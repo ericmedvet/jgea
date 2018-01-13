@@ -3,22 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.units.malelab.jgea.core.evolver.stopcriterion;
+package it.units.malelab.jgea.core.evolver.stopcondition;
 
 /**
  *
  * @author eric
  */
-public class RelativeElapsedTime {
-  
-  private final double r;
+public class FitnessEvaluations extends Iterations {
 
-  public RelativeElapsedTime(double r) {
-    this.r = r;
-  }
-
-  public double getR() {
-    return r;
+  public FitnessEvaluations(int n) {
+    super(n);
   }
   
 }

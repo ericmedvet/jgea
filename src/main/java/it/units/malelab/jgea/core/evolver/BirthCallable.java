@@ -46,7 +46,7 @@ public class BirthCallable<G, S, F> implements Callable<Individual<G, S, F>> {
 
   @Override
   public Individual<G, S, F> call() throws Exception {
-    Stopwatch stopwatch = Stopwatch.createStarted();
+    Stopwatch stopwatch = Stopwatch.createUnstarted();
     Capturer capturer = new Capturer();
     long elapsed;
     //genotype -> solution

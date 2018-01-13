@@ -3,22 +3,22 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.units.malelab.jgea.core.evolver.stopcriterion;
+package it.units.malelab.jgea.core.evolver.stopcondition;
 
 /**
  *
  * @author eric
  */
-public class Iterations implements StoppingCondition {
+public class RelativeElapsedTime {
   
-  private final int n;
+  private final double r;
 
-  public Iterations(int n) {
-    this.n = n;
+  public RelativeElapsedTime(double r) {
+    this.r = r;
   }
 
-  public int getN() {
-    return n;
+  public double getR() {
+    return r;
   }
   
 }

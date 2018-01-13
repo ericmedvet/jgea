@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.units.malelab.jgea.core.evolver.stopcriterion;
+package it.units.malelab.jgea.core.evolver.stopcondition;
 
 import java.util.concurrent.TimeUnit;
 
@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author eric
  */
-public class ElapsedTime implements StoppingCondition {
+public class ElapsedTime implements StopCondition {
   
   private final double t;
   private final TimeUnit timeUnit;

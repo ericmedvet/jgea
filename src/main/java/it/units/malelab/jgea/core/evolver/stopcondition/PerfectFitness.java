@@ -3,16 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.units.malelab.jgea.core.evolver.stopcriterion;
+package it.units.malelab.jgea.core.evolver.stopcondition;
 
 /**
  *
  * @author eric
  */
-public class FitnessEvaluations extends Iterations {
-
-  public FitnessEvaluations(int n) {
-    super(n);
-  }
+public class PerfectFitness implements StopCondition {
   
 }

@@ -5,7 +5,9 @@
  */
 package it.units.malelab.jgea.core.util;
 
+import com.google.common.collect.Range;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +58,56 @@ public class Misc {
       d = d - option.getValue();
     }
     return (T) options.keySet().toArray()[0];
+  }
+  
+    public static List<Range<Integer>> slices(Range<Integer> range, int pieces) {
+    List<Integer> sizes = new ArrayList<>(pieces);
+    for (int i = 0; i < pieces; i++) {
+      sizes.add(1);
+    }
+    return slices(range, sizes);
+  }
+
+  public static List<Range<Integer>> slices(Range<Integer> range, List<Integer> sizes) {
+    int length = range.upperEndpoint() - range.lowerEndpoint();
+    int sumOfSizes = 0;
+    for (int size : sizes) {
+      sumOfSizes = sumOfSizes + size;
+    }
+    if (sumOfSizes > length) {
+      List<Integer> originalSizes = new ArrayList<>(sizes);
+      sizes = new ArrayList<>(sizes.size());
+      int oldSumOfSizes = sumOfSizes;
+      sumOfSizes = 0;
+      for (int originalSize : originalSizes) {
+        int newSize = (int) Math.round((double) originalSize / (double) oldSumOfSizes);
+        sizes.add(newSize);
+        sumOfSizes = sumOfSizes + newSize;
+      }
+    }
+    int minSize = (int) Math.floor((double) length / (double) sumOfSizes);
+    int missing = length - minSize * sumOfSizes;
+    int[] rangeSize = new int[sizes.size()];
+    for (int i = 0; i < rangeSize.length; i++) {
+      rangeSize[i] = minSize * sizes.get(i);
+    }
+    int c = 0;
+    while (missing > 0) {
+      rangeSize[c % rangeSize.length] = rangeSize[c % rangeSize.length] + 1;
+      c = c + 1;
+      missing = missing - 1;
+    }
+    List<Range<Integer>> ranges = new ArrayList<>(sizes.size());
+    int offset = range.lowerEndpoint();
+    for (int i = 0; i < rangeSize.length; i++) {
+      ranges.add(Range.closedOpen(offset, offset + rangeSize[i]));
+      offset = offset + rangeSize[i];
+    }
+    return ranges;
+  }
+
+  public static <T> T pickRandomly(Collection<T> ts, Random random) {
+    return (T)ts.toArray()[random.nextInt(ts.size())];
   }
 
 }

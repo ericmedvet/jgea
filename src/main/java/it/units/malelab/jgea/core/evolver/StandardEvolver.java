@@ -6,36 +6,51 @@
 package it.units.malelab.jgea.core.evolver;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Lists;
 import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.Problem;
-import it.units.malelab.jgea.core.evolver.stopcriterion.Births;
-import it.units.malelab.jgea.core.evolver.stopcriterion.ElapsedTime;
-import it.units.malelab.jgea.core.evolver.stopcriterion.FitnessEvaluations;
-import it.units.malelab.jgea.core.evolver.stopcriterion.Iterations;
-import it.units.malelab.jgea.core.evolver.stopcriterion.RelativeElapsedTime;
-import it.units.malelab.jgea.core.evolver.stopcriterion.StoppingCondition;
+import it.units.malelab.jgea.core.evolver.stopcondition.Births;
+import it.units.malelab.jgea.core.evolver.stopcondition.ElapsedTime;
+import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
+import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
+import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
+import it.units.malelab.jgea.core.evolver.stopcondition.RelativeElapsedTime;
+import it.units.malelab.jgea.core.evolver.stopcondition.StopCondition;
+import it.units.malelab.jgea.core.genotype.BitString;
+import it.units.malelab.jgea.core.genotype.BitStringFactory;
 import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.core.listener.event.Event;
+import it.units.malelab.jgea.core.listener.event.EvolutionEndEvent;
+import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
+import it.units.malelab.jgea.core.mapper.BoundMapper;
 import it.units.malelab.jgea.core.mapper.CachedMapper;
+import it.units.malelab.jgea.core.mapper.Identity;
 import it.units.malelab.jgea.core.mapper.Mapper;
 import it.units.malelab.jgea.core.mapper.MappingException;
+import it.units.malelab.jgea.core.operator.BitFlipMutation;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
+import it.units.malelab.jgea.core.operator.LenghtPreservingTwoPointCrossover;
+import it.units.malelab.jgea.core.ranker.ComparableRanker;
 import it.units.malelab.jgea.core.ranker.Ranker;
 import it.units.malelab.jgea.core.ranker.selector.Selector;
+import it.units.malelab.jgea.core.ranker.selector.Tournament;
+import it.units.malelab.jgea.core.ranker.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
+import it.units.malelab.jgea.problem.synthetic.OneMax;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -52,10 +67,43 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
   private final Selector<Individual<G, S, F>> unsurvivalSelector;
   private final int offspringSize;
   private final boolean overlapping;
-  private final List<StoppingCondition> stoppingConditions;
+  private final List<StopCondition> stopConditions;
   private final boolean saveAncestry;
+  
+  
+  public static void main(String[] args) throws InterruptedException, ExecutionException {
+    Problem<BitString, Double> p = new OneMax(100);
+    Map<GeneticOperator<BitString>, Double> operators = new LinkedHashMap<>();
+    operators.put(new BitFlipMutation(0.01), 0.2d);
+    operators.put(new LenghtPreservingTwoPointCrossover<BitString>(), 0.8d);
+    StandardEvolver<BitString, BitString, Double> evolver = new StandardEvolver<>(
+            100,
+            new BitStringFactory(100),
+            new ComparableRanker<>(new Comparator<Individual<BitString, BitString, Double>>() {
+              @Override
+              public int compare(Individual<BitString, BitString, Double> i1, Individual<BitString, BitString, Double> i2) {
+                return Double.compare(i1.getFitness(), i2.getFitness());
+              }
+            }),
+            new Identity<BitString>(),
+            operators,
+            new Tournament<Individual<BitString, BitString, Double>>(3),
+            new Worst<Individual<BitString, BitString, Double>>(),
+            100,
+            true,
+            Lists.newArrayList(new FitnessEvaluations(10000), new PerfectFitness()),
+            false
+    );
+    Random r = new Random(1);
+    evolver.solve(p, r, Executors.newFixedThreadPool(3), new Listener() {
+      @Override
+      public void listen(Event event) {
+        System.out.println(event);
+      }
+    });
+  }
 
-  public StandardEvolver(int populationSize, Factory<G> genotypeBuilder, Ranker<Individual<G, S, F>> ranker, Mapper<G, S> mapper, Map<GeneticOperator<G>, Double> operators, Selector<Individual<G, S, F>> parentSelector, Selector<Individual<G, S, F>> unsurvivalSelector, int offspringSize, boolean overlapping, List<StoppingCondition> stoppingConditions, boolean saveAncestry) {
+  public StandardEvolver(int populationSize, Factory<G> genotypeBuilder, Ranker<Individual<G, S, F>> ranker, Mapper<G, S> mapper, Map<GeneticOperator<G>, Double> operators, Selector<Individual<G, S, F>> parentSelector, Selector<Individual<G, S, F>> unsurvivalSelector, int offspringSize, boolean overlapping, List<StopCondition> stoppingConditions, boolean saveAncestry) {
     this.populationSize = populationSize;
     this.genotypeBuilder = genotypeBuilder;
     this.ranker = ranker;
@@ -65,7 +113,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
     this.unsurvivalSelector = unsurvivalSelector;
     this.offspringSize = offspringSize;
     this.overlapping = overlapping;
-    this.stoppingConditions = stoppingConditions;
+    this.stopConditions = stoppingConditions;
     this.saveAncestry = saveAncestry;
   }
   
@@ -102,7 +150,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
         try {
           List<G> childGenotypes = operator.map(parentGenotypes, random, listener);
           for (G childGenotype : childGenotypes) {
-            tasks.add(new BirthCallable<>(childGenotype, births, parents, mapper, problem.getFitnessMapper(), random, listener));
+            tasks.add(new BirthCallable<>(childGenotype, births, saveAncestry?parents:null, mapper, problem.getFitnessMapper(), random, listener));
           }
           births = births+childGenotypes.size();
           i = i+childGenotypes.size();          
@@ -134,9 +182,12 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
         Individual<G, S, F> individual = unsurvivalSelector.select(rankedPopulation, random);
         population.remove(individual);
       }
+      listener.listen(new EvolutionEvent<>(generations, rankedPopulation));
       //check stopping conditions
-      if (checkStoppingConditions(generations, births, stopwatch, problem.getFitnessMapper())!=null) {
-        break;
+      StopCondition stopCondition = checkStopConditions(generations, births, stopwatch, problem.getFitnessMapper(), rankedPopulation);
+      if (stopCondition!=null) {
+        listener.listen(new EvolutionEndEvent(stopCondition, generations, rankedPopulation));
+        break;     
       }
     }        
     //take out solutions
@@ -148,8 +199,8 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
     return solutions;
   }
   
-  protected StoppingCondition checkStoppingConditions(int iterations, int births, Stopwatch stopwatch, Mapper<S, F> fitnessMapper) {
-    for (StoppingCondition stoppingCondition : stoppingConditions) {
+  protected StopCondition checkStopConditions(int iterations, int births, Stopwatch stopwatch, Mapper<S, F> fitnessMapper, List<Collection<Individual<G, S, F>>> rankedPopulation) {
+    for (StopCondition stoppingCondition : stopConditions) {
       if (stoppingCondition.getClass().equals(Births.class)) {
         if (births>((Births)stoppingCondition).getN()) {
           return stoppingCondition;
@@ -177,6 +228,16 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
             return stoppingCondition;
           }          
         }        
+      } else if (stoppingCondition.getClass().equals(PerfectFitness.class)) {
+        if (fitnessMapper instanceof BoundMapper) {
+          for (Collection<Individual<G, S, F>> rank : rankedPopulation) {
+            for (Individual<G, S, F> individual : rank) {
+              if (individual.getFitness().equals(((BoundMapper)fitnessMapper).bestValue())) {
+                return stoppingCondition;
+              }
+            }
+          }
+        }
       }
     }
     return null;

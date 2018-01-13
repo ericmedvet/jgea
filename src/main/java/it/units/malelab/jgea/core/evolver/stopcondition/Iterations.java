@@ -3,16 +3,22 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.units.malelab.jgea.core.evolver.stopcriterion;
+package it.units.malelab.jgea.core.evolver.stopcondition;
 
 /**
  *
  * @author eric
  */
-public class Births extends Iterations {
+public class Iterations implements StopCondition {
+  
+  private final int n;
 
-  public Births(int n) {
-    super(n);
+  public Iterations(int n) {
+    this.n = n;
+  }
+
+  public int getN() {
+    return n;
   }
   
 }

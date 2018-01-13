@@ -5,7 +5,6 @@
  */
 package it.units.malelab.jgea.core;
 
-import it.units.malelab.jgea.core.ranker.Ranker;
 import it.units.malelab.jgea.core.mapper.BoundMapper;
 import java.io.Serializable;
 

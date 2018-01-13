@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.units.malelab.jgea.core.evolver.stopcriterion;
+package it.units.malelab.jgea.core.evolver.stopcondition;
 
 import java.io.Serializable;
 
@@ -11,6 +11,6 @@ import java.io.Serializable;
  *
  * @author eric
  */
-public interface StoppingCondition extends Serializable {
+public interface StopCondition extends Serializable {
   
 }
