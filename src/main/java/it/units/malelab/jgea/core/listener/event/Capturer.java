@@ -6,6 +6,8 @@
 package it.units.malelab.jgea.core.listener.event;
 
 import it.units.malelab.jgea.core.listener.Listener;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -13,15 +15,23 @@ import it.units.malelab.jgea.core.listener.Listener;
  */
 public class Capturer implements Listener {
   
-  private Event lastEvent;
+  private final List<Event> events;
+
+  public Capturer() {
+    events = new ArrayList<>();
+  }
 
   @Override
   public void listen(Event event) {
-    lastEvent = event;
+    events.add(event);
   }
 
-  public Event getLastEvent() {
-    return lastEvent;
+  public List<Event> getEvents() {
+    return events;
   }
   
+  public void clear() {
+    events.clear();
+  }
+
 }

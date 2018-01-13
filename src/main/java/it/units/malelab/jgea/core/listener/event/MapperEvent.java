@@ -11,7 +11,7 @@ import java.util.Map;
  *
  * @author eric
  */
-public class MapperEvent<A, B> implements Event {
+public class MapperEvent<A, B> implements InfoEvent {
   
   private final A source;
   private final B destination;

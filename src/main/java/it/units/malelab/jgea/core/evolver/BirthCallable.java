@@ -8,12 +8,12 @@ package it.units.malelab.jgea.core.evolver;
 import com.google.common.base.Stopwatch;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.core.listener.ListenerUtils;
 import it.units.malelab.jgea.core.listener.event.Capturer;
 import it.units.malelab.jgea.core.listener.event.MapperEvent;
 import it.units.malelab.jgea.core.listener.event.TimedEvent;
 import it.units.malelab.jgea.core.mapper.Mapper;
 import it.units.malelab.jgea.core.util.Misc;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -48,19 +48,22 @@ public class BirthCallable<G, S, F> implements Callable<Individual<G, S, F>> {
   public Individual<G, S, F> call() throws Exception {
     Stopwatch stopwatch = Stopwatch.createStarted();
     Capturer capturer = new Capturer();
-    Map<String, Object> info = new LinkedHashMap<>();
     long elapsed;
+    //genotype -> solution
     stopwatch.start();
     S solution = solutionMapper.map(genotype, random, capturer);
     elapsed = stopwatch.stop().elapsed(TimeUnit.NANOSECONDS);
-    info.putAll(Misc.keyPrefix("solution.", ((MapperEvent)capturer.getLastEvent()).getInfo()));
-    listener.listen(new TimedEvent(elapsed, TimeUnit.NANOSECONDS, capturer.getLastEvent()));    
+    Map<String, Object> solutionInfo = ListenerUtils.fromInfoEvents(capturer.getEvents(), "solution.");
+    listener.listen(new TimedEvent(elapsed, TimeUnit.NANOSECONDS, new MapperEvent(genotype, solution, solutionInfo)));
+    capturer.clear();
+    //solution -> fitness
     stopwatch.reset().start();
     F fitness = fitnessMapper.map(solution, random, capturer);
     elapsed = stopwatch.stop().elapsed(TimeUnit.NANOSECONDS);
-    info.putAll(Misc.keyPrefix("fitness.", ((MapperEvent)capturer.getLastEvent()).getInfo()));
-    listener.listen(new TimedEvent(elapsed, TimeUnit.NANOSECONDS, capturer.getLastEvent()));
-    return new Individual<>(genotype, solution, fitness, birthDate, parents, info);
+    Map<String, Object> fitnessInfo = ListenerUtils.fromInfoEvents(capturer.getEvents(), "fitness.");
+    listener.listen(new TimedEvent(elapsed, TimeUnit.NANOSECONDS, new MapperEvent(genotype, solution, fitnessInfo)));
+    //merge info
+    return new Individual<>(genotype, solution, fitness, birthDate, parents, Misc.merge(solutionInfo, fitnessInfo));
   }  
   
 }
