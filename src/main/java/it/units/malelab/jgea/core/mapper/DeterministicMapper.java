@@ -6,7 +6,6 @@
 package it.units.malelab.jgea.core.mapper;
 
 import it.units.malelab.jgea.core.listener.Listener;
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -20,6 +19,6 @@ public abstract class DeterministicMapper<A, B> implements Mapper<A, B> {
     return map(a, listener);
   }
   
-  protected abstract B map(A a, Listener listener) throws MappingException;
+  public abstract B map(A a, Listener listener) throws MappingException;
   
 }

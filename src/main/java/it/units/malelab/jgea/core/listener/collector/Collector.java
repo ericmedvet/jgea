@@ -3,17 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.units.malelab.jgea.core.evolver.stopcondition;
+package it.units.malelab.jgea.core.listener.collector;
 
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  *
  * @author eric
  */
-public interface StopCondition<G, S, F> extends Serializable {
+public interface Collector<G, S, F> extends Serializable {
   
-  public boolean shouldStop(EvolutionEvent<G, S, F> evolutionEvent);
+  public Map<String, String> getFormattedNames();
+  public Map<String, Object> collect(EvolutionEvent<G, S, F> evolutionEvent);  
   
 }

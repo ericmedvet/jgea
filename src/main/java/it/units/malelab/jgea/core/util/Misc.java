@@ -45,7 +45,7 @@ public class Misc {
     return map;
   }
 
-  public static <T> T selectRandom(Map<T, Double> options, Random random) {
+  public static <T> T pickRandomly(Map<T, Double> options, Random random) {
     double sum = 0;
     for (Double rate : options.values()) {
       sum = sum + rate;
@@ -108,6 +108,13 @@ public class Misc {
 
   public static <T> T pickRandomly(Collection<T> ts, Random random) {
     return (T)ts.toArray()[random.nextInt(ts.size())];
+  }
+  
+  public static <T> T first(Collection<T> ts) {
+    if (ts.isEmpty()) {
+      return null;
+    }
+    return ts.iterator().next();
   }
 
 }

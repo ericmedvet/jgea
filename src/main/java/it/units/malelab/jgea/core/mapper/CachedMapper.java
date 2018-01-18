@@ -9,8 +9,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheStats;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.event.MapperEvent;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
@@ -31,7 +29,7 @@ public class CachedMapper<A, B> extends DeterministicMapper<A, B> {
   }
           
   @Override
-  protected B map(final A a, final Listener listener) throws MappingException {    
+  public B map(final A a, final Listener listener) throws MappingException {    
     try {
       return cache.get(a, new Callable<B>() {
         @Override

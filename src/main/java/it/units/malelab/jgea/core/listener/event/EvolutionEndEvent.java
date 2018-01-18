@@ -16,8 +16,8 @@ public class EvolutionEndEvent extends EvolutionEvent {
   
   private final StopCondition stopCondition;
 
-  public EvolutionEndEvent(StopCondition stopCondition, int iteration, List rankedPopulation) {
-    super(iteration, rankedPopulation);
+  public EvolutionEndEvent(StopCondition stopCondition, int iteration, int births, List rankedPopulation, long elapsedMillis) {
+    super(iteration, births, rankedPopulation, elapsedMillis);
     this.stopCondition = stopCondition;
   }
 

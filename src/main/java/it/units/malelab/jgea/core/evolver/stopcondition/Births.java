@@ -5,14 +5,27 @@
  */
 package it.units.malelab.jgea.core.evolver.stopcondition;
 
+import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
+
 /**
  *
  * @author eric
  */
-public class Births extends Iterations {
+public class Births implements StopCondition<Object, Object, Object> {
+  
+  private final int n;
 
   public Births(int n) {
-    super(n);
+    this.n = n;
   }
-  
+
+  public int getN() {
+    return n;
+  }
+
+  @Override
+  public boolean shouldStop(EvolutionEvent<Object, Object, Object> evolutionEvent) {
+    return evolutionEvent.getBirths()>n;
+  }
+
 }

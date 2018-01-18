@@ -5,6 +5,7 @@
  */
 package it.units.malelab.jgea.core.evolver.stopcondition;
 
+import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -28,5 +29,12 @@ public class ElapsedTime implements StopCondition {
   public TimeUnit getTimeUnit() {
     return timeUnit;
   }
+
+  @Override
+  public boolean shouldStop(EvolutionEvent evolutionEvent) {
+    long tMillis = TimeUnit.MILLISECONDS.convert((long)t, timeUnit);
+    return evolutionEvent.getElapsedMillis()>tMillis;
+  }
+  
   
 }

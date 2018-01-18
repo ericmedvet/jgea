@@ -20,6 +20,12 @@ import it.units.malelab.jgea.core.evolver.stopcondition.StopCondition;
 import it.units.malelab.jgea.core.genotype.BitString;
 import it.units.malelab.jgea.core.genotype.BitStringFactory;
 import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.core.listener.PrintStreamListener;
+import it.units.malelab.jgea.core.listener.collector.Basic;
+import it.units.malelab.jgea.core.listener.collector.BestPrinter;
+import it.units.malelab.jgea.core.listener.collector.Diversity;
+import it.units.malelab.jgea.core.listener.collector.SingleObjectiveBest;
+import it.units.malelab.jgea.core.listener.collector.Population;
 import it.units.malelab.jgea.core.listener.event.Event;
 import it.units.malelab.jgea.core.listener.event.EvolutionEndEvent;
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
@@ -72,7 +78,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
   
   
   public static void main(String[] args) throws InterruptedException, ExecutionException {
-    Problem<BitString, Double> p = new OneMax(100);
+    Problem<BitString, Double> p = new OneMax();
     Map<GeneticOperator<BitString>, Double> operators = new LinkedHashMap<>();
     operators.put(new BitFlipMutation(0.01), 0.2d);
     operators.put(new LenghtPreservingTwoPointCrossover<BitString>(), 0.8d);
@@ -91,16 +97,18 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
             new Worst<Individual<BitString, BitString, Double>>(),
             100,
             true,
-            Lists.newArrayList(new FitnessEvaluations(10000), new PerfectFitness()),
+            Lists.newArrayList(new FitnessEvaluations(10000), new PerfectFitness(p.getFitnessMapper().bestValue())),
             false
     );
     Random r = new Random(1);
-    evolver.solve(p, r, Executors.newFixedThreadPool(3), new Listener() {
-      @Override
-      public void listen(Event event) {
-        System.out.println(event);
-      }
-    });
+    evolver.solve(p, r, Executors.newFixedThreadPool(1),
+            new PrintStreamListener(System.out, true, 10, " ", " | ",
+                    new Basic(),
+                    new Population(),
+                    new SingleObjectiveBest("%4.2f", false, null),
+                    new Diversity(),
+                    new BestPrinter(null, "%s")
+            ));
   }
 
   public StandardEvolver(int populationSize, Factory<G> genotypeBuilder, Ranker<Individual<G, S, F>> ranker, Mapper<G, S> mapper, Map<GeneticOperator<G>, Double> operators, Selector<Individual<G, S, F>> parentSelector, Selector<Individual<G, S, F>> unsurvivalSelector, int offspringSize, boolean overlapping, List<StopCondition> stoppingConditions, boolean saveAncestry) {
@@ -126,7 +134,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
     //initialize population
     List<Individual<G, S, F>> population = new ArrayList<>();
     for (G genotype : genotypeBuilder.build(populationSize, random)) {
-      tasks.add(new BirthCallable<>(genotype, 0, Collections.EMPTY_LIST, mapper, problem.getFitnessMapper(), random, listener));
+      tasks.add(new BirthCallable<>(genotype, generations, Collections.EMPTY_LIST, mapper, problem.getFitnessMapper(), random, listener));
     }
     population.addAll(Misc.getAll(executor.invokeAll(tasks)));
     births = births+populationSize;
@@ -139,7 +147,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
       int i = 0;
       tasks.clear();
       while (i<offspringSize) {
-        GeneticOperator<G> operator = Misc.selectRandom(operators, random);
+        GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
         List<Individual<G, S, F>> parents = new ArrayList<>(operator.arity());
         List<G> parentGenotypes = new ArrayList<>(operator.arity());
         for (int j = 0; j < operator.arity(); j++) {
@@ -150,12 +158,12 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
         try {
           List<G> childGenotypes = operator.map(parentGenotypes, random, listener);
           for (G childGenotype : childGenotypes) {
-            tasks.add(new BirthCallable<>(childGenotype, births, saveAncestry?parents:null, mapper, problem.getFitnessMapper(), random, listener));
+            tasks.add(new BirthCallable<>(childGenotype, generations, saveAncestry?parents:null, mapper, problem.getFitnessMapper(), random, listener));
           }
           births = births+childGenotypes.size();
           i = i+childGenotypes.size();          
         } catch (MappingException ex) {
-          //just ignore
+          //just ignore: will not be added to the population
         }
       }
       //update population
@@ -182,11 +190,12 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
         Individual<G, S, F> individual = unsurvivalSelector.select(rankedPopulation, random);
         population.remove(individual);
       }
-      listener.listen(new EvolutionEvent<>(generations, rankedPopulation));
+      EvolutionEvent<G, S, F> event = new EvolutionEvent<>(generations, births, rankedPopulation, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      listener.listen(event);
       //check stopping conditions
-      StopCondition stopCondition = checkStopConditions(generations, births, stopwatch, problem.getFitnessMapper(), rankedPopulation);
+      StopCondition stopCondition = checkStopConditions(event);
       if (stopCondition!=null) {
-        listener.listen(new EvolutionEndEvent(stopCondition, generations, rankedPopulation));
+        listener.listen(new EvolutionEndEvent(stopCondition, generations, births, rankedPopulation, stopwatch.elapsed(TimeUnit.MILLISECONDS)));
         break;     
       }
     }        
@@ -199,45 +208,10 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
     return solutions;
   }
   
-  protected StopCondition checkStopConditions(int iterations, int births, Stopwatch stopwatch, Mapper<S, F> fitnessMapper, List<Collection<Individual<G, S, F>>> rankedPopulation) {
-    for (StopCondition stoppingCondition : stopConditions) {
-      if (stoppingCondition.getClass().equals(Births.class)) {
-        if (births>((Births)stoppingCondition).getN()) {
-          return stoppingCondition;
-        }
-      } else if (stoppingCondition.getClass().equals(ElapsedTime.class)) {
-        if (stopwatch.elapsed(((ElapsedTime)stoppingCondition).getTimeUnit())>((ElapsedTime)stoppingCondition).getT()) {
-          return stoppingCondition;
-        }        
-      } else if (stoppingCondition.getClass().equals(RelativeElapsedTime.class)) {
-        if (fitnessMapper instanceof CachedMapper) {
-          double avgFitnessEvaluationNanos = ((CachedMapper)fitnessMapper).getCacheStats().averageLoadPenalty();
-          double elapsedNanos = stopwatch.elapsed(TimeUnit.NANOSECONDS);
-          if ((elapsedNanos/avgFitnessEvaluationNanos)>((RelativeElapsedTime)stoppingCondition).getR()) {
-            return stoppingCondition;
-          }          
-        }
-      } else if (stoppingCondition.getClass().equals(Iterations.class)) {
-        if (iterations>((Iterations)stoppingCondition).getN()) {
-          return stoppingCondition;
-        }        
-      } else if (stoppingCondition.getClass().equals(FitnessEvaluations.class)) {
-        if (fitnessMapper instanceof CachedMapper) {
-          long actualEvaluations = ((CachedMapper)fitnessMapper).getActualCount();
-          if (actualEvaluations>((FitnessEvaluations)stoppingCondition).getN()) {
-            return stoppingCondition;
-          }          
-        }        
-      } else if (stoppingCondition.getClass().equals(PerfectFitness.class)) {
-        if (fitnessMapper instanceof BoundMapper) {
-          for (Collection<Individual<G, S, F>> rank : rankedPopulation) {
-            for (Individual<G, S, F> individual : rank) {
-              if (individual.getFitness().equals(((BoundMapper)fitnessMapper).bestValue())) {
-                return stoppingCondition;
-              }
-            }
-          }
-        }
+  protected StopCondition checkStopConditions(EvolutionEvent<G, S, F> event) {
+    for (StopCondition stopCondition : stopConditions) {
+      if (stopCondition.shouldStop(event)) {
+        return stopCondition;
       }
     }
     return null;

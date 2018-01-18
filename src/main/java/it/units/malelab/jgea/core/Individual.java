@@ -18,15 +18,15 @@ public class Individual<G, S, F> implements Serializable {
   private final G genotype;
   private final S solution;
   private final F fitness;
-  private final double birthDate;
+  private final int birthIteration;
   private final List<Individual<G, S, F>> parents;
   private final Map<String, Object> info;
 
-  public Individual(G genotype, S solution, F fitness, double birthDate, List<Individual<G, S, F>> parents, Map<String, Object> info) {
+  public Individual(G genotype, S solution, F fitness, int birthIteration, List<Individual<G, S, F>> parents, Map<String, Object> info) {
     this.genotype = genotype;
     this.solution = solution;
     this.fitness = fitness;
-    this.birthDate = birthDate;
+    this.birthIteration = birthIteration;
     this.parents = parents;
     this.info = info;
   }
@@ -43,8 +43,8 @@ public class Individual<G, S, F> implements Serializable {
     return fitness;
   }
 
-  public double getBirthDate() {
-    return birthDate;
+  public int getBirthIteration() {
+    return birthIteration;
   }
 
   public List<Individual<G, S, F>> getParents() {

@@ -27,16 +27,16 @@ import java.util.concurrent.TimeUnit;
 public class BirthCallable<G, S, F> implements Callable<Individual<G, S, F>> {
   
   private final G genotype;
-  private final double birthDate;
+  private final int birthIteration;
   private final List<Individual<G, S, F>> parents;
   private final Mapper<G, S> solutionMapper;
   private final Mapper<S, F> fitnessMapper;
   private final Random random;
   private final Listener listener;
 
-  public BirthCallable(G genotype, double birthDate, List<Individual<G, S, F>> parents, Mapper<G, S> solutionMapper, Mapper<S, F> fitnessMapper, Random random, Listener listener) {
+  public BirthCallable(G genotype, int birthIteration, List<Individual<G, S, F>> parents, Mapper<G, S> solutionMapper, Mapper<S, F> fitnessMapper, Random random, Listener listener) {
     this.genotype = genotype;
-    this.birthDate = birthDate;
+    this.birthIteration = birthIteration;
     this.parents = parents;
     this.solutionMapper = solutionMapper;
     this.fitnessMapper = fitnessMapper;
@@ -63,7 +63,7 @@ public class BirthCallable<G, S, F> implements Callable<Individual<G, S, F>> {
     Map<String, Object> fitnessInfo = ListenerUtils.fromInfoEvents(capturer.getEvents(), "fitness.");
     listener.listen(new TimedEvent(elapsed, TimeUnit.NANOSECONDS, new MapperEvent(genotype, solution, fitnessInfo)));
     //merge info
-    return new Individual<>(genotype, solution, fitness, birthDate, parents, Misc.merge(solutionInfo, fitnessInfo));
+    return new Individual<>(genotype, solution, fitness, birthIteration, parents, Misc.merge(solutionInfo, fitnessInfo));
   }  
   
 }

@@ -11,6 +11,7 @@ import it.units.malelab.jgea.core.util.Misc;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 /**
  *
@@ -26,6 +27,39 @@ public class ListenerUtils {
       }
     }
     return info;
+  }
+  
+  public static Listener deafListener() {
+    return new Listener() {
+      @Override
+      public void listen(Event event) {       
+      }
+    };
+  }
+  
+  public static Listener chain(final Listener... listeners) {
+    return new Listener() {
+      @Override
+      public void listen(Event event) {
+        for (Listener listener : listeners) {
+          listener.listen(event);
+        }
+      }
+    };
+  }
+  
+  public static Listener onExecutor(final Listener listener, final ExecutorService executor) {
+    return new Listener() {
+      @Override
+      public void listen(final Event event) {
+        executor.submit(new Runnable() {
+          @Override
+          public void run() {
+            listener.listen(event);
+          }
+        });
+      }
+    };
   }
   
 }

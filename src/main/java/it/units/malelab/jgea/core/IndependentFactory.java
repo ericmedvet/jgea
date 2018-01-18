@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.units.malelab.jgea;
+package it.units.malelab.jgea.core;
 
 import it.units.malelab.jgea.core.Factory;
 import java.util.ArrayList;

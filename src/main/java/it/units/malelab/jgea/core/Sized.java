@@ -9,10 +9,8 @@ package it.units.malelab.jgea.core;
  *
  * @author eric
  */
-public interface Sequence<T> extends Sized, Cloneable {
+public interface Sized {
   
-  public T get(int index);
-  public void set(int index, T t);
-  public Sequence<T> clone();
+  public int size();
   
 }

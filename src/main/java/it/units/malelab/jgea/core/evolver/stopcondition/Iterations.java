@@ -5,6 +5,8 @@
  */
 package it.units.malelab.jgea.core.evolver.stopcondition;
 
+import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
+
 /**
  *
  * @author eric
@@ -19,6 +21,11 @@ public class Iterations implements StopCondition {
 
   public int getN() {
     return n;
+  }
+
+  @Override
+  public boolean shouldStop(EvolutionEvent evolutionEvent) {
+    return evolutionEvent.getIteration()>n;
   }
   
 }

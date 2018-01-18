@@ -7,25 +7,23 @@ package it.units.malelab.jgea.core.evolver.stopcondition;
 
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
 import it.units.malelab.jgea.core.mapper.CachedMapper;
-import it.units.malelab.jgea.core.mapper.Mapper;
-import java.util.concurrent.TimeUnit;
 
 /**
  *
  * @author eric
  */
-public class RelativeElapsedTime<G, S, F> implements StopCondition<G, S, F> {
+public class ActualFitnessEvaluations<G, S, F> implements StopCondition<G, S, F> {
   
-  private final double r;
+  private final long n;
   private final CachedMapper<S, F> cachedFitnessMapper;
 
-  public RelativeElapsedTime(double r, CachedMapper<S, F> cachedFitnessMapper) {
-    this.r = r;
+  public ActualFitnessEvaluations(long n, CachedMapper<S, F> cachedFitnessMapper) {
+    this.n = n;
     this.cachedFitnessMapper = cachedFitnessMapper;
   }
 
-  public double getR() {
-    return r;
+  public long getN() {
+    return n;
   }
 
   public CachedMapper<S, F> getCachedFitnessMapper() {
@@ -34,9 +32,7 @@ public class RelativeElapsedTime<G, S, F> implements StopCondition<G, S, F> {
 
   @Override
   public boolean shouldStop(EvolutionEvent<G, S, F> evolutionEvent) {
-    double elapsedNanos = TimeUnit.NANOSECONDS.convert(evolutionEvent.getElapsedMillis(), TimeUnit.MILLISECONDS);
-    double avgNanos = cachedFitnessMapper.getCacheStats().averageLoadPenalty();
-    return elapsedNanos/avgNanos>r;
+    return cachedFitnessMapper.getActualCount()>n;
   }
 
 }

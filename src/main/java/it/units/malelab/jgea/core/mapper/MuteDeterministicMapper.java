@@ -6,19 +6,18 @@
 package it.units.malelab.jgea.core.mapper;
 
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.event.MapperEvent;
-import java.util.Collections;
 
 /**
  *
  * @author eric
  */
-public class Identity<A> extends DeterministicMapper<A, A>{
+public abstract class MuteDeterministicMapper<A, B> extends DeterministicMapper<A, B> {
 
   @Override
-  public A map(A a, Listener listener) throws MappingException {
-    listener.listen(new MapperEvent(a, a, Collections.EMPTY_MAP));
-    return a;
+  public B map(A a, Listener listener) throws MappingException {
+    return map(a);
   }
-
+  
+  public abstract B map(A a) throws MappingException;
+    
 }

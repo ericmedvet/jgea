@@ -18,7 +18,7 @@ import java.util.Random;
  */
 public class OneMax extends Problem<BitString, Double> {
 
-  public OneMax(final int size) {
+  public OneMax() {
     super(new BoundMapper<BitString, Double>() {
 
       @Override
@@ -33,7 +33,7 @@ public class OneMax extends Problem<BitString, Double> {
 
       @Override
       public Double map(BitString b, Random random, Listener listener) throws MappingException {
-        return (double)b.count()/(double)size;
+        return 1d-(double)b.count()/(double)b.size();
       }
     });
   }

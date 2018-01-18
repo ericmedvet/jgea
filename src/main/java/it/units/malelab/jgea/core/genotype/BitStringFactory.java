@@ -5,7 +5,7 @@
  */
 package it.units.malelab.jgea.core.genotype;
 
-import it.units.malelab.jgea.IndependentFactory;
+import it.units.malelab.jgea.core.IndependentFactory;
 import java.util.Random;
 
 /**
