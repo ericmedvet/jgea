@@ -1,0 +1,4 @@
+<expr> ::= <op> <expr> <expr> | <pre-op> <expr> | <var>
+<op> ::= + | *
+<pre-op> ::= _ | 1/ | √
+<var> ::= x

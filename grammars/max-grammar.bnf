@@ -1,0 +1,4 @@
+<prog> ::= <expr>
+<expr> ::=  <op> <expr> <expr> | <var>
+<op> ::= + | * 
+<var> ::= 0.5

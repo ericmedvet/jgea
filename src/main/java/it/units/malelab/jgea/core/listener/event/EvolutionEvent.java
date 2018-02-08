@@ -16,13 +16,15 @@ import java.util.List;
 public class EvolutionEvent<G, S, F> implements Event {
   
   private final int iteration;
-  private final int births;
+  private final long births;
+  private final long fitnessEvaluations;
   private final List<Collection<Individual<G, S, F>>> rankedPopulation;
   private final long elapsedMillis;
 
-  public EvolutionEvent(int iteration, int births, List<Collection<Individual<G, S, F>>> rankedPopulation, long elapsedMillis) {
+  public EvolutionEvent(int iteration, long births, long fitnessEvaluations, List<Collection<Individual<G, S, F>>> rankedPopulation, long elapsedMillis) {
     this.iteration = iteration;
     this.births = births;
+    this.fitnessEvaluations = fitnessEvaluations;
     this.rankedPopulation = rankedPopulation;
     this.elapsedMillis = elapsedMillis;
   }
@@ -31,8 +33,12 @@ public class EvolutionEvent<G, S, F> implements Event {
     return iteration;
   }
 
-  public int getBirths() {
+  public long getBirths() {
     return births;
+  }
+
+  public long getFitnessEvaluations() {
+    return fitnessEvaluations;
   }
 
   public List<Collection<Individual<G, S, F>>> getRankedPopulation() {

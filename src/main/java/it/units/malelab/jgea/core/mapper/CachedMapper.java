@@ -22,7 +22,7 @@ public class CachedMapper<A, B> extends DeterministicMapper<A, B> {
   private final Cache<A, B> cache;
   private long actualCount;
 
-  public CachedMapper(DeterministicMapper<A, B> innerMapper, int cacheSize) {
+  public CachedMapper(DeterministicMapper<A, B> innerMapper, long cacheSize) {
     this.innerMapper = innerMapper;
     cache = CacheBuilder.newBuilder().maximumSize(cacheSize).recordStats().build();
     actualCount = 0;
@@ -57,6 +57,8 @@ public class CachedMapper<A, B> extends DeterministicMapper<A, B> {
   }
 
   public long getActualCount() {
+    //System.out.println(cache.stats().missCount());
+    long mc = cache.stats().missCount();
     return actualCount;
   }
   

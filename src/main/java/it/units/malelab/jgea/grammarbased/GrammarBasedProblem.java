@@ -21,5 +21,9 @@ public class GrammarBasedProblem<T, S, F> extends Problem<Node<S>, F> {
     super(fitnessMapper);
     this.grammar = grammar;
   }
+
+  public Grammar<T> getGrammar() {
+    return grammar;
+  }
   
 }

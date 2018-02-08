@@ -1,0 +1,11 @@
+<text> ::= <sentence> <text> | <sentence>
+<sentence> ::= <Word> _ <sentence> | <word> _ <sentence> | <word> <punct> 
+<word> ::= <letter> <word> | <letter>
+<Word> ::= <Letter> <word>
+<letter> ::= <vowel> | <consonant>
+<vowel> ::= a | o | u | e | i
+<consonant> ::= q | w | r | t | y | p | s | d | f | g | h | j | k | l | z | x | c | v | b | n | m
+<Letter> ::= <Vowel> | <Consonant>
+<Vowel> ::= A | O | U | E | I
+<Consonant> ::= Q | W | R | T | Y | P | S | D | F | G | H | J | K | L | Z | X | C | V | B | N | M
+<punct> ::= ! | ? | .

@@ -25,6 +25,7 @@ public class Basic<G, S, F> implements Collector<G, S, F> {
     Map<String, Object> indexes = new LinkedHashMap<>();
     indexes.put("iterations", evolutionEvent.getIteration());
     indexes.put("births", evolutionEvent.getBirths());
+    indexes.put("fitness.evaluations", evolutionEvent.getFitnessEvaluations());
     indexes.put("elapsed.sec", (double)evolutionEvent.getElapsedMillis()/1000d);
     return indexes;
   }
@@ -34,7 +35,8 @@ public class Basic<G, S, F> implements Collector<G, S, F> {
     LinkedHashMap<String, String> formattedNames = new LinkedHashMap<>();
     formattedNames.put("iterations", "%3d");
     formattedNames.put("births", "%8d");
-    formattedNames.put("elapsed.sec", "%5.0f");
+    formattedNames.put("fitness.evaluations", "%6d");
+    formattedNames.put("elapsed.sec", "%6.1f");
     return formattedNames;
   }
 

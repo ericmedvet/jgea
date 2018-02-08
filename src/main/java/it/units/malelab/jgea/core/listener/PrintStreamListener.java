@@ -65,22 +65,26 @@ public class PrintStreamListener<G, S, F> implements Listener {
     } else {
       return;
     }
+    StringBuffer sb = new StringBuffer();
     if ((lines == 0) || ((headerInterval > 0) && (evolutionEvent.getIteration() % headerInterval == 0))) {
       //print header: collectors
       for (int i = 0; i < formattedNames.size(); i++) {
         int j = 0;
         for (String name : formattedNames.get(i).keySet()) {
-          ps.print(formattedNames.get(i).get(name));
+          sb.append(formattedNames.get(i).get(name));
           if (j != formattedNames.get(i).size() - 1) {
-            ps.print(innerSeparator);
+            sb.append(innerSeparator);
           }
           j = j + 1;
         }
         if (i != formattedNames.size() - 1) {
-          ps.print(outerSeparator);
+          sb.append(outerSeparator);
         }
       }
-      ps.println();
+      synchronized (ps) {
+        ps.println(sb.toString());
+      }
+      sb.setLength(0);
     }
     //print values: collectors
     for (int i = 0; i < formattedNames.size(); i++) {
@@ -89,22 +93,23 @@ public class PrintStreamListener<G, S, F> implements Listener {
       for (String name : formattedNames.get(i).keySet()) {
         if (format) {
           String value = String.format(collectors.get(i).getFormattedNames().get(name), values.get(name));
-          ps.print(pad(value, formattedNames.get(i).get(name).length(), format));
+          sb.append(pad(value, formattedNames.get(i).get(name).length(), format));
         } else {
-          ps.print(values.get(name));
+          sb.append(values.get(name));
         }
         if (j != formattedNames.get(i).size() - 1) {
-          ps.print(innerSeparator);
+          sb.append(innerSeparator);
         }
         j = j + 1;
       }
       if (i != formattedNames.size() - 1) {
-        ps.print(outerSeparator);
+        sb.append(outerSeparator);
       }
     }
-    ps.println();
+    synchronized (ps) {
+      ps.println(sb.toString());
+    }
     lines = lines + 1;
-
   }
 
   private String formatName(String name, String format, boolean doFormat) {
@@ -119,7 +124,7 @@ public class PrintStreamListener<G, S, F> implements Listener {
     acronym = pad(acronym, formatSize(format), doFormat);
     return acronym;
   }
-  
+
   private int formatSize(String format) {
     int size = 0;
     Matcher matcher = Pattern.compile("\\d++").matcher(format);
@@ -132,7 +137,7 @@ public class PrintStreamListener<G, S, F> implements Listener {
     }
     return String.format(format, (Object[]) null).length();
   }
-  
+
   private String pad(String s, int length, boolean doFormat) {
     while (doFormat && (s.length() < length)) {
       s = " " + s;

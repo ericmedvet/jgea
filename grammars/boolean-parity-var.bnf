@@ -1,0 +1,1 @@
+<e> ::= .or <e> <e> | .xor <e> <e> | .and <e> <e> | .and1not <e> <e> | <v>

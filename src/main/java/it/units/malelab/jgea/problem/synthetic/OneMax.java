@@ -9,6 +9,7 @@ import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.genotype.BitString;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.mapper.BoundMapper;
+import it.units.malelab.jgea.core.mapper.DeterministicMapper;
 import it.units.malelab.jgea.core.mapper.MappingException;
 import java.util.Random;
 
@@ -19,23 +20,26 @@ import java.util.Random;
 public class OneMax extends Problem<BitString, Double> {
 
   public OneMax() {
-    super(new BoundMapper<BitString, Double>() {
-
-      @Override
-      public Double worstValue() {
-        return 0d;
-      }
-
-      @Override
-      public Double bestValue() {
-        return 1d;
-      }
-
-      @Override
-      public Double map(BitString b, Random random, Listener listener) throws MappingException {
-        return 1d-(double)b.count()/(double)b.size();
-      }
-    });
+    super(new FitnessMapper());
   }
-  
+
+  private static class FitnessMapper extends DeterministicMapper<BitString, Double> implements BoundMapper<BitString, Double> {
+
+    @Override
+    public Double worstValue() {
+      return 1d;
+    }
+
+    @Override
+    public Double bestValue() {
+      return 0d;
+    }
+
+    @Override
+    public Double map(BitString b, Listener listener) throws MappingException {
+      return 1d - (double) b.count() / (double) b.size();
+    }
+
+  }
+
 }

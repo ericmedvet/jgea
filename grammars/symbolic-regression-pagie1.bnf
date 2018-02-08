@@ -1,0 +1,4 @@
+<expr> ::= <op> <expr> <expr> | <pre-op> <expr> | <var>
+<op> ::= + | - | p/ | *
+<pre-op> ::= sin | cos | exp | plog
+<var> ::= x | y | 1.0

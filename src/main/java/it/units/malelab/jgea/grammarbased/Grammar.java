@@ -5,10 +5,18 @@
  */
 package it.units.malelab.jgea.grammarbased;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -57,6 +65,39 @@ public class Grammar<T> implements Serializable {
 
   public Map<T, List<List<T>>> getRules() {
     return rules;
+  }
+  
+  public static Grammar<String> fromFile(File file) throws FileNotFoundException, IOException {
+    return fromFile(file, "UTF-8");
+  }
+
+  public static Grammar<String> fromFile(File file, String charset) throws FileNotFoundException, IOException {
+    Grammar<String> grammar = new Grammar<>();
+    BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), charset));
+    String line;
+    while ((line = br.readLine()) != null) {
+      String[] components = line.split(Pattern.quote(RULE_ASSIGNMENT_STRING));
+      String toReplaceSymbol = components[0].trim();
+      String[] optionStrings = components[1].split(Pattern.quote(RULE_OPTION_SEPARATOR_STRING));
+      if (grammar.getStartingSymbol() == null) {
+        grammar.setStartingSymbol(toReplaceSymbol);
+      }
+      List<List<String>> options = new ArrayList<>();
+      for (String optionString : optionStrings) {
+        List<String> symbols = new ArrayList<>();
+        for (String symbol : optionString.split("\\s+")) {
+          if (!symbol.trim().isEmpty()) {
+            symbols.add(symbol.trim());
+          }
+        }
+        if (!symbols.isEmpty()) {
+          options.add(symbols);
+        }
+      }
+      grammar.getRules().put(toReplaceSymbol, options);
+    }
+    br.close();
+    return grammar;
   }
 
 }
