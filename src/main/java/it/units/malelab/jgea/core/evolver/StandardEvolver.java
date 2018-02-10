@@ -13,6 +13,7 @@ import it.units.malelab.jgea.core.evolver.stopcondition.StopCondition;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.event.EvolutionEndEvent;
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
+import it.units.malelab.jgea.core.mapper.BoundMapper;
 import it.units.malelab.jgea.core.mapper.CachedMapper;
 import it.units.malelab.jgea.core.mapper.DeterministicMapper;
 import it.units.malelab.jgea.core.mapper.Mapper;
@@ -72,7 +73,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
     int births = 0;
     int generations = 0;
     Stopwatch stopwatch = Stopwatch.createStarted();
-    Mapper<S, F> fitnessMapper = buildFitnessMapper(problem);
+    BoundMapper<S, F> fitnessMapper = buildFitnessMapper(problem);
     //initialize population
     List<Individual<G, S, F>> population = new ArrayList<>();
     for (G genotype : genotypeBuilder.build(populationSize, random)) {
@@ -183,9 +184,9 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
     return (fitnessMapper instanceof CachedMapper) ? ((CachedMapper) fitnessMapper).getActualCount() : births;
   }
 
-  protected Mapper<S, F> buildFitnessMapper(final Problem<S, F> problem) {
+  protected BoundMapper<S, F> buildFitnessMapper(final Problem<S, F> problem) {
     if ((cacheSize > 0) && (problem.getFitnessMapper() instanceof DeterministicMapper)) {
-      return new CachedMapper<>((DeterministicMapper) problem.getFitnessMapper(), cacheSize);
+      return new CachedBoundMapper<>((DeterministicMapper) problem.getFitnessMapper(), cacheSize);
     }
     return problem.getFitnessMapper();
   }
@@ -197,6 +198,27 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
       }
     }
     return null;
+  }
+  
+  private class CachedBoundMapper<S, F> extends CachedMapper<S, F> implements BoundMapper<S, F> {
+    
+    private final BoundMapper<S, F> boundInnerMapper;
+
+    public CachedBoundMapper(DeterministicMapper<S, F> innerMapper, long cacheSize) {
+      super(innerMapper, cacheSize);
+      boundInnerMapper = (BoundMapper<S, F>)innerMapper;
+    }
+
+    @Override
+    public F worstValue() {
+      return boundInnerMapper.worstValue();
+    }
+
+    @Override
+    public F bestValue() {
+      return boundInnerMapper.bestValue();
+    }
+    
   }
 
 }

@@ -7,6 +7,7 @@ package it.units.malelab.jgea;
 
 import com.google.common.collect.Lists;
 import it.units.malelab.jgea.core.Individual;
+import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
@@ -21,13 +22,25 @@ import it.units.malelab.jgea.core.listener.collector.Diversity;
 import it.units.malelab.jgea.core.listener.collector.Population;
 import it.units.malelab.jgea.core.listener.collector.SingleObjectiveBest;
 import it.units.malelab.jgea.core.mapper.Identity;
+import it.units.malelab.jgea.core.mapper.Mapper;
 import it.units.malelab.jgea.core.operator.BitFlipMutation;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.operator.LenghtPreservingTwoPointCrossover;
 import it.units.malelab.jgea.core.ranker.ComparableRanker;
+import it.units.malelab.jgea.core.ranker.FitnessComparator;
 import it.units.malelab.jgea.core.ranker.selector.Tournament;
 import it.units.malelab.jgea.core.ranker.selector.Worst;
+import it.units.malelab.jgea.core.util.Misc;
+import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
+import it.units.malelab.jgea.grammarbased.cfggp.RampedHalfAndHalf;
+import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeCrossover;
+import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeMutation;
+import it.units.malelab.jgea.grammarbased.ge.StandardGEMapper;
+import it.units.malelab.jgea.problem.symbolicregression.Nguyen7;
+import it.units.malelab.jgea.problem.symbolicregression.element.Element;
 import it.units.malelab.jgea.problem.synthetic.OneMax;
+import it.units.malelab.jgea.problem.synthetic.Text;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -44,36 +57,71 @@ import java.util.concurrent.Executors;
  */
 public class Executor {
 
-  public static void main(String[] args) throws InterruptedException, ExecutionException {
+  public static void main(String[] args) throws InterruptedException, ExecutionException, IOException {
     //read command lines
     String baseResultDirName = a(args, "dir", ".");
     String baseResultFileName = a(args, "file", "results");
 
-    Problem<BitString, Double> p = new OneMax();
+    /*
+    //Problem<BitString, Double> p = new OneMax();
+    //Problem<Node<String>, Integer> p = new Text("Hello World!");
+    GrammarBasedProblem<String, String, Integer> p = new Text("Hello World!");
+    Map<GeneticOperator<Node<String>>, Double> operators = new LinkedHashMap<>();
+    operators.put(new StandardTreeMutation<>(12, p.getGrammar()), 0.2d);
+    operators.put(new StandardTreeCrossover<String>(12), 0.8d);
+    StandardEvolver<Node<String>, String, Integer> evolver = new StandardEvolver<>(
+            500,
+            new RampedHalfAndHalf<>(12, p.getGrammar()),
+            new ComparableRanker(new FitnessComparator<Integer>()),
+            p.getSolutionMapper(),
+            operators,
+            new Tournament<Individual<Node<String>, String, Integer>>(3),
+            new Worst<Individual<Node<String>, String, Integer>>(),
+            500,
+            true,
+            Lists.newArrayList(new FitnessEvaluations(100000), new PerfectFitness(p.getFitnessMapper().bestValue())),
+            10000,
+            false
+    );
+    /*
     Map<GeneticOperator<BitString>, Double> operators = new LinkedHashMap<>();
     operators.put(new BitFlipMutation(0.01), 0.2d);
     operators.put(new LenghtPreservingTwoPointCrossover<BitString>(), 0.8d);
-    StandardEvolver<BitString, BitString, Double> evolver = new StandardEvolver<>(
-            100,
-            new BitStringFactory(100),
-            new ComparableRanker<>(new Comparator<Individual<BitString, BitString, Double>>() {
-              @Override
-              public int compare(Individual<BitString, BitString, Double> i1, Individual<BitString, BitString, Double> i2) {
-                return Double.compare(i1.getFitness(), i2.getFitness());
-              }
-            }),
-            new Identity<BitString>(),
+    StandardEvolver<BitString, String, Integer> evolver = new StandardEvolver<>(
+            500,
+            new BitStringFactory(1024),
+            new ComparableRanker(new FitnessComparator<Integer>()),
+            Misc.compose(new StandardGEMapper<>(8, 5, p.getGrammar()), p.getSolutionMapper()),
             operators,
-            new Tournament<Individual<BitString, BitString, Double>>(3),
-            new Worst<Individual<BitString, BitString, Double>>(),
-            100,
+            new Tournament<Individual<BitString, String, Integer>>(3),
+            new Worst<Individual<BitString, String, Integer>>(),
+            500,
             true,
-            Lists.newArrayList(new FitnessEvaluations(10000), new PerfectFitness(p.getFitnessMapper().bestValue())),
+            Lists.newArrayList(new FitnessEvaluations(100000), new PerfectFitness(p.getFitnessMapper().bestValue())),
+            10000,
+            false
+    );
+            */
+    GrammarBasedProblem<String, Node<Element>, Double> p = new Nguyen7(1);
+    Map<GeneticOperator<Node<String>>, Double> operators = new LinkedHashMap<>();
+    operators.put(new StandardTreeMutation<>(12, p.getGrammar()), 0.2d);
+    operators.put(new StandardTreeCrossover<String>(12), 0.8d);
+    StandardEvolver<Node<String>, Node<Element>, Double> evolver = new StandardEvolver<>(
+            500,
+            new RampedHalfAndHalf<>(12, p.getGrammar()),
+            new ComparableRanker(new FitnessComparator<Integer>()),
+            p.getSolutionMapper(),
+            operators,
+            new Tournament<Individual<Node<String>, Node<Element>, Double>>(3),
+            new Worst<Individual<Node<String>, Node<Element>, Double>>(),
+            500,
+            true,
+            Lists.newArrayList(new FitnessEvaluations(100000), new PerfectFitness(p.getFitnessMapper().bestValue())),
             10000,
             false
     );
     Random r = new Random(1);
-    ExecutorService executor = Executors.newFixedThreadPool(2);
+    ExecutorService executor = Executors.newFixedThreadPool(4);
     evolver.solve(p, r, executor,
             ListenerUtils.onExecutor(
                     new PrintStreamListener(System.out, true, 10, " ", " | ",

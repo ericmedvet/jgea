@@ -11,6 +11,7 @@ import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.IllegalFormatException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +66,7 @@ public class PrintStreamListener<G, S, F> implements Listener {
     } else {
       return;
     }
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     if ((lines == 0) || ((headerInterval > 0) && (evolutionEvent.getIteration() % headerInterval == 0))) {
       //print header: collectors
       for (int i = 0; i < formattedNames.size(); i++) {
@@ -92,7 +93,12 @@ public class PrintStreamListener<G, S, F> implements Listener {
       Map<String, Object> values = collectors.get(i).collect(evolutionEvent);
       for (String name : formattedNames.get(i).keySet()) {
         if (format) {
-          String value = String.format(collectors.get(i).getFormattedNames().get(name), values.get(name));
+          String value;
+          try {
+            value = String.format(collectors.get(i).getFormattedNames().get(name), values.get(name));
+          } catch (IllegalFormatException ex) {
+            value = values.get(name).toString();
+          }
           sb.append(pad(value, formattedNames.get(i).get(name).length(), format));
         } else {
           sb.append(values.get(name));

@@ -33,21 +33,21 @@ public class Population<G, S, F> implements Collector<G, S, F> {
     for (Collection<Individual<G, S, F>> rank : rankedPopulation) {
       for (Individual<G, S, F> individual : rank) {
         if (individual.getGenotype() instanceof Sized) {
-          genoSizeSum = genoSizeSum+((Sized)individual.getGenotype()).size();
-          genoCount = genoCount+1;
+          genoSizeSum = genoSizeSum + ((Sized) individual.getGenotype()).size();
+          genoCount = genoCount + 1;
         }
-        if (individual.getSolution()instanceof Sized) {
-          solutionSizeSum = solutionSizeSum+((Sized)individual.getSolution()).size();
-          solutionCount = solutionCount+1;
+        if (individual.getSolution() instanceof Sized) {
+          solutionSizeSum = solutionSizeSum + ((Sized) individual.getSolution()).size();
+          solutionCount = solutionCount + 1;
         }
-        ageSum = ageSum+evolutionEvent.getIteration()-individual.getBirthIteration();
-        count = count+1;
+        ageSum = ageSum + evolutionEvent.getIteration() - individual.getBirthIteration();
+        count = count + 1;
       }
     }
-    indexes.put("population.genotype.size.average", (int)Math.round(genoSizeSum / genoCount));
-    indexes.put("population.solution.size.average", (int)Math.round(solutionSizeSum / solutionCount));
-    indexes.put("population.age.average", (int)Math.round(ageSum / count));
-    indexes.put("population.size", (int)count);
+    indexes.put("population.genotype.size.average", (int) Math.round(genoSizeSum / genoCount));
+    indexes.put("population.solution.size.average", (int) Math.round(solutionSizeSum / solutionCount));
+    indexes.put("population.age.average", (int) Math.round(ageSum / count));
+    indexes.put("population.size", (int) count);
     indexes.put("population.ranks", rankedPopulation.size());
     indexes.put("population.rank0.size", rankedPopulation.get(0).size());
     return indexes;

@@ -15,12 +15,11 @@ import java.util.Objects;
  *
  * @author eric
  */
-public class Node<T> implements Serializable, Cloneable {
-  
-  public static Node EMPTY_TREE = new Node(null);
+public class Node<T> implements Serializable, Cloneable, Sized {
   
   private final T content;
   private final List<Node<T>> children = new ArrayList<>();
+  private Node<T> parent;
   
   public Node(T content) {
     this.content = content;
@@ -79,12 +78,34 @@ public class Node<T> implements Serializable, Cloneable {
     return max+1;
   }
   
-  public int nodeSize() {
+  @Override
+  public int size() {
     int size = 0;
     for (Node<T> child : children) {
-      size = size+child.nodeSize();
+      size = size+child.size();
     }
     return size+1;
+  }
+  
+    public List<Node<T>> getAncestors() {
+    if (parent==null) {
+      return Collections.EMPTY_LIST;
+    }
+    List<Node<T>> ancestors = new ArrayList<>();
+    ancestors.add(parent);
+    ancestors.addAll(parent.getAncestors());
+    return Collections.unmodifiableList(ancestors);
+  }
+
+  public Node<T> getParent() {
+    return parent;
+  }
+  
+  public void propagateParentship() {
+    for (Node<T> child : children) {
+      child.parent = this;
+      child.propagateParentship();
+    }
   }
 
   @Override

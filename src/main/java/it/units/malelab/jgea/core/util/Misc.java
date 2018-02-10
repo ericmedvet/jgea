@@ -6,6 +6,11 @@
 package it.units.malelab.jgea.core.util;
 
 import com.google.common.collect.Range;
+import it.units.malelab.jgea.core.Node;
+import it.units.malelab.jgea.core.Sequence;
+import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.core.mapper.Mapper;
+import it.units.malelab.jgea.core.mapper.MappingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -59,8 +64,8 @@ public class Misc {
     }
     return (T) options.keySet().toArray()[0];
   }
-  
-    public static List<Range<Integer>> slices(Range<Integer> range, int pieces) {
+
+  public static List<Range<Integer>> slices(Range<Integer> range, int pieces) {
     List<Integer> sizes = new ArrayList<>(pieces);
     for (int i = 0; i < pieces; i++) {
       sizes.add(1);
@@ -107,14 +112,56 @@ public class Misc {
   }
 
   public static <T> T pickRandomly(Collection<T> ts, Random random) {
-    return (T)ts.toArray()[random.nextInt(ts.size())];
+    return (T) ts.toArray()[random.nextInt(ts.size())];
   }
-  
+
   public static <T> T first(Collection<T> ts) {
     if (ts.isEmpty()) {
       return null;
     }
     return ts.iterator().next();
+  }
+
+  public static <T> Sequence<T> fromList(final List<T> list) {
+    return new Sequence<T>() {
+      @Override
+      public T get(int index) {
+        return list.get(index);
+      }
+
+      @Override
+      public int size() {
+        return list.size();
+      }
+
+      @Override
+      public Sequence<T> clone() {
+        return fromList(new ArrayList<T>(list));
+      }
+
+      @Override
+      public void set(int index, T t) {
+        throw new UnsupportedOperationException("Cannot set in read-only view of a list");
+      }
+    };
+  }
+
+  public static <T> List<T> contents(List<Node<T>> nodes) {
+    List<T> contents = new ArrayList<>(nodes.size());
+    for (Node<T> node : nodes) {
+      contents.add(node.getContent());
+    }
+    return contents;
+  }
+  
+  public static <A,B,C> Mapper<A, C> compose(final Mapper<A, B> firstMapper, final Mapper<B, C> secondMapper) {
+    return new Mapper<A, C>() {
+      @Override
+      public C map(A a, Random random, Listener listener) throws MappingException {
+        B b = firstMapper.map(a, random, listener);
+        return secondMapper.map(b, random, listener);
+      }
+    };
   }
 
 }
