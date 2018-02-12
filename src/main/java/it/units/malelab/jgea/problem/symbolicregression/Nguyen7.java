@@ -6,6 +6,7 @@
 package it.units.malelab.jgea.problem.symbolicregression;
 
 import it.units.malelab.jgea.core.Node;
+import it.units.malelab.jgea.core.fitness.SymbolicRegressionCaseBasedFitness;
 import it.units.malelab.jgea.grammarbased.Grammar;
 import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
 import it.units.malelab.jgea.problem.symbolicregression.element.Element;
@@ -20,7 +21,7 @@ import java.util.Random;
  */
 public class Nguyen7 extends GrammarBasedProblem<String, Node<Element>, Double> {
 
-  private final static SymbolicRegressionFitness.TargetFunction TARGET_FUNCTION = new SymbolicRegressionFitness.TargetFunction() {
+  private final static SymbolicRegressionCaseBasedFitness.TargetFunction TARGET_FUNCTION = new SymbolicRegressionCaseBasedFitness.TargetFunction() {
     @Override
     public double compute(double... v) {
       return Math.log(v[0] + 1) + Math.log(v[0] * v[0] + 1);
@@ -36,9 +37,10 @@ public class Nguyen7 extends GrammarBasedProblem<String, Node<Element>, Double> 
     super(
             Grammar.fromFile(new File("grammars/symbolic-regression-nguyen7.bnf")),
             new FormulaMapper(),
-            new SymbolicRegressionFitness(
+            new SymbolicRegressionCaseBasedFitness(
                     TARGET_FUNCTION,
-                    new LinkedHashMap<>(MathUtils.valuesMap("x", MathUtils.uniformSample(0, 2, 20, new Random(seed)))))
+                    MathUtils.asObservations(MathUtils.valuesMap("x", MathUtils.uniformSample(0, 2, 20, new Random(seed))), TARGET_FUNCTION.varNames())
+            )
     );
   }
 

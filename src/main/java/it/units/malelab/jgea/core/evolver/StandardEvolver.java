@@ -169,7 +169,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
                 stopwatch.elapsed(TimeUnit.MILLISECONDS))
         );
         break;
-      }
+      }      
     }
     //take out solutions
     List<Collection<Individual<G, S, F>>> rankedPopulation = ranker.rank(population, random);
