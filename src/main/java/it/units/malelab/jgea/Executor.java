@@ -11,7 +11,6 @@ import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
 import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
-import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.ListenerUtils;
 import it.units.malelab.jgea.core.listener.PrintStreamListener;
 import it.units.malelab.jgea.core.listener.collector.Basic;
@@ -19,9 +18,6 @@ import it.units.malelab.jgea.core.listener.collector.BestPrinter;
 import it.units.malelab.jgea.core.listener.collector.Diversity;
 import it.units.malelab.jgea.core.listener.collector.Population;
 import it.units.malelab.jgea.core.listener.collector.SingleObjectiveBest;
-import it.units.malelab.jgea.core.listener.event.Event;
-import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
-import it.units.malelab.jgea.core.mapper.MappingException;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.ranker.ComparableRanker;
 import it.units.malelab.jgea.core.ranker.FitnessComparator;
@@ -31,8 +27,8 @@ import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
 import it.units.malelab.jgea.grammarbased.cfggp.RampedHalfAndHalf;
 import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeCrossover;
 import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeMutation;
-import it.units.malelab.jgea.problem.symbolicregression.Nguyen7;
-import it.units.malelab.jgea.problem.symbolicregression.element.Element;
+import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
+import it.units.malelab.jgea.problem.booleanfunction.element.Element;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -42,8 +38,6 @@ import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -96,18 +90,18 @@ public class Executor {
      false
      );
      */
-    final GrammarBasedProblem<String, Node<Element>, Double> p = new Nguyen7(1);
+    final GrammarBasedProblem<String, List<Node<Element>>, Double> p = new EvenParity(8);
     Map<GeneticOperator<Node<String>>, Double> operators = new LinkedHashMap<>();
     operators.put(new StandardTreeMutation<>(12, p.getGrammar()), 0.2d);
     operators.put(new StandardTreeCrossover<String>(12), 0.8d);
-    StandardEvolver<Node<String>, Node<Element>, Double> evolver = new StandardEvolver<>(
+    StandardEvolver<Node<String>, List<Node<Element>>, Double> evolver = new StandardEvolver<>(
             500,
-            new RampedHalfAndHalf<>(12, p.getGrammar()),
+            new RampedHalfAndHalf<>(3, 12, p.getGrammar()),
             new ComparableRanker(new FitnessComparator<Integer>()),
             p.getSolutionMapper(),
             operators,
-            new Tournament<Individual<Node<String>, Node<Element>, Double>>(3),
-            new Worst<Individual<Node<String>, Node<Element>, Double>>(),
+            new Tournament<Individual<Node<String>, List<Node<Element>>, Double>>(3),
+            new Worst<Individual<Node<String>, List<Node<Element>>, Double>>(),
             500,
             true,
             Lists.newArrayList(new FitnessEvaluations(100000), new PerfectFitness(p.getFitnessMapper().bestValue())),
@@ -121,7 +115,7 @@ public class Executor {
                     new PrintStreamListener(System.out, true, 10, " ", " | ",
                             new Basic(),
                             new Population(),
-                            new SingleObjectiveBest("%4.2f", false, null),
+                            new SingleObjectiveBest("%6.4f", false, null),
                             new Diversity(),
                             new BestPrinter(null, "%s")
                     ), executor)

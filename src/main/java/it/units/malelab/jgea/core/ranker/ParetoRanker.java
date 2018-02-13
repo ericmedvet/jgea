@@ -56,8 +56,7 @@ public class ParetoRanker<G, T> implements Ranker<Individual<G, T, Double[]>>, C
     int better = 0;
     int worse = 0;
     for (int i = 0; i<f1.length; i++) {
-      //int outcome =f1[i].compareTo(f2[i]);
-      int outcome = 0;
+      int outcome =f1[i].compareTo(f2[i]);
       better = better+((outcome<0)?1:0);
       worse = worse+((outcome>0)?1:0);
     }

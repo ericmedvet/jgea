@@ -27,39 +27,30 @@ import java.util.Random;
  */
 public class MathUtils {
 
-  public static double[] compute(Node<Element> node, Map<String, double[]> values, int length) {
+  public static Double compute(Node<Element> node, Map<String, Double> values) {
     if (node.getContent() instanceof Decoration) {
       return null;
     }
     if (node.getContent() instanceof Variable) {
-      double[] result = values.get(node.getContent().toString());
+      Double result = values.get(node.getContent().toString());
       if (result == null) {
         throw new RuntimeException(String.format("Undefined variable: %s", node.getContent().toString()));
       }
       return result;
     }
-    double[] result = new double[length];
     if (node.getContent() instanceof Constant) {
-      Arrays.fill(result, ((Constant) node.getContent()).getValue());
-      return result;
+      return ((Constant) node.getContent()).getValue();
     }
-    double[][] childrenValues = new double[node.getChildren().size()][];
+    double[] childrenValues = new double[node.getChildren().size()];
     int i = 0;
     for (Node<Element> child : node.getChildren()) {
-      double[] childValues = compute(child, values, length);
-      if (childValues != null) {
-        childrenValues[i] = childValues;
+      Double childValue = compute(child, values);
+      if (childValue != null) {
+        childrenValues[i] = childValue;
         i = i + 1;
       }
     }
-    for (int j = 0; j < result.length; j++) {
-      double[] operands = new double[childrenValues.length];
-      for (int k = 0; k < operands.length; k++) {
-        operands[k] = childrenValues[k][j];
-      }
-      result[j] = compute((Operator) node.getContent(), operands);
-    }
-    return result;
+    return compute((Operator) node.getContent(), childrenValues);
   }
 
   private static double compute(Operator operator, double... operands) {

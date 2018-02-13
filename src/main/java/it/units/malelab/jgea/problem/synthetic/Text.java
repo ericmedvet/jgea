@@ -7,8 +7,6 @@ package it.units.malelab.jgea.problem.synthetic;
 
 import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.Sequence;
-import it.units.malelab.jgea.core.genotype.BitString;
-import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.mapper.BoundMapper;
 import it.units.malelab.jgea.core.mapper.DeterministicMapper;
 import it.units.malelab.jgea.core.mapper.MappingException;
@@ -26,16 +24,8 @@ import java.util.Arrays;
  *
  * @author eric
  */
-public class Text extends GrammarBasedProblem<String, String, Integer> {
+public class Text implements GrammarBasedProblem<String, String, Integer> {
 
-  public Text(String target) throws IOException {
-    super(
-            Grammar.fromFile(new File("grammars/text.bnf")),
-            new SolutionMapper(),
-            new FitnessMapper(target)
-    );
-  }
-  
   private static class SolutionMapper extends MuteDeterministicMapper<Node<String>, String> {
 
     @Override
@@ -78,6 +68,31 @@ public class Text extends GrammarBasedProblem<String, String, Integer> {
       return 0;
     }
     
+  }
+  
+  private final Grammar<String> grammar;
+  private final DeterministicMapper<Node<String>, String> solutionMapper;
+  private final BoundMapper<String, Integer> fitnessMapper;
+
+  public Text(String targetString) throws IOException {
+    grammar = Grammar.fromFile(new File("grammars/text.bnf"));
+    solutionMapper = new SolutionMapper();
+    fitnessMapper = new FitnessMapper(targetString);
+  }
+
+  @Override
+  public Grammar<String> getGrammar() {
+    return grammar;
+  }
+
+  @Override
+  public DeterministicMapper<Node<String>, String> getSolutionMapper() {
+    return solutionMapper;
+  }
+
+  @Override
+  public BoundMapper<String, Integer> getFitnessMapper() {
+    return fitnessMapper;
   }
   
 }

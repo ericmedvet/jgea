@@ -17,14 +17,16 @@ import java.util.Random;
  *
  * @author eric
  */
-public abstract class CaseBasedFitness<S, O, OF, AF> implements BoundMapper<S, AF> {
+public abstract class CaseBasedFitness<S, O, OF, AF> extends DeterministicMapper<S, AF> implements BoundMapper<S, AF> {
   
   private final List<O> observations;
   private final BoundMapper<List<OF>, AF> aggregateMapper;
+  private final Random random;
 
   public CaseBasedFitness(List<O> observations, BoundMapper<List<OF>, AF> aggregateMapper) {
     this.observations = observations;
     this.aggregateMapper = aggregateMapper;
+    random = new Random(1);
   }
 
   public List<O> getObservations() {
@@ -38,7 +40,7 @@ public abstract class CaseBasedFitness<S, O, OF, AF> implements BoundMapper<S, A
   protected abstract OF fitnessOfCase(S solution, O observation);
 
   @Override
-  public AF map(S solution, Random random, Listener listener) throws MappingException {
+  public AF map(S solution, Listener listener) throws MappingException {
     List<OF> observationFitnesses = new ArrayList<>(observations.size());
     for (O observation : observations) {
       observationFitnesses.add(fitnessOfCase(solution, observation));

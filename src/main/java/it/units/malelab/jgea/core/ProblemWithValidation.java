@@ -6,14 +6,14 @@
 package it.units.malelab.jgea.core;
 
 import it.units.malelab.jgea.core.mapper.BoundMapper;
-import java.io.Serializable;
+import it.units.malelab.jgea.core.mapper.Mapper;
 
 /**
  *
  * @author eric
  */
-public interface Problem<S, F> extends Serializable {
+public interface ProblemWithValidation<S, F> extends Problem<S, F> {
   
-  public BoundMapper<S, F> getFitnessMapper();
-
+  public Mapper<S, F> getValidationMapper();
+  
 }

@@ -17,11 +17,7 @@ import java.util.Random;
  *
  * @author eric
  */
-public class OneMax extends Problem<BitString, Double> {
-
-  public OneMax() {
-    super(new FitnessMapper());
-  }
+public class OneMax implements Problem<BitString, Double> {
 
   private static class FitnessMapper extends DeterministicMapper<BitString, Double> implements BoundMapper<BitString, Double> {
 
@@ -40,6 +36,17 @@ public class OneMax extends Problem<BitString, Double> {
       return 1d - (double) b.count() / (double) b.size();
     }
 
+  }
+
+  private final BoundMapper<BitString, Double> fitnessMapper;
+
+  public OneMax() {
+    this.fitnessMapper = new FitnessMapper();
+  }
+  
+  @Override
+  public BoundMapper<BitString, Double> getFitnessMapper() {
+    return fitnessMapper;
   }
 
 }

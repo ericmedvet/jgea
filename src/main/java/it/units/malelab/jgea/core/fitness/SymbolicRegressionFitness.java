@@ -10,7 +10,6 @@ import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.mapper.BoundMapper;
 import it.units.malelab.jgea.core.mapper.MappingException;
-import it.units.malelab.jgea.core.mapper.MuteDeterministicMapper;
 import it.units.malelab.jgea.problem.symbolicregression.element.Element;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -21,14 +20,20 @@ import java.util.Random;
  *
  * @author eric
  */
-public class SymbolicRegressionCaseBasedFitness extends CaseBasedFitness<Node<Element>, double[], Double, Double> {
+public class SymbolicRegressionFitness extends CaseBasedFitness<Node<Element>, double[], Double, Double> {
 
   public static interface TargetFunction {
     public double compute(double... arguments);
     public String[] varNames();
   }
   
-  public static class Sum implements BoundMapper<List<Double>, Double> {
+  private static class Aggregator implements BoundMapper<List<Double>, Double> {
+    
+    private final boolean average;
+
+    public Aggregator(boolean average) {
+      this.average = average;
+    }
 
     @Override
     public Double worstValue() {
@@ -46,6 +51,9 @@ public class SymbolicRegressionCaseBasedFitness extends CaseBasedFitness<Node<El
       for (Double v : vs) {
         sum = sum + v;
       }
+      if (average) {
+        return sum/(double)vs.size();
+      }
       return sum;
     }
     
@@ -53,19 +61,19 @@ public class SymbolicRegressionCaseBasedFitness extends CaseBasedFitness<Node<El
   
   private final TargetFunction targetFunction;
 
-  public SymbolicRegressionCaseBasedFitness(TargetFunction targetFunction, List<double[]> observations) {
-    super(observations, new Sum());
+  public SymbolicRegressionFitness(TargetFunction targetFunction, List<double[]> observations, boolean average) {
+    super(observations, new Aggregator(average));
     this.targetFunction = targetFunction;
   }
 
   @Override
   protected Double fitnessOfCase(Node<Element> solution, double[] observation) {
-    Map<String, double[]> varValues = new LinkedHashMap<>();
+    Map<String, Double> varValues = new LinkedHashMap<>();
     for (int i = 0; i<targetFunction.varNames().length; i++) {
-      varValues.put(targetFunction.varNames()[i], new double[]{observation[i]});
+      varValues.put(targetFunction.varNames()[i], observation[i]);
     }
-    double[] computed = MathUtils.compute(solution, varValues, 1);
-    return Math.abs(computed[0]-targetFunction.compute(observation));
+    double computed = MathUtils.compute(solution, varValues);
+    return Math.abs(computed-targetFunction.compute(observation));
   }
     
 }
