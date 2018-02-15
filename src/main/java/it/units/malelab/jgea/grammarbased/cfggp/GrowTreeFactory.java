@@ -9,7 +9,7 @@ import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.grammarbased.Grammar;
-import it.units.malelab.jgea.grammarbased.Util;
+import it.units.malelab.jgea.grammarbased.GrammarUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +20,8 @@ import java.util.Random;
  * @author eric
  */
 public class GrowTreeFactory<T> implements Factory<Node<T>> {
+  
+  private final static int MAX_ATTEMPTS = 100;
 
   protected final int maxDepth;
   protected final Grammar<T> grammar;
@@ -29,23 +31,25 @@ public class GrowTreeFactory<T> implements Factory<Node<T>> {
   public GrowTreeFactory(int maxDepth, Grammar<T> grammar) {
     this.maxDepth = maxDepth;
     this.grammar = grammar;
-    nonTerminalDepths = Util.computeSymbolsMinMaxDepths(grammar);
+    nonTerminalDepths = GrammarUtil.computeSymbolsMinMaxDepths(grammar);
   }
 
   @Override
   public List<Node<T>> build(int n, Random random) {
     List<Node<T>> trees = new ArrayList<>();
     while (trees.size()<n) {
-      trees.add(build(random));
+      trees.add(build(random, maxDepth));
     }
     return trees;
   }
   
-  public Node<T> build(Random random) {
+  public Node<T> build(Random random, int targetDepth) {
     Node<T> tree = null;
-    while (tree == null) {
-      tree = build(random, grammar.getStartingSymbol(), maxDepth);
-      break;
+    for (int i = 0; i<MAX_ATTEMPTS; i++) {
+      tree = build(random, grammar.getStartingSymbol(), targetDepth);
+      if (tree!=null) {
+        break;
+      }
     }
     return tree;
   }
@@ -57,7 +61,7 @@ public class GrowTreeFactory<T> implements Factory<Node<T>> {
       min = Math.max(min, nonTerminalDepths.get(symbol).getFirst());
       max = Math.max(max, nonTerminalDepths.get(symbol).getSecond());
     }
-    return new Pair<>(min, max);
+    return Pair.build(min, max);
   }
   
   public Node<T> build(Random random, T symbol, int targetDepth) {

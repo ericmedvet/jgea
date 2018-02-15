@@ -25,12 +25,12 @@ public class BooleanUtils {
 
   public static boolean[] compute(List<Node<Element>> formulas, Map<String, Boolean> values) {
     boolean[] result = new boolean[formulas.size()];
-    for (int i = 0; i<result.length; i++) {
+    for (int i = 0; i < result.length; i++) {
       result[i] = compute(formulas.get(i), values);
     }
     return result;
   }
-  
+
   public static Boolean compute(Node<Element> node, Map<String, Boolean> values) {
     if (node.getContent() instanceof Decoration) {
       return null;
@@ -91,14 +91,30 @@ public class BooleanUtils {
   public static List<boolean[]> buildCompleteObservations(String... names) {
     Map<String, boolean[]> cases = buildCompleteCases(names);
     List<boolean[]> observations = new ArrayList<>();
-    for (int i = 0; i<cases.get(names[0]).length; i++) {
+    for (int i = 0; i < cases.get(names[0]).length; i++) {
       boolean[] observation = new boolean[names.length];
-      for (int j = 0; j<names.length; j++) {
+      for (int j = 0; j < names.length; j++) {
         observation[j] = cases.get(names[j])[i];
       }
       observations.add(observation);
     }
     return observations;
+  }
+
+  public static int fromBinary(boolean[] bits) {
+    int n = 0;
+    for (int i = bits.length - 1; i >= 0; i--) {
+      n = (n << 1) | (bits[i] ? 1 : 0);
+    }
+    return n;
+  }
+
+  public static boolean[] toBinary(int input, int size) {
+    boolean[] bits = new boolean[size];
+    for (int i = size - 1; i >= 0; i--) {
+      bits[i] = (input & (1 << i)) != 0;
+    }
+    return bits;
   }
 
 }

@@ -22,26 +22,32 @@ import java.util.List;
  *
  * @author eric
  */
-public class EvenParity implements GrammarBasedProblem<String, List<Node<Element>>, Double> {
+public class MultipleOutputParallelMultiplier implements GrammarBasedProblem<String, List<Node<Element>>, Double> {
 
   private static class TargetFunction implements BooleanFunctionFitness.TargetFunction {
 
+    private final int size;
     private final String[] varNames;
 
     public TargetFunction(int size) {
-      varNames = new String[size];
-      for (int i = 0; i < size; i++) {
-        varNames[i] = "b" + i;
+      this.size = size;
+      varNames = new String[2*size];
+      for (int j = 0; j < 2; j++) {
+        for (int i = 0; i < size; i++) {
+          varNames[(size*j)+i] = "b" + j + "." + i;
+        }
       }
     }
 
     @Override
     public boolean[] compute(boolean... arguments) {
-      int count = 0;
-      for (boolean argument : arguments) {
-        count = count + (argument ? 1 : 0);
-      }
-      return new boolean[]{(count % 2) == 1};
+      boolean[] a1 = new boolean[size];
+      boolean[] a2 = new boolean[size];
+      System.arraycopy(arguments, 0, a1, 0, size);
+      System.arraycopy(arguments, size, a2, 0, size);
+      int n1 = BooleanUtils.fromBinary(a1);
+      int n2 = BooleanUtils.fromBinary(a2);
+      return BooleanUtils.toBinary(n1*n2, 2*size);
     }
 
     @Override
@@ -55,13 +61,21 @@ public class EvenParity implements GrammarBasedProblem<String, List<Node<Element
   private final DeterministicMapper<Node<String>, List<Node<Element>>> solutionMapper;
   private final BoundMapper<List<Node<Element>>, Double> fitnessMapper;
 
-  public EvenParity(final int size) throws IOException {
+  public MultipleOutputParallelMultiplier(final int size) throws IOException {
     grammar = Grammar.fromFile(new File("grammars/boolean-parity-var.bnf"));
     List<List<String>> vars = new ArrayList<>();
-    for (int i = 0; i < size; i++) {
-      vars.add(Collections.singletonList("b" + i));
+    for (int j = 0; j < 2; j++) {
+      for (int i = 0; i < size; i++) {
+        vars.add(Collections.singletonList("b" + j + "." + i));
+      }
     }
     grammar.getRules().put("<v>", vars);
+    List<String> output = new ArrayList<>();
+    for (int i = 0; i < 2 * size; i++) {
+      output.add("<e>");
+    }
+    grammar.getRules().put(FormulaMapper.MULTIPLE_OUTPUT_NON_TERMINAL, Collections.singletonList(output));
+    grammar.setStartingSymbol(FormulaMapper.MULTIPLE_OUTPUT_NON_TERMINAL);
     solutionMapper = new FormulaMapper();
     TargetFunction targetFunction = new TargetFunction(size);
     fitnessMapper = new BooleanFunctionFitness(

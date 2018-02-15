@@ -9,7 +9,9 @@ import it.units.malelab.jgea.problem.symbolicregression.*;
 import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.mapper.BoundMapper;
+import it.units.malelab.jgea.core.mapper.DeterministicMapper;
 import it.units.malelab.jgea.core.mapper.MappingException;
+import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.problem.symbolicregression.element.Element;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,12 +25,14 @@ import java.util.Random;
 public class SymbolicRegressionFitness extends CaseBasedFitness<Node<Element>, double[], Double, Double> {
 
   public static interface TargetFunction {
+
     public double compute(double... arguments);
+
     public String[] varNames();
   }
-  
+
   private static class Aggregator implements BoundMapper<List<Double>, Double> {
-    
+
     private final boolean average;
 
     public Aggregator(boolean average) {
@@ -52,28 +56,37 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<Node<Element>, d
         sum = sum + v;
       }
       if (average) {
-        return sum/(double)vs.size();
+        return sum / (double) vs.size();
       }
       return sum;
     }
-    
+
   }
-  
-  private final TargetFunction targetFunction;
+
+  private static class Error extends DeterministicMapper<Pair<Node<Element>, double[]>, Double> {
+
+    private final TargetFunction targetFunction;
+
+    public Error(TargetFunction targetFunction) {
+      this.targetFunction = targetFunction;
+    }
+
+    @Override
+    public Double map(Pair<Node<Element>, double[]> pair, Listener listener) throws MappingException {
+      Node<Element> solution = pair.getFirst();
+      double[] observation = pair.getSecond();
+      Map<String, Double> varValues = new LinkedHashMap<>();
+      for (int i = 0; i < targetFunction.varNames().length; i++) {
+        varValues.put(targetFunction.varNames()[i], observation[i]);
+      }
+      double computed = MathUtils.compute(solution, varValues);
+      return Math.abs(computed - targetFunction.compute(observation));
+    }
+
+  }
 
   public SymbolicRegressionFitness(TargetFunction targetFunction, List<double[]> observations, boolean average) {
-    super(observations, new Aggregator(average));
-    this.targetFunction = targetFunction;
+    super(observations, new Error(targetFunction), new Aggregator(average));
   }
 
-  @Override
-  protected Double fitnessOfCase(Node<Element> solution, double[] observation) {
-    Map<String, Double> varValues = new LinkedHashMap<>();
-    for (int i = 0; i<targetFunction.varNames().length; i++) {
-      varValues.put(targetFunction.varNames()[i], observation[i]);
-    }
-    double computed = MathUtils.compute(solution, varValues);
-    return Math.abs(computed-targetFunction.compute(observation));
-  }
-    
 }

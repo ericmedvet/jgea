@@ -28,6 +28,7 @@ import it.units.malelab.jgea.grammarbased.cfggp.RampedHalfAndHalf;
 import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeCrossover;
 import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeMutation;
 import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
+import it.units.malelab.jgea.problem.booleanfunction.MultipleOutputParallelMultiplier;
 import it.units.malelab.jgea.problem.booleanfunction.element.Element;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -90,7 +91,7 @@ public class Executor {
      false
      );
      */
-    final GrammarBasedProblem<String, List<Node<Element>>, Double> p = new EvenParity(8);
+    final GrammarBasedProblem<String, List<Node<Element>>, Double> p = new EvenParity(5);
     Map<GeneticOperator<Node<String>>, Double> operators = new LinkedHashMap<>();
     operators.put(new StandardTreeMutation<>(12, p.getGrammar()), 0.2d);
     operators.put(new StandardTreeCrossover<String>(12), 0.8d);

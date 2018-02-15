@@ -6,6 +6,8 @@
 package it.units.malelab.jgea.core.util;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -13,11 +15,11 @@ import java.util.Objects;
  * @author eric
  */
 public class Pair<F, S> implements Serializable {
-  
+
   private final F first;
   private final S second;
 
-  public Pair(F first, S second) {
+  protected Pair(F first, S second) {
     this.first = first;
     this.second = second;
   }
@@ -28,6 +30,26 @@ public class Pair<F, S> implements Serializable {
 
   public S getSecond() {
     return second;
+  }
+
+  public static <F, S> Pair<F, S> build(F first, S second) {
+    return new Pair<>(first, second);
+  }
+
+  public static <F, S> List<F> firsts(List<Pair<F, S>> pairs) {
+    List<F> firsts = new ArrayList<>(pairs.size());
+    for (Pair<F, S> pair : pairs) {
+      firsts.add(pair.getFirst());
+    }
+    return firsts;
+  }
+
+  public static <F, S> List<S> seconds(List<Pair<F, S>> pairs) {
+    List<S> seconds = new ArrayList<>(pairs.size());
+    for (Pair<F, S> pair : pairs) {
+      seconds.add(pair.getSecond());
+    }
+    return seconds;
   }
 
   @Override
@@ -60,5 +82,5 @@ public class Pair<F, S> implements Serializable {
   public String toString() {
     return "<" + first + ", " + second + '>';
   }
-  
+
 }

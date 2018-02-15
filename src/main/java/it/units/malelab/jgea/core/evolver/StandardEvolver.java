@@ -77,6 +77,9 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
     //initialize population
     List<Individual<G, S, F>> population = new ArrayList<>();
     for (G genotype : genotypeBuilder.build(populationSize, random)) {
+      if (genotype==null) {
+        System.out.println("NULL GENO");
+      }
       tasks.add(new BirthCallable<>(
               genotype,
               generations,

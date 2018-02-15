@@ -9,6 +9,7 @@ import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.mapper.BoundMapper;
 import it.units.malelab.jgea.core.mapper.DeterministicMapper;
 import it.units.malelab.jgea.core.mapper.MappingException;
+import it.units.malelab.jgea.core.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -17,16 +18,18 @@ import java.util.Random;
  *
  * @author eric
  */
-public abstract class CaseBasedFitness<S, O, OF, AF> extends DeterministicMapper<S, AF> implements BoundMapper<S, AF> {
+public class CaseBasedFitness<S, O, OF, AF> extends DeterministicMapper<S, AF> implements BoundMapper<S, AF> {
   
   private final List<O> observations;
+  private final DeterministicMapper<Pair<S, O>, OF> observationMapper;
   private final BoundMapper<List<OF>, AF> aggregateMapper;
   private final Random random;
 
-  public CaseBasedFitness(List<O> observations, BoundMapper<List<OF>, AF> aggregateMapper) {
+  public CaseBasedFitness(List<O> observations, DeterministicMapper<Pair<S, O>, OF> observationMapper, BoundMapper<List<OF>, AF> aggregateMapper) {
     this.observations = observations;
+    this.observationMapper = observationMapper;
     this.aggregateMapper = aggregateMapper;
-    random = new Random(1);
+    this.random = new Random(1);
   }
 
   public List<O> getObservations() {
@@ -36,14 +39,12 @@ public abstract class CaseBasedFitness<S, O, OF, AF> extends DeterministicMapper
   public BoundMapper<List<OF>, AF> getAggregateMapper() {
     return aggregateMapper;
   }
-  
-  protected abstract OF fitnessOfCase(S solution, O observation);
 
   @Override
   public AF map(S solution, Listener listener) throws MappingException {
     List<OF> observationFitnesses = new ArrayList<>(observations.size());
     for (O observation : observations) {
-      observationFitnesses.add(fitnessOfCase(solution, observation));
+      observationFitnesses.add(observationMapper.map(Pair.build(solution, observation), listener));
     }
     return aggregateMapper.map(observationFitnesses, random, listener);
   }

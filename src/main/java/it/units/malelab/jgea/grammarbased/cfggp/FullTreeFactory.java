@@ -22,15 +22,6 @@ public class FullTreeFactory<T> extends GrowTreeFactory<T> {
     super(maxDepth, grammar);
   }
   
-  @Override
-  public Node<T> build(Random random) {
-    Node<T> tree = null;
-    while (tree == null) {
-      tree = build(random, grammar.getStartingSymbol(), super.maxDepth);
-    }
-    return tree;
-  }  
-
   public Node<T> build(Random random, T symbol, int targetDepth) {
     if (targetDepth<0) {
       return null;

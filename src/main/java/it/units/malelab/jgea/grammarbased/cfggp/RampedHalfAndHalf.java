@@ -20,14 +20,12 @@ public class RampedHalfAndHalf<T> implements Factory<Node<T>> {
   
   private final int minDepth;
   private final int maxDepth;
-  private final Grammar<T> grammar;
   private final FullTreeFactory<T> fullTreeFactory;
   private final GrowTreeFactory<T> growTreeFactory;
 
   public RampedHalfAndHalf(int minDepth, int maxDepth, Grammar<T> grammar) {
     this.minDepth = minDepth;
     this.maxDepth = maxDepth;
-    this.grammar = grammar;
     fullTreeFactory = new FullTreeFactory<>(maxDepth, grammar);
     growTreeFactory = new GrowTreeFactory<>(maxDepth, grammar);
   }
@@ -38,7 +36,10 @@ public class RampedHalfAndHalf<T> implements Factory<Node<T>> {
     //full
     int depth = minDepth;
     while (trees.size()<n/2) {
-      trees.add(fullTreeFactory.build(random, grammar.getStartingSymbol(), depth));
+      Node<T> tree = fullTreeFactory.build(random, depth);
+      if (tree!=null) {
+        trees.add(tree);      
+      }
       depth = depth+1;
       if (depth>maxDepth) {
         depth = minDepth;
@@ -46,7 +47,10 @@ public class RampedHalfAndHalf<T> implements Factory<Node<T>> {
     }
     //grow
     while (trees.size()<n) {
-      trees.add(growTreeFactory.build(random, grammar.getStartingSymbol(), depth));
+      Node<T> tree = growTreeFactory.build(random, depth);
+      if (tree!=null) {
+        trees.add(tree);      
+      }
       depth = depth+1;
       if (depth>maxDepth) {
         depth = minDepth;

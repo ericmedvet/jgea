@@ -18,28 +18,28 @@ import java.util.Set;
  *
  * @author eric
  */
-public class Util {
+public class GrammarUtil {
 
   public static <T> Map<T, Pair<Double, Double>> computeSymbolsMinMaxDepths(Grammar<T> g) {
     Map<T, Pair<Integer, Boolean>> minDepths = computeSymbolsMinDepths(g);
     Map<T, Triplet<Double, Boolean, Set<T>>> maxDepths = computeSymbolsMaxDepths(g);
     Map<T, Pair<Double, Double>> map = new HashMap<>();
     for (T t : minDepths.keySet()) {
-      map.put(t, new Pair<>((double) minDepths.get(t).getFirst(), maxDepths.get(t).getFirst()));
+      map.put(t, Pair.build((double) minDepths.get(t).getFirst(), maxDepths.get(t).getFirst()));
     }
     return map;
   }
 
   private static <T> Map<T, Pair<Integer, Boolean>> computeSymbolsMinDepths(Grammar<T> g) {
     Map<T, Pair<Integer, Boolean>> map = new HashMap<>();
-    map.put(g.getStartingSymbol(), new Pair<>(Integer.MAX_VALUE, false));
+    map.put(g.getStartingSymbol(), Pair.build(Integer.MAX_VALUE, false));
     for (List<List<T>> options : g.getRules().values()) {
       for (List<T> option : options) {
         for (T symbol : option) {
           if (!g.getRules().containsKey(symbol)) {
-            map.put(symbol, new Pair<>(1, true));
+            map.put(symbol, Pair.build(1, true));
           } else {
-            map.put(symbol, new Pair<>(Integer.MAX_VALUE, false));
+            map.put(symbol, Pair.build(Integer.MAX_VALUE, false));
           }
         }
       }
@@ -66,7 +66,7 @@ public class Util {
           allResolved = allResolved && optionAllResolved;
           minDepth = Math.min(minDepth, optionMaxDepth + 1);
         }
-        Pair<Integer, Boolean> newPair = new Pair<>(minDepth, allResolved);
+        Pair<Integer, Boolean> newPair = Pair.build(minDepth, allResolved);
         if (!newPair.equals(pair)) {
           map.put(nonTerminal, newPair);
           changed = true;
@@ -81,14 +81,14 @@ public class Util {
 
   private static <T> Map<T, Triplet<Double, Boolean, Set<T>>> computeSymbolsMaxDepths(Grammar<T> g) {
     Map<T, Triplet<Double, Boolean, Set<T>>> map = new HashMap<>();
-    map.put(g.getStartingSymbol(), new Triplet<>(0d, false, (Set<T>) new HashSet<T>()));
+    map.put(g.getStartingSymbol(), Triplet.build(0d, false, (Set<T>) new HashSet<T>()));
     for (List<List<T>> options : g.getRules().values()) {
       for (List<T> option : options) {
         for (T symbol : option) {
           if (!g.getRules().containsKey(symbol)) {
-            map.put(symbol, new Triplet<>(1d, true, (Set<T>) Collections.EMPTY_SET));
+            map.put(symbol, Triplet.build(1d, true, (Set<T>) Collections.EMPTY_SET));
           } else {
-            map.put(symbol, new Triplet<>(0d, false, (Set<T>) new HashSet<T>()));
+            map.put(symbol, Triplet.build(0d, false, (Set<T>) new HashSet<T>()));
           }
         }
       }
@@ -122,7 +122,7 @@ public class Util {
           allResolved = true;
           maxDepth = Double.POSITIVE_INFINITY;
         }
-        Triplet<Double, Boolean, Set<T>> newTriplet = new Triplet<>(maxDepth, allResolved, dependencies);
+        Triplet<Double, Boolean, Set<T>> newTriplet = Triplet.build(maxDepth, allResolved, dependencies);
         if (!newTriplet.equals(triplet)) {
           map.put(nonTerminal, newTriplet);
           changed = true;
