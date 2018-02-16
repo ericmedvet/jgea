@@ -58,8 +58,8 @@ public class GrowTreeFactory<T> implements Factory<Node<T>> {
     double min = 0d;
     double max = 0d;
     for (T symbol : option) {
-      min = Math.max(min, nonTerminalDepths.get(symbol).getFirst());
-      max = Math.max(max, nonTerminalDepths.get(symbol).getSecond());
+      min = Math.max(min, nonTerminalDepths.get(symbol).first());
+      max = Math.max(max, nonTerminalDepths.get(symbol).second());
     }
     return Pair.build(min, max);
   }
@@ -78,7 +78,7 @@ public class GrowTreeFactory<T> implements Factory<Node<T>> {
       //2. choose expansion
       for (List<T> option : options) {        
         Pair<Double, Double> minMax = optionMinMaxDepth(option);
-        if (((targetDepth-1)>=minMax.getFirst())&&((targetDepth-1)<=minMax.getSecond())) {
+        if (((targetDepth-1)>=minMax.first())&&((targetDepth-1)<=minMax.second())) {
           availableOptions.add(option);
         }
       }
@@ -90,7 +90,7 @@ public class GrowTreeFactory<T> implements Factory<Node<T>> {
       List<Integer> availableFullIndexes = new ArrayList<>();
       for (int i = 0; i<availableOptions.get(optionIndex).size(); i++) {
         Pair<Double, Double> minMax = nonTerminalDepths.get(availableOptions.get(optionIndex).get(i));
-        if (((targetDepth-1)>=minMax.getFirst())&&((targetDepth-1)<=minMax.getSecond())) {
+        if (((targetDepth-1)>=minMax.first())&&((targetDepth-1)<=minMax.second())) {
           availableFullIndexes.add(i);
         } 
       }
@@ -101,8 +101,8 @@ public class GrowTreeFactory<T> implements Factory<Node<T>> {
       for (int i = 0; i<availableOptions.get(optionIndex).size(); i++) {
         int childTargetDepth = targetDepth -1;
         Pair<Double, Double> minMax = nonTerminalDepths.get(availableOptions.get(optionIndex).get(i));
-        if ((i!=fullIndex)&&(childTargetDepth>minMax.getFirst())) {          
-          childTargetDepth = random.nextInt(childTargetDepth-minMax.getFirst().intValue())+minMax.getFirst().intValue();
+        if ((i!=fullIndex)&&(childTargetDepth>minMax.first())) {          
+          childTargetDepth = random.nextInt(childTargetDepth-minMax.first().intValue())+minMax.first().intValue();
         }
         Node<T> child = build(random, availableOptions.get(optionIndex).get(i), childTargetDepth);
         if (child == null) {

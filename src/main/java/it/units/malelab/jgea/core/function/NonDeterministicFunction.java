@@ -6,7 +6,6 @@
 package it.units.malelab.jgea.core.function;
 
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.ListenerUtils;
 import java.io.Serializable;
 import java.util.Random;
 
@@ -18,8 +17,12 @@ public interface NonDeterministicFunction<A, B> extends Serializable {
 
   public B apply(A a, Random random, Listener listener) throws FunctionException;
 
-  default B apply(A a, Random random) throws FunctionException {
-    return apply(a, random, ListenerUtils.deafListener());
+  public default B apply(A a, Random random) throws FunctionException {
+    return apply(a, random, Listener.deaf());
+  }
+  
+  public default <C> NonDeterministicFunction<A, C> andThen(NonDeterministicFunction<? super B, ? extends C> other) {
+    return (A a, Random random, Listener listener) -> other.apply(apply(a, random, listener), random, listener);
   }
 
 }

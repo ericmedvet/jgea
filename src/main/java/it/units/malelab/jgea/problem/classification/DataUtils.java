@@ -7,10 +7,10 @@ package it.units.malelab.jgea.problem.classification;
 
 import it.units.malelab.jgea.core.util.Pair;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -18,15 +18,17 @@ import java.util.Set;
  */
 public class DataUtils {
 
-  public static <O, L> List<Pair<O, L>> fold(List<Pair<O, L>> data, int i, int n, Random random) {
+  public static <O, L> List<Pair<O, L>> fold(List<Pair<O, L>> data, int i, int n) {
     List<Pair<O, L>> subset = new ArrayList<>();
-    Set<L> labels = new LinkedHashSet<>();
-    for (Pair<O, L> pair : data) {
-      labels.add(pair.getSecond());
-    }
-    for (L label : labels) {
-      
-    }
+    data.stream().map(Pair::second).distinct().forEach((L l) -> {
+      List<Pair<O, L>> currentSubset = data.stream()
+              .filter((Pair<O, L> pair) -> (pair.second().equals(l)))
+              .collect(Collectors.toList());
+      subset.addAll(
+              currentSubset.stream()
+              .skip(currentSubset.size() / n * i)
+              .limit(currentSubset.size() / n).collect(Collectors.toList()));
+    });
     return subset;
   }
 

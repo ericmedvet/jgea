@@ -10,7 +10,6 @@ import it.units.malelab.jgea.core.Sequence;
 import it.units.malelab.jgea.core.function.Bounded;
 import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.function.FunctionException;
-import it.units.malelab.jgea.core.function.NonDeterministicFunction;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.distance.Distance;
@@ -48,13 +47,13 @@ public class Text implements GrammarBasedProblem<String, String, Integer> {
     private final Distance<Sequence<String>> distance;
 
     public FitnessFunction(String targetString) {
-      this.target = Misc.fromList(Arrays.asList(targetString.split("")));
+      this.target = Sequence.from(targetString.split(""));
       this.distance = new Edit<>();
     }
 
     @Override
     public Integer apply(String string, Listener listener) throws FunctionException {
-      Sequence<String> sequence = Misc.fromList(Arrays.asList(string.split("")));
+      Sequence<String> sequence = Sequence.from(string.split(""));
       int d = (int)Math.round(distance.d(target, sequence));
       return d;
     }

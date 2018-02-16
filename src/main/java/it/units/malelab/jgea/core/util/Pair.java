@@ -24,32 +24,16 @@ public class Pair<F, S> implements Serializable {
     this.second = second;
   }
 
-  public F getFirst() {
+  public F first() {
     return first;
   }
 
-  public S getSecond() {
+  public S second() {
     return second;
   }
 
   public static <F, S> Pair<F, S> build(F first, S second) {
     return new Pair<>(first, second);
-  }
-
-  public static <F, S> List<F> firsts(List<Pair<F, S>> pairs) {
-    List<F> firsts = new ArrayList<>(pairs.size());
-    for (Pair<F, S> pair : pairs) {
-      firsts.add(pair.getFirst());
-    }
-    return firsts;
-  }
-
-  public static <F, S> List<S> seconds(List<Pair<F, S>> pairs) {
-    List<S> seconds = new ArrayList<>(pairs.size());
-    for (Pair<F, S> pair : pairs) {
-      seconds.add(pair.getSecond());
-    }
-    return seconds;
   }
 
   @Override

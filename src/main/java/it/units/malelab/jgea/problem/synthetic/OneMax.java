@@ -10,8 +10,6 @@ import it.units.malelab.jgea.core.function.Bounded;
 import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.genotype.BitString;
 import it.units.malelab.jgea.core.function.FunctionException;
-import it.units.malelab.jgea.core.function.FunctionUtils;
-import it.units.malelab.jgea.core.function.NonDeterministicFunction;
 import it.units.malelab.jgea.core.listener.Listener;
 
 /**

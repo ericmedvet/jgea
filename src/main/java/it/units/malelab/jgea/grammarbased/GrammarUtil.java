@@ -25,7 +25,7 @@ public class GrammarUtil {
     Map<T, Triplet<Double, Boolean, Set<T>>> maxDepths = computeSymbolsMaxDepths(g);
     Map<T, Pair<Double, Double>> map = new HashMap<>();
     for (T t : minDepths.keySet()) {
-      map.put(t, Pair.build((double) minDepths.get(t).getFirst(), maxDepths.get(t).getFirst()));
+      map.put(t, Pair.build((double) minDepths.get(t).first(), maxDepths.get(t).first()));
     }
     return map;
   }
@@ -49,7 +49,7 @@ public class GrammarUtil {
       boolean changed = false;
       for (T nonTerminal : g.getRules().keySet()) {
         Pair<Integer, Boolean> pair = map.get(nonTerminal);
-        if (pair.getSecond()) {
+        if (pair.second()) {
           //this non-terminal is definitely resolved
           continue;
         }
@@ -60,8 +60,8 @@ public class GrammarUtil {
           int optionMaxDepth = 0;
           for (T optionSymbol : option) {
             Pair<Integer, Boolean> optionSymbolPair = map.get(optionSymbol);
-            optionAllResolved = optionAllResolved && optionSymbolPair.getSecond();
-            optionMaxDepth = Math.max(optionMaxDepth, optionSymbolPair.getFirst());
+            optionAllResolved = optionAllResolved && optionSymbolPair.second();
+            optionMaxDepth = Math.max(optionMaxDepth, optionSymbolPair.first());
           }
           allResolved = allResolved && optionAllResolved;
           minDepth = Math.min(minDepth, optionMaxDepth + 1);
@@ -99,7 +99,7 @@ public class GrammarUtil {
       for (T nonTerminal : g.getRules().keySet()) {
         Triplet<Double, Boolean, Set<T>> triplet = map.get(nonTerminal);
         Set<T> dependencies = new HashSet<>(triplet.getThird());
-        if (triplet.getSecond()) {
+        if (triplet.second()) {
           //this non-terminal is definitely resolved
           continue;
         }
@@ -110,8 +110,8 @@ public class GrammarUtil {
           double optionMaxDepth = 0;
           for (T optionSymbol : option) {
             Triplet<Double, Boolean, Set<T>> optionSymbolTriplet = map.get(optionSymbol);
-            optionAllResolved = optionAllResolved && optionSymbolTriplet.getSecond();
-            optionMaxDepth = Math.max(optionMaxDepth, optionSymbolTriplet.getFirst());
+            optionAllResolved = optionAllResolved && optionSymbolTriplet.second();
+            optionMaxDepth = Math.max(optionMaxDepth, optionSymbolTriplet.first());
             dependencies.add(optionSymbol);
             dependencies.addAll(optionSymbolTriplet.getThird());
           }

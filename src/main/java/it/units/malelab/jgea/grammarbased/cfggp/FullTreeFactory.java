@@ -36,7 +36,7 @@ public class FullTreeFactory<T> extends GrowTreeFactory<T> {
       //2. choose expansion
       for (List<T> option : options) {        
         Pair<Double, Double> minMax = optionMinMaxDepth(option);
-        if (((targetDepth-1)>=minMax.getFirst())&&((targetDepth-1)<=minMax.getSecond())) {
+        if (((targetDepth-1)>=minMax.first())&&((targetDepth-1)<=minMax.second())) {
           availableOptions.add(option);
         }
       }

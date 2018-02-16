@@ -6,12 +6,11 @@
 package it.units.malelab.jgea;
 
 import com.google.common.collect.Lists;
-import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
 import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
-import it.units.malelab.jgea.core.listener.ListenerUtils;
+import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.PrintStreamListener;
 import it.units.malelab.jgea.core.listener.collector.Basic;
 import it.units.malelab.jgea.core.listener.collector.BestPrinter;
@@ -28,7 +27,6 @@ import it.units.malelab.jgea.grammarbased.cfggp.RampedHalfAndHalf;
 import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeCrossover;
 import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeMutation;
 import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
-import it.units.malelab.jgea.problem.booleanfunction.MultipleOutputParallelMultiplier;
 import it.units.malelab.jgea.problem.booleanfunction.element.Element;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -112,7 +110,7 @@ public class Executor {
     Random r = new Random(1);
     ExecutorService executor = Executors.newFixedThreadPool(4);
     evolver.solve(p, r, executor,
-            ListenerUtils.onExecutor(
+            Listener.onExecutor(
                     new PrintStreamListener(System.out, true, 10, " ", " | ",
                             new Basic(),
                             new Population(),

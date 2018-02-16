@@ -12,12 +12,13 @@ import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.util.Pair;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
  * @author eric
  */
-public abstract class BinaryClassification<C, O> extends CaseBasedFitness<C, O, Boolean, Double[]> implements Bounded<Double[]> {
+public class BinaryClassification<C, O> extends CaseBasedFitness<C, O, Boolean, Double[]> implements Bounded<Double[]> {
 
   private static class Aggregator implements Function<List<Boolean>, Double[]>, Bounded<Double[]> {
     
@@ -54,8 +55,12 @@ public abstract class BinaryClassification<C, O> extends CaseBasedFitness<C, O, 
     
   }
   
-  public BinaryClassification(List<Pair<O, Boolean>> data, BiFunction<C, O, Boolean> classifier) {
-    super(Pair.firsts(data), classifier, new Aggregator(Pair.seconds(data)));
+  public BinaryClassification(List<Pair<O, Boolean>> data, BiFunction<C, O, Boolean> observationFitnessFunction) {
+    super(
+            data.stream().map(Pair::first).collect(Collectors.toList()),
+            observationFitnessFunction,
+            new Aggregator(data.stream().map(Pair::second).collect(Collectors.toList()))
+    );
   }
 
   @Override
@@ -67,7 +72,5 @@ public abstract class BinaryClassification<C, O> extends CaseBasedFitness<C, O, 
   public Double[] worstValue() {
     return ((Bounded<Double[]>)getAggregateFunction()).worstValue();
   }
-  
-  
   
 }

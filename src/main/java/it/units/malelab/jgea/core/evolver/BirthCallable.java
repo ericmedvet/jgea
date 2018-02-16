@@ -8,7 +8,6 @@ package it.units.malelab.jgea.core.evolver;
 import com.google.common.base.Stopwatch;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.ListenerUtils;
 import it.units.malelab.jgea.core.listener.event.Capturer;
 import it.units.malelab.jgea.core.listener.event.MapperEvent;
 import it.units.malelab.jgea.core.listener.event.TimedEvent;
@@ -61,7 +60,7 @@ public class BirthCallable<G, S, F> implements Callable<Individual<G, S, F>> {
       //TODO log to listener
     }
     elapsed = stopwatch.stop().elapsed(TimeUnit.NANOSECONDS);
-    Map<String, Object> solutionInfo = ListenerUtils.fromInfoEvents(capturer.getEvents(), "solution.");
+    Map<String, Object> solutionInfo = Misc.fromInfoEvents(capturer.getEvents(), "solution.");
     listener.listen(new TimedEvent(elapsed, TimeUnit.NANOSECONDS, new MapperEvent(genotype, solution, solutionInfo)));
     capturer.clear();
     //solution -> fitness
@@ -75,7 +74,7 @@ public class BirthCallable<G, S, F> implements Callable<Individual<G, S, F>> {
       }
     }
     elapsed = stopwatch.stop().elapsed(TimeUnit.NANOSECONDS);
-    Map<String, Object> fitnessInfo = ListenerUtils.fromInfoEvents(capturer.getEvents(), "fitness.");
+    Map<String, Object> fitnessInfo = Misc.fromInfoEvents(capturer.getEvents(), "fitness.");
     listener.listen(new TimedEvent(elapsed, TimeUnit.NANOSECONDS, new MapperEvent(genotype, solution, fitnessInfo)));
     //merge info
     return new Individual<>(genotype, solution, fitness, birthIteration, parents, Misc.merge(solutionInfo, fitnessInfo));

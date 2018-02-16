@@ -62,7 +62,7 @@ public class Triplet<F, S, T> extends Pair<F, S> {
 
   @Override
   public String toString() {
-    return "<" + getFirst() + ", " + getSecond() + ", " + third + '>';
+    return "<" + first() + ", " + second() + ", " + third + '>';
   }
 
 }
