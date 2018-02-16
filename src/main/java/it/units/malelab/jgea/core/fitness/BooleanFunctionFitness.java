@@ -6,33 +6,29 @@
 package it.units.malelab.jgea.core.fitness;
 
 import it.units.malelab.jgea.core.Node;
+import it.units.malelab.jgea.core.function.BiFunction;
+import it.units.malelab.jgea.core.function.Bounded;
+import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.mapper.BoundMapper;
-import it.units.malelab.jgea.core.mapper.DeterministicMapper;
-import it.units.malelab.jgea.core.mapper.MappingException;
-import it.units.malelab.jgea.core.util.Pair;
+import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.problem.booleanfunction.BooleanUtils;
 import it.units.malelab.jgea.problem.booleanfunction.element.Element;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 /**
  *
  * @author eric
  */
-public class BooleanFunctionFitness extends CaseBasedFitness<List<Node<Element>>, boolean[], Boolean, Double> {
+public class BooleanFunctionFitness extends CaseBasedFitness<List<Node<Element>>, boolean[], Boolean, Double> implements Bounded<Double>{
 
-  public static interface TargetFunction {
-
-    public boolean[] compute(boolean... arguments);
-
+  public static interface TargetFunction extends Function<boolean[], boolean[]>{
     public String[] varNames();
   }
 
-  private static class ErrorRate implements BoundMapper<List<Boolean>, Double> {
+  private static class ErrorRate implements Function<List<Boolean>, Double>, Bounded<Double> {
 
     @Override
     public Double worstValue() {
@@ -45,7 +41,7 @@ public class BooleanFunctionFitness extends CaseBasedFitness<List<Node<Element>>
     }
 
     @Override
-    public Double map(List<Boolean> vs, Random random, Listener listener) throws MappingException {
+    public Double apply(List<Boolean> vs, Listener listener) throws FunctionException {
       double errors = 0;
       for (Boolean v : vs) {
         errors = errors + (v ? 0d : 1d);
@@ -55,7 +51,7 @@ public class BooleanFunctionFitness extends CaseBasedFitness<List<Node<Element>>
 
   }
 
-  private static class Error extends DeterministicMapper<Pair<List<Node<Element>>, boolean[]>, Boolean> {
+  private static class Error implements BiFunction<List<Node<Element>>, boolean[], Boolean> {
 
     private final BooleanFunctionFitness.TargetFunction targetFunction;
 
@@ -64,15 +60,13 @@ public class BooleanFunctionFitness extends CaseBasedFitness<List<Node<Element>>
     }
     
     @Override
-    public Boolean map(Pair<List<Node<Element>>, boolean[]> pair, Listener listener) throws MappingException {
-      List<Node<Element>> solution = pair.getFirst();
-      boolean[] observation = pair.getSecond();
+    public Boolean apply(List<Node<Element>> solution, boolean[] observation, Listener listener) throws FunctionException {
       Map<String, Boolean> varValues = new LinkedHashMap<>();
       for (int i = 0; i < targetFunction.varNames().length; i++) {
         varValues.put(targetFunction.varNames()[i], observation[i]);
       }
       boolean[] computed = BooleanUtils.compute(solution, varValues);
-      return Arrays.equals(computed, targetFunction.compute(observation));
+      return Arrays.equals(computed, targetFunction.apply(observation));
     }
 
   }
@@ -81,4 +75,14 @@ public class BooleanFunctionFitness extends CaseBasedFitness<List<Node<Element>>
     super(observations, new Error(targetFunction), new ErrorRate());
   }
 
+  @Override
+  public Double bestValue() {
+    return ((Bounded<Double>)getAggregateFunction()).bestValue();
+  }
+
+  @Override
+  public Double worstValue() {
+    return ((Bounded<Double>)getAggregateFunction()).worstValue();
+  }
+  
 }

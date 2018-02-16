@@ -5,58 +5,48 @@
  */
 package it.units.malelab.jgea.core.fitness;
 
+import it.units.malelab.jgea.core.function.BiFunction;
+import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.mapper.BoundMapper;
-import it.units.malelab.jgea.core.mapper.DeterministicMapper;
-import it.units.malelab.jgea.core.mapper.MappingException;
-import it.units.malelab.jgea.core.util.Pair;
+import it.units.malelab.jgea.core.function.FunctionException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  *
  * @author eric
  */
-public class CaseBasedFitness<S, O, OF, AF> extends DeterministicMapper<S, AF> implements BoundMapper<S, AF> {
-  
+public class CaseBasedFitness<S, O, OF, AF> implements Function<S, AF> {
+    
   private final List<O> observations;
-  private final DeterministicMapper<Pair<S, O>, OF> observationMapper;
-  private final BoundMapper<List<OF>, AF> aggregateMapper;
-  private final Random random;
+  private final BiFunction<S, O, OF> observationFitnessFunction;
+  private final Function<List<OF>, AF> aggregateFunction;
 
-  public CaseBasedFitness(List<O> observations, DeterministicMapper<Pair<S, O>, OF> observationMapper, BoundMapper<List<OF>, AF> aggregateMapper) {
+  public CaseBasedFitness(List<O> observations, BiFunction<S, O, OF> observationFitnessFunction, Function<List<OF>, AF> aggregateFunction) {
     this.observations = observations;
-    this.observationMapper = observationMapper;
-    this.aggregateMapper = aggregateMapper;
-    this.random = new Random(1);
+    this.observationFitnessFunction = observationFitnessFunction;
+    this.aggregateFunction = aggregateFunction;
   }
 
   public List<O> getObservations() {
     return observations;
   }
 
-  public BoundMapper<List<OF>, AF> getAggregateMapper() {
-    return aggregateMapper;
-  }
-
   @Override
-  public AF map(S solution, Listener listener) throws MappingException {
+  public AF apply(S solution, Listener listener) throws FunctionException {
     List<OF> observationFitnesses = new ArrayList<>(observations.size());
     for (O observation : observations) {
-      observationFitnesses.add(observationMapper.map(Pair.build(solution, observation), listener));
+      observationFitnesses.add(observationFitnessFunction.apply(solution, observation, listener));
     }
-    return aggregateMapper.map(observationFitnesses, random, listener);
+    return aggregateFunction.apply(observationFitnesses, listener);
   }
 
-  @Override
-  public AF worstValue() {
-    return aggregateMapper.worstValue();
+  public BiFunction<S, O, OF> getObservationFitnessFunction() {
+    return observationFitnessFunction;
   }
 
-  @Override
-  public AF bestValue() {
-    return aggregateMapper.bestValue();
+  public Function<List<OF>, AF> getAggregateFunction() {
+    return aggregateFunction;
   }
-  
+
 }

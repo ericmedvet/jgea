@@ -6,9 +6,9 @@
 package it.units.malelab.jgea.core.listener.collector;
 
 import it.units.malelab.jgea.core.Individual;
+import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
-import it.units.malelab.jgea.core.mapper.MappingException;
-import it.units.malelab.jgea.core.mapper.MuteDeterministicMapper;
+import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.util.Misc;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,10 +24,10 @@ import java.util.logging.Logger;
  */
 public class BestPrinter<G, S, F> implements Collector<G, S, F>{
   
-  private final MuteDeterministicMapper<S, String> printer;
+  private final Function<S, String> printer;
   private final String format;
 
-  public BestPrinter(MuteDeterministicMapper<S, String> printer, String format) {
+  public BestPrinter(Function<S, String> printer, String format) {
     this.printer = printer;
     this.format = format;
   }
@@ -38,8 +38,8 @@ public class BestPrinter<G, S, F> implements Collector<G, S, F>{
     Individual<G, S, F> best = Misc.first(rankedPopulation.get(0));
     if (printer!=null) {
       try {
-        return (Map)Collections.singletonMap("best.solution", printer.map(best.getSolution()));
-      } catch (MappingException ex) {
+        return (Map)Collections.singletonMap("best.solution", printer.apply(best.getSolution()));
+      } catch (FunctionException ex) {
         Logger.getLogger(BestPrinter.class.getName()).log(Level.WARNING, "Cannot print best.", ex);
       }
     }

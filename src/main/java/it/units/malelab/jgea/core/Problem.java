@@ -5,15 +5,16 @@
  */
 package it.units.malelab.jgea.core;
 
-import it.units.malelab.jgea.core.mapper.BoundMapper;
+import it.units.malelab.jgea.core.function.NonDeterministicFunction;
 import java.io.Serializable;
 
 /**
  *
  * @author eric
  */
+@FunctionalInterface
 public interface Problem<S, F> extends Serializable {
   
-  public BoundMapper<S, F> getFitnessMapper();
+  public NonDeterministicFunction<S, F> getFitnessFunction();
 
 }

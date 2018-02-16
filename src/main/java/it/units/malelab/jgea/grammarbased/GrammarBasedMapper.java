@@ -6,13 +6,13 @@
 package it.units.malelab.jgea.grammarbased;
 
 import it.units.malelab.jgea.core.Node;
-import it.units.malelab.jgea.core.mapper.DeterministicMapper;
+import it.units.malelab.jgea.core.function.Function;
 
 /**
  *
  * @author eric
  */
-public abstract class GrammarBasedMapper<G, T> extends DeterministicMapper<G, Node<T>> {
+public abstract class GrammarBasedMapper<G, T> implements Function<G, Node<T>> {
   
   protected final Grammar<T> grammar;
 

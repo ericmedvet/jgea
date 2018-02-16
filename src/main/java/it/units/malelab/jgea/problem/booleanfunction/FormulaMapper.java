@@ -6,8 +6,9 @@
 package it.units.malelab.jgea.problem.booleanfunction;
 
 import it.units.malelab.jgea.core.Node;
-import it.units.malelab.jgea.core.mapper.MappingException;
-import it.units.malelab.jgea.core.mapper.MuteDeterministicMapper;
+import it.units.malelab.jgea.core.function.Function;
+import it.units.malelab.jgea.core.function.FunctionException;
+import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.problem.booleanfunction.element.Constant;
 import it.units.malelab.jgea.problem.booleanfunction.element.Decoration;
 import it.units.malelab.jgea.problem.booleanfunction.element.Element;
@@ -21,12 +22,12 @@ import java.util.List;
  *
  * @author eric
  */
-public class FormulaMapper extends MuteDeterministicMapper<Node<String>, List<Node<Element>>> {
+public class FormulaMapper implements Function<Node<String>, List<Node<Element>>> {
 
   public static final String MULTIPLE_OUTPUT_NON_TERMINAL = "<o>";
 
   @Override
-  public List<Node<Element>> map(Node<String> stringNode) throws MappingException {
+  public List<Node<Element>> apply(Node<String> stringNode, Listener listener) throws FunctionException {
     if (stringNode.getContent().equals(MULTIPLE_OUTPUT_NON_TERMINAL)) {
       List<Node<Element>> nodes = new ArrayList<>();
       for (Node<String> child : stringNode.getChildren()) {
@@ -38,7 +39,7 @@ public class FormulaMapper extends MuteDeterministicMapper<Node<String>, List<No
     }
   }
 
-  public Node<Element> singleMap(Node<String> stringNode) throws MappingException {
+  public Node<Element> singleMap(Node<String> stringNode) throws FunctionException {
     if (stringNode.getChildren().isEmpty()) {
       return new Node<>(fromString(stringNode.getContent()));
     }

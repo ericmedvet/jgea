@@ -5,14 +5,14 @@
  */
 package it.units.malelab.jgea.core.operator;
 
-import it.units.malelab.jgea.core.mapper.Mapper;
+import it.units.malelab.jgea.core.function.NonDeterministicFunction;
 import java.util.List;
 
 /**
  *
  * @author eric
  */
-public interface GeneticOperator<G> extends Mapper<List<G>, List<G>> {
+public interface GeneticOperator<G> extends NonDeterministicFunction<List<G>, List<G>> {
   
   public int arity();
   

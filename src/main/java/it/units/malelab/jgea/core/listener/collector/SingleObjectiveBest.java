@@ -5,7 +5,7 @@
  */
 package it.units.malelab.jgea.core.listener.collector;
 
-import it.units.malelab.jgea.core.mapper.DeterministicMapper;
+import it.units.malelab.jgea.core.function.Function;
 import java.util.Collections;
 import java.util.Map;
 
@@ -17,7 +17,7 @@ public class SingleObjectiveBest<G, S> extends Best<G, S, Number> {
 
   private final String fitnessFormat;
 
-  public SingleObjectiveBest(String fitnessFormat, boolean ancestry, DeterministicMapper<S, Number> validationFitnessMapper) {
+  public SingleObjectiveBest(String fitnessFormat, boolean ancestry, Function<S, Number> validationFitnessMapper) {
     super(ancestry, validationFitnessMapper);
     this.fitnessFormat = fitnessFormat;
   }

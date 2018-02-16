@@ -6,8 +6,9 @@
 package it.units.malelab.jgea.problem.symbolicregression;
 
 import it.units.malelab.jgea.core.Node;
-import it.units.malelab.jgea.core.mapper.MappingException;
-import it.units.malelab.jgea.core.mapper.MuteDeterministicMapper;
+import it.units.malelab.jgea.core.function.Function;
+import it.units.malelab.jgea.core.function.FunctionException;
+import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.problem.symbolicregression.element.Constant;
 import it.units.malelab.jgea.problem.symbolicregression.element.Decoration;
 import it.units.malelab.jgea.problem.symbolicregression.element.Element;
@@ -18,19 +19,19 @@ import it.units.malelab.jgea.problem.symbolicregression.element.Variable;
  *
  * @author eric
  */
-public class FormulaMapper extends MuteDeterministicMapper<Node<String>, Node<Element>> {
+public class FormulaMapper implements Function<Node<String>, Node<Element>> {
 
   @Override
-  public Node<Element> map(Node<String> stringNode) throws MappingException {
+  public Node<Element> apply(Node<String> stringNode, Listener listener) throws FunctionException {
     if (stringNode.getChildren().isEmpty()) {
       return new Node<>(fromString(stringNode.getContent()));
     }
     if (stringNode.getChildren().size() == 1) {
-      return map(stringNode.getChildren().get(0));
+      return apply(stringNode.getChildren().get(0));
     }
-    Node<Element> node = map(stringNode.getChildren().get(0));
+    Node<Element> node = apply(stringNode.getChildren().get(0));
     for (int i = 1; i < stringNode.getChildren().size(); i++) {
-      node.getChildren().add(map(stringNode.getChildren().get(i)));
+      node.getChildren().add(apply(stringNode.getChildren().get(i)));
     }
     return node;
   }

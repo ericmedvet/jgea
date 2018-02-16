@@ -7,31 +7,27 @@ package it.units.malelab.jgea.core.fitness;
 
 import it.units.malelab.jgea.problem.symbolicregression.*;
 import it.units.malelab.jgea.core.Node;
+import it.units.malelab.jgea.core.function.BiFunction;
+import it.units.malelab.jgea.core.function.Bounded;
+import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.mapper.BoundMapper;
-import it.units.malelab.jgea.core.mapper.DeterministicMapper;
-import it.units.malelab.jgea.core.mapper.MappingException;
-import it.units.malelab.jgea.core.util.Pair;
+import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.problem.symbolicregression.element.Element;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 /**
  *
  * @author eric
  */
-public class SymbolicRegressionFitness extends CaseBasedFitness<Node<Element>, double[], Double, Double> {
+public class SymbolicRegressionFitness extends CaseBasedFitness<Node<Element>, double[], Double, Double> implements Bounded<Double> {
 
-  public static interface TargetFunction {
-
-    public double compute(double... arguments);
-
+  public static interface TargetFunction extends Function<double[], Double> {
     public String[] varNames();
   }
 
-  private static class Aggregator implements BoundMapper<List<Double>, Double> {
+  private static class Aggregator implements Function<List<Double>, Double>, Bounded<Double> {
 
     private final boolean average;
 
@@ -50,7 +46,7 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<Node<Element>, d
     }
 
     @Override
-    public Double map(List<Double> vs, Random random, Listener listener) throws MappingException {
+    public Double apply(List<Double> vs, Listener listener) throws FunctionException {
       double sum = 0;
       for (Double v : vs) {
         sum = sum + v;
@@ -63,7 +59,7 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<Node<Element>, d
 
   }
 
-  private static class Error extends DeterministicMapper<Pair<Node<Element>, double[]>, Double> {
+  private static class Error implements BiFunction<Node<Element>, double[], Double> {
 
     private final TargetFunction targetFunction;
 
@@ -72,15 +68,13 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<Node<Element>, d
     }
 
     @Override
-    public Double map(Pair<Node<Element>, double[]> pair, Listener listener) throws MappingException {
-      Node<Element> solution = pair.getFirst();
-      double[] observation = pair.getSecond();
+    public Double apply(Node<Element> solution, double[] observation, Listener listener) throws FunctionException {
       Map<String, Double> varValues = new LinkedHashMap<>();
       for (int i = 0; i < targetFunction.varNames().length; i++) {
         varValues.put(targetFunction.varNames()[i], observation[i]);
       }
       double computed = MathUtils.compute(solution, varValues);
-      return Math.abs(computed - targetFunction.compute(observation));
+      return Math.abs(computed - targetFunction.apply(observation));
     }
 
   }
@@ -89,4 +83,14 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<Node<Element>, d
     super(observations, new Error(targetFunction), new Aggregator(average));
   }
 
+  @Override
+  public Double bestValue() {
+    return ((Bounded<Double>)getAggregateFunction()).bestValue();
+  }
+
+  @Override
+  public Double worstValue() {
+    return ((Bounded<Double>)getAggregateFunction()).worstValue();
+  }
+  
 }

@@ -13,11 +13,9 @@ import it.units.malelab.jgea.core.evolver.stopcondition.StopCondition;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.event.EvolutionEndEvent;
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
-import it.units.malelab.jgea.core.mapper.BoundMapper;
-import it.units.malelab.jgea.core.mapper.CachedMapper;
-import it.units.malelab.jgea.core.mapper.DeterministicMapper;
-import it.units.malelab.jgea.core.mapper.Mapper;
-import it.units.malelab.jgea.core.mapper.MappingException;
+import it.units.malelab.jgea.core.function.CachedFunction;
+import it.units.malelab.jgea.core.function.FunctionException;
+import it.units.malelab.jgea.core.function.NonDeterministicFunction;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.ranker.Ranker;
 import it.units.malelab.jgea.core.ranker.selector.Selector;
@@ -32,6 +30,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import it.units.malelab.jgea.core.function.Bounded;
+import it.units.malelab.jgea.core.function.CachedBoundedFunction;
 
 /**
  *
@@ -42,7 +42,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
   private final int populationSize;
   private final Factory<G> genotypeBuilder;
   private final Ranker<Individual<G, S, F>> ranker;
-  private final Mapper<G, S> mapper;
+  private final NonDeterministicFunction<G, S> mapper;
   private final Map<GeneticOperator<G>, Double> operators;
   private final Selector<Individual<G, S, F>> parentSelector;
   private final Selector<Individual<G, S, F>> unsurvivalSelector;
@@ -52,7 +52,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
   private final boolean saveAncestry;
   private final long cacheSize;
 
-  public StandardEvolver(int populationSize, Factory<G> genotypeBuilder, Ranker<Individual<G, S, F>> ranker, Mapper<G, S> mapper, Map<GeneticOperator<G>, Double> operators, Selector<Individual<G, S, F>> parentSelector, Selector<Individual<G, S, F>> unsurvivalSelector, int offspringSize, boolean overlapping, List<StopCondition> stoppingConditions, long cacheSize, boolean saveAncestry) {
+  public StandardEvolver(int populationSize, Factory<G> genotypeBuilder, Ranker<Individual<G, S, F>> ranker, NonDeterministicFunction<G, S> mapper, Map<GeneticOperator<G>, Double> operators, Selector<Individual<G, S, F>> parentSelector, Selector<Individual<G, S, F>> unsurvivalSelector, int offspringSize, boolean overlapping, List<StopCondition> stoppingConditions, long cacheSize, boolean saveAncestry) {
     this.populationSize = populationSize;
     this.genotypeBuilder = genotypeBuilder;
     this.ranker = ranker;
@@ -73,7 +73,14 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
     int births = 0;
     int generations = 0;
     Stopwatch stopwatch = Stopwatch.createStarted();
-    BoundMapper<S, F> fitnessMapper = buildFitnessMapper(problem);
+    NonDeterministicFunction<S, F> fitnessFunction = problem.getFitnessFunction();
+    if (cacheSize>0) {
+      if (fitnessFunction instanceof Bounded) {
+        fitnessFunction = new CachedBoundedFunction<>(fitnessFunction, cacheSize);
+      } else {
+        fitnessFunction = new CachedFunction<>(fitnessFunction, cacheSize);
+      }
+    }
     //initialize population
     List<Individual<G, S, F>> population = new ArrayList<>();
     for (G genotype : genotypeBuilder.build(populationSize, random)) {
@@ -85,7 +92,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
               generations,
               Collections.EMPTY_LIST,
               mapper,
-              fitnessMapper,
+              fitnessFunction,
               random,
               listener
       ));
@@ -110,21 +117,21 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
           parentGenotypes.add(parent.getGenotype());
         }
         try {
-          List<G> childGenotypes = operator.map(parentGenotypes, random, listener);
+          List<G> childGenotypes = operator.apply(parentGenotypes, random, listener);
           for (G childGenotype : childGenotypes) {
             tasks.add(new BirthCallable<>(
                     childGenotype,
                     generations,
                     saveAncestry ? parents : null,
                     mapper,
-                    fitnessMapper,
+                    fitnessFunction,
                     random,
                     listener
             ));
           }
           births = births + childGenotypes.size();
           i = i + childGenotypes.size();
-        } catch (MappingException ex) {
+        } catch (FunctionException ex) {
           //just ignore: will not be added to the population
         }
       }
@@ -155,7 +162,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
       EvolutionEvent<G, S, F> event = new EvolutionEvent<>(
               generations,
               births,
-              fitnessEvaluations(fitnessMapper, births),
+              fitnessEvaluations(fitnessFunction, births),
               rankedPopulation,
               stopwatch.elapsed(TimeUnit.MILLISECONDS)
       );
@@ -167,7 +174,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
                 stopCondition,
                 generations,
                 births,
-                fitnessEvaluations(fitnessMapper, births),
+                fitnessEvaluations(fitnessFunction, births),
                 rankedPopulation,
                 stopwatch.elapsed(TimeUnit.MILLISECONDS))
         );
@@ -183,15 +190,8 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
     return solutions;
   }
 
-  protected long fitnessEvaluations(Mapper<S, F> fitnessMapper, int births) {
-    return (fitnessMapper instanceof CachedMapper) ? ((CachedMapper) fitnessMapper).getActualCount() : births;
-  }
-
-  protected BoundMapper<S, F> buildFitnessMapper(final Problem<S, F> problem) {
-    if ((cacheSize > 0) && (problem.getFitnessMapper() instanceof DeterministicMapper)) {
-      return new CachedBoundMapper<>((DeterministicMapper) problem.getFitnessMapper(), cacheSize);
-    }
-    return problem.getFitnessMapper();
+  protected long fitnessEvaluations(NonDeterministicFunction<S, F> fitnessFunction, int births) {
+    return (fitnessFunction instanceof CachedFunction) ? ((CachedFunction) fitnessFunction).getActualCount() : births;
   }
 
   protected StopCondition checkStopConditions(EvolutionEvent<G, S, F> event) {
@@ -203,25 +203,4 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
     return null;
   }
   
-  private class CachedBoundMapper<S, F> extends CachedMapper<S, F> implements BoundMapper<S, F> {
-    
-    private final BoundMapper<S, F> boundInnerMapper;
-
-    public CachedBoundMapper(DeterministicMapper<S, F> innerMapper, long cacheSize) {
-      super(innerMapper, cacheSize);
-      boundInnerMapper = (BoundMapper<S, F>)innerMapper;
-    }
-
-    @Override
-    public F worstValue() {
-      return boundInnerMapper.worstValue();
-    }
-
-    @Override
-    public F bestValue() {
-      return boundInnerMapper.bestValue();
-    }
-    
-  }
-
 }

@@ -94,18 +94,18 @@ public class Executor {
     final GrammarBasedProblem<String, List<Node<Element>>, Double> p = new EvenParity(5);
     Map<GeneticOperator<Node<String>>, Double> operators = new LinkedHashMap<>();
     operators.put(new StandardTreeMutation<>(12, p.getGrammar()), 0.2d);
-    operators.put(new StandardTreeCrossover<String>(12), 0.8d);
+    operators.put(new StandardTreeCrossover<>(12), 0.8d);
     StandardEvolver<Node<String>, List<Node<Element>>, Double> evolver = new StandardEvolver<>(
             500,
             new RampedHalfAndHalf<>(3, 12, p.getGrammar()),
-            new ComparableRanker(new FitnessComparator<Integer>()),
+            new ComparableRanker(new FitnessComparator<>()),
             p.getSolutionMapper(),
             operators,
-            new Tournament<Individual<Node<String>, List<Node<Element>>, Double>>(3),
-            new Worst<Individual<Node<String>, List<Node<Element>>, Double>>(),
+            new Tournament<>(3),
+            new Worst<>(),
             500,
             true,
-            Lists.newArrayList(new FitnessEvaluations(100000), new PerfectFitness(p.getFitnessMapper().bestValue())),
+            Lists.newArrayList(new FitnessEvaluations(100000), new PerfectFitness<>(p.getFitnessFunction())),
             10000,
             false
     );

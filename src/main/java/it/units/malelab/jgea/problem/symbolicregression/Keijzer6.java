@@ -5,15 +5,9 @@
  */
 package it.units.malelab.jgea.problem.symbolicregression;
 
-import it.units.malelab.jgea.core.Node;
-import it.units.malelab.jgea.core.ProblemWithValidation;
-import it.units.malelab.jgea.core.fitness.SymbolicRegressionFitness;
-import it.units.malelab.jgea.core.mapper.BoundMapper;
-import it.units.malelab.jgea.core.mapper.DeterministicMapper;
-import it.units.malelab.jgea.core.mapper.Mapper;
+import it.units.malelab.jgea.core.function.FunctionException;
+import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.grammarbased.Grammar;
-import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
-import it.units.malelab.jgea.problem.symbolicregression.element.Element;
 import java.io.File;
 import java.io.IOException;
 
@@ -21,64 +15,28 @@ import java.io.IOException;
  *
  * @author eric
  */
-public class Keijzer6 implements GrammarBasedProblem<String, Node<Element>, Double>, ProblemWithValidation<Node<Element>, Double> {
+public class Keijzer6 extends AbstractProblemWithValidation {
 
-  private final static SymbolicRegressionFitness.TargetFunction TARGET_FUNCTION = new SymbolicRegressionFitness.TargetFunction() {
-    @Override
-    public double compute(double... v) {
-      return Math.log(v[0] + 1) + Math.log(v[0] * v[0] + 1);
-    }
-
-    @Override
-    public String[] varNames() {
-      return new String[]{"x"};
-    }
-  };
-
-  private final Grammar<String> grammar;
-  private final DeterministicMapper<Node<String>, Node<Element>> solutionMapper;
-  private final BoundMapper<Node<Element>, Double> fitnessMapper;
-  private final Mapper<Node<Element>, Double> validationMapper;
-
-  public Keijzer6(long seed) throws IOException {
-    grammar = Grammar.fromFile(new File("grammars/symbolic-regression-harmonic.bnf"));
-    solutionMapper = new FormulaMapper();
-    fitnessMapper = new SymbolicRegressionFitness(
-            TARGET_FUNCTION,
-            MathUtils.asObservations(
-                    MathUtils.valuesMap("x", MathUtils.equispacedValues(1, 50, 1)),
-                    TARGET_FUNCTION.varNames()
-            ),
-            true
-    );
-    validationMapper = new SymbolicRegressionFitness(
-            TARGET_FUNCTION,
-            MathUtils.asObservations(
-                    MathUtils.valuesMap("x", MathUtils.equispacedValues(1, 120, 1)),
-                    TARGET_FUNCTION.varNames()
-            ),
-            true
+  public Keijzer6() throws IOException {
+    super(
+            Grammar.fromFile(new File("grammars/symbolic-regression-keijzer6.bnf")),
+            MathUtils.valuesMap("x", MathUtils.equispacedValues(1, 50, 1)),
+            MathUtils.valuesMap("x", MathUtils.equispacedValues(1, 120, 1))
     );
   }
-
+  
   @Override
-  public Grammar<String> getGrammar() {
-    return grammar;
+  public String[] varNames() {
+    return new String[]{"x"};
   }
 
   @Override
-  public DeterministicMapper<Node<String>, Node<Element>> getSolutionMapper() {
-    return solutionMapper;
-  }
-
-  @Override
-  public BoundMapper<Node<Element>, Double> getFitnessMapper() {
-    return fitnessMapper;
-  }
-
-  @Override
-  public Mapper<Node<Element>, Double> getValidationMapper() {
-    return validationMapper;
+  public Double apply(double[] v, Listener listener) throws FunctionException {
+    double s = 0;
+    for (double i = 1; i < v[0]; i++) {
+      s = s + 1 / i;
+    }
+    return s;
   }
 
 }

@@ -30,10 +30,7 @@ public class ListenerUtils {
   }
   
   public static Listener deafListener() {
-    return new Listener() {
-      @Override
-      public void listen(Event event) {       
-      }
+    return (Event event) -> {
     };
   }
   

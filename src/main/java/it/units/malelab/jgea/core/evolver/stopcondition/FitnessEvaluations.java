@@ -6,7 +6,7 @@
 package it.units.malelab.jgea.core.evolver.stopcondition;
 
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
-import it.units.malelab.jgea.core.mapper.CachedMapper;
+import it.units.malelab.jgea.core.function.CachedFunction;
 
 /**
  *

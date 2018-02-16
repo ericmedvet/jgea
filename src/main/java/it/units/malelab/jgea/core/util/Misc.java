@@ -9,8 +9,8 @@ import com.google.common.collect.Range;
 import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.Sequence;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.mapper.Mapper;
-import it.units.malelab.jgea.core.mapper.MappingException;
+import it.units.malelab.jgea.core.function.FunctionException;
+import it.units.malelab.jgea.core.function.NonDeterministicFunction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -154,14 +154,4 @@ public class Misc {
     return contents;
   }
   
-  public static <A,B,C> Mapper<A, C> compose(final Mapper<A, B> firstMapper, final Mapper<B, C> secondMapper) {
-    return new Mapper<A, C>() {
-      @Override
-      public C map(A a, Random random, Listener listener) throws MappingException {
-        B b = firstMapper.map(a, random, listener);
-        return secondMapper.map(b, random, listener);
-      }
-    };
-  }
-
 }

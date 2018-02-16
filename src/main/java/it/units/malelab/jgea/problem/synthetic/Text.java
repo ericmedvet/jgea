@@ -7,10 +7,11 @@ package it.units.malelab.jgea.problem.synthetic;
 
 import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.Sequence;
-import it.units.malelab.jgea.core.mapper.BoundMapper;
-import it.units.malelab.jgea.core.mapper.DeterministicMapper;
-import it.units.malelab.jgea.core.mapper.MappingException;
-import it.units.malelab.jgea.core.mapper.MuteDeterministicMapper;
+import it.units.malelab.jgea.core.function.Bounded;
+import it.units.malelab.jgea.core.function.Function;
+import it.units.malelab.jgea.core.function.FunctionException;
+import it.units.malelab.jgea.core.function.NonDeterministicFunction;
+import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.distance.Distance;
 import it.units.malelab.jgea.distance.Edit;
@@ -26,10 +27,10 @@ import java.util.Arrays;
  */
 public class Text implements GrammarBasedProblem<String, String, Integer> {
 
-  private static class SolutionMapper extends MuteDeterministicMapper<Node<String>, String> {
+  private static class SolutionMapper implements Function<Node<String>, String> {
 
     @Override
-    public String map(Node<String> tree) throws MappingException {
+    public String apply(Node<String> tree, Listener listener) throws FunctionException {
       StringBuilder sb = new StringBuilder();
       if (tree!=null) {
         for (Node<String> leafNode : tree.leafNodes()) {
@@ -41,18 +42,18 @@ public class Text implements GrammarBasedProblem<String, String, Integer> {
     
   }
   
-  private static class FitnessMapper extends MuteDeterministicMapper<String, Integer> implements BoundMapper<String, Integer> {
+  private static class FitnessFunction implements Function<String, Integer>, Bounded<Integer> {
     
     private final Sequence<String> target;
     private final Distance<Sequence<String>> distance;
 
-    public FitnessMapper(String targetString) {
-      target = Misc.fromList(Arrays.asList(targetString.split("")));
-      distance = new Edit<>();
+    public FitnessFunction(String targetString) {
+      this.target = Misc.fromList(Arrays.asList(targetString.split("")));
+      this.distance = new Edit<>();
     }
 
     @Override
-    public Integer map(String string) throws MappingException {
+    public Integer apply(String string, Listener listener) throws FunctionException {
       Sequence<String> sequence = Misc.fromList(Arrays.asList(string.split("")));
       int d = (int)Math.round(distance.d(target, sequence));
       return d;
@@ -71,13 +72,13 @@ public class Text implements GrammarBasedProblem<String, String, Integer> {
   }
   
   private final Grammar<String> grammar;
-  private final DeterministicMapper<Node<String>, String> solutionMapper;
-  private final BoundMapper<String, Integer> fitnessMapper;
+  private final Function<Node<String>, String> solutionMapper;
+  private final Function<String, Integer> fitnessFunction;
 
   public Text(String targetString) throws IOException {
     grammar = Grammar.fromFile(new File("grammars/text.bnf"));
     solutionMapper = new SolutionMapper();
-    fitnessMapper = new FitnessMapper(targetString);
+    fitnessFunction = new FitnessFunction(targetString);
   }
 
   @Override
@@ -86,13 +87,13 @@ public class Text implements GrammarBasedProblem<String, String, Integer> {
   }
 
   @Override
-  public DeterministicMapper<Node<String>, String> getSolutionMapper() {
+  public Function<Node<String>, String> getSolutionMapper() {
     return solutionMapper;
   }
 
   @Override
-  public BoundMapper<String, Integer> getFitnessMapper() {
-    return fitnessMapper;
+  public Function<String, Integer> getFitnessFunction() {
+    return fitnessFunction;
   }
   
 }

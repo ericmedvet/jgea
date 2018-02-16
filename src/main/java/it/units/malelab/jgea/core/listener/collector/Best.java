@@ -7,10 +7,9 @@ package it.units.malelab.jgea.core.listener.collector;
 
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.Sized;
-import it.units.malelab.jgea.core.listener.ListenerUtils;
+import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
-import it.units.malelab.jgea.core.mapper.DeterministicMapper;
-import it.units.malelab.jgea.core.mapper.MappingException;
+import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.util.Misc;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,11 +26,11 @@ import java.util.logging.Logger;
 public abstract class Best<G, S, F> implements Collector<G, S, F> {
 
   private final boolean ancestry;
-  private final DeterministicMapper<S, F> validationFitnessMapper;
+  private final Function<S, F> validationFitnessFunction;
 
-  public Best(boolean ancestry, DeterministicMapper<S, F> validationFitnessMapper) {
+  public Best(boolean ancestry, Function<S, F> validationFitnessFunction) {
     this.ancestry = ancestry;
-    this.validationFitnessMapper = validationFitnessMapper;
+    this.validationFitnessFunction = validationFitnessFunction;
   }
 
   @Override
@@ -44,15 +43,15 @@ public abstract class Best<G, S, F> implements Collector<G, S, F> {
               augmentFitnessName("best.fitness", fitnessEntry.getKey()),
               fitnessEntry.getValue());
     }
-    if (validationFitnessMapper != null) {
+    if (validationFitnessFunction != null) {
       try {
-        F validationFitness = validationFitnessMapper.map(best.getSolution(), ListenerUtils.deafListener());
+        F validationFitness = validationFitnessFunction.apply(best.getSolution());
         for (Map.Entry<String, Object> fitnessEntry : getFitnessIndexes(validationFitness).entrySet()) {
           indexes.put(
                   augmentFitnessName("best.validation.fitness", fitnessEntry.getKey()),
                   fitnessEntry.getValue());
         }
-      } catch (MappingException ex) {
+      } catch (FunctionException ex) {
         Logger.getLogger(Best.class.getName()).log(Level.WARNING, "Cannot compute best validation fitness.", ex);
       }
     }

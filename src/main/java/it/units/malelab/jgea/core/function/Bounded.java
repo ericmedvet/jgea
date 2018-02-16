@@ -3,15 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.units.malelab.jgea.core.mapper;
+package it.units.malelab.jgea.core.function;
+
+import java.io.Serializable;
 
 /**
  *
  * @author eric
  */
-public interface BoundMapper<A, B> extends Mapper<A, B>{
+public interface Bounded<B> extends Serializable {
   
-  public B worstValue();
   public B bestValue();
+  public B worstValue();
   
 }

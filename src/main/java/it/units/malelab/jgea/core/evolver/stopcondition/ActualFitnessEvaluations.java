@@ -6,7 +6,7 @@
 package it.units.malelab.jgea.core.evolver.stopcondition;
 
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
-import it.units.malelab.jgea.core.mapper.CachedMapper;
+import it.units.malelab.jgea.core.function.CachedFunction;
 
 /**
  *
@@ -15,9 +15,9 @@ import it.units.malelab.jgea.core.mapper.CachedMapper;
 public class ActualFitnessEvaluations<G, S, F> implements StopCondition<G, S, F> {
   
   private final long n;
-  private final CachedMapper<S, F> cachedFitnessMapper;
+  private final CachedFunction<S, F> cachedFitnessMapper;
 
-  public ActualFitnessEvaluations(long n, CachedMapper<S, F> cachedFitnessMapper) {
+  public ActualFitnessEvaluations(long n, CachedFunction<S, F> cachedFitnessMapper) {
     this.n = n;
     this.cachedFitnessMapper = cachedFitnessMapper;
   }
@@ -26,7 +26,7 @@ public class ActualFitnessEvaluations<G, S, F> implements StopCondition<G, S, F>
     return n;
   }
 
-  public CachedMapper<S, F> getCachedFitnessMapper() {
+  public CachedFunction<S, F> getCachedFitnessMapper() {
     return cachedFitnessMapper;
   }
 

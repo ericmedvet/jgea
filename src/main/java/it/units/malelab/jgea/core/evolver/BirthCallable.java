@@ -12,15 +12,15 @@ import it.units.malelab.jgea.core.listener.ListenerUtils;
 import it.units.malelab.jgea.core.listener.event.Capturer;
 import it.units.malelab.jgea.core.listener.event.MapperEvent;
 import it.units.malelab.jgea.core.listener.event.TimedEvent;
-import it.units.malelab.jgea.core.mapper.BoundMapper;
-import it.units.malelab.jgea.core.mapper.Mapper;
-import it.units.malelab.jgea.core.mapper.MappingException;
+import it.units.malelab.jgea.core.function.FunctionException;
+import it.units.malelab.jgea.core.function.NonDeterministicFunction;
 import it.units.malelab.jgea.core.util.Misc;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import it.units.malelab.jgea.core.function.Bounded;
 
 /**
  *
@@ -31,17 +31,17 @@ public class BirthCallable<G, S, F> implements Callable<Individual<G, S, F>> {
   private final G genotype;
   private final int birthIteration;
   private final List<Individual<G, S, F>> parents;
-  private final Mapper<G, S> solutionMapper;
-  private final BoundMapper<S, F> fitnessMapper;
+  private final NonDeterministicFunction<G, S> solutionMapper;
+  private final NonDeterministicFunction<S, F> fitnessFunction;
   private final Random random;
   private final Listener listener;
 
-  public BirthCallable(G genotype, int birthIteration, List<Individual<G, S, F>> parents, Mapper<G, S> solutionMapper, BoundMapper<S, F> fitnessMapper, Random random, Listener listener) {
+  public BirthCallable(G genotype, int birthIteration, List<Individual<G, S, F>> parents, NonDeterministicFunction<G, S> solutionMapper, NonDeterministicFunction<S, F> fitnessMapper, Random random, Listener listener) {
     this.genotype = genotype;
     this.birthIteration = birthIteration;
     this.parents = parents;
     this.solutionMapper = solutionMapper;
-    this.fitnessMapper = fitnessMapper;
+    this.fitnessFunction = fitnessMapper;
     this.random = random;
     this.listener = listener;
   }
@@ -55,8 +55,8 @@ public class BirthCallable<G, S, F> implements Callable<Individual<G, S, F>> {
     stopwatch.start();
     S solution = null;
     try {
-      solution = solutionMapper.map(genotype, random, capturer);
-    } catch (MappingException ex) {
+      solution = solutionMapper.apply(genotype, random, capturer);
+    } catch (FunctionException ex) {
       //invalid solution
       //TODO log to listener
     }
@@ -66,11 +66,13 @@ public class BirthCallable<G, S, F> implements Callable<Individual<G, S, F>> {
     capturer.clear();
     //solution -> fitness
     stopwatch.reset().start();
-    F fitness;
+    F fitness = null;
     if (solution!=null) {
-      fitness = fitnessMapper.map(solution, random, capturer);
+      fitness = fitnessFunction.apply(solution, random, capturer);
     } else {
-      fitness = fitnessMapper.worstValue();
+      if (fitness instanceof Bounded) {
+        fitness = ((Bounded<F>)fitness).worstValue();
+      }
     }
     elapsed = stopwatch.stop().elapsed(TimeUnit.NANOSECONDS);
     Map<String, Object> fitnessInfo = ListenerUtils.fromInfoEvents(capturer.getEvents(), "fitness.");

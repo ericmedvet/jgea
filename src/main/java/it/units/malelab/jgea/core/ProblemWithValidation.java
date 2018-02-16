@@ -5,8 +5,8 @@
  */
 package it.units.malelab.jgea.core;
 
-import it.units.malelab.jgea.core.mapper.BoundMapper;
-import it.units.malelab.jgea.core.mapper.Mapper;
+import it.units.malelab.jgea.core.function.Function;
+
 
 /**
  *
@@ -14,6 +14,6 @@ import it.units.malelab.jgea.core.mapper.Mapper;
  */
 public interface ProblemWithValidation<S, F> extends Problem<S, F> {
   
-  public Mapper<S, F> getValidationMapper();
+  public Function<S, F> getValidationFunction();
   
 }

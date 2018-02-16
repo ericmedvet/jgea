@@ -5,24 +5,21 @@
  */
 package it.units.malelab.jgea.core.fitness;
 
-import it.units.malelab.jgea.core.Node;
+import it.units.malelab.jgea.core.function.BiFunction;
+import it.units.malelab.jgea.core.function.Bounded;
+import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.mapper.BoundMapper;
-import it.units.malelab.jgea.core.mapper.DeterministicMapper;
-import it.units.malelab.jgea.core.mapper.MappingException;
+import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.util.Pair;
-import it.units.malelab.jgea.problem.symbolicregression.element.Element;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  *
  * @author eric
  */
-public abstract class BinaryClassification<C, O> extends CaseBasedFitness<C, O, Boolean, Double[]> {
+public abstract class BinaryClassification<C, O> extends CaseBasedFitness<C, O, Boolean, Double[]> implements Bounded<Double[]> {
 
-  private static class Aggregator implements BoundMapper<List<Boolean>, Double[]> {
+  private static class Aggregator implements Function<List<Boolean>, Double[]>, Bounded<Double[]> {
     
     private final List<Boolean> actualLabels;
 
@@ -41,7 +38,7 @@ public abstract class BinaryClassification<C, O> extends CaseBasedFitness<C, O, 
     }
 
     @Override
-    public Double[] map(List<Boolean> predictedLabels, Random random, Listener listener) throws MappingException {
+    public Double[] apply(List<Boolean> predictedLabels, Listener listener) throws FunctionException {
       double fp = 0;
       double fn = 0;
       double p = 0;
@@ -57,8 +54,20 @@ public abstract class BinaryClassification<C, O> extends CaseBasedFitness<C, O, 
     
   }
   
-  public BinaryClassification(List<Pair<O, Boolean>> data, DeterministicMapper<Pair<C, O>, Boolean> classifier) {
+  public BinaryClassification(List<Pair<O, Boolean>> data, BiFunction<C, O, Boolean> classifier) {
     super(Pair.firsts(data), classifier, new Aggregator(Pair.seconds(data)));
   }
+
+  @Override
+  public Double[] bestValue() {
+    return ((Bounded<Double[]>)getAggregateFunction()).bestValue();
+  }
+
+  @Override
+  public Double[] worstValue() {
+    return ((Bounded<Double[]>)getAggregateFunction()).worstValue();
+  }
+  
+  
   
 }

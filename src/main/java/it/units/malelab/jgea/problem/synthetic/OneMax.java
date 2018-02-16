@@ -6,12 +6,13 @@
 package it.units.malelab.jgea.problem.synthetic;
 
 import it.units.malelab.jgea.core.Problem;
+import it.units.malelab.jgea.core.function.Bounded;
+import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.genotype.BitString;
+import it.units.malelab.jgea.core.function.FunctionException;
+import it.units.malelab.jgea.core.function.FunctionUtils;
+import it.units.malelab.jgea.core.function.NonDeterministicFunction;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.mapper.BoundMapper;
-import it.units.malelab.jgea.core.mapper.DeterministicMapper;
-import it.units.malelab.jgea.core.mapper.MappingException;
-import java.util.Random;
 
 /**
  *
@@ -19,7 +20,7 @@ import java.util.Random;
  */
 public class OneMax implements Problem<BitString, Double> {
 
-  private static class FitnessMapper extends DeterministicMapper<BitString, Double> implements BoundMapper<BitString, Double> {
+  private static class FitnessFunction implements Function<BitString, Double>, Bounded<Double> {
 
     @Override
     public Double worstValue() {
@@ -32,21 +33,21 @@ public class OneMax implements Problem<BitString, Double> {
     }
 
     @Override
-    public Double map(BitString b, Listener listener) throws MappingException {
+    public Double apply(BitString b, Listener listener) throws FunctionException {
       return 1d - (double) b.count() / (double) b.size();
     }
 
   }
 
-  private final BoundMapper<BitString, Double> fitnessMapper;
+  private final FitnessFunction fitnessFunction;
 
   public OneMax() {
-    this.fitnessMapper = new FitnessMapper();
+    this.fitnessFunction = new FitnessFunction();
   }
   
   @Override
-  public BoundMapper<BitString, Double> getFitnessMapper() {
-    return fitnessMapper;
+  public Function<BitString, Double> getFitnessFunction() {
+    return fitnessFunction;
   }
 
 }

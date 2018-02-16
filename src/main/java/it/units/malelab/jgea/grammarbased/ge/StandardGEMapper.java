@@ -9,12 +9,11 @@ import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.genotype.BitString;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.event.MapperEvent;
-import it.units.malelab.jgea.core.mapper.MappingException;
+import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.grammarbased.Grammar;
 import it.units.malelab.jgea.grammarbased.GrammarBasedMapper;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -34,10 +33,10 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
   }    
 
   @Override
-  public Node<T> map(BitString genotype, Listener listener) throws MappingException {
+  public Node<T> apply(BitString genotype, Listener listener) throws FunctionException {
     int[] bitUsages = new int[genotype.size()];
     if (genotype.size()<codonLenght) {
-      throw new MappingException(String.format("Short genotype (%d<%d)", genotype.size(), codonLenght));
+      throw new FunctionException(String.format("Short genotype (%d<%d)", genotype.size(), codonLenght));
     }
     Node<T> tree = new Node<>(grammar.getStartingSymbol());
     int currentCodonIndex = 0;
@@ -58,7 +57,7 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
         wraps = wraps+1;
         currentCodonIndex = 0;
         if (wraps>maxWraps) {
-          throw new MappingException(String.format("Too many wraps (%d>%d)", wraps, maxWraps));
+          throw new FunctionException(String.format("Too many wraps (%d>%d)", wraps, maxWraps));
         }
       }      
       List<List<T>> options = grammar.getRules().get(nodeToBeReplaced.getContent());

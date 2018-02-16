@@ -3,19 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.units.malelab.jgea.core.mapper;
+package it.units.malelab.jgea.core.function;
 
 /**
  *
  * @author eric
  */
-public class MappingException extends Exception {
+public class FunctionException extends Exception {
 
-  public MappingException(String message) {
+  public FunctionException(String message) {
     super(message);
   }
 
-  public MappingException(Throwable cause) {
+  public FunctionException(Throwable cause) {
     super(cause);
   }
 

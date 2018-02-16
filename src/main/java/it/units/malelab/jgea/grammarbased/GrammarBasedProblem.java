@@ -7,7 +7,7 @@ package it.units.malelab.jgea.grammarbased;
 
 import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.Problem;
-import it.units.malelab.jgea.core.mapper.DeterministicMapper;
+import it.units.malelab.jgea.core.function.Function;
 
 /**
  *
@@ -16,6 +16,6 @@ import it.units.malelab.jgea.core.mapper.DeterministicMapper;
 public interface GrammarBasedProblem<N, S, F> extends Problem<S, F> {
 
   public Grammar<N> getGrammar();
-  public DeterministicMapper<Node<N>, S> getSolutionMapper();
+  public Function<Node<N>, S> getSolutionMapper();
   
 }

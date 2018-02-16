@@ -3,45 +3,42 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.units.malelab.jgea.core.mapper;
+package it.units.malelab.jgea.core.function;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheStats;
 import it.units.malelab.jgea.core.listener.Listener;
-import java.util.concurrent.Callable;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 /**
  *
  * @author eric
  */
-public class CachedMapper<A, B> extends DeterministicMapper<A, B> {
+public class CachedFunction<A, B> implements NonDeterministicFunction<A, B> {
 
-  private final DeterministicMapper<A, B> innerMapper;
+  private final NonDeterministicFunction<A, B> innerFunction;
   private final Cache<A, B> cache;
   private long actualCount;
 
-  public CachedMapper(DeterministicMapper<A, B> innerMapper, long cacheSize) {
-    this.innerMapper = innerMapper;
+  public CachedFunction(NonDeterministicFunction<A, B> innerFunction, long cacheSize) {
+    this.innerFunction = innerFunction;
     cache = CacheBuilder.newBuilder().maximumSize(cacheSize).recordStats().build();
     actualCount = 0;
   }
-          
+  
   @Override
-  public B map(final A a, final Listener listener) throws MappingException {    
+  public B apply(A a, Random r, Listener listener) throws FunctionException {
     try {
-      return cache.get(a, new Callable<B>() {
-        @Override
-        public B call() throws Exception {
-          actualCount = actualCount+1;
-          return innerMapper.map(a, listener);
-        }
+      return cache.get(a, () -> {
+        actualCount = actualCount+1;
+        return innerFunction.apply(a, r, listener);
       });
     } catch (ExecutionException ex) {
-      throw new MappingException(ex);
+      throw new FunctionException(ex);
     }
-  }
+  }  
   
   public void reset() {
     cache.asMap().clear();
@@ -52,14 +49,12 @@ public class CachedMapper<A, B> extends DeterministicMapper<A, B> {
     return cache.stats();
   }
 
-  public DeterministicMapper<A, B> getInnerMapper() {
-    return innerMapper;
+  public NonDeterministicFunction<A, B> getInnerFunction() {
+    return innerFunction;
   }
 
   public long getActualCount() {
-    //System.out.println(cache.stats().missCount());
-    long mc = cache.stats().missCount();
     return actualCount;
   }
-  
+
 }

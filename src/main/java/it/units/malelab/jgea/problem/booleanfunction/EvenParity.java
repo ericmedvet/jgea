@@ -7,8 +7,8 @@ package it.units.malelab.jgea.problem.booleanfunction;
 
 import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.fitness.BooleanFunctionFitness;
-import it.units.malelab.jgea.core.mapper.BoundMapper;
-import it.units.malelab.jgea.core.mapper.DeterministicMapper;
+import it.units.malelab.jgea.core.function.Function;
+import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.grammarbased.Grammar;
 import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
 import it.units.malelab.jgea.problem.booleanfunction.element.Element;
@@ -36,7 +36,7 @@ public class EvenParity implements GrammarBasedProblem<String, List<Node<Element
     }
 
     @Override
-    public boolean[] compute(boolean... arguments) {
+    public boolean[] apply(boolean[] arguments, Listener listener) {
       int count = 0;
       for (boolean argument : arguments) {
         count = count + (argument ? 1 : 0);
@@ -52,8 +52,8 @@ public class EvenParity implements GrammarBasedProblem<String, List<Node<Element
   }
 
   private final Grammar<String> grammar;
-  private final DeterministicMapper<Node<String>, List<Node<Element>>> solutionMapper;
-  private final BoundMapper<List<Node<Element>>, Double> fitnessMapper;
+  private final Function<Node<String>, List<Node<Element>>> solutionMapper;
+  private final Function<List<Node<Element>>, Double> fitnessFunction;
 
   public EvenParity(final int size) throws IOException {
     grammar = Grammar.fromFile(new File("grammars/boolean-parity-var.bnf"));
@@ -64,7 +64,7 @@ public class EvenParity implements GrammarBasedProblem<String, List<Node<Element
     grammar.getRules().put("<v>", vars);
     solutionMapper = new FormulaMapper();
     TargetFunction targetFunction = new TargetFunction(size);
-    fitnessMapper = new BooleanFunctionFitness(
+    fitnessFunction = new BooleanFunctionFitness(
             targetFunction,
             BooleanUtils.buildCompleteObservations(targetFunction.varNames)
     );
@@ -76,13 +76,13 @@ public class EvenParity implements GrammarBasedProblem<String, List<Node<Element
   }
 
   @Override
-  public DeterministicMapper<Node<String>, List<Node<Element>>> getSolutionMapper() {
+  public Function<Node<String>, List<Node<Element>>> getSolutionMapper() {
     return solutionMapper;
   }
 
   @Override
-  public BoundMapper<List<Node<Element>>, Double> getFitnessMapper() {
-    return fitnessMapper;
+  public Function<List<Node<Element>>, Double> getFitnessFunction() {
+    return fitnessFunction;
   }
 
 }

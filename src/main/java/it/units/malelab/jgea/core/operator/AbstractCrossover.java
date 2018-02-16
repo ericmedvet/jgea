@@ -6,7 +6,7 @@
 package it.units.malelab.jgea.core.operator;
 
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.mapper.MappingException;
+import it.units.malelab.jgea.core.function.FunctionException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -23,7 +23,7 @@ public abstract class AbstractCrossover<G> implements GeneticOperator<G> {
   }
 
   @Override
-  public List<G> map(List<G> gs, Random random, Listener listener) throws MappingException {
+  public List<G> apply(List<G> gs, Random random, Listener listener) throws FunctionException {
     return Collections.singletonList(recombine(gs.get(0), gs.get(1), random, listener));
   }
   
