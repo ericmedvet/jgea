@@ -16,15 +16,15 @@ import java.util.Random;
  *
  * @author eric
  */
-public class ParetoRanker<G, T> implements Ranker<Individual<G, T, Double[]>>, Comparator<Double[]> {
+public class ParetoRanker<G, S> implements Ranker<Individual<G, S, List<Double>>>, Comparator<List<Double>> {
   
   @Override
-  public List<Collection<Individual<G, T, Double[]>>> rank(Collection<Individual<G, T, Double[]>> individuals, Random random) {
-    List<Collection<Individual<G, T, Double[]>>> ranks = new ArrayList<>();
-    List<Individual<G, T, Double[]>> localIndividuals = new ArrayList<>(individuals);
+  public List<Collection<Individual<G, S, List<Double>>>> rank(Collection<Individual<G, S, List<Double>>> individuals, Random random) {
+    List<Collection<Individual<G, S, List<Double>>>> ranks = new ArrayList<>();
+    List<Individual<G, S, List<Double>>> localIndividuals = new ArrayList<>(individuals);
     while (!localIndividuals.isEmpty()) {
       int[] counts = dominanceCounts(localIndividuals);
-      List<Individual<G, T, Double[]>> paretoFront = new ArrayList<>();
+      List<Individual<G, S, List<Double>>> paretoFront = new ArrayList<>();
       for (int i = 0; i<counts.length; i++) {
         if (counts[i]==0) {
           paretoFront.add(localIndividuals.get(i));
@@ -36,7 +36,7 @@ public class ParetoRanker<G, T> implements Ranker<Individual<G, T, Double[]>>, C
     return ranks;
   }
   
-  private int[] dominanceCounts(List<Individual<G, T, Double[]>> individuals) {
+  private int[] dominanceCounts(List<Individual<G, S, List<Double>>> individuals) {
     int[] counts = new int[individuals.size()];
     for (int i = 0; i<individuals.size(); i++) {
       for (int j = i+1; j<individuals.size(); j++) {
@@ -52,11 +52,11 @@ public class ParetoRanker<G, T> implements Ranker<Individual<G, T, Double[]>>, C
   }
   
   @Override
-  public int compare(Double[] f1, Double[] f2) {
+  public int compare(List<Double> f1, List<Double> f2) {
     int better = 0;
     int worse = 0;
-    for (int i = 0; i<f1.length; i++) {
-      int outcome =f1[i].compareTo(f2[i]);
+    for (int i = 0; i<f1.size(); i++) {
+      int outcome =f1.get(i).compareTo(f2.get(i));
       better = better+((outcome<0)?1:0);
       worse = worse+((outcome>0)?1:0);
     }

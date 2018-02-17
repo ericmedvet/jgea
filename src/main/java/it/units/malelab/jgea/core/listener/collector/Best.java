@@ -25,11 +25,9 @@ import java.util.logging.Logger;
  */
 public abstract class Best<G, S, F> implements Collector<G, S, F> {
 
-  private final boolean ancestry;
   private final Function<S, F> validationFitnessFunction;
 
-  public Best(boolean ancestry, Function<S, F> validationFitnessFunction) {
-    this.ancestry = ancestry;
+  public Best(Function<S, F> validationFitnessFunction) {
     this.validationFitnessFunction = validationFitnessFunction;
   }
 
@@ -62,10 +60,6 @@ public abstract class Best<G, S, F> implements Collector<G, S, F> {
       indexes.put("best.solution.size", ((Sized)best.getSolution()).size());
     }
     indexes.put("best.age", evolutionEvent.getIteration()-best.getBirthIteration());
-    if (ancestry) {
-      indexes.put("best.ancestry.depth", getAncestryDepth(best));
-      indexes.put("best.ancestry.size", getAncestrySize(best));
-    }
     return indexes;
   }
 
@@ -85,10 +79,6 @@ public abstract class Best<G, S, F> implements Collector<G, S, F> {
     formattedNames.put("best.genotype.size", "%4d");
     formattedNames.put("best.solution.size", "%4d");
     formattedNames.put("best.age", "%5d");
-    if (ancestry) {
-      formattedNames.put("best.ancestry.depth", "%2d");
-      formattedNames.put("best.ancestry.size", "%5d");
-    }
     return formattedNames;
   }
 

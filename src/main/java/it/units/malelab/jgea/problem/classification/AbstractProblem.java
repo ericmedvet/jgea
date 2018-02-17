@@ -9,19 +9,16 @@ import it.units.malelab.jgea.core.ProblemWithValidation;
 import it.units.malelab.jgea.core.fitness.BinaryClassification;
 import it.units.malelab.jgea.core.function.BiFunction;
 import it.units.malelab.jgea.core.function.Function;
-import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.function.NonDeterministicFunction;
-import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  *
  * @author eric
  */
-public abstract class AbstractProblem<C, O> implements ProblemWithValidation<C, Double[]>, BiFunction<C, O, Boolean> {
+public abstract class AbstractProblem<C, O> implements ProblemWithValidation<C, List<Double>>, BiFunction<C, O, Boolean> {
   
   private final BinaryClassification<C, O> fitnessFunction;
   private final BinaryClassification<C, O> validationFunction;
@@ -34,18 +31,13 @@ public abstract class AbstractProblem<C, O> implements ProblemWithValidation<C, 
   }
 
   @Override
-  public Function<C, Double[]> getValidationFunction() {
+  public Function<C, List<Double>> getValidationFunction() {
     return validationFunction;
   }
 
   @Override
-  public NonDeterministicFunction<C, Double[]> getFitnessFunction() {
+  public NonDeterministicFunction<C, List<Double>> getFitnessFunction() {
     return fitnessFunction;
   }
-  
-  
-  
-  
-  
   
 }

@@ -7,6 +7,7 @@ package it.units.malelab.jgea.problem.classification;
 
 import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.function.Function;
+import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.grammarbased.Grammar;
 import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
@@ -17,7 +18,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,9 +26,9 @@ import java.util.stream.Stream;
  *
  * @author eric
  */
-public class BinaryRegexClassification extends RegexClassification implements GrammarBasedProblem<String, Pattern, Double[]> {
+public class BinaryRegexClassification extends RegexClassification implements GrammarBasedProblem<String, String, List<Double>> {
 
-  private final static String[] REGEXES = new String[]{"0+1?0+", "1010.+0101", "111.+", "1?0.+01?"};
+  private final static String[] REGEXES = new String[]{"101010...010101", "11111...11111", "(11110000)++"};
   private final static String ALPHABET = "01";
 
   private static List<Pair<String, Boolean>> buildData(String[] regexes, String alphabet, int length, int size, Random random) {
@@ -40,7 +40,7 @@ public class BinaryRegexClassification extends RegexClassification implements Gr
       while (sb.length() < length) {
         sb.append(alphabet.charAt(random.nextInt(alphabet.length())));
       }
-      if (patterns.stream().anyMatch((Pattern p) -> (p.matcher(sb).matches()))) {
+      if (patterns.stream().anyMatch((Pattern p) -> (p.matcher(sb).find()))) {
         if (positives.size() < size) {
           positives.add(sb.toString());
         }
@@ -62,22 +62,27 @@ public class BinaryRegexClassification extends RegexClassification implements Gr
   }
 
   private final Grammar<String> grammar;
-  private Function<Node<String>, Pattern> solutionMapper;
+  private final Function<Node<String>, String> solutionMapper;
 
-  public BinaryRegexClassification(int size, int length, int folds, int i, Random random) throws IOException {
-    super(buildData(REGEXES, ALPHABET, length, size, random), folds, i);
+  public BinaryRegexClassification(boolean useOr, int size, int length, int folds, int i, long seed) throws IOException {
+    super(buildData(REGEXES, ALPHABET, length, size, new Random(seed)), folds, i);
     grammar = Grammar.fromFile(new File("grammars/base-regex.bnf"));
     grammar.getRules().get("<symbol>").addAll(
             Stream.of(ALPHABET.split(""))
             .map(this::escape)
             .map(Collections::singletonList)
             .collect(Collectors.toList()));
-  }
-
-  public static void main(String[] args) throws IOException {
-    BinaryRegexClassification p = new BinaryRegexClassification(20, 20, 5, 0, new Random(1));
-    System.out.println(p.getValidationFunction());
-    System.out.println(p.getGrammar());
+    if (useOr) {
+      grammar.getRules().put("<orPiece>", Arrays.asList(
+              Arrays.asList("<orPiece>", "|", "<regex>"),
+              Arrays.asList("<regex>")
+      ));
+      grammar.setStartingSymbol("<orPiece>");
+    }
+    solutionMapper = (Node<String> node, Listener listener)
+            -> node.leafNodes().stream()
+            .map(Node::getContent)
+            .collect(Collectors.joining());
   }
 
   @Override
@@ -86,7 +91,7 @@ public class BinaryRegexClassification extends RegexClassification implements Gr
   }
 
   @Override
-  public Function<Node<String>, Pattern> getSolutionMapper() {
+  public Function<Node<String>, String> getSolutionMapper() {
     return solutionMapper;
   }
 

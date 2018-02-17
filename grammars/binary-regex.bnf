@@ -1,4 +1,0 @@
-<regex> ::= <regex> <token> | <token>
-<token> ::= <symbol> <quantifier> | <symbol> 
-<quantifier> ::= ?+ | ++
-<symbol> ::= . | 0 | 1

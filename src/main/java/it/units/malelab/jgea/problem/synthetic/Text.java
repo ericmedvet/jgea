@@ -11,35 +11,19 @@ import it.units.malelab.jgea.core.function.Bounded;
 import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.distance.Distance;
 import it.units.malelab.jgea.distance.Edit;
 import it.units.malelab.jgea.grammarbased.Grammar;
 import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  *
  * @author eric
  */
 public class Text implements GrammarBasedProblem<String, String, Integer> {
-
-  private static class SolutionMapper implements Function<Node<String>, String> {
-
-    @Override
-    public String apply(Node<String> tree, Listener listener) throws FunctionException {
-      StringBuilder sb = new StringBuilder();
-      if (tree!=null) {
-        for (Node<String> leafNode : tree.leafNodes()) {
-          sb.append(leafNode.getContent());
-        }
-      }
-      return sb.toString().replace("_", " ");
-    }
-    
-  }
   
   private static class FitnessFunction implements Function<String, Integer>, Bounded<Integer> {
     
@@ -76,7 +60,10 @@ public class Text implements GrammarBasedProblem<String, String, Integer> {
 
   public Text(String targetString) throws IOException {
     grammar = Grammar.fromFile(new File("grammars/text.bnf"));
-    solutionMapper = new SolutionMapper();
+    solutionMapper = (Node<String> node, Listener listener) -> 
+            node.leafNodes().stream()
+                    .map(Node::getContent)
+                    .collect(Collectors.joining()).replace("_", " ");
     fitnessFunction = new FitnessFunction(targetString);
   }
 

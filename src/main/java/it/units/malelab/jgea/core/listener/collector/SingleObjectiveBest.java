@@ -13,12 +13,12 @@ import java.util.Map;
  *
  * @author eric
  */
-public class SingleObjectiveBest<G, S> extends Best<G, S, Number> {
+public class SingleObjectiveBest<S> extends Best<Object, S, Number> {
 
   private final String fitnessFormat;
 
-  public SingleObjectiveBest(String fitnessFormat, boolean ancestry, Function<S, Number> validationFitnessMapper) {
-    super(ancestry, validationFitnessMapper);
+  public SingleObjectiveBest(String fitnessFormat, Function<S, Number> validationFitnessMapper) {
+    super(validationFitnessMapper);
     this.fitnessFormat = fitnessFormat;
   }
  

@@ -21,16 +21,15 @@ import java.util.regex.Pattern;
  *
  * @author eric
  */
-public class RegexClassification extends AbstractProblem<Pattern, String> {
+public class RegexClassification extends AbstractProblem<String, String> {
 
   public RegexClassification(List<Pair<String, Boolean>> data, int folds, int i) {
     super(data, folds, i);
   }
 
   @Override
-  public Boolean apply(Pattern pattern, String string, Listener listener) throws FunctionException {
-    Matcher matcher = pattern.matcher(string);
-    return matcher.find();
+  public Boolean apply(String pattern, String string, Listener listener) throws FunctionException {
+    return Pattern.compile(pattern).matcher(string).find();
   }
 
 }

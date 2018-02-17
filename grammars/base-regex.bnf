@@ -1,4 +1,4 @@
 <regex> ::= <regex> <token> | <token>
-<token> ::= <symbol> <quantifier> | <symbol> 
+<token> ::= <symbol> <quantifier> | <symbol> | (?: <token> )
 <quantifier> ::= ?+ | ++
 <symbol> ::= .
