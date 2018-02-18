@@ -6,6 +6,7 @@
 package it.units.malelab.jgea.problem.classification;
 
 import it.units.malelab.jgea.core.Node;
+import it.units.malelab.jgea.core.fitness.Classification;
 import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.util.Pair;
@@ -31,7 +32,7 @@ public class BinaryRegexClassification extends RegexClassification implements Gr
   private final static String[] REGEXES = new String[]{"101010...010101", "11111...11111", "(11110000)++"};
   private final static String ALPHABET = "01";
 
-  private static List<Pair<String, Boolean>> buildData(String[] regexes, String alphabet, int length, int size, Random random) {
+  private static List<Pair<String, Label>> buildData(String[] regexes, String alphabet, int length, int size, Random random) {
     List<String> positives = new ArrayList<>();
     List<String> negatives = new ArrayList<>();
     List<Pattern> patterns = Stream.of(regexes).map(Pattern::compile).collect(Collectors.toList());
@@ -51,21 +52,22 @@ public class BinaryRegexClassification extends RegexClassification implements Gr
       }
     }
     //return
-    List<Pair<String, Boolean>> data = new ArrayList<>();
-    data.addAll(positives.stream().map(s -> Pair.build(s, true)).collect(Collectors.toList()));
-    data.addAll(negatives.stream().map(s -> Pair.build(s, false)).collect(Collectors.toList()));
+    List<Pair<String, Label>> data = new ArrayList<>();
+    data.addAll(positives.stream().map(s -> Pair.build(s, Label.FOUND)).collect(Collectors.toList()));
+    data.addAll(negatives.stream().map(s -> Pair.build(s, Label.NOT_FOUND)).collect(Collectors.toList()));
     return data;
   }
 
   private String escape(String s) {
+    //TODO
     return s;
   }
 
   private final Grammar<String> grammar;
   private final Function<Node<String>, String> solutionMapper;
 
-  public BinaryRegexClassification(boolean useOr, int size, int length, int folds, int i, long seed) throws IOException {
-    super(buildData(REGEXES, ALPHABET, length, size, new Random(seed)), folds, i);
+  public BinaryRegexClassification(boolean useOr, int size, int length, int folds, int i, long seed, Classification.ErrorMetric trainingErrorMetric, Classification.ErrorMetric validationErrorMetric) throws IOException {
+    super(buildData(REGEXES, ALPHABET, length, size, new Random(seed)), folds, i, trainingErrorMetric, validationErrorMetric);
     grammar = Grammar.fromFile(new File("grammars/base-regex.bnf"));
     grammar.getRules().get("<symbol>").addAll(
             Stream.of(ALPHABET.split(""))

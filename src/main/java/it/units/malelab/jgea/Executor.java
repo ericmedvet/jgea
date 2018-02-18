@@ -6,28 +6,28 @@
 package it.units.malelab.jgea;
 
 import com.google.common.collect.Lists;
-import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.ProblemWithValidation;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
 import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
+import it.units.malelab.jgea.core.fitness.Classification;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.PrintStreamListener;
 import it.units.malelab.jgea.core.listener.collector.Basic;
+import it.units.malelab.jgea.core.listener.collector.Best;
 import it.units.malelab.jgea.core.listener.collector.BestPrinter;
+import it.units.malelab.jgea.core.listener.collector.BestValidation;
+import it.units.malelab.jgea.core.listener.collector.Collector;
 import it.units.malelab.jgea.core.listener.collector.Diversity;
-import it.units.malelab.jgea.core.listener.collector.MultiObjectiveBest;
 import it.units.malelab.jgea.core.listener.collector.Population;
-import it.units.malelab.jgea.core.listener.collector.SingleObjectiveBest;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.ranker.ComparableRanker;
 import it.units.malelab.jgea.core.ranker.FitnessComparator;
 import it.units.malelab.jgea.core.ranker.ParetoRanker;
-import it.units.malelab.jgea.core.ranker.Ranker;
 import it.units.malelab.jgea.core.ranker.selector.Tournament;
 import it.units.malelab.jgea.core.ranker.selector.Worst;
-import it.units.malelab.jgea.core.util.Pair;
+import it.units.malelab.jgea.core.util.WithNames;
 import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
 import it.units.malelab.jgea.grammarbased.cfggp.RampedHalfAndHalf;
 import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeCrossover;
@@ -37,7 +37,7 @@ import it.units.malelab.jgea.problem.booleanfunction.element.Element;
 import it.units.malelab.jgea.problem.classification.BinaryRegexClassification;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +45,6 @@ import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.regex.Pattern;
 
 /**
  *
@@ -54,6 +53,7 @@ import java.util.regex.Pattern;
 public class Executor {
 
   public static void main(String[] args) throws InterruptedException, ExecutionException, IOException {
+
     //read command lines
     String baseResultDirName = a(args, "dir", ".");
     String baseResultFileName = a(args, "file", "results");
@@ -64,7 +64,7 @@ public class Executor {
   }
 
   private static void parity(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
-    final GrammarBasedProblem<String, List<Node<Element>>, Double> p = new EvenParity(8);
+    final GrammarBasedProblem<String, List<Node<Element>>, Double> p = new EvenParity(5);
     Map<GeneticOperator<Node<String>>, Double> operators = new LinkedHashMap<>();
     operators.put(new StandardTreeMutation<>(12, p.getGrammar()), 0.2d);
     operators.put(new StandardTreeCrossover<>(12), 0.8d);
@@ -88,15 +88,17 @@ public class Executor {
                     new PrintStreamListener(System.out, true, 10, " ", " | ",
                             new Basic(),
                             new Population(),
-                            new SingleObjectiveBest("%6.4f", null),
+                            new Best<>(
+                                    (f, l) -> Collections.singletonMap("", f),
+                                    (n, l) -> "%6.4f"),
                             new Diversity(),
                             new BestPrinter(null, "%s")
                     ), executor)
     );
   }
 
-  private static void binaryRegex(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {    
-    GrammarBasedProblem<String, String, List<Double>> p = new BinaryRegexClassification(true, 50, 100, 5, 0, 1);
+  private static void binaryRegex(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
+    GrammarBasedProblem<String, String, List<Double>> p = new BinaryRegexClassification(true, 50, 100, 5, 0, 1, Classification.ErrorMetric.BALANCED_ERROR_RATE, Classification.ErrorMetric.CLASS_ERROR_RATE);
     Map<GeneticOperator<Node<String>>, Double> operators = new LinkedHashMap<>();
     operators.put(new StandardTreeMutation<>(12, p.getGrammar()), 0.2d);
     operators.put(new StandardTreeCrossover<>(12), 0.8d);
@@ -120,12 +122,17 @@ public class Executor {
                     new PrintStreamListener(System.out, true, 10, " ", " | ",
                             new Basic(),
                             new Population(),
-                            new MultiObjectiveBest<>(
-                                    Arrays.asList(Pair.build("fpr", "%5.3f"), Pair.build("fnr", "%5.3f")),
-                                    ((ProblemWithValidation<String, List<Double>>) p).getValidationFunction()),
+                            new Best<>(
+                                    Best.fromNames((WithNames) p.getFitnessFunction()),
+                                    (n, l) -> "%5.3f"),
+                            new BestValidation<>(
+                                    ((ProblemWithValidation<String, List<Double>>) p).getValidationFunction(),
+                                    Best.fromNames((WithNames) ((ProblemWithValidation<String, List<Double>>) p).getValidationFunction()),
+                                    (n, l) -> "%5.3f"),
                             new Diversity(),
                             new BestPrinter(null, "%s")
-                    ), executor)
+                    ), executor
+            )
     );
   }
 

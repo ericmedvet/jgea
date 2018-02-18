@@ -5,31 +5,29 @@
  */
 package it.units.malelab.jgea.problem.classification;
 
-import it.units.malelab.jgea.core.ProblemWithValidation;
-import it.units.malelab.jgea.core.fitness.BinaryClassification;
-import it.units.malelab.jgea.core.function.BiFunction;
-import it.units.malelab.jgea.core.function.Function;
+import it.units.malelab.jgea.core.fitness.Classification;
 import it.units.malelab.jgea.core.function.FunctionException;
-import it.units.malelab.jgea.core.function.NonDeterministicFunction;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.util.Pair;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  *
  * @author eric
  */
-public class RegexClassification extends AbstractProblem<String, String> {
+public class RegexClassification extends AbstractProblem<String, String, RegexClassification.Label> {
+  
+  public static enum Label {FOUND, NOT_FOUND};
 
-  public RegexClassification(List<Pair<String, Boolean>> data, int folds, int i) {
-    super(data, folds, i);
+  public RegexClassification(List<Pair<String, Label>> data, int folds, int i, Classification.ErrorMetric trainingErrorMetric, Classification.ErrorMetric validationErrorMetric) {
+    super(data, folds, i, trainingErrorMetric, validationErrorMetric);
   }
 
   @Override
-  public Boolean apply(String pattern, String string, Listener listener) throws FunctionException {
-    return Pattern.compile(pattern).matcher(string).find();
+  public RegexClassification.Label apply(String pattern, String string, Listener listener) throws FunctionException {
+    boolean found = Pattern.compile(pattern).matcher(string).find();
+    return found?Label.FOUND:Label.NOT_FOUND;
   }
 
 }

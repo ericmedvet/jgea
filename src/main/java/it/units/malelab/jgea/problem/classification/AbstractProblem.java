@@ -6,7 +6,7 @@
 package it.units.malelab.jgea.problem.classification;
 
 import it.units.malelab.jgea.core.ProblemWithValidation;
-import it.units.malelab.jgea.core.fitness.BinaryClassification;
+import it.units.malelab.jgea.core.fitness.Classification;
 import it.units.malelab.jgea.core.function.BiFunction;
 import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.function.NonDeterministicFunction;
@@ -18,16 +18,16 @@ import java.util.List;
  *
  * @author eric
  */
-public abstract class AbstractProblem<C, O> implements ProblemWithValidation<C, List<Double>>, BiFunction<C, O, Boolean> {
+public abstract class AbstractProblem<C, O, E extends Enum<E>> implements ProblemWithValidation<C, List<Double>>, BiFunction<C, O, E> {
   
-  private final BinaryClassification<C, O> fitnessFunction;
-  private final BinaryClassification<C, O> validationFunction;
+  private final Classification<C, O, E> fitnessFunction;
+  private final Classification<C, O, E> validationFunction;
 
-  public AbstractProblem(List<Pair<O, Boolean>> data, int folds, int i) {
-    List<Pair<O, Boolean>> learningData = new ArrayList<>(data);
+  public AbstractProblem(List<Pair<O, E>> data, int folds, int i, Classification.ErrorMetric trainingErrorMetric, Classification.ErrorMetric validationErrorMetric) {
+    List<Pair<O, E>> learningData = new ArrayList<>(data);
     learningData.removeAll(DataUtils.fold(data, i, folds));
-    this.fitnessFunction = new BinaryClassification<>(learningData, this);
-    this.validationFunction = new BinaryClassification<>(DataUtils.fold(data, i, folds), this);
+    this.fitnessFunction = new Classification<>(learningData, this, trainingErrorMetric);
+    this.validationFunction = new Classification<>(DataUtils.fold(data, i, folds), this, validationErrorMetric);
   }
 
   @Override
