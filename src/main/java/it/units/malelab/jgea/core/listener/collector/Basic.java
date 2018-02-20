@@ -17,7 +17,7 @@ import java.util.Map;
  *
  * @author eric
  */
-public class Basic<G, S, F> implements Collector<G, S, F> {
+public class Basic<G, S, F> implements DataCollector<G, S, F> {
 
   @Override
   public Map<String, Object> collect(EvolutionEvent<G, S, F> evolutionEvent) {
@@ -33,7 +33,7 @@ public class Basic<G, S, F> implements Collector<G, S, F> {
   @Override
   public Map<String, String> getFormattedNames() {
     LinkedHashMap<String, String> formattedNames = new LinkedHashMap<>();
-    formattedNames.put("iterations", "%3d");
+    formattedNames.put("iterations", "%4d");
     formattedNames.put("births", "%8d");
     formattedNames.put("fitness.evaluations", "%6d");
     formattedNames.put("elapsed.sec", "%6.1f");

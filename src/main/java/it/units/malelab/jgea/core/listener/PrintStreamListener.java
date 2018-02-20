@@ -5,7 +5,6 @@
  */
 package it.units.malelab.jgea.core.listener;
 
-import it.units.malelab.jgea.core.listener.collector.Collector;
 import it.units.malelab.jgea.core.listener.event.Event;
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
 import java.io.PrintStream;
@@ -17,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import it.units.malelab.jgea.core.listener.collector.DataCollector;
 
 /**
  *
@@ -29,7 +29,7 @@ public class PrintStreamListener<G, S, F> implements Listener {
   private final int headerInterval;
   private final String innerSeparator;
   private final String outerSeparator;
-  private final List<Collector<G, S, F>> collectors;
+  private final List<DataCollector<G, S, F>> collectors;
 
   private final List<Map<String, String>> formattedNames;
   private int lines;
@@ -40,7 +40,7 @@ public class PrintStreamListener<G, S, F> implements Listener {
           int headerInterval,
           String innerSeparator,
           String outerSeparator,
-          Collector<G, S, F>... collectors) {
+          DataCollector<G, S, F>... collectors) {
     this.ps = ps;
     this.format = format;
     this.headerInterval = headerInterval;
@@ -48,7 +48,7 @@ public class PrintStreamListener<G, S, F> implements Listener {
     this.outerSeparator = outerSeparator;
     this.collectors = Arrays.asList(collectors);
     formattedNames = new ArrayList<>(this.collectors.size());
-    for (Collector<G, S, F> collector : collectors) {
+    for (DataCollector<G, S, F> collector : collectors) {
       Map<String, String> localFormattedNames = new LinkedHashMap<>();
       for (String name : collector.getFormattedNames().keySet()) {
         localFormattedNames.put(name, formatName(name, collector.getFormattedNames().get(name), format));

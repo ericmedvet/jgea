@@ -85,12 +85,12 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<Node<Element>, d
 
   @Override
   public Double bestValue() {
-    return ((Bounded<Double>)getAggregateFunction()).bestValue();
+    return ((Bounded<Double>)second()).bestValue();
   }
 
   @Override
   public Double worstValue() {
-    return ((Bounded<Double>)getAggregateFunction()).worstValue();
+    return ((Bounded<Double>)second()).worstValue();
   }
   
 }

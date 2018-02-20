@@ -5,7 +5,6 @@
  */
 package it.units.malelab.jgea.problem.classification;
 
-import com.google.common.collect.Multiset;
 import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.fitness.Classification;
 import it.units.malelab.jgea.core.function.Function;
@@ -13,17 +12,12 @@ import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.grammarbased.Grammar;
 import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
-import java.util.regex.Pattern;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  *
@@ -35,7 +29,7 @@ public class GrammarBasedRegexClassification extends RegexClassification impleme
   private final Function<Node<String>, String> solutionMapper;
 
   public static enum Option {
-    OR, QUANTIFIERS, BOUNDED_QUANTIFIERS, CHAR_CLASS, NEGATED_CHAR_CLASS, NON_CAPTURING_GROUP, ANY
+    OR, QUANTIFIERS, BOUNDED_QUANTIFIERS, CHAR_CLASS, NEGATED_CHAR_CLASS, NON_CAPTURING_GROUP, ANY, ENHANCED_CONCATENATION
   };
   
   public static final String TO_BE_ESCAPED = "{}[]()?+*.\\^";
@@ -46,6 +40,17 @@ public class GrammarBasedRegexClassification extends RegexClassification impleme
             -> node.leafNodes().stream()
             .map(Node::getContent)
             .collect(Collectors.joining());
+    if (alphabet==null) {
+      //read alphabet from data
+      alphabet = new TreeSet<>();
+      for (Pair<String, Label> p : data) {
+        alphabet.addAll(p.first().chars()
+                .mapToObj(c -> (char)c)
+                .filter(c -> (c.toString().matches("[\\Wa-zA-Z0-9]")))
+                .collect(Collectors.toSet())
+        );
+      }
+    }
     grammar = new Grammar<>();
     grammar.getRules().put("<regex>", l(l("<concat>")));
     if (options.contains(Option.OR)) {
@@ -53,6 +58,9 @@ public class GrammarBasedRegexClassification extends RegexClassification impleme
       grammar.getRules().put("<union>", l(l("<regex>", "|", "<concat>")));
     }
     grammar.getRules().put("<concat>", l(l("<term>", "<concat>"), l("<term>")));
+    if (options.contains(Option.ENHANCED_CONCATENATION)) {
+      grammar.getRules().get("<concat>").add(l("<concat>", "<concat>"));
+    }
     grammar.getRules().put("<term>", l(l("<element>")));
     if (options.contains(Option.QUANTIFIERS)) {
       grammar.getRules().get("<term>").add(l("<element>", "<quantifier>"));
@@ -66,6 +74,9 @@ public class GrammarBasedRegexClassification extends RegexClassification impleme
     if (options.contains(Option.CHAR_CLASS)) {
       grammar.getRules().get("<element>").add(l("[", "<constChars>", "]"));
       grammar.getRules().put("<constChars>", l(l("<constChar>"), l("<constChars>", "<constChar>")));
+    if (options.contains(Option.ENHANCED_CONCATENATION)) {
+      grammar.getRules().get("<constChars>").add(l("<constChars>", "<constChars>"));
+    }
     }
     if (options.contains(Option.NEGATED_CHAR_CLASS)) {
       grammar.getRules().get("<element>").add(l("[^", "<constChars>", "]"));

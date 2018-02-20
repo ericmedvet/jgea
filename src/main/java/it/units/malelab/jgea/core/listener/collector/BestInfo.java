@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  *
  * @author eric
  */
-public class BestInfo<G, S, F> implements Collector<G, S, F> {
+public class BestInfo<G, S, F> implements DataCollector<G, S, F> {
 
   private final Function<F, Map<String, Object>> fitnessSplitter;
   private final Function<String, String> formatFunction;
@@ -62,14 +62,23 @@ public class BestInfo<G, S, F> implements Collector<G, S, F> {
     } catch (FunctionException ex) {
       //ignore: leave null
     }
-    if (best.getGenotype() instanceof Sized) {
-      indexes.put("best.genotype.size", ((Sized) best.getGenotype()).size());
-    }
-    if (best.getSolution() instanceof Sized) {
-      indexes.put("best.solution.size", ((Sized) best.getSolution()).size());
-    }
+    indexes.put("best.genotype.size", size(best.getGenotype()));
+    indexes.put("best.solution.size", size(best.getSolution()));
     indexes.put("best.age", evolutionEvent.getIteration() - best.getBirthIteration());
     return indexes;
+  }
+  
+  private Integer size(Object o) {
+    if (o instanceof Sized) {
+      return ((Sized)o).size();
+    }
+    if (o instanceof Collection) {
+      return ((Collection)o).size();
+    }
+    if (o instanceof String) {
+      return ((String)o).length();
+    }
+    return null;
   }
 
   @Override

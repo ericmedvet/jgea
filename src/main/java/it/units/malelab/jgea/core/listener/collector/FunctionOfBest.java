@@ -21,7 +21,7 @@ import java.util.Map;
  *
  * @author eric
  */
-public class FunctionOfBest<G, S, F, V> implements Collector<G, S, F> {
+public class FunctionOfBest<G, S, F, V> implements DataCollector<G, S, F> {
   
   private final String name;
   private final Function<S, V> validationFunction;

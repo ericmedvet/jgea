@@ -19,7 +19,7 @@ import java.util.Set;
  *
  * @author eric
  */
-public class Diversity<G, S, F> implements Collector<G, S, F> {
+public class Diversity<G, S, F> implements DataCollector<G, S, F> {
 
   @Override
   public Map<String, Object> collect(EvolutionEvent<G, S, F> evolutionEvent) {

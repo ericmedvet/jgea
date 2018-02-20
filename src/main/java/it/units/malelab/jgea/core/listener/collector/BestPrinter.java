@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  *
  * @author eric
  */
-public class BestPrinter<G, S, F> implements Collector<G, S, F>{
+public class BestPrinter<G, S, F> implements DataCollector<G, S, F>{
   
   private final Function<S, String> printer;
   private final String format;

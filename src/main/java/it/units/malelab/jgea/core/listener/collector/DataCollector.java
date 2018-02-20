@@ -13,7 +13,7 @@ import java.util.Map;
  *
  * @author eric
  */
-public interface Collector<G, S, F> extends Serializable {
+public interface DataCollector<G, S, F> extends Serializable {
   
   public Map<String, String> getFormattedNames();
   public Map<String, Object> collect(EvolutionEvent<G, S, F> evolutionEvent);  

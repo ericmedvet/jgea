@@ -11,14 +11,17 @@ import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.util.Pair;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  *
  * @author eric
  */
 public class RegexClassification extends AbstractClassificationProblem<String, String, RegexClassification.Label> {
-  
-  public static enum Label {FOUND, NOT_FOUND};
+
+  public static enum Label {
+    FOUND, NOT_FOUND
+  };
 
   public RegexClassification(List<Pair<String, Label>> data, int folds, int i, Classification.ErrorMetric learningErrorMetric, Classification.ErrorMetric validationErrorMetric) {
     super(data, folds, i, learningErrorMetric, validationErrorMetric);
@@ -26,8 +29,13 @@ public class RegexClassification extends AbstractClassificationProblem<String, S
 
   @Override
   public RegexClassification.Label apply(String pattern, String string, Listener listener) throws FunctionException {
-    boolean found = Pattern.compile(pattern).matcher(string).find();
-    return found?Label.FOUND:Label.NOT_FOUND;
+    boolean found = false;
+    try {
+      found = Pattern.compile(pattern).matcher(string).find();
+    } catch (PatternSyntaxException ex) {
+      //ignore
+    }
+    return found ? Label.FOUND : Label.NOT_FOUND;
   }
 
 }

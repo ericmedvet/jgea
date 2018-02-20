@@ -27,7 +27,7 @@ public interface Function<A, B> extends NonDeterministicFunction<A, B> {
   }
 
   public default <C> Function<A, C> andThen(Function<? super B, ? extends C> other) {
-    return (A a, Listener listener) -> other.apply(apply(a, listener), listener);
+    return ComposedFunction.compose(this, other);
   }
   
   @Override
