@@ -18,13 +18,13 @@ import java.util.Map;
  *
  * @author eric
  */
-public abstract class AbstractProblem implements GrammarBasedProblem<String, Node<Element>, Double>, SymbolicRegressionFitness.TargetFunction {
+public abstract class AbstractSymbolicRegressionProblem implements GrammarBasedProblem<String, Node<Element>, Double>, SymbolicRegressionFitness.TargetFunction {
   
   private final Grammar<String> grammar;
   private final Function<Node<String>, Node<Element>> solutionMapper;
   private final Function<Node<Element>, Double> fitnessFunction;
 
-  public AbstractProblem(Grammar<String> grammar, Map<String, double[]> varValues) throws IOException {
+  public AbstractSymbolicRegressionProblem(Grammar<String> grammar, Map<String, double[]> varValues) throws IOException {
     this.grammar = grammar;
     solutionMapper = new FormulaMapper();
     fitnessFunction = new SymbolicRegressionFitness(

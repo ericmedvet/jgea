@@ -25,12 +25,12 @@ import java.util.stream.Collectors;
  *
  * @author eric
  */
-public class Best<G, S, F> implements Collector<G, S, F> {
+public class BestInfo<G, S, F> implements Collector<G, S, F> {
 
   private final Function<F, Map<String, Object>> fitnessSplitter;
   private final Function<String, String> formatFunction;
 
-  public Best(Function<F, Map<String, Object>> fitnessSplitter, Function<String, String> formatFunction) {
+  public BestInfo(Function<F, Map<String, Object>> fitnessSplitter, Function<String, String> formatFunction) {
     this.fitnessSplitter = fitnessSplitter;
     this.formatFunction = formatFunction;
   }

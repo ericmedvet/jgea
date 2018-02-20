@@ -6,6 +6,7 @@
 package it.units.malelab.jgea.distance;
 
 import it.units.malelab.jgea.core.Sequence;
+import it.units.malelab.jgea.core.listener.Listener;
 
 /**
  *
@@ -14,7 +15,7 @@ import it.units.malelab.jgea.core.Sequence;
 public class Hamming<T> implements Distance<Sequence<T>>{
 
   @Override
-  public double d(Sequence<T> t1, Sequence<T> t2) {
+  public Double apply(Sequence<T> t1, Sequence<T> t2, Listener listener) {
     if (t1.size()!=t2.size()) {
       throw new IllegalArgumentException(String.format("Sequences size should be the same (%d vs. %d)", t1.size(), t2.size()));
     }
@@ -24,7 +25,7 @@ public class Hamming<T> implements Distance<Sequence<T>>{
         count = count+1;
       }
     }
-    return count;
+    return (double)count;
   }
   
   

@@ -18,16 +18,19 @@ import java.util.List;
  *
  * @author eric
  */
-public abstract class AbstractProblem<C, O, E extends Enum<E>> implements ProblemWithValidation<C, List<Double>>, BiFunction<C, O, E> {
+public abstract class AbstractClassificationProblem<C, O, E extends Enum<E>> implements ProblemWithValidation<C, List<Double>>, BiFunction<C, O, E> {
   
   private final Classification<C, O, E> fitnessFunction;
   private final Classification<C, O, E> validationFunction;
+  private final List<Pair<O, E>> learningData;
+  private final List<Pair<O, E>> validationData;
 
-  public AbstractProblem(List<Pair<O, E>> data, int folds, int i, Classification.ErrorMetric trainingErrorMetric, Classification.ErrorMetric validationErrorMetric) {
-    List<Pair<O, E>> learningData = new ArrayList<>(data);
-    learningData.removeAll(DataUtils.fold(data, i, folds));
+  public AbstractClassificationProblem(List<Pair<O, E>> data, int folds, int i, Classification.ErrorMetric trainingErrorMetric, Classification.ErrorMetric validationErrorMetric) {
+    validationData = DataUtils.fold(data, i, folds);
+    learningData = new ArrayList<>(data);
+    learningData.removeAll(validationData);
     this.fitnessFunction = new Classification<>(learningData, this, trainingErrorMetric);
-    this.validationFunction = new Classification<>(DataUtils.fold(data, i, folds), this, validationErrorMetric);
+    this.validationFunction = new Classification<>(validationData, this, validationErrorMetric);
   }
 
   @Override
@@ -38,6 +41,14 @@ public abstract class AbstractProblem<C, O, E extends Enum<E>> implements Proble
   @Override
   public NonDeterministicFunction<C, List<Double>> getFitnessFunction() {
     return fitnessFunction;
+  }
+
+  public List<Pair<O, E>> getLearningData() {
+    return learningData;
+  }
+
+  public List<Pair<O, E>> getValidationData() {
+    return validationData;
   }
   
 }

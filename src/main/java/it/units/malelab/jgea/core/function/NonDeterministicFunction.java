@@ -25,4 +25,8 @@ public interface NonDeterministicFunction<A, B> extends Serializable {
     return (A a, Random random, Listener listener) -> other.apply(apply(a, random, listener), random, listener);
   }
 
+  public default NonDeterministicFunction<A, B> cached(long cacheSize) {
+    return new CachedNonDeterministicFunction<>(this, cacheSize);
+  }
+  
 }

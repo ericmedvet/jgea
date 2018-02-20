@@ -21,13 +21,15 @@ import java.util.Map;
  *
  * @author eric
  */
-public class BestValidation<G, S, F, V> implements Collector<G, S, F> {
+public class FunctionOfBest<G, S, F, V> implements Collector<G, S, F> {
   
+  private final String name;
   private final Function<S, V> validationFunction;
   private final Function<V, Map<String, Object>> fitnessSplitter;
   private final Function<String, String> formatFunction;
 
-  public BestValidation(Function<S, V> validationFunction, Function<V, Map<String, Object>> fitnessSplitter, Function<String, String> formatFunction) {
+  public FunctionOfBest(String name, Function<S, V> validationFunction, Function<V, Map<String, Object>> fitnessSplitter, Function<String, String> formatFunction) {
+    this.name = name;
     this.validationFunction = validationFunction;
     this.fitnessSplitter = fitnessSplitter;
     this.formatFunction = formatFunction;
@@ -41,7 +43,7 @@ public class BestValidation<G, S, F, V> implements Collector<G, S, F> {
     try {
       for (Map.Entry<String, Object> fitnessEntry : fitnessSplitter.apply(validationFunction.apply(best.getSolution())).entrySet()) {
         indexes.put(
-                augmentName("best.validation", fitnessEntry.getKey()),
+                augmentName("best."+name, fitnessEntry.getKey()),
                 fitnessEntry.getValue());
       }
     } catch (FunctionException ex) {
@@ -56,7 +58,7 @@ public class BestValidation<G, S, F, V> implements Collector<G, S, F> {
     try {
       for (Map.Entry<String, Object> fitnessEntry : fitnessSplitter.apply(null).entrySet()) {
         formattedNames.put(
-                augmentName("best.validation", fitnessEntry.getKey()),
+                augmentName("best."+name, fitnessEntry.getKey()),
                 formatFunction.apply(fitnessEntry.getKey()));
       }
     } catch (FunctionException ex) {

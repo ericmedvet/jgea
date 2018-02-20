@@ -6,7 +6,7 @@
 package it.units.malelab.jgea.core.evolver.stopcondition;
 
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
-import it.units.malelab.jgea.core.function.CachedFunction;
+import it.units.malelab.jgea.core.function.CachedNonDeterministicFunction;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -16,9 +16,9 @@ import java.util.concurrent.TimeUnit;
 public class RelativeElapsedTime<G, S, F> implements StopCondition<G, S, F> {
   
   private final double r;
-  private final CachedFunction<S, F> cachedFitnessFunction;
+  private final CachedNonDeterministicFunction<S, F> cachedFitnessFunction;
 
-  public RelativeElapsedTime(double r, CachedFunction<S, F> cachedFitnessFunction) {
+  public RelativeElapsedTime(double r, CachedNonDeterministicFunction<S, F> cachedFitnessFunction) {
     this.r = r;
     this.cachedFitnessFunction = cachedFitnessFunction;
   }
@@ -27,7 +27,7 @@ public class RelativeElapsedTime<G, S, F> implements StopCondition<G, S, F> {
     return r;
   }
 
-  public CachedFunction<S, F> getCachedFitnessMapper() {
+  public CachedNonDeterministicFunction<S, F> getCachedFitnessMapper() {
     return cachedFitnessFunction;
   }
 

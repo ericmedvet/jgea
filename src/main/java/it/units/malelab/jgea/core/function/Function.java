@@ -30,8 +30,17 @@ public interface Function<A, B> extends NonDeterministicFunction<A, B> {
     return (A a, Listener listener) -> other.apply(apply(a, listener), listener);
   }
   
+  @Override
+  public default Function<A, B> cached(long cacheSize) {
+    return new CachedFunction<>(this, cacheSize);
+  }
+  
   public static <A> Function<A, A> identity() {
     return (A a, Listener listener) -> a;
   }
-
+  
+  public static <A, B> Function<A, B> deterministic(NonDeterministicFunction<A, B> nonDeterministicFunction) {
+    return (A a, Listener listener) -> nonDeterministicFunction.apply(a, new Random(1), listener);
+  }
+  
 }

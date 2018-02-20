@@ -6,6 +6,7 @@
 package it.units.malelab.jgea.distance;
 
 import it.units.malelab.jgea.core.Sequence;
+import it.units.malelab.jgea.core.listener.Listener;
 
 /**
  *
@@ -15,7 +16,7 @@ public class Edit<T> implements Distance<Sequence<T>> {
 
   //from https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Java
   @Override
-  public double d(Sequence<T> ts1, Sequence<T> ts2) {
+  public Double apply(Sequence<T> ts1, Sequence<T> ts2, Listener listener) {
     int len0 = ts1.size()+ 1;
     int len1 = ts2.size()+ 1;
     int[] cost = new int[len0];
@@ -36,7 +37,7 @@ public class Edit<T> implements Distance<Sequence<T>> {
       cost = newcost;
       newcost = swap;
     }
-    return cost[len0 - 1];
+    return (double)cost[len0 - 1];
   }
 
 }

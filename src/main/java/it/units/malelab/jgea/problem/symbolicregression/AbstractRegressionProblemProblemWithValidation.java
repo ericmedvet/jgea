@@ -18,11 +18,11 @@ import java.util.Map;
  *
  * @author eric
  */
-public abstract class AbstractProblemWithValidation extends AbstractProblem implements ProblemWithValidation<Node<Element>, Double>{
+public abstract class AbstractRegressionProblemProblemWithValidation extends AbstractSymbolicRegressionProblem implements ProblemWithValidation<Node<Element>, Double>{
   
   private final Function<Node<Element>, Double> validationFunction;
 
-  public AbstractProblemWithValidation(Grammar<String> grammar, Map<String, double[]> varLearningValues, Map<String, double[]> varValidationValues) throws IOException {
+  public AbstractRegressionProblemProblemWithValidation(Grammar<String> grammar, Map<String, double[]> varLearningValues, Map<String, double[]> varValidationValues) throws IOException {
     super(grammar, varLearningValues);
     validationFunction = new SymbolicRegressionFitness(
             this,

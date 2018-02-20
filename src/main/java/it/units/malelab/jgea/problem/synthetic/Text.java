@@ -27,18 +27,20 @@ public class Text implements GrammarBasedProblem<String, String, Integer> {
   
   private static class FitnessFunction implements Function<String, Integer>, Bounded<Integer> {
     
-    private final Sequence<String> target;
-    private final Distance<Sequence<String>> distance;
+    private final Sequence<Character> target;
+    private final Distance<Sequence<Character>> distance;
 
     public FitnessFunction(String targetString) {
-      this.target = Sequence.from(targetString.split(""));
+      this.target = Sequence.from(targetString.chars().mapToObj(c -> (char) c).toArray(Character[]::new));
       this.distance = new Edit<>();
     }
 
     @Override
     public Integer apply(String string, Listener listener) throws FunctionException {
-      Sequence<String> sequence = Sequence.from(string.split(""));
-      int d = (int)Math.round(distance.d(target, sequence));
+      int d = (int)Math.round(distance.apply(
+              target,
+              Sequence.from(string.chars().mapToObj(c -> (char) c).toArray(Character[]::new))
+      ));
       return d;
     }
 

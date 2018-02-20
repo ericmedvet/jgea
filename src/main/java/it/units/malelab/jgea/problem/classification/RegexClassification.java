@@ -16,12 +16,12 @@ import java.util.regex.Pattern;
  *
  * @author eric
  */
-public class RegexClassification extends AbstractProblem<String, String, RegexClassification.Label> {
+public class RegexClassification extends AbstractClassificationProblem<String, String, RegexClassification.Label> {
   
   public static enum Label {FOUND, NOT_FOUND};
 
-  public RegexClassification(List<Pair<String, Label>> data, int folds, int i, Classification.ErrorMetric trainingErrorMetric, Classification.ErrorMetric validationErrorMetric) {
-    super(data, folds, i, trainingErrorMetric, validationErrorMetric);
+  public RegexClassification(List<Pair<String, Label>> data, int folds, int i, Classification.ErrorMetric learningErrorMetric, Classification.ErrorMetric validationErrorMetric) {
+    super(data, folds, i, learningErrorMetric, validationErrorMetric);
   }
 
   @Override

@@ -15,7 +15,7 @@ import java.io.IOException;
  *
  * @author eric
  */
-public class Keijzer6 extends AbstractProblemWithValidation {
+public class Keijzer6 extends AbstractRegressionProblemProblemWithValidation {
 
   public Keijzer6() throws IOException {
     super(

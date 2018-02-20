@@ -17,8 +17,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -27,7 +31,7 @@ import java.util.stream.Stream;
  *
  * @author eric
  */
-public class BinaryRegexClassification extends RegexClassification implements GrammarBasedProblem<String, String, List<Double>> {
+public class BinaryRegexClassification extends GrammarBasedRegexClassification {
 
   private final static String[] REGEXES = new String[]{"101010...010101", "11111...11111", "(11110000)++"};
   private final static String ALPHABET = "01";
@@ -58,43 +62,13 @@ public class BinaryRegexClassification extends RegexClassification implements Gr
     return data;
   }
 
-  private String escape(String s) {
-    //TODO
-    return s;
-  }
-
-  private final Grammar<String> grammar;
-  private final Function<Node<String>, String> solutionMapper;
-
-  public BinaryRegexClassification(boolean useOr, int size, int length, int folds, int i, long seed, Classification.ErrorMetric trainingErrorMetric, Classification.ErrorMetric validationErrorMetric) throws IOException {
-    super(buildData(REGEXES, ALPHABET, length, size, new Random(seed)), folds, i, trainingErrorMetric, validationErrorMetric);
-    grammar = Grammar.fromFile(new File("grammars/base-regex.bnf"));
-    grammar.getRules().get("<symbol>").addAll(
-            Stream.of(ALPHABET.split(""))
-            .map(this::escape)
-            .map(Collections::singletonList)
-            .collect(Collectors.toList()));
-    if (useOr) {
-      grammar.getRules().put("<orPiece>", Arrays.asList(
-              Arrays.asList("<orPiece>", "|", "<regex>"),
-              Arrays.asList("<regex>")
-      ));
-      grammar.setStartingSymbol("<orPiece>");
-    }
-    solutionMapper = (Node<String> node, Listener listener)
-            -> node.leafNodes().stream()
-            .map(Node::getContent)
-            .collect(Collectors.joining());
-  }
-
-  @Override
-  public Grammar<String> getGrammar() {
-    return grammar;
-  }
-
-  @Override
-  public Function<Node<String>, String> getSolutionMapper() {
-    return solutionMapper;
+  public BinaryRegexClassification(int size, int length, int folds, int i, long seed, Classification.ErrorMetric learningErrorMetric, Classification.ErrorMetric validationErrorMetric) throws IOException {
+    super(new TreeSet<>(ALPHABET.chars().mapToObj(c -> (char)c).collect(Collectors.toSet())),
+            new LinkedHashSet<>(Arrays.asList(Option.ANY, Option.QUANTIFIERS, Option.OR)),
+            buildData(REGEXES, ALPHABET, length, size, new Random(seed)),
+            folds, i,
+            learningErrorMetric, validationErrorMetric);
+    System.out.println(getGrammar());
   }
 
 }

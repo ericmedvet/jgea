@@ -5,14 +5,20 @@
  */
 package it.units.malelab.jgea.distance;
 
-import java.io.Serializable;
+import it.units.malelab.jgea.core.function.BiFunction;
+import it.units.malelab.jgea.core.function.CachedFunction;
+import it.units.malelab.jgea.core.function.Function;
 
 /**
  *
  * @author eric
  */
-public interface Distance<T> extends Serializable {
-  
-  public double d(T t1, T t2);
-  
+@FunctionalInterface
+public interface Distance<T> extends BiFunction<T, T, Double> {
+
+  @Override
+  public default Distance<T> cached(long cacheSize) {
+    return new CachedDistance<>(this, cacheSize);
+  }
+
 }

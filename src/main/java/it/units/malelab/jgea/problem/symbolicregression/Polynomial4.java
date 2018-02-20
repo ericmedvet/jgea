@@ -14,7 +14,7 @@ import java.io.IOException;
  *
  * @author eric
  */
-public class Polynomial4 extends AbstractProblem {
+public class Polynomial4 extends AbstractSymbolicRegressionProblem {
 
   public Polynomial4() throws IOException {
     super(

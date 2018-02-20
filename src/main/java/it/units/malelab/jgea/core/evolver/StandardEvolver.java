@@ -13,7 +13,7 @@ import it.units.malelab.jgea.core.evolver.stopcondition.StopCondition;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.event.EvolutionEndEvent;
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
-import it.units.malelab.jgea.core.function.CachedFunction;
+import it.units.malelab.jgea.core.function.CachedNonDeterministicFunction;
 import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.function.NonDeterministicFunction;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
@@ -39,18 +39,18 @@ import it.units.malelab.jgea.core.function.CachedBoundedFunction;
  */
 public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
 
-  private final int populationSize;
-  private final Factory<G> genotypeBuilder;
-  private final Ranker<Individual<G, S, F>> ranker;
-  private final NonDeterministicFunction<G, S> mapper;
-  private final Map<GeneticOperator<G>, Double> operators;
-  private final Selector<Individual<G, S, F>> parentSelector;
-  private final Selector<Individual<G, S, F>> unsurvivalSelector;
-  private final int offspringSize;
-  private final boolean overlapping;
-  private final List<StopCondition> stopConditions;
-  private final boolean saveAncestry;
-  private final long cacheSize;
+  protected final int populationSize;
+  protected final Factory<G> genotypeBuilder;
+  protected final Ranker<Individual<G, S, F>> ranker;
+  protected final NonDeterministicFunction<G, S> mapper;
+  protected final Map<GeneticOperator<G>, Double> operators;
+  protected final Selector<Individual<G, S, F>> parentSelector;
+  protected final Selector<Individual<G, S, F>> unsurvivalSelector;
+  protected final int offspringSize;
+  protected final boolean overlapping;
+  protected final List<StopCondition> stopConditions;
+  protected final boolean saveAncestry;
+  protected final long cacheSize;
 
   public StandardEvolver(int populationSize, Factory<G> genotypeBuilder, Ranker<Individual<G, S, F>> ranker, NonDeterministicFunction<G, S> mapper, Map<GeneticOperator<G>, Double> operators, Selector<Individual<G, S, F>> parentSelector, Selector<Individual<G, S, F>> unsurvivalSelector, int offspringSize, boolean overlapping, List<StopCondition> stoppingConditions, long cacheSize, boolean saveAncestry) {
     this.populationSize = populationSize;
@@ -78,15 +78,12 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
       if (fitnessFunction instanceof Bounded) {
         fitnessFunction = new CachedBoundedFunction<>(fitnessFunction, cacheSize);
       } else {
-        fitnessFunction = new CachedFunction<>(fitnessFunction, cacheSize);
+        fitnessFunction = fitnessFunction.cached(cacheSize);
       }
     }
     //initialize population
     List<Individual<G, S, F>> population = new ArrayList<>();
     for (G genotype : genotypeBuilder.build(populationSize, random)) {
-      if (genotype==null) {
-        System.out.println("NULL GENO");
-      }
       tasks.add(new BirthCallable<>(
               genotype,
               generations,
@@ -137,21 +134,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
       }
       //update population
       List<Individual<G, S, F>> newPopulation = Misc.getAll(executor.invokeAll(tasks));
-      if (overlapping) {
-        population.addAll(newPopulation);
-      } else {
-        if (newPopulation.size() >= populationSize) {
-          population = newPopulation;
-        } else {
-          //keep missing individuals from old population
-          int targetSize = population.size() - newPopulation.size();
-          while (population.size() > targetSize) {
-            Individual<G, S, F> individual = unsurvivalSelector.select(rankedPopulation, random);
-            population.remove(individual);
-          }
-          population.addAll(newPopulation);
-        }
-      }
+      population = updatePopulation(population, newPopulation, rankedPopulation, random);
       //select survivals
       while (population.size() > populationSize) {
         //re-rank
@@ -190,8 +173,27 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
     return solutions;
   }
 
+  protected List<Individual<G, S, F>> updatePopulation(List<Individual<G, S, F>> population, List<Individual<G, S, F>> newPopulation, List<Collection<Individual<G, S, F>>> rankedPopulation, Random random) {
+    if (overlapping) {
+      population.addAll(newPopulation);
+    } else {
+      if (newPopulation.size() >= populationSize) {
+        population = newPopulation;
+      } else {
+        //keep missing individuals from old population
+        int targetSize = population.size() - newPopulation.size();
+        while (population.size() > targetSize) {
+          Individual<G, S, F> individual = unsurvivalSelector.select(rankedPopulation, random);
+          population.remove(individual);
+        }
+        population.addAll(newPopulation);
+      }
+    }
+    return population;
+  }
+
   protected long fitnessEvaluations(NonDeterministicFunction<S, F> fitnessFunction, int births) {
-    return (fitnessFunction instanceof CachedFunction) ? ((CachedFunction) fitnessFunction).getActualCount() : births;
+    return (fitnessFunction instanceof CachedNonDeterministicFunction) ? ((CachedNonDeterministicFunction) fitnessFunction).getActualCount() : births;
   }
 
   protected StopCondition checkStopConditions(EvolutionEvent<G, S, F> event) {

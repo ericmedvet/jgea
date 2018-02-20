@@ -26,4 +26,9 @@ public interface BiFunction<A1, A2, B> extends Function<Pair<A1, A2>, B> {
     return apply(a1, a2, Listener.deaf());
   }
   
+  @Override
+  public default BiFunction<A1, A2, B> cached(long cacheSize) {
+    return new CachedBiFunction<>(this, cacheSize);
+  }
+  
 }

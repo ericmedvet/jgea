@@ -9,7 +9,7 @@ package it.units.malelab.jgea.core.function;
  *
  * @author eric
  */
-public class FunctionException extends Exception {
+public class FunctionException extends RuntimeException {
 
   public FunctionException(String message) {
     super(message);
