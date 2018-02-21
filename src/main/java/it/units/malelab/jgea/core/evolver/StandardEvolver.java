@@ -192,7 +192,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
     return population;
   }
 
-  protected long fitnessEvaluations(NonDeterministicFunction<S, F> fitnessFunction, int births) {
+  protected long fitnessEvaluations(NonDeterministicFunction fitnessFunction, int births) {
     return (fitnessFunction instanceof CachedNonDeterministicFunction) ? ((CachedNonDeterministicFunction) fitnessFunction).getActualCount() : births;
   }
 

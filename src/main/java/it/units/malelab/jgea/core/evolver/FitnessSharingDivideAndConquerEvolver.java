@@ -35,6 +35,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -42,12 +43,14 @@ import java.util.concurrent.TimeUnit;
  */
 public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardEvolver<G, S, F> {
 
-  private final BiFunction<S, S, S> reducer;
+  private final BiFunction<S, S, S> solutionReducer;
+  private final BiFunction<B, B, B> semanticsReducer;
   private final Distance<B> distance;
 
-  public FitnessSharingDivideAndConquerEvolver(BiFunction<S, S, S> reducer, Distance<B> distance, int populationSize, Factory<G> genotypeBuilder, Ranker<Individual<G, S, F>> ranker, NonDeterministicFunction<G, S> mapper, Map<GeneticOperator<G>, Double> operators, Selector<Individual<G, S, F>> parentSelector, Selector<Individual<G, S, F>> unsurvivalSelector, int offspringSize, boolean overlapping, List<StopCondition> stoppingConditions, long cacheSize, boolean saveAncestry) {
-    super(populationSize, genotypeBuilder, ranker, mapper, operators, parentSelector, unsurvivalSelector, offspringSize, overlapping, stoppingConditions, cacheSize, saveAncestry);
-    this.reducer = reducer;
+  public FitnessSharingDivideAndConquerEvolver(BiFunction<S, S, S> solutionReducer, BiFunction<B, B, B> semanticsReducer, Distance<B> distance, int populationSize, Factory<G> genotypeBuilder, Ranker<Individual<G, S, F>> ranker, NonDeterministicFunction<G, S> mapper, Map<GeneticOperator<G>, Double> operators, Selector<Individual<G, S, F>> parentSelector, Selector<Individual<G, S, F>> unsurvivalSelector, int offspringSize, boolean overlapping, List<StopCondition> stoppingConditions, long cacheSize) {
+    super(populationSize, genotypeBuilder, ranker, mapper, operators, parentSelector, unsurvivalSelector, offspringSize, overlapping, stoppingConditions, cacheSize, false);
+    this.solutionReducer = solutionReducer;
+    this.semanticsReducer = semanticsReducer;
     this.distance = distance;
   }
 
@@ -57,29 +60,30 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
     int births = 0;
     int generations = 0;
     Stopwatch stopwatch = Stopwatch.createStarted();
-    Function<S, B> semanticFunction = ((ComposedFunction< S, B, F>) problem.getFitnessFunction()).first().cached(cacheSize);
+    Function<S, B> semanticsFunction = ((ComposedFunction< S, B, F>) problem.getFitnessFunction()).first();
     Function<? super B, ? extends F> fitnessFunction = ((ComposedFunction< S, B, F>) problem.getFitnessFunction()).second();
     if (cacheSize > 0) {
+      semanticsFunction = semanticsFunction.cached(cacheSize);
       if (fitnessFunction instanceof Bounded) {
-        fitnessFunction = (Function<? super B, ? extends F>)(new CachedBoundedFunction<>(fitnessFunction, cacheSize));
+        fitnessFunction = (Function<? super B, ? extends F>) (new CachedBoundedFunction<>(fitnessFunction, cacheSize));
       } else {
         fitnessFunction = ((ComposedFunction< S, B, F>) problem.getFitnessFunction()).second().cached(cacheSize);
       }
     }
     //initialize population
-    List<Individual<G, S, B>> semanticPopulation = new ArrayList<>();
+    List<Individual<G, S, B>> semanticsPopulation = new ArrayList<>();
     for (G genotype : genotypeBuilder.build(populationSize, random)) {
       tasks.add(new BirthCallable<>(
               genotype,
               generations,
               Collections.EMPTY_LIST,
               mapper,
-              semanticFunction,
+              semanticsFunction,
               random,
               listener
       ));
     }
-    semanticPopulation.addAll(Misc.getAll(executor.invokeAll(tasks)));
+    semanticsPopulation.addAll(Misc.getAll(executor.invokeAll(tasks)));
     births = births + populationSize;
     //iterate
     while (true) {
@@ -158,4 +162,20 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
     return solutions;
   }
 
+  private List<Individual<G, S, F>> computeFitness(List<Individual<G, S, B>> semanticsPopulation, Function<? super B, ? extends F> fitnessFunction) {
+    List<Individual<G, S, F>> population = semanticsPopulation.stream()
+            .map(i -> new Individual<G, S, F>(
+            i.getGenotype(),
+            i.getSolution(),
+            fitnessFunction.apply(i.getFitness()),
+            i.getBirthIteration(),
+            Collections.EMPTY_LIST,
+            i.getInfo()))
+            .collect(Collectors.toList());
+    for (Individual<G, S, F> individual : population) {
+      List<Individual<G, S, B>> others = new ArrayList<>(semanticsPopulation);
+
+    }
+    return null;
+  }
 }
