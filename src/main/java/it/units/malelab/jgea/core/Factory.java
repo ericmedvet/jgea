@@ -13,6 +13,7 @@ import java.util.Random;
  *
  * @author eric
  */
+@FunctionalInterface
 public interface Factory<T> extends Serializable {
   
   public List<T> build(int n, Random random);

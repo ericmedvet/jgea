@@ -5,7 +5,9 @@
  */
 package it.units.malelab.jgea.core.ranker;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
@@ -13,8 +15,22 @@ import java.util.Random;
  *
  * @author eric
  */
+@FunctionalInterface
 public interface Ranker<T> {
   
   public List<Collection<T>> rank(Collection<T> ts, Random random);
+  
+  public default int compare(T t1, T t2, Random random) {
+    List<Collection<T>> ranked = rank(Arrays.asList(t1, t2), random);
+    if (ranked.size()==1) {
+      return 0;
+    }
+    Collection<T> firstRank = ranked.get(0);
+    T t = firstRank.stream().findFirst().get();
+    if (t==t1) {
+      return -1;
+    }
+    return 1;
+  }
   
 }
