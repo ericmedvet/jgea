@@ -19,17 +19,17 @@ import java.util.Set;
  *
  * @author eric
  */
-public class Diversity<G, S, F> implements DataCollector<G, S, F> {
+public class Diversity implements DataCollector {
 
   @Override
-  public Map<String, Object> collect(EvolutionEvent<G, S, F> evolutionEvent) {
-    List<Collection<Individual<G, S, F>>> rankedPopulation = new ArrayList<>(evolutionEvent.getRankedPopulation());
-    Set<G> genotypes = new HashSet<>();
-    Set<S> solutions = new HashSet<>();
-    Set<F> fitnesses = new HashSet<>();
+  public Map<String, Object> collect(EvolutionEvent evolutionEvent) {
+    List<Collection<Individual>> rankedPopulation = new ArrayList<>((List)evolutionEvent.getRankedPopulation());
+    Set genotypes = new HashSet<>();
+    Set solutions = new HashSet<>();
+    Set fitnesses = new HashSet<>();
     double count = 0;
-    for (Collection<Individual<G, S, F>> rank : rankedPopulation) {
-      for (Individual<G, S, F> individual : rank) {
+    for (Collection<Individual> rank : rankedPopulation) {
+      for (Individual individual : rank) {
         genotypes.add(individual.getGenotype());
         solutions.add(individual.getSolution());
         fitnesses.add(individual.getFitness());

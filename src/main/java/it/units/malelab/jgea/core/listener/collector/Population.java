@@ -18,11 +18,11 @@ import java.util.Map;
  *
  * @author eric
  */
-public class Population<G, S, F> implements DataCollector<G, S, F> {
+public class Population implements DataCollector {
 
   @Override
-  public Map<String, Object> collect(EvolutionEvent<G, S, F> evolutionEvent) {
-    List<Collection<Individual<G, S, F>>> rankedPopulation = new ArrayList<>(evolutionEvent.getRankedPopulation());
+  public Map<String, Object> collect(EvolutionEvent evolutionEvent) {
+    List<Collection<Individual>> rankedPopulation = new ArrayList<>((List)evolutionEvent.getRankedPopulation());
     Map<String, Object> indexes = new LinkedHashMap<>();
     double genoCount = 0;
     double solutionCount = 0;
@@ -30,8 +30,8 @@ public class Population<G, S, F> implements DataCollector<G, S, F> {
     double solutionSizeSum = 0;
     double ageSum = 0;
     double count = 0;
-    for (Collection<Individual<G, S, F>> rank : rankedPopulation) {
-      for (Individual<G, S, F> individual : rank) {
+    for (Collection<Individual> rank : rankedPopulation) {
+      for (Individual individual : rank) {
         if (individual.getGenotype() instanceof Sized) {
           genoSizeSum = genoSizeSum + ((Sized) individual.getGenotype()).size();
           genoCount = genoCount + 1;

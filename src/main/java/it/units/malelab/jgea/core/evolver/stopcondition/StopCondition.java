@@ -13,8 +13,8 @@ import java.io.Serializable;
  * @author eric
  */
 @FunctionalInterface
-public interface StopCondition<G, S, F> extends Serializable {
+public interface StopCondition extends Serializable {
   
-  public boolean shouldStop(EvolutionEvent<G, S, F> evolutionEvent);
+  public boolean shouldStop(EvolutionEvent evolutionEvent);
   
 }

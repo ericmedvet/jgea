@@ -12,12 +12,12 @@ import it.units.malelab.jgea.core.function.CachedNonDeterministicFunction;
  *
  * @author eric
  */
-public class ActualFitnessEvaluations<G, S, F> implements StopCondition<G, S, F> {
-  
-  private final long n;
-  private final CachedNonDeterministicFunction<S, F> cachedFitnessMapper;
+public class ActualFitnessEvaluations implements StopCondition {
 
-  public ActualFitnessEvaluations(long n, CachedNonDeterministicFunction<S, F> cachedFitnessMapper) {
+  private final long n;
+  private final CachedNonDeterministicFunction cachedFitnessMapper;
+
+  public ActualFitnessEvaluations(long n, CachedNonDeterministicFunction cachedFitnessMapper) {
     this.n = n;
     this.cachedFitnessMapper = cachedFitnessMapper;
   }
@@ -26,13 +26,13 @@ public class ActualFitnessEvaluations<G, S, F> implements StopCondition<G, S, F>
     return n;
   }
 
-  public CachedNonDeterministicFunction<S, F> getCachedFitnessMapper() {
+  public CachedNonDeterministicFunction getCachedFitnessMapper() {
     return cachedFitnessMapper;
   }
 
   @Override
-  public boolean shouldStop(EvolutionEvent<G, S, F> evolutionEvent) {
-    return cachedFitnessMapper.getActualCount()>n;
+  public boolean shouldStop(EvolutionEvent evolutionEvent) {
+    return cachedFitnessMapper.getActualCount() > n;
   }
 
 }

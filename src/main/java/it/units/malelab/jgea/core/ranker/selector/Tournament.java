@@ -26,12 +26,12 @@ public class Tournament<T> implements Selector<T> {
   }
 
   @Override
-  public T select(List<Collection<T>> ts, Random random) {
-    SortedMap<Integer, List<T>> selected = new TreeMap<>();
+  public <K extends T> K select(List<Collection<K>> ts, Random random) {
+    SortedMap<Integer, List<K>> selected = new TreeMap<>();
     for (int i = 0; i<size; i++) {
       int rankIndex = random.nextInt(ts.size());
       int index = random.nextInt(ts.get(rankIndex).size());
-      List<T> localTs = selected.get(rankIndex);
+      List<K> localTs = selected.get(rankIndex);
       if (localTs==null) {
         localTs = new ArrayList<>();
         selected.put(rankIndex, localTs);

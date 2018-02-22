@@ -26,9 +26,9 @@ public class ComparableRanker<T> implements Ranker<T> {
   }
 
   @Override
-  public List<Collection<T>> rank(Collection<T> ts, Random random) {
-    List<T> list = new ArrayList<>(ts);
-    List<Collection<T>> ranks = new ArrayList<>();
+  public <K extends T> List<Collection<K>> rank(Collection<K> ts, Random random) {
+    List<K> list = new ArrayList<>(ts);
+    List<Collection<K>> ranks = new ArrayList<>();
     Collections.sort(list, comparator);
     ranks.add(new ArrayList<>(Arrays.asList(list.get(0))));
     for (int i = 1; i < list.size(); i++) {

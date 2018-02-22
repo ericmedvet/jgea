@@ -32,6 +32,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import it.units.malelab.jgea.core.function.Bounded;
 import it.units.malelab.jgea.core.function.CachedBoundedFunction;
+import it.units.malelab.jgea.core.listener.event.Capturer;
+import it.units.malelab.jgea.core.listener.event.FunctionEvent;
+import it.units.malelab.jgea.core.listener.event.TimedEvent;
 
 /**
  *
@@ -74,7 +77,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
     int generations = 0;
     Stopwatch stopwatch = Stopwatch.createStarted();
     NonDeterministicFunction<S, F> fitnessFunction = problem.getFitnessFunction();
-    if (cacheSize>0) {
+    if (cacheSize > 0) {
       if (fitnessFunction instanceof Bounded) {
         fitnessFunction = new CachedBoundedFunction<>(fitnessFunction, cacheSize);
       } else {
@@ -84,7 +87,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
     //initialize population
     List<Individual<G, S, F>> population = new ArrayList<>();
     for (G genotype : genotypeBuilder.build(populationSize, random)) {
-      tasks.add(new BirthCallable<>(
+      tasks.add(birthCallable(
               genotype,
               generations,
               Collections.EMPTY_LIST,
@@ -116,7 +119,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
         try {
           List<G> childGenotypes = operator.apply(parentGenotypes, random, listener);
           for (G childGenotype : childGenotypes) {
-            tasks.add(new BirthCallable<>(
+            tasks.add(birthCallable(
                     childGenotype,
                     generations,
                     saveAncestry ? parents : null,
@@ -142,11 +145,11 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
         Individual<G, S, F> individual = unsurvivalSelector.select(rankedPopulation, random);
         population.remove(individual);
       }
-      EvolutionEvent<G, S, F> event = new EvolutionEvent<>(
+      EvolutionEvent event = new EvolutionEvent(
               generations,
               births,
               fitnessEvaluations(fitnessFunction, births),
-              rankedPopulation,
+              (List)rankedPopulation,
               stopwatch.elapsed(TimeUnit.MILLISECONDS)
       );
       listener.listen(event);
@@ -173,7 +176,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
     return solutions;
   }
 
-  protected List<Individual<G, S, F>> updatePopulation(List<Individual<G, S, F>> population, List<Individual<G, S, F>> newPopulation, List<Collection<Individual<G, S, F>>> rankedPopulation, Random random) {
+  protected <I extends Individual<G, S, F>> List<I> updatePopulation(List<I> population, List<I> newPopulation, List<Collection<I>> rankedPopulation, Random random) {
     if (overlapping) {
       population.addAll(newPopulation);
     } else {
@@ -183,7 +186,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
         //keep missing individuals from old population
         int targetSize = population.size() - newPopulation.size();
         while (population.size() > targetSize) {
-          Individual<G, S, F> individual = unsurvivalSelector.select(rankedPopulation, random);
+          I individual = unsurvivalSelector.select(rankedPopulation, random);
           population.remove(individual);
         }
         population.addAll(newPopulation);
@@ -196,7 +199,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
     return (fitnessFunction instanceof CachedNonDeterministicFunction) ? ((CachedNonDeterministicFunction) fitnessFunction).getActualCount() : births;
   }
 
-  protected StopCondition checkStopConditions(EvolutionEvent<G, S, F> event) {
+  protected StopCondition checkStopConditions(EvolutionEvent event) {
     for (StopCondition stopCondition : stopConditions) {
       if (stopCondition.shouldStop(event)) {
         return stopCondition;
@@ -204,5 +207,41 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
     }
     return null;
   }
-  
+
+  protected Callable<Individual<G, S, F>> birthCallable(G genotype, int birthIteration, List<Individual<G, S, F>> parents, NonDeterministicFunction<G, S> solutionFunction, NonDeterministicFunction<S, F> fitnessFunction, Random random, Listener listener) {
+    return () -> {
+      Stopwatch stopwatch = Stopwatch.createUnstarted();
+      Capturer capturer = new Capturer();
+      long elapsed;
+      //genotype -> solution
+      stopwatch.start();
+      S solution = null;
+      try {
+        solution = solutionFunction.apply(genotype, random, capturer);
+      } catch (FunctionException ex) {
+        //invalid solution
+        //TODO log to listener
+      }
+      elapsed = stopwatch.stop().elapsed(TimeUnit.NANOSECONDS);
+      Map<String, Object> solutionInfo = Misc.fromInfoEvents(capturer.getEvents(), "solution.");
+      listener.listen(new TimedEvent(elapsed, TimeUnit.NANOSECONDS, new FunctionEvent(genotype, solution, solutionInfo)));
+      capturer.clear();
+      //solution -> fitness
+      stopwatch.reset().start();
+      F fitness = null;
+      if (solution != null) {
+        fitness = fitnessFunction.apply(solution, random, capturer);
+      } else {
+        if (fitnessFunction instanceof Bounded) {
+          fitness = ((Bounded<F>) fitnessFunction).worstValue();
+        }
+      }
+      elapsed = stopwatch.stop().elapsed(TimeUnit.NANOSECONDS);
+      Map<String, Object> fitnessInfo = Misc.fromInfoEvents(capturer.getEvents(), "fitness.");
+      listener.listen(new TimedEvent(elapsed, TimeUnit.NANOSECONDS, new FunctionEvent(genotype, solution, fitnessInfo)));
+      //merge info
+      return new Individual<>(genotype, solution, fitness, birthIteration, parents, Misc.merge(solutionInfo, fitnessInfo));
+    };
+  }
+
 }

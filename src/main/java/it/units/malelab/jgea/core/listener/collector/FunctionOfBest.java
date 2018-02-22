@@ -21,7 +21,7 @@ import java.util.Map;
  *
  * @author eric
  */
-public class FunctionOfBest<G, S, F, V> implements DataCollector<G, S, F> {
+public class FunctionOfBest<S, V> implements DataCollector {
   
   private final String name;
   private final Function<S, V> validationFunction;
@@ -36,12 +36,12 @@ public class FunctionOfBest<G, S, F, V> implements DataCollector<G, S, F> {
   }
 
   @Override
-  public Map<String, Object> collect(EvolutionEvent<G, S, F> evolutionEvent) {
-    List<Collection<Individual<G, S, F>>> rankedPopulation = new ArrayList<>(evolutionEvent.getRankedPopulation());
-    Individual<G, S, F> best = Misc.first(rankedPopulation.get(0));
+  public Map<String, Object> collect(EvolutionEvent evolutionEvent) {
+    List<Collection<Individual>> rankedPopulation = new ArrayList<>((List)evolutionEvent.getRankedPopulation());
+    Individual best = Misc.first(rankedPopulation.get(0));
     Map<String, Object> indexes = new LinkedHashMap<>();
     try {
-      for (Map.Entry<String, Object> fitnessEntry : fitnessSplitter.apply(validationFunction.apply(best.getSolution())).entrySet()) {
+      for (Map.Entry<String, Object> fitnessEntry : fitnessSplitter.apply(validationFunction.apply((S)best.getSolution())).entrySet()) {
         indexes.put(
                 augmentName("best."+name, fitnessEntry.getKey()),
                 fitnessEntry.getValue());

@@ -36,8 +36,8 @@ public class DeterministicCrowdingEvolver<G, S, F> extends StandardEvolver<G, S,
   }
 
   @Override
-  protected List<Individual<G, S, F>> updatePopulation(List<Individual<G, S, F>> population, List<Individual<G, S, F>> newPopulation, List<Collection<Individual<G, S, F>>> rankedPopulation, Random random) {
-    for (Individual<G, S, F> newIndividual : newPopulation) {
+  protected <I extends Individual<G, S, F>> List<I> updatePopulation(List<I> population, List<I> newPopulation, List<Collection<I>> rankedPopulation, Random random) {
+    for (I newIndividual : newPopulation) {
       //find parents
       List<Individual<G, S, F>> parents = new ArrayList<>(newIndividual.getParents());
       parents.retainAll(population);
@@ -51,8 +51,7 @@ public class DeterministicCrowdingEvolver<G, S, F> extends StandardEvolver<G, S,
               .findFirst()
               .get();
       //rank parent and child
-      List<Collection<Individual<G, S, F>>> ranked = ranker.rank(Arrays.asList(newIndividual, closestParent), random);
-      if (ranked.get(0).contains(newIndividual) && ranked.size() > 1) {
+      if (ranker.compare(newIndividual, closestParent, random)==-1) {
         population.remove(closestParent);
         population.add(newIndividual);
         if (!localSaveAncestry) {

@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  *
  * @author eric
  */
-public class Static<G, S, F> implements DataCollector<G, S, F> {
+public class Static implements DataCollector {
   
   private final Map<String, Object> values;
 
@@ -28,7 +28,7 @@ public class Static<G, S, F> implements DataCollector<G, S, F> {
   }
 
   @Override
-  public Map<String, Object> collect(EvolutionEvent<G, S, F> evolutionEvent) {
+  public Map<String, Object> collect(EvolutionEvent evolutionEvent) {
     return values;
   }    
   

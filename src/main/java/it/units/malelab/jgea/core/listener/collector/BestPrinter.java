@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  *
  * @author eric
  */
-public class BestPrinter<G, S, F> implements DataCollector<G, S, F>{
+public class BestPrinter<S> implements DataCollector {
   
   private final Function<S, String> printer;
   private final String format;
@@ -33,12 +33,12 @@ public class BestPrinter<G, S, F> implements DataCollector<G, S, F>{
   }
 
   @Override
-  public Map<String, Object> collect(EvolutionEvent<G, S, F> evolutionEvent) {
-    List<Collection<Individual<G, S, F>>> rankedPopulation = new ArrayList<>(evolutionEvent.getRankedPopulation());
-    Individual<G, S, F> best = Misc.first(rankedPopulation.get(0));
+  public Map<String, Object> collect(EvolutionEvent evolutionEvent) {
+    List<Collection<Individual>> rankedPopulation = new ArrayList<>((List)evolutionEvent.getRankedPopulation());
+    Individual best = Misc.first(rankedPopulation.get(0));
     if (printer!=null) {
       try {
-        return (Map)Collections.singletonMap("best.solution", printer.apply(best.getSolution()));
+        return (Map)Collections.singletonMap("best.solution", printer.apply((S)best.getSolution()));
       } catch (FunctionException ex) {
         Logger.getLogger(BestPrinter.class.getName()).log(Level.WARNING, "Cannot print best.", ex);
       }

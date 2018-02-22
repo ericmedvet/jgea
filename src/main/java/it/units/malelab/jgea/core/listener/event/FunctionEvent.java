@@ -11,13 +11,13 @@ import java.util.Map;
  *
  * @author eric
  */
-public class MapperEvent<A, B> implements InfoEvent {
+public class FunctionEvent<A, B> implements InfoEvent {
   
   private final A source;
   private final B destination;
   private final Map<String, Object> info;
 
-  public MapperEvent(A source, B destination, Map<String, Object> info) {
+  public FunctionEvent(A source, B destination, Map<String, Object> info) {
     this.source = source;
     this.destination = destination;
     this.info = info;

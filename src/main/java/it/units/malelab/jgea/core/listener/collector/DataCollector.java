@@ -13,9 +13,9 @@ import java.util.Map;
  *
  * @author eric
  */
-public interface DataCollector<G, S, F> extends Serializable {
+public interface DataCollector extends Serializable {
   
   public Map<String, String> getFormattedNames();
-  public Map<String, Object> collect(EvolutionEvent<G, S, F> evolutionEvent);  
+  public Map<String, Object> collect(EvolutionEvent evolutionEvent);  
   
 }

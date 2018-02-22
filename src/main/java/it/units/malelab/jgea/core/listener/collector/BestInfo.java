@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  *
  * @author eric
  */
-public class BestInfo<G, S, F> implements DataCollector<G, S, F> {
+public class BestInfo<F> implements DataCollector {
 
   private final Function<F, Map<String, Object>> fitnessSplitter;
   private final Function<String, String> formatFunction;
@@ -49,12 +49,12 @@ public class BestInfo<G, S, F> implements DataCollector<G, S, F> {
   }
 
   @Override
-  public Map<String, Object> collect(EvolutionEvent<G, S, F> evolutionEvent) {
-    List<Collection<Individual<G, S, F>>> rankedPopulation = new ArrayList<>(evolutionEvent.getRankedPopulation());
-    Individual<G, S, F> best = Misc.first(rankedPopulation.get(0));
+  public Map<String, Object> collect(EvolutionEvent evolutionEvent) {
+    List<Collection<Individual>> rankedPopulation = new ArrayList<>((List)evolutionEvent.getRankedPopulation());
+    Individual best = Misc.first(rankedPopulation.get(0));
     Map<String, Object> indexes = new LinkedHashMap<>();
     try {
-      for (Map.Entry<String, Object> fitnessEntry : fitnessSplitter.apply(best.getFitness()).entrySet()) {
+      for (Map.Entry<String, Object> fitnessEntry : fitnessSplitter.apply((F)best.getFitness()).entrySet()) {
         indexes.put(
                 augmentFitnessName("best.fitness", fitnessEntry.getKey()),
                 fitnessEntry.getValue());

@@ -13,12 +13,12 @@ import java.util.concurrent.TimeUnit;
  *
  * @author eric
  */
-public class RelativeElapsedTime<G, S, F> implements StopCondition<G, S, F> {
+public class RelativeElapsedTime implements StopCondition {
   
   private final double r;
-  private final CachedNonDeterministicFunction<S, F> cachedFitnessFunction;
+  private final CachedNonDeterministicFunction cachedFitnessFunction;
 
-  public RelativeElapsedTime(double r, CachedNonDeterministicFunction<S, F> cachedFitnessFunction) {
+  public RelativeElapsedTime(double r, CachedNonDeterministicFunction cachedFitnessFunction) {
     this.r = r;
     this.cachedFitnessFunction = cachedFitnessFunction;
   }
@@ -27,12 +27,12 @@ public class RelativeElapsedTime<G, S, F> implements StopCondition<G, S, F> {
     return r;
   }
 
-  public CachedNonDeterministicFunction<S, F> getCachedFitnessMapper() {
+  public CachedNonDeterministicFunction getCachedFitnessMapper() {
     return cachedFitnessFunction;
   }
 
   @Override
-  public boolean shouldStop(EvolutionEvent<G, S, F> evolutionEvent) {
+  public boolean shouldStop(EvolutionEvent evolutionEvent) {
     double elapsedNanos = TimeUnit.NANOSECONDS.convert(evolutionEvent.getElapsedMillis(), TimeUnit.MILLISECONDS);
     double avgNanos = cachedFitnessFunction.getCacheStats().averageLoadPenalty();
     return elapsedNanos/avgNanos>r;

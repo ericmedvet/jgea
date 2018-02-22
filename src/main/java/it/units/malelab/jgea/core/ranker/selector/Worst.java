@@ -17,7 +17,7 @@ import java.util.Random;
 public class Worst<T> implements Selector<T> {
 
   @Override
-  public T select(List<Collection<T>> ts, Random random) {
+  public <K extends T> K select(List<Collection<K>> ts, Random random) {
     if (ts.isEmpty()) {
       return null;
     }

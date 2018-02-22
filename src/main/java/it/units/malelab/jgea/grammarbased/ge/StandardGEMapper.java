@@ -8,7 +8,7 @@ package it.units.malelab.jgea.grammarbased.ge;
 import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.genotype.BitString;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.event.MapperEvent;
+import it.units.malelab.jgea.core.listener.event.FunctionEvent;
 import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.grammarbased.Grammar;
 import it.units.malelab.jgea.grammarbased.GrammarBasedMapper;
@@ -84,7 +84,7 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
       }
       currentCodonIndex = currentCodonIndex+1;
     }
-    listener.listen(new MapperEvent(genotype, tree, Collections.singletonMap(BIT_USAGES_INDEX_NAME, bitUsages)));
+    listener.listen(new FunctionEvent(genotype, tree, Collections.singletonMap(BIT_USAGES_INDEX_NAME, bitUsages)));
     return tree;
   }
 

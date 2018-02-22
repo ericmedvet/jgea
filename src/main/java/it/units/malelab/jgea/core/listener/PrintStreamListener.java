@@ -22,14 +22,14 @@ import it.units.malelab.jgea.core.listener.collector.DataCollector;
  *
  * @author eric
  */
-public class PrintStreamListener<G, S, F> implements Listener {
+public class PrintStreamListener implements Listener {
 
   private final PrintStream ps;
   private final boolean format;
   private final int headerInterval;
   private final String innerSeparator;
   private final String outerSeparator;
-  private final List<DataCollector<G, S, F>> collectors;
+  private final List<DataCollector> collectors;
 
   private final List<Map<String, String>> formattedNames;
   private int lines;
@@ -40,7 +40,7 @@ public class PrintStreamListener<G, S, F> implements Listener {
           int headerInterval,
           String innerSeparator,
           String outerSeparator,
-          DataCollector<G, S, F>... collectors) {
+          DataCollector... collectors) {
     this.ps = ps;
     this.format = format;
     this.headerInterval = headerInterval;
@@ -48,7 +48,7 @@ public class PrintStreamListener<G, S, F> implements Listener {
     this.outerSeparator = outerSeparator;
     this.collectors = Arrays.asList(collectors);
     formattedNames = new ArrayList<>(this.collectors.size());
-    for (DataCollector<G, S, F> collector : collectors) {
+    for (DataCollector collector : collectors) {
       Map<String, String> localFormattedNames = new LinkedHashMap<>();
       for (String name : collector.getFormattedNames().keySet()) {
         localFormattedNames.put(name, formatName(name, collector.getFormattedNames().get(name), format));
@@ -60,9 +60,9 @@ public class PrintStreamListener<G, S, F> implements Listener {
 
   @Override
   public void listen(Event event) {
-    EvolutionEvent<G, S, F> evolutionEvent = null;
+    EvolutionEvent evolutionEvent = null;
     if (event instanceof EvolutionEvent) {
-      evolutionEvent = ((EvolutionEvent<G, S, F>) event);
+      evolutionEvent = ((EvolutionEvent) event);
     } else {
       return;
     }

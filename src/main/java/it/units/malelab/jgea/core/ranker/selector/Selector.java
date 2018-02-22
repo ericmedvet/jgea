@@ -17,6 +17,6 @@ import java.util.Random;
 @FunctionalInterface
 public interface Selector<T> extends Serializable {
   
-  public T select(List<Collection<T>> ts, Random random);
+  public <K extends T> K select(List<Collection<K>> ts, Random random);
   
 }

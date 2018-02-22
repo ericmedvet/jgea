@@ -6,14 +6,13 @@
 package it.units.malelab.jgea.core.evolver.stopcondition;
 
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
-import it.units.malelab.jgea.core.function.CachedNonDeterministicFunction;
 
 /**
  *
  * @author eric
  */
-public class FitnessEvaluations<G, S, F> implements StopCondition<G, S, F>{
-  
+public class FitnessEvaluations implements StopCondition {
+
   private final long n;
 
   public FitnessEvaluations(long n) {
@@ -21,8 +20,8 @@ public class FitnessEvaluations<G, S, F> implements StopCondition<G, S, F>{
   }
 
   @Override
-  public boolean shouldStop(EvolutionEvent<G, S, F> evolutionEvent) {
-    return evolutionEvent.getFitnessEvaluations()>=n;
+  public boolean shouldStop(EvolutionEvent evolutionEvent) {
+    return evolutionEvent.getFitnessEvaluations() >= n;
   }
-  
+
 }

@@ -78,7 +78,7 @@ public abstract class Worker implements Runnable {
     return strings.stream().map(Integer::parseInt).collect(Collectors.toList());
   }
   
-  protected <G,S,F> Listener listener(DataCollector<G, S, F>... collectors) {
+  protected Listener listener(DataCollector... collectors) {
     Listener listener = new PrintStreamListener(System.out, true, 10, " ", " | ", collectors);
     if (filePrintStream!=null) {
       listener = listener.then(new PrintStreamListener(filePrintStream, false, -1, "; ", "; ", collectors));

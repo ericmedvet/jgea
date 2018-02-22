@@ -11,8 +11,8 @@ import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
  *
  * @author eric
  */
-public class Births implements StopCondition<Object, Object, Object> {
-  
+public class Births implements StopCondition {
+
   private final int n;
 
   public Births(int n) {
@@ -24,8 +24,8 @@ public class Births implements StopCondition<Object, Object, Object> {
   }
 
   @Override
-  public boolean shouldStop(EvolutionEvent<Object, Object, Object> evolutionEvent) {
-    return evolutionEvent.getBirths()>n;
+  public boolean shouldStop(EvolutionEvent evolutionEvent) {
+    return evolutionEvent.getBirths() > n;
   }
 
 }

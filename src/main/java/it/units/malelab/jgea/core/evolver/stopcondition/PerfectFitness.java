@@ -10,12 +10,13 @@ import it.units.malelab.jgea.core.function.Bounded;
 import it.units.malelab.jgea.core.function.NonDeterministicFunction;
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
 import java.util.Collection;
+import java.util.List;
 
 /**
  *
  * @author eric
  */
-public class PerfectFitness<G, S, F> implements StopCondition<G, S, F> {
+public class PerfectFitness<F> implements StopCondition {
 
   private final F targetFitness;
 
@@ -23,7 +24,7 @@ public class PerfectFitness<G, S, F> implements StopCondition<G, S, F> {
     this.targetFitness = targetFitness;
   }
   
-  public PerfectFitness(NonDeterministicFunction<S, F> fitnessFunction) {
+  public PerfectFitness(NonDeterministicFunction<?, F> fitnessFunction) {
     if (fitnessFunction instanceof Bounded) {
       targetFitness = ((Bounded<F>) fitnessFunction).bestValue();
     } else {
@@ -32,12 +33,13 @@ public class PerfectFitness<G, S, F> implements StopCondition<G, S, F> {
   }
 
   @Override
-  public boolean shouldStop(EvolutionEvent<G, S, F> evolutionEvent) {
+  public boolean shouldStop(EvolutionEvent evolutionEvent) {
     if (targetFitness==null) {
       return false;
     }
-    for (Collection<Individual<G, S, F>> rank : evolutionEvent.getRankedPopulation()) {
-      for (Individual<G, S, F> individual : rank) {
+    List<Collection<Individual>> rankedPopulation = (List)evolutionEvent.getRankedPopulation();
+    for (Collection<Individual> rank : rankedPopulation) {
+      for (Individual individual : rank) {
         if (individual.getFitness().equals(targetFitness)) {
           return true;
         }

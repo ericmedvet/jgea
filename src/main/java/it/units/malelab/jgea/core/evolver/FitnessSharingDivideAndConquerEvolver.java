@@ -18,18 +18,20 @@ import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.function.NonDeterministicFunction;
 import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.core.listener.event.Capturer;
 import it.units.malelab.jgea.core.listener.event.EvolutionEndEvent;
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
+import it.units.malelab.jgea.core.listener.event.FunctionEvent;
+import it.units.malelab.jgea.core.listener.event.TimedEvent;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.ranker.Ranker;
 import it.units.malelab.jgea.core.ranker.selector.Selector;
 import it.units.malelab.jgea.core.util.Misc;
-import it.units.malelab.jgea.core.util.Triplet;
 import it.units.malelab.jgea.distance.Distance;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -47,46 +49,45 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
 
   private class EnhancedIndividual extends Individual<G, S, F> {
 
-    private S compositeSolution;
-    private B compositeSemantics;
-    private F compositeFitness;
+    private final S originalSolution;
+    private final B originalSemantics;
+    private final F originalFitness;
+    private B semantics;
     private final List<EnhancedIndividual> all;
 
+    @SuppressWarnings("LeakingThisInConstructor")
     public EnhancedIndividual(G genotype, S solution, F fitness, B semantics, int birthIteration, Map<String, Object> info) {
       super(genotype, solution, fitness, birthIteration, Collections.EMPTY_LIST, info);
-      compositeSolution = solution;
-      compositeSemantics = semantics;
-      compositeFitness = fitness;
-      all = new ArrayList<EnhancedIndividual>();
+      this.semantics = semantics;
+      originalSolution = solution;
+      originalSemantics = semantics;
+      originalFitness = fitness;
+      all = new ArrayList<>();
       all.add(this);
-    }
-
-    public B getCompositeSemantics() {
-      return compositeSemantics;
-    }
-
-    public void setCompositeSemantics(B compositeSemantics) {
-      this.compositeSemantics = compositeSemantics;
-    }
-
-    public F getCompositeFitness() {
-      return compositeFitness;
-    }
-
-    public void setCompositeFitness(F compositeFitness) {
-      this.compositeFitness = compositeFitness;
-    }
-
-    public S getCompositeSolution() {
-      return compositeSolution;
-    }
-
-    public void setCompositeSolution(S compositeSolution) {
-      this.compositeSolution = compositeSolution;
     }
 
     public List<EnhancedIndividual> getAll() {
       return all;
+    }
+
+    public B getOriginalSemantics() {
+      return originalSemantics;
+    }
+
+    public S getOriginalSolution() {
+      return originalSolution;
+    }
+
+    public F getOriginalFitness() {
+      return originalFitness;
+    }
+
+    public B getSemantics() {
+      return semantics;
+    }
+
+    public void setSemantics(B semantics) {
+      this.semantics = semantics;
     }
 
   }
@@ -104,7 +105,7 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
 
   @Override
   public Collection<S> solve(final Problem<S, F> problem, Random random, ExecutorService executor, Listener listener) throws InterruptedException, ExecutionException {
-    List<Callable<Individual<G, S, B>>> tasks = new ArrayList<>();
+    List<Callable<EnhancedIndividual>> tasks = new ArrayList<>();
     int births = 0;
     int fitnessEvaluations = 0;
     int generations = 0;
@@ -123,52 +124,34 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
       fitnessFunction = ((ComposedFunction< S, B, F>) problem.getFitnessFunction()).second();
     }
     //initialize population
-    List<Individual<G, S, B>> semanticsPopulation = new ArrayList<>();
     for (G genotype : genotypeBuilder.build(populationSize, random)) {
-      tasks.add(new BirthCallable<>(
-              genotype,
-              generations,
-              Collections.EMPTY_LIST,
-              mapper,
-              semanticsFunction,
-              random,
-              listener
-      ));
+      tasks.add(birthCallable(genotype, generations, mapper, semanticsFunction, fitnessFunction, random, listener));
     }
-    semanticsPopulation.addAll(Misc.getAll(executor.invokeAll(tasks)));
+    List<EnhancedIndividual> population = Misc.getAll(executor.invokeAll(tasks));
     births = births + populationSize;
     fitnessEvaluations = fitnessEvaluations + populationSize;
     //iterate
     while (true) {
       generations = generations + 1;
-      //associate individuals
-      List<EnhancedIndividual> enhancedPopulation = semanticsPopulation.stream()
-              .map(i -> new EnhancedIndividual(
-                              i.getGenotype(),
-                              i.getSolution(),
-                              fitnessFunction.apply(i.getFitness()),
-                              i.getFitness(),
-                              i.getBirthIteration(),
-                              i.getInfo()))
-              .collect(Collectors.toList());
       //rank by fitness
-      List<Collection<EnhancedIndividual>> rankedEnhancedPopulation = ranker.rank((Collection) enhancedPopulation, random);
-      for (Collection<EnhancedIndividual> rank : rankedEnhancedPopulation) {
+      List<Collection<EnhancedIndividual>> rankedPopulation = ranker.rank(population, random);
+      //associate individuals
+      for (Collection<EnhancedIndividual> rank : rankedPopulation) {
         for (EnhancedIndividual individual : rank) {
           //sort other by distance to this
-          List<EnhancedIndividual> others = enhancedPopulation.stream()
-                  .filter(i -> i.getAll().size()==1)
+          List<EnhancedIndividual> others = rank.stream()
+                  .filter(i -> i.getAll().size() == 1)
                   .sorted((i1, i2) -> {
-                    double d1 = distance.apply(i1.getCompositeSemantics(), individual.getCompositeSemantics());
-                    double d2 = distance.apply(i2.getCompositeSemantics(), individual.getCompositeSemantics());
+                    double d1 = distance.apply(i1.getSemantics(), individual.getSemantics());
+                    double d2 = distance.apply(i2.getSemantics(), individual.getSemantics());
                     return -Double.compare(d1, d2);
                   })
                   .collect(Collectors.toList());
           //iterate on others
           for (EnhancedIndividual other : others) {
             fitnessEvaluations = fitnessEvaluations + 1;
-            S compositeSolution = solutionReducer.apply(individual.getCompositeSolution(), other.getCompositeSolution());
-            B compositeSemantics = semanticsReducer.apply(individual.getCompositeSemantics(), other.getCompositeSemantics());
+            S compositeSolution = solutionReducer.apply(individual.getSolution(), other.getSolution());
+            B compositeSemantics = semanticsReducer.apply(individual.getSemantics(), other.getSemantics());
             F compositeFitness;
             if (semanticsReducer != null) {
               compositeFitness = fitnessFunction.apply(compositeSemantics, listener);
@@ -177,117 +160,150 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
             }
             //compare composed vs original
             if (ranker.compare(
-                    new Individual<>(
+                    new EnhancedIndividual(
                             individual.getGenotype(),
-                            individual.getCompositeSolution(),
-                            individual.getCompositeFitness(),
+                            individual.getSolution(),
+                            individual.getFitness(),
+                            individual.getSemantics(),
                             individual.getBirthIteration(),
-                            Collections.EMPTY_LIST,
                             individual.getInfo()
                     ),
-                    new Individual<>(
+                    new EnhancedIndividual(
                             individual.getGenotype(),
                             compositeSolution,
                             compositeFitness,
+                            compositeSemantics,
                             individual.getBirthIteration(),
-                            Collections.EMPTY_LIST,
                             individual.getInfo()
                     ),
                     random) == 1) {
-              //update both individuals
-              individual.setCompositeSolution(compositeSolution);
-              individual.setCompositeSemantics(compositeSemantics);
-              individual.setCompositeFitness(compositeFitness);
-              for (EnhancedIndividual associate : individual.getAll()) {
+              //update this individuals
+              individual.setSolution(compositeSolution);
+              individual.setSemantics(compositeSemantics);
+              individual.setFitness(compositeFitness);
+              individual.getAll().forEach((associate) -> {
                 associate.getAll().add(other);
-              }
+              });
               individual.getAll().add(other);
               for (EnhancedIndividual associate : individual.getAll()) {
-                associate.setCompositeSolution(compositeSolution);
-                associate.setCompositeSemantics(compositeSemantics);
-                associate.setCompositeFitness(compositeFitness);               
+                associate.setSolution(compositeSolution);
+                associate.setSemantics(compositeSemantics);
+                associate.setFitness(compositeFitness);
               }
             }
           }
         }
       }
-
-    }
-    //re-rank
-    List<Collection<Individual<G, S, F>>> rankedPopulation = ranker.rank(population, random);
-    //build offsprings
-    int i = 0;
-    tasks.clear();
-    while (i < offspringSize) {
-      GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
-      List<Individual<G, S, F>> parents = new ArrayList<>(operator.arity());
-      List<G> parentGenotypes = new ArrayList<>(operator.arity());
-      for (int j = 0; j < operator.arity(); j++) {
-        Individual<G, S, F> parent = parentSelector.select(rankedPopulation, random);
-        parents.add(parent);
-        parentGenotypes.add(parent.getGenotype());
-      }
-      try {
-        List<G> childGenotypes = operator.apply(parentGenotypes, random, listener);
-        for (G childGenotype : childGenotypes) {
-          tasks.add(new BirthCallable<>(
-                  childGenotype,
-                  generations,
-                  saveAncestry ? parents : null,
-                  mapper,
-                  fitnessFunction,
-                  random,
-                  listener
-          ));
-        }
-        births = births + childGenotypes.size();
-        i = i + childGenotypes.size();
-      } catch (FunctionException ex) {
-        //just ignore: will not be added to the population
-      }
-    }
-    //update population
-    List<Individual<G, S, F>> newPopulation = Misc.getAll(executor.invokeAll(tasks));
-    population = updatePopulation(population, newPopulation, rankedPopulation, random);
-    //select survivals
-    while (population.size() > populationSize) {
-      //re-rank
+      //rank by fitness
       rankedPopulation = ranker.rank(population, random);
-      Individual<G, S, F> individual = unsurvivalSelector.select(rankedPopulation, random);
-      population.remove(individual);
-    }
-    EvolutionEvent<G, S, F> event = new EvolutionEvent<>(
-            generations,
-            births,
-            fitnessEvaluations(fitnessFunction, births),
-            rankedPopulation,
-            stopwatch.elapsed(TimeUnit.MILLISECONDS)
-    );
-    listener.listen(event);
-    //check stopping conditions
-    StopCondition stopCondition = checkStopConditions(event);
-    if (stopCondition != null) {
-      listener.listen(new EvolutionEndEvent(
-              stopCondition,
+      //build offsprings
+      int i = 0;
+      tasks.clear();
+      while (i < offspringSize) {
+        GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
+        List<EnhancedIndividual> parents = new ArrayList<>(operator.arity());
+        List<G> parentGenotypes = new ArrayList<>(operator.arity());
+        for (int j = 0; j < operator.arity(); j++) {
+          EnhancedIndividual parent = parentSelector.select(rankedPopulation, random);
+          parents.add(parent);
+          parentGenotypes.add(parent.getGenotype());
+        }
+        try {
+          List<G> childGenotypes = operator.apply(parentGenotypes, random, listener);
+          for (G childGenotype : childGenotypes) {
+            tasks.add(birthCallable(childGenotype, generations, mapper, semanticsFunction, fitnessFunction, random, listener));
+          }
+          births = births + childGenotypes.size();
+          fitnessEvaluations = fitnessEvaluations + childGenotypes.size();
+          i = i + childGenotypes.size();
+        } catch (FunctionException ex) {
+          //just ignore: will not be added to the population
+        }
+      }
+      //update population
+      List<EnhancedIndividual> newPopulation = Misc.getAll(executor.invokeAll(tasks));
+      population = updatePopulation(population, newPopulation, rankedPopulation, random);
+      //select survivals
+      while (population.size() > populationSize) {
+        //re-rank
+        rankedPopulation = ranker.rank(population, random);
+        EnhancedIndividual individual = unsurvivalSelector.select(rankedPopulation, random);
+        population.remove(individual);
+      }
+      EvolutionEvent event = new EvolutionEvent(
               generations,
               births,
-              fitnessEvaluations(fitnessFunction, births),
-              rankedPopulation,
-              stopwatch.elapsed(TimeUnit.MILLISECONDS))
+              fitnessEvaluations,
+              (List)rankedPopulation,
+              stopwatch.elapsed(TimeUnit.MILLISECONDS)
       );
-      break;
+      listener.listen(event);
+      //check stopping conditions
+      StopCondition stopCondition = checkStopConditions(event);
+      if (stopCondition != null) {
+        listener.listen(new EvolutionEndEvent(
+                stopCondition,
+                generations,
+                births,
+                fitnessEvaluations(fitnessFunction, births),
+                rankedPopulation,
+                stopwatch.elapsed(TimeUnit.MILLISECONDS))
+        );
+        break;
+      }
     }
-  }
-  //take out solutions
-  List<Collection<Individual<G, S, F>>> rankedPopulation = ranker.rank(population, random);
-  Collection<S> solutions = new ArrayList<>();
-  for (Individual<G, S, F> individual
-
-  : rankedPopulation.get ( 
-    0)) {
+    //take out solutions
+    List<Collection<EnhancedIndividual>> rankedPopulation = ranker.rank(population, random);
+    Collection<S> solutions = new ArrayList<>();
+    for (EnhancedIndividual individual : rankedPopulation.get(0)) {
       solutions.add(individual.getSolution());
+    }
+    return solutions;
   }
-  return solutions ;
-}
+
+  private Callable<EnhancedIndividual> birthCallable(G genotype, int birthIteration, NonDeterministicFunction<G, S> solutionFunction, Function<S, B> semanticsFunction, Function<? super B, ? extends F> fitnessFunction, Random random, Listener listener) {
+    return () -> {
+      Stopwatch stopwatch = Stopwatch.createUnstarted();
+      Capturer capturer = new Capturer();
+      Map<String, Object> info = new LinkedHashMap<>();
+      long elapsed;
+      //genotype -> solution
+      stopwatch.start();
+      S solution = null;
+      try {
+        solution = solutionFunction.apply(genotype, random, capturer);
+      } catch (FunctionException ex) {
+        //invalid solution
+        //TODO log to listener
+      }
+      elapsed = stopwatch.stop().elapsed(TimeUnit.NANOSECONDS);
+      Map<String, Object> solutionInfo = Misc.fromInfoEvents(capturer.getEvents(), "solution.");
+      info.putAll(solutionInfo);
+      listener.listen(new TimedEvent(elapsed, TimeUnit.NANOSECONDS, new FunctionEvent(genotype, solution, solutionInfo)));
+      capturer.clear();
+      //solution -> semantics and semantics -> fitness
+      stopwatch.reset().start();
+      B semantics = null;
+      F fitness = null;
+      Map<String, Object> fitnessInfo;
+      if (solution != null) {
+        semantics = semanticsFunction.apply(solution, random, capturer);
+        info.putAll(Misc.fromInfoEvents(capturer.getEvents(), "semantics."));
+        capturer.clear();
+        fitness = fitnessFunction.apply(semantics, random, capturer);
+        fitnessInfo = Misc.fromInfoEvents(capturer.getEvents(), "fitness.");
+        info.putAll(fitnessInfo);
+      } else {
+        if (fitnessFunction instanceof Bounded) {
+          fitness = ((Bounded<F>) fitness).worstValue();
+        }
+        fitnessInfo = Collections.EMPTY_MAP;
+      }
+      elapsed = stopwatch.stop().elapsed(TimeUnit.NANOSECONDS);
+      listener.listen(new TimedEvent(elapsed, TimeUnit.NANOSECONDS, new FunctionEvent(genotype, solution, fitnessInfo)));
+      //merge info
+      return new EnhancedIndividual(genotype, solution, fitness, semantics, birthIteration, info);
+    };
+  }
 
 }

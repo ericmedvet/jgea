@@ -17,11 +17,11 @@ import java.util.Map;
  *
  * @author eric
  */
-public class Basic<G, S, F> implements DataCollector<G, S, F> {
+public class Basic implements DataCollector {
 
   @Override
-  public Map<String, Object> collect(EvolutionEvent<G, S, F> evolutionEvent) {
-    List<Collection<Individual<G, S, F>>> rankedPopulation = new ArrayList<>(evolutionEvent.getRankedPopulation());
+  public Map<String, Object> collect(EvolutionEvent evolutionEvent) {
+    List<Collection<Individual>> rankedPopulation = new ArrayList<>((List)evolutionEvent.getRankedPopulation());
     Map<String, Object> indexes = new LinkedHashMap<>();
     indexes.put("iterations", evolutionEvent.getIteration());
     indexes.put("births", evolutionEvent.getBirths());
