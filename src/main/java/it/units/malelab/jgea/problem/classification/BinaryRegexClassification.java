@@ -53,9 +53,9 @@ public class BinaryRegexClassification extends GrammarBasedRegexClassification {
     return data;
   }
 
-  public BinaryRegexClassification(int size, int length, long seed, int folds, int i, Classification.ErrorMetric learningErrorMetric, Classification.ErrorMetric validationErrorMetric) throws IOException {
+  public BinaryRegexClassification(int size, int length, long seed, int folds, int i, Classification.ErrorMetric learningErrorMetric, Classification.ErrorMetric validationErrorMetric, Option... options) throws IOException {
     super(new TreeSet<>(ALPHABET.chars().mapToObj(c -> (char)c).collect(Collectors.toSet())),
-            new LinkedHashSet<>(Arrays.asList(Option.ANY, Option.QUANTIFIERS, Option.OR, Option.ENHANCED_CONCATENATION)),
+            new LinkedHashSet<>(Arrays.asList(options)),
             buildData(REGEXES, ALPHABET, length, size, new Random(seed)),
             folds, i,
             learningErrorMetric, validationErrorMetric);

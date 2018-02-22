@@ -28,6 +28,7 @@ import it.units.malelab.jgea.core.ranker.Ranker;
 import it.units.malelab.jgea.core.ranker.selector.Selector;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.distance.Distance;
+import it.units.malelab.jgea.problem.classification.RegexClassification;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -96,11 +97,11 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
   private final BiFunction<B, B, B> semanticsReducer;
   private final Distance<B> distance;
 
-  public FitnessSharingDivideAndConquerEvolver(BiFunction<S, S, S> solutionReducer, BiFunction<B, B, B> semanticsReducer, Distance<B> distance, int populationSize, Factory<G> genotypeBuilder, Ranker<Individual<G, S, F>> ranker, NonDeterministicFunction<G, S> mapper, Map<GeneticOperator<G>, Double> operators, Selector<Individual<G, S, F>> parentSelector, Selector<Individual<G, S, F>> unsurvivalSelector, int offspringSize, boolean overlapping, List<StopCondition> stoppingConditions, long cacheSize) {
+  public FitnessSharingDivideAndConquerEvolver(BiFunction<S, S, S> solutionReducer, BiFunction<B, B, B> semanticsReducer, Distance<B> semanticsDistance, int populationSize, Factory<G> genotypeBuilder, Ranker<Individual<G, S, F>> ranker, NonDeterministicFunction<G, S> mapper, Map<GeneticOperator<G>, Double> operators, Selector<Individual<G, S, F>> parentSelector, Selector<Individual<G, S, F>> unsurvivalSelector, int offspringSize, boolean overlapping, List<StopCondition> stoppingConditions, long cacheSize) {
     super(populationSize, genotypeBuilder, ranker, mapper, operators, parentSelector, unsurvivalSelector, offspringSize, overlapping, stoppingConditions, cacheSize, false);
     this.solutionReducer = solutionReducer;
     this.semanticsReducer = semanticsReducer;
-    this.distance = distance;
+    this.distance = semanticsDistance;
   }
 
   @Override
@@ -139,7 +140,9 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
       for (Collection<EnhancedIndividual> rank : rankedPopulation) {
         for (EnhancedIndividual individual : rank) {
           //sort other by distance to this
-          List<EnhancedIndividual> others = rank.stream()
+          List<EnhancedIndividual> others = rankedPopulation.stream()
+                  .reduce(new ArrayList<EnhancedIndividual>(), (r1, r2) -> {r1.addAll(r2); return r1;})
+                  .stream()
                   .filter(i -> i.getAll().size() == 1)
                   .sorted((i1, i2) -> {
                     double d1 = distance.apply(i1.getSemantics(), individual.getSemantics());
@@ -181,8 +184,10 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
               individual.setSolution(compositeSolution);
               individual.setSemantics(compositeSemantics);
               individual.setFitness(compositeFitness);
-              individual.getAll().forEach((associate) -> {
-                associate.getAll().add(other);
+              individual.getAll().forEach(associate -> {
+                if (associate!=individual) {
+                  associate.getAll().add(other);
+                }
               });
               individual.getAll().add(other);
               for (EnhancedIndividual associate : individual.getAll()) {
@@ -223,6 +228,7 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
       //update population
       List<EnhancedIndividual> newPopulation = Misc.getAll(executor.invokeAll(tasks));
       population = updatePopulation(population, newPopulation, rankedPopulation, random);
+      //TODO should rerank by original fitness
       //select survivals
       while (population.size() > populationSize) {
         //re-rank
