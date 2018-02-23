@@ -14,11 +14,10 @@ import it.units.malelab.jgea.core.ranker.Ranker;
 import it.units.malelab.jgea.core.ranker.selector.Selector;
 import it.units.malelab.jgea.distance.Distance;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -36,7 +35,7 @@ public class DeterministicCrowdingEvolver<G, S, F> extends StandardEvolver<G, S,
   }
 
   @Override
-  protected <I extends Individual<G, S, F>> List<I> updatePopulation(List<I> population, List<I> newPopulation, List<Collection<I>> rankedPopulation, Random random) {
+  protected <I extends Individual<G, S, F>> void updatePopulation(final List<I> population, final List<I> newPopulation, Random random, AtomicInteger fitnessEvaluations) {
     for (I newIndividual : newPopulation) {
       //find parents
       List<Individual<G, S, F>> parents = new ArrayList<>(newIndividual.getParents());
@@ -46,7 +45,7 @@ public class DeterministicCrowdingEvolver<G, S, F> extends StandardEvolver<G, S,
         continue;
       }
       //find closest parent
-      Individual<G, S, F> closestParent = parents.stream()
+      I closestParent = (I)parents.stream()
               .sorted((i1, i2) -> (Double.compare(distance.apply(newIndividual, i1), distance.apply(newIndividual, i2))))
               .findFirst()
               .get();
@@ -60,7 +59,6 @@ public class DeterministicCrowdingEvolver<G, S, F> extends StandardEvolver<G, S,
         }
       }
     }
-    return population;
   }
 
 }

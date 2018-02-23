@@ -18,7 +18,6 @@ import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
 import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
 import it.units.malelab.jgea.core.fitness.Classification;
 import it.units.malelab.jgea.core.function.BiFunction;
-import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.collector.Basic;
 import it.units.malelab.jgea.core.listener.collector.BestInfo;
@@ -32,7 +31,6 @@ import it.units.malelab.jgea.core.ranker.FitnessComparator;
 import it.units.malelab.jgea.core.ranker.ParetoRanker;
 import it.units.malelab.jgea.core.ranker.selector.Tournament;
 import it.units.malelab.jgea.core.ranker.selector.Worst;
-import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.core.util.WithNames;
 import it.units.malelab.jgea.distance.Distance;
 import it.units.malelab.jgea.distance.Edit;
@@ -266,15 +264,15 @@ public class Example extends Worker {
             solutionReducer,
             semanticsReducer,
             semanticsDistance,
-            100,
+            20,
             new RampedHalfAndHalf<>(3, 15, p.getGrammar()),
             new ParetoRanker<>(),
             p.getSolutionMapper(),
             operators,
             new Tournament<>(3),
             new Worst(),
-            100,
-            false,
+            20,
+            true,
             Lists.newArrayList(new ElapsedTime(90, TimeUnit.SECONDS), new PerfectFitness<>(p.getFitnessFunction())),
             10000
     );

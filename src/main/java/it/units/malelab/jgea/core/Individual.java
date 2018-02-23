@@ -61,6 +61,11 @@ public class Individual<G, S, F> implements Serializable {
 
   public void setFitness(F fitness) {
     this.fitness = fitness;
-  }    
+  }
+
+  @Override
+  public String toString() {
+    return "Individual{" + "solution=" + solution + ", fitness=" + fitness + '}';
+  }  
     
 }

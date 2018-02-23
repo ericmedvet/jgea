@@ -35,6 +35,7 @@ import it.units.malelab.jgea.core.function.CachedBoundedFunction;
 import it.units.malelab.jgea.core.listener.event.Capturer;
 import it.units.malelab.jgea.core.listener.event.FunctionEvent;
 import it.units.malelab.jgea.core.listener.event.TimedEvent;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -72,9 +73,9 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
 
   @Override
   public Collection<S> solve(final Problem<S, F> problem, Random random, ExecutorService executor, Listener listener) throws InterruptedException, ExecutionException {
-    List<Callable<Individual<G, S, F>>> tasks = new ArrayList<>();
-    int births = 0;
     int generations = 0;
+    AtomicInteger births = new AtomicInteger();
+    AtomicInteger fitnessEvaluations = new AtomicInteger();
     Stopwatch stopwatch = Stopwatch.createStarted();
     NonDeterministicFunction<S, F> fitnessFunction = problem.getFitnessFunction();
     if (cacheSize > 0) {
@@ -85,71 +86,21 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
       }
     }
     //initialize population
-    List<Individual<G, S, F>> population = new ArrayList<>();
-    for (G genotype : genotypeBuilder.build(populationSize, random)) {
-      tasks.add(birthCallable(
-              genotype,
-              generations,
-              Collections.EMPTY_LIST,
-              mapper,
-              fitnessFunction,
-              random,
-              listener
-      ));
-    }
-    population.addAll(Misc.getAll(executor.invokeAll(tasks)));
-    births = births + populationSize;
+    List<Individual<G, S, F>> population = initPopulation(fitnessFunction, births, fitnessEvaluations, random, listener, executor);
     //iterate
     while (true) {
       generations = generations + 1;
-      //re-rank
-      List<Collection<Individual<G, S, F>>> rankedPopulation = ranker.rank(population, random);
       //build offsprings
-      int i = 0;
-      tasks.clear();
-      while (i < offspringSize) {
-        GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
-        List<Individual<G, S, F>> parents = new ArrayList<>(operator.arity());
-        List<G> parentGenotypes = new ArrayList<>(operator.arity());
-        for (int j = 0; j < operator.arity(); j++) {
-          Individual<G, S, F> parent = parentSelector.select(rankedPopulation, random);
-          parents.add(parent);
-          parentGenotypes.add(parent.getGenotype());
-        }
-        try {
-          List<G> childGenotypes = operator.apply(parentGenotypes, random, listener);
-          for (G childGenotype : childGenotypes) {
-            tasks.add(birthCallable(
-                    childGenotype,
-                    generations,
-                    saveAncestry ? parents : null,
-                    mapper,
-                    fitnessFunction,
-                    random,
-                    listener
-            ));
-          }
-          births = births + childGenotypes.size();
-          i = i + childGenotypes.size();
-        } catch (FunctionException ex) {
-          //just ignore: will not be added to the population
-        }
-      }
+      List<Individual<G, S, F>> newPopulation = buildOffspring(population, ranker, fitnessFunction, generations, births, fitnessEvaluations, random, listener, executor);
       //update population
-      List<Individual<G, S, F>> newPopulation = Misc.getAll(executor.invokeAll(tasks));
-      population = updatePopulation(population, newPopulation, rankedPopulation, random);
-      //select survivals
-      while (population.size() > populationSize) {
-        //re-rank
-        rankedPopulation = ranker.rank(population, random);
-        Individual<G, S, F> individual = unsurvivalSelector.select(rankedPopulation, random);
-        population.remove(individual);
-      }
+      updatePopulation(population, newPopulation, ranker, random);
+      //send event
+      List<Collection<Individual<G, S, F>>> rankedPopulation = ranker.rank(population, random);
       EvolutionEvent event = new EvolutionEvent(
               generations,
-              births,
-              fitnessEvaluations(fitnessFunction, births),
-              (List)rankedPopulation,
+              births.get(),
+              (fitnessFunction instanceof CachedNonDeterministicFunction) ? ((CachedNonDeterministicFunction) fitnessFunction).getActualCount() : fitnessEvaluations.get(),
+              (List) rankedPopulation,
               stopwatch.elapsed(TimeUnit.MILLISECONDS)
       );
       listener.listen(event);
@@ -159,8 +110,8 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
         listener.listen(new EvolutionEndEvent(
                 stopCondition,
                 generations,
-                births,
-                fitnessEvaluations(fitnessFunction, births),
+                births.get(),
+                (fitnessFunction instanceof CachedNonDeterministicFunction) ? ((CachedNonDeterministicFunction) fitnessFunction).getActualCount() : fitnessEvaluations.get(),
                 rankedPopulation,
                 stopwatch.elapsed(TimeUnit.MILLISECONDS))
         );
@@ -176,27 +127,36 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
     return solutions;
   }
 
-  protected <I extends Individual<G, S, F>> List<I> updatePopulation(List<I> population, List<I> newPopulation, List<Collection<I>> rankedPopulation, Random random) {
+  //TODO rank only one time here!
+  protected void updatePopulation(
+          final List<Individual<G, S, F>> population,
+          final List<Individual<G, S, F>> newPopulation,
+          final Ranker<Individual<G, S, F>> ranker,
+          final Random random) {
     if (overlapping) {
       population.addAll(newPopulation);
     } else {
       if (newPopulation.size() >= populationSize) {
-        population = newPopulation;
-      } else {
-        //keep missing individuals from old population
-        int targetSize = population.size() - newPopulation.size();
-        while (population.size() > targetSize) {
-          I individual = unsurvivalSelector.select(rankedPopulation, random);
-          population.remove(individual);
-        }
+        population.clear();
         population.addAll(newPopulation);
+      } else {
+        List<Collection<Individual<G, S, F>>> rankedPopulation = ranker.rank(population, random);
+        population.clear();
+        population.addAll(newPopulation);
+        //keep missing individuals from old population
+        while (population.size() < populationSize) {
+          Individual<G, S, F> individual = unsurvivalSelector.select(rankedPopulation, random);
+          population.add(individual);
+        }
       }
     }
-    return population;
-  }
-
-  protected long fitnessEvaluations(NonDeterministicFunction fitnessFunction, int births) {
-    return (fitnessFunction instanceof CachedNonDeterministicFunction) ? ((CachedNonDeterministicFunction) fitnessFunction).getActualCount() : births;
+    //select survivals
+    while (population.size() > populationSize) {
+      //re-rank
+      List<Collection<Individual<G, S, F>>> rankedPopulation = ranker.rank(population, random);
+      Individual<G, S, F> individual = unsurvivalSelector.select(rankedPopulation, random);
+      population.remove(individual);
+    }
   }
 
   protected StopCondition checkStopConditions(EvolutionEvent event) {
@@ -208,7 +168,14 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
     return null;
   }
 
-  protected Callable<Individual<G, S, F>> birthCallable(G genotype, int birthIteration, List<Individual<G, S, F>> parents, NonDeterministicFunction<G, S> solutionFunction, NonDeterministicFunction<S, F> fitnessFunction, Random random, Listener listener) {
+  protected Callable<Individual<G, S, F>> birthCallable(
+          final G genotype,
+          final int birthIteration,
+          final List<Individual<G, S, F>> parents,
+          final NonDeterministicFunction<G, S> solutionFunction,
+          final NonDeterministicFunction<S, F> fitnessFunction,
+          final Random random,
+          final Listener listener) {
     return () -> {
       Stopwatch stopwatch = Stopwatch.createUnstarted();
       Capturer capturer = new Capturer();
@@ -242,6 +209,75 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
       //merge info
       return new Individual<>(genotype, solution, fitness, birthIteration, parents, Misc.merge(solutionInfo, fitnessInfo));
     };
+  }
+
+  protected List<Individual<G, S, F>> initPopulation(
+          final NonDeterministicFunction<S, F> fitnessFunction,
+          final AtomicInteger births,
+          final AtomicInteger fitnessEvaluations,
+          final Random random,
+          final Listener listener,
+          final ExecutorService executor) throws InterruptedException, ExecutionException {
+    List<Callable<Individual<G, S, F>>> tasks = new ArrayList<>();
+    for (G genotype : genotypeBuilder.build(populationSize, random)) {
+      tasks.add(birthCallable(
+              genotype,
+              0,
+              Collections.EMPTY_LIST,
+              mapper,
+              fitnessFunction,
+              random,
+              listener
+      ));
+    }
+    births.addAndGet(populationSize);
+    fitnessEvaluations.addAndGet(populationSize);
+    return Misc.getAll(executor.invokeAll(tasks));
+  }
+
+  protected List<Individual<G, S, F>> buildOffspring(
+          final List<Individual<G, S, F>> population,
+          final Ranker<Individual<G, S, F>> ranker,
+          final NonDeterministicFunction<S, F> fitnessFunction,
+          final int generation,
+          final AtomicInteger births,
+          final AtomicInteger fitnessEvaluations,
+          final Random random,
+          final Listener listener,
+          final ExecutorService executor) throws InterruptedException, ExecutionException {
+    List<Callable<Individual<G, S, F>>> tasks = new ArrayList<>();
+    List<Collection<Individual<G, S, F>>> rankedPopulation = ranker.rank(population, random);
+    int i = 0;
+    while (i < offspringSize) {
+      GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
+      List<Individual<G, S, F>> parents = new ArrayList<>(operator.arity());
+      List<G> parentGenotypes = new ArrayList<>(operator.arity());
+      for (int j = 0; j < operator.arity(); j++) {
+        Individual<G, S, F> parent = parentSelector.select(rankedPopulation, random);
+        parents.add(parent);
+        parentGenotypes.add(parent.getGenotype());
+      }
+      try {
+        List<G> childGenotypes = operator.apply(parentGenotypes, random, listener);
+        for (G childGenotype : childGenotypes) {
+          tasks.add(birthCallable(
+                  childGenotype,
+                  generation,
+                  saveAncestry ? parents : null,
+                  mapper,
+                  fitnessFunction,
+                  random,
+                  listener
+          ));
+        }       
+        fitnessEvaluations.addAndGet(childGenotypes.size());
+        births.addAndGet(childGenotypes.size());
+        i = i + childGenotypes.size();
+      } catch (FunctionException ex) {
+        //just ignore: will not be added to the population
+      }
+    }
+    return Misc.getAll(executor.invokeAll(tasks));
   }
 
 }
