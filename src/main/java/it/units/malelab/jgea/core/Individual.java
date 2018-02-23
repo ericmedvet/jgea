@@ -16,8 +16,8 @@ import java.util.Map;
 public class Individual<G, S, F> implements Serializable {
   
   private final G genotype;
-  private S solution;
-  private F fitness;
+  private final S solution;
+  private final F fitness;
   private final int birthIteration;
   private final List<Individual<G, S, F>> parents;
   private final Map<String, Object> info;
@@ -53,14 +53,6 @@ public class Individual<G, S, F> implements Serializable {
 
   public Map<String, Object> getInfo() {
     return info;
-  }
-
-  public void setSolution(S solution) {
-    this.solution = solution;
-  }
-
-  public void setFitness(F fitness) {
-    this.fitness = fitness;
   }
 
   @Override

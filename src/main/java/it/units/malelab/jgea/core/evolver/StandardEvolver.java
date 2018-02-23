@@ -93,7 +93,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
       //build offsprings
       List<Individual<G, S, F>> newPopulation = buildOffspring(population, ranker, fitnessFunction, generations, births, fitnessEvaluations, random, listener, executor);
       //update population
-      updatePopulation(population, newPopulation, ranker, random);
+      updatePopulation(population, newPopulation, random);
       //send event
       List<Collection<Individual<G, S, F>>> rankedPopulation = ranker.rank(population, random);
       EvolutionEvent event = new EvolutionEvent(
@@ -127,11 +127,9 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
     return solutions;
   }
 
-  //TODO rank only one time here!
   protected void updatePopulation(
           final List<Individual<G, S, F>> population,
           final List<Individual<G, S, F>> newPopulation,
-          final Ranker<Individual<G, S, F>> ranker,
           final Random random) {
     if (overlapping) {
       population.addAll(newPopulation);

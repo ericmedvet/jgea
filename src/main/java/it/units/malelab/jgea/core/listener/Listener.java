@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutorService;
  */
 @FunctionalInterface
 public interface Listener extends Serializable {
-
+  
   public void listen(Event event);
 
   public static Listener deaf() {

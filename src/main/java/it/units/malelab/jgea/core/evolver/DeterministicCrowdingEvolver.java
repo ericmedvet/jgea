@@ -35,8 +35,11 @@ public class DeterministicCrowdingEvolver<G, S, F> extends StandardEvolver<G, S,
   }
 
   @Override
-  protected <I extends Individual<G, S, F>> void updatePopulation(final List<I> population, final List<I> newPopulation, Random random, AtomicInteger fitnessEvaluations) {
-    for (I newIndividual : newPopulation) {
+  protected void updatePopulation(
+          final List<Individual<G, S, F>> population,
+          final List<Individual<G, S, F>> newPopulation,
+          Random random) {
+    for (Individual<G, S, F> newIndividual : newPopulation) {
       //find parents
       List<Individual<G, S, F>> parents = new ArrayList<>(newIndividual.getParents());
       parents.retainAll(population);
@@ -45,7 +48,7 @@ public class DeterministicCrowdingEvolver<G, S, F> extends StandardEvolver<G, S,
         continue;
       }
       //find closest parent
-      I closestParent = (I)parents.stream()
+      Individual<G, S, F> closestParent = parents.stream()
               .sorted((i1, i2) -> (Double.compare(distance.apply(newIndividual, i1), distance.apply(newIndividual, i2))))
               .findFirst()
               .get();

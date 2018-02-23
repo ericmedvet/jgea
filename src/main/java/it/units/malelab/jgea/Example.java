@@ -18,6 +18,7 @@ import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
 import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
 import it.units.malelab.jgea.core.fitness.Classification;
 import it.units.malelab.jgea.core.function.BiFunction;
+import it.units.malelab.jgea.core.function.Reducer;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.collector.Basic;
 import it.units.malelab.jgea.core.listener.collector.BestInfo;
@@ -31,6 +32,7 @@ import it.units.malelab.jgea.core.ranker.FitnessComparator;
 import it.units.malelab.jgea.core.ranker.ParetoRanker;
 import it.units.malelab.jgea.core.ranker.selector.Tournament;
 import it.units.malelab.jgea.core.ranker.selector.Worst;
+import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.core.util.WithNames;
 import it.units.malelab.jgea.distance.Distance;
 import it.units.malelab.jgea.distance.Edit;
@@ -241,37 +243,36 @@ public class Example extends Worker {
     operators.put(new StandardTreeCrossover<>(15), 0.8d);
     Distance<List<RegexClassification.Label>> semanticsDistance = (l1, l2, listener) -> {
       double count = 0;
-      for (int i = 0; i<Math.min(l1.size(), l2.size()); i++) {
+      for (int i = 0; i < Math.min(l1.size(), l2.size()); i++) {
         if (!l1.get(i).equals(l2.get(i))) {
-          count = count+1d;
+          count = count + 1d;
         }
       }
-      return count/(double)Math.min(l1.size(), l2.size());
+      return count / (double) Math.min(l1.size(), l2.size());
     };
-    BiFunction<List<RegexClassification.Label>, List<RegexClassification.Label>, List<RegexClassification.Label>> semanticsReducer = (l0, l1, listener) -> {
-      List<RegexClassification.Label> ored = new ArrayList<>(Math.min(l0.size(), l1.size()));
-      for (int i = 0; i<Math.min(l0.size(), l1.size()); i++) {
-        if (l0.get(i).equals(RegexClassification.Label.FOUND)||l1.get(i).equals(RegexClassification.Label.FOUND)) {
+    Reducer<Pair<String, List<RegexClassification.Label>>> reducer = (p0, p1, listener) -> {
+      String s = p0.first() + "|" + p1.first();
+      List<RegexClassification.Label> ored = new ArrayList<>(Math.min(p0.second().size(), p1.second().size()));
+      for (int i = 0; i < Math.min(p0.second().size(), p1.second().size()); i++) {
+        if (p0.second().get(i).equals(RegexClassification.Label.FOUND) || p1.second().get(i).equals(RegexClassification.Label.FOUND)) {
           ored.add(RegexClassification.Label.FOUND);
         } else {
           ored.add(RegexClassification.Label.NOT_FOUND);
         }
       }
-      return ored;
+      return Pair.build(s, ored);
     };
-    BiFunction<String, String, String> solutionReducer = (s0, s1, listener) -> (s0+"|"+s1);
     StandardEvolver<Node<String>, String, List<Double>> evolver = new FitnessSharingDivideAndConquerEvolver<>(
-            solutionReducer,
-            semanticsReducer,
+            reducer,
             semanticsDistance,
-            20,
+            500,
             new RampedHalfAndHalf<>(3, 15, p.getGrammar()),
             new ParetoRanker<>(),
             p.getSolutionMapper(),
             operators,
             new Tournament<>(3),
             new Worst(),
-            20,
+            500,
             true,
             Lists.newArrayList(new ElapsedTime(90, TimeUnit.SECONDS), new PerfectFitness<>(p.getFitnessFunction())),
             10000
