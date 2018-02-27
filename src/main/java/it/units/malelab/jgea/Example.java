@@ -17,7 +17,6 @@ import it.units.malelab.jgea.core.evolver.stopcondition.ElapsedTime;
 import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
 import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
 import it.units.malelab.jgea.core.fitness.Classification;
-import it.units.malelab.jgea.core.function.BiFunction;
 import it.units.malelab.jgea.core.function.Reducer;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.collector.Basic;
@@ -128,14 +127,14 @@ public class Example extends Worker {
     operators.put(new StandardTreeMutation<>(15, p.getGrammar()), 0.2d);
     operators.put(new StandardTreeCrossover<>(15), 0.8d);
     StandardEvolver<Node<String>, String, List<Double>> evolver = new StandardEvolver<>(
-            500,
+            100,
             new RampedHalfAndHalf<>(3, 15, p.getGrammar()),
             new ParetoRanker<>(),
             p.getSolutionMapper(),
             operators,
             new Tournament<>(3),
             new Worst(),
-            500,
+            100,
             true,
             Lists.newArrayList(new ElapsedTime(90, TimeUnit.SECONDS), new PerfectFitness<>(p.getFitnessFunction())),
             10000,
@@ -233,7 +232,7 @@ public class Example extends Worker {
 
   private void binaryRegexFSDC(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
     GrammarBasedProblem<String, String, List<Double>> p = new BinaryRegexClassification(
-            50, 100, 1,
+            100, 200, 1,
             5, 0,
             Classification.ErrorMetric.BALANCED_ERROR_RATE, Classification.ErrorMetric.CLASS_ERROR_RATE,
             GrammarBasedRegexClassification.Option.ANY, GrammarBasedRegexClassification.Option.ENHANCED_CONCATENATION

@@ -144,6 +144,7 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
     fitnessEvaluations.addAndGet(populationSize);
     //iterate
     while (true) {
+      tasks.clear();
       generations = generations + 1;
       groupIndividuals(population, fitnessFunction, random, fitnessEvaluations);
       //build offsprings      
@@ -170,10 +171,12 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
           //just ignore: will not be added to the population
         }
       }
-      List<Individual<G, S, F>> newPopulation = (List) Misc.getAll(executor.invokeAll(tasks));;
+      List<Individual<G, S, F>> newPopulation = (List) Misc.getAll(executor.invokeAll(tasks));
       //update population
-      groupIndividuals(population, fitnessFunction, random, fitnessEvaluations);
       updatePopulation(population, newPopulation, random);
+      //reduce population
+      groupIndividuals(population, fitnessFunction, random, fitnessEvaluations);
+      reducePopulation(population, random);
       //send event
       rankedPopulation = ranker.rank(population, random);
       EvolutionEvent event = new EvolutionEvent(

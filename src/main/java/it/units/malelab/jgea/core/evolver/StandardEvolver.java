@@ -36,6 +36,7 @@ import it.units.malelab.jgea.core.listener.event.Capturer;
 import it.units.malelab.jgea.core.listener.event.FunctionEvent;
 import it.units.malelab.jgea.core.listener.event.TimedEvent;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -94,6 +95,8 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
       List<Individual<G, S, F>> newPopulation = buildOffspring(population, ranker, fitnessFunction, generations, births, fitnessEvaluations, random, listener, executor);
       //update population
       updatePopulation(population, newPopulation, random);
+      //reduce population
+      reducePopulation(population, random);
       //send event
       List<Collection<Individual<G, S, F>>> rankedPopulation = ranker.rank(population, random);
       EvolutionEvent event = new EvolutionEvent(
@@ -148,12 +151,31 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
         }
       }
     }
+  }
+  
+  protected void reducePopulation(
+          final List<Individual<G, S, F>> population,
+          final Random random ) {
     //select survivals
-    while (population.size() > populationSize) {
-      //re-rank
+    if (population.size()> populationSize) {
       List<Collection<Individual<G, S, F>>> rankedPopulation = ranker.rank(population, random);
-      Individual<G, S, F> individual = unsurvivalSelector.select(rankedPopulation, random);
-      population.remove(individual);
+      while (population.size() > populationSize) {
+        //re-rank
+        Individual<G, S, F> individual = unsurvivalSelector.select(rankedPopulation, random);
+        population.remove(individual);
+        boolean wasLast = false;
+        for (Collection<Individual<G, S, F>> rank : rankedPopulation) {
+          if (rank.remove(individual)) {
+            if (rank.isEmpty()) {
+              wasLast = true;
+            }
+            break;
+          }
+        }
+        if (wasLast) {
+          rankedPopulation = rankedPopulation.stream().filter(rank -> !rank.isEmpty()).collect(Collectors.toList());
+        }                
+      }  
     }
   }
 
