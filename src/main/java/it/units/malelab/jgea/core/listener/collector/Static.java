@@ -24,7 +24,7 @@ public class Static implements DataCollector {
   @Override
   public Map<String, String> getFormattedNames() {
     return values.entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getKey, e -> "%s"));
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> "%"+e.getValue().toString().length()+"."+e.getValue().toString().length()+"s"));
   }
 
   @Override

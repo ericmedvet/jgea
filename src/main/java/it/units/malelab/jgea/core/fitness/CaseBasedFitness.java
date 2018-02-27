@@ -9,8 +9,6 @@ import it.units.malelab.jgea.core.function.BiFunction;
 import it.units.malelab.jgea.core.function.ComposedFunction;
 import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.function.FunctionException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

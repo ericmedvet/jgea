@@ -29,9 +29,9 @@ public class FileRegexClassification extends GrammarBasedRegexClassification {
     return data;
   }
 
-  public FileRegexClassification(String positiveFileName, String negativeFileName, int folds, int i, Classification.ErrorMetric learningErrorMetric, Classification.ErrorMetric validationErrorMetric) throws IOException {
+  public FileRegexClassification(String positiveFileName, String negativeFileName, int folds, int i, Classification.ErrorMetric learningErrorMetric, Classification.ErrorMetric validationErrorMetric, Option... options) throws IOException {
     super(null,
-            new LinkedHashSet<>(Arrays.asList(Option.ANY, Option.OR, Option.CHAR_CLASS, Option.ENHANCED_CONCATENATION)),
+            new LinkedHashSet<>(Arrays.asList(options)),
             buildData(positiveFileName, negativeFileName),
             folds, i,
             learningErrorMetric, validationErrorMetric);
