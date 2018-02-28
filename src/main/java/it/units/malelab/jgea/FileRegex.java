@@ -16,7 +16,7 @@ import it.units.malelab.jgea.core.evolver.FitnessSharingDivideAndConquerEvolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.ElapsedTime;
 import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
-import it.units.malelab.jgea.core.fitness.Classification;
+import it.units.malelab.jgea.core.fitness.ClassificationFitness;
 import it.units.malelab.jgea.core.function.Reducer;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.collector.Basic;
@@ -42,6 +42,7 @@ import it.units.malelab.jgea.problem.classification.AbstractClassificationProble
 import it.units.malelab.jgea.problem.classification.FileRegexClassification;
 import it.units.malelab.jgea.problem.classification.GrammarBasedRegexClassification;
 import it.units.malelab.jgea.problem.classification.RegexClassification;
+import it.units.malelab.jgea.problem.extraction.RegexGrammar;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -94,15 +95,15 @@ public class FileRegex extends Worker {
             a(args, "pFile", ""),
             a(args, "nFile", ""),
             folds, fold,
-            Classification.ErrorMetric.BALANCED_ERROR_RATE, Classification.ErrorMetric.CLASS_ERROR_RATE,
-            GrammarBasedRegexClassification.Option.ANY, GrammarBasedRegexClassification.Option.OR, GrammarBasedRegexClassification.Option.CHAR_CLASS, GrammarBasedRegexClassification.Option.ENHANCED_CONCATENATION
+            ClassificationFitness.Metric.BALANCED_ERROR_RATE, ClassificationFitness.Metric.CLASS_ERROR_RATE,
+            RegexGrammar.Option.ANY, RegexGrammar.Option.OR, RegexGrammar.Option.CHAR_CLASS, RegexGrammar.Option.ENHANCED_CONCATENATION
     );
     GrammarBasedProblem<String, String, List<Double>> pNoOr = new FileRegexClassification(
             a(args, "pFile", ""),
             a(args, "nFile", ""),
             folds, fold,
-            Classification.ErrorMetric.BALANCED_ERROR_RATE, Classification.ErrorMetric.CLASS_ERROR_RATE,
-            GrammarBasedRegexClassification.Option.ANY, GrammarBasedRegexClassification.Option.OR, GrammarBasedRegexClassification.Option.CHAR_CLASS, GrammarBasedRegexClassification.Option.ENHANCED_CONCATENATION
+            ClassificationFitness.Metric.BALANCED_ERROR_RATE, ClassificationFitness.Metric.CLASS_ERROR_RATE,
+            RegexGrammar.Option.ANY, RegexGrammar.Option.OR, RegexGrammar.Option.CHAR_CLASS, RegexGrammar.Option.ENHANCED_CONCATENATION
     );
     GrammarBasedProblem<String, String, List<Double>> p;
     for (int run : runs) {
@@ -204,8 +205,7 @@ public class FileRegex extends Worker {
         constants.put("ea", ea);
         System.out.printf("Starting evolution: %s%n", constants);
         Collection<String> solutions = evolver.solve(p, random, executor,
-                Listener.onExecutor(listener(
-                                new Static(constants),
+                Listener.onExecutor(listener(new Static(constants),
                                 new Basic(),
                                 new Population(),
                                 new BestInfo<>(
@@ -213,10 +213,10 @@ public class FileRegex extends Worker {
                                         (n, l) -> "%5.3f"),
                                 new FunctionOfBest<>(
                                         "learning",
-                                        new Classification<>(
+                                        new ClassificationFitness<>(
                                                 ((AbstractClassificationProblem) p).getLearningData(),
                                                 (AbstractClassificationProblem) p,
-                                                Classification.ErrorMetric.CLASS_ERROR_RATE
+                                                ClassificationFitness.Metric.CLASS_ERROR_RATE
                                         ).cached(cacheSize),
                                         BestInfo.fromNames((WithNames) ((ProblemWithValidation<String, List<Double>>) p).getValidationFunction()),
                                         (n, l) -> "%5.3f"),

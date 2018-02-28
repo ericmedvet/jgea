@@ -5,8 +5,9 @@
  */
 package it.units.malelab.jgea.problem.classification;
 
-import it.units.malelab.jgea.core.fitness.Classification;
+import it.units.malelab.jgea.core.fitness.ClassificationFitness;
 import it.units.malelab.jgea.core.util.Pair;
+import it.units.malelab.jgea.problem.extraction.RegexGrammar;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,7 +54,7 @@ public class BinaryRegexClassification extends GrammarBasedRegexClassification {
     return data;
   }
 
-  public BinaryRegexClassification(int size, int length, long seed, int folds, int i, Classification.ErrorMetric learningErrorMetric, Classification.ErrorMetric validationErrorMetric, Option... options) throws IOException {
+  public BinaryRegexClassification(int size, int length, long seed, int folds, int i, ClassificationFitness.Metric learningErrorMetric, ClassificationFitness.Metric validationErrorMetric, RegexGrammar.Option... options) throws IOException {
     super(new TreeSet<>(ALPHABET.chars().mapToObj(c -> (char)c).collect(Collectors.toSet())),
             new LinkedHashSet<>(Arrays.asList(options)),
             buildData(REGEXES, ALPHABET, length, size, new Random(seed)),

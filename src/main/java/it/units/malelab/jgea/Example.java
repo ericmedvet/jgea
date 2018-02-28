@@ -6,6 +6,7 @@
 package it.units.malelab.jgea;
 
 import com.google.common.collect.Lists;
+import com.sun.xml.internal.ws.policy.sourcemodel.wspolicy.XmlToken;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.ProblemWithValidation;
@@ -16,7 +17,8 @@ import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.ElapsedTime;
 import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
 import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
-import it.units.malelab.jgea.core.fitness.Classification;
+import it.units.malelab.jgea.core.fitness.ClassificationFitness;
+import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.function.Reducer;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.collector.Basic;
@@ -45,10 +47,16 @@ import it.units.malelab.jgea.problem.classification.AbstractClassificationProble
 import it.units.malelab.jgea.problem.classification.BinaryRegexClassification;
 import it.units.malelab.jgea.problem.classification.GrammarBasedRegexClassification;
 import it.units.malelab.jgea.problem.classification.RegexClassification;
+import it.units.malelab.jgea.problem.extraction.AbstractExtractionProblem;
+import it.units.malelab.jgea.problem.extraction.BinaryRegexExtraction;
+import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
+import it.units.malelab.jgea.problem.extraction.RegexGrammar;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,7 +85,8 @@ public class Example extends Worker {
     try {
       //binaryRegexStandard(executorService);
       //binaryRegexDC(executorService);
-      binaryRegexFSDC(executorService);
+      //binaryRegexFSDC(executorService);
+      binaryRegexExtractionStandard(executorService);
     } catch (IOException | InterruptedException | ExecutionException ex) {
       Logger.getLogger(Example.class.getName()).log(Level.SEVERE, null, ex);
     }
@@ -120,8 +129,8 @@ public class Example extends Worker {
     GrammarBasedProblem<String, String, List<Double>> p = new BinaryRegexClassification(
             50, 100, 1,
             5, 0,
-            Classification.ErrorMetric.BALANCED_ERROR_RATE, Classification.ErrorMetric.CLASS_ERROR_RATE,
-            GrammarBasedRegexClassification.Option.ANY, GrammarBasedRegexClassification.Option.ENHANCED_CONCATENATION, GrammarBasedRegexClassification.Option.OR
+            ClassificationFitness.Metric.BALANCED_ERROR_RATE, ClassificationFitness.Metric.CLASS_ERROR_RATE,
+            RegexGrammar.Option.ANY, RegexGrammar.Option.ENHANCED_CONCATENATION, RegexGrammar.Option.OR
     );
     Map<GeneticOperator<Node<String>>, Double> operators = new LinkedHashMap<>();
     operators.put(new StandardTreeMutation<>(15, p.getGrammar()), 0.2d);
@@ -142,19 +151,14 @@ public class Example extends Worker {
     );
     Random r = new Random(1);
     evolver.solve(p, r, executor,
-            Listener.onExecutor(listener(
-                            new Basic(),
+            Listener.onExecutor(listener(new Basic(),
                             new Population(),
                             new BestInfo<>(
                                     BestInfo.fromNames((WithNames) p.getFitnessFunction()),
                                     (n, l) -> "%5.3f"),
                             new FunctionOfBest<>(
                                     "learning",
-                                    new Classification<>(
-                                            ((AbstractClassificationProblem) p).getLearningData(),
-                                            (AbstractClassificationProblem) p,
-                                            Classification.ErrorMetric.CLASS_ERROR_RATE
-                                    ).cached(10000),
+                                    ((ClassificationFitness) ((AbstractClassificationProblem) p).getFitnessFunction()).changeMetric(ClassificationFitness.Metric.ERROR_RATE).cached(10000),
                                     BestInfo.fromNames((WithNames) ((ProblemWithValidation<String, List<Double>>) p).getValidationFunction()),
                                     (n, l) -> "%5.3f"),
                             new FunctionOfBest<>(
@@ -173,8 +177,8 @@ public class Example extends Worker {
     GrammarBasedProblem<String, String, List<Double>> p = new BinaryRegexClassification(
             50, 100, 1,
             5, 0,
-            Classification.ErrorMetric.BALANCED_ERROR_RATE, Classification.ErrorMetric.CLASS_ERROR_RATE,
-            GrammarBasedRegexClassification.Option.ANY, GrammarBasedRegexClassification.Option.ENHANCED_CONCATENATION, GrammarBasedRegexClassification.Option.OR
+            ClassificationFitness.Metric.BALANCED_ERROR_RATE, ClassificationFitness.Metric.CLASS_ERROR_RATE,
+            RegexGrammar.Option.ANY, RegexGrammar.Option.ENHANCED_CONCATENATION, RegexGrammar.Option.OR
     );
     Map<GeneticOperator<Node<String>>, Double> operators = new LinkedHashMap<>();
     operators.put(new StandardTreeMutation<>(15, p.getGrammar()), 0.2d);
@@ -203,19 +207,14 @@ public class Example extends Worker {
     );
     Random r = new Random(1);
     evolver.solve(p, r, executor,
-            Listener.onExecutor(listener(
-                            new Basic(),
+            Listener.onExecutor(listener(new Basic(),
                             new Population(),
                             new BestInfo<>(
                                     BestInfo.fromNames((WithNames) p.getFitnessFunction()),
                                     (n, l) -> "%5.3f"),
                             new FunctionOfBest<>(
                                     "learning",
-                                    new Classification<>(
-                                            ((AbstractClassificationProblem) p).getLearningData(),
-                                            (AbstractClassificationProblem) p,
-                                            Classification.ErrorMetric.CLASS_ERROR_RATE
-                                    ).cached(10000),
+                                    ((ClassificationFitness) ((AbstractClassificationProblem) p).getFitnessFunction()).changeMetric(ClassificationFitness.Metric.ERROR_RATE).cached(10000),
                                     BestInfo.fromNames((WithNames) ((ProblemWithValidation<String, List<Double>>) p).getValidationFunction()),
                                     (n, l) -> "%5.3f"),
                             new FunctionOfBest<>(
@@ -234,8 +233,8 @@ public class Example extends Worker {
     GrammarBasedProblem<String, String, List<Double>> p = new BinaryRegexClassification(
             100, 200, 1,
             5, 0,
-            Classification.ErrorMetric.BALANCED_ERROR_RATE, Classification.ErrorMetric.CLASS_ERROR_RATE,
-            GrammarBasedRegexClassification.Option.ANY, GrammarBasedRegexClassification.Option.ENHANCED_CONCATENATION
+            ClassificationFitness.Metric.BALANCED_ERROR_RATE, ClassificationFitness.Metric.CLASS_ERROR_RATE,
+            RegexGrammar.Option.ANY, RegexGrammar.Option.ENHANCED_CONCATENATION
     );
     Map<GeneticOperator<Node<String>>, Double> operators = new LinkedHashMap<>();
     operators.put(new StandardTreeMutation<>(15, p.getGrammar()), 0.2d);
@@ -278,25 +277,69 @@ public class Example extends Worker {
     );
     Random r = new Random(1);
     evolver.solve(p, r, executor,
-            Listener.onExecutor(listener(
-                            new Basic(),
+            Listener.onExecutor(listener(new Basic(),
                             new Population(),
                             new BestInfo<>(
                                     BestInfo.fromNames((WithNames) p.getFitnessFunction()),
                                     (n, l) -> "%5.3f"),
                             new FunctionOfBest<>(
                                     "learning",
-                                    new Classification<>(
-                                            ((AbstractClassificationProblem) p).getLearningData(),
-                                            (AbstractClassificationProblem) p,
-                                            Classification.ErrorMetric.CLASS_ERROR_RATE
-                                    ).cached(10000),
+                                    ((ClassificationFitness) ((AbstractClassificationProblem) p).getFitnessFunction()).changeMetric(ClassificationFitness.Metric.ERROR_RATE).cached(10000),
                                     BestInfo.fromNames((WithNames) ((ProblemWithValidation<String, List<Double>>) p).getValidationFunction()),
                                     (n, l) -> "%5.3f"),
                             new FunctionOfBest<>(
                                     "validation",
                                     ((ProblemWithValidation<String, List<Double>>) p).getValidationFunction().cached(10000),
                                     BestInfo.fromNames((WithNames) ((ProblemWithValidation<String, List<Double>>) p).getValidationFunction()),
+                                    (n, l) -> "%5.3f"),
+                            new Diversity(),
+                            new BestPrinter(null, "%s")
+                    ), executor
+            )
+    );
+  }
+
+  private void binaryRegexExtractionStandard(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
+    GrammarBasedProblem<String, String, List<Double>> p = new BinaryRegexExtraction(
+            10, 1,
+            false, new HashSet<>(Arrays.asList(RegexGrammar.Option.ANY, RegexGrammar.Option.ENHANCED_CONCATENATION, RegexGrammar.Option.OR)),
+            5, 0,
+            ExtractionFitness.Metric.ONE_MINUS_FM);
+    Map<GeneticOperator<Node<String>>, Double> operators = new LinkedHashMap<>();
+    operators.put(new StandardTreeMutation<>(15, p.getGrammar()), 0.2d);
+    operators.put(new StandardTreeCrossover<>(15), 0.8d);
+    StandardEvolver<Node<String>, String, List<Double>> evolver = new StandardEvolver<>(
+            100,
+            new RampedHalfAndHalf<>(3, 15, p.getGrammar()),
+            new ParetoRanker<>(),
+            p.getSolutionMapper(),
+            operators,
+            new Tournament<>(3),
+            new Worst(),
+            100,
+            true,
+            Lists.newArrayList(new ElapsedTime(90, TimeUnit.SECONDS), new PerfectFitness<>(p.getFitnessFunction())),
+            10000,
+            false
+    );
+    Random r = new Random(1);
+    Function learningAssessmentFunction = ((ExtractionFitness) ((AbstractExtractionProblem) p).getFitnessFunction()).changeMetrics(ExtractionFitness.Metric.ONE_MINUS_PREC, ExtractionFitness.Metric.ONE_MINUS_REC, ExtractionFitness.Metric.CHAR_ERROR);
+    Function validationAssessmentFunction = ((ExtractionFitness) ((AbstractExtractionProblem) p).getValidationFunction()).changeMetrics(ExtractionFitness.Metric.ONE_MINUS_FM, ExtractionFitness.Metric.ONE_MINUS_PREC, ExtractionFitness.Metric.ONE_MINUS_REC, ExtractionFitness.Metric.CHAR_ERROR);    
+    evolver.solve(p, r, executor,
+            Listener.onExecutor(listener(new Basic(),
+                            new Population(),
+                            new BestInfo<>(
+                                    BestInfo.fromNames((WithNames) p.getFitnessFunction()),
+                                    (n, l) -> "%5.3f"),
+                            new FunctionOfBest<>(
+                                    "learning",
+                                    learningAssessmentFunction.cached(10000),
+                                    BestInfo.fromNames((WithNames)learningAssessmentFunction),
+                                    (n, l) -> "%5.3f"),
+                            new FunctionOfBest<>(
+                                    "validation",
+                                    validationAssessmentFunction.cached(10000),
+                                    BestInfo.fromNames((WithNames)validationAssessmentFunction),
                                     (n, l) -> "%5.3f"),
                             new Diversity(),
                             new BestPrinter(null, "%s")

@@ -24,9 +24,9 @@ import java.util.stream.Collectors;
  *
  * @author eric
  */
-public class Classification<C, O, E extends Enum<E>> extends CaseBasedFitness<C, O, E, List<Double>> implements Bounded<List<Double>>, WithNames {
+public class ClassificationFitness<C, O, E extends Enum<E>> extends CaseBasedFitness<C, O, E, List<Double>> implements Bounded<List<Double>>, WithNames {
 
-  public static enum ErrorMetric {
+  public static enum Metric {
     CLASS_ERROR_RATE, ERROR_RATE, BALANCED_ERROR_RATE
   };
 
@@ -59,9 +59,9 @@ public class Classification<C, O, E extends Enum<E>> extends CaseBasedFitness<C,
 
   }
 
-  private static <E extends Enum<E>> Function<List<E>, List<Double>> getAggregator(List<E> actualLabels, ErrorMetric metric) {
+  private static <E extends Enum<E>> Function<List<E>, List<Double>> getAggregator(List<E> actualLabels, Metric metric) {
     final ClassErrorRate<E> classErrorRate = new ClassErrorRate<>(actualLabels);
-    if (metric.equals(ErrorMetric.CLASS_ERROR_RATE)) {
+    if (metric.equals(Metric.CLASS_ERROR_RATE)) {
       return (List<E> predictedLabels, Listener listener) -> {
         List<Pair<Integer, Integer>> pairs = classErrorRate.apply(predictedLabels);
         return pairs.stream()
@@ -69,7 +69,7 @@ public class Classification<C, O, E extends Enum<E>> extends CaseBasedFitness<C,
                 .collect(Collectors.toList());
       };
     }
-    if (metric.equals(ErrorMetric.ERROR_RATE)) {
+    if (metric.equals(Metric.ERROR_RATE)) {
       return (List<E> predictedLabels, Listener listener) -> {
         List<Pair<Integer, Integer>> pairs = classErrorRate.apply(predictedLabels);
         int errors = pairs.stream().map(Pair::first).mapToInt(Integer::intValue).sum();
@@ -77,7 +77,7 @@ public class Classification<C, O, E extends Enum<E>> extends CaseBasedFitness<C,
         return Arrays.asList((double)errors/(double)count);
       };
     }
-    if (metric.equals(ErrorMetric.BALANCED_ERROR_RATE)) {
+    if (metric.equals(Metric.BALANCED_ERROR_RATE)) {
       return (List<E> predictedLabels, Listener listener) -> {
         List<Pair<Integer, Integer>> pairs = classErrorRate.apply(predictedLabels);
         return Arrays.asList(pairs.stream()
@@ -89,25 +89,31 @@ public class Classification<C, O, E extends Enum<E>> extends CaseBasedFitness<C,
     return null;
   }
   
+  private final List<Pair<O, E>> data;
   private final List<String> names;
 
-  public Classification(List<Pair<O, E>> data, BiFunction<C, O, E> observationFitnessFunction, ErrorMetric errorMetric) {
+  public ClassificationFitness(List<Pair<O, E>> data, BiFunction<C, O, E> observationFitnessFunction, Metric errorMetric) {
     super(
             data.stream().map(Pair::first).collect(Collectors.toList()),
             observationFitnessFunction,
             getAggregator(data.stream().map(Pair::second).collect(Collectors.toList()), errorMetric)
     );
+    this.data = data;
     names = new ArrayList<>();
-    if (errorMetric.equals(ErrorMetric.CLASS_ERROR_RATE)) {
+    if (errorMetric.equals(Metric.CLASS_ERROR_RATE)) {
       E protoLabel = data.get(0).second();
       for (E label : (E[]) protoLabel.getClass().getEnumConstants()) {
         names.add(label.toString().toLowerCase()+".error.rate");
       }
-    } else if (errorMetric.equals(ErrorMetric.ERROR_RATE)){
+    } else if (errorMetric.equals(Metric.ERROR_RATE)){
       names.add("error.rate");
-    } else if (errorMetric.equals(ErrorMetric.BALANCED_ERROR_RATE)){
+    } else if (errorMetric.equals(Metric.BALANCED_ERROR_RATE)){
       names.add("balanced.error.rate");
     }
+  }
+  
+  public ClassificationFitness<C, O, E> changeMetric(Metric metric) {
+    return new ClassificationFitness<>(data, observationFunction(), metric);
   }
 
   @Override

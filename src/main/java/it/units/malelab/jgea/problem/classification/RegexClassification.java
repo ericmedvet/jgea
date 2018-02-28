@@ -5,7 +5,7 @@
  */
 package it.units.malelab.jgea.problem.classification;
 
-import it.units.malelab.jgea.core.fitness.Classification;
+import it.units.malelab.jgea.core.fitness.ClassificationFitness;
 import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.util.Pair;
@@ -23,7 +23,7 @@ public class RegexClassification extends AbstractClassificationProblem<String, S
     FOUND, NOT_FOUND
   };
 
-  public RegexClassification(List<Pair<String, Label>> data, int folds, int i, Classification.ErrorMetric learningErrorMetric, Classification.ErrorMetric validationErrorMetric) {
+  public RegexClassification(List<Pair<String, Label>> data, int folds, int i, ClassificationFitness.Metric learningErrorMetric, ClassificationFitness.Metric validationErrorMetric) {
     super(data, folds, i, learningErrorMetric, validationErrorMetric);
   }
 

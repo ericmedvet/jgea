@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.units.malelab.jgea.problem.classification;
+package it.units.malelab.jgea.problem.extraction;
 
 import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.fitness.ClassificationFitness;
@@ -12,31 +12,36 @@ import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.grammarbased.Grammar;
 import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
-import it.units.malelab.jgea.problem.extraction.RegexGrammar;
+import it.units.malelab.jgea.problem.classification.RegexClassification;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
  *
  * @author eric
  */
-public class GrammarBasedRegexClassification extends RegexClassification implements GrammarBasedProblem<String, String, List<Double>> {
+public class GrammarBasedRegexExtraction extends RegexExtraction implements GrammarBasedProblem<String, String, List<Double>> {
 
   private final Grammar<String> grammar;
   private final Function<Node<String>, String> solutionMapper;
 
-  public GrammarBasedRegexClassification(Set<Character> alphabet, Set<RegexGrammar.Option> options, List<Pair<String, Label>> data, int folds, int i, ClassificationFitness.Metric learningErrorMetric, ClassificationFitness.Metric validationErrorMetric) {
-    super(data, folds, i, learningErrorMetric, validationErrorMetric);
+  public GrammarBasedRegexExtraction(boolean limitAlphabetToExtractions, Set<RegexGrammar.Option> options, String text, Set<String> extractors, int folds, int i, ExtractionFitness.Metric... metrics) {
+    super(text, extractors, folds, i, metrics);
     solutionMapper = (Node<String> node, Listener listener)
             -> node.leafNodes().stream()
             .map(Node::getContent)
             .collect(Collectors.joining());
-    if (alphabet==null) {
-      grammar = new RegexGrammar(data.stream().map(Pair::first).collect(Collectors.toList()), options);
+    Set<String> texts = new TreeSet<>();
+    if (limitAlphabetToExtractions) {
+      texts.addAll(getFitnessFunction().getDesiredExtractions().stream()
+              .map(r -> getFitnessFunction().getText().substring(r.lowerEndpoint(), r.upperEndpoint()))
+              .collect(Collectors.toSet()));
     } else {
-      grammar = new RegexGrammar(alphabet, options);
+      texts.add(text);
     }
+    grammar = new RegexGrammar(texts, options);
   }
 
   @Override

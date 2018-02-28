@@ -5,8 +5,9 @@
  */
 package it.units.malelab.jgea.problem.classification;
 
-import it.units.malelab.jgea.core.fitness.Classification;
+import it.units.malelab.jgea.core.fitness.ClassificationFitness;
 import it.units.malelab.jgea.core.util.Pair;
+import it.units.malelab.jgea.problem.extraction.RegexGrammar;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -29,7 +30,7 @@ public class FileRegexClassification extends GrammarBasedRegexClassification {
     return data;
   }
 
-  public FileRegexClassification(String positiveFileName, String negativeFileName, int folds, int i, Classification.ErrorMetric learningErrorMetric, Classification.ErrorMetric validationErrorMetric, Option... options) throws IOException {
+  public FileRegexClassification(String positiveFileName, String negativeFileName, int folds, int i, ClassificationFitness.Metric learningErrorMetric, ClassificationFitness.Metric validationErrorMetric, RegexGrammar.Option... options) throws IOException {
     super(null,
             new LinkedHashSet<>(Arrays.asList(options)),
             buildData(positiveFileName, negativeFileName),
