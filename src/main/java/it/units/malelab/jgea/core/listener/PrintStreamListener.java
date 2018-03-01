@@ -63,10 +63,27 @@ public class PrintStreamListener implements Listener {
     } else {
       return;
     }
+    //collect items
+    List<List<Item>> items = collectItems(evolutionEvent);
+    //possibly print headers
+    if ((lines == 0) || ((headerInterval > 0) && (evolutionEvent.getIteration() % headerInterval == 0))) {
+      String headers = buildHeadersString();
+      synchronized (ps) {
+        ps.println(headers);
+      }
+    }
+    //print values: collectors
+    String data = buildDataString(items);    
+    synchronized (ps) {
+      ps.println(data);
+    }
+  }
+
+  protected List<List<Item>> collectItems(final EvolutionEvent evolutionEvent) {
     //collect
     List<List<Item>> items = collectors.stream()
-              .map(collector -> collector.collect(evolutionEvent))
-              .collect(Collectors.toList());
+            .map(collector -> collector.collect(evolutionEvent))
+            .collect(Collectors.toList());
     if (firstItems.isEmpty()) {
       firstItems.addAll(items);
       sizes.addAll(firstItems.stream()
@@ -75,17 +92,14 @@ public class PrintStreamListener implements Listener {
               ).collect(Collectors.toList()))
               .collect(Collectors.toList()));
     }
-    //possibly print headers
-    if ((lines == 0) || ((headerInterval > 0) && (evolutionEvent.getIteration() % headerInterval == 0))) {
-      printHeaders();
-    }
-    //put in map
+    return items;
+  }
+
+  protected String buildDataString(List<List<Item>> items) {
     List<Map<String, Item>> maps = items.stream()
             .map(cItems -> cItems.stream().collect(Collectors.toMap(i -> i.getName(), i -> i)))
             .collect(Collectors.toList());    
-    //print values: collectors
     StringBuilder sb = new StringBuilder();
-    //print header: collectors
     for (int i = 0; i < firstItems.size(); i++) {
       for (int j = 0; j < firstItems.get(i).size(); j++) {
         String name = firstItems.get(i).get(j).getName();
@@ -108,13 +122,11 @@ public class PrintStreamListener implements Listener {
         sb.append(outerSeparator);
       }
     }
-    synchronized (ps) {
-      ps.println(sb.toString());
-    }
     lines = lines + 1;
+    return sb.toString();
   }
 
-  public void printHeaders() {
+  public String buildHeadersString() {
     StringBuilder sb = new StringBuilder();
     //print header: collectors
     for (int i = 0; i < firstItems.size(); i++) {
@@ -128,9 +140,7 @@ public class PrintStreamListener implements Listener {
         sb.append(outerSeparator);
       }
     }
-    synchronized (ps) {
-      ps.println(sb.toString());
-    }
+    return sb.toString();
   }
 
   private String formatName(String name, String format, boolean doFormat) {

@@ -21,7 +21,6 @@ import it.units.malelab.jgea.core.function.Reducer;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.collector.Basic;
 import it.units.malelab.jgea.core.listener.collector.BestInfo;
-import it.units.malelab.jgea.core.listener.collector.BestPrinter;
 import it.units.malelab.jgea.core.listener.collector.FunctionOfBest;
 import it.units.malelab.jgea.core.listener.collector.Diversity;
 import it.units.malelab.jgea.core.listener.collector.Population;
@@ -31,23 +30,19 @@ import it.units.malelab.jgea.core.ranker.ParetoRanker;
 import it.units.malelab.jgea.core.ranker.selector.Tournament;
 import it.units.malelab.jgea.core.ranker.selector.Worst;
 import it.units.malelab.jgea.core.util.Pair;
-import it.units.malelab.jgea.core.util.WithNames;
 import it.units.malelab.jgea.distance.Distance;
 import it.units.malelab.jgea.distance.Edit;
 import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
 import it.units.malelab.jgea.grammarbased.cfggp.RampedHalfAndHalf;
 import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeCrossover;
 import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeMutation;
-import it.units.malelab.jgea.problem.classification.AbstractClassificationProblem;
 import it.units.malelab.jgea.problem.classification.FileRegexClassification;
-import it.units.malelab.jgea.problem.classification.GrammarBasedRegexClassification;
 import it.units.malelab.jgea.problem.classification.RegexClassification;
 import it.units.malelab.jgea.problem.extraction.RegexGrammar;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,24 +78,24 @@ public class FileRegex extends Worker {
   }
 
   private void androidRegex(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
-    int maxDepth = i(a(args, "d", "15"));
-    int cacheSize = i(a(args, "cache", "10000"));
-    int maxMinutes = i(a(args, "t", "10"));
-    int folds = i(a(args, "folds", "5"));
-    int fold = i(a(args, "fold", "0"));
-    int popSize = i(a(args, "pop", "500"));
-    List<Integer> runs = i(l(a(args, "runs", "0")));
-    List<String> eas = l(a(args, "ea", "standard,dc,fsdc"));
+    int maxDepth = i(a("d", "15"));
+    int cacheSize = i(a("cache", "10000"));
+    int maxMinutes = i(a("t", "10"));
+    int folds = i(a("folds", "5"));
+    int fold = i(a("fold", "0"));
+    int popSize = i(a("pop", "500"));
+    List<Integer> runs = i(l(a("runs", "0")));
+    List<String> eas = l(a("ea", "standard,dc,fsdc"));
     GrammarBasedProblem<String, String, List<Double>> pOr = new FileRegexClassification(
-            a(args, "pFile", ""),
-            a(args, "nFile", ""),
+            a("pFile", ""),
+            a("nFile", ""),
             folds, fold,
             ClassificationFitness.Metric.BALANCED_ERROR_RATE, ClassificationFitness.Metric.CLASS_ERROR_RATE,
             RegexGrammar.Option.ANY, RegexGrammar.Option.OR, RegexGrammar.Option.CHAR_CLASS, RegexGrammar.Option.ENHANCED_CONCATENATION
     );
     GrammarBasedProblem<String, String, List<Double>> pNoOr = new FileRegexClassification(
-            a(args, "pFile", ""),
-            a(args, "nFile", ""),
+            a("pFile", ""),
+            a("nFile", ""),
             folds, fold,
             ClassificationFitness.Metric.BALANCED_ERROR_RATE, ClassificationFitness.Metric.CLASS_ERROR_RATE,
             RegexGrammar.Option.ANY, RegexGrammar.Option.OR, RegexGrammar.Option.CHAR_CLASS, RegexGrammar.Option.ENHANCED_CONCATENATION

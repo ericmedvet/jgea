@@ -54,7 +54,7 @@ public class BinaryRegexClassification extends GrammarBasedRegexClassification {
     return data;
   }
 
-  public BinaryRegexClassification(int size, int length, long seed, int folds, int i, ClassificationFitness.Metric learningErrorMetric, ClassificationFitness.Metric validationErrorMetric, RegexGrammar.Option... options) throws IOException {
+  public BinaryRegexClassification(int size, int length, long seed, int folds, int i, ClassificationFitness.Metric learningErrorMetric, ClassificationFitness.Metric validationErrorMetric, RegexGrammar.Option... options) {
     super(new TreeSet<>(ALPHABET.chars().mapToObj(c -> (char)c).collect(Collectors.toSet())),
             new LinkedHashSet<>(Arrays.asList(options)),
             buildData(REGEXES, ALPHABET, length, size, new Random(seed)),

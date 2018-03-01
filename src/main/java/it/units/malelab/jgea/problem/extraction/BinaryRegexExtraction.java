@@ -48,11 +48,11 @@ public class BinaryRegexExtraction extends GrammarBasedRegexExtraction {
     }
   }
 
-  public BinaryRegexExtraction(int length, long seed, boolean limitAlphabetToExtractions, Set<RegexGrammar.Option> options, int folds, int i, ExtractionFitness.Metric... metrics) {
+  public BinaryRegexExtraction(int minExtractionsPerRegex, long seed, Set<RegexGrammar.Option> options, int folds, int i, ExtractionFitness.Metric... metrics) {
     super(
-            limitAlphabetToExtractions,
+            false,
             options,
-            buildText(length, REGEXES, ALPHABET, new Random(seed)),
+            buildText(minExtractionsPerRegex, REGEXES, ALPHABET, new Random(seed)),
             new TreeSet<>(Arrays.asList(REGEXES)),
             folds,
             i,

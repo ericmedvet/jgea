@@ -5,6 +5,7 @@
  */
 package it.units.malelab.jgea;
 
+import it.units.malelab.jgea.core.listener.LazyFileListener;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.PrintStreamListener;
 import java.io.File;
@@ -16,6 +17,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import it.units.malelab.jgea.core.listener.collector.DataCollector;
+import it.units.malelab.jgea.core.listener.event.Event;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,16 +32,12 @@ public abstract class Worker implements Runnable {
 
   protected final ExecutorService executorService;
   protected final String[] args;
-  protected final String baseResultFileName;
-  private final Map<List<String>, Listener> fileListeners;
   
   private final static Logger L = Logger.getLogger(Worker.class.getName());
 
   public Worker(String[] args) throws FileNotFoundException {
     this.args = args;
-    baseResultFileName = a(args, "file", null);
-    fileListeners = new HashMap<>();
-    executorService = Executors.newFixedThreadPool(i(a(args, "threads", Integer.toString(Runtime.getRuntime().availableProcessors()))));
+    executorService = Executors.newFixedThreadPool(i(a("threads", Integer.toString(Runtime.getRuntime().availableProcessors()))));
     run();
     executorService.shutdown();
   }
@@ -64,7 +62,7 @@ public abstract class Worker implements Runnable {
     return Double.parseDouble(s);
   }
 
-  protected String a(String[] args, String name, String defaultValue) {
+  protected String a(String name, String defaultValue) {
     for (String arg : args) {
       String[] pieces = arg.split(KEYVAL_SEP);
       if (pieces[0].equals(name)) {
@@ -83,27 +81,10 @@ public abstract class Worker implements Runnable {
   }
 
   protected Listener listener(DataCollector... collectors) {
-    if (baseResultFileName == null) {
+    if (a("file", null) == null) {
       return new PrintStreamListener(System.out, true, 10, " ", " | ", collectors);
     }
-    List<String> names = Collections.EMPTY_LIST;
-    
-    //TODO redo
-    
-    Listener listener = fileListeners.get(names);
-    if (listener==null) {
-      String fileName = a(args, "dir", ".")+File.separator+String.format(baseResultFileName, names.hashCode());
-      try {
-        PrintStream filePrintStream = new PrintStream(fileName);
-        listener = new PrintStreamListener(filePrintStream, false, 0, "; ", "; ", collectors);
-        fileListeners.put(names, listener);
-        L.log(Level.INFO, String.format("New output file %s created", fileName));
-      } catch (FileNotFoundException ex) {
-        L.log(Level.SEVERE, String.format("Cannot create output file %s", fileName), ex);
-        return new PrintStreamListener(System.out, true, 10, " ", " | ", collectors);
-      }
-    }
-    return listener;   
+    return new LazyFileListener(a("dir", "."), a("file", null), collectors);
   }
 
 }

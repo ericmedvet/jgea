@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.stream.Stream;
 
 /**
  *
@@ -127,13 +128,13 @@ public class Misc {
     });
     return contents;
   }
-  
-    public static Map<String, Object> fromInfoEvents(List<Event> events, String prefix) {
+
+  public static Map<String, Object> fromInfoEvents(List<Event> events, String prefix) {
     Map<String, Object> info = new LinkedHashMap<>();
     events.stream().filter((event) -> (event instanceof InfoEvent)).forEach((event) -> {
-      info.putAll(Misc.keyPrefix(prefix, ((InfoEvent)event).getInfo()));
+      info.putAll(Misc.keyPrefix(prefix, ((InfoEvent) event).getInfo()));
     });
     return info;
   }
-  
+
 }

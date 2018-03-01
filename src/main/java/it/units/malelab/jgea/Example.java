@@ -276,7 +276,7 @@ public class Example extends Worker {
   private void binaryRegexExtractionStandard(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
     GrammarBasedProblem<String, String, List<Double>> p = new BinaryRegexExtraction(
             10, 1,
-            false, new HashSet<>(Arrays.asList(RegexGrammar.Option.ANY, RegexGrammar.Option.ENHANCED_CONCATENATION, RegexGrammar.Option.OR)),
+            new HashSet<>(Arrays.asList(RegexGrammar.Option.ANY, RegexGrammar.Option.ENHANCED_CONCATENATION, RegexGrammar.Option.OR)),
             5, 0,
             ExtractionFitness.Metric.ONE_MINUS_FM);
     Map<GeneticOperator<Node<String>>, Double> operators = new LinkedHashMap<>();

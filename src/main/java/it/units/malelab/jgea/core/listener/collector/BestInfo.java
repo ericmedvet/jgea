@@ -54,6 +54,9 @@ public class BestInfo<F> implements DataCollector {
       return ((Sized)o).size();
     }
     if (o instanceof Collection) {
+      if (Misc.first((Collection)o) instanceof Sized) {
+        return ((Collection)o).stream().mapToInt(i -> ((Sized)i).size()).sum();
+      }
       return ((Collection)o).size();
     }
     if (o instanceof String) {
