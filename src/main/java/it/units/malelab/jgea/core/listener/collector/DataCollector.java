@@ -7,15 +7,15 @@ package it.units.malelab.jgea.core.listener.collector;
 
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
 import java.io.Serializable;
-import java.util.Map;
+import java.util.List;
 
 /**
  *
  * @author eric
  */
+@FunctionalInterface
 public interface DataCollector extends Serializable {
   
-  public Map<String, String> getFormattedNames();
-  public Map<String, Object> collect(EvolutionEvent evolutionEvent);  
-  
+  public List<Item> collect(EvolutionEvent evolutionEvent);
+
 }

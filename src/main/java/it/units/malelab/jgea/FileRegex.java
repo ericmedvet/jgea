@@ -208,23 +208,9 @@ public class FileRegex extends Worker {
                 Listener.onExecutor(listener(new Static(constants),
                                 new Basic(),
                                 new Population(),
-                                new BestInfo<>(
-                                        BestInfo.fromNames((WithNames) p.getFitnessFunction()),
-                                        (n, l) -> "%5.3f"),
-                                new FunctionOfBest<>(
-                                        "learning",
-                                        new ClassificationFitness<>(
-                                                ((AbstractClassificationProblem) p).getLearningData(),
-                                                (AbstractClassificationProblem) p,
-                                                ClassificationFitness.Metric.CLASS_ERROR_RATE
-                                        ).cached(cacheSize),
-                                        BestInfo.fromNames((WithNames) ((ProblemWithValidation<String, List<Double>>) p).getValidationFunction()),
-                                        (n, l) -> "%5.3f"),
-                                new FunctionOfBest<>(
-                                        "validation",
-                                        ((ProblemWithValidation<String, List<Double>>) p).getValidationFunction().cached(cacheSize),
-                                        BestInfo.fromNames((WithNames) ((ProblemWithValidation<String, List<Double>>) p).getValidationFunction()),
-                                        (n, l) -> "%5.3f"),
+                                new BestInfo<>((ClassificationFitness)p.getFitnessFunction(), "%5.3f"),
+                                new FunctionOfBest<>("best.learning", ((ClassificationFitness)p.getFitnessFunction()).changeMetric(ClassificationFitness.Metric.CLASS_ERROR_RATE), 10000, "%5.3f"),
+                                new FunctionOfBest<>("best.validation", ((ClassificationFitness)((ProblemWithValidation)p).getValidationFunction()).changeMetric(ClassificationFitness.Metric.CLASS_ERROR_RATE), 10000, "%5.3f"),
                                 new Diversity()
                         ), executor
                 )

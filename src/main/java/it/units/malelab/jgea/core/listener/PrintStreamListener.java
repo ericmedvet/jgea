@@ -11,12 +11,14 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.IllegalFormatException;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import it.units.malelab.jgea.core.listener.collector.DataCollector;
+import it.units.malelab.jgea.core.listener.collector.Item;
+import it.units.malelab.jgea.core.util.Pair;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -31,7 +33,8 @@ public class PrintStreamListener implements Listener {
   private final String outerSeparator;
   private final List<DataCollector> collectors;
 
-  private final List<Map<String, String>> formattedNames;
+  private final List<List<Item>> firstItems;
+  private final List<List<Integer>> sizes;
   private int lines;
 
   public PrintStreamListener(
@@ -47,68 +50,61 @@ public class PrintStreamListener implements Listener {
     this.innerSeparator = innerSeparator;
     this.outerSeparator = outerSeparator;
     this.collectors = Arrays.asList(collectors);
-    formattedNames = new ArrayList<>(this.collectors.size());
-    for (DataCollector collector : collectors) {
-      Map<String, String> localFormattedNames = new LinkedHashMap<>();
-      for (String name : collector.getFormattedNames().keySet()) {
-        localFormattedNames.put(name, formatName(name, collector.getFormattedNames().get(name), format));
-      }
-      formattedNames.add(localFormattedNames);
-    }
+    firstItems = new ArrayList<>();
+    sizes = new ArrayList<>();
     lines = 0;
   }
 
   @Override
   public void listen(Event event) {
-    EvolutionEvent evolutionEvent = null;
+    final EvolutionEvent evolutionEvent;
     if (event instanceof EvolutionEvent) {
       evolutionEvent = ((EvolutionEvent) event);
     } else {
       return;
     }
-    StringBuilder sb = new StringBuilder();
-    if ((lines == 0) || ((headerInterval > 0) && (evolutionEvent.getIteration() % headerInterval == 0))) {
-      //print header: collectors
-      for (int i = 0; i < formattedNames.size(); i++) {
-        int j = 0;
-        for (String name : formattedNames.get(i).keySet()) {
-          sb.append(formattedNames.get(i).get(name));
-          if (j != formattedNames.get(i).size() - 1) {
-            sb.append(innerSeparator);
-          }
-          j = j + 1;
-        }
-        if (i != formattedNames.size() - 1) {
-          sb.append(outerSeparator);
-        }
-      }
-      synchronized (ps) {
-        ps.println(sb.toString());
-      }
-      sb.setLength(0);
+    //collect
+    List<List<Item>> items = collectors.stream()
+              .map(collector -> collector.collect(evolutionEvent))
+              .collect(Collectors.toList());
+    if (firstItems.isEmpty()) {
+      firstItems.addAll(items);
+      sizes.addAll(firstItems.stream()
+              .map(is -> is.stream().map(
+                      i -> formatName(i.getName(), i.getFormat(), format).length()
+              ).collect(Collectors.toList()))
+              .collect(Collectors.toList()));
     }
+    //possibly print headers
+    if ((lines == 0) || ((headerInterval > 0) && (evolutionEvent.getIteration() % headerInterval == 0))) {
+      printHeaders();
+    }
+    //put in map
+    List<Map<String, Item>> maps = items.stream()
+            .map(cItems -> cItems.stream().collect(Collectors.toMap(i -> i.getName(), i -> i)))
+            .collect(Collectors.toList());    
     //print values: collectors
-    for (int i = 0; i < formattedNames.size(); i++) {
-      int j = 0;
-      Map<String, Object> values = collectors.get(i).collect(evolutionEvent);
-      for (String name : formattedNames.get(i).keySet()) {
-        if (format) {
-          String value;
-          try {
-            value = String.format(collectors.get(i).getFormattedNames().get(name), values.get(name));
-          } catch (IllegalFormatException ex) {
-            value = values.get(name).toString();
-          }
-          sb.append(pad(value, formattedNames.get(i).get(name).length(), format));
-        } else {
-          sb.append(values.get(name));
+    StringBuilder sb = new StringBuilder();
+    //print header: collectors
+    for (int i = 0; i < firstItems.size(); i++) {
+      for (int j = 0; j < firstItems.get(i).size(); j++) {
+        String name = firstItems.get(i).get(j).getName();
+        try {
+          sb.append(pad(
+                  String.format(firstItems.get(i).get(j).getFormat(), maps.get(i).get(name).getValue()),
+                  sizes.get(i).get(j), format
+          ));
+        } catch (IllegalFormatException ex) {
+          sb.append(pad(
+                  maps.get(i).get(name).getValue().toString(),
+                  sizes.get(i).get(j), format
+          ));
         }
-        if (j != formattedNames.get(i).size() - 1) {
+        if (j != firstItems.get(i).size() - 1) {
           sb.append(innerSeparator);
         }
-        j = j + 1;
       }
-      if (i != formattedNames.size() - 1) {
+      if (i != firstItems.size() - 1) {
         sb.append(outerSeparator);
       }
     }
@@ -116,6 +112,25 @@ public class PrintStreamListener implements Listener {
       ps.println(sb.toString());
     }
     lines = lines + 1;
+  }
+
+  public void printHeaders() {
+    StringBuilder sb = new StringBuilder();
+    //print header: collectors
+    for (int i = 0; i < firstItems.size(); i++) {
+      for (int j = 0; j < firstItems.get(i).size(); j++) {
+        sb.append(formatName(firstItems.get(i).get(j).getName(), firstItems.get(i).get(j).getFormat(), format));
+        if (j != firstItems.get(i).size() - 1) {
+          sb.append(innerSeparator);
+        }
+      }
+      if (i != firstItems.size() - 1) {
+        sb.append(outerSeparator);
+      }
+    }
+    synchronized (ps) {
+      ps.println(sb.toString());
+    }
   }
 
   private String formatName(String name, String format, boolean doFormat) {

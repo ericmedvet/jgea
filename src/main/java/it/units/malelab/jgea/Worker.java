@@ -16,30 +16,34 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import it.units.malelab.jgea.core.listener.collector.DataCollector;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author eric
  */
 public abstract class Worker implements Runnable {
-  
+
   protected final ExecutorService executorService;
-  private final PrintStream filePrintStream;
   protected final String[] args;
+  protected final String baseResultFileName;
+  private final Map<List<String>, Listener> fileListeners;
+  
+  private final static Logger L = Logger.getLogger(Worker.class.getName());
 
   public Worker(String[] args) throws FileNotFoundException {
     this.args = args;
-    String baseResultFileName = a(args, "file", null);
+    baseResultFileName = a(args, "file", null);
+    fileListeners = new HashMap<>();
     executorService = Executors.newFixedThreadPool(i(a(args, "threads", Integer.toString(Runtime.getRuntime().availableProcessors()))));
-    if (baseResultFileName!=null) {
-      filePrintStream = new PrintStream(a(args, "dir", ".")+File.separator+baseResultFileName);
-    } else {
-      filePrintStream = null;
-    }
     run();
     executorService.shutdown();
-  }  
-  
+  }
+
   private final static String PIECES_SEP = "-";
   private final static String OPTIONS_SEP = ",";
   private final static String KEYVAL_SEP = "=";
@@ -77,13 +81,29 @@ public abstract class Worker implements Runnable {
   protected List<Integer> i(List<String> strings) {
     return strings.stream().map(Integer::parseInt).collect(Collectors.toList());
   }
-  
+
   protected Listener listener(DataCollector... collectors) {
-    Listener listener = new PrintStreamListener(System.out, true, 10, " ", " | ", collectors);
-    if (filePrintStream!=null) {
-      listener = listener.then(new PrintStreamListener(filePrintStream, false, -1, "; ", "; ", collectors));
+    if (baseResultFileName == null) {
+      return new PrintStreamListener(System.out, true, 10, " ", " | ", collectors);
     }
-    return listener;
+    List<String> names = Collections.EMPTY_LIST;
+    
+    //TODO redo
+    
+    Listener listener = fileListeners.get(names);
+    if (listener==null) {
+      String fileName = a(args, "dir", ".")+File.separator+String.format(baseResultFileName, names.hashCode());
+      try {
+        PrintStream filePrintStream = new PrintStream(fileName);
+        listener = new PrintStreamListener(filePrintStream, false, 0, "; ", "; ", collectors);
+        fileListeners.put(names, listener);
+        L.log(Level.INFO, String.format("New output file %s created", fileName));
+      } catch (FileNotFoundException ex) {
+        L.log(Level.SEVERE, String.format("Cannot create output file %s", fileName), ex);
+        return new PrintStreamListener(System.out, true, 10, " ", " | ", collectors);
+      }
+    }
+    return listener;   
   }
 
 }

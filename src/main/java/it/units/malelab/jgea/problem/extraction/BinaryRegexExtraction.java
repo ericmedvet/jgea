@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
  */
 public class BinaryRegexExtraction extends GrammarBasedRegexExtraction {
 
-  private final static String[] REGEXES = new String[]{"1010...0101", "010011000111", "(010101)++"};
+  private final static String[] REGEXES = new String[]{"1010...0101", "010011000111", "(01010101)++"};
   private final static String ALPHABET = "01";
   private final static int CHUNK_SIZE = 100;
 

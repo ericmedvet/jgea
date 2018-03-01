@@ -6,7 +6,6 @@
 package it.units.malelab.jgea;
 
 import com.google.common.collect.Lists;
-import com.sun.xml.internal.ws.policy.sourcemodel.wspolicy.XmlToken;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.ProblemWithValidation;
@@ -26,6 +25,7 @@ import it.units.malelab.jgea.core.listener.collector.BestInfo;
 import it.units.malelab.jgea.core.listener.collector.BestPrinter;
 import it.units.malelab.jgea.core.listener.collector.FunctionOfBest;
 import it.units.malelab.jgea.core.listener.collector.Diversity;
+import it.units.malelab.jgea.core.listener.collector.Item;
 import it.units.malelab.jgea.core.listener.collector.Population;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.ranker.ComparableRanker;
@@ -45,7 +45,6 @@ import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
 import it.units.malelab.jgea.problem.booleanfunction.element.Element;
 import it.units.malelab.jgea.problem.classification.AbstractClassificationProblem;
 import it.units.malelab.jgea.problem.classification.BinaryRegexClassification;
-import it.units.malelab.jgea.problem.classification.GrammarBasedRegexClassification;
 import it.units.malelab.jgea.problem.classification.RegexClassification;
 import it.units.malelab.jgea.problem.extraction.AbstractExtractionProblem;
 import it.units.malelab.jgea.problem.extraction.BinaryRegexExtraction;
@@ -83,6 +82,7 @@ public class Example extends Worker {
 
   public void run() {
     try {
+      parity(executorService);
       //binaryRegexStandard(executorService);
       //binaryRegexDC(executorService);
       //binaryRegexFSDC(executorService);
@@ -116,9 +116,7 @@ public class Example extends Worker {
             Listener.onExecutor(listener(
                             new Basic(),
                             new Population(),
-                            new BestInfo<>(
-                                    (f, l) -> Collections.singletonMap("", f),
-                                    (n, l) -> "%6.4f"),
+                            new BestInfo<>("%6.4f"),
                             new Diversity(),
                             new BestPrinter(null, "%s")
                     ), executor)
@@ -150,24 +148,16 @@ public class Example extends Worker {
             false
     );
     Random r = new Random(1);
+    Function learningAssessmentFunction = ((ClassificationFitness) p.getFitnessFunction()).changeMetric(ClassificationFitness.Metric.CLASS_ERROR_RATE);
+    Function validationAssessmentFunction = ((ClassificationFitness) ((ProblemWithValidation) p).getFitnessFunction()).changeMetric(ClassificationFitness.Metric.CLASS_ERROR_RATE);
     evolver.solve(p, r, executor,
             Listener.onExecutor(listener(new Basic(),
                             new Population(),
-                            new BestInfo<>(
-                                    BestInfo.fromNames((WithNames) p.getFitnessFunction()),
-                                    (n, l) -> "%5.3f"),
-                            new FunctionOfBest<>(
-                                    "learning",
-                                    ((ClassificationFitness) ((AbstractClassificationProblem) p).getFitnessFunction()).changeMetric(ClassificationFitness.Metric.ERROR_RATE).cached(10000),
-                                    BestInfo.fromNames((WithNames) ((ProblemWithValidation<String, List<Double>>) p).getValidationFunction()),
-                                    (n, l) -> "%5.3f"),
-                            new FunctionOfBest<>(
-                                    "validation",
-                                    ((ProblemWithValidation<String, List<Double>>) p).getValidationFunction().cached(10000),
-                                    BestInfo.fromNames((WithNames) ((ProblemWithValidation<String, List<Double>>) p).getValidationFunction()),
-                                    (n, l) -> "%5.3f"),
+                            new BestInfo<>((ExtractionFitness)p.getFitnessFunction(), "%5.3f"),
+                            new FunctionOfBest("best.learning", learningAssessmentFunction, 10000, "%5.3f"),
+                            new FunctionOfBest("best.validation", validationAssessmentFunction, 10000, "%5.3f"),
                             new Diversity(),
-                            new BestPrinter(null, "%s")
+                            new BestPrinter()
                     ), executor
             )
     );
@@ -206,24 +196,16 @@ public class Example extends Worker {
             false
     );
     Random r = new Random(1);
+    Function learningAssessmentFunction = ((ClassificationFitness) p.getFitnessFunction()).changeMetric(ClassificationFitness.Metric.CLASS_ERROR_RATE);
+    Function validationAssessmentFunction = ((ClassificationFitness) ((ProblemWithValidation) p).getFitnessFunction()).changeMetric(ClassificationFitness.Metric.CLASS_ERROR_RATE);
     evolver.solve(p, r, executor,
             Listener.onExecutor(listener(new Basic(),
                             new Population(),
-                            new BestInfo<>(
-                                    BestInfo.fromNames((WithNames) p.getFitnessFunction()),
-                                    (n, l) -> "%5.3f"),
-                            new FunctionOfBest<>(
-                                    "learning",
-                                    ((ClassificationFitness) ((AbstractClassificationProblem) p).getFitnessFunction()).changeMetric(ClassificationFitness.Metric.ERROR_RATE).cached(10000),
-                                    BestInfo.fromNames((WithNames) ((ProblemWithValidation<String, List<Double>>) p).getValidationFunction()),
-                                    (n, l) -> "%5.3f"),
-                            new FunctionOfBest<>(
-                                    "validation",
-                                    ((ProblemWithValidation<String, List<Double>>) p).getValidationFunction().cached(10000),
-                                    BestInfo.fromNames((WithNames) ((ProblemWithValidation<String, List<Double>>) p).getValidationFunction()),
-                                    (n, l) -> "%5.3f"),
+                            new BestInfo<>((ExtractionFitness)p.getFitnessFunction(), "%5.3f"),
+                            new FunctionOfBest("best.learning", learningAssessmentFunction, 10000, "%5.3f"),
+                            new FunctionOfBest("best.validation", validationAssessmentFunction, 10000, "%5.3f"),
                             new Diversity(),
-                            new BestPrinter(null, "%s")
+                            new BestPrinter()
                     ), executor
             )
     );
@@ -276,24 +258,16 @@ public class Example extends Worker {
             10000
     );
     Random r = new Random(1);
+    Function learningAssessmentFunction = ((ClassificationFitness) p.getFitnessFunction()).changeMetric(ClassificationFitness.Metric.CLASS_ERROR_RATE);
+    Function validationAssessmentFunction = ((ClassificationFitness) ((ProblemWithValidation) p).getFitnessFunction()).changeMetric(ClassificationFitness.Metric.CLASS_ERROR_RATE);
     evolver.solve(p, r, executor,
             Listener.onExecutor(listener(new Basic(),
                             new Population(),
-                            new BestInfo<>(
-                                    BestInfo.fromNames((WithNames) p.getFitnessFunction()),
-                                    (n, l) -> "%5.3f"),
-                            new FunctionOfBest<>(
-                                    "learning",
-                                    ((ClassificationFitness) ((AbstractClassificationProblem) p).getFitnessFunction()).changeMetric(ClassificationFitness.Metric.ERROR_RATE).cached(10000),
-                                    BestInfo.fromNames((WithNames) ((ProblemWithValidation<String, List<Double>>) p).getValidationFunction()),
-                                    (n, l) -> "%5.3f"),
-                            new FunctionOfBest<>(
-                                    "validation",
-                                    ((ProblemWithValidation<String, List<Double>>) p).getValidationFunction().cached(10000),
-                                    BestInfo.fromNames((WithNames) ((ProblemWithValidation<String, List<Double>>) p).getValidationFunction()),
-                                    (n, l) -> "%5.3f"),
+                            new BestInfo<>((ExtractionFitness)p.getFitnessFunction(), "%5.3f"),
+                            new FunctionOfBest("best.learning", learningAssessmentFunction, 10000, "%5.3f"),
+                            new FunctionOfBest("best.validation", validationAssessmentFunction, 10000, "%5.3f"),
                             new Diversity(),
-                            new BestPrinter(null, "%s")
+                            new BestPrinter()
                     ), executor
             )
     );
@@ -309,40 +283,30 @@ public class Example extends Worker {
     operators.put(new StandardTreeMutation<>(15, p.getGrammar()), 0.2d);
     operators.put(new StandardTreeCrossover<>(15), 0.8d);
     StandardEvolver<Node<String>, String, List<Double>> evolver = new StandardEvolver<>(
-            100,
+            500,
             new RampedHalfAndHalf<>(3, 15, p.getGrammar()),
             new ParetoRanker<>(),
             p.getSolutionMapper(),
             operators,
             new Tournament<>(3),
             new Worst(),
-            100,
+            500,
             true,
-            Lists.newArrayList(new ElapsedTime(90, TimeUnit.SECONDS), new PerfectFitness<>(p.getFitnessFunction())),
+            Lists.newArrayList(new ElapsedTime(30, TimeUnit.SECONDS), new PerfectFitness<>(p.getFitnessFunction())),
             10000,
             false
     );
     Random r = new Random(1);
-    Function learningAssessmentFunction = ((ExtractionFitness) ((AbstractExtractionProblem) p).getFitnessFunction()).changeMetrics(ExtractionFitness.Metric.ONE_MINUS_PREC, ExtractionFitness.Metric.ONE_MINUS_REC, ExtractionFitness.Metric.CHAR_ERROR);
+    Function learningAssessmentFunction = ((ExtractionFitness) ((AbstractExtractionProblem) p).getFitnessFunction()).changeMetrics(ExtractionFitness.Metric.ONE_MINUS_FM, ExtractionFitness.Metric.ONE_MINUS_PREC, ExtractionFitness.Metric.ONE_MINUS_REC, ExtractionFitness.Metric.CHAR_ERROR);
     Function validationAssessmentFunction = ((ExtractionFitness) ((AbstractExtractionProblem) p).getValidationFunction()).changeMetrics(ExtractionFitness.Metric.ONE_MINUS_FM, ExtractionFitness.Metric.ONE_MINUS_PREC, ExtractionFitness.Metric.ONE_MINUS_REC, ExtractionFitness.Metric.CHAR_ERROR);    
     evolver.solve(p, r, executor,
             Listener.onExecutor(listener(new Basic(),
                             new Population(),
-                            new BestInfo<>(
-                                    BestInfo.fromNames((WithNames) p.getFitnessFunction()),
-                                    (n, l) -> "%5.3f"),
-                            new FunctionOfBest<>(
-                                    "learning",
-                                    learningAssessmentFunction.cached(10000),
-                                    BestInfo.fromNames((WithNames)learningAssessmentFunction),
-                                    (n, l) -> "%5.3f"),
-                            new FunctionOfBest<>(
-                                    "validation",
-                                    validationAssessmentFunction.cached(10000),
-                                    BestInfo.fromNames((WithNames)validationAssessmentFunction),
-                                    (n, l) -> "%5.3f"),
+                            new BestInfo<>((ExtractionFitness)p.getFitnessFunction(), "%5.3f"),
+                            new FunctionOfBest("best.learning", learningAssessmentFunction, 10000, "%5.3f"),
+                            new FunctionOfBest("best.validation", validationAssessmentFunction, 10000, "%5.3f"),
                             new Diversity(),
-                            new BestPrinter(null, "%s")
+                            new BestPrinter()
                     ), executor
             )
     );

@@ -66,7 +66,7 @@ public class ExtractionFitness<E> implements ComposedFunction<E, Set<Range<Integ
 
     @Override
     public List<Double> apply(Set<Range<Integer>> extractions, Listener listener) throws FunctionException {
-      Map<Metric, Double> values = new EnumMap<Metric, Double>(Metric.class);
+      Map<Metric, Double> values = new EnumMap<>(Metric.class);
       if (metrics.contains(Metric.ONE_MINUS_FM) || metrics.contains(Metric.ONE_MINUS_PREC) || metrics.contains(Metric.ONE_MINUS_REC)) {
         //precision and recall
         Set<Range<Integer>> correctExtractions = new LinkedHashSet<>(extractions);

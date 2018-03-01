@@ -6,6 +6,7 @@
 package it.units.malelab.jgea.core.listener.collector;
 
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -22,14 +23,10 @@ public class Static implements DataCollector {
   }
 
   @Override
-  public Map<String, String> getFormattedNames() {
+  public List<Item> collect(EvolutionEvent evolutionEvent) {
     return values.entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getKey, e -> "%"+e.getValue().toString().length()+"."+e.getValue().toString().length()+"s"));
-  }
-
-  @Override
-  public Map<String, Object> collect(EvolutionEvent evolutionEvent) {
-    return values;
+            .map(entry -> new Item<>(entry.getKey(), entry.getValue(), "%"+entry.getValue().toString().length()+"."+entry.getValue().toString().length()+"s"))
+            .collect(Collectors.toList());
   }    
   
 }
