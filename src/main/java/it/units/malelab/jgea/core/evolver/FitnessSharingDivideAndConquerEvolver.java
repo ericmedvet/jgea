@@ -12,6 +12,7 @@ import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.evolver.stopcondition.StopCondition;
 import it.units.malelab.jgea.core.function.Bounded;
 import it.units.malelab.jgea.core.function.CachedBoundedFunction;
+import it.units.malelab.jgea.core.function.CachedFunction;
 import it.units.malelab.jgea.core.function.CachedNonDeterministicFunction;
 import it.units.malelab.jgea.core.function.ComposedFunction;
 import it.units.malelab.jgea.core.function.Function;
@@ -112,7 +113,7 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
   public FitnessSharingDivideAndConquerEvolver(Reducer<Pair<S, B>> reducer, Distance<B> semanticsDistance, int populationSize, Factory<G> genotypeBuilder, Ranker<Individual<G, S, F>> ranker, NonDeterministicFunction<G, S> mapper, Map<GeneticOperator<G>, Double> operators, Selector<Individual<G, S, F>> parentSelector, Selector<Individual<G, S, F>> unsurvivalSelector, int offspringSize, boolean overlapping, List<StopCondition> stoppingConditions, long cacheSize) {
     super(populationSize, genotypeBuilder, ranker, mapper, operators, parentSelector, unsurvivalSelector, offspringSize, overlapping, stoppingConditions, cacheSize, false);
     this.reducer = reducer;
-    this.distance = semanticsDistance;
+    this.distance = semanticsDistance.cached(cacheSize);
   }
 
   @Override
@@ -268,22 +269,26 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
           final Function<? super B, ? extends F> fitnessFunction,
           final Random random,
           final AtomicInteger fitnessEvaluations) {
+
+    System.out.println("grouping...");
+
     population.stream().forEach(individual -> ((EnhancedIndividual) individual).reset());
     //initial rank by fitness
     List<Collection<Individual<G, S, F>>> rankedPopulation = ranker.rank(population, random);
     List<Individual<G, S, F>> sortedPopulation = new ArrayList<>();
     rankedPopulation.stream().forEach(rank -> sortedPopulation.addAll(rank));
     //associate individuals
-    for (int h = 0; h<sortedPopulation.size(); h++) {
+    for (int h = 0; h < sortedPopulation.size(); h++) {
       EnhancedIndividual individual = (EnhancedIndividual) sortedPopulation.get(h);
-      if (individual.getGroup().size()>1) {
+      if (individual.getGroup().size() > 1) {
         continue;
       }
       while (true) {
         //sort other by distance to this
-        List<Individual<G, S, F>> others = sortedPopulation.stream()
+        List<Individual<G, S, F>> others = sortedPopulation.parallelStream()
                 .skip(h)
-                .filter(i -> individual.getGroup().size()==1)
+                .filter(i -> !i.getSolution().equals(individual.getSolution()))
+                .filter(i -> ((EnhancedIndividual) i).getGroup().size() == 1)
                 .sorted((i1, i2) -> {
                   double d1 = distance.apply(((EnhancedIndividual) i1).getSemantics(), individual.getSemantics());
                   double d2 = distance.apply(((EnhancedIndividual) i2).getSemantics(), individual.getSemantics());
@@ -291,6 +296,14 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
                 })
                 .collect(Collectors.toList());
         //iterate on others
+
+        System.out.printf("\t%d others\td-cache-hit:%6.4f\td-cache-load:%f\td-cache-hit:%6.4f\td-cache-load:%f%n",
+                others.size(),
+                ((CachedFunction) distance).getCacheStats().hitRate(),
+                ((CachedFunction) distance).getCacheStats().averageLoadPenalty(),
+                ((CachedFunction) fitnessFunction).getCacheStats().hitRate(),
+                ((CachedFunction) fitnessFunction).getCacheStats().averageLoadPenalty()
+        );
         boolean found = false;
         for (Individual<G, S, F> baseOther : others) {
           EnhancedIndividual other = (EnhancedIndividual) baseOther;
@@ -300,6 +313,7 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
                   Pair.build(other.getSolution(), other.getSemantics())
           );
           F groupedFitness = fitnessFunction.apply(groupedPair.second());
+          if (true) continue;
           //compare composed vs original
           EnhancedIndividual groupedIndividual = new EnhancedIndividual(
                   individual.getGenotype(),

@@ -31,7 +31,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import it.units.malelab.jgea.core.function.Bounded;
-import it.units.malelab.jgea.core.function.CachedBoundedFunction;
+import it.units.malelab.jgea.core.function.CachedBoundedNonDeterministicFunction;
 import it.units.malelab.jgea.core.listener.event.Capturer;
 import it.units.malelab.jgea.core.listener.event.FunctionEvent;
 import it.units.malelab.jgea.core.listener.event.TimedEvent;
@@ -81,7 +81,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
     NonDeterministicFunction<S, F> fitnessFunction = problem.getFitnessFunction();
     if (cacheSize > 0) {
       if (fitnessFunction instanceof Bounded) {
-        fitnessFunction = new CachedBoundedFunction<>(fitnessFunction, cacheSize);
+        fitnessFunction = new CachedBoundedNonDeterministicFunction<>(fitnessFunction, cacheSize);
       } else {
         fitnessFunction = fitnessFunction.cached(cacheSize);
       }

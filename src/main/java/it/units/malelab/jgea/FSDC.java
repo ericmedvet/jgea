@@ -20,6 +20,7 @@ import it.units.malelab.jgea.core.evolver.stopcondition.ElapsedTime;
 import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
 import it.units.malelab.jgea.core.fitness.ClassificationFitness;
 import it.units.malelab.jgea.core.function.Function;
+import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.function.Reducer;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.collector.Basic;
@@ -47,12 +48,14 @@ import it.units.malelab.jgea.problem.classification.RegexClassification;
 import it.units.malelab.jgea.problem.extraction.AbstractExtractionProblem;
 import it.units.malelab.jgea.problem.extraction.BinaryRegexExtraction;
 import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
-import it.units.malelab.jgea.problem.extraction.RegexGrammar;
+import it.units.malelab.jgea.grammarbased.RegexGrammar;
+import it.units.malelab.jgea.problem.extraction.ExtractionSetDistance;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -60,6 +63,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -90,7 +94,11 @@ public class FSDC extends Worker {
     int popSize = i(a("pop", "500"));
     List<Integer> runs = i(l(a("runs", "0")));
     List<String> eas = l(a("ea", "standard,dc,fsdc"));
-    List<String> problems = l(a("problems", "binRegexClass-100-500,binRegexExtr-100"));
+    List<String> problems = l(a("problems", "binRegexClass-100-500,binRegexExtr-20"));
+
+    eas = Collections.singletonList("fsdc");
+    problems = l("binRegexExtr-20");
+
     for (int run : runs) {
       for (String p : problems) {
         for (String ea : eas) {
@@ -98,7 +106,7 @@ public class FSDC extends Worker {
           staticInfo.put("run", run);
           staticInfo.put("problem", p);
           staticInfo.put("ea", ea);
-          L.info(String.format("Preparing %s.%n", staticInfo));
+          L.info(String.format("Preparing %s.", staticInfo));
           //prepare problem
           GrammarBasedProblem problem;
           List<DataCollector> dataCollectors = Lists.newArrayList(
@@ -118,7 +126,7 @@ public class FSDC extends Worker {
               options.remove(RegexGrammar.Option.OR);
             }
             problem = new BinaryRegexClassification(
-                    i(p(p, 1)), i(p(p, 1)), 1,
+                    i(p(p, 1)), i(p(p, 2)), 1,
                     5, 0,
                     ClassificationFitness.Metric.BALANCED_ERROR_RATE, ClassificationFitness.Metric.CLASS_ERROR_RATE,
                     options.toArray(new RegexGrammar.Option[0])
@@ -187,11 +195,9 @@ public class FSDC extends Worker {
             reducer = localReducer;
           }
           if (p(p, 0).equals("binRegexExtr")) {
-            Distance<Set<Range<Integer>>> localSemanticsDistance = (s1, s2, listener)
-                    -> (double) s1.stream()
-                    .mapToInt(r1 -> s2.stream()
-                            .mapToInt(r2 -> r1.isConnected(r2) ? r1.intersection(r2).upperEndpoint() - r1.intersection(r2).lowerEndpoint() : 0).sum())
-                    .sum();
+            Distance<Set<Range<Integer>>> localSemanticsDistance = new ExtractionSetDistance(
+                    ((ExtractionFitness)problem.getFitnessFunction()).getText().length(), 10
+            );
             Reducer<Pair<String, Set<Range<Integer>>>> localReducer = (p0, p1, listener) -> Pair.build(
                     p0.first() + "|" + p1.first(),
                     Sets.union(p0.second(), p1.second())
@@ -254,9 +260,9 @@ public class FSDC extends Worker {
             continue;
           }
           try {
-            L.info(String.format("Starting %s.%n", staticInfo));
+            L.info(String.format("Starting %s.", staticInfo));
             Collection solutions = evolver.solve(problem, random, executorService, listener(dataCollectors.toArray(new DataCollector[0])));
-            L.info(String.format("Found %d solutions: one is %s.%n", solutions.size(), solutions.stream().findFirst().orElse("")));
+            L.info(String.format("Found %d solutions: one is %s.", solutions.size(), solutions.stream().findFirst().orElse("")));
           } catch (InterruptedException | ExecutionException ex) {
             L.log(Level.SEVERE, "Error while evolving!", ex);
           }

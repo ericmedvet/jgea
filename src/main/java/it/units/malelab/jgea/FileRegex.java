@@ -38,7 +38,7 @@ import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeCrossover;
 import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeMutation;
 import it.units.malelab.jgea.problem.classification.FileRegexClassification;
 import it.units.malelab.jgea.problem.classification.RegexClassification;
-import it.units.malelab.jgea.problem.extraction.RegexGrammar;
+import it.units.malelab.jgea.grammarbased.RegexGrammar;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;

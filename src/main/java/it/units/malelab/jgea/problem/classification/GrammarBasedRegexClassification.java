@@ -12,7 +12,7 @@ import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.grammarbased.Grammar;
 import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
-import it.units.malelab.jgea.problem.extraction.RegexGrammar;
+import it.units.malelab.jgea.grammarbased.RegexGrammar;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;

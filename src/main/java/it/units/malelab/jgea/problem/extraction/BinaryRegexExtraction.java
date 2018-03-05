@@ -5,6 +5,7 @@
  */
 package it.units.malelab.jgea.problem.extraction;
 
+import it.units.malelab.jgea.grammarbased.RegexGrammar;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.Set;
@@ -18,7 +19,7 @@ import java.util.regex.Pattern;
  */
 public class BinaryRegexExtraction extends GrammarBasedRegexExtraction {
 
-  private final static String[] REGEXES = new String[]{"1010...0101", "010011000111", "(01010101)++"};
+  private final static String[] REGEXES = new String[]{"10100101", "111(00)?+(11)++", "(110110)++"};
   private final static String ALPHABET = "01";
   private final static int CHUNK_SIZE = 100;
 

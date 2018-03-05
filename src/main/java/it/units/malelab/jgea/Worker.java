@@ -8,20 +8,15 @@ package it.units.malelab.jgea;
 import it.units.malelab.jgea.core.listener.LazyFileListener;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.PrintStreamListener;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import it.units.malelab.jgea.core.listener.collector.DataCollector;
-import it.units.malelab.jgea.core.listener.event.Event;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
+import java.io.IOException;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 /**
@@ -30,6 +25,16 @@ import java.util.logging.Logger;
  */
 public abstract class Worker implements Runnable {
 
+  static {
+    try {
+      LogManager.getLogManager().readConfiguration(Worker.class.getClassLoader().getResourceAsStream("logging.properties"));
+    } catch (IOException ex) {
+      //ignore
+    } catch (SecurityException ex) {
+      //ignore
+    }
+  }
+  
   protected final ExecutorService executorService;
   protected final String[] args;
   

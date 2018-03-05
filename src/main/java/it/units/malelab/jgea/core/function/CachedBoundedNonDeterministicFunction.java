@@ -9,11 +9,11 @@ package it.units.malelab.jgea.core.function;
  *
  * @author eric
  */
-public class CachedBoundedFunction<A, B> extends CachedFunction<A, B> implements Bounded<B> {
+public class CachedBoundedNonDeterministicFunction<A, B> extends CachedNonDeterministicFunction<A, B> implements Bounded<B> {
   
   private final Bounded<B> boundedInnerFunction;
 
-  public CachedBoundedFunction(Function<A, B> innerFunction, long cacheSize) {
+  public CachedBoundedNonDeterministicFunction(NonDeterministicFunction<A, B> innerFunction, long cacheSize) {
     super(innerFunction, cacheSize);
     boundedInnerFunction = (Bounded<B>)innerFunction;
   }

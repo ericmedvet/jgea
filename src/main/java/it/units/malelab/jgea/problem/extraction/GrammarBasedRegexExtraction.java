@@ -5,6 +5,7 @@
  */
 package it.units.malelab.jgea.problem.extraction;
 
+import it.units.malelab.jgea.grammarbased.RegexGrammar;
 import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.fitness.ClassificationFitness;
 import it.units.malelab.jgea.core.function.Function;

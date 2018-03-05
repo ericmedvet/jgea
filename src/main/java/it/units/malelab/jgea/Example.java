@@ -49,7 +49,7 @@ import it.units.malelab.jgea.problem.classification.RegexClassification;
 import it.units.malelab.jgea.problem.extraction.AbstractExtractionProblem;
 import it.units.malelab.jgea.problem.extraction.BinaryRegexExtraction;
 import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
-import it.units.malelab.jgea.problem.extraction.RegexGrammar;
+import it.units.malelab.jgea.grammarbased.RegexGrammar;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
