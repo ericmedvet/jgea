@@ -112,7 +112,7 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
 
   public FitnessSharingDivideAndConquerEvolver(Reducer<Pair<S, B>> reducer, Distance<B> semanticsDistance, int populationSize, Factory<G> genotypeBuilder, Ranker<Individual<G, S, F>> ranker, NonDeterministicFunction<G, S> mapper, Map<GeneticOperator<G>, Double> operators, Selector<Individual<G, S, F>> parentSelector, Selector<Individual<G, S, F>> unsurvivalSelector, int offspringSize, boolean overlapping, List<StopCondition> stoppingConditions, long cacheSize) {
     super(populationSize, genotypeBuilder, ranker, mapper, operators, parentSelector, unsurvivalSelector, offspringSize, overlapping, stoppingConditions, cacheSize, false);
-    this.reducer = reducer;
+    this.reducer = reducer.cached(cacheSize);
     this.distance = semanticsDistance.cached(cacheSize);
   }
 
@@ -279,6 +279,16 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
     rankedPopulation.stream().forEach(rank -> sortedPopulation.addAll(rank));
     //associate individuals
     for (int h = 0; h < sortedPopulation.size(); h++) {
+
+      System.out.printf(""
+              + "\td:%4.2f %.0f"
+              + "\tr:%4.2f %.0f"
+              + "\tf:%4.2f %.0f %n",
+              ((CachedFunction) distance).getCacheStats().hitRate(), ((CachedFunction) distance).getCacheStats().averageLoadPenalty(),
+              ((CachedFunction) reducer).getCacheStats().hitRate(), ((CachedFunction) reducer).getCacheStats().averageLoadPenalty(),
+              ((CachedFunction) fitnessFunction).getCacheStats().hitRate(), ((CachedFunction) fitnessFunction).getCacheStats().averageLoadPenalty()
+      );
+
       EnhancedIndividual individual = (EnhancedIndividual) sortedPopulation.get(h);
       if (individual.getGroup().size() > 1) {
         continue;
@@ -296,14 +306,6 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
                 })
                 .collect(Collectors.toList());
         //iterate on others
-
-        System.out.printf("\t%d others\td-cache-hit:%6.4f\td-cache-load:%f\td-cache-hit:%6.4f\td-cache-load:%f%n",
-                others.size(),
-                ((CachedFunction) distance).getCacheStats().hitRate(),
-                ((CachedFunction) distance).getCacheStats().averageLoadPenalty(),
-                ((CachedFunction) fitnessFunction).getCacheStats().hitRate(),
-                ((CachedFunction) fitnessFunction).getCacheStats().averageLoadPenalty()
-        );
         boolean found = false;
         for (Individual<G, S, F> baseOther : others) {
           EnhancedIndividual other = (EnhancedIndividual) baseOther;
@@ -313,7 +315,6 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
                   Pair.build(other.getSolution(), other.getSemantics())
           );
           F groupedFitness = fitnessFunction.apply(groupedPair.second());
-          if (true) continue;
           //compare composed vs original
           EnhancedIndividual groupedIndividual = new EnhancedIndividual(
                   individual.getGenotype(),
@@ -342,6 +343,7 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
               groupIndividual.setGroupFitness(groupedFitness);
             }
             found = true;
+            System.out.printf("merged: %s%n", groupedIndividual.getSolution());
             break;
           }
         }

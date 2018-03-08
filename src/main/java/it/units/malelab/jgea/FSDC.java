@@ -20,12 +20,10 @@ import it.units.malelab.jgea.core.evolver.stopcondition.ElapsedTime;
 import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
 import it.units.malelab.jgea.core.fitness.ClassificationFitness;
 import it.units.malelab.jgea.core.function.Function;
-import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.function.Reducer;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.collector.Basic;
 import it.units.malelab.jgea.core.listener.collector.BestInfo;
-import it.units.malelab.jgea.core.listener.collector.BestPrinter;
 import it.units.malelab.jgea.core.listener.collector.DataCollector;
 import it.units.malelab.jgea.core.listener.collector.FunctionOfBest;
 import it.units.malelab.jgea.core.listener.collector.Diversity;
@@ -43,15 +41,12 @@ import it.units.malelab.jgea.grammarbased.cfggp.RampedHalfAndHalf;
 import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeCrossover;
 import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeMutation;
 import it.units.malelab.jgea.problem.classification.BinaryRegexClassification;
-import it.units.malelab.jgea.problem.classification.FileRegexClassification;
 import it.units.malelab.jgea.problem.classification.RegexClassification;
-import it.units.malelab.jgea.problem.extraction.AbstractExtractionProblem;
 import it.units.malelab.jgea.problem.extraction.BinaryRegexExtraction;
 import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
 import it.units.malelab.jgea.grammarbased.RegexGrammar;
 import it.units.malelab.jgea.problem.extraction.ExtractionSetDistance;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -62,10 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -90,14 +82,15 @@ public class FSDC extends Worker {
   public void run() {
     int maxDepth = i(a("d", "15"));
     int cacheSize = i(a("cache", "10000"));
-    int maxSeconds = i(a("t", "5"));
+    int maxSeconds = i(a("t", "30"));
     int popSize = i(a("pop", "500"));
     List<Integer> runs = i(l(a("runs", "0")));
     List<String> eas = l(a("ea", "standard,dc,fsdc"));
     List<String> problems = l(a("problems", "binRegexClass-100-500,binRegexExtr-20"));
 
     eas = Collections.singletonList("fsdc");
-    problems = l("binRegexExtr-20");
+    problems = l("binRegexClass-100-500,binRegexExtr-20");
+//    problems = l("binRegexExtr-20");
 
     for (int run : runs) {
       for (String p : problems) {
