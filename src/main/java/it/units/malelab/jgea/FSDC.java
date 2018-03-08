@@ -82,15 +82,14 @@ public class FSDC extends Worker {
   public void run() {
     int maxDepth = i(a("d", "15"));
     int cacheSize = i(a("cache", "10000"));
-    int maxSeconds = i(a("t", "30"));
+    int maxSeconds = i(a("t", "5"));
     int popSize = i(a("pop", "500"));
     List<Integer> runs = i(l(a("runs", "0")));
     List<String> eas = l(a("ea", "standard,dc,fsdc"));
     List<String> problems = l(a("problems", "binRegexClass-100-500,binRegexExtr-20"));
 
     eas = Collections.singletonList("fsdc");
-    problems = l("binRegexClass-100-500,binRegexExtr-20");
-//    problems = l("binRegexExtr-20");
+    //problems = l("binRegexExtr-20");
 
     for (int run : runs) {
       for (String p : problems) {
@@ -189,7 +188,7 @@ public class FSDC extends Worker {
           }
           if (p(p, 0).equals("binRegexExtr")) {
             Distance<Set<Range<Integer>>> localSemanticsDistance = new ExtractionSetDistance(
-                    ((ExtractionFitness)problem.getFitnessFunction()).getText().length(), 10
+                    ((ExtractionFitness)problem.getFitnessFunction()).getText().length(), 100
             );
             Reducer<Pair<String, Set<Range<Integer>>>> localReducer = (p0, p1, listener) -> Pair.build(
                     p0.first() + "|" + p1.first(),

@@ -271,6 +271,9 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
           final AtomicInteger fitnessEvaluations) {
 
     System.out.println("grouping...");
+    Stopwatch sw = Stopwatch.createStarted();
+    double tSort = 0, tBuild = 0, tCompare = 0, tUpdate = 0;
+    double nSort = 0, nBuild = 0, nCompare = 0, nUpdate = 0;
 
     population.stream().forEach(individual -> ((EnhancedIndividual) individual).reset());
     //initial rank by fitness
@@ -280,13 +283,16 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
     //associate individuals
     for (int h = 0; h < sortedPopulation.size(); h++) {
 
-      System.out.printf(""
+      System.out.printf("%2d"
               + "\td:%4.2f %.0f"
               + "\tr:%4.2f %.0f"
-              + "\tf:%4.2f %.0f %n",
+              + "\tf:%4.2f %.0f"
+              + "\tsort:%6.0f build:%6.4f compare:%6.4f %n",
+              h, 
               ((CachedFunction) distance).getCacheStats().hitRate(), ((CachedFunction) distance).getCacheStats().averageLoadPenalty(),
               ((CachedFunction) reducer).getCacheStats().hitRate(), ((CachedFunction) reducer).getCacheStats().averageLoadPenalty(),
-              ((CachedFunction) fitnessFunction).getCacheStats().hitRate(), ((CachedFunction) fitnessFunction).getCacheStats().averageLoadPenalty()
+              ((CachedFunction) fitnessFunction).getCacheStats().hitRate(), ((CachedFunction) fitnessFunction).getCacheStats().averageLoadPenalty(),
+              tSort/nSort, tBuild/nBuild, tCompare/nCompare
       );
 
       EnhancedIndividual individual = (EnhancedIndividual) sortedPopulation.get(h);
@@ -294,8 +300,11 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
         continue;
       }
       while (true) {
+        
+        tSort = tSort-sw.elapsed(TimeUnit.MICROSECONDS);
+        
         //sort other by distance to this
-        List<Individual<G, S, F>> others = sortedPopulation.parallelStream()
+        List<Individual<G, S, F>> others = sortedPopulation.stream()
                 .skip(h)
                 .filter(i -> !i.getSolution().equals(individual.getSolution()))
                 .filter(i -> ((EnhancedIndividual) i).getGroup().size() == 1)
@@ -305,9 +314,16 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
                   return -Double.compare(d1, d2);
                 })
                 .collect(Collectors.toList());
+        
+        tSort = tSort+sw.elapsed(TimeUnit.MICROSECONDS);
+        nSort++;
+        
         //iterate on others
         boolean found = false;
         for (Individual<G, S, F> baseOther : others) {
+
+          tBuild = tBuild-sw.elapsed(TimeUnit.MICROSECONDS);
+
           EnhancedIndividual other = (EnhancedIndividual) baseOther;
           fitnessEvaluations.incrementAndGet();
           Pair<S, B> groupedPair = reducer.apply(
@@ -315,6 +331,11 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
                   Pair.build(other.getSolution(), other.getSemantics())
           );
           F groupedFitness = fitnessFunction.apply(groupedPair.second());
+          
+          tBuild = tBuild+sw.elapsed(TimeUnit.MICROSECONDS);
+          nBuild++;
+          
+          
           //compare composed vs original
           EnhancedIndividual groupedIndividual = new EnhancedIndividual(
                   individual.getGenotype(),
@@ -325,7 +346,15 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
                   individual.getParents(),
                   individual.getInfo()
           );
-          if (ranker.compare(groupedIndividual, individual, random) == -1) {
+          
+          tCompare = tCompare-sw.elapsed(TimeUnit.MICROSECONDS);
+          
+          int comparisonOutcome = ranker.compare(groupedIndividual, individual, random);
+          
+          tCompare = tCompare+sw.elapsed(TimeUnit.MICROSECONDS);
+          nCompare++;
+          
+          if (comparisonOutcome == -1) {
             //update this individuals
             individual.setGroupSolution(groupedPair.first());
             individual.setGroupSemantics(groupedPair.second());
@@ -343,7 +372,6 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
               groupIndividual.setGroupFitness(groupedFitness);
             }
             found = true;
-            System.out.printf("merged: %s%n", groupedIndividual.getSolution());
             break;
           }
         }

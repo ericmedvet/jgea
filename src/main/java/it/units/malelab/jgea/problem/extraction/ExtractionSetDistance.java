@@ -8,12 +8,8 @@ package it.units.malelab.jgea.problem.extraction;
 import com.google.common.collect.Range;
 import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.distance.Distance;
-import java.util.Random;
 import java.util.Set;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  *
