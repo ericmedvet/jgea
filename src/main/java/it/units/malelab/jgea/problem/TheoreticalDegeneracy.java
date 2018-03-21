@@ -5,6 +5,8 @@
  */
 package it.units.malelab.jgea.problem;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.genotype.BitString;
@@ -12,6 +14,9 @@ import it.units.malelab.jgea.grammarbased.Grammar;
 import it.units.malelab.jgea.grammarbased.GrammarBasedMapper;
 import it.units.malelab.jgea.grammarbased.ge.HierarchicalMapper;
 import it.units.malelab.jgea.grammarbased.ge.StandardGEMapper;
+import it.units.malelab.jgea.grammarbased.ge.WeightedHierarchicalMapper;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -20,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
+import org.apache.commons.math3.stat.StatUtils;
 
 /**
  *
@@ -27,40 +34,73 @@ import java.util.TreeMap;
  */
 public class TheoreticalDegeneracy {
 
-  public static void main(String[] args) {
-    int maxLength = 10;
-    Map<String, GrammarBasedMapper<BitString, String>> mappers = new TreeMap<>();
-    //toy grammar 1
-    Grammar<String> grammar = new Grammar<>();
-    grammar.getRules().put("A", l(l("A", "a"), l("a")));
-    grammar.setStartingSymbol("A");
-    System.out.println(grammar);
-    mappers.put("GE", new StandardGEMapper<>(1, 1, grammar));
-    mappers.put("HGE", new HierarchicalMapper<>(grammar));
-    for (int l = 1; l < maxLength; l++) {
-      System.out.printf("Length: %d%n", l);
-      Set<BitString> genotypes = new HashSet<>();
-      for (long i = 0; i < Math.pow(2, l); i++) {
-        genotypes.add(new BitString(l, BitSet.valueOf(new long[]{i})));
-      }
-      mappers.forEach((k, mapper) -> {
-        Set<Node<String>> phenotypes = new HashSet<>();
-        int invalidCount = 0;
-        for (BitString genotype : genotypes) {
-          try {
-            phenotypes.add(mapper.apply(genotype));
-          } catch (FunctionException ex) {
-            invalidCount = invalidCount + 1;
-          };
+  public static void main(String[] args) throws FileNotFoundException {
+    final PrintStream ps = new PrintStream("/home/eric/experiments/tcyb-whge/properties.txt");
+    //final PrintStream ps = System.out;
+
+    int[] lengths = new int[]{2, 4, 6, 8, 10, 12, 14, 16};
+    int[] ts = new int[]{1, 2, 4, 6, 8};
+    int[] ns = new int[]{1, 2, 4, 6, 8};
+    ps.printf("%s %s %s %s %s %s%n", "n", "t", "l", "mapper", "property", "value");
+    for (int n : ns) {
+      for (int t : ts) {
+        //build grammar
+        Grammar<String> grammar = new Grammar<>();
+        for (int i = 0; i < n; i++) {
+          grammar.getRules().put("N_" + i, new ArrayList<>());
+          List<String> nonTerminalsOption = new ArrayList<>();
+          for (int j = i; j < n; j++) {
+            nonTerminalsOption.add("N_" + j);
+          }
+          grammar.getRules().get("N_" + i).add(nonTerminalsOption);
+          for (int j = 0; j < t; j++) {
+            grammar.getRules().get("N_" + i).add(l("t_" + i + "_" + j));
+          }
         }
-        System.out.printf("%5.5s phenos=%6d degeneracy=%5.3f invalids=%6d invalidity=%5.3f%n",
-                k,
-                phenotypes.size(),
-                1d - (double) phenotypes.size() / (double) genotypes.size(),
-                invalidCount,
-                (double) invalidCount / (double) genotypes.size()
-        );
-      });
+        grammar.setStartingSymbol("N_0");
+        //build mappers
+        Map<String, GrammarBasedMapper<BitString, String>> mappers = new TreeMap<>();
+        mappers.put("GE-1-1", new StandardGEMapper<>(1, 1, grammar));
+        mappers.put("GE-1-2", new StandardGEMapper<>(1, 2, grammar));
+        mappers.put("GE-1-4", new StandardGEMapper<>(1, 4, grammar));
+        mappers.put("HGE", new HierarchicalMapper<>(grammar));
+        mappers.put("WHGE-1", new WeightedHierarchicalMapper<>(1, grammar));
+        mappers.put("WHGE-2", new WeightedHierarchicalMapper<>(2, grammar));
+        mappers.put("WHGE-3", new WeightedHierarchicalMapper<>(3, grammar));
+        //compute
+        for (int l : lengths) {
+          Set<BitString> genotypes = new HashSet<>();
+          for (long i = 0; i < Math.pow(2, l); i++) {
+            genotypes.add(new BitString(l, BitSet.valueOf(new long[]{i})));
+          }
+          mappers.forEach((k, mapper) -> {
+            Multiset<List<String>> phenotypes = HashMultiset.create();
+            phenotypes.addAll(genotypes.stream()
+                    .map(g -> {
+                      try {
+                        return mapper.apply(g).leafNodes().stream().map(Node::getContent).collect(Collectors.toList());
+                      } catch (FunctionException e) {
+                        return null;
+                      }
+                    })
+                    .collect(Collectors.toList()));
+            double invalidity = (double) phenotypes.count(null) / (double) phenotypes.size();
+            double phenoSize = (double) phenotypes.elementSet().size() - (phenotypes.contains(null) ? 1d : 0d);
+            double degeneracy = 1d - phenoSize / (double) genotypes.size();
+            double maxLength = phenotypes.elementSet().stream().filter(s -> (s != null)).mapToInt(List::size).max().getAsInt();
+            double avgLength = phenotypes.stream().filter(s -> (s != null)).mapToInt(List::size).average().getAsDouble();
+            double[] sizes = phenotypes.entrySet().stream().filter(e -> (e.getElement() != null)).mapToDouble(Multiset.Entry::getCount).toArray();
+            double nonUniformity = Math.sqrt(StatUtils.variance(sizes))/StatUtils.mean(sizes);
+            ps.printf("%d %d %d %s %s %f%n", n, t, l, k, "degeneracy", degeneracy);
+            ps.printf("%d %d %d %s %s %f%n", n, t, l, k, "nonUniformity", nonUniformity);
+            ps.printf("%d %d %d %s %s %f%n", n, t, l, k, "invalidity", invalidity);
+            ps.printf("%d %d %d %s %s %f%n", n, t, l, k, "phenoSize", phenoSize);
+            ps.printf("%d %d %d %s %s %f%n", n, t, l, k, "maxLength", maxLength);
+            ps.printf("%d %d %d %s %s %f%n", n, t, l, k, "avgLength", avgLength);
+          });
+        }
+
+      }
     }
   }
 
