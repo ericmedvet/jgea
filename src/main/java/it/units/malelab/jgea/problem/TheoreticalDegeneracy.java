@@ -59,14 +59,19 @@ public class TheoreticalDegeneracy {
         }
         grammar.setStartingSymbol("N_0");
         //build mappers
+        int geCodonSize = (int)Math.ceil(Math.log(t+1)/Math.log(2));
+        
+        System.out.println(grammar);
+        System.out.printf("n=%d t=%d codonSize=%d%n", n, t, geCodonSize);
+        
         Map<String, GrammarBasedMapper<BitString, String>> mappers = new TreeMap<>();
-        mappers.put("GE-1-1", new StandardGEMapper<>(1, 1, grammar));
-        mappers.put("GE-1-2", new StandardGEMapper<>(1, 2, grammar));
-        mappers.put("GE-1-4", new StandardGEMapper<>(1, 4, grammar));
+        mappers.put("GE-opt-1", new StandardGEMapper<>(geCodonSize, 1, grammar));
+        mappers.put("GE-opt-2", new StandardGEMapper<>(geCodonSize, 2, grammar));
+        mappers.put("GE-opt-4", new StandardGEMapper<>(geCodonSize, 4, grammar));
         mappers.put("HGE", new HierarchicalMapper<>(grammar));
-        mappers.put("WHGE-1", new WeightedHierarchicalMapper<>(1, grammar));
         mappers.put("WHGE-2", new WeightedHierarchicalMapper<>(2, grammar));
         mappers.put("WHGE-3", new WeightedHierarchicalMapper<>(3, grammar));
+        mappers.put("WHGE-4", new WeightedHierarchicalMapper<>(4, grammar));
         //compute
         for (int l : lengths) {
           Set<BitString> genotypes = new HashSet<>();
@@ -75,7 +80,7 @@ public class TheoreticalDegeneracy {
           }
           mappers.forEach((k, mapper) -> {
             Multiset<List<String>> phenotypes = HashMultiset.create();
-            phenotypes.addAll(genotypes.stream()
+            phenotypes.addAll(genotypes.parallelStream()
                     .map(g -> {
                       try {
                         return mapper.apply(g).leafNodes().stream().map(Node::getContent).collect(Collectors.toList());
@@ -87,8 +92,8 @@ public class TheoreticalDegeneracy {
             double invalidity = (double) phenotypes.count(null) / (double) phenotypes.size();
             double phenoSize = (double) phenotypes.elementSet().size() - (phenotypes.contains(null) ? 1d : 0d);
             double degeneracy = 1d - phenoSize / (double) genotypes.size();
-            double maxLength = phenotypes.elementSet().stream().filter(s -> (s != null)).mapToInt(List::size).max().getAsInt();
-            double avgLength = phenotypes.stream().filter(s -> (s != null)).mapToInt(List::size).average().getAsDouble();
+            double maxLength = phenotypes.elementSet().stream().filter(s -> (s != null)).mapToInt(List::size).max().orElse(0);
+            double avgLength = phenotypes.stream().filter(s -> (s != null)).mapToInt(List::size).average().orElse(0d);
             double[] sizes = phenotypes.entrySet().stream().filter(e -> (e.getElement() != null)).mapToDouble(Multiset.Entry::getCount).toArray();
             double nonUniformity = Math.sqrt(StatUtils.variance(sizes))/StatUtils.mean(sizes);
             ps.printf("%d %d %d %s %s %f%n", n, t, l, k, "degeneracy", degeneracy);
