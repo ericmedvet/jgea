@@ -6,8 +6,6 @@
 package it.units.malelab.jgea.distance;
 
 import it.units.malelab.jgea.core.function.BiFunction;
-import it.units.malelab.jgea.core.function.CachedFunction;
-import it.units.malelab.jgea.core.function.Function;
 
 /**
  *

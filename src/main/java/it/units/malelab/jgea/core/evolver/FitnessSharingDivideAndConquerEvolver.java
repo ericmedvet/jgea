@@ -284,14 +284,14 @@ public class FitnessSharingDivideAndConquerEvolver<G, S, F, B> extends StandardE
     for (int h = 0; h < sortedPopulation.size(); h++) {
 
       System.out.printf("%2d"
-              + "\td:%4.2f %.0f"
-              + "\tr:%4.2f %.0f"
-              + "\tf:%4.2f %.0f"
-              + "\tsort:%6.0f build:%6.4f compare:%6.4f %n",
+              + "\tdistance:%4.2f %.0f"
+              + "\treducer:%4.2f %.0f"
+              + "\tfitness:%4.2f %.0f"
+              + "\tsort:%6.0f build:%6.0f compare:%6.0f %n",
               h, 
-              ((CachedFunction) distance).getCacheStats().hitRate(), ((CachedFunction) distance).getCacheStats().averageLoadPenalty(),
-              ((CachedFunction) reducer).getCacheStats().hitRate(), ((CachedFunction) reducer).getCacheStats().averageLoadPenalty(),
-              ((CachedFunction) fitnessFunction).getCacheStats().hitRate(), ((CachedFunction) fitnessFunction).getCacheStats().averageLoadPenalty(),
+              ((CachedFunction) distance).getCacheStats().hitRate(), ((CachedFunction) distance).getCacheStats().averageLoadPenalty()/1000,
+              ((CachedFunction) reducer).getCacheStats().hitRate(), ((CachedFunction) reducer).getCacheStats().averageLoadPenalty()/1000,
+              ((CachedFunction) fitnessFunction).getCacheStats().hitRate(), ((CachedFunction) fitnessFunction).getCacheStats().averageLoadPenalty()/1000,
               tSort/nSort, tBuild/nBuild, tCompare/nCompare
       );
 

@@ -19,37 +19,41 @@ import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
 import it.units.malelab.jgea.core.fitness.ClassificationFitness;
 import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.function.Reducer;
+import it.units.malelab.jgea.core.genotype.BitString;
+import it.units.malelab.jgea.core.genotype.BitStringFactory;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.collector.Basic;
 import it.units.malelab.jgea.core.listener.collector.BestInfo;
 import it.units.malelab.jgea.core.listener.collector.BestPrinter;
 import it.units.malelab.jgea.core.listener.collector.FunctionOfBest;
 import it.units.malelab.jgea.core.listener.collector.Diversity;
-import it.units.malelab.jgea.core.listener.collector.Item;
 import it.units.malelab.jgea.core.listener.collector.Population;
+import it.units.malelab.jgea.core.operator.BitFlipMutation;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
+import it.units.malelab.jgea.core.operator.LenghtPreservingTwoPointCrossover;
 import it.units.malelab.jgea.core.ranker.ComparableRanker;
 import it.units.malelab.jgea.core.ranker.FitnessComparator;
 import it.units.malelab.jgea.core.ranker.ParetoRanker;
 import it.units.malelab.jgea.core.ranker.selector.Tournament;
 import it.units.malelab.jgea.core.ranker.selector.Worst;
 import it.units.malelab.jgea.core.util.Pair;
-import it.units.malelab.jgea.core.util.WithNames;
 import it.units.malelab.jgea.distance.Distance;
 import it.units.malelab.jgea.distance.Edit;
+import it.units.malelab.jgea.grammarbased.GrammarBasedMapper;
 import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
 import it.units.malelab.jgea.grammarbased.cfggp.RampedHalfAndHalf;
 import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeCrossover;
 import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeMutation;
 import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
 import it.units.malelab.jgea.problem.booleanfunction.element.Element;
-import it.units.malelab.jgea.problem.classification.AbstractClassificationProblem;
 import it.units.malelab.jgea.problem.classification.BinaryRegexClassification;
 import it.units.malelab.jgea.problem.classification.RegexClassification;
 import it.units.malelab.jgea.problem.extraction.AbstractExtractionProblem;
 import it.units.malelab.jgea.problem.extraction.BinaryRegexExtraction;
 import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
 import it.units.malelab.jgea.grammarbased.RegexGrammar;
+import it.units.malelab.jgea.grammarbased.ge.StandardGEMapper;
+import it.units.malelab.jgea.grammarbased.ge.WeightedHierarchicalMapper;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,6 +69,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  *
@@ -82,11 +88,14 @@ public class Example extends Worker {
 
   public void run() {
     try {
-      parity(executorService);
+      //parity(executorService);
+      //parityGE(executorService, "ge");
+      //parityGE(executorService, "whge");
+      parityDCGE(executorService, "whge");
       //binaryRegexStandard(executorService);
       //binaryRegexDC(executorService);
       //binaryRegexFSDC(executorService);
-      binaryRegexExtractionStandard(executorService);
+      //binaryRegexExtractionStandard(executorService);
     } catch (IOException | InterruptedException | ExecutionException ex) {
       Logger.getLogger(Example.class.getName()).log(Level.SEVERE, null, ex);
     }
@@ -114,12 +123,104 @@ public class Example extends Worker {
     Random r = new Random(1);
     evolver.solve(p, r, executor,
             Listener.onExecutor(listener(
-                            new Basic(),
-                            new Population(),
-                            new BestInfo<>("%6.4f"),
-                            new Diversity(),
-                            new BestPrinter(null, "%s")
-                    ), executor)
+                    new Basic(),
+                    new Population(),
+                    new BestInfo<>("%6.4f"),
+                    new Diversity(),
+                    new BestPrinter(null, "%s")
+            ), executor)
+    );
+  }
+
+  private void parityGE(ExecutorService executor, String mapperName) throws IOException, InterruptedException, ExecutionException {
+    final GrammarBasedProblem<String, List<Node<Element>>, Double> p = new EvenParity(5);
+    GrammarBasedMapper<BitString, String> mapper;
+    if (mapperName.equals("ge")) {
+      mapper = new StandardGEMapper<>(8, 1, p.getGrammar());
+    } else if (mapperName.equals("whge")) {
+      mapper = new WeightedHierarchicalMapper<>(2, p.getGrammar());
+    } else {
+      return;
+    }
+    Map<GeneticOperator<BitString>, Double> operators = new LinkedHashMap<>();
+    operators.put(new BitFlipMutation(0.01d), 0.2d);
+    operators.put(new LenghtPreservingTwoPointCrossover(), 0.8d);
+    StandardEvolver<BitString, List<Node<Element>>, Double> evolver = new StandardEvolver<>(
+            500,
+            new BitStringFactory(128),
+            new ComparableRanker(new FitnessComparator<>()),
+            mapper.andThen(p.getSolutionMapper()),
+            operators,
+            new Tournament<>(3),
+            new Worst<>(),
+            500,
+            true,
+            Lists.newArrayList(new FitnessEvaluations(100000), new PerfectFitness<>(p.getFitnessFunction())),
+            10000,
+            false
+    );
+    Random r = new Random(1);
+    evolver.solve(p, r, executor,
+            Listener.onExecutor(listener(
+                    new Basic(),
+                    new Population(),
+                    new BestInfo<>("%6.4f"),
+                    new Diversity(),
+                    new BestPrinter(null, "%s")
+            ), executor)
+    );
+  }
+
+  private void parityDCGE(ExecutorService executor, String mapperName) throws IOException, InterruptedException, ExecutionException {
+    final GrammarBasedProblem<String, List<Node<Element>>, Double> p = new EvenParity(5);
+    GrammarBasedMapper<BitString, String> mapper;
+    if (mapperName.equals("ge")) {
+      mapper = new StandardGEMapper<>(8, 1, p.getGrammar());
+    } else if (mapperName.equals("whge")) {
+      mapper = new WeightedHierarchicalMapper<>(2, p.getGrammar());
+    } else {
+      return;
+    }
+    Map<GeneticOperator<BitString>, Double> operators = new LinkedHashMap<>();
+    operators.put(new BitFlipMutation(0.01d), 0.2d);
+    operators.put(new LenghtPreservingTwoPointCrossover(), 0.8d);
+    Edit<Element> edit = new Edit<>();
+    DeterministicCrowdingEvolver<BitString, List<Node<Element>>, Double> evolver = new DeterministicCrowdingEvolver<>(
+            (i1, i2, l) -> {
+              double d = 0d;
+              for (int i = 0; i < Math.min(i1.getSolution().size(), i2.getSolution().size()); i++) {
+                Sequence<Element> s1 = Sequence.from(
+                        i1.getSolution().get(i).leafNodes().stream()
+                                .map(Node::getContent)
+                                .collect(Collectors.toList()));
+                Sequence<Element> s2 = Sequence.from(
+                        i2.getSolution().get(i).leafNodes().stream()
+                                .map(Node::getContent)
+                                .collect(Collectors.toList()));
+                d = d + edit.apply(s1, s2);
+              }
+              return d;
+            },
+            500,
+            new BitStringFactory(128),
+            new ComparableRanker(new FitnessComparator<>()),
+            mapper.andThen(p.getSolutionMapper()),
+            operators,
+            new Tournament<>(3),
+            new Worst<>(),
+            Lists.newArrayList(new FitnessEvaluations(100000), new PerfectFitness<>(p.getFitnessFunction())),
+            10000,
+            false
+    );
+    Random r = new Random(1);
+    evolver.solve(p, r, executor,
+            Listener.onExecutor(listener(
+                    new Basic(),
+                    new Population(),
+                    new BestInfo<>("%6.4f"),
+                    new Diversity(),
+                    new BestPrinter(null, "%s")
+            ), executor)
     );
   }
 
@@ -152,13 +253,13 @@ public class Example extends Worker {
     Function validationAssessmentFunction = ((ClassificationFitness) ((ProblemWithValidation) p).getFitnessFunction()).changeMetric(ClassificationFitness.Metric.CLASS_ERROR_RATE);
     evolver.solve(p, r, executor,
             Listener.onExecutor(listener(new Basic(),
-                            new Population(),
-                            new BestInfo<>((ExtractionFitness)p.getFitnessFunction(), "%5.3f"),
-                            new FunctionOfBest("best.learning", learningAssessmentFunction, 10000, "%5.3f"),
-                            new FunctionOfBest("best.validation", validationAssessmentFunction, 10000, "%5.3f"),
-                            new Diversity(),
-                            new BestPrinter()
-                    ), executor
+                    new Population(),
+                    new BestInfo<>((ExtractionFitness) p.getFitnessFunction(), "%5.3f"),
+                    new FunctionOfBest("best.learning", learningAssessmentFunction, 10000, "%5.3f"),
+                    new FunctionOfBest("best.validation", validationAssessmentFunction, 10000, "%5.3f"),
+                    new Diversity(),
+                    new BestPrinter()
+            ), executor
             )
     );
   }
@@ -200,13 +301,13 @@ public class Example extends Worker {
     Function validationAssessmentFunction = ((ClassificationFitness) ((ProblemWithValidation) p).getFitnessFunction()).changeMetric(ClassificationFitness.Metric.CLASS_ERROR_RATE);
     evolver.solve(p, r, executor,
             Listener.onExecutor(listener(new Basic(),
-                            new Population(),
-                            new BestInfo<>((ExtractionFitness)p.getFitnessFunction(), "%5.3f"),
-                            new FunctionOfBest("best.learning", learningAssessmentFunction, 10000, "%5.3f"),
-                            new FunctionOfBest("best.validation", validationAssessmentFunction, 10000, "%5.3f"),
-                            new Diversity(),
-                            new BestPrinter()
-                    ), executor
+                    new Population(),
+                    new BestInfo<>((ExtractionFitness) p.getFitnessFunction(), "%5.3f"),
+                    new FunctionOfBest("best.learning", learningAssessmentFunction, 10000, "%5.3f"),
+                    new FunctionOfBest("best.validation", validationAssessmentFunction, 10000, "%5.3f"),
+                    new Diversity(),
+                    new BestPrinter()
+            ), executor
             )
     );
   }
@@ -262,13 +363,13 @@ public class Example extends Worker {
     Function validationAssessmentFunction = ((ClassificationFitness) ((ProblemWithValidation) p).getFitnessFunction()).changeMetric(ClassificationFitness.Metric.CLASS_ERROR_RATE);
     evolver.solve(p, r, executor,
             Listener.onExecutor(listener(new Basic(),
-                            new Population(),
-                            new BestInfo<>((ExtractionFitness)p.getFitnessFunction(), "%5.3f"),
-                            new FunctionOfBest("best.learning", learningAssessmentFunction, 10000, "%5.3f"),
-                            new FunctionOfBest("best.validation", validationAssessmentFunction, 10000, "%5.3f"),
-                            new Diversity(),
-                            new BestPrinter()
-                    ), executor
+                    new Population(),
+                    new BestInfo<>((ExtractionFitness) p.getFitnessFunction(), "%5.3f"),
+                    new FunctionOfBest("best.learning", learningAssessmentFunction, 10000, "%5.3f"),
+                    new FunctionOfBest("best.validation", validationAssessmentFunction, 10000, "%5.3f"),
+                    new Diversity(),
+                    new BestPrinter()
+            ), executor
             )
     );
   }
@@ -298,16 +399,16 @@ public class Example extends Worker {
     );
     Random r = new Random(1);
     Function learningAssessmentFunction = ((ExtractionFitness) ((AbstractExtractionProblem) p).getFitnessFunction()).changeMetrics(ExtractionFitness.Metric.ONE_MINUS_FM, ExtractionFitness.Metric.ONE_MINUS_PREC, ExtractionFitness.Metric.ONE_MINUS_REC, ExtractionFitness.Metric.CHAR_ERROR);
-    Function validationAssessmentFunction = ((ExtractionFitness) ((AbstractExtractionProblem) p).getValidationFunction()).changeMetrics(ExtractionFitness.Metric.ONE_MINUS_FM, ExtractionFitness.Metric.ONE_MINUS_PREC, ExtractionFitness.Metric.ONE_MINUS_REC, ExtractionFitness.Metric.CHAR_ERROR);    
+    Function validationAssessmentFunction = ((ExtractionFitness) ((AbstractExtractionProblem) p).getValidationFunction()).changeMetrics(ExtractionFitness.Metric.ONE_MINUS_FM, ExtractionFitness.Metric.ONE_MINUS_PREC, ExtractionFitness.Metric.ONE_MINUS_REC, ExtractionFitness.Metric.CHAR_ERROR);
     evolver.solve(p, r, executor,
             Listener.onExecutor(listener(new Basic(),
-                            new Population(),
-                            new BestInfo<>((ExtractionFitness)p.getFitnessFunction(), "%5.3f"),
-                            new FunctionOfBest("best.learning", learningAssessmentFunction, 10000, "%5.3f"),
-                            new FunctionOfBest("best.validation", validationAssessmentFunction, 10000, "%5.3f"),
-                            new Diversity(),
-                            new BestPrinter()
-                    ), executor
+                    new Population(),
+                    new BestInfo<>((ExtractionFitness) p.getFitnessFunction(), "%5.3f"),
+                    new FunctionOfBest("best.learning", learningAssessmentFunction, 10000, "%5.3f"),
+                    new FunctionOfBest("best.validation", validationAssessmentFunction, 10000, "%5.3f"),
+                    new Diversity(),
+                    new BestPrinter()
+            ), executor
             )
     );
   }

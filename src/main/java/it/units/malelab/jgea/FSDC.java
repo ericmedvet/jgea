@@ -24,6 +24,7 @@ import it.units.malelab.jgea.core.function.Reducer;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.collector.Basic;
 import it.units.malelab.jgea.core.listener.collector.BestInfo;
+import it.units.malelab.jgea.core.listener.collector.BestPrinter;
 import it.units.malelab.jgea.core.listener.collector.DataCollector;
 import it.units.malelab.jgea.core.listener.collector.FunctionOfBest;
 import it.units.malelab.jgea.core.listener.collector.Diversity;
@@ -89,7 +90,7 @@ public class FSDC extends Worker {
     List<String> problems = l(a("problems", "binRegexClass-100-500,binRegexExtr-20"));
 
     eas = Collections.singletonList("fsdc");
-    //problems = l("binRegexExtr-20");
+    problems = l("binRegexExtr-20");
 
     for (int run : runs) {
       for (String p : problems) {
@@ -148,6 +149,7 @@ public class FSDC extends Worker {
                     new FunctionOfBest("best.validation", validationAssessmentFunction, cacheSize, "%5.3f")
             ));
           }
+          dataCollectors.add(new BestPrinter(null, "%s"));
           //prepare distances and reducer
           if (p(p, 0).equals("binRegexClass") || p(p, 0).equals("binRegexExtr")) {
             Distance<Sequence<Character>> edit = new Edit<>();

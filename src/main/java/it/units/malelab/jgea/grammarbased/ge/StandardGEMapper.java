@@ -61,28 +61,20 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
         }
       }      
       List<List<T>> options = grammar.getRules().get(nodeToBeReplaced.getContent());
-      int optionIndex = genotype.slice(currentCodonIndex*codonLenght, (currentCodonIndex+1)*codonLenght).toInt()%options.size();
-      /*
-      System.out.printf("i=%3d g_i=%3d |r_s|=%2d j=%2d w=%2d %s %s%n",
-              currentCodonIndex,
-              genotype.slice(currentCodonIndex*codonLenght, (currentCodonIndex+1)*codonLenght).toInt(),
-              options.size(),
-              optionIndex,
-              wraps,
-              genotype.slice(currentCodonIndex*codonLenght, (currentCodonIndex+1)*codonLenght),
-              tree.leaves()
-              );
-      */
+      int optionIndex = 0;
+      if (options.size()>1) {
+      optionIndex = genotype.slice(currentCodonIndex*codonLenght, (currentCodonIndex+1)*codonLenght).toInt()%options.size();
       //update usages
       for (int i = currentCodonIndex*codonLenght; i<(currentCodonIndex+1)*codonLenght; i++) {
         bitUsages[i] = bitUsages[i]+1;
+      }
+        currentCodonIndex = currentCodonIndex + 1;
       }
       //add children
       for (T t : options.get(optionIndex)) {
         Node<T> newChild = new Node<>(t);
         nodeToBeReplaced.getChildren().add(newChild);
       }
-      currentCodonIndex = currentCodonIndex+1;
     }
     listener.listen(new FunctionEvent(genotype, tree, Collections.singletonMap(BIT_USAGES_INDEX_NAME, bitUsages)));
     return tree;
