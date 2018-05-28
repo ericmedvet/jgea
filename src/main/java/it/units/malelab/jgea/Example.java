@@ -101,6 +101,7 @@ public class Example extends Worker {
     }
   }
 
+
   private void parity(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
     final GrammarBasedProblem<String, List<Node<Element>>, Double> p = new EvenParity(5);
     Map<GeneticOperator<Node<String>>, Double> operators = new LinkedHashMap<>();

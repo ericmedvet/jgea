@@ -270,7 +270,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
     return node;
   }
   
-  protected static List<Range<Integer>> slices(Range<Integer> range, int pieces) {
+  public static List<Range<Integer>> slices(Range<Integer> range, int pieces) {
     List<Integer> sizes = new ArrayList<>(pieces);
     for (int i = 0; i < pieces; i++) {
       sizes.add(1);
@@ -278,7 +278,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
     return slices(range, sizes);
   }
 
-  protected static List<Range<Integer>> slices(Range<Integer> range, List<Integer> sizes) {
+  public static List<Range<Integer>> slices(Range<Integer> range, List<Integer> sizes) {
     int length = range.upperEndpoint() - range.lowerEndpoint();
     int sumOfSizes = 0;
     for (int size : sizes) {

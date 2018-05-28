@@ -5,7 +5,6 @@
  */
 package it.units.malelab.jgea.core;
 
-import it.units.malelab.jgea.core.Factory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -25,6 +24,6 @@ public abstract class IndependentFactory<T> implements Factory<T> {
     return ts;
   }
   
-  protected abstract T build(Random random);
+  public abstract T build(Random random);
   
 }

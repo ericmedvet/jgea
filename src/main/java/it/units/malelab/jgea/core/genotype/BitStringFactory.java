@@ -21,7 +21,7 @@ public class BitStringFactory extends IndependentFactory<BitString> {
   }
 
   @Override
-  protected BitString build(Random random) {
+  public BitString build(Random random) {
     BitString bitString = new BitString(size);
     for (int i = 0; i<size; i++) {
       bitString.set(i, random.nextBoolean());

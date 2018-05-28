@@ -3,16 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.units.malelab.jgea.core;
+package it.units.malelab.jgea.problem.mapper.element;
 
-import java.util.Set;
+import java.io.Serializable;
 
 /**
  *
  * @author eric
  */
-public interface ConstrainedSequence<T> extends Sequence<T> {
+public interface Element extends Serializable {
   
-  public Set<T> domain(int index);
+  public String toString();
   
 }
