@@ -39,6 +39,8 @@ import it.units.malelab.jgea.core.ranker.selector.Worst;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.distance.Distance;
 import it.units.malelab.jgea.distance.Edit;
+import it.units.malelab.jgea.distance.Pairwise;
+import it.units.malelab.jgea.distance.TreeLeaves;
 import it.units.malelab.jgea.grammarbased.GrammarBasedMapper;
 import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
 import it.units.malelab.jgea.grammarbased.cfggp.RampedHalfAndHalf;
@@ -185,23 +187,9 @@ public class Example extends Worker {
     Map<GeneticOperator<BitString>, Double> operators = new LinkedHashMap<>();
     operators.put(new BitFlipMutation(0.01d), 0.2d);
     operators.put(new LenghtPreservingTwoPointCrossover(), 0.8d);
-    Edit<Element> edit = new Edit<>();
+    Distance<List<Node<Element>>> distance = new Pairwise<>(new TreeLeaves<>(new Edit<Element>()));
     DeterministicCrowdingEvolver<BitString, List<Node<Element>>, Double> evolver = new DeterministicCrowdingEvolver<>(
-            (i1, i2, l) -> {
-              double d = 0d;
-              for (int i = 0; i < Math.min(i1.getSolution().size(), i2.getSolution().size()); i++) {
-                Sequence<Element> s1 = Sequence.from(
-                        i1.getSolution().get(i).leafNodes().stream()
-                                .map(Node::getContent)
-                                .collect(Collectors.toList()));
-                Sequence<Element> s2 = Sequence.from(
-                        i2.getSolution().get(i).leafNodes().stream()
-                                .map(Node::getContent)
-                                .collect(Collectors.toList()));
-                d = d + edit.apply(s1, s2);
-              }
-              return d;
-            },
+            null, //TODO put a distance
             500,
             new BitStringFactory(128),
             new ComparableRanker(new FitnessComparator<>()),
