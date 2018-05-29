@@ -60,7 +60,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -71,8 +70,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  *
@@ -112,7 +109,7 @@ public class Example extends Worker {
     StandardEvolver<Node<String>, List<Node<Element>>, Double> evolver = new StandardEvolver<>(
             500,
             new RampedHalfAndHalf<>(3, 12, p.getGrammar()),
-            new ComparableRanker(new FitnessComparator<>()),
+            new ComparableRanker(new FitnessComparator<>(Function.identity())),
             p.getSolutionMapper(),
             operators,
             new Tournament<>(3),
@@ -151,7 +148,7 @@ public class Example extends Worker {
     StandardEvolver<BitString, List<Node<Element>>, Double> evolver = new StandardEvolver<>(
             500,
             new BitStringFactory(128),
-            new ComparableRanker(new FitnessComparator<>()),
+            new ComparableRanker(new FitnessComparator<>(Function.identity())),
             mapper.andThen(p.getSolutionMapper()),
             operators,
             new Tournament<>(3),
@@ -187,12 +184,12 @@ public class Example extends Worker {
     Map<GeneticOperator<BitString>, Double> operators = new LinkedHashMap<>();
     operators.put(new BitFlipMutation(0.01d), 0.2d);
     operators.put(new LenghtPreservingTwoPointCrossover(), 0.8d);
-    Distance<List<Node<Element>>> distance = new Pairwise<>(new TreeLeaves<>(new Edit<Element>()));
+    Distance<List<Node<Element>>> distance = new Pairwise<>(new TreeLeaves<>(new Edit<>()));
     DeterministicCrowdingEvolver<BitString, List<Node<Element>>, Double> evolver = new DeterministicCrowdingEvolver<>(
             null, //TODO put a distance
             500,
             new BitStringFactory(128),
-            new ComparableRanker(new FitnessComparator<>()),
+            new ComparableRanker(new FitnessComparator<>(Function.identity())),
             mapper.andThen(p.getSolutionMapper()),
             operators,
             new Tournament<>(3),

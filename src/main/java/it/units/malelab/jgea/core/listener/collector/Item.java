@@ -6,7 +6,6 @@
 package it.units.malelab.jgea.core.listener.collector;
 
 import it.units.malelab.jgea.core.function.Function;
-import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.util.WithNames;
 import java.util.ArrayList;

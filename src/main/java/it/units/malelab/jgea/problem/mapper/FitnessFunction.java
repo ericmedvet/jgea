@@ -8,8 +8,6 @@ package it.units.malelab.jgea.problem.mapper;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
 import it.units.malelab.jgea.core.Node;
-import it.units.malelab.jgea.core.Sequence;
-import it.units.malelab.jgea.core.function.BiFunction;
 import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.genotype.BitString;
@@ -18,6 +16,7 @@ import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.operator.BitFlipMutation;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.util.Pair;
+import it.units.malelab.jgea.core.util.WithNames;
 import it.units.malelab.jgea.distance.Distance;
 import it.units.malelab.jgea.distance.Hamming;
 import it.units.malelab.jgea.problem.mapper.element.Element;
@@ -36,24 +35,13 @@ import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
  * @author eric
  */
 public class FitnessFunction implements
-        Function<Pair<Node<Element>, Node<Element>>, List<Double>> {
+        Function<Pair<Node<Element>, Node<Element>>, List<Double>>,
+        WithNames {
 
   private final static int EXPRESSIVENESS_DEPTH = 2;
 
   public static enum Property {
-    DEGENERACY("d"),
-    NON_UNIFORMITY("nu"),
-    NON_LOCALITY("nl");
-    private final String shortName;
-
-    private Property(String shortName) {
-      this.shortName = shortName;
-    }
-
-    public String getShortName() {
-      return shortName;
-    }
-
+    DEGENERACY, NON_UNIFORMITY, NON_LOCALITY
   };
 
   private final List<EnhancedProblem> problems;
@@ -80,7 +68,7 @@ public class FitnessFunction implements
     }
     genotypes = new ArrayList<>(set);
     //compute distances
-    genotypeDistances = computeDistances(genotypes, new Hamming<Boolean>());
+    genotypeDistances = computeDistances(genotypes, new Hamming<>());
   }
 
   private List<BitString> consecutiveMutations(BitString g, int n, GeneticOperator<BitString> mutation, Random random) {
@@ -157,5 +145,10 @@ public class FitnessFunction implements
     }
     return dists;
   }
+
+  @Override
+  public List<String> names() {
+    return properties.stream().map(p -> p.toString().toLowerCase().replace("_", ".")).collect(Collectors.toList());
+  }    
 
 }
