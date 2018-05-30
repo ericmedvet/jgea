@@ -91,5 +91,9 @@ public abstract class Worker implements Runnable {
     }
     return new LazyFileListener(a("dir", "."), a("file", null), collectors);
   }
+  
+  protected Listener listener(String fileArgName, DataCollector... collectors) {
+    return new LazyFileListener(a("dir", "."), a(fileArgName, null), collectors);
+  }
 
 }

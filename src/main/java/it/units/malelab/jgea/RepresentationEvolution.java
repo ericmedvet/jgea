@@ -11,8 +11,11 @@ import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.evolver.DeterministicCrowdingEvolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
+import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
+import it.units.malelab.jgea.core.evolver.stopcondition.StopCondition;
 import it.units.malelab.jgea.core.fitness.Linearization;
+import it.units.malelab.jgea.core.function.Bounded;
 import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.genotype.BitString;
 import it.units.malelab.jgea.core.genotype.BitStringFactory;
@@ -23,6 +26,7 @@ import it.units.malelab.jgea.core.listener.collector.BestPrinter;
 import it.units.malelab.jgea.core.listener.collector.Diversity;
 import it.units.malelab.jgea.core.listener.collector.FunctionOfBest;
 import it.units.malelab.jgea.core.listener.collector.Population;
+import it.units.malelab.jgea.core.listener.collector.Static;
 import it.units.malelab.jgea.core.operator.BitFlipMutation;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.operator.LenghtPreservingTwoPointCrossover;
@@ -41,11 +45,15 @@ import it.units.malelab.jgea.grammarbased.cfggp.RampedHalfAndHalf;
 import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeCrossover;
 import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeMutation;
 import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
+import it.units.malelab.jgea.problem.booleanfunction.MultipleOutputParallelMultiplier;
 import it.units.malelab.jgea.problem.mapper.EnhancedProblem;
 import it.units.malelab.jgea.problem.mapper.FitnessFunction;
 import it.units.malelab.jgea.problem.mapper.MapperGeneration;
+import it.units.malelab.jgea.problem.mapper.MapperUtils;
 import it.units.malelab.jgea.problem.mapper.RecursiveMapper;
 import it.units.malelab.jgea.problem.mapper.element.Element;
+import it.units.malelab.jgea.problem.symbolicregression.Keijzer6;
+import it.units.malelab.jgea.problem.symbolicregression.Nguyen7;
 import it.units.malelab.jgea.problem.symbolicregression.Pagie1;
 import it.units.malelab.jgea.problem.synthetic.KLandscapes;
 import it.units.malelab.jgea.problem.synthetic.Text;
@@ -83,39 +91,47 @@ public class RepresentationEvolution extends Worker {
 
   @Override
   public void run() {
-    List<EnhancedProblem> problems = new ArrayList<>();
+    //prepare parameters
+    List<Integer> learningRuns = i(l(a("runs", "0")));
+    Map<String, EnhancedProblem> baseProblems = new LinkedHashMap<>();
+    Map<String, EnhancedProblem> validationOnlyProblems = new LinkedHashMap<>();
     try {
-      problems.add(new EnhancedProblem<>(new EvenParity(3), (Distance) (new Pairwise<>(new TreeLeaves<>(new Edit<>()))).cached(CACHE_SIZE), null));
-      problems.add(new EnhancedProblem<>(new Pagie1(), (Distance) (new TreeLeaves<>(new Edit<>()).cached(CACHE_SIZE)), null));
-      problems.add(new EnhancedProblem<>(new KLandscapes(5), (Distance) (new TreeLeaves<>(new Edit<>()).cached(CACHE_SIZE)), null));
-      problems.add(new EnhancedProblem<>(new Text("Hello World!"), new StringSequence(new Edit<>()).cached(CACHE_SIZE), null));
+      baseProblems.put("Parity-3", new EnhancedProblem<>(new EvenParity(3), (Distance) (new Pairwise<>(new TreeLeaves<>(new Edit<>()))).cached(CACHE_SIZE)));
+      baseProblems.put("Pagie1", new EnhancedProblem<>(new Pagie1(), (Distance) (new TreeLeaves<>(new Edit<>()).cached(CACHE_SIZE))));
+      baseProblems.put("KLandscapes-5", new EnhancedProblem<>(new KLandscapes(5), (Distance) (new TreeLeaves<>(new Edit<>()).cached(CACHE_SIZE))));
+      baseProblems.put("Text", new EnhancedProblem<>(new Text("Hello World!"), new StringSequence(new Edit<>()).cached(CACHE_SIZE)));
+      validationOnlyProblems.putAll(baseProblems);
+      validationOnlyProblems.put("MOPM-3", new EnhancedProblem<>(new MultipleOutputParallelMultiplier(3), (Distance) (new Pairwise<>(new TreeLeaves<>(new Edit<>()))).cached(CACHE_SIZE)));
+      validationOnlyProblems.put("Nguyen7", new EnhancedProblem<>(new Nguyen7(1), (Distance) (new TreeLeaves<>(new Edit<>()).cached(CACHE_SIZE))));
+      validationOnlyProblems.put("Keijzer6", new EnhancedProblem<>(new Keijzer6(), (Distance) (new TreeLeaves<>(new Edit<>()).cached(CACHE_SIZE))));
+      validationOnlyProblems.put("KLandscapes-7", new EnhancedProblem<>(new KLandscapes(7), (Distance) (new TreeLeaves<>(new Edit<>()).cached(CACHE_SIZE))));
     } catch (IOException ex) {
       L.log(Level.SEVERE, "Cannot instantiate problems", ex);
+      ex.printStackTrace();
       System.exit(-1);
     }
     int learningGenotypeSize = 64;
-    int learningN = 16;
+    int learningN = 100;
     int learningMaxMappingDepth = 9;
-    int learningRuns = 1;
-    int learningFitnessEvaluations = 2000;
+    int learningIterations = 50;
     int learningPopulation = 500;
     int learningDepth = 14;
-    int validationGenotypeSize = 128;
+    int validationGenotypeSize = 256;
     int validationN = 400;
-    int validationMaxMappingDepth = 12;
-    int validationRuns = 2;
-    int validationFitnessEvaluations = 10000;
-    int validationPopulation = 250;
+    int validationMaxMappingDepth = 9;
+    int validationRuns = 5;
+    int validationIterations = 50;
+    int validationPopulation = 500;
     List<FitnessFunction.Property> properties = Arrays.asList(
             FitnessFunction.Property.DEGENERACY,
             FitnessFunction.Property.NON_LOCALITY,
             FitnessFunction.Property.NON_UNIFORMITY);
     //iterate
-    for (EnhancedProblem problem : problems) {
-      List<EnhancedProblem> learningProblems = new ArrayList<>(problems);
-      learningProblems.remove(problem);
-      List<EnhancedProblem> validationProblems = Collections.singletonList(problem);
-      for (int learningRun = 0; learningRun < learningRuns; learningRun++) {
+    for (Map.Entry<String, EnhancedProblem> problemEntry : baseProblems.entrySet()) {
+      List<EnhancedProblem> learningProblems = new ArrayList<>(baseProblems.values());
+      learningProblems.remove(problemEntry.getValue());
+      List<EnhancedProblem> validationProblems = Collections.singletonList(problemEntry.getValue());
+      for (int learningRun : learningRuns) {
         for (int propertiesSize = 1; propertiesSize <= properties.size(); propertiesSize++) {
           List<FitnessFunction.Property> localProperties = properties.subList(0, propertiesSize);
           try {
@@ -145,69 +161,78 @@ public class RepresentationEvolution extends Worker {
                     operators,
                     new Tournament<>(3),
                     new Worst<>(),
-                    Lists.newArrayList(new FitnessEvaluations(learningFitnessEvaluations), new PerfectFitness<>(0d)),
+                    Lists.newArrayList(new Iterations(learningIterations)),
                     CACHE_SIZE,
                     false
             );
             //evolve
-            L.info(String.format("LEARNING\tProblems: %s\tRun: %s\tFitness: %s%n",
-                    learningProblems.stream().map(p -> p.getProblem().getClass().getSimpleName()).collect(Collectors.toList()),
-                    learningRun,
-                    localProperties
-            ));
+            Map<String, String> keys = new LinkedHashMap<>();
+            List<String> learningProblemNames = new ArrayList<>(baseProblems.keySet());
+            learningProblemNames.remove(problemEntry.getKey());
+            keys.put("learning.problems", learningProblemNames.stream().collect(Collectors.joining("|")));
+            keys.put("learning.run", Integer.toString(learningRun));
+            keys.put("learning.fitness", localProperties.stream().map(p -> p.toString().toLowerCase()).collect(Collectors.joining("|")));
             Random random = new Random(learningRun);
+            System.out.printf("%s%n", keys);
             try {
               Collection<Pair<Node<Element>, Node<Element>>> mapperPairs = evolver.solve(mapperGeneration, random, executorService,
-                      Listener.onExecutor(listener(
-                              new Basic(),
-                              new Population(),
-                              new BestInfo<>((FitnessFunction) mapperGeneration.getFitnessFunction(), "%5.3f"),
-                              new FunctionOfBest("best.validation", (FitnessFunction) mapperGeneration.getValidationFunction(), 10000, "%5.3f"),
-                              new Diversity(),
-                              new BestPrinter()
-                      ), executorService
+                      Listener.onExecutor(listener("lFile",
+                                      new Static(keys),
+                                      new Basic(),
+                                      new Population(),
+                                      new BestInfo<>((FitnessFunction) mapperGeneration.getFitnessFunction(), "%5.3f"),
+                                      new FunctionOfBest("best.validation", (FitnessFunction) mapperGeneration.getValidationFunction(), 10000, "%5.3f"),
+                                      new Diversity(),
+                                      new BestPrinter()
+                              ), executorService
                       ));
               Pair<Node<Element>, Node<Element>> mapperPair = Misc.first(mapperPairs);
               //iterate on problems
-              for (EnhancedProblem innerProblem : problems) {
+              for (Map.Entry<String, EnhancedProblem> innerProblemEntry : validationOnlyProblems.entrySet()) {
                 Map<GeneticOperator<BitString>, Double> innerOperators = new LinkedHashMap<>();
                 innerOperators.put(new BitFlipMutation(0.01d), 0.2d);
                 innerOperators.put(new LenghtPreservingTwoPointCrossover(), 0.8d);
                 for (int validationRun = 0; validationRun < validationRuns; validationRun++) {
+                  //prepare mapper
                   RecursiveMapper recursiveMapper = new RecursiveMapper<>(
                           mapperPair.first(),
                           mapperPair.second(),
                           validationMaxMappingDepth,
                           2,
-                          innerProblem.getProblem().getGrammar());
+                          innerProblemEntry.getValue().getProblem().getGrammar());
+                  //prepare evolver
                   StandardEvolver innerEvolver = new StandardEvolver(
                           validationPopulation,
                           new BitStringFactory(validationGenotypeSize),
                           new ComparableRanker(new FitnessComparator<>(Function.identity())),
-                          recursiveMapper.andThen(innerProblem.getProblem().getSolutionMapper()),
+                          recursiveMapper.andThen(innerProblemEntry.getValue().getProblem().getSolutionMapper()),
                           innerOperators,
                           new Tournament<>(3),
                           new Worst<>(),
                           validationPopulation,
                           true,
-                          Lists.newArrayList(new FitnessEvaluations(validationFitnessEvaluations)),
+                          Lists.newArrayList(
+                                  new Iterations(validationIterations),
+                                  new PerfectFitness<>(innerProblemEntry.getValue().getProblem().getFitnessFunction())),
                           CACHE_SIZE,
                           false
                   );
                   //solve validation
+                  Map<String, String> innerKeys = new LinkedHashMap<>();
+                  innerKeys.put("validation.problem", innerProblemEntry.getKey());
+                  innerKeys.put("validation.run", Integer.toString(validationRun));
+                  System.out.printf("\t%s%n", innerKeys);
+                  innerKeys.putAll(keys);
                   Random innerRandom = new Random(validationRun);
-                  L.info(String.format("VALIDATION\tProblem: %s\tRun: %s%n",
-                          innerProblem.getProblem().getClass().getSimpleName(),
-                          validationRun
-                  ));
-                  innerEvolver.solve(innerProblem.getProblem(), innerRandom, executorService,
-                          Listener.onExecutor(listener(
-                                  new Basic(),
-                                  new Population(),
-                                  new BestInfo((Function) innerProblem.getProblem().getFitnessFunction(), "%5.3f"),
-                                  new Diversity(),
-                                  new BestPrinter()
-                          ), executorService
+                  innerEvolver.solve(innerProblemEntry.getValue().getProblem(), innerRandom, executorService,
+                          Listener.onExecutor(listener("vFile",
+                                          new Static(innerKeys),
+                                          new Basic(),
+                                          new Population(),
+                                          new BestInfo("%5.3f"),
+                                          new Diversity(),
+                                          new BestPrinter()
+                                  ), executorService
                           ));
                 }
               }

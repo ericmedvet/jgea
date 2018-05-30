@@ -17,12 +17,10 @@ public class EnhancedProblem<N, S, F> {
 
   private final GrammarBasedProblem<N, S, F> problem;
   private final Distance<S> distance;
-  private final Ranker<F> ranker;
 
-  public EnhancedProblem(GrammarBasedProblem<N, S, F> problem, Distance<S> distance, Ranker<F> ranker) {
+  public EnhancedProblem(GrammarBasedProblem<N, S, F> problem, Distance<S> distance) {
     this.problem = problem;
     this.distance = distance;
-    this.ranker = ranker;
   }
 
   public GrammarBasedProblem<N, S, F> getProblem() {
@@ -31,10 +29,6 @@ public class EnhancedProblem<N, S, F> {
 
   public Distance<S> getDistance() {
     return distance;
-  }
-
-  public Ranker<F> getRanker() {
-    return ranker;
   }
 
 }
