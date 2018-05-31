@@ -20,6 +20,7 @@ import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.genotype.BitString;
 import it.units.malelab.jgea.core.genotype.BitStringFactory;
 import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.core.listener.MultiFileListenerFactory;
 import it.units.malelab.jgea.core.listener.collector.Basic;
 import it.units.malelab.jgea.core.listener.collector.BestInfo;
 import it.units.malelab.jgea.core.listener.collector.BestPrinter;
@@ -128,6 +129,8 @@ public class RepresentationEvolution extends Worker {
             FitnessFunction.Property.NON_UNIFORMITY);
     //prepare things
     List<FitnessFunction.Property> localProperties = properties.subList(0, nProperties);
+    MultiFileListenerFactory learningListenerFactory = new MultiFileListenerFactory(a("dir", "."), a("lFile", null));
+    MultiFileListenerFactory validationListenerFactory = new MultiFileListenerFactory(a("dir", "."), a("vFile", null));
     //iterate
     for (Map.Entry<String, EnhancedProblem> problemEntry : baseProblems.entrySet()) {
       List<EnhancedProblem> learningProblems = new ArrayList<>(baseProblems.values());
@@ -176,7 +179,7 @@ public class RepresentationEvolution extends Worker {
           System.out.printf("%s%n", keys);
           try {
             Collection<Pair<Node<Element>, Node<Element>>> mapperPairs = evolver.solve(mapperGeneration, random, executorService,
-                    Listener.onExecutor(listener("lFile",
+                    Listener.onExecutor(learningListenerFactory.build(
                             new Static(keys),
                             new Basic(),
                             new Population(),
@@ -224,13 +227,12 @@ public class RepresentationEvolution extends Worker {
                 System.out.printf("\t%s%n", innerKeys);
                 innerKeys.putAll(keys);
                 Random innerRandom = new Random(validationRun);
-                innerEvolver.solve(innerProblemEntry.getValue().getProblem(), innerRandom, executorService, Listener.onExecutor(listener("vFile",
+                innerEvolver.solve(innerProblemEntry.getValue().getProblem(), innerRandom, executorService, Listener.onExecutor(validationListenerFactory.build(
                         new Static(innerKeys),
                         new Basic(),
                         new Population(),
                         new BestInfo("%5.3f"),
-                        new Diversity(),
-                        new BestPrinter()
+                        new Diversity()
                 ), executorService
                 ));
               }

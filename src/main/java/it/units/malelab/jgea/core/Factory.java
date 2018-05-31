@@ -17,5 +17,5 @@ import java.util.Random;
 public interface Factory<T> extends Serializable {
   
   public List<T> build(int n, Random random);
-  
+    
 }

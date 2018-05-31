@@ -10,6 +10,7 @@ import it.units.malelab.jgea.core.Sized;
 import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
 import it.units.malelab.jgea.core.util.Misc;
+import it.units.malelab.jgea.core.util.Pair;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,6 +62,13 @@ public class BestInfo<F> implements DataCollector {
     }
     if (o instanceof String) {
       return ((String)o).length();
+    }
+    if (o instanceof Pair) {
+      Integer firstSize = size(((Pair)o).first());
+      Integer secondSize = size(((Pair)o).second());
+      if ((firstSize!=null)&&(secondSize!=null)) {
+        return firstSize+secondSize;
+      }
     }
     return null;
   }

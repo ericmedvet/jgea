@@ -5,7 +5,6 @@
  */
 package it.units.malelab.jgea;
 
-import it.units.malelab.jgea.core.listener.LazyFileListener;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.PrintStreamListener;
 import java.io.FileNotFoundException;
@@ -86,14 +85,7 @@ public abstract class Worker implements Runnable {
   }
 
   protected Listener listener(DataCollector... collectors) {
-    if (a("file", null) == null) {
-      return new PrintStreamListener(System.out, true, 10, " ", " | ", collectors);
-    }
-    return new LazyFileListener(a("dir", "."), a("file", null), collectors);
-  }
-  
-  protected Listener listener(String fileArgName, DataCollector... collectors) {
-    return new LazyFileListener(a("dir", "."), a(fileArgName, null), collectors);
+    return new PrintStreamListener(System.out, true, 10, " ", " | ", collectors);
   }
 
 }
