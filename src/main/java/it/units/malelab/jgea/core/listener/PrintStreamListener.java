@@ -17,7 +17,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import it.units.malelab.jgea.core.listener.collector.DataCollector;
 import it.units.malelab.jgea.core.listener.collector.Item;
-import it.units.malelab.jgea.core.util.Pair;
 import java.util.stream.Collectors;
 
 /**

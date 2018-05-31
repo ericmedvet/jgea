@@ -7,7 +7,6 @@ package it.units.malelab.jgea.core.listener;
 
 import it.units.malelab.jgea.core.listener.event.Event;
 import java.io.Serializable;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 /**
