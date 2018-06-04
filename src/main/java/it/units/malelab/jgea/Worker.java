@@ -62,6 +62,10 @@ public abstract class Worker implements Runnable {
     return Integer.parseInt(s);
   }
 
+  protected boolean b(String s) {
+    return Boolean.parseBoolean(s);
+  }
+
   protected double d(String s) {
     return Double.parseDouble(s);
   }

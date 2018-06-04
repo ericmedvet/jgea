@@ -388,7 +388,7 @@ public class MapperUtils {
     return node;
   }
 
-  public static Node<String> getGERawTree() {
+  public static Node<String> getGERawTree(int codonLength) {
     return node("<mapper>",
             node("<n>",
                     node("<fun_n_g>",
@@ -423,7 +423,7 @@ public class MapperUtils {
                                             node(","),
                                             node("<n>",
                                                     node("<const_n>",
-                                                            node("8")
+                                                            node(Integer.toString(codonLength))
                                                     )),
                                             node(")")
                                     ),
@@ -432,7 +432,7 @@ public class MapperUtils {
                             node(","),
                             node("<n>",
                                     node("<const_n>",
-                                            node("8")
+                                            node(Integer.toString(codonLength))
                                     )
                             ),
                             node(")")
