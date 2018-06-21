@@ -40,7 +40,7 @@ public class Triplet<F, S, T> extends Pair<F, S> {
 
   @Override
   public int hashCode() {
-    int hash = 7;
+    int hash = super.hashCode();
     hash = 67 * hash + Objects.hashCode(this.third);
     return hash;
   }
