@@ -5,11 +5,8 @@
  */
 package it.units.malelab.jgea.core.listener.collector;
 
-import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 /**

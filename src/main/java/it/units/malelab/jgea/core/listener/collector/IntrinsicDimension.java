@@ -12,11 +12,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
@@ -27,17 +24,20 @@ import org.apache.commons.math3.stat.regression.SimpleRegression;
 public class IntrinsicDimension implements DataCollector {
 
   private final static float DEFAULT_FRACTION = 0.9f;
+  private final static boolean DEFAULT_DROP_NULL_DISTANCES = true;
 
   private final Distance<Individual> distance;
   private final float fraction;
+  private final boolean dropNullDistances;
 
-  public IntrinsicDimension(Distance<Individual> distance, float fraction) {
+  public IntrinsicDimension(Distance<Individual> distance, float fraction, boolean dropNullDistances) {
     this.distance = distance;
     this.fraction = fraction;
+    this.dropNullDistances = dropNullDistances;
   }
 
   public IntrinsicDimension(Distance<Individual> distance) {
-    this(distance, DEFAULT_FRACTION);
+    this(distance, DEFAULT_FRACTION, DEFAULT_DROP_NULL_DISTANCES);
   }
 
   @Override
@@ -59,7 +59,17 @@ public class IntrinsicDimension implements DataCollector {
       Arrays.sort(ds);
       for (int j = 0; j < ds.length; j++) {
         if ((ds[j] > 0) && (j < ds.length - 1)) {
-          mus.add(ds[j+1] / ds[j]);
+          if (!dropNullDistances) {
+            mus.add(ds[j+1] / ds[j]);
+          } else {
+            int y = j+1;
+            while ((ds[y]<=ds[j])&&(y<ds.length)) {
+              y++;
+            }
+            if (y<ds.length) {
+              mus.add(ds[y] / ds[j]);
+            }
+          }
           break;
         }
       }
@@ -78,16 +88,6 @@ public class IntrinsicDimension implements DataCollector {
             new Item<>("intrinsic.dimension.slope", regression.getSlope(), "%4.1f"),
             new Item<>("intrinsic.dimension.pearson", regression.getR(), "%4.2f")
     );
-  }
-
-  private double minGreaterThan(double[] values, double t, boolean exclusive) {
-    double m = Double.NaN;
-    for (double v : values) {
-      if ((exclusive ? (v > t) : (v >= t)) && (Double.isNaN(m) || v < m)) {
-        m = v;
-      }
-    }
-    return m;
   }
 
 }

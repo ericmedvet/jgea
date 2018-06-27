@@ -38,6 +38,7 @@ import it.units.malelab.jgea.core.ranker.ParetoRanker;
 import it.units.malelab.jgea.core.ranker.selector.Tournament;
 import it.units.malelab.jgea.core.ranker.selector.Worst;
 import it.units.malelab.jgea.core.util.Pair;
+import it.units.malelab.jgea.distance.BitStringHamming;
 import it.units.malelab.jgea.distance.Distance;
 import it.units.malelab.jgea.distance.Edit;
 import it.units.malelab.jgea.distance.Pairwise;
@@ -88,6 +89,7 @@ public class Example extends Worker {
 
   public void run() {
     try {
+      parityGE(executorService, "whge");
       parity(executorService);
       //parityGE(executorService, "ge");
       //parityGE(executorService, "whge");
@@ -103,7 +105,7 @@ public class Example extends Worker {
 
 
   private void parity(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
-    final GrammarBasedProblem<String, List<Node<Element>>, Double> p = new EvenParity(5);
+    final GrammarBasedProblem<String, List<Node<Element>>, Double> p = new EvenParity(8);
     Map<GeneticOperator<Node<String>>, Double> operators = new LinkedHashMap<>();
     operators.put(new StandardTreeMutation<>(12, p.getGrammar()), 0.2d);
     operators.put(new StandardTreeCrossover<>(12), 0.8d);
@@ -122,7 +124,7 @@ public class Example extends Worker {
             false
     );
     Random r = new Random(1);
-    Distance<Node<String>> treeEdit = new TreeLeaves<>(new Edit<>());
+    Distance<Node<String>> treeEdit = new TreeLeaves<>(new Edit<>());    
     Distance<Individual<Node<String>, List<Node<Element>>, Double>> distance = (i1, i2, l) -> treeEdit.apply(i1.getGenotype(), i2.getGenotype());
     evolver.solve(p, r, executor,
             Listener.onExecutor(listener(
@@ -130,14 +132,15 @@ public class Example extends Worker {
                     new Population(),
                     new BestInfo<>("%6.4f"),
                     new Diversity(),
-                    new IntrinsicDimension((Distance)distance.cached(10000)),
+                    new IntrinsicDimension((Distance)distance.cached(10000), 0.9f, false),
+                    new IntrinsicDimension((Distance)distance.cached(10000), 0.9f, true),
                     new BestPrinter(null, "%s")
             ), executor)
     );
   }
 
   private void parityGE(ExecutorService executor, String mapperName) throws IOException, InterruptedException, ExecutionException {
-    final GrammarBasedProblem<String, List<Node<Element>>, Double> p = new EvenParity(5);
+    final GrammarBasedProblem<String, List<Node<Element>>, Double> p = new EvenParity(8);
     GrammarBasedMapper<BitString, String> mapper;
     if (mapperName.equals("ge")) {
       mapper = new StandardGEMapper<>(8, 1, p.getGrammar());
@@ -151,7 +154,7 @@ public class Example extends Worker {
     operators.put(new LenghtPreservingTwoPointCrossover(), 0.8d);
     StandardEvolver<BitString, List<Node<Element>>, Double> evolver = new StandardEvolver<>(
             500,
-            new BitStringFactory(128),
+            new BitStringFactory(512),
             new ComparableRanker(new FitnessComparator<>(Function.identity())),
             mapper.andThen(p.getSolutionMapper()),
             operators,
@@ -164,12 +167,16 @@ public class Example extends Worker {
             false
     );
     Random r = new Random(1);
+    Distance<BitString> hamming = new BitStringHamming();
+    Distance<Individual<BitString, List<Node<Element>>, Double>> distance = (i1, i2, l) -> hamming.apply(i1.getGenotype(), i2.getGenotype());
     evolver.solve(p, r, executor,
             Listener.onExecutor(listener(
                     new Basic(),
                     new Population(),
                     new BestInfo<>("%6.4f"),
                     new Diversity(),
+                    new IntrinsicDimension((Distance)distance.cached(10000), 0.9f, false),
+                    new IntrinsicDimension((Distance)distance.cached(10000), 0.9f, true),
                     new BestPrinter(null, "%s")
             ), executor)
     );
