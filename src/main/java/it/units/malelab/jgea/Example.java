@@ -27,6 +27,7 @@ import it.units.malelab.jgea.core.listener.collector.BestInfo;
 import it.units.malelab.jgea.core.listener.collector.BestPrinter;
 import it.units.malelab.jgea.core.listener.collector.FunctionOfBest;
 import it.units.malelab.jgea.core.listener.collector.Diversity;
+import it.units.malelab.jgea.core.listener.collector.IntrinsicDimension;
 import it.units.malelab.jgea.core.listener.collector.Population;
 import it.units.malelab.jgea.core.operator.BitFlipMutation;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
@@ -87,10 +88,10 @@ public class Example extends Worker {
 
   public void run() {
     try {
-      //parity(executorService);
+      parity(executorService);
       //parityGE(executorService, "ge");
       //parityGE(executorService, "whge");
-      parityDCGE(executorService, "whge");
+      //parityDCGE(executorService, "whge");
       //binaryRegexStandard(executorService);
       //binaryRegexDC(executorService);
       //binaryRegexFSDC(executorService);
@@ -107,7 +108,7 @@ public class Example extends Worker {
     operators.put(new StandardTreeMutation<>(12, p.getGrammar()), 0.2d);
     operators.put(new StandardTreeCrossover<>(12), 0.8d);
     StandardEvolver<Node<String>, List<Node<Element>>, Double> evolver = new StandardEvolver<>(
-            500,
+            100,
             new RampedHalfAndHalf<>(3, 12, p.getGrammar()),
             new ComparableRanker(new FitnessComparator<>(Function.identity())),
             p.getSolutionMapper(),
@@ -121,12 +122,15 @@ public class Example extends Worker {
             false
     );
     Random r = new Random(1);
+    Distance<Node<String>> treeEdit = new TreeLeaves<>(new Edit<>());
+    Distance<Individual<Node<String>, List<Node<Element>>, Double>> distance = (i1, i2, l) -> treeEdit.apply(i1.getGenotype(), i2.getGenotype());
     evolver.solve(p, r, executor,
             Listener.onExecutor(listener(
                     new Basic(),
                     new Population(),
                     new BestInfo<>("%6.4f"),
                     new Diversity(),
+                    new IntrinsicDimension((Distance)distance.cached(10000)),
                     new BestPrinter(null, "%s")
             ), executor)
     );
