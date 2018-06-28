@@ -110,7 +110,7 @@ public class Example extends Worker {
     operators.put(new StandardTreeMutation<>(12, p.getGrammar()), 0.2d);
     operators.put(new StandardTreeCrossover<>(12), 0.8d);
     StandardEvolver<Node<String>, List<Node<Element>>, Double> evolver = new StandardEvolver<>(
-            100,
+            500,
             new RampedHalfAndHalf<>(3, 12, p.getGrammar()),
             new ComparableRanker(new FitnessComparator<>(Function.identity())),
             p.getSolutionMapper(),
@@ -124,23 +124,22 @@ public class Example extends Worker {
             false
     );
     Random r = new Random(1);
-    Distance<Node<String>> treeEdit = new TreeLeaves<>(new Edit<>());    
-    Distance<Individual<Node<String>, List<Node<Element>>, Double>> distance = (i1, i2, l) -> treeEdit.apply(i1.getGenotype(), i2.getGenotype());
+    Distance<Node<String>> treeEdit = (Distance)(new TreeLeaves<>(new Edit<>())).cached(10000);
     evolver.solve(p, r, executor,
             Listener.onExecutor(listener(
                     new Basic(),
                     new Population(),
                     new BestInfo<>("%6.4f"),
                     new Diversity(),
-                    new IntrinsicDimension((Distance)distance.cached(10000), 0.9f, false),
-                    new IntrinsicDimension((Distance)distance.cached(10000), 0.9f, true),
+                    new IntrinsicDimension(treeEdit, false),
+                    new IntrinsicDimension(treeEdit, true),
                     new BestPrinter(null, "%s")
             ), executor)
     );
   }
 
   private void parityGE(ExecutorService executor, String mapperName) throws IOException, InterruptedException, ExecutionException {
-    final GrammarBasedProblem<String, List<Node<Element>>, Double> p = new EvenParity(8);
+    final GrammarBasedProblem<String, List<Node<Element>>, Double> p = new EvenParity(5);
     GrammarBasedMapper<BitString, String> mapper;
     if (mapperName.equals("ge")) {
       mapper = new StandardGEMapper<>(8, 1, p.getGrammar());
@@ -154,7 +153,7 @@ public class Example extends Worker {
     operators.put(new LenghtPreservingTwoPointCrossover(), 0.8d);
     StandardEvolver<BitString, List<Node<Element>>, Double> evolver = new StandardEvolver<>(
             500,
-            new BitStringFactory(512),
+            new BitStringFactory(256),
             new ComparableRanker(new FitnessComparator<>(Function.identity())),
             mapper.andThen(p.getSolutionMapper()),
             operators,
@@ -167,16 +166,15 @@ public class Example extends Worker {
             false
     );
     Random r = new Random(1);
-    Distance<BitString> hamming = new BitStringHamming();
-    Distance<Individual<BitString, List<Node<Element>>, Double>> distance = (i1, i2, l) -> hamming.apply(i1.getGenotype(), i2.getGenotype());
+    Distance<BitString> hamming = (new BitStringHamming()).cached(10000);
     evolver.solve(p, r, executor,
             Listener.onExecutor(listener(
                     new Basic(),
                     new Population(),
                     new BestInfo<>("%6.4f"),
                     new Diversity(),
-                    new IntrinsicDimension((Distance)distance.cached(10000), 0.9f, false),
-                    new IntrinsicDimension((Distance)distance.cached(10000), 0.9f, true),
+                    new IntrinsicDimension(hamming, false),
+                    new IntrinsicDimension(hamming, true),
                     new BestPrinter(null, "%s")
             ), executor)
     );

@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -21,55 +22,44 @@ import org.apache.commons.math3.stat.regression.SimpleRegression;
  *
  * @author eric
  */
-public class IntrinsicDimension implements DataCollector {
+public class IntrinsicDimension<G> implements DataCollector {
 
-  private final static float DEFAULT_FRACTION = 0.9f;
-  private final static boolean DEFAULT_DROP_NULL_DISTANCES = true;
+  private final Distance<G> distance;
+  private final boolean dropDuplicates;
 
-  private final Distance<Individual> distance;
-  private final float fraction;
-  private final boolean dropNullDistances;
-
-  public IntrinsicDimension(Distance<Individual> distance, float fraction, boolean dropNullDistances) {
+  public IntrinsicDimension(Distance<G> distance, boolean dropDuplicates) {
     this.distance = distance;
-    this.fraction = fraction;
-    this.dropNullDistances = dropNullDistances;
-  }
-
-  public IntrinsicDimension(Distance<Individual> distance) {
-    this(distance, DEFAULT_FRACTION, DEFAULT_DROP_NULL_DISTANCES);
+    this.dropDuplicates = dropDuplicates;
   }
 
   @Override
   public List<Item> collect(EvolutionEvent evolutionEvent) {
     List<Collection<Individual>> rankedPopulation = new ArrayList<>((List) evolutionEvent.getRankedPopulation());
-    List<Individual> individuals = rankedPopulation.stream().flatMap(Collection::stream).collect(Collectors.toList());
+    List<G> genotypes = rankedPopulation.stream()
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList())
+            .stream()
+            .map(i -> (G)i.getGenotype())
+            .collect(Collectors.toList());
+    if (dropDuplicates) {
+      genotypes = new ArrayList<>(new LinkedHashSet<>(genotypes));
+    }
     //compute distance matrix
-    double[][] dMatrix = new double[individuals.size()][individuals.size()];
-    for (int i1 = 0; i1 < individuals.size(); i1++) {
-      for (int i2 = i1 + 1; i2 < individuals.size(); i2++) {
-        dMatrix[i1][i2] = distance.apply(individuals.get(i1), individuals.get(i2));
+    double[][] dMatrix = new double[genotypes.size()][genotypes.size()];
+    for (int i1 = 0; i1 < genotypes.size(); i1++) {
+      for (int i2 = i1 + 1; i2 < genotypes.size(); i2++) {
+        dMatrix[i1][i2] = distance.apply(genotypes.get(i1), genotypes.get(i2));
         dMatrix[i2][i1] = dMatrix[i1][i2];
       }
     }
     //find mus
     List<Double> mus = new ArrayList<>();
-    for (int i = 0; i < individuals.size(); i++) {
+    for (int i = 0; i < genotypes.size(); i++) {
       double[] ds = dMatrix[i];
       Arrays.sort(ds);
       for (int j = 0; j < ds.length; j++) {
         if ((ds[j] > 0) && (j < ds.length - 1)) {
-          if (!dropNullDistances) {
-            mus.add(ds[j+1] / ds[j]);
-          } else {
-            int y = j+1;
-            while ((ds[y]<=ds[j])&&(y<ds.length)) {
-              y++;
-            }
-            if (y<ds.length) {
-              mus.add(ds[y] / ds[j]);
-            }
-          }
+          mus.add(ds[j + 1] / ds[j]);
           break;
         }
       }
@@ -78,7 +68,12 @@ public class IntrinsicDimension implements DataCollector {
     //build x and y
     double s = mus.size();
     double[] x = mus.stream().mapToDouble(d -> Math.log(d)).toArray();
-    double[] y = IntStream.range(0, (int)s).asDoubleStream().map(d -> -Math.log(1 - d/s)).toArray();
+    double[] y = IntStream.range(0, (int) s).asDoubleStream().map(d -> -Math.log(1 - d / s)).toArray();
+
+    //for (int i = 0; i < mus.size(); i++) {
+    //  System.out.printf("%f %f%n", x[i], y[i]);
+    //}
+
     //do regression
     SimpleRegression regression = new SimpleRegression();
     for (int i = 0; i < mus.size(); i++) {

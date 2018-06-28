@@ -5,7 +5,6 @@
  */
 package it.units.malelab.jgea.problem.mapper;
 
-import it.units.malelab.jgea.core.ranker.Ranker;
 import it.units.malelab.jgea.distance.Distance;
 import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
 
