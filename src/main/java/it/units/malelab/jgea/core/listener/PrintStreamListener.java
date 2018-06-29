@@ -5,6 +5,7 @@
  */
 package it.units.malelab.jgea.core.listener;
 
+import it.units.malelab.jgea.IntrinsicDimensionAssessment;
 import it.units.malelab.jgea.core.listener.event.Event;
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
 import java.io.PrintStream;
@@ -17,6 +18,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import it.units.malelab.jgea.core.listener.collector.DataCollector;
 import it.units.malelab.jgea.core.listener.collector.Item;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +38,8 @@ public class PrintStreamListener implements Listener {
   private final List<List<Item>> firstItems;
   private final List<List<Integer>> sizes;
   private int lines;
+
+  private final static Logger L = Logger.getLogger(PrintStreamListener.class.getName());
 
   public PrintStreamListener(
           PrintStream ps,
@@ -72,23 +77,28 @@ public class PrintStreamListener implements Listener {
       }
     }
     //print values: collectors
-    String data = buildDataString(items);    
+    String data = buildDataString(items);
     synchronized (ps) {
       ps.println(data);
     }
   }
 
   protected List<List<Item>> collectItems(final EvolutionEvent evolutionEvent) {
+    List<List<Item>> items = new ArrayList<>();
     //collect
-    List<List<Item>> items = collectors.stream()
-            .map(collector -> collector.collect(evolutionEvent))
-            .collect(Collectors.toList());
+    for (DataCollector collector : collectors) {
+      try {
+        items.add(collector.collect(evolutionEvent));
+      } catch (Throwable t) {
+        L.log(Level.WARNING, String.format("Cannot collect from %s due to %s", collector.getClass().getSimpleName(), t), t);
+      }
+    }
     if (firstItems.isEmpty()) {
       firstItems.addAll(items);
       sizes.addAll(firstItems.stream()
               .map(is -> is.stream().map(
-                      i -> formatName(i.getName(), i.getFormat(), format).length()
-              ).collect(Collectors.toList()))
+              i -> formatName(i.getName(), i.getFormat(), format).length()
+      ).collect(Collectors.toList()))
               .collect(Collectors.toList()));
     }
     return items;
@@ -97,7 +107,7 @@ public class PrintStreamListener implements Listener {
   protected String buildDataString(List<List<Item>> items) {
     List<Map<String, Item>> maps = items.stream()
             .map(cItems -> cItems.stream().collect(Collectors.toMap(i -> i.getName(), i -> i)))
-            .collect(Collectors.toList());    
+            .collect(Collectors.toList());
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < firstItems.size(); i++) {
       for (int j = 0; j < firstItems.get(i).size(); j++) {
