@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -27,6 +28,8 @@ import java.util.Map;
 public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
 
   private final static boolean RECURSIVE_DEFAULT = false;
+  private final static boolean DEBUG = false;
+  private final static boolean LATEX_TREE_DEBUG = false;
 
   private final boolean recursive;
   protected final Map<T, List<Integer>> shortestOptionIndexesMap;
@@ -157,7 +160,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
     }
     return node;
   }
-  
+
   protected double optionSliceWeigth(BitString slice) {
     return (double) slice.count() / (double) slice.size();
   }
@@ -179,11 +182,24 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
         bestOptionIndexes.add(i);
       }
     }
+    int index = bestOptionIndexes.get(0);
     //for avoiding choosing always the 1st option in case of tie, choose depending on count of 1s in genotype
     if (bestOptionIndexes.size() == 1) {
-      return options.get(bestOptionIndexes.get(0));
+      index = bestOptionIndexes.get(genotype.slice(range).count() % bestOptionIndexes.size());
     }
-    return options.get(bestOptionIndexes.get(genotype.slice(range).count() % bestOptionIndexes.size()));
+    if (LATEX_TREE_DEBUG) {
+      for (int i = 0; i < slices.size(); i++) {
+        if (i > 0) {
+          System.out.print("\\:");
+        }
+        if (i == index) {
+          System.out.printf("\\textbf{\\gft{%s}}", slices.get(i).toFlatString());
+        } else {
+          System.out.printf("\\gft{%s}", slices.get(i).toFlatString());
+        }
+      }
+    }
+    return options.get(index);
   }
 
   public Node<T> mapIteratively(BitString genotype, int[] bitUsages) throws FunctionException {
@@ -235,6 +251,13 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
 
   public Node<T> mapRecursively(T symbol, Range<Integer> range, BitString genotype, int[] bitUsages) throws FunctionException {
     Node<T> node = new Node<>(symbol);
+    if (LATEX_TREE_DEBUG) {
+      if (grammar.getRules().keySet().contains(symbol)) {
+        System.out.printf("[.{\\gft{\\bnfPiece{%s}} \\\\$", symbol.toString().replaceAll("[<>]", ""));
+      } else {
+        System.out.printf("[.{\\gft{%s}} ]%n", symbol);
+      }
+    }
     if (grammar.getRules().keySet().contains(symbol)) {
       //a non-terminal node
       //update usage
@@ -248,11 +271,17 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
         int count = (range.upperEndpoint() - range.lowerEndpoint() > 0) ? genotype.slice(range).count() : genotype.count();
         int index = shortestOptionIndexesMap.get(symbol).get(count % shortestOptionIndexesMap.get(symbol).size());
         symbols = options.get(index);
+        if (LATEX_TREE_DEBUG) {
+          System.out.printf("%s", genotype.slice(range).toFlatString());
+        }
       } else {
         symbols = chooseOption(genotype, range, options);
         for (int i = range.lowerEndpoint(); i < range.upperEndpoint(); i++) {
           bitUsages[i] = bitUsages[i] + 1;
         }
+      }
+      if (LATEX_TREE_DEBUG) {
+        System.out.printf("$\\\\$");
       }
       //add children
       List<Range<Integer>> childRanges = getChildrenSlices(range, symbols);
@@ -263,13 +292,38 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
           childRanges.set(i, childRange);
         }
       }
+      if (LATEX_TREE_DEBUG) {
+        System.out.printf("%s$}%n",
+                childRanges.stream().map((Range<Integer> r) -> {
+                  if (r.upperEndpoint() - r.lowerEndpoint() > 0) {
+                    return String.format("\\gft{%s}", genotype.slice(r).toFlatString());
+                  } else {
+                    return "\\emptyset";
+                  }
+                }).collect(Collectors.joining("\\:"))
+        );
+      }
       for (int i = 0; i < symbols.size(); i++) {
         node.getChildren().add(mapRecursively(symbols.get(i), childRanges.get(i), genotype, bitUsages));
+      }
+      if (LATEX_TREE_DEBUG) {
+        System.out.println("]");
+      }
+      if (DEBUG) {
+        System.out.printf("%10.10s %4d %4d %2d %20.20s %s%n",
+                //System.out.printf("\\gft{\\bnfPiece{%s}} & %d & %d & %d & $%s$ & \\gft{%s} \\\\%n",
+                symbol,
+                range.upperEndpoint() - range.lowerEndpoint(),
+                options.size(),
+                options.indexOf(symbols),
+                childRanges.stream().map(r -> Integer.toString(r.upperEndpoint() - r.lowerEndpoint())).collect(Collectors.joining(",")),
+                node.leafNodes().stream().map(Object::toString).collect(Collectors.joining(" "))
+        );
       }
     }
     return node;
   }
-  
+
   public static List<Range<Integer>> slices(Range<Integer> range, int pieces) {
     List<Integer> sizes = new ArrayList<>(pieces);
     for (int i = 0; i < pieces; i++) {

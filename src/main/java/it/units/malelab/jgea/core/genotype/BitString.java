@@ -96,6 +96,14 @@ public class BitString implements ConstrainedSequence<Boolean> {
     }
     return sb.toString();
   }
+  
+  public String toFlatString() {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < length; i++) {
+      sb.append(bitSet.get(i) ? '1' : '0');
+    }
+    return sb.toString();    
+  }
 
   @Override
   public Boolean get(int index) {

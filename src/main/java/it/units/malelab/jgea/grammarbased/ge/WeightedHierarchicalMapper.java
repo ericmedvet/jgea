@@ -8,6 +8,8 @@ package it.units.malelab.jgea.grammarbased.ge;
 import com.google.common.collect.Range;
 import it.units.malelab.jgea.core.genotype.BitString;
 import it.units.malelab.jgea.grammarbased.Grammar;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +26,18 @@ public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
   private final boolean weightOptions;
   private final boolean weightChildren;
   
+  public static void main(String[] args) throws IOException {
+    Grammar<String> g = Grammar.fromFile(new File("grammars/symbolic-regression-paper.bnf"));
+    WeightedHierarchicalMapper<String> m = new WeightedHierarchicalMapper<>(2, g);
+    System.out.println(m.weightsMap);
+    for (String nt : g.getRules().keySet()) {
+      System.out.printf("%s -> %d (%.1f)%n", nt, countOptions(nt, 0, 2, g), Math.log10(countOptions(nt, 0, 2, g)));
+    }
+    //BitString x = new BitString("111001111111000010100101011100010110010100000111");
+    BitString x = new BitString("111001111111000010100101011100010110010100000111");
+    System.out.println(m.apply(x).leafNodes());
+  }
+  
   public WeightedHierarchicalMapper(int expressivenessDepth, Grammar<T> grammar) {
     this(expressivenessDepth, false, true, grammar);
   }
@@ -38,20 +52,20 @@ public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
       for (List<T> option : options) {
         for (T symbol : option) {
           if (!weightsMap.keySet().contains(symbol)) {
-            weightsMap.put(symbol, countOptions(symbol, 0, expressivenessDepth));
+            weightsMap.put(symbol, countOptions(symbol, 0, expressivenessDepth, grammar));
           }
         }
       }
     }
-    for (T symbol : weightsMap.keySet()) {
+    for (T symbol : weightsMap.keySet()) { //modify to log_2 for non-terminals: the terminals have 1 (should be set to 0)
       int options = weightsMap.get(symbol);
       int bits = (int) Math.ceil(Math.log10(options) / Math.log10(2d));
       weightsMap.put(symbol, bits);
     }
   }
 
-  private int countOptions(T symbol, int level, int maxLevel) {
-    List<List<T>> options = grammar.getRules().get(symbol);
+  private static <T> int countOptions(T symbol, int level, int maxLevel, Grammar<T> g) {
+    List<List<T>> options = g.getRules().get(symbol);
     if (options == null) {
       return 1;
     }
@@ -61,7 +75,7 @@ public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
     int count = 0;
     for (List<T> option : options) {
       for (T optionSymbol : option) {
-        count = count + countOptions(optionSymbol, level + 1, maxLevel);
+        count = count + countOptions(optionSymbol, level + 1, maxLevel, g);
       }
     }
     return count;
