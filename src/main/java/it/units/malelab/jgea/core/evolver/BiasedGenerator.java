@@ -18,6 +18,7 @@ import it.units.malelab.jgea.core.function.NonDeterministicFunction;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.event.EvolutionEndEvent;
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
+import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.grammarbased.Grammar;
 import it.units.malelab.jgea.grammarbased.cfggp.RampedHalfAndHalf;
 import it.units.malelab.jgea.problem.synthetic.Text;
@@ -25,10 +26,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +43,182 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author eric
  */
 public class BiasedGenerator<T, F extends Comparable<F>> implements Evolver<Node<T>, Node<T>, F> {
+
+  private static class FlaggedContent<K> {
+
+    private final K content;
+    private boolean flag;
+
+    public FlaggedContent(K content, boolean flag) {
+      this.content = content;
+      this.flag = flag;
+    }
+
+    public K getContent() {
+      return content;
+    }
+
+    public boolean getFlag() {
+      return flag;
+    }
+
+    public void setFlag(boolean flag) {
+      this.flag = flag;
+    }
+
+    @Override
+    public int hashCode() {
+      int hash = 3;
+      hash = 13 * hash + Objects.hashCode(this.content);
+      hash = 13 * hash + (this.flag ? 1 : 0);
+      return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (obj == null) {
+        return false;
+      }
+      if (getClass() != obj.getClass()) {
+        return false;
+      }
+      final FlaggedContent<?> other = (FlaggedContent<?>) obj;
+      if (this.flag != other.flag) {
+        return false;
+      }
+      if (!Objects.equals(this.content, other.content)) {
+        return false;
+      }
+      return true;
+    }
+
+    @Override
+    public String toString() {
+      return content.toString() + (flag ? "*" : "");
+    }
+
+  }
+
+  public static class FlaggedNode<K> extends Node<FlaggedContent<K>> {
+
+    public FlaggedNode(K content, boolean flag) {
+      super(new FlaggedContent(content, flag));
+    }
+
+    public FlaggedNode(Node<K> tree, Node<K> nodeToFlag) {
+      this(tree.getContent(), nodeToFlag == tree);
+      for (Node<K> child : tree.getChildren()) {
+        getChildren().add(new FlaggedNode<>(child, nodeToFlag));
+      }
+      propagateParentship();
+    }
+
+    public void pruneUnflagged() {
+      if (!getContent().getFlag() & getParent() == null) {
+        throw new RuntimeException("Cannot prune root, which is unflagged.");
+      }
+      Set<Node<FlaggedContent<K>>> toRemoveChildren = new HashSet<>();
+      for (Node<FlaggedContent<K>> child : getChildren()) {
+        if (child.getContent().getFlag()) {
+          ((FlaggedNode) child).pruneUnflagged();
+        } else {
+          toRemoveChildren.add(child);
+        }
+      }
+      getChildren().removeAll(toRemoveChildren);
+      propagateParentship();
+    }
+
+    public Node<K> getDeflagged() {
+      Node<K> node = new Node<>(getContent().getContent());
+      for (Node<FlaggedContent<K>> child : getChildren()) {
+        node.getChildren().add(((FlaggedNode) child).getDeflagged());
+      }
+      propagateParentship();
+      return node;
+    }
+
+    public List<FlaggedNode<K>> getFlaggedNodes() {
+      List<FlaggedNode<K>> nodes = new ArrayList<>();
+      if (getContent().getFlag()) {
+        nodes.add(this);
+      }
+      for (Node<FlaggedContent<K>> child : getChildren()) {
+        nodes.addAll(((FlaggedNode) child).getFlaggedNodes());
+      }
+      return nodes;
+    }
+
+    public void flag() {
+      getContent().setFlag(true);
+    }
+
+    public void unflag() {
+      getContent().setFlag(false);
+    }
+
+    public void flagSubtree(int n) {
+      flag();
+      if (n > 0) {
+        for (Node<FlaggedContent<K>> child : getChildren()) {
+          ((FlaggedNode) child).flagSubtree(n - 1);
+        }
+      }
+    }
+
+  }
+
+  public static class Case<K> {
+
+    private final FlaggedNode<K> tree;
+    private final int optionIndex;
+
+    public Case(FlaggedNode<K> tree, int optionIndex) {
+      this.tree = tree;
+      this.optionIndex = optionIndex;
+    }
+
+    public FlaggedNode<K> getTree() {
+      return tree;
+    }
+
+    public int getOptionIndex() {
+      return optionIndex;
+    }
+
+    @Override
+    public int hashCode() {
+      int hash = 3;
+      hash = 83 * hash + Objects.hashCode(this.tree);
+      hash = 83 * hash + this.optionIndex;
+      return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (obj == null) {
+        return false;
+      }
+      if (getClass() != obj.getClass()) {
+        return false;
+      }
+      final Case<?> other = (Case<?>) obj;
+      if (this.optionIndex != other.optionIndex) {
+        return false;
+      }
+      if (!Objects.equals(this.tree, other.tree)) {
+        return false;
+      }
+      return true;
+    }
+
+  }
 
   private final Grammar<T> grammar;
   private final Function<List<? extends Collection<F>>, Integer> policy;
@@ -75,13 +255,13 @@ public class BiasedGenerator<T, F extends Comparable<F>> implements Evolver<Node
         fitnessFunction = fitnessFunction.cached(cacheSize);
       }
     }
-    Map<Node<T>, List<F>> fitnessSamples = new LinkedHashMap<>();
+    Map<Case, List<F>> fitnessSamples = new LinkedHashMap<>();
     //main loop
     while (true) {
       //generate individual
       Node<T> tree = null;
       //
-      iterations = iterations+1;
+      iterations = iterations + 1;
       EvolutionEvent event = new EvolutionEvent(
               iterations,
               births.get(),
@@ -108,10 +288,10 @@ public class BiasedGenerator<T, F extends Comparable<F>> implements Evolver<Node
     //return result
     return null;
   }
-  
+
   private Node<T> build(Node<T> root, Map<Node<T>, List<F>> fitnessSamples) {
     List<List<T>> options = grammar.getRules().get(root.getContent());
-    
+    return null;
   }
 
   private StopCondition checkStopConditions(EvolutionEvent event) {
@@ -138,6 +318,26 @@ public class BiasedGenerator<T, F extends Comparable<F>> implements Evolver<Node
     ancestors = ancestors.subList(1, ancestors.size());
     newRoot = addLineage(newRoot, ancestors, indexes);
     return newRoot;
+  }
+
+  private static <K> FlaggedNode<K> getHKSuperTree(FlaggedNode<K> node, int h, int k) {
+    FlaggedNode<FlaggedContent<K>> flagged = new FlaggedNode<>(node.getRoot(), node);
+    FlaggedNode<FlaggedContent<K>> startingNode = flagged.getFlaggedNodes().get(0);
+    int i = h;
+    FlaggedNode<FlaggedContent<K>> current = startingNode;
+    while (i > 0) {
+      i = i - 1;
+      current.flag();
+      if (current.getParent() != null) {
+        current = (FlaggedNode<FlaggedContent<K>>) current.getParent();
+      } else {
+        break;
+      }
+    }
+    current.flagSubtree(Math.min(k, h - i));
+    current.pruneUnflagged();
+    current.getDeflagged().prettyPrint(System.out);
+    return null;
   }
 
   private static <K> Node<K> addLineage(Node<K> node, List<Node<K>> descendants, List<Integer> indexes) {
@@ -174,7 +374,6 @@ public class BiasedGenerator<T, F extends Comparable<F>> implements Evolver<Node
       //System.out.printf("%d\t%s%n", i, ts.get(i));
     }
     Node<String> t = ts.get(26);
-    System.out.println(t);
     t.prettyPrint(System.out);
     Node<String> n = t
             .getChildren().get(0)
@@ -182,7 +381,11 @@ public class BiasedGenerator<T, F extends Comparable<F>> implements Evolver<Node
             .getChildren().get(1)
             .getChildren().get(0);
     System.out.println(n.getContent());
-    getHKSuperTree(n, 0, 1).prettyPrint(System.out);
+    FlaggedNode<String> at = new FlaggedNode<>(t, n);
+    //at.prettyPrint(System.out);
+    //System.out.println(at.getFlaggedNodes());
+    //at.unflag().prettyPrint(System.out);
+    getHKSuperTree(at.getFlaggedNodes().get(0), 2, 1).prettyPrint(System.out);
   }
 
 }

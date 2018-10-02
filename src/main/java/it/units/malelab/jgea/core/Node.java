@@ -97,6 +97,13 @@ public class Node<T> implements Serializable, Cloneable, Sized {
     ancestors.addAll(parent.getAncestors());
     return Collections.unmodifiableList(ancestors);
   }
+  
+  public Node<T> getRoot() {
+    if (getParent()==null) {
+      return this;
+    }
+    return parent.getRoot();
+  }
 
   public Node<T> getParent() {
     return parent;
