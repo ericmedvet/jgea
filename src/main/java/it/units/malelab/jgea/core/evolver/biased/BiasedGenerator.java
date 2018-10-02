@@ -3,12 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.units.malelab.jgea.core.evolver;
+package it.units.malelab.jgea.core.evolver.biased;
 
 import com.google.common.base.Stopwatch;
-import it.units.malelab.jgea.core.Factory;
+import com.google.common.collect.Lists;
+import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.Problem;
+import it.units.malelab.jgea.core.evolver.StandardEvolver;
+import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
+import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.evolver.stopcondition.StopCondition;
 import it.units.malelab.jgea.core.function.Bounded;
 import it.units.malelab.jgea.core.function.CachedBoundedNonDeterministicFunction;
@@ -20,7 +24,8 @@ import it.units.malelab.jgea.core.listener.event.EvolutionEndEvent;
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.grammarbased.Grammar;
-import it.units.malelab.jgea.grammarbased.cfggp.RampedHalfAndHalf;
+import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
+import it.units.malelab.jgea.grammarbased.GrammarUtil;
 import it.units.malelab.jgea.problem.synthetic.Text;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,6 +40,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -42,7 +48,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author eric
  */
-public class BiasedGenerator<T, F extends Comparable<F>> implements Evolver<Node<T>, Node<T>, F> {
+public class BiasedGenerator<T, S, F extends Comparable<F>> extends StandardEvolver<Node<T>, S, F> {
 
   private static class FlaggedContent<K> {
 
@@ -171,83 +177,33 @@ public class BiasedGenerator<T, F extends Comparable<F>> implements Evolver<Node
 
   }
 
-  public static class Case<K> {
-
-    private final FlaggedNode<K> tree;
-    private final int optionIndex;
-
-    public Case(FlaggedNode<K> tree, int optionIndex) {
-      this.tree = tree;
-      this.optionIndex = optionIndex;
-    }
-
-    public FlaggedNode<K> getTree() {
-      return tree;
-    }
-
-    public int getOptionIndex() {
-      return optionIndex;
-    }
-
-    @Override
-    public int hashCode() {
-      int hash = 3;
-      hash = 83 * hash + Objects.hashCode(this.tree);
-      hash = 83 * hash + this.optionIndex;
-      return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (getClass() != obj.getClass()) {
-        return false;
-      }
-      final Case<?> other = (Case<?>) obj;
-      if (this.optionIndex != other.optionIndex) {
-        return false;
-      }
-      if (!Objects.equals(this.tree, other.tree)) {
-        return false;
-      }
-      return true;
-    }
-
-  }
-
-  private final Grammar<T> grammar;
-  private final Function<List<? extends Collection<F>>, Integer> policy;
+  private final NonDeterministicFunction<List<? extends Collection<F>>, Integer> policy;
   private final int h;
   private final int k;
-  private final int nToUpdate;
-  private final int maxDepth;
-  private final List<StopCondition> stopConditions;
-  private final long cacheSize;
+  private final int maxHeight;
 
-  public BiasedGenerator(Grammar<T> grammar, Function<List<? extends Collection<F>>, Integer> policy, int h, int k, int nToUpdate, int maxDepth, List<StopCondition> stopConditions, long cacheSize) {
-    this.grammar = grammar;
+  public BiasedGenerator(NonDeterministicFunction<List<? extends Collection<F>>, Integer> policy, int h, int k, int populationSize, int offspringSize, int maxHeight, List<StopCondition> stoppingConditions, long cacheSize) {
+    super(populationSize, null, null, null, null, null, null, offspringSize, true, stoppingConditions, cacheSize, false);
     this.policy = policy;
     this.h = h;
     this.k = k;
-    this.nToUpdate = nToUpdate;
-    this.maxDepth = maxDepth;
-    this.stopConditions = stopConditions;
-    this.cacheSize = cacheSize;
+    this.maxHeight = maxHeight;
   }
 
   @Override
-  public Collection<Node<T>> solve(Problem<Node<T>, F> problem, Random random, ExecutorService executor, Listener listener) throws InterruptedException, ExecutionException {
+  public Collection<S> solve(Problem<S, F> problem, Random random, ExecutorService executor, Listener listener) throws InterruptedException, ExecutionException {
+    if (!(problem instanceof GrammarBasedProblem)) {
+      throw new IllegalArgumentException("Input problem is not a GrammarBasedProblem");
+    }
+    Function<Node<T>, S> solutionMapper = (Function<Node<T>,S>)((GrammarBasedProblem) problem).getSolutionMapper();
+    Grammar<T> grammar = ((GrammarBasedProblem) problem).getGrammar();
+    Map<T, List<Integer>> shortestOptionIndexesMap = GrammarUtil.computeShortestOptionIndexesMap(grammar);
     //init
     int iterations = 0;
     AtomicInteger births = new AtomicInteger();
     AtomicInteger fitnessEvaluations = new AtomicInteger();
     Stopwatch stopwatch = Stopwatch.createStarted();
-    NonDeterministicFunction<Node<T>, F> fitnessFunction = problem.getFitnessFunction();
+    NonDeterministicFunction<S, F> fitnessFunction = problem.getFitnessFunction();
     if (cacheSize > 0) {
       if (fitnessFunction instanceof Bounded) {
         fitnessFunction = new CachedBoundedNonDeterministicFunction<>(fitnessFunction, cacheSize);
@@ -255,12 +211,61 @@ public class BiasedGenerator<T, F extends Comparable<F>> implements Evolver<Node
         fitnessFunction = fitnessFunction.cached(cacheSize);
       }
     }
-    Map<Case, List<F>> fitnessSamples = new LinkedHashMap<>();
+    Map<Node<FlaggedContent<T>>, List<List<F>>> fitnessSamples = new LinkedHashMap<>();
     //main loop
     while (true) {
-      //generate individual
-      Node<T> tree = null;
-      //
+      //generate tree
+      Node<T> tree = new Node<>(grammar.getStartingSymbol());
+      List<Pair<Node<FlaggedContent<T>>, Integer>> contexts = new ArrayList<>();
+      while (true) {
+        boolean done = true;
+        for (Node<T> leaf : tree.leafNodes()) {
+          List<List<T>> options = grammar.getRules().get(leaf.getContent());
+          if (options != null) {
+            done = false;
+            int optionIndex;
+            FlaggedNode<T> flaggedTree = new FlaggedNode<>(leaf.getRoot(), leaf);
+            Node<FlaggedContent<T>> context = getHKSuperTree(flaggedTree.getFlaggedNodes().get(0), h, k);
+            //check depth
+            if (leaf.height() > maxHeight) {
+              optionIndex = shortestOptionIndexesMap.get(leaf.getContent()).get(0); //TODO mitigate bias here
+            } else {
+              List<List<F>> fitnessSample = new ArrayList<>(fitnessSamples.getOrDefault(context, new ArrayList<>()));
+              while (fitnessSample.size() < options.size()) {
+                fitnessSample.add(Collections.EMPTY_LIST);
+              }
+              optionIndex = policy.apply(fitnessSample, random);
+            }
+            contexts.add(Pair.build(context, optionIndex));
+            //expand
+            for (T symbol : options.get(optionIndex)) {
+              leaf.getChildren().add(new Node<>(symbol));
+            }
+          }
+        }
+        tree.propagateParentship();
+        if (done) {
+          break;
+        }
+      }
+      //compute fitness
+      S solution = solutionMapper.apply(tree); //TODO use callables+executor
+      F fitness = fitnessFunction.apply(solution, random); //TODO use callables+executor
+      System.out.printf("tree: h=%d size=%d with %d contexts, fitness=%s%n", tree.height(), tree.size(), contexts.size(), fitness);
+      //update fitnessSamples
+      for (Pair<Node<FlaggedContent<T>>, Integer> context : contexts) {
+        List<List<F>> samples = fitnessSamples.get(context.first());
+        if (samples==null) {
+          samples = new ArrayList<>();
+          fitnessSamples.put(context.first(), samples);
+        }
+        while (samples.size()<=context.second()) {
+          samples.add(new ArrayList<>());
+        }
+        samples.get(context.second()).add(fitness);
+      }
+      System.out.println(fitnessSamples);
+      //cast event to listener
       iterations = iterations + 1;
       EvolutionEvent event = new EvolutionEvent(
               iterations,
@@ -289,38 +294,7 @@ public class BiasedGenerator<T, F extends Comparable<F>> implements Evolver<Node
     return null;
   }
 
-  private Node<T> build(Node<T> root, Map<Node<T>, List<F>> fitnessSamples) {
-    List<List<T>> options = grammar.getRules().get(root.getContent());
-    return null;
-  }
-
-  private StopCondition checkStopConditions(EvolutionEvent event) {
-    for (StopCondition stopCondition : stopConditions) {
-      if (stopCondition.shouldStop(event)) {
-        return stopCondition;
-      }
-    }
-    return null;
-  }
-
-  private static <K> Node<K> getHKSuperTree(Node<K> node, int h, int k) {
-    if (h == 0) {
-      return new Node<>(node.getContent());
-    }
-    List<Node<K>> ancestors = node.getAncestors();
-    ancestors = new ArrayList<>(ancestors.subList(0, Math.min(ancestors.size(), h)));
-    List<Integer> indexes = node.ancestorIndexes().subList(0, ancestors.size());
-    Node<K> newRoot = ancestors.get(ancestors.size() - 1);
-    newRoot = newRoot.prunedSubTree(Math.min(k, ancestors.size()));
-    Collections.reverse(ancestors);
-    Collections.reverse(indexes);
-    ancestors.add(new Node<>(node.getContent()));
-    ancestors = ancestors.subList(1, ancestors.size());
-    newRoot = addLineage(newRoot, ancestors, indexes);
-    return newRoot;
-  }
-
-  private static <K> FlaggedNode<K> getHKSuperTree(FlaggedNode<K> node, int h, int k) {
+  private static <K> Node<FlaggedContent<K>> getHKSuperTree(FlaggedNode<K> node, int h, int k) {
     FlaggedNode<FlaggedContent<K>> flagged = new FlaggedNode<>(node.getRoot(), node);
     FlaggedNode<FlaggedContent<K>> startingNode = flagged.getFlaggedNodes().get(0);
     int i = h;
@@ -336,56 +310,17 @@ public class BiasedGenerator<T, F extends Comparable<F>> implements Evolver<Node
     }
     current.flagSubtree(Math.min(k, h - i));
     current.pruneUnflagged();
-    current.getDeflagged().prettyPrint(System.out);
-    return null;
+    return current.getDeflagged();
   }
 
-  private static <K> Node<K> addLineage(Node<K> node, List<Node<K>> descendants, List<Integer> indexes) {
-    if (descendants.isEmpty()) {
-      //do nothing
-      return node;
-    }
-    int index = indexes.get(0);
-    Node<K> descendant = descendants.get(0);
-    Node<K> newNode = new Node<>(descendant.getContent());
-    if (!node.getChildren().isEmpty()) {
-      //just replace the content of the n-th node
-      newNode.getChildren().addAll(node.getChildren().get(index).getChildren());
-      node.getChildren().set(index, addLineage(
-              newNode,
-              descendants.subList(1, descendants.size()),
-              indexes.subList(1, indexes.size())
-      ));
-    } else {
-      node.getChildren().add(addLineage(
-              newNode,
-              descendants.subList(1, descendants.size()),
-              indexes.subList(1, indexes.size())
-      ));
-    }
-    return node;
-  }
-
-  public static void main(String[] args) throws IOException {
-    Grammar<String> g = new Text("Hello World!").getGrammar();
-    Factory<Node<String>> factory = new RampedHalfAndHalf<>(3, 12, g);
-    List<Node<String>> ts = factory.build(100, new Random(1));
-    for (int i = 0; i < ts.size(); i++) {
-      //System.out.printf("%d\t%s%n", i, ts.get(i));
-    }
-    Node<String> t = ts.get(26);
-    t.prettyPrint(System.out);
-    Node<String> n = t
-            .getChildren().get(0)
-            .getChildren().get(0)
-            .getChildren().get(1)
-            .getChildren().get(0);
-    System.out.println(n.getContent());
-    FlaggedNode<String> at = new FlaggedNode<>(t, n);
-    //at.prettyPrint(System.out);
-    //System.out.println(at.getFlaggedNodes());
-    //at.unflag().prettyPrint(System.out);
-    getHKSuperTree(at.getFlaggedNodes().get(0), 2, 1).prettyPrint(System.out);
+  public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
+    GrammarBasedProblem<String, String, Integer> p = new Text("Hello World!");
+    BiasedGenerator<String, String, Integer> bg = new BiasedGenerator<String, String, Integer>(
+            new Uniform<>(),
+            1, 0, 10, 10, 1,
+            Lists.newArrayList(new FitnessEvaluations(100000), new Iterations(10)),
+            10000);
+    bg.solve(p, new Random(1), Executors.newFixedThreadPool(1), Listener.deaf());
   }
 
 }

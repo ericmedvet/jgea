@@ -28,7 +28,7 @@ public class DeterministicCrowdingEvolver<G, S, F> extends StandardEvolver<G, S,
   private final boolean localSaveAncestry;
 
   public DeterministicCrowdingEvolver(Distance<Individual<G, S, F>> distance, int populationSize, Factory<G> genotypeBuilder, Ranker<Individual<G, S, F>> ranker, NonDeterministicFunction<G, S> mapper, Map<GeneticOperator<G>, Double> operators, Selector<Individual<G, S, F>> parentSelector, Selector<Individual<G, S, F>> unsurvivalSelector, List<StopCondition> stoppingConditions, long cacheSize, boolean saveAncestry) {
-    super(populationSize, genotypeBuilder, ranker, mapper, operators, parentSelector, unsurvivalSelector, populationSize, true, stoppingConditions, cacheSize, true);
+    super(populationSize, genotypeBuilder, ranker, mapper, operators, parentSelector, unsurvivalSelector, populationSize, true, stoppingConditions, cacheSize, false);
     this.distance = distance.cached(cacheSize);
     this.localSaveAncestry = saveAncestry;
   }

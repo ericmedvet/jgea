@@ -7,9 +7,11 @@ package it.units.malelab.jgea.grammarbased;
 
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.core.util.Triplet;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -133,6 +135,69 @@ public class GrammarUtil {
       }
     }
     return map;
+  }
+  
+  public static <T> Map<T, List<Integer>> computeShortestOptionIndexesMap(Grammar<T> grammar) {
+    Map<T, List<Integer>> optionJumpsToTerminalMap = new LinkedHashMap<>();
+    for (Map.Entry<T, List<List<T>>> rule : grammar.getRules().entrySet()) {
+      List<Integer> optionsJumps = new ArrayList<>();
+      for (List<T> option : rule.getValue()) {
+        optionsJumps.add(Integer.MAX_VALUE);
+      }
+      optionJumpsToTerminalMap.put(rule.getKey(), optionsJumps);
+    }
+    while (true) {
+      boolean completed = true;
+      for (Map.Entry<T, List<Integer>> entry : optionJumpsToTerminalMap.entrySet()) {
+        for (int i = 0; i < entry.getValue().size(); i++) {
+          List<T> option = grammar.getRules().get(entry.getKey()).get(i);
+          if (Collections.disjoint(option, grammar.getRules().keySet())) {
+            entry.getValue().set(i, 1);
+          } else {
+            int maxJumps = Integer.MIN_VALUE;
+            for (T optionSymbol : option) {
+              List<Integer> optionSymbolJumps = optionJumpsToTerminalMap.get(optionSymbol);
+              if (optionSymbolJumps == null) {
+                maxJumps = Math.max(0, maxJumps);
+              } else {
+                int minJumps = Integer.MAX_VALUE;
+                for (int jumps : optionSymbolJumps) {
+                  minJumps = Math.min(minJumps, jumps);
+                }
+                minJumps = (minJumps == Integer.MAX_VALUE) ? minJumps : (minJumps + 1);
+                maxJumps = Math.max(minJumps, maxJumps);
+              }
+            }
+            entry.getValue().set(i, maxJumps);
+            if (maxJumps == Integer.MAX_VALUE) {
+              completed = false;
+            }
+          }
+        }
+      }
+      if (completed) {
+        break;
+      }
+    }
+    //build shortestOptionIndexMap
+    Map<T, List<Integer>> shortestOptionIndexesMap = new LinkedHashMap<>();
+    for (Map.Entry<T, List<List<T>>> rule : grammar.getRules().entrySet()) {
+      int minJumps = Integer.MAX_VALUE;
+      for (int i = 0; i < optionJumpsToTerminalMap.get(rule.getKey()).size(); i++) {
+        int localJumps = optionJumpsToTerminalMap.get(rule.getKey()).get(i);
+        if (localJumps < minJumps) {
+          minJumps = localJumps;
+        }
+      }
+      List<Integer> indexes = new ArrayList<>();
+      for (int i = 0; i < optionJumpsToTerminalMap.get(rule.getKey()).size(); i++) {
+        if (optionJumpsToTerminalMap.get(rule.getKey()).get(i) == minJumps) {
+          indexes.add(i);
+        }
+      }
+      shortestOptionIndexesMap.put(rule.getKey(), indexes);
+    }
+    return shortestOptionIndexesMap;
   }
 
 }

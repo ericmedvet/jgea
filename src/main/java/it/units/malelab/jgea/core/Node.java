@@ -128,27 +128,7 @@ public class Node<T> implements Serializable, Cloneable, Sized {
     return -1; //should not happen;
   }
 
-  public List<Integer> ancestorIndexes() {
-    List<Integer> indexes = new ArrayList<>();
-    if (parent!=null) {
-      indexes.add(childIndex());
-      indexes.addAll(parent.ancestorIndexes());
-    } else {
-      return Collections.EMPTY_LIST;
-    }
-    return indexes;
-  }
-
-  public Node<T> prunedSubTree(int n) {
-    Node<T> subtree = new Node<T>(content);
-    if (n > 0) {
-      for (Node<T> child : children) {
-        subtree.getChildren().add(child.prunedSubTree(n-1));
-      }
-    }
-    return subtree;
-  }
-  
+ 
   public void prettyPrint(PrintStream ps) {
     propagateParentship();
     ps.printf("%" + (1 + this.getAncestors().size() * 2) + "s-%s%n", "", this.getContent());
