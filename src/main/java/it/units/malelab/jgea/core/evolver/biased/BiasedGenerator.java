@@ -6,28 +6,30 @@
 package it.units.malelab.jgea.core.evolver.biased;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.Lists;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
-import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
-import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.evolver.stopcondition.StopCondition;
 import it.units.malelab.jgea.core.function.Bounded;
 import it.units.malelab.jgea.core.function.CachedBoundedNonDeterministicFunction;
 import it.units.malelab.jgea.core.function.CachedNonDeterministicFunction;
 import it.units.malelab.jgea.core.function.Function;
+import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.function.NonDeterministicFunction;
 import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.core.listener.event.Capturer;
 import it.units.malelab.jgea.core.listener.event.EvolutionEndEvent;
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
+import it.units.malelab.jgea.core.listener.event.FunctionEvent;
+import it.units.malelab.jgea.core.listener.event.TimedEvent;
+import it.units.malelab.jgea.core.ranker.ComparableRanker;
+import it.units.malelab.jgea.core.ranker.FitnessComparator;
+import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.grammarbased.Grammar;
 import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
 import it.units.malelab.jgea.grammarbased.GrammarUtil;
-import it.units.malelab.jgea.problem.synthetic.Text;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -38,11 +40,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -177,13 +180,13 @@ public class BiasedGenerator<T, S, F extends Comparable<F>> extends StandardEvol
 
   }
 
-  private final NonDeterministicFunction<List<? extends Collection<F>>, Integer> policy;
+  private final NonDeterministicFunction<List<List<F>>, Integer> policy;
   private final int h;
   private final int k;
   private final int maxHeight;
 
-  public BiasedGenerator(NonDeterministicFunction<List<? extends Collection<F>>, Integer> policy, int h, int k, int populationSize, int offspringSize, int maxHeight, List<StopCondition> stoppingConditions, long cacheSize) {
-    super(populationSize, null, null, null, null, null, null, offspringSize, true, stoppingConditions, cacheSize, false);
+  public BiasedGenerator(NonDeterministicFunction<List<List<F>>, Integer> policy, int h, int k, int populationSize, int offspringSize, int maxHeight, List<StopCondition> stoppingConditions, long cacheSize) {
+    super(populationSize, null, new ComparableRanker(new FitnessComparator<>(Function.identity())), null, null, null, null, offspringSize, true, stoppingConditions, cacheSize, false);
     this.policy = policy;
     this.h = h;
     this.k = k;
@@ -195,7 +198,7 @@ public class BiasedGenerator<T, S, F extends Comparable<F>> extends StandardEvol
     if (!(problem instanceof GrammarBasedProblem)) {
       throw new IllegalArgumentException("Input problem is not a GrammarBasedProblem");
     }
-    Function<Node<T>, S> solutionMapper = (Function<Node<T>,S>)((GrammarBasedProblem) problem).getSolutionMapper();
+    Function<Node<T>, S> solutionMapper = (Function<Node<T>, S>) ((GrammarBasedProblem) problem).getSolutionMapper();
     Grammar<T> grammar = ((GrammarBasedProblem) problem).getGrammar();
     Map<T, List<Integer>> shortestOptionIndexesMap = GrammarUtil.computeShortestOptionIndexesMap(grammar);
     //init
@@ -212,8 +215,110 @@ public class BiasedGenerator<T, S, F extends Comparable<F>> extends StandardEvol
       }
     }
     Map<Node<FlaggedContent<T>>, List<List<F>>> fitnessSamples = new LinkedHashMap<>();
+    List<Individual<Node<T>, S, F>> population = new ArrayList<>();
     //main loop
     while (true) {
+      //generate trees
+      List<Callable<Pair<Individual<Node<T>, S, F>, List<Pair<Node<FlaggedContent<T>>, Integer>>>>> tasks = new ArrayList<>();
+      for (int i = 0; i < offspringSize; i++) {
+        tasks.add(buildingCallable(
+                iterations,
+                solutionMapper,
+                fitnessFunction,
+                shortestOptionIndexesMap,
+                fitnessSamples,
+                grammar,
+                random,
+                listener));
+      }
+      fitnessEvaluations.addAndGet(offspringSize);
+      births.addAndGet(offspringSize);
+      for (Pair<Individual<Node<T>, S, F>, List<Pair<Node<FlaggedContent<T>>, Integer>>> pair : Misc.getAll(executor.invokeAll(tasks))) {
+        //add to population
+        population.add(pair.first());
+        //update fitnessSamples
+        for (Pair<Node<FlaggedContent<T>>, Integer> context : pair.second()) {
+          List<List<F>> samples = fitnessSamples.get(context.first());
+          if (samples == null) {
+            samples = new ArrayList<>();
+            fitnessSamples.put(context.first(), samples);
+          }
+          while (samples.size() <= context.second()) {
+            samples.add(new ArrayList<>());
+          }
+          samples.get(context.second()).add(pair.first().getFitness());
+        }
+      }
+      //rank population and trim
+      List<Collection<Individual<Node<T>, S, F>>> rankedPopulation = ranker.rank(population, random);
+      int toRemoveCount = population.size() - populationSize;
+      while (toRemoveCount > 0) {
+        Individual<Node<T>, S, F> toRemove = Misc.pickRandomly(rankedPopulation.get(rankedPopulation.size() - 1), random);
+        rankedPopulation.get(rankedPopulation.size() - 1).remove(toRemove);
+        if (rankedPopulation.get(rankedPopulation.size() - 1).isEmpty()) {
+          rankedPopulation.remove(rankedPopulation.size() - 1);
+        }
+        population.remove(toRemove);
+        toRemoveCount = toRemoveCount - 1;
+      }
+
+      /*for (Map.Entry<Node<FlaggedContent<T>>, List<List<F>>> entry : fitnessSamples.entrySet()) {
+        List<String> averages = entry.getValue().stream()
+                .map(fs -> String.format(
+                                "mu=%8.6f,n=%6d", fs.stream().mapToDouble(f -> ((Number) f).doubleValue()).average().orElse(Double.NaN),
+                                fs.size()))
+                .collect(Collectors.toList());
+        System.out.printf("%s -> %s%n", entry.getKey(), averages);
+      }*/
+
+      //cast event to listener
+      iterations = iterations + 1;
+      EvolutionEvent event = new EvolutionEvent(
+              iterations,
+              births.get(),
+              (fitnessFunction instanceof CachedNonDeterministicFunction) ? ((CachedNonDeterministicFunction) fitnessFunction).getActualCount() : fitnessEvaluations.get(),
+              (List) rankedPopulation,
+              stopwatch.elapsed(TimeUnit.MILLISECONDS)
+      );
+      listener.listen(event);
+      //check stopping conditions
+      StopCondition stopCondition = checkStopConditions(event);
+      if (stopCondition != null) {
+        listener.listen(new EvolutionEndEvent(
+                stopCondition,
+                iterations,
+                births.get(),
+                (fitnessFunction instanceof CachedNonDeterministicFunction) ? ((CachedNonDeterministicFunction) fitnessFunction).getActualCount() : fitnessEvaluations.get(),
+                rankedPopulation,
+                stopwatch.elapsed(TimeUnit.MILLISECONDS))
+        );
+        break;
+      }
+
+    }
+    //take out solutions
+    List<Collection<Individual<Node<T>, S, F>>> rankedPopulation = ranker.rank(population, random);
+    Collection<S> solutions = new ArrayList<>();
+    for (Individual<Node<T>, S, F> individual : rankedPopulation.get(0)) {
+      solutions.add(individual.getSolution());
+    }
+    return solutions;
+  }
+
+  protected Callable<Pair<Individual<Node<T>, S, F>, List<Pair<Node<FlaggedContent<T>>, Integer>>>> buildingCallable(
+          final int birthIteration,
+          final NonDeterministicFunction<Node<T>, S> solutionFunction,
+          final NonDeterministicFunction<S, F> fitnessFunction,
+          final Map<T, List<Integer>> shortestOptionIndexesMap,
+          final Map<Node<FlaggedContent<T>>, List<List<F>>> fitnessSamples,
+          final Grammar<T> grammar,
+          final Random random,
+          final Listener listener) {
+    return () -> {
+      Stopwatch stopwatch = Stopwatch.createUnstarted();
+      Capturer capturer = new Capturer();
+      long elapsed;
+      stopwatch.start();
       //generate tree
       Node<T> tree = new Node<>(grammar.getStartingSymbol());
       List<Pair<Node<FlaggedContent<T>>, Integer>> contexts = new ArrayList<>();
@@ -227,7 +332,7 @@ public class BiasedGenerator<T, S, F extends Comparable<F>> extends StandardEvol
             FlaggedNode<T> flaggedTree = new FlaggedNode<>(leaf.getRoot(), leaf);
             Node<FlaggedContent<T>> context = getHKSuperTree(flaggedTree.getFlaggedNodes().get(0), h, k);
             //check depth
-            if (leaf.height() > maxHeight) {
+            if (tree.height() > maxHeight) {
               optionIndex = shortestOptionIndexesMap.get(leaf.getContent()).get(0); //TODO mitigate bias here
             } else {
               List<List<F>> fitnessSample = new ArrayList<>(fitnessSamples.getOrDefault(context, new ArrayList<>()));
@@ -248,50 +353,40 @@ public class BiasedGenerator<T, S, F extends Comparable<F>> extends StandardEvol
           break;
         }
       }
-      //compute fitness
-      S solution = solutionMapper.apply(tree); //TODO use callables+executor
-      F fitness = fitnessFunction.apply(solution, random); //TODO use callables+executor
-      System.out.printf("tree: h=%d size=%d with %d contexts, fitness=%s%n", tree.height(), tree.size(), contexts.size(), fitness);
-      //update fitnessSamples
-      for (Pair<Node<FlaggedContent<T>>, Integer> context : contexts) {
-        List<List<F>> samples = fitnessSamples.get(context.first());
-        if (samples==null) {
-          samples = new ArrayList<>();
-          fitnessSamples.put(context.first(), samples);
-        }
-        while (samples.size()<=context.second()) {
-          samples.add(new ArrayList<>());
-        }
-        samples.get(context.second()).add(fitness);
+      elapsed = stopwatch.stop().elapsed(TimeUnit.NANOSECONDS);
+      listener.listen(new TimedEvent(elapsed, TimeUnit.NANOSECONDS, new FunctionEvent(grammar.getStartingSymbol(), tree, Collections.EMPTY_MAP)));
+      //tree -> solution
+      stopwatch.reset().start();
+      S solution = null;
+      try {
+        solution = solutionFunction.apply(tree, random, capturer);
+      } catch (FunctionException ex) {
+        //invalid solution
+        //TODO log to listener
       }
-      System.out.println(fitnessSamples);
-      //cast event to listener
-      iterations = iterations + 1;
-      EvolutionEvent event = new EvolutionEvent(
-              iterations,
-              births.get(),
-              (fitnessFunction instanceof CachedNonDeterministicFunction) ? ((CachedNonDeterministicFunction) fitnessFunction).getActualCount() : fitnessEvaluations.get(),
-              (List) null,
-              stopwatch.elapsed(TimeUnit.MILLISECONDS)
+      elapsed = stopwatch.stop().elapsed(TimeUnit.NANOSECONDS);
+      Map<String, Object> solutionInfo = Misc.fromInfoEvents(capturer.getEvents(), "solution.");
+      listener.listen(new TimedEvent(elapsed, TimeUnit.NANOSECONDS, new FunctionEvent(tree, solution, solutionInfo)));
+      capturer.clear();
+      //solution -> fitness
+      stopwatch.reset().start();
+      F fitness = null;
+      if (solution != null) {
+        fitness = fitnessFunction.apply(solution, random, capturer);
+      } else {
+        if (fitnessFunction instanceof Bounded) {
+          fitness = ((Bounded<F>) fitnessFunction).worstValue();
+        }
+      }
+      elapsed = stopwatch.stop().elapsed(TimeUnit.NANOSECONDS);
+      Map<String, Object> fitnessInfo = Misc.fromInfoEvents(capturer.getEvents(), "fitness.");
+      listener.listen(new TimedEvent(elapsed, TimeUnit.NANOSECONDS, new FunctionEvent(tree, solution, fitnessInfo)));
+      //merge info and return
+      return Pair.build(
+              new Individual<>(tree, solution, fitness, birthIteration, null, Misc.merge(solutionInfo, fitnessInfo)),
+              contexts
       );
-      listener.listen(event);
-      //check stopping conditions
-      StopCondition stopCondition = checkStopConditions(event);
-      if (stopCondition != null) {
-        listener.listen(new EvolutionEndEvent(
-                stopCondition,
-                iterations,
-                births.get(),
-                (fitnessFunction instanceof CachedNonDeterministicFunction) ? ((CachedNonDeterministicFunction) fitnessFunction).getActualCount() : fitnessEvaluations.get(),
-                null,
-                stopwatch.elapsed(TimeUnit.MILLISECONDS))
-        );
-        break;
-      }
-
-    }
-    //return result
-    return null;
+    };
   }
 
   private static <K> Node<FlaggedContent<K>> getHKSuperTree(FlaggedNode<K> node, int h, int k) {
@@ -311,16 +406,6 @@ public class BiasedGenerator<T, S, F extends Comparable<F>> extends StandardEvol
     current.flagSubtree(Math.min(k, h - i));
     current.pruneUnflagged();
     return current.getDeflagged();
-  }
-
-  public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
-    GrammarBasedProblem<String, String, Integer> p = new Text("Hello World!");
-    BiasedGenerator<String, String, Integer> bg = new BiasedGenerator<String, String, Integer>(
-            new Uniform<>(),
-            1, 0, 10, 10, 1,
-            Lists.newArrayList(new FitnessEvaluations(100000), new Iterations(10)),
-            10000);
-    bg.solve(p, new Random(1), Executors.newFixedThreadPool(1), Listener.deaf());
   }
 
 }

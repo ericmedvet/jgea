@@ -8,7 +8,6 @@ package it.units.malelab.jgea.core.evolver.biased;
 import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.function.NonDeterministicFunction;
 import it.units.malelab.jgea.core.listener.Listener;
-import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
@@ -16,10 +15,10 @@ import java.util.Random;
  *
  * @author eric
  */
-public class Uniform<F> implements NonDeterministicFunction<List<? extends Collection<F>>, Integer> {
+public class Uniform<F> implements NonDeterministicFunction<List<List<F>>, Integer> {
 
   @Override
-  public Integer apply(List<? extends Collection<F>> samples, Random random, Listener listener) throws FunctionException {
+  public Integer apply(List<List<F>> samples, Random random, Listener listener) throws FunctionException {
     return random.nextInt(samples.size());
   }
   

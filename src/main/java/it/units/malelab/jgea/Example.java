@@ -13,8 +13,13 @@ import it.units.malelab.jgea.core.Sequence;
 import it.units.malelab.jgea.core.evolver.DeterministicCrowdingEvolver;
 import it.units.malelab.jgea.core.evolver.FitnessSharingDivideAndConquerEvolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
+import it.units.malelab.jgea.core.evolver.biased.BiasedGenerator;
+import it.units.malelab.jgea.core.evolver.biased.Filler;
+import it.units.malelab.jgea.core.evolver.biased.Percentile;
+import it.units.malelab.jgea.core.evolver.biased.Uniform;
 import it.units.malelab.jgea.core.evolver.stopcondition.ElapsedTime;
 import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
+import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
 import it.units.malelab.jgea.core.fitness.ClassificationFitness;
 import it.units.malelab.jgea.core.function.Function;
@@ -58,6 +63,8 @@ import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
 import it.units.malelab.jgea.grammarbased.RegexGrammar;
 import it.units.malelab.jgea.grammarbased.ge.StandardGEMapper;
 import it.units.malelab.jgea.grammarbased.ge.WeightedHierarchicalMapper;
+import it.units.malelab.jgea.problem.synthetic.Text;
+import it.units.malelab.jgea.problem.synthetic.TreeSize;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -89,8 +96,10 @@ public class Example extends Worker {
 
   public void run() {
     try {
-      parityGE(executorService, "whge");
-      parity(executorService);
+      //treeSizeBiasedGenerator(executorService);
+      textBiasedGenerator(executorService);
+      //parityGE(executorService, "whge");
+      //parity(executorService);
       //parityGE(executorService, "ge");
       //parityGE(executorService, "whge");
       //parityDCGE(executorService, "whge");
@@ -103,6 +112,39 @@ public class Example extends Worker {
     }
   }
 
+  private void treeSizeBiasedGenerator(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
+    GrammarBasedProblem<Boolean, Node<Boolean>, Double> p = new TreeSize(2, 1);
+    System.out.println(p.getGrammar());
+    BiasedGenerator<Boolean, Node<Boolean>, Double> bg = new BiasedGenerator<Boolean, Node<Boolean>, Double>(
+            new Filler<>(10, new Percentile<Double>(0.2f)),
+            //new Uniform<>(),
+            3, 3, 100, 1, 15,
+            Lists.newArrayList(new FitnessEvaluations(10000)),
+            10000);
+    Random random = new Random(1);
+    bg.solve(p, random, executor, Listener.onExecutor(listener(
+                    new Basic(),
+                    new Population(),
+                    new BestInfo<>("%8.6f")
+            ), executor));
+  }
+
+  private void textBiasedGenerator(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
+    GrammarBasedProblem<String, String, Integer> p = new Text("Hello World!");
+    System.out.println(p.getGrammar());
+    BiasedGenerator<String, String, Integer> bg = new BiasedGenerator<String, String, Integer>(
+            new Filler<>(10, new Percentile<Integer>(0.1f)),
+            //new Uniform<>(),
+            1, 0, 100, 1, 10,
+            Lists.newArrayList(new FitnessEvaluations(10000)),
+            10000);
+    Random random = new Random(1);
+    bg.solve(p, random, executor, Listener.onExecutor(listener(
+                    new Basic(),
+                    new Population(),
+                    new BestInfo<>("%8.6f")
+            ), executor));
+  }
 
   private void parity(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
     final GrammarBasedProblem<String, List<Node<Element>>, Double> p = new EvenParity(8);
