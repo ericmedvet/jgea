@@ -118,7 +118,7 @@ public class Example extends Worker {
     BiasedGenerator<Boolean, Node<Boolean>, Double> bg = new BiasedGenerator<Boolean, Node<Boolean>, Double>(
             new Filler<>(10, new Percentile<Double>(0.2f)),
             //new Uniform<>(),
-            3, 3, 100, 1, 15,
+            1, 0, 100, 1, 10,
             Lists.newArrayList(new FitnessEvaluations(10000)),
             10000);
     Random random = new Random(1);
@@ -142,7 +142,8 @@ public class Example extends Worker {
     bg.solve(p, random, executor, Listener.onExecutor(listener(
                     new Basic(),
                     new Population(),
-                    new BestInfo<>("%8.6f")
+                    new BestInfo<>("%8.6f"),
+                    new BestPrinter(null, "%s")
             ), executor));
   }
 
