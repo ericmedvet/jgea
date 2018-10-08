@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -201,6 +202,7 @@ public class BiasedGenerator<T, S, F extends Comparable<F>> extends StandardEvol
     Function<Node<T>, S> solutionMapper = (Function<Node<T>, S>) ((GrammarBasedProblem) problem).getSolutionMapper();
     Grammar<T> grammar = ((GrammarBasedProblem) problem).getGrammar();
     Map<T, List<Integer>> shortestOptionIndexesMap = GrammarUtil.computeShortestOptionIndexesMap(grammar);
+    Set<Node<T>> trees = new LinkedHashSet<>();
     //init
     int iterations = 0;
     AtomicInteger births = new AtomicInteger();
@@ -232,21 +234,24 @@ public class BiasedGenerator<T, S, F extends Comparable<F>> extends StandardEvol
                 listener));
       }
       fitnessEvaluations.addAndGet(offspringSize);
-      births.addAndGet(offspringSize);
+      births.addAndGet(offspringSize);      
       for (Pair<Individual<Node<T>, S, F>, List<Pair<Node<FlaggedContent<T>>, Integer>>> pair : Misc.getAll(executor.invokeAll(tasks))) {
-        //add to population
-        population.add(pair.first());
-        //update fitnessSamples
-        for (Pair<Node<FlaggedContent<T>>, Integer> context : pair.second()) {
-          List<List<F>> samples = fitnessSamples.get(context.first());
-          if (samples == null) {
-            samples = new ArrayList<>();
-            fitnessSamples.put(context.first(), samples);
+        if (!trees.contains(pair.first().getGenotype())) {
+          trees.add(pair.first().getGenotype());
+          //add to population
+          population.add(pair.first());
+          //update fitnessSamples
+          for (Pair<Node<FlaggedContent<T>>, Integer> context : pair.second()) {
+            List<List<F>> samples = fitnessSamples.get(context.first());
+            if (samples == null) {
+              samples = new ArrayList<>();
+              fitnessSamples.put(context.first(), samples);
+            }
+            while (samples.size() <= context.second()) {
+              samples.add(new ArrayList<>());
+            }
+            samples.get(context.second()).add(pair.first().getFitness());
           }
-          while (samples.size() <= context.second()) {
-            samples.add(new ArrayList<>());
-          }
-          samples.get(context.second()).add(pair.first().getFitness());
         }
       }
       //rank population and trim
@@ -262,14 +267,16 @@ public class BiasedGenerator<T, S, F extends Comparable<F>> extends StandardEvol
         toRemoveCount = toRemoveCount - 1;
       }
 
-      /*for (Map.Entry<Node<FlaggedContent<T>>, List<List<F>>> entry : fitnessSamples.entrySet()) {
-        List<String> averages = entry.getValue().stream()
-                .map(fs -> String.format(
-                                "mu=%8.6f,n=%6d", fs.stream().mapToDouble(f -> ((Number) f).doubleValue()).average().orElse(Double.NaN),
-                                fs.size()))
-                .collect(Collectors.toList());
-        System.out.printf("%s -> %s%n", entry.getKey(), averages);
-      }*/
+      if (false) {
+        for (Map.Entry<Node<FlaggedContent<T>>, List<List<F>>> entry : fitnessSamples.entrySet()) {
+          List<String> averages = entry.getValue().stream()
+                  .map(fs -> String.format(
+                  "mu=%.6f,n=%d", fs.stream().mapToDouble(f -> ((Number) f).doubleValue()).average().orElse(Double.NaN),
+                  fs.size()))
+                  .collect(Collectors.toList());
+          System.out.printf("%s -> %s%n", entry.getKey(), averages);
+        }
+      }
 
       //cast event to listener
       iterations = iterations + 1;

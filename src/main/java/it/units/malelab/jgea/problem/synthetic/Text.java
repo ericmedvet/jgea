@@ -23,9 +23,9 @@ import java.util.stream.Collectors;
  *
  * @author eric
  */
-public class Text implements GrammarBasedProblem<String, String, Integer> {
+public class Text implements GrammarBasedProblem<String, String, Double> {
   
-  private static class FitnessFunction implements Function<String, Integer>, Bounded<Integer> {
+  private static class FitnessFunction implements Function<String, Double>, Bounded<Double> {
     
     private final Sequence<Character> target;
     private final Distance<Sequence<Character>> distance;
@@ -36,29 +36,29 @@ public class Text implements GrammarBasedProblem<String, String, Integer> {
     }
 
     @Override
-    public Integer apply(String string, Listener listener) throws FunctionException {
-      int d = (int)Math.round(distance.apply(
+    public Double apply(String string, Listener listener) throws FunctionException {
+      double d = (double)distance.apply(
               target,
               Sequence.from(string.chars().mapToObj(c -> (char) c).toArray(Character[]::new))
-      ));
+      )/(double)target.size();
       return d;
     }
 
     @Override
-    public Integer worstValue() {
-      return Integer.MAX_VALUE;
+    public Double worstValue() {
+      return Double.POSITIVE_INFINITY;
     }
 
     @Override
-    public Integer bestValue() {
-      return 0;
+    public Double bestValue() {
+      return 0d;
     }
     
   }
   
   private final Grammar<String> grammar;
   private final Function<Node<String>, String> solutionMapper;
-  private final Function<String, Integer> fitnessFunction;
+  private final Function<String, Double> fitnessFunction;
 
   public Text(String targetString) throws IOException {
     grammar = Grammar.fromFile(new File("grammars/text.bnf"));
@@ -80,7 +80,7 @@ public class Text implements GrammarBasedProblem<String, String, Integer> {
   }
 
   @Override
-  public Function<String, Integer> getFitnessFunction() {
+  public Function<String, Double> getFitnessFunction() {
     return fitnessFunction;
   }
   

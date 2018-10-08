@@ -16,6 +16,7 @@ import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.biased.BiasedGenerator;
 import it.units.malelab.jgea.core.evolver.biased.Filler;
 import it.units.malelab.jgea.core.evolver.biased.Percentile;
+import it.units.malelab.jgea.core.evolver.biased.PercentileProportional;
 import it.units.malelab.jgea.core.evolver.biased.Uniform;
 import it.units.malelab.jgea.core.evolver.stopcondition.ElapsedTime;
 import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
@@ -115,10 +116,10 @@ public class Example extends Worker {
   private void treeSizeBiasedGenerator(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
     GrammarBasedProblem<Boolean, Node<Boolean>, Double> p = new TreeSize(2, 1);
     System.out.println(p.getGrammar());
-    BiasedGenerator<Boolean, Node<Boolean>, Double> bg = new BiasedGenerator<Boolean, Node<Boolean>, Double>(
-            new Filler<>(10, new Percentile<Double>(0.2f)),
+    BiasedGenerator<Boolean, Node<Boolean>, Double> bg = new BiasedGenerator<>(
+            new Filler<>(10, new Percentile<>(0.2f)),
             //new Uniform<>(),
-            1, 0, 100, 1, 10,
+            0, 0, 100, 1, 10,
             Lists.newArrayList(new FitnessEvaluations(10000)),
             10000);
     Random random = new Random(1);
@@ -130,12 +131,13 @@ public class Example extends Worker {
   }
 
   private void textBiasedGenerator(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
-    GrammarBasedProblem<String, String, Integer> p = new Text("Hello World!");
+    GrammarBasedProblem<String, String, Double> p = new Text("Hello World!");
     System.out.println(p.getGrammar());
-    BiasedGenerator<String, String, Integer> bg = new BiasedGenerator<String, String, Integer>(
-            new Filler<>(10, new Percentile<Integer>(0.1f)),
+    BiasedGenerator<String, String, Double> bg = new BiasedGenerator<>(
+            //new Filler<>(10, new Percentile<>(0.1f)),
+            new Filler<>(10, new PercentileProportional(0.01f)),
             //new Uniform<>(),
-            1, 0, 100, 1, 10,
+            4, 4, 100, 1, 20,
             Lists.newArrayList(new FitnessEvaluations(10000)),
             10000);
     Random random = new Random(1);
