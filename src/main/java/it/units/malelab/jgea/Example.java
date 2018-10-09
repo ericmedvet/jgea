@@ -8,19 +8,19 @@ package it.units.malelab.jgea;
 import com.google.common.collect.Lists;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.Node;
+import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.ProblemWithValidation;
 import it.units.malelab.jgea.core.Sequence;
 import it.units.malelab.jgea.core.evolver.DeterministicCrowdingEvolver;
+import it.units.malelab.jgea.core.evolver.DifferentialEvolution;
 import it.units.malelab.jgea.core.evolver.FitnessSharingDivideAndConquerEvolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.biased.BiasedGenerator;
 import it.units.malelab.jgea.core.evolver.biased.Filler;
 import it.units.malelab.jgea.core.evolver.biased.Percentile;
 import it.units.malelab.jgea.core.evolver.biased.PercentileProportional;
-import it.units.malelab.jgea.core.evolver.biased.Uniform;
 import it.units.malelab.jgea.core.evolver.stopcondition.ElapsedTime;
 import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
-import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
 import it.units.malelab.jgea.core.fitness.ClassificationFitness;
 import it.units.malelab.jgea.core.function.Function;
@@ -64,6 +64,8 @@ import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
 import it.units.malelab.jgea.grammarbased.RegexGrammar;
 import it.units.malelab.jgea.grammarbased.ge.StandardGEMapper;
 import it.units.malelab.jgea.grammarbased.ge.WeightedHierarchicalMapper;
+import it.units.malelab.jgea.problem.application.RobotPowerSupplyGeometry;
+import it.units.malelab.jgea.problem.synthetic.LinearPoints;
 import it.units.malelab.jgea.problem.synthetic.Text;
 import it.units.malelab.jgea.problem.synthetic.TreeSize;
 import java.io.FileNotFoundException;
@@ -97,8 +99,9 @@ public class Example extends Worker {
 
   public void run() {
     try {
+      linearPointsDE(executorService);
       //treeSizeBiasedGenerator(executorService);
-      textBiasedGenerator(executorService);
+      //textBiasedGenerator(executorService);
       //parityGE(executorService, "whge");
       //parity(executorService);
       //parityGE(executorService, "ge");
@@ -110,7 +113,26 @@ public class Example extends Worker {
       //binaryRegexExtractionStandard(executorService);
     } catch (IOException | InterruptedException | ExecutionException ex) {
       Logger.getLogger(Example.class.getName()).log(Level.SEVERE, null, ex);
+      ex.printStackTrace();
     }
+  }
+
+  private void linearPointsDE(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
+    Problem<double[], Double> problem = new LinearPoints();
+    problem = new RobotPowerSupplyGeometry(5d, 1d, (a, r) -> (a[0]>2)&&(a[0]<8), 100);
+    DifferentialEvolution de = new DifferentialEvolution(
+            100, 1,
+            0.8, 0.5,
+            10,
+            5d, 1d,
+            Lists.newArrayList(new FitnessEvaluations(10000)), 10000);
+    Random random = new Random(1);
+    de.solve(problem, random, executor, Listener.onExecutor(listener(
+                    new Basic(),
+                    new Population(),
+                    new BestInfo<>("%8.6f"),
+                    new BestPrinter((d, l) -> Arrays.toString((double[])d), "%s")
+            ), executor));
   }
 
   private void treeSizeBiasedGenerator(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {

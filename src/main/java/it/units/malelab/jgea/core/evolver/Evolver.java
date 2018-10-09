@@ -9,7 +9,6 @@ import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.listener.Listener;
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
