@@ -8,7 +8,6 @@ package it.units.malelab.jgea;
 import com.google.common.collect.Lists;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.Node;
-import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.ProblemWithValidation;
 import it.units.malelab.jgea.core.Sequence;
 import it.units.malelab.jgea.core.evolver.DeterministicCrowdingEvolver;
@@ -28,6 +27,7 @@ import it.units.malelab.jgea.core.function.Reducer;
 import it.units.malelab.jgea.core.genotype.BitString;
 import it.units.malelab.jgea.core.genotype.BitStringFactory;
 import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.core.listener.collector.DoubleArrayPrinter;
 import it.units.malelab.jgea.core.listener.collector.Basic;
 import it.units.malelab.jgea.core.listener.collector.BestInfo;
 import it.units.malelab.jgea.core.listener.collector.BestPrinter;
@@ -65,7 +65,6 @@ import it.units.malelab.jgea.grammarbased.RegexGrammar;
 import it.units.malelab.jgea.grammarbased.ge.StandardGEMapper;
 import it.units.malelab.jgea.grammarbased.ge.WeightedHierarchicalMapper;
 import it.units.malelab.jgea.problem.application.RobotPowerSupplyGeometry;
-import it.units.malelab.jgea.problem.synthetic.LinearPoints;
 import it.units.malelab.jgea.problem.synthetic.Text;
 import it.units.malelab.jgea.problem.synthetic.TreeSize;
 import java.io.FileNotFoundException;
@@ -118,20 +117,27 @@ public class Example extends Worker {
   }
 
   private void linearPointsDE(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
-    Problem<double[], Double> problem = new LinearPoints();
-    problem = new RobotPowerSupplyGeometry(5d, 1d, (a, r) -> (a[0]>2)&&(a[0]<8), 100);
+    //Problem<double[], Double> problem = new LinearPoints();
+    RobotPowerSupplyGeometry problem = new RobotPowerSupplyGeometry(
+            5d, 0.1d,
+            (a, l) -> (a[0]>=0d)&&(a[0]<15d),
+            100,
+            //RobotPowerSupplyGeometry.Objective.CONTACT_MIN
+            RobotPowerSupplyGeometry.Objective.CONTACT_MIN,RobotPowerSupplyGeometry.Objective.CONTACT_AVG
+            //RobotPowerSupplyGeometry.Objective.CONTACT_MIN,RobotPowerSupplyGeometry.Objective.DIST_AVG
+    );
     DifferentialEvolution de = new DifferentialEvolution(
-            100, 1,
+            100, 4,
             0.8, 0.5,
             10,
-            5d, 1d,
-            Lists.newArrayList(new FitnessEvaluations(10000)), 10000);
+            5d, 10d,
+            new ParetoRanker<>(true),
+            Lists.newArrayList(new FitnessEvaluations(1000000)), 10000);
     Random random = new Random(1);
-    de.solve(problem, random, executor, Listener.onExecutor(listener(
-                    new Basic(),
+    de.solve(problem, random, executor, Listener.onExecutor(listener(new Basic(),
                     new Population(),
-                    new BestInfo<>("%8.6f"),
-                    new BestPrinter((d, l) -> Arrays.toString((double[])d), "%s")
+                    new BestInfo<>((Function)problem.getFitnessFunction(), "%4.2f"),
+                    new BestPrinter(new DoubleArrayPrinter("%+3.1f"), "%s")
             ), executor));
   }
 
@@ -299,7 +305,7 @@ public class Example extends Worker {
     StandardEvolver<Node<String>, String, List<Double>> evolver = new StandardEvolver<>(
             100,
             new RampedHalfAndHalf<>(3, 15, p.getGrammar()),
-            new ParetoRanker<>(),
+            new ParetoRanker<>(false),
             p.getSolutionMapper(),
             operators,
             new Tournament<>(3),
@@ -349,7 +355,7 @@ public class Example extends Worker {
             distance.cached(10000),
             500,
             new RampedHalfAndHalf<>(3, 15, p.getGrammar()),
-            new ParetoRanker<>(),
+            new ParetoRanker<>(false),
             p.getSolutionMapper(),
             operators,
             new Tournament<>(3),
@@ -410,7 +416,7 @@ public class Example extends Worker {
             semanticsDistance,
             500,
             new RampedHalfAndHalf<>(3, 15, p.getGrammar()),
-            new ParetoRanker<>(),
+            new ParetoRanker<>(false),
             p.getSolutionMapper(),
             operators,
             new Tournament<>(3),
@@ -448,7 +454,7 @@ public class Example extends Worker {
     StandardEvolver<Node<String>, String, List<Double>> evolver = new StandardEvolver<>(
             500,
             new RampedHalfAndHalf<>(3, 15, p.getGrammar()),
-            new ParetoRanker<>(),
+            new ParetoRanker<>(false),
             p.getSolutionMapper(),
             operators,
             new Tournament<>(3),

@@ -19,10 +19,12 @@ import java.util.Random;
 public class ParetoRanker<G, S> implements Ranker<Individual<G, S, List<Double>>>, Comparator<List<Double>> {
 
   private final ComparableRanker<Individual<G, S, List<Double>>> innerRanker;
+  private final boolean reversed;
 
-  public ParetoRanker() {
+  public ParetoRanker(boolean reversed) {
+    this.reversed = reversed;
     this.innerRanker = new ComparableRanker<>(
-            (i1, i2) -> Double.compare(i1.getFitness().get(0), i2.getFitness().get(0))
+            (i1, i2) -> Double.compare(i1.getFitness().get(0), i2.getFitness().get(0))*(reversed?-1:1)
     );
   }
 
@@ -69,7 +71,7 @@ public class ParetoRanker<G, S> implements Ranker<Individual<G, S, List<Double>>
     int better = 0;
     int worse = 0;
     for (int i = 0; i < f1.size(); i++) {
-      int outcome = f1.get(i).compareTo(f2.get(i));
+      int outcome = f1.get(i).compareTo(f2.get(i))*(reversed?-1:1);
       better = better + ((outcome < 0) ? 1 : 0);
       worse = worse + ((outcome > 0) ? 1 : 0);
     }

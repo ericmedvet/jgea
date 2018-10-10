@@ -9,6 +9,8 @@ import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.util.WithNames;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -55,6 +57,12 @@ public class Item<T> {
         items.add(new Item(name1, f.get(i), format1));
       }
       return items;
+    };
+  }
+  
+  public static <F> Function<F, List<Item>> fromSingle(Function<?, F> function, String format) {
+    return (F f, Listener listener) -> {
+      return Collections.singletonList(new Item<>("", f, format));
     };
   }
   

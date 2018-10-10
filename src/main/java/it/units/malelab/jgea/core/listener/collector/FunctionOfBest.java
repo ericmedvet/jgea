@@ -19,28 +19,32 @@ import java.util.stream.Collectors;
  * @author eric
  */
 public class FunctionOfBest<S, V> implements DataCollector {
-  
+
   private final String name;
   private final Function<S, V> function;
   private final Function<V, List<Item>> splitter;
 
   public FunctionOfBest(String name, Function<S, V> function, Function<V, List<Item>> splitter, long cacheSize) {
     this.name = name;
-    this.function = cacheSize>0?function.cached(cacheSize):function;
+    this.function = cacheSize > 0 ? function.cached(cacheSize) : function;
     this.splitter = splitter;
   }
 
   public FunctionOfBest(String name, Function<S, V> function, long cacheSize, String... formats) {
     this.name = name;
-    this.function = cacheSize>0?function.cached(cacheSize):function;
-    this.splitter = Item.fromMultiobjective((Function)function, formats);
+    this.function = cacheSize > 0 ? function.cached(cacheSize) : function;
+    if (formats.length > 1) {
+      splitter = Item.fromMultiobjective((Function) function, formats);
+    } else {
+      splitter = Item.fromSingle(function, formats[0]);
+    }
   }
 
   @Override
   public List<Item> collect(EvolutionEvent evolutionEvent) {
-    List<Collection<Individual>> rankedPopulation = new ArrayList<>((List)evolutionEvent.getRankedPopulation());
+    List<Collection<Individual>> rankedPopulation = new ArrayList<>((List) evolutionEvent.getRankedPopulation());
     Individual best = Misc.first(rankedPopulation.get(0));
-    return splitter.apply(function.apply((S)best.getSolution())).stream()
+    return splitter.apply(function.apply((S) best.getSolution())).stream()
             .map(item -> item.prefixed(name))
             .collect(Collectors.toList());
   }

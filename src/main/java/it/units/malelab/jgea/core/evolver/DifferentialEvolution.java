@@ -26,6 +26,7 @@ import it.units.malelab.jgea.core.ranker.FitnessComparator;
 import it.units.malelab.jgea.core.ranker.Ranker;
 import it.units.malelab.jgea.core.util.Misc;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -41,7 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author eric
  */
-public class DifferentialEvolution implements Evolver<double[], double[], Double> {
+public class DifferentialEvolution<F> implements Evolver<double[], double[], F> {
 
   protected final int populationSize;
   protected final int offspringSize;
@@ -50,6 +51,7 @@ public class DifferentialEvolution implements Evolver<double[], double[], Double
   protected final int size;
   protected final double initMean;
   protected final double initStandardDeviation;
+  protected final Ranker<Individual<double[], double[], F>> ranker;
   protected final List<StopCondition> stopConditions;
   protected final long cacheSize;
 
@@ -60,7 +62,10 @@ public class DifferentialEvolution implements Evolver<double[], double[], Double
           double differentialWeight,
           int size,
           double initMean,
-          double initStandardDeviation, List<StopCondition> stopConditions, long cacheSize) {
+          double initStandardDeviation,
+          Ranker<Individual<double[], double[], F>> ranker,
+          List<StopCondition> stopConditions,
+          long cacheSize) {
     this.populationSize = populationSize;
     this.offspringSize = offspringSize;
     this.crossoverRate = crossoverRate;
@@ -68,17 +73,18 @@ public class DifferentialEvolution implements Evolver<double[], double[], Double
     this.size = size;
     this.initMean = initMean;
     this.initStandardDeviation = initStandardDeviation;
+    this.ranker = ranker;
     this.stopConditions = stopConditions;
     this.cacheSize = cacheSize;
   }
 
   @Override
-  public Collection<double[]> solve(Problem<double[], Double> problem, Random random, ExecutorService executor, Listener listener) throws InterruptedException, ExecutionException {
+  public Collection<double[]> solve(Problem<double[], F> problem, Random random, ExecutorService executor, Listener listener) throws InterruptedException, ExecutionException {
     int generations = 0;
     AtomicInteger births = new AtomicInteger();
     AtomicInteger fitnessEvaluations = new AtomicInteger();
     Stopwatch stopwatch = Stopwatch.createStarted();
-    NonDeterministicFunction<double[], Double> fitnessFunction = problem.getFitnessFunction();
+    NonDeterministicFunction<double[], F> fitnessFunction = problem.getFitnessFunction();
     if (cacheSize > 0) {
       if (fitnessFunction instanceof Bounded) {
         fitnessFunction = new CachedBoundedNonDeterministicFunction<>(fitnessFunction, cacheSize);
@@ -86,9 +92,8 @@ public class DifferentialEvolution implements Evolver<double[], double[], Double
         fitnessFunction = fitnessFunction.cached(cacheSize);
       }
     }
-    Ranker<Individual<double[], double[], Double>> ranker = new ComparableRanker(new FitnessComparator<>(Function.identity()));
     //init population
-    List<Callable<Individual<double[], double[], Double>>> tasks = new ArrayList<>();
+    List<Callable<Individual<double[], double[], F>>> tasks = new ArrayList<>();
     while (tasks.size() < populationSize) {
       double[] point = new double[size];
       for (int i = 0; i < point.length; i++) {
@@ -98,12 +103,12 @@ public class DifferentialEvolution implements Evolver<double[], double[], Double
     }
     births.addAndGet(populationSize);
     fitnessEvaluations.addAndGet(populationSize);
-    List<Individual<double[], double[], Double>> population = Misc.getAll(executor.invokeAll(tasks));
+    List<Individual<double[], double[], F>> population = Misc.getAll(executor.invokeAll(tasks));
     //iterate
     while (true) {
       generations = generations + 1;
       //generate offsprings
-      List<Individual<double[], double[], Double>> firstParents = new ArrayList<>();
+      List<Individual<double[], double[], F>> firstParents = new ArrayList<>();
       tasks.clear();
       while (tasks.size() < offspringSize) {
         Collections.shuffle(population);
@@ -121,16 +126,16 @@ public class DifferentialEvolution implements Evolver<double[], double[], Double
         births.incrementAndGet();
         fitnessEvaluations.incrementAndGet();
       }
-      List<Individual<double[], double[], Double>> offspring = Misc.getAll(executor.invokeAll(tasks));
+      List<Individual<double[], double[], F>> offspring = Misc.getAll(executor.invokeAll(tasks));
       //replace
       for (int i = 0; i<firstParents.size(); i++) {
-        if (firstParents.get(i).getFitness()>offspring.get(i).getFitness()) {
+        if (ranker.compare(firstParents.get(i), offspring.get(i), random)>0) {
           population.remove(firstParents.get(i));
           population.add(offspring.get(i));
         }
       }
       //send event
-      List<Collection<Individual<double[], double[], Double>>> rankedPopulation = ranker.rank(population, random);
+      List<Collection<Individual<double[], double[], F>>> rankedPopulation = ranker.rank(population, random);
       EvolutionEvent event = new EvolutionEvent(
               generations,
               births.get(),
@@ -154,18 +159,18 @@ public class DifferentialEvolution implements Evolver<double[], double[], Double
       }
     }
     //take out solutions
-    List<Collection<Individual<double[], double[], Double>>> rankedPopulation = ranker.rank(population, random);
+    List<Collection<Individual<double[], double[], F>>> rankedPopulation = ranker.rank(population, random);
     Collection<double[]> solutions = new ArrayList<>();
-    for (Individual<double[], double[], Double> individual : rankedPopulation.get(0)) {
+    for (Individual<double[], double[], F> individual : rankedPopulation.get(0)) {
       solutions.add(individual.getSolution());
     }
     return solutions;
   }
 
-  protected Callable<Individual<double[], double[], Double>> birthCallable(
+  protected Callable<Individual<double[], double[], F>> birthCallable(
           final double[] point,
           final int birthIteration,
-          final NonDeterministicFunction<double[], Double> fitnessFunction,
+          final NonDeterministicFunction<double[], F> fitnessFunction,
           final Random random,
           final Listener listener) {
     return () -> {
@@ -174,7 +179,7 @@ public class DifferentialEvolution implements Evolver<double[], double[], Double
       long elapsed;
       //solution -> fitness
       stopwatch.reset().start();
-      Double fitness = fitnessFunction.apply(point, random, capturer);
+      F fitness = fitnessFunction.apply(point, random, capturer);
       elapsed = stopwatch.stop().elapsed(TimeUnit.NANOSECONDS);
       Map<String, Object> fitnessInfo = Misc.fromInfoEvents(capturer.getEvents(), "fitness.");
       listener.listen(new TimedEvent(elapsed, TimeUnit.NANOSECONDS, new FunctionEvent(point, fitness, fitnessInfo)));
