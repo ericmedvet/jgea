@@ -53,18 +53,18 @@ public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>>
     if (bandIndex == 0 && positive) {
       return 1d;
     }
-    if (bandIndex != 1 && !positive) {
+    if (bandIndex != 0 && !positive) {
       return 1d;
     }
     return 0d;
   }
 
-  private double pinsContact(double[] a, double x0, double phi0) {
+  private double pinsContact(List<double[]> pins, double x0, double phi0) {
     double positives = 0d;
     double negatives = 0d;
-    for (int i = 0; i < a.length - 1; i = i + 2) {
-      double r = a[i];
-      double phi = a[i + 1];
+    for (double[] pin : pins) {
+      double r = pin[0];
+      double phi = pin[1];
       double x = x0 + r * Math.sin(phi0 + phi);
       positives = positives + pinContact(x, true);
       negatives = negatives + pinContact(x, false);
@@ -75,9 +75,10 @@ public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>>
   private double pinsContact(double[] a, boolean average) {
     double min = a.length / 2d;
     double sum = 0d;
+    List<double[]> validPins = validPins(a);
     for (double x0 = 0; x0 < 2 * (w + v); x0 = x0 + 2d * (w + v) / (double) steps) {
       for (double phi0 = 0; phi0 < 2d * Math.PI; phi0 = phi0 + 2d * Math.PI / (double) steps) {
-        double contacts = pinsContact(a, x0, phi0);
+        double contacts = pinsContact(validPins, x0, phi0);
         sum = sum + contacts;
         min = Math.min(min, contacts);
       }
@@ -85,23 +86,8 @@ public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>>
     return average ? (sum / (double) (steps * steps)) : min;
   }
 
-  private boolean satisfyConstraint(double[] a) {
-    for (int i = 0; i < a.length - 1; i = i + 2) {
-      if (!constraintFunction.apply(new double[]{a[i], a[i + 1]})) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   private double avgDistanceToValidClosest(double[] a) {
-    //get valid pins
-    List<double[]> validPins = new ArrayList<>();
-    for (int i = 0; i < a.length - 1; i = i + 2) {
-      if (constraintFunction.apply(new double[]{a[i], a[i + 1]})) {
-        validPins.add(new double[]{a[i], a[i + 1]});
-      }
-    }
+    List<double[]> validPins = validPins(a);
     if (validPins.size() <= 1) {
       return 0d;
     }
@@ -127,19 +113,32 @@ public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>>
     return Arrays.stream(dists).mapToDouble(ds -> Arrays.stream(ds).min().orElse(0d)).average().orElse(0d);
   }
 
+  private List<double[]> validPins(double[] a) throws FunctionException {
+    //get valid pins
+    List<double[]> validPins = new ArrayList<>();
+    for (int i = 0; i < a.length - 1; i = i + 2) {
+      if (constraintFunction.apply(new double[]{a[i], a[i + 1]})) {
+        validPins.add(new double[]{a[i], a[i + 1]});
+      }
+    }
+    return validPins;
+  }
+
   private class FitnessFunction implements Function<double[], List<Double>>, Bounded<List<Double>> {
 
     @Override
     public List<Double> bestValue() {
       List<Double> values = new ArrayList<>();
-      if (objectives.contains(Objective.CONTACT_AVG)) {
-        values.add(1d);
-      }
-      if (objectives.contains(Objective.CONTACT_MIN)) {
-        values.add(1d);
-      }
-      if (objectives.contains(Objective.DIST_AVG)) {
-        values.add(Double.POSITIVE_INFINITY);
+      for (Objective objective : objectives) {
+        if (objective.equals(Objective.CONTACT_AVG)) {
+          values.add(1d);
+        }
+        if (objective.equals(Objective.CONTACT_MIN)) {
+          values.add(1d);
+        }
+        if (objective.equals(Objective.DIST_AVG)) {
+          values.add(Double.POSITIVE_INFINITY);
+        }
       }
       return values;
     }
@@ -147,14 +146,16 @@ public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>>
     @Override
     public List<Double> worstValue() {
       List<Double> values = new ArrayList<>();
-      if (objectives.contains(Objective.CONTACT_AVG)) {
-        values.add(0d);
-      }
-      if (objectives.contains(Objective.CONTACT_MIN)) {
-        values.add(0d);
-      }
-      if (objectives.contains(Objective.DIST_AVG)) {
-        values.add(0d);
+      for (Objective objective : objectives) {
+        if (objective.equals(Objective.CONTACT_AVG)) {
+          values.add(0d);
+        }
+        if (objective.equals(Objective.CONTACT_MIN)) {
+          values.add(0d);
+        }
+        if (objective.equals(Objective.DIST_AVG)) {
+          values.add(0d);
+        }
       }
       return values;
     }
@@ -162,15 +163,16 @@ public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>>
     @Override
     public List<Double> apply(double[] a, Listener listener) throws FunctionException {
       List<Double> values = new ArrayList<>();
-      boolean satisfyConstraint = satisfyConstraint(a);
-      if (objectives.contains(Objective.CONTACT_AVG)) {
-        values.add(satisfyConstraint ? pinsContact(a, true)/((double)a.length/4d) : 0d);
-      }
-      if (objectives.contains(Objective.CONTACT_MIN)) {
-        values.add(satisfyConstraint ? pinsContact(a, false)/((double)a.length/4d) : 0d);
-      }
-      if (objectives.contains(Objective.DIST_AVG)) {
-        values.add(avgDistanceToValidClosest(a));
+      for (Objective objective : objectives) {
+        if (objective.equals(Objective.CONTACT_AVG)) {
+          values.add(pinsContact(a, true) / ((double) a.length / 4d));
+        }
+        if (objective.equals(Objective.CONTACT_MIN)) {
+          values.add(pinsContact(a, false) / ((double) a.length / 4d));
+        }
+        if (objective.equals(Objective.DIST_AVG)) {
+          values.add(avgDistanceToValidClosest(a));
+        }
       }
       return values;
     }
