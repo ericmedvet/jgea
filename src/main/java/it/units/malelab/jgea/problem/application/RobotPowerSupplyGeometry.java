@@ -29,14 +29,18 @@ public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>>
   private final double w;
   private final double v;
   private final Function<double[], Boolean> constraintFunction;
+  private double rMin;
+  private double rMax;
   private final int steps;
   private final FitnessFunction fitnessFunction;
   private final List<Objective> objectives;
 
-  public RobotPowerSupplyGeometry(double w, double v, Function<double[], Boolean> constraintFunction, int steps, Objective... objectives) {
+  public RobotPowerSupplyGeometry(double w, double v, Function<double[], Boolean> constraintFunction, double rMin, double rMax, int steps, Objective... objectives) {
     this.w = w;
     this.v = v;
     this.constraintFunction = constraintFunction;
+    this.rMin = rMin;
+    this.rMax = rMax;
     this.steps = steps;
     this.objectives = new ArrayList<>(Objective.values().length);
     for (Objective objective : objectives) {
@@ -123,6 +127,18 @@ public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>>
     }
     return validPins;
   }
+  
+  private double[] scale(double[] a) {
+    double[] s = new double[a.length];
+    for (int i = 0; i<a.length; i++) {
+      if (i % 2 == 0) {
+        s[i] = a[i]*(rMax-rMin)+rMin;
+      } else {
+        s[i] = a[i]*2*Math.PI+Math.PI;
+      }
+    }
+    return s;
+  }
 
   private class FitnessFunction implements Function<double[], List<Double>>, Bounded<List<Double>> {
 
@@ -131,10 +147,10 @@ public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>>
       List<Double> values = new ArrayList<>();
       for (Objective objective : objectives) {
         if (objective.equals(Objective.CONTACT_AVG)) {
-          values.add(1d);
+          values.add(Double.POSITIVE_INFINITY);
         }
         if (objective.equals(Objective.CONTACT_MIN)) {
-          values.add(1d);
+          values.add(Double.POSITIVE_INFINITY);
         }
         if (objective.equals(Objective.DIST_AVG)) {
           values.add(Double.POSITIVE_INFINITY);
@@ -163,15 +179,16 @@ public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>>
     @Override
     public List<Double> apply(double[] a, Listener listener) throws FunctionException {
       List<Double> values = new ArrayList<>();
+      double[] s = scale(a);
       for (Objective objective : objectives) {
         if (objective.equals(Objective.CONTACT_AVG)) {
-          values.add(pinsContact(a, true) / ((double) a.length / 4d));
+          values.add(pinsContact(s, true));
         }
         if (objective.equals(Objective.CONTACT_MIN)) {
-          values.add(pinsContact(a, false) / ((double) a.length / 4d));
+          values.add(pinsContact(s, false));
         }
         if (objective.equals(Objective.DIST_AVG)) {
-          values.add(avgDistanceToValidClosest(a));
+          values.add(avgDistanceToValidClosest(s));
         }
       }
       return values;
@@ -182,6 +199,10 @@ public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>>
   @Override
   public NonDeterministicFunction<double[], List<Double>> getFitnessFunction() {
     return fitnessFunction;
+  }
+  
+  public Function<double[], Integer> getValidContactsFunction() {
+    return (a, l) -> validPins(scale(a)).size();
   }
 
 }

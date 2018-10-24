@@ -5,7 +5,6 @@
  */
 package it.units.malelab.jgea.core.listener;
 
-import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.listener.collector.DataCollector;
 import it.units.malelab.jgea.core.listener.collector.Item;
 import it.units.malelab.jgea.core.listener.event.Event;
@@ -16,7 +15,6 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -60,7 +58,7 @@ public class MultiFileListenerFactory {
                 .collect(Collectors.toList());
         PrintStream ps = streams.get(names);
         if (ps == null) {
-          String fileName = baseDirName + File.separator + String.format(baseFileName, names.hashCode());
+          String fileName = baseDirName + File.separator + String.format(baseFileName, Integer.toHexString(names.hashCode()));
           try {
             ps = new PrintStream(fileName);
             L.log(Level.INFO, String.format("New output file %s created", fileName));

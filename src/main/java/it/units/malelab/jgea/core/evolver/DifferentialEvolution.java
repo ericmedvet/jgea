@@ -44,8 +44,8 @@ public class DifferentialEvolution<F> implements Evolver<double[], double[], F> 
   protected final double crossoverRate;
   protected final double differentialWeight;
   protected final int size;
-  protected final double initMean;
-  protected final double initStandardDeviation;
+  protected final double initMin;
+  protected final double initMax;
   protected final Ranker<Individual<double[], double[], F>> ranker;
   protected final List<StopCondition> stopConditions;
   protected final long cacheSize;
@@ -56,8 +56,8 @@ public class DifferentialEvolution<F> implements Evolver<double[], double[], F> 
           double crossoverRate,
           double differentialWeight,
           int size,
-          double initMean,
-          double initStandardDeviation,
+          double initMin,
+          double initMax,
           Ranker<Individual<double[], double[], F>> ranker,
           List<StopCondition> stopConditions,
           long cacheSize) {
@@ -66,8 +66,8 @@ public class DifferentialEvolution<F> implements Evolver<double[], double[], F> 
     this.crossoverRate = crossoverRate;
     this.differentialWeight = differentialWeight;
     this.size = size;
-    this.initMean = initMean;
-    this.initStandardDeviation = initStandardDeviation;
+    this.initMin = initMin;
+    this.initMax = initMax;
     this.ranker = ranker;
     this.stopConditions = stopConditions;
     this.cacheSize = cacheSize;
@@ -92,7 +92,7 @@ public class DifferentialEvolution<F> implements Evolver<double[], double[], F> 
     while (tasks.size() < populationSize) {
       double[] point = new double[size];
       for (int i = 0; i < point.length; i++) {
-        point[i] = random.nextGaussian() * initStandardDeviation + initMean;
+        point[i] = random.nextDouble() * (initMax - initMin)+initMin;
       }
       tasks.add(birthCallable(point, 0, fitnessFunction, random, listener));
     }

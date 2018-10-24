@@ -35,7 +35,6 @@ import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
 import it.units.malelab.jgea.grammarbased.ge.WeightedHierarchicalMapper;
 import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
 import it.units.malelab.jgea.problem.booleanfunction.element.Element;
-import it.units.malelab.jgea.problem.synthetic.KLandscapes;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.LinkedHashMap;

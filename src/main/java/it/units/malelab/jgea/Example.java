@@ -8,6 +8,7 @@ package it.units.malelab.jgea;
 import com.google.common.collect.Lists;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.Node;
+import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.ProblemWithValidation;
 import it.units.malelab.jgea.core.Sequence;
 import it.units.malelab.jgea.core.evolver.DeterministicCrowdingEvolver;
@@ -40,9 +41,7 @@ import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.operator.LenghtPreservingTwoPointCrossover;
 import it.units.malelab.jgea.core.ranker.ComparableRanker;
 import it.units.malelab.jgea.core.ranker.FitnessComparator;
-import it.units.malelab.jgea.core.ranker.LexicoGraphicalMOComparator;
 import it.units.malelab.jgea.core.ranker.ParetoRanker;
-import it.units.malelab.jgea.core.ranker.Ranker;
 import it.units.malelab.jgea.core.ranker.selector.Tournament;
 import it.units.malelab.jgea.core.ranker.selector.Worst;
 import it.units.malelab.jgea.core.util.Pair;
@@ -66,14 +65,13 @@ import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
 import it.units.malelab.jgea.grammarbased.RegexGrammar;
 import it.units.malelab.jgea.grammarbased.ge.StandardGEMapper;
 import it.units.malelab.jgea.grammarbased.ge.WeightedHierarchicalMapper;
-import it.units.malelab.jgea.problem.application.RobotPowerSupplyGeometry;
+import it.units.malelab.jgea.problem.synthetic.LinearPoints;
 import it.units.malelab.jgea.problem.synthetic.Text;
 import it.units.malelab.jgea.problem.synthetic.TreeSize;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -120,25 +118,14 @@ public class Example extends Worker {
   }
 
   private void linearPointsDE(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
-    //Problem<double[], Double> problem = new LinearPoints();
-    RobotPowerSupplyGeometry problem = new RobotPowerSupplyGeometry(
-            5d, 0.1d,
-            (a, l) -> (a[0]>=0d)&&(a[0]<15d),
-            100,
-            //RobotPowerSupplyGeometry.Objective.CONTACT_MIN
-            RobotPowerSupplyGeometry.Objective.CONTACT_MIN,RobotPowerSupplyGeometry.Objective.CONTACT_AVG
-            //RobotPowerSupplyGeometry.Objective.CONTACT_MIN,RobotPowerSupplyGeometry.Objective.DIST_AVG
-    );
-    Comparator<List<Double>> lgComparator = (Comparator)(new LexicoGraphicalMOComparator<>(0, 1).reversed());
-    DifferentialEvolution<List<Double>> de = new DifferentialEvolution<>(
+    Problem<double[], Double> problem = new LinearPoints();
+    DifferentialEvolution<Double> de = new DifferentialEvolution<>(
             100, 4,
             0.8, 0.5,
             16,
             5d, 10d,
-            new ComparableRanker<>(
-                    (i1, i2) -> lgComparator.compare(i1.getFitness(), i2.getFitness())
-            ),
-            Lists.newArrayList(new FitnessEvaluations(10000)), 10000);
+            new ComparableRanker(new FitnessComparator(Function.identity())),
+            Lists.newArrayList(new FitnessEvaluations(5000)), 10000);
     Random random = new Random(1);
     de.solve(problem, random, executor, Listener.onExecutor(listener(new Basic(),
                     new Population(),

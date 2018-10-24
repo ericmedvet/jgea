@@ -5,7 +5,6 @@
  */
 package it.units.malelab.jgea.core.listener;
 
-import it.units.malelab.jgea.IntrinsicDimensionAssessment;
 import it.units.malelab.jgea.core.listener.event.Event;
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
 import java.io.PrintStream;
@@ -112,16 +111,21 @@ public class PrintStreamListener implements Listener {
     for (int i = 0; i < firstItems.size(); i++) {
       for (int j = 0; j < firstItems.get(i).size(); j++) {
         String name = firstItems.get(i).get(j).getName();
-        try {
-          sb.append(pad(
-                  String.format(firstItems.get(i).get(j).getFormat(), maps.get(i).get(name).getValue()),
-                  sizes.get(i).get(j), format
-          ));
-        } catch (IllegalFormatException ex) {
-          sb.append(pad(
-                  maps.get(i).get(name).getValue().toString(),
-                  sizes.get(i).get(j), format
-          ));
+        Object value = maps.get(i).get(name).getValue();
+        if (format) {
+          try {
+            sb.append(pad(
+                    String.format(firstItems.get(i).get(j).getFormat(), value),
+                    sizes.get(i).get(j), format
+            ));
+          } catch (IllegalFormatException ex) {
+            sb.append(pad(
+                    (value != null) ? value.toString() : "",
+                    sizes.get(i).get(j), format
+            ));
+          }
+        } else {
+          sb.append((value != null) ? value.toString() : "");
         }
         if (j != firstItems.get(i).size() - 1) {
           sb.append(innerSeparator);
