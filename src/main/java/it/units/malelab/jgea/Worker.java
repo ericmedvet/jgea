@@ -87,6 +87,10 @@ public abstract class Worker implements Runnable {
   protected List<Integer> i(List<String> strings) {
     return strings.stream().map(Integer::parseInt).collect(Collectors.toList());
   }
+  
+  protected List<Double> d(List<String> strings) {
+    return strings.stream().map(Double::parseDouble).collect(Collectors.toList());
+  }
 
   protected Listener listener(DataCollector... collectors) {
     return new PrintStreamListener(System.out, true, 10, " ", " | ", collectors);
