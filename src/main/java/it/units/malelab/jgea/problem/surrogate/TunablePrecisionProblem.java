@@ -6,6 +6,7 @@
 package it.units.malelab.jgea.problem.surrogate;
 
 import it.units.malelab.jgea.core.Problem;
+import it.units.malelab.jgea.core.function.NonDeterministicBiFunction;
 
 /**
  *
@@ -13,6 +14,6 @@ import it.units.malelab.jgea.core.Problem;
  */
 public interface TunablePrecisionProblem<S, F> extends Problem<S, F> {
   
-  public TunablePrecisionFunction<S, F> getTunablePrecisionFitnessFunction();
+  public NonDeterministicBiFunction<S, Double, F> getTunablePrecisionFitnessFunction();
   
 }

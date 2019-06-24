@@ -10,9 +10,9 @@ import it.units.malelab.jgea.core.function.Bounded;
 import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.genotype.BitString;
 import it.units.malelab.jgea.core.function.FunctionException;
+import it.units.malelab.jgea.core.function.NonDeterministicBiFunction;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.util.Pair;
-import it.units.malelab.jgea.problem.surrogate.TunablePrecisionFunction;
 import it.units.malelab.jgea.problem.surrogate.TunablePrecisionProblem;
 import java.util.Arrays;
 import java.util.Random;
@@ -42,7 +42,7 @@ public class OneMax implements Problem<BitString, Double>, TunablePrecisionProbl
 
   }
 
-  private static class TunablePrecisionFitnessFunction implements TunablePrecisionFunction<BitString, Double>, Bounded<Double> {
+  private static class TunablePrecisionFitnessFunction implements NonDeterministicBiFunction<BitString, Double, Double>, Bounded<Double> {
 
     @Override
     public Double worstValue() {
@@ -62,10 +62,10 @@ public class OneMax implements Problem<BitString, Double>, TunablePrecisionProbl
       }
       shuffleArray(indexes, random);
       double count = 0;
-      for (int i = 0; i<Math.round((1d-precision)*(double)b.size()); i++) {
-        count = count + (b.get(indexes[i])?1d:0d);
+      for (int i = 0; i < Math.round((1d - precision) * (double) b.size()); i++) {
+        count = count + (b.get(indexes[i]) ? 1d : 0d);
       }
-      return count/((1d-precision)*(double)b.size());
+      return 1d - count / ((1d - precision) * (double) b.size());
     }
 
     private static void shuffleArray(int[] a, Random r) {
@@ -101,7 +101,7 @@ public class OneMax implements Problem<BitString, Double>, TunablePrecisionProbl
   }
 
   @Override
-  public TunablePrecisionFunction<BitString, Double> getTunablePrecisionFitnessFunction() {
+  public NonDeterministicBiFunction<BitString, Double, Double> getTunablePrecisionFitnessFunction() {
     return tunablePrecisionFitnessFunction;
   }
 
