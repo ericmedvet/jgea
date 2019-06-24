@@ -22,7 +22,6 @@ import it.units.malelab.jgea.core.ranker.ComparableRanker;
 import it.units.malelab.jgea.core.ranker.LexicoGraphicalMOComparator;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.problem.application.RobotPowerSupplyGeometry;
-import it.units.malelab.jgea.problem.mapper.FitnessFunction;
 import java.io.FileNotFoundException;
 import java.util.Comparator;
 import java.util.LinkedHashMap;

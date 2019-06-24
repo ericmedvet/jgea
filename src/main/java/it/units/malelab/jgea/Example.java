@@ -98,6 +98,8 @@ public class Example extends Worker {
   }
 
   public void run() {
+    System.out.println("Ciao mondo");
+    System.exit(0);
     try {
       linearPointsDE(executorService);
       //treeSizeBiasedGenerator(executorService);
