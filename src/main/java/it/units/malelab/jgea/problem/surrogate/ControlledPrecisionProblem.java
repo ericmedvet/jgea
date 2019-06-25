@@ -7,8 +7,6 @@ package it.units.malelab.jgea.problem.surrogate;
 
 import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.function.BiFunction;
-import it.units.malelab.jgea.core.function.FunctionException;
-import it.units.malelab.jgea.core.function.NonDeterministicBiFunction;
 import it.units.malelab.jgea.core.function.NonDeterministicFunction;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.util.Pair;
@@ -29,16 +27,16 @@ public class ControlledPrecisionProblem<S, F> implements Problem<S, F> {
   private final List<Pair<S, Double>> history;
   private final NonDeterministicFunction<S, F> nonDeterministicFunction;
 
-  private double sumOfPrecisions;
+  private double overallCost;
 
   public ControlledPrecisionProblem(TunablePrecisionProblem<S, F> innerProblem, BiFunction<S, List<Pair<S, Double>>, Double> controller) {
     this.innerProblem = innerProblem;
     this.controller = controller;
     history = Collections.synchronizedList(new ArrayList<>()); //TODO: maybe choose a more efficient, size-limited implementation
-    sumOfPrecisions = 0d;
+    overallCost = 0d;
     nonDeterministicFunction = (S s, Random random, Listener listener) -> { //TODO: make thread safe
       double precision = controller.apply(s, history);
-      sumOfPrecisions = sumOfPrecisions + precision;
+      overallCost = overallCost + (1d-precision);
       history.add(Pair.build(s, precision));
       return innerProblem.getTunablePrecisionFitnessFunction().apply(s, precision, random, listener);
     };
@@ -54,7 +52,7 @@ public class ControlledPrecisionProblem<S, F> implements Problem<S, F> {
   }
 
   public synchronized double overallCost() {
-    return sumOfPrecisions/(double)history.size();
+    return overallCost;
   }
 
 }

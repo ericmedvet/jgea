@@ -96,7 +96,7 @@ public class RobotContactsDE extends Worker {
                               (i1, i2) -> lgComparator.compare(i1.getFitness(), i2.getFitness())
                       ),
                       Lists.newArrayList(new FitnessEvaluations(evaluations)), evaluations);
-              Random random = new Random(1);
+              Random random = new Random(run);
               Map<String, String> keys = new LinkedHashMap<>();
               keys.put("run", Integer.toString(run));
               keys.put("robot", robot.getKey());

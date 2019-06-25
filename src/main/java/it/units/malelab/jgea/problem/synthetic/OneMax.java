@@ -12,7 +12,6 @@ import it.units.malelab.jgea.core.genotype.BitString;
 import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.function.NonDeterministicBiFunction;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.problem.surrogate.TunablePrecisionProblem;
 import java.util.Arrays;
 import java.util.Random;
