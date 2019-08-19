@@ -5,6 +5,7 @@
  */
 package it.units.malelab.jgea;
 
+import com.google.common.collect.Range;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.PrintStreamListener;
 import java.io.FileNotFoundException;
@@ -17,6 +18,7 @@ import it.units.malelab.jgea.core.listener.collector.DataCollector;
 import java.io.IOException;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
 
 /**
  *
@@ -48,6 +50,7 @@ public abstract class Worker implements Runnable {
 
   private final static String PIECES_SEP = "-";
   private final static String OPTIONS_SEP = ",";
+  private final static String RANGE_SEP = ":";
   private final static String KEYVAL_SEP = "=";
 
   protected String p(String s, int n) {
@@ -78,6 +81,11 @@ public abstract class Worker implements Runnable {
       }
     }
     return defaultValue;
+  }
+  
+  protected int[] ri(String s) {
+    String[] pieces = s.split(RANGE_SEP);
+    return IntStream.range(Integer.parseInt(pieces[0]), Integer.parseInt(pieces[1])).toArray();
   }
 
   protected List<String> l(String s) {

@@ -11,10 +11,13 @@ import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.genotype.BitString;
 import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.function.NonDeterministicBiFunction;
+import it.units.malelab.jgea.core.genotype.BitStringFactory;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.problem.surrogate.TunablePrecisionProblem;
 import java.util.Arrays;
 import java.util.Random;
+import org.apache.commons.math3.stat.StatUtils;
+import sun.jvm.hotspot.gc.shared.Generation;
 
 /**
  *
@@ -61,10 +64,11 @@ public class OneMax implements Problem<BitString, Double>, TunablePrecisionProbl
       }
       shuffleArray(indexes, random);
       double count = 0;
-      for (int i = 0; i < Math.round((1d - precision) * (double) b.size()); i++) {
+      double significant = Math.round((1d - precision) * (double) b.size());
+      for (int i = 0; i < significant; i++) {
         count = count + (b.get(indexes[i]) ? 1d : 0d);
       }
-      return 1d - count / ((1d - precision) * (double) b.size());
+      return 1d - count / significant;
     }
 
     private static void shuffleArray(int[] a, Random r) {
@@ -102,6 +106,38 @@ public class OneMax implements Problem<BitString, Double>, TunablePrecisionProbl
   @Override
   public NonDeterministicBiFunction<BitString, Double, Double> getTunablePrecisionFitnessFunction() {
     return tunablePrecisionFitnessFunction;
+  }
+  
+  //to check descriptive statistics of tunable fitness
+  public static void main(String[] args) {
+    TunablePrecisionFitnessFunction f = new TunablePrecisionFitnessFunction();
+    int n = 10000;
+    int l = 50;
+    double[] fidelities = new double[] {0d, 0.1d, 0.25d, 0.5d, 0.9d};
+    double[][] values = new double[fidelities.length][];
+    for (int i = 0; i<fidelities.length; i++) {
+      values[i] = new double[n];
+    }
+    BitStringFactory factory = new BitStringFactory(l);
+    Random r = new Random(1l);
+    for (int i = 0; i<n; i++) {
+      BitString b = factory.build(r);
+      for (int j = 0; j<fidelities.length; j++) {
+        values[j][i] = f.apply(b, fidelities[j], r, Listener.deaf());
+      }
+    }
+    for (int i = 0; i<fidelities.length; i++) {
+      System.out.printf("%4.2f:\tmin=%5.3f\t25p=%5.3f\tmean=%5.3f\t50p=%5.3f\t75p=%5.3f\tmax=%5.3f\n",
+              fidelities[i],
+              StatUtils.min(values[i]),
+              StatUtils.percentile(values[i], 25d),
+              StatUtils.mean(values[i]),
+              StatUtils.percentile(values[i], 5d),
+              StatUtils.percentile(values[i], 75d),
+              StatUtils.max(values[i])
+              );
+      
+    }
   }
 
 }

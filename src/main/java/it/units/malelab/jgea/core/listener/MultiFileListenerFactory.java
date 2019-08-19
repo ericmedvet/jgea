@@ -56,20 +56,23 @@ public class MultiFileListenerFactory {
                 .reduce((l1s, l2s) -> Stream.concat(l1s, l2s))
                 .get()
                 .collect(Collectors.toList());
-        PrintStream ps = streams.get(names);
-        if (ps == null) {
-          String fileName = baseDirName + File.separator + String.format(baseFileName, Integer.toHexString(names.hashCode()));
-          try {
-            ps = new PrintStream(fileName);
-            L.log(Level.INFO, String.format("New output file %s created", fileName));
-          } catch (FileNotFoundException ex) {
-            L.log(Level.SEVERE, String.format("Cannot create output file %s", fileName), ex);
-            ps = System.out;
-          }
-          String headersString = buildHeadersString();
-          synchronized (streams) {
-            streams.put(names, ps);
-            ps.println(headersString);
+        PrintStream ps = null;
+        synchronized (streams) {
+          ps = streams.get(names);
+          if (ps == null) {
+            String fileName = baseDirName + File.separator + String.format(baseFileName, Integer.toHexString(names.hashCode()));
+            try {
+              ps = new PrintStream(fileName);
+              L.log(Level.INFO, String.format("New output file %s created", fileName));
+            } catch (FileNotFoundException ex) {
+              L.log(Level.SEVERE, String.format("Cannot create output file %s", fileName), ex);
+              ps = System.out;
+            }
+            String headersString = buildHeadersString();
+            synchronized (streams) {
+              streams.put(names, ps);
+              ps.println(headersString);
+            }
           }
         }
         //print values: collectors

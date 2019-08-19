@@ -5,14 +5,10 @@
  */
 package it.units.malelab.jgea.problem.surrogate;
 
+import it.units.malelab.jgea.core.PrecisionController;
 import it.units.malelab.jgea.core.Problem;
-import it.units.malelab.jgea.core.function.BiFunction;
 import it.units.malelab.jgea.core.function.NonDeterministicFunction;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.util.Pair;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -22,22 +18,15 @@ import java.util.Random;
 public class ControlledPrecisionProblem<S, F> implements Problem<S, F> {
 
   private final TunablePrecisionProblem<S, F> innerProblem;
-  private final BiFunction<S, List<Pair<S, Double>>, Double> controller;
+  private final PrecisionController<S> controller;
 
-  private final List<Pair<S, Double>> history;
   private final NonDeterministicFunction<S, F> nonDeterministicFunction;
 
-  private double overallCost;
-
-  public ControlledPrecisionProblem(TunablePrecisionProblem<S, F> innerProblem, BiFunction<S, List<Pair<S, Double>>, Double> controller) {
+  public ControlledPrecisionProblem(TunablePrecisionProblem<S, F> innerProblem, PrecisionController<S> controller) {
     this.innerProblem = innerProblem;
     this.controller = controller;
-    history = Collections.synchronizedList(new ArrayList<>()); //TODO: maybe choose a more efficient, size-limited implementation
-    overallCost = 0d;
-    nonDeterministicFunction = (S s, Random random, Listener listener) -> { //TODO: make thread safe
-      double precision = controller.apply(s, history);
-      overallCost = overallCost + (1d-precision);
-      history.add(Pair.build(s, precision));
+    nonDeterministicFunction = (S s, Random random, Listener listener) -> {
+      double precision = controller.apply(s);
       return innerProblem.getTunablePrecisionFitnessFunction().apply(s, precision, random, listener);
     };
   }
@@ -51,8 +40,8 @@ public class ControlledPrecisionProblem<S, F> implements Problem<S, F> {
     return innerProblem;
   }
 
-  public synchronized double overallCost() {
-    return overallCost;
+  public PrecisionController<S> getController() {
+    return controller;
   }
 
 }
