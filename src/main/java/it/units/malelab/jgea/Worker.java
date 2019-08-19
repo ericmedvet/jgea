@@ -100,6 +100,10 @@ public abstract class Worker implements Runnable {
     return strings.stream().map(Double::parseDouble).collect(Collectors.toList());
   }
 
+  protected List<Boolean> b(List<String> strings) {
+    return strings.stream().map(Boolean::parseBoolean).collect(Collectors.toList());
+  }
+
   protected Listener listener(DataCollector... collectors) {
     return new PrintStreamListener(System.out, true, 10, " ", " | ", collectors);
   }
