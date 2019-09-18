@@ -5,7 +5,6 @@
  */
 package it.units.malelab.jgea;
 
-import com.google.common.collect.Range;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.PrintStreamListener;
 import java.io.FileNotFoundException;

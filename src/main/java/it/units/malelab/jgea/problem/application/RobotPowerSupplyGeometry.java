@@ -22,8 +22,7 @@ import java.util.List;
 public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>> {
 
   public enum Objective {
-
-    CONTACT_MIN, CONTACT_AVG, DIST_AVG
+    CONTACT_MIN, CONTACT_AVG, DIST_AVG, BALANCE
   };
 
   private final double w;
@@ -76,6 +75,19 @@ public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>>
     return Math.min(positives, negatives);
   }
 
+  private double pinsBalance(List<double[]> pins, double x0, double phi0) {
+    double positives = 0d;
+    double negatives = 0d;
+    for (double[] pin : pins) {
+      double r = pin[0];
+      double phi = pin[1];
+      double x = x0 + r * Math.sin(phi0 + phi);
+      positives = positives + pinContact(x, true);
+      negatives = negatives + pinContact(x, false);
+    }
+    return -Math.abs(positives-negatives);
+  }
+
   private double pinsContact(double[] a, boolean average) {
     double min = a.length / 2d;
     double sum = 0d;
@@ -88,6 +100,20 @@ public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>>
       }
     }
     return average ? (sum / (double) (steps * steps)) : min;
+  }
+
+  private double pinsBalance(double[] a) {
+    double min = a.length / 2d;
+    double sum = 0d;
+    List<double[]> validPins = validPins(a);
+    for (double x0 = 0; x0 < 2 * (w + v); x0 = x0 + 2d * (w + v) / (double) steps) {
+      for (double phi0 = 0; phi0 < 2d * Math.PI; phi0 = phi0 + 2d * Math.PI / (double) steps) {
+        double contacts = pinsContact(validPins, x0, phi0);
+        sum = sum + contacts;
+        min = Math.min(min, contacts);
+      }
+    }
+    return sum / (double) (steps * steps);
   }
 
   private double avgDistanceToValidClosest(double[] a) {
@@ -155,6 +181,9 @@ public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>>
         if (objective.equals(Objective.DIST_AVG)) {
           values.add(Double.POSITIVE_INFINITY);
         }
+        if (objective.equals(Objective.BALANCE)) {
+          values.add(0d);
+        }
       }
       return values;
     }
@@ -171,6 +200,9 @@ public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>>
         }
         if (objective.equals(Objective.DIST_AVG)) {
           values.add(0d);
+        }
+        if (objective.equals(Objective.DIST_AVG)) {
+          values.add(Double.NEGATIVE_INFINITY);
         }
       }
       return values;
@@ -189,6 +221,9 @@ public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>>
         }
         if (objective.equals(Objective.DIST_AVG)) {
           values.add(avgDistanceToValidClosest(s));
+        }
+        if (objective.equals(Objective.BALANCE)) {
+          values.add(pinsBalance(a));
         }
       }
       return values;

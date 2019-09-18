@@ -51,7 +51,7 @@ public class RobotContactsDE extends Worker {
   @Override
   public void run() {
     //prepare parameters
-    List<Integer> runs = i(l(a("runs", "0")));
+    int[] runs = ri(a("runs", "0:1"));
     List<Double> ws = d(l(a("w", "25")));
     double v = d(a("v", "3"));
     int evaluations = i(a("nev", "10000"));
@@ -60,7 +60,7 @@ public class RobotContactsDE extends Worker {
     double differentialWeight = d(a("dw", "0.5"));
     List<Integer> nContacts = i(l(a("contacts", "10")));
     int nPoints = i(a("npoints", "100"));
-    List<String> fitnessNames = l(a("fitnesses", "mad"));
+    List<String> fitnessNames = l(a("fitnesses", "madb"));
     Map<String, Pair<Function<double[], Boolean>, double[]>> robots = new LinkedHashMap<>();
     robots.put("Elisa-3", Pair.build((a, l) -> (a[0] >= 25d) && (a[0] < 30d), new double[]{25d, 30d}));
     robots.put("mBot", Pair.build((a, l) -> (a[0] >= 0d) && (Math.abs(a[0] * Math.cos(a[1])) <= 45d) && (Math.abs(a[0] * Math.sin(a[1])) <= 45d), new double[]{0d, 45d}));
@@ -69,6 +69,7 @@ public class RobotContactsDE extends Worker {
     fitnesses.put("m", new RobotPowerSupplyGeometry.Objective[]{RobotPowerSupplyGeometry.Objective.CONTACT_MIN});      
     fitnesses.put("md", new RobotPowerSupplyGeometry.Objective[]{RobotPowerSupplyGeometry.Objective.CONTACT_MIN, RobotPowerSupplyGeometry.Objective.DIST_AVG});
     fitnesses.put("mad", new RobotPowerSupplyGeometry.Objective[]{RobotPowerSupplyGeometry.Objective.CONTACT_MIN, RobotPowerSupplyGeometry.Objective.CONTACT_AVG, RobotPowerSupplyGeometry.Objective.DIST_AVG});
+    fitnesses.put("madb", new RobotPowerSupplyGeometry.Objective[]{RobotPowerSupplyGeometry.Objective.CONTACT_MIN, RobotPowerSupplyGeometry.Objective.CONTACT_AVG, RobotPowerSupplyGeometry.Objective.DIST_AVG, RobotPowerSupplyGeometry.Objective.BALANCE});
     fitnesses.keySet().retainAll(fitnessNames);
     //prepare things
     MultiFileListenerFactory listenerFactory = new MultiFileListenerFactory(a("dir", "."), a("file", null));
