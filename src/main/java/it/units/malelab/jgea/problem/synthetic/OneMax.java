@@ -17,7 +17,6 @@ import it.units.malelab.jgea.problem.surrogate.TunablePrecisionProblem;
 import java.util.Arrays;
 import java.util.Random;
 import org.apache.commons.math3.stat.StatUtils;
-import sun.jvm.hotspot.gc.shared.Generation;
 
 /**
  *
