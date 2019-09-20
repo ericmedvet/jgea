@@ -60,6 +60,7 @@ public class RobotContactsDE extends Worker {
     double differentialWeight = d(a("dw", "0.5"));
     List<Integer> nContacts = i(l(a("contacts", "10")));
     int nPoints = i(a("npoints", "100"));
+    boolean symmetric = b(a("symmetry", "false"));
     List<String> fitnessNames = l(a("fitnesses", "madb"));
     Map<String, Pair<Function<double[], Boolean>, double[]>> robots = new LinkedHashMap<>();
     robots.put("Elisa-3", Pair.build((a, l) -> (a[0] >= 25d) && (a[0] < 30d), new double[]{25d, 30d}));
@@ -69,7 +70,10 @@ public class RobotContactsDE extends Worker {
     fitnesses.put("m", new RobotPowerSupplyGeometry.Objective[]{RobotPowerSupplyGeometry.Objective.CONTACT_MIN});      
     fitnesses.put("md", new RobotPowerSupplyGeometry.Objective[]{RobotPowerSupplyGeometry.Objective.CONTACT_MIN, RobotPowerSupplyGeometry.Objective.DIST_AVG});
     fitnesses.put("mad", new RobotPowerSupplyGeometry.Objective[]{RobotPowerSupplyGeometry.Objective.CONTACT_MIN, RobotPowerSupplyGeometry.Objective.CONTACT_AVG, RobotPowerSupplyGeometry.Objective.DIST_AVG});
-    fitnesses.put("madb", new RobotPowerSupplyGeometry.Objective[]{RobotPowerSupplyGeometry.Objective.CONTACT_MIN, RobotPowerSupplyGeometry.Objective.CONTACT_AVG, RobotPowerSupplyGeometry.Objective.DIST_AVG, RobotPowerSupplyGeometry.Objective.BALANCE});
+    fitnesses.put("mabd", new RobotPowerSupplyGeometry.Objective[]{RobotPowerSupplyGeometry.Objective.CONTACT_MIN, RobotPowerSupplyGeometry.Objective.CONTACT_AVG, RobotPowerSupplyGeometry.Objective.BALANCE, RobotPowerSupplyGeometry.Objective.DIST_AVG});
+    fitnesses.put("mad", new RobotPowerSupplyGeometry.Objective[]{RobotPowerSupplyGeometry.Objective.CONTACT_MIN, RobotPowerSupplyGeometry.Objective.CONTACT_AVG, RobotPowerSupplyGeometry.Objective.BALANCE});
+    fitnesses.put("mabd", new RobotPowerSupplyGeometry.Objective[]{RobotPowerSupplyGeometry.Objective.CONTACT_MIN, RobotPowerSupplyGeometry.Objective.CONTACT_AVG, RobotPowerSupplyGeometry.Objective.BALANCE, RobotPowerSupplyGeometry.Objective.DIST_AVG});
+    fitnesses.put("mbad", new RobotPowerSupplyGeometry.Objective[]{RobotPowerSupplyGeometry.Objective.CONTACT_MIN, RobotPowerSupplyGeometry.Objective.BALANCE, RobotPowerSupplyGeometry.Objective.CONTACT_AVG, RobotPowerSupplyGeometry.Objective.DIST_AVG});
     fitnesses.keySet().retainAll(fitnessNames);
     //prepare things
     MultiFileListenerFactory listenerFactory = new MultiFileListenerFactory(a("dir", "."), a("file", null));
@@ -84,6 +88,7 @@ public class RobotContactsDE extends Worker {
                       robot.getValue().first(),
                       robot.getValue().second()[0],
                       robot.getValue().second()[1],
+                      symmetric,
                       nPoints,
                       fitness.getValue()
               );
@@ -102,6 +107,7 @@ public class RobotContactsDE extends Worker {
               keys.put("run", Integer.toString(run));
               keys.put("robot", robot.getKey());
               keys.put("fitness", fitness.getKey());
+              keys.put("symmetry", Boolean.toString(symmetric));
               keys.put("w", Double.toString(w));
               keys.put("nc", Integer.toString(nContact));
               System.out.println(keys);
@@ -111,6 +117,10 @@ public class RobotContactsDE extends Worker {
                         new Basic(),
                         new Population(),
                         new BestInfo<>((Function) problem.getFitnessFunction(), "%5.3f"),
+                        new FunctionOfBest("min.contacts", problem.getMinContactsFunction(), evaluations, "%%5.3f"),
+                        new FunctionOfBest("avg.contacts", problem.getAvgContactsFunction(), evaluations, "%%5.3f"),
+                        new FunctionOfBest("avg.dist", problem.getAvgDistFunction(), evaluations, "%%5.3f"),
+                        new FunctionOfBest("avg.balance", problem.getAvgBalanceFunction(), evaluations, "%%5.3f"),
                         new FunctionOfBest("contacts", problem.getValidContactsFunction(), evaluations, "%2d"),
                         new BestPrinter(new DoubleArrayPrinter("%+5.3f"), "%s")
                 ), executorService));
