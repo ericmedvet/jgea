@@ -216,12 +216,20 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
       //solution -> fitness
       stopwatch.reset().start();
       F fitness = null;
+      
+      try {
+      
       if (solution != null) {
         fitness = fitnessFunction.apply(solution, random, capturer);
       } else {
         if (fitnessFunction instanceof Bounded) {
           fitness = ((Bounded<F>) fitnessFunction).worstValue();
         }
+      }
+      
+      } catch (Throwable t) {
+        t.printStackTrace();
+        System.exit(0);
       }
       elapsed = stopwatch.stop().elapsed(TimeUnit.NANOSECONDS);
       Map<String, Object> fitnessInfo = Misc.fromInfoEvents(capturer.getEvents(), "fitness.");

@@ -36,6 +36,7 @@ public abstract class PrecisionController<S> implements Function<S, Double> {
   @Override
   public synchronized Double apply(S solution, Listener listener) throws FunctionException {
     double precision = apply(solution, history, listener);
+    precision = Math.max(0d, Math.min(precision, 1d));
     history.add(Pair.build(solution, precision));
     sumOfPrecisions = sumOfPrecisions+precision;
     calls = calls+1;

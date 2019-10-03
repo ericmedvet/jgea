@@ -39,7 +39,7 @@ public class MultiFileListenerFactory {
   }
 
   public Listener build(DataCollector... collectors) {
-    return new PrintStreamListener(null, false, 0, "; ", "; ", collectors) {
+    return new PrintStreamListener(null, false, 0, ";", ";", collectors) {
       @Override
       public void listen(Event event) {
         final EvolutionEvent evolutionEvent;

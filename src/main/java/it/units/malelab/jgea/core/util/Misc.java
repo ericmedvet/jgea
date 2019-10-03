@@ -34,7 +34,7 @@ public class Misc {
   }
 
   public static <T> List<T> getAll(List<Future<T>> futures) throws InterruptedException, ExecutionException {
-    List<T> results = new ArrayList<>();
+    List<T> results = new ArrayList<>(futures.size());
     for (Future<T> future : futures) {
       results.add(future.get());
     }

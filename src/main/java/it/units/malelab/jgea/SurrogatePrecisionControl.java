@@ -44,6 +44,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -186,6 +188,55 @@ public class SurrogatePrecisionControl extends Worker {
 
   }
 
+  public static class HistoricAvgDistanceRatio<S> extends PrecisionController<S> {
+
+    private final double minPrecision;
+    private final SortedSet<Double> longestDistances;
+    private final SortedSet<Double> shortestDistances;
+    private final int nOfDistances;
+    private final Distance<S> distance;
+
+    public HistoricAvgDistanceRatio(double minPrecision, int nOfDistances, Distance<S> distance, int historySize) {
+      super(historySize);
+      this.minPrecision = minPrecision;
+      this.nOfDistances = nOfDistances;
+      this.distance = distance;
+      longestDistances = new TreeSet<>();
+      shortestDistances = new TreeSet<>();
+    }
+
+    @Override
+    public Double apply(S solution, Collection<Pair<S, Double>> history, Listener listener) throws FunctionException {
+      if (history.isEmpty()) {
+        return minPrecision;
+      }
+      //compute average distance to history
+      double avgD = history.stream().mapToDouble(p -> distance.apply(solution, p.first())).average().orElse(Double.POSITIVE_INFINITY);
+      //update shortest
+      if (shortestDistances.isEmpty() || (shortestDistances.last() > avgD)) {
+        shortestDistances.add(avgD);
+        if (shortestDistances.size() > nOfDistances) {
+          shortestDistances.remove(shortestDistances.last());
+        }
+      }
+      //update longest
+      if (longestDistances.isEmpty() || (longestDistances.first() < avgD)) {
+        longestDistances.add(avgD);
+        if (longestDistances.size() > nOfDistances) {
+          longestDistances.remove(longestDistances.first());
+        }
+      }
+      //compute current avgD position
+      double p = (avgD - shortestDistances.last()) / (longestDistances.first() - shortestDistances.last());
+      if (Double.isNaN(p)) {
+        return minPrecision;
+      }
+      p = Math.max(0d, Math.min(p, 1d));
+      return minPrecision * p;
+    }
+
+  }
+
   @Override
   public void run() {
     //prepare parameters
@@ -209,7 +260,14 @@ public class SurrogatePrecisionControl extends Worker {
     controllerNames.add("reducer-0.5-0.95-1-min-100");
     controllerNames.add("reducer-0.5-0.95-5-avg-100");
     controllerNames.add("crowding-0.5-5-100");
+
+    controllerNames.clear();
+
+    controllerNames.add("static-0");
+    controllerNames.add("static-0.50");
     controllerNames.add("crowding-0.5-10-100");
+    controllerNames.add("avgDistRatio-0.5-5-100");
+    controllerNames.add("avgDistRatio-0.5-100-100");
     //prepare things
     MultiFileListenerFactory listenerFactory = new MultiFileListenerFactory(a("dir", "."), a("file", null));
     //prepare problem
@@ -250,6 +308,13 @@ public class SurrogatePrecisionControl extends Worker {
             controller = new CrowdingController<>(
                     d(p(controllerName, 1)),
                     d(p(controllerName, 2)),
+                    new Hamming(),
+                    i(p(controllerName, 3))
+            );
+          } else if (controllerName.startsWith("avgDistRatio")) {
+            controller = new HistoricAvgDistanceRatio<>(
+                    d(p(controllerName, 1)),
+                    i(p(controllerName, 2)),
                     new Hamming(),
                     i(p(controllerName, 3))
             );
@@ -294,6 +359,9 @@ public class SurrogatePrecisionControl extends Worker {
             ), executorService));
           } catch (InterruptedException | ExecutionException ex) {
             L.log(Level.SEVERE, String.format("Cannot solve problem: %s", ex), ex);
+
+            ex.printStackTrace();
+            System.exit(0);
           }
         }
       }
