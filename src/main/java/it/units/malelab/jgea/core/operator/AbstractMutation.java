@@ -27,6 +27,6 @@ public abstract class AbstractMutation<G> implements GeneticOperator<G> {
     return Collections.singletonList(mutate(gs.get(0), random, listener));
   }
   
-  protected abstract G mutate(G g, Random random, Listener listener);
+  public abstract G mutate(G g, Random random, Listener listener);
   
 }

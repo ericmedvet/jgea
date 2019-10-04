@@ -27,6 +27,6 @@ public abstract class AbstractCrossover<G> implements GeneticOperator<G> {
     return Collections.singletonList(recombine(gs.get(0), gs.get(1), random, listener));
   }
   
-  protected abstract G recombine(G g1, G g2, Random random, Listener listener);
+  public abstract G recombine(G g1, G g2, Random random, Listener listener);
   
 }

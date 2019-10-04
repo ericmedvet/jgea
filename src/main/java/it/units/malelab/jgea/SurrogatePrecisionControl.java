@@ -266,6 +266,7 @@ public class SurrogatePrecisionControl extends Worker {
     controllerNames.add("static-0");
     controllerNames.add("static-0.50");
     controllerNames.add("crowding-0.5-10-100");
+    controllerNames.add("avgDistRatio-0.5-1-100");
     controllerNames.add("avgDistRatio-0.5-5-100");
     controllerNames.add("avgDistRatio-0.5-100-100");
     //prepare things

@@ -22,7 +22,7 @@ public class BitFlipMutation extends AbstractMutation<BitString> {
   }
 
   @Override
-  protected BitString mutate(BitString g, Random random, Listener listener) {
+  public BitString mutate(BitString g, Random random, Listener listener) {
     BitString newG = (BitString)g.clone();
     for (int i = 0; i<newG.size(); i++) {
       if (random.nextDouble()<=p) {

@@ -29,7 +29,7 @@ public class StandardTreeMutation<T>  extends AbstractMutation<Node<T>> {
   }
 
   @Override
-  protected Node<T> mutate(Node<T> parent, Random random, Listener listener) {
+  public Node<T> mutate(Node<T> parent, Random random, Listener listener) {
     Node<T> child = (Node<T>)parent.clone();
     List<Node<T>> nonTerminalNodes = new ArrayList<>();
     getNonTerminalNodes(child, nonTerminalNodes);

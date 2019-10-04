@@ -28,7 +28,7 @@ public class StandardTreeCrossover<T> extends AbstractCrossover<Node<T>> {
   }
 
   @Override
-  protected Node<T> recombine(Node<T> parent1, Node<T> parent2, Random random, Listener listener) {
+  public Node<T> recombine(Node<T> parent1, Node<T> parent2, Random random, Listener listener) {
     Node<T> child1 = (Node<T>)parent1.clone();
     Node<T> child2 = (Node<T>)parent1.clone();
     child1.propagateParentship();

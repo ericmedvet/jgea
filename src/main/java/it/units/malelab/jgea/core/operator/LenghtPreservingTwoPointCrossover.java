@@ -16,7 +16,7 @@ import java.util.Random;
 public class LenghtPreservingTwoPointCrossover<S extends Sequence> extends AbstractCrossover<S> {
 
   @Override
-  protected S recombine(S s1, S s2, Random random, Listener listener) {
+  public S recombine(S s1, S s2, Random random, Listener listener) {
     S s = (S)s1.clone();
     int l1 = s1.size();
     int l2 = s2.size();
