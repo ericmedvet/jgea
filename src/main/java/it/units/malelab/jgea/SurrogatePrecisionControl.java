@@ -6,6 +6,7 @@
 package it.units.malelab.jgea;
 
 import com.google.common.collect.Lists;
+import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.PrecisionController;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
@@ -31,11 +32,19 @@ import it.units.malelab.jgea.core.ranker.selector.Tournament;
 import it.units.malelab.jgea.core.ranker.selector.Worst;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.distance.Distance;
+import it.units.malelab.jgea.distance.Edit;
 import it.units.malelab.jgea.distance.Hamming;
+import it.units.malelab.jgea.distance.TreeLeaves;
+import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
+import it.units.malelab.jgea.grammarbased.cfggp.RampedHalfAndHalf;
+import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeCrossover;
+import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeMutation;
 import it.units.malelab.jgea.problem.surrogate.ControlledPrecisionProblem;
 import it.units.malelab.jgea.problem.surrogate.TunablePrecisionProblem;
+import it.units.malelab.jgea.problem.symbolicregression.Pagie1;
 import it.units.malelab.jgea.problem.synthetic.OneMax;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -242,12 +251,15 @@ public class SurrogatePrecisionControl extends Worker {
     //prepare parameters
     int[] runs = ri(a("runs", "0:10"));
     int evaluations = i(a("nev", "1000"));
-    int solutionSize = i(a("ssize", "100"));
     int population = i(a("npop", "100"));
     List<Boolean> overlappings = b(l(a("overlapping", "false,true")));
-    Map<GeneticOperator<BitString>, Double> operators = new LinkedHashMap<>();
-    operators.put(new BitFlipMutation(0.01d), 0.2d);
-    operators.put(new LenghtPreservingTwoPointCrossover(), 0.8d);
+    Map<String, TunablePrecisionProblem> problems = new LinkedHashMap<>();
+    problems.put("OneMax", new OneMax());
+    try {
+      problems.put("SR-Pagie1", new Pagie1());
+    } catch (IOException ex) {
+      Logger.getLogger(SurrogatePrecisionControl.class.getName()).log(Level.SEVERE, "Cannot set problem!", ex);
+    }
     //prepare controllers
     Set<String> controllerNames = new LinkedHashSet<>();
     controllerNames.add("static-0");
@@ -266,103 +278,119 @@ public class SurrogatePrecisionControl extends Worker {
     controllerNames.add("static-0");
     controllerNames.add("static-0.50");
     controllerNames.add("crowding-0.5-10-100");
-    controllerNames.add("avgDistRatio-0.5-1-100");
     controllerNames.add("avgDistRatio-0.5-5-100");
-    controllerNames.add("avgDistRatio-0.5-100-100");
     //prepare things
     MultiFileListenerFactory listenerFactory = new MultiFileListenerFactory(a("dir", "."), a("file", null));
-    //prepare problem
-    TunablePrecisionProblem<BitString, Double> ip = new OneMax();
     //iterate
     for (int run : runs) {
-      for (boolean overlapping : overlappings) {
-        for (String controllerName : controllerNames) {
-          //prepare controlled problem
-          PrecisionController<BitString> controller = null;
-          if (controllerName.startsWith("static")) {
-            controller = new StaticController<>(
-                    d(p(controllerName, 1))
+      for (Map.Entry<String, TunablePrecisionProblem> problemEntry : problems.entrySet()) {
+        TunablePrecisionProblem problem = problemEntry.getValue();
+        //prepare problem-dependent components
+        Factory genotypeFactory = null;
+        Function mapper = Function.identity();
+        Map<GeneticOperator, Double> operators = new LinkedHashMap<>();
+        Distance solutionDistance = null;
+        if (problemEntry.getKey().startsWith("OneMax")) {
+          genotypeFactory = new BitStringFactory(100);
+          operators.put(new BitFlipMutation(0.01d), 0.2d);
+          operators.put(new LenghtPreservingTwoPointCrossover(), 0.8d);
+          solutionDistance = new Hamming().cached(10000);
+        } else if (problemEntry.getKey().startsWith("SR-")) {
+          genotypeFactory = new RampedHalfAndHalf<>(3, 12, ((GrammarBasedProblem) problem).getGrammar());
+          mapper = ((GrammarBasedProblem) problem).getSolutionMapper();
+          operators.put(new StandardTreeMutation<>(12, ((GrammarBasedProblem) problem).getGrammar()), 0.2d);
+          operators.put(new StandardTreeCrossover(12), 0.2d);
+          solutionDistance = new TreeLeaves(new Edit()).cached(10000);
+        }
+        for (boolean overlapping : overlappings) {
+          for (String controllerName : controllerNames) {
+            //prepare controlled problem
+            PrecisionController controller = null;
+            if (controllerName.startsWith("static")) {
+              controller = new StaticController<>(
+                      d(p(controllerName, 1))
+              );
+            } else if (controllerName.startsWith("linear")) {
+              controller = new LinearController<>(
+                      d(p(controllerName, 1)),
+                      d(p(controllerName, 2)),
+                      (int) Math.round((double) evaluations / d(p(controllerName, 3)))
+              );
+            } else if (controllerName.startsWith("solutionLinear")) {
+              controller = new PerSolutionLinearController<>(
+                      d(p(controllerName, 1)),
+                      d(p(controllerName, 2)),
+                      (int) Math.round((double) evaluations / d(p(controllerName, 3))),
+                      i(p(controllerName, 4))
+              );
+            } else if (controllerName.startsWith("reducer")) {
+              controller = new ReducerController<>(
+                      d(p(controllerName, 1)),
+                      d(p(controllerName, 2)),
+                      d(p(controllerName, 3)),
+                      solutionDistance,
+                      ReducerController.AggregateType.valueOf(p(controllerName, 4).toUpperCase()),
+                      i(p(controllerName, 5))
+              );
+            } else if (controllerName.startsWith("crowding")) {
+              controller = new CrowdingController<>(
+                      d(p(controllerName, 1)),
+                      d(p(controllerName, 2)),
+                      solutionDistance,
+                      i(p(controllerName, 3))
+              );
+            } else if (controllerName.startsWith("avgDistRatio")) {
+              controller = new HistoricAvgDistanceRatio<>(
+                      d(p(controllerName, 1)),
+                      i(p(controllerName, 2)),
+                      solutionDistance,
+                      i(p(controllerName, 3))
+              );
+            }
+            ControlledPrecisionProblem p = new ControlledPrecisionProblem<>(problem, controller);
+            //prepare evolver
+            StandardEvolver evolver = new StandardEvolver(
+                    population,
+                    genotypeFactory,
+                    new ComparableRanker(new FitnessComparator<>(Function.identity())),
+                    mapper,
+                    operators,
+                    new Tournament<>(3),
+                    new Worst<>(),
+                    population,
+                    overlapping,
+                    Lists.newArrayList(new FitnessEvaluations(evaluations)),
+                    0,
+                    false
             );
-          } else if (controllerName.startsWith("linear")) {
-            controller = new LinearController<>(
-                    d(p(controllerName, 1)),
-                    d(p(controllerName, 2)),
-                    (int) Math.round((double) evaluations / d(p(controllerName, 3)))
-            );
-          } else if (controllerName.startsWith("solutionLinear")) {
-            controller = new PerSolutionLinearController<>(
-                    d(p(controllerName, 1)),
-                    d(p(controllerName, 2)),
-                    (int) Math.round((double) evaluations / d(p(controllerName, 3))),
-                    i(p(controllerName, 4))
-            );
-          } else if (controllerName.startsWith("reducer")) {
-            controller = new ReducerController<>(
-                    d(p(controllerName, 1)),
-                    d(p(controllerName, 2)),
-                    d(p(controllerName, 3)),
-                    new Hamming(),
-                    ReducerController.AggregateType.valueOf(p(controllerName, 4).toUpperCase()),
-                    i(p(controllerName, 5))
-            );
-          } else if (controllerName.startsWith("crowding")) {
-            controller = new CrowdingController<>(
-                    d(p(controllerName, 1)),
-                    d(p(controllerName, 2)),
-                    new Hamming(),
-                    i(p(controllerName, 3))
-            );
-          } else if (controllerName.startsWith("avgDistRatio")) {
-            controller = new HistoricAvgDistanceRatio<>(
-                    d(p(controllerName, 1)),
-                    i(p(controllerName, 2)),
-                    new Hamming(),
-                    i(p(controllerName, 3))
-            );
-          }
-          ControlledPrecisionProblem<BitString, Double> p = new ControlledPrecisionProblem<>(ip, controller);
-          //prepare evolver
-          StandardEvolver<BitString, BitString, Double> evolver = new StandardEvolver<>(
-                  population,
-                  new BitStringFactory(solutionSize),
-                  new ComparableRanker(new FitnessComparator<>(Function.identity())),
-                  Function.identity(),
-                  operators,
-                  new Tournament<>(3),
-                  new Worst<>(),
-                  population,
-                  overlapping,
-                  Lists.newArrayList(new FitnessEvaluations(evaluations)),
-                  0,
-                  false
-          );
-          //prepare keys
-          Map<String, String> keys = new LinkedHashMap<>();
-          keys.put("run", Integer.toString(run));
-          keys.put("solution.size", Integer.toString(solutionSize));
-          keys.put("max.evaluations", Integer.toString(evaluations));
-          keys.put("controller", controllerName);
-          keys.put("overlapping", Boolean.toString(overlapping));
-          System.out.println(keys);
-          //run evolver
-          Random r = new Random(run);
-          try {
-            evolver.solve(p, r, executorService, Listener.onExecutor(listenerFactory.build(
-                    new Static(keys),
-                    new Basic(),
-                    new Population(),
-                    new Diversity(),
-                    new BestInfo<>("%6.4f"),
-                    new FunctionOfBest<>("actual.fitness", (Function) p.getInnerProblem().getFitnessFunction(), 0, "%6.4f"),
-                    new FunctionOfEvent<>("sum.precisions", (e, l) -> p.getController().getSumOfPrecisions(), "%8.4f"),
-                    new FunctionOfEvent<>("calls", (e, l) -> p.getController().getCalls(), "%7d"),
-                    new FunctionOfEvent<>("history.avg.precision", (e, l) -> p.getController().getHistory().stream().mapToDouble(Pair::second).average().orElse(Double.NaN), "%7d")
-            ), executorService));
-          } catch (InterruptedException | ExecutionException ex) {
-            L.log(Level.SEVERE, String.format("Cannot solve problem: %s", ex), ex);
+            //prepare keys
+            Map<String, String> keys = new LinkedHashMap<>();
+            keys.put("run", Integer.toString(run));
+            keys.put("problem", problemEntry.getKey());
+            keys.put("max.evaluations", Integer.toString(evaluations));
+            keys.put("controller", controllerName);
+            keys.put("overlapping", Boolean.toString(overlapping));
+            System.out.println(keys);
+            //run evolver
+            Random r = new Random(run);
+            try {
+              evolver.solve(p, r, executorService, Listener.onExecutor(listenerFactory.build(
+                      new Static(keys),
+                      new Basic(),
+                      new Population(),
+                      new Diversity(),
+                      new BestInfo<>("%6.4f"),
+                      new FunctionOfBest<>("actual.fitness", (Function) p.getInnerProblem().getFitnessFunction(), 0, "%6.4f"),
+                      new FunctionOfEvent<>("sum.precisions", (e, l) -> p.getController().getSumOfPrecisions(), "%8.4f"),
+                      new FunctionOfEvent<>("calls", (e, l) -> p.getController().getCalls(), "%7d"),
+                      new FunctionOfEvent("history.avg.precision", (e, l) -> p.getController().getHistory().stream().mapToDouble((o) -> ((Double) ((Pair) o).second()).doubleValue()).average().orElse(Double.NaN), "%5.3f")
+              ), executorService));
+            } catch (InterruptedException | ExecutionException ex) {
+              L.log(Level.SEVERE, String.format("Cannot solve problem: %s", ex), ex);
 
-            ex.printStackTrace();
-            System.exit(0);
+              ex.printStackTrace();
+              System.exit(0);
+            }
           }
         }
       }

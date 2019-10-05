@@ -14,6 +14,7 @@ import it.units.malelab.jgea.core.Sequence;
 import it.units.malelab.jgea.core.evolver.DeterministicCrowdingEvolver;
 import it.units.malelab.jgea.core.evolver.DifferentialEvolution;
 import it.units.malelab.jgea.core.evolver.FitnessSharingDivideAndConquerEvolver;
+import it.units.malelab.jgea.core.evolver.MutationOnly;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.biased.BiasedGenerator;
 import it.units.malelab.jgea.core.evolver.biased.Filler;
@@ -34,6 +35,7 @@ import it.units.malelab.jgea.core.listener.collector.BestInfo;
 import it.units.malelab.jgea.core.listener.collector.BestPrinter;
 import it.units.malelab.jgea.core.listener.collector.FunctionOfBest;
 import it.units.malelab.jgea.core.listener.collector.Diversity;
+import it.units.malelab.jgea.core.listener.collector.FunctionOfEvent;
 import it.units.malelab.jgea.core.listener.collector.IntrinsicDimension;
 import it.units.malelab.jgea.core.listener.collector.Population;
 import it.units.malelab.jgea.core.operator.BitFlipMutation;
@@ -65,6 +67,11 @@ import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
 import it.units.malelab.jgea.grammarbased.RegexGrammar;
 import it.units.malelab.jgea.grammarbased.ge.StandardGEMapper;
 import it.units.malelab.jgea.grammarbased.ge.WeightedHierarchicalMapper;
+import it.units.malelab.jgea.problem.surrogate.ControlledPrecisionProblem;
+import it.units.malelab.jgea.problem.surrogate.TunablePrecisionProblem;
+import it.units.malelab.jgea.problem.symbolicregression.AbstractRegressionProblemProblemWithValidation;
+import it.units.malelab.jgea.problem.symbolicregression.AbstractSymbolicRegressionProblem;
+import it.units.malelab.jgea.problem.symbolicregression.Pagie1;
 import it.units.malelab.jgea.problem.synthetic.LinearPoints;
 import it.units.malelab.jgea.problem.synthetic.Text;
 import it.units.malelab.jgea.problem.synthetic.TreeSize;
@@ -98,10 +105,9 @@ public class Example extends Worker {
   }
 
   public void run() {
-    System.out.println("Ciao mondo");
-    System.exit(0);
     try {
-      linearPointsDE(executorService);
+      tunablePagie1CFGGP(executorService);
+      //linearPointsDE(executorService);
       //treeSizeBiasedGenerator(executorService);
       //textBiasedGenerator(executorService);
       //parityGE(executorService, "whge");
@@ -119,6 +125,37 @@ public class Example extends Worker {
     }
   }
 
+  private void tunablePagie1CFGGP(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
+    //GrammarBasedProblem<String, Node<Element>, Double> p = new Pagie1();
+    AbstractSymbolicRegressionProblem op = new Pagie1();
+    ControlledPrecisionProblem p = new ControlledPrecisionProblem<>(
+            op,
+            new SurrogatePrecisionControl.HistoricAvgDistanceRatio<>(
+                    0.5d, 5,
+                    new TreeLeaves<>(new Edit<it.units.malelab.jgea.problem.symbolicregression.element.Element>()),
+                    100                   
+            )
+    );
+    MutationOnly<Node<String>, Node<it.units.malelab.jgea.problem.symbolicregression.element.Element>, Double> ea = new MutationOnly<>(
+            500,
+            new RampedHalfAndHalf(3, 12, op.getGrammar()),
+            new ComparableRanker(new FitnessComparator(Function.identity())),
+            op.getSolutionMapper(),
+            new StandardTreeMutation(12, op.getGrammar()),
+            Lists.newArrayList(new FitnessEvaluations(20000)),
+            10000,
+            false
+    );
+    Random random = new Random(1);
+    ea.solve(p, random, executor, Listener.onExecutor(listener(
+            new Basic(),
+            new Population(),
+            new BestInfo<>("%5.3f"),
+            new FunctionOfBest<>("actual.fitness", (Function) p.getInnerProblem().getFitnessFunction(), 0, "%5.3f"),
+            new FunctionOfEvent("history.avg.precision", (e, l) -> p.getController().getHistory().stream().mapToDouble((o) -> ((Double)((Pair)o).second()).doubleValue()).average().orElse(Double.NaN), "%5.3f")
+    ), executor));
+  }
+
   private void linearPointsDE(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
     Problem<double[], Double> problem = new LinearPoints();
     DifferentialEvolution<Double> de = new DifferentialEvolution<>(
@@ -130,10 +167,10 @@ public class Example extends Worker {
             Lists.newArrayList(new FitnessEvaluations(5000)), 10000);
     Random random = new Random(1);
     de.solve(problem, random, executor, Listener.onExecutor(listener(new Basic(),
-                    new Population(),
-                    new BestInfo<>((Function)problem.getFitnessFunction(), "%5.3f"),
-                    new BestPrinter(new DoubleArrayPrinter("%+3.1f"), "%s")
-            ), executor));
+            new Population(),
+            new BestInfo<>((Function) problem.getFitnessFunction(), "%5.3f"),
+            new BestPrinter(new DoubleArrayPrinter("%+3.1f"), "%s")
+    ), executor));
   }
 
   private void treeSizeBiasedGenerator(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
@@ -147,10 +184,10 @@ public class Example extends Worker {
             10000);
     Random random = new Random(1);
     bg.solve(p, random, executor, Listener.onExecutor(listener(
-                    new Basic(),
-                    new Population(),
-                    new BestInfo<>("%8.6f")
-            ), executor));
+            new Basic(),
+            new Population(),
+            new BestInfo<>("%8.6f")
+    ), executor));
   }
 
   private void textBiasedGenerator(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
@@ -165,11 +202,11 @@ public class Example extends Worker {
             10000);
     Random random = new Random(1);
     bg.solve(p, random, executor, Listener.onExecutor(listener(
-                    new Basic(),
-                    new Population(),
-                    new BestInfo<>("%8.6f"),
-                    new BestPrinter(null, "%s")
-            ), executor));
+            new Basic(),
+            new Population(),
+            new BestInfo<>("%8.6f"),
+            new BestPrinter(null, "%s")
+    ), executor));
   }
 
   private void parity(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
@@ -192,7 +229,7 @@ public class Example extends Worker {
             false
     );
     Random r = new Random(1);
-    Distance<Node<String>> treeEdit = (Distance)(new TreeLeaves<>(new Edit<>())).cached(10000);
+    Distance<Node<String>> treeEdit = (Distance) (new TreeLeaves<>(new Edit<>())).cached(10000);
     evolver.solve(p, r, executor,
             Listener.onExecutor(listener(
                     new Basic(),

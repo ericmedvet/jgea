@@ -15,18 +15,18 @@ import java.util.Random;
  *
  * @author eric
  */
-public abstract class AbstractMutation<G> implements GeneticOperator<G> {
+public interface Crossover<G> extends GeneticOperator<G> {
 
   @Override
-  public int arity() {
-    return 1;
+  public default int arity() {
+    return 2;
   }
 
   @Override
-  public List<G> apply(List<G> gs, Random random, Listener listener) throws FunctionException {
-    return Collections.singletonList(mutate(gs.get(0), random, listener));
+  public default List<G> apply(List<G> gs, Random random, Listener listener) throws FunctionException {
+    return Collections.singletonList(recombine(gs.get(0), gs.get(1), random, listener));
   }
   
-  public abstract G mutate(G g, Random random, Listener listener);
+  public G recombine(G g1, G g2, Random random, Listener listener);
   
 }

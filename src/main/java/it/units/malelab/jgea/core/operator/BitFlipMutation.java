@@ -13,7 +13,7 @@ import java.util.Random;
  *
  * @author eric
  */
-public class BitFlipMutation extends AbstractMutation<BitString> {
+public class BitFlipMutation implements Mutation<BitString> {
   
   private final double p;
 

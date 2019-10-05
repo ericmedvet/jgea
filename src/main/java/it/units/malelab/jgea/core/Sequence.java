@@ -20,6 +20,14 @@ public interface Sequence<T> extends Sized, Cloneable {
   public void set(int index, T t);
 
   public Sequence<T> clone();
+  
+  public default T[] toArray() {
+    List<T> ts = new ArrayList<>(size());
+    for (int i = 0; i<size(); i++) {
+      ts.add(get(i));
+    }
+    return (T[])ts.toArray();
+  }
 
   public static <T> Sequence<T> from(final T... ts) {
     return from((List)Arrays.asList(ts));

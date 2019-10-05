@@ -17,20 +17,20 @@ import it.units.malelab.jgea.core.function.NonDeterministicFunction;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.event.EvolutionEndEvent;
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
-import it.units.malelab.jgea.core.operator.AbstractMutation;
-import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.ranker.Ranker;
-import it.units.malelab.jgea.core.ranker.selector.Selector;
+import it.units.malelab.jgea.core.ranker.selector.Worst;
+import it.units.malelab.jgea.core.util.Misc;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import it.units.malelab.jgea.core.operator.Mutation;
 
 /**
  *
@@ -38,19 +38,19 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class MutationOnly<G, S, F> extends StandardEvolver<G, S, F> {
 
-  protected final AbstractMutation<G> mutation;
+  protected final Mutation<G> mutation;
 
   public MutationOnly(
           int populationSize,
           Factory<G> genotypeBuilder,
           Ranker<Individual<G, S, F>> ranker,
           NonDeterministicFunction<G, S> mapper,
-          AbstractMutation<G> mutation,
+          Mutation<G> mutation,
           List<StopCondition> stoppingConditions,
           long cacheSize,
           boolean saveAncestry
   ) {
-    super(populationSize, genotypeBuilder, ranker, mapper, null, null, null, 0, false, stoppingConditions, cacheSize, saveAncestry);
+    super(populationSize, genotypeBuilder, ranker, mapper, null, null, new Worst<Individual<G, S, F>>(), 0, true, stoppingConditions, cacheSize, saveAncestry);
     this.mutation = mutation;
   }
 
@@ -76,14 +76,34 @@ public class MutationOnly<G, S, F> extends StandardEvolver<G, S, F> {
       //mutate al individuals
       List<Callable<Individual<G, S, F>>> tasks = new ArrayList<>();
       for (Individual<G, S, F> parent : population) {
-        
-        //TODO
-        
+        tasks.add(birthCallable(
+                mutation.mutate(parent.getGenotype(), random, listener),
+                generations,
+                Collections.singletonList(parent),
+                mapper,
+                fitnessFunction,
+                random,
+                listener
+        ));
       }
-      List<Individual<G, S, F>> newPopulation = new ArrayList<>(populationSize+1);
-      
-      //TODO
-      
+      births.addAndGet(populationSize);
+      fitnessEvaluations.addAndGet(populationSize);
+      //add one new individual
+      tasks.add(birthCallable(
+              genotypeBuilder.build(1, random).get(0),
+              generations,
+              Collections.EMPTY_LIST,
+              mapper,
+              fitnessFunction,
+              random,
+              listener
+      ));
+      //get new population
+      List<Individual<G, S, F>> newPopulation = Misc.getAll(executor.invokeAll(tasks));
+      //update population
+      updatePopulation(population, newPopulation, random);
+      //reduce population
+      reducePopulation(population, random);
       //send event
       List<Collection<Individual<G, S, F>>> rankedPopulation = ranker.rank(population, random);
       EvolutionEvent event = new EvolutionEvent(

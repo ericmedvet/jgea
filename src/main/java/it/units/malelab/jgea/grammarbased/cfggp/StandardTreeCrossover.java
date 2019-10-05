@@ -9,7 +9,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.operator.AbstractCrossover;
+import it.units.malelab.jgea.core.operator.Crossover;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.Random;
  *
  * @author eric
  */
-public class StandardTreeCrossover<T> extends AbstractCrossover<Node<T>> {
+public class StandardTreeCrossover<T> implements Crossover<Node<T>> {
 
   private final int maxDepth;
 

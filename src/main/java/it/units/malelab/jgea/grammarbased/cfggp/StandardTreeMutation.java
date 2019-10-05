@@ -7,18 +7,18 @@ package it.units.malelab.jgea.grammarbased.cfggp;
 
 import it.units.malelab.jgea.core.Node;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.operator.AbstractMutation;
 import it.units.malelab.jgea.grammarbased.Grammar;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import it.units.malelab.jgea.core.operator.Mutation;
 
 /**
  *
  * @author eric
  */
-public class StandardTreeMutation<T>  extends AbstractMutation<Node<T>> {
+public class StandardTreeMutation<T>  implements Mutation<Node<T>> {
   
   private final int maxDepth;
   private GrowTreeFactory<T> factory;

@@ -12,7 +12,7 @@ import java.util.Random;
  *
  * @author eric
  */
-public class BitStringFactory extends IndependentFactory<BitString> {
+public class BitStringFactory implements IndependentFactory<BitString> {
 
   private final int size;
 

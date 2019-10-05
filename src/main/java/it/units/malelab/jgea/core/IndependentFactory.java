@@ -13,10 +13,10 @@ import java.util.Random;
  *
  * @author eric
  */
-public abstract class IndependentFactory<T> implements Factory<T> {
+public interface IndependentFactory<T> extends Factory<T> {
 
   @Override
-  public List<T> build(int n, Random random) {
+  public default List<T> build(int n, Random random) {
     List<T> ts = new ArrayList<>();
     for (int i = 0; i<n; i++) {
       ts.add(build(random));
@@ -24,6 +24,6 @@ public abstract class IndependentFactory<T> implements Factory<T> {
     return ts;
   }
   
-  public abstract T build(Random random);
+  public T build(Random random);
   
 }

@@ -12,6 +12,7 @@ import it.units.malelab.jgea.core.function.Bounded;
 import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.function.FunctionException;
+import it.units.malelab.jgea.core.function.NonDeterministicBiFunction;
 import it.units.malelab.jgea.problem.symbolicregression.element.Element;
 import java.util.LinkedHashMap;
 import java.util.List;

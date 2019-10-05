@@ -13,7 +13,7 @@ import java.util.Random;
  *
  * @author eric
  */
-public class LenghtPreservingTwoPointCrossover<S extends Sequence> extends AbstractCrossover<S> {
+public class LenghtPreservingTwoPointCrossover<S extends Sequence> implements Crossover<S> {
 
   @Override
   public S recombine(S s1, S s2, Random random, Listener listener) {

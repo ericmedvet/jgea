@@ -8,8 +8,13 @@ package it.units.malelab.jgea.core.fitness;
 import it.units.malelab.jgea.core.function.BiFunction;
 import it.units.malelab.jgea.core.function.ComposedFunction;
 import it.units.malelab.jgea.core.function.Function;
+import it.units.malelab.jgea.core.function.FunctionException;
+import it.units.malelab.jgea.core.function.NonDeterministicBiFunction;
 import it.units.malelab.jgea.core.listener.Listener;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 /**
@@ -46,6 +51,19 @@ public class CaseBasedFitness<S, O, OF, AF> implements ComposedFunction<S, List<
 
   public BiFunction<S, O, OF> observationFunction() {
     return observationFunction;
-  }
+  } 
 
+  public NonDeterministicBiFunction<S, Double, AF> getRandomSubsetFunction() {
+    return (S s, Double discardRatio, Random random, Listener l) -> {
+      double ratio = 1d-Math.max(0d, Math.min(discardRatio, 1d));
+      List<O> subset = new ArrayList<>(observations);
+      Collections.shuffle(subset, random);
+      subset = subset.subList(0, (int)Math.round(subset.size()*ratio));
+      List<OF> observationFitnesses = subset.stream()
+              .map((O o) -> observationFunction.apply(s, o, l))
+              .collect(Collectors.toList());
+      return aggregateFunction.apply(observationFitnesses, l);
+    };
+  }
+  
 }
