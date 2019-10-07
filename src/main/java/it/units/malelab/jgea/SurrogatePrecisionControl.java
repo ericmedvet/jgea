@@ -1,7 +1,18 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2019 Eric Medvet <eric.medvet@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package it.units.malelab.jgea;
 
@@ -12,7 +23,6 @@ import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
 import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.function.FunctionException;
-import it.units.malelab.jgea.core.genotype.BitString;
 import it.units.malelab.jgea.core.genotype.BitStringFactory;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.MultiFileListenerFactory;
@@ -41,6 +51,7 @@ import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeCrossover;
 import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeMutation;
 import it.units.malelab.jgea.problem.surrogate.ControlledPrecisionProblem;
 import it.units.malelab.jgea.problem.surrogate.TunablePrecisionProblem;
+import it.units.malelab.jgea.problem.symbolicregression.Nguyen7;
 import it.units.malelab.jgea.problem.symbolicregression.Pagie1;
 import it.units.malelab.jgea.problem.synthetic.OneMax;
 import java.io.FileNotFoundException;
@@ -64,8 +75,6 @@ import java.util.logging.Logger;
  * @author eric
  */
 public class SurrogatePrecisionControl extends Worker {
-
-  private final static Logger L = Logger.getLogger(SurrogatePrecisionControl.class.getName());
 
   public final static void main(String[] args) throws FileNotFoundException {
     new SurrogatePrecisionControl(args);
@@ -257,6 +266,7 @@ public class SurrogatePrecisionControl extends Worker {
     problems.put("OneMax", new OneMax());
     try {
       problems.put("SR-Pagie1", new Pagie1());
+      problems.put("SR-Nguyen7", new Nguyen7(1));
     } catch (IOException ex) {
       Logger.getLogger(SurrogatePrecisionControl.class.getName()).log(Level.SEVERE, "Cannot set problem!", ex);
     }
@@ -266,7 +276,6 @@ public class SurrogatePrecisionControl extends Worker {
     controllerNames.add("static-0.25");
     controllerNames.add("static-0.50");
     controllerNames.add("linear-0.5-0-1.0");
-    controllerNames.add("linear-0.5-0-0.5");
     controllerNames.add("solutionLinear-0.5-0-0.1-100");
     controllerNames.add("solutionLinear-0.5-0-0.05-100");
     controllerNames.add("reducer-0.5-0.95-1-min-100");
@@ -275,10 +284,11 @@ public class SurrogatePrecisionControl extends Worker {
 
     controllerNames.clear();
 
-    controllerNames.add("static-0");
-    controllerNames.add("static-0.50");
-    controllerNames.add("crowding-0.5-10-100");
-    controllerNames.add("avgDistRatio-0.5-5-100");
+    //controllerNames.add("static-0");
+    //controllerNames.add("static-0.50");
+    controllerNames.add("linear-0.5-0-1.0");
+    //controllerNames.add("crowding-0.5-10-100");
+    //controllerNames.add("avgDistRatio-0.95-5-100");
     //prepare things
     MultiFileListenerFactory listenerFactory = new MultiFileListenerFactory(a("dir", "."), a("file", null));
     //iterate

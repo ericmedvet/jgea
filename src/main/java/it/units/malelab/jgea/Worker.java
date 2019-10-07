@@ -38,7 +38,7 @@ public abstract class Worker implements Runnable {
   protected final ExecutorService executorService;
   protected final String[] args;
   
-  private final static Logger L = Logger.getLogger(Worker.class.getName());
+  protected final static Logger L = Logger.getLogger(Worker.class.getName());
 
   public Worker(String[] args) throws FileNotFoundException {
     this.args = args;
