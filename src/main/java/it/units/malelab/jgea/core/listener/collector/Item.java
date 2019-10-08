@@ -9,7 +9,6 @@ import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.util.WithNames;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -65,5 +64,10 @@ public class Item<T> {
       return Collections.singletonList(new Item<>("", f, format));
     };
   }
+
+  @Override
+  public String toString() {
+    return "Item{" + "name=" + name + ", value=" + value + ", format=" + format + '}';
+  }    
   
 }
