@@ -314,49 +314,7 @@ public class SurrogatePrecisionControl extends Worker {
         }
         for (boolean overlapping : overlappings) {
           for (String controllerName : controllerNames) {
-            //prepare controlled problem
-            PrecisionController controller = null;
-            if (controllerName.startsWith("static")) {
-              controller = new StaticController<>(
-                      d(p(controllerName, 1))
-              );
-            } else if (controllerName.startsWith("linear")) {
-              controller = new LinearController<>(
-                      d(p(controllerName, 1)),
-                      d(p(controllerName, 2)),
-                      (int) Math.round((double) evaluations / d(p(controllerName, 3)))
-              );
-            } else if (controllerName.startsWith("solutionLinear")) {
-              controller = new PerSolutionLinearController<>(
-                      d(p(controllerName, 1)),
-                      d(p(controllerName, 2)),
-                      (int) Math.round((double) evaluations / d(p(controllerName, 3))),
-                      i(p(controllerName, 4))
-              );
-            } else if (controllerName.startsWith("reducer")) {
-              controller = new ReducerController<>(
-                      d(p(controllerName, 1)),
-                      d(p(controllerName, 2)),
-                      d(p(controllerName, 3)),
-                      solutionDistance,
-                      ReducerController.AggregateType.valueOf(p(controllerName, 4).toUpperCase()),
-                      i(p(controllerName, 5))
-              );
-            } else if (controllerName.startsWith("crowding")) {
-              controller = new CrowdingController<>(
-                      d(p(controllerName, 1)),
-                      d(p(controllerName, 2)),
-                      solutionDistance,
-                      i(p(controllerName, 3))
-              );
-            } else if (controllerName.startsWith("avgDistRatio")) {
-              controller = new HistoricAvgDistanceRatio<>(
-                      d(p(controllerName, 1)),
-                      i(p(controllerName, 2)),
-                      solutionDistance,
-                      i(p(controllerName, 3))
-              );
-            }
+            PrecisionController controller = createController(controllerName, evaluations, solutionDistance);
             ControlledPrecisionProblem p = new ControlledPrecisionProblem<>(problem, controller);
             //prepare evolver
             StandardEvolver evolver = new StandardEvolver(
@@ -405,6 +363,53 @@ public class SurrogatePrecisionControl extends Worker {
         }
       }
     }
+  }
+
+  public PrecisionController createController(String controllerName, int evaluations, Distance solutionDistance) {
+    //prepare controlled problem
+    PrecisionController controller = null;
+    if (controllerName.startsWith("static")) {
+      controller = new StaticController<>(
+              d(p(controllerName, 1))
+      );
+    } else if (controllerName.startsWith("linear")) {
+      controller = new LinearController<>(
+              d(p(controllerName, 1)),
+              d(p(controllerName, 2)),
+              (int) Math.round((double) evaluations / d(p(controllerName, 3)))
+      );
+    } else if (controllerName.startsWith("solutionLinear")) {
+      controller = new PerSolutionLinearController<>(
+              d(p(controllerName, 1)),
+              d(p(controllerName, 2)),
+              (int) Math.round((double) evaluations / d(p(controllerName, 3))),
+              i(p(controllerName, 4))
+      );
+    } else if (controllerName.startsWith("reducer")) {
+      controller = new ReducerController<>(
+              d(p(controllerName, 1)),
+              d(p(controllerName, 2)),
+              d(p(controllerName, 3)),
+              solutionDistance,
+              ReducerController.AggregateType.valueOf(p(controllerName, 4).toUpperCase()),
+              i(p(controllerName, 5))
+      );
+    } else if (controllerName.startsWith("crowding")) {
+      controller = new CrowdingController<>(
+              d(p(controllerName, 1)),
+              d(p(controllerName, 2)),
+              solutionDistance,
+              i(p(controllerName, 3))
+      );
+    } else if (controllerName.startsWith("avgDistRatio")) {
+      controller = new HistoricAvgDistanceRatio<>(
+              d(p(controllerName, 1)),
+              i(p(controllerName, 2)),
+              solutionDistance,
+              i(p(controllerName, 3))
+      );
+    }
+    return controller;
   }
 
 }
