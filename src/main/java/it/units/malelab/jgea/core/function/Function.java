@@ -23,7 +23,7 @@ public interface Function<A, B> extends NonDeterministicFunction<A, B> {
 
   @Override
   public default B apply(A a, Random random, Listener listener) throws FunctionException {
-    return apply(a, Listener.deaf());
+    return apply(a, listener);
   }
 
   public default <C> Function<A, C> andThen(Function<? super B, ? extends C> other) {
