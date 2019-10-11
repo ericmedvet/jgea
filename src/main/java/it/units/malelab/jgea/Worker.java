@@ -84,7 +84,11 @@ public abstract class Worker implements Runnable {
   
   protected int[] ri(String s) {
     String[] pieces = s.split(RANGE_SEP);
-    return IntStream.range(Integer.parseInt(pieces[0]), Integer.parseInt(pieces[1])).toArray();
+    if (pieces.length>1) {
+      return IntStream.range(Integer.parseInt(pieces[0]), Integer.parseInt(pieces[1])).toArray();
+    } else {
+      return new int[]{Integer.parseInt(pieces[0])};
+    }
   }
 
   protected List<String> l(String s) {
