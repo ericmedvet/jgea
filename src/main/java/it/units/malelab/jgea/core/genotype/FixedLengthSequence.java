@@ -8,6 +8,7 @@ package it.units.malelab.jgea.core.genotype;
 import it.units.malelab.jgea.core.Sequence;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -51,4 +52,13 @@ public class FixedLengthSequence<T> implements Sequence<T> {
     return values.size();
   }
   
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("[");
+    sb.append(values.stream().map(Object::toString).collect(Collectors.joining(", ")));
+    sb.append("]");
+    return sb.toString();
+  }
+
 }

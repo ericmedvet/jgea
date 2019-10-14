@@ -83,6 +83,22 @@ public class SurrogatePrecisionControl extends Worker {
   public SurrogatePrecisionControl(String[] args) throws FileNotFoundException {
     super(args);
   }
+  
+  public static class MinOfPrecisions<S> extends PrecisionController<S> {
+    private final List<PrecisionController<S>> precisionControllers;
+
+    public MinOfPrecisions(int historySize, PrecisionController<S>... precisionControllers) {
+      super(historySize);
+      this.precisionControllers = Lists.newArrayList(precisionControllers);
+    }
+
+    @Override
+    public Double apply(S solution, Collection<Pair<S, Double>> history, Listener listener) throws FunctionException {
+      double min = precisionControllers.stream().mapToDouble(pc -> pc.apply(solution, history, listener)).min().orElse(0d);
+      return min;
+    }        
+    
+  }
 
   public static class StaticController<S> extends PrecisionController<S> {
 
