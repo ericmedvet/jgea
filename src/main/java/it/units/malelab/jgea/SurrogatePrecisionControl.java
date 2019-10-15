@@ -83,8 +83,9 @@ public class SurrogatePrecisionControl extends Worker {
   public SurrogatePrecisionControl(String[] args) throws FileNotFoundException {
     super(args);
   }
-  
+
   public static class MinOfPrecisions<S> extends PrecisionController<S> {
+
     private final List<PrecisionController<S>> precisionControllers;
 
     public MinOfPrecisions(int historySize, PrecisionController<S>... precisionControllers) {
@@ -94,10 +95,10 @@ public class SurrogatePrecisionControl extends Worker {
 
     @Override
     public Double apply(S solution, Collection<Pair<S, Double>> history, Listener listener) throws FunctionException {
-      double min = precisionControllers.stream().mapToDouble(pc -> pc.apply(solution, history, listener)).min().orElse(0d);
+      double min = precisionControllers.stream().mapToDouble(pc -> pc.apply(solution)).min().orElse(0d);
       return min;
-    }        
-    
+    }
+
   }
 
   public static class StaticController<S> extends PrecisionController<S> {
@@ -277,15 +278,15 @@ public class SurrogatePrecisionControl extends Worker {
     int[] runs = ri(a("runs", "0:10"));
     int evaluations = i(a("nev", "1000"));
     int population = i(a("npop", "100"));
-    List<Boolean> overlappings = b(l(a("overlapping", "false,true")));
+    List<Boolean> overlappings = b(l(a("overlapping", "false")));
     Map<String, TunablePrecisionProblem> problems = new LinkedHashMap<>();
     problems.put("OneMax", new OneMax());
-    try {
+    /*try {
       problems.put("SR-Pagie1", new Pagie1());
       problems.put("SR-Nguyen7", new Nguyen7(1));
     } catch (IOException ex) {
       Logger.getLogger(SurrogatePrecisionControl.class.getName()).log(Level.SEVERE, "Cannot set problem!", ex);
-    }
+    }*/
     //prepare controllers
     Set<String> controllerNames = new LinkedHashSet<>();
     controllerNames.add("static-0");
@@ -300,11 +301,12 @@ public class SurrogatePrecisionControl extends Worker {
 
     controllerNames.clear();
 
-    //controllerNames.add("static-0");
+    controllerNames.add("static-0");
     //controllerNames.add("static-0.50");
-    controllerNames.add("linear-0.5-0-1.0");
+    controllerNames.add("linear-0.95-0-1.0");
     //controllerNames.add("crowding-0.5-10-100");
-    //controllerNames.add("avgDistRatio-0.95-5-100");
+    controllerNames.add("avgDistRatio-0.95-5-100");
+    controllerNames.add("min");
     //prepare things
     MultiFileListenerFactory listenerFactory = new MultiFileListenerFactory(a("dir", "."), a("file", null));
     //iterate
@@ -423,6 +425,12 @@ public class SurrogatePrecisionControl extends Worker {
               i(p(controllerName, 2)),
               solutionDistance,
               i(p(controllerName, 3))
+      );
+    } else if (controllerName.startsWith("min")) {
+      controller = new SurrogatePrecisionControl.MinOfPrecisions<>(
+              100,
+              new SurrogatePrecisionControl.LinearController<>(0.95d, 0d, evaluations),
+              new SurrogatePrecisionControl.HistoricAvgDistanceRatio<>(0.95d, 5, solutionDistance, 100)
       );
     }
     return controller;
