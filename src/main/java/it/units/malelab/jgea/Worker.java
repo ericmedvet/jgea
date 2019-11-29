@@ -8,16 +8,15 @@ package it.units.malelab.jgea;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.PrintStreamListener;
 import java.io.FileNotFoundException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 import it.units.malelab.jgea.core.listener.collector.DataCollector;
+import it.units.malelab.jgea.core.util.Args;
 import java.io.IOException;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import java.util.stream.IntStream;
+
+import static it.units.malelab.jgea.core.util.Args.*;
 
 /**
  *
@@ -42,69 +41,13 @@ public abstract class Worker implements Runnable {
 
   public Worker(String[] args) throws FileNotFoundException {
     this.args = args;
-    executorService = Executors.newFixedThreadPool(i(a("threads", Integer.toString(Runtime.getRuntime().availableProcessors()))));
+    executorService = Executors.newFixedThreadPool(i(Args.a(args, "threads", Integer.toString(Runtime.getRuntime().availableProcessors()))));
     run();
     executorService.shutdown();
   }
-
-  private final static String PIECES_SEP = "-";
-  private final static String OPTIONS_SEP = ",";
-  private final static String RANGE_SEP = ":";
-  private final static String KEYVAL_SEP = "=";
-
-  protected String p(String s, int n) {
-    String[] pieces = s.split(PIECES_SEP);
-    if (n < pieces.length) {
-      return pieces[n];
-    }
-    return null;
-  }
-
-  protected int i(String s) {
-    return Integer.parseInt(s);
-  }
-
-  protected boolean b(String s) {
-    return Boolean.parseBoolean(s);
-  }
-
-  protected double d(String s) {
-    return Double.parseDouble(s);
-  }
-
+  
   protected String a(String name, String defaultValue) {
-    for (String arg : args) {
-      String[] pieces = arg.split(KEYVAL_SEP);
-      if (pieces[0].equals(name)) {
-        return pieces[1];
-      }
-    }
-    return defaultValue;
-  }
-  
-  protected int[] ri(String s) {
-    String[] pieces = s.split(RANGE_SEP);
-    if (pieces.length>1) {
-      return IntStream.range(Integer.parseInt(pieces[0]), Integer.parseInt(pieces[1])).toArray();
-    } else {
-      return new int[]{Integer.parseInt(pieces[0])};
-    }
-  }
-
-  protected List<String> l(String s) {
-    return Arrays.stream(s.split(OPTIONS_SEP)).collect(Collectors.toList());
-  }
-
-  protected List<Integer> i(List<String> strings) {
-    return strings.stream().map(Integer::parseInt).collect(Collectors.toList());
-  }
-  
-  protected List<Double> d(List<String> strings) {
-    return strings.stream().map(Double::parseDouble).collect(Collectors.toList());
-  }
-
-  protected List<Boolean> b(List<String> strings) {
-    return strings.stream().map(Boolean::parseBoolean).collect(Collectors.toList());
+    return Args.a(args, name, defaultValue);
   }
 
   protected Listener listener(DataCollector... collectors) {

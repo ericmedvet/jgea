@@ -71,6 +71,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static it.units.malelab.jgea.core.util.Args.*;
+
 /**
  *
  * @author eric

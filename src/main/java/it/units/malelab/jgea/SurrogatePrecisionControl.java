@@ -51,11 +51,8 @@ import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeCrossover;
 import it.units.malelab.jgea.grammarbased.cfggp.StandardTreeMutation;
 import it.units.malelab.jgea.problem.surrogate.ControlledPrecisionProblem;
 import it.units.malelab.jgea.problem.surrogate.TunablePrecisionProblem;
-import it.units.malelab.jgea.problem.symbolicregression.Nguyen7;
-import it.units.malelab.jgea.problem.symbolicregression.Pagie1;
 import it.units.malelab.jgea.problem.synthetic.OneMax;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -68,7 +65,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import static it.units.malelab.jgea.core.util.Args.*;
 
 /**
  *
