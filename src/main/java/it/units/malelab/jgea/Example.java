@@ -35,8 +35,13 @@ import it.units.malelab.jgea.core.listener.collector.BestInfo;
 import it.units.malelab.jgea.core.listener.collector.BestPrinter;
 import it.units.malelab.jgea.core.listener.collector.FunctionOfBest;
 import it.units.malelab.jgea.core.listener.collector.Diversity;
+import it.units.malelab.jgea.core.listener.collector.FirstOfNthObjective;
+import it.units.malelab.jgea.core.listener.collector.FirstRankIndividualInfo;
 import it.units.malelab.jgea.core.listener.collector.FunctionOfEvent;
+import it.units.malelab.jgea.core.listener.collector.IndividualBasicInfo;
 import it.units.malelab.jgea.core.listener.collector.IntrinsicDimension;
+import it.units.malelab.jgea.core.listener.collector.LowestNormalizedSum;
+import it.units.malelab.jgea.core.listener.collector.ObjectiveMostCentral;
 import it.units.malelab.jgea.core.listener.collector.Population;
 import it.units.malelab.jgea.core.operator.BitFlipMutation;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
@@ -68,8 +73,6 @@ import it.units.malelab.jgea.grammarbased.RegexGrammar;
 import it.units.malelab.jgea.grammarbased.ge.StandardGEMapper;
 import it.units.malelab.jgea.grammarbased.ge.WeightedHierarchicalMapper;
 import it.units.malelab.jgea.problem.surrogate.ControlledPrecisionProblem;
-import it.units.malelab.jgea.problem.surrogate.TunablePrecisionProblem;
-import it.units.malelab.jgea.problem.symbolicregression.AbstractRegressionProblemProblemWithValidation;
 import it.units.malelab.jgea.problem.symbolicregression.AbstractSymbolicRegressionProblem;
 import it.units.malelab.jgea.problem.symbolicregression.Pagie1;
 import it.units.malelab.jgea.problem.synthetic.LinearPoints;
@@ -106,7 +109,7 @@ public class Example extends Worker {
 
   public void run() {
     try {
-      tunablePagie1CFGGP(executorService);
+      //tunablePagie1CFGGP(executorService);
       //linearPointsDE(executorService);
       //treeSizeBiasedGenerator(executorService);
       //textBiasedGenerator(executorService);
@@ -115,7 +118,7 @@ public class Example extends Worker {
       //parityGE(executorService, "ge");
       //parityGE(executorService, "whge");
       //parityDCGE(executorService, "whge");
-      //binaryRegexStandard(executorService);
+      binaryRegexStandard(executorService);
       //binaryRegexDC(executorService);
       //binaryRegexFSDC(executorService);
       //binaryRegexExtractionStandard(executorService);
@@ -133,7 +136,7 @@ public class Example extends Worker {
             new SurrogatePrecisionControl.HistoricAvgDistanceRatio<>(
                     0.5d, 5,
                     new TreeLeaves<>(new Edit<it.units.malelab.jgea.problem.symbolicregression.element.Element>()),
-                    100                   
+                    100
             )
     );
     MutationOnly<Node<String>, Node<it.units.malelab.jgea.problem.symbolicregression.element.Element>, Double> ea = new MutationOnly<>(
@@ -152,7 +155,7 @@ public class Example extends Worker {
             new Population(),
             new BestInfo<>("%5.3f"),
             new FunctionOfBest<>("actual.fitness", (Function) p.getInnerProblem().getFitnessFunction(), 0, "%5.3f"),
-            new FunctionOfEvent("history.avg.precision", (e, l) -> p.getController().getHistory().stream().mapToDouble((o) -> ((Double)((Pair)o).second()).doubleValue()).average().orElse(Double.NaN), "%5.3f")
+            new FunctionOfEvent("history.avg.precision", (e, l) -> p.getController().getHistory().stream().mapToDouble((o) -> ((Double) ((Pair) o).second()).doubleValue()).average().orElse(Double.NaN), "%5.3f")
     ), executor));
   }
 
@@ -328,7 +331,7 @@ public class Example extends Worker {
     GrammarBasedProblem<String, String, List<Double>> p = new BinaryRegexClassification(
             50, 100, 1,
             5, 0,
-            ClassificationFitness.Metric.BALANCED_ERROR_RATE, ClassificationFitness.Metric.CLASS_ERROR_RATE,
+            ClassificationFitness.Metric.CLASS_ERROR_RATE, ClassificationFitness.Metric.CLASS_ERROR_RATE,
             RegexGrammar.Option.ANY, RegexGrammar.Option.ENHANCED_CONCATENATION, RegexGrammar.Option.OR
     );
     Map<GeneticOperator<Node<String>>, Double> operators = new LinkedHashMap<>();
@@ -354,14 +357,22 @@ public class Example extends Worker {
     evolver.solve(p, r, executor,
             Listener.onExecutor(listener(new Basic(),
                     new Population(),
-                    new BestInfo<>((ExtractionFitness) p.getFitnessFunction(), "%5.3f"),
+                    new BestInfo<>((ClassificationFitness) p.getFitnessFunction(), "%5.3f"),
+                    new FirstRankIndividualInfo("lowest.first", new FirstOfNthObjective<>(0), new IndividualBasicInfo<>((ClassificationFitness) p.getFitnessFunction(), "%5.3f")),
+                    new FirstRankIndividualInfo("lowest.second", new FirstOfNthObjective<>(1), new IndividualBasicInfo<>((ClassificationFitness) p.getFitnessFunction(), "%5.3f")),
+                    new FirstRankIndividualInfo("central", new ObjectiveMostCentral<>(), new IndividualBasicInfo<>((ClassificationFitness) p.getFitnessFunction(), "%5.3f")),
+                    new FirstRankIndividualInfo("lowest.sum", new LowestNormalizedSum<>(), new IndividualBasicInfo<>((ClassificationFitness) p.getFitnessFunction(), "%5.3f")),
                     new FunctionOfBest("best.learning", learningAssessmentFunction, 10000, "%5.3f"),
                     new FunctionOfBest("best.validation", validationAssessmentFunction, 10000, "%5.3f"),
                     new Diversity(),
                     new BestPrinter()
             ), executor
-            )
-    );
+    )
+  
+
+  
+
+  );
   }
 
   private void binaryRegexDC(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {

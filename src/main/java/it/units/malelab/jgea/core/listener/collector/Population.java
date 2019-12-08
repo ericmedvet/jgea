@@ -6,14 +6,11 @@
 package it.units.malelab.jgea.core.listener.collector;
 
 import it.units.malelab.jgea.core.Individual;
-import it.units.malelab.jgea.core.Sized;
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -32,12 +29,12 @@ public class Population implements DataCollector {
     double count = 0;
     for (Collection<Individual> rank : rankedPopulation) {
       for (Individual individual : rank) {
-        Integer genoSize = BestInfo.size(individual.getGenotype());
+        Integer genoSize = IndividualBasicInfo.size(individual.getGenotype());
         if (genoSize!=null) {
           genoSizeSum = genoSizeSum + genoSize;
           genoCount = genoCount + 1;
         }
-        Integer solutionSize = BestInfo.size(individual.getSolution());
+        Integer solutionSize = IndividualBasicInfo.size(individual.getSolution());
         if (solutionSize!=null) {
           solutionSizeSum = solutionSizeSum + solutionSize;
           solutionCount = solutionCount + 1;
