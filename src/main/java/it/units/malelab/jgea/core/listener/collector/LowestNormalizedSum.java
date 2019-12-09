@@ -58,7 +58,8 @@ public class LowestNormalizedSum<G, S> implements Function<Collection<Individual
       }
       if (max > min) {
         for (Individual<G, S, List<Double>> individual : rank) {
-          scores.put(individual, scores.get(individual) + (individual.getFitness().get(i) - min) / (max - min));
+          double relativeValue = (individual.getFitness().get(i) - min) / (max - min);          
+          scores.put(individual, scores.get(individual) + Math.abs(relativeValue-0.5d));
         }
       }
     }
