@@ -7,6 +7,7 @@ package it.units.malelab.jgea.core.listener.collector;
 
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.function.Function;
+import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
 import it.units.malelab.jgea.core.util.Misc;
 import java.util.ArrayList;
@@ -18,32 +19,30 @@ import java.util.List;
  *
  * @author eric
  */
-public class BestPrinter<S> implements DataCollector {
-  
-  private final Function<S, String> printer;
-  private final String format;
+public class BestPrinter<G, S, F> extends FirstRankIndividualInfo<G, S, F> {
 
-  public BestPrinter(Function<S, String> printer, String format) {
-    if (printer==null) {
-      printer = (s, l) -> s.toString();
-    }
-    this.printer = printer;   
-    this.format = format;
+  public BestPrinter(final Function<S, String> printer, final String format) {
+    super(
+            "best",
+            (Collection<Individual<G, S, F>> individuals, Listener listener) -> Misc.first(individuals),
+            (Individual<G, S, F> individual) -> Collections.singletonList(new Item<>("solution", printer.apply(individual.getSolution()), format))
+    );
   }
-  
-  public BestPrinter(String format) {
-    this(null, format);
+
+  public BestPrinter(final String format) {
+    super(
+            "best",
+            (Collection<Individual<G, S, F>> individuals, Listener listener) -> Misc.first(individuals),
+            (Individual<G, S, F> individual) -> Collections.singletonList(new Item<>("solution", individual.getSolution().toString(), format))
+    );
   }
-  
+
   public BestPrinter() {
-    this(null, "%s");
+    super(
+            "best",
+            (Collection<Individual<G, S, F>> individuals, Listener listener) -> Misc.first(individuals),
+            (Individual<G, S, F> individual) -> Collections.singletonList(new Item<>("solution", individual.getSolution().toString(), "%s"))
+    );
   }
 
-  @Override
-  public List<Item> collect(EvolutionEvent evolutionEvent) {
-    List<Collection<Individual>> rankedPopulation = new ArrayList<>((List)evolutionEvent.getRankedPopulation());
-    Individual best = Misc.first(rankedPopulation.get(0));
-    return Collections.singletonList(new Item<>("best.solution", printer.apply((S)best.getSolution()), format));
-  }  
-    
 }
