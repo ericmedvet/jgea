@@ -37,7 +37,7 @@ public class MultiFileListenerFactory {
     this.baseFileName = baseFileName;
     streams = new HashMap<>();
   }
-
+  
   public Listener build(DataCollector... collectors) {
     return new PrintStreamListener(null, false, 0, ";", ";", collectors) {
       @Override

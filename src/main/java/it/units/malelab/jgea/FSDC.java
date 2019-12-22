@@ -147,8 +147,8 @@ public class FSDC extends Worker {
           if (p(p, 0).equals("binRegexClass") || p(p, 0).equals("binRegexExtr")) {
             dataCollectors.addAll(Arrays.asList(
                     new BestInfo((Function) problem.getFitnessFunction(), "%5.3f"),
-                    new FunctionOfBest("best.learning", learningAssessmentFunction, cacheSize, "%5.3f"),
-                    new FunctionOfBest("best.validation", validationAssessmentFunction, cacheSize, "%5.3f")
+                    new FunctionOfBest("best.learning", learningAssessmentFunction.cached(cacheSize), "%5.3f"),
+                    new FunctionOfBest("best.validation", validationAssessmentFunction.cached(cacheSize), "%5.3f")
             ));
           }
           dataCollectors.add(new BestPrinter(null, "%s"));

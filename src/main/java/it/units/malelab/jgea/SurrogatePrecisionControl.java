@@ -364,7 +364,7 @@ public class SurrogatePrecisionControl extends Worker {
                       new Population(),
                       new Diversity(),
                       new BestInfo<>("%6.4f"),
-                      new FunctionOfBest<>("actual.fitness", (Function) p.getInnerProblem().getFitnessFunction(), 0, "%6.4f"),
+                      new FunctionOfBest<>("actual.fitness", (Function) p.getInnerProblem().getFitnessFunction().cached(0), "%6.4f"),
                       new FunctionOfEvent<>("sum.precisions", (e, l) -> p.getController().getSumOfPrecisions(), "%8.4f"),
                       new FunctionOfEvent<>("calls", (e, l) -> p.getController().getCalls(), "%7d"),
                       new FunctionOfEvent("history.avg.precision", (e, l) -> p.getController().getHistory().stream().mapToDouble((o) -> ((Double) ((Pair) o).second()).doubleValue()).average().orElse(Double.NaN), "%5.3f")

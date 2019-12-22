@@ -119,11 +119,11 @@ public class RobotContactsDE extends Worker {
                         new Basic(),
                         new Population(),
                         new BestInfo<>((Function) problem.getFitnessFunction(), "%5.3f"),
-                        new FunctionOfBest("min.contacts", problem.getMinContactsFunction(), evaluations, "%%5.3f"),
-                        new FunctionOfBest("avg.contacts", problem.getAvgContactsFunction(), evaluations, "%%5.3f"),
-                        new FunctionOfBest("avg.dist", problem.getAvgDistFunction(), evaluations, "%%5.3f"),
-                        new FunctionOfBest("avg.balance", problem.getAvgBalanceFunction(), evaluations, "%%5.3f"),
-                        new FunctionOfBest("contacts", problem.getValidContactsFunction(), evaluations, "%2d"),
+                        new FunctionOfBest("min.contacts", problem.getMinContactsFunction().cached(evaluations), "%%5.3f"),
+                        new FunctionOfBest("avg.contacts", problem.getAvgContactsFunction().cached(evaluations), "%%5.3f"),
+                        new FunctionOfBest("avg.dist", problem.getAvgDistFunction().cached(evaluations), "%%5.3f"),
+                        new FunctionOfBest("avg.balance", problem.getAvgBalanceFunction().cached(evaluations), "%%5.3f"),
+                        new FunctionOfBest("contacts", problem.getValidContactsFunction().cached(evaluations), "%2d"),
                         new BestPrinter(new DoubleArrayPrinter("%+5.3f"), "%s")
                 ), executorService));
               } catch (InterruptedException | ExecutionException ex) {

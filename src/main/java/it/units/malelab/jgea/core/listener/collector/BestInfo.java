@@ -16,12 +16,11 @@ import java.util.List;
  *
  * @author eric
  */
-public class BestInfo<G, S, F> extends FirstRankIndividualInfo<G, S, F> {
+public class BestInfo<G, S, F> extends FunctionOfBest<G, S, F> {
 
   public BestInfo(Function<F, List<Item>> fitnessSplitter) {
     super(
             "best",
-            (Collection<Individual<G, S, F>> individuals, Listener listener) -> Misc.first(individuals),
             new IndividualBasicInfo<>(fitnessSplitter)
     );
   }
@@ -29,7 +28,6 @@ public class BestInfo<G, S, F> extends FirstRankIndividualInfo<G, S, F> {
   public BestInfo(Function<?, F> function, String... formats) {
     super(
             "best",
-            (Collection<Individual<G, S, F>> individuals, Listener listener) -> Misc.first(individuals),
             new IndividualBasicInfo<>(function, formats)
     );
   }
@@ -37,7 +35,6 @@ public class BestInfo<G, S, F> extends FirstRankIndividualInfo<G, S, F> {
   public BestInfo(String format) {
     super(
             "best",
-            (Collection<Individual<G, S, F>> individuals, Listener listener) -> Misc.first(individuals),
             new IndividualBasicInfo<>(format)
     );
   }

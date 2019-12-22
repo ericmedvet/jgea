@@ -154,7 +154,7 @@ public class Example extends Worker {
             new Basic(),
             new Population(),
             new BestInfo<>("%5.3f"),
-            new FunctionOfBest<>("actual.fitness", (Function) p.getInnerProblem().getFitnessFunction(), 0, "%5.3f"),
+            new FunctionOfBest<>("actual.fitness", (Function) p.getInnerProblem().getFitnessFunction(), "%5.3f"),
             new FunctionOfEvent("history.avg.precision", (e, l) -> p.getController().getHistory().stream().mapToDouble((o) -> ((Double) ((Pair) o).second()).doubleValue()).average().orElse(Double.NaN), "%5.3f")
     ), executor));
   }
@@ -362,8 +362,8 @@ public class Example extends Worker {
                     new FirstRankIndividualInfo("lowest.second", new FirstOfNthObjective<>(1), new IndividualBasicInfo<>((ClassificationFitness) p.getFitnessFunction(), "%5.3f")),
                     new FirstRankIndividualInfo("central", new ObjectiveMostCentral<>(), new IndividualBasicInfo<>((ClassificationFitness) p.getFitnessFunction(), "%5.3f")),
                     new FirstRankIndividualInfo("lowest.sum", new LowestNormalizedSum<>(), new IndividualBasicInfo<>((ClassificationFitness) p.getFitnessFunction(), "%5.3f")),
-                    new FunctionOfBest("best.learning", learningAssessmentFunction, 10000, "%5.3f"),
-                    new FunctionOfBest("best.validation", validationAssessmentFunction, 10000, "%5.3f"),
+                    new FunctionOfBest("best.learning", learningAssessmentFunction.cached(10000), "%5.3f"),
+                    new FunctionOfBest("best.validation", validationAssessmentFunction.cached(10000), "%5.3f"),
                     new Diversity(),
                     new BestPrinter()
             ), executor
@@ -414,8 +414,8 @@ public class Example extends Worker {
             Listener.onExecutor(listener(new Basic(),
                     new Population(),
                     new BestInfo<>((ExtractionFitness) p.getFitnessFunction(), "%5.3f"),
-                    new FunctionOfBest("best.learning", learningAssessmentFunction, 10000, "%5.3f"),
-                    new FunctionOfBest("best.validation", validationAssessmentFunction, 10000, "%5.3f"),
+                    new FunctionOfBest("best.learning", learningAssessmentFunction.cached(10000), "%5.3f"),
+                    new FunctionOfBest("best.validation", validationAssessmentFunction.cached(10000), "%5.3f"),
                     new Diversity(),
                     new BestPrinter()
             ), executor
@@ -476,8 +476,8 @@ public class Example extends Worker {
             Listener.onExecutor(listener(new Basic(),
                     new Population(),
                     new BestInfo<>((ExtractionFitness) p.getFitnessFunction(), "%5.3f"),
-                    new FunctionOfBest("best.learning", learningAssessmentFunction, 10000, "%5.3f"),
-                    new FunctionOfBest("best.validation", validationAssessmentFunction, 10000, "%5.3f"),
+                    new FunctionOfBest("best.learning", learningAssessmentFunction.cached(10000), "%5.3f"),
+                    new FunctionOfBest("best.validation", validationAssessmentFunction.cached(10000), "%5.3f"),
                     new Diversity(),
                     new BestPrinter()
             ), executor
@@ -515,8 +515,8 @@ public class Example extends Worker {
             Listener.onExecutor(listener(new Basic(),
                     new Population(),
                     new BestInfo<>((ExtractionFitness) p.getFitnessFunction(), "%5.3f"),
-                    new FunctionOfBest("best.learning", learningAssessmentFunction, 10000, "%5.3f"),
-                    new FunctionOfBest("best.validation", validationAssessmentFunction, 10000, "%5.3f"),
+                    new FunctionOfBest("best.learning", learningAssessmentFunction.cached(10000), "%5.3f"),
+                    new FunctionOfBest("best.validation", validationAssessmentFunction.cached(10000), "%5.3f"),
                     new Diversity(),
                     new BestPrinter()
             ), executor

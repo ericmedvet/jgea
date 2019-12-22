@@ -186,7 +186,7 @@ public class RepresentationEvolution extends Worker {
                               new Basic(),
                               new Population(),
                               new BestInfo<>((FitnessFunction) mapperGeneration.getFitnessFunction(), "%5.3f"),
-                              new FunctionOfBest("best.validation", (FitnessFunction) mapperGeneration.getValidationFunction(), 10000, "%5.3f"),
+                              new FunctionOfBest("best.validation", (FitnessFunction) mapperGeneration.getValidationFunction().cached(10000), "%5.3f"),
                               new Diversity(),
                               new BestPrinter()
                       ), executorService

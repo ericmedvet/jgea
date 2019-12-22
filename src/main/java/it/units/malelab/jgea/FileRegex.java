@@ -206,8 +206,8 @@ public class FileRegex extends Worker {
                                 new Basic(),
                                 new Population(),
                                 new BestInfo<>((ClassificationFitness)p.getFitnessFunction(), "%5.3f"),
-                                new FunctionOfBest<>("best.learning", ((ClassificationFitness)p.getFitnessFunction()).changeMetric(ClassificationFitness.Metric.CLASS_ERROR_RATE), 10000, "%5.3f"),
-                                new FunctionOfBest<>("best.validation", ((ClassificationFitness)((ProblemWithValidation)p).getValidationFunction()).changeMetric(ClassificationFitness.Metric.CLASS_ERROR_RATE), 10000, "%5.3f"),
+                                new FunctionOfBest<>("best.learning", ((ClassificationFitness)p.getFitnessFunction()).changeMetric(ClassificationFitness.Metric.CLASS_ERROR_RATE).cached(10000), "%5.3f"),
+                                new FunctionOfBest<>("best.validation", ((ClassificationFitness)((ProblemWithValidation)p).getValidationFunction()).changeMetric(ClassificationFitness.Metric.CLASS_ERROR_RATE).cached(10000), "%5.3f"),
                                 new Diversity()
                         ), executor
                 )

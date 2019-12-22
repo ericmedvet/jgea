@@ -50,7 +50,7 @@ public class FirstOfNthObjective<G, S> implements Function<Collection<Individual
       } else {
         Comparable firstValue = first.getFitness().get(n);
         Comparable individualValue = individual.getFitness().get(n);
-        if (firstValue.compareTo(individualValue)*(reverse?-1:1)<0) {
+        if (individualValue.compareTo(firstValue)*(reverse?-1:1)<0) {
           first = individual;
         }
       }
