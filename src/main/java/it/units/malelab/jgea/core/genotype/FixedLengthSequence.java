@@ -8,6 +8,7 @@ package it.units.malelab.jgea.core.genotype;
 import it.units.malelab.jgea.core.Sequence;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -61,4 +62,29 @@ public class FixedLengthSequence<T> implements Sequence<T> {
     return sb.toString();
   }
 
+  @Override
+  public int hashCode() {
+    int hash = 5;
+    hash = 59 * hash + Objects.hashCode(this.values);
+    return hash;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final FixedLengthSequence<?> other = (FixedLengthSequence<?>) obj;
+    if (!Objects.equals(this.values, other.values)) {
+      return false;
+    }
+    return true;
+  }
+  
 }
