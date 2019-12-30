@@ -16,6 +16,7 @@ import it.units.malelab.jgea.core.evolver.DifferentialEvolution;
 import it.units.malelab.jgea.core.evolver.FitnessSharingDivideAndConquerEvolver;
 import it.units.malelab.jgea.core.evolver.MutationOnly;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
+import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversity;
 import it.units.malelab.jgea.core.evolver.biased.BiasedGenerator;
 import it.units.malelab.jgea.core.evolver.biased.Filler;
 import it.units.malelab.jgea.core.evolver.biased.Percentile;
@@ -114,11 +115,12 @@ public class Example extends Worker {
       //treeSizeBiasedGenerator(executorService);
       //textBiasedGenerator(executorService);
       //parityGE(executorService, "whge");
-      //parity(executorService);
+      parity(executorService);
+      parityEnforcedDiversity(executorService);
       //parityGE(executorService, "ge");
       //parityGE(executorService, "whge");
       //parityDCGE(executorService, "whge");
-      binaryRegexStandard(executorService);
+      //binaryRegexStandard(executorService);
       //binaryRegexDC(executorService);
       //binaryRegexFSDC(executorService);
       //binaryRegexExtractionStandard(executorService);
@@ -218,7 +220,7 @@ public class Example extends Worker {
     operators.put(new StandardTreeMutation<>(12, p.getGrammar()), 0.2d);
     operators.put(new StandardTreeCrossover<>(12), 0.8d);
     StandardEvolver<Node<String>, List<Node<Element>>, Double> evolver = new StandardEvolver<>(
-            500,
+            100,
             new RampedHalfAndHalf<>(3, 12, p.getGrammar()),
             new ComparableRanker(new FitnessComparator<>(Function.identity())),
             p.getSolutionMapper(),
@@ -227,21 +229,49 @@ public class Example extends Worker {
             new Worst<>(),
             500,
             true,
-            Lists.newArrayList(new FitnessEvaluations(100000), new PerfectFitness<>(p.getFitnessFunction())),
+            Lists.newArrayList(new FitnessEvaluations(10000), new PerfectFitness<>(p.getFitnessFunction())),
             10000,
             false
     );
     Random r = new Random(1);
-    Distance<Node<String>> treeEdit = (Distance) (new TreeLeaves<>(new Edit<>())).cached(10000);
     evolver.solve(p, r, executor,
             Listener.onExecutor(listener(
                     new Basic(),
                     new Population(),
                     new BestInfo<>("%6.4f"),
                     new Diversity(),
-                    new IntrinsicDimension(treeEdit, false),
-                    new IntrinsicDimension(treeEdit, true),
-                    new BestPrinter(null, "%s")
+                    new BestPrinter("%s")
+            ), executor)
+    );
+  }
+
+  private void parityEnforcedDiversity(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
+    final GrammarBasedProblem<String, List<Node<Element>>, Double> p = new EvenParity(8);
+    Map<GeneticOperator<Node<String>>, Double> operators = new LinkedHashMap<>();
+    operators.put(new StandardTreeMutation<>(12, p.getGrammar()), 0.2d);
+    operators.put(new StandardTreeCrossover<>(12), 0.8d);
+    StandardWithEnforcedDiversity<Node<String>, List<Node<Element>>, Double> evolver = new StandardWithEnforcedDiversity<>(
+            100,
+            100,
+            new RampedHalfAndHalf<>(3, 12, p.getGrammar()),
+            new ComparableRanker(new FitnessComparator<>(Function.identity())),
+            p.getSolutionMapper(),
+            operators,
+            new Tournament<>(3),
+            new Worst<>(),
+            100,
+            true,
+            Lists.newArrayList(new FitnessEvaluations(10000), new PerfectFitness<>(p.getFitnessFunction())),
+            10000
+    );
+    Random r = new Random(1);
+    evolver.solve(p, r, executor,
+            Listener.onExecutor(listener(
+                    new Basic(),
+                    new Population(),
+                    new BestInfo<>("%6.4f"),
+                    new Diversity(),
+                    new BestPrinter("%s")
             ), executor)
     );
   }
