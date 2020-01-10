@@ -34,21 +34,22 @@ public class FunctionOfBest<G, S, F> extends FirstRankIndividualInfo<G, S, F> {
   public FunctionOfBest(String prefix, Function<S, F> function, List<String> names, List<String> formats) {
     this(
             prefix,
-            multiCollector((Function)function, names, formats)
+            multiCollector((Function) function, names, formats)
     );
   }
+
   public FunctionOfBest(String prefix, Function<S, F> function, String... formats) {
     this(prefix,
             function,
             (formats.length > 1) ? Item.fromMultiobjective((Function) function, formats) : Item.fromSingle(function, formats[0])
     );
   }
-  
+
   private static <G1, S1, F1, F2 extends List> IndividualDataCollector<G1, S1, F1> multiCollector(Function<S1, F2> function, final List<String> names, final List<String> formats) {
     return (Individual<G1, S1, F1> individual) -> {
       F2 value = function.apply(individual.getSolution());
       List<Item> items = new ArrayList<>(value.size());
-      for (int i = 0; i<value.size(); i++) {
+      for (int i = 0; i < value.size(); i++) {
         items.add(new Item(names.get(i % names.size()), value.get(i), formats.get(i % formats.size())));
       }
       return items;
