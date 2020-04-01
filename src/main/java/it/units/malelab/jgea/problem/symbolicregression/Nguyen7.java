@@ -7,7 +7,7 @@ package it.units.malelab.jgea.problem.symbolicregression;
 
 import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.grammarbased.Grammar;
+import it.units.malelab.jgea.representation.grammar.Grammar;
 import java.io.File;
 import java.io.IOException;
 import java.util.Random;

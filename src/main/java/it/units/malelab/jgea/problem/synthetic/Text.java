@@ -5,16 +5,16 @@
  */
 package it.units.malelab.jgea.problem.synthetic;
 
-import it.units.malelab.jgea.core.Node;
-import it.units.malelab.jgea.core.Sequence;
+import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.sequence.Sequence;
 import it.units.malelab.jgea.core.function.Bounded;
 import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.distance.Distance;
-import it.units.malelab.jgea.distance.Edit;
-import it.units.malelab.jgea.grammarbased.Grammar;
-import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
+import it.units.malelab.jgea.representation.sequence.Edit;
+import it.units.malelab.jgea.representation.grammar.Grammar;
+import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 import java.io.File;
 import java.io.IOException;
 import java.util.stream.Collectors;

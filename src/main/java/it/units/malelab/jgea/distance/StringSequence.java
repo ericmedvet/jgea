@@ -5,11 +5,9 @@
  */
 package it.units.malelab.jgea.distance;
 
-import it.units.malelab.jgea.core.Sequence;
+import it.units.malelab.jgea.representation.sequence.Sequence;
 import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.listener.Listener;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 /**
  *

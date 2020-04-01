@@ -5,12 +5,12 @@
  */
 package it.units.malelab.jgea.problem.mapper;
 
-import it.units.malelab.jgea.core.Node;
+import it.units.malelab.jgea.representation.tree.Node;
 import it.units.malelab.jgea.core.function.FunctionException;
-import it.units.malelab.jgea.core.genotype.BitString;
+import it.units.malelab.jgea.representation.sequence.bit.BitString;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.grammarbased.Grammar;
-import it.units.malelab.jgea.grammarbased.ge.WeightedHierarchicalMapper;
+import it.units.malelab.jgea.representation.grammar.Grammar;
+import it.units.malelab.jgea.representation.grammar.ge.WeightedHierarchicalMapper;
 import it.units.malelab.jgea.problem.mapper.element.Element;
 import java.util.ArrayList;
 import java.util.List;

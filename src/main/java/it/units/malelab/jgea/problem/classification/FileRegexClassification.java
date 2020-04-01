@@ -7,7 +7,7 @@ package it.units.malelab.jgea.problem.classification;
 
 import it.units.malelab.jgea.core.fitness.ClassificationFitness;
 import it.units.malelab.jgea.core.util.Pair;
-import it.units.malelab.jgea.grammarbased.RegexGrammar;
+import it.units.malelab.jgea.representation.grammar.RegexGrammar;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;

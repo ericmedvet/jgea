@@ -7,7 +7,7 @@ package it.units.malelab.jgea.problem.symbolicregression;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import it.units.malelab.jgea.core.Node;
+import it.units.malelab.jgea.representation.tree.Node;
 import it.units.malelab.jgea.problem.symbolicregression.element.Constant;
 import it.units.malelab.jgea.problem.symbolicregression.element.Decoration;
 import it.units.malelab.jgea.problem.symbolicregression.element.Element;

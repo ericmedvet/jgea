@@ -6,7 +6,7 @@
 package it.units.malelab.jgea.core.util;
 
 import com.google.common.collect.Range;
-import it.units.malelab.jgea.core.Node;
+import it.units.malelab.jgea.representation.tree.Node;
 import it.units.malelab.jgea.core.listener.event.Event;
 import it.units.malelab.jgea.core.listener.event.InfoEvent;
 import java.util.ArrayList;

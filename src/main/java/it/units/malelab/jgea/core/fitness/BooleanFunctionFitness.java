@@ -5,7 +5,7 @@
  */
 package it.units.malelab.jgea.core.fitness;
 
-import it.units.malelab.jgea.core.Node;
+import it.units.malelab.jgea.representation.tree.Node;
 import it.units.malelab.jgea.core.function.BiFunction;
 import it.units.malelab.jgea.core.function.Bounded;
 import it.units.malelab.jgea.core.function.Function;

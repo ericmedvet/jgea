@@ -5,7 +5,7 @@
  */
 package it.units.malelab.jgea.problem.surrogate;
 
-import it.units.malelab.jgea.core.PrecisionController;
+import it.units.malelab.jgea.lab.PrecisionController;
 import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.function.NonDeterministicFunction;
 import it.units.malelab.jgea.core.listener.Listener;

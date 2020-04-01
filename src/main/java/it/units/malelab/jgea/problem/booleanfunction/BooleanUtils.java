@@ -5,7 +5,7 @@
  */
 package it.units.malelab.jgea.problem.booleanfunction;
 
-import it.units.malelab.jgea.core.Node;
+import it.units.malelab.jgea.representation.tree.Node;
 import it.units.malelab.jgea.problem.booleanfunction.element.Constant;
 import it.units.malelab.jgea.problem.booleanfunction.element.Decoration;
 import it.units.malelab.jgea.problem.booleanfunction.element.Element;

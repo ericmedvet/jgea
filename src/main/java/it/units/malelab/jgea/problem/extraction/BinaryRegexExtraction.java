@@ -5,7 +5,7 @@
  */
 package it.units.malelab.jgea.problem.extraction;
 
-import it.units.malelab.jgea.grammarbased.RegexGrammar;
+import it.units.malelab.jgea.representation.grammar.RegexGrammar;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.Set;

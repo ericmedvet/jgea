@@ -5,12 +5,12 @@
  */
 package it.units.malelab.jgea.problem.booleanfunction;
 
-import it.units.malelab.jgea.core.Node;
+import it.units.malelab.jgea.representation.tree.Node;
 import it.units.malelab.jgea.core.fitness.BooleanFunctionFitness;
 import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.grammarbased.Grammar;
-import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
+import it.units.malelab.jgea.representation.grammar.Grammar;
+import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 import it.units.malelab.jgea.problem.booleanfunction.element.Element;
 import java.io.File;
 import java.io.IOException;

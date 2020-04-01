@@ -6,9 +6,9 @@
 package it.units.malelab.jgea.problem.mapper;
 
 import com.google.common.collect.Range;
-import it.units.malelab.jgea.core.Node;
-import it.units.malelab.jgea.core.genotype.BitString;
-import it.units.malelab.jgea.grammarbased.ge.HierarchicalMapper;
+import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.sequence.bit.BitString;
+import it.units.malelab.jgea.representation.grammar.ge.HierarchicalMapper;
 import it.units.malelab.jgea.problem.mapper.element.Element;
 import it.units.malelab.jgea.problem.mapper.element.Function;
 import it.units.malelab.jgea.problem.mapper.element.NumericConstant;

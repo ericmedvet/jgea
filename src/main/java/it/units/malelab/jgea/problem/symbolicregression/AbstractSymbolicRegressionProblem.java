@@ -5,13 +5,13 @@
  */
 package it.units.malelab.jgea.problem.symbolicregression;
 
-import it.units.malelab.jgea.core.Node;
+import it.units.malelab.jgea.representation.tree.Node;
 import it.units.malelab.jgea.core.fitness.CaseBasedFitness;
 import it.units.malelab.jgea.core.fitness.SymbolicRegressionFitness;
 import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.function.NonDeterministicBiFunction;
-import it.units.malelab.jgea.grammarbased.Grammar;
-import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
+import it.units.malelab.jgea.representation.grammar.Grammar;
+import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 import it.units.malelab.jgea.problem.surrogate.TunablePrecisionProblem;
 import it.units.malelab.jgea.problem.symbolicregression.element.Element;
 import java.io.IOException;
