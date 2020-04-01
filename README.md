@@ -38,7 +38,7 @@ public abstract class AbstractClassificationProblem<C, O, E extends Enum<E>> imp
 ```
 where `C` is the space of classifiers, `O` is the space of observations (or instances, or data points, in supervised learning jargon), `E` is the space of labels (or responses, or outputs).
 
-## Evolutionary Algorithm (EA)
+### Evolutionary Algorithm (EA)
 The EA is described by a class implementing the `Evolver` interface.
 `Evolver` is parametrized with three types that potentially represent the genotype (`G`), solution (`S`), and fitness (`F`) spaces:
 ```java
@@ -57,11 +57,18 @@ Note that some EAs might support only the case in which `G` = `S`.
 An `Evolver` solves a problem when the `solve()` method is invoked; that is, invoking `solve()` corresponds to performing an **evolutionary run** (also called evolutionary search or simply evolution).
 
 Besides the `Problem` parameter, whose role is obvious, this methods takes as input also a `Random`, an `ExecutorService`, and a `Listener`.
-The `Random` instance is used for all the random choices, hence allowing for repeatability of the experimentation.
+- The `Random` instance is used for all the random choices, hence allowing for repeatability of the experimentation.
 **Note**: reproducibility, i.e., obtaining the same results in the same conditions, is not a direct consequence of repeatability if some conditions are not satisfied. JGEA attempts to meet all of these conditions: however, executing an evolutionary run with some parallelism leads in general to not meeting one condition.
-The `ExecutorService` instance is used for distributing computation across different workers of the executor.
-The `Listener` instance is used for notifying about important events during the evolution.
+- The `ExecutorService` instance is used for distributing computation across different workers of the executor.
+- The `Listener` instance is used for notifying about important events during the evolution.
 The return value of `solve()` is a collection of solutions: depending on the EA, this collection might be composed of a single solution, i.e., the solution found by the EA.
+
+#### Listeners
+
+#### Implemented EAs
+
+JGEA contains a few significatives EAs, i.e., classes implementing `Evolver`
+One, that is at the same time pretty standard and a template that can be realized in many ways depending on the parameters, is `StanderdEvolver`, that corresponds to a mu + lamda (or mu, lambda) generational model. (see [reference 1](#ref1))
 
 ## Research papers based on JGEA
 The list includes paper published from 2018 on.
@@ -77,3 +84,6 @@ The list includes paper published from 2018 on.
 - Medvet, Bartoli, De Lorenzo, [Exploring the Application of GOMEA to Bit-string GE](http://medvet.inginf.units.it/publications/exploringtheapplicationofgomeatobitstringge), ACM Genetic and Evolutionary Computation Conference (GECCO), 2018, Kyoto (Japan)
 - Medvet, Bartoli, [On the Automatic Design of a Representation for Grammar-based Genetic Programming](http://medvet.inginf.units.it/publications/ontheautomaticdesignofarepresentationforgrammarbasedgeneticprogramming), 21st European Conference on Genetic Programming (EuroGP), 2018, Parma (Italy)
 - Medvet, Bartoli, Ansuini, Tarlao, [Observing the Population Dynamics in GE by means of the Intrinsic Dimension](http://medvet.inginf.units.it/publications/observingthepopulationdynamicsingebymeansoftheintrinsicdimension), Evolutionary Machine Learning workshop at International Conference on Parallel Problem Solving from Nature (EML@PPSN), 2018, Coimbra (Portugal)
+
+## References
+1. <a id="ref01"></a> De Jong, Kenneth. "Evolutionary computation: a unified approach." Proceedings of the 2016 on Genetic and Evolutionary Computation Conference Companion. 2016.
