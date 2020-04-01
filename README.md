@@ -65,10 +65,86 @@ The return value of `solve()` is a collection of solutions: depending on the EA,
 
 #### Listeners
 
+Listeners are a key component of JGEA.
+They main use is to monitor the evolution by extracting some information and printing it somewhere.
+Typical information of interest is, at each iteration of the EA:
+- the size of the population
+- the diversity in the population
+- the fitness (a `F`) of the best individual
+- the best individual (a `S`)
+- some function of the best individual
+
+In the example below, it is shown how to use listner to print on the standard output how this kind of information changes during the evolution.
+JGEA contains classes for printing on stdout as well as on files, with proper formats.
+
 #### Implemented EAs
 
-JGEA contains a few significatives EAs, i.e., classes implementing `Evolver`
-One, that is at the same time pretty standard and a template that can be realized in many ways depending on the parameters, is `StanderdEvolver`, that corresponds to a mu + lamda (or mu, lambda) generational model. (see [reference 1](#ref1))
+JGEA contains a few significatives EAs, i.e., classes implementing `Evolver`.
+
+One, that is at the same time pretty standard and a template that can be realized in many ways depending on the parameters, is `StanderdEvolver`, that corresponds to a *mu + lamda* (or *mu, lambda*, depending on the parameter) *generational model* (see [[1]](#references)).
+`StandardEvolver` parameters are set using the only class constructor: names of the parameters indicate the corresponding meaning.
+```java
+public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
+  protected final int populationSize;
+  protected final Factory<G> genotypeBuilder;
+  protected final Ranker<Individual<G, S, F>> ranker;
+  protected final NonDeterministicFunction<G, S> mapper;
+  protected final Map<GeneticOperator<G>, Double> operators;
+  protected final Selector<Individual<G, S, F>> parentSelector;
+  protected final Selector<Individual<G, S, F>> unsurvivalSelector;
+  protected final int offspringSize;
+  protected final boolean overlapping;
+  protected final List<StopCondition> stopConditions;
+  protected final boolean saveAncestry;
+  protected final long cacheSize;
+  /* ... */
+}
+```
+`StandardEvolver` automatically exploits parallelism using the `ExecutorService` parameter of `solve()` and automatically builds a cached version of the problem fitness function, if it is deterministic.
+
+`Ranker` is used for ranking the individuals in the population.
+JGEA uses `Ranker` instead of the standard JDK interface `Comparator` because the latter represents a total ordering, whereas there are many cases where the EA does not assume a total ordering.
+Moreover, `Ranker` is a parameter of an EA, rather than part of the definition of a `Problem` because different ranking criteria can be used on individuals rather than just quality.
+For example, one may want to solve a *symbolic regression* problem by ranking solutions according to Pareto dominance based on mean absolute error *and* complexity of the expression, both to be minimized.
+
+## Example
+In this example, JGEA is used for solving the *parity problem* with the standard EA and solution encoded as derivation trees of a provided grammar, that is, with a form of G3P.
+Here a solution is a `List<Node<Element>>`, because the general form of a bits-to-bits set function is list of trees, each tree encoding a bits-to-bit function.
+```java
+public class Example {
+  public static void main(String[] args) {
+    ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    GrammarBasedProblem<String, List<Node<Element>>, Double> p = new EvenParity(8);
+    Map<GeneticOperator<Node<String>>, Double> operators = new LinkedHashMap<>();
+    operators.put(new StandardTreeMutation<>(12, p.getGrammar()), 0.2d);
+    operators.put(new StandardTreeCrossover<>(12), 0.8d);
+    StandardEvolver<Node<String>, List<Node<Element>>, Double> evolver = new StandardEvolver<>(
+            100,
+            new RampedHalfAndHalf<>(3, 12, p.getGrammar()),
+            new ComparableRanker(new FitnessComparator<>(Function.identity())),
+            p.getSolutionMapper(),
+            operators,
+            new Tournament<>(3),
+            new Worst<>(),
+            500,
+            true,
+            Lists.newArrayList(new FitnessEvaluations(10000), new PerfectFitness<>(p.getFitnessFunction())),
+            10000,
+            false
+    );
+    Random r = new Random(1);
+    Collection<List<Node<Element>>> solutions = evolver.solve(p, r, executor,
+            Listener.onExecutor(new PrintStreamListener(System.out, true, 10, " ", " | ",
+                    new Basic(),
+                    new Population(),
+                    new BestInfo<>("%6.4f"),
+                    new Diversity(),
+                    new BestPrinter("%s")
+            ), executor)
+    );
+  }
+}
+```
 
 ## Research papers based on JGEA
 The list includes paper published from 2018 on.
@@ -86,4 +162,4 @@ The list includes paper published from 2018 on.
 - Medvet, Bartoli, Ansuini, Tarlao, [Observing the Population Dynamics in GE by means of the Intrinsic Dimension](http://medvet.inginf.units.it/publications/observingthepopulationdynamicsingebymeansoftheintrinsicdimension), Evolutionary Machine Learning workshop at International Conference on Parallel Problem Solving from Nature (EML@PPSN), 2018, Coimbra (Portugal)
 
 ## References
-1. <a id="ref01"></a> De Jong, Kenneth. "Evolutionary computation: a unified approach." Proceedings of the 2016 on Genetic and Evolutionary Computation Conference Companion. 2016.
+1. De Jong, Kenneth. "Evolutionary computation: a unified approach." Proceedings of the 2016 on Genetic and Evolutionary Computation Conference Companion. 2016.
