@@ -5,11 +5,7 @@
  */
 package it.units.malelab.jgea.core.listener.collector;
 
-import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.function.Function;
-import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.util.Misc;
-import java.util.Collection;
 import java.util.List;
 
 /**

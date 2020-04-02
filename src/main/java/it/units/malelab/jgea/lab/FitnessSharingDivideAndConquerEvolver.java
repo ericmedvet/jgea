@@ -3,12 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.units.malelab.jgea.core.evolver;
+package it.units.malelab.jgea.lab;
 
 import com.google.common.base.Stopwatch;
 import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.Problem;
+import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.StopCondition;
 import it.units.malelab.jgea.core.function.Bounded;
 import it.units.malelab.jgea.core.function.CachedBoundedFunction;

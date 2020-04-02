@@ -32,11 +32,8 @@ public interface Listener extends Serializable {
 
   public static Listener onExecutor(final Listener listener, final ExecutorService executor) {
     return (final Event event) -> {
-      executor.submit(new Runnable() {
-        @Override
-        public void run() {
-          listener.listen(event);
-        }
+      executor.submit(() -> {
+        listener.listen(event);
       });
     };
   }

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.units.malelab.jgea.core.evolver.biased;
+package it.units.malelab.jgea.lab.biased;
 
 import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.function.NonDeterministicFunction;

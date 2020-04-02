@@ -5,7 +5,6 @@
  */
 package it.units.malelab.jgea.representation.sequence.bit;
 
-import it.units.malelab.jgea.representation.sequence.bit.BitString;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.operator.Mutation;
 import java.util.Random;

@@ -36,6 +36,7 @@ import it.units.malelab.jgea.core.listener.event.Capturer;
 import it.units.malelab.jgea.core.listener.event.FunctionEvent;
 import it.units.malelab.jgea.core.listener.event.TimedEvent;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -57,6 +58,8 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
   protected final boolean saveAncestry;
   protected final long cacheSize;
 
+  private static final Logger L = Logger.getLogger(StandardEvolver.class.getName());
+
   public StandardEvolver(int populationSize, Factory<G> genotypeBuilder, Ranker<Individual<G, S, F>> ranker, NonDeterministicFunction<G, S> mapper, Map<GeneticOperator<G>, Double> operators, Selector<Individual<G, S, F>> parentSelector, Selector<Individual<G, S, F>> unsurvivalSelector, int offspringSize, boolean overlapping, List<StopCondition> stoppingConditions, long cacheSize, boolean saveAncestry) {
     this.populationSize = populationSize;
     this.genotypeBuilder = genotypeBuilder;
@@ -74,6 +77,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
 
   @Override
   public Collection<S> solve(final Problem<S, F> problem, Random random, ExecutorService executor, Listener listener) throws InterruptedException, ExecutionException {
+    L.fine("Starting");
     int generations = 0;
     AtomicInteger births = new AtomicInteger();
     AtomicInteger fitnessEvaluations = new AtomicInteger();
@@ -87,17 +91,22 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
       }
     }
     //initialize population
+    L.fine("Initializing population");
     List<Individual<G, S, F>> population = initPopulation(fitnessFunction, births, fitnessEvaluations, random, listener, executor);
     //iterate
     while (true) {
       generations = generations + 1;
       //build offsprings
+      L.fine(String.format("Building offspring (g=%d)", generations));
       List<Individual<G, S, F>> newPopulation = buildOffspring(population, ranker, fitnessFunction, generations, births, fitnessEvaluations, random, listener, executor);
       //update population
+      L.fine(String.format("Updating population (g=%d)", generations));
       updatePopulation(population, newPopulation, random);
       //reduce population
+      L.fine(String.format("Reducing population (g=%d)", generations));
       reducePopulation(population, random);
       //send event
+      L.fine(String.format("Ranking population (g=%d)", generations));
       List<Collection<Individual<G, S, F>>> rankedPopulation = ranker.rank(population, random);
       EvolutionEvent event = new EvolutionEvent(
               generations,
@@ -118,9 +127,11 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
                 rankedPopulation,
                 stopwatch.elapsed(TimeUnit.MILLISECONDS))
         );
+        L.fine(String.format("Stopping, criterion %s met (g=%d)", stopCondition.getClass().getSimpleName(), generations));
         break;
       }
     }
+    L.fine("Ending");
     //take out solutions
     List<Collection<Individual<G, S, F>>> rankedPopulation = ranker.rank(population, random);
     Collection<S> solutions = new ArrayList<>();
@@ -152,12 +163,12 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
       }
     }
   }
-  
+
   protected void reducePopulation(
           final List<Individual<G, S, F>> population,
-          final Random random ) {
+          final Random random) {
     //select survivals
-    if (population.size()> populationSize) {
+    if (population.size() > populationSize) {
       List<Collection<Individual<G, S, F>>> rankedPopulation = ranker.rank(population, random);
       while (population.size() > populationSize) {
         //re-rank
@@ -174,8 +185,8 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
         }
         if (wasLast) {
           rankedPopulation = rankedPopulation.stream().filter(rank -> !rank.isEmpty()).collect(Collectors.toList());
-        }                
-      }  
+        }
+      }
     }
   }
 
@@ -207,7 +218,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
         solution = solutionFunction.apply(genotype, random, capturer);
       } catch (FunctionException ex) {
         //invalid solution
-        //TODO log to listener
+        L.finest(String.format("Cannot map %s: %s", genotype.getClass().getSimpleName(), ex));
       }
       elapsed = stopwatch.stop().elapsed(TimeUnit.NANOSECONDS);
       Map<String, Object> solutionInfo = Misc.fromInfoEvents(capturer.getEvents(), "solution.");
@@ -216,20 +227,18 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
       //solution -> fitness
       stopwatch.reset().start();
       F fitness = null;
-      
       try {
-      
-      if (solution != null) {
-        fitness = fitnessFunction.apply(solution, random, capturer);
-      } else {
-        if (fitnessFunction instanceof Bounded) {
-          fitness = ((Bounded<F>) fitnessFunction).worstValue();
+        if (solution != null) {
+          fitness = fitnessFunction.apply(solution, random, capturer);
+        } else {
+          if (fitnessFunction instanceof Bounded) {
+            fitness = ((Bounded<F>) fitnessFunction).worstValue();
+          }
         }
-      }
-      
-      } catch (Throwable t) {
-        t.printStackTrace();
-        System.exit(0);
+      } catch (FunctionException ex) {
+        L.severe(String.format("Cannot compute fitness of %s: %s", solution.getClass().getSimpleName(), ex));
+        
+        ex.printStackTrace();
       }
       elapsed = stopwatch.stop().elapsed(TimeUnit.NANOSECONDS);
       Map<String, Object> fitnessInfo = Misc.fromInfoEvents(capturer.getEvents(), "fitness.");
@@ -297,7 +306,7 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
                   random,
                   listener
           ));
-        }       
+        }
         fitnessEvaluations.addAndGet(childGenotypes.size());
         births.addAndGet(childGenotypes.size());
         i = i + childGenotypes.size();

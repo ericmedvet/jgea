@@ -14,14 +14,14 @@ import it.units.malelab.jgea.core.ProblemWithValidation;
 import it.units.malelab.jgea.representation.sequence.Sequence;
 import it.units.malelab.jgea.core.evolver.DeterministicCrowdingEvolver;
 import it.units.malelab.jgea.core.evolver.DifferentialEvolution;
-import it.units.malelab.jgea.core.evolver.FitnessSharingDivideAndConquerEvolver;
+import it.units.malelab.jgea.lab.FitnessSharingDivideAndConquerEvolver;
 import it.units.malelab.jgea.core.evolver.MutationOnly;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversity;
-import it.units.malelab.jgea.core.evolver.biased.BiasedGenerator;
-import it.units.malelab.jgea.core.evolver.biased.Filler;
-import it.units.malelab.jgea.core.evolver.biased.Percentile;
-import it.units.malelab.jgea.core.evolver.biased.PercentileProportional;
+import it.units.malelab.jgea.lab.biased.BiasedGenerator;
+import it.units.malelab.jgea.lab.biased.Filler;
+import it.units.malelab.jgea.lab.biased.Percentile;
+import it.units.malelab.jgea.lab.biased.PercentileProportional;
 import it.units.malelab.jgea.core.evolver.stopcondition.ElapsedTime;
 import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
 import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
@@ -241,7 +241,7 @@ public class Example extends Worker {
                     new Population(),
                     new BestInfo<>("%6.4f"),
                     new Diversity(),
-                    new BestPrinter("%s")
+                    new BestPrinter()
             ), executor)
     );
   }
@@ -272,7 +272,7 @@ public class Example extends Worker {
                     new Population(),
                     new BestInfo<>("%6.4f"),
                     new Diversity(),
-                    new BestPrinter("%s")
+                    new BestPrinter()
             ), executor)
     );
   }

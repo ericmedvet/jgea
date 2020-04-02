@@ -124,6 +124,18 @@ public class BitString implements ConstrainedSequence<Boolean> {
     checkIndexes(fromIndex, toIndex);
     bitSet.flip(fromIndex, toIndex);
   }
+  
+  public BitString or(BitString other) {
+    BitSet ored = (BitSet)bitSet.clone();
+    ored.or(other.bitSet);
+    return new BitString(length, ored);
+  }
+
+  public BitString and(BitString other) {
+    BitSet anded = (BitSet)bitSet.clone();
+    anded.and(other.bitSet);
+    return new BitString(length, anded);
+  }
 
   private void checkIndexes(int fromIndex, int toIndex) {
     if (fromIndex >= toIndex) {

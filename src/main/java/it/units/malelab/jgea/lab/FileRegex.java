@@ -13,7 +13,6 @@ import it.units.malelab.jgea.core.ProblemWithValidation;
 import it.units.malelab.jgea.representation.sequence.Sequence;
 import it.units.malelab.jgea.core.evolver.DeterministicCrowdingEvolver;
 import it.units.malelab.jgea.core.evolver.Evolver;
-import it.units.malelab.jgea.core.evolver.FitnessSharingDivideAndConquerEvolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.ElapsedTime;
 import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
