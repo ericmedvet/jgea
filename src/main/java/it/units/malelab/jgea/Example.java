@@ -5,19 +5,16 @@
  */
 package it.units.malelab.jgea;
 
+import it.units.malelab.jgea.core.evolver.*;
 import it.units.malelab.jgea.lab.SurrogatePrecisionControl;
 import com.google.common.collect.Lists;
 import it.units.malelab.jgea.core.Individual;
+import it.units.malelab.jgea.problem.synthetic.*;
 import it.units.malelab.jgea.representation.tree.Node;
 import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.ProblemWithValidation;
 import it.units.malelab.jgea.representation.sequence.Sequence;
-import it.units.malelab.jgea.core.evolver.DeterministicCrowdingEvolver;
-import it.units.malelab.jgea.core.evolver.DifferentialEvolution;
 import it.units.malelab.jgea.lab.FitnessSharingDivideAndConquerEvolver;
-import it.units.malelab.jgea.core.evolver.MutationOnly;
-import it.units.malelab.jgea.core.evolver.StandardEvolver;
-import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversity;
 import it.units.malelab.jgea.lab.biased.BiasedGenerator;
 import it.units.malelab.jgea.lab.biased.Filler;
 import it.units.malelab.jgea.lab.biased.Percentile;
@@ -77,9 +74,7 @@ import it.units.malelab.jgea.representation.grammar.ge.WeightedHierarchicalMappe
 import it.units.malelab.jgea.problem.surrogate.ControlledPrecisionProblem;
 import it.units.malelab.jgea.problem.symbolicregression.AbstractSymbolicRegressionProblem;
 import it.units.malelab.jgea.problem.symbolicregression.Pagie1;
-import it.units.malelab.jgea.problem.synthetic.LinearPoints;
-import it.units.malelab.jgea.problem.synthetic.Text;
-import it.units.malelab.jgea.problem.synthetic.TreeSize;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -113,11 +108,15 @@ public class Example extends Worker {
     try {
       //tunablePagie1CFGGP(executorService);
       //linearPointsDE(executorService);
+      //sphereDE(executorService);
+      linearPointsCMAES(executorService);
+      //sphereCMAES(executorService);
+      //rastriginCMAES(executorService);
       //treeSizeBiasedGenerator(executorService);
       //textBiasedGenerator(executorService);
       //parityGE(executorService, "whge");
-      parity(executorService);
-      parityEnforcedDiversity(executorService);
+      //parity(executorService);
+      //parityEnforcedDiversity(executorService);
       //parityGE(executorService, "ge");
       //parityGE(executorService, "whge");
       //parityDCGE(executorService, "whge");
@@ -173,6 +172,71 @@ public class Example extends Worker {
             Lists.newArrayList(new FitnessEvaluations(5000)), 10000);
     Random random = new Random(1);
     de.solve(problem, random, executor, Listener.onExecutor(listener(new Basic(),
+            new Population(),
+            new BestInfo<>((Function) problem.getFitnessFunction(), "%5.3f"),
+            new BestPrinter(new DoubleArrayPrinter("%+3.1f"), "%s")
+    ), executor));
+  }
+
+  private void sphereDE(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
+    Problem<double[], Double> problem = new Sphere();
+    DifferentialEvolution<Double> de = new DifferentialEvolution<>(
+            100, 4,
+            0.8, 0.5,
+            16,
+            5d, 10d,
+            new ComparableRanker(new FitnessComparator(Function.identity())),
+            Lists.newArrayList(new FitnessEvaluations(5000)), 10000);
+    Random random = new Random(1);
+    de.solve(problem, random, executor, Listener.onExecutor(listener(new Basic(),
+            new Population(),
+            new BestInfo<>((Function) problem.getFitnessFunction(), "%5.3f"),
+            new BestPrinter(new DoubleArrayPrinter("%+3.1f"), "%s")
+    ), executor));
+  }
+
+  private void linearPointsCMAES(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
+    Problem<double[], Double> problem = new LinearPoints();
+    Random random = new Random(1);
+    CMAEvolutionStrategy<Double> cmaes = new CMAEvolutionStrategy<>(
+            16,
+            new ComparableRanker(new FitnessComparator(Function.identity())),
+            Lists.newArrayList(new  FitnessEvaluations(5000)),
+            10000,
+            random);
+    cmaes.solve(problem, random, executor, Listener.onExecutor(listener(new Basic(),
+            new Population(),
+            new BestInfo<>((Function) problem.getFitnessFunction(), "%5.3f"),
+            new BestPrinter(new DoubleArrayPrinter("%+3.1f"), "%s")
+    ), executor));
+  }
+
+  private void sphereCMAES(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
+    Problem<double[], Double> problem = new Sphere();
+    Random random = new Random(1);
+    CMAEvolutionStrategy<Double> cmaes = new CMAEvolutionStrategy<>(
+            16,
+            new ComparableRanker(new FitnessComparator(Function.identity())),
+            Lists.newArrayList(new  FitnessEvaluations(5000)),
+            10000,
+            random);
+    cmaes.solve(problem, random, executor, Listener.onExecutor(listener(new Basic(),
+            new Population(),
+            new BestInfo<>((Function) problem.getFitnessFunction(), "%5.3f"),
+            new BestPrinter(new DoubleArrayPrinter("%+3.1f"), "%s")
+    ), executor));
+  }
+
+  private void rastriginCMAES(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
+    Problem<double[], Double> problem = new Rastrigin();
+    Random random = new Random(1);
+    CMAEvolutionStrategy<Double> cmaes = new CMAEvolutionStrategy<>(
+            16,
+            new ComparableRanker(new FitnessComparator(Function.identity())),
+            Lists.newArrayList(new  FitnessEvaluations(5000)),
+            10000,
+            random);
+    cmaes.solve(problem, random, executor, Listener.onExecutor(listener(new Basic(),
             new Population(),
             new BestInfo<>((Function) problem.getFitnessFunction(), "%5.3f"),
             new BestPrinter(new DoubleArrayPrinter("%+3.1f"), "%s")
