@@ -27,7 +27,6 @@ public class Rastrigin implements Problem<double[], Double> {
             for (int i = 0; i < solution.length; i++) {
                 sum += solution[i] * solution[i] - 10 * Math.cos(2 * Math.PI * solution[i]);
             }
-            System.out.println(10 * solution.length + sum);
             return 10 * solution.length + sum;
         }
     }

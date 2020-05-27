@@ -26,7 +26,6 @@ public class Sphere implements Problem<double[], Double> {
             for (int i = 0; i < solution.length; i++) {
                 sum += solution[i] * solution[i];
             }
-            System.out.println(sum);
             return sum;
         }
     }

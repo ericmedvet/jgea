@@ -31,7 +31,7 @@ public class DoubleArrayPrinter implements Function<double[], String> {
     for (int i = 0; i<a.length; i++) {
       sb.append(String.format(formats[i%formats.length], a[i]));
       if (i<a.length-1) {
-        sb.append(";");
+        sb.append(",");
       }
     }
     sb.append("]");

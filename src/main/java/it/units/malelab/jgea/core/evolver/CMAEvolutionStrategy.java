@@ -43,6 +43,14 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
      */
     protected final int size;
     /**
+     * Endpoint of the initial search points.
+     */
+    protected final double initMin;
+    /**
+     * Endpoint of the initial search points.
+     */
+    protected final double initMax;
+    /**
      * Step-size.
      */
     double stepSize;
@@ -82,12 +90,14 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
     protected final List<StopCondition> stopConditions;
     protected final long cacheSize;
 
-    private static final Logger L = Logger.getLogger(StandardEvolver.class.getName());
+    private static final Logger L = Logger.getLogger(CMAEvolutionStrategy.class.getName());
 
-    public CMAEvolutionStrategy(int lambda, int mu, int size, double stepSize, double[] weights, double cs, double cc, double mueff, double chiN, double cmu, double c1, double damps, Ranker<Individual<double[], double[], F>> ranker, List<StopCondition> stopConditions, long cacheSize) {
+    public CMAEvolutionStrategy(int lambda, int mu, int size, double initMin, double initMax, double stepSize, double[] weights, double cs, double cc, double mueff, double chiN, double cmu, double c1, double damps, Ranker<Individual<double[], double[], F>> ranker, List<StopCondition> stopConditions, long cacheSize) {
         this.lambda = lambda;
         this.mu = mu;
         this.size = size;
+        this.initMin = initMin;
+        this.initMax = initMax;
         this.stepSize = stepSize;
         this.weights = weights;
         this.cs = cs;
@@ -102,11 +112,51 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
         this.cacheSize = cacheSize;
     }
 
+    public CMAEvolutionStrategy(int lambda, int mu, int size, double initMin, double initMax, double stepSize, Ranker<Individual<double[], double[], F>> ranker, List<StopCondition> stopConditions, long cacheSize) {
+        this.lambda = lambda;
+        this.mu = mu;
+        this.size = size;
+        this.initMin = initMin;
+        this.initMax = initMax;
+        this.stepSize = stepSize;
+        this.ranker = ranker;
+        this.stopConditions = stopConditions;
+        this.cacheSize = cacheSize;
+
+        weights = new double[mu];
+        double sum = 0d;
+        double sumSq = 0d;
+        for (int i = 0; i < mu; i++) {
+            weights[i] = Math.log((lambda + 1) / 2d) - Math.log(i + 1);
+            sum += weights[i];
+            sumSq += Math.pow(weights[i], 2);
+        }
+        // normalize recombination weights array
+        for (int i = 0; i < mu; i++) {
+            weights[i] /= sum;
+        }
+        mueff = Math.pow(sum, 2) / sumSq;
+
+        // initialize step-size control parameters
+        cs = (mueff + 2) / (size + mueff + 5);
+        damps = 1 + 2 * Math.max(0, Math.sqrt((mueff - 1) / (size + 1d)) - 1) + cs;
+
+        // initialize covariance matrix adaptation
+        cc = (4d + mueff / size) / (size + 4d + 2 * mueff / size);
+        c1 = 2 / (Math.pow((size + 1.3), 2) + mueff);
+        cmu = Math.min(1 - c1, 2 * (mueff - 2 + 1 / mueff) / (Math.pow((size + 2), 2) + 2 * mueff / 2d));
+
+        // initialize other variables
+        chiN = Math.sqrt(size) * (1d - 1d / (4d * size) + 1d / (21d * Math.pow(size, 2)));
+    }
+
     /**
      * Constructs a new CMA-ES instance using default parameters.
      */
-    public CMAEvolutionStrategy(int size, Ranker<Individual<double[], double[], F>> ranker, List<StopCondition> stopConditions, long cacheSize, Random random) {
+    public CMAEvolutionStrategy(int size, double initMin, double initMax, Ranker<Individual<double[], double[], F>> ranker, List<StopCondition> stopConditions, long cacheSize) {
         this.size = size;
+        this.initMin = initMin;
+        this.initMax = initMax;
         this.ranker = ranker;
         this.stopConditions = stopConditions;
         this.cacheSize = cacheSize;
@@ -127,15 +177,11 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
         for (int i = 0; i < mu; i++) {
             weights[i] /= sum;
         }
-        mueff = 1d / sumSq;
+        mueff = Math.pow(sum, 2) / sumSq;
 
         // initialize step-size control parameters
         cs = (mueff + 2) / (size + mueff + 5);
-        if ((mueff - 1) / (size + 1d) > 0) {
-            damps = 1 + 2 * Math.max(0, Math.sqrt((mueff - 1) / (size + 1d)) - 1) + cs;
-        } else {
-            damps = 1 + cs;
-        }
+        damps = 1 + 2 * Math.max(0, Math.sqrt((mueff - 1) / (size + 1d)) - 1) + cs;
 
         // initialize covariance matrix adaptation
         cc = (4d + mueff / size) / (size + 4d + 2 * mueff / size);
@@ -168,13 +214,7 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
 
         // objective variables initial point
         for (int i = 0; i < size; i++) {
-            distrMean[i] = random.nextGaussian();
-        }
-
-        // initialize evolution paths
-        for (int i = 0; i < size; i++) {
-            CEvolutionPath[i] = 0d;
-            sEvolutionPath[i] = 0d;
+            distrMean[i] = random.nextDouble() * (initMax - initMin) + initMin;
         }
 
         L.fine("Starting");
@@ -207,8 +247,20 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
             // update B and D from C
             if ((generations - lastEigenUpdate.get()) > (1d / (c1 + cmu) / size / 10d)) {
                 L.fine(String.format("Eigendecomposition of covariance matrix (g=%d)", generations));
-                lastEigenUpdate.set(generations);
-                eigenDecomposition(B, D, C);
+                lastEigenUpdate.getAndSet(generations);
+                EigenDecomposition eig = new EigenDecomposition(C);
+                // normalized eigenvectors
+                B = eig.getV();
+                D = eig.getD();
+                // D contains standard deviations now
+                for (int i = 0; i < size; i++) {
+                    // numerical problem?
+                    if (D.getEntry(i, i) < 0) {
+                        L.warning("An eigenvalue has become negative");
+                        D.setEntry(i, i, 0d);
+                    }
+                    D.setEntry(i, i, Math.sqrt(D.getEntry(i, i)));
+                }
             }
             // send event
             L.fine(String.format("Ranking population (g=%d)", generations));
@@ -234,6 +286,11 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
                 );
                 L.fine(String.format("Stopping, criterion %s met (g=%d)", stopCondition.getClass().getSimpleName(), generations));
                 break;
+            }
+            // escape flat fitness, or better terminate?
+            if (rankedPopulation.get(0).size() >= Math.ceil(0.7 * lambda)) {
+                stepSize = stepSize * Math.exp(0.2 + cs / damps);
+                L.warning("Flat fitness, consider reformulating the objective");
             }
         }
         L.fine("Ending");

@@ -107,9 +107,9 @@ public class Example extends Worker {
   public void run() {
     try {
       //tunablePagie1CFGGP(executorService);
-      //linearPointsDE(executorService);
+      linearPointsDE(executorService);
       //sphereDE(executorService);
-      linearPointsCMAES(executorService);
+      //linearPointsCMAES(executorService);
       //sphereCMAES(executorService);
       //rastriginCMAES(executorService);
       //treeSizeBiasedGenerator(executorService);
@@ -200,10 +200,10 @@ public class Example extends Worker {
     Random random = new Random(1);
     CMAEvolutionStrategy<Double> cmaes = new CMAEvolutionStrategy<>(
             16,
+            5d, 10d,
             new ComparableRanker(new FitnessComparator(Function.identity())),
             Lists.newArrayList(new  FitnessEvaluations(5000)),
-            10000,
-            random);
+            10000);
     cmaes.solve(problem, random, executor, Listener.onExecutor(listener(new Basic(),
             new Population(),
             new BestInfo<>((Function) problem.getFitnessFunction(), "%5.3f"),
@@ -216,10 +216,10 @@ public class Example extends Worker {
     Random random = new Random(1);
     CMAEvolutionStrategy<Double> cmaes = new CMAEvolutionStrategy<>(
             16,
+            -10, 10,
             new ComparableRanker(new FitnessComparator(Function.identity())),
             Lists.newArrayList(new  FitnessEvaluations(5000)),
-            10000,
-            random);
+            10000);
     cmaes.solve(problem, random, executor, Listener.onExecutor(listener(new Basic(),
             new Population(),
             new BestInfo<>((Function) problem.getFitnessFunction(), "%5.3f"),
@@ -232,10 +232,10 @@ public class Example extends Worker {
     Random random = new Random(1);
     CMAEvolutionStrategy<Double> cmaes = new CMAEvolutionStrategy<>(
             16,
+            -5.12, 5.12,
             new ComparableRanker(new FitnessComparator(Function.identity())),
             Lists.newArrayList(new  FitnessEvaluations(5000)),
-            10000,
-            random);
+            10000);
     cmaes.solve(problem, random, executor, Listener.onExecutor(listener(new Basic(),
             new Population(),
             new BestInfo<>((Function) problem.getFitnessFunction(), "%5.3f"),
