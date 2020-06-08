@@ -117,7 +117,7 @@ public class Example extends Worker {
       //textBiasedGenerator(executorService);
       //parityGE(executorService, "whge");
       parity(executorService);
-      parityEnforcedDiversity(executorService);
+      //parityEnforcedDiversity(executorService);
       //parityGE(executorService, "ge");
       //parityGE(executorService, "whge");
       //parityDCGE(executorService, "whge");
@@ -240,8 +240,7 @@ public class Example extends Worker {
                     new Basic(),
                     new Population(),
                     new BestInfo<>("%6.4f"),
-                    new Diversity(),
-                    new BestPrinter()
+                    new Diversity()
             ), executor)
     );
   }

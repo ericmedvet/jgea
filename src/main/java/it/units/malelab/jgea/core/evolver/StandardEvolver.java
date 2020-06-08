@@ -237,8 +237,6 @@ public class StandardEvolver<G, S, F> implements Evolver<G, S, F> {
         }
       } catch (FunctionException ex) {
         L.severe(String.format("Cannot compute fitness of %s: %s", solution.getClass().getSimpleName(), ex));
-        
-        ex.printStackTrace();
       }
       elapsed = stopwatch.stop().elapsed(TimeUnit.NANOSECONDS);
       Map<String, Object> fitnessInfo = Misc.fromInfoEvents(capturer.getEvents(), "fitness.");

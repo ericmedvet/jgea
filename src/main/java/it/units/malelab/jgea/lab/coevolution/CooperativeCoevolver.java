@@ -14,11 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.units.malelab.jgea.lab;
+package it.units.malelab.jgea.lab.coevolution;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
-import it.units.malelab.jgea.Example;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.Individual;
@@ -34,12 +33,11 @@ import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.core.function.NonDeterministicFunction;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.PrintStreamListener;
+import it.units.malelab.jgea.core.listener.MultiFileListenerFactory;
 import it.units.malelab.jgea.core.listener.collector.Basic;
 import it.units.malelab.jgea.core.listener.collector.BestInfo;
 import it.units.malelab.jgea.core.listener.collector.BestPrinter;
 import it.units.malelab.jgea.core.listener.collector.Diversity;
-import it.units.malelab.jgea.core.listener.collector.FunctionOfBest;
 import it.units.malelab.jgea.core.listener.collector.Population;
 import it.units.malelab.jgea.core.listener.collector.Static;
 import it.units.malelab.jgea.core.listener.event.Event;
@@ -57,6 +55,7 @@ import it.units.malelab.jgea.representation.sequence.UniformCrossover;
 import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
 import it.units.malelab.jgea.representation.sequence.bit.BitStringFactory;
+
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -79,7 +78,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
- *
  * @author Eric Medvet <eric.medvet@gmail.com>
  */
 public class CooperativeCoevolver<G1, G2, S1, S2, S, F> implements Evolver<Pair<S1, S2>, S, F> {
@@ -90,13 +88,13 @@ public class CooperativeCoevolver<G1, G2, S1, S2, S, F> implements Evolver<Pair<
   private final Evolver<G2, S2, F> evolver2;
   private final Factory<S1> factory1;
   private final Factory<S2> factory2;
-  private final Ranker<Individual<Pair<G1, G2>, S, F>> ranker;
+  private final Ranker<Individual<Pair<S1, S2>, S, F>> ranker;
   private final int initialPopulationSize;
   private final int cacheSize;
 
   private static final Logger L = Logger.getLogger(CooperativeCoevolver.class.getName());
 
-  public CooperativeCoevolver(Function<Collection<F>, F> fitnessAggregator, BiFunction<S1, S2, S> composer, Evolver<G1, S1, F> evolver1, Evolver<G2, S2, F> evolver2, Factory<S1> factory1, Factory<S2> factory2, Ranker<Individual<Pair<G1, G2>, S, F>> ranker, int initialPopulationSize, int cacheSize) {
+  public CooperativeCoevolver(Function<Collection<F>, F> fitnessAggregator, BiFunction<S1, S2, S> composer, Evolver<G1, S1, F> evolver1, Evolver<G2, S2, F> evolver2, Factory<S1> factory1, Factory<S2> factory2, Ranker<Individual<Pair<S1, S2>, S, F>> ranker, int initialPopulationSize, int cacheSize) {
     this.fitnessAggregator = fitnessAggregator;
     this.composer = composer;
     this.evolver1 = evolver1;
@@ -132,90 +130,88 @@ public class CooperativeCoevolver<G1, G2, S1, S2, S, F> implements Evolver<Pair<
     populations2.put(0, factory2.build(initialPopulationSize, random));
     //prepare problems
     final Problem<S1, F> problem1 = () -> createPartialFitnessFunction(
-            fitnessFunction,
-            composer,
-            populations1,
-            populations2,
-            fitnessEvaluations,
-            iterations,
-            Function.identity(),
-            populations,
-            executor,
-            random
+        fitnessFunction,
+        composer,
+        populations1,
+        populations2,
+        fitnessEvaluations,
+        iterations,
+        Function.identity(),
+        populations,
+        executor,
+        random
     );
-    final Problem<S2, F> problem2 = () -> createPartialFitnessFunction(fitnessFunction,
-            (S2 s2, S1 s1, Listener l) -> composer.apply(s1, s2),
-            populations2,
-            populations1,
-            fitnessEvaluations,
-            iterations,
-            (Pair<S2, S1> p, Listener l) -> Pair.build(p.second(), p.first()),
-            populations,
-            executor,
-            random
+    final Problem<S2, F> problem2 = () -> createPartialFitnessFunction(
+        fitnessFunction,
+        (S2 s2, S1 s1, Listener l) -> composer.apply(s1, s2),
+        populations2,
+        populations1,
+        fitnessEvaluations,
+        iterations,
+        (Pair<S2, S1> p, Listener l) -> Pair.build(p.second(), p.first()),
+        populations,
+        executor,
+        random
     );
     //prepare listeners
     final Listener listener1 = createListener(
-            fitnessFunction,
-            populations1,
-            populations2,
-            fitnessEvaluations,
-            iterations,
-            stopwatch,
-            populations,
-            listener,
-            random
+        fitnessFunction,
+        populations1,
+        populations2,
+        fitnessEvaluations,
+        iterations,
+        stopwatch,
+        populations,
+        listener,
+        random
     );
     final Listener listener2 = createListener(
-            fitnessFunction,
-            populations2,
-            populations1,
-            fitnessEvaluations,
-            iterations,
-            stopwatch,
-            populations,
-            listener,
-            random
+        fitnessFunction,
+        populations2,
+        populations1,
+        fitnessEvaluations,
+        iterations,
+        stopwatch,
+        populations,
+        listener,
+        random
     );
     //prepare executor services
     final ExecutorService executor1 = Executors.newFixedThreadPool(2);
     final ExecutorService executor2 = Executors.newFixedThreadPool(2);
     //run inner evolvers
-    Future<Collection<S1>> future1 = executor1.submit(() -> {
-      return evolver1.solve(problem1, random, executor1, listener1);
-    });
-    Future<Collection<S2>> future2 = executor2.submit(() -> {
-      return evolver2.solve(problem2, random, executor2, listener2);
-    });
+    Future<Collection<S1>> future1 = executor1.submit(() -> evolver1.solve(problem1, random, executor1, listener1));
+    Future<Collection<S2>> future2 = executor2.submit(() -> evolver2.solve(problem2, random, executor2, listener2));
     //combine solutions
     Collection<S1> solutions1 = future1.get();
     Collection<S2> solutions2 = future2.get();
     L.fine("Ending");
     executor1.shutdown();
     executor2.shutdown();
-    //TODO combine
-    return null;
+    Collection<Individual<Pair<S1, S2>, S, F>> bestRank = ranker.rank(populations.get(populations.lastKey()), random).get(0);
+    return bestRank.stream()
+        .map(Individual::getSolution)
+        .collect(Collectors.toList());
   }
 
   private <ST, SO> Function<ST, F> createPartialFitnessFunction(
-          final NonDeterministicFunction<S, F> fitnessFunction,
-          final BiFunction<ST, SO, S> composer,
-          final SortedMap<Integer, List<ST>> thisPopulations,
-          final SortedMap<Integer, List<SO>> otherPopulations,
-          final AtomicInteger fitnessEvaluations,
-          final AtomicInteger iterations,
-          final Function<Pair<ST, SO>, Pair<S1, S2>> pairMapper,
-          final SortedMap<Integer, List<Individual<Pair<S1, S2>, S, F>>> composedPopulations,
-          final ExecutorService executor,
-          final Random random
+      final NonDeterministicFunction<S, F> fitnessFunction,
+      final BiFunction<ST, SO, S> composer,
+      final SortedMap<Integer, List<ST>> thisPopulations,
+      final SortedMap<Integer, List<SO>> otherPopulations,
+      final AtomicInteger fitnessEvaluations,
+      final AtomicInteger iterations,
+      final Function<Pair<ST, SO>, Pair<S1, S2>> pairMapper,
+      final SortedMap<Integer, List<Individual<Pair<S1, S2>, S, F>>> composedPopulations,
+      final ExecutorService executor,
+      final Random random
   ) {
     return (ST st, Listener listener) -> {
-      L.finest(String.format("gt=%2d, go=%2d\tf() of %s", thisPopulations.lastKey(), otherPopulations.lastKey(), st));
       final int thisCurrentCounter = thisPopulations.lastKey();
       while (otherPopulations.lastKey() < thisCurrentCounter) {
         synchronized (otherPopulations) {
           try {
-            otherPopulations.wait();
+            otherPopulations.wait(100); //TODO maybe put a constant
           } catch (InterruptedException ex) {
             //ignore
           }
@@ -229,12 +225,12 @@ public class CooperativeCoevolver<G1, G2, S1, S2, S, F> implements Evolver<Pair<
             fitnessEvaluations.incrementAndGet();
             F fitness = fitnessFunction.apply(solution, random);
             Individual<Pair<S1, S2>, S, F> individual = new Individual<>(
-                    pairMapper.apply(Pair.build(st, so)),
-                    solution,
-                    fitness,
-                    iterations.get(),
-                    Collections.EMPTY_LIST,
-                    Collections.EMPTY_MAP
+                pairMapper.apply(Pair.build(st, so)),
+                solution,
+                fitness,
+                iterations.get(),
+                Collections.EMPTY_LIST,
+                Collections.EMPTY_MAP
             );
             List<Individual<Pair<S1, S2>, S, F>> composedPopulation;
             synchronized (composedPopulations) {
@@ -263,15 +259,15 @@ public class CooperativeCoevolver<G1, G2, S1, S2, S, F> implements Evolver<Pair<
   }
 
   private <ST, SO> Listener createListener(
-          final NonDeterministicFunction<S, F> fitnessFunction,
-          final SortedMap<Integer, List<ST>> thisPopulations,
-          final SortedMap<Integer, List<SO>> otherPopulations,
-          final AtomicInteger fitnessEvaluations,
-          final AtomicInteger iterations,
-          final Stopwatch stopwatch,
-          final SortedMap<Integer, List<Individual<Pair<S1, S2>, S, F>>> composedPopulations,
-          final Listener listener,
-          final Random random
+      final NonDeterministicFunction<S, F> fitnessFunction,
+      final SortedMap<Integer, List<ST>> thisPopulations,
+      final SortedMap<Integer, List<SO>> otherPopulations,
+      final AtomicInteger fitnessEvaluations,
+      final AtomicInteger iterations,
+      final Stopwatch stopwatch,
+      final SortedMap<Integer, List<Individual<Pair<S1, S2>, S, F>>> composedPopulations,
+      final Listener listener,
+      final Random random
   ) {
     return (Event event) -> {
       if (event instanceof EvolutionEvent) {
@@ -285,94 +281,17 @@ public class CooperativeCoevolver<G1, G2, S1, S2, S, F> implements Evolver<Pair<
           if (thisPopulations.lastKey().equals(otherPopulations.lastKey())) {
             iterations.set(thisPopulations.lastKey());
             EvolutionEvent composedEvent = new EvolutionEvent(
-                    iterations.get(),
-                    fitnessEvaluations.get(),
-                    (fitnessFunction instanceof CachedNonDeterministicFunction) ? ((CachedNonDeterministicFunction) fitnessFunction).getActualCount() : fitnessEvaluations.get(),
-                    ranker.rank((List) composedPopulations.get(iterations.get() - 1), random),
-                    stopwatch.elapsed(TimeUnit.MILLISECONDS)
+                iterations.get(),
+                fitnessEvaluations.get(),
+                (fitnessFunction instanceof CachedNonDeterministicFunction) ? ((CachedNonDeterministicFunction) fitnessFunction).getActualCount() : fitnessEvaluations.get(),
+                (List) ranker.rank(composedPopulations.get(iterations.get() - 1), random),
+                stopwatch.elapsed(TimeUnit.MILLISECONDS)
             );
             listener.listen(composedEvent);
           }
         }
       }
     };
-  }
-
-  private static class Starter extends Worker {
-
-    public Starter(String[] args) throws FileNotFoundException {
-      super(args);
-    }
-
-    @Override
-    public void run() {
-      Random random = new Random(1);
-      int nPop1 = 25;
-      int nPop2 = 25;
-      int l = 100;
-      int nGen = 1000;
-      Map<GeneticOperator<BitString>, Double> operators = new LinkedHashMap<>();
-      operators.put(new BitFlipMutation(0.01d), 0.2d);
-      operators.put(new UniformCrossover<>(), 0.8d);
-      OneMax p = new OneMax();
-      StandardEvolver<BitString, BitString, Double> evolver1 = new StandardEvolver<>(
-              nPop1,
-              new BitStringFactory(l),
-              new ComparableRanker(new FitnessComparator(Function.identity())),
-              Function.identity(),
-              operators,
-              new Tournament<>(Math.max(nPop1 / 5, 2)),
-              new Worst<>(),
-              nPop1,
-              true,
-              Lists.newArrayList(new Iterations(nGen)),
-              0,
-              false
-      );
-      StandardEvolver<BitString, BitString, Double> evolver2 = new StandardEvolver<>(
-              nPop2,
-              new BitStringFactory(l),
-              new ComparableRanker(new FitnessComparator(Function.identity())),
-              Function.identity(),
-              operators,
-              new Tournament<>(Math.max(nPop1 / 2, 2)),
-              new Worst<>(),
-              nPop2,
-              false,
-              Lists.newArrayList(new Iterations(nGen)),
-              0,
-              false
-      );
-      CooperativeCoevolver<BitString, BitString, BitString, BitString, BitString, Double> coevolver = new CooperativeCoevolver<>(
-              (Collection<Double> fs, Listener listener) -> fs.stream().mapToDouble(Double::doubleValue).average().orElse(1d),
-              (BitString b1, BitString b2, Listener listener) -> b1.and(b2),
-              evolver1,
-              evolver2,
-              new BitStringFactory(l),
-              new BitStringFactory(l),
-              new ComparableRanker(new FitnessComparator(Function.identity())),
-              1,
-              100
-      );
-      try {
-        Collection<BitString> solutions = coevolver.solve(p, random, executorService, Listener.onExecutor(listener(
-                new Basic(),
-                new Population(),
-                new Diversity(),
-                new BestInfo<>("%8.6f"),
-                new BestPrinter(BestPrinter.Part.SOLUTION),
-                new BestPrinter(BestPrinter.Part.GENOTYPE)
-        ), executorService));
-      } catch (InterruptedException | ExecutionException ex) {
-        L.log(Level.SEVERE, "Some exception!", ex);
-        ex.printStackTrace();
-      }
-    }
-
-  }
-
-  public final static void main(String[] args) throws FileNotFoundException {
-    new Starter(args);
   }
 
 }
