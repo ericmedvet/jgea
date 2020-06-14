@@ -198,10 +198,19 @@ public class Example extends Worker {
   private void linearPointsCMAES(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
     Problem<double[], Double> problem = new LinearPoints();
     Random random = new Random(1);
-    CMAEvolutionStrategy<Double> cmaes = new CMAEvolutionStrategy<>(
+    // identity function
+    Function<Sequence<Double>, double[]> mapper = (genotype, listener) -> {
+      final double[] solution = new double[genotype.size()];
+      for (int i = 0; i < genotype.size(); i++) {
+        solution[i] = genotype.get(i);
+      }
+      return solution;
+    };
+    CovarianceMatrixAdaptationES<double[], Double> cmaes = new CovarianceMatrixAdaptationES<>(
             16,
             5d, 10d,
             new ComparableRanker(new FitnessComparator(Function.identity())),
+            mapper,
             Lists.newArrayList(new  FitnessEvaluations(5000)),
             10000);
     cmaes.solve(problem, random, executor, Listener.onExecutor(listener(new Basic(),
@@ -214,10 +223,19 @@ public class Example extends Worker {
   private void sphereCMAES(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
     Problem<double[], Double> problem = new Sphere();
     Random random = new Random(1);
-    CMAEvolutionStrategy<Double> cmaes = new CMAEvolutionStrategy<>(
+    // identity function
+    Function<Sequence<Double>, double[]> mapper = (genotype, listener) -> {
+      final double[] solution = new double[genotype.size()];
+      for (int i = 0; i < genotype.size(); i++) {
+        solution[i] = genotype.get(i);
+      }
+      return solution;
+    };
+    CovarianceMatrixAdaptationES<double[], Double> cmaes = new CovarianceMatrixAdaptationES<>(
             16,
             -10, 10,
             new ComparableRanker(new FitnessComparator(Function.identity())),
+            mapper,
             Lists.newArrayList(new  FitnessEvaluations(5000)),
             10000);
     cmaes.solve(problem, random, executor, Listener.onExecutor(listener(new Basic(),
@@ -230,10 +248,19 @@ public class Example extends Worker {
   private void rastriginCMAES(ExecutorService executor) throws IOException, InterruptedException, ExecutionException {
     Problem<double[], Double> problem = new Rastrigin();
     Random random = new Random(1);
-    CMAEvolutionStrategy<Double> cmaes = new CMAEvolutionStrategy<>(
+    // identity function
+    Function<Sequence<Double>, double[]> mapper = (genotype, listener) -> {
+      final double[] solution = new double[genotype.size()];
+      for (int i = 0; i < genotype.size(); i++) {
+        solution[i] = genotype.get(i);
+      }
+      return solution;
+    };
+    CovarianceMatrixAdaptationES<double[], Double> cmaes = new CovarianceMatrixAdaptationES<>(
             16,
             -5.12, 5.12,
             new ComparableRanker(new FitnessComparator(Function.identity())),
+            mapper,
             Lists.newArrayList(new  FitnessEvaluations(5000)),
             10000);
     cmaes.solve(problem, random, executor, Listener.onExecutor(listener(new Basic(),

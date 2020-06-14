@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.Problem;
-import it.units.malelab.jgea.core.evolver.CMAEvolutionStrategy;
+import it.units.malelab.jgea.core.evolver.CovarianceMatrixAdaptationES;
 import it.units.malelab.jgea.core.evolver.DifferentialEvolution;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
@@ -59,8 +59,8 @@ public class SingleObjectiveOptimization extends Worker {
 
         // prepare problems
         Map<String, Problem<double[], Double>> problems = new LinkedHashMap<>();
-//        problems.put("LinearPoints", new LinearPoints());
-//        problems.put("Sphere", new Sphere());
+        problems.put("LinearPoints", new LinearPoints());
+        problems.put("Sphere", new Sphere());
         problems.put("Rastrigin", new Rastrigin());
 
         // prepare evolvers
@@ -80,12 +80,13 @@ public class SingleObjectiveOptimization extends Worker {
                     if (evolverName.equals("GA")) {
                         //prepare problem-dependent components
                         Factory genotypeFactory = null;
+                        // identity function
                         Function<Sequence<Double>, double[]> mapper = (genotype, listener) -> {
-                            final double[] doubles = new double[genotype.size()];
+                            final double[] solution = new double[genotype.size()];
                             for (int i = 0; i < genotype.size(); i++) {
-                                doubles[i] = genotype.get(i);
+                                solution[i] = genotype.get(i);
                             }
-                            return doubles;
+                            return solution;
                         };
                         Map<GeneticOperator, Double> operators = new LinkedHashMap<>();
                         if (problemEntry.getKey().equals("LinearPoints")) {
@@ -186,6 +187,14 @@ public class SingleObjectiveOptimization extends Worker {
                             L.log(Level.SEVERE, String.format("Cannot solve problem: %s", ex), ex);
                         }
                     } else if (evolverName.equals("CMAES")) {
+                        // identity function
+                        Function<Sequence<Double>, double[]> mapper = (genotype, listener) -> {
+                            final double[] solution = new double[genotype.size()];
+                            for (int i = 0; i < genotype.size(); i++) {
+                                solution[i] = genotype.get(i);
+                            }
+                            return solution;
+                        };
                         // prepare problem-dependent components
                         Double initMin = null;
                         Double initMax = null;
@@ -201,10 +210,11 @@ public class SingleObjectiveOptimization extends Worker {
                         }
                         // prepare evolver
                         Random random = new Random(run);
-                        CMAEvolutionStrategy<Double> cmaes = new CMAEvolutionStrategy<>(
+                        CovarianceMatrixAdaptationES<double[], Double> cmaes = new CovarianceMatrixAdaptationES<>(
                                 size,
                                 initMin, initMax,
                                 new ComparableRanker(new FitnessComparator(Function.identity())),
+                                mapper,
                                 Lists.newArrayList(new FitnessEvaluations(evaluations)),
                                 cacheSize);
                         // prepare keys

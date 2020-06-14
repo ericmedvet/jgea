@@ -4,14 +4,13 @@ import com.google.common.base.Stopwatch;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.evolver.stopcondition.StopCondition;
-import it.units.malelab.jgea.core.function.Bounded;
-import it.units.malelab.jgea.core.function.CachedBoundedNonDeterministicFunction;
-import it.units.malelab.jgea.core.function.CachedNonDeterministicFunction;
-import it.units.malelab.jgea.core.function.NonDeterministicFunction;
+import it.units.malelab.jgea.core.function.*;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.event.*;
 import it.units.malelab.jgea.core.ranker.Ranker;
 import it.units.malelab.jgea.core.util.Misc;
+import it.units.malelab.jgea.representation.sequence.FixedLengthSequence;
+import it.units.malelab.jgea.representation.sequence.Sequence;
 import org.apache.commons.math3.linear.*;
 
 import java.util.*;
@@ -27,7 +26,7 @@ import java.util.stream.Collectors;
  *
  * @author luca
  */
-public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> {
+public class CovarianceMatrixAdaptationES <S, F> implements Evolver<Sequence<Double>, S, F> {
 
     /**
      * Population size, sample size, number of offspring, λ.
@@ -86,13 +85,14 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
      * Damping parameter for step-size update.
      */
     protected final double damps;
-    protected final Ranker<Individual<double[], double[], F>> ranker;
+    protected final Ranker<Individual<Sequence<Double>, S, F>> ranker;
+    protected final NonDeterministicFunction<Sequence<Double>, S> mapper;
     protected final List<StopCondition> stopConditions;
     protected final long cacheSize;
 
-    private static final Logger L = Logger.getLogger(CMAEvolutionStrategy.class.getName());
+    private static final Logger L = Logger.getLogger(CovarianceMatrixAdaptationES.class.getName());
 
-    public CMAEvolutionStrategy(int lambda, int mu, int size, double initMin, double initMax, double stepSize, double[] weights, double cs, double cc, double mueff, double chiN, double cmu, double c1, double damps, Ranker<Individual<double[], double[], F>> ranker, List<StopCondition> stopConditions, long cacheSize) {
+    public CovarianceMatrixAdaptationES(int lambda, int mu, int size, double initMin, double initMax, double stepSize, double[] weights, double cs, double cc, double mueff, double chiN, double cmu, double c1, double damps, Ranker<Individual<Sequence<Double>, S, F>> ranker, NonDeterministicFunction<Sequence<Double>, S> mapper, List<StopCondition> stopConditions, long cacheSize) {
         this.lambda = lambda;
         this.mu = mu;
         this.size = size;
@@ -108,11 +108,12 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
         this.c1 = c1;
         this.damps = damps;
         this.ranker = ranker;
+        this.mapper = mapper;
         this.stopConditions = stopConditions;
         this.cacheSize = cacheSize;
     }
 
-    public CMAEvolutionStrategy(int lambda, int mu, int size, double initMin, double initMax, double stepSize, Ranker<Individual<double[], double[], F>> ranker, List<StopCondition> stopConditions, long cacheSize) {
+    public CovarianceMatrixAdaptationES(int lambda, int mu, int size, double initMin, double initMax, double stepSize, Ranker<Individual<Sequence<Double>, S, F>> ranker, NonDeterministicFunction<Sequence<Double>, S> mapper, List<StopCondition> stopConditions, long cacheSize) {
         this.lambda = lambda;
         this.mu = mu;
         this.size = size;
@@ -120,6 +121,7 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
         this.initMax = initMax;
         this.stepSize = stepSize;
         this.ranker = ranker;
+        this.mapper = mapper;
         this.stopConditions = stopConditions;
         this.cacheSize = cacheSize;
 
@@ -153,11 +155,12 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
     /**
      * Constructs a new CMA-ES instance using default parameters.
      */
-    public CMAEvolutionStrategy(int size, double initMin, double initMax, Ranker<Individual<double[], double[], F>> ranker, List<StopCondition> stopConditions, long cacheSize) {
+    public CovarianceMatrixAdaptationES(int size, double initMin, double initMax, Ranker<Individual<Sequence<Double>, S, F>> ranker, NonDeterministicFunction<Sequence<Double>, S> mapper, List<StopCondition> stopConditions, long cacheSize) {
         this.size = size;
         this.initMin = initMin;
         this.initMax = initMax;
         this.ranker = ranker;
+        this.mapper = mapper;
         this.stopConditions = stopConditions;
         this.cacheSize = cacheSize;
 
@@ -193,7 +196,7 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
     }
 
     @Override
-    public Collection<double[]> solve(Problem<double[], F> problem, Random random, ExecutorService executor, Listener listener) throws InterruptedException, ExecutionException {
+    public Collection<S> solve(Problem<S, F> problem, Random random, ExecutorService executor, Listener listener) throws InterruptedException, ExecutionException {
         // Mean value of the search distribution.
         double[] distrMean = new double[size];
         // Evolution path for step-size.
@@ -222,7 +225,7 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
         AtomicInteger births = new AtomicInteger();
         AtomicInteger fitnessEvaluations = new AtomicInteger();
         Stopwatch stopwatch = Stopwatch.createStarted();
-        NonDeterministicFunction<double[], F> fitnessFunction = problem.getFitnessFunction();
+        NonDeterministicFunction<S, F> fitnessFunction = problem.getFitnessFunction();
         if (cacheSize > 0) {
             if (fitnessFunction instanceof Bounded) {
                 fitnessFunction = new CachedBoundedNonDeterministicFunction<>(fitnessFunction, cacheSize);
@@ -230,13 +233,13 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
                 fitnessFunction = fitnessFunction.cached(cacheSize);
             }
         }
-        List<Individual<double[], double[], F>> population = new ArrayList<>();
+        List<Individual<Sequence<Double>, S, F>> population = new ArrayList<>();
         //iterate
         while (true) {
             generations = generations + 1;
             // sample population
             L.fine(String.format("Sampling population (g=%d)", generations));
-            List<Individual<double[], double[], F>> newPopulation = samplePopulation(fitnessFunction, generations, births, fitnessEvaluations, random, listener, executor, distrMean, B, D);
+            List<Individual<Sequence<Double>, S, F>> newPopulation = samplePopulation(fitnessFunction, generations, births, fitnessEvaluations, random, listener, executor, distrMean, B, D);
             // update population
             L.fine(String.format("Updating population (g=%d)", generations));
             population.clear();
@@ -264,7 +267,7 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
             }
             // send event
             L.fine(String.format("Ranking population (g=%d)", generations));
-            List<Collection<Individual<double[], double[], F>>> rankedPopulation = ranker.rank(population, random);
+            List<Collection<Individual<Sequence<Double>, S, F>>> rankedPopulation = ranker.rank(population, random);
             EvolutionEvent event = new EvolutionEvent(
                     generations,
                     births.get(),
@@ -295,9 +298,9 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
         }
         L.fine("Ending");
         //take out solutions
-        List<Collection<Individual<double[], double[], F>>> rankedPopulation = ranker.rank(population, random);
-        Collection<double[]> solutions = new ArrayList<>();
-        for (Individual<double[], double[], F> individual : rankedPopulation.get(0)) {
+        List<Collection<Individual<Sequence<Double>, S, F>>> rankedPopulation = ranker.rank(population, random);
+        Collection<S> solutions = new ArrayList<>();
+        for (Individual<Sequence<Double>, S, F> individual : rankedPopulation.get(0)) {
             solutions.add(individual.getSolution());
         }
         return solutions;
@@ -312,10 +315,11 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
         return null;
     }
 
-    protected Callable<Individual<double[], double[], F>> birthCallable(
-            final double[] point,
+    protected Callable<Individual<Sequence<Double>, S, F>> birthCallable(
+            final Sequence<Double> genotype,
             final int birthIteration,
-            final NonDeterministicFunction<double[], F> fitnessFunction,
+            final NonDeterministicFunction<Sequence<Double>, S> solutionFunction,
+            final NonDeterministicFunction<S, F> fitnessFunction,
             final Random random,
             final Listener listener) {
         return () -> {
@@ -323,18 +327,44 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
             Capturer capturer = new Capturer();
             long elapsed;
             //solution -> fitness
+            stopwatch.start();
+            S solution = null;
+            try {
+                solution = solutionFunction.apply(genotype, random, capturer);
+            } catch (FunctionException ex) {
+                //invalid solution
+                L.finest(String.format("Cannot map %s: %s", genotype.getClass().getSimpleName(), ex));
+            }
+            elapsed = stopwatch.stop().elapsed(TimeUnit.NANOSECONDS);
+            Map<String, Object> solutionInfo = Misc.fromInfoEvents(capturer.getEvents(), "solution.");
+            listener.listen(new TimedEvent(elapsed, TimeUnit.NANOSECONDS, new FunctionEvent(genotype, solution, solutionInfo)));
+            capturer.clear();
+            //solution -> fitness
             stopwatch.reset().start();
-            F fitness = fitnessFunction.apply(point, random, capturer);
+            F fitness = null;
+            try {
+                if (solution != null) {
+                    fitness = fitnessFunction.apply(solution, random, capturer);
+                } else {
+                    if (fitnessFunction instanceof Bounded) {
+                        fitness = ((Bounded<F>) fitnessFunction).worstValue();
+                    }
+                }
+            } catch (FunctionException ex) {
+                L.severe(String.format("Cannot compute fitness of %s: %s", solution.getClass().getSimpleName(), ex));
+
+                ex.printStackTrace();
+            }
             elapsed = stopwatch.stop().elapsed(TimeUnit.NANOSECONDS);
             Map<String, Object> fitnessInfo = Misc.fromInfoEvents(capturer.getEvents(), "fitness.");
-            listener.listen(new TimedEvent(elapsed, TimeUnit.NANOSECONDS, new FunctionEvent(point, fitness, fitnessInfo)));
-            //merge info
-            return new Individual<>(point, point, fitness, birthIteration, null, fitnessInfo);
+            listener.listen(new TimedEvent(elapsed, TimeUnit.NANOSECONDS, new FunctionEvent(genotype, solution, fitnessInfo)));
+            // merge info
+            return new Individual<>(genotype, solution, fitness, birthIteration, null, Misc.merge(solutionInfo, fitnessInfo));
         };
     }
 
-    protected List<Individual<double[], double[], F>> samplePopulation(
-            final NonDeterministicFunction<double[], F> fitnessFunction,
+    protected List<Individual<Sequence<Double>, S, F>> samplePopulation(
+            final NonDeterministicFunction<S, F> fitnessFunction,
             final int generation,
             final AtomicInteger births,
             final AtomicInteger fitnessEvaluations,
@@ -344,10 +374,10 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
             final double[] distrMean,
             final RealMatrix B,
             final RealMatrix D) throws InterruptedException, ExecutionException {
-        List<Callable<Individual<double[], double[], F>>> tasks = new ArrayList<>();
+        List<Callable<Individual<Sequence<Double>, S, F>>> tasks = new ArrayList<>();
         while (tasks.size() < lambda) {
             // new point
-            double[] newPoint = new double[size];
+            FixedLengthSequence<Double> genotype = new FixedLengthSequence<>(size, 0d);
             // z ∼ N (0, I) normally distributed vector
             double[] arz = new double[size];
             for (int i = 0; i < size; i++) {
@@ -357,9 +387,10 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
             double[] ary = B.preMultiply(D.preMultiply(arz));
             for (int i = 0; i < size; i++) {
                 // add mutation (sigma*B*(D*z))
-                newPoint[i] = distrMean[i] + stepSize * ary[i];
+                genotype.set(i, distrMean[i] + stepSize * ary[i]);
             }
-            tasks.add(birthCallable(newPoint, generation, fitnessFunction, random, listener));
+
+            tasks.add(birthCallable(genotype, generation, mapper, fitnessFunction, random, listener));
             births.incrementAndGet();
             fitnessEvaluations.incrementAndGet();
         }
@@ -367,7 +398,7 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
     }
 
     protected void updateDistribution(
-            final List<Individual<double[], double[], F>> population,
+            final List<Individual<Sequence<Double>, S, F>> population,
             final int generation,
             final Random random,
             final double[] distrMean,
@@ -377,9 +408,9 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
             final RealMatrix D,
             final RealMatrix C) {
         // sort by fitness and compute weighted mean into distrMean
-        List<Collection<Individual<double[], double[], F>>> rankedPopulation = ranker.rank(population, random);
+        List<Collection<Individual<Sequence<Double>, S, F>>> rankedPopulation = ranker.rank(population, random);
         // best mu ranked points
-        List<Individual<double[], double[], F>> bestMuPoints = new ArrayList<>();
+        List<Individual<Sequence<Double>, S, F>> bestMuPoints = new ArrayList<>();
         int paretoLevel = 0;
         while (bestMuPoints.size() < mu) {
             bestMuPoints.addAll(rankedPopulation.get(paretoLevel).stream().limit(mu - bestMuPoints.size()).collect(Collectors.toList()));
@@ -391,7 +422,7 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
         for (int i = 0; i < size; i++) {
             distrMean[i] = 0;
             for (int j = 0; j < mu; j++) {
-                distrMean[i] += weights[j] * bestMuPoints.get(j).getGenotype()[i];
+                distrMean[i] += weights[j] * bestMuPoints.get(j).getGenotype().get(i);
             }
             artmp[i] = (distrMean[i] - oldDistrMean[i]) / stepSize;
         }
@@ -427,7 +458,7 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
                 double rankOneUpdate = CEvolutionPath[i] * CEvolutionPath[j] + (1 - hsig) * cc * (2 - cc) * C.getEntry(i, j);
                 double rankMuUpdate = 0d;
                 for (int k = 0; k < mu; k++) {
-                    rankMuUpdate += weights[k] * ((bestMuPoints.get(k).getGenotype()[i] - oldDistrMean[i]) / stepSize) * ((bestMuPoints.get(k).getGenotype()[j] - oldDistrMean[j]) / stepSize);
+                    rankMuUpdate += weights[k] * ((bestMuPoints.get(k).getGenotype().get(i) - oldDistrMean[i]) / stepSize) * ((bestMuPoints.get(k).getGenotype().get(j) - oldDistrMean[j]) / stepSize);
                 }
                 C.setEntry(i, j, (1 - c1 - cmu) * C.getEntry(i, j) + c1 * rankOneUpdate + cmu * rankMuUpdate);
             }
@@ -448,4 +479,5 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
             D.setEntry(i, i, Math.sqrt(eig.getD().getEntry(i, i)));
         }
     }
+
 }
