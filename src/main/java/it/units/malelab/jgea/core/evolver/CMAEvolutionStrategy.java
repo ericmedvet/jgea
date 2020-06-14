@@ -252,13 +252,13 @@ public class CMAEvolutionStrategy <F> implements Evolver<double[], double[], F> 
                 // normalized eigenvectors
                 B = eig.getV();
                 D = eig.getD();
-                // D contains standard deviations now
                 for (int i = 0; i < size; i++) {
                     // numerical problem?
                     if (D.getEntry(i, i) < 0) {
                         L.warning("An eigenvalue has become negative");
                         D.setEntry(i, i, 0d);
                     }
+                    // D contains standard deviations now
                     D.setEntry(i, i, Math.sqrt(D.getEntry(i, i)));
                 }
             }

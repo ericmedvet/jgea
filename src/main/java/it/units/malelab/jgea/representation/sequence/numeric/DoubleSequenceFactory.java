@@ -34,5 +34,16 @@ public class DoubleSequenceFactory implements IndependentFactory<Sequence<Double
     }
     return sequence;
   }
-  
+
+  public double getMin() {
+    return min;
+  }
+
+  public double getMax() {
+    return max;
+  }
+
+  public int getLength() {
+    return length;
+  }
 }
