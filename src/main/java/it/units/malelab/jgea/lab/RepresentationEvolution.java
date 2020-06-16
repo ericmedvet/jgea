@@ -12,7 +12,7 @@ import it.units.malelab.jgea.representation.tree.Node;
 import it.units.malelab.jgea.core.evolver.DeterministicCrowdingEvolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
-import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
+import it.units.malelab.jgea.core.evolver.stopcondition.TargetFitness;
 import it.units.malelab.jgea.core.fitness.Linearization;
 import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
@@ -297,7 +297,7 @@ public class RepresentationEvolution extends Worker {
               true,
               Lists.newArrayList(
                       new Iterations(validationIterations),
-                      new PerfectFitness<>(innerProblemEntry.getValue().getProblem().getFitnessFunction())),
+                      new TargetFitness<>(innerProblemEntry.getValue().getProblem().getFitnessFunction())),
               CACHE_SIZE,
               false
       );

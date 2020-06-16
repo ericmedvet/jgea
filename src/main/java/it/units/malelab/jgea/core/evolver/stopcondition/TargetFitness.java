@@ -15,26 +15,25 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.core;
+package it.units.malelab.jgea.core.evolver.stopcondition;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import it.units.malelab.jgea.core.listener.Event;
+
+import java.util.function.Predicate;
 
 /**
  * @author eric
  */
-public interface IndependentFactory<T> extends Factory<T> {
+public class TargetFitness<F> implements Predicate<Event<Object, Object, F>> {
 
-  @Override
-  default List<T> build(int n, Random random) {
-    List<T> ts = new ArrayList<>();
-    for (int i = 0; i < n; i++) {
-      ts.add(build(random));
-    }
-    return ts;
+  private final F targetFitness;
+
+  public TargetFitness(F targetFitness) {
+    this.targetFitness = targetFitness;
   }
 
-  T build(Random random);
-
+  @Override
+  public boolean test(Event<Object, Object, F> event) {
+    return event.getOrderedPopulation().all().stream().anyMatch(i -> targetFitness.equals(i.getFitness()));
+  }
 }

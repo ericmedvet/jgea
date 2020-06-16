@@ -3,12 +3,11 @@ package it.units.malelab.jgea.lab.coevolution;
 import com.google.common.collect.Lists;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.Factory;
-import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversity;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
-import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
+import it.units.malelab.jgea.core.evolver.stopcondition.TargetFitness;
 import it.units.malelab.jgea.core.function.BiFunction;
 import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.listener.Listener;
@@ -20,9 +19,7 @@ import it.units.malelab.jgea.core.ranker.FitnessComparator;
 import it.units.malelab.jgea.core.ranker.selector.Tournament;
 import it.units.malelab.jgea.core.ranker.selector.Worst;
 import it.units.malelab.jgea.problem.symbolicregression.*;
-import it.units.malelab.jgea.problem.symbolicregression.element.Constant;
 import it.units.malelab.jgea.problem.symbolicregression.element.Element;
-import it.units.malelab.jgea.problem.symbolicregression.element.Operator;
 import it.units.malelab.jgea.problem.symbolicregression.element.Variable;
 import it.units.malelab.jgea.problem.synthetic.OneMax;
 import it.units.malelab.jgea.representation.grammar.cfggp.RampedHalfAndHalf;
@@ -108,7 +105,7 @@ public class Starter extends Worker {
                     new Worst<>(),
                     nPop1 * nPop2,
                     true,
-                    Lists.newArrayList(new Iterations(nGen), new PerfectFitness<>(0d)),
+                    Lists.newArrayList(new Iterations(nGen), new TargetFitness<>(0d)),
                     1000,
                     false
                 );
@@ -124,7 +121,7 @@ public class Starter extends Worker {
                     new Worst<>(),
                     nPop1 * nPop2,
                     true,
-                    Lists.newArrayList(new Iterations(nGen), new PerfectFitness<>(0d)),
+                    Lists.newArrayList(new Iterations(nGen), new TargetFitness<>(0d)),
                     1000
                 );
               } else if (evolverType.startsWith("coevo")) {
@@ -259,7 +256,7 @@ public class Starter extends Worker {
                     new Worst<>(),
                     nPop1 * nPop2,
                     true,
-                    Lists.newArrayList(new Iterations(nGen), new PerfectFitness<>(0d)),
+                    Lists.newArrayList(new Iterations(nGen), new TargetFitness<>(0d)),
                     1000,
                     false
                 );

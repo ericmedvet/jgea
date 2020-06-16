@@ -17,7 +17,7 @@ import it.units.malelab.jgea.core.evolver.DeterministicCrowdingEvolver;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.ElapsedTime;
-import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
+import it.units.malelab.jgea.core.evolver.stopcondition.TargetFitness;
 import it.units.malelab.jgea.core.fitness.ClassificationFitness;
 import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.function.Reducer;
@@ -218,7 +218,7 @@ public class FSDC extends Worker {
                     new Worst(),
                     popSize,
                     true,
-                    Lists.newArrayList(new ElapsedTime(maxSeconds, TimeUnit.SECONDS), new PerfectFitness<>(problem.getFitnessFunction())),
+                    Lists.newArrayList(new ElapsedTime(maxSeconds, TimeUnit.SECONDS), new TargetFitness<>(problem.getFitnessFunction())),
                     cacheSize,
                     false
             );
@@ -232,7 +232,7 @@ public class FSDC extends Worker {
                     operators,
                     new Tournament<>(3),
                     new Worst(),
-                    Lists.newArrayList(new ElapsedTime(maxSeconds, TimeUnit.SECONDS), new PerfectFitness<>(problem.getFitnessFunction())),
+                    Lists.newArrayList(new ElapsedTime(maxSeconds, TimeUnit.SECONDS), new TargetFitness<>(problem.getFitnessFunction())),
                     cacheSize,
                     false
             );
@@ -249,7 +249,7 @@ public class FSDC extends Worker {
                     new Worst(),
                     popSize,
                     true,
-                    Lists.newArrayList(new ElapsedTime(maxSeconds, TimeUnit.SECONDS), new PerfectFitness<>(problem.getFitnessFunction())),
+                    Lists.newArrayList(new ElapsedTime(maxSeconds, TimeUnit.SECONDS), new TargetFitness<>(problem.getFitnessFunction())),
                     cacheSize
             );
           } else {

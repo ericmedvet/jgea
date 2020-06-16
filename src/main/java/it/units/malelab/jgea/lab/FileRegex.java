@@ -15,7 +15,7 @@ import it.units.malelab.jgea.core.evolver.DeterministicCrowdingEvolver;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.ElapsedTime;
-import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
+import it.units.malelab.jgea.core.evolver.stopcondition.TargetFitness;
 import it.units.malelab.jgea.core.fitness.ClassificationFitness;
 import it.units.malelab.jgea.core.function.Reducer;
 import it.units.malelab.jgea.core.listener.Listener;
@@ -122,7 +122,7 @@ public class FileRegex extends Worker {
                   new Worst(),
                   popSize,
                   true,
-                  Lists.newArrayList(new ElapsedTime(maxMinutes, TimeUnit.MINUTES), new PerfectFitness<>(p.getFitnessFunction())),
+                  Lists.newArrayList(new ElapsedTime(maxMinutes, TimeUnit.MINUTES), new TargetFitness<>(p.getFitnessFunction())),
                   cacheSize,
                   false
           );
@@ -149,7 +149,7 @@ public class FileRegex extends Worker {
                   operators,
                   new Tournament<>(3),
                   new Worst(),
-                  Lists.newArrayList(new ElapsedTime(maxMinutes, TimeUnit.MINUTES), new PerfectFitness<>(p.getFitnessFunction())),
+                  Lists.newArrayList(new ElapsedTime(maxMinutes, TimeUnit.MINUTES), new TargetFitness<>(p.getFitnessFunction())),
                   cacheSize,
                   false
           );
@@ -191,7 +191,7 @@ public class FileRegex extends Worker {
                   new Worst(),
                   popSize,
                   true,
-                  Lists.newArrayList(new ElapsedTime(maxMinutes, TimeUnit.MINUTES), new PerfectFitness<>(p.getFitnessFunction())),
+                  Lists.newArrayList(new ElapsedTime(maxMinutes, TimeUnit.MINUTES), new TargetFitness<>(p.getFitnessFunction())),
                   cacheSize
           );
         } else {

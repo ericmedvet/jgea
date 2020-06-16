@@ -24,7 +24,7 @@ import it.units.malelab.jgea.lab.biased.Percentile;
 import it.units.malelab.jgea.lab.biased.PercentileProportional;
 import it.units.malelab.jgea.core.evolver.stopcondition.ElapsedTime;
 import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
-import it.units.malelab.jgea.core.evolver.stopcondition.PerfectFitness;
+import it.units.malelab.jgea.core.evolver.stopcondition.TargetFitness;
 import it.units.malelab.jgea.core.fitness.ClassificationFitness;
 import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.function.Reducer;
@@ -230,7 +230,7 @@ public class Example extends Worker {
             new Worst<>(),
             500,
             true,
-            Lists.newArrayList(new FitnessEvaluations(10000), new PerfectFitness<>(p.getFitnessFunction())),
+            Lists.newArrayList(new FitnessEvaluations(10000), new TargetFitness<>(p.getFitnessFunction())),
             10000,
             false
     );
@@ -261,7 +261,7 @@ public class Example extends Worker {
             new Worst<>(),
             100,
             true,
-            Lists.newArrayList(new FitnessEvaluations(10000), new PerfectFitness<>(p.getFitnessFunction())),
+            Lists.newArrayList(new FitnessEvaluations(10000), new TargetFitness<>(p.getFitnessFunction())),
             10000
     );
     Random r = new Random(1);
@@ -299,7 +299,7 @@ public class Example extends Worker {
             new Worst<>(),
             500,
             true,
-            Lists.newArrayList(new FitnessEvaluations(100000), new PerfectFitness<>(p.getFitnessFunction())),
+            Lists.newArrayList(new FitnessEvaluations(100000), new TargetFitness<>(p.getFitnessFunction())),
             10000,
             false
     );
@@ -341,7 +341,7 @@ public class Example extends Worker {
             operators,
             new Tournament<>(3),
             new Worst<>(),
-            Lists.newArrayList(new FitnessEvaluations(100000), new PerfectFitness<>(p.getFitnessFunction())),
+            Lists.newArrayList(new FitnessEvaluations(100000), new TargetFitness<>(p.getFitnessFunction())),
             10000,
             false
     );
@@ -377,7 +377,7 @@ public class Example extends Worker {
             new Worst(),
             100,
             true,
-            Lists.newArrayList(new ElapsedTime(90, TimeUnit.SECONDS), new PerfectFitness<>(p.getFitnessFunction())),
+            Lists.newArrayList(new ElapsedTime(90, TimeUnit.SECONDS), new TargetFitness<>(p.getFitnessFunction())),
             10000,
             false
     );
@@ -433,7 +433,7 @@ public class Example extends Worker {
             operators,
             new Tournament<>(3),
             new Worst(),
-            Lists.newArrayList(new ElapsedTime(90, TimeUnit.SECONDS), new PerfectFitness<>(p.getFitnessFunction())),
+            Lists.newArrayList(new ElapsedTime(90, TimeUnit.SECONDS), new TargetFitness<>(p.getFitnessFunction())),
             10000,
             false
     );
@@ -496,7 +496,7 @@ public class Example extends Worker {
             new Worst(),
             500,
             true,
-            Lists.newArrayList(new ElapsedTime(90, TimeUnit.SECONDS), new PerfectFitness<>(p.getFitnessFunction())),
+            Lists.newArrayList(new ElapsedTime(90, TimeUnit.SECONDS), new TargetFitness<>(p.getFitnessFunction())),
             10000
     );
     Random r = new Random(1);
@@ -534,7 +534,7 @@ public class Example extends Worker {
             new Worst(),
             500,
             true,
-            Lists.newArrayList(new ElapsedTime(30, TimeUnit.SECONDS), new PerfectFitness<>(p.getFitnessFunction())),
+            Lists.newArrayList(new ElapsedTime(30, TimeUnit.SECONDS), new TargetFitness<>(p.getFitnessFunction())),
             10000,
             false
     );
