@@ -21,7 +21,7 @@ import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
-import it.units.malelab.jgea.core.ranker.selector.Selector;
+import it.units.malelab.jgea.core.selector.Selector;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;

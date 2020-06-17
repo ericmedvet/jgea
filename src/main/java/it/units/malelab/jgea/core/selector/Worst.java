@@ -15,36 +15,28 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.core.listener.collector;
+package it.units.malelab.jgea.core.selector;
 
-import java.util.function.Function;
+import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
+import it.units.malelab.jgea.core.util.Misc;
+import java.util.Collection;
+import java.util.List;
+import java.util.Random;
 
 /**
+ *
  * @author eric
  */
-public class DoubleArrayPrinter implements Function<double[], String> {
+public class Worst implements Selector<Object> {
 
-  private final String[] formats;
-
-  public DoubleArrayPrinter(String... formats) {
-    this.formats = formats;
-    if (formats.length == 0) {
-      formats = new String[]{"%s"};
-    }
+  @Override
+  public <K> K select(PartiallyOrderedCollection<K> ks, Random random) {
+    return Misc.pickRandomly(ks.lasts(), random);
   }
 
   @Override
-  public String apply(double[] a) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("[");
-    for (int i = 0; i < a.length; i++) {
-      sb.append(String.format(formats[i % formats.length], a[i]));
-      if (i < a.length - 1) {
-        sb.append(";");
-      }
-    }
-    sb.append("]");
-    return sb.toString();
+  public String toString() {
+    return "Worst{" + '}';
   }
 
 }

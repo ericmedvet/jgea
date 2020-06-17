@@ -51,8 +51,8 @@ import it.units.malelab.jgea.representation.sequence.LenghtPreservingTwoPointCro
 import it.units.malelab.jgea.core.ranker.ComparableRanker;
 import it.units.malelab.jgea.core.ranker.FitnessComparator;
 import it.units.malelab.jgea.core.ranker.ParetoRanker;
-import it.units.malelab.jgea.core.ranker.selector.Tournament;
-import it.units.malelab.jgea.core.ranker.selector.Worst;
+import it.units.malelab.jgea.core.selector.Tournament;
+import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.representation.sequence.bit.BitStringHamming;
 import it.units.malelab.jgea.distance.Distance;

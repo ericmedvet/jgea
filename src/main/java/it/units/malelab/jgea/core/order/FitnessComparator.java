@@ -15,20 +15,24 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.core.ranker.selector;
+package it.units.malelab.jgea.core.order;
 
-import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
-
-import java.io.Serializable;
-import java.util.Random;
+import it.units.malelab.jgea.core.Individual;
 
 /**
- *
  * @author eric
+ * @created 2020/06/17
+ * @project jgea
  */
-@FunctionalInterface
-public interface Selector<T> extends Serializable {
-  
-  <K extends T> K select(PartiallyOrderedCollection<K> ks, Random random);
-  
+public class FitnessComparator<F> implements PartialComparator<Individual<Object, Object, F>> {
+  private final PartialComparator<? super F> comparator;
+
+  public FitnessComparator(PartialComparator<? super F> comparator) {
+    this.comparator = comparator;
+  }
+
+  @Override
+  public PartialComparatorOutcome compare(Individual<Object, Object, F> i1, Individual<Object, Object, F> i2) {
+    return comparator.compare(i1.getFitness(), i2.getFitness());
+  }
 }

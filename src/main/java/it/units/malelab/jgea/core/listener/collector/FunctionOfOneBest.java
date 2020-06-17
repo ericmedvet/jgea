@@ -17,33 +17,22 @@
 
 package it.units.malelab.jgea.core.listener.collector;
 
+import it.units.malelab.jgea.core.Individual;
+import it.units.malelab.jgea.core.listener.Event;
 
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * @author eric
+ * @created 2020/06/17
+ * @project jgea
  */
-public class BestInfo extends FunctionOfOneBest<Object, Object, Object> {
-  public BestInfo(String... fitnessFormats) {
-    super(new IndividualBasicInfo<>(f -> {
-      List<Item> items = new ArrayList<>();
-      if (f instanceof List<?>) {
-        for (int i = 0; i < ((List<?>) f).size(); i++) {
-          items.add(new Item(
-              "objective." + i,
-              ((List<?>) f).get(i),
-              fitnessFormats.length > 0 ? fitnessFormats[i % fitnessFormats.length] : "%s"
-          ));
-        }
-      } else {
-        items.add(new Item(
-            "value",
-            f,
-            fitnessFormats.length > 0 ? fitnessFormats[0] : "%s"
-        ));
-      }
-      return items;
-    }));
+public class FunctionOfOneBest<G, S, F> extends Prefix<G, S, F> {
+
+  public FunctionOfOneBest(Function<Individual<? extends G, ? extends S, ? extends F>, List<Item>> function) {
+    super("best", new FunctionOfFirsts<>(firsts -> function.apply(firsts.iterator().next())));
   }
 }

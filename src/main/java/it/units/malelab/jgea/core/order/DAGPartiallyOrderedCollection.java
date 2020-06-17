@@ -150,4 +150,7 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
     return Collections.unmodifiableCollection(filterNodes(n -> n.getAfterNodes().isEmpty()));
   }
 
+  public PartialComparator<? super T> getPartialComparator() {
+    return partialComparator;
+  }
 }

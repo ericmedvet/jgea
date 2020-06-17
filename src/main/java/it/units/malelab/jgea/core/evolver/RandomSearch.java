@@ -20,6 +20,8 @@ package it.units.malelab.jgea.core.evolver;
 import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
+import it.units.malelab.jgea.core.order.PartialComparator;
+import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 
 import java.util.Collection;
 import java.util.List;
@@ -35,7 +37,7 @@ import java.util.function.Function;
  */
 public class RandomSearch<G, S, F> extends AbstractIterativeEvolver<G, S, F> {
 
-  public RandomSearch(Function<G, S> solutionMapper, Factory<? extends G> genotypeFactory, DAGPartiallyOrderedCollection.PartialComparator<Individual<? super G, ? super S, ? super F>> individualComparator) {
+  public RandomSearch(Function<G, S> solutionMapper, Factory<? extends G> genotypeFactory, PartialComparator<Individual<? super G, ? super S, ? super F>> individualComparator) {
     super(solutionMapper, genotypeFactory, individualComparator);
   }
 
@@ -45,11 +47,11 @@ public class RandomSearch<G, S, F> extends AbstractIterativeEvolver<G, S, F> {
   }
 
   @Override
-  protected Collection<Individual<G, S, F>> updatePopulation(DAGPartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<G, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     G genotype = genotypeFactory.build(1, random).get(0);
     Individual<G, S, F> newIndividual = AbstractIterativeEvolver.buildIndividuals(List.of(genotype), solutionMapper, fitnessFunction, executor, state).get(0);
     Individual<G, S, F> currentIndividual = orderedPopulation.firsts().iterator().next();
-    if (individualComparator.compare(newIndividual, currentIndividual).equals(DAGPartiallyOrderedCollection.PartialComparatorOutcome.BEFORE)) {
+    if (individualComparator.compare(newIndividual, currentIndividual).equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
       return List.of(newIndividual);
     }
     return List.of(currentIndividual);

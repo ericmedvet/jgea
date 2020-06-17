@@ -22,6 +22,8 @@ import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
 import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.operator.Mutation;
+import it.units.malelab.jgea.core.order.PartialComparator;
+import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 
 import java.util.Collection;
 import java.util.List;
@@ -39,23 +41,23 @@ public class RandomWalk<G, S, F> extends AbstractIterativeEvolver<G, S, F> {
 
   private final Mutation<G> mutation;
 
-  public RandomWalk(Function<G, S> solutionMapper, Factory<? extends G> genotypeFactory, DAGPartiallyOrderedCollection.PartialComparator<Individual<? super G, ? super S, ? super F>> individualComparator, Mutation<G> mutation) {
+  public RandomWalk(Function<G, S> solutionMapper, Factory<? extends G> genotypeFactory, PartialComparator<Individual<? super G, ? super S, ? super F>> individualComparator, Mutation<G> mutation) {
     super(solutionMapper, genotypeFactory, individualComparator);
     this.mutation = mutation;
   }
 
   @Override
-  protected Collection<Individual<G, S, F>> initPopulation(Problem<S, F> problem, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<G, S, F>> initPopulation(Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     G genotype = genotypeFactory.build(1, random).get(0);
-    return AbstractIterativeEvolver.buildIndividuals(List.of(genotype), solutionMapper, problem.getFitnessFunction(), executor, state);
+    return AbstractIterativeEvolver.buildIndividuals(List.of(genotype), solutionMapper, fitnessFunction, executor, state);
   }
 
   @Override
-  protected Collection<Individual<G, S, F>> updatePopulation(DAGPartiallyOrderedCollection<Individual<G, S, F>> population, Problem<S, F> problem, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<G, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<G, S, F>> population, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     Individual<G, S, F> currentIndividual = population.firsts().iterator().next();
     G genotype = mutation.mutate(currentIndividual.getGenotype(), random);
-    Individual<G, S, F> newIndividual = AbstractIterativeEvolver.buildIndividuals(List.of(genotype), solutionMapper, problem.getFitnessFunction(), executor, state).get(0);
-    if (individualComparator.compare(newIndividual, currentIndividual).equals(DAGPartiallyOrderedCollection.PartialComparatorOutcome.BEFORE)) {
+    Individual<G, S, F> newIndividual = AbstractIterativeEvolver.buildIndividuals(List.of(genotype), solutionMapper, fitnessFunction, executor, state).get(0);
+    if (individualComparator.compare(newIndividual, currentIndividual).equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
       return List.of(newIndividual);
     }
     return List.of(currentIndividual);

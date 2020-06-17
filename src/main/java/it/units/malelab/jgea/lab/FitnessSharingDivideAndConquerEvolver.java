@@ -28,7 +28,7 @@ import it.units.malelab.jgea.core.listener.event.FunctionEvent;
 import it.units.malelab.jgea.core.listener.event.TimedEvent;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.ranker.Ranker;
-import it.units.malelab.jgea.core.ranker.selector.Selector;
+import it.units.malelab.jgea.core.selector.Selector;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.distance.Distance;
