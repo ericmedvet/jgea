@@ -34,7 +34,13 @@ public class FitnessEvaluations implements Predicate<Event<Object, Object, Objec
 
   @Override
   public boolean test(Event<Object, Object, Object> event) {
-    return event.getFitnessEvaluations() >= n;
+    return event.getState().getFitnessEvaluations() >= n;
   }
 
+  @Override
+  public String toString() {
+    return "FitnessEvaluations{" +
+        "n=" + n +
+        '}';
+  }
 }

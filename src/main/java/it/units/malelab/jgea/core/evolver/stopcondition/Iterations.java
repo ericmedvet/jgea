@@ -38,7 +38,13 @@ public class Iterations implements Predicate<Event<Object, Object, Object>> {
 
   @Override
   public boolean test(Event<Object, Object, Object> event) {
-    return event.getIteration() >= n;
+    return event.getState().getIterations() >= n;
   }
 
+  @Override
+  public String toString() {
+    return "Iterations{" +
+        "n=" + n +
+        '}';
+  }
 }

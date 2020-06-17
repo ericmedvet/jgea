@@ -15,13 +15,31 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.core;
+package it.units.malelab.jgea.core.listener.collector;
+
+import it.units.malelab.jgea.core.listener.Event;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author eric
  */
-public interface Sized {
+public class Prefix<G, S, F> implements DataCollector<G, S, F> {
 
-  int size();
+  private final String prefix;
+  private final DataCollector<G, S, F> collector;
+
+  public Prefix(String prefix, DataCollector<G, S, F> collector) {
+    this.prefix = prefix;
+    this.collector = collector;
+  }
+
+  @Override
+  public List<Item> collect(Event<? extends G, ? extends S, ? extends F> event) {
+    return collector.collect(event).stream()
+        .map(i -> i.prefixed(prefix))
+        .collect(Collectors.toList());
+  }
 
 }

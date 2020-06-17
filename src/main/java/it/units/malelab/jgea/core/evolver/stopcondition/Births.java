@@ -38,6 +38,13 @@ public class Births implements Predicate<Event<Object, Object, Object>> {
 
   @Override
   public boolean test(Event<Object, Object, Object> event) {
-    return event.getBirths() >= n;
+    return event.getState().getBirths() >= n;
+  }
+
+  @Override
+  public String toString() {
+    return "Births{" +
+        "n=" + n +
+        '}';
   }
 }

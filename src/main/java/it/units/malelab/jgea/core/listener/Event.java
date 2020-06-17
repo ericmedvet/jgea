@@ -18,7 +18,8 @@
 package it.units.malelab.jgea.core.listener;
 
 import it.units.malelab.jgea.core.Individual;
-import it.units.malelab.jgea.core.PartiallyOrderedCollection;
+import it.units.malelab.jgea.core.evolver.Evolver;
+import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 
 import java.io.Serializable;
 
@@ -29,34 +30,16 @@ import java.io.Serializable;
  */
 public class Event<G, S, F> implements Serializable {
 
-  private final int iteration;
-  private final int births;
-  private final int fitnessEvaluations;
-  private final long elapsedMillis;
+  private final Evolver.State state;
   private final PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation;
 
-  public Event(int iteration, int births, int fitnessEvaluations, long elapsedMillis, PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation) {
-    this.iteration = iteration;
-    this.births = births;
-    this.fitnessEvaluations = fitnessEvaluations;
-    this.elapsedMillis = elapsedMillis;
+  public Event(Evolver.State state, PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation) {
+    this.state = state;
     this.orderedPopulation = orderedPopulation;
   }
 
-  public int getIteration() {
-    return iteration;
-  }
-
-  public int getBirths() {
-    return births;
-  }
-
-  public int getFitnessEvaluations() {
-    return fitnessEvaluations;
-  }
-
-  public long getElapsedMillis() {
-    return elapsedMillis;
+  public Evolver.State getState() {
+    return state;
   }
 
   public PartiallyOrderedCollection<Individual<G, S, F>> getOrderedPopulation() {

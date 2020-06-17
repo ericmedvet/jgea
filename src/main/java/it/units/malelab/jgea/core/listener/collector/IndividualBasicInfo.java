@@ -17,7 +17,7 @@
 package it.units.malelab.jgea.core.listener.collector;
 
 import it.units.malelab.jgea.core.Individual;
-import it.units.malelab.jgea.core.Sized;
+import it.units.malelab.jgea.core.util.Sized;
 import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.core.util.Pair;

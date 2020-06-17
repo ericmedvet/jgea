@@ -15,31 +15,31 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.core.listener.collector;
+package it.units.malelab.jgea.core.order;
 
-import it.units.malelab.jgea.core.listener.Event;
+import it.units.malelab.jgea.core.util.Sized;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * @author eric
+ * @created 2020/06/17
+ * @project jgea
  */
-public class Suffix<G, S, F> implements DataCollector<G, S, F> {
+public interface PartiallyOrderedCollection<T> extends Sized, Serializable {
+  Collection<T> all();
 
-  private final String suffix;
-  private final DataCollector<G, S, F> collector;
+  Collection<T> firsts();
 
-  public Suffix(String suffix, DataCollector<G, S, F> collector) {
-    this.suffix = suffix;
-    this.collector = collector;
-  }
+  Collection<T> lasts();
+
+  boolean remove(T t);
+
+  void add(T t);
 
   @Override
-  public List<Item> collect(Event<? extends G, ? extends S, ? extends F> event) {
-    return collector.collect(event).stream()
-        .map(i -> i.suffixed(suffix))
-        .collect(Collectors.toList());
+  default int size() {
+    return all().size();
   }
-
 }

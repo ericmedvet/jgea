@@ -15,31 +15,13 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.core.listener.collector;
-
-import it.units.malelab.jgea.core.listener.Event;
-
-import java.util.List;
-import java.util.stream.Collectors;
+package it.units.malelab.jgea.core.util;
 
 /**
  * @author eric
  */
-public class Suffix<G, S, F> implements DataCollector<G, S, F> {
+public interface Sized {
 
-  private final String suffix;
-  private final DataCollector<G, S, F> collector;
-
-  public Suffix(String suffix, DataCollector<G, S, F> collector) {
-    this.suffix = suffix;
-    this.collector = collector;
-  }
-
-  @Override
-  public List<Item> collect(Event<? extends G, ? extends S, ? extends F> event) {
-    return collector.collect(event).stream()
-        .map(i -> i.suffixed(suffix))
-        .collect(Collectors.toList());
-  }
+  int size();
 
 }

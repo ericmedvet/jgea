@@ -5,7 +5,7 @@
  */
 package it.units.malelab.jgea.representation.tree;
 
-import it.units.malelab.jgea.core.Sized;
+import it.units.malelab.jgea.core.util.Sized;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;

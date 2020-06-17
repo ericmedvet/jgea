@@ -36,4 +36,11 @@ public class TargetFitness<F> implements Predicate<Event<Object, Object, F>> {
   public boolean test(Event<Object, Object, F> event) {
     return event.getOrderedPopulation().all().stream().anyMatch(i -> targetFitness.equals(i.getFitness()));
   }
+
+  @Override
+  public String toString() {
+    return "TargetFitness{" +
+        "targetFitness=" + targetFitness +
+        '}';
+  }
 }

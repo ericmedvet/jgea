@@ -46,7 +46,14 @@ public class ElapsedTime implements Predicate<Event<Object, Object, Object>> {
   @Override
   public boolean test(Event<Object, Object, Object> event) {
     long tMillis = TimeUnit.MILLISECONDS.convert((long) t, timeUnit);
-    return event.getElapsedMillis() > tMillis;
+    return event.getState().getElapsedMillis() > tMillis;
   }
 
+  @Override
+  public String toString() {
+    return "ElapsedTime{" +
+        "t=" + t +
+        ", timeUnit=" + timeUnit +
+        '}';
+  }
 }
