@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.units.malelab.jgea.problem.surrogate;
+package it.units.malelab.jgea.lab.surrogate;
 
 import it.units.malelab.jgea.lab.PrecisionController;
 import it.units.malelab.jgea.core.Problem;

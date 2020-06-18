@@ -1,29 +1,35 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.representation.grammar.ge;
 
 import com.google.common.collect.Range;
 import it.units.malelab.jgea.representation.tree.Node;
-import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
-import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.event.FunctionEvent;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedMapper;
 import it.units.malelab.jgea.representation.grammar.GrammarUtil;
-import static it.units.malelab.jgea.representation.grammar.ge.StandardGEMapper.BIT_USAGES_INDEX_NAME;
+
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- *
  * @author eric
  */
 public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
@@ -66,7 +72,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
   }
 
   @Override
-  public Node<T> apply(BitString genotype, Listener listener) throws FunctionException {
+  public Node<T> apply(BitString genotype) {
     int[] bitUsages = new int[genotype.size()];
     Node<T> tree;
     if (recursive) {
@@ -74,7 +80,6 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
     } else {
       tree = mapIteratively(genotype, bitUsages);
     }
-    listener.listen(new FunctionEvent(genotype, tree, Collections.singletonMap(BIT_USAGES_INDEX_NAME, bitUsages)));
     //convert
     return tree;
   }
@@ -104,7 +109,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
     return node;
   }
 
-  protected double optionSliceWeigth(BitString slice) {
+  protected double optionSliceWeight(BitString slice) {
     return (double) slice.count() / (double) slice.size();
   }
 
@@ -116,7 +121,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
     List<BitString> slices = genotype.slices(getOptionSlices(range, options));
     List<Integer> bestOptionIndexes = new ArrayList<>();
     for (int i = 0; i < options.size(); i++) {
-      double value = optionSliceWeigth(slices.get(i));
+      double value = optionSliceWeight(slices.get(i));
       if (value == max) {
         bestOptionIndexes.add(i);
       } else if (value > max) {
@@ -145,7 +150,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
     return options.get(index);
   }
 
-  public Node<T> mapIteratively(BitString genotype, int[] bitUsages) throws FunctionException {
+  public Node<T> mapIteratively(BitString genotype, int[] bitUsages) {
     Node<EnhancedSymbol<T>> enhancedTree = new Node<>(new EnhancedSymbol<>(grammar.getStartingSymbol(), Range.closedOpen(0, genotype.size())));
     while (true) {
       Node<EnhancedSymbol<T>> nodeToBeReplaced = null;
@@ -182,8 +187,8 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
           childRange = Range.closedOpen(symbolRange.lowerEndpoint(), symbolRange.upperEndpoint() - 1);
         }
         Node<EnhancedSymbol<T>> newChild = new Node<>(new EnhancedSymbol<>(
-                symbols.get(i),
-                childRange
+            symbols.get(i),
+            childRange
         ));
         nodeToBeReplaced.getChildren().add(newChild);
       }
@@ -192,16 +197,16 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
     return extractFromEnhanced(enhancedTree);
   }
 
-  public Node<T> mapRecursively(T symbol, Range<Integer> range, BitString genotype, int[] bitUsages) throws FunctionException {
+  public Node<T> mapRecursively(T symbol, Range<Integer> range, BitString genotype, int[] bitUsages) {
     Node<T> node = new Node<>(symbol);
     if (LATEX_TREE_DEBUG) {
-      if (grammar.getRules().keySet().contains(symbol)) {
+      if (grammar.getRules().containsKey(symbol)) {
         System.out.printf("[.{\\gft{\\bnfPiece{%s}} \\\\$", symbol.toString().replaceAll("[<>]", ""));
       } else {
         System.out.printf("[.{\\gft{%s}} ]%n", symbol);
       }
     }
-    if (grammar.getRules().keySet().contains(symbol)) {
+    if (grammar.getRules().containsKey(symbol)) {
       //a non-terminal node
       //update usage
       for (int i = range.lowerEndpoint(); i < range.upperEndpoint(); i++) {
@@ -237,13 +242,13 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
       }
       if (LATEX_TREE_DEBUG) {
         System.out.printf("%s$}%n",
-                childRanges.stream().map((Range<Integer> r) -> {
-                  if (r.upperEndpoint() - r.lowerEndpoint() > 0) {
-                    return String.format("\\gft{%s}", genotype.slice(r).toFlatString());
-                  } else {
-                    return "\\emptyset";
-                  }
-                }).collect(Collectors.joining("\\:"))
+            childRanges.stream().map((Range<Integer> r) -> {
+              if (r.upperEndpoint() - r.lowerEndpoint() > 0) {
+                return String.format("\\gft{%s}", genotype.slice(r).toFlatString());
+              } else {
+                return "\\emptyset";
+              }
+            }).collect(Collectors.joining("\\:"))
         );
       }
       for (int i = 0; i < symbols.size(); i++) {
@@ -254,13 +259,13 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
       }
       if (DEBUG) {
         System.out.printf("%10.10s %4d %4d %2d %20.20s %s%n",
-                //System.out.printf("\\gft{\\bnfPiece{%s}} & %d & %d & %d & $%s$ & \\gft{%s} \\\\%n",
-                symbol,
-                range.upperEndpoint() - range.lowerEndpoint(),
-                options.size(),
-                options.indexOf(symbols),
-                childRanges.stream().map(r -> Integer.toString(r.upperEndpoint() - r.lowerEndpoint())).collect(Collectors.joining(",")),
-                node.leafNodes().stream().map(Object::toString).collect(Collectors.joining(" "))
+            //System.out.printf("\\gft{\\bnfPiece{%s}} & %d & %d & %d & $%s$ & \\gft{%s} \\\\%n",
+            symbol,
+            range.upperEndpoint() - range.lowerEndpoint(),
+            options.size(),
+            options.indexOf(symbols),
+            childRanges.stream().map(r -> Integer.toString(r.upperEndpoint() - r.lowerEndpoint())).collect(Collectors.joining(",")),
+            node.leafNodes().stream().map(Object::toString).collect(Collectors.joining(" "))
         );
       }
     }

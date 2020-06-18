@@ -1,8 +1,20 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.representation.grammar;
 
 import java.io.BufferedReader;
@@ -19,7 +31,6 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
- *
  * @author eric
  */
 public class Grammar<T> implements Serializable {
@@ -28,7 +39,7 @@ public class Grammar<T> implements Serializable {
   public static final String RULE_OPTION_SEPARATOR_STRING = "|";
 
   private T startingSymbol;
-  private Map<T, List<List<T>>> rules;
+  private final Map<T, List<List<T>>> rules;
 
   public Grammar() {
     rules = new LinkedHashMap<>();
@@ -39,13 +50,13 @@ public class Grammar<T> implements Serializable {
     StringBuilder sb = new StringBuilder();
     for (Map.Entry<T, List<List<T>>> rule : rules.entrySet()) {
       sb.append(rule.getKey())
-              .append(" ")
-              .append(rule.getKey().equals(startingSymbol) ? "*" : "")
-              .append(RULE_ASSIGNMENT_STRING + " ");
+          .append(" ")
+          .append(rule.getKey().equals(startingSymbol) ? "*" : "")
+          .append(RULE_ASSIGNMENT_STRING + " ");
       for (List<T> option : rule.getValue()) {
         for (T symbol : option) {
           sb.append(symbol)
-                  .append(" ");
+              .append(" ");
         }
         sb.append(RULE_OPTION_SEPARATOR_STRING + " ");
       }
@@ -66,7 +77,7 @@ public class Grammar<T> implements Serializable {
   public Map<T, List<List<T>>> getRules() {
     return rules;
   }
-  
+
   public static Grammar<String> fromFile(File file) throws FileNotFoundException, IOException {
     return fromFile(file, "UTF-8");
   }

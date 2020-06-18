@@ -47,18 +47,18 @@ import it.units.malelab.jgea.core.listener.collector.ObjectiveMostCentral;
 import it.units.malelab.jgea.core.listener.collector.Population;
 import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
-import it.units.malelab.jgea.representation.sequence.LenghtPreservingTwoPointCrossover;
+import it.units.malelab.jgea.representation.sequence.LengthPreservingTwoPointCrossover;
 import it.units.malelab.jgea.core.ranker.ComparableRanker;
 import it.units.malelab.jgea.core.ranker.FitnessComparator;
 import it.units.malelab.jgea.core.ranker.ParetoRanker;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Pair;
-import it.units.malelab.jgea.representation.sequence.bit.BitStringHamming;
+import it.units.malelab.jgea.distance.BitStringHamming;
 import it.units.malelab.jgea.distance.Distance;
-import it.units.malelab.jgea.representation.sequence.Edit;
+import it.units.malelab.jgea.distance.Edit;
 import it.units.malelab.jgea.distance.Pairwise;
-import it.units.malelab.jgea.representation.tree.TreeLeaves;
+import it.units.malelab.jgea.distance.TreeLeaves;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedMapper;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 import it.units.malelab.jgea.representation.grammar.cfggp.RampedHalfAndHalf;
@@ -74,7 +74,7 @@ import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
 import it.units.malelab.jgea.representation.grammar.RegexGrammar;
 import it.units.malelab.jgea.representation.grammar.ge.StandardGEMapper;
 import it.units.malelab.jgea.representation.grammar.ge.WeightedHierarchicalMapper;
-import it.units.malelab.jgea.problem.surrogate.ControlledPrecisionProblem;
+import it.units.malelab.jgea.lab.surrogate.ControlledPrecisionProblem;
 import it.units.malelab.jgea.problem.symbolicregression.AbstractSymbolicRegressionProblem;
 import it.units.malelab.jgea.problem.symbolicregression.Pagie1;
 import it.units.malelab.jgea.problem.synthetic.LinearPoints;
@@ -288,7 +288,7 @@ public class Example extends Worker {
     }
     Map<GeneticOperator<BitString>, Double> operators = new LinkedHashMap<>();
     operators.put(new BitFlipMutation(0.01d), 0.2d);
-    operators.put(new LenghtPreservingTwoPointCrossover(), 0.8d);
+    operators.put(new LengthPreservingTwoPointCrossover(), 0.8d);
     StandardEvolver<BitString, List<Node<Element>>, Double> evolver = new StandardEvolver<>(
             500,
             new BitStringFactory(256),
@@ -330,7 +330,7 @@ public class Example extends Worker {
     }
     Map<GeneticOperator<BitString>, Double> operators = new LinkedHashMap<>();
     operators.put(new BitFlipMutation(0.01d), 0.2d);
-    operators.put(new LenghtPreservingTwoPointCrossover(), 0.8d);
+    operators.put(new LengthPreservingTwoPointCrossover(), 0.8d);
     Distance<List<Node<Element>>> distance = new Pairwise<>(new TreeLeaves<>(new Edit<>()));
     DeterministicCrowdingEvolver<BitString, List<Node<Element>>, Double> evolver = new DeterministicCrowdingEvolver<>(
             null, //TODO put a distance

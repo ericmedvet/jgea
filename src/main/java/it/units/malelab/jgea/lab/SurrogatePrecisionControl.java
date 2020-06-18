@@ -35,22 +35,22 @@ import it.units.malelab.jgea.core.listener.collector.Population;
 import it.units.malelab.jgea.core.listener.collector.Static;
 import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
-import it.units.malelab.jgea.representation.sequence.LenghtPreservingTwoPointCrossover;
+import it.units.malelab.jgea.representation.sequence.LengthPreservingTwoPointCrossover;
 import it.units.malelab.jgea.core.ranker.ComparableRanker;
 import it.units.malelab.jgea.core.ranker.FitnessComparator;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.distance.Distance;
-import it.units.malelab.jgea.representation.sequence.Edit;
-import it.units.malelab.jgea.representation.sequence.Hamming;
-import it.units.malelab.jgea.representation.tree.TreeLeaves;
+import it.units.malelab.jgea.distance.Edit;
+import it.units.malelab.jgea.distance.Hamming;
+import it.units.malelab.jgea.distance.TreeLeaves;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 import it.units.malelab.jgea.representation.grammar.cfggp.RampedHalfAndHalf;
 import it.units.malelab.jgea.representation.grammar.cfggp.StandardTreeCrossover;
 import it.units.malelab.jgea.representation.grammar.cfggp.StandardTreeMutation;
-import it.units.malelab.jgea.problem.surrogate.ControlledPrecisionProblem;
-import it.units.malelab.jgea.problem.surrogate.TunablePrecisionProblem;
+import it.units.malelab.jgea.lab.surrogate.ControlledPrecisionProblem;
+import it.units.malelab.jgea.lab.surrogate.TunablePrecisionProblem;
 import it.units.malelab.jgea.problem.synthetic.OneMax;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
@@ -319,7 +319,7 @@ public class SurrogatePrecisionControl extends Worker {
         if (problemEntry.getKey().startsWith("OneMax")) {
           genotypeFactory = new BitStringFactory(100);
           operators.put(new BitFlipMutation(0.01d), 0.2d);
-          operators.put(new LenghtPreservingTwoPointCrossover(), 0.8d);
+          operators.put(new LengthPreservingTwoPointCrossover(), 0.8d);
           solutionDistance = new Hamming().cached(10000);
         } else if (problemEntry.getKey().startsWith("SR-")) {
           genotypeFactory = new RampedHalfAndHalf<>(3, 12, ((GrammarBasedProblem) problem).getGrammar());

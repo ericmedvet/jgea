@@ -1,26 +1,34 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.problem.extraction;
 
 import it.units.malelab.jgea.representation.grammar.RegexGrammar;
 import it.units.malelab.jgea.representation.tree.Node;
-import it.units.malelab.jgea.core.fitness.ClassificationFitness;
-import it.units.malelab.jgea.core.function.Function;
-import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
-import it.units.malelab.jgea.problem.classification.RegexClassification;
+
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- *
  * @author eric
  */
 public class GrammarBasedRegexExtraction extends RegexExtraction implements GrammarBasedProblem<String, String, List<Double>> {
@@ -30,15 +38,14 @@ public class GrammarBasedRegexExtraction extends RegexExtraction implements Gram
 
   public GrammarBasedRegexExtraction(boolean limitAlphabetToExtractions, Set<RegexGrammar.Option> options, String text, Set<String> extractors, int folds, int i, ExtractionFitness.Metric... metrics) {
     super(text, extractors, folds, i, metrics);
-    solutionMapper = (Node<String> node, Listener listener)
-            -> node.leafNodes().stream()
-            .map(Node::getContent)
-            .collect(Collectors.joining());
+    solutionMapper = (Node<String> node) -> node.leafNodes().stream()
+        .map(Node::getContent)
+        .collect(Collectors.joining());
     Set<String> texts = new TreeSet<>();
     if (limitAlphabetToExtractions) {
       texts.addAll(getFitnessFunction().getDesiredExtractions().stream()
-              .map(r -> getFitnessFunction().getText().substring(r.lowerEndpoint(), r.upperEndpoint()))
-              .collect(Collectors.toSet()));
+          .map(r -> getFitnessFunction().getText().substring(r.lowerEndpoint(), r.upperEndpoint()))
+          .collect(Collectors.toSet()));
     } else {
       texts.add(text);
     }

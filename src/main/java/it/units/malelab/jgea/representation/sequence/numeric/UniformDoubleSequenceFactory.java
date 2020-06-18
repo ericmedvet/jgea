@@ -15,30 +15,36 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.representation.sequence.bit;
+package it.units.malelab.jgea.representation.sequence.numeric;
 
 import it.units.malelab.jgea.core.IndependentFactory;
+import it.units.malelab.jgea.representation.sequence.FixedLengthSequence;
+import it.units.malelab.jgea.representation.sequence.Sequence;
 
 import java.util.Random;
 
 /**
- * @author eric
+ * @author Eric Medvet <eric.medvet@gmail.com>
  */
-public class BitStringFactory implements IndependentFactory<BitString> {
+public class UniformDoubleSequenceFactory implements IndependentFactory<Sequence<Double>> {
 
-  private final int size;
+  private final double min;
+  private final double max;
+  private final int length;
 
-  public BitStringFactory(int size) {
-    this.size = size;
+  public UniformDoubleSequenceFactory(double min, double max, int length) {
+    this.min = min;
+    this.max = max;
+    this.length = length;
   }
 
   @Override
-  public BitString build(Random random) {
-    BitString bitString = new BitString(size);
-    for (int i = 0; i < size; i++) {
-      bitString.set(i, random.nextBoolean());
+  public Sequence<Double> build(Random random) {
+    FixedLengthSequence<Double> sequence = new FixedLengthSequence<>(length, 0d);
+    for (int i = 0; i < sequence.size(); i++) {
+      sequence.set(i, min + (max - min) * random.nextDouble());
     }
-    return bitString;
+    return sequence;
   }
 
 }

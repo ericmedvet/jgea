@@ -15,47 +15,30 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.problem.booleanfunction.element;
+package it.units.malelab.jgea.distance;
 
-import java.util.Objects;
+import it.units.malelab.jgea.representation.sequence.Sequence;
+import it.units.malelab.jgea.representation.tree.Node;
+
+import java.util.stream.Collectors;
 
 /**
- *
  * @author eric
  */
-public class Variable implements Element {
-  
-  private final String string;
+public class TreeLeaves<T> implements Distance<Node<T>> {
 
-  public Variable(String string) {
-    this.string = string;
+  private final Distance<Sequence<T>> innerDistance;
+
+  public TreeLeaves(Distance<Sequence<T>> innerDistance) {
+    this.innerDistance = innerDistance;
   }
 
   @Override
-  public String toString() {
-    return string;
+  public Double apply(Node<T> t1, Node<T> t2) {
+    Sequence<T> s1 = Sequence.from(t1.leafNodes().stream().map(Node::getContent).collect(Collectors.toList()));
+    Sequence<T> s2 = Sequence.from(t2.leafNodes().stream().map(Node::getContent).collect(Collectors.toList()));
+    return innerDistance.apply(s1, s2);
   }
 
-  @Override
-  public int hashCode() {
-    int hash = 5;
-    hash = 37 * hash + Objects.hashCode(this.string);
-    return hash;
-  }
 
-  @Override
-  public boolean equals(Object obj) {
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    final Variable other = (Variable) obj;
-    if (!Objects.equals(this.string, other.string)) {
-      return false;
-    }
-    return true;
-  }
-  
 }

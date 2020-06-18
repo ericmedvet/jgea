@@ -34,7 +34,7 @@ import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.distance.Distance;
-import it.units.malelab.jgea.representation.sequence.Edit;
+import it.units.malelab.jgea.distance.Edit;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 import it.units.malelab.jgea.representation.grammar.cfggp.RampedHalfAndHalf;
 import it.units.malelab.jgea.representation.grammar.cfggp.StandardTreeCrossover;

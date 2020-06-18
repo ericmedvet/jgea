@@ -24,12 +24,12 @@ import it.units.malelab.jgea.core.listener.collector.Static;
 import it.units.malelab.jgea.core.listener.collector.Suffix;
 import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
-import it.units.malelab.jgea.representation.sequence.LenghtPreservingTwoPointCrossover;
+import it.units.malelab.jgea.representation.sequence.LengthPreservingTwoPointCrossover;
 import it.units.malelab.jgea.core.ranker.ComparableRanker;
 import it.units.malelab.jgea.core.ranker.FitnessComparator;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
-import it.units.malelab.jgea.representation.sequence.bit.BitStringHamming;
+import it.units.malelab.jgea.distance.BitStringHamming;
 import it.units.malelab.jgea.distance.Distance;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedMapper;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
@@ -85,7 +85,7 @@ public class IntrinsicDimensionAssessment extends Worker {
           GrammarBasedMapper<BitString, String> mapper = new WeightedHierarchicalMapper<>(2, problem.getGrammar());
           Map<GeneticOperator<BitString>, Double> operators = new LinkedHashMap<>();
           operators.put(new BitFlipMutation(0.01d), 0.2d);
-          operators.put(new LenghtPreservingTwoPointCrossover(), 0.8d);
+          operators.put(new LengthPreservingTwoPointCrossover(), 0.8d);
           StandardEvolver<BitString, List<Node<Element>>, Double> evolver = new StandardEvolver<>(
                   population,
                   new BitStringFactory(genotypeSize),

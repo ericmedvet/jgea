@@ -15,47 +15,26 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.problem.booleanfunction.element;
+package it.units.malelab.jgea.distance;
 
-import java.util.Objects;
+import it.units.malelab.jgea.representation.sequence.bit.BitString;
+
+import java.util.BitSet;
 
 /**
- *
  * @author eric
  */
-public class Variable implements Element {
-  
-  private final String string;
-
-  public Variable(String string) {
-    this.string = string;
-  }
+public class BitStringHamming implements Distance<BitString> {
 
   @Override
-  public String toString() {
-    return string;
+  public Double apply(BitString b1, BitString b2) {
+    if (b1.size() != b2.size()) {
+      throw new IllegalArgumentException(String.format("Sequences size should be the same (%d vs. %d)", b1.size(), b2.size()));
+    }
+    BitSet xored = b1.asBitSet();
+    xored.xor(b2.asBitSet());
+    return (double) xored.cardinality();
   }
 
-  @Override
-  public int hashCode() {
-    int hash = 5;
-    hash = 37 * hash + Objects.hashCode(this.string);
-    return hash;
-  }
 
-  @Override
-  public boolean equals(Object obj) {
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    final Variable other = (Variable) obj;
-    if (!Objects.equals(this.string, other.string)) {
-      return false;
-    }
-    return true;
-  }
-  
 }

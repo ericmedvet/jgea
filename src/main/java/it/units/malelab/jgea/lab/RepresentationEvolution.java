@@ -28,7 +28,7 @@ import it.units.malelab.jgea.core.listener.collector.Population;
 import it.units.malelab.jgea.core.listener.collector.Static;
 import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
-import it.units.malelab.jgea.representation.sequence.LenghtPreservingTwoPointCrossover;
+import it.units.malelab.jgea.representation.sequence.LengthPreservingTwoPointCrossover;
 import it.units.malelab.jgea.core.ranker.ComparableRanker;
 import it.units.malelab.jgea.core.ranker.FitnessComparator;
 import it.units.malelab.jgea.core.selector.Tournament;
@@ -36,10 +36,10 @@ import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.distance.Distance;
-import it.units.malelab.jgea.representation.sequence.Edit;
+import it.units.malelab.jgea.distance.Edit;
 import it.units.malelab.jgea.distance.Pairwise;
 import it.units.malelab.jgea.distance.StringSequence;
-import it.units.malelab.jgea.representation.tree.TreeLeaves;
+import it.units.malelab.jgea.distance.TreeLeaves;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 import it.units.malelab.jgea.representation.grammar.cfggp.RampedHalfAndHalf;
 import it.units.malelab.jgea.representation.grammar.cfggp.StandardTreeCrossover;
@@ -275,7 +275,7 @@ public class RepresentationEvolution extends Worker {
     //iterate on problems
     Map<GeneticOperator<BitString>, Double> innerOperators = new LinkedHashMap<>();
     innerOperators.put(new BitFlipMutation(0.01d), 0.2d);
-    innerOperators.put(new LenghtPreservingTwoPointCrossover(), 0.8d);
+    innerOperators.put(new LengthPreservingTwoPointCrossover(), 0.8d);
     for (int validationRun = 0; validationRun < validationRuns; validationRun++) {
       //prepare mapper
       RecursiveMapper recursiveMapper = new RecursiveMapper<>(

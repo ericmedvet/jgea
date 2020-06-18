@@ -15,47 +15,32 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.problem.booleanfunction.element;
+package it.units.malelab.jgea.representation.sequence;
 
-import java.util.Objects;
+import it.units.malelab.jgea.core.operator.Crossover;
+
+import java.util.Random;
 
 /**
- *
  * @author eric
  */
-public class Variable implements Element {
-  
-  private final String string;
-
-  public Variable(String string) {
-    this.string = string;
-  }
+public class LengthPreservingTwoPointCrossover<S extends Sequence<?>> implements Crossover<S> {
 
   @Override
-  public String toString() {
-    return string;
+  public S recombine(S s1, S s2, Random random) {
+    S s = (S) s1.clone();
+    int l1 = s1.size();
+    int l2 = s2.size();
+    int p1 = 0;
+    int p2 = 0;
+    while (p1 == p2) {
+      p1 = random.nextInt(Math.min(l1, l2));
+      p2 = random.nextInt(Math.min(l1, l2));
+    }
+    for (int i = Math.min(p1, p2); i < Math.max(p1, p2); i++) {
+      s.set(i, s2.get(i));
+    }
+    return s;
   }
 
-  @Override
-  public int hashCode() {
-    int hash = 5;
-    hash = 37 * hash + Objects.hashCode(this.string);
-    return hash;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    final Variable other = (Variable) obj;
-    if (!Objects.equals(this.string, other.string)) {
-      return false;
-    }
-    return true;
-  }
-  
 }
