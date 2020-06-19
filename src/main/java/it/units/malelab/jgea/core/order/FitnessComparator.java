@@ -24,7 +24,7 @@ import it.units.malelab.jgea.core.Individual;
  * @created 2020/06/17
  * @project jgea
  */
-public class FitnessComparator<F> implements PartialComparator<Individual<Object, Object, F>> {
+public class FitnessComparator<F> implements PartialComparator<Individual<?, ?, ? extends F>> {
   private final PartialComparator<? super F> comparator;
 
   public FitnessComparator(PartialComparator<? super F> comparator) {
@@ -32,7 +32,8 @@ public class FitnessComparator<F> implements PartialComparator<Individual<Object
   }
 
   @Override
-  public PartialComparatorOutcome compare(Individual<Object, Object, F> i1, Individual<Object, Object, F> i2) {
+  public PartialComparatorOutcome compare(Individual<?, ?, ? extends F> i1, Individual<?, ?, ? extends F> i2) {
     return comparator.compare(i1.getFitness(), i2.getFitness());
   }
+
 }

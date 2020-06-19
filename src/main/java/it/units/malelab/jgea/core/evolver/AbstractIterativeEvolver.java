@@ -41,20 +41,20 @@ import java.util.stream.Collectors;
  */
 public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S, F> {
 
-  protected final Function<G, S> solutionMapper;
+  protected final Function<? super G, ? extends S> solutionMapper;
   protected final Factory<? extends G> genotypeFactory;
-  protected final PartialComparator<Individual<? super G, ? super S, ? super F>> individualComparator;
+  protected final PartialComparator<? super Individual<G, S, F>> individualComparator;
 
   private static final Logger L = Logger.getLogger(AbstractIterativeEvolver.class.getName());
 
-  public AbstractIterativeEvolver(Function<G, S> solutionMapper, Factory<? extends G> genotypeFactory, PartialComparator<Individual<? super G, ? super S, ? super F>> individualComparator) {
+  public AbstractIterativeEvolver(Function<? super G, ? extends S> solutionMapper, Factory<? extends G> genotypeFactory, PartialComparator<? super Individual<G, S, F>> individualComparator) {
     this.solutionMapper = solutionMapper;
     this.genotypeFactory = genotypeFactory;
     this.individualComparator = individualComparator;
   }
 
   @Override
-  public Collection<S> solve(Problem<S, F> problem, Predicate<Event<? super G, ? super S, ? super F>> stopCondition, Random random, ExecutorService executor, Listener<? super G, ? super S, ? super F> listener) throws InterruptedException, ExecutionException {
+  public Collection<S> solve(Problem<S, F> problem, Predicate<? super Event<G, S, F>> stopCondition, Random random, ExecutorService executor, Listener<? super G, ? super S, ? super F> listener) throws InterruptedException, ExecutionException {
     State state = new State();
     Stopwatch stopwatch = Stopwatch.createStarted();
     Collection<Individual<G, S, F>> population = initPopulation(problem.getFitnessFunction(), random, executor, state);
@@ -81,7 +81,7 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
 
   protected abstract Collection<Individual<G, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException;
 
-  public static <G1, S1, F1> List<Individual<G1, S1, F1>> buildIndividuals(Collection<G1> genotypes, Function<G1, S1> solutionMapper, Function<S1, F1> fitnessFunction, ExecutorService executor, State state) throws InterruptedException, ExecutionException {
+  public static <G1, S1, F1> List<Individual<G1, S1, F1>> buildIndividuals(Collection<G1> genotypes, Function<? super G1, ? extends S1> solutionMapper, Function<? super S1, ? extends F1> fitnessFunction, ExecutorService executor, State state) throws InterruptedException, ExecutionException {
     List<Callable<Individual<G1, S1, F1>>> callables = genotypes.stream()
         .map(genotype -> (Callable<Individual<G1, S1, F1>>) () -> {
           S1 solution = solutionMapper.apply(genotype);

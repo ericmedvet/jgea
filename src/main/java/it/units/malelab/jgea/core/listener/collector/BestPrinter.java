@@ -1,58 +1,47 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.core.listener.collector;
 
 import it.units.malelab.jgea.core.Individual;
-import it.units.malelab.jgea.core.function.BiFunction;
-import it.units.malelab.jgea.core.function.Function;
-import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.util.Misc;
-import java.util.Collection;
-import java.util.Collections;
+
+import java.util.*;
+import java.util.function.Function;
 
 /**
- *
  * @author eric
  */
-public class BestPrinter<G, S, F> extends FirstRankIndividualInfo<G, S, F> {
+public class BestPrinter extends FunctionOfOneBest<Object, Object, Object> {
 
-  public static enum Part {
+  public enum Part {
     GENOTYPE, SOLUTION
-  };
-
-  public BestPrinter(final Function<S, String> printer, final String format) {
-    super(
-            "best",
-            (Collection<Individual<G, S, F>> individuals, Listener listener) -> Misc.first(individuals),
-            (Individual<G, S, F> individual) -> Collections.singletonList(new Item<>(
-                    "individual", 
-                    printer.apply(individual.getSolution()), 
-                    format)
-            )
-    );
   }
 
-  public BestPrinter(final String format, Part part) {
-    super(
-            "best",
-            (Collection<Individual<G, S, F>> individuals, Listener listener) -> Misc.first(individuals),
-            (Individual<G, S, F> individual) -> Collections.singletonList(new Item<>(
-                    part.name().toLowerCase(),
-                    part.equals(Part.GENOTYPE) ? individual.getGenotype().toString() : individual.getSolution().toString(),
-                    format
-            ))
-    );
-  }
-
-  public BestPrinter(Part part) {
-    this("%s", part);
-  }
-
-  public BestPrinter() {
-    this(Part.SOLUTION);
+  public BestPrinter(Set<Part> parts) {
+    super(individual -> {
+      List<Item> items = new ArrayList<>();
+      if (parts.contains(Part.GENOTYPE)) {
+        items.add(new Item(Part.GENOTYPE.toString().toLowerCase(), individual.getGenotype(), "%s"));
+      }
+      if (parts.contains(Part.SOLUTION)) {
+        items.add(new Item(Part.SOLUTION.toString().toLowerCase(), individual.getSolution(), "%s"));
+      }
+      return items;
+    });
   }
 
 }

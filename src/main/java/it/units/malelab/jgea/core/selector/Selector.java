@@ -30,5 +30,9 @@ import java.util.Random;
 public interface Selector<T> extends Serializable {
   
   <K extends T> K select(PartiallyOrderedCollection<K> ks, Random random);
+
+  static void main(String[] args) {
+
+  }
   
 }

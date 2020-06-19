@@ -48,7 +48,7 @@ public class MultiFileListenerFactory<G, S, F> {
     streams = new HashMap<>();
   }
 
-  public Listener build(DataCollector<? super G, ? super S, ? super F>... collectors) {
+  public Listener<G, S, F> build(DataCollector<? super G, ? super S, ? super F>... collectors) {
     return new PrintStreamListener<G, S, F>(null, false, 0, ";", ";", collectors) {
       @Override
       public void listen(Event<? extends G, ? extends S, ? extends F> event) {

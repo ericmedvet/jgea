@@ -1,8 +1,20 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.lab;
 
 import com.google.common.collect.Lists;
@@ -10,7 +22,6 @@ import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.representation.tree.Node;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
-import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
 import it.units.malelab.jgea.representation.sequence.bit.BitStringFactory;
 import it.units.malelab.jgea.core.listener.Listener;
@@ -25,8 +36,6 @@ import it.units.malelab.jgea.core.listener.collector.Suffix;
 import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.representation.sequence.LengthPreservingTwoPointCrossover;
-import it.units.malelab.jgea.core.ranker.ComparableRanker;
-import it.units.malelab.jgea.core.ranker.FitnessComparator;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.distance.BitStringHamming;

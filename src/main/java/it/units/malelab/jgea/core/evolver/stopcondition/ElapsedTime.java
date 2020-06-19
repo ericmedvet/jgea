@@ -25,7 +25,7 @@ import java.util.function.Predicate;
 /**
  * @author eric
  */
-public class ElapsedTime implements Predicate<Event<Object, Object, Object>> {
+public class ElapsedTime implements Predicate<Event<?, ?, ?>> {
 
   private final double t;
   private final TimeUnit timeUnit;
@@ -44,7 +44,7 @@ public class ElapsedTime implements Predicate<Event<Object, Object, Object>> {
   }
 
   @Override
-  public boolean test(Event<Object, Object, Object> event) {
+  public boolean test(Event<?, ?, ?> event) {
     long tMillis = TimeUnit.MILLISECONDS.convert((long) t, timeUnit);
     return event.getState().getElapsedMillis() > tMillis;
   }

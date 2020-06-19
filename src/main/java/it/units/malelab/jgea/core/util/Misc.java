@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 
 /**
  * @author eric

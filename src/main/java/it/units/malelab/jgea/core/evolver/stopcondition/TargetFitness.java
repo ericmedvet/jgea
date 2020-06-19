@@ -24,7 +24,7 @@ import java.util.function.Predicate;
 /**
  * @author eric
  */
-public class TargetFitness<F> implements Predicate<Event<Object, Object, F>> {
+public class TargetFitness<F> implements Predicate<Event<?, ?, F>> {
 
   private final F targetFitness;
 
@@ -33,7 +33,7 @@ public class TargetFitness<F> implements Predicate<Event<Object, Object, F>> {
   }
 
   @Override
-  public boolean test(Event<Object, Object, F> event) {
+  public boolean test(Event<?, ?, F> event) {
     return event.getOrderedPopulation().all().stream().anyMatch(i -> targetFitness.equals(i.getFitness()));
   }
 

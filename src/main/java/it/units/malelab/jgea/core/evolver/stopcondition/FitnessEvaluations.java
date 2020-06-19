@@ -24,7 +24,7 @@ import java.util.function.Predicate;
 /**
  * @author eric
  */
-public class FitnessEvaluations implements Predicate<Event<Object, Object, Object>> {
+public class FitnessEvaluations implements Predicate<Event<?, ?, ?>> {
 
   private final long n;
 
@@ -33,7 +33,7 @@ public class FitnessEvaluations implements Predicate<Event<Object, Object, Objec
   }
 
   @Override
-  public boolean test(Event<Object, Object, Object> event) {
+  public boolean test(Event<?, ?, ?> event) {
     return event.getState().getFitnessEvaluations() >= n;
   }
 

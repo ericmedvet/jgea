@@ -35,7 +35,7 @@ public interface Evolver<G, S, F> extends Serializable {
 
   Collection<S> solve(
       Problem<S, F> problem,
-      Predicate<Event<? super G, ? super S, ? super F>> stopCondition,
+      Predicate<? super Event<G, S, F>> stopCondition,
       Random random,
       ExecutorService executor,
       Listener<? super G, ? super S, ? super F> listener) throws InterruptedException, ExecutionException;
