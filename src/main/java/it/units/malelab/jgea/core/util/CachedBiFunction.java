@@ -22,30 +22,30 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheStats;
 
 import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 /**
  * @author eric
  * @created 2020/06/19
  * @project jgea
  */
-public class CachedFunction<T, R> implements Function<T, R> {
+public class CachedBiFunction<T, U, R> implements BiFunction<T, U, R> {
 
-  private final Function<T, R> function;
-  private final Cache<T, R> cache;
+  private final BiFunction<T, U, R> function;
+  private final Cache<Pair<T, U>, R> cache;
   private long innerInvocations;
 
-  public CachedFunction(Function<T, R> function, long size) {
+  public CachedBiFunction(BiFunction<T, U, R> function, long size) {
     this.function = function;
     cache = CacheBuilder.newBuilder().maximumSize(size).recordStats().build();
   }
 
   @Override
-  public R apply(T t) {
+  public R apply(T t, U u) {
     try {
-      return cache.get(t, () -> {
+      return cache.get(Pair.build(t, u), () -> {
         innerInvocations = innerInvocations + 1;
-        return function.apply(t);
+        return function.apply(t, u);
       });
     } catch (ExecutionException ex) {
       throw new RuntimeException(ex);

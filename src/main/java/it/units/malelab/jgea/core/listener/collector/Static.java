@@ -28,9 +28,9 @@ import java.util.stream.Collectors;
  */
 public class Static implements DataCollector<Object, Object, Object> {
 
-  private final Map<String, Object> values;
+  private final Map<String, ?> values;
 
-  public Static(Map<String, Object> values) {
+  public Static(Map<String, ?> values) {
     this.values = values;
   }
 

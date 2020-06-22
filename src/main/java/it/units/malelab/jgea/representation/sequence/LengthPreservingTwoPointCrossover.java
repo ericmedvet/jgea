@@ -24,7 +24,10 @@ import java.util.Random;
 /**
  * @author eric
  */
-public class LengthPreservingTwoPointCrossover<S extends Sequence<?>> implements Crossover<S> {
+public class LengthPreservingTwoPointCrossover<E, S extends Sequence<E>> implements Crossover<S> {
+
+  public LengthPreservingTwoPointCrossover(Class<E> eClass) {
+  }
 
   @Override
   public S recombine(S s1, S s2, Random random) {

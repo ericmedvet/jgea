@@ -20,6 +20,7 @@ package it.units.malelab.jgea.representation.sequence.numeric;
 import it.units.malelab.jgea.representation.sequence.Sequence;
 import it.units.malelab.jgea.core.operator.Mutation;
 
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -37,7 +38,7 @@ public class GaussianMutation implements Mutation<Sequence<Double>> {
   public Sequence<Double> mutate(Sequence<Double> parent, Random random) {
     Sequence<Double> child = parent.clone();
     for (int i = 0; i < child.size(); i++) {
-      child.set(i, child.get(i) + random.nextGaussian() * sigma);
+      child.set(i, child.get(i).doubleValue() + random.nextGaussian() * sigma);
     }
     return child;
   }

@@ -17,8 +17,10 @@
 
 package it.units.malelab.jgea.lab;
 
-import com.google.common.collect.Lists;
 import it.units.malelab.jgea.Worker;
+import it.units.malelab.jgea.core.Individual;
+import it.units.malelab.jgea.core.order.PartialComparator;
+import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.representation.tree.Node;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
@@ -45,6 +47,7 @@ import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 import it.units.malelab.jgea.representation.grammar.ge.WeightedHierarchicalMapper;
 import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
 import it.units.malelab.jgea.problem.booleanfunction.element.Element;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -58,7 +61,6 @@ import java.util.logging.Logger;
 import static it.units.malelab.jgea.core.util.Args.*;
 
 /**
- *
  * @author eric
  */
 public class IntrinsicDimensionAssessment extends Worker {
@@ -66,7 +68,7 @@ public class IntrinsicDimensionAssessment extends Worker {
   private final static Logger L = Logger.getLogger(IntrinsicDimensionAssessment.class.getName());
   private final static long CACHE_SIZE = 10000;
 
-  public final static void main(String[] args) throws FileNotFoundException {
+  public static void main(String[] args) throws FileNotFoundException {
     new IntrinsicDimensionAssessment(args);
   }
 
@@ -83,8 +85,8 @@ public class IntrinsicDimensionAssessment extends Worker {
     int iterations = 50;
     int population = 500;
     //prepare things
-    MultiFileListenerFactory listenerFactory = new MultiFileListenerFactory(a("dir", "."), a("file", null));
-    Distance<BitString> hamming = (new BitStringHamming()).cached(CACHE_SIZE);
+    MultiFileListenerFactory<BitString, Object, Object> listenerFactory = new MultiFileListenerFactory<>(a("dir", "."), a("file", null));
+    Distance<BitString> hamming = Misc.cached(new BitStringHamming(), CACHE_SIZE);
     //iterate
     for (int k : ks) {
       try {
@@ -94,20 +96,17 @@ public class IntrinsicDimensionAssessment extends Worker {
           GrammarBasedMapper<BitString, String> mapper = new WeightedHierarchicalMapper<>(2, problem.getGrammar());
           Map<GeneticOperator<BitString>, Double> operators = new LinkedHashMap<>();
           operators.put(new BitFlipMutation(0.01d), 0.2d);
-          operators.put(new LengthPreservingTwoPointCrossover(), 0.8d);
+          operators.put(new LengthPreservingTwoPointCrossover<>(Boolean.class), 0.8d);
           StandardEvolver<BitString, List<Node<Element>>, Double> evolver = new StandardEvolver<>(
-                  population,
-                  new BitStringFactory(genotypeSize),
-                  new ComparableRanker(new FitnessComparator<>(Function.identity())),
-                  mapper.andThen(problem.getSolutionMapper()),
-                  operators,
-                  new Tournament<>(3),
-                  new Worst<>(),
-                  population,
-                  true,
-                  Lists.newArrayList(new Iterations(iterations)),
-                  CACHE_SIZE,
-                  false
+              mapper.andThen(problem.getSolutionMapper()),
+              new BitStringFactory(genotypeSize),
+              PartialComparator.from(Double.class).on(Individual::getFitness),
+              population,
+              operators,
+              new Tournament(3),
+              new Worst(),
+              population,
+              true
           );
           Map<String, String> keys = new LinkedHashMap<>();
           keys.put("run", Integer.toString(run));
@@ -117,17 +116,17 @@ public class IntrinsicDimensionAssessment extends Worker {
           System.out.println(keys);
           Random random = new Random(run);
           try {
-            evolver.solve(problem, random, executorService,
-                    Listener.onExecutor(listenerFactory.build(
-                            new Static(keys),
-                            new Basic(),
-                            new Population(),
-                            new BestInfo<>("%5.3f"),
-                            new Diversity(),
-                            new Suffix("unique", new IntrinsicDimension(hamming, true)),
-                            new Suffix("all", new IntrinsicDimension(hamming, false))
+            evolver.solve(problem, new Iterations(iterations), random, executorService,
+                Listener.onExecutor(listenerFactory.build(
+                    new Static(keys),
+                    new Basic(),
+                    new Population(),
+                    new BestInfo("%5.3f"),
+                    new Diversity(),
+                    new Suffix<>("unique", new IntrinsicDimension<>(hamming, true)),
+                    new Suffix<>("all", new IntrinsicDimension<>(hamming, false))
                     ), executorService
-                    ));
+                ));
           } catch (InterruptedException | ExecutionException ex) {
             L.log(Level.SEVERE, String.format("Cannot solve problem: %s", ex), ex);
           }

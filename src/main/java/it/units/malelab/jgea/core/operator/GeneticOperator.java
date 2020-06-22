@@ -39,11 +39,11 @@ public interface GeneticOperator<G> {
 
       @Override
       public List<G> apply(List<G> parents, Random random) {
-        List<G> intemediate = thisOperator.apply(parents, random);
-        if (intemediate.size() < other.arity()) {
-          throw new IllegalArgumentException(String.format("Cannot apply composed operator: 2nd operator expects %d parents and found %d", other.arity(), intemediate.size()));
+        List<G> intermediate = thisOperator.apply(parents, random);
+        if (intermediate.size() < other.arity()) {
+          throw new IllegalArgumentException(String.format("Cannot apply composed operator: 2nd operator expects %d parents and found %d", other.arity(), intermediate.size()));
         }
-        return other.apply(intemediate, random);
+        return other.apply(intermediate, random);
       }
     };
 

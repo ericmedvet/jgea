@@ -18,6 +18,7 @@
 package it.units.malelab.jgea.core.util;
 
 import com.google.common.collect.Range;
+import it.units.malelab.jgea.distance.Distance;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,6 +28,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -120,6 +122,19 @@ public class Misc {
       return null;
     }
     return ts.iterator().next();
+  }
+
+  public static <T, R> CachedFunction<T, R> cached(Function<T, R> function, long size) {
+    return new CachedFunction<>(function, size);
+  }
+
+  public static <T, U, R> CachedBiFunction<T, U, R> cached(BiFunction<T, U, R> function, long size) {
+    return new CachedBiFunction<>(function, size);
+  }
+
+  public static <T> Distance<T> cached(Distance<T> function, long size) {
+    final CachedBiFunction<T, T, Double> cached = new CachedBiFunction<>(function, size);
+    return (t1, t2) -> cached.apply(t1, t2);
   }
 
 }

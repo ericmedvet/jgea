@@ -39,7 +39,16 @@ public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> 
 
   private static final Logger L = Logger.getLogger(StandardEvolver.class.getName());
 
-  public StandardEvolver(Function<? super G, ? extends S> solutionMapper, Factory<? extends G> genotypeFactory, PartialComparator<? super Individual<G, S, F>> individualComparator, int populationSize, Map<GeneticOperator<G>, Double> operators, Selector<? super Individual<? super G, ? super S, ? super F>> parentSelector, Selector<? super Individual<? super G, ? super S, ? super F>> unsurvivalSelector, int offspringSize, boolean overlapping) {
+  public StandardEvolver(
+      Function<? super G, ? extends S> solutionMapper,
+      Factory<? extends G> genotypeFactory,
+      PartialComparator<? super Individual<G, S, F>> individualComparator,
+      int populationSize,
+      Map<GeneticOperator<G>, Double> operators,
+      Selector<? super Individual<? super G, ? super S, ? super F>> parentSelector,
+      Selector<? super Individual<? super G, ? super S, ? super F>> unsurvivalSelector,
+      int offspringSize,
+      boolean overlapping) {
     super(solutionMapper, genotypeFactory, individualComparator);
     this.populationSize = populationSize;
     this.operators = operators;

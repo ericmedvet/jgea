@@ -34,8 +34,6 @@ public class RobotPowerSupplyGeometry implements Problem<Sequence<Double>, List<
     CONTACT_MIN, CONTACT_AVG, DIST_AVG, BALANCE
   }
 
-  ;
-
   private final double w;
   private final double v;
   private final Function<double[], Boolean> constraintFunction;

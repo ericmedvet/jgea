@@ -20,6 +20,7 @@ package it.units.malelab.jgea.core.order;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -47,6 +48,15 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
 
     public Collection<Node<T1>> getAfterNodes() {
       return afterNodes;
+    }
+
+    @Override
+    public String toString() {
+      return "Node{" +
+          "content=" + content +
+          ", before=" + beforeNodes.stream().map(Node::getContent).collect(Collectors.toList()) +
+          ", after=" + afterNodes.stream().map(Node::getContent).collect(Collectors.toList()) +
+          '}';
     }
   }
 
@@ -87,34 +97,25 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
 
   @Override
   public void add(T t) {
-    boolean added = false;
     for (Node<Collection<T>> node : nodes) {
       PartialComparator.PartialComparatorOutcome outcome = partialComparator.compare(t, node.getContent().iterator().next());
       if (outcome.equals(PartialComparator.PartialComparatorOutcome.SAME)) {
-        added = true;
         node.getContent().add(t);
-        break;
+        return;
       }
     }
-    if (!added) {
-      for (Node<Collection<T>> node : nodes) {
-        PartialComparator.PartialComparatorOutcome outcome = partialComparator.compare(t, node.getContent().iterator().next());
-        if (outcome.equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
-          added = true;
-          Node<Collection<T>> newNode = newNode(t);
-          node.getBeforeNodes().add(newNode);
-          newNode.getAfterNodes().add(node);
-        } else if (outcome.equals(PartialComparator.PartialComparatorOutcome.AFTER)) {
-          added = true;
-          Node<Collection<T>> newNode = newNode(t);
-          node.getAfterNodes().add(newNode);
-          newNode.getBeforeNodes().add(node);
-        }
+    Node<Collection<T>> newNode = newNode(t);
+    for (Node<Collection<T>> node : nodes) {
+      PartialComparator.PartialComparatorOutcome outcome = partialComparator.compare(t, node.getContent().iterator().next());
+      if (outcome.equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
+        node.getBeforeNodes().add(newNode);
+        newNode.getAfterNodes().add(node);
+      } else if (outcome.equals(PartialComparator.PartialComparatorOutcome.AFTER)) {
+        node.getAfterNodes().add(newNode);
+        newNode.getBeforeNodes().add(node);
       }
     }
-    if (!added) {
-      nodes.add(newNode(t));
-    }
+    nodes.add(newNode);
   }
 
   private static <T1> Node<Collection<T1>> newNode(T1 t) {
@@ -153,4 +154,5 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
   public PartialComparator<? super T> getPartialComparator() {
     return partialComparator;
   }
+
 }

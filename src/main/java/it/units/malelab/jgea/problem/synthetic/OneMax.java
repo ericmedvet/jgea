@@ -27,16 +27,7 @@ import java.util.function.Function;
  */
 public class OneMax implements Problem<BitString, Double> {
 
-  private static class FitnessFunction implements Function<BitString, Double> {
-
-    @Override
-    public Double apply(BitString b) {
-      return 1d - (double) b.count() / (double) b.size();
-    }
-
-  }
-
-  private FitnessFunction fitnessFunction;
+  private final Function<BitString, Double> fitnessFunction = b -> 1d - (double) b.count() / (double) b.size();
 
   @Override
   public Function<BitString, Double> getFitnessFunction() {

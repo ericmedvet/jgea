@@ -10,8 +10,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="JGEA" target="1.8" />
-      <module name="JGEA (1)" target="1.8" />
+      <module name="JGEA" target="13" />
     </bytecodeTargetLevel>
   </component>
 </project>

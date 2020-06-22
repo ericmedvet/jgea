@@ -24,7 +24,10 @@ import java.util.Random;
 /**
  * @author Eric Medvet <eric.medvet@gmail.com>
  */
-public class UniformCrossover<S extends Sequence<?>> implements Crossover<S> {
+public class UniformCrossover<E, S extends Sequence<E>> implements Crossover<S> {
+
+  public UniformCrossover(Class<E> eClass) {
+  }
 
   @Override
   public S recombine(S parent1, S parent2, Random random) {

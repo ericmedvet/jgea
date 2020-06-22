@@ -25,6 +25,7 @@ import java.util.List;
  * @author eric
  */
 public class BestInfo extends FunctionOfOneBest<Object, Object, Object> {
+
   public BestInfo(String... fitnessFormats) {
     super(new IndividualBasicInfo<>(f -> {
       List<Item> items = new ArrayList<>();
@@ -46,4 +47,5 @@ public class BestInfo extends FunctionOfOneBest<Object, Object, Object> {
       return items;
     }));
   }
+
 }

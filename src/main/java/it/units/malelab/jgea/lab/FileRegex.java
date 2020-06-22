@@ -18,9 +18,9 @@
 package it.units.malelab.jgea.lab;
 
 import it.units.malelab.jgea.Worker;
+import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.listener.collector.*;
-import it.units.malelab.jgea.core.order.FitnessComparator;
 import it.units.malelab.jgea.core.order.ParetoDominance;
 import it.units.malelab.jgea.representation.tree.Node;
 import it.units.malelab.jgea.core.evolver.Evolver;
@@ -105,7 +105,7 @@ public class FileRegex extends Worker {
           evolver = new StandardEvolver<>(
               p.getSolutionMapper(),
               new RampedHalfAndHalf<>(3, maxDepth, p.getGrammar()),
-              new FitnessComparator<>(new ParetoDominance<>()),
+              new ParetoDominance<>(Double.class).on(Individual::getFitness),
               popSize,
               operators,
               new Tournament(3),
@@ -126,7 +126,7 @@ public class FileRegex extends Worker {
             new Basic(),
             new Population(),
             new BestInfo(),
-            new BestPrinter(Set.of(BestPrinter.Part.SOLUTION))
+            new BestPrinter(BestPrinter.Part.SOLUTION)
         ), executor));
         System.out.printf("Found %d solutions: one is %s.%n", solutions.size(), solutions.stream().findFirst().orElse(""));
       }

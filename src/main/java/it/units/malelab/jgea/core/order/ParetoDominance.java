@@ -24,10 +24,13 @@ import java.util.List;
  * @created 2020/06/17
  * @project jgea
  */
-public class ParetoDominance<C extends Comparable<C>> implements PartialComparator<List<C>> {
+public class ParetoDominance<C extends Comparable<C>> implements PartialComparator<List<? extends C>> {
+
+  public ParetoDominance(Class<C> cClass) {
+  }
 
   @Override
-  public PartialComparatorOutcome compare(List<C> k1, List<C> k2) {
+  public PartialComparatorOutcome compare(List<? extends C> k1, List<? extends C> k2) {
     if (k1.size() != k2.size()) {
       return PartialComparatorOutcome.NOT_COMPARABLE;
     }
@@ -54,4 +57,5 @@ public class ParetoDominance<C extends Comparable<C>> implements PartialComparat
     }
     return PartialComparatorOutcome.NOT_COMPARABLE;
   }
+
 }

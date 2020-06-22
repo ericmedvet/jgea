@@ -38,7 +38,13 @@ public class MutationOnly<G, S, F> extends StandardEvolver<G, S, F> {
 
   private final Mutation<G> mutation;
 
-  public MutationOnly(Function<G, S> solutionMapper, Factory<? extends G> genotypeFactory, PartialComparator<Individual<? super G, ? super S, ? super F>> individualComparator, int populationSize, Selector<Individual<G, S, F>> unsurvivalSelector, Mutation<G> mutation) {
+  public MutationOnly(
+      Function<? super G, ? extends S> solutionMapper,
+      Factory<? extends G> genotypeFactory,
+      PartialComparator<? super Individual<G, S, F>> individualComparator,
+      int populationSize,
+      Selector<? super Individual<? super G, ? super S, ? super F>> unsurvivalSelector,
+      Mutation<G> mutation) {
     super(solutionMapper, genotypeFactory, individualComparator, populationSize, null, null, unsurvivalSelector, 0, true);
     this.mutation = mutation;
   }

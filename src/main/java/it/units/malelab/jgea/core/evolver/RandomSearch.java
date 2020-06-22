@@ -37,7 +37,10 @@ import java.util.function.Function;
  */
 public class RandomSearch<G, S, F> extends AbstractIterativeEvolver<G, S, F> {
 
-  public RandomSearch(Function<G, S> solutionMapper, Factory<? extends G> genotypeFactory, PartialComparator<Individual<? super G, ? super S, ? super F>> individualComparator) {
+  public RandomSearch(
+      Function<? super G, ? extends S> solutionMapper,
+      Factory<? extends G> genotypeFactory,
+      PartialComparator<? super Individual<G, S, F>> individualComparator) {
     super(solutionMapper, genotypeFactory, individualComparator);
   }
 
@@ -49,7 +52,8 @@ public class RandomSearch<G, S, F> extends AbstractIterativeEvolver<G, S, F> {
   @Override
   protected Collection<Individual<G, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     G genotype = genotypeFactory.build(1, random).get(0);
-    Individual<G, S, F> newIndividual = AbstractIterativeEvolver.buildIndividuals(List.of(genotype), solutionMapper, fitnessFunction, executor, state).get(0);
+    Collection<Individual<G, S, F>> offspring = AbstractIterativeEvolver.buildIndividuals(List.of(genotype), solutionMapper, fitnessFunction, executor, state);
+    Individual<G, S, F> newIndividual = offspring.iterator().next();
     Individual<G, S, F> currentIndividual = orderedPopulation.firsts().iterator().next();
     if (individualComparator.compare(newIndividual, currentIndividual).equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
       return List.of(newIndividual);

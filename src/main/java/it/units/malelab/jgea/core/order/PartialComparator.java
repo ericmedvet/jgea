@@ -17,7 +17,9 @@
 
 package it.units.malelab.jgea.core.order;
 
+
 import java.util.Comparator;
+import java.util.function.Function;
 
 /**
  * @author eric
@@ -56,6 +58,24 @@ public interface PartialComparator<K> {
         return PartialComparatorOutcome.SAME;
       }
       return PartialComparatorOutcome.AFTER;
+    };
+  }
+
+  default <C> PartialComparator<C> on(Function<? super C, ? extends K> function) {
+    return (c1, c2) -> compare(function.apply(c1), function.apply(c2));
+  }
+
+  default PartialComparator<K> reversed() {
+    PartialComparator<K> thisComparator = this;
+    return (k1, k2) -> {
+      PartialComparatorOutcome outcome = thisComparator.compare(k1, k2);
+      if (outcome.equals(PartialComparatorOutcome.BEFORE)) {
+        return PartialComparatorOutcome.AFTER;
+      }
+      if (outcome.equals(PartialComparatorOutcome.AFTER)) {
+        return PartialComparatorOutcome.BEFORE;
+      }
+      return outcome;
     };
   }
 }

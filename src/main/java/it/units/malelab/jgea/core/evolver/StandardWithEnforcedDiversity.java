@@ -42,7 +42,17 @@ public class StandardWithEnforcedDiversity<G, S, F> extends StandardEvolver<G, S
 
   private final int maxAttempts;
 
-  public StandardWithEnforcedDiversity(Function<G, S> solutionMapper, Factory<? extends G> genotypeFactory, PartialComparator<Individual<? super G, ? super S, ? super F>> individualComparator, int populationSize, Map<GeneticOperator<G>, Double> operators, Selector<Individual<G, S, F>> parentSelector, Selector<Individual<G, S, F>> unsurvivalSelector, int offspringSize, boolean overlapping, int maxAttempts) {
+  public StandardWithEnforcedDiversity(
+      Function<? super G, ? extends S> solutionMapper,
+      Factory<? extends G> genotypeFactory,
+      PartialComparator<? super Individual<G, S, F>> individualComparator,
+      int populationSize,
+      Map<GeneticOperator<G>, Double> operators,
+      Selector<? super Individual<? super G, ? super S, ? super F>> parentSelector,
+      Selector<? super Individual<? super G, ? super S, ? super F>> unsurvivalSelector,
+      int offspringSize,
+      boolean overlapping,
+      int maxAttempts) {
     super(solutionMapper, genotypeFactory, individualComparator, populationSize, operators, parentSelector, unsurvivalSelector, offspringSize, overlapping);
     this.maxAttempts = maxAttempts;
   }

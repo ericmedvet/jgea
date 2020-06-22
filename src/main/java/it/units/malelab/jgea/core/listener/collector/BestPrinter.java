@@ -44,4 +44,8 @@ public class BestPrinter extends FunctionOfOneBest<Object, Object, Object> {
     });
   }
 
+  public BestPrinter(Part part) {
+    this(EnumSet.of(part));
+  }
+
 }
