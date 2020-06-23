@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  */
 public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollection<T> {
 
-  public static class Node<T1> implements Serializable {
+  private static class Node<T1> implements Serializable {
     private final T1 content;
     private final Collection<Node<T1>> beforeNodes = new ArrayList<>();
     private final Collection<Node<T1>> afterNodes = new ArrayList<>();
@@ -153,6 +153,30 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
 
   public PartialComparator<? super T> getPartialComparator() {
     return partialComparator;
+  }
+
+  @Override
+  public String toString() {
+    Set<Node<Collection<T>>> visited = new HashSet<>();
+    return nodes.stream()
+        .filter(n -> n.beforeNodes.isEmpty())
+        .map(n -> toString(n, visited))
+        .collect(Collectors.joining("; "));
+  }
+
+  private String toString(Node<Collection<T>> node, Set<Node<Collection<T>>> visited) {
+    visited.add(node);
+    String s = node.getContent().toString();
+    s = s + " < [";
+    s = s + node.afterNodes.stream()
+        .filter(n -> n.beforeNodes.stream()
+            .filter(nb -> node.afterNodes.contains(nb))
+            .count() == 0
+        )
+        .map(n -> visited.contains(n) ? "..." : toString(n, visited))
+        .collect(Collectors.joining(", "));
+    s = s + "]";
+    return s;
   }
 
 }

@@ -121,7 +121,7 @@ public class FileRegex extends Worker {
         constants.put("run", run);
         constants.put("ea", ea);
         System.out.printf("Starting evolution: %s%n", constants);
-        Collection<String> solutions = evolver.solve(p, new Iterations(100), random, executor, Listener.onExecutor(listener(
+        Collection<String> solutions = evolver.solve(p.getFitnessFunction(), new Iterations(100), random, executor, Listener.onExecutor(listener(
             new Static(constants),
             new Basic(),
             new Population(),

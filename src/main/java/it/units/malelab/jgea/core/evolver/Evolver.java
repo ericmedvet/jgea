@@ -17,7 +17,6 @@
 
 package it.units.malelab.jgea.core.evolver;
 
-import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.listener.Event;
 import it.units.malelab.jgea.core.listener.Listener;
 
@@ -26,6 +25,7 @@ import java.util.Collection;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -34,7 +34,7 @@ import java.util.function.Predicate;
 public interface Evolver<G, S, F> extends Serializable {
 
   Collection<S> solve(
-      Problem<S, F> problem,
+      Function<S, F> fitnessFunction,
       Predicate<? super Event<G, S, F>> stopCondition,
       Random random,
       ExecutorService executor,

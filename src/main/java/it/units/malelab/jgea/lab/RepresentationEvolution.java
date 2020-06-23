@@ -187,7 +187,7 @@ public class RepresentationEvolution extends Worker {
                   new BestPrinter(EnumSet.of(BestPrinter.Part.GENOTYPE))
               );
               Collection<Pair<Node<Element>, Node<Element>>> mapperPairs = evolver.solve(
-                  mapperGeneration, new Iterations(learningIterations), random, executorService,
+                  mapperGeneration.getFitnessFunction(), new Iterations(learningIterations), random, executorService,
                   Listener.onExecutor(listener, executorService)
               );
               Pair<Node<Element>, Node<Element>> mapperPair = Misc.first(mapperPairs);
@@ -302,7 +302,7 @@ public class RepresentationEvolution extends Worker {
       innerKeys.putAll(keys);
       Random innerRandom = new Random(validationRun);
       innerEvolver.solve(
-          innerProblemEntry.getValue().getProblem(), new Iterations(validationIterations),
+          innerProblemEntry.getValue().getProblem().getFitnessFunction(), new Iterations(validationIterations),
           innerRandom, executorService, Listener.onExecutor(validationListenerFactory.build(
               new Static(innerKeys),
               new Basic(),

@@ -62,7 +62,7 @@ public abstract class Worker implements Runnable {
     return Args.a(args, name, defaultValue);
   }
 
-  protected <G, S, F> Listener<G, S, F> listener(DataCollector<G, S, F>... collectors) {
+  protected <G, S, F> Listener<G, S, F> listener(DataCollector<? super G, ? super S, ? super F>... collectors) {
     return new PrintStreamListener<>(System.out, true, 10, " ", " | ", collectors);
   }
 

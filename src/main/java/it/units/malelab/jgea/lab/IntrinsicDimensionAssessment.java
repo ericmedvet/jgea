@@ -116,7 +116,7 @@ public class IntrinsicDimensionAssessment extends Worker {
           System.out.println(keys);
           Random random = new Random(run);
           try {
-            evolver.solve(problem, new Iterations(iterations), random, executorService,
+            evolver.solve(problem.getFitnessFunction(), new Iterations(iterations), random, executorService,
                 Listener.onExecutor(listenerFactory.build(
                     new Static(keys),
                     new Basic(),

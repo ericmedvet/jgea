@@ -133,7 +133,7 @@ public class RobotContactsDE extends Worker {
               };
               Misc.cached(toArray.andThen(problem.getMinContactsFunction()), evaluations);
               try {
-                evolver.solve(problem, new FitnessEvaluations(evaluations), random, executorService, Listener.onExecutor(listenerFactory.build(
+                evolver.solve(problem.getFitnessFunction(), new FitnessEvaluations(evaluations), random, executorService, Listener.onExecutor(listenerFactory.build(
                     new Static(keys),
                     new Basic(),
                     new Population(),

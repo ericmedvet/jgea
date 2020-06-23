@@ -20,14 +20,17 @@ package it.units.malelab.jgea.core.evolver;
 import com.google.common.base.Stopwatch;
 import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.Individual;
-import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
-import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.listener.Event;
 import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
+import it.units.malelab.jgea.core.util.CachedFunction;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -54,21 +57,24 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
   }
 
   @Override
-  public Collection<S> solve(Problem<S, F> problem, Predicate<? super Event<G, S, F>> stopCondition, Random random, ExecutorService executor, Listener<? super G, ? super S, ? super F> listener) throws InterruptedException, ExecutionException {
+  public Collection<S> solve(Function<S, F> fitnessFunction, Predicate<? super Event<G, S, F>> stopCondition, Random random, ExecutorService executor, Listener<? super G, ? super S, ? super F> listener) throws InterruptedException, ExecutionException {
     State state = new State();
     Stopwatch stopwatch = Stopwatch.createStarted();
-    Collection<Individual<G, S, F>> population = initPopulation(problem.getFitnessFunction(), random, executor, state);
+    Collection<Individual<G, S, F>> population = initPopulation(fitnessFunction, random, executor, state);
     L.fine(String.format("Population initialized: %d individuals", population.size()));
     while (true) {
       PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation = new DAGPartiallyOrderedCollection<>(population, individualComparator);
       state.setElapsedMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS));
       Event<G, S, F> event = new Event<>(state, orderedPopulation);
       listener.listen(event);
+
+      System.out.println(orderedPopulation.firsts().stream().map(Individual::getSolution).collect(Collectors.toList()));
+
       if (stopCondition.test(event)) {
         L.fine(String.format("Stop condition met: %s", stopCondition.toString()));
         break;
       }
-      population = updatePopulation(orderedPopulation, problem.getFitnessFunction(), random, executor, state);
+      population = updatePopulation(orderedPopulation, fitnessFunction, random, executor, state);
       L.fine(String.format("Population updated: %d individuals", population.size()));
       state.incIterations(1);
     }
@@ -81,7 +87,7 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
 
   protected abstract Collection<Individual<G, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException;
 
-  public static <G1, S1, F1> List<Individual<G1, S1, F1>> buildIndividuals(Collection<G1> genotypes, Function<? super G1, ? extends S1> solutionMapper, Function<? super S1, ? extends F1> fitnessFunction, ExecutorService executor, State state) throws InterruptedException, ExecutionException {
+  public static <G1, S1, F1> List<Individual<G1, S1, F1>> buildIndividuals(Collection<? extends G1> genotypes, Function<? super G1, ? extends S1> solutionMapper, Function<? super S1, ? extends F1> fitnessFunction, ExecutorService executor, State state) throws InterruptedException, ExecutionException {
     List<Callable<Individual<G1, S1, F1>>> callables = genotypes.stream()
         .map(genotype -> (Callable<Individual<G1, S1, F1>>) () -> {
           S1 solution = solutionMapper.apply(genotype);
@@ -90,7 +96,9 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
         }).collect(Collectors.toList());
     List<Individual<G1, S1, F1>> individuals = getIndividuals(executor.invokeAll(callables));
     state.incBirths(individuals.size());
-    state.setFitnessEvaluations(state.getBirths());
+    state.setFitnessEvaluations(
+        (fitnessFunction instanceof CachedFunction) ? (int) ((CachedFunction) fitnessFunction).getInnerInvocations() : state.getBirths()
+    );
     return individuals;
   }
 
@@ -103,8 +111,8 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
   }
 
   protected Collection<Individual<G, S, F>> initPopulation(int n, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
-    G genotype = genotypeFactory.build(n, random).get(0);
-    return AbstractIterativeEvolver.buildIndividuals(List.of(genotype), solutionMapper, fitnessFunction, executor, state);
+    Collection<? extends G> genotypes = genotypeFactory.build(n, random);
+    return AbstractIterativeEvolver.buildIndividuals(genotypes, solutionMapper, fitnessFunction, executor, state);
   }
 
 }

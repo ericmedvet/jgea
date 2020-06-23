@@ -17,6 +17,7 @@
 
 package it.units.malelab.jgea.core.operator;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -27,7 +28,7 @@ public interface GeneticOperator<G> {
 
   int arity();
 
-  List<G> apply(List<G> parents, Random random);
+  List<? extends G> apply(List<? extends G> parents, Random random);
 
   default GeneticOperator<G> andThen(GeneticOperator<G> other) {
     final GeneticOperator<G> thisOperator = this;
@@ -38,15 +39,15 @@ public interface GeneticOperator<G> {
       }
 
       @Override
-      public List<G> apply(List<G> parents, Random random) {
-        List<G> intermediate = thisOperator.apply(parents, random);
+      public List<? extends G> apply(List<? extends G> parents, Random random) {
+        List<? extends G> intermediate = thisOperator.apply(parents, random);
         if (intermediate.size() < other.arity()) {
-          throw new IllegalArgumentException(String.format("Cannot apply composed operator: 2nd operator expects %d parents and found %d", other.arity(), intermediate.size()));
+          throw new IllegalArgumentException(String.format("Cannot apply composed operator: 2nd operator expected %d parents and found %d", other.arity(), intermediate.size()));
         }
         return other.apply(intermediate, random);
       }
     };
-
   }
+
 
 }

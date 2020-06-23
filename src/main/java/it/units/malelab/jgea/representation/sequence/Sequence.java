@@ -21,12 +21,14 @@ import it.units.malelab.jgea.core.util.Sized;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author eric
  */
-public interface Sequence<T> extends Sized, Cloneable {
+public interface Sequence<T> extends Sized, Cloneable, Iterable<T> {
 
   T get(int index);
 
@@ -40,6 +42,29 @@ public interface Sequence<T> extends Sized, Cloneable {
       ts.add(get(i));
     }
     return (T[]) ts.toArray();
+  }
+
+  @Override
+  default Iterator<T> iterator() {
+    return new Iterator<T>() {
+      int i = 0;
+
+      @Override
+      public boolean hasNext() {
+        return i < size();
+      }
+
+      @Override
+      public T next() {
+        T t = get(i);
+        i = i + 1;
+        return t;
+      }
+    };
+  }
+
+  default Stream<T> stream() {
+    return List.of(toArray()).stream();
   }
 
   static <T> Sequence<T> from(final T... ts) {
