@@ -187,7 +187,6 @@ public class Example extends Worker {
 
   public void runGrammarBasedSymbolicRegression() {
     //TODO not deterministic, check!
-    //TODO enforced diversity seems not working
     Random r = new Random(1);
     AbstractRegressionProblemProblemWithValidation p;
     try {
@@ -212,8 +211,8 @@ public class Example extends Worker {
             true
         ),
         new StandardWithEnforcedDiversity<>(
-            new FormulaMapper(),
-            new RampedHalfAndHalf<>(3, 12, p.getGrammar()),
+            new FormulaMapper(), //TODO add here a function that transforms e(x) to a*e(x)+b with a, b minimizing the error
+            new RampedHalfAndHalf<>(3, 12, p.getGrammar()).withOptimisticUniqueness(100),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             100,
             Map.of(
@@ -224,7 +223,7 @@ public class Example extends Worker {
             new Worst(),
             100,
             true,
-            100
+            1000
         )
     );
     for (Evolver<Node<String>, Node<Element>, Double> evolver : evolvers) {
@@ -264,7 +263,7 @@ public class Example extends Worker {
       return;
     }
     List<Evolver<Node<String>, Node<Element>, List<Double>>> evolvers = List.of(
-        new StandardEvolver<>(
+        /*new StandardEvolver<>(
             new FormulaMapper(),
             new RampedHalfAndHalf<>(3, 12, p.getGrammar()),
             new ParetoDominance<>(Double.class).on(i -> i.getFitness()),
@@ -277,21 +276,21 @@ public class Example extends Worker {
             new Worst(),
             100,
             true
-        ),
+        ),*/
         new StandardWithEnforcedDiversity<>(
             new FormulaMapper(),
-            new RampedHalfAndHalf<>(3, 12, p.getGrammar()),
+            new RampedHalfAndHalf<>(3, 12, p.getGrammar()).withOptimisticUniqueness(100),
             new ParetoDominance<>(Double.class).on(i -> i.getFitness()),
             100,
             Map.of(
                 new StandardTreeCrossover<>(12), 0.8d,
                 new StandardTreeMutation<>(12, p.getGrammar()), 0.2d
             ),
-            new Tournament(5),
+            new Tournament(3),
             new Worst(),
             100,
             true,
-            100
+            1000
         )
     );
     for (Evolver<Node<String>, Node<Element>, List<Double>> evolver : evolvers) {
@@ -302,14 +301,14 @@ public class Example extends Worker {
                 p.getFitnessFunction().apply(n),
                 (double)n.size()
             ),
-            new Iterations(100),
+            new Iterations(25),
             r,
             executorService,
             listener(
                 new Basic(),
                 new Population(),
                 new Diversity(),
-                new BestInfo("%5.3f"),
+                new BestInfo("%5.3f", "%2.0f"),
                 new BestPrinter(BestPrinter.Part.SOLUTION)
             ));
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());

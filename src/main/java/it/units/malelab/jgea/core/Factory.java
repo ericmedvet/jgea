@@ -18,6 +18,8 @@
 package it.units.malelab.jgea.core;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
 
@@ -28,5 +30,22 @@ import java.util.Random;
 public interface Factory<T> extends Serializable {
 
   List<T> build(int n, Random random);
+
+  default Factory<T> withOptimisticUniqueness(int maxAttempts) {
+    Factory<T> innerFactory = this;
+    return new Factory<T>() {
+      @Override
+      public List<T> build(int n, Random random) {
+        int attempts = 0;
+        List<T> ts = new ArrayList<>();
+        while ((ts.size() < n) && (attempts < maxAttempts)) {
+          attempts = attempts + 1;
+          ts.addAll(new LinkedHashSet<>(innerFactory.build(n - ts.size(), random)));
+        }
+        ts.addAll(innerFactory.build(n - ts.size(), random));
+        return ts;
+      }
+    };
+  }
 
 }

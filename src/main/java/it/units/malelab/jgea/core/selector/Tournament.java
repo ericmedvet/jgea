@@ -18,16 +18,12 @@
 package it.units.malelab.jgea.core.selector;
 
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
-import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.util.Misc;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Random;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 /**
  * @author eric

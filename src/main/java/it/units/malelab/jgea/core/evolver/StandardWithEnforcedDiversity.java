@@ -66,6 +66,7 @@ public class StandardWithEnforcedDiversity<G, S, F> extends StandardEvolver<G, S
       List<G> parentGenotypes = new ArrayList<>(operator.arity());
       int attempts = 0;
       while (true) {
+        parentGenotypes.clear();
         for (int j = 0; j < operator.arity(); j++) {
           Individual<G, S, F> parent = parentSelector.select(orderedPopulation, random);
           parentGenotypes.add(parent.getGenotype());
@@ -73,7 +74,7 @@ public class StandardWithEnforcedDiversity<G, S, F> extends StandardEvolver<G, S
         List<G> childGenotypes = new ArrayList<>(operator.apply(parentGenotypes, random));
         boolean added = false;
         for (G childGenotype : childGenotypes) {
-          if ((!offspringGenotypes.contains(childGenotype) && !existingGenotypes.contains(childGenotype)) || (attempts == maxAttempts - 1)) {
+          if ((!offspringGenotypes.contains(childGenotype) && !existingGenotypes.contains(childGenotype)) || (attempts >= maxAttempts - 1)) {
             added = true;
             offspringGenotypes.add(childGenotype);
           }

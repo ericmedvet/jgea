@@ -67,9 +67,6 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
       state.setElapsedMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS));
       Event<G, S, F> event = new Event<>(state, orderedPopulation);
       listener.listen(event);
-
-      System.out.println(orderedPopulation.firsts().stream().map(Individual::getSolution).collect(Collectors.toList()));
-
       if (stopCondition.test(event)) {
         L.fine(String.format("Stop condition met: %s", stopCondition.toString()));
         break;
