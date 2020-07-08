@@ -82,11 +82,7 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<Node<Element>, d
 
     @Override
     public Double apply(Node<Element> solution, double[] point) {
-      Map<String, Double> varValues = new LinkedHashMap<>();
-      for (int i = 0; i < targetFunction.varNames().length; i++) {
-        varValues.put(targetFunction.varNames()[i], point[i]);
-      }
-      Double computed = MathUtils.compute(solution, varValues);
+      Double computed = MathUtils.compute(solution, MathUtils.buildVarValues(targetFunction, point));
       if (computed == null) {
         return Double.POSITIVE_INFINITY;
       }
@@ -95,8 +91,20 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<Node<Element>, d
 
   }
 
+  private final TargetFunction targetFunction;
+  private final List<double[]> points;
+
   public SymbolicRegressionFitness(TargetFunction targetFunction, List<double[]> points, boolean average) {
     super(points, new AbsoluteError(targetFunction), new Aggregator(average));
+    this.targetFunction = targetFunction;
+    this.points = points;
   }
 
+  public TargetFunction getTargetFunction() {
+    return targetFunction;
+  }
+
+  public List<double[]> getPoints() {
+    return points;
+  }
 }

@@ -19,24 +19,49 @@ package it.units.malelab.jgea.problem.symbolicregression;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import it.units.malelab.jgea.core.fitness.SymbolicRegressionFitness;
+import it.units.malelab.jgea.problem.symbolicregression.element.*;
 import it.units.malelab.jgea.representation.tree.Node;
-import it.units.malelab.jgea.problem.symbolicregression.element.Constant;
-import it.units.malelab.jgea.problem.symbolicregression.element.Decoration;
-import it.units.malelab.jgea.problem.symbolicregression.element.Element;
-import it.units.malelab.jgea.problem.symbolicregression.element.Operator;
-import it.units.malelab.jgea.problem.symbolicregression.element.Variable;
+import org.apache.commons.math3.stat.StatUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 /**
  * @author eric
  */
 public class MathUtils {
+
+  public static UnaryOperator<Node<Element>> linearScaler(SymbolicRegressionFitness symbolicRegressionFitness) {
+    double[] targetYs = symbolicRegressionFitness.getPoints().stream()
+        .mapToDouble(p -> symbolicRegressionFitness.getTargetFunction().apply(p))
+        .toArray();
+    final double targetMean = StatUtils.mean(targetYs);
+    final double targetVariance = StatUtils.variance(targetYs, targetMean);
+    return function -> {
+      final Node<Element> finalFunction = function;
+      double[] ys = symbolicRegressionFitness.getPoints().stream()
+          .mapToDouble(p -> compute(finalFunction, buildVarValues(symbolicRegressionFitness.getTargetFunction(), p)))
+          .toArray();
+      double mean = StatUtils.mean(ys);
+      double variance = StatUtils.variance(ys, mean);
+      Node<Element> newFunction = new Node<>(Operator.ADDITION);
+      newFunction.getChildren().add(new Node<>(new Constant(targetMean - mean * Math.sqrt(targetVariance / variance))));
+      newFunction.getChildren().add(new Node<>(Operator.MULTIPLICATION));
+      newFunction.getChildren().get(1).getChildren().add(function);
+      newFunction.getChildren().get(1).getChildren().add(new Node<>(new Constant(Math.sqrt(targetVariance / variance))));
+      return newFunction;
+    };
+  }
+
+  public static Map<String, Double> buildVarValues(SymbolicRegressionFitness.TargetFunction function, double[] point) {
+    Map<String, Double> varValues = new LinkedHashMap<>();
+    for (int i = 0; i < function.varNames().length; i++) {
+      varValues.put(function.varNames()[i], point[i]);
+    }
+    return varValues;
+  }
 
   public static Double compute(Node<Element> node, Map<String, Double> values) {
     if (node.getContent() instanceof Decoration) {

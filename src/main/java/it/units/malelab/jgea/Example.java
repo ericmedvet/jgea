@@ -11,6 +11,7 @@ import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.evolver.*;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.evolver.stopcondition.TargetFitness;
+import it.units.malelab.jgea.core.fitness.SymbolicRegressionFitness;
 import it.units.malelab.jgea.core.listener.collector.*;
 import it.units.malelab.jgea.core.order.ParetoDominance;
 import it.units.malelab.jgea.core.order.PartialComparator;
@@ -19,6 +20,7 @@ import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.problem.symbolicregression.AbstractRegressionProblemProblemWithValidation;
 import it.units.malelab.jgea.problem.symbolicregression.FormulaMapper;
+import it.units.malelab.jgea.problem.symbolicregression.MathUtils;
 import it.units.malelab.jgea.problem.symbolicregression.Nguyen7;
 import it.units.malelab.jgea.problem.symbolicregression.element.Element;
 import it.units.malelab.jgea.problem.synthetic.LinearPoints;
@@ -63,7 +65,7 @@ public class Example extends Worker {
   public void run() {
     //runOneMax();
     //runLinearPoints();
-    //runGrammarBasedSymbolicRegression();
+    runGrammarBasedSymbolicRegression();
     runGrammarBasedSymbolicRegressionMO();
   }
 
@@ -197,7 +199,7 @@ public class Example extends Worker {
     }
     List<Evolver<Node<String>, Node<Element>, Double>> evolvers = List.of(
         new StandardEvolver<>(
-            new FormulaMapper(),
+            new FormulaMapper().andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new RampedHalfAndHalf<>(3, 12, p.getGrammar()),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             100,
@@ -211,7 +213,7 @@ public class Example extends Worker {
             true
         ),
         new StandardWithEnforcedDiversity<>(
-            new FormulaMapper(), //TODO add here a function that transforms e(x) to a*e(x)+b with a, b minimizing the error
+            new FormulaMapper().andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new RampedHalfAndHalf<>(3, 12, p.getGrammar()).withOptimisticUniqueness(100),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             100,
@@ -278,7 +280,7 @@ public class Example extends Worker {
             true
         ),*/
         new StandardWithEnforcedDiversity<>(
-            new FormulaMapper(),
+            new FormulaMapper().andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new RampedHalfAndHalf<>(3, 12, p.getGrammar()).withOptimisticUniqueness(100),
             new ParetoDominance<>(Double.class).on(i -> i.getFitness()),
             100,
@@ -286,7 +288,7 @@ public class Example extends Worker {
                 new StandardTreeCrossover<>(12), 0.8d,
                 new StandardTreeMutation<>(12, p.getGrammar()), 0.2d
             ),
-            new Tournament(3),
+            new Tournament(5),
             new Worst(),
             100,
             true,
@@ -299,9 +301,9 @@ public class Example extends Worker {
         Collection<Node<Element>> solutions = evolver.solve(
             n -> List.of(
                 p.getFitnessFunction().apply(n),
-                (double)n.size()
+                (double) n.size()
             ),
-            new Iterations(25),
+            new Iterations(100),
             r,
             executorService,
             listener(
@@ -309,6 +311,11 @@ public class Example extends Worker {
                 new Population(),
                 new Diversity(),
                 new BestInfo("%5.3f", "%2.0f"),
+                new FunctionOfOneBest<>(i -> List.of(new Item(
+                    "validation.fitness",
+                    p.getValidationFunction().apply(i.getSolution()),
+                    "%5.3f"
+                ))),
                 new BestPrinter(BestPrinter.Part.SOLUTION)
             ));
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
