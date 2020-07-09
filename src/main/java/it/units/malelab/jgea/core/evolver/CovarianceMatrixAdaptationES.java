@@ -454,13 +454,17 @@ public class CovarianceMatrixAdaptationES <S, F> implements Evolver<Sequence<Dou
 
         // adapt covariance matrix C
         for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
+            for (int j = 0; j <= i; j++) {
                 double rankOneUpdate = CEvolutionPath[i] * CEvolutionPath[j] + (1 - hsig) * cc * (2 - cc) * C.getEntry(i, j);
                 double rankMuUpdate = 0d;
                 for (int k = 0; k < mu; k++) {
                     rankMuUpdate += weights[k] * ((bestMuPoints.get(k).getGenotype().get(i) - oldDistrMean[i]) / stepSize) * ((bestMuPoints.get(k).getGenotype().get(j) - oldDistrMean[j]) / stepSize);
                 }
                 C.setEntry(i, j, (1 - c1 - cmu) * C.getEntry(i, j) + c1 * rankOneUpdate + cmu * rankMuUpdate);
+                if (i != j) {
+                    // force symmetric matrix
+                    C.setEntry(j, i, C.getEntry(i, j));
+                }
             }
         }
 
