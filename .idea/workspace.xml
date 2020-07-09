@@ -19,7 +19,20 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fb3f97aa-f1ba-4dca-af0a-845a3176b0c1" name="Default Changelist" comment="Version change." />
+    <list default="true" id="fb3f97aa-f1ba-4dca-af0a-845a3176b0c1" name="Default Changelist" comment="Version change.">
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_code_findbugs_jsr305_3_0_2.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_errorprone_error_prone_annotations_2_3_4.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_guava_failureaccess_1_0_1.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_guava_listenablefuture_9999_0_empty_to_avoid_conflict_with_guava.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_j2objc_j2objc_annotations_1_3.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_checkerframework_checker_qual_2_11_1.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/jgea.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jgea.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_guava_guava_19_0.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_guava_guava_29_0_jre.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/Example.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/Example.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -36,7 +49,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="release-1.0.0" />
+        <entry key="$PROJECT_DIR$" value="feature-simplification" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -65,7 +78,7 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="extract.method.default.visibility" value="private" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="project.structure.last.edited" value="Artifacts" />
+    <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="settings.editor.selected.configurable" value="reference.projectsettings.compiler.javacompiler" />
@@ -86,7 +99,7 @@
       <recent name="it.units.malelab.jgea.problem.symbolicregression" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.Starter">
+  <component name="RunManager" selected="Application.Example">
     <configuration name="CooperativeCoevolver" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="it.units.malelab.jgea.lab.coevolution.CooperativeCoevolver" />
       <module name="JGEA" />
@@ -102,7 +115,7 @@
     </configuration>
     <configuration name="Example" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="it.units.malelab.jgea.Example" />
-      <module name="JGEA" />
+      <module name="jgea" />
       <extension name="coverage">
         <pattern>
           <option name="PATTERN" value="it.units.malelab.jgea.*" />
@@ -154,8 +167,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.Starter" />
         <item itemvalue="Application.Example" />
+        <item itemvalue="Application.Starter" />
         <item itemvalue="Application.CooperativeCoevolver" />
         <item itemvalue="Application.Example" />
         <item itemvalue="Application.MathUtils" />
@@ -284,9 +297,14 @@
     <MESSAGE value="Solved a bug in standard with diversity; added an optimistic uniqueness factory." />
     <MESSAGE value="Guava updated to 29." />
     <MESSAGE value="Version change." />
-    <option name="LAST_COMMIT_MESSAGE" value="Version change." />
+    <MESSAGE value="IDE files update." />
+    <option name="LAST_COMMIT_MESSAGE" value="IDE files update." />
   </component>
   <component name="WindowStateProjectService">
+    <state x="759" y="235" width="726" height="783" key="#Example" timestamp="1594304939061">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="759" y="235" width="726" height="783" key="#Example/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594304939061" />
     <state x="756" y="312" width="950" height="649" key="#Inspections" timestamp="1592376873898">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
@@ -328,25 +346,25 @@
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state x="908" y="327" width="424" height="597" key="FileChooserDialogImpl/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592236218165" />
-    <state width="2090" height="326" key="GridCell.Tab.0.bottom" timestamp="1594304166552">
+    <state width="2090" height="326" key="GridCell.Tab.0.bottom" timestamp="1594305214042">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594304166552" />
+    <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594305214042" />
     <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434169" />
-    <state width="2090" height="326" key="GridCell.Tab.0.center" timestamp="1594304166552">
+    <state width="2090" height="326" key="GridCell.Tab.0.center" timestamp="1594305214042">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594304166552" />
+    <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594305214042" />
     <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434169" />
-    <state width="2090" height="326" key="GridCell.Tab.0.left" timestamp="1594304166551">
+    <state width="2090" height="326" key="GridCell.Tab.0.left" timestamp="1594305214042">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594304166551" />
+    <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594305214042" />
     <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434168" />
-    <state width="2090" height="326" key="GridCell.Tab.0.right" timestamp="1594304166552">
+    <state width="2090" height="326" key="GridCell.Tab.0.right" timestamp="1594305214042">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594304166552" />
+    <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594305214042" />
     <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434169" />
     <state width="2090" height="512" key="GridCell.Tab.1.bottom" timestamp="1594225517878">
       <screen x="56" y="27" width="2136" height="1206" />
@@ -376,10 +394,10 @@
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state x="827" y="314" width="590" height="645" key="RollbackChangesDialog/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592403588804" />
-    <state x="610" y="163" width="1016" height="742" key="SettingsEditor" timestamp="1592863441000">
+    <state x="610" y="163" width="1016" height="742" key="SettingsEditor" timestamp="1594305048239">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state x="610" y="173" width="1279" height="857" key="SettingsEditor/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592338727919" />
+    <state x="610" y="163" width="1279" height="857" key="SettingsEditor/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594305048239" />
     <state x="610" y="163" width="1016" height="742" key="SettingsEditor/56.27.2136.1206@56.27.2136.1206" timestamp="1592863441000" />
     <state x="722" y="326" width="800" height="540" key="Vcs.Push.Dialog.v2" timestamp="1594225511815">
       <screen x="56" y="27" width="2136" height="1206" />

@@ -6,10 +6,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="jgea" />
         <module name="JGEA" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="jgea" target="13" />
       <module name="JGEA" target="13" />
     </bytecodeTargetLevel>
   </component>

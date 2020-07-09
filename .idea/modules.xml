@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/JGEA.iml" filepath="$PROJECT_DIR$/JGEA.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/jgea.iml" filepath="$PROJECT_DIR$/.idea/jgea.iml" />
     </modules>
   </component>
 </project>
