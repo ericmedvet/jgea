@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="fb3f97aa-f1ba-4dca-af0a-845a3176b0c1" name="Default Changelist" comment="Version change." />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="release-1.0.0" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="importingSettings">
+      <MavenImportingSettings>
+        <option name="downloadAnnotationsAutomatically" value="true" />
+        <option name="downloadDocsAutomatically" value="true" />
+        <option name="downloadSourcesAutomatically" value="true" />
+        <option name="vmOptionsForImporter" value="-Xmx768m" />
+      </MavenImportingSettings>
+    </option>
+  </component>
+  <component name="ProjectId" id="1d2SgaxCyPeOqO6wUR8GTYb8SaG" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="extract.method.default.visibility" value="private" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="project.structure.last.edited" value="Artifacts" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="project.structure.side.proportion" value="0.2" />
+    <property name="settings.editor.selected.configurable" value="reference.projectsettings.compiler.javacompiler" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="it.units.malelab.jgea.lab" />
+      <recent name="it.units.malelab.jgea.representation.sequence" />
+      <recent name="it.units.malelab.jgea.distance" />
+      <recent name="it.units.malelab.jgea.representation.grammar.cfggp" />
+      <recent name="it.units.malelab.jgea.core.operator" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="it.units.malelab.jgea.core.util" />
+      <recent name="it.units.malelab.jgea.core.order" />
+      <recent name="it.units.malelab.jgea.core.listener.collector" />
+      <recent name="it.units.malelab.jgea.core.evolver" />
+      <recent name="it.units.malelab.jgea.problem.symbolicregression" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Application.Starter">
+    <configuration name="CooperativeCoevolver" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="it.units.malelab.jgea.lab.coevolution.CooperativeCoevolver" />
+      <module name="JGEA" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="it.units.malelab.jgea.lab.coevolution.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Example" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="it.units.malelab.jgea.Example" />
+      <module name="JGEA" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="it.units.malelab.jgea.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="MathUtils" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="it.units.malelab.jgea.problem.symbolicregression.MathUtils" />
+      <module name="JGEA" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="it.units.malelab.jgea.problem.symbolicregression.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="PG" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="it.units.malelab.jgea.core.PG" />
+      <module name="JGEA" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="it.units.malelab.jgea.core.order.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Starter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="it.units.malelab.jgea.lab.coevolution.Starter" />
+      <module name="JGEA" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="it.units.malelab.jgea.lab.coevolution.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.Starter" />
+        <item itemvalue="Application.Example" />
+        <item itemvalue="Application.CooperativeCoevolver" />
+        <item itemvalue="Application.Example" />
+        <item itemvalue="Application.MathUtils" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="fb3f97aa-f1ba-4dca-af0a-845a3176b0c1" name="Default Changelist" comment="" />
+      <created>1591621806879</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1591621806879</updated>
+    </task>
+    <task id="LOCAL-00001" summary="Moved to IntelliJ; coevolution works; testing it.">
+      <created>1591651872310</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1591651872310</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Working on coevolution.">
+      <created>1591716999641</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1591716999642</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Doing huge refactoring.">
+      <created>1592341992424</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1592341992425</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Still refactoring.">
+      <created>1592389825916</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1592389825916</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Refactoring.">
+      <created>1592405727049</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1592405727049</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Refactoring almost ended.">
+      <created>1592497352510</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1592497352510</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Refactoring almost ended.">
+      <created>1592586580701</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1592586580701</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Big refactoring ended: a simple OneMax works. Composition of GeneticOperators is still problematic (due to generics not being generic enough...).">
+      <created>1592866413877</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1592866413877</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Checking functionalities with symbolic regression. Likely problems obtaining deterministic evolution; diversity not enforced; MO not working (maybe problems in POSET+selectors).">
+      <created>1592945139748</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1592945139748</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Solved a bug in standard with diversity; added an optimistic uniqueness factory.">
+      <created>1594225500063</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1594225500063</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Guava updated to 29.">
+      <created>1594303052553</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1594303052553</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Version change.">
+      <created>1594304030482</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1594304030482</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Moved to IntelliJ; coevolution works; testing it." />
+    <MESSAGE value="Working on coevolution." />
+    <MESSAGE value="Doing huge refactoring." />
+    <MESSAGE value="Still refactoring." />
+    <MESSAGE value="Refactoring." />
+    <MESSAGE value="Refactoring almost ended." />
+    <MESSAGE value="Big refactoring ended: a simple OneMax works. Composition of GeneticOperators is still problematic (due to generics not being generic enough...)." />
+    <MESSAGE value="Checking functionalities with symbolic regression. Likely problems obtaining deterministic evolution; diversity not enforced; MO not working (maybe problems in POSET+selectors)." />
+    <MESSAGE value="Solved a bug in standard with diversity; added an optimistic uniqueness factory." />
+    <MESSAGE value="Guava updated to 29." />
+    <MESSAGE value="Version change." />
+    <option name="LAST_COMMIT_MESSAGE" value="Version change." />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="756" y="312" width="950" height="649" key="#Inspections" timestamp="1592376873898">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="756" y="312" width="950" height="649" key="#Inspections/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592376873898" />
+    <state x="935" y="22" width="551" height="770" key="#com.intellij.ide.util.MemberChooser" timestamp="1594302101342">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="935" y="22" width="551" height="770" key="#com.intellij.ide.util.MemberChooser/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594302101342" />
+    <state x="935" y="22" width="551" height="770" key="#com.intellij.ide.util.MemberChooser/56.27.2136.1206@56.27.2136.1206" timestamp="1592865366069" />
+    <state x="865" y="466" width="654" height="315" key="#com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackagesDialog.classes" timestamp="1592493351554">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="865" y="466" width="654" height="315" key="#com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackagesDialog.classes/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592493351554" />
+    <state x="880" y="528" key="#com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackagesDialog.packages" timestamp="1592495888121">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="880" y="528" key="#com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackagesDialog.packages/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592495888121" />
+    <state x="559" y="22" width="1126" height="1211" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog" timestamp="1592492357699">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="559" y="22" width="1126" height="1211" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592492357699" />
+    <state x="860" y="374" width="524" height="514" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1592861590986">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="860" y="374" width="524" height="514" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/56.27.2136.1206@56.27.2136.1206" timestamp="1592861590986" />
+    <state x="860" y="379" width="524" height="514" key="#com.intellij.refactoring.typeMigration.ui.FailedConversionsDialog" timestamp="1592864476404">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="860" y="379" width="524" height="514" key="#com.intellij.refactoring.typeMigration.ui.FailedConversionsDialog/56.27.2136.1206@56.27.2136.1206" timestamp="1592864476404" />
+    <state x="945" y="678" key="#xdebugger.evaluate" timestamp="1594223473000">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="945" y="678" key="#xdebugger.evaluate/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594223473000" />
+    <state width="521" height="506" key="DebuggerActiveHint" timestamp="1592863605117">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state width="521" height="506" key="DebuggerActiveHint/56.27.2136.1206@56.27.2136.1206" timestamp="1592863605117" />
+    <state x="908" y="327" width="424" height="597" key="FileChooserDialogImpl" timestamp="1592236218165">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="908" y="327" width="424" height="597" key="FileChooserDialogImpl/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592236218165" />
+    <state width="2090" height="326" key="GridCell.Tab.0.bottom" timestamp="1594304166552">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594304166552" />
+    <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434169" />
+    <state width="2090" height="326" key="GridCell.Tab.0.center" timestamp="1594304166552">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594304166552" />
+    <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434169" />
+    <state width="2090" height="326" key="GridCell.Tab.0.left" timestamp="1594304166551">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594304166551" />
+    <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434168" />
+    <state width="2090" height="326" key="GridCell.Tab.0.right" timestamp="1594304166552">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594304166552" />
+    <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434169" />
+    <state width="2090" height="512" key="GridCell.Tab.1.bottom" timestamp="1594225517878">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state width="2090" height="512" key="GridCell.Tab.1.bottom/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594225517878" />
+    <state width="2090" height="512" key="GridCell.Tab.1.bottom/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434164" />
+    <state width="2090" height="512" key="GridCell.Tab.1.center" timestamp="1594225517877">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state width="2090" height="512" key="GridCell.Tab.1.center/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594225517877" />
+    <state width="2090" height="512" key="GridCell.Tab.1.center/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434163" />
+    <state width="2090" height="512" key="GridCell.Tab.1.left" timestamp="1594225517877">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state width="2090" height="512" key="GridCell.Tab.1.left/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594225517877" />
+    <state width="2090" height="512" key="GridCell.Tab.1.left/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434163" />
+    <state width="2090" height="512" key="GridCell.Tab.1.right" timestamp="1594225517878">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state width="2090" height="512" key="GridCell.Tab.1.right/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594225517878" />
+    <state width="2090" height="512" key="GridCell.Tab.1.right/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434164" />
+    <state x="726" y="405" width="787" height="451" key="NewModule_or_Project.wizard" timestamp="1591623459862">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="726" y="405" width="787" height="451" key="NewModule_or_Project.wizard/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1591623459862" />
+    <state x="827" y="314" width="590" height="645" key="RollbackChangesDialog" timestamp="1592403588804">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="827" y="314" width="590" height="645" key="RollbackChangesDialog/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592403588804" />
+    <state x="610" y="163" width="1016" height="742" key="SettingsEditor" timestamp="1592863441000">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="610" y="173" width="1279" height="857" key="SettingsEditor/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592338727919" />
+    <state x="610" y="163" width="1016" height="742" key="SettingsEditor/56.27.2136.1206@56.27.2136.1206" timestamp="1592863441000" />
+    <state x="722" y="326" width="800" height="540" key="Vcs.Push.Dialog.v2" timestamp="1594225511815">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="722" y="326" width="800" height="540" key="Vcs.Push.Dialog.v2/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594225511815" />
+    <state x="722" y="331" key="Vcs.Push.Dialog.v2/56.27.2136.1206@56.27.2136.1206" timestamp="1592866426334" />
+    <state x="156" y="112" width="1936" height="1011" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1592494898511">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="156" y="112" width="1936" height="1011" key="com.intellij.history.integration.ui.views.FileHistoryDialog/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592494898511" />
+    <state x="860" y="380" width="524" height="513" key="extract.method.dialog" timestamp="1592381734211">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="860" y="380" width="524" height="513" key="extract.method.dialog/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592381734211" />
+    <state x="788" y="288" key="run.anything.popup" timestamp="1592861136835">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="788" y="288" key="run.anything.popup/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592585917665" />
+    <state x="788" y="288" key="run.anything.popup/56.27.2136.1206@56.27.2136.1206" timestamp="1592861136835" />
+    <state x="787" y="293" width="672" height="678" key="search.everywhere.popup" timestamp="1592861790450">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="787" y="293" width="672" height="678" key="search.everywhere.popup/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1591628002353" />
+    <state x="787" y="293" width="672" height="678" key="search.everywhere.popup/56.27.2136.1206@56.27.2136.1206" timestamp="1592861790450" />
+  </component>
+</project>
