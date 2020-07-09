@@ -20,18 +20,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fb3f97aa-f1ba-4dca-af0a-845a3176b0c1" name="Default Changelist" comment="Version change.">
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_code_findbugs_jsr305_3_0_2.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_errorprone_error_prone_annotations_2_3_4.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_guava_failureaccess_1_0_1.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_guava_listenablefuture_9999_0_empty_to_avoid_conflict_with_guava.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_j2objc_j2objc_annotations_1_3.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_checkerframework_checker_qual_2_11_1.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jgea.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jgea.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_guava_guava_19_0.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_guava_guava_29_0_jre.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/Example.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/Example.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/selector/Selector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/selector/Selector.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,6 +39,12 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="PUSH_TAGS">
+      <GitPushTagMode>
+        <option name="argument" value="--tags" />
+        <option name="title" value="All" />
+      </GitPushTagMode>
+    </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
         <entry key="$PROJECT_DIR$" value="feature-simplification" />
@@ -270,7 +268,14 @@
       <option name="project" value="LOCAL" />
       <updated>1594304030482</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="IDE files update.">
+      <created>1594305270696</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1594305270696</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -309,6 +314,10 @@
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state x="756" y="312" width="950" height="649" key="#Inspections/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592376873898" />
+    <state x="956" y="524" width="1025" height="562" key="#Markdown" timestamp="1594309058294">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="956" y="524" width="1025" height="562" key="#Markdown/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594309058294" />
     <state x="935" y="22" width="551" height="770" key="#com.intellij.ide.util.MemberChooser" timestamp="1594302101342">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
@@ -346,25 +355,25 @@
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state x="908" y="327" width="424" height="597" key="FileChooserDialogImpl/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592236218165" />
-    <state width="2090" height="326" key="GridCell.Tab.0.bottom" timestamp="1594305214042">
+    <state width="2090" height="326" key="GridCell.Tab.0.bottom" timestamp="1594308363028">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594305214042" />
+    <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594308363028" />
     <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434169" />
-    <state width="2090" height="326" key="GridCell.Tab.0.center" timestamp="1594305214042">
+    <state width="2090" height="326" key="GridCell.Tab.0.center" timestamp="1594308363028">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594305214042" />
+    <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594308363028" />
     <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434169" />
-    <state width="2090" height="326" key="GridCell.Tab.0.left" timestamp="1594305214042">
+    <state width="2090" height="326" key="GridCell.Tab.0.left" timestamp="1594308363028">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594305214042" />
+    <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594308363028" />
     <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434168" />
-    <state width="2090" height="326" key="GridCell.Tab.0.right" timestamp="1594305214042">
+    <state width="2090" height="326" key="GridCell.Tab.0.right" timestamp="1594308363028">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594305214042" />
+    <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594308363028" />
     <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434169" />
     <state width="2090" height="512" key="GridCell.Tab.1.bottom" timestamp="1594225517878">
       <screen x="56" y="27" width="2136" height="1206" />
@@ -399,10 +408,10 @@
     </state>
     <state x="610" y="163" width="1279" height="857" key="SettingsEditor/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594305048239" />
     <state x="610" y="163" width="1016" height="742" key="SettingsEditor/56.27.2136.1206@56.27.2136.1206" timestamp="1592863441000" />
-    <state x="722" y="326" width="800" height="540" key="Vcs.Push.Dialog.v2" timestamp="1594225511815">
+    <state x="722" y="306" width="800" height="540" key="Vcs.Push.Dialog.v2" timestamp="1594305548443">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state x="722" y="326" width="800" height="540" key="Vcs.Push.Dialog.v2/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594225511815" />
+    <state x="722" y="306" width="800" height="540" key="Vcs.Push.Dialog.v2/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594305548443" />
     <state x="722" y="331" key="Vcs.Push.Dialog.v2/56.27.2136.1206@56.27.2136.1206" timestamp="1592866426334" />
     <state x="156" y="112" width="1936" height="1011" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1592494898511">
       <screen x="56" y="27" width="2136" height="1206" />

@@ -24,12 +24,15 @@ import it.units.malelab.jgea.core.evolver.*;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.evolver.stopcondition.TargetFitness;
 import it.units.malelab.jgea.core.fitness.SymbolicRegressionFitness;
+import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.core.listener.PrintStreamListener;
 import it.units.malelab.jgea.core.listener.collector.*;
 import it.units.malelab.jgea.core.order.ParetoDominance;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
+import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
 import it.units.malelab.jgea.problem.symbolicregression.AbstractRegressionProblemProblemWithValidation;
 import it.units.malelab.jgea.problem.symbolicregression.FormulaMapper;
 import it.units.malelab.jgea.problem.symbolicregression.MathUtils;
@@ -37,6 +40,7 @@ import it.units.malelab.jgea.problem.symbolicregression.Nguyen7;
 import it.units.malelab.jgea.problem.symbolicregression.element.Element;
 import it.units.malelab.jgea.problem.synthetic.LinearPoints;
 import it.units.malelab.jgea.problem.synthetic.OneMax;
+import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 import it.units.malelab.jgea.representation.grammar.cfggp.RampedHalfAndHalf;
 import it.units.malelab.jgea.representation.grammar.cfggp.StandardTreeCrossover;
 import it.units.malelab.jgea.representation.grammar.cfggp.StandardTreeMutation;
@@ -78,7 +82,8 @@ public class Example extends Worker {
     //runOneMax();
     //runLinearPoints();
     //runGrammarBasedSymbolicRegression();
-    runGrammarBasedSymbolicRegressionMO();
+    //runGrammarBasedSymbolicRegressionMO();
+    runGrammarBasedParity();
   }
 
   public void runLinearPoints() {
@@ -334,6 +339,49 @@ public class Example extends Worker {
       } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();
       }
+    }
+  }
+
+  public void runGrammarBasedParity() {
+    Random r = new Random(1);
+    GrammarBasedProblem<String, List<Node<it.units.malelab.jgea.problem.booleanfunction.element.Element>>, Double> p;
+    try {
+      p = new EvenParity(8);
+    } catch (IOException e) {
+      System.err.println(String.format("Cannot load problem due to %s", e));
+      return;
+    }
+    Evolver<Node<String>, List<Node<it.units.malelab.jgea.problem.booleanfunction.element.Element>>, Double> evolver = new StandardEvolver<>(
+        new it.units.malelab.jgea.problem.booleanfunction.FormulaMapper(),
+        new RampedHalfAndHalf<>(3, 12, p.getGrammar()),
+        PartialComparator.from(Double.class).on(Individual::getFitness),
+        100,
+        Map.of(
+            new StandardTreeCrossover<>(12), 0.8d,
+            new StandardTreeMutation<>(12, p.getGrammar()), 0.2d
+        ),
+        new Tournament(3),
+        new Worst(),
+        100,
+        true
+    );
+    try {
+      Collection<List<Node<it.units.malelab.jgea.problem.booleanfunction.element.Element>>> solutions = evolver.solve(
+          Misc.cached(p.getFitnessFunction(), 10000),
+          new Iterations(100),
+          r,
+          executorService,
+          Listener.onExecutor(new PrintStreamListener<>(
+              System.out, true, 10, " ", "|",
+              new Basic(),
+              new Population(),
+              new Diversity(),
+              new BestInfo("%5.3f")
+          ), executorService)
+      );
+      System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
+    } catch (InterruptedException | ExecutionException e) {
+      e.printStackTrace();
     }
   }
 
