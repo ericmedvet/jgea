@@ -65,7 +65,7 @@ public class Example extends Worker {
   public void run() {
     //runOneMax();
     //runLinearPoints();
-    runGrammarBasedSymbolicRegression();
+    //runGrammarBasedSymbolicRegression();
     runGrammarBasedSymbolicRegressionMO();
   }
 
@@ -188,7 +188,6 @@ public class Example extends Worker {
   }
 
   public void runGrammarBasedSymbolicRegression() {
-    //TODO not deterministic, check!
     Random r = new Random(1);
     AbstractRegressionProblemProblemWithValidation p;
     try {
@@ -303,7 +302,7 @@ public class Example extends Worker {
                 p.getFitnessFunction().apply(n),
                 (double) n.size()
             ),
-            new Iterations(100),
+            new Iterations(3),
             r,
             executorService,
             listener(
@@ -311,6 +310,7 @@ public class Example extends Worker {
                 new Population(),
                 new Diversity(),
                 new BestInfo("%5.3f", "%2.0f"),
+                new FunctionOfFirsts<>(bests -> List.of(new Item("firsts.fitnesses", bests.stream().map(i -> i.getFitness().toString()).collect(Collectors.joining(", ")), "%s"))),
                 new FunctionOfOneBest<>(i -> List.of(new Item(
                     "validation.fitness",
                     p.getValidationFunction().apply(i.getSolution()),
