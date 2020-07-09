@@ -1,42 +1,51 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.core.listener.collector;
 
-import it.units.malelab.jgea.core.Individual;
-import it.units.malelab.jgea.core.function.Function;
-import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.util.Misc;
-import java.util.Collection;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
  * @author eric
  */
-public class BestInfo<G, S, F> extends FunctionOfBest<G, S, F> {
+public class BestInfo extends FunctionOfOneBest<Object, Object, Object> {
 
-  public BestInfo(Function<F, List<Item>> fitnessSplitter) {
-    super(
-            "best",
-            new IndividualBasicInfo<>(fitnessSplitter)
-    );
-  }
-
-  public BestInfo(Function<?, F> function, String... formats) {
-    super(
-            "best",
-            new IndividualBasicInfo<>(function, formats)
-    );
-  }
-
-  public BestInfo(String format) {
-    super(
-            "best",
-            new IndividualBasicInfo<>(format)
-    );
+  public BestInfo(String... fitnessFormats) {
+    super(new IndividualBasicInfo<>(f -> {
+      List<Item> items = new ArrayList<>();
+      if (f instanceof List<?>) {
+        for (int i = 0; i < ((List<?>) f).size(); i++) {
+          items.add(new Item(
+              "objective." + i,
+              ((List<?>) f).get(i),
+              fitnessFormats.length > 0 ? fitnessFormats[i % fitnessFormats.length] : "%s"
+          ));
+        }
+      } else {
+        items.add(new Item(
+            "value",
+            f,
+            fitnessFormats.length > 0 ? fitnessFormats[0] : "%s"
+        ));
+      }
+      return items;
+    }));
   }
 
 }

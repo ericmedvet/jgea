@@ -1,35 +1,44 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.problem.synthetic;
 
-import it.units.malelab.jgea.core.Node;
-import it.units.malelab.jgea.core.function.Function;
-import it.units.malelab.jgea.core.function.NonDeterministicFunction;
-import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.grammarbased.Grammar;
-import it.units.malelab.jgea.grammarbased.GrammarBasedProblem;
+import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.grammar.Grammar;
+import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
+import java.util.function.Function;
 
 /**
- *
  * @author eric
  */
 public class TreeSize implements GrammarBasedProblem<Boolean, Node<Boolean>, Double> {
 
   private final Grammar<Boolean> grammar;
-  private final NonDeterministicFunction<Node<Boolean>, Double> fitnessFunction;
+  private final Function<Node<Boolean>, Double> fitnessFunction;
 
   public TreeSize(int nonTerminals, int terminals) {
     this.grammar = new Grammar<>();
     grammar.setStartingSymbol(false);
     grammar.getRules().put(false, l(r(nonTerminals, false), r(terminals, true)));
-    fitnessFunction = (Node<Boolean> tree, Random r, Listener l) -> 1d / (double) tree.size();
+    fitnessFunction = (Node<Boolean> tree) -> 1d / (double) tree.size();
   }
 
   @Override
@@ -43,7 +52,7 @@ public class TreeSize implements GrammarBasedProblem<Boolean, Node<Boolean>, Dou
   }
 
   @Override
-  public NonDeterministicFunction<Node<Boolean>, Double> getFitnessFunction() {
+  public Function<Node<Boolean>, Double> getFitnessFunction() {
     return fitnessFunction;
   }
 

@@ -1,48 +1,60 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.problem.mapper;
 
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
-import it.units.malelab.jgea.core.Node;
-import it.units.malelab.jgea.core.function.Function;
-import it.units.malelab.jgea.core.function.FunctionException;
-import it.units.malelab.jgea.core.genotype.BitString;
-import it.units.malelab.jgea.core.genotype.BitStringFactory;
+import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.sequence.bit.BitString;
+import it.units.malelab.jgea.representation.sequence.bit.BitStringFactory;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.operator.BitFlipMutation;
+import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.core.util.WithNames;
 import it.units.malelab.jgea.distance.Distance;
 import it.units.malelab.jgea.distance.Hamming;
 import it.units.malelab.jgea.problem.mapper.element.Element;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
 import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 
 /**
- *
  * @author eric
  */
 public class FitnessFunction implements
-        Function<Pair<Node<Element>, Node<Element>>, List<Double>>,
-        WithNames {
+    Function<Pair<Node<Element>, Node<Element>>, List<Double>>,
+    WithNames {
 
   private final static int EXPRESSIVENESS_DEPTH = 2;
 
-  public static enum Property {
+  public enum Property {
     DEGENERACY, NON_UNIFORMITY, NON_LOCALITY
-  };
+  }
 
   private final List<EnhancedProblem> problems;
   private final int maxMappingDepth;
@@ -81,10 +93,10 @@ public class FitnessFunction implements
   }
 
   @Override
-  public List<Double> apply(Pair<Node<Element>, Node<Element>> pair, Listener listener) {
+  public List<Double> apply(Pair<Node<Element>, Node<Element>> pair) {
     List<List<Double>> valuesLists = new ArrayList<>();
     for (EnhancedProblem problem : problems) {
-      List<Double> localValues = apply(pair, problem, listener);
+      List<Double> localValues = apply(pair, problem);
       if (valuesLists.isEmpty()) {
         localValues.forEach(v -> {
           List<Double> valuesList = new ArrayList<>(problems.size());
@@ -96,44 +108,44 @@ public class FitnessFunction implements
       }
     }
     return valuesLists.stream()
-            .map(valuesList -> valuesList.stream().mapToDouble(Double::doubleValue).average().orElse(Double.NaN))
-            .collect(Collectors.toList());
+        .map(valuesList -> valuesList.stream().mapToDouble(Double::doubleValue).average().orElse(Double.NaN))
+        .collect(Collectors.toList());
   }
 
-  protected <N, S, F> List<Double> apply(Pair<Node<Element>, Node<Element>> pair, EnhancedProblem<N, S, F> problem, Listener listener) throws FunctionException {
+  protected <N, S, F> List<Double> apply(Pair<Node<Element>, Node<Element>> pair, EnhancedProblem<N, S, F> problem) {
     //build mapper
     RecursiveMapper<N> recursiveMapper = new RecursiveMapper<>(
-            pair.first(),
-            pair.second(),
-            maxMappingDepth,
-            EXPRESSIVENESS_DEPTH,
-            problem.getProblem().getGrammar());
+        pair.first(),
+        pair.second(),
+        maxMappingDepth,
+        EXPRESSIVENESS_DEPTH,
+        problem.getProblem().getGrammar());
     //map
     List<S> solutions = genotypes.stream()
-            .map(g -> recursiveMapper.apply(g))
-            .map(t -> problem.getProblem().getSolutionMapper().apply(t))
-            .collect(Collectors.toList());
+        .map(g -> recursiveMapper.apply(g))
+        .map(t -> problem.getProblem().getSolutionMapper().apply(t))
+        .collect(Collectors.toList());
     Multiset<S> multiset = LinkedHashMultiset.create();
     multiset.addAll(solutions);
     //compute properties
     List<Double> values = new ArrayList<>();
     for (Property property : properties) {
       if (property.equals(Property.DEGENERACY)) {
-        values.add(1d - (double)multiset.elementSet().size()/(double)genotypes.size());
+        values.add(1d - (double) multiset.elementSet().size() / (double) genotypes.size());
       } else if (property.equals(Property.NON_UNIFORMITY)) {
-        double[] sizes = multiset.entrySet().stream().mapToDouble(e -> (double)e.getCount()).toArray();
+        double[] sizes = multiset.entrySet().stream().mapToDouble(e -> (double) e.getCount()).toArray();
         values.add(Math.sqrt(StatUtils.variance(sizes)) / StatUtils.mean(sizes));
       } else if (property.equals(Property.NON_LOCALITY)) {
         double[] solutionDistances = computeDistances(solutions, problem.getDistance());
-        double locality = 1d-(1d+(new PearsonsCorrelation().correlation(genotypeDistances, solutionDistances)))/2d;
-        values.add(Double.isNaN(locality)?1d:locality);
+        double locality = 1d - (1d + (new PearsonsCorrelation().correlation(genotypeDistances, solutionDistances))) / 2d;
+        values.add(Double.isNaN(locality) ? 1d : locality);
       } else {
         values.add(0d);
       }
     }
     return values;
   }
-  
+
   private <E> double[] computeDistances(List<E> elements, Distance<? super E> distance) {
     double[] dists = new double[elements.size() * (elements.size() - 1) / 2];
     int c = 0;
@@ -149,6 +161,6 @@ public class FitnessFunction implements
   @Override
   public List<String> names() {
     return properties.stream().map(p -> p.toString().toLowerCase().replace("_", ".")).collect(Collectors.toList());
-  }    
+  }
 
 }

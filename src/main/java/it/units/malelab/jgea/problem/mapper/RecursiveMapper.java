@@ -1,23 +1,34 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.problem.mapper;
 
-import it.units.malelab.jgea.core.Node;
-import it.units.malelab.jgea.core.function.FunctionException;
-import it.units.malelab.jgea.core.genotype.BitString;
+import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.sequence.bit.BitString;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.grammarbased.Grammar;
-import it.units.malelab.jgea.grammarbased.ge.WeightedHierarchicalMapper;
+import it.units.malelab.jgea.representation.grammar.Grammar;
+import it.units.malelab.jgea.representation.grammar.ge.WeightedHierarchicalMapper;
 import it.units.malelab.jgea.problem.mapper.element.Element;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- *
  * @author eric
  */
 public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
@@ -34,20 +45,20 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
   }
 
   @Override
-  public Node<T> apply(BitString genotype, Listener listener) throws FunctionException {
+  public Node<T> apply(BitString genotype) {
     AtomicInteger mappingGlobalCounter = new AtomicInteger();
     AtomicInteger finalizationGlobalCounter = new AtomicInteger();
     Node<T> tree = mapRecursively(grammar.getStartingSymbol(), genotype, mappingGlobalCounter, finalizationGlobalCounter, 0);
     tree.propagateParentship();
-    return tree;    
+    return tree;
   }
 
   private Node<T> mapRecursively(
-          T symbol,
-          BitString genotype,
-          AtomicInteger mappingGlobalCounter,
-          AtomicInteger finalizationGlobalCounter,
-          int depth
+      T symbol,
+      BitString genotype,
+      AtomicInteger mappingGlobalCounter,
+      AtomicInteger finalizationGlobalCounter,
+      int depth
   ) {
     Node<T> node = new Node<>(symbol);
     if (!grammar.getRules().containsKey(symbol)) {
@@ -55,7 +66,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
     }
     if (depth >= maxMappingDepth) {
       List<Integer> shortestOptionIndexTies = shortestOptionIndexesMap.get(symbol);
-      List<T> shortestOption = grammar.getRules().get(symbol).get(shortestOptionIndexTies.get(finalizationGlobalCounter.getAndIncrement()% shortestOptionIndexTies.size()));
+      List<T> shortestOption = grammar.getRules().get(symbol).get(shortestOptionIndexTies.get(finalizationGlobalCounter.getAndIncrement() % shortestOptionIndexTies.size()));
       for (T optionSymbol : shortestOption) {
         node.getChildren().add(mapRecursively(optionSymbol, genotype, mappingGlobalCounter, finalizationGlobalCounter, depth + 1));
       }
@@ -72,8 +83,8 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
       expressivenesses.add(expressiveness);
     }
     int optionIndex = ((Double) MapperUtils.compute(
-            optionChooser, genotype, expressivenesses, depth, mappingGlobalCounter)).intValue();
-    optionIndex = Math.min(optionIndex, options.size()-1);
+        optionChooser, genotype, expressivenesses, depth, mappingGlobalCounter)).intValue();
+    optionIndex = Math.min(optionIndex, options.size() - 1);
     optionIndex = Math.max(0, optionIndex);
     //split genotype
     expressivenesses.clear();
@@ -89,7 +100,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
         piece = new BitString(0);
       }
       node.getChildren().add(mapRecursively(
-              options.get(optionIndex).get(i), piece, mappingGlobalCounter, finalizationGlobalCounter, depth + 1));
+          options.get(optionIndex).get(i), piece, mappingGlobalCounter, finalizationGlobalCounter, depth + 1));
     }
     return node;
   }

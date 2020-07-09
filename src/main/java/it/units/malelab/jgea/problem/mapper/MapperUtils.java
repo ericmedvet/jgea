@@ -1,25 +1,37 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.problem.mapper;
 
 import com.google.common.collect.Range;
-import it.units.malelab.jgea.core.Node;
-import it.units.malelab.jgea.core.genotype.BitString;
-import it.units.malelab.jgea.grammarbased.ge.HierarchicalMapper;
+import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.sequence.bit.BitString;
+import it.units.malelab.jgea.representation.grammar.ge.HierarchicalMapper;
 import it.units.malelab.jgea.problem.mapper.element.Element;
 import it.units.malelab.jgea.problem.mapper.element.Function;
 import it.units.malelab.jgea.problem.mapper.element.NumericConstant;
 import it.units.malelab.jgea.problem.mapper.element.Variable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- *
  * @author eric
  */
 public class MapperUtils {
@@ -102,26 +114,26 @@ public class MapperUtils {
           break;
         case ADD:
           result = ((Double) compute(node.getChildren().get(0), g, values, depth, globalCounter)
-                  + (Double) compute(node.getChildren().get(1), g, values, depth, globalCounter));
+              + (Double) compute(node.getChildren().get(1), g, values, depth, globalCounter));
           break;
         case SUBTRACT:
           result = ((Double) compute(node.getChildren().get(0), g, values, depth, globalCounter)
-                  - (Double) compute(node.getChildren().get(1), g, values, depth, globalCounter));
+              - (Double) compute(node.getChildren().get(1), g, values, depth, globalCounter));
           break;
         case MULT:
           result = ((Double) compute(node.getChildren().get(0), g, values, depth, globalCounter)
-                  * (Double) compute(node.getChildren().get(1), g, values, depth, globalCounter));
+              * (Double) compute(node.getChildren().get(1), g, values, depth, globalCounter));
           break;
         case DIVIDE:
           result = protectedDivision(
-                  (Double) compute(node.getChildren().get(0), g, values, depth, globalCounter),
-                  (Double) compute(node.getChildren().get(1), g, values, depth, globalCounter)
+              (Double) compute(node.getChildren().get(0), g, values, depth, globalCounter),
+              (Double) compute(node.getChildren().get(1), g, values, depth, globalCounter)
           );
           break;
         case REMAINDER:
           result = protectedRemainder(
-                  (Double) compute(node.getChildren().get(0), g, values, depth, globalCounter),
-                  (Double) compute(node.getChildren().get(1), g, values, depth, globalCounter)
+              (Double) compute(node.getChildren().get(0), g, values, depth, globalCounter),
+              (Double) compute(node.getChildren().get(1), g, values, depth, globalCounter)
           );
           break;
         case LENGTH:
@@ -135,60 +147,60 @@ public class MapperUtils {
           break;
         case GET:
           result = getFromList(
-                  (List) compute(node.getChildren().get(0), g, values, depth, globalCounter),
-                  ((Double) compute(node.getChildren().get(1), g, values, depth, globalCounter)).intValue()
+              (List) compute(node.getChildren().get(0), g, values, depth, globalCounter),
+              ((Double) compute(node.getChildren().get(1), g, values, depth, globalCounter)).intValue()
           );
           break;
         case SEQ:
           result = seq(
-                  ((Double) compute(node.getChildren().get(0), g, values, depth, globalCounter)).intValue(),
-                  values.size()
+              ((Double) compute(node.getChildren().get(0), g, values, depth, globalCounter)).intValue(),
+              values.size()
           );
           break;
         case REPEAT:
           result = repeat(
-                  compute(node.getChildren().get(0), g, values, depth, globalCounter),
-                  ((Double) compute(node.getChildren().get(1), g, values, depth, globalCounter)).intValue(),
-                  values.size()
+              compute(node.getChildren().get(0), g, values, depth, globalCounter),
+              ((Double) compute(node.getChildren().get(1), g, values, depth, globalCounter)).intValue(),
+              values.size()
           );
           break;
         case ROTATE_SX:
           result = rotateSx(
-                  (BitString) compute(node.getChildren().get(0), g, values, depth, globalCounter),
-                  ((Double) compute(node.getChildren().get(1), g, values, depth, globalCounter)).intValue()
+              (BitString) compute(node.getChildren().get(0), g, values, depth, globalCounter),
+              ((Double) compute(node.getChildren().get(1), g, values, depth, globalCounter)).intValue()
           );
           break;
         case ROTATE_DX:
           result = rotateDx(
-                  (BitString) compute(node.getChildren().get(0), g, values, depth, globalCounter),
-                  ((Double) compute(node.getChildren().get(1), g, values, depth, globalCounter)).intValue()
+              (BitString) compute(node.getChildren().get(0), g, values, depth, globalCounter),
+              ((Double) compute(node.getChildren().get(1), g, values, depth, globalCounter)).intValue()
           );
           break;
         case SUBSTRING:
           result = substring(
-                  (BitString) compute(node.getChildren().get(0), g, values, depth, globalCounter),
-                  ((Double) compute(node.getChildren().get(1), g, values, depth, globalCounter)).intValue()
+              (BitString) compute(node.getChildren().get(0), g, values, depth, globalCounter),
+              ((Double) compute(node.getChildren().get(1), g, values, depth, globalCounter)).intValue()
           );
           break;
         case SPLIT:
           result = split(
-                  (BitString) compute(node.getChildren().get(0), g, values, depth, globalCounter),
-                  ((Double) compute(node.getChildren().get(1), g, values, depth, globalCounter)).intValue(),
-                  values.size()
+              (BitString) compute(node.getChildren().get(0), g, values, depth, globalCounter),
+              ((Double) compute(node.getChildren().get(1), g, values, depth, globalCounter)).intValue(),
+              values.size()
           );
           break;
         case SPLIT_W:
           result = splitWeighted(
-                  (BitString) compute(node.getChildren().get(0), g, values, depth, globalCounter),
-                  (List<Double>) compute(node.getChildren().get(1), g, values, depth, globalCounter),
-                  values.size()
+              (BitString) compute(node.getChildren().get(0), g, values, depth, globalCounter),
+              (List<Double>) compute(node.getChildren().get(1), g, values, depth, globalCounter),
+              values.size()
           );
           break;
         case APPLY:
           result = apply(
-                  (Function) node.getChildren().get(0).getContent(),
-                  ((List) compute(node.getChildren().get(1), g, values, depth, globalCounter)),
-                  (node.getChildren().size() >= 3) ? compute(node.getChildren().get(2), g, values, depth, globalCounter) : null
+              (Function) node.getChildren().get(0).getContent(),
+              ((List) compute(node.getChildren().get(1), g, values, depth, globalCounter)),
+              (node.getChildren().size() >= 3) ? compute(node.getChildren().get(2), g, values, depth, globalCounter) : null
           );
           break;
       }
@@ -379,7 +391,7 @@ public class MapperUtils {
     }
     return list;
   }
-  
+
   private static <T> Node<T> node(T content, Node<T>... children) {
     Node<T> node = new Node<>(content);
     for (Node<T> child : children) {
@@ -390,213 +402,213 @@ public class MapperUtils {
 
   public static Node<String> getGERawTree(int codonLength) {
     return node("<mapper>",
-            node("<n>",
-                    node("<fun_n_g>",
-                            node("int")
-                    ),
-                    node("("),
-                    node("<g>",
-                            node("<fun_g_g,n>",
-                                    node("substring")
-                            ),
-                            node("("),
-                            node("<g>",
-                                    node("<fun_g_g,n>",
-                                            node("rotate_sx")
-                                    ),
-                                    node("("),
-                                    node("<g>",
-                                            node("<var_g>",
-                                                    node("g")
-                                            )
-                                    ),
-                                    node(","),
-                                    node("<n>",
-                                            node("<fun_n_n,n>",
-                                                    node("*")
-                                            ),
-                                            node("("),
-                                            node("<n>",
-                                                    node("<var_n>",
-                                                            node("g_count_rw")
-                                                    )),
-                                            node(","),
-                                            node("<n>",
-                                                    node("<const_n>",
-                                                            node(Integer.toString(codonLength))
-                                                    )),
-                                            node(")")
-                                    ),
-                                    node(")")
-                            ),
-                            node(","),
-                            node("<n>",
-                                    node("<const_n>",
-                                            node(Integer.toString(codonLength))
-                                    )
-                            ),
-                            node(")")
-                    ),
-                    node(")")
+        node("<n>",
+            node("<fun_n_g>",
+                node("int")
             ),
-            node("<lg>",
-                    node("<fun_lg_g,n>",
-                            node("repeat")
+            node("("),
+            node("<g>",
+                node("<fun_g_g,n>",
+                    node("substring")
+                ),
+                node("("),
+                node("<g>",
+                    node("<fun_g_g,n>",
+                        node("rotate_sx")
                     ),
                     node("("),
                     node("<g>",
-                            node("<var_g>",
-                                    node("g")
-                            )
+                        node("<var_g>",
+                            node("g")
+                        )
                     ),
                     node(","),
                     node("<n>",
-                            node("<fun_n_ln>",
-                                    node("length")
-                            ),
-                            node("("),
-                            node("<ln>",
-                                    node("<var_ln>",
-                                            node("ln")
-                                    )
-                            ),
-                            node(")")
+                        node("<fun_n_n,n>",
+                            node("*")
+                        ),
+                        node("("),
+                        node("<n>",
+                            node("<var_n>",
+                                node("g_count_rw")
+                            )),
+                        node(","),
+                        node("<n>",
+                            node("<const_n>",
+                                node(Integer.toString(codonLength))
+                            )),
+                        node(")")
                     ),
                     node(")")
-            )
+                ),
+                node(","),
+                node("<n>",
+                    node("<const_n>",
+                        node(Integer.toString(codonLength))
+                    )
+                ),
+                node(")")
+            ),
+            node(")")
+        ),
+        node("<lg>",
+            node("<fun_lg_g,n>",
+                node("repeat")
+            ),
+            node("("),
+            node("<g>",
+                node("<var_g>",
+                    node("g")
+                )
+            ),
+            node(","),
+            node("<n>",
+                node("<fun_n_ln>",
+                    node("length")
+                ),
+                node("("),
+                node("<ln>",
+                    node("<var_ln>",
+                        node("ln")
+                    )
+                ),
+                node(")")
+            ),
+            node(")")
+        )
     );
   }
 
   public static Node<String> getWHGERawTree() {
     return node("<mapper>",
-            node("<n>",
-                    node("<fun_n_ln>",
-                            node("max_index")
-                    ),
-                    node("("),
-                    node("<ln>",
-                            node("apply"),
-                            node("("),
-                            node("<fun_n_g>",
-                                    node("weight_r")),
-                            node(","),
-                            node("<lg>",
-                                    node("<fun_lg_g,n>",
-                                            node("split")
-                                    ),
-                                    node("("),
-                                    node("<g>",
-                                            node("<var_g>",
-                                                    node("g")
-                                            )
-                                    ),
-                                    node(","),
-                                    node("<n>",
-                                            node("<fun_n_ln>",
-                                                    node("length")
-                                            ),
-                                            node("("),
-                                            node("<ln>",
-                                                    node("<var_ln>",
-                                                            node("ln")
-                                                    )
-                                            ),
-                                            node(")")
-                                    ),
-                                    node(")")
-                            ),
-                            node(")")
-                    ),
-                    node(")")
+        node("<n>",
+            node("<fun_n_ln>",
+                node("max_index")
             ),
-            node("<lg>",
-                    node("<fun_lg_g,ln>",
-                            node("split_w")
+            node("("),
+            node("<ln>",
+                node("apply"),
+                node("("),
+                node("<fun_n_g>",
+                    node("weight_r")),
+                node(","),
+                node("<lg>",
+                    node("<fun_lg_g,n>",
+                        node("split")
                     ),
                     node("("),
                     node("<g>",
-                            node("<var_g>",
-                                    node("g")
-                            )
+                        node("<var_g>",
+                            node("g")
+                        )
                     ),
                     node(","),
-                    node("<ln>",
+                    node("<n>",
+                        node("<fun_n_ln>",
+                            node("length")
+                        ),
+                        node("("),
+                        node("<ln>",
                             node("<var_ln>",
-                                    node("ln")
+                                node("ln")
                             )
+                        ),
+                        node(")")
                     ),
                     node(")")
-            )
+                ),
+                node(")")
+            ),
+            node(")")
+        ),
+        node("<lg>",
+            node("<fun_lg_g,ln>",
+                node("split_w")
+            ),
+            node("("),
+            node("<g>",
+                node("<var_g>",
+                    node("g")
+                )
+            ),
+            node(","),
+            node("<ln>",
+                node("<var_ln>",
+                    node("ln")
+                )
+            ),
+            node(")")
+        )
     );
   }
 
   public static Node<String> getHGERawTree() {
     return node("<mapper>",
-            node("<n>",
-                    node("<fun_n_ln>",
-                            node("max_index")
-                    ),
-                    node("("),
-                    node("<ln>",
-                            node("apply"),
-                            node("("),
-                            node("<fun_n_g>",
-                                    node("weight_r")),
-                            node(","),
-                            node("<lg>",
-                                    node("<fun_lg_g,n>",
-                                            node("split")
-                                    ),
-                                    node("("),
-                                    node("<g>",
-                                            node("<var_g>",
-                                                    node("g")
-                                            )
-                                    ),
-                                    node(","),
-                                    node("<n>",
-                                            node("<fun_n_ln>",
-                                                    node("length")
-                                            ),
-                                            node("("),
-                                            node("<ln>",
-                                                    node("<var_ln>",
-                                                            node("ln")
-                                                    )
-                                            ),
-                                            node(")")
-                                    ),
-                                    node(")")
-                            ),
-                            node(")")
-                    ),
-                    node(")")
+        node("<n>",
+            node("<fun_n_ln>",
+                node("max_index")
             ),
-            node("<lg>",
+            node("("),
+            node("<ln>",
+                node("apply"),
+                node("("),
+                node("<fun_n_g>",
+                    node("weight_r")),
+                node(","),
+                node("<lg>",
                     node("<fun_lg_g,n>",
-                            node("split")
+                        node("split")
                     ),
                     node("("),
                     node("<g>",
-                            node("<var_g>",
-                                    node("g")
-                            )
+                        node("<var_g>",
+                            node("g")
+                        )
                     ),
                     node(","),
                     node("<n>",
-                            node("<fun_n_ln>",
-                                    node("length")
-                            ),
-                            node("("),
-                            node("<ln>",
-                                    node("<var_ln>",
-                                            node("ln")
-                                    )
-                            ),
-                            node(")")
+                        node("<fun_n_ln>",
+                            node("length")
+                        ),
+                        node("("),
+                        node("<ln>",
+                            node("<var_ln>",
+                                node("ln")
+                            )
+                        ),
+                        node(")")
                     ),
                     node(")")
-            )
+                ),
+                node(")")
+            ),
+            node(")")
+        ),
+        node("<lg>",
+            node("<fun_lg_g,n>",
+                node("split")
+            ),
+            node("("),
+            node("<g>",
+                node("<var_g>",
+                    node("g")
+                )
+            ),
+            node(","),
+            node("<n>",
+                node("<fun_n_ln>",
+                    node("length")
+                ),
+                node("("),
+                node("<ln>",
+                    node("<var_ln>",
+                        node("ln")
+                    )
+                ),
+                node(")")
+            ),
+            node(")")
+        )
     );
   }
 

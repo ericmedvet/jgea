@@ -1,14 +1,25 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.core.util;
 
 import com.google.common.collect.Range;
-import it.units.malelab.jgea.core.Node;
-import it.units.malelab.jgea.core.listener.event.Event;
-import it.units.malelab.jgea.core.listener.event.InfoEvent;
+import it.units.malelab.jgea.distance.Distance;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -17,10 +28,10 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.stream.Stream;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
- *
  * @author eric
  */
 public class Misc {
@@ -31,14 +42,6 @@ public class Misc {
       modified.put(prefix + entry.getKey(), entry.getValue());
     }
     return modified;
-  }
-
-  public static <T> List<T> getAll(List<Future<T>> futures) throws InterruptedException, ExecutionException {
-    List<T> results = new ArrayList<>(futures.size());
-    for (Future<T> future : futures) {
-      results.add(future.get());
-    }
-    return results;
   }
 
   public static <K, V> Map<K, V> merge(Map<K, V>... maps) {
@@ -121,20 +124,17 @@ public class Misc {
     return ts.iterator().next();
   }
 
-  public static <T> List<T> contents(List<Node<T>> nodes) {
-    List<T> contents = new ArrayList<>(nodes.size());
-    nodes.stream().forEach((node) -> {
-      contents.add(node.getContent());
-    });
-    return contents;
+  public static <T, R> CachedFunction<T, R> cached(Function<T, R> function, long size) {
+    return new CachedFunction<>(function, size);
   }
 
-  public static Map<String, Object> fromInfoEvents(List<Event> events, String prefix) {
-    Map<String, Object> info = new LinkedHashMap<>();
-    events.stream().filter((event) -> (event instanceof InfoEvent)).forEach((event) -> {
-      info.putAll(Misc.keyPrefix(prefix, ((InfoEvent) event).getInfo()));
-    });
-    return info;
+  public static <T, U, R> CachedBiFunction<T, U, R> cached(BiFunction<T, U, R> function, long size) {
+    return new CachedBiFunction<>(function, size);
+  }
+
+  public static <T> Distance<T> cached(Distance<T> function, long size) {
+    final CachedBiFunction<T, T, Double> cached = new CachedBiFunction<>(function, size);
+    return (t1, t2) -> cached.apply(t1, t2);
   }
 
 }
