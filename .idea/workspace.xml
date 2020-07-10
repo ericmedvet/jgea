@@ -21,9 +21,6 @@
   <component name="ChangeListManager">
     <list default="true" id="fb3f97aa-f1ba-4dca-af0a-845a3176b0c1" name="Default Changelist" comment="Version change.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/Example.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/Example.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/selector/Selector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/selector/Selector.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -275,7 +272,14 @@
       <option name="project" value="LOCAL" />
       <updated>1594305270696</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="README updated.">
+      <created>1594309107207</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1594309107207</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -303,7 +307,8 @@
     <MESSAGE value="Guava updated to 29." />
     <MESSAGE value="Version change." />
     <MESSAGE value="IDE files update." />
-    <option name="LAST_COMMIT_MESSAGE" value="IDE files update." />
+    <MESSAGE value="README updated." />
+    <option name="LAST_COMMIT_MESSAGE" value="README updated." />
   </component>
   <component name="WindowStateProjectService">
     <state x="759" y="235" width="726" height="783" key="#Example" timestamp="1594304939061">
@@ -408,10 +413,10 @@
     </state>
     <state x="610" y="163" width="1279" height="857" key="SettingsEditor/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594305048239" />
     <state x="610" y="163" width="1016" height="742" key="SettingsEditor/56.27.2136.1206@56.27.2136.1206" timestamp="1592863441000" />
-    <state x="722" y="306" width="800" height="540" key="Vcs.Push.Dialog.v2" timestamp="1594305548443">
+    <state x="722" y="301" width="800" height="540" key="Vcs.Push.Dialog.v2" timestamp="1594309114344">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state x="722" y="306" width="800" height="540" key="Vcs.Push.Dialog.v2/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594305548443" />
+    <state x="722" y="301" width="800" height="540" key="Vcs.Push.Dialog.v2/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594309114344" />
     <state x="722" y="331" key="Vcs.Push.Dialog.v2/56.27.2136.1206@56.27.2136.1206" timestamp="1592866426334" />
     <state x="156" y="112" width="1936" height="1011" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1592494898511">
       <screen x="56" y="27" width="2136" height="1206" />
