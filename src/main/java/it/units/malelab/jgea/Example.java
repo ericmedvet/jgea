@@ -33,7 +33,7 @@ import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
-import it.units.malelab.jgea.problem.symbolicregression.AbstractRegressionProblemProblemWithValidation;
+import it.units.malelab.jgea.problem.symbolicregression.AbstractRegressionProblemWithValidation;
 import it.units.malelab.jgea.problem.symbolicregression.FormulaMapper;
 import it.units.malelab.jgea.problem.symbolicregression.MathUtils;
 import it.units.malelab.jgea.problem.symbolicregression.Nguyen7;
@@ -206,7 +206,7 @@ public class Example extends Worker {
 
   public void runGrammarBasedSymbolicRegression() {
     Random r = new Random(1);
-    AbstractRegressionProblemProblemWithValidation p;
+    AbstractRegressionProblemWithValidation p;
     try {
       p = new Nguyen7(1);
     } catch (IOException e) {
@@ -273,7 +273,7 @@ public class Example extends Worker {
 
   public void runGrammarBasedSymbolicRegressionMO() {
     Random r = new Random(1);
-    AbstractRegressionProblemProblemWithValidation p;
+    AbstractRegressionProblemWithValidation p;
     try {
       p = new Nguyen7(1);
     } catch (IOException e) {

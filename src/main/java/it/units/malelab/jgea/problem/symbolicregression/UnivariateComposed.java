@@ -25,7 +25,7 @@ import java.io.IOException;
 /**
  * @author eric
  */
-public class UnivariateComposed extends AbstractRegressionProblemProblemWithValidation {
+public class UnivariateComposed extends AbstractRegressionProblemWithValidation {
 
   public UnivariateComposed() throws IOException {
     super(

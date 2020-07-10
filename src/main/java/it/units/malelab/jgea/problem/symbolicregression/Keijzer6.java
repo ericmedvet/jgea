@@ -17,7 +17,6 @@
 
 package it.units.malelab.jgea.problem.symbolicregression;
 
-import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 
 import java.io.File;
@@ -26,7 +25,7 @@ import java.io.IOException;
 /**
  * @author eric
  */
-public class Keijzer6 extends AbstractRegressionProblemProblemWithValidation {
+public class Keijzer6 extends AbstractRegressionProblemWithValidation {
 
   public Keijzer6() throws IOException {
     super(

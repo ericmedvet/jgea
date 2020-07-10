@@ -58,7 +58,7 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
 
   @Override
   public Collection<S> solve(Function<S, F> fitnessFunction, Predicate<? super Event<G, S, F>> stopCondition, Random random, ExecutorService executor, Listener<? super G, ? super S, ? super F> listener) throws InterruptedException, ExecutionException {
-    State state = new State();
+    State state = initState();
     Stopwatch stopwatch = Stopwatch.createStarted();
     Collection<Individual<G, S, F>> population = initPopulation(fitnessFunction, random, executor, state);
     L.fine(String.format("Population initialized: %d individuals", population.size()));
@@ -78,6 +78,10 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
     return new DAGPartiallyOrderedCollection<>(population, individualComparator).firsts().stream()
         .map(Individual::getSolution)
         .collect(Collectors.toList());
+  }
+
+  protected State initState() {
+    return new State();
   }
 
   protected abstract Collection<Individual<G, S, F>> initPopulation(Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException;
