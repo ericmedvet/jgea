@@ -50,7 +50,7 @@ public class ClassificationFitness<C, O, E extends Enum<E>> extends CaseBasedFit
       }
       List<Pair<Integer, Integer>> pairs = new ArrayList<>(allLabels.length);
       for (E currentLabel : allLabels) {
-        pairs.add(Pair.build(errors.count(currentLabel), counts.count(currentLabel)));
+        pairs.add(Pair.of(errors.count(currentLabel), counts.count(currentLabel)));
       }
       return pairs;
     }

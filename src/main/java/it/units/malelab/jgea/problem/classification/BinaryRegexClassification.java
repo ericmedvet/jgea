@@ -60,8 +60,8 @@ public class BinaryRegexClassification extends GrammarBasedRegexClassification {
     }
     //return
     List<Pair<String, Label>> data = new ArrayList<>();
-    data.addAll(positives.stream().map(s -> Pair.build(s, Label.FOUND)).collect(Collectors.toList()));
-    data.addAll(negatives.stream().map(s -> Pair.build(s, Label.NOT_FOUND)).collect(Collectors.toList()));
+    data.addAll(positives.stream().map(s -> Pair.of(s, Label.FOUND)).collect(Collectors.toList()));
+    data.addAll(negatives.stream().map(s -> Pair.of(s, Label.NOT_FOUND)).collect(Collectors.toList()));
     return data;
   }
 

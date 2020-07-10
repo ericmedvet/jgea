@@ -49,7 +49,7 @@ public class MapperGeneration implements
       Node<Element> genoAssigner = MapperUtils.transform(rawMappingTree.getChildren().get(1));
       optionChooser.propagateParentship();
       genoAssigner.propagateParentship();
-      return Pair.build(optionChooser, genoAssigner);
+      return Pair.of(optionChooser, genoAssigner);
     };
   }
 

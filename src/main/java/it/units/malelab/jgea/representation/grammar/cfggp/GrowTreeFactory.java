@@ -73,7 +73,7 @@ public class GrowTreeFactory<T> implements Factory<Node<T>> {
       min = Math.max(min, nonTerminalDepths.get(symbol).first());
       max = Math.max(max, nonTerminalDepths.get(symbol).second());
     }
-    return Pair.build(min, max);
+    return Pair.of(min, max);
   }
 
   public Node<T> build(Random random, T symbol, int targetDepth) {

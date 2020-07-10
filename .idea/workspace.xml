@@ -19,8 +19,23 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fb3f97aa-f1ba-4dca-af0a-845a3176b0c1" name="Default Changelist" comment="Version change.">
+    <list default="true" id="fb3f97aa-f1ba-4dca-af0a-845a3176b0c1" name="Default Changelist" comment="Tiny IDE file update.">
+      <change afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/graph/DecoratedEdge.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/graph/EdgeModification.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/graph/NodeAddition.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/fitness/ClassificationFitness.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/fitness/ClassificationFitness.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/util/CachedBiFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/util/CachedBiFunction.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/util/Pair.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/util/Pair.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/util/Triplet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/util/Triplet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/lab/RepresentationEvolution.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/lab/RepresentationEvolution.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/lab/RobotContactsDE.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/lab/RobotContactsDE.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/classification/BinaryRegexClassification.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/classification/BinaryRegexClassification.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/classification/FileRegexClassification.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/classification/FileRegexClassification.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/mapper/MapperGeneration.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/mapper/MapperGeneration.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/synthetic/KLandscapes.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/synthetic/KLandscapes.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/grammar/GrammarUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/grammar/GrammarUtil.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/grammar/cfggp/GrowTreeFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/grammar/cfggp/GrowTreeFactory.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,7 +59,7 @@
     </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="feature-simplification" />
+        <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -279,7 +294,14 @@
       <option name="project" value="LOCAL" />
       <updated>1594309107207</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="Tiny IDE file update.">
+      <created>1594389454429</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1594389454429</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -308,7 +330,8 @@
     <MESSAGE value="Version change." />
     <MESSAGE value="IDE files update." />
     <MESSAGE value="README updated." />
-    <option name="LAST_COMMIT_MESSAGE" value="README updated." />
+    <MESSAGE value="Tiny IDE file update." />
+    <option name="LAST_COMMIT_MESSAGE" value="Tiny IDE file update." />
   </component>
   <component name="WindowStateProjectService">
     <state x="759" y="235" width="726" height="783" key="#Example" timestamp="1594304939061">
@@ -323,10 +346,10 @@
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state x="956" y="524" width="1025" height="562" key="#Markdown/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594309058294" />
-    <state x="935" y="22" width="551" height="770" key="#com.intellij.ide.util.MemberChooser" timestamp="1594302101342">
+    <state x="935" y="22" width="551" height="826" key="#com.intellij.ide.util.MemberChooser" timestamp="1594394130161">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state x="935" y="22" width="551" height="770" key="#com.intellij.ide.util.MemberChooser/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594302101342" />
+    <state x="935" y="22" width="551" height="826" key="#com.intellij.ide.util.MemberChooser/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594394130161" />
     <state x="935" y="22" width="551" height="770" key="#com.intellij.ide.util.MemberChooser/56.27.2136.1206@56.27.2136.1206" timestamp="1592865366069" />
     <state x="865" y="466" width="654" height="315" key="#com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackagesDialog.classes" timestamp="1592493351554">
       <screen x="56" y="27" width="2136" height="1206" />
@@ -336,10 +359,10 @@
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state x="880" y="528" key="#com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackagesDialog.packages/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592495888121" />
-    <state x="559" y="22" width="1126" height="1211" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog" timestamp="1592492357699">
+    <state x="559" y="22" width="1126" height="1211" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog" timestamp="1594394459167">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state x="559" y="22" width="1126" height="1211" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592492357699" />
+    <state x="559" y="22" width="1126" height="1211" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594394459167" />
     <state x="860" y="374" width="524" height="514" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1592861590986">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>

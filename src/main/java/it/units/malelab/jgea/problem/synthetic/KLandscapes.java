@@ -108,10 +108,10 @@ public class KLandscapes implements
     //fill w map
     for (int j = 0; j < nNonTerminals; j++) {
       for (int i = 0; i < nTerminals; i++) {
-        w.put(Pair.build("n" + j, "t" + i), random.nextDouble() * (wRange.upperEndpoint() - wRange.lowerEndpoint()) + wRange.lowerEndpoint());
+        w.put(Pair.of("n" + j, "t" + i), random.nextDouble() * (wRange.upperEndpoint() - wRange.lowerEndpoint()) + wRange.lowerEndpoint());
       }
       for (int i = 0; i < nNonTerminals; i++) {
-        w.put(Pair.build("n" + j, "n" + i), random.nextDouble() * (wRange.upperEndpoint() - wRange.lowerEndpoint()) + wRange.lowerEndpoint());
+        w.put(Pair.of("n" + j, "n" + i), random.nextDouble() * (wRange.upperEndpoint() - wRange.lowerEndpoint()) + wRange.lowerEndpoint());
       }
     }
     //prepare fitness
@@ -130,7 +130,7 @@ public class KLandscapes implements
     }
     double sum = v.get(tree.getContent());
     for (Node<String> child : tree.getChildren()) {
-      final double weight = w.get(Pair.build(tree.getContent(), child.getContent()));
+      final double weight = w.get(Pair.of(tree.getContent(), child.getContent()));
       final double innerFK = fK(child, k - 1, v, w);
       sum = sum + (1 + weight) * innerFK;
     }

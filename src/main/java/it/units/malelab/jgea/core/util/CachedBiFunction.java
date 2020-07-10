@@ -43,7 +43,7 @@ public class CachedBiFunction<T, U, R> implements BiFunction<T, U, R> {
   @Override
   public R apply(T t, U u) {
     try {
-      return cache.get(Pair.build(t, u), () -> {
+      return cache.get(Pair.of(t, u), () -> {
         innerInvocations = innerInvocations + 1;
         return function.apply(t, u);
       });

@@ -26,7 +26,7 @@ public class Triplet<F, S, T> extends Pair<F, S> {
     return third;
   }
 
-  public static <F, S, T> Triplet<F, S, T> build(F first, S second, T third) {
+  public static <F, S, T> Triplet<F, S, T> of(F first, S second, T third) {
     return new Triplet<>(first, second, third);
   }
 

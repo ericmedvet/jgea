@@ -32,7 +32,7 @@ public class Pair<F, S> implements Serializable {
     return second;
   }
 
-  public static <F, S> Pair<F, S> build(F first, S second) {
+  public static <F, S> Pair<F, S> of(F first, S second) {
     return new Pair<>(first, second);
   }
 

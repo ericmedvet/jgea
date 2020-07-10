@@ -37,8 +37,8 @@ public class FileRegexClassification extends GrammarBasedRegexClassification {
 
   private static List<Pair<String, Label>> buildData(String positiveFileName, String negativeFileName) throws IOException {
     List<Pair<String, Label>> data = new ArrayList<>();
-    data.addAll(Files.lines(Paths.get(positiveFileName)).map(s -> Pair.build(s, Label.FOUND)).collect(Collectors.toList()));
-    data.addAll(Files.lines(Paths.get(negativeFileName)).map(s -> Pair.build(s, Label.NOT_FOUND)).collect(Collectors.toList()));
+    data.addAll(Files.lines(Paths.get(positiveFileName)).map(s -> Pair.of(s, Label.FOUND)).collect(Collectors.toList()));
+    data.addAll(Files.lines(Paths.get(negativeFileName)).map(s -> Pair.of(s, Label.NOT_FOUND)).collect(Collectors.toList()));
     return data;
   }
 

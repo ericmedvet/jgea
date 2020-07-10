@@ -74,9 +74,9 @@ public class RobotContactsDE extends Worker {
     boolean symmetric = b(a("symmetry", "false"));
     List<String> fitnessNames = l(a("fitnesses", "madb"));
     Map<String, Pair<Function<double[], Boolean>, double[]>> robots = new LinkedHashMap<>();
-    robots.put("Elisa-3", Pair.build((a) -> (a[0] >= 25d) && (a[0] < 30d), new double[]{25d, 30d}));
-    robots.put("mBot", Pair.build((a) -> (a[0] >= 0d) && (Math.abs(a[0] * Math.cos(a[1])) <= 45d) && (Math.abs(a[0] * Math.sin(a[1])) <= 45d), new double[]{0d, 45d}));
-    robots.put("Thymio-II", Pair.build((a) -> (a[0] >= 0d) && (((a[0] * Math.sin(a[1]) >= -50d) && (a[0] * Math.sin(a[1]) <= 0d) && (Math.abs(a[0] * Math.cos(a[1])) <= 75d)) || ((a[0] * Math.sin(a[1]) >= 0d) && (a[0] * Math.sin(a[1]) <= 30d) && (Math.abs(a[0] * Math.cos(a[1])) <= 110d))), new double[]{0d, 110d}));
+    robots.put("Elisa-3", Pair.of((a) -> (a[0] >= 25d) && (a[0] < 30d), new double[]{25d, 30d}));
+    robots.put("mBot", Pair.of((a) -> (a[0] >= 0d) && (Math.abs(a[0] * Math.cos(a[1])) <= 45d) && (Math.abs(a[0] * Math.sin(a[1])) <= 45d), new double[]{0d, 45d}));
+    robots.put("Thymio-II", Pair.of((a) -> (a[0] >= 0d) && (((a[0] * Math.sin(a[1]) >= -50d) && (a[0] * Math.sin(a[1]) <= 0d) && (Math.abs(a[0] * Math.cos(a[1])) <= 75d)) || ((a[0] * Math.sin(a[1]) >= 0d) && (a[0] * Math.sin(a[1]) <= 30d) && (Math.abs(a[0] * Math.cos(a[1])) <= 110d))), new double[]{0d, 110d}));
     Map<String, RobotPowerSupplyGeometry.Objective[]> fitnesses = new LinkedHashMap<>();
     fitnesses.put("m", new RobotPowerSupplyGeometry.Objective[]{RobotPowerSupplyGeometry.Objective.CONTACT_MIN});
     fitnesses.put("md", new RobotPowerSupplyGeometry.Objective[]{RobotPowerSupplyGeometry.Objective.CONTACT_MIN, RobotPowerSupplyGeometry.Objective.DIST_AVG});
