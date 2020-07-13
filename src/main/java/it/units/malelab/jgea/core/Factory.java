@@ -48,4 +48,9 @@ public interface Factory<T> extends Serializable {
     };
   }
 
+  default IndependentFactory<T> independent() {
+    Factory<T> thisFactory = this;
+    return (IndependentFactory<T>) random -> thisFactory.build(1, random).get(0);
+  }
+
 }

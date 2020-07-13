@@ -39,4 +39,8 @@ public interface Mutation<G> extends GeneticOperator<G> {
 
   G mutate(G g, Random random);
 
+  static <K> Mutation<K> copy() {
+    return (k, random) -> k;
+  }
+
 }

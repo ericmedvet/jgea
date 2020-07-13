@@ -17,26 +17,30 @@
 
 package it.units.malelab.jgea.representation.graph;
 
-import com.google.common.graph.*;
+import com.google.common.graph.EndpointPair;
+import com.google.common.graph.Graphs;
+import com.google.common.graph.MutableValueGraph;
+import com.google.common.graph.ValueGraph;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.util.Misc;
 
 import java.util.Random;
+import java.util.function.Predicate;
 
 /**
  * @author eric
  * @created 2020/07/10
  * @project jgea
  */
-public class EdgeModification<N, E> implements Mutation<ValueGraph<N, E>> {
-  private final Mutation<E> edgeMutation;
+public class EdgeRemoval<N, E> implements Mutation<ValueGraph<N, E>> {
+  private final Predicate<N> unremovableNodePredicate;
 
-  public EdgeModification(Mutation<E> edgeMutation) {
-    this.edgeMutation = edgeMutation;
+  public EdgeRemoval(Predicate<N> unremovableNodePredicate) {
+    this.unremovableNodePredicate = unremovableNodePredicate;
   }
 
-  public Mutation<E> getEdgeMutation() {
-    return edgeMutation;
+  public Predicate<N> getUnremovableNodePredicate() {
+    return unremovableNodePredicate;
   }
 
   @Override
@@ -44,9 +48,9 @@ public class EdgeModification<N, E> implements Mutation<ValueGraph<N, E>> {
     MutableValueGraph<N, E> child = Graphs.copyOf(parent);
     if (!child.edges().isEmpty()) {
       EndpointPair<N> endpointPair = Misc.pickRandomly(child.edges(), random);
-      E edge = child.edgeValue(endpointPair.nodeU(), endpointPair.nodeV()).get();
-      child.putEdgeValue(endpointPair.nodeU(), endpointPair.nodeV(), edgeMutation.mutate(edge, random));
+      child.removeEdge(endpointPair.nodeU(), endpointPair.nodeV());
     }
+    GraphUtils.removeUnconnectedNodes(child, unremovableNodePredicate);
     return child;
   }
 }

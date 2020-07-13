@@ -20,15 +20,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fb3f97aa-f1ba-4dca-af0a-845a3176b0c1" name="Default Changelist" comment="Starting to work on graph genetic operators for generalized NEAT.">
+      <change afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/graph/AlignedCrossover.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/graph/EdgeAddition.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/graph/EdgeRemoval.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/graph/GraphUtils.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/Example.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/Example.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/AbstractIterativeEvolver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/AbstractIterativeEvolver.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/symbolicregression/AbstractRegressionProblemProblemWithValidation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/symbolicregression/AbstractRegressionProblemWithValidation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/symbolicregression/Keijzer6.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/symbolicregression/Keijzer6.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/symbolicregression/Nguyen7.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/symbolicregression/Nguyen7.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/symbolicregression/Pagie1.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/symbolicregression/Pagie1.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/symbolicregression/UnivariateComposed.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/symbolicregression/UnivariateComposed.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/symbolicregression/Vladislavleva4.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/symbolicregression/Vladislavleva4.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/Factory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/Factory.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/operator/Crossover.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/operator/Crossover.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/operator/Mutation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/operator/Mutation.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/graph/DecoratedEdge.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/graph/EdgeModification.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/graph/EdgeModification.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/graph/NodeAddition.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/graph/NodeAddition.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -95,14 +97,14 @@
       <recent name="it.units.malelab.jgea.core.operator" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="it.units.malelab.jgea.representation.graph" />
       <recent name="it.units.malelab.jgea.core.util" />
       <recent name="it.units.malelab.jgea.core.order" />
       <recent name="it.units.malelab.jgea.core.listener.collector" />
       <recent name="it.units.malelab.jgea.core.evolver" />
-      <recent name="it.units.malelab.jgea.problem.symbolicregression" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.Example">
+  <component name="RunManager" selected="Application.NodeAddition">
     <configuration name="CooperativeCoevolver" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="it.units.malelab.jgea.lab.coevolution.CooperativeCoevolver" />
       <module name="JGEA" />
@@ -129,12 +131,12 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="MathUtils" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="it.units.malelab.jgea.problem.symbolicregression.MathUtils" />
-      <module name="JGEA" />
+    <configuration name="NodeAddition" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="it.units.malelab.jgea.representation.graph.NodeAddition" />
+      <module name="jgea" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="it.units.malelab.jgea.problem.symbolicregression.*" />
+          <option name="PATTERN" value="it.units.malelab.jgea.representation.graph.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -170,11 +172,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.NodeAddition" />
         <item itemvalue="Application.Example" />
         <item itemvalue="Application.Starter" />
         <item itemvalue="Application.CooperativeCoevolver" />
         <item itemvalue="Application.Example" />
-        <item itemvalue="Application.MathUtils" />
       </list>
     </recent_temporary>
   </component>
@@ -347,10 +349,10 @@
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state x="956" y="524" width="1025" height="562" key="#Markdown/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594309058294" />
-    <state x="935" y="22" width="551" height="826" key="#com.intellij.ide.util.MemberChooser" timestamp="1594394130161">
+    <state x="935" y="22" width="551" height="826" key="#com.intellij.ide.util.MemberChooser" timestamp="1594676673741">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state x="935" y="22" width="551" height="826" key="#com.intellij.ide.util.MemberChooser/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594394130161" />
+    <state x="935" y="22" width="551" height="826" key="#com.intellij.ide.util.MemberChooser/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594676673741" />
     <state x="935" y="22" width="551" height="770" key="#com.intellij.ide.util.MemberChooser/56.27.2136.1206@56.27.2136.1206" timestamp="1592865366069" />
     <state x="865" y="466" width="654" height="315" key="#com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackagesDialog.classes" timestamp="1592493351554">
       <screen x="56" y="27" width="2136" height="1206" />
@@ -384,25 +386,25 @@
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state x="908" y="327" width="424" height="597" key="FileChooserDialogImpl/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592236218165" />
-    <state width="2090" height="326" key="GridCell.Tab.0.bottom" timestamp="1594308363028">
+    <state width="2090" height="326" key="GridCell.Tab.0.bottom" timestamp="1594676338342">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594308363028" />
+    <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594676338342" />
     <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434169" />
-    <state width="2090" height="326" key="GridCell.Tab.0.center" timestamp="1594308363028">
+    <state width="2090" height="326" key="GridCell.Tab.0.center" timestamp="1594676338342">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594308363028" />
+    <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594676338342" />
     <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434169" />
-    <state width="2090" height="326" key="GridCell.Tab.0.left" timestamp="1594308363028">
+    <state width="2090" height="326" key="GridCell.Tab.0.left" timestamp="1594676338342">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594308363028" />
+    <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594676338342" />
     <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434168" />
-    <state width="2090" height="326" key="GridCell.Tab.0.right" timestamp="1594308363028">
+    <state width="2090" height="326" key="GridCell.Tab.0.right" timestamp="1594676338342">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594308363028" />
+    <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594676338342" />
     <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434169" />
     <state width="2090" height="512" key="GridCell.Tab.1.bottom" timestamp="1594225517878">
       <screen x="56" y="27" width="2136" height="1206" />

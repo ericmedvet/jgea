@@ -40,4 +40,8 @@ public interface Crossover<G> extends GeneticOperator<G> {
 
   G recombine(G g1, G g2, Random random);
 
+  static <K> Crossover<K> randomCopy() {
+    return (g1, g2, random) -> random.nextBoolean() ? g1 : g2;
+  }
+
 }
