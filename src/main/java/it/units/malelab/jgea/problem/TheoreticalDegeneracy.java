@@ -1,20 +1,32 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.problem;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import it.units.malelab.jgea.representation.tree.Node;
-import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedMapper;
 import it.units.malelab.jgea.representation.grammar.ge.HierarchicalMapper;
 import it.units.malelab.jgea.representation.grammar.ge.StandardGEMapper;
 import it.units.malelab.jgea.representation.grammar.ge.WeightedHierarchicalMapper;
+
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -26,10 +38,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+
 import org.apache.commons.math3.stat.StatUtils;
 
 /**
- *
  * @author eric
  */
 public class TheoreticalDegeneracy {
@@ -59,11 +71,11 @@ public class TheoreticalDegeneracy {
         }
         grammar.setStartingSymbol("N_0");
         //build mappers
-        int geCodonSize = (int)Math.ceil(Math.log(t+1)/Math.log(2));
-        
+        int geCodonSize = (int) Math.ceil(Math.log(t + 1) / Math.log(2));
+
         System.out.println(grammar);
         System.out.printf("n=%d t=%d codonSize=%d%n", n, t, geCodonSize);
-        
+
         Map<String, GrammarBasedMapper<BitString, String>> mappers = new TreeMap<>();
         mappers.put("GE-opt-1", new StandardGEMapper<>(geCodonSize, 1, grammar));
         mappers.put("GE-opt-2", new StandardGEMapper<>(geCodonSize, 2, grammar));
@@ -81,21 +93,21 @@ public class TheoreticalDegeneracy {
           mappers.forEach((k, mapper) -> {
             Multiset<List<String>> phenotypes = HashMultiset.create();
             phenotypes.addAll(genotypes.parallelStream()
-                    .map(g -> {
-                      try {
-                        return mapper.apply(g).leafNodes().stream().map(Node::getContent).collect(Collectors.toList());
-                      } catch (FunctionException e) {
-                        return null;
-                      }
-                    })
-                    .collect(Collectors.toList()));
+                .map(g -> {
+                  try {
+                    return mapper.apply(g).leafNodes().stream().map(Node::getContent).collect(Collectors.toList());
+                  } catch (RuntimeException e) {
+                    return null;
+                  }
+                })
+                .collect(Collectors.toList()));
             double invalidity = (double) phenotypes.count(null) / (double) phenotypes.size();
             double phenoSize = (double) phenotypes.elementSet().size() - (phenotypes.contains(null) ? 1d : 0d);
             double degeneracy = 1d - phenoSize / (double) genotypes.size();
             double maxLength = phenotypes.elementSet().stream().filter(s -> (s != null)).mapToInt(List::size).max().orElse(0);
             double avgLength = phenotypes.stream().filter(s -> (s != null)).mapToInt(List::size).average().orElse(0d);
             double[] sizes = phenotypes.entrySet().stream().filter(e -> (e.getElement() != null)).mapToDouble(Multiset.Entry::getCount).toArray();
-            double nonUniformity = Math.sqrt(StatUtils.variance(sizes))/StatUtils.mean(sizes);
+            double nonUniformity = Math.sqrt(StatUtils.variance(sizes)) / StatUtils.mean(sizes);
             ps.printf("%d %d %d %s %s %f%n", n, t, l, k, "degeneracy", degeneracy);
             ps.printf("%d %d %d %s %s %f%n", n, t, l, k, "nonUniformity", nonUniformity);
             ps.printf("%d %d %d %s %s %f%n", n, t, l, k, "invalidity", invalidity);

@@ -1,42 +1,50 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.lab;
 
-import com.google.common.collect.Lists;
 import it.units.malelab.jgea.Worker;
-import it.units.malelab.jgea.core.evolver.DifferentialEvolution;
+import it.units.malelab.jgea.core.Individual;
+import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
-import it.units.malelab.jgea.core.function.Function;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.MultiFileListenerFactory;
-import it.units.malelab.jgea.core.listener.collector.Basic;
-import it.units.malelab.jgea.core.listener.collector.BestInfo;
-import it.units.malelab.jgea.core.listener.collector.BestPrinter;
-import it.units.malelab.jgea.core.listener.collector.DoubleArrayPrinter;
-import it.units.malelab.jgea.core.listener.collector.FunctionOfBest;
-import it.units.malelab.jgea.core.listener.collector.Population;
-import it.units.malelab.jgea.core.listener.collector.Static;
-import it.units.malelab.jgea.core.ranker.ComparableRanker;
-import it.units.malelab.jgea.core.ranker.LexicoGraphicalMOComparator;
+import it.units.malelab.jgea.core.listener.collector.*;
+import it.units.malelab.jgea.core.order.LexicoGraphical;
+import it.units.malelab.jgea.core.selector.Tournament;
+import it.units.malelab.jgea.core.selector.Worst;
+import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.problem.application.RobotPowerSupplyGeometry;
+import it.units.malelab.jgea.representation.sequence.Sequence;
+import it.units.malelab.jgea.representation.sequence.numeric.GaussianMutation;
+import it.units.malelab.jgea.representation.sequence.numeric.GeometricCrossover;
+import it.units.malelab.jgea.representation.sequence.numeric.UniformDoubleSequenceFactory;
+
 import java.io.FileNotFoundException;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static it.units.malelab.jgea.core.util.Args.*;
 
 /**
- *
  * @author eric
  */
 public class RobotContactsDE extends Worker {
@@ -66,11 +74,11 @@ public class RobotContactsDE extends Worker {
     boolean symmetric = b(a("symmetry", "false"));
     List<String> fitnessNames = l(a("fitnesses", "madb"));
     Map<String, Pair<Function<double[], Boolean>, double[]>> robots = new LinkedHashMap<>();
-    robots.put("Elisa-3", Pair.build((a, l) -> (a[0] >= 25d) && (a[0] < 30d), new double[]{25d, 30d}));
-    robots.put("mBot", Pair.build((a, l) -> (a[0] >= 0d) && (Math.abs(a[0] * Math.cos(a[1])) <= 45d) && (Math.abs(a[0] * Math.sin(a[1])) <= 45d), new double[]{0d, 45d}));
-    robots.put("Thymio-II", Pair.build((a, l) -> (a[0] >= 0d) && (((a[0] * Math.sin(a[1]) >= -50d) && (a[0] * Math.sin(a[1]) <= 0d) && (Math.abs(a[0] * Math.cos(a[1])) <= 75d)) || ((a[0] * Math.sin(a[1]) >= 0d) && (a[0] * Math.sin(a[1]) <= 30d) && (Math.abs(a[0] * Math.cos(a[1])) <= 110d))), new double[]{0d, 110d}));
+    robots.put("Elisa-3", Pair.build((a) -> (a[0] >= 25d) && (a[0] < 30d), new double[]{25d, 30d}));
+    robots.put("mBot", Pair.build((a) -> (a[0] >= 0d) && (Math.abs(a[0] * Math.cos(a[1])) <= 45d) && (Math.abs(a[0] * Math.sin(a[1])) <= 45d), new double[]{0d, 45d}));
+    robots.put("Thymio-II", Pair.build((a) -> (a[0] >= 0d) && (((a[0] * Math.sin(a[1]) >= -50d) && (a[0] * Math.sin(a[1]) <= 0d) && (Math.abs(a[0] * Math.cos(a[1])) <= 75d)) || ((a[0] * Math.sin(a[1]) >= 0d) && (a[0] * Math.sin(a[1]) <= 30d) && (Math.abs(a[0] * Math.cos(a[1])) <= 110d))), new double[]{0d, 110d}));
     Map<String, RobotPowerSupplyGeometry.Objective[]> fitnesses = new LinkedHashMap<>();
-    fitnesses.put("m", new RobotPowerSupplyGeometry.Objective[]{RobotPowerSupplyGeometry.Objective.CONTACT_MIN});      
+    fitnesses.put("m", new RobotPowerSupplyGeometry.Objective[]{RobotPowerSupplyGeometry.Objective.CONTACT_MIN});
     fitnesses.put("md", new RobotPowerSupplyGeometry.Objective[]{RobotPowerSupplyGeometry.Objective.CONTACT_MIN, RobotPowerSupplyGeometry.Objective.DIST_AVG});
     fitnesses.put("mad", new RobotPowerSupplyGeometry.Objective[]{RobotPowerSupplyGeometry.Objective.CONTACT_MIN, RobotPowerSupplyGeometry.Objective.CONTACT_AVG, RobotPowerSupplyGeometry.Objective.DIST_AVG});
     fitnesses.put("mabd", new RobotPowerSupplyGeometry.Objective[]{RobotPowerSupplyGeometry.Objective.CONTACT_MIN, RobotPowerSupplyGeometry.Objective.CONTACT_AVG, RobotPowerSupplyGeometry.Objective.BALANCE, RobotPowerSupplyGeometry.Objective.DIST_AVG});
@@ -79,7 +87,7 @@ public class RobotContactsDE extends Worker {
     fitnesses.put("mbad", new RobotPowerSupplyGeometry.Objective[]{RobotPowerSupplyGeometry.Objective.CONTACT_MIN, RobotPowerSupplyGeometry.Objective.BALANCE, RobotPowerSupplyGeometry.Objective.CONTACT_AVG, RobotPowerSupplyGeometry.Objective.DIST_AVG});
     fitnesses.keySet().retainAll(fitnessNames);
     //prepare things
-    MultiFileListenerFactory listenerFactory = new MultiFileListenerFactory(a("dir", "."), a("file", null));
+    MultiFileListenerFactory<Object, Object, Object> listenerFactory = new MultiFileListenerFactory<>(a("dir", "."), a("file", null));
     //iterate
     for (int run : runs) {
       for (Map.Entry<String, Pair<Function<double[], Boolean>, double[]>> robot : robots.entrySet()) {
@@ -87,24 +95,25 @@ public class RobotContactsDE extends Worker {
           for (double w : ws) {
             for (int nContact : nContacts) {
               RobotPowerSupplyGeometry problem = new RobotPowerSupplyGeometry(
-                      w, v,
-                      robot.getValue().first(),
-                      robot.getValue().second()[0],
-                      robot.getValue().second()[1],
-                      symmetric,
-                      nPoints,
-                      fitness.getValue()
+                  w, v,
+                  robot.getValue().first(),
+                  robot.getValue().second()[0],
+                  robot.getValue().second()[1],
+                  symmetric,
+                  nPoints,
+                  fitness.getValue()
               );
-              Comparator<List<Double>> lgComparator = (Comparator) (new LexicoGraphicalMOComparator<>(seq(fitness.getValue().length)).reversed());
-              DifferentialEvolution<List<Double>> de = new DifferentialEvolution<>(
-                      population, i(a("threads", Integer.toString(Runtime.getRuntime().availableProcessors()))),
-                      crossoverRate, differentialWeight,
-                      nContact * 2,
-                      0.5d, 1d,
-                      new ComparableRanker<>(
-                              (i1, i2) -> lgComparator.compare(i1.getFitness(), i2.getFitness())
-                      ),
-                      Lists.newArrayList(new FitnessEvaluations(evaluations)), evaluations);
+              StandardEvolver<Sequence<Double>, Sequence<Double>, List<Double>> evolver = new StandardEvolver<>(
+                  Function.identity(),
+                  new UniformDoubleSequenceFactory(-1, 1, nContact * 2),
+                  new LexicoGraphical(seq(fitness.getValue().length)).reversed().on(Individual::getFitness),
+                  population,
+                  Map.of(new GeometricCrossover().andThen(new GaussianMutation(0.1d)), 1d),
+                  new Tournament(3),
+                  new Worst(),
+                  population,
+                  true
+              );
               Random random = new Random(run);
               Map<String, String> keys = new LinkedHashMap<>();
               keys.put("run", Integer.toString(run));
@@ -114,18 +123,27 @@ public class RobotContactsDE extends Worker {
               keys.put("w", Double.toString(w));
               keys.put("nc", Integer.toString(nContact));
               System.out.println(keys);
+              Function<Individual<Sequence<Double>, Object, Object>, double[]> toArray = (individual) -> {
+                Sequence<Double> s = individual.getGenotype();
+                double[] values = new double[s.size()];
+                for (int i = 0; i < s.size(); i++) {
+                  values[i] = s.get(i);
+                }
+                return values;
+              };
+              Misc.cached(toArray.andThen(problem.getMinContactsFunction()), evaluations);
               try {
-                de.solve(problem, random, executorService, Listener.onExecutor(listenerFactory.build(
-                        new Static(keys),
-                        new Basic(),
-                        new Population(),
-                        new BestInfo<>((Function) problem.getFitnessFunction(), "%5.3f"),
-                        new FunctionOfBest("min.contacts", problem.getMinContactsFunction().cached(evaluations), "%%5.3f"),
-                        new FunctionOfBest("avg.contacts", problem.getAvgContactsFunction().cached(evaluations), "%%5.3f"),
-                        new FunctionOfBest("avg.dist", problem.getAvgDistFunction().cached(evaluations), "%%5.3f"),
-                        new FunctionOfBest("avg.balance", problem.getAvgBalanceFunction().cached(evaluations), "%%5.3f"),
-                        new FunctionOfBest("contacts", problem.getValidContactsFunction().cached(evaluations), "%2d"),
-                        new BestPrinter(new DoubleArrayPrinter("%+5.3f"), "%s")
+                evolver.solve(problem.getFitnessFunction(), new FitnessEvaluations(evaluations), random, executorService, Listener.onExecutor(listenerFactory.build(
+                    new Static(keys),
+                    new Basic(),
+                    new Population(),
+                    new BestInfo("%5.3f"),
+                    //new Prefix("min.contacts", new FunctionOfOneBest<Sequence<Double>, Object, Object>(Misc.cached(toArray.andThen(problem.getMinContactsFunction()), evaluations), "%%5.3f")),
+                    //new FunctionOfBest("avg.contacts", problem.getAvgContactsFunction().cached(evaluations), "%%5.3f"),
+                    //new FunctionOfBest("avg.dist", problem.getAvgDistFunction().cached(evaluations), "%%5.3f"),
+                    //new FunctionOfBest("avg.balance", problem.getAvgBalanceFunction().cached(evaluations), "%%5.3f"),
+                    //new FunctionOfBest("contacts", problem.getValidContactsFunction().cached(evaluations), "%2d"),
+                    new BestPrinter(EnumSet.of(BestPrinter.Part.GENOTYPE))
                 ), executorService));
               } catch (InterruptedException | ExecutionException ex) {
                 L.log(Level.SEVERE, String.format("Cannot solve problem: %s", ex), ex);

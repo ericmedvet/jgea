@@ -5,8 +5,6 @@
  */
 package it.units.malelab.jgea.core.listener;
 
-import it.units.malelab.jgea.core.listener.event.Event;
-import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,24 +13,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import it.units.malelab.jgea.core.listener.collector.DataCollector;
 import it.units.malelab.jgea.core.listener.collector.Item;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
- *
  * @author eric
  */
-public class PrintStreamListener implements Listener {
+public class PrintStreamListener<G, S, F> implements Listener<G, S, F> {
 
   private final PrintStream ps;
   private final boolean format;
   private final int headerInterval;
   private final String innerSeparator;
   private final String outerSeparator;
-  private final List<DataCollector> collectors;
+  private final List<DataCollector<? super G, ? super S, ? super F>> collectors;
 
   private final List<List<Item>> firstItems;
   private final List<List<Integer>> sizes;
@@ -41,12 +40,12 @@ public class PrintStreamListener implements Listener {
   private final static Logger L = Logger.getLogger(PrintStreamListener.class.getName());
 
   public PrintStreamListener(
-          PrintStream ps,
-          boolean format,
-          int headerInterval,
-          String innerSeparator,
-          String outerSeparator,
-          DataCollector... collectors) {
+      PrintStream ps,
+      boolean format,
+      int headerInterval,
+      String innerSeparator,
+      String outerSeparator,
+      DataCollector<? super G, ? super S, ? super F>... collectors) {
     this.ps = ps;
     this.format = format;
     this.headerInterval = headerInterval;
@@ -59,17 +58,11 @@ public class PrintStreamListener implements Listener {
   }
 
   @Override
-  public void listen(Event event) {
-    final EvolutionEvent evolutionEvent;
-    if (event instanceof EvolutionEvent) {
-      evolutionEvent = ((EvolutionEvent) event);
-    } else {
-      return;
-    }
+  public void listen(Event<? extends G, ? extends S, ? extends F> event) {
     //collect items
-    List<List<Item>> items = collectItems(evolutionEvent);
+    List<List<Item>> items = collectItems(event);
     //possibly print headers
-    if ((lines == 0) || ((headerInterval > 0) && (evolutionEvent.getIteration() % headerInterval == 0))) {
+    if ((lines == 0) || ((headerInterval > 0) && (event.getState().getIterations() % headerInterval == 0))) {
       String headers = buildHeadersString();
       synchronized (ps) {
         ps.println(headers);
@@ -82,12 +75,12 @@ public class PrintStreamListener implements Listener {
     }
   }
 
-  protected List<List<Item>> collectItems(final EvolutionEvent evolutionEvent) {
+  protected List<List<Item>> collectItems(final Event<? extends G, ? extends S, ? extends F> event) {
     List<List<Item>> items = new ArrayList<>();
     //collect
-    for (DataCollector collector : collectors) {
+    for (DataCollector<? super G, ? super S, ? super F> collector : collectors) {
       try {
-        items.add(collector.collect(evolutionEvent));
+        items.add(collector.collect(event));
       } catch (Throwable t) {
         L.log(Level.WARNING, String.format("Cannot collect from %s due to %s", collector.getClass().getSimpleName(), t), t);
       }
@@ -95,18 +88,18 @@ public class PrintStreamListener implements Listener {
     if (firstItems.isEmpty()) {
       firstItems.addAll(items);
       sizes.addAll(firstItems.stream()
-              .map(is -> is.stream().map(
+          .map(is -> is.stream().map(
               i -> formatName(i.getName(), i.getFormat(), format).length()
-      ).collect(Collectors.toList()))
-              .collect(Collectors.toList()));
+          ).collect(Collectors.toList()))
+          .collect(Collectors.toList()));
     }
     return items;
   }
 
   protected String buildDataString(List<List<Item>> items) {
     List<Map<String, Item>> maps = items.stream()
-            .map(cItems -> cItems.stream().collect(Collectors.toMap(i -> i.getName(), i -> i)))
-            .collect(Collectors.toList());
+        .map(cItems -> cItems.stream().collect(Collectors.toMap(Item::getName, i -> i)))
+        .collect(Collectors.toList());
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < firstItems.size(); i++) {
       for (int j = 0; j < firstItems.get(i).size(); j++) {
@@ -115,13 +108,13 @@ public class PrintStreamListener implements Listener {
         if (format) {
           try {
             sb.append(pad(
-                    String.format(firstItems.get(i).get(j).getFormat(), value),
-                    sizes.get(i).get(j), format
+                String.format(firstItems.get(i).get(j).getFormat(), value),
+                sizes.get(i).get(j), format
             ));
           } catch (IllegalFormatException ex) {
             sb.append(pad(
-                    (value != null) ? value.toString() : "",
-                    sizes.get(i).get(j), format
+                (value != null) ? value.toString() : "",
+                sizes.get(i).get(j), format
             ));
           }
         } else {

@@ -1,40 +1,77 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.representation.sequence;
 
-import it.units.malelab.jgea.core.Sized;
+import it.units.malelab.jgea.core.util.Sized;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
- *
  * @author eric
  */
-public interface Sequence<T> extends Sized, Cloneable {
+public interface Sequence<T> extends Sized, Cloneable, Iterable<T> {
 
-  public T get(int index);
+  T get(int index);
 
-  public void set(int index, T t);
+  void set(int index, T t);
 
-  public Sequence<T> clone();
-  
-  public default T[] toArray() {
+  Sequence<T> clone();
+
+  default T[] toArray() {
     List<T> ts = new ArrayList<>(size());
-    for (int i = 0; i<size(); i++) {
+    for (int i = 0; i < size(); i++) {
       ts.add(get(i));
     }
-    return (T[])ts.toArray();
+    return (T[]) ts.toArray();
   }
 
-  public static <T> Sequence<T> from(final T... ts) {
-    return from((List)Arrays.asList(ts));
+  @Override
+  default Iterator<T> iterator() {
+    return new Iterator<T>() {
+      int i = 0;
+
+      @Override
+      public boolean hasNext() {
+        return i < size();
+      }
+
+      @Override
+      public T next() {
+        T t = get(i);
+        i = i + 1;
+        return t;
+      }
+    };
   }
-  
-  public static <T> Sequence<T> from(final List<T> list) {
+
+  default Stream<T> stream() {
+    return List.of(toArray()).stream();
+  }
+
+  static <T> Sequence<T> from(final T... ts) {
+    return from(Arrays.asList(ts));
+  }
+
+  static <T> Sequence<T> from(final List<T> list) {
     return new Sequence<T>() {
       @Override
       public T get(int index) {

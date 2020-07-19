@@ -1,29 +1,38 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.problem.application;
 
 import it.units.malelab.jgea.core.Problem;
-import it.units.malelab.jgea.core.function.Bounded;
-import it.units.malelab.jgea.core.function.Function;
-import it.units.malelab.jgea.core.function.FunctionException;
-import it.units.malelab.jgea.core.function.NonDeterministicFunction;
-import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.representation.sequence.Sequence;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 /**
- *
  * @author eric
  */
-public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>> {
+public class RobotPowerSupplyGeometry implements Problem<Sequence<Double>, List<Double>> {
 
   public enum Objective {
     CONTACT_MIN, CONTACT_AVG, DIST_AVG, BALANCE
-  };
+  }
 
   private final double w;
   private final double v;
@@ -140,7 +149,7 @@ public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>>
     return Arrays.stream(dists).mapToDouble(ds -> Arrays.stream(ds).min().orElse(0d)).average().orElse(0d);
   }
 
-  private List<double[]> validPins(double[] a) throws FunctionException {
+  private List<double[]> validPins(double[] a) {
     //get valid pins
     List<double[]> validPins = new ArrayList<>();
     for (int i = 0; i < a.length - 1; i = i + 2) {
@@ -169,52 +178,16 @@ public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>>
     return s;
   }
 
-  private class FitnessFunction implements Function<double[], List<Double>>, Bounded<List<Double>> {
+  private class FitnessFunction implements Function<Sequence<Double>, List<Double>> {
 
     @Override
-    public List<Double> bestValue() {
+    public List<Double> apply(Sequence<Double> sequence) {
       List<Double> values = new ArrayList<>();
-      for (Objective objective : objectives) {
-        if (objective.equals(Objective.CONTACT_AVG)) {
-          values.add(Double.POSITIVE_INFINITY);
-        }
-        if (objective.equals(Objective.CONTACT_MIN)) {
-          values.add(Double.POSITIVE_INFINITY);
-        }
-        if (objective.equals(Objective.DIST_AVG)) {
-          values.add(Double.POSITIVE_INFINITY);
-        }
-        if (objective.equals(Objective.BALANCE)) {
-          values.add(0d);
-        }
+      double[] s = new double[sequence.size()];
+      for (int i = 0; i < sequence.size(); i++) {
+        s[i] = sequence.get(i);
       }
-      return values;
-    }
-
-    @Override
-    public List<Double> worstValue() {
-      List<Double> values = new ArrayList<>();
-      for (Objective objective : objectives) {
-        if (objective.equals(Objective.CONTACT_AVG)) {
-          values.add(0d);
-        }
-        if (objective.equals(Objective.CONTACT_MIN)) {
-          values.add(0d);
-        }
-        if (objective.equals(Objective.DIST_AVG)) {
-          values.add(0d);
-        }
-        if (objective.equals(Objective.DIST_AVG)) {
-          values.add(Double.NEGATIVE_INFINITY);
-        }
-      }
-      return values;
-    }
-
-    @Override
-    public List<Double> apply(double[] a, Listener listener) throws FunctionException {
-      List<Double> values = new ArrayList<>();
-      double[] s = scale(a);
+      s = scale(s);
       for (Objective objective : objectives) {
         if (objective.equals(Objective.CONTACT_AVG)) {
           values.add(pinsContact(s, true));
@@ -226,7 +199,7 @@ public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>>
           values.add(avgDistanceToValidClosest(s));
         }
         if (objective.equals(Objective.BALANCE)) {
-          values.add(pinsBalance(a));
+          values.add(pinsBalance(s));
         }
       }
       return values;
@@ -235,28 +208,28 @@ public class RobotPowerSupplyGeometry implements Problem<double[], List<Double>>
   }
 
   @Override
-  public NonDeterministicFunction<double[], List<Double>> getFitnessFunction() {
+  public Function<Sequence<Double>, List<Double>> getFitnessFunction() {
     return fitnessFunction;
   }
 
   public Function<double[], Integer> getValidContactsFunction() {
-    return (a, l) -> validPins(scale(a)).size();
+    return a -> validPins(scale(a)).size();
   }
 
   public Function<double[], Double> getMinContactsFunction() {
-    return (a, l) -> pinsContact(scale(a), false);
+    return a -> pinsContact(scale(a), false);
   }
 
   public Function<double[], Double> getAvgContactsFunction() {
-    return (a, l) -> pinsContact(scale(a), true);
+    return a -> pinsContact(scale(a), true);
   }
 
   public Function<double[], Double> getAvgDistFunction() {
-    return (a, l) -> avgDistanceToValidClosest(scale(a));
+    return a -> avgDistanceToValidClosest(scale(a));
   }
 
   public Function<double[], Double> getAvgBalanceFunction() {
-    return (a, l) -> pinsBalance(scale(a));
+    return a -> pinsBalance(scale(a));
   }
 
 }

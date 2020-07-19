@@ -1,32 +1,41 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.problem.synthetic;
 
 import it.units.malelab.jgea.representation.tree.Node;
 import it.units.malelab.jgea.representation.sequence.Sequence;
-import it.units.malelab.jgea.core.function.Bounded;
-import it.units.malelab.jgea.core.function.Function;
-import it.units.malelab.jgea.core.function.FunctionException;
-import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.distance.Distance;
-import it.units.malelab.jgea.representation.sequence.Edit;
+import it.units.malelab.jgea.distance.Edit;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- *
  * @author eric
  */
 public class Text implements GrammarBasedProblem<String, String, Double> {
-  
-  private static class FitnessFunction implements Function<String, Double>, Bounded<Double> {
-    
+
+  private static class FitnessFunction implements Function<String, Double> {
+
     private final Sequence<Character> target;
     private final Distance<Sequence<Character>> distance;
 
@@ -36,36 +45,25 @@ public class Text implements GrammarBasedProblem<String, String, Double> {
     }
 
     @Override
-    public Double apply(String string, Listener listener) throws FunctionException {
-      double d = (double)distance.apply(
-              target,
-              Sequence.from(string.chars().mapToObj(c -> (char) c).toArray(Character[]::new))
-      )/(double)target.size();
+    public Double apply(String string) {
+      double d = (double) distance.apply(
+          target,
+          Sequence.from(string.chars().mapToObj(c -> (char) c).toArray(Character[]::new))
+      ) / (double) target.size();
       return d;
     }
 
-    @Override
-    public Double worstValue() {
-      return Double.POSITIVE_INFINITY;
-    }
-
-    @Override
-    public Double bestValue() {
-      return 0d;
-    }
-    
   }
-  
+
   private final Grammar<String> grammar;
   private final Function<Node<String>, String> solutionMapper;
   private final Function<String, Double> fitnessFunction;
 
   public Text(String targetString) throws IOException {
     grammar = Grammar.fromFile(new File("grammars/text.bnf"));
-    solutionMapper = (Node<String> node, Listener listener) -> 
-            node.leafNodes().stream()
-                    .map(Node::getContent)
-                    .collect(Collectors.joining()).replace("_", " ");
+    solutionMapper = (Node<String> node) -> node.leafNodes().stream()
+        .map(Node::getContent)
+        .collect(Collectors.joining()).replace("_", " ");
     fitnessFunction = new FitnessFunction(targetString);
   }
 
@@ -83,5 +81,5 @@ public class Text implements GrammarBasedProblem<String, String, Double> {
   public Function<String, Double> getFitnessFunction() {
     return fitnessFunction;
   }
-  
+
 }

@@ -3,18 +3,18 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>it.units.malelab</groupId>
   <artifactId>JGEA</artifactId>
-  <version>0.9.2</version>
+  <version>1.0.0</version>
   <packaging>jar</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>13</maven.compiler.source>
+    <maven.compiler.target>13</maven.compiler.target>
   </properties>
   <dependencies>
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>19.0</version>
+      <version>29.0-jre</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -31,14 +31,13 @@
   </dependencies>
   
   <!-- http://www.mkyong.com/maven/create-a-fat-jar-file-maven-shade-plugin/ -->
-  <build>
+  <!-- <build>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <version>2.3</version>
         <executions>
-          <!-- Run shade goal on package phase -->
           <execution>
             <phase>package</phase>
             <goals>
@@ -49,6 +48,7 @@
       </plugin>
     </plugins>
   </build>
+  -->
 
 
 </project>

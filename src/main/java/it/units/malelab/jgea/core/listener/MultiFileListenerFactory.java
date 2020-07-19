@@ -1,14 +1,25 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.core.listener;
 
 import it.units.malelab.jgea.core.listener.collector.DataCollector;
 import it.units.malelab.jgea.core.listener.collector.Item;
-import it.units.malelab.jgea.core.listener.event.Event;
-import it.units.malelab.jgea.core.listener.event.EvolutionEvent;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -21,10 +32,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- *
  * @author eric
  */
-public class MultiFileListenerFactory {
+public class MultiFileListenerFactory<G, S, F> {
 
   private final String baseDirName;
   private final String baseFileName;
@@ -37,25 +47,19 @@ public class MultiFileListenerFactory {
     this.baseFileName = baseFileName;
     streams = new HashMap<>();
   }
-  
-  public Listener build(DataCollector... collectors) {
-    return new PrintStreamListener(null, false, 0, ";", ";", collectors) {
+
+  public Listener<G, S, F> build(DataCollector<? super G, ? super S, ? super F>... collectors) {
+    return new PrintStreamListener<G, S, F>(null, false, 0, ";", ";", collectors) {
       @Override
-      public void listen(Event event) {
-        final EvolutionEvent evolutionEvent;
-        if (event instanceof EvolutionEvent) {
-          evolutionEvent = ((EvolutionEvent) event);
-        } else {
-          return;
-        }
+      public void listen(Event<? extends G, ? extends S, ? extends F> event) {
         //collect items
-        List<List<Item>> items = collectItems(evolutionEvent);
+        List<List<Item>> items = collectItems(event);
         //retrieve printstream
         List<String> names = items.stream()
-                .map(is -> is.stream().map(Item::getName))
-                .reduce((l1s, l2s) -> Stream.concat(l1s, l2s))
-                .get()
-                .collect(Collectors.toList());
+            .map(is -> is.stream().map(Item::getName))
+            .reduce(Stream::concat)
+            .get()
+            .collect(Collectors.toList());
         PrintStream ps = null;
         synchronized (streams) {
           ps = streams.get(names);

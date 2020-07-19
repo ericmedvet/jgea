@@ -1,33 +1,56 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.core.fitness;
 
 import it.units.malelab.jgea.problem.symbolicregression.*;
 import it.units.malelab.jgea.representation.tree.Node;
-import it.units.malelab.jgea.core.function.BiFunction;
-import it.units.malelab.jgea.core.function.Bounded;
-import it.units.malelab.jgea.core.function.Function;
-import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.problem.symbolicregression.element.Element;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
- *
  * @author eric
  */
-public class SymbolicRegressionFitness extends CaseBasedFitness<Node<Element>, double[], Double, Double> implements Bounded<Double> {
+public class SymbolicRegressionFitness extends CaseBasedFitness<Node<Element>, double[], Double, Double> {
 
-  public static interface TargetFunction extends Function<double[], Double> {
-    public String[] varNames();
+  public interface TargetFunction extends Function<double[], Double> {
+    String[] varNames();
+
+    static TargetFunction from(final Function<double[], Double> function, final String... varNames) {
+      return new TargetFunction() {
+        @Override
+        public String[] varNames() {
+          return varNames;
+        }
+
+        @Override
+        public Double apply(double[] values) {
+          return function.apply(values);
+        }
+      };
+    }
   }
 
-  private static class Aggregator implements Function<List<Double>, Double>, Bounded<Double> {
+  private static class Aggregator implements Function<List<Double>, Double> {
 
     private final boolean average;
 
@@ -36,61 +59,52 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<Node<Element>, d
     }
 
     @Override
-    public Double worstValue() {
-      return Double.POSITIVE_INFINITY;
-    }
-
-    @Override
-    public Double bestValue() {
-      return 0d;
-    }
-
-    @Override
-    public Double apply(List<Double> vs, Listener listener) throws FunctionException {
+    public Double apply(List<Double> values) {
       double sum = 0;
-      for (Double v : vs) {
+      for (Double v : values) {
         sum = sum + v;
       }
       if (average) {
-        return sum / (double) vs.size();
+        return sum / (double) values.size();
       }
       return sum;
     }
 
   }
 
-  private static class Error implements BiFunction<Node<Element>, double[], Double> {
+  private static class AbsoluteError implements BiFunction<Node<Element>, double[], Double> {
 
     private final TargetFunction targetFunction;
 
-    public Error(TargetFunction targetFunction) {
+    public AbsoluteError(TargetFunction targetFunction) {
       this.targetFunction = targetFunction;
     }
 
     @Override
-    public Double apply(Node<Element> solution, double[] observation, Listener listener) throws FunctionException {
-      Map<String, Double> varValues = new LinkedHashMap<>();
-      for (int i = 0; i < targetFunction.varNames().length; i++) {
-        varValues.put(targetFunction.varNames()[i], observation[i]);
+    public Double apply(Node<Element> solution, double[] point) {
+      Double computed = MathUtils.compute(solution, MathUtils.buildVarValues(targetFunction, point));
+      if (computed == null) {
+        return Double.POSITIVE_INFINITY;
       }
-      double computed = MathUtils.compute(solution, varValues);
-      return Math.abs(computed - targetFunction.apply(observation));
+      return Math.abs(computed - targetFunction.apply(point));
     }
 
   }
 
-  public SymbolicRegressionFitness(TargetFunction targetFunction, List<double[]> observations, boolean average) {
-    super(observations, new Error(targetFunction), new Aggregator(average));
+  private final TargetFunction targetFunction;
+  private final List<double[]> points;
+
+  public SymbolicRegressionFitness(TargetFunction targetFunction, List<double[]> points, boolean average) {
+    super(points, new AbsoluteError(targetFunction), new Aggregator(average));
+    this.targetFunction = targetFunction;
+    this.points = points;
   }
 
-  @Override
-  public Double bestValue() {
-    return ((Bounded<Double>)second()).bestValue();
+  public TargetFunction getTargetFunction() {
+    return targetFunction;
   }
 
-  @Override
-  public Double worstValue() {
-    return ((Bounded<Double>)second()).worstValue();
+  public List<double[]> getPoints() {
+    return points;
   }
-  
 }

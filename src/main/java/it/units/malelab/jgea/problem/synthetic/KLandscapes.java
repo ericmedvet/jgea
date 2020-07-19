@@ -1,33 +1,42 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.problem.synthetic;
 
 import com.google.common.collect.Range;
 import it.units.malelab.jgea.representation.tree.Node;
-import it.units.malelab.jgea.core.function.Function;
-import it.units.malelab.jgea.core.function.FunctionException;
-import it.units.malelab.jgea.core.function.NonDeterministicFunction;
-import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.Function;
 
 /**
- *
  * @author eric
  */
 public class KLandscapes implements
-        GrammarBasedProblem<String, Node<String>, Double>,
-        Function<Node<String>, Node<String>> {
+    GrammarBasedProblem<String, Node<String>, Double>,
+    Function<Node<String>, Node<String>> {
 
   private final static int ARITY = 2;
   private final static Range<Double> V_RANGE = Range.closed(-1d, 1d);
@@ -63,7 +72,7 @@ public class KLandscapes implements
   }
 
   @Override
-  public Node<String> apply(Node<String> original, Listener listener) throws FunctionException {
+  public Node<String> apply(Node<String> original) {
     if (original == null) {
       return original;
     }
@@ -72,7 +81,7 @@ public class KLandscapes implements
       //is a non terminal node
       for (Node<String> orginalChild : original.getChildren()) {
         if (orginalChild.getContent().equals("N")) {
-          node.getChildren().add(apply(orginalChild, listener));
+          node.getChildren().add(apply(orginalChild));
         }
       }
     }
@@ -85,7 +94,7 @@ public class KLandscapes implements
   }
 
   @Override
-  public NonDeterministicFunction<Node<String>, Double> getFitnessFunction() {
+  public Function<Node<String>, Double> getFitnessFunction() {
     Random random = new Random(1l);
     final Map<String, Double> v = new LinkedHashMap<>();
     final Map<Pair<String, String>, Double> w = new LinkedHashMap<>();
@@ -108,7 +117,7 @@ public class KLandscapes implements
     //prepare fitness
     final double optimumFitness = f(optimum(k, nTerminals, nNonTerminals, arity, v, w), k, v, w);
     //build function
-    return (Node<String> t, Random r, Listener l) -> (1d - f(t, k, v, w) / optimumFitness);
+    return t -> (1d - f(t, k, v, w) / optimumFitness);
   }
 
   protected static double f(Node<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {

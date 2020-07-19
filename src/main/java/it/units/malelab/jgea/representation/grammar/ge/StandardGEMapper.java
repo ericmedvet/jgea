@@ -1,42 +1,51 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.representation.grammar.ge;
 
 import it.units.malelab.jgea.representation.tree.Node;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.event.FunctionEvent;
-import it.units.malelab.jgea.core.function.FunctionException;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedMapper;
+
 import java.util.Collections;
 import java.util.List;
 
 /**
- *
  * @author eric
  */
 public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
-  
-  private final int codonLenght;
+
+  private final int codonLength;
   private final int maxWraps;
-  
+
   public static final String BIT_USAGES_INDEX_NAME = "bitUsages";
 
-  public StandardGEMapper(int codonLenght, int maxWraps, Grammar<T> grammar) {
+  public StandardGEMapper(int codonLength, int maxWraps, Grammar<T> grammar) {
     super(grammar);
-    this.codonLenght = codonLenght;
+    this.codonLength = codonLength;
     this.maxWraps = maxWraps;
-  }    
+  }
 
   @Override
-  public Node<T> apply(BitString genotype, Listener listener) throws FunctionException {
-    int[] bitUsages = new int[genotype.size()];
-    if (genotype.size()<codonLenght) {
-      throw new FunctionException(String.format("Short genotype (%d<%d)", genotype.size(), codonLenght));
+  public Node<T> apply(BitString genotype) {
+    if (genotype.size() < codonLength) {
+      throw new IllegalArgumentException(String.format("Short genotype (%d<%d)", genotype.size(), codonLength));
     }
     Node<T> tree = new Node<>(grammar.getStartingSymbol());
     int currentCodonIndex = 0;
@@ -49,25 +58,21 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
           break;
         }
       }
-      if (nodeToBeReplaced==null) {
+      if (nodeToBeReplaced == null) {
         break;
       }
       //get codon index and option
-      if ((currentCodonIndex+1)*codonLenght>genotype.size()) {
-        wraps = wraps+1;
+      if ((currentCodonIndex + 1) * codonLength > genotype.size()) {
+        wraps = wraps + 1;
         currentCodonIndex = 0;
-        if (wraps>maxWraps) {
-          throw new FunctionException(String.format("Too many wraps (%d>%d)", wraps, maxWraps));
+        if (wraps > maxWraps) {
+          throw new IllegalArgumentException(String.format("Too many wraps (%d>%d)", wraps, maxWraps));
         }
-      }      
+      }
       List<List<T>> options = grammar.getRules().get(nodeToBeReplaced.getContent());
       int optionIndex = 0;
-      if (options.size()>1) {
-      optionIndex = genotype.slice(currentCodonIndex*codonLenght, (currentCodonIndex+1)*codonLenght).toInt()%options.size();
-      //update usages
-      for (int i = currentCodonIndex*codonLenght; i<(currentCodonIndex+1)*codonLenght; i++) {
-        bitUsages[i] = bitUsages[i]+1;
-      }
+      if (options.size() > 1) {
+        optionIndex = genotype.slice(currentCodonIndex * codonLength, (currentCodonIndex + 1) * codonLength).toInt() % options.size();
         currentCodonIndex = currentCodonIndex + 1;
       }
       //add children
@@ -76,13 +81,12 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
         nodeToBeReplaced.getChildren().add(newChild);
       }
     }
-    listener.listen(new FunctionEvent(genotype, tree, Collections.singletonMap(BIT_USAGES_INDEX_NAME, bitUsages)));
     return tree;
   }
 
   @Override
   public String toString() {
-    return "StandardGEMapper{" + "codonLenght=" + codonLenght + ", maxWraps=" + maxWraps + '}';
-  }    
-     
+    return "StandardGEMapper{" + "codonLength=" + codonLength + ", maxWraps=" + maxWraps + '}';
+  }
+
 }

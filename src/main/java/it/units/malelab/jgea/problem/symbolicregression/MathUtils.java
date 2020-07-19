@@ -1,31 +1,67 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.problem.symbolicregression;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import it.units.malelab.jgea.core.fitness.SymbolicRegressionFitness;
+import it.units.malelab.jgea.problem.symbolicregression.element.*;
 import it.units.malelab.jgea.representation.tree.Node;
-import it.units.malelab.jgea.problem.symbolicregression.element.Constant;
-import it.units.malelab.jgea.problem.symbolicregression.element.Decoration;
-import it.units.malelab.jgea.problem.symbolicregression.element.Element;
-import it.units.malelab.jgea.problem.symbolicregression.element.Operator;
-import it.units.malelab.jgea.problem.symbolicregression.element.Variable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import org.apache.commons.math3.stat.StatUtils;
+
+import java.util.*;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 /**
- *
  * @author eric
  */
 public class MathUtils {
+
+  public static UnaryOperator<Node<Element>> linearScaler(SymbolicRegressionFitness symbolicRegressionFitness) {
+    double[] targetYs = symbolicRegressionFitness.getPoints().stream()
+        .mapToDouble(p -> symbolicRegressionFitness.getTargetFunction().apply(p))
+        .toArray();
+    final double targetMean = StatUtils.mean(targetYs);
+    final double targetVariance = StatUtils.variance(targetYs, targetMean);
+    return function -> {
+      final Node<Element> finalFunction = function;
+      double[] ys = symbolicRegressionFitness.getPoints().stream()
+          .mapToDouble(p -> compute(finalFunction, buildVarValues(symbolicRegressionFitness.getTargetFunction(), p)))
+          .toArray();
+      double mean = StatUtils.mean(ys);
+      double variance = StatUtils.variance(ys, mean);
+      Node<Element> newFunction = new Node<>(Operator.ADDITION);
+      newFunction.getChildren().add(new Node<>(new Constant(targetMean - mean * Math.sqrt(targetVariance / variance))));
+      newFunction.getChildren().add(new Node<>(Operator.MULTIPLICATION));
+      newFunction.getChildren().get(1).getChildren().add(function);
+      newFunction.getChildren().get(1).getChildren().add(new Node<>(new Constant(Math.sqrt(targetVariance / variance))));
+      return newFunction;
+    };
+  }
+
+  public static Map<String, Double> buildVarValues(SymbolicRegressionFitness.TargetFunction function, double[] point) {
+    Map<String, Double> varValues = new LinkedHashMap<>();
+    for (int i = 0; i < function.varNames().length; i++) {
+      varValues.put(function.varNames()[i], point[i]);
+    }
+    return varValues;
+  }
 
   public static Double compute(Node<Element> node, Map<String, Double> values) {
     if (node.getContent() instanceof Decoration) {
@@ -108,7 +144,7 @@ public class MathUtils {
     List<double[]> observations = new ArrayList<>(n);
     for (int i = 0; i < n; i++) {
       double[] observation = new double[varNames.length];
-      for (int j = 0; j<varNames.length; j++) {
+      for (int j = 0; j < varNames.length; j++) {
         observation[j] = valuesMap.get(varNames[j])[i];
       }
       observations.add(observation);

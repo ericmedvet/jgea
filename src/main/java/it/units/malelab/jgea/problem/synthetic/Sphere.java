@@ -1,30 +1,19 @@
 package it.units.malelab.jgea.problem.synthetic;
 
 import it.units.malelab.jgea.core.Problem;
-import it.units.malelab.jgea.core.function.Bounded;
-import it.units.malelab.jgea.core.function.Function;
-import it.units.malelab.jgea.core.function.FunctionException;
-import it.units.malelab.jgea.core.function.NonDeterministicFunction;
-import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.representation.sequence.Sequence;
 
-public class Sphere implements Problem<double[], Double> {
+import java.util.function.Function;
 
-    private static class FitnessFunction implements Function<double[], Double>, Bounded<Double> {
-        @Override
-        public Double bestValue() {
-            return 0d;
-        }
+public class Sphere implements Problem<Sequence<Double>, Double> {
+
+    private static class FitnessFunction implements Function<Sequence<Double>, Double> {
 
         @Override
-        public Double worstValue() {
-            return Double.POSITIVE_INFINITY;
-        }
-
-        @Override
-        public Double apply(double[] solution, Listener listener) throws FunctionException {
+        public Double apply(Sequence<Double> s) {
             double sum = 0.0;
-            for (int i = 0; i < solution.length; i++) {
-                sum += solution[i] * solution[i];
+            for (int i = 0; i < s.size(); i++) {
+                sum += s.get(i) * s.get(i);
             }
             return sum;
         }
@@ -33,7 +22,7 @@ public class Sphere implements Problem<double[], Double> {
     private final FitnessFunction fitnessFunction = new FitnessFunction();
 
     @Override
-    public NonDeterministicFunction<double[], Double> getFitnessFunction() {
+    public Function<Sequence<Double>, Double> getFitnessFunction() {
         return fitnessFunction;
     }
 }

@@ -1,18 +1,25 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.problem.extraction;
 
 import com.google.common.collect.Range;
-import it.units.malelab.jgea.core.function.BiFunction;
-import it.units.malelab.jgea.core.function.Bounded;
-import it.units.malelab.jgea.core.function.ComposedFunction;
-import it.units.malelab.jgea.core.function.Function;
-import it.units.malelab.jgea.core.function.FunctionException;
-import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.util.WithNames;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -21,15 +28,16 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- *
  * @author eric
  */
-public class ExtractionFitness<E> implements ComposedFunction<E, Set<Range<Integer>>, List<Double>>, WithNames {
+public class ExtractionFitness<E> implements Function<E, List<Double>>, WithNames {
 
-  public static enum Metric {
+  public enum Metric {
 
     ONE_MINUS_PREC(0d, Double.POSITIVE_INFINITY),
     ONE_MINUS_REC(0d, 1d),
@@ -46,9 +54,9 @@ public class ExtractionFitness<E> implements ComposedFunction<E, Set<Range<Integ
       this.worst = worst;
     }
 
-  };
+  }
 
-  private static class Aggregator implements Function<Set<Range<Integer>>, List<Double>>, Bounded<List<Double>> {
+  private static class Aggregator implements Function<Set<Range<Integer>>, List<Double>> {
 
     private final String text;
     private final Set<Range<Integer>> desiredExtractions;
@@ -60,12 +68,12 @@ public class ExtractionFitness<E> implements ComposedFunction<E, Set<Range<Integ
       this.desiredExtractions = desiredExtractions;
       this.metrics = Arrays.asList(metrics);
       posChars = desiredExtractions.stream()
-              .mapToInt(range -> (range.upperEndpoint() - range.lowerEndpoint()))
-              .sum();
+          .mapToInt(range -> (range.upperEndpoint() - range.lowerEndpoint()))
+          .sum();
     }
 
     @Override
-    public List<Double> apply(Set<Range<Integer>> extractions, Listener listener) throws FunctionException {
+    public List<Double> apply(Set<Range<Integer>> extractions) {
       Map<Metric, Double> values = new EnumMap<>(Metric.class);
       if (metrics.contains(Metric.ONE_MINUS_FM) || metrics.contains(Metric.ONE_MINUS_PREC) || metrics.contains(Metric.ONE_MINUS_REC)) {
         //precision and recall
@@ -80,11 +88,11 @@ public class ExtractionFitness<E> implements ComposedFunction<E, Set<Range<Integ
       }
       if (metrics.contains(Metric.CHAR_ERROR) || metrics.contains(Metric.CHAR_FNR) || metrics.contains(Metric.CHAR_FPR)) {
         double asPosChars = extractions.stream()
-                .mapToInt(range -> (range.upperEndpoint() - range.lowerEndpoint()))
-                .sum();
+            .mapToInt(range -> (range.upperEndpoint() - range.lowerEndpoint()))
+            .sum();
         double truePosChars = extractions.stream()
-                .mapToInt(e -> intersections(e, desiredExtractions).stream().mapToInt(range -> (range.upperEndpoint() - range.lowerEndpoint())).sum())
-                .sum();
+            .mapToInt(e -> intersections(e, desiredExtractions).stream().mapToInt(range -> (range.upperEndpoint() - range.lowerEndpoint())).sum())
+            .sum();
         double falseNegChars = posChars - truePosChars;
         double falsePosChars = asPosChars - truePosChars;
         values.put(Metric.CHAR_FPR, falsePosChars / ((double) text.length() - posChars));
@@ -94,24 +102,6 @@ public class ExtractionFitness<E> implements ComposedFunction<E, Set<Range<Integ
       List<Double> results = new ArrayList<>(metrics.size());
       for (Metric metric : metrics) {
         results.add(values.get(metric));
-      }
-      return results;
-    }
-
-    @Override
-    public List<Double> bestValue() {
-      List<Double> results = new ArrayList<>(metrics.size());
-      for (Metric metric : metrics) {
-        results.add(metric.best);
-      }
-      return results;
-    }
-
-    @Override
-    public List<Double> worstValue() {
-      List<Double> results = new ArrayList<>(metrics.size());
-      for (Metric metric : metrics) {
-        results.add(metric.worst);
       }
       return results;
     }
@@ -137,7 +127,7 @@ public class ExtractionFitness<E> implements ComposedFunction<E, Set<Range<Integ
     public List<Metric> getMetrics() {
       return metrics;
     }
-    
+
   }
 
   private final BiFunction<E, String, Set<Range<Integer>>> extractionFunction;
@@ -147,7 +137,7 @@ public class ExtractionFitness<E> implements ComposedFunction<E, Set<Range<Integ
     this.extractionFunction = extractionFunction;
     aggregator = new Aggregator(text, desiredExtractions, metrics);
   }
-  
+
   public ExtractionFitness<E> changeMetrics(Metric... metrics) {
     return new ExtractionFitness<>(aggregator.text, aggregator.desiredExtractions, extractionFunction, metrics);
   }
@@ -159,7 +149,7 @@ public class ExtractionFitness<E> implements ComposedFunction<E, Set<Range<Integ
   public Set<Range<Integer>> getDesiredExtractions() {
     return aggregator.getDesiredExtractions();
   }
-  
+
   public List<Metric> getMetrics() {
     return aggregator.getMetrics();
   }
@@ -169,13 +159,8 @@ public class ExtractionFitness<E> implements ComposedFunction<E, Set<Range<Integ
   }
 
   @Override
-  public Function<E, Set<Range<Integer>>> first() {
-    return (e, listener) -> extractionFunction.apply(e, getText(), listener);
-  }
-
-  @Override
-  public Function<? super Set<Range<Integer>>, ? extends List<Double>> second() {
-    return aggregator;
+  public List<Double> apply(E e) {
+    return aggregator.apply(extractionFunction.apply(e, getText()));
   }
 
   @Override

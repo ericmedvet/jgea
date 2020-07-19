@@ -1,15 +1,26 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.representation.grammar.ge;
 
 import com.google.common.collect.Range;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
 import it.units.malelab.jgea.representation.grammar.Grammar;
-import java.io.File;
-import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,19 +36,7 @@ public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
   private final int expressivenessDepth;
   private final boolean weightOptions;
   private final boolean weightChildren;
-  
-  public static void main(String[] args) throws IOException {
-    Grammar<String> g = Grammar.fromFile(new File("grammars/symbolic-regression-paper.bnf"));
-    WeightedHierarchicalMapper<String> m = new WeightedHierarchicalMapper<>(2, g);
-    System.out.println(m.weightsMap);
-    for (String nt : g.getRules().keySet()) {
-      System.out.printf("%s -> %d (%.1f)%n", nt, countOptions(nt, 0, 2, g), Math.log10(countOptions(nt, 0, 2, g)));
-    }
-    //BitString x = new BitString("111001111111000010100101011100010110010100000111");
-    BitString x = new BitString("111001111111000010100101011100010110010100000111");
-    System.out.println(m.apply(x).leafNodes());
-  }
-  
+
   public WeightedHierarchicalMapper(int expressivenessDepth, Grammar<T> grammar) {
     this(expressivenessDepth, false, true, grammar);
   }
@@ -107,9 +106,9 @@ public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
   }
 
   @Override
-  protected double optionSliceWeigth(BitString slice) {
+  protected double optionSliceWeight(BitString slice) {
     if (!weightOptions) {
-      return super.optionSliceWeigth(slice);
+      return super.optionSliceWeight(slice);
     }
     return (double) slice.count();
   }

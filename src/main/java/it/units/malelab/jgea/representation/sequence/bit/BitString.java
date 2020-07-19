@@ -1,14 +1,27 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.units.malelab.jgea.representation.sequence.bit;
 
 import com.google.common.collect.Range;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.representation.sequence.ConstrainedSequence;
 import it.units.malelab.jgea.representation.sequence.Sequence;
+
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
@@ -18,7 +31,6 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- *
  * @author eric
  */
 public class BitString implements ConstrainedSequence<Boolean> {
@@ -96,13 +108,13 @@ public class BitString implements ConstrainedSequence<Boolean> {
     }
     return sb.toString();
   }
-  
+
   public String toFlatString() {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < length; i++) {
       sb.append(bitSet.get(i) ? '1' : '0');
     }
-    return sb.toString();    
+    return sb.toString();
   }
 
   @Override
@@ -124,15 +136,15 @@ public class BitString implements ConstrainedSequence<Boolean> {
     checkIndexes(fromIndex, toIndex);
     bitSet.flip(fromIndex, toIndex);
   }
-  
+
   public BitString or(BitString other) {
-    BitSet ored = (BitSet)bitSet.clone();
+    BitSet ored = (BitSet) bitSet.clone();
     ored.or(other.bitSet);
     return new BitString(length, ored);
   }
 
   public BitString and(BitString other) {
-    BitSet anded = (BitSet)bitSet.clone();
+    BitSet anded = (BitSet) bitSet.clone();
     anded.and(other.bitSet);
     return new BitString(length, anded);
   }
