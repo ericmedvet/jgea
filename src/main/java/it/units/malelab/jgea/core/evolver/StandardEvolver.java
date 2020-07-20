@@ -59,11 +59,6 @@ public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> 
   }
 
   @Override
-  protected State initState() {
-    return new State();
-  }
-
-  @Override
   protected Collection<Individual<G, S, F>> initPopulation(Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     return initPopulation(populationSize, fitnessFunction, random, executor, state);
   }

@@ -51,11 +51,6 @@ public class RandomWalk<G, S, F> extends AbstractIterativeEvolver<G, S, F> {
   }
 
   @Override
-  protected State initState() {
-    return new State();
-  }
-
-  @Override
   protected Collection<Individual<G, S, F>> initPopulation(Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     G genotype = genotypeFactory.build(1, random).get(0);
     return AbstractIterativeEvolver.buildIndividuals(List.of(genotype), solutionMapper, fitnessFunction, executor, state);
