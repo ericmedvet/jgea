@@ -20,17 +20,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fb3f97aa-f1ba-4dca-af0a-845a3176b0c1" name="Default Changelist" comment="Starting to work on graph genetic operators for generalized NEAT.">
-      <change afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/graph/AlignedCrossover.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/graph/EdgeAddition.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/graph/EdgeRemoval.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/graph/GraphUtils.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/Factory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/Factory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/operator/Crossover.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/operator/Crossover.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/operator/Mutation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/operator/Mutation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/graph/DecoratedEdge.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/graph/EdgeModification.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/graph/EdgeModification.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/graph/NodeAddition.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/representation/graph/NodeAddition.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
