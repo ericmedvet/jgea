@@ -25,7 +25,7 @@ import java.io.IOException;
 /**
  * @author eric
  */
-public class Pagie1 extends AbstractRegressionProblemProblemWithValidation {
+public class Pagie1 extends AbstractRegressionProblemWithValidation {
 
   public Pagie1() throws IOException {
     super(

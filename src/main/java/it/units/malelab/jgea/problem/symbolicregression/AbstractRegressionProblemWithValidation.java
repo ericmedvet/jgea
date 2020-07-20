@@ -30,11 +30,11 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public abstract class AbstractRegressionProblemProblemWithValidation extends AbstractSymbolicRegressionProblem implements ProblemWithValidation<Node<Element>, Double> {
+public abstract class AbstractRegressionProblemWithValidation extends AbstractSymbolicRegressionProblem implements ProblemWithValidation<Node<Element>, Double> {
 
   private final Function<Node<Element>, Double> validationFunction;
 
-  public AbstractRegressionProblemProblemWithValidation(Grammar<String> grammar, Map<String, double[]> varLearningValues, Map<String, double[]> varValidationValues) throws IOException {
+  public AbstractRegressionProblemWithValidation(Grammar<String> grammar, Map<String, double[]> varLearningValues, Map<String, double[]> varValidationValues) throws IOException {
     super(grammar, varLearningValues);
     validationFunction = new SymbolicRegressionFitness(
         this,

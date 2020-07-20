@@ -26,7 +26,7 @@ import java.util.Random;
 /**
  * @author eric
  */
-public class Nguyen7 extends AbstractRegressionProblemProblemWithValidation {
+public class Nguyen7 extends AbstractRegressionProblemWithValidation {
 
   public Nguyen7(long seed) throws IOException {
     super(

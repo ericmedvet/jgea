@@ -28,7 +28,7 @@ import java.util.Random;
 /**
  * @author eric
  */
-public class Vladislavleva4 extends AbstractRegressionProblemProblemWithValidation {
+public class Vladislavleva4 extends AbstractRegressionProblemWithValidation {
 
   private final static String[] VAR_NAMES = new String[]{"x1", "x2", "x3", "x4", "x5"};
 

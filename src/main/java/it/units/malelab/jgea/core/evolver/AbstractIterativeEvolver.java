@@ -114,4 +114,7 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
     return AbstractIterativeEvolver.buildIndividuals(genotypes, solutionMapper, fitnessFunction, executor, state);
   }
 
+  protected State initState() {
+    return new State();
+  }
 }

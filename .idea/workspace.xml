@@ -21,9 +21,6 @@
   <component name="ChangeListManager">
     <list default="true" id="fb3f97aa-f1ba-4dca-af0a-845a3176b0c1" name="Default Changelist" comment="Version change.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/Example.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/Example.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/selector/Selector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/selector/Selector.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,7 +44,7 @@
     </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="feature-simplification" />
+        <entry key="$PROJECT_DIR$" value="release-1.0.1" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -165,11 +162,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.Example" />
         <item itemvalue="Application.Starter" />
-        <item itemvalue="Application.CooperativeCoevolver" />
-        <item itemvalue="Application.Example" />
+        <item itemvalue="Application.PG" />
         <item itemvalue="Application.MathUtils" />
+        <item itemvalue="Application.Example" />
+        <item itemvalue="Application.CooperativeCoevolver" />
       </list>
     </recent_temporary>
   </component>
@@ -275,7 +272,21 @@
       <option name="project" value="LOCAL" />
       <updated>1594305270696</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="README updated.">
+      <created>1594309107207</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1594309107207</updated>
+    </task>
+    <task id="LOCAL-00015" summary="Version change.">
+      <created>1595231641902</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1595231641902</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -301,9 +312,10 @@
     <MESSAGE value="Checking functionalities with symbolic regression. Likely problems obtaining deterministic evolution; diversity not enforced; MO not working (maybe problems in POSET+selectors)." />
     <MESSAGE value="Solved a bug in standard with diversity; added an optimistic uniqueness factory." />
     <MESSAGE value="Guava updated to 29." />
-    <MESSAGE value="Version change." />
     <MESSAGE value="IDE files update." />
-    <option name="LAST_COMMIT_MESSAGE" value="IDE files update." />
+    <MESSAGE value="README updated." />
+    <MESSAGE value="Version change." />
+    <option name="LAST_COMMIT_MESSAGE" value="Version change." />
   </component>
   <component name="WindowStateProjectService">
     <state x="759" y="235" width="726" height="783" key="#Example" timestamp="1594304939061">
@@ -408,10 +420,10 @@
     </state>
     <state x="610" y="163" width="1279" height="857" key="SettingsEditor/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594305048239" />
     <state x="610" y="163" width="1016" height="742" key="SettingsEditor/56.27.2136.1206@56.27.2136.1206" timestamp="1592863441000" />
-    <state x="722" y="306" width="800" height="540" key="Vcs.Push.Dialog.v2" timestamp="1594305548443">
+    <state x="722" y="301" width="800" height="540" key="Vcs.Push.Dialog.v2" timestamp="1594309114344">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state x="722" y="306" width="800" height="540" key="Vcs.Push.Dialog.v2/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594305548443" />
+    <state x="722" y="301" width="800" height="540" key="Vcs.Push.Dialog.v2/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594309114344" />
     <state x="722" y="331" key="Vcs.Push.Dialog.v2/56.27.2136.1206@56.27.2136.1206" timestamp="1592866426334" />
     <state x="156" y="112" width="1936" height="1011" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1592494898511">
       <screen x="56" y="27" width="2136" height="1206" />
@@ -421,6 +433,10 @@
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state x="860" y="380" width="524" height="513" key="extract.method.dialog/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592381734211" />
+    <state x="886" y="419" width="471" height="435" key="git4idea.merge.GitMergeDialog" timestamp="1595231691139">
+      <screen x="56" y="27" width="4056" height="1206" />
+    </state>
+    <state x="886" y="419" width="471" height="435" key="git4idea.merge.GitMergeDialog/56.27.4056.1206@56.27.4056.1206" timestamp="1595231691139" />
     <state x="788" y="288" key="run.anything.popup" timestamp="1592861136835">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
