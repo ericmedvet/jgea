@@ -80,10 +80,6 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
         .collect(Collectors.toList());
   }
 
-  protected State initState() {
-    return new State();
-  }
-
   protected abstract Collection<Individual<G, S, F>> initPopulation(Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException;
 
   protected abstract Collection<Individual<G, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException;

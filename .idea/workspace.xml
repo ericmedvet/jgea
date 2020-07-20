@@ -20,7 +20,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fb3f97aa-f1ba-4dca-af0a-845a3176b0c1" name="Default Changelist" comment="Starting to work on graph genetic operators for generalized NEAT.">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/AbstractIterativeEvolver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/AbstractIterativeEvolver.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -416,6 +416,10 @@
     </state>
     <state width="2090" height="512" key="GridCell.Tab.1.right/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594225517878" />
     <state width="2090" height="512" key="GridCell.Tab.1.right/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434164" />
+    <state x="548" y="256" width="729" height="487" key="MultipleFileMergeDialog" timestamp="1595231511255">
+      <screen x="56" y="27" width="4056" height="1206" />
+    </state>
+    <state x="548" y="256" width="729" height="487" key="MultipleFileMergeDialog/56.27.4056.1206@56.27.4056.1206" timestamp="1595231511255" />
     <state x="726" y="405" width="787" height="451" key="NewModule_or_Project.wizard" timestamp="1591623459862">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
