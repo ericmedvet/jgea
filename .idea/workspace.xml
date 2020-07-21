@@ -26,12 +26,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fb3f97aa-f1ba-4dca-af0a-845a3176b0c1" name="Default Changelist" comment="Version change.">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/Example.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/Example.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/CMAESEvolver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/CMAESEvolver.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/synthetic/Rastrigin.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/synthetic/Rastrigin.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/synthetic/Sphere.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/synthetic/Sphere.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/logging.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/logging.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,7 +50,7 @@
     </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="release-1.0.1" />
+        <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -297,7 +292,14 @@
       <option name="project" value="LOCAL" />
       <updated>1595231641902</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="Reformatting.">
+      <created>1595319629022</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1595319629022</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -338,7 +340,8 @@
     <MESSAGE value="IDE files update." />
     <MESSAGE value="README updated." />
     <MESSAGE value="Version change." />
-    <option name="LAST_COMMIT_MESSAGE" value="Version change." />
+    <MESSAGE value="Reformatting." />
+    <option name="LAST_COMMIT_MESSAGE" value="Reformatting." />
   </component>
   <component name="WindowStateProjectService">
     <state x="759" y="235" width="726" height="783" key="#Example" timestamp="1594304939061">
