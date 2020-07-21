@@ -16,15 +16,22 @@
         <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
       </path>
     </expand>
-    <select />
+    <select>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="BRANCH:feature-cma-es" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </select>
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fb3f97aa-f1ba-4dca-af0a-845a3176b0c1" name="Default Changelist" comment="Version change.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/AbstractIterativeEvolver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/AbstractIterativeEvolver.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/RandomSearch.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/RandomSearch.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/RandomWalk.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/RandomWalk.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/StandardEvolver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/StandardEvolver.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/Example.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/Example.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/CMAESEvolver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/CMAESEvolver.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/synthetic/Rastrigin.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/synthetic/Rastrigin.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/synthetic/Sphere.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/synthetic/Sphere.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/logging.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/logging.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -298,7 +305,19 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="feature-cma-es" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
@@ -371,29 +390,29 @@
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state x="908" y="327" width="424" height="597" key="FileChooserDialogImpl/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592236218165" />
-    <state width="1251" height="198" key="GridCell.Tab.0.bottom" timestamp="1595267966671">
-      <screen x="69" y="32" width="1297" height="736" />
+    <state width="2090" height="326" key="GridCell.Tab.0.bottom" timestamp="1595319423165">
+      <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594308363028" />
-    <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434169" />
+    <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.2136.1206@56.27.2136.1206" timestamp="1595319423165" />
     <state width="1251" height="198" key="GridCell.Tab.0.bottom/69.32.1297.736@69.32.1297.736" timestamp="1595267966671" />
-    <state width="1251" height="198" key="GridCell.Tab.0.center" timestamp="1595267966670">
-      <screen x="69" y="32" width="1297" height="736" />
+    <state width="2090" height="326" key="GridCell.Tab.0.center" timestamp="1595319423164">
+      <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594308363028" />
-    <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434169" />
+    <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.2136.1206@56.27.2136.1206" timestamp="1595319423164" />
     <state width="1251" height="198" key="GridCell.Tab.0.center/69.32.1297.736@69.32.1297.736" timestamp="1595267966670" />
-    <state width="1251" height="198" key="GridCell.Tab.0.left" timestamp="1595267966670">
-      <screen x="69" y="32" width="1297" height="736" />
+    <state width="2090" height="326" key="GridCell.Tab.0.left" timestamp="1595319423164">
+      <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594308363028" />
-    <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434168" />
+    <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.2136.1206@56.27.2136.1206" timestamp="1595319423164" />
     <state width="1251" height="198" key="GridCell.Tab.0.left/69.32.1297.736@69.32.1297.736" timestamp="1595267966670" />
-    <state width="1251" height="198" key="GridCell.Tab.0.right" timestamp="1595267966670">
-      <screen x="69" y="32" width="1297" height="736" />
+    <state width="2090" height="326" key="GridCell.Tab.0.right" timestamp="1595319423165">
+      <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594308363028" />
-    <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434169" />
+    <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.2136.1206@56.27.2136.1206" timestamp="1595319423165" />
     <state width="1251" height="198" key="GridCell.Tab.0.right/69.32.1297.736@69.32.1297.736" timestamp="1595267966670" />
     <state width="2090" height="512" key="GridCell.Tab.1.bottom" timestamp="1594225517878">
       <screen x="56" y="27" width="2136" height="1206" />

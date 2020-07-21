@@ -85,9 +85,9 @@ public class Example extends Worker {
     //runLinearPoints();
     //runGrammarBasedSymbolicRegression();
     //runGrammarBasedSymbolicRegressionMO();
-    runGrammarBasedParity();
-    //runSphere();
-    //runRastrigin();
+    //runGrammarBasedParity();
+    runSphere();
+    runRastrigin();
   }
 
   public void runLinearPoints() {
@@ -393,44 +393,44 @@ public class Example extends Worker {
     Random r = new Random(1);
     Problem<Sequence<Double>, Double> p = new Sphere();
     List<Evolver<Sequence<Double>, Sequence<Double>, Double>> evolvers = List.of(
-            new StandardEvolver<>(
-                    Function.identity(),
-                    new UniformDoubleSequenceFactory(-10, 10, 10),
-                    PartialComparator.from(Double.class).on(Individual::getFitness),
-                    100,
-                    Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
-                    new Tournament(5),
-                    new Worst(),
-                    100,
-                    true
-            ),
-            new CMAESEvolver<>(
-                    Function.identity(),
-                    new UniformDoubleSequenceFactory(-10, 10, 10),
-                    PartialComparator.from(Double.class).on(Individual::getFitness),
-                    10,
-                    -10,
-                    10
-            )
+        new StandardEvolver<>(
+            Function.identity(),
+            new UniformDoubleSequenceFactory(-10, 10, 10),
+            PartialComparator.from(Double.class).on(Individual::getFitness),
+            100,
+            Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
+            new Tournament(5),
+            new Worst(),
+            100,
+            true
+        ),
+        new CMAESEvolver<>(
+            Function.identity(),
+            new UniformDoubleSequenceFactory(-10, 10, 10),
+            PartialComparator.from(Double.class).on(Individual::getFitness),
+            10,
+            -10,
+            10
+        )
     );
     for (Evolver<Sequence<Double>, Sequence<Double>, Double> evolver : evolvers) {
       System.out.println(evolver.getClass().getSimpleName());
       try {
         Collection<Sequence<Double>> solutions = evolver.solve(
-                p.getFitnessFunction(),
-                new TargetFitness<>(0d).or(new Iterations(100)),
-                r,
-                executorService,
-                listener(
-                        new Basic(),
-                        new Population(),
-                        new Diversity(),
-                        new BestInfo("%5.3f"),
-                        new FunctionOfOneBest<>(i -> List.of(new Item(
-                                "solution",
-                                i.getSolution().stream().map(d -> String.format("%5.2f", d)).collect(Collectors.joining(",")),
-                                "%s")))
-                ));
+            p.getFitnessFunction(),
+            new TargetFitness<>(0d).or(new Iterations(100)),
+            r,
+            executorService,
+            listener(
+                new Basic(),
+                new Population(),
+                new Diversity(),
+                new BestInfo("%5.3f"),
+                new FunctionOfOneBest<>(i -> List.of(new Item(
+                    "solution",
+                    i.getSolution().stream().map(d -> String.format("%5.2f", d)).collect(Collectors.joining(",")),
+                    "%s")))
+            ));
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
       } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();
@@ -442,44 +442,44 @@ public class Example extends Worker {
     Random r = new Random(1);
     Problem<Sequence<Double>, Double> p = new Rastrigin();
     List<Evolver<Sequence<Double>, Sequence<Double>, Double>> evolvers = List.of(
-            new StandardEvolver<>(
-                    Function.identity(),
-                    new UniformDoubleSequenceFactory(-5.12, 5.12, 10),
-                    PartialComparator.from(Double.class).on(Individual::getFitness),
-                    100,
-                    Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
-                    new Tournament(5),
-                    new Worst(),
-                    100,
-                    true
-            ),
-            new CMAESEvolver<>(
-                    Function.identity(),
-                    new UniformDoubleSequenceFactory(-5.12, 5.12, 10),
-                    PartialComparator.from(Double.class).on(Individual::getFitness),
-                    10,
-                    -5.12,
-                    5.12
-            )
+        new StandardEvolver<>(
+            Function.identity(),
+            new UniformDoubleSequenceFactory(-5.12, 5.12, 10),
+            PartialComparator.from(Double.class).on(Individual::getFitness),
+            100,
+            Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
+            new Tournament(5),
+            new Worst(),
+            100,
+            true
+        ),
+        new CMAESEvolver<>(
+            Function.identity(),
+            new UniformDoubleSequenceFactory(-5.12, 5.12, 10),
+            PartialComparator.from(Double.class).on(Individual::getFitness),
+            10,
+            -5.12,
+            5.12
+        )
     );
     for (Evolver<Sequence<Double>, Sequence<Double>, Double> evolver : evolvers) {
       System.out.println(evolver.getClass().getSimpleName());
       try {
         Collection<Sequence<Double>> solutions = evolver.solve(
-                p.getFitnessFunction(),
-                new TargetFitness<>(0d).or(new Iterations(100)),
-                r,
-                executorService,
-                listener(
-                        new Basic(),
-                        new Population(),
-                        new Diversity(),
-                        new BestInfo("%5.3f"),
-                        new FunctionOfOneBest<>(i -> List.of(new Item(
-                                "solution",
-                                i.getSolution().stream().map(d -> String.format("%5.2f", d)).collect(Collectors.joining(",")),
-                                "%s")))
-                ));
+            p.getFitnessFunction(),
+            new TargetFitness<>(0d).or(new Iterations(100)),
+            r,
+            executorService,
+            listener(
+                new Basic(),
+                new Population(),
+                new Diversity(),
+                new BestInfo("%5.3f"),
+                new FunctionOfOneBest<>(i -> List.of(new Item(
+                    "solution",
+                    i.getSolution().stream().map(d -> String.format("%5.2f", d)).collect(Collectors.joining(",")),
+                    "%s")))
+            ));
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
       } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();
