@@ -40,6 +40,8 @@ import it.units.malelab.jgea.problem.symbolicregression.Nguyen7;
 import it.units.malelab.jgea.problem.symbolicregression.element.Element;
 import it.units.malelab.jgea.problem.synthetic.LinearPoints;
 import it.units.malelab.jgea.problem.synthetic.OneMax;
+import it.units.malelab.jgea.problem.synthetic.Rastrigin;
+import it.units.malelab.jgea.problem.synthetic.Sphere;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 import it.units.malelab.jgea.representation.grammar.cfggp.RampedHalfAndHalf;
 import it.units.malelab.jgea.representation.grammar.cfggp.StandardTreeCrossover;
@@ -84,6 +86,8 @@ public class Example extends Worker {
     //runGrammarBasedSymbolicRegression();
     //runGrammarBasedSymbolicRegressionMO();
     runGrammarBasedParity();
+    //runSphere();
+    //runRastrigin();
   }
 
   public void runLinearPoints() {
@@ -385,4 +389,101 @@ public class Example extends Worker {
     }
   }
 
+  public void runSphere() {
+    Random r = new Random(1);
+    Problem<Sequence<Double>, Double> p = new Sphere();
+    List<Evolver<Sequence<Double>, Sequence<Double>, Double>> evolvers = List.of(
+            new StandardEvolver<>(
+                    Function.identity(),
+                    new UniformDoubleSequenceFactory(-10, 10, 10),
+                    PartialComparator.from(Double.class).on(Individual::getFitness),
+                    100,
+                    Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
+                    new Tournament(5),
+                    new Worst(),
+                    100,
+                    true
+            ),
+            new CMAESEvolver<>(
+                    Function.identity(),
+                    new UniformDoubleSequenceFactory(-10, 10, 10),
+                    PartialComparator.from(Double.class).on(Individual::getFitness),
+                    10,
+                    -10,
+                    10
+            )
+    );
+    for (Evolver<Sequence<Double>, Sequence<Double>, Double> evolver : evolvers) {
+      System.out.println(evolver.getClass().getSimpleName());
+      try {
+        Collection<Sequence<Double>> solutions = evolver.solve(
+                p.getFitnessFunction(),
+                new TargetFitness<>(0d).or(new Iterations(100)),
+                r,
+                executorService,
+                listener(
+                        new Basic(),
+                        new Population(),
+                        new Diversity(),
+                        new BestInfo("%5.3f"),
+                        new FunctionOfOneBest<>(i -> List.of(new Item(
+                                "solution",
+                                i.getSolution().stream().map(d -> String.format("%5.2f", d)).collect(Collectors.joining(",")),
+                                "%s")))
+                ));
+        System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
+      } catch (InterruptedException | ExecutionException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  public void runRastrigin() {
+    Random r = new Random(1);
+    Problem<Sequence<Double>, Double> p = new Rastrigin();
+    List<Evolver<Sequence<Double>, Sequence<Double>, Double>> evolvers = List.of(
+            new StandardEvolver<>(
+                    Function.identity(),
+                    new UniformDoubleSequenceFactory(-5.12, 5.12, 10),
+                    PartialComparator.from(Double.class).on(Individual::getFitness),
+                    100,
+                    Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
+                    new Tournament(5),
+                    new Worst(),
+                    100,
+                    true
+            ),
+            new CMAESEvolver<>(
+                    Function.identity(),
+                    new UniformDoubleSequenceFactory(-5.12, 5.12, 10),
+                    PartialComparator.from(Double.class).on(Individual::getFitness),
+                    10,
+                    -5.12,
+                    5.12
+            )
+    );
+    for (Evolver<Sequence<Double>, Sequence<Double>, Double> evolver : evolvers) {
+      System.out.println(evolver.getClass().getSimpleName());
+      try {
+        Collection<Sequence<Double>> solutions = evolver.solve(
+                p.getFitnessFunction(),
+                new TargetFitness<>(0d).or(new Iterations(100)),
+                r,
+                executorService,
+                listener(
+                        new Basic(),
+                        new Population(),
+                        new Diversity(),
+                        new BestInfo("%5.3f"),
+                        new FunctionOfOneBest<>(i -> List.of(new Item(
+                                "solution",
+                                i.getSolution().stream().map(d -> String.format("%5.2f", d)).collect(Collectors.joining(",")),
+                                "%s")))
+                ));
+        System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
+      } catch (InterruptedException | ExecutionException e) {
+        e.printStackTrace();
+      }
+    }
+  }
 }
