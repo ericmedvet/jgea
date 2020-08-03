@@ -29,20 +29,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fb3f97aa-f1ba-4dca-af0a-845a3176b0c1" name="Default Changelist" comment="Version change.">
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__junit_junit_4_8_2.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__junit_junit_4_8_2.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/Factory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/Factory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/Problem.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/Problem.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/Evolver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/Evolver.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/listener/Listener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/listener/Listener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/listener/collector/DataCollector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/listener/collector/DataCollector.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/order/PartiallyOrderedCollection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/order/PartiallyOrderedCollection.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/selector/Selector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/selector/Selector.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/util/Args.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/util/Args.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/util/Misc.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/util/Misc.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/util/WithNames.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/util/WithNames.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/mapper/element/Element.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/mapper/element/Element.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/symbolicregression/element/Element.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/symbolicregression/element/Element.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -321,7 +308,14 @@
       <option name="project" value="LOCAL" />
       <updated>1595319629022</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="Interface inheritance from Serialized removed in all core interfaces. Private constructor added to utility classes.">
+      <created>1596452164687</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1596452164687</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -363,7 +357,8 @@
     <MESSAGE value="README updated." />
     <MESSAGE value="Version change." />
     <MESSAGE value="Reformatting." />
-    <option name="LAST_COMMIT_MESSAGE" value="Reformatting." />
+    <MESSAGE value="Interface inheritance from Serialized removed in all core interfaces. Private constructor added to utility classes." />
+    <option name="LAST_COMMIT_MESSAGE" value="Interface inheritance from Serialized removed in all core interfaces. Private constructor added to utility classes." />
   </component>
   <component name="WindowStateProjectService">
     <state x="759" y="235" width="726" height="783" key="#Example" timestamp="1594304939061">
@@ -501,9 +496,10 @@
       <screen x="56" y="27" width="4056" height="1206" />
     </state>
     <state x="886" y="419" width="471" height="435" key="git4idea.merge.GitMergeDialog/56.27.4056.1206@56.27.4056.1206" timestamp="1595231691139" />
-    <state x="925" y="473" width="398" height="326" key="git4idea.ui.GitTagDialog" timestamp="1595319909560">
+    <state x="925" y="468" width="405" height="326" key="git4idea.ui.GitTagDialog" timestamp="1596452232131">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
+    <state x="925" y="468" width="405" height="326" key="git4idea.ui.GitTagDialog/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1596452232131" />
     <state x="925" y="473" width="398" height="326" key="git4idea.ui.GitTagDialog/56.27.2136.1206@56.27.2136.1206" timestamp="1595319909560" />
     <state x="788" y="288" key="run.anything.popup" timestamp="1592861136835">
       <screen x="56" y="27" width="2136" height="1206" />
