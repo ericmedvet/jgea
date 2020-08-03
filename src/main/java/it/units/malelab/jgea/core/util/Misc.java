@@ -36,6 +36,10 @@ import java.util.function.Function;
  */
 public class Misc {
 
+  private Misc() {
+    /* prevent instantiation */
+  }
+
   public static <V> Map<String, V> keyPrefix(String prefix, Map<String, V> original) {
     Map<String, V> modified = new LinkedHashMap<>();
     for (Map.Entry<String, V> entry : original.entrySet()) {

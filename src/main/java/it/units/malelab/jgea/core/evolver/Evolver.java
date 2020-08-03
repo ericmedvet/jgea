@@ -31,7 +31,7 @@ import java.util.function.Predicate;
 /**
  * @author eric
  */
-public interface Evolver<G, S, F> extends Serializable {
+public interface Evolver<G, S, F> {
 
   Collection<S> solve(
       Function<S, F> fitnessFunction,

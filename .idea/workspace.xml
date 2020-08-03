@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="BranchesTreeState">
     <expand>
       <path>
@@ -16,11 +19,17 @@
         <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
       </path>
     </expand>
-    <select />
+    <select>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="BRANCH:feature-cma-es" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </select>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fb3f97aa-f1ba-4dca-af0a-845a3176b0c1" name="Default Changelist" comment="Starting to work on graph genetic operators for generalized NEAT.">
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/AbstractIterativeEvolver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/AbstractIterativeEvolver.java" afterDir="false" />
+    <list default="true" id="fb3f97aa-f1ba-4dca-af0a-845a3176b0c1" name="Default Changelist" comment="Version change.">
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,6 +59,11 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHome" value="$APPLICATION_HOME_DIR$/plugins/maven/lib/maven3" />
+      </MavenGeneralSettings>
+    </option>
     <option name="importingSettings">
       <MavenImportingSettings>
         <option name="downloadAnnotationsAutomatically" value="true" />
@@ -87,14 +101,14 @@
       <recent name="it.units.malelab.jgea.core.operator" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
-      <recent name="it.units.malelab.jgea.representation.graph" />
       <recent name="it.units.malelab.jgea.core.util" />
       <recent name="it.units.malelab.jgea.core.order" />
       <recent name="it.units.malelab.jgea.core.listener.collector" />
       <recent name="it.units.malelab.jgea.core.evolver" />
+      <recent name="it.units.malelab.jgea.problem.symbolicregression" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.NodeAddition">
+  <component name="RunManager" selected="Application.Example">
     <configuration name="CooperativeCoevolver" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="it.units.malelab.jgea.lab.coevolution.CooperativeCoevolver" />
       <module name="JGEA" />
@@ -121,12 +135,12 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="NodeAddition" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="it.units.malelab.jgea.representation.graph.NodeAddition" />
-      <module name="jgea" />
+    <configuration name="MathUtils" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="it.units.malelab.jgea.problem.symbolicregression.MathUtils" />
+      <module name="JGEA" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="it.units.malelab.jgea.representation.graph.*" />
+          <option name="PATTERN" value="it.units.malelab.jgea.problem.symbolicregression.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -162,14 +176,15 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.NodeAddition" />
-        <item itemvalue="Application.Example" />
         <item itemvalue="Application.Starter" />
-        <item itemvalue="Application.CooperativeCoevolver" />
+        <item itemvalue="Application.PG" />
+        <item itemvalue="Application.MathUtils" />
         <item itemvalue="Application.Example" />
+        <item itemvalue="Application.CooperativeCoevolver" />
       </list>
     </recent_temporary>
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
     <configuration />
   </component>
@@ -279,21 +294,28 @@
       <option name="project" value="LOCAL" />
       <updated>1594309107207</updated>
     </task>
-    <task id="LOCAL-00015" summary="Tiny IDE file update.">
-      <created>1594389454429</created>
+    <task id="LOCAL-00015" summary="Version change.">
+      <created>1595231641902</created>
       <option name="number" value="00015" />
       <option name="presentableId" value="LOCAL-00015" />
       <option name="project" value="LOCAL" />
-      <updated>1594389454429</updated>
+      <updated>1595231641902</updated>
     </task>
-    <task id="LOCAL-00016" summary="Starting to work on graph genetic operators for generalized NEAT.">
-      <created>1594394607165</created>
+    <task id="LOCAL-00016" summary="Reformatting.">
+      <created>1595319629022</created>
       <option name="number" value="00016" />
       <option name="presentableId" value="LOCAL-00016" />
       <option name="project" value="LOCAL" />
-      <updated>1594394607165</updated>
+      <updated>1595319629022</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="Interface inheritance from Serialized removed in all core interfaces. Private constructor added to utility classes.">
+      <created>1596452164687</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1596452164687</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -301,7 +323,19 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="feature-cma-es" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
@@ -319,12 +353,12 @@
     <MESSAGE value="Checking functionalities with symbolic regression. Likely problems obtaining deterministic evolution; diversity not enforced; MO not working (maybe problems in POSET+selectors)." />
     <MESSAGE value="Solved a bug in standard with diversity; added an optimistic uniqueness factory." />
     <MESSAGE value="Guava updated to 29." />
-    <MESSAGE value="Version change." />
     <MESSAGE value="IDE files update." />
     <MESSAGE value="README updated." />
-    <MESSAGE value="Tiny IDE file update." />
-    <MESSAGE value="Starting to work on graph genetic operators for generalized NEAT." />
-    <option name="LAST_COMMIT_MESSAGE" value="Starting to work on graph genetic operators for generalized NEAT." />
+    <MESSAGE value="Version change." />
+    <MESSAGE value="Reformatting." />
+    <MESSAGE value="Interface inheritance from Serialized removed in all core interfaces. Private constructor added to utility classes." />
+    <option name="LAST_COMMIT_MESSAGE" value="Interface inheritance from Serialized removed in all core interfaces. Private constructor added to utility classes." />
   </component>
   <component name="WindowStateProjectService">
     <state x="759" y="235" width="726" height="783" key="#Example" timestamp="1594304939061">
@@ -339,10 +373,10 @@
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state x="956" y="524" width="1025" height="562" key="#Markdown/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594309058294" />
-    <state x="935" y="22" width="551" height="826" key="#com.intellij.ide.util.MemberChooser" timestamp="1594676673741">
+    <state x="935" y="22" width="551" height="770" key="#com.intellij.ide.util.MemberChooser" timestamp="1594302101342">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state x="935" y="22" width="551" height="826" key="#com.intellij.ide.util.MemberChooser/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594676673741" />
+    <state x="935" y="22" width="551" height="770" key="#com.intellij.ide.util.MemberChooser/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594302101342" />
     <state x="935" y="22" width="551" height="770" key="#com.intellij.ide.util.MemberChooser/56.27.2136.1206@56.27.2136.1206" timestamp="1592865366069" />
     <state x="865" y="466" width="654" height="315" key="#com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackagesDialog.classes" timestamp="1592493351554">
       <screen x="56" y="27" width="2136" height="1206" />
@@ -352,10 +386,10 @@
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state x="880" y="528" key="#com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackagesDialog.packages/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592495888121" />
-    <state x="559" y="22" width="1126" height="1211" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog" timestamp="1594394459167">
+    <state x="559" y="22" width="1126" height="1211" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog" timestamp="1592492357699">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state x="559" y="22" width="1126" height="1211" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594394459167" />
+    <state x="559" y="22" width="1126" height="1211" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592492357699" />
     <state x="860" y="374" width="524" height="514" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1592861590986">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
@@ -376,26 +410,34 @@
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state x="908" y="327" width="424" height="597" key="FileChooserDialogImpl/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592236218165" />
-    <state width="2090" height="326" key="GridCell.Tab.0.bottom" timestamp="1594676338342">
-      <screen x="56" y="27" width="2136" height="1206" />
+    <state width="2090" height="326" key="GridCell.Tab.0.bottom" timestamp="1595337302622">
+      <screen x="56" y="27" width="4056" height="1206" />
     </state>
-    <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594676338342" />
-    <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434169" />
-    <state width="2090" height="326" key="GridCell.Tab.0.center" timestamp="1594676338342">
-      <screen x="56" y="27" width="2136" height="1206" />
+    <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594308363028" />
+    <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.2136.1206@56.27.2136.1206" timestamp="1595319423165" />
+    <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.4056.1206@56.27.4056.1206" timestamp="1595337302622" />
+    <state width="1251" height="198" key="GridCell.Tab.0.bottom/69.32.1297.736@69.32.1297.736" timestamp="1595267966671" />
+    <state width="2090" height="326" key="GridCell.Tab.0.center" timestamp="1595337302621">
+      <screen x="56" y="27" width="4056" height="1206" />
     </state>
-    <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594676338342" />
-    <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434169" />
-    <state width="2090" height="326" key="GridCell.Tab.0.left" timestamp="1594676338342">
-      <screen x="56" y="27" width="2136" height="1206" />
+    <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594308363028" />
+    <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.2136.1206@56.27.2136.1206" timestamp="1595319423164" />
+    <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.4056.1206@56.27.4056.1206" timestamp="1595337302621" />
+    <state width="1251" height="198" key="GridCell.Tab.0.center/69.32.1297.736@69.32.1297.736" timestamp="1595267966670" />
+    <state width="2090" height="326" key="GridCell.Tab.0.left" timestamp="1595337302621">
+      <screen x="56" y="27" width="4056" height="1206" />
     </state>
-    <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594676338342" />
-    <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434168" />
-    <state width="2090" height="326" key="GridCell.Tab.0.right" timestamp="1594676338342">
-      <screen x="56" y="27" width="2136" height="1206" />
+    <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594308363028" />
+    <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.2136.1206@56.27.2136.1206" timestamp="1595319423164" />
+    <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.4056.1206@56.27.4056.1206" timestamp="1595337302621" />
+    <state width="1251" height="198" key="GridCell.Tab.0.left/69.32.1297.736@69.32.1297.736" timestamp="1595267966670" />
+    <state width="2090" height="326" key="GridCell.Tab.0.right" timestamp="1595337302621">
+      <screen x="56" y="27" width="4056" height="1206" />
     </state>
-    <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594676338342" />
-    <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434169" />
+    <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594308363028" />
+    <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.2136.1206@56.27.2136.1206" timestamp="1595319423165" />
+    <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.4056.1206@56.27.4056.1206" timestamp="1595337302621" />
+    <state width="1251" height="198" key="GridCell.Tab.0.right/69.32.1297.736@69.32.1297.736" timestamp="1595267966670" />
     <state width="2090" height="512" key="GridCell.Tab.1.bottom" timestamp="1594225517878">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
@@ -416,10 +458,10 @@
     </state>
     <state width="2090" height="512" key="GridCell.Tab.1.right/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594225517878" />
     <state width="2090" height="512" key="GridCell.Tab.1.right/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434164" />
-    <state x="548" y="256" width="729" height="487" key="MultipleFileMergeDialog" timestamp="1595231511255">
-      <screen x="56" y="27" width="4056" height="1206" />
+    <state x="268" y="128" width="1708" height="1006" key="MergeDialog" timestamp="1596451689014">
+      <screen x="56" y="27" width="2136" height="1206" />
     </state>
-    <state x="548" y="256" width="729" height="487" key="MultipleFileMergeDialog/56.27.4056.1206@56.27.4056.1206" timestamp="1595231511255" />
+    <state x="268" y="128" width="1708" height="1006" key="MergeDialog/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1596451689014" />
     <state x="726" y="405" width="787" height="451" key="NewModule_or_Project.wizard" timestamp="1591623459862">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
@@ -433,11 +475,11 @@
     </state>
     <state x="610" y="163" width="1279" height="857" key="SettingsEditor/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594305048239" />
     <state x="610" y="163" width="1016" height="742" key="SettingsEditor/56.27.2136.1206@56.27.2136.1206" timestamp="1592863441000" />
-    <state x="722" y="301" width="800" height="540" key="Vcs.Push.Dialog.v2" timestamp="1594309114344">
+    <state x="722" y="326" width="800" height="540" key="Vcs.Push.Dialog.v2" timestamp="1595319922357">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state x="722" y="301" width="800" height="540" key="Vcs.Push.Dialog.v2/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594309114344" />
-    <state x="722" y="331" key="Vcs.Push.Dialog.v2/56.27.2136.1206@56.27.2136.1206" timestamp="1592866426334" />
+    <state x="722" y="326" width="800" height="540" key="Vcs.Push.Dialog.v2/56.27.2136.1206@56.27.2136.1206" timestamp="1595319922357" />
     <state x="156" y="112" width="1936" height="1011" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1592494898511">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
@@ -446,6 +488,19 @@
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state x="860" y="380" width="524" height="513" key="extract.method.dialog/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592381734211" />
+    <state x="849" y="319" width="545" height="624" key="git4idea.branch.GitSmartOperationDialog" timestamp="1596451667368">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="849" y="319" width="545" height="624" key="git4idea.branch.GitSmartOperationDialog/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1596451667368" />
+    <state x="886" y="419" width="471" height="435" key="git4idea.merge.GitMergeDialog" timestamp="1595231691139">
+      <screen x="56" y="27" width="4056" height="1206" />
+    </state>
+    <state x="886" y="419" width="471" height="435" key="git4idea.merge.GitMergeDialog/56.27.4056.1206@56.27.4056.1206" timestamp="1595231691139" />
+    <state x="925" y="468" width="405" height="326" key="git4idea.ui.GitTagDialog" timestamp="1596452232131">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="925" y="468" width="405" height="326" key="git4idea.ui.GitTagDialog/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1596452232131" />
+    <state x="925" y="473" width="398" height="326" key="git4idea.ui.GitTagDialog/56.27.2136.1206@56.27.2136.1206" timestamp="1595319909560" />
     <state x="788" y="288" key="run.anything.popup" timestamp="1592861136835">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
@@ -456,5 +511,12 @@
     </state>
     <state x="787" y="293" width="672" height="678" key="search.everywhere.popup/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1591628002353" />
     <state x="787" y="293" width="672" height="678" key="search.everywhere.popup/56.27.2136.1206@56.27.2136.1206" timestamp="1592861790450" />
+  </component>
+  <component name="XDebuggerManager">
+    <pin-to-top-manager>
+      <pinned-members>
+        <PinnedItemInfo />
+      </pinned-members>
+    </pin-to-top-manager>
   </component>
 </project>

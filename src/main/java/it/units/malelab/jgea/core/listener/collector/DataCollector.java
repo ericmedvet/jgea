@@ -19,14 +19,13 @@ package it.units.malelab.jgea.core.listener.collector;
 
 import it.units.malelab.jgea.core.listener.Event;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
  * @author eric
  */
 @FunctionalInterface
-public interface DataCollector<G, S, F> extends Serializable {
+public interface DataCollector<G, S, F> {
 
   List<Item> collect(Event<? extends G, ? extends S, ? extends F> event);
 

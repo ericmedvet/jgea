@@ -22,15 +22,18 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- *
  * @author Eric Medvet <eric.medvet@gmail.com>
  */
 public class Args {
-  
+
   private final static String PIECES_SEP = "-";
   private final static String OPTIONS_SEP = ",";
   private final static String RANGE_SEP = ":";
   private final static String KEYVAL_SEP = "=";
+
+  private Args() {
+    /* prevent instantiation */
+  }
 
   public static String p(String s, int n) {
     String[] pieces = s.split(PIECES_SEP);
@@ -61,10 +64,10 @@ public class Args {
     }
     return defaultValue;
   }
-  
+
   public static int[] ri(String s) {
     String[] pieces = s.split(RANGE_SEP);
-    if (pieces.length>1) {
+    if (pieces.length > 1) {
       return IntStream.range(Integer.parseInt(pieces[0]), Integer.parseInt(pieces[1])).toArray();
     } else {
       return new int[]{Integer.parseInt(pieces[0])};
@@ -78,13 +81,13 @@ public class Args {
   public static List<Integer> i(List<String> strings) {
     return strings.stream().map(Integer::parseInt).collect(Collectors.toList());
   }
-  
+
   public static List<Double> d(List<String> strings) {
     return strings.stream().map(Double::parseDouble).collect(Collectors.toList());
   }
 
   public static List<Boolean> b(List<String> strings) {
     return strings.stream().map(Boolean::parseBoolean).collect(Collectors.toList());
-  }  
-  
+  }
+
 }

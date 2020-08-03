@@ -11,6 +11,6 @@ package it.units.malelab.jgea.problem.symbolicregression.element;
  */
 public interface Element {
   
-  public String toString();
+  String toString();
   
 }

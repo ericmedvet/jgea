@@ -17,7 +17,6 @@
 
 package it.units.malelab.jgea.core;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -27,7 +26,7 @@ import java.util.Random;
  * @author eric
  */
 @FunctionalInterface
-public interface Factory<T> extends Serializable {
+public interface Factory<T> {
 
   List<T> build(int n, Random random);
 

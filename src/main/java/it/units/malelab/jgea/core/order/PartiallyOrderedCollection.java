@@ -19,7 +19,6 @@ package it.units.malelab.jgea.core.order;
 
 import it.units.malelab.jgea.core.util.Sized;
 
-import java.io.Serializable;
 import java.util.Collection;
 
 /**
@@ -27,7 +26,7 @@ import java.util.Collection;
  * @created 2020/06/17
  * @project jgea
  */
-public interface PartiallyOrderedCollection<T> extends Sized, Serializable {
+public interface PartiallyOrderedCollection<T> extends Sized {
   Collection<T> all();
 
   Collection<T> firsts();
