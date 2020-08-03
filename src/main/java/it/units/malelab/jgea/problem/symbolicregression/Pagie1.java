@@ -17,38 +17,23 @@
 
 package it.units.malelab.jgea.problem.symbolicregression;
 
-import it.units.malelab.jgea.representation.grammar.Grammar;
-
-import java.io.File;
-import java.io.IOException;
-
 /**
  * @author eric
  */
-public class Pagie1 extends AbstractRegressionProblemWithValidation {
+public class Pagie1 extends AbstractSymbolicRegressionProblem {
 
-  public Pagie1() throws IOException {
+  public Pagie1() {
     super(
-        Grammar.fromFile(new File("grammars/symbolic-regression-pagie1.bnf")),
-        MathUtils.combinedValuesMap(
-            MathUtils.valuesMap("x", MathUtils.equispacedValues(-5, 5, 0.4)),
-            MathUtils.valuesMap("y", MathUtils.equispacedValues(-5, 5, 0.4))
+        v -> 1 / (1 + Math.pow(v[0], -4)) + 1 / (1 + Math.pow(v[1], -4)),
+        MathUtils.cartesian(
+            MathUtils.equispacedValues(-5, 5, 0.4),
+            MathUtils.equispacedValues(-5, 5, 0.4)
         ),
-        MathUtils.combinedValuesMap(
-            MathUtils.valuesMap("x", MathUtils.equispacedValues(-5, 5, 0.1)),
-            MathUtils.valuesMap("y", MathUtils.equispacedValues(-5, 5, 0.1))
+        MathUtils.cartesian(
+            MathUtils.equispacedValues(-5, 5, 0.1),
+            MathUtils.equispacedValues(-5, 5, 0.1)
         )
     );
-  }
-
-  @Override
-  public String[] varNames() {
-    return new String[]{"x", "y"};
-  }
-
-  @Override
-  public Double apply(double[] v) {
-    return 1 / (1 + Math.pow(v[0], -4)) + 1 / (1 + Math.pow(v[1], -4));
   }
 
 }

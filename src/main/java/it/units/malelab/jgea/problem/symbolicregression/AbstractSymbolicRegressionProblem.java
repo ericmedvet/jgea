@@ -17,51 +17,50 @@
 
 package it.units.malelab.jgea.problem.symbolicregression;
 
+import it.units.malelab.jgea.core.Problem;
+import it.units.malelab.jgea.core.ProblemWithValidation;
 import it.units.malelab.jgea.representation.tree.Node;
 import it.units.malelab.jgea.core.fitness.CaseBasedFitness;
-import it.units.malelab.jgea.core.fitness.SymbolicRegressionFitness;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 import it.units.malelab.jgea.problem.symbolicregression.element.Element;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 /**
  * @author eric
  */
-public abstract class AbstractSymbolicRegressionProblem implements GrammarBasedProblem<String, Node<Element>, Double>, SymbolicRegressionFitness.TargetFunction {
+public abstract class AbstractSymbolicRegressionProblem implements ProblemWithValidation<RealFunction, Double> {
 
-  private final Grammar<String> grammar;
-  private final Function<Node<String>, Node<Element>> solutionMapper;
-  private final CaseBasedFitness<Node<Element>, double[], Double, Double> fitnessFunction;
+  private final SymbolicRegressionFitness trainingFitness;
+  private final SymbolicRegressionFitness validationFitness;
+  private RealFunction targetFunction;
 
-  public AbstractSymbolicRegressionProblem(Grammar<String> grammar, Map<String, double[]> varValues) {
-    this.grammar = grammar;
-    solutionMapper = new FormulaMapper();
-    fitnessFunction = new SymbolicRegressionFitness(
-        this,
-        MathUtils.asObservations(
-            varValues,
-            varNames()
-        ),
-        true
-    );
+  public AbstractSymbolicRegressionProblem(RealFunction targetFunction, List<double[]> trainingPoints, List<double[]> validationPoints) {
+    this.targetFunction = targetFunction;
+    trainingFitness = new SymbolicRegressionFitness(targetFunction, trainingPoints);
+    validationFitness = new SymbolicRegressionFitness(targetFunction, validationPoints);
+  }
+
+  public AbstractSymbolicRegressionProblem(RealFunction targetFunction, List<double[]> trainingPoints) {
+    this.targetFunction = targetFunction;
+    trainingFitness = new SymbolicRegressionFitness(targetFunction, trainingPoints);
+    validationFitness = new SymbolicRegressionFitness(targetFunction, trainingPoints);
   }
 
   @Override
-  public Grammar<String> getGrammar() {
-    return grammar;
+  public Function<RealFunction, Double> getValidationFunction() {
+    return validationFitness;
   }
 
   @Override
-  public Function<Node<String>, Node<Element>> getSolutionMapper() {
-    return solutionMapper;
+  public Function<RealFunction, Double> getFitnessFunction() {
+    return trainingFitness;
   }
 
-  @Override
-  public Function<Node<Element>, Double> getFitnessFunction() {
-    return fitnessFunction;
+  public RealFunction getTargetFunction() {
+    return targetFunction;
   }
-
 }

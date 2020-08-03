@@ -17,33 +17,19 @@
 
 package it.units.malelab.jgea.problem.symbolicregression;
 
-import it.units.malelab.jgea.representation.grammar.Grammar;
-
-import java.io.File;
-import java.io.IOException;
 import java.util.Random;
 
 /**
  * @author eric
  */
-public class Nguyen7 extends AbstractRegressionProblemWithValidation {
+public class Nguyen7 extends AbstractSymbolicRegressionProblem {
 
-  public Nguyen7(long seed) throws IOException {
+  public Nguyen7(long seed) {
     super(
-        Grammar.fromFile(new File("grammars/symbolic-regression-nguyen7.bnf")),
-        MathUtils.valuesMap("x", MathUtils.uniformSample(0, 2, 20, new Random(seed))),
-        MathUtils.valuesMap("x", MathUtils.uniformSample(0, 2, 100, new Random(seed)))
+        v -> Math.log(v[0] + 1) + Math.log(v[0] * v[0] + 1),
+        MathUtils.pairwise(MathUtils.uniformSample(0, 2, 20, new Random(seed))),
+        MathUtils.pairwise(MathUtils.uniformSample(0, 2, 100, new Random(seed)))
     );
-  }
-
-  @Override
-  public String[] varNames() {
-    return new String[]{"x"};
-  }
-
-  @Override
-  public Double apply(double[] v) {
-    return Math.log(v[0] + 1) + Math.log(v[0] * v[0] + 1);
   }
 
 }

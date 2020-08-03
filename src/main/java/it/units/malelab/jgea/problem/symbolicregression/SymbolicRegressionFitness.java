@@ -17,21 +17,33 @@
 
 package it.units.malelab.jgea.problem.symbolicregression;
 
+import it.units.malelab.jgea.core.fitness.CaseBasedFitness;
+
+import java.util.List;
+
 /**
  * @author eric
  */
-public class UnivariateComposed extends AbstractSymbolicRegressionProblem {
+public class SymbolicRegressionFitness extends CaseBasedFitness<RealFunction, double[], Double, Double> {
 
-  public UnivariateComposed() {
+  private final RealFunction targetFunction;
+  private final List<double[]> points;
+
+  public SymbolicRegressionFitness(RealFunction targetFunction, List<double[]> points) {
     super(
-        v -> {
-          double x = v[0];
-          double fx = 1d / (x * x + 1d);
-          return 2d * fx - Math.sin(10d * fx) + 0.1d / fx;
-        },
-        MathUtils.pairwise(MathUtils.equispacedValues(-3, 3, .1)),
-        MathUtils.pairwise(MathUtils.equispacedValues(-5, 5, .05))
+        points,
+        (f, x) -> Math.abs(f.apply(x)-targetFunction.apply(x)),
+        errs -> errs.stream().mapToDouble(Double::doubleValue).average().orElse(Double.NaN)
     );
+    this.targetFunction = targetFunction;
+    this.points = points;
   }
 
+  public RealFunction getTargetFunction() {
+    return targetFunction;
+  }
+
+  public List<double[]> getPoints() {
+    return points;
+  }
 }

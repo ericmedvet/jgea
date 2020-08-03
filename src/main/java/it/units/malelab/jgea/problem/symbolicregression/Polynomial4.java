@@ -17,32 +17,19 @@
 
 package it.units.malelab.jgea.problem.symbolicregression;
 
-import it.units.malelab.jgea.representation.grammar.Grammar;
-
-import java.io.File;
-import java.io.IOException;
-
 /**
  * @author eric
  */
 public class Polynomial4 extends AbstractSymbolicRegressionProblem {
 
-  public Polynomial4() throws IOException {
+  public Polynomial4() {
     super(
-        Grammar.fromFile(new File("grammars/symbolic-regression-harmonic.bnf")),
-        MathUtils.valuesMap("x", MathUtils.equispacedValues(-1, 1, .1))
+        v -> {
+          double x = v[0];
+          return x * x * x * x + x * x * x + x * x + x;
+        },
+        MathUtils.pairwise(MathUtils.equispacedValues(-1, 1, .1))
     );
-  }
-
-  @Override
-  public Double apply(double[] v) {
-    double x = v[0];
-    return x * x * x * x + x * x * x + x * x + x;
-  }
-
-  @Override
-  public String[] varNames() {
-    return new String[]{"x"};
   }
 
 }
