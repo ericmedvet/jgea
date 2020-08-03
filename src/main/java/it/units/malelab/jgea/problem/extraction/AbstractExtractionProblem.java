@@ -18,8 +18,10 @@
 package it.units.malelab.jgea.problem.extraction;
 
 import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
 import it.units.malelab.jgea.core.ProblemWithValidation;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -30,44 +32,44 @@ import java.util.stream.Stream;
 /**
  * @author eric
  */
-public abstract class AbstractExtractionProblem<E> implements ProblemWithValidation<E, List<Double>>, BiFunction<E, String, Set<Range<Integer>>> {
+public abstract class AbstractExtractionProblem<S> implements ProblemWithValidation<Extractor<S>, List<Double>> {
 
-  private final ExtractionFitness<E> fitnessFunction;
-  private final ExtractionFitness<E> validationFunction;
+  private final ExtractionFitness<S> fitnessFunction;
+  private final ExtractionFitness<S> validationFunction;
 
-  public AbstractExtractionProblem(String text, Set<E> extractors, int folds, int i, ExtractionFitness.Metric... metrics) {
-    String learningText = "";
-    String validationText = "";
-    double foldLength = (double) text.length() / (double) folds;
+  public AbstractExtractionProblem(List<S> sequence, Set<Extractor<S>> extractors, int folds, int i, ExtractionFitness.Metric... metrics) {
+    List<S> learningSequence = new ArrayList<>();
+    List<S> validationSequence = new ArrayList<>();
+    double foldLength = (double) sequence.size() / (double) folds;
     for (int n = 0; n < folds; n++) {
-      String piece = text.substring(
+      List<S> piece = sequence.subList(
           (int) Math.round(foldLength * (double) n),
-          (n == folds - 1) ? text.length() : ((int) Math.round(foldLength * (double) (n + 1))));
+          (n == folds - 1) ? sequence.size() : ((int) Math.round(foldLength * (double) (n + 1))));
       if (n == i) {
-        validationText = piece;
+        validationSequence = piece;
       } else {
-        learningText = learningText + piece;
+        learningSequence.addAll(piece);
       }
     }
-    final String finalLearningText = learningText;
-    final String finalValidationText = validationText;
+    final List<S> finalLearningSequence = learningSequence;
+    final List<S> finalValidationSequence = validationSequence;
     Set<Range<Integer>> learningDesiredExtractions = extractors.stream()
-        .map(e -> apply(e, finalLearningText))
-        .reduce((extractions1, extractions2) -> Stream.concat(extractions1.stream(), extractions2.stream()).collect(Collectors.toSet()))
-        .orElse(Collections.EMPTY_SET);
+        .map(e -> e.extractLargest(finalLearningSequence))
+        .reduce(Sets::union)
+        .orElse((Set<Range<Integer>>) Collections.EMPTY_SET);
     Set<Range<Integer>> validationDesiredExtractions = extractors.stream()
-        .map(e -> apply(e, finalValidationText))
-        .reduce((extractions1, extractions2) -> Stream.concat(extractions1.stream(), extractions2.stream()).collect(Collectors.toSet()))
-        .orElse(Collections.EMPTY_SET);
-    fitnessFunction = new ExtractionFitness<>(learningText, learningDesiredExtractions, this, metrics);
-    validationFunction = new ExtractionFitness<>(validationText, validationDesiredExtractions, this, metrics);
+        .map(e -> e.extractLargest(finalValidationSequence))
+        .reduce(Sets::union)
+        .orElse((Set<Range<Integer>>) Collections.EMPTY_SET);
+    fitnessFunction = new ExtractionFitness<>(finalLearningSequence, learningDesiredExtractions, metrics);
+    validationFunction = new ExtractionFitness<>(finalValidationSequence, validationDesiredExtractions, metrics);
   }
 
-  public ExtractionFitness<E> getFitnessFunction() {
+  public ExtractionFitness<S> getFitnessFunction() {
     return fitnessFunction;
   }
 
-  public ExtractionFitness<E> getValidationFunction() {
+  public ExtractionFitness<S> getValidationFunction() {
     return validationFunction;
   }
 

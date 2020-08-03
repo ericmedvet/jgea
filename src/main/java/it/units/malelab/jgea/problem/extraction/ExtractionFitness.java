@@ -20,22 +20,14 @@ package it.units.malelab.jgea.problem.extraction;
 import com.google.common.collect.Range;
 import it.units.malelab.jgea.core.util.WithNames;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.BiFunction;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
  * @author eric
  */
-public class ExtractionFitness<E> implements Function<E, List<Double>>, WithNames {
+public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>>, WithNames {
 
   public enum Metric {
 
@@ -56,15 +48,15 @@ public class ExtractionFitness<E> implements Function<E, List<Double>>, WithName
 
   }
 
-  private static class Aggregator implements Function<Set<Range<Integer>>, List<Double>> {
+  private static class Aggregator<S> implements Function<Set<Range<Integer>>, List<Double>> {
 
-    private final String text;
+    private final List<S> sequence;
     private final Set<Range<Integer>> desiredExtractions;
     private final List<Metric> metrics;
     private final double posChars;
 
-    public Aggregator(String text, Set<Range<Integer>> desiredExtractions, Metric... metrics) {
-      this.text = text;
+    public Aggregator(List<S> sequence, Set<Range<Integer>> desiredExtractions, Metric... metrics) {
+      this.sequence = sequence;
       this.desiredExtractions = desiredExtractions;
       this.metrics = Arrays.asList(metrics);
       posChars = desiredExtractions.stream()
@@ -95,9 +87,9 @@ public class ExtractionFitness<E> implements Function<E, List<Double>>, WithName
             .sum();
         double falseNegChars = posChars - truePosChars;
         double falsePosChars = asPosChars - truePosChars;
-        values.put(Metric.CHAR_FPR, falsePosChars / ((double) text.length() - posChars));
+        values.put(Metric.CHAR_FPR, falsePosChars / ((double) sequence.size() - posChars));
         values.put(Metric.CHAR_FNR, falseNegChars / posChars);
-        values.put(Metric.CHAR_ERROR, (falseNegChars + falsePosChars) / (double) text.length());
+        values.put(Metric.CHAR_ERROR, (falseNegChars + falsePosChars) / (double) sequence.size());
       }
       List<Double> results = new ArrayList<>(metrics.size());
       for (Metric metric : metrics) {
@@ -116,8 +108,8 @@ public class ExtractionFitness<E> implements Function<E, List<Double>>, WithName
       return intersections;
     }
 
-    public String getText() {
-      return text;
+    public List<S> getSequence() {
+      return sequence;
     }
 
     public Set<Range<Integer>> getDesiredExtractions() {
@@ -130,20 +122,18 @@ public class ExtractionFitness<E> implements Function<E, List<Double>>, WithName
 
   }
 
-  private final BiFunction<E, String, Set<Range<Integer>>> extractionFunction;
-  private final Aggregator aggregator;
+  private final Aggregator<S> aggregator;
 
-  public ExtractionFitness(String text, Set<Range<Integer>> desiredExtractions, BiFunction<E, String, Set<Range<Integer>>> extractionFunction, Metric... metrics) {
-    this.extractionFunction = extractionFunction;
-    aggregator = new Aggregator(text, desiredExtractions, metrics);
+  public ExtractionFitness(List<S> sequence, Set<Range<Integer>> desiredExtractions, Metric... metrics) {
+    aggregator = new Aggregator<S>(sequence, desiredExtractions, metrics);
   }
 
-  public ExtractionFitness<E> changeMetrics(Metric... metrics) {
-    return new ExtractionFitness<>(aggregator.text, aggregator.desiredExtractions, extractionFunction, metrics);
+  public ExtractionFitness<S> changeMetrics(Metric... metrics) {
+    return new ExtractionFitness<>(aggregator.sequence, aggregator.desiredExtractions, metrics);
   }
 
-  public String getText() {
-    return aggregator.getText();
+  public List<S> getSequence() {
+    return aggregator.sequence;
   }
 
   public Set<Range<Integer>> getDesiredExtractions() {
@@ -154,13 +144,9 @@ public class ExtractionFitness<E> implements Function<E, List<Double>>, WithName
     return aggregator.getMetrics();
   }
 
-  public BiFunction<E, String, Set<Range<Integer>>> getExtractionFunction() {
-    return extractionFunction;
-  }
-
   @Override
-  public List<Double> apply(E e) {
-    return aggregator.apply(extractionFunction.apply(e, getText()));
+  public List<Double> apply(Extractor<S> e) {
+    return aggregator.apply(e.extractLargest(aggregator.sequence));
   }
 
   @Override

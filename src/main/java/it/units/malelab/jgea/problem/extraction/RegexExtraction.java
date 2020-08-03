@@ -18,40 +18,59 @@
 package it.units.malelab.jgea.problem.extraction;
 
 import com.google.common.collect.Range;
-import it.units.malelab.jgea.core.listener.Listener;
 
-import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 /**
  * @author eric
  */
-public class RegexExtraction extends AbstractExtractionProblem<String> {
+public class RegexExtraction extends AbstractExtractionProblem<Character> {
 
-  public RegexExtraction(String text, Set<String> extractors, int folds, int i, ExtractionFitness.Metric... metrics) {
-    super(text, extractors, folds, i, metrics);
+  public RegexExtraction(List<Character> sequence, Set<Extractor<Character>> extractors, int folds, int i, ExtractionFitness.Metric... metrics) {
+    super(sequence, extractors, folds, i, metrics);
   }
 
-  @Override
-  public Set<Range<Integer>> apply(String pattern, String string) {
-    try {
-      Matcher matcher = Pattern.compile(pattern).matcher(string);
-      Set<Range<Integer>> extractions = new LinkedHashSet<>();
-      int s = 0;
-      while (matcher.find(s)) {
-        Range<Integer> extraction = Range.openClosed(matcher.start(), matcher.end());
-        s = extraction.upperEndpoint();
-        extractions.add(extraction);
+  public RegexExtraction(String text, Set<String> regexes, int folds, int i, ExtractionFitness.Metric... metrics) {
+    super(
+        text.chars().mapToObj(c -> (char) c).collect(Collectors.toList()),
+        regexes.stream().map(RegexExtraction::fromRegex).collect(Collectors.toSet()),
+        folds, i, metrics
+    );
+  }
+
+
+  public static Extractor<Character> fromRegex(String pattern) {
+    return new Extractor<Character>() {
+      @Override
+      public Set<Range<Integer>> extract(List<Character> sequence) {
+        String string = sequence.stream()
+            .map(String::valueOf)
+            .collect(Collectors.joining());
+        Matcher matcher = Pattern.compile(pattern).matcher(string);
+        Set<Range<Integer>> extractions = new LinkedHashSet<>();
+        int s = 0;
+        while (matcher.find(s)) {
+          Range<Integer> extraction = Range.openClosed(matcher.start(), matcher.end());
+          s = extraction.upperEndpoint();
+          extractions.add(extraction);
+        }
+        return extractions;
       }
-      return extractions;
-    } catch (PatternSyntaxException ex) {
-      //ignore
-    }
-    return Collections.EMPTY_SET;
+
+      @Override
+      public boolean match(List<Character> sequence) {
+        String string = sequence.stream()
+            .map(String::valueOf)
+            .collect(Collectors.joining());
+        Matcher matcher = Pattern.compile(pattern).matcher(string);
+        return matcher.matches();
+      }
+    };
   }
 
 }

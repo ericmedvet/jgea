@@ -31,20 +31,22 @@ import java.util.stream.Collectors;
 /**
  * @author eric
  */
-public class GrammarBasedRegexExtraction extends RegexExtraction implements GrammarBasedProblem<String, String, List<Double>> {
+public class GrammarBasedRegexExtraction extends RegexExtraction implements GrammarBasedProblem<String, Extractor<Character>, List<Double>> {
 
   private final Grammar<String> grammar;
-  private final Function<Node<String>, String> solutionMapper;
+  private final Function<Node<String>, Extractor<Character>> solutionMapper;
 
   public GrammarBasedRegexExtraction(boolean limitAlphabetToExtractions, Set<RegexGrammar.Option> options, String text, Set<String> extractors, int folds, int i, ExtractionFitness.Metric... metrics) {
     super(text, extractors, folds, i, metrics);
-    solutionMapper = (Node<String> node) -> node.leafNodes().stream()
+    solutionMapper = (Node<String> node) -> RegexExtraction.fromRegex(node.leafNodes().stream()
         .map(Node::getContent)
-        .collect(Collectors.joining());
+        .collect(Collectors.joining()));
     Set<String> texts = new TreeSet<>();
     if (limitAlphabetToExtractions) {
       texts.addAll(getFitnessFunction().getDesiredExtractions().stream()
-          .map(r -> getFitnessFunction().getText().substring(r.lowerEndpoint(), r.upperEndpoint()))
+          .map(r -> getFitnessFunction().getSequence().subList(r.lowerEndpoint(), r.upperEndpoint()).stream()
+              .map(String::valueOf)
+              .collect(Collectors.joining()))
           .collect(Collectors.toSet()));
     } else {
       texts.add(text);
@@ -58,7 +60,7 @@ public class GrammarBasedRegexExtraction extends RegexExtraction implements Gram
   }
 
   @Override
-  public Function<Node<String>, String> getSolutionMapper() {
+  public Function<Node<String>, Extractor<Character>> getSolutionMapper() {
     return solutionMapper;
   }
 

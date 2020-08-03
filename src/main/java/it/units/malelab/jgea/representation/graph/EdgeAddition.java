@@ -20,10 +20,8 @@ package it.units.malelab.jgea.representation.graph;
 import com.google.common.graph.Graphs;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraph;
-import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.operator.Mutation;
-import it.units.malelab.jgea.representation.tree.Node;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,7 +46,6 @@ public class EdgeAddition<N, E> implements Mutation<ValueGraph<N, E>> {
 
   @Override
   public ValueGraph<N, E> mutate(ValueGraph<N, E> parent, Random random) {
-
     MutableValueGraph<N, E> child = Graphs.copyOf(parent);
     if (!parent.nodes().isEmpty()) {
       List<N> fromNodes = new ArrayList<>(child.nodes());
