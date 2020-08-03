@@ -23,7 +23,8 @@ import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.evolver.*;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.evolver.stopcondition.TargetFitness;
-import it.units.malelab.jgea.core.fitness.SymbolicRegressionFitness;
+import it.units.malelab.jgea.core.util.Sized;
+import it.units.malelab.jgea.problem.symbolicregression.*;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.PrintStreamListener;
 import it.units.malelab.jgea.core.listener.collector.*;
@@ -33,15 +34,12 @@ import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
-import it.units.malelab.jgea.problem.symbolicregression.AbstractRegressionProblemWithValidation;
-import it.units.malelab.jgea.problem.symbolicregression.FormulaMapper;
-import it.units.malelab.jgea.problem.symbolicregression.MathUtils;
-import it.units.malelab.jgea.problem.symbolicregression.Nguyen7;
 import it.units.malelab.jgea.problem.symbolicregression.element.Element;
 import it.units.malelab.jgea.problem.synthetic.LinearPoints;
 import it.units.malelab.jgea.problem.synthetic.OneMax;
 import it.units.malelab.jgea.problem.synthetic.Rastrigin;
 import it.units.malelab.jgea.problem.synthetic.Sphere;
+import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 import it.units.malelab.jgea.representation.grammar.cfggp.RampedHalfAndHalf;
 import it.units.malelab.jgea.representation.grammar.cfggp.StandardTreeCrossover;
@@ -56,6 +54,7 @@ import it.units.malelab.jgea.representation.sequence.numeric.GeometricCrossover;
 import it.units.malelab.jgea.representation.sequence.numeric.UniformDoubleSequenceFactory;
 import it.units.malelab.jgea.representation.tree.Node;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
@@ -83,11 +82,11 @@ public class Example extends Worker {
   public void run() {
     //runOneMax();
     //runLinearPoints();
-    //runGrammarBasedSymbolicRegression();
-    //runGrammarBasedSymbolicRegressionMO();
+    runSymbolicRegression();
+    //runSymbolicRegressionMO();
     //runGrammarBasedParity();
-    runSphere();
-    runRastrigin();
+    //runSphere();
+    //runRastrigin();
   }
 
   public void runLinearPoints() {
@@ -208,24 +207,27 @@ public class Example extends Worker {
     }
   }
 
-  public void runGrammarBasedSymbolicRegression() {
+  public void runSymbolicRegression() {
     Random r = new Random(1);
-    AbstractRegressionProblemWithValidation p;
+    AbstractSymbolicRegressionProblem p = new Nguyen7(1);
+    Grammar<String> srGrammar;
     try {
-      p = new Nguyen7(1);
+      srGrammar = Grammar.fromFile(new File("grammars/symbolic-regression-nguyen7.bnf"));
     } catch (IOException e) {
-      System.err.println(String.format("Cannot load problem due to %s", e));
+      e.printStackTrace();
       return;
     }
-    List<Evolver<Node<String>, Node<Element>, Double>> evolvers = List.of(
+    List<Evolver<Node<String>, RealFunction, Double>> evolvers = List.of(
         new StandardEvolver<>(
-            new FormulaMapper().andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new RampedHalfAndHalf<>(3, 12, p.getGrammar()),
+            new FormulaMapper()
+                .andThen(n -> NodeBasedRealFunction.from(n, "x"))
+                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+            new RampedHalfAndHalf<>(3, 12, srGrammar),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             100,
             Map.of(
                 new StandardTreeCrossover<>(12), 0.8d,
-                new StandardTreeMutation<>(12, p.getGrammar()), 0.2d
+                new StandardTreeMutation<>(12, srGrammar), 0.2d
             ),
             new Tournament(5),
             new Worst(),
@@ -233,13 +235,15 @@ public class Example extends Worker {
             true
         ),
         new StandardWithEnforcedDiversity<>(
-            new FormulaMapper().andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new RampedHalfAndHalf<>(3, 12, p.getGrammar()).withOptimisticUniqueness(100),
+            new FormulaMapper()
+                .andThen(n -> NodeBasedRealFunction.from(n, "x"))
+                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+            new RampedHalfAndHalf<>(3, 12, srGrammar).withOptimisticUniqueness(100),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             100,
             Map.of(
                 new StandardTreeCrossover<>(12), 0.8d,
-                new StandardTreeMutation<>(12, p.getGrammar()), 0.2d
+                new StandardTreeMutation<>(12, srGrammar), 0.2d
             ),
             new Tournament(5),
             new Worst(),
@@ -248,10 +252,10 @@ public class Example extends Worker {
             1000
         )
     );
-    for (Evolver<Node<String>, Node<Element>, Double> evolver : evolvers) {
+    for (Evolver<Node<String>, RealFunction, Double> evolver : evolvers) {
       System.out.println(evolver.getClass().getSimpleName());
       try {
-        Collection<Node<Element>> solutions = evolver.solve(
+        Collection<RealFunction> solutions = evolver.solve(
             Misc.cached(p.getFitnessFunction(), 10000),
             new TargetFitness<>(0d).or(new Iterations(100)),
             r,
@@ -275,38 +279,43 @@ public class Example extends Worker {
     }
   }
 
-  public void runGrammarBasedSymbolicRegressionMO() {
+  public void runSymbolicRegressionMO() {
     Random r = new Random(1);
-    AbstractRegressionProblemWithValidation p;
+    AbstractSymbolicRegressionProblem p = new Nguyen7(1);
+    Grammar<String> srGrammar;
     try {
-      p = new Nguyen7(1);
+      srGrammar = Grammar.fromFile(new File("grammars/symbolic-regression-nguyen7.bnf"));
     } catch (IOException e) {
-      System.err.println(String.format("Cannot load problem due to %s", e));
+      e.printStackTrace();
       return;
     }
-    List<Evolver<Node<String>, Node<Element>, List<Double>>> evolvers = List.of(
-        /*new StandardEvolver<>(
-            new FormulaMapper(),
-            new RampedHalfAndHalf<>(3, 12, p.getGrammar()),
-            new ParetoDominance<>(Double.class).on(i -> i.getFitness()),
+    List<Evolver<Node<String>, RealFunction, List<Double>>> evolvers = List.of(
+        new StandardEvolver<>(
+            new FormulaMapper()
+                .andThen(n -> NodeBasedRealFunction.from(n, "x"))
+                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+            new RampedHalfAndHalf<>(3, 12, srGrammar),
+            new ParetoDominance<>(Double.class).on(Individual::getFitness),
             100,
             Map.of(
                 new StandardTreeCrossover<>(12), 0.8d,
-                new StandardTreeMutation<>(12, p.getGrammar()), 0.2d
+                new StandardTreeMutation<>(12, srGrammar), 0.2d
             ),
             new Tournament(5),
             new Worst(),
             100,
             true
-        ),*/
+        ),
         new StandardWithEnforcedDiversity<>(
-            new FormulaMapper().andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new RampedHalfAndHalf<>(3, 12, p.getGrammar()).withOptimisticUniqueness(100),
+            new FormulaMapper()
+                .andThen(n -> NodeBasedRealFunction.from(n, "x"))
+                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+            new RampedHalfAndHalf<>(3, 12, srGrammar).withOptimisticUniqueness(100),
             new ParetoDominance<>(Double.class).on(Individual::getFitness),
             100,
             Map.of(
                 new StandardTreeCrossover<>(12), 0.8d,
-                new StandardTreeMutation<>(12, p.getGrammar()), 0.2d
+                new StandardTreeMutation<>(12, srGrammar), 0.2d
             ),
             new Tournament(5),
             new Worst(),
@@ -315,13 +324,13 @@ public class Example extends Worker {
             1000
         )
     );
-    for (Evolver<Node<String>, Node<Element>, List<Double>> evolver : evolvers) {
+    for (Evolver<Node<String>, RealFunction, List<Double>> evolver : evolvers) {
       System.out.println(evolver.getClass().getSimpleName());
       try {
-        Collection<Node<Element>> solutions = evolver.solve(
-            n -> List.of(
-                p.getFitnessFunction().apply(n),
-                (double) n.size()
+        Collection<RealFunction> solutions = evolver.solve(
+            f -> List.of(
+                p.getFitnessFunction().apply(f),
+                (f instanceof Sized) ? ((Sized) f).size() : Double.POSITIVE_INFINITY
             ),
             new Iterations(3),
             r,
@@ -352,7 +361,7 @@ public class Example extends Worker {
     try {
       p = new EvenParity(8);
     } catch (IOException e) {
-      System.err.println(String.format("Cannot load problem due to %s", e));
+      System.err.printf("Cannot load problem due to %s%n", e);
       return;
     }
     Evolver<Node<String>, List<Node<it.units.malelab.jgea.problem.booleanfunction.element.Element>>, Double> evolver = new StandardEvolver<>(

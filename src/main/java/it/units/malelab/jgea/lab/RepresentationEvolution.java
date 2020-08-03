@@ -20,47 +20,39 @@ package it.units.malelab.jgea.lab;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.Evolver;
-import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversity;
-import it.units.malelab.jgea.core.listener.collector.*;
-import it.units.malelab.jgea.core.order.PartialComparator;
-import it.units.malelab.jgea.representation.tree.Node;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
+import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversity;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.fitness.Linearization;
-import it.units.malelab.jgea.representation.sequence.bit.BitString;
-import it.units.malelab.jgea.representation.sequence.bit.BitStringFactory;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.MultiFileListenerFactory;
-import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
+import it.units.malelab.jgea.core.listener.collector.*;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
-import it.units.malelab.jgea.representation.sequence.LengthPreservingTwoPointCrossover;
+import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.core.util.Pair;
-import it.units.malelab.jgea.distance.Distance;
-import it.units.malelab.jgea.distance.Edit;
-import it.units.malelab.jgea.distance.Pairwise;
-import it.units.malelab.jgea.distance.StringSequence;
-import it.units.malelab.jgea.distance.TreeLeaves;
+import it.units.malelab.jgea.distance.*;
+import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
+import it.units.malelab.jgea.problem.booleanfunction.MultipleOutputParallelMultiplier;
+import it.units.malelab.jgea.problem.mapper.*;
+import it.units.malelab.jgea.problem.mapper.element.Element;
+import it.units.malelab.jgea.problem.symbolicregression.*;
+import it.units.malelab.jgea.problem.synthetic.KLandscapes;
+import it.units.malelab.jgea.problem.synthetic.Text;
+import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 import it.units.malelab.jgea.representation.grammar.cfggp.RampedHalfAndHalf;
 import it.units.malelab.jgea.representation.grammar.cfggp.StandardTreeCrossover;
 import it.units.malelab.jgea.representation.grammar.cfggp.StandardTreeMutation;
-import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
-import it.units.malelab.jgea.problem.booleanfunction.MultipleOutputParallelMultiplier;
-import it.units.malelab.jgea.problem.mapper.EnhancedProblem;
-import it.units.malelab.jgea.problem.mapper.FitnessFunction;
-import it.units.malelab.jgea.problem.mapper.MapperGeneration;
-import it.units.malelab.jgea.problem.mapper.MapperUtils;
-import it.units.malelab.jgea.problem.mapper.RecursiveMapper;
-import it.units.malelab.jgea.problem.mapper.element.Element;
-import it.units.malelab.jgea.problem.symbolicregression.Keijzer6;
-import it.units.malelab.jgea.problem.symbolicregression.Nguyen7;
-import it.units.malelab.jgea.problem.symbolicregression.Pagie1;
-import it.units.malelab.jgea.problem.synthetic.KLandscapes;
-import it.units.malelab.jgea.problem.synthetic.Text;
+import it.units.malelab.jgea.representation.sequence.LengthPreservingTwoPointCrossover;
+import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
+import it.units.malelab.jgea.representation.sequence.bit.BitString;
+import it.units.malelab.jgea.representation.sequence.bit.BitStringFactory;
+import it.units.malelab.jgea.representation.tree.Node;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
@@ -98,13 +90,13 @@ public class RepresentationEvolution extends Worker {
     Map<String, EnhancedProblem<?, ?, ?>> validationOnlyProblems = new LinkedHashMap<>();
     try {
       baseProblems.put("Parity-3", new EnhancedProblem<>(new EvenParity(3), Misc.cached(new Pairwise<>(new TreeLeaves<>(new Edit<>())), CACHE_SIZE)));
-      baseProblems.put("Pagie1", new EnhancedProblem<>(new Pagie1(), Misc.cached(new TreeLeaves<>(new Edit<>()), CACHE_SIZE)));
+      baseProblems.put("Pagie1", from(new Pagie1(), Grammar.fromFile(new File("grammars/symbolic-regression-pagie1.bnf")), "x", "y"));
       baseProblems.put("KLandscapes-5", new EnhancedProblem<>(new KLandscapes(5), Misc.cached(new TreeLeaves<>(new Edit<>()), CACHE_SIZE)));
       baseProblems.put("Text", new EnhancedProblem<>(new Text("Hello World!"), Misc.cached(new StringSequence(new Edit<>()), CACHE_SIZE)));
       validationOnlyProblems.putAll(baseProblems);
       validationOnlyProblems.put("MOPM-3", new EnhancedProblem<>(new MultipleOutputParallelMultiplier(3), Misc.cached((new Pairwise<>(new TreeLeaves<>(new Edit<>()))), CACHE_SIZE)));
-      validationOnlyProblems.put("Nguyen7", new EnhancedProblem<>(new Nguyen7(1), Misc.cached(new TreeLeaves<>(new Edit<>()), CACHE_SIZE)));
-      validationOnlyProblems.put("Keijzer6", new EnhancedProblem<>(new Keijzer6(), Misc.cached(new TreeLeaves<>(new Edit<>()), CACHE_SIZE)));
+      baseProblems.put("Nguyen7", from(new Nguyen7(1), Grammar.fromFile(new File("grammars/symbolic-regression-nguyen7.bnf")), "x"));
+      baseProblems.put("Keijzer6", from(new Keijzer6(), Grammar.fromFile(new File("grammars/symbolic-regression-keijzer6.bnf")), "x"));
       validationOnlyProblems.put("KLandscapes-7", new EnhancedProblem<>(new KLandscapes(7), Misc.cached(new TreeLeaves<>(new Edit<>()), CACHE_SIZE)));
     } catch (IOException ex) {
       L.log(Level.SEVERE, "Cannot instantiate problems", ex);
@@ -312,6 +304,33 @@ public class RepresentationEvolution extends Worker {
               ), executorService
           ));
     }
+  }
+
+  private static EnhancedProblem<String, RealFunction, Double> from(AbstractSymbolicRegressionProblem p, Grammar<String> g, String... vars) {
+    Distance<Node<it.units.malelab.jgea.problem.symbolicregression.element.Element>> nodeDistance = Misc.cached(new TreeLeaves<>(new Edit<>()), CACHE_SIZE);
+    Distance<RealFunction> d = (f1, f2) -> nodeDistance.apply(
+        ((NodeBasedRealFunction) f1).getNode(),
+        ((NodeBasedRealFunction) f2).getNode()
+    );
+    return new EnhancedProblem<>(
+        new GrammarBasedProblem<String, RealFunction, Double>() {
+          @Override
+          public Grammar<String> getGrammar() {
+            return g;
+          }
+
+          @Override
+          public Function<Node<String>, RealFunction> getSolutionMapper() {
+            return new FormulaMapper().andThen(n -> NodeBasedRealFunction.from(n, vars));
+          }
+
+          @Override
+          public Function<RealFunction, Double> getFitnessFunction() {
+            return p.getFitnessFunction();
+          }
+        },
+        d
+    );
   }
 
 }

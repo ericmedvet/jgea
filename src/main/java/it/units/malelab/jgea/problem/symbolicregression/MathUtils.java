@@ -19,7 +19,8 @@ package it.units.malelab.jgea.problem.symbolicregression;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import it.units.malelab.jgea.core.fitness.SymbolicRegressionFitness;
+import it.units.malelab.jgea.core.util.Sized;
+import it.units.malelab.jgea.problem.mapper.element.Function;
 import it.units.malelab.jgea.problem.symbolicregression.element.*;
 import it.units.malelab.jgea.representation.tree.Node;
 import org.apache.commons.math3.stat.StatUtils;
@@ -33,94 +34,77 @@ import java.util.stream.Collectors;
  */
 public class MathUtils {
 
-  public static UnaryOperator<Node<Element>> linearScaler(SymbolicRegressionFitness symbolicRegressionFitness) {
-    double[] targetYs = symbolicRegressionFitness.getPoints().stream()
-        .mapToDouble(p -> symbolicRegressionFitness.getTargetFunction().apply(p))
-        .toArray();
-    final double targetMean = StatUtils.mean(targetYs);
-    final double targetVariance = StatUtils.variance(targetYs, targetMean);
-    return function -> {
-      final Node<Element> finalFunction = function;
+  private static class ScaledRealFunction implements RealFunction {
+    private final RealFunction innerF;
+    private final double a;
+    private final double b;
+
+    public ScaledRealFunction(RealFunction innerF, SymbolicRegressionFitness symbolicRegressionFitness) {
+      this.innerF = innerF;
+      double[] targetYs = symbolicRegressionFitness.getPoints().stream()
+          .mapToDouble(p -> symbolicRegressionFitness.getTargetFunction().apply(p))
+          .toArray();
+      double targetMean = StatUtils.mean(targetYs);
+      double targetVariance = StatUtils.variance(targetYs, targetMean);
       double[] ys = symbolicRegressionFitness.getPoints().stream()
-          .mapToDouble(p -> compute(finalFunction, buildVarValues(symbolicRegressionFitness.getTargetFunction(), p)))
+          .mapToDouble(innerF::apply)
           .toArray();
       double mean = StatUtils.mean(ys);
       double variance = StatUtils.variance(ys, mean);
-      Node<Element> newFunction = new Node<>(Operator.ADDITION);
-      newFunction.getChildren().add(new Node<>(new Constant(targetMean - mean * Math.sqrt(targetVariance / variance))));
-      newFunction.getChildren().add(new Node<>(Operator.MULTIPLICATION));
-      newFunction.getChildren().get(1).getChildren().add(function);
-      newFunction.getChildren().get(1).getChildren().add(new Node<>(new Constant(Math.sqrt(targetVariance / variance))));
-      return newFunction;
-    };
+      b = targetMean - mean * Math.sqrt(targetVariance / variance);
+      a = Math.sqrt(targetVariance / variance);
+    }
+
+    public RealFunction getInnerF() {
+      return innerF;
+    }
+
+    @Override
+    public double apply(double... input) {
+      return a * innerF.apply(input) + b;
+    }
+
+    @Override
+    public String toString() {
+      return String.format("%.3f * %s + %.3f", a, innerF, b);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      ScaledRealFunction that = (ScaledRealFunction) o;
+      return Double.compare(that.a, a) == 0 &&
+          Double.compare(that.b, b) == 0 &&
+          innerF.equals(that.innerF);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(innerF, a, b);
+    }
   }
 
-  public static Map<String, Double> buildVarValues(SymbolicRegressionFitness.TargetFunction function, double[] point) {
-    Map<String, Double> varValues = new LinkedHashMap<>();
-    for (int i = 0; i < function.varNames().length; i++) {
-      varValues.put(function.varNames()[i], point[i]);
-    }
-    return varValues;
-  }
+  private static class SizedScaledRealFunction extends ScaledRealFunction implements Sized {
+    private final int size;
 
-  public static Double compute(Node<Element> node, Map<String, Double> values) {
-    if (node.getContent() instanceof Decoration) {
-      return null;
-    }
-    if (node.getContent() instanceof Variable) {
-      Double result = values.get(node.getContent().toString());
-      if (result == null) {
-        throw new RuntimeException(String.format("Undefined variable: %s", node.getContent().toString()));
+    public SizedScaledRealFunction(RealFunction innerF, SymbolicRegressionFitness symbolicRegressionFitness) {
+      super(innerF, symbolicRegressionFitness);
+      if (innerF instanceof Sized) {
+        size = ((Sized) innerF).size();
+      } else {
+        size = 0;
       }
-      return result;
     }
-    if (node.getContent() instanceof Constant) {
-      return ((Constant) node.getContent()).getValue();
+
+    @Override
+    public int size() {
+      return size;
     }
-    double[] childrenValues = new double[node.getChildren().size()];
-    int i = 0;
-    for (Node<Element> child : node.getChildren()) {
-      Double childValue = compute(child, values);
-      if (childValue != null) {
-        childrenValues[i] = childValue;
-        i = i + 1;
-      }
-    }
-    return compute((Operator) node.getContent(), childrenValues);
   }
 
-  private static double compute(Operator operator, double... operands) {
-    switch (operator) {
-      case ADDITION:
-        return operands[0] + operands[1];
-      case COS:
-        return Math.cos(operands[0]);
-      case DIVISION:
-        return operands[0] / operands[1];
-      case PROT_DIVISION:
-        return (operands[1] == 0) ? 1 : (operands[0] / operands[1]);
-      case EXP:
-        return Math.exp(operands[0]);
-      case INVERSE:
-        return 1 / operands[0];
-      case LOG:
-        return Math.log(operands[0]);
-      case PROT_LOG:
-        return (operands[0] <= 0) ? 0 : Math.log(operands[0]);
-      case MULTIPLICATION:
-        return operands[0] * operands[1];
-      case OPPOSITE:
-        return -operands[0];
-      case SIN:
-        return Math.sin(operands[0]);
-      case SQRT:
-        return Math.sqrt(operands[0]);
-      case SQ:
-        return Math.pow(operands[0], 2);
-      case SUBTRACTION:
-        return operands[0] - operands[1];
-    }
-    return Double.NaN;
+  public static UnaryOperator<RealFunction> linearScaler(SymbolicRegressionFitness symbolicRegressionFitness) {
+    return f -> (f instanceof Sized) ? new SizedScaledRealFunction(f, symbolicRegressionFitness) : new ScaledRealFunction(f, symbolicRegressionFitness);
   }
 
   public static double[] equispacedValues(double min, double max, double step) {
@@ -139,71 +123,40 @@ public class MathUtils {
     return values;
   }
 
-  public static List<double[]> asObservations(Map<String, double[]> valuesMap, String[] varNames) {
-    int n = valuesMap.values().iterator().next().length;
-    List<double[]> observations = new ArrayList<>(n);
-    for (int i = 0; i < n; i++) {
-      double[] observation = new double[varNames.length];
-      for (int j = 0; j < varNames.length; j++) {
-        observation[j] = valuesMap.get(varNames[j])[i];
+  public static List<double[]> pairwise(double[]... xs) {
+    int l = xs[0].length;
+    for (int i = 1; i < xs.length; i++) {
+      if (xs[i].length != l) {
+        throw new IllegalArgumentException(String.format(
+            "Invalid input arrays: %d-th lenght (%d) is different than 1st length (%d)",
+            i + 1, xs[i].length, l
+        ));
       }
-      observations.add(observation);
     }
-    return observations;
+    List<double[]> list = new ArrayList<>(l);
+    for (int i = 0; i < l; i++) {
+      double[] x = new double[xs.length];
+      for (int j = 0; j < x.length; j++) {
+        x[j] = xs[j][i];
+      }
+      list.add(x);
+    }
+    return list;
   }
 
-  public static Map<String, double[]> valuesMap(String string, double... values) {
-    return Collections.singletonMap(string, values);
-  }
-
-  public static Map<String, double[]> combinedValuesMap(Map<String, double[]>... flatMaps) {
-    Map<String, double[]> flatMap = new LinkedHashMap<>();
-    for (Map<String, double[]> map : flatMaps) {
-      flatMap.putAll(map);
-    }
-    return flatMap;
-  }
-
-  public static Map<String, double[]> combinedValuesMap(Map<String, double[]> flatMap) {
-    String[] names = new String[flatMap.keySet().size()];
-    int[] counters = new int[flatMap.keySet().size()];
-    Multimap<String, Double> multimap = ArrayListMultimap.create();
-    //init
-    int y = 0;
-    for (String name : flatMap.keySet()) {
-      names[y] = name;
-      counters[y] = 0;
-      y = y + 1;
-    }
-    //fill map
-    while (true) {
-      for (int i = 0; i < names.length; i++) {
-        multimap.put(names[i], flatMap.get(names[i])[counters[i]]);
+  public static List<double[]> cartesian(double[]... xs) {
+    int l = Arrays.stream(xs).mapToInt(x -> x.length).reduce(1, (v1, v2) -> v1 * v2);
+    List<double[]> list = new ArrayList<>(l);
+    for (int i = 0; i < l; i++) {
+      double[] x = new double[xs.length];
+      int c = i;
+      for (int j = 0; j < x.length; j++) {
+        x[j] = xs[j][c % xs[j].length];
+        c = Math.floorDiv(c, xs[j].length);
       }
-      for (int i = 0; i < counters.length; i++) {
-        counters[i] = counters[i] + 1;
-        if ((i < counters.length - 1) && (counters[i] == flatMap.get(names[i]).length)) {
-          counters[i] = 0;
-        } else {
-          break;
-        }
-      }
-      if (counters[counters.length - 1] == flatMap.get(names[counters.length - 1]).length) {
-        break;
-      }
+      list.add(x);
     }
-    //transform
-    Map<String, double[]> map = new LinkedHashMap<>();
-    for (String key : multimap.keySet()) {
-      double[] values = new double[multimap.get(key).size()];
-      int i = 0;
-      for (Double value : multimap.get(key)) {
-        values[i] = value;
-        i = i + 1;
-      }
-      map.put(key, values);
-    }
-    return map;
+    return list;
   }
 
 }
