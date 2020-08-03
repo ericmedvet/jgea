@@ -17,14 +17,13 @@
 
 package it.units.malelab.jgea.core.listener;
 
-import java.io.Serializable;
 import java.util.concurrent.ExecutorService;
 
 /**
  * @author eric
  */
 @FunctionalInterface
-public interface Listener<G, S, F> extends Serializable {
+public interface Listener<G, S, F> {
 
   void listen(Event<? extends G, ? extends S, ? extends F> event);
 

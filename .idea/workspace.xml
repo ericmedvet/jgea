@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="BranchesTreeState">
     <expand>
       <path>
@@ -26,7 +29,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fb3f97aa-f1ba-4dca-af0a-845a3176b0c1" name="Default Changelist" comment="Version change.">
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__junit_junit_4_8_2.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__junit_junit_4_8_2.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/Factory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/Factory.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/Problem.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/Problem.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/Evolver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/evolver/Evolver.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/listener/Listener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/listener/Listener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/listener/collector/DataCollector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/listener/collector/DataCollector.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/order/PartiallyOrderedCollection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/order/PartiallyOrderedCollection.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/selector/Selector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/selector/Selector.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/util/Args.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/util/Args.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/util/Misc.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/util/Misc.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/util/WithNames.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/core/util/WithNames.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/mapper/element/Element.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/mapper/element/Element.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/symbolicregression/element/Element.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/units/malelab/jgea/problem/symbolicregression/element/Element.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,6 +72,11 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHome" value="$APPLICATION_HOME_DIR$/plugins/maven/lib/maven3" />
+      </MavenGeneralSettings>
+    </option>
     <option name="importingSettings">
       <MavenImportingSettings>
         <option name="downloadAnnotationsAutomatically" value="true" />
@@ -168,14 +189,15 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.Example" />
         <item itemvalue="Application.Starter" />
         <item itemvalue="Application.PG" />
         <item itemvalue="Application.MathUtils" />
+        <item itemvalue="Application.Example" />
         <item itemvalue="Application.CooperativeCoevolver" />
       </list>
     </recent_temporary>
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
     <configuration />
   </component>
@@ -393,29 +415,33 @@
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state x="908" y="327" width="424" height="597" key="FileChooserDialogImpl/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592236218165" />
-    <state width="2090" height="326" key="GridCell.Tab.0.bottom" timestamp="1595319423165">
-      <screen x="56" y="27" width="2136" height="1206" />
+    <state width="2090" height="326" key="GridCell.Tab.0.bottom" timestamp="1595337302622">
+      <screen x="56" y="27" width="4056" height="1206" />
     </state>
     <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594308363028" />
     <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.2136.1206@56.27.2136.1206" timestamp="1595319423165" />
+    <state width="2090" height="326" key="GridCell.Tab.0.bottom/56.27.4056.1206@56.27.4056.1206" timestamp="1595337302622" />
     <state width="1251" height="198" key="GridCell.Tab.0.bottom/69.32.1297.736@69.32.1297.736" timestamp="1595267966671" />
-    <state width="2090" height="326" key="GridCell.Tab.0.center" timestamp="1595319423164">
-      <screen x="56" y="27" width="2136" height="1206" />
+    <state width="2090" height="326" key="GridCell.Tab.0.center" timestamp="1595337302621">
+      <screen x="56" y="27" width="4056" height="1206" />
     </state>
     <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594308363028" />
     <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.2136.1206@56.27.2136.1206" timestamp="1595319423164" />
+    <state width="2090" height="326" key="GridCell.Tab.0.center/56.27.4056.1206@56.27.4056.1206" timestamp="1595337302621" />
     <state width="1251" height="198" key="GridCell.Tab.0.center/69.32.1297.736@69.32.1297.736" timestamp="1595267966670" />
-    <state width="2090" height="326" key="GridCell.Tab.0.left" timestamp="1595319423164">
-      <screen x="56" y="27" width="2136" height="1206" />
+    <state width="2090" height="326" key="GridCell.Tab.0.left" timestamp="1595337302621">
+      <screen x="56" y="27" width="4056" height="1206" />
     </state>
     <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594308363028" />
     <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.2136.1206@56.27.2136.1206" timestamp="1595319423164" />
+    <state width="2090" height="326" key="GridCell.Tab.0.left/56.27.4056.1206@56.27.4056.1206" timestamp="1595337302621" />
     <state width="1251" height="198" key="GridCell.Tab.0.left/69.32.1297.736@69.32.1297.736" timestamp="1595267966670" />
-    <state width="2090" height="326" key="GridCell.Tab.0.right" timestamp="1595319423165">
-      <screen x="56" y="27" width="2136" height="1206" />
+    <state width="2090" height="326" key="GridCell.Tab.0.right" timestamp="1595337302621">
+      <screen x="56" y="27" width="4056" height="1206" />
     </state>
     <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594308363028" />
     <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.2136.1206@56.27.2136.1206" timestamp="1595319423165" />
+    <state width="2090" height="326" key="GridCell.Tab.0.right/56.27.4056.1206@56.27.4056.1206" timestamp="1595337302621" />
     <state width="1251" height="198" key="GridCell.Tab.0.right/69.32.1297.736@69.32.1297.736" timestamp="1595267966670" />
     <state width="2090" height="512" key="GridCell.Tab.1.bottom" timestamp="1594225517878">
       <screen x="56" y="27" width="2136" height="1206" />
@@ -437,6 +463,10 @@
     </state>
     <state width="2090" height="512" key="GridCell.Tab.1.right/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594225517878" />
     <state width="2090" height="512" key="GridCell.Tab.1.right/56.27.2136.1206@56.27.2136.1206" timestamp="1592866434164" />
+    <state x="268" y="128" width="1708" height="1006" key="MergeDialog" timestamp="1596451689014">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="268" y="128" width="1708" height="1006" key="MergeDialog/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1596451689014" />
     <state x="726" y="405" width="787" height="451" key="NewModule_or_Project.wizard" timestamp="1591623459862">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
@@ -450,11 +480,11 @@
     </state>
     <state x="610" y="163" width="1279" height="857" key="SettingsEditor/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594305048239" />
     <state x="610" y="163" width="1016" height="742" key="SettingsEditor/56.27.2136.1206@56.27.2136.1206" timestamp="1592863441000" />
-    <state x="722" y="301" width="800" height="540" key="Vcs.Push.Dialog.v2" timestamp="1594309114344">
+    <state x="722" y="326" width="800" height="540" key="Vcs.Push.Dialog.v2" timestamp="1595319922357">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state x="722" y="301" width="800" height="540" key="Vcs.Push.Dialog.v2/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1594309114344" />
-    <state x="722" y="331" key="Vcs.Push.Dialog.v2/56.27.2136.1206@56.27.2136.1206" timestamp="1592866426334" />
+    <state x="722" y="326" width="800" height="540" key="Vcs.Push.Dialog.v2/56.27.2136.1206@56.27.2136.1206" timestamp="1595319922357" />
     <state x="156" y="112" width="1936" height="1011" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1592494898511">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
@@ -463,10 +493,18 @@
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
     <state x="860" y="380" width="524" height="513" key="extract.method.dialog/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1592381734211" />
+    <state x="849" y="319" width="545" height="624" key="git4idea.branch.GitSmartOperationDialog" timestamp="1596451667368">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="849" y="319" width="545" height="624" key="git4idea.branch.GitSmartOperationDialog/56.27.2136.1206/2192.0.1920.1080@56.27.2136.1206" timestamp="1596451667368" />
     <state x="886" y="419" width="471" height="435" key="git4idea.merge.GitMergeDialog" timestamp="1595231691139">
       <screen x="56" y="27" width="4056" height="1206" />
     </state>
     <state x="886" y="419" width="471" height="435" key="git4idea.merge.GitMergeDialog/56.27.4056.1206@56.27.4056.1206" timestamp="1595231691139" />
+    <state x="925" y="473" width="398" height="326" key="git4idea.ui.GitTagDialog" timestamp="1595319909560">
+      <screen x="56" y="27" width="2136" height="1206" />
+    </state>
+    <state x="925" y="473" width="398" height="326" key="git4idea.ui.GitTagDialog/56.27.2136.1206@56.27.2136.1206" timestamp="1595319909560" />
     <state x="788" y="288" key="run.anything.popup" timestamp="1592861136835">
       <screen x="56" y="27" width="2136" height="1206" />
     </state>
@@ -481,7 +519,7 @@
   <component name="XDebuggerManager">
     <pin-to-top-manager>
       <pinned-members>
-        <PinnedItemInfo typeName="it.units.malelab.jgea.core.listener.collector.Item$$Lambda$20.1022308509" fieldName="arg$2" />
+        <PinnedItemInfo />
       </pinned-members>
     </pin-to-top-manager>
   </component>

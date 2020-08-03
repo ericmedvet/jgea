@@ -13,6 +13,6 @@ import java.util.List;
  */
 public interface WithNames {
   
-  public List<String> names();
+  List<String> names();
   
 }

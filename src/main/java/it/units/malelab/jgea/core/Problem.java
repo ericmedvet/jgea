@@ -16,14 +16,13 @@
  */
 package it.units.malelab.jgea.core;
 
-import java.io.Serializable;
 import java.util.function.Function;
 
 /**
  * @author eric
  */
 @FunctionalInterface
-public interface Problem<S, F> extends Serializable {
+public interface Problem<S, F> {
 
   Function<S, F> getFitnessFunction();
 

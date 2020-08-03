@@ -17,12 +17,10 @@
 
 package it.units.malelab.jgea.problem.mapper.element;
 
-import java.io.Serializable;
-
 /**
  * @author eric
  */
-public interface Element extends Serializable {
+public interface Element {
 
   String toString();
 

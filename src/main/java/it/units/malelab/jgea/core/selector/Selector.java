@@ -19,7 +19,6 @@ package it.units.malelab.jgea.core.selector;
 
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 
-import java.io.Serializable;
 import java.util.Random;
 
 /**
@@ -27,7 +26,7 @@ import java.util.Random;
  * @author eric
  */
 @FunctionalInterface
-public interface Selector<T> extends Serializable {
+public interface Selector<T> {
   
   <K extends T> K select(PartiallyOrderedCollection<K> ks, Random random);
 
