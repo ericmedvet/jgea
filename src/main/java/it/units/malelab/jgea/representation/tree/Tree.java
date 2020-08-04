@@ -6,167 +6,145 @@
 package it.units.malelab.jgea.representation.tree;
 
 import it.units.malelab.jgea.core.util.Sized;
-import java.io.PrintStream;
+
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
- *
  * @author eric
  */
-public class Tree<T> implements Serializable, Cloneable, Sized {
+public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>> {
 
-  private final T content;
-  private final List<Tree<T>> children = new ArrayList<>();
-  private Tree<T> parent;
+  private final C content;
+  private final List<Tree<C>> children = new ArrayList<>();
+  private Tree<C> parent;
 
-  public Tree(T content) {
+  public static <K> Tree<K> copyOf(Tree<K> other) {
+    Tree<K> t = new Tree<>(other.content, null);
+    for (Tree<K> child : other.children) {
+      t.addChild(Tree.copyOf(child));
+    }
+    return t;
+  }
+
+  public static <K> Tree<K> of(K content, Tree<K>... children) {
+    Tree<K> t = new Tree<>(content, null);
+    for (Tree<K> child : children) {
+      t.addChild(child);
+    }
+    return t;
+  }
+
+  public static <K, H> Tree<H> map(Tree<K> other, Function<K, H> mapper) {
+    Tree<H> t = Tree.of(mapper.apply(other.content));
+    for (Tree<K> child : other.children) {
+      t.addChild(Tree.map(child, mapper));
+    }
+    return t;
+  }
+
+  private Tree(C content, Tree<C> parent) {
     this.content = content;
+    this.parent = parent;
   }
 
-  public Tree(Tree<T> original) {
-    if (original == null) {
-      this.content = null;
-      return;
-    }
-    this.content = original.getContent();
-    for (Tree<T> child : original.getChildren()) {
-      children.add(new Tree<>(child));
-    }
-  }
-
-  public T getContent() {
+  public C content() {
     return content;
   }
 
-  public List<Tree<T>> getChildren() {
-    return children;
+  public void addChild(Tree<C> child) {
+    children.add(child);
+    child.parent = this;
   }
 
-  public List<Tree<T>> leafNodes() {
-    if (children.isEmpty()) {
-      return Collections.singletonList(this);
-    }
-    List<Tree<T>> childContents = new ArrayList<>();
-    for (Tree<T> child : children) {
-      childContents.addAll(child.leafNodes());
-    }
-    return childContents;
+  public boolean removeChild(Tree<C> child) {
+    return children.remove(child);
   }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(content);
-    if (!children.isEmpty()) {
-      sb.append("{");
-      for (Tree<T> child : children) {
-        sb.append(child.toString()).append(",");
-      }
-      sb.deleteCharAt(sb.length() - 1);
-      sb.append("}");
-    }
-    return sb.toString();
+  public void clearChildren() {
+    children.clear();
+  }
+
+  public Tree<C> child(int i) {
+    return children.get(i);
+  }
+
+  public boolean isLeaf() {
+    return children.isEmpty();
+  }
+
+  public int nChildren() {
+    return children.size();
   }
 
   public int height() {
-    int max = 0;
-    for (Tree<T> child : children) {
-      max = Math.max(max, child.height());
+    return 1 + children.stream().mapToInt(Tree::height).max().orElse(0);
+  }
+
+  public int depth() {
+    if (parent == null) {
+      return 0;
     }
-    return max + 1;
+    return parent.depth() + 1;
+  }
+
+  public List<C> visitDepth() {
+    List<C> contents = new ArrayList<>(1 + children.size());
+    contents.add(content);
+    children.forEach(c -> contents.addAll(c.visitDepth()));
+    return contents;
+  }
+
+  public List<C> visitLeaves() {
+    return leaves().stream().map(Tree::content).collect(Collectors.toList());
+  }
+
+  public List<Tree<C>> leaves() {
+    if (children.isEmpty()) {
+      return List.of(this);
+    }
+    List<Tree<C>> leaves = new ArrayList<>();
+    children.forEach(c -> leaves.addAll(c.leaves()));
+    return leaves;
+  }
+
+  public List<Tree<C>> topSubtrees() {
+    List<Tree<C>> subtrees = new ArrayList<>();
+    subtrees.add(this);
+    children.forEach(c -> subtrees.addAll(c.topSubtrees()));
+    return subtrees;
+  }
+
+  @Override
+  public Iterator<Tree<C>> iterator() {
+    return children.iterator();
   }
 
   @Override
   public int size() {
-    int size = 0;
-    for (Tree<T> child : children) {
-      size = size + child.size();
-    }
-    return size + 1;
+    return 1 + children.stream().mapToInt(Tree::size).sum();
   }
 
-  public List<Tree<T>> getAncestors() {
-    if (parent == null) {
-      return Collections.EMPTY_LIST;
-    }
-    List<Tree<T>> ancestors = new ArrayList<>();
-    ancestors.add(parent);
-    ancestors.addAll(parent.getAncestors());
-    return Collections.unmodifiableList(ancestors);
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Tree<?> tree = (Tree<?>) o;
+    return Objects.equals(content, tree.content) &&
+        children.equals(tree.children);
   }
-  
-  public Tree<T> getRoot() {
-    if (getParent()==null) {
-      return this;
-    }
-    return parent.getRoot();
-  }
-
-  public Tree<T> getParent() {
-    return parent;
-  }
-
-  public void propagateParentship() {
-    for (Tree<T> child : children) {
-      child.parent = this;
-      child.propagateParentship();
-    }
-  }
-
-  public int childIndex() {
-    if (parent == null) {
-      return -1;
-    }
-    for (int i = 0; i < parent.getChildren().size(); i++) {
-      if (this == parent.getChildren().get(i)) {
-        return i;
-      }
-    }
-    return -1; //should not happen;
-  }
-
- 
-  public void prettyPrint(PrintStream ps) {
-    propagateParentship();
-    ps.printf("%" + (1 + this.getAncestors().size() * 2) + "s-%s%n", "", this.getContent());
-    for (Tree<T> child : this.getChildren()) {
-      child.prettyPrint(ps);
-    }
-  }  
 
   @Override
   public int hashCode() {
-    int hash = 3;
-    hash = 53 * hash + Objects.hashCode(this.content);
-    hash = 53 * hash + Objects.hashCode(this.children);
-    return hash;
+    return Objects.hash(content, children);
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    final Tree<?> other = (Tree<?>) obj;
-    if (!Objects.equals(this.content, other.content)) {
-      return false;
-    }
-    if (!Objects.equals(this.children, other.children)) {
-      return false;
-    }
-    return true;
+  public String toString() {
+    String s = content.toString() +
+        (children.isEmpty() ? "" : ("[" + children.stream().map(Tree::toString).collect(Collectors.joining(",")) + "]"));
+    return s;
   }
-
-  @Override
-  public Object clone() {
-    return new Tree<>(this);
-  }
-
 }

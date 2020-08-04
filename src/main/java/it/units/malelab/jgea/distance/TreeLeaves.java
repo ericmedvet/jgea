@@ -35,8 +35,8 @@ public class TreeLeaves<T> implements Distance<Tree<T>> {
 
   @Override
   public Double apply(Tree<T> t1, Tree<T> t2) {
-    Sequence<T> s1 = Sequence.from(t1.leafNodes().stream().map(Tree::getContent).collect(Collectors.toList()));
-    Sequence<T> s2 = Sequence.from(t2.leafNodes().stream().map(Tree::getContent).collect(Collectors.toList()));
+    Sequence<T> s1 = Sequence.from(t1.leaves().stream().map(Tree::content).collect(Collectors.toList()));
+    Sequence<T> s2 = Sequence.from(t2.leaves().stream().map(Tree::content).collect(Collectors.toList()));
     return innerDistance.apply(s1, s2);
   }
 

@@ -45,13 +45,13 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
     if (genotype.size() < codonLength) {
       throw new IllegalArgumentException(String.format("Short genotype (%d<%d)", genotype.size(), codonLength));
     }
-    Tree<T> tree = new Tree<>(grammar.getStartingSymbol());
+    Tree<T> tree = Tree.of(grammar.getStartingSymbol());
     int currentCodonIndex = 0;
     int wraps = 0;
     while (true) {
       Tree<T> treeToBeReplaced = null;
-      for (Tree<T> node : tree.leafNodes()) {
-        if (grammar.getRules().keySet().contains(node.getContent())) {
+      for (Tree<T> node : tree.leaves()) {
+        if (grammar.getRules().keySet().contains(node.content())) {
           treeToBeReplaced = node;
           break;
         }
@@ -67,7 +67,7 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
           throw new IllegalArgumentException(String.format("Too many wraps (%d>%d)", wraps, maxWraps));
         }
       }
-      List<List<T>> options = grammar.getRules().get(treeToBeReplaced.getContent());
+      List<List<T>> options = grammar.getRules().get(treeToBeReplaced.content());
       int optionIndex = 0;
       if (options.size() > 1) {
         optionIndex = genotype.slice(currentCodonIndex * codonLength, (currentCodonIndex + 1) * codonLength).toInt() % options.size();
@@ -75,8 +75,8 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
       }
       //add children
       for (T t : options.get(optionIndex)) {
-        Tree<T> newChild = new Tree<>(t);
-        treeToBeReplaced.getChildren().add(newChild);
+        Tree<T> newChild = Tree.of(t);
+        treeToBeReplaced.addChild(newChild);
       }
     }
     return tree;

@@ -245,10 +245,8 @@ public class RepresentationEvolution extends Worker {
     } else {
       return null;
     }
-    Tree<Element> optionChooser = MapperUtils.transform(rawMappingTree.getChildren().get(0));
-    Tree<Element> genoAssigner = MapperUtils.transform(rawMappingTree.getChildren().get(1));
-    optionChooser.propagateParentship();
-    genoAssigner.propagateParentship();
+    Tree<Element> optionChooser = MapperUtils.transform(rawMappingTree.child(0));
+    Tree<Element> genoAssigner = MapperUtils.transform(rawMappingTree.child(1));
     return Pair.of(optionChooser, genoAssigner);
   }
 

@@ -45,10 +45,8 @@ public class MapperGeneration implements
   @Override
   public Function<Tree<String>, Pair<Tree<Element>, Tree<Element>>> getSolutionMapper() {
     return (Tree<String> rawMappingTree) -> {
-      Tree<Element> optionChooser = MapperUtils.transform(rawMappingTree.getChildren().get(0));
-      Tree<Element> genoAssigner = MapperUtils.transform(rawMappingTree.getChildren().get(1));
-      optionChooser.propagateParentship();
-      genoAssigner.propagateParentship();
+      Tree<Element> optionChooser = MapperUtils.transform(rawMappingTree.child(0));
+      Tree<Element> genoAssigner = MapperUtils.transform(rawMappingTree.child(1));
       return Pair.of(optionChooser, genoAssigner);
     };
   }

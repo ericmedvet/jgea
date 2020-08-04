@@ -80,7 +80,7 @@ public class GrowTreeFactory<T> implements Factory<Tree<T>> {
     if (targetDepth < 0) {
       return null;
     }
-    Tree<T> tree = new Tree<>(symbol);
+    Tree<T> tree = Tree.of(symbol);
     if (grammar.getRules().containsKey(symbol)) {
       //a non-terminal
       List<List<T>> options = grammar.getRules().get(symbol);
@@ -120,7 +120,7 @@ public class GrowTreeFactory<T> implements Factory<Tree<T>> {
         if (child == null) {
           return null;
         }
-        tree.getChildren().add(child);
+        tree.addChild(child);
       }
     }
     return tree;

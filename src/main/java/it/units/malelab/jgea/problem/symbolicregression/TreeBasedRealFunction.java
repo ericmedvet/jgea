@@ -61,30 +61,30 @@ public class TreeBasedRealFunction implements RealFunction, Sized {
           x.length
       ));
     }
-    if (tree.getContent() instanceof Decoration) {
+    if (tree.content() instanceof Decoration) {
       throw new RuntimeException(String.format(
           "Cannot compute: decoration node %s found",
-          tree.getContent()
+          tree.content()
       ));
     }
-    if (tree.getContent() instanceof Variable) {
-      int index = Arrays.binarySearch(varNames, tree.getContent().toString());
+    if (tree.content() instanceof Variable) {
+      int index = Arrays.binarySearch(varNames, tree.content().toString());
       if (index < 0) {
-        throw new RuntimeException(String.format("Undefined variable: %s", tree.getContent().toString()));
+        throw new RuntimeException(String.format("Undefined variable: %s", tree.content().toString()));
       }
       return x[index];
     }
-    if (tree.getContent() instanceof Constant) {
-      return ((Constant) tree.getContent()).getValue();
+    if (tree.content() instanceof Constant) {
+      return ((Constant) tree.content()).getValue();
     }
-    double[] childrenValues = new double[tree.getChildren().size()];
+    double[] childrenValues = new double[tree.nChildren()];
     int i = 0;
-    for (Tree<Element> child : tree.getChildren()) {
+    for (Tree<Element> child : tree) {
       double childValue = compute(child, x, varNames);
       childrenValues[i] = childValue;
       i = i + 1;
     }
-    return ((Operator) tree.getContent()).apply(childrenValues);
+    return ((Operator) tree.content()).apply(childrenValues);
   }
 
   public Tree<Element> getNode() {

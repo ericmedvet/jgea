@@ -61,8 +61,8 @@ public class Text implements GrammarBasedProblem<String, String, Double> {
 
   public Text(String targetString) throws IOException {
     grammar = Grammar.fromFile(new File("grammars/text.bnf"));
-    solutionMapper = (Tree<String> tree) -> tree.leafNodes().stream()
-        .map(Tree::getContent)
+    solutionMapper = (Tree<String> tree) -> tree.leaves().stream()
+        .map(Tree::content)
         .collect(Collectors.joining()).replace("_", " ");
     fitnessFunction = new FitnessFunction(targetString);
   }

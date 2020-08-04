@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.StreamSupport;
 
 import it.units.malelab.jgea.core.operator.Mutation;
 
@@ -42,16 +43,15 @@ public class StandardTreeMutation<T> implements Mutation<Tree<T>> {
 
   @Override
   public Tree<T> mutate(Tree<T> parent, Random random) {
-    Tree<T> child = (Tree<T>) parent.clone();
-    List<Tree<T>> nonTerminalTrees = new ArrayList<>();
-    getNonTerminalNodes(child, nonTerminalTrees);
+    Tree<T> child = Tree.copyOf(parent);
+    List<Tree<T>> nonTerminalTrees = child.topSubtrees();
     Collections.shuffle(nonTerminalTrees, random);
     boolean done = false;
     for (Tree<T> toReplaceSubTree : nonTerminalTrees) {
-      Tree<T> newSubTree = factory.build(random, toReplaceSubTree.getContent(), toReplaceSubTree.height());
+      Tree<T> newSubTree = factory.build(random, toReplaceSubTree.content(), toReplaceSubTree.height());
       if (newSubTree != null) {
-        toReplaceSubTree.getChildren().clear();
-        toReplaceSubTree.getChildren().addAll(newSubTree.getChildren());
+        toReplaceSubTree.clearChildren();
+        StreamSupport.stream(newSubTree.spliterator(), false).forEach(toReplaceSubTree::addChild);
         done = true;
         break;
       }
@@ -60,15 +60,6 @@ public class StandardTreeMutation<T> implements Mutation<Tree<T>> {
       return null;
     }
     return child;
-  }
-
-  private void getNonTerminalNodes(Tree<T> tree, List<Tree<T>> trees) {
-    if (!tree.getChildren().isEmpty()) {
-      trees.add(tree);
-      for (Tree<T> child : tree.getChildren()) {
-        getNonTerminalNodes(child, trees);
-      }
-    }
   }
 
 }

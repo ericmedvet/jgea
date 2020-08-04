@@ -76,12 +76,12 @@ public class KLandscapes implements
     if (original == null) {
       return original;
     }
-    Tree<String> tree = new Tree<>(original.getChildren().get(0).getChildren().get(0).getContent());
-    if (original.getChildren().size() > 1) {
+    Tree<String> tree = Tree.of(original.child(0).child(0).content());
+    if (original.height() > 1) {
       //is a non terminal node
-      for (Tree<String> orginalChild : original.getChildren()) {
-        if (orginalChild.getContent().equals("N")) {
-          tree.getChildren().add(apply(orginalChild));
+      for (Tree<String> orginalChild : original) {
+        if (orginalChild.content().equals("N")) {
+          tree.addChild(apply(orginalChild));
         }
       }
     }
@@ -126,11 +126,11 @@ public class KLandscapes implements
 
   protected static double fK(Tree<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
     if (k == 0) {
-      return v.get(tree.getContent());
+      return v.get(tree.content());
     }
-    double sum = v.get(tree.getContent());
-    for (Tree<String> child : tree.getChildren()) {
-      final double weight = w.get(Pair.of(tree.getContent(), child.getContent()));
+    double sum = v.get(tree.content());
+    for (Tree<String> child : tree) {
+      final double weight = w.get(Pair.of(tree.content(), child.content()));
       final double innerFK = fK(child, k - 1, v, w);
       sum = sum + (1 + weight) * innerFK;
     }
@@ -167,18 +167,18 @@ public class KLandscapes implements
 
   protected static Tree<String> levelEqualTree(int[] indexes, int arity) {
     if (indexes.length == 1) {
-      return new Tree<>("t" + indexes[0]);
+      return Tree.of("t" + indexes[0]);
     }
-    Tree<String> tree = new Tree<>("n" + indexes[0]);
+    Tree<String> tree = Tree.of("n" + indexes[0]);
     for (int i = 0; i < arity; i++) {
-      tree.getChildren().add(levelEqualTree(Arrays.copyOfRange(indexes, 1, indexes.length), arity));
+      tree.addChild(levelEqualTree(Arrays.copyOfRange(indexes, 1, indexes.length), arity));
     }
     return tree;
   }
 
   protected static double maxFK(Tree<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
     double max = fK(tree, k, v, w);
-    for (Tree<String> child : tree.getChildren()) {
+    for (Tree<String> child : tree) {
       max = Math.max(max, maxFK(child, k, v, w));
     }
     return max;

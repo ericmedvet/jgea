@@ -38,8 +38,8 @@ public class GrammarBasedRegexExtractionProblem extends RegexExtractionProblem i
 
   public GrammarBasedRegexExtractionProblem(boolean limitAlphabetToExtractions, Set<RegexGrammar.Option> options, String text, Set<String> extractors, int folds, int i, ExtractionFitness.Metric... metrics) {
     super(extractors, text, folds, i, metrics);
-    solutionMapper = (Tree<String> tree) -> RegexExtractionProblem.fromRegex(tree.leafNodes().stream()
-        .map(Tree::getContent)
+    solutionMapper = (Tree<String> tree) -> RegexExtractionProblem.fromRegex(tree.leaves().stream()
+        .map(Tree::content)
         .collect(Collectors.joining()));
     Set<String> texts = new TreeSet<>();
     if (limitAlphabetToExtractions) {

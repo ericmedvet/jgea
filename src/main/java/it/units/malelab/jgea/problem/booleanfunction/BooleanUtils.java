@@ -43,29 +43,29 @@ public class BooleanUtils {
   }
 
   public static Boolean compute(Tree<Element> tree, Map<String, Boolean> values) {
-    if (tree.getContent() instanceof Decoration) {
+    if (tree.content() instanceof Decoration) {
       return null;
     }
-    if (tree.getContent() instanceof Variable) {
-      Boolean result = values.get(tree.getContent().toString());
+    if (tree.content() instanceof Variable) {
+      Boolean result = values.get(tree.content().toString());
       if (result == null) {
-        throw new RuntimeException(String.format("Undefined variable: %s", tree.getContent().toString()));
+        throw new RuntimeException(String.format("Undefined variable: %s", tree.content().toString()));
       }
       return result;
     }
-    if (tree.getContent() instanceof Constant) {
-      return ((Constant) tree.getContent()).getValue();
+    if (tree.content() instanceof Constant) {
+      return ((Constant) tree.content()).getValue();
     }
-    boolean[] childrenValues = new boolean[tree.getChildren().size()];
+    boolean[] childrenValues = new boolean[tree.nChildren()];
     int i = 0;
-    for (Tree<Element> child : tree.getChildren()) {
+    for (Tree<Element> child : tree) {
       Boolean childValue = compute(child, values);
       if (childValue != null) {
         childrenValues[i] = childValue;
         i = i + 1;
       }
     }
-    return compute((Operator) tree.getContent(), childrenValues);
+    return compute((Operator) tree.content(), childrenValues);
   }
 
   private static boolean compute(Operator operator, boolean... operands) {

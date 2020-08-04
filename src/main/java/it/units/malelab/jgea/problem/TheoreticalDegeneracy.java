@@ -95,7 +95,7 @@ public class TheoreticalDegeneracy {
             phenotypes.addAll(genotypes.parallelStream()
                 .map(g -> {
                   try {
-                    return mapper.apply(g).leafNodes().stream().map(Tree::getContent).collect(Collectors.toList());
+                    return mapper.apply(g).leaves().stream().map(Tree::content).collect(Collectors.toList());
                   } catch (RuntimeException e) {
                     return null;
                   }

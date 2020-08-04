@@ -26,6 +26,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * @author eric
@@ -40,10 +43,8 @@ public class StandardTreeCrossover<T> implements Crossover<Tree<T>> {
 
   @Override
   public Tree<T> recombine(Tree<T> parent1, Tree<T> parent2, Random random) {
-    Tree<T> child1 = (Tree<T>) parent1.clone();
-    Tree<T> child2 = (Tree<T>) parent2.clone();
-    child1.propagateParentship();
-    child2.propagateParentship();
+    Tree<T> child1 = Tree.copyOf(parent1);
+    Tree<T> child2 = Tree.copyOf(parent2);
     Multimap<T, Tree<T>> child1subtrees = ArrayListMultimap.create();
     Multimap<T, Tree<T>> child2subtrees = ArrayListMultimap.create();
     populateMultimap(child1, child1subtrees);
@@ -64,12 +65,13 @@ public class StandardTreeCrossover<T> implements Crossover<Tree<T>> {
       Collections.shuffle(subtrees2, random);
       for (Tree<T> subtree1 : subtrees1) {
         for (Tree<T> subtree2 : subtrees2) {
-          if ((subtree1.getAncestors().size() + subtree2.height() <= maxDepth) && (subtree2.getAncestors().size() + subtree1.height() <= maxDepth)) {
-            List<Tree<T>> swappingChildren = new ArrayList<>(subtree1.getChildren());
-            subtree1.getChildren().clear();
-            subtree1.getChildren().addAll(subtree2.getChildren());
-            subtree2.getChildren().clear();
-            subtree2.getChildren().addAll(swappingChildren);
+          if ((subtree1.depth() + subtree2.height() <= maxDepth) && (subtree2.depth() + subtree1.height() <= maxDepth)) {
+            List<Tree<T>> children1 = StreamSupport.stream(subtree1.spliterator(), false).collect(Collectors.toList());
+            List<Tree<T>> children2 = StreamSupport.stream(subtree2.spliterator(), false).collect(Collectors.toList());
+            subtree1.clearChildren();
+            subtree2.clearChildren();
+            children1.forEach(subtree2::addChild);
+            children2.forEach(subtree1::addChild);
             done = true;
             break;
           }
@@ -89,11 +91,11 @@ public class StandardTreeCrossover<T> implements Crossover<Tree<T>> {
   }
 
   private void populateMultimap(Tree<T> tree, Multimap<T, Tree<T>> multimap) {
-    if (tree.getChildren().isEmpty()) {
+    if (tree.isLeaf()) {
       return;
     }
-    multimap.put(tree.getContent(), tree);
-    for (Tree<T> child : tree.getChildren()) {
+    multimap.put(tree.content(), tree);
+    for (Tree<T> child : tree) {
       populateMultimap(child, multimap);
     }
 

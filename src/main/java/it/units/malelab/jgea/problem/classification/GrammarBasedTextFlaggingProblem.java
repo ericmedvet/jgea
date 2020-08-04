@@ -42,8 +42,8 @@ public class GrammarBasedTextFlaggingProblem extends TextFlaggingProblem impleme
   public GrammarBasedTextFlaggingProblem(Set<Character> alphabet, Set<RegexGrammar.Option> options, List<Pair<String, Label>> data, int folds, int i, ClassificationFitness.Metric learningErrorMetric, ClassificationFitness.Metric validationErrorMetric) {
     super(data, folds, i, learningErrorMetric, validationErrorMetric);
     solutionMapper = (Tree<String> tree) -> {
-      String regex = tree.leafNodes().stream()
-          .map(Tree::getContent)
+      String regex = tree.leaves().stream()
+          .map(Tree::content)
           .collect(Collectors.joining());
       return (Classifier<String, Label>) s -> {
         Matcher matcher = Pattern.compile(regex).matcher(s);

@@ -47,9 +47,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
   public Tree<T> apply(BitString genotype) {
     AtomicInteger mappingGlobalCounter = new AtomicInteger();
     AtomicInteger finalizationGlobalCounter = new AtomicInteger();
-    Tree<T> tree = mapRecursively(grammar.getStartingSymbol(), genotype, mappingGlobalCounter, finalizationGlobalCounter, 0);
-    tree.propagateParentship();
-    return tree;
+    return mapRecursively(grammar.getStartingSymbol(), genotype, mappingGlobalCounter, finalizationGlobalCounter, 0);
   }
 
   private Tree<T> mapRecursively(
@@ -59,7 +57,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
       AtomicInteger finalizationGlobalCounter,
       int depth
   ) {
-    Tree<T> tree = new Tree<>(symbol);
+    Tree<T> tree = Tree.of(symbol);
     if (!grammar.getRules().containsKey(symbol)) {
       return tree;
     }
@@ -67,7 +65,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
       List<Integer> shortestOptionIndexTies = shortestOptionIndexesMap.get(symbol);
       List<T> shortestOption = grammar.getRules().get(symbol).get(shortestOptionIndexTies.get(finalizationGlobalCounter.getAndIncrement() % shortestOptionIndexTies.size()));
       for (T optionSymbol : shortestOption) {
-        tree.getChildren().add(mapRecursively(optionSymbol, genotype, mappingGlobalCounter, finalizationGlobalCounter, depth + 1));
+        tree.addChild(mapRecursively(optionSymbol, genotype, mappingGlobalCounter, finalizationGlobalCounter, depth + 1));
       }
       return tree;
     }
@@ -98,7 +96,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
       } else {
         piece = new BitString(0);
       }
-      tree.getChildren().add(mapRecursively(
+      tree.addChild(mapRecursively(
           options.get(optionIndex).get(i), piece, mappingGlobalCounter, finalizationGlobalCounter, depth + 1));
     }
     return tree;

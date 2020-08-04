@@ -27,7 +27,6 @@ import it.units.malelab.jgea.representation.grammar.GrammarUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -35,8 +34,6 @@ import java.util.stream.Collectors;
 public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
 
   private final static boolean RECURSIVE_DEFAULT = false;
-  private final static boolean DEBUG = false;
-  private final static boolean LATEX_TREE_DEBUG = false;
 
   private final boolean recursive;
   protected final Map<T, List<Integer>> shortestOptionIndexesMap;
@@ -101,14 +98,6 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
     return slices(range, options.size());
   }
 
-  private Tree<T> extractFromEnhanced(Tree<EnhancedSymbol<T>> enhancedTree) {
-    Tree<T> tree = new Tree<>(enhancedTree.getContent().getSymbol());
-    for (Tree<EnhancedSymbol<T>> enhancedChild : enhancedTree.getChildren()) {
-      tree.getChildren().add(extractFromEnhanced(enhancedChild));
-    }
-    return tree;
-  }
-
   protected double optionSliceWeight(BitString slice) {
     return (double) slice.count() / (double) slice.size();
   }
@@ -135,27 +124,15 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
     if (bestOptionIndexes.size() == 1) {
       index = bestOptionIndexes.get(genotype.slice(range).count() % bestOptionIndexes.size());
     }
-    if (LATEX_TREE_DEBUG) {
-      for (int i = 0; i < slices.size(); i++) {
-        if (i > 0) {
-          System.out.print("\\:");
-        }
-        if (i == index) {
-          System.out.printf("\\textbf{\\gft{%s}}", slices.get(i).toFlatString());
-        } else {
-          System.out.printf("\\gft{%s}", slices.get(i).toFlatString());
-        }
-      }
-    }
     return options.get(index);
   }
 
   public Tree<T> mapIteratively(BitString genotype, int[] bitUsages) {
-    Tree<EnhancedSymbol<T>> enhancedTree = new Tree<>(new EnhancedSymbol<>(grammar.getStartingSymbol(), Range.closedOpen(0, genotype.size())));
+    Tree<EnhancedSymbol<T>> enhancedTree = Tree.of(new EnhancedSymbol<>(grammar.getStartingSymbol(), Range.closedOpen(0, genotype.size())));
     while (true) {
       Tree<EnhancedSymbol<T>> treeToBeReplaced = null;
-      for (Tree<EnhancedSymbol<T>> tree : enhancedTree.leafNodes()) {
-        if (grammar.getRules().keySet().contains(tree.getContent().getSymbol())) {
+      for (Tree<EnhancedSymbol<T>> tree : enhancedTree.leaves()) {
+        if (grammar.getRules().keySet().contains(tree.content().symbol)) {
           treeToBeReplaced = tree;
           break;
         }
@@ -164,8 +141,8 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
         break;
       }
       //get genotype
-      T symbol = treeToBeReplaced.getContent().getSymbol();
-      Range<Integer> symbolRange = treeToBeReplaced.getContent().getRange();
+      T symbol = treeToBeReplaced.content().getSymbol();
+      Range<Integer> symbolRange = treeToBeReplaced.content().getRange();
       List<List<T>> options = grammar.getRules().get(symbol);
       //get option
       List<T> symbols;
@@ -186,26 +163,19 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
         if (childRanges.get(i).equals(symbolRange) && (childRange.upperEndpoint() - childRange.lowerEndpoint() > 0)) {
           childRange = Range.closedOpen(symbolRange.lowerEndpoint(), symbolRange.upperEndpoint() - 1);
         }
-        Tree<EnhancedSymbol<T>> newChild = new Tree<>(new EnhancedSymbol<>(
+        Tree<EnhancedSymbol<T>> newChild = Tree.of(new EnhancedSymbol<>(
             symbols.get(i),
             childRange
         ));
-        treeToBeReplaced.getChildren().add(newChild);
+        treeToBeReplaced.addChild(newChild);
       }
     }
     //convert
-    return extractFromEnhanced(enhancedTree);
+    return Tree.map(enhancedTree, EnhancedSymbol::getSymbol);
   }
 
   public Tree<T> mapRecursively(T symbol, Range<Integer> range, BitString genotype, int[] bitUsages) {
-    Tree<T> tree = new Tree<>(symbol);
-    if (LATEX_TREE_DEBUG) {
-      if (grammar.getRules().containsKey(symbol)) {
-        System.out.printf("[.{\\gft{\\bnfPiece{%s}} \\\\$", symbol.toString().replaceAll("[<>]", ""));
-      } else {
-        System.out.printf("[.{\\gft{%s}} ]%n", symbol);
-      }
-    }
+    Tree<T> tree = Tree.of(symbol);
     if (grammar.getRules().containsKey(symbol)) {
       //a non-terminal node
       //update usage
@@ -219,17 +189,11 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
         int count = (range.upperEndpoint() - range.lowerEndpoint() > 0) ? genotype.slice(range).count() : genotype.count();
         int index = shortestOptionIndexesMap.get(symbol).get(count % shortestOptionIndexesMap.get(symbol).size());
         symbols = options.get(index);
-        if (LATEX_TREE_DEBUG) {
-          System.out.printf("%s", genotype.slice(range).toFlatString());
-        }
       } else {
         symbols = chooseOption(genotype, range, options);
         for (int i = range.lowerEndpoint(); i < range.upperEndpoint(); i++) {
           bitUsages[i] = bitUsages[i] + 1;
         }
-      }
-      if (LATEX_TREE_DEBUG) {
-        System.out.printf("$\\\\$");
       }
       //add children
       List<Range<Integer>> childRanges = getChildrenSlices(range, symbols);
@@ -240,33 +204,8 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
           childRanges.set(i, childRange);
         }
       }
-      if (LATEX_TREE_DEBUG) {
-        System.out.printf("%s$}%n",
-            childRanges.stream().map((Range<Integer> r) -> {
-              if (r.upperEndpoint() - r.lowerEndpoint() > 0) {
-                return String.format("\\gft{%s}", genotype.slice(r).toFlatString());
-              } else {
-                return "\\emptyset";
-              }
-            }).collect(Collectors.joining("\\:"))
-        );
-      }
       for (int i = 0; i < symbols.size(); i++) {
-        tree.getChildren().add(mapRecursively(symbols.get(i), childRanges.get(i), genotype, bitUsages));
-      }
-      if (LATEX_TREE_DEBUG) {
-        System.out.println("]");
-      }
-      if (DEBUG) {
-        System.out.printf("%10.10s %4d %4d %2d %20.20s %s%n",
-            //System.out.printf("\\gft{\\bnfPiece{%s}} & %d & %d & %d & $%s$ & \\gft{%s} \\\\%n",
-            symbol,
-            range.upperEndpoint() - range.lowerEndpoint(),
-            options.size(),
-            options.indexOf(symbols),
-            childRanges.stream().map(r -> Integer.toString(r.upperEndpoint() - r.lowerEndpoint())).collect(Collectors.joining(",")),
-            tree.leafNodes().stream().map(Object::toString).collect(Collectors.joining(" "))
-        );
+        tree.addChild(mapRecursively(symbols.get(i), childRanges.get(i), genotype, bitUsages));
       }
     }
     return tree;

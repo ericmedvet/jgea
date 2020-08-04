@@ -33,15 +33,15 @@ public class FormulaMapper implements Function<Tree<String>, Tree<Element>> {
 
   @Override
   public Tree<Element> apply(Tree<String> stringTree) {
-    if (stringTree.getChildren().isEmpty()) {
-      return new Tree<>(fromString(stringTree.getContent()));
+    if (stringTree.isLeaf()) {
+      return Tree.of(fromString(stringTree.content()));
     }
-    if (stringTree.getChildren().size() == 1) {
-      return apply(stringTree.getChildren().get(0));
+    if (stringTree.nChildren() == 1) {
+      return apply(stringTree.child(0));
     }
-    Tree<Element> tree = apply(stringTree.getChildren().get(0));
-    for (int i = 1; i < stringTree.getChildren().size(); i++) {
-      tree.getChildren().add(apply(stringTree.getChildren().get(i)));
+    Tree<Element> tree = apply(stringTree.child(0));
+    for (int i = 1; i < stringTree.nChildren(); i++) {
+      tree.addChild(apply(stringTree.child(i)));
     }
     return tree;
   }

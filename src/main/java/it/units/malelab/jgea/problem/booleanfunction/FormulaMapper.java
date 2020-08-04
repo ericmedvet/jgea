@@ -38,9 +38,9 @@ public class FormulaMapper implements Function<Tree<String>, List<Tree<Element>>
 
   @Override
   public List<Tree<Element>> apply(Tree<String> stringTree) {
-    if (stringTree.getContent().equals(MULTIPLE_OUTPUT_NON_TERMINAL)) {
+    if (stringTree.content().equals(MULTIPLE_OUTPUT_NON_TERMINAL)) {
       List<Tree<Element>> trees = new ArrayList<>();
-      for (Tree<String> child : stringTree.getChildren()) {
+      for (Tree<String> child : stringTree) {
         trees.add(singleMap(child));
       }
       return trees;
@@ -50,15 +50,15 @@ public class FormulaMapper implements Function<Tree<String>, List<Tree<Element>>
   }
 
   public Tree<Element> singleMap(Tree<String> stringTree) {
-    if (stringTree.getChildren().isEmpty()) {
-      return new Tree<>(fromString(stringTree.getContent()));
+    if (stringTree.isLeaf()) {
+      return Tree.of(fromString(stringTree.content()));
     }
-    if (stringTree.getChildren().size() == 1) {
-      return singleMap(stringTree.getChildren().get(0));
+    if (stringTree.nChildren() == 1) {
+      return singleMap(stringTree.child(0));
     }
-    Tree<Element> tree = singleMap(stringTree.getChildren().get(0));
-    for (int i = 1; i < stringTree.getChildren().size(); i++) {
-      tree.getChildren().add(singleMap(stringTree.getChildren().get(i)));
+    Tree<Element> tree = singleMap(stringTree.child(0));
+    for (int i = 1; i < stringTree.nChildren(); i++) {
+      tree.addChild(singleMap(stringTree.child(i)));
     }
     return tree;
   }
