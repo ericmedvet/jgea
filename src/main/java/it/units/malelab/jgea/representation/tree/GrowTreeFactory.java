@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  * @project jgea
  */
 public class GrowTreeFactory<N> extends FullTreeFactory<N> {
-  public GrowTreeFactory(int height, ToIntFunction arityFunction, IndependentFactory nonTerminalFactory, IndependentFactory terminalFactory) {
+  public GrowTreeFactory(int height, ToIntFunction<N> arityFunction, IndependentFactory<N> nonTerminalFactory, IndependentFactory<N> terminalFactory) {
     super(height, arityFunction, nonTerminalFactory, terminalFactory);
   }
 
@@ -55,5 +55,5 @@ public class GrowTreeFactory<N> extends FullTreeFactory<N> {
     }
     return t;
   }
-  
+
 }
