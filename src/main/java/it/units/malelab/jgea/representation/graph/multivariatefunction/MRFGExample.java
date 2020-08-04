@@ -19,22 +19,33 @@ package it.units.malelab.jgea.representation.graph.multivariatefunction;
 
 import com.google.common.graph.ValueGraph;
 import it.units.malelab.jgea.Worker;
+import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.evolver.RandomSearch;
+import it.units.malelab.jgea.core.evolver.RandomWalk;
+import it.units.malelab.jgea.core.evolver.StandardEvolver;
+import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.evolver.stopcondition.TargetFitness;
+import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.collector.*;
+import it.units.malelab.jgea.core.operator.Crossover;
+import it.units.malelab.jgea.core.operator.GeneticOperator;
+import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.order.PartialComparator;
+import it.units.malelab.jgea.core.selector.Tournament;
+import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
+import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.problem.symbolicregression.*;
+import it.units.malelab.jgea.representation.graph.*;
 
 import java.io.FileNotFoundException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * @author eric
@@ -52,36 +63,102 @@ public class MRFGExample extends Worker {
   @Override
   public void run() {
     Random r = new Random(1);
+    int maxNodes = 50;
     SymbolicRegressionProblem p = new Nguyen7(1);
-    List<Evolver<ValueGraph<MultivariateRealFunctionGraph.Node, Double>, RealFunction, Double>> evolvers = List.of(
-        new RandomSearch<ValueGraph<MultivariateRealFunctionGraph.Node, Double>, RealFunction, Double>(
+    List<Evolver<ValueGraph<Node, Double>, RealFunction, Double>> evolvers = List.of(
+        new RandomSearch<ValueGraph<Node, Double>, RealFunction, Double>(
             MultivariateRealFunctionGraph.builder()
                 .andThen(GraphBasedRealFunction.builder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new ShallowGraphFactory(0.5d, 0d, 1d, p.getArity(), 1),
             PartialComparator.from(Double.class).on(Individual::getFitness)
+        ),
+        new RandomWalk<>(
+            MultivariateRealFunctionGraph.builder()
+                .andThen(GraphBasedRealFunction.builder())
+                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+            new ShallowGraphFactory(0.5d, 0d, 1d, p.getArity(), 1),
+            PartialComparator.from(Double.class).on(Individual::getFitness),
+            Mutation.oneOf(Map.of(
+                new NodeAddition<>(
+                    BaseFunction.factory(maxNodes, BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.SIN),
+                    Random::nextGaussian
+                ), 1d,
+                new EdgeModification<>((w, random) -> w + random.nextGaussian()), 1d,
+                new EdgeAddition<>(Random::nextGaussian, false), 1d,
+                new EdgeRemoval<>(node -> node instanceof OutputNode), 0.1d
+            ))
+        ),
+        new StandardEvolver<>(
+            MultivariateRealFunctionGraph.builder()
+                .andThen(GraphBasedRealFunction.builder())
+                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+            new ShallowGraphFactory(0.5d, 0d, 1d, p.getArity(), 1),
+            PartialComparator.from(Double.class).on(Individual::getFitness),
+            100,
+            Map.of(
+                new NodeAddition<>(
+                    BaseFunction.factory(maxNodes, BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.SIN),
+                    Random::nextGaussian
+                ), 2d,
+                new EdgeModification<>((w, random) -> w + random.nextGaussian()), 1d,
+                new EdgeAddition<>(Random::nextGaussian, false), 1d,
+                new EdgeRemoval<>(node -> node instanceof OutputNode), 0.1d
+            ),
+            new Tournament(5),
+            new Worst(),
+            100,
+            true
+        ),
+        new StandardEvolver<>(
+            MultivariateRealFunctionGraph.builder()
+                .andThen(GraphBasedRealFunction.builder())
+                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+            new ShallowGraphFactory(0.5d, 0d, 1d, p.getArity(), 1),
+            PartialComparator.from(Double.class).on(Individual::getFitness),
+            100,
+            Map.of(
+                new NodeAddition<>(
+                    BaseFunction.factory(maxNodes, BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.SIN),
+                    Random::nextGaussian
+                ), 2d,
+                new EdgeModification<>((w, random) -> w + random.nextGaussian()), 1d,
+                new EdgeAddition<>(Random::nextGaussian, false), 1d,
+                new EdgeRemoval<>(node -> node instanceof OutputNode), 0.1d,
+                new AlignedCrossover<>(
+                    (w1, w2, random) -> w1 + (w2 - w1) - random.nextDouble(),
+                    node -> node instanceof OutputNode,
+                    false
+                ), 1d
+            ),
+            new Tournament(5),
+            new Worst(),
+            100,
+            true
         )
     );
-    for (Evolver<ValueGraph<MultivariateRealFunctionGraph.Node, Double>, RealFunction, Double> evolver : evolvers) {
+    evolvers = evolvers.subList(2, 4); //TODO remove
+    for (Evolver<ValueGraph<Node, Double>, RealFunction, Double> evolver : evolvers) {
       System.out.println(evolver.getClass().getSimpleName());
       try {
         Collection<RealFunction> solutions = evolver.solve(
             Misc.cached(p.getFitnessFunction(), 10000),
-            new TargetFitness<>(0d).or(new Iterations(100)),
+            new TargetFitness<>(0d).or(new FitnessEvaluations(10000)),
             r,
             executorService,
-            listener(
+            Listener.onExecutor(listener(
                 new Basic(),
                 new Population(),
                 new Diversity(),
-                new BestInfo("%5.3f"),
+                new BestInfo("%7.5f"),
                 new FunctionOfOneBest<>(i -> List.of(new Item(
                     "validation.fitness",
                     p.getValidationFunction().apply(i.getSolution()),
-                    "%5.3f"
-                ))),
-                new BestPrinter(BestPrinter.Part.SOLUTION)
-            ));
+                    "%7.5f"
+                )))//,
+                //new BestPrinter(BestPrinter.Part.SOLUTION)
+            ), executorService)
+        );
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
       } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();

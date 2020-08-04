@@ -17,10 +17,7 @@
 
 package it.units.malelab.jgea.representation.graph;
 
-import com.google.common.graph.EndpointPair;
-import com.google.common.graph.MutableValueGraph;
-import com.google.common.graph.ValueGraph;
-import com.google.common.graph.ValueGraphBuilder;
+import com.google.common.graph.*;
 import it.units.malelab.jgea.core.operator.Crossover;
 
 import java.util.LinkedHashSet;
@@ -37,10 +34,12 @@ public class AlignedCrossover<N, E> implements Crossover<ValueGraph<N, E>> {
 
   private final Crossover<E> edgeCrossover;
   private final Predicate<N> unremovableNodePredicate;
+  private final boolean allowCycles;
 
-  public AlignedCrossover(Crossover<E> edgeCrossover, Predicate<N> unremovableNodePredicate) {
+  public AlignedCrossover(Crossover<E> edgeCrossover, Predicate<N> unremovableNodePredicate, boolean allowCycles) {
     this.edgeCrossover = edgeCrossover;
     this.unremovableNodePredicate = unremovableNodePredicate;
+    this.allowCycles = allowCycles;
   }
 
   public Crossover<E> getEdgeCrossover() {
@@ -49,6 +48,10 @@ public class AlignedCrossover<N, E> implements Crossover<ValueGraph<N, E>> {
 
   public Predicate<N> getUnremovableNodePredicate() {
     return unremovableNodePredicate;
+  }
+
+  public boolean isAllowCycles() {
+    return allowCycles;
   }
 
   @Override
@@ -74,6 +77,9 @@ public class AlignedCrossover<N, E> implements Crossover<ValueGraph<N, E>> {
       }
       if (childEdge != null) {
         child.putEdgeValue(endpointPair.nodeU(), endpointPair.nodeV(), childEdge);
+        if (!allowCycles && Graphs.hasCycle(child.asGraph())) {
+          child.removeEdge(endpointPair.nodeU(), endpointPair.nodeV());
+        }
       }
     }
     //remove unconnected nodes

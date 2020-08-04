@@ -17,7 +17,6 @@
 
 package it.units.malelab.jgea.core.operator;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -48,6 +47,5 @@ public interface GeneticOperator<G> {
       }
     };
   }
-
 
 }

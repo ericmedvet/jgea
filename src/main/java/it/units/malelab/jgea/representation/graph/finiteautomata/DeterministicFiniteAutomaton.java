@@ -27,6 +27,7 @@ import it.units.malelab.jgea.problem.extraction.Extractor;
 import it.units.malelab.jgea.problem.extraction.RegexExtractionProblem;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -76,6 +77,10 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
 
   private final ValueGraph<Node, Set<S>> graph;
   private final Node startingNode;
+
+  public static <R> Function<ValueGraph<Node, Set<R>>, DeterministicFiniteAutomaton<R>> builder(Node startingNode) {
+    return nodeSetValueGraph -> new DeterministicFiniteAutomaton<>(nodeSetValueGraph, startingNode);
+  }
 
   public DeterministicFiniteAutomaton(ValueGraph<Node, Set<S>> graph, Node startingNode) {
     //check if the graph is valid

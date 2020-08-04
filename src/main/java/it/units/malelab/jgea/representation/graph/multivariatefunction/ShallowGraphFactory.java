@@ -27,7 +27,7 @@ import java.util.Random;
  * @created 2020/08/04
  * @project jgea
  */
-public class ShallowGraphFactory implements IndependentFactory<ValueGraph<MultivariateRealFunctionGraph.Node, Double>> {
+public class ShallowGraphFactory implements IndependentFactory<ValueGraph<Node, Double>> {
   private final double sparsity;
   private final double mu;
   private final double sigma;
@@ -43,18 +43,18 @@ public class ShallowGraphFactory implements IndependentFactory<ValueGraph<Multiv
   }
 
   @Override
-  public ValueGraph<MultivariateRealFunctionGraph.Node, Double> build(Random random) {
-    MutableValueGraph<MultivariateRealFunctionGraph.Node, Double> g = ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+  public ValueGraph<Node, Double> build(Random random) {
+    MutableValueGraph<Node, Double> g = ValueGraphBuilder.directed().allowsSelfLoops(false).build();
     for (int i = 0; i < nInputs; i++) {
-      g.addNode(new MultivariateRealFunctionGraph.InputNode(i));
+      g.addNode(new InputNode(i));
     }
     for (int o = 0; o < nOutputs; o++) {
-      g.addNode(new MultivariateRealFunctionGraph.OutputNode(o));
+      g.addNode(new OutputNode(o));
     }
     for (int i = 0; i < nInputs; i++) {
-      MultivariateRealFunctionGraph.Node inputNode = new MultivariateRealFunctionGraph.InputNode(i);
+      Node inputNode = new InputNode(i);
       for (int o = 0; o < nOutputs; o++) {
-        MultivariateRealFunctionGraph.Node outputNode = new MultivariateRealFunctionGraph.OutputNode(o);
+        Node outputNode = new OutputNode(o);
         if (random.nextDouble() < (1d - sparsity)) {
           double w = random.nextGaussian() * sigma + mu;
           g.putEdgeValue(inputNode, outputNode, w);

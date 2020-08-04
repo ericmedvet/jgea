@@ -21,7 +21,6 @@ import com.google.common.graph.ValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import it.units.malelab.jgea.core.util.Sized;
 import it.units.malelab.jgea.problem.symbolicregression.GraphBasedRealFunction;
-import it.units.malelab.jgea.problem.symbolicregression.RealFunction;
 
 import java.util.Objects;
 import java.util.Random;
@@ -35,71 +34,6 @@ import java.util.stream.Collectors;
  * @project jgea
  */
 public class MultivariateRealFunctionGraph implements Function<double[], double[]>, Sized {
-
-  public static abstract class Node {
-    private final int index;
-
-    public Node(int index) {
-      this.index = index;
-    }
-
-    public int getIndex() {
-      return index;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      Node node = (Node) o;
-      return index == node.index;
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(index);
-    }
-  }
-
-  public static class InputNode extends Node {
-    public InputNode(int index) {
-      super(index);
-    }
-
-    @Override
-    public String toString() {
-      return "i" + getIndex();
-    }
-  }
-
-  public static class OutputNode extends Node {
-    public OutputNode(int index) {
-      super(index);
-    }
-
-    @Override
-    public String toString() {
-      return "o" + getIndex();
-    }
-  }
-
-  public static class FunctionNode extends Node {
-    private final Function<Double, Double> function;
-
-    public FunctionNode(int index, Function<Double, Double> function) {
-      super(index);
-      this.function = function;
-    }
-
-    public Function<Double, Double> getFunction() {
-      return function;
-    }
-
-    @Override
-    public String toString() {
-      return "f" + getIndex();
-    }
-  }
 
   private final ValueGraph<Node, Double> graph;
 
@@ -142,11 +76,11 @@ public class MultivariateRealFunctionGraph implements Function<double[], double[
   }
 
   public int nInputs() {
-    return (int) graph.nodes().stream().filter(n -> n instanceof MultivariateRealFunctionGraph.InputNode).count();
+    return (int) graph.nodes().stream().filter(n -> n instanceof InputNode).count();
   }
 
   public int nOutputs() {
-    return (int) graph.nodes().stream().filter(n -> n instanceof MultivariateRealFunctionGraph.OutputNode).count();
+    return (int) graph.nodes().stream().filter(n -> n instanceof OutputNode).count();
   }
 
   private double outValue(Node node, double[] input) {
@@ -162,32 +96,21 @@ public class MultivariateRealFunctionGraph implements Function<double[], double[
       return sum;
     }
     if (node instanceof FunctionNode) {
-      return ((FunctionNode) node).getFunction().apply(sum);
+      return ((FunctionNode) node).apply(sum);
     }
     throw new RuntimeException(String.format("Unknown type of node: %s", node.getClass().getSimpleName()));
   }
 
-  public static void main(String[] args) {
-    InputNode i0 = new InputNode(0);
-    OutputNode o0 = new OutputNode(0);
-    FunctionNode f0 = new FunctionNode(0, x -> x);
-    FunctionNode f1 = new FunctionNode(1, x -> 1 / x);
-    ValueGraph<Node, Double> g = ValueGraphBuilder.directed().allowsSelfLoops(false)
-        .<Node, Double>immutable()
-        .addNode(i0)
-        .addNode(o0)
-        .addNode(f0)
-        .addNode(f1)
-        .putEdgeValue(i0, f0, 1d)
-        .putEdgeValue(i0, f1, 0.1)
-        .putEdgeValue(f0, o0, 2d)
-        .putEdgeValue(f1, o0, 1d)
-        .build();
-    System.out.println(g);
-    MultivariateRealFunctionGraph mrfg = new MultivariateRealFunctionGraph(g);
-    System.out.println(new GraphBasedRealFunction(mrfg).apply(10d));
-    mrfg = new MultivariateRealFunctionGraph(new ShallowGraphFactory(0.15d, 0, 1, 1, 1).build(new Random(2)));
-    System.out.println(mrfg);
-    System.out.println(new GraphBasedRealFunction(mrfg).apply(10d));
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    MultivariateRealFunctionGraph that = (MultivariateRealFunctionGraph) o;
+    return graph.equals(that.graph);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(graph);
   }
 }

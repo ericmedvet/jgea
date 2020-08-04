@@ -15,37 +15,36 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.core.operator;
+package it.units.malelab.jgea.representation.graph.multivariatefunction;
 
-import it.units.malelab.jgea.core.util.Misc;
-import it.units.malelab.jgea.core.util.Pair;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 /**
  * @author eric
+ * @created 2020/08/04
+ * @project jgea
  */
-@FunctionalInterface
-public interface Mutation<G> extends GeneticOperator<G> {
+public abstract class Node {
+  private final int index;
 
-  @Override
-  default int arity() {
-    return 1;
+  public Node(int index) {
+    this.index = index;
+  }
+
+  public int getIndex() {
+    return index;
   }
 
   @Override
-  default List<? extends G> apply(List<? extends G> gs, Random random) {
-    return Collections.singletonList(mutate(gs.get(0), random));
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Node node = (Node) o;
+    return index == node.index;
   }
 
-  G mutate(G g, Random random);
-
-  static <K> Mutation<K> copy() {
-    return (k, random) -> k;
-  }
-
-  static <K> Mutation<K> oneOf(Map<Mutation<K>, Double> operators) {
-    return (k, random) -> Misc.pickRandomly(operators, random).mutate(k, random);
+  @Override
+  public int hashCode() {
+    return Objects.hash(index);
   }
 }

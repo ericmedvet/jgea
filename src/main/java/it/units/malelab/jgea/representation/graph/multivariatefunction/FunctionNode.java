@@ -15,37 +15,32 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.core.operator;
+package it.units.malelab.jgea.representation.graph.multivariatefunction;
 
-import it.units.malelab.jgea.core.util.Misc;
-import it.units.malelab.jgea.core.util.Pair;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
 /**
  * @author eric
+ * @created 2020/08/04
+ * @project jgea
  */
-@FunctionalInterface
-public interface Mutation<G> extends GeneticOperator<G> {
+public class FunctionNode extends Node implements Function<Double, Double> {
 
-  @Override
-  default int arity() {
-    return 1;
+  private final Function<Double, Double> function;
+
+  public FunctionNode(int index, Function<Double, Double> function) {
+    super(index);
+    this.function = function;
   }
 
   @Override
-  default List<? extends G> apply(List<? extends G> gs, Random random) {
-    return Collections.singletonList(mutate(gs.get(0), random));
+  public Double apply(Double x) {
+    return function.apply(x);
   }
 
-  G mutate(G g, Random random);
-
-  static <K> Mutation<K> copy() {
-    return (k, random) -> k;
+  @Override
+  public String toString() {
+    return String.format("f%d[%s]", getIndex(), function.toString());
   }
 
-  static <K> Mutation<K> oneOf(Map<Mutation<K>, Double> operators) {
-    return (k, random) -> Misc.pickRandomly(operators, random).mutate(k, random);
-  }
 }

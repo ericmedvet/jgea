@@ -35,9 +35,11 @@ import java.util.Random;
  */
 public class EdgeAddition<N, E> implements Mutation<ValueGraph<N, E>> {
   private final IndependentFactory<E> edgeFactory;
+  private final boolean allowCycles;
 
-  public EdgeAddition(IndependentFactory<E> edgeFactory) {
+  public EdgeAddition(IndependentFactory<E> edgeFactory, boolean allowCycles) {
     this.edgeFactory = edgeFactory;
+    this.allowCycles = allowCycles;
   }
 
   public IndependentFactory<E> getEdgeFactory() {
@@ -55,10 +57,14 @@ public class EdgeAddition<N, E> implements Mutation<ValueGraph<N, E>> {
       boolean added = false;
       for (N fromNode : fromNodes) {
         for (N toNode : toNodes) {
-          if (!child.hasEdgeConnecting(fromNode, toNode)) {
+          if (!fromNode.equals(toNode) && !child.hasEdgeConnecting(fromNode, toNode)) {
             child.putEdgeValue(fromNode, toNode, edgeFactory.build(random));
-            added = true;
-            break;
+            if (!allowCycles && Graphs.hasCycle(child.asGraph())) {
+              child.removeEdge(fromNode, toNode);
+            } else {
+              added = true;
+              break;
+            }
           }
         }
         if (added) {
