@@ -20,7 +20,7 @@ package it.units.malelab.jgea.problem.symbolicregression;
 /**
  * @author eric
  */
-public class UnivariateComposed extends AbstractSymbolicRegressionProblem {
+public class UnivariateComposed extends SymbolicRegressionProblem {
 
   public UnivariateComposed() {
     super(

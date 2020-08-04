@@ -34,7 +34,6 @@ import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
-import it.units.malelab.jgea.problem.symbolicregression.element.Element;
 import it.units.malelab.jgea.problem.synthetic.LinearPoints;
 import it.units.malelab.jgea.problem.synthetic.OneMax;
 import it.units.malelab.jgea.problem.synthetic.Rastrigin;
@@ -209,7 +208,7 @@ public class Example extends Worker {
 
   public void runSymbolicRegression() {
     Random r = new Random(1);
-    AbstractSymbolicRegressionProblem p = new Nguyen7(1);
+    SymbolicRegressionProblem p = new Nguyen7(1);
     Grammar<String> srGrammar;
     try {
       srGrammar = Grammar.fromFile(new File("grammars/symbolic-regression-nguyen7.bnf"));
@@ -281,7 +280,7 @@ public class Example extends Worker {
 
   public void runSymbolicRegressionMO() {
     Random r = new Random(1);
-    AbstractSymbolicRegressionProblem p = new Nguyen7(1);
+    SymbolicRegressionProblem p = new Nguyen7(1);
     Grammar<String> srGrammar;
     try {
       srGrammar = Grammar.fromFile(new File("grammars/symbolic-regression-nguyen7.bnf"));

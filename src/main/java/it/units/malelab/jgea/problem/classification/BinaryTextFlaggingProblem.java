@@ -34,7 +34,7 @@ import java.util.stream.Stream;
 /**
  * @author eric
  */
-public class BinaryRegexClassification extends GrammarBasedRegexClassification {
+public class BinaryTextFlaggingProblem extends GrammarBasedTextFlaggingProblem {
 
   private final static String[] REGEXES = new String[]{"101010...010101", "11111...11111", "(11110000)++"};
   private final static String ALPHABET = "01";
@@ -65,7 +65,7 @@ public class BinaryRegexClassification extends GrammarBasedRegexClassification {
     return data;
   }
 
-  public BinaryRegexClassification(int size, int length, long seed, int folds, int i, ClassificationFitness.Metric learningErrorMetric, ClassificationFitness.Metric validationErrorMetric, RegexGrammar.Option... options) {
+  public BinaryTextFlaggingProblem(int size, int length, long seed, int folds, int i, ClassificationFitness.Metric learningErrorMetric, ClassificationFitness.Metric validationErrorMetric, RegexGrammar.Option... options) {
     super(new TreeSet<>(ALPHABET.chars().mapToObj(c -> (char) c).collect(Collectors.toSet())),
         new LinkedHashSet<>(Arrays.asList(options)),
         buildData(REGEXES, ALPHABET, length, size, new Random(seed)),

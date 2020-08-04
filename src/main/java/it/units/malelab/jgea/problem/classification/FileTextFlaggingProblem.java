@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 /**
  * @author eric
  */
-public class FileRegexClassification extends GrammarBasedRegexClassification {
+public class FileTextFlaggingProblem extends GrammarBasedTextFlaggingProblem {
 
   private static List<Pair<String, Label>> buildData(String positiveFileName, String negativeFileName) throws IOException {
     List<Pair<String, Label>> data = new ArrayList<>();
@@ -42,7 +42,7 @@ public class FileRegexClassification extends GrammarBasedRegexClassification {
     return data;
   }
 
-  public FileRegexClassification(String positiveFileName, String negativeFileName, int folds, int i, ClassificationFitness.Metric learningErrorMetric, ClassificationFitness.Metric validationErrorMetric, RegexGrammar.Option... options) throws IOException {
+  public FileTextFlaggingProblem(String positiveFileName, String negativeFileName, int folds, int i, ClassificationFitness.Metric learningErrorMetric, ClassificationFitness.Metric validationErrorMetric, RegexGrammar.Option... options) throws IOException {
     super(null,
         new LinkedHashSet<>(Arrays.asList(options)),
         buildData(positiveFileName, negativeFileName),

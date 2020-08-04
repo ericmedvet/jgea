@@ -20,7 +20,7 @@ package it.units.malelab.jgea.problem.symbolicregression;
 /**
  * @author eric
  */
-public class Keijzer6 extends AbstractSymbolicRegressionProblem {
+public class Keijzer6 extends SymbolicRegressionProblem {
 
   public Keijzer6() {
     super(

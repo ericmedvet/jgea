@@ -23,7 +23,7 @@ import com.google.common.graph.ValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
 import it.units.malelab.jgea.problem.extraction.Extractor;
-import it.units.malelab.jgea.problem.extraction.RegexExtraction;
+import it.units.malelab.jgea.problem.extraction.RegexExtractionProblem;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -174,7 +174,7 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S> {
     System.out.println(dfa.extract("00aabc00bccc00".chars().mapToObj(c -> (char) c).collect(Collectors.toList())));
     System.out.println(dfa.extractLargest("00aabc00bccc00".chars().mapToObj(c -> (char) c).collect(Collectors.toList())));
 
-    RegexExtraction p = new RegexExtraction("010101010101112010101011900010101010101010101001101", Set.of("00+", "01(01)+"), 2, 0, ExtractionFitness.Metric.values());
+    RegexExtractionProblem p = new RegexExtractionProblem(Set.of("00+", "01(01)+"), "010101010101112010101011900010101010101010101001101", 2, 0, ExtractionFitness.Metric.values());
     System.out.println(p.getFitnessFunction().getSequence());
     System.out.println(p.getFitnessFunction().getDesiredExtractions());
   }

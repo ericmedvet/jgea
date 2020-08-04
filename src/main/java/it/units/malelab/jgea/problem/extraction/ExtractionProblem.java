@@ -32,12 +32,12 @@ import java.util.stream.Stream;
 /**
  * @author eric
  */
-public abstract class AbstractExtractionProblem<S> implements ProblemWithValidation<Extractor<S>, List<Double>> {
+public class ExtractionProblem<S> implements ProblemWithValidation<Extractor<S>, List<Double>> {
 
   private final ExtractionFitness<S> fitnessFunction;
   private final ExtractionFitness<S> validationFunction;
 
-  public AbstractExtractionProblem(List<S> sequence, Set<Extractor<S>> extractors, int folds, int i, ExtractionFitness.Metric... metrics) {
+  public ExtractionProblem(Set<Extractor<S>> extractors, List<S> sequence, int folds, int i, ExtractionFitness.Metric... metrics) {
     List<S> learningSequence = new ArrayList<>();
     List<S> validationSequence = new ArrayList<>();
     double foldLength = (double) sequence.size() / (double) folds;

@@ -20,7 +20,7 @@ package it.units.malelab.jgea.problem.symbolicregression;
 /**
  * @author eric
  */
-public class Pagie1 extends AbstractSymbolicRegressionProblem {
+public class Pagie1 extends SymbolicRegressionProblem {
 
   public Pagie1() {
     super(

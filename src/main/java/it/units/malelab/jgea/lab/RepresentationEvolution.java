@@ -306,7 +306,7 @@ public class RepresentationEvolution extends Worker {
     }
   }
 
-  private static EnhancedProblem<String, RealFunction, Double> from(AbstractSymbolicRegressionProblem p, Grammar<String> g, String... vars) {
+  private static EnhancedProblem<String, RealFunction, Double> from(SymbolicRegressionProblem p, Grammar<String> g, String... vars) {
     Distance<Node<it.units.malelab.jgea.problem.symbolicregression.element.Element>> nodeDistance = Misc.cached(new TreeLeaves<>(new Edit<>()), CACHE_SIZE);
     Distance<RealFunction> d = (f1, f2) -> nodeDistance.apply(
         ((NodeBasedRealFunction) f1).getNode(),

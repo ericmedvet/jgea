@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 /**
  * @author eric
  */
-public class BinaryRegexExtraction extends GrammarBasedRegexExtraction {
+public class BinaryRegexExtractionProblem extends GrammarBasedRegexExtractionProblem {
 
   private final static String[] REGEXES = new String[]{"10100101", "111(00)?+(11)++", "(110110)++"};
   private final static String ALPHABET = "01";
@@ -61,7 +61,7 @@ public class BinaryRegexExtraction extends GrammarBasedRegexExtraction {
     }
   }
 
-  public BinaryRegexExtraction(int minExtractionsPerRegex, long seed, Set<RegexGrammar.Option> options, int folds, int i, ExtractionFitness.Metric... metrics) {
+  public BinaryRegexExtractionProblem(int minExtractionsPerRegex, long seed, Set<RegexGrammar.Option> options, int folds, int i, ExtractionFitness.Metric... metrics) {
     super(
         false,
         options,

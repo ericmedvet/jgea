@@ -29,23 +29,19 @@ import java.util.stream.Collectors;
 /**
  * @author eric
  */
-public class RegexExtraction extends AbstractExtractionProblem<Character> {
+public class RegexExtractionProblem extends ExtractionProblem<Character> {
 
-  public RegexExtraction(List<Character> sequence, Set<Extractor<Character>> extractors, int folds, int i, ExtractionFitness.Metric... metrics) {
-    super(sequence, extractors, folds, i, metrics);
-  }
-
-  public RegexExtraction(String text, Set<String> regexes, int folds, int i, ExtractionFitness.Metric... metrics) {
+  public RegexExtractionProblem(Set<String> regexes, String text, int folds, int i, ExtractionFitness.Metric... metrics) {
     super(
+        regexes.stream().map(RegexExtractionProblem::fromRegex).collect(Collectors.toSet()),
         text.chars().mapToObj(c -> (char) c).collect(Collectors.toList()),
-        regexes.stream().map(RegexExtraction::fromRegex).collect(Collectors.toSet()),
         folds, i, metrics
     );
   }
 
 
   public static Extractor<Character> fromRegex(String pattern) {
-    return new Extractor<Character>() {
+    return new Extractor<>() {
       @Override
       public Set<Range<Integer>> extract(List<Character> sequence) {
         String string = sequence.stream()

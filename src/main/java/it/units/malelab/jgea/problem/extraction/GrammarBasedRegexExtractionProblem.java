@@ -31,14 +31,14 @@ import java.util.stream.Collectors;
 /**
  * @author eric
  */
-public class GrammarBasedRegexExtraction extends RegexExtraction implements GrammarBasedProblem<String, Extractor<Character>, List<Double>> {
+public class GrammarBasedRegexExtractionProblem extends RegexExtractionProblem implements GrammarBasedProblem<String, Extractor<Character>, List<Double>> {
 
   private final Grammar<String> grammar;
   private final Function<Node<String>, Extractor<Character>> solutionMapper;
 
-  public GrammarBasedRegexExtraction(boolean limitAlphabetToExtractions, Set<RegexGrammar.Option> options, String text, Set<String> extractors, int folds, int i, ExtractionFitness.Metric... metrics) {
-    super(text, extractors, folds, i, metrics);
-    solutionMapper = (Node<String> node) -> RegexExtraction.fromRegex(node.leafNodes().stream()
+  public GrammarBasedRegexExtractionProblem(boolean limitAlphabetToExtractions, Set<RegexGrammar.Option> options, String text, Set<String> extractors, int folds, int i, ExtractionFitness.Metric... metrics) {
+    super(extractors, text, folds, i, metrics);
+    solutionMapper = (Node<String> node) -> RegexExtractionProblem.fromRegex(node.leafNodes().stream()
         .map(Node::getContent)
         .collect(Collectors.joining()));
     Set<String> texts = new TreeSet<>();

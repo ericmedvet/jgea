@@ -17,34 +17,27 @@
 
 package it.units.malelab.jgea.problem.symbolicregression;
 
-import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.ProblemWithValidation;
-import it.units.malelab.jgea.representation.tree.Node;
-import it.units.malelab.jgea.core.fitness.CaseBasedFitness;
-import it.units.malelab.jgea.representation.grammar.Grammar;
-import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
-import it.units.malelab.jgea.problem.symbolicregression.element.Element;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 /**
  * @author eric
  */
-public abstract class AbstractSymbolicRegressionProblem implements ProblemWithValidation<RealFunction, Double> {
+public class SymbolicRegressionProblem implements ProblemWithValidation<RealFunction, Double> {
 
   private final SymbolicRegressionFitness trainingFitness;
   private final SymbolicRegressionFitness validationFitness;
   private RealFunction targetFunction;
 
-  public AbstractSymbolicRegressionProblem(RealFunction targetFunction, List<double[]> trainingPoints, List<double[]> validationPoints) {
+  public SymbolicRegressionProblem(RealFunction targetFunction, List<double[]> trainingPoints, List<double[]> validationPoints) {
     this.targetFunction = targetFunction;
     trainingFitness = new SymbolicRegressionFitness(targetFunction, trainingPoints);
     validationFitness = new SymbolicRegressionFitness(targetFunction, validationPoints);
   }
 
-  public AbstractSymbolicRegressionProblem(RealFunction targetFunction, List<double[]> trainingPoints) {
+  public SymbolicRegressionProblem(RealFunction targetFunction, List<double[]> trainingPoints) {
     this.targetFunction = targetFunction;
     trainingFitness = new SymbolicRegressionFitness(targetFunction, trainingPoints);
     validationFitness = new SymbolicRegressionFitness(targetFunction, trainingPoints);

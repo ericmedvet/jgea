@@ -9,6 +9,7 @@ import com.google.common.collect.EnumMultiset;
 import com.google.common.collect.Multiset;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.core.util.WithNames;
+import it.units.malelab.jgea.problem.classification.Classifier;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,13 +21,11 @@ import java.util.stream.Collectors;
 /**
  * @author eric
  */
-public class ClassificationFitness<C, O, E extends Enum<E>> extends CaseBasedFitness<C, O, E, List<Double>> implements WithNames {
+public class ClassificationFitness<O, L extends Enum<L>> extends CaseBasedFitness<Classifier<O, L>, O, L, List<Double>> implements WithNames {
 
   public enum Metric {
     CLASS_ERROR_RATE, ERROR_RATE, BALANCED_ERROR_RATE
   }
-
-  ;
 
   private static class ClassErrorRate<E extends Enum<E>> implements Function<List<E>, List<Pair<Integer, Integer>>> {
 
@@ -87,20 +86,20 @@ public class ClassificationFitness<C, O, E extends Enum<E>> extends CaseBasedFit
     return null;
   }
 
-  private final List<Pair<O, E>> data;
+  private final List<Pair<O, L>> data;
   private final List<String> names;
 
-  public ClassificationFitness(List<Pair<O, E>> data, BiFunction<C, O, E> caseFitnessFunction, Metric errorMetric) {
+  public ClassificationFitness(List<Pair<O, L>> data, Metric errorMetric) {
     super(
         data.stream().map(Pair::first).collect(Collectors.toList()),
-        caseFitnessFunction,
+        (c, o) -> c.classify(o),
         getAggregator(data.stream().map(Pair::second).collect(Collectors.toList()), errorMetric)
     );
     this.data = data;
     names = new ArrayList<>();
     if (errorMetric.equals(Metric.CLASS_ERROR_RATE)) {
-      E protoLabel = data.get(0).second();
-      for (E label : (E[]) protoLabel.getClass().getEnumConstants()) {
+      L protoLabel = data.get(0).second();
+      for (L label : (L[]) protoLabel.getClass().getEnumConstants()) {
         names.add(label.toString().toLowerCase() + ".error.rate");
       }
     } else if (errorMetric.equals(Metric.ERROR_RATE)) {
@@ -110,8 +109,8 @@ public class ClassificationFitness<C, O, E extends Enum<E>> extends CaseBasedFit
     }
   }
 
-  public ClassificationFitness<C, O, E> changeMetric(Metric metric) {
-    return new ClassificationFitness<>(data, getCaseFunction(), metric);
+  public ClassificationFitness<O, L> changeMetric(Metric metric) {
+    return new ClassificationFitness<>(data, metric);
   }
 
   @Override

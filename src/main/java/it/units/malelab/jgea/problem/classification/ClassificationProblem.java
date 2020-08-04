@@ -23,42 +23,41 @@ import it.units.malelab.jgea.core.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
  * @author eric
  */
-public abstract class AbstractClassificationProblem<C, O, E extends Enum<E>> implements ProblemWithValidation<C, List<Double>>, BiFunction<C, O, E> {
+public class ClassificationProblem<O, L extends Enum<L>> implements ProblemWithValidation<Classifier<O, L>, List<Double>> {
 
-  private final ClassificationFitness<C, O, E> fitnessFunction;
-  private final ClassificationFitness<C, O, E> validationFunction;
-  private final List<Pair<O, E>> learningData;
-  private final List<Pair<O, E>> validationData;
+  private final ClassificationFitness<O, L> fitnessFunction;
+  private final ClassificationFitness<O, L> validationFunction;
+  private final List<Pair<O, L>> learningData;
+  private final List<Pair<O, L>> validationData;
 
-  public AbstractClassificationProblem(List<Pair<O, E>> data, int folds, int i, ClassificationFitness.Metric learningMetric, ClassificationFitness.Metric validationMetric) {
+  public ClassificationProblem(List<Pair<O, L>> data, int folds, int i, ClassificationFitness.Metric learningMetric, ClassificationFitness.Metric validationMetric) {
     validationData = DataUtils.fold(data, i, folds);
     learningData = new ArrayList<>(data);
     learningData.removeAll(validationData);
-    this.fitnessFunction = new ClassificationFitness<>(learningData, this, learningMetric);
-    this.validationFunction = new ClassificationFitness<>(validationData, this, validationMetric);
+    this.fitnessFunction = new ClassificationFitness<>(learningData, learningMetric);
+    this.validationFunction = new ClassificationFitness<>(validationData, validationMetric);
   }
 
   @Override
-  public Function<C, List<Double>> getValidationFunction() {
+  public Function<Classifier<O, L>, List<Double>> getValidationFunction() {
     return validationFunction;
   }
 
   @Override
-  public Function<C, List<Double>> getFitnessFunction() {
+  public Function<Classifier<O, L>, List<Double>> getFitnessFunction() {
     return fitnessFunction;
   }
 
-  public List<Pair<O, E>> getLearningData() {
+  public List<Pair<O, L>> getLearningData() {
     return learningData;
   }
 
-  public List<Pair<O, E>> getValidationData() {
+  public List<Pair<O, L>> getValidationData() {
     return validationData;
   }
 

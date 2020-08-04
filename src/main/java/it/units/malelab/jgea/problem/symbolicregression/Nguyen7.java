@@ -22,7 +22,7 @@ import java.util.Random;
 /**
  * @author eric
  */
-public class Nguyen7 extends AbstractSymbolicRegressionProblem {
+public class Nguyen7 extends SymbolicRegressionProblem {
 
   public Nguyen7(long seed) {
     super(

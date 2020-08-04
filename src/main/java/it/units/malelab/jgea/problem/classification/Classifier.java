@@ -15,21 +15,13 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.problem.symbolicregression;
+package it.units.malelab.jgea.problem.classification;
 
 /**
  * @author eric
+ * @created 2020/08/04
+ * @project jgea
  */
-public class Polynomial4 extends SymbolicRegressionProblem {
-
-  public Polynomial4() {
-    super(
-        v -> {
-          double x = v[0];
-          return x * x * x * x + x * x * x + x * x + x;
-        },
-        MathUtils.pairwise(MathUtils.equispacedValues(-1, 1, .1))
-    );
-  }
-
+public interface Classifier<O, L extends Enum<L>> {
+  L classify(O o);
 }

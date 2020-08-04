@@ -27,21 +27,29 @@ import it.units.malelab.jgea.representation.grammar.RegexGrammar;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
  * @author eric
  */
-public class GrammarBasedRegexClassification extends RegexClassification implements GrammarBasedProblem<String, String, List<Double>> {
+public class GrammarBasedTextFlaggingProblem extends TextFlaggingProblem implements GrammarBasedProblem<String, Classifier<String, TextFlaggingProblem.Label>, List<Double>> {
 
   private final Grammar<String> grammar;
-  private final Function<Node<String>, String> solutionMapper;
+  private final Function<Node<String>, Classifier<String, TextFlaggingProblem.Label>> solutionMapper;
 
-  public GrammarBasedRegexClassification(Set<Character> alphabet, Set<RegexGrammar.Option> options, List<Pair<String, Label>> data, int folds, int i, ClassificationFitness.Metric learningErrorMetric, ClassificationFitness.Metric validationErrorMetric) {
+  public GrammarBasedTextFlaggingProblem(Set<Character> alphabet, Set<RegexGrammar.Option> options, List<Pair<String, Label>> data, int folds, int i, ClassificationFitness.Metric learningErrorMetric, ClassificationFitness.Metric validationErrorMetric) {
     super(data, folds, i, learningErrorMetric, validationErrorMetric);
-    solutionMapper = (Node<String> node) -> node.leafNodes().stream()
-        .map(Node::getContent)
-        .collect(Collectors.joining());
+    solutionMapper = (Node<String> node) -> {
+      String regex = node.leafNodes().stream()
+          .map(Node::getContent)
+          .collect(Collectors.joining());
+      return (Classifier<String, Label>) s -> {
+        Matcher matcher = Pattern.compile(regex).matcher(s);
+        return matcher.find() ? Label.FOUND : Label.NOT_FOUND;
+      };
+    };
     if (alphabet == null) {
       grammar = new RegexGrammar(data.stream().map(Pair::first).collect(Collectors.toList()), options);
     } else {
@@ -55,8 +63,7 @@ public class GrammarBasedRegexClassification extends RegexClassification impleme
   }
 
   @Override
-  public Function<Node<String>, String> getSolutionMapper() {
+  public Function<Node<String>, Classifier<String, Label>> getSolutionMapper() {
     return solutionMapper;
   }
-
 }
