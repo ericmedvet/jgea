@@ -21,6 +21,7 @@ import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.graph.ValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
+import it.units.malelab.jgea.core.util.Sized;
 import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
 import it.units.malelab.jgea.problem.extraction.Extractor;
 import it.units.malelab.jgea.problem.extraction.RegexExtractionProblem;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
  * @created 2020/08/03
  * @project jgea
  */
-public class DeterministicFiniteAutomaton<S> implements Extractor<S> {
+public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
 
   private static class Node {
     private final int index;
@@ -150,6 +151,16 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S> {
       }
     }
     return null;
+  }
+
+  @Override
+  public int size() {
+    return graph.nodes().size() + graph.edges().size();
+  }
+
+  @Override
+  public String toString() {
+    return graph.toString();
   }
 
   public static void main(String[] args) {
