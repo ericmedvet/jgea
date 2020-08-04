@@ -17,7 +17,7 @@
 
 package it.units.malelab.jgea.representation.grammar.cfggp;
 
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 
@@ -34,11 +34,11 @@ public class FullTreeFactory<T> extends GrowTreeFactory<T> {
     super(maxDepth, grammar);
   }
 
-  public Node<T> build(Random random, T symbol, int targetDepth) {
+  public Tree<T> build(Random random, T symbol, int targetDepth) {
     if (targetDepth < 0) {
       return null;
     }
-    Node<T> tree = new Node<>(symbol);
+    Tree<T> tree = new Tree<>(symbol);
     if (grammar.getRules().containsKey(symbol)) {
       //a non-terminal
       List<List<T>> options = grammar.getRules().get(symbol);
@@ -57,7 +57,7 @@ public class FullTreeFactory<T> extends GrowTreeFactory<T> {
       }
       int optionIndex = random.nextInt(availableOptions.size());
       for (int i = 0; i < availableOptions.get(optionIndex).size(); i++) {
-        Node<T> child = build(random, availableOptions.get(optionIndex).get(i), targetDepth - 1);
+        Tree<T> child = build(random, availableOptions.get(optionIndex).get(i), targetDepth - 1);
         if (child == null) {
           return null;
         }

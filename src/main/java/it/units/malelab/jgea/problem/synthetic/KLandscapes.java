@@ -18,7 +18,7 @@
 package it.units.malelab.jgea.problem.synthetic;
 
 import com.google.common.collect.Range;
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
@@ -35,8 +35,8 @@ import java.util.function.Function;
  * @author eric
  */
 public class KLandscapes implements
-    GrammarBasedProblem<String, Node<String>, Double>,
-    Function<Node<String>, Node<String>> {
+    GrammarBasedProblem<String, Tree<String>, Double>,
+    Function<Tree<String>, Tree<String>> {
 
   private final static int ARITY = 2;
   private final static Range<Double> V_RANGE = Range.closed(-1d, 1d);
@@ -72,29 +72,29 @@ public class KLandscapes implements
   }
 
   @Override
-  public Node<String> apply(Node<String> original) {
+  public Tree<String> apply(Tree<String> original) {
     if (original == null) {
       return original;
     }
-    Node<String> node = new Node<>(original.getChildren().get(0).getChildren().get(0).getContent());
+    Tree<String> tree = new Tree<>(original.getChildren().get(0).getChildren().get(0).getContent());
     if (original.getChildren().size() > 1) {
       //is a non terminal node
-      for (Node<String> orginalChild : original.getChildren()) {
+      for (Tree<String> orginalChild : original.getChildren()) {
         if (orginalChild.getContent().equals("N")) {
-          node.getChildren().add(apply(orginalChild));
+          tree.getChildren().add(apply(orginalChild));
         }
       }
     }
-    return node;
+    return tree;
   }
 
   @Override
-  public Function<Node<String>, Node<String>> getSolutionMapper() {
+  public Function<Tree<String>, Tree<String>> getSolutionMapper() {
     return this;
   }
 
   @Override
-  public Function<Node<String>, Double> getFitnessFunction() {
+  public Function<Tree<String>, Double> getFitnessFunction() {
     Random random = new Random(1l);
     final Map<String, Double> v = new LinkedHashMap<>();
     final Map<Pair<String, String>, Double> w = new LinkedHashMap<>();
@@ -120,16 +120,16 @@ public class KLandscapes implements
     return t -> (1d - f(t, k, v, w) / optimumFitness);
   }
 
-  protected static double f(Node<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
+  protected static double f(Tree<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
     return 1d / (1d + (double) Math.abs(k - tree.height())) * maxFK(tree, k, v, w);
   }
 
-  protected static double fK(Node<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
+  protected static double fK(Tree<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
     if (k == 0) {
       return v.get(tree.getContent());
     }
     double sum = v.get(tree.getContent());
-    for (Node<String> child : tree.getChildren()) {
+    for (Tree<String> child : tree.getChildren()) {
       final double weight = w.get(Pair.of(tree.getContent(), child.getContent()));
       final double innerFK = fK(child, k - 1, v, w);
       sum = sum + (1 + weight) * innerFK;
@@ -137,13 +137,13 @@ public class KLandscapes implements
     return sum;
   }
 
-  protected static Node<String> optimum(int k, int nTerminals, int nNonTerminals, int arity, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
-    Node<String> optimum = null;
+  protected static Tree<String> optimum(int k, int nTerminals, int nNonTerminals, int arity, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
+    Tree<String> optimum = null;
     double maxFitness = Double.NEGATIVE_INFINITY;
     for (int d = 1; d <= k + 1; d++) {
       int[] indexes = new int[d]; //indexes of the (non)Terminals to be used. terminal is the last index.
       while (true) {
-        Node<String> tree = levelEqualTree(indexes, arity);
+        Tree<String> tree = levelEqualTree(indexes, arity);
         double fitness = f(tree, k, v, w);
         if ((optimum == null) || (fitness > maxFitness)) {
           optimum = tree;
@@ -165,20 +165,20 @@ public class KLandscapes implements
     return optimum;
   }
 
-  protected static Node<String> levelEqualTree(int[] indexes, int arity) {
+  protected static Tree<String> levelEqualTree(int[] indexes, int arity) {
     if (indexes.length == 1) {
-      return new Node<>("t" + indexes[0]);
+      return new Tree<>("t" + indexes[0]);
     }
-    Node<String> node = new Node<>("n" + indexes[0]);
+    Tree<String> tree = new Tree<>("n" + indexes[0]);
     for (int i = 0; i < arity; i++) {
-      node.getChildren().add(levelEqualTree(Arrays.copyOfRange(indexes, 1, indexes.length), arity));
+      tree.getChildren().add(levelEqualTree(Arrays.copyOfRange(indexes, 1, indexes.length), arity));
     }
-    return node;
+    return tree;
   }
 
-  protected static double maxFK(Node<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
+  protected static double maxFK(Tree<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
     double max = fK(tree, k, v, w);
-    for (Node<String> child : tree.getChildren()) {
+    for (Tree<String> child : tree.getChildren()) {
       max = Math.max(max, maxFK(child, k, v, w));
     }
     return max;

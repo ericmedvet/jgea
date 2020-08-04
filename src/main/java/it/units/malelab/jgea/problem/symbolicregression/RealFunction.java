@@ -32,4 +32,5 @@ public interface RealFunction extends Function<Double[], Double> {
   }
 
   double apply(double... input);
+
 }

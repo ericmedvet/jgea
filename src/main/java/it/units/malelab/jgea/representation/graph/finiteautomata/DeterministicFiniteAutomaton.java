@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  */
 public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
 
-  private static class Node {
+  public static class Node {
     private final int index;
     private final boolean accepting;
 

@@ -17,7 +17,7 @@
 
 package it.units.malelab.jgea.problem.symbolicregression;
 
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.problem.symbolicregression.element.Constant;
 import it.units.malelab.jgea.problem.symbolicregression.element.Decoration;
 import it.units.malelab.jgea.problem.symbolicregression.element.Element;
@@ -29,21 +29,21 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class FormulaMapper implements Function<Node<String>, Node<Element>> {
+public class FormulaMapper implements Function<Tree<String>, Tree<Element>> {
 
   @Override
-  public Node<Element> apply(Node<String> stringNode) {
-    if (stringNode.getChildren().isEmpty()) {
-      return new Node<>(fromString(stringNode.getContent()));
+  public Tree<Element> apply(Tree<String> stringTree) {
+    if (stringTree.getChildren().isEmpty()) {
+      return new Tree<>(fromString(stringTree.getContent()));
     }
-    if (stringNode.getChildren().size() == 1) {
-      return apply(stringNode.getChildren().get(0));
+    if (stringTree.getChildren().size() == 1) {
+      return apply(stringTree.getChildren().get(0));
     }
-    Node<Element> node = apply(stringNode.getChildren().get(0));
-    for (int i = 1; i < stringNode.getChildren().size(); i++) {
-      node.getChildren().add(apply(stringNode.getChildren().get(i)));
+    Tree<Element> tree = apply(stringTree.getChildren().get(0));
+    for (int i = 1; i < stringTree.getChildren().size(); i++) {
+      tree.getChildren().add(apply(stringTree.getChildren().get(i)));
     }
-    return node;
+    return tree;
   }
 
   private static Element fromString(String string) {

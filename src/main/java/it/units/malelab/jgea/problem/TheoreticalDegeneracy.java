@@ -19,7 +19,7 @@ package it.units.malelab.jgea.problem;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedMapper;
@@ -95,7 +95,7 @@ public class TheoreticalDegeneracy {
             phenotypes.addAll(genotypes.parallelStream()
                 .map(g -> {
                   try {
-                    return mapper.apply(g).leafNodes().stream().map(Node::getContent).collect(Collectors.toList());
+                    return mapper.apply(g).leafNodes().stream().map(Tree::getContent).collect(Collectors.toList());
                   } catch (RuntimeException e) {
                     return null;
                   }

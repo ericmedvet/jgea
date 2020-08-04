@@ -17,13 +17,11 @@
 
 package it.units.malelab.jgea.representation.grammar.ge;
 
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
-import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedMapper;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -43,22 +41,22 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
   }
 
   @Override
-  public Node<T> apply(BitString genotype) {
+  public Tree<T> apply(BitString genotype) {
     if (genotype.size() < codonLength) {
       throw new IllegalArgumentException(String.format("Short genotype (%d<%d)", genotype.size(), codonLength));
     }
-    Node<T> tree = new Node<>(grammar.getStartingSymbol());
+    Tree<T> tree = new Tree<>(grammar.getStartingSymbol());
     int currentCodonIndex = 0;
     int wraps = 0;
     while (true) {
-      Node<T> nodeToBeReplaced = null;
-      for (Node<T> node : tree.leafNodes()) {
+      Tree<T> treeToBeReplaced = null;
+      for (Tree<T> node : tree.leafNodes()) {
         if (grammar.getRules().keySet().contains(node.getContent())) {
-          nodeToBeReplaced = node;
+          treeToBeReplaced = node;
           break;
         }
       }
-      if (nodeToBeReplaced == null) {
+      if (treeToBeReplaced == null) {
         break;
       }
       //get codon index and option
@@ -69,7 +67,7 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
           throw new IllegalArgumentException(String.format("Too many wraps (%d>%d)", wraps, maxWraps));
         }
       }
-      List<List<T>> options = grammar.getRules().get(nodeToBeReplaced.getContent());
+      List<List<T>> options = grammar.getRules().get(treeToBeReplaced.getContent());
       int optionIndex = 0;
       if (options.size() > 1) {
         optionIndex = genotype.slice(currentCodonIndex * codonLength, (currentCodonIndex + 1) * codonLength).toInt() % options.size();
@@ -77,8 +75,8 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
       }
       //add children
       for (T t : options.get(optionIndex)) {
-        Node<T> newChild = new Node<>(t);
-        nodeToBeReplaced.getChildren().add(newChild);
+        Tree<T> newChild = new Tree<>(t);
+        treeToBeReplaced.getChildren().add(newChild);
       }
     }
     return tree;

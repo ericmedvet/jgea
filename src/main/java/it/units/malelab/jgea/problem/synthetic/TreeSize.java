@@ -17,7 +17,7 @@
 
 package it.units.malelab.jgea.problem.synthetic;
 
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 
@@ -29,16 +29,16 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class TreeSize implements GrammarBasedProblem<Boolean, Node<Boolean>, Double> {
+public class TreeSize implements GrammarBasedProblem<Boolean, Tree<Boolean>, Double> {
 
   private final Grammar<Boolean> grammar;
-  private final Function<Node<Boolean>, Double> fitnessFunction;
+  private final Function<Tree<Boolean>, Double> fitnessFunction;
 
   public TreeSize(int nonTerminals, int terminals) {
     this.grammar = new Grammar<>();
     grammar.setStartingSymbol(false);
     grammar.getRules().put(false, l(r(nonTerminals, false), r(terminals, true)));
-    fitnessFunction = (Node<Boolean> tree) -> 1d / (double) tree.size();
+    fitnessFunction = (Tree<Boolean> tree) -> 1d / (double) tree.size();
   }
 
   @Override
@@ -47,12 +47,12 @@ public class TreeSize implements GrammarBasedProblem<Boolean, Node<Boolean>, Dou
   }
 
   @Override
-  public Function<Node<Boolean>, Node<Boolean>> getSolutionMapper() {
+  public Function<Tree<Boolean>, Tree<Boolean>> getSolutionMapper() {
     return Function.identity();
   }
 
   @Override
-  public Function<Node<Boolean>, Double> getFitnessFunction() {
+  public Function<Tree<Boolean>, Double> getFitnessFunction() {
     return fitnessFunction;
   }
 

@@ -5,7 +5,7 @@
  */
 package it.units.malelab.jgea.problem.mapper;
 
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.core.ProblemWithValidation;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.representation.grammar.Grammar;
@@ -21,8 +21,8 @@ import java.util.function.Function;
  * @author eric
  */
 public class MapperGeneration implements
-    GrammarBasedProblem<String, Pair<Node<Element>, Node<Element>>, List<Double>>,
-    ProblemWithValidation<Pair<Node<Element>, Node<Element>>, List<Double>> {
+    GrammarBasedProblem<String, Pair<Tree<Element>, Tree<Element>>, List<Double>>,
+    ProblemWithValidation<Pair<Tree<Element>, Tree<Element>>, List<Double>> {
 
   private final Grammar<String> grammar;
   private final FitnessFunction learningFitnessFunction;
@@ -43,10 +43,10 @@ public class MapperGeneration implements
   }
 
   @Override
-  public Function<Node<String>, Pair<Node<Element>, Node<Element>>> getSolutionMapper() {
-    return (Node<String> rawMappingTree) -> {
-      Node<Element> optionChooser = MapperUtils.transform(rawMappingTree.getChildren().get(0));
-      Node<Element> genoAssigner = MapperUtils.transform(rawMappingTree.getChildren().get(1));
+  public Function<Tree<String>, Pair<Tree<Element>, Tree<Element>>> getSolutionMapper() {
+    return (Tree<String> rawMappingTree) -> {
+      Tree<Element> optionChooser = MapperUtils.transform(rawMappingTree.getChildren().get(0));
+      Tree<Element> genoAssigner = MapperUtils.transform(rawMappingTree.getChildren().get(1));
       optionChooser.propagateParentship();
       genoAssigner.propagateParentship();
       return Pair.of(optionChooser, genoAssigner);
@@ -54,12 +54,12 @@ public class MapperGeneration implements
   }
 
   @Override
-  public Function<Pair<Node<Element>, Node<Element>>, List<Double>> getFitnessFunction() {
+  public Function<Pair<Tree<Element>, Tree<Element>>, List<Double>> getFitnessFunction() {
     return learningFitnessFunction;
   }
 
   @Override
-  public Function<Pair<Node<Element>, Node<Element>>, List<Double>> getValidationFunction() {
+  public Function<Pair<Tree<Element>, Tree<Element>>, List<Double>> getValidationFunction() {
     return validationFitnessFunction;
   }
 

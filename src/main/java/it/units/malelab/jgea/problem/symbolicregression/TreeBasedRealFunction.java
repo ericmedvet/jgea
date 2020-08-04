@@ -19,11 +19,9 @@ package it.units.malelab.jgea.problem.symbolicregression;
 
 import it.units.malelab.jgea.core.util.Sized;
 import it.units.malelab.jgea.problem.symbolicregression.element.*;
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -31,31 +29,31 @@ import java.util.Objects;
  * @created 2020/08/03
  * @project jgea
  */
-public class NodeBasedRealFunction implements RealFunction, Sized {
+public class TreeBasedRealFunction implements RealFunction, Sized {
 
-  private final Node<Element> node;
+  private final Tree<Element> tree;
   private final String[] varNames;
 
-  public NodeBasedRealFunction(Node<Element> node, String... varNames) {
-    this.node = node;
+  public TreeBasedRealFunction(Tree<Element> tree, String... varNames) {
+    this.tree = tree;
     this.varNames = varNames;
   }
 
-  public static NodeBasedRealFunction from(Node<Element> node, String... varNames) {
-    return new NodeBasedRealFunction(node, varNames);
+  public static TreeBasedRealFunction from(Tree<Element> tree, String... varNames) {
+    return new TreeBasedRealFunction(tree, varNames);
   }
 
   @Override
   public int size() {
-    return node.size();
+    return tree.size();
   }
 
   @Override
   public double apply(double... input) {
-    return compute(node, input, varNames);
+    return compute(tree, input, varNames);
   }
 
-  private static double compute(Node<Element> node, double[] x, String[] varNames) {
+  private static double compute(Tree<Element> tree, double[] x, String[] varNames) {
     if (varNames.length != x.length) {
       throw new IllegalArgumentException(String.format(
           "Wrong number of arguments: %d expected, %d received",
@@ -63,34 +61,34 @@ public class NodeBasedRealFunction implements RealFunction, Sized {
           x.length
       ));
     }
-    if (node.getContent() instanceof Decoration) {
+    if (tree.getContent() instanceof Decoration) {
       throw new RuntimeException(String.format(
           "Cannot compute: decoration node %s found",
-          node.getContent()
+          tree.getContent()
       ));
     }
-    if (node.getContent() instanceof Variable) {
-      int index = Arrays.binarySearch(varNames, node.getContent().toString());
+    if (tree.getContent() instanceof Variable) {
+      int index = Arrays.binarySearch(varNames, tree.getContent().toString());
       if (index < 0) {
-        throw new RuntimeException(String.format("Undefined variable: %s", node.getContent().toString()));
+        throw new RuntimeException(String.format("Undefined variable: %s", tree.getContent().toString()));
       }
       return x[index];
     }
-    if (node.getContent() instanceof Constant) {
-      return ((Constant) node.getContent()).getValue();
+    if (tree.getContent() instanceof Constant) {
+      return ((Constant) tree.getContent()).getValue();
     }
-    double[] childrenValues = new double[node.getChildren().size()];
+    double[] childrenValues = new double[tree.getChildren().size()];
     int i = 0;
-    for (Node<Element> child : node.getChildren()) {
+    for (Tree<Element> child : tree.getChildren()) {
       double childValue = compute(child, x, varNames);
       childrenValues[i] = childValue;
       i = i + 1;
     }
-    return ((Operator) node.getContent()).apply(childrenValues);
+    return ((Operator) tree.getContent()).apply(childrenValues);
   }
 
-  public Node<Element> getNode() {
-    return node;
+  public Tree<Element> getNode() {
+    return tree;
   }
 
   public String[] getVarNames() {
@@ -99,21 +97,21 @@ public class NodeBasedRealFunction implements RealFunction, Sized {
 
   @Override
   public String toString() {
-    return node.toString();
+    return tree.toString();
   }
 
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    NodeBasedRealFunction that = (NodeBasedRealFunction) o;
-    return node.equals(that.node) &&
+    TreeBasedRealFunction that = (TreeBasedRealFunction) o;
+    return tree.equals(that.tree) &&
         Arrays.equals(varNames, that.varNames);
   }
 
   @Override
   public int hashCode() {
-    int result = Objects.hash(node);
+    int result = Objects.hash(tree);
     result = 31 * result + Arrays.hashCode(varNames);
     return result;
   }

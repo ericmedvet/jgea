@@ -18,7 +18,7 @@
 package it.units.malelab.jgea.representation.grammar.cfggp;
 
 import it.units.malelab.jgea.core.Factory;
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarUtil;
@@ -31,7 +31,7 @@ import java.util.Random;
 /**
  * @author eric
  */
-public class GrowTreeFactory<T> implements Factory<Node<T>> {
+public class GrowTreeFactory<T> implements Factory<Tree<T>> {
 
   private final static int MAX_ATTEMPTS = 100;
 
@@ -47,16 +47,16 @@ public class GrowTreeFactory<T> implements Factory<Node<T>> {
   }
 
   @Override
-  public List<Node<T>> build(int n, Random random) {
-    List<Node<T>> trees = new ArrayList<>();
+  public List<Tree<T>> build(int n, Random random) {
+    List<Tree<T>> trees = new ArrayList<>();
     while (trees.size() < n) {
       trees.add(build(random, maxDepth));
     }
     return trees;
   }
 
-  public Node<T> build(Random random, int targetDepth) {
-    Node<T> tree = null;
+  public Tree<T> build(Random random, int targetDepth) {
+    Tree<T> tree = null;
     for (int i = 0; i < MAX_ATTEMPTS; i++) {
       tree = build(random, grammar.getStartingSymbol(), targetDepth);
       if (tree != null) {
@@ -76,11 +76,11 @@ public class GrowTreeFactory<T> implements Factory<Node<T>> {
     return Pair.of(min, max);
   }
 
-  public Node<T> build(Random random, T symbol, int targetDepth) {
+  public Tree<T> build(Random random, T symbol, int targetDepth) {
     if (targetDepth < 0) {
       return null;
     }
-    Node<T> tree = new Node<>(symbol);
+    Tree<T> tree = new Tree<>(symbol);
     if (grammar.getRules().containsKey(symbol)) {
       //a non-terminal
       List<List<T>> options = grammar.getRules().get(symbol);
@@ -116,7 +116,7 @@ public class GrowTreeFactory<T> implements Factory<Node<T>> {
         if ((i != fullIndex) && (childTargetDepth > minMax.first())) {
           childTargetDepth = random.nextInt(childTargetDepth - minMax.first().intValue()) + minMax.first().intValue();
         }
-        Node<T> child = build(random, availableOptions.get(optionIndex).get(i), childTargetDepth);
+        Tree<T> child = build(random, availableOptions.get(optionIndex).get(i), childTargetDepth);
         if (child == null) {
           return null;
         }

@@ -17,7 +17,7 @@
 
 package it.units.malelab.jgea.representation.grammar;
 
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.core.Problem;
 
 import java.util.function.Function;
@@ -29,6 +29,6 @@ import java.util.function.Function;
 public interface GrammarBasedProblem<N, S, F> extends Problem<S, F> {
 
   Grammar<N> getGrammar();
-  Function<Node<N>, S> getSolutionMapper();
+  Function<Tree<N>, S> getSolutionMapper();
   
 }

@@ -17,24 +17,24 @@ import java.util.Objects;
  *
  * @author eric
  */
-public class Node<T> implements Serializable, Cloneable, Sized {
+public class Tree<T> implements Serializable, Cloneable, Sized {
 
   private final T content;
-  private final List<Node<T>> children = new ArrayList<>();
-  private Node<T> parent;
+  private final List<Tree<T>> children = new ArrayList<>();
+  private Tree<T> parent;
 
-  public Node(T content) {
+  public Tree(T content) {
     this.content = content;
   }
 
-  public Node(Node<T> original) {
+  public Tree(Tree<T> original) {
     if (original == null) {
       this.content = null;
       return;
     }
     this.content = original.getContent();
-    for (Node<T> child : original.getChildren()) {
-      children.add(new Node<>(child));
+    for (Tree<T> child : original.getChildren()) {
+      children.add(new Tree<>(child));
     }
   }
 
@@ -42,16 +42,16 @@ public class Node<T> implements Serializable, Cloneable, Sized {
     return content;
   }
 
-  public List<Node<T>> getChildren() {
+  public List<Tree<T>> getChildren() {
     return children;
   }
 
-  public List<Node<T>> leafNodes() {
+  public List<Tree<T>> leafNodes() {
     if (children.isEmpty()) {
       return Collections.singletonList(this);
     }
-    List<Node<T>> childContents = new ArrayList<>();
-    for (Node<T> child : children) {
+    List<Tree<T>> childContents = new ArrayList<>();
+    for (Tree<T> child : children) {
       childContents.addAll(child.leafNodes());
     }
     return childContents;
@@ -63,7 +63,7 @@ public class Node<T> implements Serializable, Cloneable, Sized {
     sb.append(content);
     if (!children.isEmpty()) {
       sb.append("{");
-      for (Node<T> child : children) {
+      for (Tree<T> child : children) {
         sb.append(child.toString()).append(",");
       }
       sb.deleteCharAt(sb.length() - 1);
@@ -74,7 +74,7 @@ public class Node<T> implements Serializable, Cloneable, Sized {
 
   public int height() {
     int max = 0;
-    for (Node<T> child : children) {
+    for (Tree<T> child : children) {
       max = Math.max(max, child.height());
     }
     return max + 1;
@@ -83,35 +83,35 @@ public class Node<T> implements Serializable, Cloneable, Sized {
   @Override
   public int size() {
     int size = 0;
-    for (Node<T> child : children) {
+    for (Tree<T> child : children) {
       size = size + child.size();
     }
     return size + 1;
   }
 
-  public List<Node<T>> getAncestors() {
+  public List<Tree<T>> getAncestors() {
     if (parent == null) {
       return Collections.EMPTY_LIST;
     }
-    List<Node<T>> ancestors = new ArrayList<>();
+    List<Tree<T>> ancestors = new ArrayList<>();
     ancestors.add(parent);
     ancestors.addAll(parent.getAncestors());
     return Collections.unmodifiableList(ancestors);
   }
   
-  public Node<T> getRoot() {
+  public Tree<T> getRoot() {
     if (getParent()==null) {
       return this;
     }
     return parent.getRoot();
   }
 
-  public Node<T> getParent() {
+  public Tree<T> getParent() {
     return parent;
   }
 
   public void propagateParentship() {
-    for (Node<T> child : children) {
+    for (Tree<T> child : children) {
       child.parent = this;
       child.propagateParentship();
     }
@@ -133,7 +133,7 @@ public class Node<T> implements Serializable, Cloneable, Sized {
   public void prettyPrint(PrintStream ps) {
     propagateParentship();
     ps.printf("%" + (1 + this.getAncestors().size() * 2) + "s-%s%n", "", this.getContent());
-    for (Node<T> child : this.getChildren()) {
+    for (Tree<T> child : this.getChildren()) {
       child.prettyPrint(ps);
     }
   }  
@@ -154,7 +154,7 @@ public class Node<T> implements Serializable, Cloneable, Sized {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    final Node<?> other = (Node<?>) obj;
+    final Tree<?> other = (Tree<?>) obj;
     if (!Objects.equals(this.content, other.content)) {
       return false;
     }
@@ -166,7 +166,7 @@ public class Node<T> implements Serializable, Cloneable, Sized {
 
   @Override
   public Object clone() {
-    return new Node<>(this);
+    return new Tree<>(this);
   }
 
 }

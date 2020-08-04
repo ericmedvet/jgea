@@ -17,7 +17,7 @@
 
 package it.units.malelab.jgea.representation.grammar;
 
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.util.function.Function;
 
@@ -25,7 +25,7 @@ import java.util.function.Function;
  *
  * @author eric
  */
-public abstract class GrammarBasedMapper<G, T> implements Function<G, Node<T>> {
+public abstract class GrammarBasedMapper<G, T> implements Function<G, Tree<T>> {
   
   protected final Grammar<T> grammar;
 

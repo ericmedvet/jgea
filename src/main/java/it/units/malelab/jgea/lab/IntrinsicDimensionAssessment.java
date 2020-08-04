@@ -21,7 +21,7 @@ import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.util.Misc;
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
@@ -91,13 +91,13 @@ public class IntrinsicDimensionAssessment extends Worker {
     for (int k : ks) {
       try {
         //GrammarBasedProblem<String, Node<String>, Double> problem = new KLandscapes(k);
-        GrammarBasedProblem<String, List<Node<Element>>, Double> problem = new EvenParity(k);
+        GrammarBasedProblem<String, List<Tree<Element>>, Double> problem = new EvenParity(k);
         for (int run : runs) {
           GrammarBasedMapper<BitString, String> mapper = new WeightedHierarchicalMapper<>(2, problem.getGrammar());
           Map<GeneticOperator<BitString>, Double> operators = new LinkedHashMap<>();
           operators.put(new BitFlipMutation(0.01d), 0.2d);
           operators.put(new LengthPreservingTwoPointCrossover<>(Boolean.class), 0.8d);
-          StandardEvolver<BitString, List<Node<Element>>, Double> evolver = new StandardEvolver<>(
+          StandardEvolver<BitString, List<Tree<Element>>, Double> evolver = new StandardEvolver<>(
               mapper.andThen(problem.getSolutionMapper()),
               new BitStringFactory(genotypeSize),
               PartialComparator.from(Double.class).on(Individual::getFitness),

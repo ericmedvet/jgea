@@ -19,8 +19,7 @@ package it.units.malelab.jgea.representation.grammar.cfggp;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import it.units.malelab.jgea.representation.tree.Node;
-import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.core.operator.Crossover;
 
 import java.util.ArrayList;
@@ -31,7 +30,7 @@ import java.util.Random;
 /**
  * @author eric
  */
-public class StandardTreeCrossover<T> implements Crossover<Node<T>> {
+public class StandardTreeCrossover<T> implements Crossover<Tree<T>> {
 
   private final int maxDepth;
 
@@ -40,13 +39,13 @@ public class StandardTreeCrossover<T> implements Crossover<Node<T>> {
   }
 
   @Override
-  public Node<T> recombine(Node<T> parent1, Node<T> parent2, Random random) {
-    Node<T> child1 = (Node<T>) parent1.clone();
-    Node<T> child2 = (Node<T>) parent2.clone();
+  public Tree<T> recombine(Tree<T> parent1, Tree<T> parent2, Random random) {
+    Tree<T> child1 = (Tree<T>) parent1.clone();
+    Tree<T> child2 = (Tree<T>) parent2.clone();
     child1.propagateParentship();
     child2.propagateParentship();
-    Multimap<T, Node<T>> child1subtrees = ArrayListMultimap.create();
-    Multimap<T, Node<T>> child2subtrees = ArrayListMultimap.create();
+    Multimap<T, Tree<T>> child1subtrees = ArrayListMultimap.create();
+    Multimap<T, Tree<T>> child2subtrees = ArrayListMultimap.create();
     populateMultimap(child1, child1subtrees);
     populateMultimap(child2, child2subtrees);
     //build common non-terminals
@@ -59,14 +58,14 @@ public class StandardTreeCrossover<T> implements Crossover<Node<T>> {
     //iterate (just once, if successfully) on non-terminals
     boolean done = false;
     for (T chosenNonTerminal : nonTerminals) {
-      List<Node<T>> subtrees1 = new ArrayList<>(child1subtrees.get(chosenNonTerminal));
-      List<Node<T>> subtrees2 = new ArrayList<>(child2subtrees.get(chosenNonTerminal));
+      List<Tree<T>> subtrees1 = new ArrayList<>(child1subtrees.get(chosenNonTerminal));
+      List<Tree<T>> subtrees2 = new ArrayList<>(child2subtrees.get(chosenNonTerminal));
       Collections.shuffle(subtrees1, random);
       Collections.shuffle(subtrees2, random);
-      for (Node<T> subtree1 : subtrees1) {
-        for (Node<T> subtree2 : subtrees2) {
+      for (Tree<T> subtree1 : subtrees1) {
+        for (Tree<T> subtree2 : subtrees2) {
           if ((subtree1.getAncestors().size() + subtree2.height() <= maxDepth) && (subtree2.getAncestors().size() + subtree1.height() <= maxDepth)) {
-            List<Node<T>> swappingChildren = new ArrayList<>(subtree1.getChildren());
+            List<Tree<T>> swappingChildren = new ArrayList<>(subtree1.getChildren());
             subtree1.getChildren().clear();
             subtree1.getChildren().addAll(subtree2.getChildren());
             subtree2.getChildren().clear();
@@ -89,12 +88,12 @@ public class StandardTreeCrossover<T> implements Crossover<Node<T>> {
     return child1;
   }
 
-  private void populateMultimap(Node<T> node, Multimap<T, Node<T>> multimap) {
-    if (node.getChildren().isEmpty()) {
+  private void populateMultimap(Tree<T> tree, Multimap<T, Tree<T>> multimap) {
+    if (tree.getChildren().isEmpty()) {
       return;
     }
-    multimap.put(node.getContent(), node);
-    for (Node<T> child : node.getChildren()) {
+    multimap.put(tree.getContent(), tree);
+    for (Tree<T> child : tree.getChildren()) {
       populateMultimap(child, multimap);
     }
 

@@ -17,7 +17,7 @@
 
 package it.units.malelab.jgea.representation.grammar.cfggp;
 
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ import it.units.malelab.jgea.core.operator.Mutation;
 /**
  * @author eric
  */
-public class StandardTreeMutation<T> implements Mutation<Node<T>> {
+public class StandardTreeMutation<T> implements Mutation<Tree<T>> {
 
   private final int maxDepth;
   private GrowTreeFactory<T> factory;
@@ -41,14 +41,14 @@ public class StandardTreeMutation<T> implements Mutation<Node<T>> {
   }
 
   @Override
-  public Node<T> mutate(Node<T> parent, Random random) {
-    Node<T> child = (Node<T>) parent.clone();
-    List<Node<T>> nonTerminalNodes = new ArrayList<>();
-    getNonTerminalNodes(child, nonTerminalNodes);
-    Collections.shuffle(nonTerminalNodes, random);
+  public Tree<T> mutate(Tree<T> parent, Random random) {
+    Tree<T> child = (Tree<T>) parent.clone();
+    List<Tree<T>> nonTerminalTrees = new ArrayList<>();
+    getNonTerminalNodes(child, nonTerminalTrees);
+    Collections.shuffle(nonTerminalTrees, random);
     boolean done = false;
-    for (Node<T> toReplaceSubTree : nonTerminalNodes) {
-      Node<T> newSubTree = factory.build(random, toReplaceSubTree.getContent(), toReplaceSubTree.height());
+    for (Tree<T> toReplaceSubTree : nonTerminalTrees) {
+      Tree<T> newSubTree = factory.build(random, toReplaceSubTree.getContent(), toReplaceSubTree.height());
       if (newSubTree != null) {
         toReplaceSubTree.getChildren().clear();
         toReplaceSubTree.getChildren().addAll(newSubTree.getChildren());
@@ -62,11 +62,11 @@ public class StandardTreeMutation<T> implements Mutation<Node<T>> {
     return child;
   }
 
-  private void getNonTerminalNodes(Node<T> node, List<Node<T>> nodes) {
-    if (!node.getChildren().isEmpty()) {
-      nodes.add(node);
-      for (Node<T> child : node.getChildren()) {
-        getNonTerminalNodes(child, nodes);
+  private void getNonTerminalNodes(Tree<T> tree, List<Tree<T>> trees) {
+    if (!tree.getChildren().isEmpty()) {
+      trees.add(tree);
+      for (Tree<T> child : tree.getChildren()) {
+        getNonTerminalNodes(child, trees);
       }
     }
   }

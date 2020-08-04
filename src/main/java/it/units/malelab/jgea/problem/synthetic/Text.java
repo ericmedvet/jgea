@@ -17,7 +17,7 @@
 
 package it.units.malelab.jgea.problem.synthetic;
 
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.representation.sequence.Sequence;
 import it.units.malelab.jgea.distance.Distance;
 import it.units.malelab.jgea.distance.Edit;
@@ -56,13 +56,13 @@ public class Text implements GrammarBasedProblem<String, String, Double> {
   }
 
   private final Grammar<String> grammar;
-  private final Function<Node<String>, String> solutionMapper;
+  private final Function<Tree<String>, String> solutionMapper;
   private final Function<String, Double> fitnessFunction;
 
   public Text(String targetString) throws IOException {
     grammar = Grammar.fromFile(new File("grammars/text.bnf"));
-    solutionMapper = (Node<String> node) -> node.leafNodes().stream()
-        .map(Node::getContent)
+    solutionMapper = (Tree<String> tree) -> tree.leafNodes().stream()
+        .map(Tree::getContent)
         .collect(Collectors.joining()).replace("_", " ");
     fitnessFunction = new FitnessFunction(targetString);
   }
@@ -73,7 +73,7 @@ public class Text implements GrammarBasedProblem<String, String, Double> {
   }
 
   @Override
-  public Function<Node<String>, String> getSolutionMapper() {
+  public Function<Tree<String>, String> getSolutionMapper() {
     return solutionMapper;
   }
 

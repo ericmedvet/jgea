@@ -19,10 +19,9 @@ package it.units.malelab.jgea.problem.mapper;
 
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
 import it.units.malelab.jgea.representation.sequence.bit.BitStringFactory;
-import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.util.Pair;
@@ -47,7 +46,7 @@ import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
  * @author eric
  */
 public class FitnessFunction implements
-    Function<Pair<Node<Element>, Node<Element>>, List<Double>>,
+    Function<Pair<Tree<Element>, Tree<Element>>, List<Double>>,
     WithNames {
 
   private final static int EXPRESSIVENESS_DEPTH = 2;
@@ -93,7 +92,7 @@ public class FitnessFunction implements
   }
 
   @Override
-  public List<Double> apply(Pair<Node<Element>, Node<Element>> pair) {
+  public List<Double> apply(Pair<Tree<Element>, Tree<Element>> pair) {
     List<List<Double>> valuesLists = new ArrayList<>();
     for (EnhancedProblem problem : problems) {
       List<Double> localValues = apply(pair, problem);
@@ -112,7 +111,7 @@ public class FitnessFunction implements
         .collect(Collectors.toList());
   }
 
-  protected <N, S, F> List<Double> apply(Pair<Node<Element>, Node<Element>> pair, EnhancedProblem<N, S, F> problem) {
+  protected <N, S, F> List<Double> apply(Pair<Tree<Element>, Tree<Element>> pair, EnhancedProblem<N, S, F> problem) {
     //build mapper
     RecursiveMapper<N> recursiveMapper = new RecursiveMapper<>(
         pair.first(),

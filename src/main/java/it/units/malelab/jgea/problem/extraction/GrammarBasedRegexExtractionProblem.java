@@ -18,7 +18,7 @@
 package it.units.malelab.jgea.problem.extraction;
 
 import it.units.malelab.jgea.representation.grammar.RegexGrammar;
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 
@@ -34,12 +34,12 @@ import java.util.stream.Collectors;
 public class GrammarBasedRegexExtractionProblem extends RegexExtractionProblem implements GrammarBasedProblem<String, Extractor<Character>, List<Double>> {
 
   private final Grammar<String> grammar;
-  private final Function<Node<String>, Extractor<Character>> solutionMapper;
+  private final Function<Tree<String>, Extractor<Character>> solutionMapper;
 
   public GrammarBasedRegexExtractionProblem(boolean limitAlphabetToExtractions, Set<RegexGrammar.Option> options, String text, Set<String> extractors, int folds, int i, ExtractionFitness.Metric... metrics) {
     super(extractors, text, folds, i, metrics);
-    solutionMapper = (Node<String> node) -> RegexExtractionProblem.fromRegex(node.leafNodes().stream()
-        .map(Node::getContent)
+    solutionMapper = (Tree<String> tree) -> RegexExtractionProblem.fromRegex(tree.leafNodes().stream()
+        .map(Tree::getContent)
         .collect(Collectors.joining()));
     Set<String> texts = new TreeSet<>();
     if (limitAlphabetToExtractions) {
@@ -60,7 +60,7 @@ public class GrammarBasedRegexExtractionProblem extends RegexExtractionProblem i
   }
 
   @Override
-  public Function<Node<String>, Extractor<Character>> getSolutionMapper() {
+  public Function<Tree<String>, Extractor<Character>> getSolutionMapper() {
     return solutionMapper;
   }
 

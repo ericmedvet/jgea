@@ -17,7 +17,7 @@
 
 package it.units.malelab.jgea.problem.booleanfunction;
 
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.problem.booleanfunction.element.Constant;
 import it.units.malelab.jgea.problem.booleanfunction.element.Decoration;
 import it.units.malelab.jgea.problem.booleanfunction.element.Element;
@@ -34,7 +34,7 @@ import java.util.Map;
  */
 public class BooleanUtils {
 
-  public static boolean[] compute(List<Node<Element>> formulas, Map<String, Boolean> values) {
+  public static boolean[] compute(List<Tree<Element>> formulas, Map<String, Boolean> values) {
     boolean[] result = new boolean[formulas.size()];
     for (int i = 0; i < result.length; i++) {
       result[i] = compute(formulas.get(i), values);
@@ -42,30 +42,30 @@ public class BooleanUtils {
     return result;
   }
 
-  public static Boolean compute(Node<Element> node, Map<String, Boolean> values) {
-    if (node.getContent() instanceof Decoration) {
+  public static Boolean compute(Tree<Element> tree, Map<String, Boolean> values) {
+    if (tree.getContent() instanceof Decoration) {
       return null;
     }
-    if (node.getContent() instanceof Variable) {
-      Boolean result = values.get(node.getContent().toString());
+    if (tree.getContent() instanceof Variable) {
+      Boolean result = values.get(tree.getContent().toString());
       if (result == null) {
-        throw new RuntimeException(String.format("Undefined variable: %s", node.getContent().toString()));
+        throw new RuntimeException(String.format("Undefined variable: %s", tree.getContent().toString()));
       }
       return result;
     }
-    if (node.getContent() instanceof Constant) {
-      return ((Constant) node.getContent()).getValue();
+    if (tree.getContent() instanceof Constant) {
+      return ((Constant) tree.getContent()).getValue();
     }
-    boolean[] childrenValues = new boolean[node.getChildren().size()];
+    boolean[] childrenValues = new boolean[tree.getChildren().size()];
     int i = 0;
-    for (Node<Element> child : node.getChildren()) {
+    for (Tree<Element> child : tree.getChildren()) {
       Boolean childValue = compute(child, values);
       if (childValue != null) {
         childrenValues[i] = childValue;
         i = i + 1;
       }
     }
-    return compute((Operator) node.getContent(), childrenValues);
+    return compute((Operator) tree.getContent(), childrenValues);
   }
 
   private static boolean compute(Operator operator, boolean... operands) {

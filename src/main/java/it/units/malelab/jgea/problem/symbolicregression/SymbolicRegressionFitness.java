@@ -28,8 +28,9 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<RealFunction, do
 
   private final RealFunction targetFunction;
   private final List<double[]> points;
+  private final int arity;
 
-  public SymbolicRegressionFitness(RealFunction targetFunction, List<double[]> points) {
+  public SymbolicRegressionFitness(RealFunction targetFunction, List<double[]> points, int arity) {
     super(
         points,
         (f, x) -> Math.abs(f.apply(x)-targetFunction.apply(x)),
@@ -37,6 +38,11 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<RealFunction, do
     );
     this.targetFunction = targetFunction;
     this.points = points;
+    this.arity = arity;
+  }
+
+  public SymbolicRegressionFitness(RealFunction targetFunction, List<double[]> points) {
+    this(targetFunction, points, points.get(0).length);
   }
 
   public RealFunction getTargetFunction() {
@@ -45,5 +51,9 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<RealFunction, do
 
   public List<double[]> getPoints() {
     return points;
+  }
+
+  public int getArity() {
+    return arity;
   }
 }

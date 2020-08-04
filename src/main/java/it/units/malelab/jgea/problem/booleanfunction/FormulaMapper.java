@@ -17,7 +17,7 @@
 
 package it.units.malelab.jgea.problem.booleanfunction;
 
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.problem.booleanfunction.element.Constant;
 import it.units.malelab.jgea.problem.booleanfunction.element.Decoration;
 import it.units.malelab.jgea.problem.booleanfunction.element.Element;
@@ -32,35 +32,35 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class FormulaMapper implements Function<Node<String>, List<Node<Element>>> {
+public class FormulaMapper implements Function<Tree<String>, List<Tree<Element>>> {
 
   public static final String MULTIPLE_OUTPUT_NON_TERMINAL = "<o>";
 
   @Override
-  public List<Node<Element>> apply(Node<String> stringNode) {
-    if (stringNode.getContent().equals(MULTIPLE_OUTPUT_NON_TERMINAL)) {
-      List<Node<Element>> nodes = new ArrayList<>();
-      for (Node<String> child : stringNode.getChildren()) {
-        nodes.add(singleMap(child));
+  public List<Tree<Element>> apply(Tree<String> stringTree) {
+    if (stringTree.getContent().equals(MULTIPLE_OUTPUT_NON_TERMINAL)) {
+      List<Tree<Element>> trees = new ArrayList<>();
+      for (Tree<String> child : stringTree.getChildren()) {
+        trees.add(singleMap(child));
       }
-      return nodes;
+      return trees;
     } else {
-      return Collections.singletonList(singleMap(stringNode));
+      return Collections.singletonList(singleMap(stringTree));
     }
   }
 
-  public Node<Element> singleMap(Node<String> stringNode) {
-    if (stringNode.getChildren().isEmpty()) {
-      return new Node<>(fromString(stringNode.getContent()));
+  public Tree<Element> singleMap(Tree<String> stringTree) {
+    if (stringTree.getChildren().isEmpty()) {
+      return new Tree<>(fromString(stringTree.getContent()));
     }
-    if (stringNode.getChildren().size() == 1) {
-      return singleMap(stringNode.getChildren().get(0));
+    if (stringTree.getChildren().size() == 1) {
+      return singleMap(stringTree.getChildren().get(0));
     }
-    Node<Element> node = singleMap(stringNode.getChildren().get(0));
-    for (int i = 1; i < stringNode.getChildren().size(); i++) {
-      node.getChildren().add(singleMap(stringNode.getChildren().get(i)));
+    Tree<Element> tree = singleMap(stringTree.getChildren().get(0));
+    for (int i = 1; i < stringTree.getChildren().size(); i++) {
+      tree.getChildren().add(singleMap(stringTree.getChildren().get(i)));
     }
-    return node;
+    return tree;
   }
 
   private static Element fromString(String string) {

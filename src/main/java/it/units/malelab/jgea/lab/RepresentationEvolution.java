@@ -50,7 +50,7 @@ import it.units.malelab.jgea.representation.sequence.LengthPreservingTwoPointCro
 import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
 import it.units.malelab.jgea.representation.sequence.bit.BitStringFactory;
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -135,11 +135,11 @@ public class RepresentationEvolution extends Worker {
                 (List) learningProblems, learningGenotypeSize, learningN, learningMaxMappingDepth, localProperties,
                 (List) validationProblems, validationGenotypeSize, validationN, validationMaxMappingDepth, properties,
                 learningRun);
-            Map<GeneticOperator<Node<String>>, Double> operators = new LinkedHashMap<>();
+            Map<GeneticOperator<Tree<String>>, Double> operators = new LinkedHashMap<>();
             operators.put(new StandardTreeMutation<>(learningDepth, mapperGeneration.getGrammar()), 0.2d);
             operators.put(new StandardTreeCrossover<>(learningDepth), 0.8d);
-            Distance<Node<Element>> innerDistance = new TreeLeaves<>(new Edit<>());
-            Distance<Individual<Node<String>, Pair<Node<Element>, Node<Element>>, List<Double>>> distance = (i1, i2) -> {
+            Distance<Tree<Element>> innerDistance = new TreeLeaves<>(new Edit<>());
+            Distance<Individual<Tree<String>, Pair<Tree<Element>, Tree<Element>>, List<Double>>> distance = (i1, i2) -> {
               double dFirst = innerDistance.apply(i1.getSolution().first(), i2.getSolution().first());
               double dSecond = innerDistance.apply(i1.getSolution().second(), i2.getSolution().second());
               return dFirst + dSecond;
@@ -147,7 +147,7 @@ public class RepresentationEvolution extends Worker {
             double[] weights = new double[localProperties.size()];
             //prepare evolver
             Arrays.fill(weights, 1d / (double) localProperties.size());
-            Evolver<Node<String>, Pair<Node<Element>, Node<Element>>, List<Double>> evolver = new StandardWithEnforcedDiversity<>(
+            Evolver<Tree<String>, Pair<Tree<Element>, Tree<Element>>, List<Double>> evolver = new StandardWithEnforcedDiversity<>(
                 mapperGeneration.getSolutionMapper(),
                 new RampedHalfAndHalf<>(3, learningDepth, mapperGeneration.getGrammar()),
                 PartialComparator.from(Double.class).on(new Linearization(weights).compose(Individual::getFitness)),
@@ -178,11 +178,11 @@ public class RepresentationEvolution extends Worker {
                   new Diversity(),
                   new BestPrinter(EnumSet.of(BestPrinter.Part.GENOTYPE))
               );
-              Collection<Pair<Node<Element>, Node<Element>>> mapperPairs = evolver.solve(
+              Collection<Pair<Tree<Element>, Tree<Element>>> mapperPairs = evolver.solve(
                   mapperGeneration.getFitnessFunction(), new Iterations(learningIterations), random, executorService,
                   Listener.onExecutor(listener, executorService)
               );
-              Pair<Node<Element>, Node<Element>> mapperPair = Misc.first(mapperPairs);
+              Pair<Tree<Element>, Tree<Element>> mapperPair = Misc.first(mapperPairs);
               for (Map.Entry<String, EnhancedProblem<?, ?, ?>> innerProblemEntry : validationOnlyProblems.entrySet()) {
                 doValidation(mapperPair, innerProblemEntry, validationRuns, validationMaxMappingDepth, validationPopulation, validationGenotypeSize, validationIterations, keys, validationListenerFactory);
               }
@@ -198,7 +198,7 @@ public class RepresentationEvolution extends Worker {
       List<String> mappers = Arrays.asList("ge", "ge-opt", "hge", "whge");
       for (String mapper : mappers) {
         for (Map.Entry<String, EnhancedProblem<?, ?, ?>> problemEntry : baseProblems.entrySet()) {
-          Pair<Node<Element>, Node<Element>> mapperPair = getMapper(mapper, problemEntry.getValue().getProblem());
+          Pair<Tree<Element>, Tree<Element>> mapperPair = getMapper(mapper, problemEntry.getValue().getProblem());
           FitnessFunction fitnessFunction = new FitnessFunction(
               Collections.singletonList(problemEntry.getValue()),
               validationGenotypeSize,
@@ -216,7 +216,7 @@ public class RepresentationEvolution extends Worker {
           );
         }
         for (Map.Entry<String, EnhancedProblem<?, ?, ?>> innerProblemEntry : validationOnlyProblems.entrySet()) {
-          Pair<Node<Element>, Node<Element>> mapperPair = getMapper(mapper, innerProblemEntry.getValue().getProblem());
+          Pair<Tree<Element>, Tree<Element>> mapperPair = getMapper(mapper, innerProblemEntry.getValue().getProblem());
           Map<String, String> keys = new LinkedHashMap<>();
           keys.put("mapper", mapper);
           try {
@@ -229,8 +229,8 @@ public class RepresentationEvolution extends Worker {
     }
   }
 
-  private Pair<Node<Element>, Node<Element>> getMapper(String mapper, GrammarBasedProblem problem) {
-    Node<String> rawMappingTree = null;
+  private Pair<Tree<Element>, Tree<Element>> getMapper(String mapper, GrammarBasedProblem problem) {
+    Tree<String> rawMappingTree = null;
     if (mapper.equals("ge")) {
       rawMappingTree = MapperUtils.getGERawTree(8);
     } else if (mapper.equals("ge-opt")) {
@@ -245,15 +245,15 @@ public class RepresentationEvolution extends Worker {
     } else {
       return null;
     }
-    Node<Element> optionChooser = MapperUtils.transform(rawMappingTree.getChildren().get(0));
-    Node<Element> genoAssigner = MapperUtils.transform(rawMappingTree.getChildren().get(1));
+    Tree<Element> optionChooser = MapperUtils.transform(rawMappingTree.getChildren().get(0));
+    Tree<Element> genoAssigner = MapperUtils.transform(rawMappingTree.getChildren().get(1));
     optionChooser.propagateParentship();
     genoAssigner.propagateParentship();
     return Pair.of(optionChooser, genoAssigner);
   }
 
   private void doValidation(
-      Pair<Node<Element>, Node<Element>> mapperPair,
+      Pair<Tree<Element>, Tree<Element>> mapperPair,
       Map.Entry<String, EnhancedProblem<?, ?, ?>> innerProblemEntry,
       int validationRuns,
       int validationMaxMappingDepth,
@@ -307,10 +307,10 @@ public class RepresentationEvolution extends Worker {
   }
 
   private static EnhancedProblem<String, RealFunction, Double> from(SymbolicRegressionProblem p, Grammar<String> g, String... vars) {
-    Distance<Node<it.units.malelab.jgea.problem.symbolicregression.element.Element>> nodeDistance = Misc.cached(new TreeLeaves<>(new Edit<>()), CACHE_SIZE);
+    Distance<Tree<it.units.malelab.jgea.problem.symbolicregression.element.Element>> nodeDistance = Misc.cached(new TreeLeaves<>(new Edit<>()), CACHE_SIZE);
     Distance<RealFunction> d = (f1, f2) -> nodeDistance.apply(
-        ((NodeBasedRealFunction) f1).getNode(),
-        ((NodeBasedRealFunction) f2).getNode()
+        ((TreeBasedRealFunction) f1).getNode(),
+        ((TreeBasedRealFunction) f2).getNode()
     );
     return new EnhancedProblem<>(
         new GrammarBasedProblem<String, RealFunction, Double>() {
@@ -320,8 +320,8 @@ public class RepresentationEvolution extends Worker {
           }
 
           @Override
-          public Function<Node<String>, RealFunction> getSolutionMapper() {
-            return new FormulaMapper().andThen(n -> NodeBasedRealFunction.from(n, vars));
+          public Function<Tree<String>, RealFunction> getSolutionMapper() {
+            return new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(n, vars));
           }
 
           @Override

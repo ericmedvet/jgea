@@ -17,7 +17,7 @@
 
 package it.units.malelab.jgea.problem.booleanfunction;
 
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.core.fitness.BooleanFunctionFitness;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
@@ -33,7 +33,7 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class MultipleOutputParallelMultiplier implements GrammarBasedProblem<String, List<Node<Element>>, Double> {
+public class MultipleOutputParallelMultiplier implements GrammarBasedProblem<String, List<Tree<Element>>, Double> {
 
   private static class TargetFunction implements BooleanFunctionFitness.TargetFunction {
 
@@ -69,8 +69,8 @@ public class MultipleOutputParallelMultiplier implements GrammarBasedProblem<Str
   }
 
   private final Grammar<String> grammar;
-  private final Function<Node<String>, List<Node<Element>>> solutionMapper;
-  private final Function<List<Node<Element>>, Double> fitnessFunction;
+  private final Function<Tree<String>, List<Tree<Element>>> solutionMapper;
+  private final Function<List<Tree<Element>>, Double> fitnessFunction;
 
   public MultipleOutputParallelMultiplier(final int size) throws IOException {
     grammar = Grammar.fromFile(new File("grammars/boolean-parity-var.bnf"));
@@ -101,12 +101,12 @@ public class MultipleOutputParallelMultiplier implements GrammarBasedProblem<Str
   }
 
   @Override
-  public Function<Node<String>, List<Node<Element>>> getSolutionMapper() {
+  public Function<Tree<String>, List<Tree<Element>>> getSolutionMapper() {
     return solutionMapper;
   }
 
   @Override
-  public Function<List<Node<Element>>, Double> getFitnessFunction() {
+  public Function<List<Tree<Element>>, Double> getFitnessFunction() {
     return fitnessFunction;
   }
 

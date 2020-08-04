@@ -17,17 +17,11 @@
 
 package it.units.malelab.jgea.problem.symbolicregression;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import it.units.malelab.jgea.core.util.Sized;
-import it.units.malelab.jgea.problem.mapper.element.Function;
-import it.units.malelab.jgea.problem.symbolicregression.element.*;
-import it.units.malelab.jgea.representation.tree.Node;
 import org.apache.commons.math3.stat.StatUtils;
 
 import java.util.*;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -66,7 +60,7 @@ public class MathUtils {
 
     @Override
     public String toString() {
-      return String.format("%.3f * %s + %.3f", a, innerF, b);
+      return String.format("%.3f * [%s] + %.3f", a, innerF, b);
     }
 
     @Override

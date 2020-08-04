@@ -15,14 +15,16 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.representation.graph;
+package it.units.malelab.jgea.representation.graph.multivariatefunction;
 
 import com.google.common.graph.ValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import it.units.malelab.jgea.core.util.Sized;
+import it.units.malelab.jgea.problem.symbolicregression.GraphBasedRealFunction;
 import it.units.malelab.jgea.problem.symbolicregression.RealFunction;
 
 import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -34,7 +36,7 @@ import java.util.stream.Collectors;
  */
 public class MultivariateRealFunctionGraph implements Function<double[], double[]>, Sized {
 
-  private static abstract class Node {
+  public static abstract class Node {
     private final int index;
 
     public Node(int index) {
@@ -59,7 +61,7 @@ public class MultivariateRealFunctionGraph implements Function<double[], double[
     }
   }
 
-  private static class InputNode extends Node {
+  public static class InputNode extends Node {
     public InputNode(int index) {
       super(index);
     }
@@ -70,7 +72,7 @@ public class MultivariateRealFunctionGraph implements Function<double[], double[
     }
   }
 
-  private static class OutputNode extends Node {
+  public static class OutputNode extends Node {
     public OutputNode(int index) {
       super(index);
     }
@@ -81,7 +83,7 @@ public class MultivariateRealFunctionGraph implements Function<double[], double[
     }
   }
 
-  private static class FunctionNode extends Node {
+  public static class FunctionNode extends Node {
     private final Function<Double, Double> function;
 
     public FunctionNode(int index, Function<Double, Double> function) {
@@ -100,6 +102,10 @@ public class MultivariateRealFunctionGraph implements Function<double[], double[
   }
 
   private final ValueGraph<Node, Double> graph;
+
+  public static Function<ValueGraph<Node, Double>, MultivariateRealFunctionGraph> builder() {
+    return MultivariateRealFunctionGraph::new;
+  }
 
   public MultivariateRealFunctionGraph(ValueGraph<Node, Double> graph) {
     //check if the graph is valid
@@ -135,16 +141,12 @@ public class MultivariateRealFunctionGraph implements Function<double[], double[
     return graph.toString();
   }
 
-  public RealFunction asRealFunction() {
-    int nOutput = (int) graph.nodes().stream().filter(n -> n instanceof OutputNode).count();
-    if (nOutput != 1) {
-      throw new UnsupportedOperationException(String.format(
-          "Cannot view as real function: number of outputs is %d instead of 1",
-          nOutput
-      ));
-    }
-    Function<double[], double[]> thisFunction = this;
-    return input -> thisFunction.apply(input)[0];
+  public int nInputs() {
+    return (int) graph.nodes().stream().filter(n -> n instanceof MultivariateRealFunctionGraph.InputNode).count();
+  }
+
+  public int nOutputs() {
+    return (int) graph.nodes().stream().filter(n -> n instanceof MultivariateRealFunctionGraph.OutputNode).count();
   }
 
   private double outValue(Node node, double[] input) {
@@ -183,6 +185,9 @@ public class MultivariateRealFunctionGraph implements Function<double[], double[
         .build();
     System.out.println(g);
     MultivariateRealFunctionGraph mrfg = new MultivariateRealFunctionGraph(g);
-    System.out.println(mrfg.asRealFunction().apply(10d));
+    System.out.println(new GraphBasedRealFunction(mrfg).apply(10d));
+    mrfg = new MultivariateRealFunctionGraph(new ShallowGraphFactory(0.15d, 0, 1, 1, 1).build(new Random(2)));
+    System.out.println(mrfg);
+    System.out.println(new GraphBasedRealFunction(mrfg).apply(10d));
   }
 }

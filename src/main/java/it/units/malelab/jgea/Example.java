@@ -24,6 +24,7 @@ import it.units.malelab.jgea.core.evolver.*;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.evolver.stopcondition.TargetFitness;
 import it.units.malelab.jgea.core.util.Sized;
+import it.units.malelab.jgea.problem.booleanfunction.element.Element;
 import it.units.malelab.jgea.problem.symbolicregression.*;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.PrintStreamListener;
@@ -51,7 +52,7 @@ import it.units.malelab.jgea.representation.sequence.bit.BitStringFactory;
 import it.units.malelab.jgea.representation.sequence.numeric.GaussianMutation;
 import it.units.malelab.jgea.representation.sequence.numeric.GeometricCrossover;
 import it.units.malelab.jgea.representation.sequence.numeric.UniformDoubleSequenceFactory;
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -216,10 +217,10 @@ public class Example extends Worker {
       e.printStackTrace();
       return;
     }
-    List<Evolver<Node<String>, RealFunction, Double>> evolvers = List.of(
+    List<Evolver<Tree<String>, RealFunction, Double>> evolvers = List.of(
         new StandardEvolver<>(
             new FormulaMapper()
-                .andThen(n -> NodeBasedRealFunction.from(n, "x"))
+                .andThen(n -> TreeBasedRealFunction.from(n, "x"))
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new RampedHalfAndHalf<>(3, 12, srGrammar),
             PartialComparator.from(Double.class).on(Individual::getFitness),
@@ -235,7 +236,7 @@ public class Example extends Worker {
         ),
         new StandardWithEnforcedDiversity<>(
             new FormulaMapper()
-                .andThen(n -> NodeBasedRealFunction.from(n, "x"))
+                .andThen(n -> TreeBasedRealFunction.from(n, "x"))
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new RampedHalfAndHalf<>(3, 12, srGrammar).withOptimisticUniqueness(100),
             PartialComparator.from(Double.class).on(Individual::getFitness),
@@ -251,7 +252,7 @@ public class Example extends Worker {
             1000
         )
     );
-    for (Evolver<Node<String>, RealFunction, Double> evolver : evolvers) {
+    for (Evolver<Tree<String>, RealFunction, Double> evolver : evolvers) {
       System.out.println(evolver.getClass().getSimpleName());
       try {
         Collection<RealFunction> solutions = evolver.solve(
@@ -288,10 +289,10 @@ public class Example extends Worker {
       e.printStackTrace();
       return;
     }
-    List<Evolver<Node<String>, RealFunction, List<Double>>> evolvers = List.of(
+    List<Evolver<Tree<String>, RealFunction, List<Double>>> evolvers = List.of(
         new StandardEvolver<>(
             new FormulaMapper()
-                .andThen(n -> NodeBasedRealFunction.from(n, "x"))
+                .andThen(n -> TreeBasedRealFunction.from(n, "x"))
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new RampedHalfAndHalf<>(3, 12, srGrammar),
             new ParetoDominance<>(Double.class).on(Individual::getFitness),
@@ -307,7 +308,7 @@ public class Example extends Worker {
         ),
         new StandardWithEnforcedDiversity<>(
             new FormulaMapper()
-                .andThen(n -> NodeBasedRealFunction.from(n, "x"))
+                .andThen(n -> TreeBasedRealFunction.from(n, "x"))
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new RampedHalfAndHalf<>(3, 12, srGrammar).withOptimisticUniqueness(100),
             new ParetoDominance<>(Double.class).on(Individual::getFitness),
@@ -323,7 +324,7 @@ public class Example extends Worker {
             1000
         )
     );
-    for (Evolver<Node<String>, RealFunction, List<Double>> evolver : evolvers) {
+    for (Evolver<Tree<String>, RealFunction, List<Double>> evolver : evolvers) {
       System.out.println(evolver.getClass().getSimpleName());
       try {
         Collection<RealFunction> solutions = evolver.solve(
@@ -356,14 +357,14 @@ public class Example extends Worker {
 
   public void runGrammarBasedParity() {
     Random r = new Random(1);
-    GrammarBasedProblem<String, List<Node<it.units.malelab.jgea.problem.booleanfunction.element.Element>>, Double> p;
+    GrammarBasedProblem<String, List<Tree<Element>>, Double> p;
     try {
       p = new EvenParity(8);
     } catch (IOException e) {
       System.err.printf("Cannot load problem due to %s%n", e);
       return;
     }
-    Evolver<Node<String>, List<Node<it.units.malelab.jgea.problem.booleanfunction.element.Element>>, Double> evolver = new StandardEvolver<>(
+    Evolver<Tree<String>, List<Tree<Element>>, Double> evolver = new StandardEvolver<>(
         new it.units.malelab.jgea.problem.booleanfunction.FormulaMapper(),
         new RampedHalfAndHalf<>(3, 12, p.getGrammar()),
         PartialComparator.from(Double.class).on(Individual::getFitness),
@@ -378,7 +379,7 @@ public class Example extends Worker {
         true
     );
     try {
-      Collection<List<Node<it.units.malelab.jgea.problem.booleanfunction.element.Element>>> solutions = evolver.solve(
+      Collection<List<Tree<Element>>> solutions = evolver.solve(
           Misc.cached(p.getFitnessFunction(), 10000),
           new Iterations(100),
           r,

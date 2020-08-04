@@ -17,9 +17,8 @@
 
 package it.units.malelab.jgea.problem.mapper;
 
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
-import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.ge.WeightedHierarchicalMapper;
 import it.units.malelab.jgea.problem.mapper.element.Element;
@@ -33,11 +32,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
 
-  private final Node<Element> optionChooser;
-  private final Node<Element> genoAssigner;
+  private final Tree<Element> optionChooser;
+  private final Tree<Element> genoAssigner;
   private final int maxMappingDepth;
 
-  public RecursiveMapper(Node<Element> optionChooser, Node<Element> genoAssigner, int maxMappingDepth, int maxDepth, Grammar<T> grammar) {
+  public RecursiveMapper(Tree<Element> optionChooser, Tree<Element> genoAssigner, int maxMappingDepth, int maxDepth, Grammar<T> grammar) {
     super(maxDepth, grammar);
     this.maxMappingDepth = maxMappingDepth;
     this.optionChooser = optionChooser;
@@ -45,32 +44,32 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
   }
 
   @Override
-  public Node<T> apply(BitString genotype) {
+  public Tree<T> apply(BitString genotype) {
     AtomicInteger mappingGlobalCounter = new AtomicInteger();
     AtomicInteger finalizationGlobalCounter = new AtomicInteger();
-    Node<T> tree = mapRecursively(grammar.getStartingSymbol(), genotype, mappingGlobalCounter, finalizationGlobalCounter, 0);
+    Tree<T> tree = mapRecursively(grammar.getStartingSymbol(), genotype, mappingGlobalCounter, finalizationGlobalCounter, 0);
     tree.propagateParentship();
     return tree;
   }
 
-  private Node<T> mapRecursively(
+  private Tree<T> mapRecursively(
       T symbol,
       BitString genotype,
       AtomicInteger mappingGlobalCounter,
       AtomicInteger finalizationGlobalCounter,
       int depth
   ) {
-    Node<T> node = new Node<>(symbol);
+    Tree<T> tree = new Tree<>(symbol);
     if (!grammar.getRules().containsKey(symbol)) {
-      return node;
+      return tree;
     }
     if (depth >= maxMappingDepth) {
       List<Integer> shortestOptionIndexTies = shortestOptionIndexesMap.get(symbol);
       List<T> shortestOption = grammar.getRules().get(symbol).get(shortestOptionIndexTies.get(finalizationGlobalCounter.getAndIncrement() % shortestOptionIndexTies.size()));
       for (T optionSymbol : shortestOption) {
-        node.getChildren().add(mapRecursively(optionSymbol, genotype, mappingGlobalCounter, finalizationGlobalCounter, depth + 1));
+        tree.getChildren().add(mapRecursively(optionSymbol, genotype, mappingGlobalCounter, finalizationGlobalCounter, depth + 1));
       }
-      return node;
+      return tree;
     }
     //choose option
     List<List<T>> options = grammar.getRules().get(symbol);
@@ -99,10 +98,10 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
       } else {
         piece = new BitString(0);
       }
-      node.getChildren().add(mapRecursively(
+      tree.getChildren().add(mapRecursively(
           options.get(optionIndex).get(i), piece, mappingGlobalCounter, finalizationGlobalCounter, depth + 1));
     }
-    return node;
+    return tree;
   }
 
 }

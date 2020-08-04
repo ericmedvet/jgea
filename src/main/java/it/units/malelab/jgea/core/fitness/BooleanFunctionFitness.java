@@ -17,7 +17,7 @@
 
 package it.units.malelab.jgea.core.fitness;
 
-import it.units.malelab.jgea.representation.tree.Node;
+import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.problem.booleanfunction.BooleanUtils;
 import it.units.malelab.jgea.problem.booleanfunction.element.Element;
 
@@ -31,7 +31,7 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class BooleanFunctionFitness extends CaseBasedFitness<List<Node<Element>>, boolean[], Boolean, Double> {
+public class BooleanFunctionFitness extends CaseBasedFitness<List<Tree<Element>>, boolean[], Boolean, Double> {
 
   public interface TargetFunction extends Function<boolean[], boolean[]> {
     String[] varNames();
@@ -64,7 +64,7 @@ public class BooleanFunctionFitness extends CaseBasedFitness<List<Node<Element>>
 
   }
 
-  private static class Error implements BiFunction<List<Node<Element>>, boolean[], Boolean> {
+  private static class Error implements BiFunction<List<Tree<Element>>, boolean[], Boolean> {
 
     private final BooleanFunctionFitness.TargetFunction targetFunction;
 
@@ -73,7 +73,7 @@ public class BooleanFunctionFitness extends CaseBasedFitness<List<Node<Element>>
     }
 
     @Override
-    public Boolean apply(List<Node<Element>> solution, boolean[] observation) {
+    public Boolean apply(List<Tree<Element>> solution, boolean[] observation) {
       Map<String, Boolean> varValues = new LinkedHashMap<>();
       for (int i = 0; i < targetFunction.varNames().length; i++) {
         varValues.put(targetFunction.varNames()[i], observation[i]);
