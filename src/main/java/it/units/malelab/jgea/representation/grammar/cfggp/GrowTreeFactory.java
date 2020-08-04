@@ -35,13 +35,13 @@ public class GrowTreeFactory<T> implements Factory<Tree<T>> {
 
   private final static int MAX_ATTEMPTS = 100;
 
-  protected final int maxDepth;
+  protected final int maxHeight;
   protected final Grammar<T> grammar;
 
   private final Map<T, Pair<Double, Double>> nonTerminalDepths;
 
-  public GrowTreeFactory(int maxDepth, Grammar<T> grammar) {
-    this.maxDepth = maxDepth;
+  public GrowTreeFactory(int maxHeight, Grammar<T> grammar) {
+    this.maxHeight = maxHeight;
     this.grammar = grammar;
     nonTerminalDepths = GrammarUtil.computeSymbolsMinMaxDepths(grammar);
   }
@@ -50,7 +50,7 @@ public class GrowTreeFactory<T> implements Factory<Tree<T>> {
   public List<Tree<T>> build(int n, Random random) {
     List<Tree<T>> trees = new ArrayList<>();
     while (trees.size() < n) {
-      trees.add(build(random, maxDepth));
+      trees.add(build(random, maxHeight));
     }
     return trees;
   }

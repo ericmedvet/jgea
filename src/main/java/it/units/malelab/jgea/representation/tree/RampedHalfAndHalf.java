@@ -15,40 +15,41 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.representation.grammar.cfggp;
+package it.units.malelab.jgea.representation.tree;
 
 import it.units.malelab.jgea.core.Factory;
-import it.units.malelab.jgea.representation.grammar.Grammar;
-import it.units.malelab.jgea.representation.tree.Tree;
+import it.units.malelab.jgea.core.IndependentFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.function.ToIntFunction;
 
 /**
  * @author eric
+ * @created 2020/08/04
+ * @project jgea
  */
-public class RampedHalfAndHalf<T> implements Factory<Tree<T>> {
-
+public class RampedHalfAndHalf<N> implements Factory<Tree<N>> {
   private final int minHeight;
   private final int maxHeight;
-  private final FullTreeFactory<T> fullTreeFactory;
-  private final GrowTreeFactory<T> growTreeFactory;
+  private final FullTreeFactory<N> fullTreeFactory;
+  private final GrowTreeFactory<N> growTreeFactory;
 
-  public RampedHalfAndHalf(int minHeight, int maxHeight, Grammar<T> grammar) {
+  public RampedHalfAndHalf(int minHeight, int maxHeight, ToIntFunction<N> arityFunction, IndependentFactory<N> nonTerminalFactory, IndependentFactory<N> terminalFactory) {
     this.minHeight = minHeight;
     this.maxHeight = maxHeight;
-    fullTreeFactory = new FullTreeFactory<>(maxHeight, grammar);
-    growTreeFactory = new GrowTreeFactory<>(maxHeight, grammar);
+    fullTreeFactory = new FullTreeFactory<>(maxHeight, arityFunction, nonTerminalFactory, terminalFactory);
+    growTreeFactory = new GrowTreeFactory<>(maxHeight, arityFunction, nonTerminalFactory, terminalFactory);
   }
 
   @Override
-  public List<Tree<T>> build(int n, Random random) {
-    List<Tree<T>> trees = new ArrayList<>();
+  public List<Tree<N>> build(int n, Random random) {
+    List<Tree<N>> trees = new ArrayList<>();
     //full
     int height = minHeight;
     while (trees.size() < n / 2) {
-      Tree<T> tree = fullTreeFactory.build(random, height);
+      Tree<N> tree = fullTreeFactory.build(random, height);
       if (tree != null) {
         trees.add(tree);
       }
@@ -59,7 +60,7 @@ public class RampedHalfAndHalf<T> implements Factory<Tree<T>> {
     }
     //grow
     while (trees.size() < n) {
-      Tree<T> tree = growTreeFactory.build(random, height);
+      Tree<N> tree = growTreeFactory.build(random, height);
       if (tree != null) {
         trees.add(tree);
       }
@@ -70,5 +71,4 @@ public class RampedHalfAndHalf<T> implements Factory<Tree<T>> {
     }
     return trees;
   }
-
 }
