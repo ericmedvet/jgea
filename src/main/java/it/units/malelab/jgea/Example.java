@@ -41,9 +41,8 @@ import it.units.malelab.jgea.problem.synthetic.Rastrigin;
 import it.units.malelab.jgea.problem.synthetic.Sphere;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
+import it.units.malelab.jgea.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
 import it.units.malelab.jgea.representation.grammar.cfggp.RampedHalfAndHalf;
-import it.units.malelab.jgea.representation.grammar.cfggp.StandardTreeCrossover;
-import it.units.malelab.jgea.representation.grammar.cfggp.StandardTreeMutation;
 import it.units.malelab.jgea.representation.sequence.FixedLengthListFactory;
 import it.units.malelab.jgea.representation.sequence.UniformCrossover;
 import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
@@ -52,6 +51,7 @@ import it.units.malelab.jgea.representation.sequence.bit.BitStringFactory;
 import it.units.malelab.jgea.representation.sequence.numeric.GaussianMutation;
 import it.units.malelab.jgea.representation.sequence.numeric.GeometricCrossover;
 import it.units.malelab.jgea.representation.sequence.numeric.UniformDoubleFactory;
+import it.units.malelab.jgea.representation.tree.SameRootSubtreeCrossover;
 import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.io.File;
@@ -226,8 +226,8 @@ public class Example extends Worker {
             PartialComparator.from(Double.class).on(Individual::getFitness),
             100,
             Map.of(
-                new StandardTreeCrossover<>(12), 0.8d,
-                new StandardTreeMutation<>(12, srGrammar), 0.2d
+                new SameRootSubtreeCrossover<>(12), 0.8d,
+                new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d
             ),
             new Tournament(5),
             new Worst(),
@@ -242,8 +242,8 @@ public class Example extends Worker {
             PartialComparator.from(Double.class).on(Individual::getFitness),
             100,
             Map.of(
-                new StandardTreeCrossover<>(12), 0.8d,
-                new StandardTreeMutation<>(12, srGrammar), 0.2d
+                new SameRootSubtreeCrossover<>(12), 0.8d,
+                new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d
             ),
             new Tournament(5),
             new Worst(),
@@ -298,8 +298,8 @@ public class Example extends Worker {
             new ParetoDominance<>(Double.class).on(Individual::getFitness),
             100,
             Map.of(
-                new StandardTreeCrossover<>(12), 0.8d,
-                new StandardTreeMutation<>(12, srGrammar), 0.2d
+                new SameRootSubtreeCrossover<>(12), 0.8d,
+                new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d
             ),
             new Tournament(5),
             new Worst(),
@@ -314,8 +314,8 @@ public class Example extends Worker {
             new ParetoDominance<>(Double.class).on(Individual::getFitness),
             100,
             Map.of(
-                new StandardTreeCrossover<>(12), 0.8d,
-                new StandardTreeMutation<>(12, srGrammar), 0.2d
+                new SameRootSubtreeCrossover<>(12), 0.8d,
+                new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d
             ),
             new Tournament(5),
             new Worst(),
@@ -370,8 +370,8 @@ public class Example extends Worker {
         PartialComparator.from(Double.class).on(Individual::getFitness),
         100,
         Map.of(
-            new StandardTreeCrossover<>(12), 0.8d,
-            new StandardTreeMutation<>(12, p.getGrammar()), 0.2d
+            new SameRootSubtreeCrossover<>(12), 0.8d,
+            new GrammarBasedSubtreeMutation<>(12, p.getGrammar()), 0.2d
         ),
         new Tournament(3),
         new Worst(),

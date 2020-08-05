@@ -43,13 +43,13 @@ import it.units.malelab.jgea.problem.synthetic.KLandscapes;
 import it.units.malelab.jgea.problem.synthetic.Text;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
+import it.units.malelab.jgea.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
 import it.units.malelab.jgea.representation.grammar.cfggp.RampedHalfAndHalf;
-import it.units.malelab.jgea.representation.grammar.cfggp.StandardTreeCrossover;
-import it.units.malelab.jgea.representation.grammar.cfggp.StandardTreeMutation;
 import it.units.malelab.jgea.representation.sequence.SameTwoPointsCrossover;
 import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
 import it.units.malelab.jgea.representation.sequence.bit.BitStringFactory;
+import it.units.malelab.jgea.representation.tree.SameRootSubtreeCrossover;
 import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.io.File;
@@ -136,8 +136,8 @@ public class RepresentationEvolution extends Worker {
                 (List) validationProblems, validationGenotypeSize, validationN, validationMaxMappingDepth, properties,
                 learningRun);
             Map<GeneticOperator<Tree<String>>, Double> operators = new LinkedHashMap<>();
-            operators.put(new StandardTreeMutation<>(learningDepth, mapperGeneration.getGrammar()), 0.2d);
-            operators.put(new StandardTreeCrossover<>(learningDepth), 0.8d);
+            operators.put(new GrammarBasedSubtreeMutation<>(learningDepth, mapperGeneration.getGrammar()), 0.2d);
+            operators.put(new SameRootSubtreeCrossover<>(learningDepth), 0.8d);
             Distance<Tree<Element>> innerDistance = new TreeLeaves<>(new Edit<>());
             Distance<Individual<Tree<String>, Pair<Tree<Element>, Tree<Element>>, List<Double>>> distance = (i1, i2) -> {
               double dFirst = innerDistance.apply(i1.getSolution().first(), i2.getSolution().first());
