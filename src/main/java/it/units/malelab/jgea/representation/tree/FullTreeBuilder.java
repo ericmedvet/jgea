@@ -24,12 +24,19 @@ import java.util.function.ToIntFunction;
 
 /**
  * @author eric
- * @created 2020/08/04
+ * @created 2020/08/05
  * @project jgea
  */
-public class GrowTreeFactory<N> extends FullTreeFactory<N> {
-  public GrowTreeFactory(int height, ToIntFunction<N> arityFunction, IndependentFactory<N> nonTerminalFactory, IndependentFactory<N> terminalFactory) {
-    super(height, arityFunction, nonTerminalFactory, terminalFactory);
+public class FullTreeBuilder<N> implements TreeBuilder<N> {
+
+  protected final ToIntFunction<N> arityFunction;
+  protected final IndependentFactory<N> nonTerminalFactory;
+  protected final IndependentFactory<N> terminalFactory;
+
+  public FullTreeBuilder(ToIntFunction<N> arityFunction, IndependentFactory<N> nonTerminalFactory, IndependentFactory<N> terminalFactory) {
+    this.arityFunction = arityFunction;
+    this.nonTerminalFactory = nonTerminalFactory;
+    this.terminalFactory = terminalFactory;
   }
 
   @Override
@@ -39,17 +46,8 @@ public class GrowTreeFactory<N> extends FullTreeFactory<N> {
     }
     Tree<N> t = Tree.of(nonTerminalFactory.build(random));
     int nChildren = arityFunction.applyAsInt(t.content());
-    int[] heights = new int[nChildren];
-    int maxHeight = 0;
     for (int i = 0; i < nChildren; i++) {
-      heights[i] = random.nextInt(h - 1) + 1;
-      maxHeight = Math.max(maxHeight, heights[i]);
-    }
-    if (maxHeight < h - 1) {
-      heights[random.nextInt(nChildren)] = h - 1;
-    }
-    for (int i = 0; i < nChildren; i++) {
-      t.addChild(build(random, heights[i]));
+      t.addChild(build(random, h - 1));
     }
     return t;
   }

@@ -66,8 +66,8 @@ public class StandardTreeCrossover<T> implements Crossover<Tree<T>> {
       for (Tree<T> subtree1 : subtrees1) {
         for (Tree<T> subtree2 : subtrees2) {
           if ((subtree1.depth() + subtree2.height() <= maxDepth) && (subtree2.depth() + subtree1.height() <= maxDepth)) {
-            List<Tree<T>> children1 = StreamSupport.stream(subtree1.spliterator(), false).collect(Collectors.toList());
-            List<Tree<T>> children2 = StreamSupport.stream(subtree2.spliterator(), false).collect(Collectors.toList());
+            List<Tree<T>> children1 = subtree1.childStream().collect(Collectors.toList());
+            List<Tree<T>> children2 = subtree2.childStream().collect(Collectors.toList());
             subtree1.clearChildren();
             subtree2.clearChildren();
             children1.forEach(subtree2::addChild);

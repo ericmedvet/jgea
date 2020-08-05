@@ -15,30 +15,17 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.core;
+package it.units.malelab.jgea.representation.tree;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 /**
  * @author eric
+ * @created 2020/08/05
+ * @project jgea
  */
-public interface IndependentFactory<T> extends Factory<T> {
+public interface TreeBuilder<N> {
 
-  @Override
-  default List<T> build(int n, Random random) {
-    List<T> ts = new ArrayList<>();
-    for (int i = 0; i < n; i++) {
-      ts.add(build(random));
-    }
-    return ts;
-  }
-
-  T build(Random random);
-
-  static <K> IndependentFactory<K> picker(K... ks) {
-    return random -> ks[random.nextInt(ks.length)];
-  }
+  Tree<N> build(Random random, int height);
 
 }

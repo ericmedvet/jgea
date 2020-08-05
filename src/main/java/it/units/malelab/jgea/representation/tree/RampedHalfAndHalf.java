@@ -33,14 +33,14 @@ import java.util.function.ToIntFunction;
 public class RampedHalfAndHalf<N> implements Factory<Tree<N>> {
   private final int minHeight;
   private final int maxHeight;
-  private final FullTreeFactory<N> fullTreeFactory;
-  private final GrowTreeFactory<N> growTreeFactory;
+  private final FullTreeBuilder<N> fullTreeFactory;
+  private final GrowTreeBuilder<N> growTreeBuilder;
 
   public RampedHalfAndHalf(int minHeight, int maxHeight, ToIntFunction<N> arityFunction, IndependentFactory<N> nonTerminalFactory, IndependentFactory<N> terminalFactory) {
     this.minHeight = minHeight;
     this.maxHeight = maxHeight;
-    fullTreeFactory = new FullTreeFactory<>(maxHeight, arityFunction, nonTerminalFactory, terminalFactory);
-    growTreeFactory = new GrowTreeFactory<>(maxHeight, arityFunction, nonTerminalFactory, terminalFactory);
+    fullTreeFactory = new FullTreeBuilder<>(arityFunction, nonTerminalFactory, terminalFactory);
+    growTreeBuilder = new GrowTreeBuilder<>(arityFunction, nonTerminalFactory, terminalFactory);
   }
 
   @Override
@@ -60,7 +60,7 @@ public class RampedHalfAndHalf<N> implements Factory<Tree<N>> {
     }
     //grow
     while (trees.size() < n) {
-      Tree<N> tree = growTreeFactory.build(random, height);
+      Tree<N> tree = growTreeBuilder.build(random, height);
       if (tree != null) {
         trees.add(tree);
       }

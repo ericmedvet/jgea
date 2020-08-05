@@ -51,7 +51,7 @@ public class StandardTreeMutation<T> implements Mutation<Tree<T>> {
       Tree<T> newSubTree = factory.build(random, toReplaceSubTree.content(), toReplaceSubTree.height());
       if (newSubTree != null) {
         toReplaceSubTree.clearChildren();
-        StreamSupport.stream(newSubTree.spliterator(), false).forEach(toReplaceSubTree::addChild);
+        newSubTree.childStream().forEach(toReplaceSubTree::addChild);
         done = true;
         break;
       }

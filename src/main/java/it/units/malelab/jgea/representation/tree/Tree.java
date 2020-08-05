@@ -11,6 +11,8 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * @author eric
@@ -115,6 +117,10 @@ public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>> {
     subtrees.add(this);
     children.forEach(c -> subtrees.addAll(c.topSubtrees()));
     return subtrees;
+  }
+
+  public Stream<Tree<C>> childStream() {
+    return StreamSupport.stream(spliterator(), false);
   }
 
   @Override
