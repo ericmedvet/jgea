@@ -17,12 +17,10 @@
 
 package it.units.malelab.jgea.representation.tree;
 
-import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.IndependentFactory;
 
 import java.util.Random;
 import java.util.function.ToIntFunction;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
