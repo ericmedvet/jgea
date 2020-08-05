@@ -24,6 +24,7 @@ import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
+import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversity;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.evolver.stopcondition.TargetFitness;
 import it.units.malelab.jgea.core.listener.Listener;
@@ -50,6 +51,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import static it.units.malelab.jgea.core.util.Args.i;
 import static it.units.malelab.jgea.core.util.Args.ri;
 
 /**
@@ -57,6 +59,8 @@ import static it.units.malelab.jgea.core.util.Args.ri;
  * @created 2020/08/05
  * @project jgea
  */
+
+// /usr/lib/jvm/jdk-14.0.1/bin/java -cp ~/IdeaProjects/jgea/out/artifacts/jgea_jar/jgea.jar it.units.malelab.jgea.lab.SymbolicRegressionComparison seed=0:10 file=results-%s.txt
 public class SymbolicRegressionComparison extends Worker {
 
   public SymbolicRegressionComparison(String[] args) throws FileNotFoundException {
@@ -69,17 +73,19 @@ public class SymbolicRegressionComparison extends Worker {
 
   @Override
   public void run() {
-    int nPop = 100;
-    int maxNodes = 10;
+    int nPop = i(a("nPop", "100"));
+    int maxNodes = i(a("maxNodes", "10"));
     int nTournament = 5;
-    int[] seeds = ri(a("seeds", "0:1"));
+    int nIterations = i(a("nIterations", "3"));
+    int[] seeds = ri(a("seed", "0:1"));
+    boolean[] enforceDiversities = new boolean[]{false, true};
     Operator[] operators = new Operator[]{Operator.ADDITION, Operator.SUBTRACTION, Operator.MULTIPLICATION, Operator.PROT_DIVISION};
     Double[] constants = new Double[]{0.1, 1d, 10d};
     List<SymbolicRegressionProblem> problems = List.of(
         new Nguyen7(1),
-        //new Keijzer6(),
-        //new Polynomial4(),
-        //new Vladislavleva4(1),
+        new Keijzer6(),
+        new Polynomial4(),
+        new Vladislavleva4(1),
         new Pagie1()
     );
     MultiFileListenerFactory<Object, RealFunction, Double> listenerFactory = new MultiFileListenerFactory<>(
@@ -171,38 +177,48 @@ public class SymbolicRegressionComparison extends Worker {
     for (int seed : seeds) {
       for (SymbolicRegressionProblem problem : problems) {
         for (Map.Entry<String, Function<SymbolicRegressionProblem, Evolver<?, RealFunction, Double>>> evolverEntry : evolvers.entrySet()) {
-          Map<String, String> keys = Map.of(
-              "seed", Integer.toString(seed),
-              "problem", problem.getClass().getSimpleName().toLowerCase(),
-              "evolver", evolverEntry.getKey()
-          );
-          System.out.printf("%s -> ", keys);
-          try {
-            Stopwatch stopwatch = Stopwatch.createStarted();
-            Evolver<?, RealFunction, Double> evolver = evolverEntry.getValue().apply(problem);
-            Collection<RealFunction> solutions = evolver.solve(
-                Misc.cached(problem.getFitnessFunction(), 10000),
-                new TargetFitness<>(0d).or(new Iterations(5)),
-                new Random(seed),
-                executorService,
-                Listener.onExecutor(listenerFactory.build(
-                    new Basic(),
-                    new Population(),
-                    new Diversity(),
-                    new BestInfo("%7.5f"),
-                    new FunctionOfOneBest<>(i -> List.of(new Item(
-                        "validation.fitness",
-                        problem.getValidationFunction().apply(i.getSolution()),
-                        "%7.5f"
-                    )))
-                ), executorService));
-            System.out.printf("%d solutions in %4.1fs%n",
-                solutions.size(),
-                (double) stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000d
-            );
-          } catch (InterruptedException | ExecutionException e) {
-            System.out.println(e);
-            e.printStackTrace();
+          for (boolean enforceDiversity : enforceDiversities) {
+            Map<String, String> keys = new TreeMap<>(Map.of(
+                "seed", Integer.toString(seed),
+                "problem", problem.getClass().getSimpleName().toLowerCase(),
+                "evolver", evolverEntry.getKey(),
+                "diversity", Boolean.toString(enforceDiversity)
+            ));
+            L.info(String.format("Starting %s", keys));
+            try {
+              Stopwatch stopwatch = Stopwatch.createStarted();
+              Evolver<?, RealFunction, Double> evolver = evolverEntry.getValue().apply(problem);
+              if (enforceDiversity && evolver instanceof StandardEvolver) {
+                evolver = StandardWithEnforcedDiversity.from((StandardEvolver<?, RealFunction, Double>) evolver, 100);
+              }
+              Collection<RealFunction> solutions = evolver.solve(
+                  Misc.cached(problem.getFitnessFunction(), 10000),
+                  new Iterations(nIterations),
+                  new Random(seed),
+                  executorService,
+                  Listener.onExecutor(listenerFactory.build(
+                      new Static(keys),
+                      new Basic(),
+                      new Population(),
+                      new Diversity(),
+                      new BestInfo("%7.5f"),
+                      new FunctionOfOneBest<>(i -> List.of(new Item(
+                          "validation.fitness",
+                          problem.getValidationFunction().apply(i.getSolution()),
+                          "%7.5f"
+                      )))
+                  ), executorService));
+              L.info(String.format("Done %s: %d solutions in %4.1fs",
+                  keys,
+                  solutions.size(),
+                  (double) stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000d
+              ));
+            } catch (InterruptedException | ExecutionException e) {
+              L.severe(String.format("Cannot complete %s due to %s",
+                  keys,
+                  e
+              ));
+            }
           }
         }
       }
