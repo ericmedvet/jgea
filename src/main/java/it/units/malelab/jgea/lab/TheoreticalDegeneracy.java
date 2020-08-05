@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.problem;
+package it.units.malelab.jgea.lab;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;

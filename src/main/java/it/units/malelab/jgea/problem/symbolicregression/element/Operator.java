@@ -45,6 +45,9 @@ public enum Operator implements Element, RealFunction {
     return string;
   }
 
+  public int arity() {
+    return arity;
+  }
 
   @Override
   public double apply(double... input) {
@@ -52,6 +55,6 @@ public enum Operator implements Element, RealFunction {
   }
 
   public static ToIntFunction<Element> arityFunction() {
-    return e -> (e instanceof Operator)?((Operator) e).arity:0;
+    return e -> (e instanceof Operator) ? ((Operator) e).arity : 0;
   }
 }

@@ -17,6 +17,7 @@
 
 package it.units.malelab.jgea.problem.symbolicregression;
 
+import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -38,14 +39,17 @@ public class Vladislavleva4 extends SymbolicRegressionProblem {
             MathUtils.uniformSample(0.05, 6.05, 1024, new Random(seed)),
             MathUtils.uniformSample(0.05, 6.05, 1024, new Random(seed + 1)),
             MathUtils.uniformSample(0.05, 6.05, 1024, new Random(seed + 2)),
-            MathUtils.uniformSample(0.05, 6.05, 1024, new Random(seed + 3))
+            MathUtils.uniformSample(0.05, 6.05, 1024, new Random(seed + 3)),
+            MathUtils.uniformSample(0.05, 6.05, 1024, new Random(seed + 4))
         ),
         MathUtils.pairwise(
             MathUtils.uniformSample(-0.25, 6.35, 5000, new Random(seed)),
             MathUtils.uniformSample(-0.25, 6.35, 5000, new Random(seed + 1)),
             MathUtils.uniformSample(-0.25, 6.35, 5000, new Random(seed + 2)),
-            MathUtils.uniformSample(-0.25, 6.35, 5000, new Random(seed + 3))
+            MathUtils.uniformSample(-0.25, 6.35, 5000, new Random(seed + 3)),
+            MathUtils.uniformSample(-0.25, 6.35, 5000, new Random(seed + 4))
         )
     );
   }
+
 }

@@ -22,7 +22,7 @@ import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedMapper;
-import it.units.malelab.jgea.representation.grammar.GrammarUtil;
+import it.units.malelab.jgea.representation.grammar.GrammarUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +45,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
   public HierarchicalMapper(Grammar<T> grammar, boolean recursive) {
     super(grammar);
     this.recursive = recursive;
-    shortestOptionIndexesMap = GrammarUtil.computeShortestOptionIndexesMap(grammar);
+    shortestOptionIndexesMap = GrammarUtils.computeShortestOptionIndexesMap(grammar);
   }
 
   private class EnhancedSymbol<T> {

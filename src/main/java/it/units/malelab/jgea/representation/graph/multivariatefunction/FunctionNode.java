@@ -17,6 +17,8 @@
 
 package it.units.malelab.jgea.representation.graph.multivariatefunction;
 
+import it.units.malelab.jgea.core.IndependentFactory;
+
 import java.util.function.Function;
 
 /**
@@ -27,6 +29,13 @@ import java.util.function.Function;
 public class FunctionNode extends Node implements Function<Double, Double> {
 
   private final Function<Double, Double> function;
+
+  public static IndependentFactory<FunctionNode> factory(int limit, Function<Double, Double>... functions) {
+    return random -> new FunctionNode(
+        random.nextInt(limit),
+        functions[random.nextInt(functions.length)]
+    );
+  }
 
   public FunctionNode(int index, Function<Double, Double> function) {
     super(index);

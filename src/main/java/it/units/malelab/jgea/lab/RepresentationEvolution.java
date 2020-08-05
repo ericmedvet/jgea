@@ -44,7 +44,7 @@ import it.units.malelab.jgea.problem.synthetic.Text;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 import it.units.malelab.jgea.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
-import it.units.malelab.jgea.representation.grammar.cfggp.RampedHalfAndHalf;
+import it.units.malelab.jgea.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
 import it.units.malelab.jgea.representation.sequence.SameTwoPointsCrossover;
 import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
@@ -149,7 +149,7 @@ public class RepresentationEvolution extends Worker {
             Arrays.fill(weights, 1d / (double) localProperties.size());
             Evolver<Tree<String>, Pair<Tree<Element>, Tree<Element>>, List<Double>> evolver = new StandardWithEnforcedDiversity<>(
                 mapperGeneration.getSolutionMapper(),
-                new RampedHalfAndHalf<>(3, learningDepth, mapperGeneration.getGrammar()),
+                new GrammarRampedHalfAndHalf<>(3, learningDepth, mapperGeneration.getGrammar()),
                 PartialComparator.from(Double.class).on(new Linearization(weights).compose(Individual::getFitness)),
                 learningPopulation,
                 operators,

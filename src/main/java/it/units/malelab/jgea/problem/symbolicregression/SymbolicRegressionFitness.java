@@ -53,7 +53,7 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<RealFunction, do
     return points;
   }
 
-  public int getArity() {
+  public int arity() {
     return arity;
   }
 }

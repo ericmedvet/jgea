@@ -42,6 +42,21 @@ public class StandardWithEnforcedDiversity<G, S, F> extends StandardEvolver<G, S
 
   private final int maxAttempts;
 
+  public static <G1, S1, F1> StandardWithEnforcedDiversity<G1, S1, F1> from(StandardEvolver<G1, S1, F1> evolver, int maxAttempts) {
+    return new StandardWithEnforcedDiversity<>(
+        evolver.solutionMapper,
+        evolver.genotypeFactory,
+        evolver.individualComparator,
+        evolver.populationSize,
+        evolver.operators,
+        evolver.parentSelector,
+        evolver.unsurvivalSelector,
+        evolver.offspringSize,
+        evolver.overlapping,
+        maxAttempts
+    );
+  }
+
   public StandardWithEnforcedDiversity(
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,

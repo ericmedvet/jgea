@@ -17,8 +17,6 @@
 
 package it.units.malelab.jgea.representation.graph.multivariatefunction;
 
-import it.units.malelab.jgea.core.IndependentFactory;
-
 import java.util.function.Function;
 
 /**
@@ -34,6 +32,7 @@ public enum BaseFunction implements Function<Double, Double> {
   STEP(x -> (x > 0) ? 1d : 0d),
   SAW(x -> x - Math.floor(x)),
   GAUSSIAN(x -> Math.exp(-0.5d * x * x) / Math.sqrt(2d * Math.PI)),
+  PROT_INVERSE(x -> (x != 0) ? 1d / x : 1d),
   TANH(Math::tanh);
 
   private final Function<Double, Double> function;
@@ -47,10 +46,4 @@ public enum BaseFunction implements Function<Double, Double> {
     return function.apply(x);
   }
 
-  public static IndependentFactory<FunctionNode> factory(int limit, BaseFunction... baseFunctions) {
-    return random -> new FunctionNode(
-        random.nextInt(limit),
-        baseFunctions[random.nextInt(baseFunctions.length)]
-    );
-  }
 }

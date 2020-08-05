@@ -28,9 +28,9 @@ import java.util.Random;
 /**
  * @author eric
  */
-public class FullTreeFactory<T> extends GrowTreeFactory<T> {
+public class FullGrammarGrammarTreeFactory<T> extends GrowGrammarTreeFactory<T> {
 
-  public FullTreeFactory(int maxDepth, Grammar<T> grammar) {
+  public FullGrammarGrammarTreeFactory(int maxDepth, Grammar<T> grammar) {
     super(maxDepth, grammar);
   }
 

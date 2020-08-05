@@ -32,7 +32,7 @@ import java.util.Set;
 /**
  * @author eric
  */
-public class GrammarUtil {
+public class GrammarUtils {
 
   public static <T> Map<T, Pair<Double, Double>> computeSymbolsMinMaxDepths(Grammar<T> g) {
     Map<T, Pair<Integer, Boolean>> minDepths = computeSymbolsMinDepths(g);

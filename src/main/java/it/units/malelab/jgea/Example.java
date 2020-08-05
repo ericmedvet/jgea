@@ -42,7 +42,7 @@ import it.units.malelab.jgea.problem.synthetic.Sphere;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 import it.units.malelab.jgea.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
-import it.units.malelab.jgea.representation.grammar.cfggp.RampedHalfAndHalf;
+import it.units.malelab.jgea.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
 import it.units.malelab.jgea.representation.sequence.FixedLengthListFactory;
 import it.units.malelab.jgea.representation.sequence.UniformCrossover;
 import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
@@ -222,7 +222,7 @@ public class Example extends Worker {
             new FormulaMapper()
                 .andThen(n -> TreeBasedRealFunction.from(n, "x"))
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new RampedHalfAndHalf<>(3, 12, srGrammar),
+            new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             100,
             Map.of(
@@ -238,7 +238,7 @@ public class Example extends Worker {
             new FormulaMapper()
                 .andThen(n -> TreeBasedRealFunction.from(n, "x"))
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new RampedHalfAndHalf<>(3, 12, srGrammar).withOptimisticUniqueness(100),
+            new GrammarRampedHalfAndHalf<>(3, 12, srGrammar).withOptimisticUniqueness(100),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             100,
             Map.of(
@@ -294,7 +294,7 @@ public class Example extends Worker {
             new FormulaMapper()
                 .andThen(n -> TreeBasedRealFunction.from(n, "x"))
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new RampedHalfAndHalf<>(3, 12, srGrammar),
+            new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
             new ParetoDominance<>(Double.class).on(Individual::getFitness),
             100,
             Map.of(
@@ -310,7 +310,7 @@ public class Example extends Worker {
             new FormulaMapper()
                 .andThen(n -> TreeBasedRealFunction.from(n, "x"))
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new RampedHalfAndHalf<>(3, 12, srGrammar).withOptimisticUniqueness(100),
+            new GrammarRampedHalfAndHalf<>(3, 12, srGrammar).withOptimisticUniqueness(100),
             new ParetoDominance<>(Double.class).on(Individual::getFitness),
             100,
             Map.of(
@@ -366,7 +366,7 @@ public class Example extends Worker {
     }
     Evolver<Tree<String>, List<Tree<Element>>, Double> evolver = new StandardEvolver<>(
         new it.units.malelab.jgea.problem.booleanfunction.FormulaMapper(),
-        new RampedHalfAndHalf<>(3, 12, p.getGrammar()),
+        new GrammarRampedHalfAndHalf<>(3, 12, p.getGrammar()),
         PartialComparator.from(Double.class).on(Individual::getFitness),
         100,
         Map.of(

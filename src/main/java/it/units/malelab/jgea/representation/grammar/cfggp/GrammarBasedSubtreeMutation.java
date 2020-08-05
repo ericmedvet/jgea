@@ -20,11 +20,9 @@ package it.units.malelab.jgea.representation.grammar.cfggp;
 import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.StreamSupport;
 
 import it.units.malelab.jgea.core.operator.Mutation;
 
@@ -34,11 +32,11 @@ import it.units.malelab.jgea.core.operator.Mutation;
 public class GrammarBasedSubtreeMutation<T> implements Mutation<Tree<T>> {
 
   private final int maxDepth;
-  private GrowTreeFactory<T> factory;
+  private GrowGrammarTreeFactory<T> factory;
 
   public GrammarBasedSubtreeMutation(int maxDepth, Grammar<T> grammar) {
     this.maxDepth = maxDepth;
-    factory = new GrowTreeFactory<>(0, grammar);
+    factory = new GrowGrammarTreeFactory<>(0, grammar);
   }
 
   @Override

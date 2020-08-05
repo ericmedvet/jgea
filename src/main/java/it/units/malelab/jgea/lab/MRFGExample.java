@@ -15,34 +15,28 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.representation.graph.multivariatefunction;
+package it.units.malelab.jgea.lab;
 
 import com.google.common.graph.ValueGraph;
 import it.units.malelab.jgea.Worker;
-import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.*;
 import it.units.malelab.jgea.core.evolver.stopcondition.FitnessEvaluations;
-import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.evolver.stopcondition.TargetFitness;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.collector.*;
-import it.units.malelab.jgea.core.operator.Crossover;
-import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
-import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.problem.symbolicregression.*;
 import it.units.malelab.jgea.representation.graph.*;
+import it.units.malelab.jgea.representation.graph.multivariatefunction.*;
 
 import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 /**
  * @author eric
@@ -67,18 +61,18 @@ public class MRFGExample extends Worker {
             MultivariateRealFunctionGraph.builder()
                 .andThen(GraphBasedRealFunction.builder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowGraphFactory(0.5d, 0d, 1d, p.getArity(), 1),
+            new ShallowGraphFactory(0.5d, 0d, 1d, p.arity(), 1),
             PartialComparator.from(Double.class).on(Individual::getFitness)
         ),
         new RandomWalk<>(
             MultivariateRealFunctionGraph.builder()
                 .andThen(GraphBasedRealFunction.builder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowGraphFactory(0.5d, 0d, 1d, p.getArity(), 1),
+            new ShallowGraphFactory(0.5d, 0d, 1d, p.arity(), 1),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             Mutation.oneOf(Map.of(
                 new NodeAddition<>(
-                    BaseFunction.factory(maxNodes, BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.SIN),
+                    FunctionNode.factory(maxNodes, BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.SIN),
                     Random::nextGaussian
                 ), 1d,
                 new EdgeModification<>((w, random) -> w + random.nextGaussian()), 1d,
@@ -90,12 +84,12 @@ public class MRFGExample extends Worker {
             MultivariateRealFunctionGraph.builder()
                 .andThen(GraphBasedRealFunction.builder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowGraphFactory(0.5d, 0d, 1d, p.getArity(), 1),
+            new ShallowGraphFactory(0.5d, 0d, 1d, p.arity(), 1),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             100,
             Map.of(
                 new NodeAddition<>(
-                    BaseFunction.factory(maxNodes, BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.SIN),
+                    FunctionNode.factory(maxNodes, BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.SIN),
                     Random::nextGaussian
                 ), 2d,
                 new EdgeModification<>((w, random) -> w + random.nextGaussian()), 1d,
@@ -111,12 +105,12 @@ public class MRFGExample extends Worker {
             MultivariateRealFunctionGraph.builder()
                 .andThen(GraphBasedRealFunction.builder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowGraphFactory(0.5d, 0d, 1d, p.getArity(), 1),
+            new ShallowGraphFactory(0.5d, 0d, 1d, p.arity(), 1),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             100,
             Map.of(
                 new NodeAddition<>(
-                    BaseFunction.factory(maxNodes, BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.SIN),
+                    FunctionNode.factory(maxNodes, BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.SIN),
                     Random::nextGaussian
                 ), 2d,
                 new EdgeModification<>((w, random) -> w + random.nextGaussian()), 1d,
@@ -137,12 +131,12 @@ public class MRFGExample extends Worker {
             MultivariateRealFunctionGraph.builder()
                 .andThen(GraphBasedRealFunction.builder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowGraphFactory(0.5d, 0d, 1d, p.getArity(), 1),
+            new ShallowGraphFactory(0.5d, 0d, 1d, p.arity(), 1),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             100,
             Map.of(
                 new NodeAddition<>(
-                    BaseFunction.factory(maxNodes, BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.SIN),
+                    FunctionNode.factory(maxNodes, BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.SIN),
                     Random::nextGaussian
                 ), 2d,
                 new EdgeModification<>((w, random) -> w + random.nextGaussian()), 1d,

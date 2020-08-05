@@ -57,7 +57,7 @@ public class SymbolicRegressionProblem implements ProblemWithValidation<RealFunc
     return targetFunction;
   }
 
-  public int getArity() {
-    return trainingFitness.getArity();
+  public int arity() {
+    return trainingFitness.arity();
   }
 }

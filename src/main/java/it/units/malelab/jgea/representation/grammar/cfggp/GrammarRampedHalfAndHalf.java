@@ -28,18 +28,18 @@ import java.util.Random;
 /**
  * @author eric
  */
-public class RampedHalfAndHalf<T> implements Factory<Tree<T>> {
+public class GrammarRampedHalfAndHalf<T> implements Factory<Tree<T>> {
 
   private final int minHeight;
   private final int maxHeight;
-  private final FullTreeFactory<T> fullTreeFactory;
-  private final GrowTreeFactory<T> growTreeFactory;
+  private final FullGrammarGrammarTreeFactory<T> fullGrammarTreeFactory;
+  private final GrowGrammarTreeFactory<T> growGrammarTreeFactory;
 
-  public RampedHalfAndHalf(int minHeight, int maxHeight, Grammar<T> grammar) {
+  public GrammarRampedHalfAndHalf(int minHeight, int maxHeight, Grammar<T> grammar) {
     this.minHeight = minHeight;
     this.maxHeight = maxHeight;
-    fullTreeFactory = new FullTreeFactory<>(maxHeight, grammar);
-    growTreeFactory = new GrowTreeFactory<>(maxHeight, grammar);
+    fullGrammarTreeFactory = new FullGrammarGrammarTreeFactory<>(maxHeight, grammar);
+    growGrammarTreeFactory = new GrowGrammarTreeFactory<>(maxHeight, grammar);
   }
 
   @Override
@@ -48,7 +48,7 @@ public class RampedHalfAndHalf<T> implements Factory<Tree<T>> {
     //full
     int height = minHeight;
     while (trees.size() < n / 2) {
-      Tree<T> tree = fullTreeFactory.build(random, height);
+      Tree<T> tree = fullGrammarTreeFactory.build(random, height);
       if (tree != null) {
         trees.add(tree);
       }
@@ -59,7 +59,7 @@ public class RampedHalfAndHalf<T> implements Factory<Tree<T>> {
     }
     //grow
     while (trees.size() < n) {
-      Tree<T> tree = growTreeFactory.build(random, height);
+      Tree<T> tree = growGrammarTreeFactory.build(random, height);
       if (tree != null) {
         trees.add(tree);
       }

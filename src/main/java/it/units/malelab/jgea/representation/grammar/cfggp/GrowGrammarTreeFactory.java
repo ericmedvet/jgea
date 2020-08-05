@@ -21,7 +21,7 @@ import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.representation.grammar.Grammar;
-import it.units.malelab.jgea.representation.grammar.GrammarUtil;
+import it.units.malelab.jgea.representation.grammar.GrammarUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +31,7 @@ import java.util.Random;
 /**
  * @author eric
  */
-public class GrowTreeFactory<T> implements Factory<Tree<T>> {
+public class GrowGrammarTreeFactory<T> implements Factory<Tree<T>> {
 
   private final static int MAX_ATTEMPTS = 100;
 
@@ -40,10 +40,10 @@ public class GrowTreeFactory<T> implements Factory<Tree<T>> {
 
   private final Map<T, Pair<Double, Double>> nonTerminalDepths;
 
-  public GrowTreeFactory(int maxHeight, Grammar<T> grammar) {
+  public GrowGrammarTreeFactory(int maxHeight, Grammar<T> grammar) {
     this.maxHeight = maxHeight;
     this.grammar = grammar;
-    nonTerminalDepths = GrammarUtil.computeSymbolsMinMaxDepths(grammar);
+    nonTerminalDepths = GrammarUtils.computeSymbolsMinMaxDepths(grammar);
   }
 
   @Override
