@@ -20,6 +20,7 @@ package it.units.malelab.jgea.representation.tree;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.util.Misc;
 
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -39,8 +40,13 @@ public class SubtreeMutation<N> implements Mutation<Tree<N>> {
 
   @Override
   public Tree<N> mutate(Tree<N> parent, Random random) {
-    Tree<N> toReplaceSubtree = Misc.pickRandomly(parent.topSubtrees(), random);
-    Tree<N> newSubtree = builder.build(random, random.nextInt(maxHeight - toReplaceSubtree.depth() - 1) + 1);
+    if (parent.height() > maxHeight) {
+      return parent;
+    }
+    List<Tree<N>> subtrees = parent.topSubtrees();
+    Tree<N> toReplaceSubtree = Misc.pickRandomly(subtrees, random);
+    int maxDepth = subtrees.stream().filter(s -> s.equals(toReplaceSubtree)).mapToInt(Tree::depth).max().orElse(0);
+    Tree<N> newSubtree = builder.build(random, maxHeight - maxDepth);
     return TreeUtils.replaceAll(Tree.copyOf(parent), toReplaceSubtree, newSubtree);
   }
 

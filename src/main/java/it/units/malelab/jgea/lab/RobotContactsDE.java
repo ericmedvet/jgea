@@ -105,7 +105,7 @@ public class RobotContactsDE extends Worker {
               );
               StandardEvolver<List<Double>, List<Double>, List<Double>> evolver = new StandardEvolver<>(
                   Function.identity(),
-                  new FixedLengthListFactory<>(nContact*2, new UniformDoubleFactory(-1, 1)),
+                  new FixedLengthListFactory<>(nContact * 2, new UniformDoubleFactory(-1, 1)),
                   new LexicoGraphical(seq(fitness.getValue().length)).reversed().on(Individual::getFitness),
                   population,
                   Map.of(new GeometricCrossover().andThen(new GaussianMutation(0.1d)), 1d),
@@ -143,7 +143,7 @@ public class RobotContactsDE extends Worker {
                     //new FunctionOfBest("avg.dist", problem.getAvgDistFunction().cached(evaluations), "%%5.3f"),
                     //new FunctionOfBest("avg.balance", problem.getAvgBalanceFunction().cached(evaluations), "%%5.3f"),
                     //new FunctionOfBest("contacts", problem.getValidContactsFunction().cached(evaluations), "%2d"),
-                    new BestPrinter(EnumSet.of(BestPrinter.Part.GENOTYPE))
+                    new BestPrinter(BestPrinter.Part.GENOTYPE)
                 ), executorService));
               } catch (InterruptedException | ExecutionException ex) {
                 L.log(Level.SEVERE, String.format("Cannot solve problem: %s", ex), ex);

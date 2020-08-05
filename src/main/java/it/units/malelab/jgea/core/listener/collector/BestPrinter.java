@@ -31,21 +31,24 @@ public class BestPrinter extends FunctionOfOneBest<Object, Object, Object> {
     GENOTYPE, SOLUTION
   }
 
-  public BestPrinter(Set<Part> parts) {
+  public BestPrinter(Map<Part, String> parts) {
     super(individual -> {
       List<Item> items = new ArrayList<>();
-      if (parts.contains(Part.GENOTYPE)) {
-        items.add(new Item(Part.GENOTYPE.toString().toLowerCase(), individual.getGenotype(), "%s"));
+      if (parts.keySet().contains(Part.GENOTYPE)) {
+        items.add(new Item(Part.GENOTYPE.toString().toLowerCase(), individual.getGenotype(), parts.get(Part.GENOTYPE)));
       }
-      if (parts.contains(Part.SOLUTION)) {
-        items.add(new Item(Part.SOLUTION.toString().toLowerCase(), individual.getSolution(), "%s"));
+      if (parts.keySet().contains(Part.SOLUTION)) {
+        items.add(new Item(Part.SOLUTION.toString().toLowerCase(), individual.getSolution(), parts.get(Part.SOLUTION)));
       }
       return items;
     });
   }
 
-  public BestPrinter(Part part) {
-    this(EnumSet.of(part));
+  public BestPrinter(Part part, String format) {
+    this(Map.of(part, format));
   }
 
+  public BestPrinter(Part part) {
+    this(part, "%s");
+  }
 }

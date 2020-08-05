@@ -1,4 +1,4 @@
 <expr> ::= <op> <expr> <expr> | <pre-op> <expr> | <var>
-<op> ::= + | - | / | *
-<pre-op> ::= sin | cos | exp | log
-<var> ::= x | 1.0
+<op> ::= + | - | p/ | *
+<pre-op> ::= sin | cos | exp | plog | 1/ | √
+<var> ::= x | 1.0 | 0.1 | 10

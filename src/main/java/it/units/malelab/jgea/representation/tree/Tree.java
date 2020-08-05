@@ -7,6 +7,7 @@ package it.units.malelab.jgea.representation.tree;
 
 import it.units.malelab.jgea.core.util.Sized;
 
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
@@ -153,4 +154,21 @@ public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>> {
         (children.isEmpty() ? "" : ("[" + children.stream().map(Tree::toString).collect(Collectors.joining(",")) + "]"));
     return s;
   }
+
+  public void prettyPrint(PrintStream ps) {
+    prettyPrint(this, 0, ps);
+  }
+
+  private static <K> void prettyPrint(Tree<K> t, int d, PrintStream ps) {
+    ps.printf("%s (h=%2d d=%2d #c=%2d) %s",
+        Collections.nCopies(d, "  ").stream().collect(Collectors.joining()),
+        t.height(),
+        t.depth(),
+        t.nChildren(),
+        t.content()
+    );
+    ps.println();
+    t.forEach(c -> prettyPrint(c, d + 1, ps));
+  }
+
 }

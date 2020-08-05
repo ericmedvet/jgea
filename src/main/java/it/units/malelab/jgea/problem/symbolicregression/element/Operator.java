@@ -7,6 +7,9 @@ package it.units.malelab.jgea.problem.symbolicregression.element;
 
 import it.units.malelab.jgea.problem.symbolicregression.RealFunction;
 
+import java.util.function.Function;
+import java.util.function.ToIntFunction;
+
 /**
  * @author eric
  */
@@ -46,5 +49,9 @@ public enum Operator implements Element, RealFunction {
   @Override
   public double apply(double... input) {
     return function.apply(input);
+  }
+
+  public static ToIntFunction<Element> arityFunction() {
+    return e -> (e instanceof Operator)?((Operator) e).arity:0;
   }
 }

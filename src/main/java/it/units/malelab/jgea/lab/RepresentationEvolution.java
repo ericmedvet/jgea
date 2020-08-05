@@ -176,7 +176,7 @@ public class RepresentationEvolution extends Worker {
                   new BestInfo("%5.3f"),
                   //new FunctionOfOneBest<>("best.validation", (FitnessFunction) mapperGeneration.getValidationFunction().cached(10000), "%5.3f"),
                   new Diversity(),
-                  new BestPrinter(EnumSet.of(BestPrinter.Part.GENOTYPE))
+                  new BestPrinter(BestPrinter.Part.GENOTYPE)
               );
               Collection<Pair<Tree<Element>, Tree<Element>>> mapperPairs = evolver.solve(
                   mapperGeneration.getFitnessFunction(), new Iterations(learningIterations), random, executorService,
