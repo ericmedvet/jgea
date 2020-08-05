@@ -20,25 +20,29 @@ package it.units.malelab.jgea.representation.sequence;
 import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.operator.Crossover;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 /**
- * @author Eric Medvet <eric.medvet@gmail.com>
+ * @author eric
  */
-public class UniformCrossover<E, L extends List<E>> implements Crossover<L> {
+public class SameTwoPointsCrossover<E, L extends List<E>> implements Crossover<L> {
 
   private final IndependentFactory<L> factory;
 
-  public UniformCrossover(IndependentFactory<L> factory) {
+  public SameTwoPointsCrossover(IndependentFactory<L> factory) {
     this.factory = factory;
   }
 
   @Override
   public L recombine(L parent1, L parent2, Random random) {
+    int cut = random.nextInt(Math.min(parent1.size(), parent2.size()));
+    List<E> list = new ArrayList<>(parent1.subList(0, cut));
+    list.addAll(parent2.subList(cut, parent2.size()));
     L child = factory.build(random);
-    for (int i = 0; i < Math.min(parent1.size(), parent2.size()); i++) {
-      E e = random.nextBoolean() ? parent1.get(i) : parent2.get(i);
+    for (int i = 0; i < list.size(); i++) {
+      E e = list.get(i);
       if (child.size() > i) {
         child.set(i, e);
       } else {

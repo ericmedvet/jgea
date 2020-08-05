@@ -18,27 +18,32 @@
 package it.units.malelab.jgea.representation.sequence;
 
 import it.units.malelab.jgea.core.IndependentFactory;
-import it.units.malelab.jgea.core.operator.Crossover;
+import it.units.malelab.jgea.core.operator.Mutation;
 
 import java.util.List;
 import java.util.Random;
 
 /**
- * @author Eric Medvet <eric.medvet@gmail.com>
+ * @author eric
+ * @created 2020/08/05
+ * @project jgea
  */
-public class UniformCrossover<E, L extends List<E>> implements Crossover<L> {
-
+public class ProbabilisticMutation<E, L extends List<E>> implements Mutation<L> {
+  private final double p;
   private final IndependentFactory<L> factory;
+  private final Mutation<E> mutation;
 
-  public UniformCrossover(IndependentFactory<L> factory) {
+  public ProbabilisticMutation(double p, IndependentFactory<L> factory, Mutation<E> mutation) {
+    this.p = p;
     this.factory = factory;
+    this.mutation = mutation;
   }
 
   @Override
-  public L recombine(L parent1, L parent2, Random random) {
+  public L mutate(L parent, Random random) {
     L child = factory.build(random);
-    for (int i = 0; i < Math.min(parent1.size(), parent2.size()); i++) {
-      E e = random.nextBoolean() ? parent1.get(i) : parent2.get(i);
+    for (int i = 0; i < parent.size(); i++) {
+      E e = (random.nextDouble() < p) ? mutation.mutate(parent.get(i), random) : parent.get(i);
       if (child.size() > i) {
         child.set(i, e);
       } else {
@@ -47,5 +52,4 @@ public class UniformCrossover<E, L extends List<E>> implements Crossover<L> {
     }
     return child;
   }
-
 }

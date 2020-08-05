@@ -18,33 +18,25 @@
 package it.units.malelab.jgea.representation.sequence.numeric;
 
 import it.units.malelab.jgea.core.IndependentFactory;
-import it.units.malelab.jgea.representation.sequence.FixedLengthSequence;
-import it.units.malelab.jgea.representation.sequence.Sequence;
 
 import java.util.Random;
 
 /**
- * @author Eric Medvet <eric.medvet@gmail.com>
+ * @author eric
+ * @created 2020/08/05
+ * @project jgea
  */
-public class UniformDoubleSequenceFactory implements IndependentFactory<Sequence<Double>> {
-
+public class UniformDoubleFactory implements IndependentFactory<Double> {
   private final double min;
   private final double max;
-  private final int length;
 
-  public UniformDoubleSequenceFactory(double min, double max, int length) {
+  public UniformDoubleFactory(double min, double max) {
     this.min = min;
     this.max = max;
-    this.length = length;
   }
 
   @Override
-  public Sequence<Double> build(Random random) {
-    FixedLengthSequence<Double> sequence = new FixedLengthSequence<>(length, 0d);
-    for (int i = 0; i < sequence.size(); i++) {
-      sequence.set(i, min + (max - min) * random.nextDouble());
-    }
-    return sequence;
+  public Double build(Random random) {
+    return random.nextDouble() * (max - min) + max;
   }
-
 }

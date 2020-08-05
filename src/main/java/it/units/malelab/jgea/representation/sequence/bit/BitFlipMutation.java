@@ -34,8 +34,8 @@ public class BitFlipMutation implements Mutation<BitString> {
   }
 
   @Override
-  public BitString mutate(BitString g, Random random) {
-    BitString newG = (BitString) g.clone();
+  public BitString mutate(BitString parent, Random random) {
+    BitString newG = BitString.copyOf(parent);
     for (int i = 0; i < newG.size(); i++) {
       if (random.nextDouble() <= p) {
         newG.flip(i);

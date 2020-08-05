@@ -18,7 +18,6 @@
 package it.units.malelab.jgea.problem.application;
 
 import it.units.malelab.jgea.core.Problem;
-import it.units.malelab.jgea.representation.sequence.Sequence;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,7 +27,7 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class RobotPowerSupplyGeometry implements Problem<Sequence<Double>, List<Double>> {
+public class RobotPowerSupplyGeometry implements Problem<List<Double>, List<Double>> {
 
   public enum Objective {
     CONTACT_MIN, CONTACT_AVG, DIST_AVG, BALANCE
@@ -178,10 +177,10 @@ public class RobotPowerSupplyGeometry implements Problem<Sequence<Double>, List<
     return s;
   }
 
-  private class FitnessFunction implements Function<Sequence<Double>, List<Double>> {
+  private class FitnessFunction implements Function<List<Double>, List<Double>> {
 
     @Override
-    public List<Double> apply(Sequence<Double> sequence) {
+    public List<Double> apply(List<Double> sequence) {
       List<Double> values = new ArrayList<>();
       double[] s = new double[sequence.size()];
       for (int i = 0; i < sequence.size(); i++) {
@@ -208,7 +207,7 @@ public class RobotPowerSupplyGeometry implements Problem<Sequence<Double>, List<
   }
 
   @Override
-  public Function<Sequence<Double>, List<Double>> getFitnessFunction() {
+  public Function<List<Double>, List<Double>> getFitnessFunction() {
     return fitnessFunction;
   }
 

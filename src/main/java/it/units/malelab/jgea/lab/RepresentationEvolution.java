@@ -46,7 +46,7 @@ import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 import it.units.malelab.jgea.representation.grammar.cfggp.RampedHalfAndHalf;
 import it.units.malelab.jgea.representation.grammar.cfggp.StandardTreeCrossover;
 import it.units.malelab.jgea.representation.grammar.cfggp.StandardTreeMutation;
-import it.units.malelab.jgea.representation.sequence.LengthPreservingTwoPointCrossover;
+import it.units.malelab.jgea.representation.sequence.SameTwoPointsCrossover;
 import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
 import it.units.malelab.jgea.representation.sequence.bit.BitStringFactory;
@@ -263,7 +263,7 @@ public class RepresentationEvolution extends Worker {
     //iterate on problems
     Map<GeneticOperator<BitString>, Double> innerOperators = new LinkedHashMap<>();
     innerOperators.put(new BitFlipMutation(0.01d), 0.2d);
-    innerOperators.put(new LengthPreservingTwoPointCrossover(Boolean.class), 0.8d);
+    innerOperators.put(new SameTwoPointsCrossover(new BitStringFactory(1)), 0.8d);
     for (int validationRun = 0; validationRun < validationRuns; validationRun++) {
       //prepare mapper
       RecursiveMapper recursiveMapper = new RecursiveMapper<>(

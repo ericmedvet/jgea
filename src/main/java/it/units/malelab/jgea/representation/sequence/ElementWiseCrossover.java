@@ -17,33 +17,38 @@
 
 package it.units.malelab.jgea.representation.sequence;
 
+import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.operator.Crossover;
 
+import java.util.List;
 import java.util.Random;
 
 /**
  * @author eric
+ * @created 2020/08/05
+ * @project jgea
  */
-public class LengthPreservingTwoPointCrossover<E, S extends Sequence<E>> implements Crossover<S> {
+public class ElementWiseCrossover<E, L extends List<E>> implements Crossover<L> {
+  private final IndependentFactory<L> factory;
+  private final Crossover<E> crossover;
 
-  public LengthPreservingTwoPointCrossover(Class<E> eClass) {
+  public ElementWiseCrossover(IndependentFactory<L> factory, Crossover<E> crossover) {
+    this.factory = factory;
+    this.crossover = crossover;
   }
 
   @Override
-  public S recombine(S s1, S s2, Random random) {
-    S s = (S) s1.clone();
-    int l1 = s1.size();
-    int l2 = s2.size();
-    int p1 = 0;
-    int p2 = 0;
-    while (p1 == p2) {
-      p1 = random.nextInt(Math.min(l1, l2));
-      p2 = random.nextInt(Math.min(l1, l2));
+  public L recombine(L parent1, L parent2, Random random) {
+    L child = factory.build(random);
+    for (int i = 0; i < Math.min(parent1.size(), parent2.size()); i++) {
+      E e = crossover.recombine(parent1.get(i), parent2.get(i), random);
+      if (child.size() > i) {
+        child.set(i, e);
+      } else {
+        child.add(e);
+      }
     }
-    for (int i = Math.min(p1, p2); i < Math.max(p1, p2); i++) {
-      s.set(i, s2.get(i));
-    }
-    return s;
+    return child;
   }
 
 }

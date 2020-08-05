@@ -17,15 +17,15 @@
 
 package it.units.malelab.jgea.problem.synthetic;
 
-import it.units.malelab.jgea.representation.tree.Tree;
-import it.units.malelab.jgea.representation.sequence.Sequence;
 import it.units.malelab.jgea.distance.Distance;
 import it.units.malelab.jgea.distance.Edit;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
+import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -36,11 +36,11 @@ public class Text implements GrammarBasedProblem<String, String, Double> {
 
   private static class FitnessFunction implements Function<String, Double> {
 
-    private final Sequence<Character> target;
-    private final Distance<Sequence<Character>> distance;
+    private final List<Character> target;
+    private final Distance<List<Character>> distance;
 
     public FitnessFunction(String targetString) {
-      this.target = Sequence.from(targetString.chars().mapToObj(c -> (char) c).toArray(Character[]::new));
+      target = targetString.chars().mapToObj(c -> (char)c).collect(Collectors.toList());
       this.distance = new Edit<>();
     }
 
@@ -48,7 +48,7 @@ public class Text implements GrammarBasedProblem<String, String, Double> {
     public Double apply(String string) {
       double d = (double) distance.apply(
           target,
-          Sequence.from(string.chars().mapToObj(c -> (char) c).toArray(Character[]::new))
+          string.chars().mapToObj(c -> (char)c).collect(Collectors.toList())
       ) / (double) target.size();
       return d;
     }

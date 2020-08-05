@@ -17,17 +17,16 @@
 
 package it.units.malelab.jgea.distance;
 
-import it.units.malelab.jgea.distance.Distance;
-import it.units.malelab.jgea.representation.sequence.Sequence;
+import java.util.List;
 
 /**
  * @author eric
  */
-public class Edit<T> implements Distance<Sequence<T>> {
+public class Edit<T> implements Distance<List<T>> {
 
   //from https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Java
   @Override
-  public Double apply(Sequence<T> ts1, Sequence<T> ts2) {
+  public Double apply(List<T> ts1, List<T> ts2) {
     int len0 = ts1.size() + 1;
     int len1 = ts2.size() + 1;
     int[] cost = new int[len0];

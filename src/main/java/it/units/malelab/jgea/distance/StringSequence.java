@@ -17,24 +17,23 @@
 
 package it.units.malelab.jgea.distance;
 
-import it.units.malelab.jgea.representation.sequence.Sequence;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author eric
  */
 public class StringSequence implements Distance<String> {
 
-  private final Distance<Sequence<Character>> innerDistance;
+  private final Distance<List<Character>> innerDistance;
 
-  public StringSequence(Distance<Sequence<Character>> innerDistance) {
+  public StringSequence(Distance<List<Character>> innerDistance) {
     this.innerDistance = innerDistance;
   }
 
   @Override
   public Double apply(String string1, String string2) {
-    Sequence<Character> s1 = Sequence.from(string1.chars().mapToObj(c -> (char) c).toArray(Character[]::new));
-    Sequence<Character> s2 = Sequence.from(string1.chars().mapToObj(c -> (char) c).toArray(Character[]::new));
-    return innerDistance.apply(s1, s2);
+    return innerDistance.apply(string1.chars().mapToObj(c -> (char) c).collect(Collectors.toList()), string2.chars().mapToObj(c -> (char) c).collect(Collectors.toList()));
   }
 
 }

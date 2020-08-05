@@ -19,32 +19,23 @@ package it.units.malelab.jgea.representation.sequence.bit;
 
 import com.google.common.collect.Range;
 import it.units.malelab.jgea.core.util.Misc;
-import it.units.malelab.jgea.representation.sequence.ConstrainedSequence;
-import it.units.malelab.jgea.representation.sequence.Sequence;
+import it.units.malelab.jgea.representation.sequence.ThinList;
 
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * @author eric
  */
-public class BitString implements ConstrainedSequence<Boolean> {
+public class BitString implements ThinList<Boolean> {
 
   private final int length;
   private final BitSet bitSet;
 
-  private final static Set<Boolean> DOMAIN;
-
-  static {
-    Set<Boolean> domain = new LinkedHashSet<>();
-    domain.add(Boolean.TRUE);
-    domain.add(Boolean.FALSE);
-    DOMAIN = Collections.unmodifiableSet(domain);
+  public static BitString copyOf(BitString other) {
+    return new BitString(other.length, other.bitSet);
   }
 
   public BitString(String bits) {
@@ -227,19 +218,23 @@ public class BitString implements ConstrainedSequence<Boolean> {
   }
 
   @Override
-  public Set<Boolean> domain(int index) {
-    return DOMAIN;
+  public boolean add(Boolean b) {
+    BitString tail = new BitString(1);
+    tail.set(0, b);
+    append(tail);
+    return true;
   }
 
   @Override
-  public Sequence<Boolean> clone() {
-    return new BitString(length, bitSet);
-  }
-
-  @Override
-  public void set(int index, Boolean t) {
+  public Boolean set(int index, Boolean t) {
+    boolean previous = bitSet.get(index);
     checkIndexes(index, index + 1);
     bitSet.set(index, t);
+    return previous;
   }
 
+  @Override
+  public Boolean remove(int index) {
+    throw new UnsupportedOperationException();
+  }
 }

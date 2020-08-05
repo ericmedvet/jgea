@@ -18,19 +18,19 @@
 package it.units.malelab.jgea.problem.synthetic;
 
 import it.units.malelab.jgea.core.Problem;
-import it.units.malelab.jgea.representation.sequence.Sequence;
 
+import java.util.List;
 import java.util.function.Function;
 
 /**
  * @author eric
  */
-public class LinearPoints implements Problem<Sequence<Double>, Double> {
+public class LinearPoints implements Problem<List<Double>, Double> {
 
-  private static class FitnessFunction implements Function<Sequence<Double>, Double> {
+  private static class FitnessFunction implements Function<List<Double>, Double> {
 
     @Override
-    public Double apply(Sequence<Double> s) {
+    public Double apply(List<Double> s) {
       if (s.size() <= 1) {
         return 0d;
       }
@@ -49,7 +49,7 @@ public class LinearPoints implements Problem<Sequence<Double>, Double> {
   private final FitnessFunction fitnessFunction = new FitnessFunction();
 
   @Override
-  public Function<Sequence<Double>, Double> getFitnessFunction() {
+  public Function<List<Double>, Double> getFitnessFunction() {
     return fitnessFunction;
   }
 

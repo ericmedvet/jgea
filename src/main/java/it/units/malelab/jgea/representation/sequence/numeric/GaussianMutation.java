@@ -17,30 +17,21 @@
 
 package it.units.malelab.jgea.representation.sequence.numeric;
 
-import it.units.malelab.jgea.representation.sequence.Sequence;
-import it.units.malelab.jgea.core.operator.Mutation;
+import it.units.malelab.jgea.representation.sequence.ProbabilisticMutation;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * @author Eric Medvet <eric.medvet@gmail.com>
  */
-public class GaussianMutation implements Mutation<Sequence<Double>> {
-
-  private final double sigma;
+public class GaussianMutation extends ProbabilisticMutation<Double, List<Double>> {
 
   public GaussianMutation(double sigma) {
-    this.sigma = sigma;
+    super(
+        1d,
+        random -> new ArrayList<>(),
+        (v, random) -> v + random.nextGaussian() * sigma
+    );
   }
-
-  @Override
-  public Sequence<Double> mutate(Sequence<Double> parent, Random random) {
-    Sequence<Double> child = parent.clone();
-    for (int i = 0; i < child.size(); i++) {
-      child.set(i, child.get(i).doubleValue() + random.nextGaussian() * sigma);
-    }
-    return child;
-  }
-
 }

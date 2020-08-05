@@ -17,27 +17,24 @@
 
 package it.units.malelab.jgea.distance;
 
-import it.units.malelab.jgea.representation.sequence.Sequence;
 import it.units.malelab.jgea.representation.tree.Tree;
 
-import java.util.stream.Collectors;
+import java.util.List;
 
 /**
  * @author eric
  */
 public class TreeLeaves<T> implements Distance<Tree<T>> {
 
-  private final Distance<Sequence<T>> innerDistance;
+  private final Distance<List<T>> innerDistance;
 
-  public TreeLeaves(Distance<Sequence<T>> innerDistance) {
+  public TreeLeaves(Distance<List<T>> innerDistance) {
     this.innerDistance = innerDistance;
   }
 
   @Override
   public Double apply(Tree<T> t1, Tree<T> t2) {
-    Sequence<T> s1 = Sequence.from(t1.leaves().stream().map(Tree::content).collect(Collectors.toList()));
-    Sequence<T> s2 = Sequence.from(t2.leaves().stream().map(Tree::content).collect(Collectors.toList()));
-    return innerDistance.apply(s1, s2);
+    return innerDistance.apply(t1.visitLeaves(), t2.visitLeaves());
   }
 
 

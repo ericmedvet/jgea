@@ -23,9 +23,6 @@ import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.evolver.*;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.evolver.stopcondition.TargetFitness;
-import it.units.malelab.jgea.core.util.Sized;
-import it.units.malelab.jgea.problem.booleanfunction.element.Element;
-import it.units.malelab.jgea.problem.symbolicregression.*;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.PrintStreamListener;
 import it.units.malelab.jgea.core.listener.collector.*;
@@ -34,7 +31,10 @@ import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
+import it.units.malelab.jgea.core.util.Sized;
 import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
+import it.units.malelab.jgea.problem.booleanfunction.element.Element;
+import it.units.malelab.jgea.problem.symbolicregression.*;
 import it.units.malelab.jgea.problem.synthetic.LinearPoints;
 import it.units.malelab.jgea.problem.synthetic.OneMax;
 import it.units.malelab.jgea.problem.synthetic.Rastrigin;
@@ -44,14 +44,14 @@ import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 import it.units.malelab.jgea.representation.grammar.cfggp.RampedHalfAndHalf;
 import it.units.malelab.jgea.representation.grammar.cfggp.StandardTreeCrossover;
 import it.units.malelab.jgea.representation.grammar.cfggp.StandardTreeMutation;
-import it.units.malelab.jgea.representation.sequence.Sequence;
+import it.units.malelab.jgea.representation.sequence.FixedLengthListFactory;
 import it.units.malelab.jgea.representation.sequence.UniformCrossover;
 import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
 import it.units.malelab.jgea.representation.sequence.bit.BitStringFactory;
 import it.units.malelab.jgea.representation.sequence.numeric.GaussianMutation;
 import it.units.malelab.jgea.representation.sequence.numeric.GeometricCrossover;
-import it.units.malelab.jgea.representation.sequence.numeric.UniformDoubleSequenceFactory;
+import it.units.malelab.jgea.representation.sequence.numeric.UniformDoubleFactory;
 import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.io.File;
@@ -91,22 +91,22 @@ public class Example extends Worker {
 
   public void runLinearPoints() {
     Random r = new Random(1);
-    Problem<Sequence<Double>, Double> p = new LinearPoints();
-    List<Evolver<Sequence<Double>, Sequence<Double>, Double>> evolvers = List.of(
+    Problem<List<Double>, Double> p = new LinearPoints();
+    List<Evolver<List<Double>, List<Double>, Double>> evolvers = List.of(
         new RandomSearch<>(
             Function.identity(),
-            new UniformDoubleSequenceFactory(0, 1, 10),
+            new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
             PartialComparator.from(Double.class).on(Individual::getFitness)
         ),
         new RandomWalk<>(
             Function.identity(),
-            new UniformDoubleSequenceFactory(0, 1, 10),
+            new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             new GaussianMutation(0.01d)
         ),
         new StandardEvolver<>(
             Function.identity(),
-            new UniformDoubleSequenceFactory(0, 1, 10),
+            new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             100,
             Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
@@ -116,10 +116,10 @@ public class Example extends Worker {
             true
         )
     );
-    for (Evolver<Sequence<Double>, Sequence<Double>, Double> evolver : evolvers) {
+    for (Evolver<List<Double>, List<Double>, Double> evolver : evolvers) {
       System.out.println(evolver.getClass().getSimpleName());
       try {
-        Collection<Sequence<Double>> solutions = evolver.solve(
+        Collection<List<Double>> solutions = evolver.solve(
             p.getFitnessFunction(),
             new TargetFitness<>(0d).or(new Iterations(100)),
             r,
@@ -162,7 +162,7 @@ public class Example extends Worker {
             PartialComparator.from(Double.class).on(Individual::getFitness),
             100,
             Map.of(
-                new UniformCrossover<>(Boolean.class), 0.8d,
+                new UniformCrossover<>(new BitStringFactory(100)), 0.8d,
                 new BitFlipMutation(0.01d), 0.2d
             ),
             new Tournament(5),
@@ -176,7 +176,7 @@ public class Example extends Worker {
             PartialComparator.from(Double.class).on(Individual::getFitness),
             100,
             Map.of(
-                new UniformCrossover<>(Boolean.class), 0.8d,
+                new UniformCrossover<>(new BitStringFactory(100)), 0.8d,
                 new BitFlipMutation(0.01d), 0.2d
             ),
             new Tournament(5),
@@ -400,11 +400,11 @@ public class Example extends Worker {
 
   public void runSphere() {
     Random r = new Random(1);
-    Problem<Sequence<Double>, Double> p = new Sphere();
-    List<Evolver<Sequence<Double>, Sequence<Double>, Double>> evolvers = List.of(
+    Problem<List<Double>, Double> p = new Sphere();
+    List<Evolver<List<Double>, List<Double>, Double>> evolvers = List.of(
         new StandardEvolver<>(
             Function.identity(),
-            new UniformDoubleSequenceFactory(-10, 10, 10),
+            new FixedLengthListFactory<>(10, new UniformDoubleFactory(-10, 10)),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             100,
             Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
@@ -415,17 +415,17 @@ public class Example extends Worker {
         ),
         new CMAESEvolver<>(
             Function.identity(),
-            new UniformDoubleSequenceFactory(-10, 10, 10),
+            new FixedLengthListFactory<>(10, new UniformDoubleFactory(-10, 10)),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             10,
             -10,
             10
         )
     );
-    for (Evolver<Sequence<Double>, Sequence<Double>, Double> evolver : evolvers) {
+    for (Evolver<List<Double>, List<Double>, Double> evolver : evolvers) {
       System.out.println(evolver.getClass().getSimpleName());
       try {
-        Collection<Sequence<Double>> solutions = evolver.solve(
+        Collection<List<Double>> solutions = evolver.solve(
             p.getFitnessFunction(),
             new TargetFitness<>(0d).or(new Iterations(100)),
             r,
@@ -449,11 +449,11 @@ public class Example extends Worker {
 
   public void runRastrigin() {
     Random r = new Random(1);
-    Problem<Sequence<Double>, Double> p = new Rastrigin();
-    List<Evolver<Sequence<Double>, Sequence<Double>, Double>> evolvers = List.of(
+    Problem<List<Double>, Double> p = new Rastrigin();
+    List<Evolver<List<Double>, List<Double>, Double>> evolvers = List.of(
         new StandardEvolver<>(
             Function.identity(),
-            new UniformDoubleSequenceFactory(-5.12, 5.12, 10),
+            new FixedLengthListFactory<>(10, new UniformDoubleFactory(-5.12, 5.12)),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             100,
             Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
@@ -464,17 +464,17 @@ public class Example extends Worker {
         ),
         new CMAESEvolver<>(
             Function.identity(),
-            new UniformDoubleSequenceFactory(-5.12, 5.12, 10),
+            new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             10,
             -5.12,
             5.12
         )
     );
-    for (Evolver<Sequence<Double>, Sequence<Double>, Double> evolver : evolvers) {
+    for (Evolver<List<Double>, List<Double>, Double> evolver : evolvers) {
       System.out.println(evolver.getClass().getSimpleName());
       try {
-        Collection<Sequence<Double>> solutions = evolver.solve(
+        Collection<List<Double>> solutions = evolver.solve(
             p.getFitnessFunction(),
             new TargetFitness<>(0d).or(new Iterations(100)),
             r,

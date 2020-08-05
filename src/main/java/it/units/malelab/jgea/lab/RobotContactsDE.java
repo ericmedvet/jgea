@@ -30,10 +30,10 @@ import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.problem.application.RobotPowerSupplyGeometry;
-import it.units.malelab.jgea.representation.sequence.Sequence;
+import it.units.malelab.jgea.representation.sequence.FixedLengthListFactory;
 import it.units.malelab.jgea.representation.sequence.numeric.GaussianMutation;
 import it.units.malelab.jgea.representation.sequence.numeric.GeometricCrossover;
-import it.units.malelab.jgea.representation.sequence.numeric.UniformDoubleSequenceFactory;
+import it.units.malelab.jgea.representation.sequence.numeric.UniformDoubleFactory;
 
 import java.io.FileNotFoundException;
 import java.util.*;
@@ -103,9 +103,9 @@ public class RobotContactsDE extends Worker {
                   nPoints,
                   fitness.getValue()
               );
-              StandardEvolver<Sequence<Double>, Sequence<Double>, List<Double>> evolver = new StandardEvolver<>(
+              StandardEvolver<List<Double>, List<Double>, List<Double>> evolver = new StandardEvolver<>(
                   Function.identity(),
-                  new UniformDoubleSequenceFactory(-1, 1, nContact * 2),
+                  new FixedLengthListFactory<>(nContact*2, new UniformDoubleFactory(-1, 1)),
                   new LexicoGraphical(seq(fitness.getValue().length)).reversed().on(Individual::getFitness),
                   population,
                   Map.of(new GeometricCrossover().andThen(new GaussianMutation(0.1d)), 1d),
@@ -123,8 +123,8 @@ public class RobotContactsDE extends Worker {
               keys.put("w", Double.toString(w));
               keys.put("nc", Integer.toString(nContact));
               System.out.println(keys);
-              Function<Individual<Sequence<Double>, Object, Object>, double[]> toArray = (individual) -> {
-                Sequence<Double> s = individual.getGenotype();
+              Function<Individual<List<Double>, Object, Object>, double[]> toArray = (individual) -> {
+                List<Double> s = individual.getGenotype();
                 double[] values = new double[s.size()];
                 for (int i = 0; i < s.size(); i++) {
                   values[i] = s.get(i);
@@ -138,7 +138,7 @@ public class RobotContactsDE extends Worker {
                     new Basic(),
                     new Population(),
                     new BestInfo("%5.3f"),
-                    //new Prefix("min.contacts", new FunctionOfOneBest<Sequence<Double>, Object, Object>(Misc.cached(toArray.andThen(problem.getMinContactsFunction()), evaluations), "%%5.3f")),
+                    //new Prefix("min.contacts", new FunctionOfOneBest<List<Double>, Object, Object>(Misc.cached(toArray.andThen(problem.getMinContactsFunction()), evaluations), "%%5.3f")),
                     //new FunctionOfBest("avg.contacts", problem.getAvgContactsFunction().cached(evaluations), "%%5.3f"),
                     //new FunctionOfBest("avg.dist", problem.getAvgDistFunction().cached(evaluations), "%%5.3f"),
                     //new FunctionOfBest("avg.balance", problem.getAvgBalanceFunction().cached(evaluations), "%%5.3f"),

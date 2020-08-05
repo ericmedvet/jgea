@@ -4,8 +4,6 @@ import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
-import it.units.malelab.jgea.representation.sequence.FixedLengthSequence;
-import it.units.malelab.jgea.representation.sequence.Sequence;
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -17,7 +15,7 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class CMAESEvolver<S, F extends Comparable<F>> extends AbstractIterativeEvolver<Sequence<Double>, S, F> {
+public class CMAESEvolver<S, F extends Comparable<F>> extends AbstractIterativeEvolver<List<Double>, S, F> {
 
   /**
    * Population size, sample size, number of offspring, λ.
@@ -165,9 +163,9 @@ public class CMAESEvolver<S, F extends Comparable<F>> extends AbstractIterativeE
    * Constructs a new CMA-ES instance using default parameters.
    */
   public CMAESEvolver(
-      Function<? super Sequence<Double>, ? extends S> solutionMapper,
-      Factory<? extends Sequence<Double>> genotypeFactory,
-      PartialComparator<? super Individual<Sequence<Double>, S, F>> individualComparator,
+      Function<? super List<Double>, ? extends S> solutionMapper,
+      Factory<? extends List<Double>> genotypeFactory,
+      PartialComparator<? super Individual<List<Double>, S, F>> individualComparator,
       int size,
       double initMin,
       double initMax) {
@@ -212,19 +210,19 @@ public class CMAESEvolver<S, F extends Comparable<F>> extends AbstractIterativeE
   }
 
   @Override
-  protected Collection<Individual<Sequence<Double>, S, F>> initPopulation(Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<List<Double>, S, F>> initPopulation(Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     // objective variables initial point
     double[] distrMean = ((CMAESState) state).getDistrMean();
     for (int i = 0; i < size; i++) {
       distrMean[i] = random.nextDouble() * (initMax - initMin) + initMin;
     }
     ((CMAESState) state).setDistrMean(distrMean);
-    List<Individual<Sequence<Double>, S, F>> population = samplePopulation(fitnessFunction, random, executor, (CMAESState) state);
+    List<Individual<List<Double>, S, F>> population = samplePopulation(fitnessFunction, random, executor, (CMAESState) state);
     return population;
   }
 
   @Override
-  protected Collection<Individual<Sequence<Double>, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<Sequence<Double>, S, F>> orderedPopulation, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<List<Double>, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<List<Double>, S, F>> orderedPopulation, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     updateDistribution(orderedPopulation, (CMAESState) state);
     // update B and D from C
     if ((state.getIterations() - ((CMAESState) state).getLastEigenUpdate()) > (1d / (c1 + cmu) / size / 10d)) {
@@ -237,15 +235,15 @@ public class CMAESEvolver<S, F extends Comparable<F>> extends AbstractIterativeE
       ((CMAESState) state).setStepSize(stepSize);
       L.warning("Flat fitness, consider reformulating the objective");
     }
-    List<Individual<Sequence<Double>, S, F>> newPopulation = samplePopulation(fitnessFunction, random, executor, (CMAESState) state);
+    List<Individual<List<Double>, S, F>> newPopulation = samplePopulation(fitnessFunction, random, executor, (CMAESState) state);
     return newPopulation;
   }
 
-  protected List<Individual<Sequence<Double>, S, F>> samplePopulation(Function<S, F> fitnessFunction, Random random, ExecutorService executor, CMAESState state) throws ExecutionException, InterruptedException {
-    List<Sequence<Double>> genotypes = new ArrayList<>();
+  protected List<Individual<List<Double>, S, F>> samplePopulation(Function<S, F> fitnessFunction, Random random, ExecutorService executor, CMAESState state) throws ExecutionException, InterruptedException {
+    List<List<Double>> genotypes = new ArrayList<>();
     while (genotypes.size() < lambda) {
       // new point
-      FixedLengthSequence<Double> genotype = new FixedLengthSequence<>(size, 0d);
+      List<Double> genotype = new ArrayList<>(Collections.nCopies(size, 0d));
       // z ∼ N (0, I) normally distributed vector
       double[] arz = new double[size];
       for (int i = 0; i < size; i++) {
@@ -263,10 +261,10 @@ public class CMAESEvolver<S, F extends Comparable<F>> extends AbstractIterativeE
   }
 
   protected void updateDistribution(
-      final PartiallyOrderedCollection<Individual<Sequence<Double>, S, F>> population,
+      final PartiallyOrderedCollection<Individual<List<Double>, S, F>> population,
       final CMAESState state) {
     // best mu ranked points
-    List<Individual<Sequence<Double>, S, F>> bestMuPoints = population
+    List<Individual<List<Double>, S, F>> bestMuPoints = population
         .all()
         .stream()
         .sorted(Comparator.comparing(Individual::getFitness))

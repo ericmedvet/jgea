@@ -17,16 +17,15 @@
 
 package it.units.malelab.jgea.distance;
 
-import it.units.malelab.jgea.distance.Distance;
-import it.units.malelab.jgea.representation.sequence.Sequence;
+import java.util.List;
 
 /**
  * @author eric
  */
-public class Hamming<T> implements Distance<Sequence<T>> {
+public class Hamming<T> implements Distance<List<T>> {
 
   @Override
-  public Double apply(Sequence<T> t1, Sequence<T> t2) {
+  public Double apply(List<T> t1, List<T> t2) {
     if (t1.size() != t2.size()) {
       throw new IllegalArgumentException(String.format("Sequences size should be the same (%d vs. %d)", t1.size(), t2.size()));
     }
