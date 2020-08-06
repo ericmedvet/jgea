@@ -82,13 +82,15 @@ public class SymbolicRegressionComparison extends Worker {
     int[] seeds = ri(a("seed", "0:1"));
     boolean[] enforceDiversities = new boolean[]{true};
     Operator[] operators = new Operator[]{Operator.ADDITION, Operator.SUBTRACTION, Operator.MULTIPLICATION, Operator.PROT_DIVISION};
+    BaseFunction[] baseFunctions = new BaseFunction[]{BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.PROT_INVERSE, BaseFunction.SQ};
     Double[] constants = new Double[]{0.1, 1d, 10d};
     List<SymbolicRegressionProblem> problems = List.of(
         new Nguyen7(1),
         new Keijzer6(),
         new Polynomial4(),
         new Vladislavleva4(1),
-        new Pagie1()
+        new Pagie1(),
+        new UnivariateComposed()
     );
     MultiFileListenerFactory<Object, RealFunction, Double> listenerFactory = new MultiFileListenerFactory<>(
         a("dir", "."),
@@ -178,7 +180,7 @@ public class SymbolicRegressionComparison extends Worker {
             PartialComparator.from(Double.class).on(Individual::getFitness),
             Mutation.oneOf(Map.of(
                 new NodeAddition<>(
-                    FunctionNode.factory(maxNodes, BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.PROT_INVERSE),
+                    FunctionNode.factory(maxNodes, baseFunctions),
                     Random::nextGaussian
                 ), 2d,
                 new EdgeModification<>((w, random) -> w + random.nextGaussian()), 1d,
@@ -195,7 +197,7 @@ public class SymbolicRegressionComparison extends Worker {
             nPop,
             Map.of(
                 new NodeAddition<>(
-                    FunctionNode.factory(maxNodes, BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.PROT_INVERSE),
+                    FunctionNode.factory(maxNodes, baseFunctions),
                     Random::nextGaussian
                 ), 2d,
                 new EdgeModification<>((w, random) -> w + random.nextGaussian()), 1d,
