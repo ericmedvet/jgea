@@ -19,16 +19,19 @@ package it.units.malelab.jgea.representation.graph.multivariatefunction;
 
 /**
  * @author eric
- * @created 2020/08/04
+ * @created 2020/08/06
  * @project jgea
  */
-public class InputNode extends Node {
-  public InputNode(int index) {
+public class Constant extends Node {
+
+  private final double value;
+
+  public Constant(int index, double value) {
     super(index);
+    this.value = value;
   }
 
-  @Override
-  public String toString() {
-    return "i" + getIndex();
+  public double getValue() {
+    return value;
   }
 }

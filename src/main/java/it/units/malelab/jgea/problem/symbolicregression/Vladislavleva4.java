@@ -31,9 +31,9 @@ public class Vladislavleva4 extends SymbolicRegressionProblem {
         v -> {
           double s = 0;
           for (int i = 0; i < 5; i++) {
-            s = s + (v[i] - 3) * (v[i] - 3);
+            s = s + (v[i] - 3d) * (v[i] - 3d);
           }
-          return 10 / (5 + s);
+          return 10d / (5d + s);
         },
         MathUtils.pairwise(
             MathUtils.uniformSample(0.05, 6.05, 1024, new Random(seed)),

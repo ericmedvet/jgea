@@ -18,12 +18,9 @@
 package it.units.malelab.jgea.representation.graph.multivariatefunction;
 
 import com.google.common.graph.ValueGraph;
-import com.google.common.graph.ValueGraphBuilder;
 import it.units.malelab.jgea.core.util.Sized;
-import it.units.malelab.jgea.problem.symbolicregression.GraphBasedRealFunction;
 
 import java.util.Objects;
-import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -56,10 +53,10 @@ public class MultivariateRealFunctionGraph implements Function<double[], double[
 
   @Override
   public double[] apply(double[] input) {
-    Set<OutputNode> outputNodes = graph.nodes().stream().filter(n -> n instanceof OutputNode).map(n -> (OutputNode) n).collect(Collectors.toSet());
-    int outputSize = outputNodes.stream().mapToInt(Node::getIndex).max().orElse(0);
+    Set<Output> outputs = graph.nodes().stream().filter(n -> n instanceof Output).map(n -> (Output) n).collect(Collectors.toSet());
+    int outputSize = outputs.stream().mapToInt(Node::getIndex).max().orElse(0);
     double[] output = new double[outputSize + 1];
-    for (OutputNode outputNode : outputNodes) {
+    for (Output outputNode : outputs) {
       output[outputNode.getIndex()] = outValue(outputNode, input);
     }
     return output;
@@ -76,23 +73,26 @@ public class MultivariateRealFunctionGraph implements Function<double[], double[
   }
 
   public int nInputs() {
-    return (int) graph.nodes().stream().filter(n -> n instanceof InputNode).count();
+    return (int) graph.nodes().stream().filter(n -> n instanceof Input).count();
   }
 
   public int nOutputs() {
-    return (int) graph.nodes().stream().filter(n -> n instanceof OutputNode).count();
+    return (int) graph.nodes().stream().filter(n -> n instanceof Output).count();
   }
 
   private double outValue(Node node, double[] input) {
-    if (node instanceof InputNode) {
+    if (node instanceof Input) {
       return input[node.getIndex()];
+    }
+    if (node instanceof Constant) {
+      return ((Constant) node).getValue();
     }
     Set<Node> predecessors = graph.predecessors(node);
     double sum = 0d;
     for (Node predecessor : predecessors) {
       sum = sum + graph.edgeValue(predecessor, node).orElse(0d) * outValue(predecessor, input);
     }
-    if (node instanceof OutputNode) {
+    if (node instanceof Output) {
       return sum;
     }
     if (node instanceof FunctionNode) {

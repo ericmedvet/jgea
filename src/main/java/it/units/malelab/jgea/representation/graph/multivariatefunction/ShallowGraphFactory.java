@@ -45,16 +45,17 @@ public class ShallowGraphFactory implements IndependentFactory<ValueGraph<Node, 
   @Override
   public ValueGraph<Node, Double> build(Random random) {
     MutableValueGraph<Node, Double> g = ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+    g.addNode(new Constant(0, 1d));
     for (int i = 0; i < nInputs; i++) {
-      g.addNode(new InputNode(i));
+      g.addNode(new Input(i));
     }
     for (int o = 0; o < nOutputs; o++) {
-      g.addNode(new OutputNode(o));
+      g.addNode(new Output(o));
     }
     for (int i = 0; i < nInputs; i++) {
-      Node inputNode = new InputNode(i);
+      Node inputNode = new Input(i);
       for (int o = 0; o < nOutputs; o++) {
-        Node outputNode = new OutputNode(o);
+        Node outputNode = new Output(o);
         if (random.nextDouble() < (1d - sparsity)) {
           double w = random.nextGaussian() * sigma + mu;
           g.putEdgeValue(inputNode, outputNode, w);

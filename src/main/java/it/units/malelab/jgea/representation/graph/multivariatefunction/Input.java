@@ -22,13 +22,13 @@ package it.units.malelab.jgea.representation.graph.multivariatefunction;
  * @created 2020/08/04
  * @project jgea
  */
-public class OutputNode extends Node {
-  public OutputNode(int index) {
+public class Input extends Node {
+  public Input(int index) {
     super(index);
   }
 
   @Override
   public String toString() {
-    return "o" + getIndex();
+    return "i" + getIndex();
   }
 }
