@@ -224,7 +224,6 @@ public class SymbolicRegressionComparison extends Worker {
                 "evolver", evolverEntry.getKey(),
                 "diversity", Boolean.toString(enforceDiversity)
             ));
-            L.info(String.format("Starting %s", keys));
             try {
               Stopwatch stopwatch = Stopwatch.createStarted();
               Evolver<?, RealFunction, Double> evolver = evolverEntry.getValue().apply(problem);
@@ -235,6 +234,7 @@ public class SymbolicRegressionComparison extends Worker {
                   continue;
                 }
               }
+              L.info(String.format("Starting %s", keys));
               Collection<RealFunction> solutions = evolver.solve(
                   Misc.cached(problem.getFitnessFunction(), 10000),
                   new Iterations(nIterations),
