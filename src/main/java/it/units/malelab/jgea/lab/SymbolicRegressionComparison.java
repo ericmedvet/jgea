@@ -78,9 +78,9 @@ public class SymbolicRegressionComparison extends Worker {
     int maxHeight = i(a("maxHeight", "10"));
     int maxNodes = i(a("maxNodes", "20"));
     int nTournament = 5;
+    int diversityMaxAttempts = 100;
     int nIterations = i(a("nIterations", "3"));
     int[] seeds = ri(a("seed", "0:1"));
-    boolean[] enforceDiversities = new boolean[]{true};
     Operator[] operators = new Operator[]{Operator.ADDITION, Operator.SUBTRACTION, Operator.MULTIPLICATION, Operator.PROT_DIVISION};
     BaseFunction[] baseFunctions = new BaseFunction[]{BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.PROT_INVERSE, BaseFunction.SQ};
     Double[] constants = new Double[]{0.1, 1d, 10d};
@@ -96,8 +96,8 @@ public class SymbolicRegressionComparison extends Worker {
         a("dir", "."),
         a("file", null)
     );
-    Map<String, Function<SymbolicRegressionProblem, Evolver<?, RealFunction, Double>>> evolvers = Map.of(
-        "tree-randomwalk", p -> {
+    Map<String, Function<SymbolicRegressionProblem, Evolver<?, RealFunction, Double>>> evolvers = Map.ofEntries(
+        Map.entry("tree-randomwalk", p -> {
           IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
               IndependentFactory.picker(Arrays.stream(vars(p.arity())).sequential().map(Variable::new).toArray(Variable[]::new)),
               IndependentFactory.picker(Arrays.stream(constants).map(Constant::new).toArray(Constant[]::new))
@@ -118,8 +118,8 @@ public class SymbolicRegressionComparison extends Worker {
                   terminalFactory
               ))
           );
-        },
-        "tree-ga", p -> {
+        }),
+        Map.entry("tree-ga", p -> {
           IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
               IndependentFactory.picker(Arrays.stream(vars(p.arity())).sequential().map(Variable::new).toArray(Variable[]::new)),
               IndependentFactory.picker(Arrays.stream(constants).map(Constant::new).toArray(Constant[]::new))
@@ -148,8 +148,39 @@ public class SymbolicRegressionComparison extends Worker {
               nPop,
               true
           );
-        },
-        "cfgtree-ga", p -> {
+        }),
+        Map.entry("tree-gadiv", p -> {
+          IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
+              IndependentFactory.picker(Arrays.stream(vars(p.arity())).sequential().map(Variable::new).toArray(Variable[]::new)),
+              IndependentFactory.picker(Arrays.stream(constants).map(Constant::new).toArray(Constant[]::new))
+          );
+          return new StandardWithEnforcedDiversity<Tree<Element>, RealFunction, Double>(
+              ((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(t, vars(p.arity())))
+                  .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+              new RampedHalfAndHalf<>(
+                  4, maxHeight,
+                  Operator.arityFunction(),
+                  IndependentFactory.picker(operators),
+                  terminalFactory
+              ),
+              PartialComparator.from(Double.class).on(Individual::getFitness),
+              nPop,
+              Map.of(
+                  new SubtreeCrossover<>(maxHeight), 0.8d,
+                  new SubtreeMutation<>(maxHeight, new GrowTreeBuilder<>(
+                      Operator.arityFunction(),
+                      IndependentFactory.picker(operators),
+                      terminalFactory
+                  )), 0.2d
+              ),
+              new Tournament(nTournament),
+              new Worst(),
+              nPop,
+              true,
+              diversityMaxAttempts
+          );
+        }),
+        Map.entry("cfgtree-ga", p -> {
           SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
               List.of(operators),
               List.of(vars(p.arity())),
@@ -171,8 +202,32 @@ public class SymbolicRegressionComparison extends Worker {
               nPop,
               true
           );
-        },
-        "graph-randomwalk", p -> new RandomWalk<ValueGraph<Node, Double>, RealFunction, Double>(
+        }),
+        Map.entry("cfgtree-gadiv", p -> {
+          SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
+              List.of(operators),
+              List.of(vars(p.arity())),
+              List.of(constants)
+          );
+          return new StandardWithEnforcedDiversity<Tree<String>, RealFunction, Double>(
+              new FormulaMapper()
+                  .andThen(n -> TreeBasedRealFunction.from(n, vars(p.arity())))
+                  .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+              new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
+              PartialComparator.from(Double.class).on(Individual::getFitness),
+              nPop,
+              Map.of(
+                  new SameRootSubtreeCrossover<>(maxHeight + 4), 0.8d,
+                  new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
+              ),
+              new Tournament(nTournament),
+              new Worst(),
+              nPop,
+              true,
+              diversityMaxAttempts
+          );
+        }),
+        Map.entry("graph-randomwalk", p -> new RandomWalk<ValueGraph<Node, Double>, RealFunction, Double>(
             MultivariateRealFunctionGraph.builder()
                 .andThen(GraphBasedRealFunction.builder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
@@ -187,8 +242,8 @@ public class SymbolicRegressionComparison extends Worker {
                 new EdgeAddition<>(Random::nextGaussian, false), 1d,
                 new EdgeRemoval<>(node -> node instanceof Output), 0.1d
             ))
-        ),
-        "graph-ga", p -> new StandardEvolver<ValueGraph<Node, Double>, RealFunction, Double>(
+        )),
+        Map.entry("graph-ga", p -> new StandardEvolver<ValueGraph<Node, Double>, RealFunction, Double>(
             MultivariateRealFunctionGraph.builder()
                 .andThen(GraphBasedRealFunction.builder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
@@ -213,58 +268,75 @@ public class SymbolicRegressionComparison extends Worker {
             new Worst(),
             nPop,
             true
-        )
+        )),
+        Map.entry("graph-gadiv", p -> new StandardWithEnforcedDiversity<ValueGraph<Node, Double>, RealFunction, Double>(
+            MultivariateRealFunctionGraph.builder()
+                .andThen(GraphBasedRealFunction.builder())
+                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+            new ShallowGraphFactory(0.5d, 0d, 1d, p.arity(), 1),
+            PartialComparator.from(Double.class).on(Individual::getFitness),
+            nPop,
+            Map.of(
+                new NodeAddition<>(
+                    FunctionNode.factory(maxNodes, baseFunctions),
+                    Random::nextGaussian
+                ), 2d,
+                new EdgeModification<>((w, random) -> w + random.nextGaussian()), 1d,
+                new EdgeAddition<>(Random::nextGaussian, false), 1d,
+                new EdgeRemoval<>(node -> node instanceof Output), 0.1d,
+                new AlignedCrossover<>(
+                    (w1, w2, random) -> w1 + (w2 - w1) - (random.nextDouble() * 3d - 1d),
+                    node -> node instanceof Output,
+                    false
+                ), 1d
+            ),
+            new Tournament(nTournament),
+            new Worst(),
+            nPop,
+            true,
+            diversityMaxAttempts
+        ))
     );
     //run
     for (int seed : seeds) {
       for (SymbolicRegressionProblem problem : problems) {
         for (Map.Entry<String, Function<SymbolicRegressionProblem, Evolver<?, RealFunction, Double>>> evolverEntry : evolvers.entrySet()) {
-          for (boolean enforceDiversity : enforceDiversities) {
-            Map<String, String> keys = new TreeMap<>(Map.of(
-                "seed", Integer.toString(seed),
-                "problem", problem.getClass().getSimpleName().toLowerCase(),
-                "evolver", evolverEntry.getKey(),
-                "diversity", Boolean.toString(enforceDiversity)
+          Map<String, String> keys = new TreeMap<>(Map.of(
+              "seed", Integer.toString(seed),
+              "problem", problem.getClass().getSimpleName().toLowerCase(),
+              "evolver", evolverEntry.getKey()
+          ));
+          try {
+            Stopwatch stopwatch = Stopwatch.createStarted();
+            Evolver<?, RealFunction, Double> evolver = evolverEntry.getValue().apply(problem);
+            L.info(String.format("Starting %s", keys));
+            Collection<RealFunction> solutions = evolver.solve(
+                Misc.cached(problem.getFitnessFunction(), 10000),
+                new Iterations(nIterations),
+                new Random(seed),
+                executorService,
+                Listener.onExecutor(listenerFactory.build(
+                    new Static(keys),
+                    new Basic(),
+                    new Population(),
+                    new Diversity(),
+                    new BestInfo("%7.5f"),
+                    new FunctionOfOneBest<>(i -> List.of(new Item(
+                        "validation.fitness",
+                        problem.getValidationFunction().apply(i.getSolution()),
+                        "%7.5f"
+                    )))
+                ), executorService));
+            L.info(String.format("Done %s: %d solutions in %4.1fs",
+                keys,
+                solutions.size(),
+                (double) stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000d
             ));
-            try {
-              Stopwatch stopwatch = Stopwatch.createStarted();
-              Evolver<?, RealFunction, Double> evolver = evolverEntry.getValue().apply(problem);
-              if (enforceDiversity) {
-                if (evolver instanceof StandardEvolver) {
-                  evolver = StandardWithEnforcedDiversity.from((StandardEvolver<?, RealFunction, Double>) evolver, 100);
-                } else {
-                  continue;
-                }
-              }
-              L.info(String.format("Starting %s", keys));
-              Collection<RealFunction> solutions = evolver.solve(
-                  Misc.cached(problem.getFitnessFunction(), 10000),
-                  new Iterations(nIterations),
-                  new Random(seed),
-                  executorService,
-                  Listener.onExecutor(listenerFactory.build(
-                      new Static(keys),
-                      new Basic(),
-                      new Population(),
-                      new Diversity(),
-                      new BestInfo("%7.5f"),
-                      new FunctionOfOneBest<>(i -> List.of(new Item(
-                          "validation.fitness",
-                          problem.getValidationFunction().apply(i.getSolution()),
-                          "%7.5f"
-                      )))
-                  ), executorService));
-              L.info(String.format("Done %s: %d solutions in %4.1fs",
-                  keys,
-                  solutions.size(),
-                  (double) stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000d
-              ));
-            } catch (InterruptedException | ExecutionException e) {
-              L.severe(String.format("Cannot complete %s due to %s",
-                  keys,
-                  e
-              ));
-            }
+          } catch (InterruptedException | ExecutionException e) {
+            L.severe(String.format("Cannot complete %s due to %s",
+                keys,
+                e
+            ));
           }
         }
       }
