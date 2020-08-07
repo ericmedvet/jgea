@@ -81,16 +81,17 @@ public class SymbolicRegressionComparison extends Worker {
     int diversityMaxAttempts = 100;
     int nIterations = i(a("nIterations", "3"));
     int[] seeds = ri(a("seed", "0:1"));
+    SymbolicRegressionFitness.Metric metric = SymbolicRegressionFitness.Metric.MSE;
     Operator[] operators = new Operator[]{Operator.ADDITION, Operator.SUBTRACTION, Operator.MULTIPLICATION, Operator.PROT_DIVISION};
     BaseFunction[] baseFunctions = new BaseFunction[]{BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.PROT_INVERSE, BaseFunction.SQ};
     Double[] constants = new Double[]{0.1, 1d, 10d};
     List<SymbolicRegressionProblem> problems = List.of(
-        new Nguyen7(1),
-        new Keijzer6(),
-        new Polynomial4(),
-        new Vladislavleva4(1),
-        new Pagie1(),
-        new UnivariateComposed()
+        new Nguyen7(metric, 1),
+        new Keijzer6(metric),
+        new Polynomial4(metric),
+        new Vladislavleva4(metric, 1),
+        new Pagie1(metric),
+        new UnivariateComposed(metric)
     );
     MultiFileListenerFactory<Object, RealFunction, Double> listenerFactory = new MultiFileListenerFactory<>(
         a("dir", "."),

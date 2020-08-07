@@ -22,13 +22,15 @@ package it.units.malelab.jgea.problem.symbolicregression;
  */
 public class Polynomial4 extends SymbolicRegressionProblem {
 
-  public Polynomial4() {
+  public Polynomial4(SymbolicRegressionFitness.Metric metric) {
     super(
         v -> {
           double x = v[0];
           return x * x * x * x + x * x * x + x * x + x;
         },
-        MathUtils.pairwise(MathUtils.equispacedValues(-1, 1, .1))
+        MathUtils.pairwise(MathUtils.equispacedValues(-1, 1, .1)),
+        MathUtils.pairwise(MathUtils.equispacedValues(-1, 1, .01)),
+        metric
     );
   }
 

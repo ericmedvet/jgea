@@ -26,7 +26,7 @@ import java.util.Random;
 public class Vladislavleva4 extends SymbolicRegressionProblem {
 
   //aka: UBall5D, https://www.researchgate.net/profile/Ekaterina_Katya_Vladislavleva/publication/224330345_Order_of_Nonlinearity_as_a_Complexity_Measure_for_Models_Generated_by_Symbolic_Regression_via_Pareto_Genetic_Programming/links/00b7d5306967756b1d000000.pdf
-  public Vladislavleva4(long seed) {
+  public Vladislavleva4(SymbolicRegressionFitness.Metric metric, long seed) {
     super(
         v -> {
           double s = 0;
@@ -48,7 +48,8 @@ public class Vladislavleva4 extends SymbolicRegressionProblem {
             MathUtils.uniformSample(-0.25, 6.35, 5000, new Random(seed + 2)),
             MathUtils.uniformSample(-0.25, 6.35, 5000, new Random(seed + 3)),
             MathUtils.uniformSample(-0.25, 6.35, 5000, new Random(seed + 4))
-        )
+        ),
+        metric
     );
   }
 

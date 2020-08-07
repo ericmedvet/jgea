@@ -22,9 +22,9 @@ package it.units.malelab.jgea.problem.symbolicregression;
  */
 public class Pagie1 extends SymbolicRegressionProblem {
 
-  public Pagie1() {
+  public Pagie1(SymbolicRegressionFitness.Metric metric) {
     super(
-        v -> 1 / (1 + Math.pow(v[0], -4)) + 1 / (1 + Math.pow(v[1], -4)),
+        v -> 1d / (1d + Math.pow(v[0], -4d)) + 1d / (1d + Math.pow(v[1], -4d)),
         MathUtils.cartesian(
             MathUtils.equispacedValues(-5, 5, 0.4),
             MathUtils.equispacedValues(-5, 5, 0.4)
@@ -32,7 +32,8 @@ public class Pagie1 extends SymbolicRegressionProblem {
         MathUtils.cartesian(
             MathUtils.equispacedValues(-5, 5, 0.1),
             MathUtils.equispacedValues(-5, 5, 0.1)
-        )
+        ),
+        metric
     );
   }
 

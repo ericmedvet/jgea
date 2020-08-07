@@ -22,17 +22,18 @@ package it.units.malelab.jgea.problem.symbolicregression;
  */
 public class Keijzer6 extends SymbolicRegressionProblem {
 
-  public Keijzer6() {
+  public Keijzer6(SymbolicRegressionFitness.Metric metric) {
     super(
         v -> {
-          double s = 0;
+          double s = 0d;
           for (double i = 1; i < v[0]; i++) {
-            s = s + 1 / i;
+            s = s + 1d / i;
           }
           return s;
         },
         MathUtils.pairwise(MathUtils.equispacedValues(1, 50, 1)),
-        MathUtils.pairwise(MathUtils.equispacedValues(1, 120, 1))
+        MathUtils.pairwise(MathUtils.equispacedValues(1, 120, 1)),
+        metric
     );
   }
 

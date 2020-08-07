@@ -22,7 +22,7 @@ package it.units.malelab.jgea.problem.symbolicregression;
  */
 public class UnivariateComposed extends SymbolicRegressionProblem {
 
-  public UnivariateComposed() {
+  public UnivariateComposed(SymbolicRegressionFitness.Metric metric) {
     super(
         v -> {
           double x = v[0];
@@ -30,7 +30,8 @@ public class UnivariateComposed extends SymbolicRegressionProblem {
           return 2d * fx - Math.sin(10d * fx) + 0.1d / fx;
         },
         MathUtils.pairwise(MathUtils.equispacedValues(-3, 3, .1)),
-        MathUtils.pairwise(MathUtils.equispacedValues(-5, 5, .05))
+        MathUtils.pairwise(MathUtils.equispacedValues(-5, 5, .05)),
+        metric
     );
   }
 

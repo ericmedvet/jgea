@@ -209,7 +209,7 @@ public class Example extends Worker {
 
   public void runSymbolicRegression() {
     Random r = new Random(1);
-    SymbolicRegressionProblem p = new Nguyen7(1);
+    SymbolicRegressionProblem p = new Nguyen7(SymbolicRegressionFitness.Metric.MSE, 1);
     Grammar<String> srGrammar;
     try {
       srGrammar = Grammar.fromFile(new File("grammars/symbolic-regression-nguyen7.bnf"));
@@ -281,7 +281,7 @@ public class Example extends Worker {
 
   public void runSymbolicRegressionMO() {
     Random r = new Random(1);
-    SymbolicRegressionProblem p = new Nguyen7(1);
+    SymbolicRegressionProblem p = new Nguyen7(SymbolicRegressionFitness.Metric.MSE, 1);
     Grammar<String> srGrammar;
     try {
       srGrammar = Grammar.fromFile(new File("grammars/symbolic-regression-nguyen7.bnf"));

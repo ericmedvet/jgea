@@ -55,7 +55,7 @@ public class MRFGExample extends Worker {
   public void run() {
     Random r = new Random(1);
     int maxNodes = 20;
-    SymbolicRegressionProblem p = new Nguyen7(1);
+    SymbolicRegressionProblem p = new Nguyen7(SymbolicRegressionFitness.Metric.MSE, 1);
     List<Evolver<ValueGraph<Node, Double>, RealFunction, Double>> evolvers = List.of(
         new RandomSearch<ValueGraph<Node, Double>, RealFunction, Double>(
             MultivariateRealFunctionGraph.builder()

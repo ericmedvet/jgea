@@ -90,13 +90,13 @@ public class RepresentationEvolution extends Worker {
     Map<String, EnhancedProblem<?, ?, ?>> validationOnlyProblems = new LinkedHashMap<>();
     try {
       baseProblems.put("Parity-3", new EnhancedProblem<>(new EvenParity(3), Misc.cached(new Pairwise<>(new TreeLeaves<>(new Edit<>())), CACHE_SIZE)));
-      baseProblems.put("Pagie1", from(new Pagie1(), Grammar.fromFile(new File("grammars/symbolic-regression-pagie1.bnf")), "x", "y"));
+      baseProblems.put("Pagie1", from(new Pagie1(SymbolicRegressionFitness.Metric.MSE), Grammar.fromFile(new File("grammars/symbolic-regression-pagie1.bnf")), "x", "y"));
       baseProblems.put("KLandscapes-5", new EnhancedProblem<>(new KLandscapes(5), Misc.cached(new TreeLeaves<>(new Edit<>()), CACHE_SIZE)));
       baseProblems.put("Text", new EnhancedProblem<>(new Text("Hello World!"), Misc.cached(new StringSequence(new Edit<>()), CACHE_SIZE)));
       validationOnlyProblems.putAll(baseProblems);
       validationOnlyProblems.put("MOPM-3", new EnhancedProblem<>(new MultipleOutputParallelMultiplier(3), Misc.cached((new Pairwise<>(new TreeLeaves<>(new Edit<>()))), CACHE_SIZE)));
-      baseProblems.put("Nguyen7", from(new Nguyen7(1), Grammar.fromFile(new File("grammars/symbolic-regression-nguyen7.bnf")), "x"));
-      baseProblems.put("Keijzer6", from(new Keijzer6(), Grammar.fromFile(new File("grammars/symbolic-regression-keijzer6.bnf")), "x"));
+      baseProblems.put("Nguyen7", from(new Nguyen7(SymbolicRegressionFitness.Metric.MSE, 1), Grammar.fromFile(new File("grammars/symbolic-regression-nguyen7.bnf")), "x"));
+      baseProblems.put("Keijzer6", from(new Keijzer6(SymbolicRegressionFitness.Metric.MSE), Grammar.fromFile(new File("grammars/symbolic-regression-keijzer6.bnf")), "x"));
       validationOnlyProblems.put("KLandscapes-7", new EnhancedProblem<>(new KLandscapes(7), Misc.cached(new TreeLeaves<>(new Edit<>()), CACHE_SIZE)));
     } catch (IOException ex) {
       L.log(Level.SEVERE, "Cannot instantiate problems", ex);
