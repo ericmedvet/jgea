@@ -20,29 +20,50 @@ package it.units.malelab.jgea.problem.symbolicregression;
 import it.units.malelab.jgea.core.fitness.CaseBasedFitness;
 
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author eric
  */
 public class SymbolicRegressionFitness extends CaseBasedFitness<RealFunction, double[], Double, Double> {
 
+  public enum Metric implements BiFunction<List<Double>, List<Double>, Double> {
+
+    MAE((errs, ys) -> errs.stream().mapToDouble(Math::abs).average().orElse(Double.NaN)),
+    MSE((errs, ys) -> errs.stream().mapToDouble(err -> err * err).average().orElse(Double.NaN)),
+    RMSE((errs, ys) -> Math.sqrt(errs.stream().mapToDouble(err -> err * err).average().orElse(Double.NaN))),
+    NMSE((errs, ys) -> errs.stream().mapToDouble(err -> err * err).average().orElse(Double.NaN) / ys.stream().mapToDouble(y -> y * y).average().orElse(1d));
+
+    private final BiFunction<List<Double>, List<Double>, Double> function;
+
+    Metric(BiFunction<List<Double>, List<Double>, Double> function) {
+      this.function = function;
+    }
+
+
+    @Override
+    public Double apply(List<Double> errs, List<Double> ys) {
+      return function.apply(errs, ys);
+    }
+  }
+
   private final RealFunction targetFunction;
   private final List<double[]> points;
   private final int arity;
+  private final Metric metric;
 
-  public SymbolicRegressionFitness(RealFunction targetFunction, List<double[]> points, int arity) {
+  public SymbolicRegressionFitness(RealFunction targetFunction, List<double[]> points, Metric metric) {
     super(
         points,
-        (f, x) -> Math.abs(f.apply(x)-targetFunction.apply(x)),
-        errs -> errs.stream().mapToDouble(Double::doubleValue).average().orElse(Double.NaN)
+        (f, x) -> f.apply(x) - targetFunction.apply(x),
+        errs -> metric.apply(errs, points.stream().map(targetFunction::apply).collect(Collectors.toList()))
     );
     this.targetFunction = targetFunction;
     this.points = points;
-    this.arity = arity;
-  }
-
-  public SymbolicRegressionFitness(RealFunction targetFunction, List<double[]> points) {
-    this(targetFunction, points, points.get(0).length);
+    this.arity = points.get(0).length;
+    this.metric = metric;
   }
 
   public RealFunction getTargetFunction() {
@@ -55,5 +76,9 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<RealFunction, do
 
   public int arity() {
     return arity;
+  }
+
+  public Metric getMetric() {
+    return metric;
   }
 }
