@@ -45,21 +45,28 @@ public class ShallowGraphFactory implements IndependentFactory<ValueGraph<Node, 
   @Override
   public ValueGraph<Node, Double> build(Random random) {
     MutableValueGraph<Node, Double> g = ValueGraphBuilder.directed().allowsSelfLoops(false).build();
-    g.addNode(new Constant(0, 1d));
+    Input[] inputs = new Input[nInputs];
+    Output[] outputs = new Output[nOutputs];
+    Constant constant = new Constant(0, 1d);
+    g.addNode(constant);
     for (int i = 0; i < nInputs; i++) {
-      g.addNode(new Input(i));
+      inputs[i] = new Input(i);
+      g.addNode(inputs[i]);
     }
     for (int o = 0; o < nOutputs; o++) {
-      g.addNode(new Output(o));
+      outputs[o] = new Output(o);
+      g.addNode(outputs[o]);
     }
     for (int i = 0; i < nInputs; i++) {
-      Node inputNode = new Input(i);
       for (int o = 0; o < nOutputs; o++) {
-        Node outputNode = new Output(o);
         if (random.nextDouble() < (1d - sparsity)) {
-          double w = random.nextGaussian() * sigma + mu;
-          g.putEdgeValue(inputNode, outputNode, w);
+          g.putEdgeValue(inputs[i], outputs[o], random.nextGaussian() * sigma + mu);
         }
+      }
+    }
+    for (int o = 0; o < nOutputs; o++) {
+      if (random.nextDouble() < (1d - sparsity)) {
+        g.putEdgeValue(constant, outputs[o], random.nextGaussian() * sigma + mu);
       }
     }
     return ImmutableValueGraph.copyOf(g);
