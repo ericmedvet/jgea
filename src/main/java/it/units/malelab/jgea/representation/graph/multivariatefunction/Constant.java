@@ -17,6 +17,8 @@
 
 package it.units.malelab.jgea.representation.graph.multivariatefunction;
 
+import java.util.Objects;
+
 /**
  * @author eric
  * @created 2020/08/06
@@ -33,5 +35,24 @@ public class Constant extends Node {
 
   public double getValue() {
     return value;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
+    Constant constant = (Constant) o;
+    return Double.compare(constant.value, value) == 0;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), value);
+  }
+
+  @Override
+  public String toString() {
+    return String.format("c%d[%.3f]", getIndex(), value);
   }
 }

@@ -72,7 +72,7 @@ public class MRFGExample extends Worker {
             PartialComparator.from(Double.class).on(Individual::getFitness),
             Mutation.oneOf(Map.of(
                 new NodeAddition<>(
-                    FunctionNode.factory(maxNodes, BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.SIN),
+                    FunctionNode.limitedIndexFactory(maxNodes, BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.SIN),
                     Random::nextGaussian
                 ), 1d,
                 new EdgeModification<>((w, random) -> w + random.nextGaussian()), 1d,
@@ -89,7 +89,7 @@ public class MRFGExample extends Worker {
             100,
             Map.of(
                 new NodeAddition<>(
-                    FunctionNode.factory(maxNodes, BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.SIN),
+                    FunctionNode.limitedIndexFactory(maxNodes, BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.SIN),
                     Random::nextGaussian
                 ), 2d,
                 new EdgeModification<>((w, random) -> w + random.nextGaussian()), 1d,
@@ -110,7 +110,7 @@ public class MRFGExample extends Worker {
             100,
             Map.of(
                 new NodeAddition<>(
-                    FunctionNode.factory(maxNodes, BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.SIN),
+                    FunctionNode.limitedIndexFactory(maxNodes, BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.SIN),
                     Random::nextGaussian
                 ), 2d,
                 new EdgeModification<>((w, random) -> w + random.nextGaussian()), 1d,
@@ -136,7 +136,7 @@ public class MRFGExample extends Worker {
             100,
             Map.of(
                 new NodeAddition<>(
-                    FunctionNode.factory(maxNodes, BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.SIN),
+                    FunctionNode.limitedIndexFactory(maxNodes, BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.SIN),
                     Random::nextGaussian
                 ), 2d,
                 new EdgeModification<>((w, random) -> w + random.nextGaussian()), 1d,
