@@ -19,7 +19,7 @@ Typical usage of JGEA consists in try to solve a **problem** using an **EA**.
 The problem is described by a class implementing the `Problem` interface.
 `Problem` is parametrized with two types that conceptually represent the solution space and the fitness space, i.e., the space of the quality of the solutions:
 ```java
-public interface Problem<S, F> extends Serializable {
+public interface Problem<S, F> {
   Function<S, F> getFitnessFunction();
 }
 ```
@@ -45,7 +45,7 @@ where `C` is the space of classifiers, `O` is the space of observations (or inst
 The EA is described by a class implementing the `Evolver` interface.
 `Evolver` is parametrized with three types that potentially represent the genotype (`G`), solution (`S`), and fitness (`F`) spaces:
 ```java
-public interface Evolver<G, S, F> extends Serializable {
+public interface Evolver<G, S, F> {
   Collection<S> solve(
       Function<S, F> fitnessFunction,
       Predicate<? super Event<G, S, F>> stopCondition,
@@ -109,7 +109,7 @@ public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> 
 
 `Selector` represents a selection criterion: it is a functional interface with a method `select()` that takes a partially ordered set ([poset](https://en.wikipedia.org/wiki/Partially_ordered_set)) and returns, possibly stochastically, an element.
 ```java
-public interface Selector<T> extends Serializable {  
+public interface Selector<T> {  
   <K extends T> K select(PartiallyOrderedCollection<K> ks, Random random);  
 }
 ```
@@ -120,14 +120,14 @@ For example, one may want to solve a *symbolic regression* problem by ranking so
 ## Example
 
 In this example, JGEA is used for solving the *parity problem* with the standard EA and solution encoded as derivation trees of a provided grammar, that is, with a form of G3P.
-Here a solution is a `List<Node<Element>>`, because the general form of a bits-to-bits set function is list of trees, each tree encoding a bits-to-bit function.
+Here a solution is a `List<Tree<Element>>`, because the general form of a bits-to-bits set function is list of trees, each tree encoding a bits-to-bit function.
 ```java
 public class Example {
   public static void main(String[] args) {
     ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     Random r = new Random(1);
-    GrammarBasedProblem<String, List<Node<Element>>, Double> p = new EvenParity(8);
-    Evolver<Node<String>, List<Node<Element>>, Double> evolver = new StandardEvolver<>(
+    GrammarBasedProblem<String, List<Tree<Element>>, Double> p = new EvenParity(8);
+    Evolver<Tree<String>, List<Tree<Element>>, Double> evolver = new StandardEvolver<>(
         new FormulaMapper(),
         new RampedHalfAndHalf<>(3, 12, p.getGrammar()),
         PartialComparator.from(Double.class).on(Individual::getFitness),
@@ -141,7 +141,7 @@ public class Example {
         100,
         true
     );
-    Collection<List<Node<Element>>> solutions = evolver.solve(
+    Collection<List<Tree<Element>>> solutions = evolver.solve(
       Misc.cached(p.getFitnessFunction(), 10000),
       new Iterations(100),
       r,

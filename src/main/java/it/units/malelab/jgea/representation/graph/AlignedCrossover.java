@@ -60,7 +60,7 @@ public class AlignedCrossover<N, E> implements Crossover<ValueGraph<N, E>> {
     //add all nodes
     parent1.nodes().forEach(n -> child.addNode(n));
     parent2.nodes().forEach(n -> child.addNode(n));
-    //iterate over 1st parent edges
+    //iterate over child edges
     Set<EndpointPair<N>> endpointPairs = new LinkedHashSet<>();
     endpointPairs.addAll(parent1.edges());
     endpointPairs.addAll(parent2.edges());

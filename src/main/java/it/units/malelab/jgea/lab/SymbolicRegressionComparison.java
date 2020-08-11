@@ -271,7 +271,7 @@ public class SymbolicRegressionComparison extends Worker {
                 new EdgeAddition<>(Random::nextGaussian, false), 1d,
                 new EdgeRemoval<>(node -> node instanceof Output), 0.1d,
                 new AlignedCrossover<>(
-                    (w1, w2, random) -> w1 + (w2 - w1) - (random.nextDouble() * 3d - 1d),
+                    (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
                     node -> node instanceof Output,
                     false
                 ), 1d
@@ -318,7 +318,7 @@ public class SymbolicRegressionComparison extends Worker {
                 new EdgeAddition<>(Random::nextGaussian, false), 1d,
                 new EdgeRemoval<>(node -> node instanceof Output), 0.1d,
                 new AlignedCrossover<>(
-                    (w1, w2, random) -> w1 + (w2 - w1) - (random.nextDouble() * 3d - 1d),
+                    (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
                     node -> node instanceof Output,
                     false
                 ), 1d
@@ -345,7 +345,7 @@ public class SymbolicRegressionComparison extends Worker {
                 new EdgeAddition<>(Random::nextGaussian, false), 1d,
                 new EdgeRemoval<>(node -> node instanceof Output), 0.1d,
                 new AlignedCrossover<>(
-                    (w1, w2, random) -> w1 + (w2 - w1) - (random.nextDouble() * 3d - 1d),
+                    (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
                     node -> node instanceof Output,
                     false
                 ), 1d
@@ -392,7 +392,7 @@ public class SymbolicRegressionComparison extends Worker {
                 new EdgeAddition<>(Random::nextGaussian, false), 1d,
                 new EdgeRemoval<>(node -> node instanceof Output), 0.1d,
                 new AlignedCrossover<>(
-                    (w1, w2, random) -> w1 + (w2 - w1) - (random.nextDouble() * 3d - 1d),
+                    (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
                     node -> node instanceof Output,
                     false
                 ), 1d
