@@ -15,19 +15,13 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.representation;
+package it.units.malelab.jgea.representation.graph;
 
 import com.google.common.graph.*;
 import it.units.malelab.jgea.core.IndependentFactory;
-import it.units.malelab.jgea.core.Individual;
-import it.units.malelab.jgea.core.evolver.RandomWalk;
 import it.units.malelab.jgea.core.operator.Mutation;
-import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.util.Misc;
-import it.units.malelab.jgea.representation.graph.EdgeAddition;
-import it.units.malelab.jgea.representation.graph.HashedNode;
 
-import java.util.Objects;
 import java.util.Random;
 
 /**
@@ -35,21 +29,23 @@ import java.util.Random;
  * @created 2020/08/11
  * @project jgea
  */
-public class HashedNodeAddition<N, E> implements Mutation<ValueGraph<HashedNode<N>, E>> {
+public class IndexedNodeAddition<N, E> implements Mutation<ValueGraph<IndexedNode<N>, E>> {
   private final IndependentFactory<? extends N> nodeFactory;
+  private final IndexedNode.Indexer indexer;
   private final Mutation<E> toNewNodeEdgeMutation;
   private final Mutation<E> fromNewNodeEdgeMutation;
   private final Mutation<E> existingEdgeMutation;
 
-  public HashedNodeAddition(IndependentFactory<? extends N> nodeFactory, Mutation<E> toNewNodeEdgeMutation, Mutation<E> fromNewNodeEdgeMutation, Mutation<E> existingEdgeMutation) {
+  public IndexedNodeAddition(IndependentFactory<? extends N> nodeFactory, IndexedNode.Indexer indexer, Mutation<E> toNewNodeEdgeMutation, Mutation<E> fromNewNodeEdgeMutation, Mutation<E> existingEdgeMutation) {
     this.nodeFactory = nodeFactory;
+    this.indexer = indexer;
     this.toNewNodeEdgeMutation = toNewNodeEdgeMutation;
     this.fromNewNodeEdgeMutation = fromNewNodeEdgeMutation;
     this.existingEdgeMutation = existingEdgeMutation;
   }
 
-  public HashedNodeAddition(IndependentFactory<? extends N> nodeFactory, Mutation<E> toNewNodeEdgeMutation, Mutation<E> fromNewNodeEdgeMutation) {
-    this(nodeFactory, toNewNodeEdgeMutation, fromNewNodeEdgeMutation, null);
+  public IndexedNodeAddition(IndependentFactory<? extends N> nodeFactory, IndexedNode.Indexer indexer, Mutation<E> toNewNodeEdgeMutation, Mutation<E> fromNewNodeEdgeMutation) {
+    this(nodeFactory, indexer, toNewNodeEdgeMutation, fromNewNodeEdgeMutation, null);
   }
 
   public IndependentFactory<? extends N> getNodeFactory() {
@@ -69,14 +65,11 @@ public class HashedNodeAddition<N, E> implements Mutation<ValueGraph<HashedNode<
   }
 
   @Override
-  public ValueGraph<HashedNode<N>, E> mutate(ValueGraph<HashedNode<N>, E> parent, Random random) {
-    N newNode = nodeFactory.build(random);
-    if (parent.nodes().contains(newNode)) {
-      return parent;
-    }
-    MutableValueGraph<HashedNode<N>, E> child = Graphs.copyOf(parent);
+  public ValueGraph<IndexedNode<N>, E> mutate(ValueGraph<IndexedNode<N>, E> parent, Random random) {
+    MutableValueGraph<IndexedNode<N>, E> child = Graphs.copyOf(parent);
     if (!child.edges().isEmpty()) {
-      EndpointPair<HashedNode<N>> endpointPair = Misc.pickRandomly(child.edges(), random);
+      N newNode = nodeFactory.build(random);
+      EndpointPair<IndexedNode<N>> endpointPair = Misc.pickRandomly(child.edges(), random);
       E existingEdge = child.edgeValue(endpointPair.nodeU(), endpointPair.nodeV()).get();
       //mutate existing edge
       if (existingEdgeMutation != null) {
@@ -88,12 +81,20 @@ public class HashedNodeAddition<N, E> implements Mutation<ValueGraph<HashedNode<
       //add new edges
       E newEdgeTo = toNewNodeEdgeMutation.mutate(existingEdge, random);
       E newEdgeFrom = fromNewNodeEdgeMutation.mutate(existingEdge, random);
+      //count "siblings"
+      int nSiblings = (int) child.nodes().stream()
+          .filter(n -> child.predecessors(n).contains(endpointPair.nodeU()) && child.successors(n).contains(endpointPair.nodeV()))
+          .count();
       //add node
-      HashedNode<N> hashedNode = new HashedNode<>(Objects.hash(endpointPair.nodeU(), endpointPair.nodeV()), newNode);
-      child.addNode(hashedNode);
+      IndexedNode<N> indexedNode = new IndexedNode<>(indexer.generate(
+          endpointPair.nodeU().index(),
+          endpointPair.nodeV().index(),
+          nSiblings
+      ), newNode);
+      child.addNode(indexedNode);
       //connect edges
-      child.putEdgeValue(endpointPair.nodeU(), hashedNode, newEdgeTo);
-      child.putEdgeValue(hashedNode, endpointPair.nodeV(), newEdgeFrom);
+      child.putEdgeValue(endpointPair.nodeU(), indexedNode, newEdgeTo);
+      child.putEdgeValue(indexedNode, endpointPair.nodeV(), newEdgeFrom);
     }
     return ImmutableValueGraph.copyOf(child);
   }

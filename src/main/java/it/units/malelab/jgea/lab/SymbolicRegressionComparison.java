@@ -20,7 +20,6 @@ package it.units.malelab.jgea.lab;
 import com.google.common.base.Stopwatch;
 import com.google.common.graph.ValueGraph;
 import it.units.malelab.jgea.Worker;
-import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.Evolver;
@@ -39,7 +38,7 @@ import it.units.malelab.jgea.problem.symbolicregression.element.Constant;
 import it.units.malelab.jgea.problem.symbolicregression.element.Element;
 import it.units.malelab.jgea.problem.symbolicregression.element.Operator;
 import it.units.malelab.jgea.problem.symbolicregression.element.Variable;
-import it.units.malelab.jgea.representation.HashedNodeAddition;
+import it.units.malelab.jgea.representation.graph.IndexedNodeAddition;
 import it.units.malelab.jgea.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
 import it.units.malelab.jgea.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
 import it.units.malelab.jgea.representation.graph.*;
@@ -81,6 +80,7 @@ public class SymbolicRegressionComparison extends Worker {
     int nTournament = 5;
     int diversityMaxAttempts = 100;
     int nIterations = i(a("nIterations", "50"));
+    String evolverNamePattern = a("evolver", "graph-.*-ga");
     int[] seeds = ri(a("seed", "0:1"));
     SymbolicRegressionFitness.Metric metric = SymbolicRegressionFitness.Metric.MSE;
     Operator[] operators = new Operator[]{Operator.ADDITION, Operator.SUBTRACTION, Operator.MULTIPLICATION, Operator.PROT_DIVISION};
@@ -362,19 +362,19 @@ public class SymbolicRegressionComparison extends Worker {
             nPop,
             true
         )),
-        Map.entry("graph-hash-ga", p -> new StandardEvolver<ValueGraph<HashedNode<Node>, Double>, RealFunction, Double>(
-            GraphUtils.mapper((Function<HashedNode<Node>, Node>) HashedNode::content, (Function<Collection<Double>, Double>) Misc::first)
+        Map.entry("graph-hash-ga", p -> new StandardEvolver<ValueGraph<IndexedNode<Node>, Double>, RealFunction, Double>(
+            GraphUtils.mapper((Function<IndexedNode<Node>, Node>) IndexedNode::content, (Function<Collection<Double>, Double>) Misc::first)
                 .andThen(MultivariateRealFunctionGraph.builder())
                 .andThen(GraphBasedRealFunction.builder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new ShallowGraphFactory(0.5d, 0d, 1d, p.arity(), 1)
-                .then(GraphUtils.mapper(HashedNode.mapper(), Misc::first)),
+                .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
             Map.of(
                 new NodeAddition<>(
                     FunctionNode.sequentialIndexFactory(baseFunctions)
-                        .then(HashedNode.mapper(Node.class)),
+                        .then(IndexedNode.hashMapper(Node.class)),
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
                 ), 2d,
@@ -391,18 +391,19 @@ public class SymbolicRegressionComparison extends Worker {
             new Worst(),
             nPop,
             true
-        )), Map.entry("graph-hash+-ga", p -> new StandardEvolver<ValueGraph<HashedNode<Node>, Double>, RealFunction, Double>(
-            GraphUtils.mapper((Function<HashedNode<Node>, Node>) HashedNode::content, (Function<Collection<Double>, Double>) Misc::first)
+        )), Map.entry("graph-hash+-ga", p -> new StandardEvolver<ValueGraph<IndexedNode<Node>, Double>, RealFunction, Double>(
+            GraphUtils.mapper((Function<IndexedNode<Node>, Node>) IndexedNode::content, (Function<Collection<Double>, Double>) Misc::first)
                 .andThen(MultivariateRealFunctionGraph.builder())
                 .andThen(GraphBasedRealFunction.builder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new ShallowGraphFactory(0.5d, 0d, 1d, p.arity(), 1)
-                .then(GraphUtils.mapper(HashedNode.mapper(), Misc::first)),
+                .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
             Map.of(
-                new HashedNodeAddition<>(
+                new IndexedNodeAddition<>(
                     FunctionNode.sequentialIndexFactory(baseFunctions),
+                    IndexedNode.incrementerIndexer(p.arity() + 2),
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
                 ), 2d,
@@ -471,11 +472,10 @@ public class SymbolicRegressionComparison extends Worker {
             diversityMaxAttempts
         ))
     );
-
+    //filter evolvers
     evolvers = evolvers.entrySet().stream()
-        .filter(e -> e.getKey().matches("graph-.*-ga"))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)); // TODO remove
-
+        .filter(e -> e.getKey().matches(evolverNamePattern))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     //run
     for (int seed : seeds) {
       for (SymbolicRegressionProblem problem : problems) {
@@ -486,6 +486,16 @@ public class SymbolicRegressionComparison extends Worker {
               "evolver", evolverEntry.getKey()
           ));
           try {
+            List<DataCollector<?, ? super RealFunction, ? super Double>> collectors = List.of(new Static(keys),
+                new Basic(),
+                new Population(),
+                new Diversity(),
+                new BestInfo("%7.5f"),
+                new FunctionOfOneBest<Object, RealFunction, Double>(i -> List.of(new Item(
+                    "validation.fitness",
+                    problem.getValidationFunction().apply(i.getSolution()),
+                    "%7.5f"
+                ))));
             Stopwatch stopwatch = Stopwatch.createStarted();
             Evolver<?, RealFunction, Double> evolver = evolverEntry.getValue().apply(problem);
             L.info(String.format("Starting %s", keys));
@@ -494,19 +504,10 @@ public class SymbolicRegressionComparison extends Worker {
                 new Iterations(nIterations),
                 new Random(seed),
                 executorService,
-                //Listener.onExecutor(listenerFactory.build(
-                Listener.onExecutor(listener(
-                    new Static(keys),
-                    new Basic(),
-                    new Population(),
-                    new Diversity(),
-                    new BestInfo("%7.5f"),
-                    new FunctionOfOneBest<>(i -> List.of(new Item(
-                        "validation.fitness",
-                        problem.getValidationFunction().apply(i.getSolution()),
-                        "%7.5f"
-                    )))
-                ), executorService));
+                Listener.onExecutor((listenerFactory.getBaseFileName() == null) ?
+                        listener(collectors.toArray(DataCollector[]::new)) :
+                        listenerFactory.build(collectors.toArray(DataCollector[]::new))
+                    , executorService));
             L.info(String.format("Done %s: %d solutions in %4.1fs",
                 keys,
                 solutions.size(),
@@ -517,6 +518,8 @@ public class SymbolicRegressionComparison extends Worker {
                 keys,
                 e
             ));
+            e.printStackTrace();
+            System.exit(-1);
           }
         }
       }

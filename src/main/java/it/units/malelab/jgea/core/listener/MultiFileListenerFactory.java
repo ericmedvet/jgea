@@ -48,6 +48,14 @@ public class MultiFileListenerFactory<G, S, F> {
     streams = new HashMap<>();
   }
 
+  public String getBaseDirName() {
+    return baseDirName;
+  }
+
+  public String getBaseFileName() {
+    return baseFileName;
+  }
+
   public Listener<G, S, F> build(DataCollector<? super G, ? super S, ? super F>... collectors) {
     return new PrintStreamListener<G, S, F>(null, false, 0, ";", ";", collectors) {
       @Override

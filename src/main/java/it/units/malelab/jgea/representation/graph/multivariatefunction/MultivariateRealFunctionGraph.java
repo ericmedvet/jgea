@@ -17,8 +17,10 @@
 
 package it.units.malelab.jgea.representation.graph.multivariatefunction;
 
+import com.google.common.graph.Graphs;
 import com.google.common.graph.ValueGraph;
 import it.units.malelab.jgea.core.util.Sized;
+import it.units.malelab.jgea.representation.graph.GraphUtils;
 
 import java.util.Objects;
 import java.util.Set;

@@ -17,17 +17,12 @@
 
 package it.units.malelab.jgea.representation.graph;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multiset;
 import com.google.common.graph.*;
 import it.units.malelab.jgea.core.operator.Mutation;
-import it.units.malelab.jgea.representation.HashedNodeAddition;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -80,36 +75,5 @@ public class GraphUtils {
 
   public static <N1, E1, N2, E2> Function<ValueGraph<N1, E1>, ValueGraph<N2, E2>> mapper(Function<N1, N2> nodeF, Function<Collection<E1>, E2> edgeF) {
     return graph -> map(graph, nodeF, edgeF);
-  }
-
-  public static void main(String[] args) {
-    MutableValueGraph<String, String> g = ValueGraphBuilder.directed().build();
-    g.addNode("a");
-    g.addNode("b");
-    g.addNode("c");
-    g.putEdgeValue("a", "c", "1");
-    g.putEdgeValue("b", "c", "2");
-    System.out.println(g);
-    ValueGraph<HashedNode<String>, String> hg = map(
-        g,
-        s -> new HashedNode(s.hashCode(), s),
-        strings -> String.join("", strings)
-    );
-    System.out.println(hg);
-
-    Random r = new Random();
-
-    Mutation<ValueGraph<HashedNode<String>, String>> mut1 = new EdgeAddition<>(random -> Integer.toString(random.nextInt(10)), true);
-    Mutation<ValueGraph<HashedNode<String>, String>> mut2 = new EdgeModification<>((s, random) -> s + "m", 1d);
-    Mutation<ValueGraph<HashedNode<String>, String>> mut3 = new EdgeRemoval<>(n -> false);
-    Mutation<ValueGraph<HashedNode<String>, String>> mut4 = new NodeAddition<>(random -> new HashedNode<>(0, "A"), (s, random) -> s + ">", (s, random) -> s + "<");
-    Mutation<ValueGraph<HashedNode<String>, String>> mut5 = new HashedNodeAddition<>(random -> "A", (s, random) -> s + ">", (s, random) -> s + "<");
-    for (int i = 0; i < 3; i++) {
-      System.out.printf("mut1: %s%n", mut1.mutate(hg, r));
-      System.out.printf("mut2: %s%n", mut2.mutate(hg, r));
-      System.out.printf("mut3: %s%n", mut3.mutate(hg, r));
-      System.out.printf("mut4: %s%n", mut4.mutate(hg, r));
-      System.out.printf("mut5: %s%n", mut5.mutate(hg, r));
-    }
   }
 }
