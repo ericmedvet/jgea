@@ -84,6 +84,6 @@ public class AlignedCrossover<N, E> implements Crossover<ValueGraph<N, E>> {
     }
     //remove unconnected nodes
     GraphUtils.removeUnconnectedNodes(child, unremovableNodePredicate);
-    return child;
+    return ImmutableValueGraph.copyOf(child);
   }
 }

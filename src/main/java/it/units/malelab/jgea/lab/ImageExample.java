@@ -100,10 +100,10 @@ public class ImageExample extends Worker {
             Map.of(
                 new NodeAddition<>(
                     FunctionNode.sequentialIndexFactory(baseFunctions),
-                    Random::nextGaussian,
-                    (w, random) -> w
+                    (w, r) -> w,
+                    (w, r) -> r.nextGaussian()
                 ), 1d,
-                new EdgeModification<>((w, random) -> w + random.nextGaussian()), 5d,
+                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), 5d,
                 new EdgeAddition<>(Random::nextGaussian, false), 1d,
                 new EdgeRemoval<>(node -> node instanceof Output), 0.1d,
                 new AlignedCrossover<>(

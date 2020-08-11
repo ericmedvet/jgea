@@ -20,6 +20,7 @@ package it.units.malelab.jgea.lab;
 import com.google.common.base.Stopwatch;
 import com.google.common.graph.ValueGraph;
 import it.units.malelab.jgea.Worker;
+import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.Evolver;
@@ -38,6 +39,7 @@ import it.units.malelab.jgea.problem.symbolicregression.element.Constant;
 import it.units.malelab.jgea.problem.symbolicregression.element.Element;
 import it.units.malelab.jgea.problem.symbolicregression.element.Operator;
 import it.units.malelab.jgea.problem.symbolicregression.element.Variable;
+import it.units.malelab.jgea.representation.HashedNodeAddition;
 import it.units.malelab.jgea.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
 import it.units.malelab.jgea.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
 import it.units.malelab.jgea.representation.graph.*;
@@ -49,6 +51,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static it.units.malelab.jgea.core.util.Args.i;
 import static it.units.malelab.jgea.core.util.Args.ri;
@@ -77,7 +80,7 @@ public class SymbolicRegressionComparison extends Worker {
     int maxNodes = i(a("maxNodes", "20"));
     int nTournament = 5;
     int diversityMaxAttempts = 100;
-    int nIterations = i(a("nIterations", "3"));
+    int nIterations = i(a("nIterations", "50"));
     int[] seeds = ri(a("seed", "0:1"));
     SymbolicRegressionFitness.Metric metric = SymbolicRegressionFitness.Metric.MSE;
     Operator[] operators = new Operator[]{Operator.ADDITION, Operator.SUBTRACTION, Operator.MULTIPLICATION, Operator.PROT_DIVISION};
@@ -265,9 +268,10 @@ public class SymbolicRegressionComparison extends Worker {
             Map.of(
                 new NodeAddition<>(
                     FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
-                    Random::nextGaussian
+                    (w, r) -> w,
+                    (w, r) -> r.nextGaussian()
                 ), 2d,
-                new EdgeModification<>((w, random) -> w + random.nextGaussian()), 1d,
+                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), 1d,
                 new EdgeAddition<>(Random::nextGaussian, false), 1d,
                 new EdgeRemoval<>(node -> node instanceof Output), 0.1d,
                 new AlignedCrossover<>(
@@ -291,9 +295,10 @@ public class SymbolicRegressionComparison extends Worker {
             Map.of(
                 new NodeAddition<>(
                     FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
-                    Random::nextGaussian
+                    (w, r) -> w,
+                    (w, r) -> r.nextGaussian()
                 ), 2d,
-                new EdgeModification<>((w, random) -> w + random.nextGaussian()), 1d,
+                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), 1d,
                 new EdgeAddition<>(Random::nextGaussian, false), 1d,
                 new EdgeRemoval<>(node -> node instanceof Output), 0.1d
             ),
@@ -312,9 +317,10 @@ public class SymbolicRegressionComparison extends Worker {
             Map.of(
                 new NodeAddition<>(
                     FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
-                    Random::nextGaussian
+                    (w, r) -> w,
+                    (w, r) -> r.nextGaussian()
                 ), 2d,
-                new EdgeModification<>((w, random) -> w + random.nextGaussian()), 1d,
+                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), 1d,
                 new EdgeAddition<>(Random::nextGaussian, false), 1d,
                 new EdgeRemoval<>(node -> node instanceof Output), 0.1d,
                 new AlignedCrossover<>(
@@ -339,14 +345,73 @@ public class SymbolicRegressionComparison extends Worker {
             Map.of(
                 new NodeAddition<>(
                     FunctionNode.sequentialIndexFactory(baseFunctions),
-                    Random::nextGaussian
+                    (w, r) -> w,
+                    (w, r) -> r.nextGaussian()
                 ), 2d,
-                new EdgeModification<>((w, random) -> w + random.nextGaussian()), 1d,
+                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), 1d,
                 new EdgeAddition<>(Random::nextGaussian, false), 1d,
                 new EdgeRemoval<>(node -> node instanceof Output), 0.1d,
                 new AlignedCrossover<>(
                     (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
                     node -> node instanceof Output,
+                    false
+                ), 1d
+            ),
+            new Tournament(nTournament),
+            new Worst(),
+            nPop,
+            true
+        )),
+        Map.entry("graph-hash-ga", p -> new StandardEvolver<ValueGraph<HashedNode<Node>, Double>, RealFunction, Double>(
+            GraphUtils.mapper((Function<HashedNode<Node>, Node>) HashedNode::content, (Function<Collection<Double>, Double>) Misc::first)
+                .andThen(MultivariateRealFunctionGraph.builder())
+                .andThen(GraphBasedRealFunction.builder())
+                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+            new ShallowGraphFactory(0.5d, 0d, 1d, p.arity(), 1)
+                .then(GraphUtils.mapper(HashedNode.mapper(), Misc::first)),
+            PartialComparator.from(Double.class).on(Individual::getFitness),
+            nPop,
+            Map.of(
+                new NodeAddition<>(
+                    FunctionNode.sequentialIndexFactory(baseFunctions)
+                        .then(HashedNode.mapper(Node.class)),
+                    (w, r) -> w,
+                    (w, r) -> r.nextGaussian()
+                ), 2d,
+                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), 1d,
+                new EdgeAddition<>(Random::nextGaussian, false), 1d,
+                new EdgeRemoval<>(node -> node.content() instanceof Output), 0.1d,
+                new AlignedCrossover<>(
+                    (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
+                    node -> node.content() instanceof Output,
+                    false
+                ), 1d
+            ),
+            new Tournament(nTournament),
+            new Worst(),
+            nPop,
+            true
+        )), Map.entry("graph-hash+-ga", p -> new StandardEvolver<ValueGraph<HashedNode<Node>, Double>, RealFunction, Double>(
+            GraphUtils.mapper((Function<HashedNode<Node>, Node>) HashedNode::content, (Function<Collection<Double>, Double>) Misc::first)
+                .andThen(MultivariateRealFunctionGraph.builder())
+                .andThen(GraphBasedRealFunction.builder())
+                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+            new ShallowGraphFactory(0.5d, 0d, 1d, p.arity(), 1)
+                .then(GraphUtils.mapper(HashedNode.mapper(), Misc::first)),
+            PartialComparator.from(Double.class).on(Individual::getFitness),
+            nPop,
+            Map.of(
+                new HashedNodeAddition<>(
+                    FunctionNode.sequentialIndexFactory(baseFunctions),
+                    (w, r) -> w,
+                    (w, r) -> r.nextGaussian()
+                ), 2d,
+                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), 1d,
+                new EdgeAddition<>(Random::nextGaussian, false), 1d,
+                new EdgeRemoval<>(node -> node.content() instanceof Output), 0.1d,
+                new AlignedCrossover<>(
+                    (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
+                    node -> node.content() instanceof Output,
                     false
                 ), 1d
             ),
@@ -365,9 +430,10 @@ public class SymbolicRegressionComparison extends Worker {
             Map.of(
                 new NodeAddition<>(
                     FunctionNode.sequentialIndexFactory(baseFunctions),
-                    Random::nextGaussian
+                    (w, r) -> w,
+                    (w, r) -> r.nextGaussian()
                 ), 2d,
-                new EdgeModification<>((w, random) -> w + random.nextGaussian()), 1d,
+                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), 1d,
                 new EdgeAddition<>(Random::nextGaussian, false), 1d,
                 new EdgeRemoval<>(node -> node instanceof Output), 0.1d
             ),
@@ -386,9 +452,10 @@ public class SymbolicRegressionComparison extends Worker {
             Map.of(
                 new NodeAddition<>(
                     FunctionNode.sequentialIndexFactory(baseFunctions),
-                    Random::nextGaussian
+                    (w, r) -> w,
+                    (w, r) -> r.nextGaussian()
                 ), 2d,
-                new EdgeModification<>((w, random) -> w + random.nextGaussian()), 1d,
+                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), 1d,
                 new EdgeAddition<>(Random::nextGaussian, false), 1d,
                 new EdgeRemoval<>(node -> node instanceof Output), 0.1d,
                 new AlignedCrossover<>(
@@ -404,6 +471,11 @@ public class SymbolicRegressionComparison extends Worker {
             diversityMaxAttempts
         ))
     );
+
+    evolvers = evolvers.entrySet().stream()
+        .filter(e -> e.getKey().matches("graph-.*-ga"))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)); // TODO remove
+
     //run
     for (int seed : seeds) {
       for (SymbolicRegressionProblem problem : problems) {
@@ -422,7 +494,8 @@ public class SymbolicRegressionComparison extends Worker {
                 new Iterations(nIterations),
                 new Random(seed),
                 executorService,
-                Listener.onExecutor(listenerFactory.build(
+                //Listener.onExecutor(listenerFactory.build(
+                Listener.onExecutor(listener(
                     new Static(keys),
                     new Basic(),
                     new Population(),

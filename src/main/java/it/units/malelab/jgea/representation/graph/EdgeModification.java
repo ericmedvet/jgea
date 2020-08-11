@@ -30,23 +30,32 @@ import java.util.Random;
  */
 public class EdgeModification<N, E> implements Mutation<ValueGraph<N, E>> {
   private final Mutation<E> edgeMutation;
+  private final double rate;
 
-  public EdgeModification(Mutation<E> edgeMutation) {
+  public EdgeModification(Mutation<E> edgeMutation, double rate) {
     this.edgeMutation = edgeMutation;
+    this.rate = rate;
   }
 
   public Mutation<E> getEdgeMutation() {
     return edgeMutation;
   }
 
+  public double getRate() {
+    return rate;
+  }
+
   @Override
   public ValueGraph<N, E> mutate(ValueGraph<N, E> parent, Random random) {
     MutableValueGraph<N, E> child = Graphs.copyOf(parent);
     if (!child.edges().isEmpty()) {
-      EndpointPair<N> endpointPair = Misc.pickRandomly(child.edges(), random);
-      E edge = child.edgeValue(endpointPair.nodeU(), endpointPair.nodeV()).get();
-      child.putEdgeValue(endpointPair.nodeU(), endpointPair.nodeV(), edgeMutation.mutate(edge, random));
+      for (EndpointPair<N> endpointPair : child.edges()) {
+        if (random.nextDouble()<rate) {
+          E edge = child.edgeValue(endpointPair.nodeU(), endpointPair.nodeV()).get();
+          child.putEdgeValue(endpointPair.nodeU(), endpointPair.nodeV(), edgeMutation.mutate(edge, random));
+        }
+      }
     }
-    return child;
+    return ImmutableValueGraph.copyOf(child);
   }
 }

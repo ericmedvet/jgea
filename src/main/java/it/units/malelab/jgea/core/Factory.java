@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -36,7 +38,7 @@ public interface Factory<T> {
       @Override
       public List<T> build(int n, Random random) {
         int attempts = 0;
-        List<T> ts = new ArrayList<>();
+        List<T> ts = new ArrayList<>(n);
         while ((ts.size() < n) && (attempts < maxAttempts)) {
           attempts = attempts + 1;
           ts.addAll(new LinkedHashSet<>(innerFactory.build(n - ts.size(), random)));
@@ -50,6 +52,13 @@ public interface Factory<T> {
   default IndependentFactory<T> independent() {
     Factory<T> thisFactory = this;
     return (IndependentFactory<T>) random -> thisFactory.build(1, random).get(0);
+  }
+
+  default <K> Factory<K> then(Function<T, K> f) {
+    Factory<T> thisFactory = this;
+    return (n, random) -> thisFactory.build(n, random).stream()
+        .map(f::apply)
+        .collect(Collectors.toList());
   }
 
 }

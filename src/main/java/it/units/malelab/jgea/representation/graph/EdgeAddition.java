@@ -18,6 +18,7 @@
 package it.units.malelab.jgea.representation.graph;
 
 import com.google.common.graph.Graphs;
+import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraph;
 import it.units.malelab.jgea.core.IndependentFactory;
@@ -72,6 +73,6 @@ public class EdgeAddition<N, E> implements Mutation<ValueGraph<N, E>> {
         }
       }
     }
-    return child;
+    return ImmutableValueGraph.copyOf(child);
   }
 }

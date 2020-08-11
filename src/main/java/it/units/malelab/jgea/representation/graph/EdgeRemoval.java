@@ -17,10 +17,7 @@
 
 package it.units.malelab.jgea.representation.graph;
 
-import com.google.common.graph.EndpointPair;
-import com.google.common.graph.Graphs;
-import com.google.common.graph.MutableValueGraph;
-import com.google.common.graph.ValueGraph;
+import com.google.common.graph.*;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.util.Misc;
 
@@ -51,6 +48,6 @@ public class EdgeRemoval<N, E> implements Mutation<ValueGraph<N, E>> {
       child.removeEdge(endpointPair.nodeU(), endpointPair.nodeV());
     }
     GraphUtils.removeUnconnectedNodes(child, unremovableNodePredicate);
-    return child;
+    return ImmutableValueGraph.copyOf(child);
   }
 }

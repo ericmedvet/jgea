@@ -20,6 +20,8 @@ package it.units.malelab.jgea.core;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -43,6 +45,11 @@ public interface IndependentFactory<T> extends Factory<T> {
 
   static <K> IndependentFactory<K> oneOf(IndependentFactory<K>... factories) {
     return random -> factories[random.nextInt(factories.length)].build(random);
+  }
+
+  default <K> IndependentFactory<K> then(Function<T, K> f) {
+    IndependentFactory<T> thisFactory = this;
+    return random -> f.apply(thisFactory.build(random));
   }
 
 }
