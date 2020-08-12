@@ -38,12 +38,12 @@ import java.util.stream.Collectors;
 /**
  * @author Eric Medvet <eric.medvet@gmail.com>
  */
-public class StandardWithEnforcedDiversity<G, S, F> extends StandardEvolver<G, S, F> {
+public class StandardWithEnforcedDiversityEvolver<G, S, F> extends StandardEvolver<G, S, F> {
 
   private final int maxAttempts;
 
-  public static <G1, S1, F1> StandardWithEnforcedDiversity<G1, S1, F1> from(StandardEvolver<G1, S1, F1> evolver, int maxAttempts) {
-    return new StandardWithEnforcedDiversity<>(
+  public static <G1, S1, F1> StandardWithEnforcedDiversityEvolver<G1, S1, F1> from(StandardEvolver<G1, S1, F1> evolver, int maxAttempts) {
+    return new StandardWithEnforcedDiversityEvolver<>(
         evolver.solutionMapper,
         evolver.genotypeFactory,
         evolver.individualComparator,
@@ -57,7 +57,7 @@ public class StandardWithEnforcedDiversity<G, S, F> extends StandardEvolver<G, S
     );
   }
 
-  public StandardWithEnforcedDiversity(
+  public StandardWithEnforcedDiversityEvolver(
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       PartialComparator<? super Individual<G, S, F>> individualComparator,

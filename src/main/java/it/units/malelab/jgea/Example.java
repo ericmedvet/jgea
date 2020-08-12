@@ -170,7 +170,7 @@ public class Example extends Worker {
             100,
             true
         ),
-        new StandardWithEnforcedDiversity<>(
+        new StandardWithEnforcedDiversityEvolver<>(
             Function.identity(),
             new BitStringFactory(100),
             PartialComparator.from(Double.class).on(Individual::getFitness),
@@ -234,7 +234,7 @@ public class Example extends Worker {
             100,
             true
         ),
-        new StandardWithEnforcedDiversity<>(
+        new StandardWithEnforcedDiversityEvolver<>(
             new FormulaMapper()
                 .andThen(n -> TreeBasedRealFunction.from(n, "x"))
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
@@ -306,7 +306,7 @@ public class Example extends Worker {
             100,
             true
         ),
-        new StandardWithEnforcedDiversity<>(
+        new StandardWithEnforcedDiversityEvolver<>(
             new FormulaMapper()
                 .andThen(n -> TreeBasedRealFunction.from(n, "x"))
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),

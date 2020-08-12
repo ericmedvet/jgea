@@ -21,7 +21,7 @@ import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
-import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversity;
+import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversityEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.fitness.Linearization;
 import it.units.malelab.jgea.core.listener.Listener;
@@ -147,7 +147,7 @@ public class RepresentationEvolution extends Worker {
             double[] weights = new double[localProperties.size()];
             //prepare evolver
             Arrays.fill(weights, 1d / (double) localProperties.size());
-            Evolver<Tree<String>, Pair<Tree<Element>, Tree<Element>>, List<Double>> evolver = new StandardWithEnforcedDiversity<>(
+            Evolver<Tree<String>, Pair<Tree<Element>, Tree<Element>>, List<Double>> evolver = new StandardWithEnforcedDiversityEvolver<>(
                 mapperGeneration.getSolutionMapper(),
                 new GrammarRampedHalfAndHalf<>(3, learningDepth, mapperGeneration.getGrammar()),
                 PartialComparator.from(Double.class).on(new Linearization(weights).compose(Individual::getFitness)),

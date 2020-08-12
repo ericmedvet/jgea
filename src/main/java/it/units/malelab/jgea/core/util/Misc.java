@@ -20,12 +20,7 @@ package it.units.malelab.jgea.core.util;
 import com.google.common.collect.Range;
 import it.units.malelab.jgea.distance.Distance;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.BiFunction;
@@ -139,6 +134,18 @@ public class Misc {
   public static <T> Distance<T> cached(Distance<T> function, long size) {
     final CachedBiFunction<T, T, Double> cached = new CachedBiFunction<>(function, size);
     return (t1, t2) -> cached.apply(t1, t2);
+  }
+
+  public static double median(double... values) {
+    if (values.length == 1) {
+      return values[0];
+    }
+    double[] vs = Arrays.copyOf(values, values.length);
+    Arrays.sort(vs);
+    if (vs.length % 2 == 0) {
+      return (vs[values.length / 2 - 1] + vs[values.length / 2]) / 2d;
+    }
+    return vs[values.length / 2];
   }
 
 }

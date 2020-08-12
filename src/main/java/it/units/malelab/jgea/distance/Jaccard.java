@@ -17,16 +17,21 @@
 
 package it.units.malelab.jgea.distance;
 
-import java.util.function.BiFunction;
-import java.util.function.Function;
+import com.google.common.collect.Sets;
+
+import java.util.Set;
 
 /**
  * @author eric
+ * @created 2020/08/12
+ * @project jgea
  */
-@FunctionalInterface
-public interface Distance<T> extends BiFunction<T, T, Double> {
-  default <K> Distance<K> on(Function<K, T> f) {
-    Distance<T> tDistance = this;
-    return (k1, k2) -> tDistance.apply(f.apply(k1), f.apply(k2));
+public class Jaccard implements Distance<Set<?>> {
+  @Override
+  public Double apply(Set<?> s1, Set<?> s2) {
+    if (s1.isEmpty() && s2.isEmpty()) {
+      return 0d;
+    }
+    return 1d - (double) Sets.intersection(s1, s2).size() / (double) Sets.union(s1, s2).size();
   }
 }

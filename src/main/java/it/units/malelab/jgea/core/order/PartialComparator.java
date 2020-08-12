@@ -78,4 +78,24 @@ public interface PartialComparator<K> {
       return outcome;
     };
   }
+
+  default Comparator<K> comparator() {
+    PartialComparator<K> thisPartialComparator = this;
+    return (o1, o2) -> {
+      PartialComparatorOutcome outcome = thisPartialComparator.compare(o1, o2);
+      if (outcome.equals(PartialComparatorOutcome.NOT_COMPARABLE)) {
+        throw new IllegalArgumentException(String.format(
+            "Cannot total order uncomparable items %s and %s",
+            o1, o2
+        ));
+      }
+      if (outcome.equals(PartialComparatorOutcome.BEFORE)) {
+        return -1;
+      }
+      if (outcome.equals(PartialComparatorOutcome.AFTER)) {
+        return 1;
+      }
+      return 0;
+    };
+  }
 }

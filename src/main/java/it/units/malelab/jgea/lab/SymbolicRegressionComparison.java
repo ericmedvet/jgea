@@ -19,12 +19,14 @@ package it.units.malelab.jgea.lab;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.graph.ValueGraph;
+import com.google.common.math.Stats;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.Evolver;
+import it.units.malelab.jgea.core.evolver.SpeciatedEvolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
-import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversity;
+import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversityEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.MultiFileListenerFactory;
@@ -33,6 +35,8 @@ import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
+import it.units.malelab.jgea.distance.Distance;
+import it.units.malelab.jgea.distance.Jaccard;
 import it.units.malelab.jgea.problem.symbolicregression.*;
 import it.units.malelab.jgea.problem.symbolicregression.element.Constant;
 import it.units.malelab.jgea.problem.symbolicregression.element.Element;
@@ -80,7 +84,7 @@ public class SymbolicRegressionComparison extends Worker {
     int nTournament = 5;
     int diversityMaxAttempts = 100;
     int nIterations = i(a("nIterations", "50"));
-    String evolverNamePattern = a("evolver", "graph-.*-ga");
+    String evolverNamePattern = a("evolver", ".*-speciated");
     int[] seeds = ri(a("seed", "0:1"));
     SymbolicRegressionFitness.Metric metric = SymbolicRegressionFitness.Metric.MSE;
     Operator[] operators = new Operator[]{Operator.ADDITION, Operator.SUBTRACTION, Operator.MULTIPLICATION, Operator.PROT_DIVISION};
@@ -163,7 +167,7 @@ public class SymbolicRegressionComparison extends Worker {
               IndependentFactory.picker(Arrays.stream(vars(p.arity())).sequential().map(Variable::new).toArray(Variable[]::new)),
               IndependentFactory.picker(Arrays.stream(constants).map(Constant::new).toArray(Constant[]::new))
           );
-          return new StandardWithEnforcedDiversity<Tree<Element>, RealFunction, Double>(
+          return new StandardWithEnforcedDiversityEvolver<Tree<Element>, RealFunction, Double>(
               ((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(t, vars(p.arity())))
                   .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
               new RampedHalfAndHalf<>(
@@ -240,7 +244,7 @@ public class SymbolicRegressionComparison extends Worker {
               List.of(vars(p.arity())),
               List.of(constants)
           );
-          return new StandardWithEnforcedDiversity<Tree<String>, RealFunction, Double>(
+          return new StandardWithEnforcedDiversityEvolver<Tree<String>, RealFunction, Double>(
               new FormulaMapper()
                   .andThen(n -> TreeBasedRealFunction.from(n, vars(p.arity())))
                   .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
@@ -307,7 +311,7 @@ public class SymbolicRegressionComparison extends Worker {
             nPop,
             true
         )),
-        Map.entry("graph-lim-gadiv", p -> new StandardWithEnforcedDiversity<ValueGraph<Node, Double>, RealFunction, Double>(
+        Map.entry("graph-lim-gadiv", p -> new StandardWithEnforcedDiversityEvolver<ValueGraph<Node, Double>, RealFunction, Double>(
             MultivariateRealFunctionGraph.builder()
                 .andThen(GraphBasedRealFunction.builder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
@@ -334,6 +338,43 @@ public class SymbolicRegressionComparison extends Worker {
             nPop,
             true,
             diversityMaxAttempts
+        )),
+        Map.entry("graph-lim-speciated", p -> new SpeciatedEvolver<ValueGraph<Node, Double>, RealFunction>(
+            MultivariateRealFunctionGraph.builder()
+                .andThen(GraphBasedRealFunction.builder())
+                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+            new ShallowGraphFactory(0.5d, 0d, 1d, p.arity(), 1),
+            PartialComparator.from(Double.class).on(Individual::getFitness),
+            nPop,
+            Map.of(
+                new NodeAddition<>(
+                    FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
+                    (w, r) -> w,
+                    (w, r) -> r.nextGaussian()
+                ), 2d,
+                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), 1d,
+                new EdgeAddition<>(Random::nextGaussian, false), 1d,
+                new EdgeRemoval<>(node -> node instanceof Output), 0.1d,
+                new AlignedCrossover<>(
+                    (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
+                    node -> node instanceof Output,
+                    false
+                ), 1d
+            ),
+            5,
+            (new Jaccard()).on(i -> i.getGenotype().nodes()),
+            0.25,
+            individuals -> {
+              double[] fitnesses = individuals.stream().mapToDouble(i -> i.getFitness()).toArray();
+              Individual<ValueGraph<Node, Double>, RealFunction, Double> r = Misc.first(individuals);
+              return new Individual<>(
+                  r.getGenotype(),
+                  r.getSolution(),
+                  Misc.median(fitnesses),
+                  r.getBirthIteration()
+              );
+            },
+            0.75
         )),
         Map.entry("graph-seq-ga", p -> new StandardEvolver<ValueGraph<Node, Double>, RealFunction, Double>(
             MultivariateRealFunctionGraph.builder()
@@ -443,7 +484,7 @@ public class SymbolicRegressionComparison extends Worker {
             nPop,
             true
         )),
-        Map.entry("graph-seq-gadiv", p -> new StandardWithEnforcedDiversity<ValueGraph<Node, Double>, RealFunction, Double>(
+        Map.entry("graph-seq-gadiv", p -> new StandardWithEnforcedDiversityEvolver<ValueGraph<Node, Double>, RealFunction, Double>(
             MultivariateRealFunctionGraph.builder()
                 .andThen(GraphBasedRealFunction.builder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
