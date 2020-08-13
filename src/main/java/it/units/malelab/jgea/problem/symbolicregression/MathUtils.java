@@ -22,6 +22,7 @@ import org.apache.commons.math3.stat.StatUtils;
 
 import java.util.*;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -33,6 +34,7 @@ public class MathUtils {
     private final double a;
     private final double b;
 
+    // TODO this is wrong: see https://link.springer.com/content/pdf/10.1023/B:GENP.0000030195.77571.f9.pdf
     public ScaledRealFunction(RealFunction innerF, SymbolicRegressionFitness symbolicRegressionFitness) {
       this.innerF = innerF;
       double[] targetYs = symbolicRegressionFitness.getPoints().stream()
@@ -45,8 +47,33 @@ public class MathUtils {
           .toArray();
       double mean = StatUtils.mean(ys);
       double variance = StatUtils.variance(ys, mean);
-      b = targetMean - mean * Math.sqrt(targetVariance / variance);
-      a = Math.sqrt(targetVariance / variance);
+      a = (variance != 0d) ? Math.sqrt(targetVariance / variance) : 1d;
+      b = targetMean - mean * a;
+    }
+
+
+    public static void main(String[] args) {
+      SymbolicRegressionFitness srf = new SymbolicRegressionFitness(
+          x -> 3d * x[0] + 2d,
+          MathUtils.pairwise(MathUtils.equispacedValues(0, 2, 1)),
+          SymbolicRegressionFitness.Metric.MSE
+      );
+
+      System.out.println(srf.getPoints().stream().map(Arrays::toString).collect(Collectors.toList()));
+
+      RealFunction f = x -> x[0];
+      RealFunction g = x -> -x[0] - 10d;
+      RealFunction h = x -> 4d;
+      RealFunction fs = new ScaledRealFunction(f, srf);
+      RealFunction gs = new ScaledRealFunction(g, srf);
+      RealFunction hs = new ScaledRealFunction(h, srf);
+      System.out.printf("%s -> %f%n", f, srf.apply(f));
+      System.out.printf("%s -> %f%n", fs, srf.apply(fs));
+      System.out.printf("%s -> %f%n", g, srf.apply(g));
+      System.out.printf("%s -> %f%n", gs, srf.apply(gs));
+      System.out.printf("%s -> %f%n", h, srf.apply(h));
+      System.out.printf("%s -> %f%n", hs, srf.apply(hs));
+
     }
 
     public RealFunction getInnerF() {

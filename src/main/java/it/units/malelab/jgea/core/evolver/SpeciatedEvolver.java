@@ -22,6 +22,7 @@ import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
+import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.distance.Distance;
 
@@ -57,7 +58,7 @@ public class SpeciatedEvolver<G, S> extends StandardEvolver<G, S, Double> {
       double distanceThreshold,
       Function<Collection<Individual<G, S, Double>>, Individual<G, S, Double>> representerSelector,
       double rankBase) {
-    super(solutionMapper, genotypeFactory, individualComparator, populationSize, operators, null, null, populationSize, false);
+    super(solutionMapper, genotypeFactory, individualComparator, populationSize, operators, null, new Worst(), populationSize, false);
     this.minSpeciesSizeForElitism = minSpeciesSizeForElitism;
     this.distance = distance;
     this.distanceThreshold = distanceThreshold;
@@ -100,7 +101,7 @@ public class SpeciatedEvolver<G, S> extends StandardEvolver<G, S, Double> {
         }
       }
     }
-    L.info(String.format("Population speciated in %d species of sizes %s",
+    L.fine(String.format("Population speciated in %d species of sizes %s",
         allSpecies.size(),
         allSpecies.stream().map(List::size).collect(Collectors.toList())
     ));
@@ -122,8 +123,14 @@ public class SpeciatedEvolver<G, S> extends StandardEvolver<G, S, Double> {
     List<Individual<G, S, Double>> representers = allSpecies.stream()
         .map(s -> representerSelector.apply(s))
         .collect(Collectors.toList());
+    L.fine(String.format("Representers determined for %d species: fitnesses are %s",
+        allSpecies.size(),
+        representers.stream()
+            .map(i -> String.format("%.3f", i.getFitness()))
+            .collect(Collectors.toList())
+    ));
     List<Individual<G, S, Double>> sortedRepresenters = new ArrayList<>(representers);
-    Collections.sort(sortedRepresenters, individualComparator.comparator().reversed());
+    Collections.sort(sortedRepresenters, individualComparator.comparator());
     List<Double> weights = representers.stream()
         .map(r -> Math.pow(rankBase, sortedRepresenters.indexOf(r)))
         .collect(Collectors.toList());
@@ -137,7 +144,7 @@ public class SpeciatedEvolver<G, S> extends StandardEvolver<G, S, Double> {
         .mapToInt(Integer::intValue)
         .sum();
     sizes.set(0, sizes.get(0) + remaining - sizeSum);
-    L.info(String.format("Offspring sizes assigned to %d species: %s",
+    L.fine(String.format("Offspring sizes assigned to %d species: %s",
         allSpecies.size(),
         sizes
     ));

@@ -102,7 +102,7 @@ public class SymbolicRegressionComparison extends Worker {
         a("dir", "."),
         a("file", null)
     );
-    Map<String, Function<SymbolicRegressionProblem, Evolver<?, RealFunction, Double>>> evolvers = Map.ofEntries(
+    Map<String, Function<SymbolicRegressionProblem, Evolver<?, RealFunction, Double>>> evolvers = new TreeMap<>(Map.ofEntries(
         Map.entry("tree-ga", p -> {
           IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
               IndependentFactory.picker(Arrays.stream(vars(p.arity())).sequential().map(Variable::new).toArray(Variable[]::new)),
@@ -266,7 +266,7 @@ public class SymbolicRegressionComparison extends Worker {
             MultivariateRealFunctionGraph.builder()
                 .andThen(GraphBasedRealFunction.builder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowGraphFactory(0.5d, 0d, 1d, p.arity(), 1),
+            new ShallowGraphFactory(1d, 0d, 1d, p.arity(), 1),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
             Map.of(
@@ -293,7 +293,7 @@ public class SymbolicRegressionComparison extends Worker {
             MultivariateRealFunctionGraph.builder()
                 .andThen(GraphBasedRealFunction.builder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowGraphFactory(0.5d, 0d, 1d, p.arity(), 1),
+            new ShallowGraphFactory(1d, 0d, 1d, p.arity(), 1),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
             Map.of(
@@ -315,7 +315,7 @@ public class SymbolicRegressionComparison extends Worker {
             MultivariateRealFunctionGraph.builder()
                 .andThen(GraphBasedRealFunction.builder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowGraphFactory(0.5d, 0d, 1d, p.arity(), 1),
+            new ShallowGraphFactory(1d, 0d, 1d, p.arity(), 1),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
             Map.of(
@@ -343,7 +343,7 @@ public class SymbolicRegressionComparison extends Worker {
             MultivariateRealFunctionGraph.builder()
                 .andThen(GraphBasedRealFunction.builder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowGraphFactory(0.5d, 0d, 1d, p.arity(), 1),
+            new ShallowGraphFactory(1d, 0d, 1d, p.arity(), 1),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
             Map.of(
@@ -376,11 +376,48 @@ public class SymbolicRegressionComparison extends Worker {
             },
             0.75
         )),
+        Map.entry("graph-seq-speciated", p -> new SpeciatedEvolver<ValueGraph<Node, Double>, RealFunction>(
+            MultivariateRealFunctionGraph.builder()
+                .andThen(GraphBasedRealFunction.builder())
+                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+            new ShallowGraphFactory(1d, 0d, 1d, p.arity(), 1),
+            PartialComparator.from(Double.class).on(Individual::getFitness),
+            nPop,
+            Map.of(
+                new NodeAddition<>(
+                    FunctionNode.sequentialIndexFactory(baseFunctions),
+                    (w, r) -> w,
+                    (w, r) -> r.nextGaussian()
+                ), 2d,
+                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), 1d,
+                new EdgeAddition<>(Random::nextGaussian, false), 1d,
+                new EdgeRemoval<>(node -> node instanceof Output), 0.1d,
+                new AlignedCrossover<>(
+                    (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
+                    node -> node instanceof Output,
+                    false
+                ), 1d
+            ),
+            5,
+            (new Jaccard()).on(i -> i.getGenotype().nodes()),
+            0.25,
+            individuals -> {
+              double[] fitnesses = individuals.stream().mapToDouble(i -> i.getFitness()).toArray();
+              Individual<ValueGraph<Node, Double>, RealFunction, Double> r = Misc.first(individuals);
+              return new Individual<>(
+                  r.getGenotype(),
+                  r.getSolution(),
+                  Misc.median(fitnesses),
+                  r.getBirthIteration()
+              );
+            },
+            0.75
+        )),
         Map.entry("graph-seq-ga", p -> new StandardEvolver<ValueGraph<Node, Double>, RealFunction, Double>(
             MultivariateRealFunctionGraph.builder()
                 .andThen(GraphBasedRealFunction.builder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowGraphFactory(0.5d, 0d, 1d, p.arity(), 1),
+            new ShallowGraphFactory(1d, 0d, 1d, p.arity(), 1),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
             Map.of(
@@ -408,7 +445,7 @@ public class SymbolicRegressionComparison extends Worker {
                 .andThen(MultivariateRealFunctionGraph.builder())
                 .andThen(GraphBasedRealFunction.builder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowGraphFactory(0.5d, 0d, 1d, p.arity(), 1)
+            new ShallowGraphFactory(1d, 0d, 1d, p.arity(), 1)
                 .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
@@ -432,12 +469,53 @@ public class SymbolicRegressionComparison extends Worker {
             new Worst(),
             nPop,
             true
-        )), Map.entry("graph-hash+-ga", p -> new StandardEvolver<ValueGraph<IndexedNode<Node>, Double>, RealFunction, Double>(
+        )),
+        Map.entry("graph-hash-speciated", p -> new SpeciatedEvolver<ValueGraph<IndexedNode<Node>, Double>, RealFunction>(
             GraphUtils.mapper((Function<IndexedNode<Node>, Node>) IndexedNode::content, (Function<Collection<Double>, Double>) Misc::first)
                 .andThen(MultivariateRealFunctionGraph.builder())
                 .andThen(GraphBasedRealFunction.builder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowGraphFactory(0.5d, 0d, 1d, p.arity(), 1)
+            new ShallowGraphFactory(1d, 0d, 1d, p.arity(), 1)
+                .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
+            PartialComparator.from(Double.class).on(Individual::getFitness),
+            nPop,
+            Map.of(
+                new NodeAddition<>(
+                    FunctionNode.sequentialIndexFactory(baseFunctions)
+                        .then(IndexedNode.hashMapper(Node.class)),
+                    (w, r) -> w,
+                    (w, r) -> r.nextGaussian()
+                ), 2d,
+                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), 1d,
+                new EdgeAddition<>(Random::nextGaussian, false), 1d,
+                new EdgeRemoval<>(node -> node.content() instanceof Output), 0.1d,
+                new AlignedCrossover<>(
+                    (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
+                    node -> node.content() instanceof Output,
+                    false
+                ), 1d
+            ),
+            5,
+            (new Jaccard()).on(i -> i.getGenotype().nodes()),
+            0.25,
+            individuals -> {
+              double[] fitnesses = individuals.stream().mapToDouble(Individual::getFitness).toArray();
+              Individual<ValueGraph<IndexedNode<Node>, Double>, RealFunction, Double> r = Misc.first(individuals);
+              return new Individual<>(
+                  r.getGenotype(),
+                  r.getSolution(),
+                  Misc.median(fitnesses),
+                  r.getBirthIteration()
+              );
+            },
+            0.75
+        )),
+        Map.entry("graph-hash+-speciated", p -> new SpeciatedEvolver<>(
+            GraphUtils.mapper((Function<IndexedNode<Node>, Node>) IndexedNode::content, (Function<Collection<Double>, Double>) Misc::first)
+                .andThen(MultivariateRealFunctionGraph.builder())
+                .andThen(GraphBasedRealFunction.builder())
+                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+            new ShallowGraphFactory(1d, 0d, 1d, p.arity(), 1)
                 .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
@@ -457,16 +535,26 @@ public class SymbolicRegressionComparison extends Worker {
                     false
                 ), 1d
             ),
-            new Tournament(nTournament),
-            new Worst(),
-            nPop,
-            true
+            5,
+            (new Jaccard()).on(i -> i.getGenotype().nodes()),
+            0.25,
+            individuals -> {
+              double[] fitnesses = individuals.stream().mapToDouble(Individual::getFitness).toArray();
+              Individual<ValueGraph<IndexedNode<Node>, Double>, RealFunction, Double> r = Misc.first(individuals);
+              return new Individual<>(
+                  r.getGenotype(),
+                  r.getSolution(),
+                  Misc.median(fitnesses),
+                  r.getBirthIteration()
+              );
+            },
+            0.75
         )),
         Map.entry("graph-seq-ga-noxover", p -> new StandardEvolver<ValueGraph<Node, Double>, RealFunction, Double>(
             MultivariateRealFunctionGraph.builder()
                 .andThen(GraphBasedRealFunction.builder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowGraphFactory(0.5d, 0d, 1d, p.arity(), 1),
+            new ShallowGraphFactory(1d, 0d, 1d, p.arity(), 1),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
             Map.of(
@@ -488,7 +576,7 @@ public class SymbolicRegressionComparison extends Worker {
             MultivariateRealFunctionGraph.builder()
                 .andThen(GraphBasedRealFunction.builder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowGraphFactory(0.5d, 0d, 1d, p.arity(), 1),
+            new ShallowGraphFactory(1d, 0d, 1d, p.arity(), 1),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
             Map.of(
@@ -512,11 +600,15 @@ public class SymbolicRegressionComparison extends Worker {
             true,
             diversityMaxAttempts
         ))
-    );
+    ));
     //filter evolvers
     evolvers = evolvers.entrySet().stream()
         .filter(e -> e.getKey().matches(evolverNamePattern))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    L.info(String.format("Going to test with %d evolvers: %s%n",
+        evolvers.size(),
+        evolvers.keySet()
+    ));
     //run
     for (int seed : seeds) {
       for (SymbolicRegressionProblem problem : problems) {
@@ -559,8 +651,6 @@ public class SymbolicRegressionComparison extends Worker {
                 keys,
                 e
             ));
-            e.printStackTrace();
-            System.exit(-1);
           }
         }
       }
