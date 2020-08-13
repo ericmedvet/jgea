@@ -82,7 +82,7 @@ Typical information of interest is, at each iteration of the EA:
 - the best individual (a `S`)
 - some function of the best individual
 
-In the example below, it is shown how to use listner to print on the standard output how this kind of information changes during the evolution.
+In the example below, it is shown how to use listener to print on the standard output how this kind of information changes during the evolution.
 JGEA contains classes for printing on stdout as well as on files, with proper formats.
 
 #### Implemented EAs
