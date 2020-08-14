@@ -41,39 +41,18 @@ public class MathUtils {
           .mapToDouble(p -> symbolicRegressionFitness.getTargetFunction().apply(p))
           .toArray();
       double targetMean = StatUtils.mean(targetYs);
-      double targetVariance = StatUtils.variance(targetYs, targetMean);
       double[] ys = symbolicRegressionFitness.getPoints().stream()
           .mapToDouble(innerF::apply)
           .toArray();
       double mean = StatUtils.mean(ys);
-      double variance = StatUtils.variance(ys, mean);
-      a = (variance != 0d) ? Math.sqrt(targetVariance / variance) : 1d;
-      b = targetMean - mean * a;
-    }
-
-
-    public static void main(String[] args) {
-      SymbolicRegressionFitness srf = new SymbolicRegressionFitness(
-          x -> 3d * x[0] + 2d,
-          MathUtils.pairwise(MathUtils.equispacedValues(0, 2, 1)),
-          SymbolicRegressionFitness.Metric.MSE
-      );
-
-      System.out.println(srf.getPoints().stream().map(Arrays::toString).collect(Collectors.toList()));
-
-      RealFunction f = x -> x[0];
-      RealFunction g = x -> -x[0] - 10d;
-      RealFunction h = x -> 4d;
-      RealFunction fs = new ScaledRealFunction(f, srf);
-      RealFunction gs = new ScaledRealFunction(g, srf);
-      RealFunction hs = new ScaledRealFunction(h, srf);
-      System.out.printf("%s -> %f%n", f, srf.apply(f));
-      System.out.printf("%s -> %f%n", fs, srf.apply(fs));
-      System.out.printf("%s -> %f%n", g, srf.apply(g));
-      System.out.printf("%s -> %f%n", gs, srf.apply(gs));
-      System.out.printf("%s -> %f%n", h, srf.apply(h));
-      System.out.printf("%s -> %f%n", hs, srf.apply(hs));
-
+      double nCovariance = 0d;
+      double nVariance = 0d;
+      for (int i = 0; i < targetYs.length; i++) {
+        nCovariance = nCovariance + (targetYs[i] - targetMean) * (ys[i] - mean);
+        nVariance = nVariance + (ys[i] - mean) * (ys[i] - mean);
+      }
+      b = (nVariance != 0d) ? nCovariance / nVariance : 0d;
+      a = targetMean - mean * b;
     }
 
     public RealFunction getInnerF() {
@@ -82,12 +61,12 @@ public class MathUtils {
 
     @Override
     public double apply(double... input) {
-      return a * innerF.apply(input) + b;
+      return a + b * innerF.apply(input);
     }
 
     @Override
     public String toString() {
-      return String.format("%.3f * [%s] + %.3f", a, innerF, b);
+      return String.format("%.3f + %.3f * [%s]", a, b, innerF);
     }
 
     @Override
@@ -129,11 +108,13 @@ public class MathUtils {
   }
 
   public static double[] equispacedValues(double min, double max, double step) {
-    double[] values = new double[(int) Math.round((max - min) / step)];
-    for (int i = 0; i < values.length; i++) {
-      values[i] = min + i * step;
+    List<Double> values = new ArrayList<>();
+    double value = min;
+    while (value <= max) {
+      values.add(value);
+      value = value + step;
     }
-    return values;
+    return values.stream().mapToDouble(Double::doubleValue).toArray();
   }
 
   public static double[] uniformSample(double min, double max, int count, Random random) {
