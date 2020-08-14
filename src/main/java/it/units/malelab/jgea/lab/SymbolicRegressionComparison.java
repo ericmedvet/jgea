@@ -107,8 +107,7 @@ public class SymbolicRegressionComparison extends Worker {
         new Nguyen7(metric, 1),
         new Keijzer6(metric),
         new Polynomial4(metric),
-        new Pagie1(metric),
-        new UnivariateComposed(metric)
+        new Pagie1(metric)
     );
     MultiFileListenerFactory<Object, RealFunction, Double> listenerFactory = new MultiFileListenerFactory<>(
         a("dir", "."),

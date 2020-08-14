@@ -31,20 +31,12 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
 
   public enum Metric {
 
-    ONE_MINUS_PREC(0d, Double.POSITIVE_INFINITY),
-    ONE_MINUS_REC(0d, 1d),
-    ONE_MINUS_FM(0d, Double.POSITIVE_INFINITY),
-    CHAR_FNR(0d, 1d),
-    CHAR_FPR(0d, 1d),
-    CHAR_ERROR(0d, 1d);
-
-    private final double best;
-    private final double worst;
-
-    Metric(double best, double worst) {
-      this.best = best;
-      this.worst = worst;
-    }
+    ONE_MINUS_PREC,
+    ONE_MINUS_REC,
+    ONE_MINUS_FM,
+    CHAR_FNR,
+    CHAR_FPR,
+    CHAR_ERROR;
 
   }
 

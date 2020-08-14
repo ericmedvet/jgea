@@ -20,15 +20,13 @@ package it.units.malelab.jgea.representation.graph.finiteautomata;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.graph.ValueGraph;
-import com.google.common.graph.ValueGraphBuilder;
 import it.units.malelab.jgea.core.util.Sized;
-import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
 import it.units.malelab.jgea.problem.extraction.Extractor;
-import it.units.malelab.jgea.problem.extraction.RegexExtractionProblem;
 import it.units.malelab.jgea.representation.graph.numeric.Node;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -60,38 +58,50 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
   private final ValueGraph<State, Set<S>> graph;
   private final State startingState;
 
+  public static <K> Predicate<ValueGraph<State, Set<K>>> checker() {
+    return graph -> {
+      try {
+        check(graph);
+      } catch (IllegalArgumentException e) {
+        return false;
+      }
+      return true;
+    };
+  }
+
+  public static <K> void check(ValueGraph<State, Set<K>> graph) {
+    if (!graph.isDirected()) {
+      throw new IllegalArgumentException("Invalid graph: indirected");
+    }
+    if (graph.nodes().stream().filter(s -> s.isAccepting()).count() == 0) {
+      throw new IllegalArgumentException("Invalid graph: no accepting nodes");
+    }
+    for (State state : graph.nodes()) {
+      Set<Set<K>> outgoingEdgeValues = graph.incidentEdges(state).stream()
+          .filter(e -> e.source().equals(state))
+          .map(e -> graph.edgeValue(e).orElse(new HashSet<>()))
+          .collect(Collectors.toSet());
+      if (outgoingEdgeValues.size() > 1) {
+        Set<K> intersection = outgoingEdgeValues.stream()
+            .reduce(Sets::intersection)
+            .orElse(new HashSet<>());
+        if (!intersection.isEmpty()) {
+          throw new IllegalArgumentException(String.format(
+              "Invalid graph: state %s has one or more outgoing symbols (%s)",
+              state,
+              intersection
+          ));
+        }
+      }
+    }
+  }
+
   public static <R> Function<ValueGraph<State, Set<R>>, DeterministicFiniteAutomaton<R>> builder(State startingState) {
     return nodeSetValueGraph -> new DeterministicFiniteAutomaton<>(nodeSetValueGraph, startingState);
   }
 
   public DeterministicFiniteAutomaton(ValueGraph<State, Set<S>> graph, State startingState) {
-    //check if the graph is valid
-    //is directed
-    if (!graph.isDirected()) {
-      throw new IllegalArgumentException("Invalid graph: indirected");
-    }
-    //no same S on two edges from a node
-    for (State state : graph.nodes()) {
-      for (State successor1 : graph.successors(state)) {
-        for (State successor2 : graph.successors(state)) {
-          if (successor1.equals(successor2)) {
-            continue;
-          }
-          Set<S> intersection = Sets.intersection(
-              graph.edgeValue(state, successor1).orElse(Collections.EMPTY_SET),
-              graph.edgeValue(state, successor2).orElse(Collections.EMPTY_SET)
-          );
-          if (!intersection.isEmpty()) {
-            throw new IllegalArgumentException(String.format(
-                "Invalid graph: multiple transitions from %s to %s and %s for symbols %s",
-                state,
-                successor1, successor2,
-                intersection
-            ));
-          }
-        }
-      }
-    }
+    check(graph);
     this.graph = graph;
     this.startingState = startingState;
   }
@@ -148,33 +158,6 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
   @Override
   public String toString() {
     return graph.toString();
-  }
-
-  public static void main(String[] args) {
-    State s0 = new State(0, false);
-    State s1 = new State(1, false);
-    State s2 = new State(2, true);
-    ValueGraph<State, Set<Character>> g = ValueGraphBuilder.directed().allowsSelfLoops(true)
-        .<State, Set<Character>>immutable()
-        .addNode(s0)
-        .addNode(s1)
-        .addNode(s2)
-        .putEdgeValue(s0, s0, Set.of('a'))
-        .putEdgeValue(s0, s1, Set.of('b'))
-        .putEdgeValue(s1, s2, Set.of('c'))
-        .putEdgeValue(s2, s2, Set.of('c'))
-        .build();
-    System.out.println(g);
-    DeterministicFiniteAutomaton<Character> dfa = new DeterministicFiniteAutomaton<>(g, s0);
-    System.out.println(dfa.match("aabc".chars().mapToObj(c -> (char) c).collect(Collectors.toList())));
-    System.out.println(dfa.extract("cane".chars().mapToObj(c -> (char) c).collect(Collectors.toList())));
-    System.out.println(dfa.extract("00bc00".chars().mapToObj(c -> (char) c).collect(Collectors.toList())));
-    System.out.println(dfa.extract("00aabc00bccc00".chars().mapToObj(c -> (char) c).collect(Collectors.toList())));
-    System.out.println(dfa.extractLargest("00aabc00bccc00".chars().mapToObj(c -> (char) c).collect(Collectors.toList())));
-
-    RegexExtractionProblem p = new RegexExtractionProblem(Set.of("00+", "01(01)+"), "010101010101112010101011900010101010101010101001101", 2, 0, ExtractionFitness.Metric.values());
-    System.out.println(p.getFitnessFunction().getSequence());
-    System.out.println(p.getFitnessFunction().getDesiredExtractions());
   }
 
 }

@@ -36,7 +36,7 @@ public interface Extractor<S> {
   default Set<Range<Integer>> extractLargest(List<S> sequence) {
     Set<Range<Integer>> all = extract(sequence);
     Set<Range<Integer>> largest = new LinkedHashSet<>();
-    for (Range<Integer> range : all) {
+    /*for (Range<Integer> range : all) {
       boolean enclosed = false;
       for (Range<Integer> other : all) {
         if (range.equals(other)) {
@@ -51,6 +51,8 @@ public interface Extractor<S> {
         largest.add(range);
       }
     }
+    */
+    largest.addAll(all);
     return largest;
   }
 }

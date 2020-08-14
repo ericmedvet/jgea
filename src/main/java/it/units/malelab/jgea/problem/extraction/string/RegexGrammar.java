@@ -15,7 +15,9 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.representation.grammar;
+package it.units.malelab.jgea.problem.extraction.string;
+
+import it.units.malelab.jgea.representation.grammar.Grammar;
 
 import java.util.ArrayList;
 import java.util.Arrays;

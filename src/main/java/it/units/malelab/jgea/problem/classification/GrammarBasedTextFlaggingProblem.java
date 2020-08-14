@@ -22,7 +22,7 @@ import it.units.malelab.jgea.core.fitness.ClassificationFitness;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
-import it.units.malelab.jgea.representation.grammar.RegexGrammar;
+import it.units.malelab.jgea.problem.extraction.string.RegexGrammar;
 
 import java.util.List;
 import java.util.Set;
