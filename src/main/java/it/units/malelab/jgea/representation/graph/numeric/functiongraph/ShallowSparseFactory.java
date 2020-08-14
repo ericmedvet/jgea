@@ -15,10 +15,14 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.representation.graph.multivariatefunction;
+package it.units.malelab.jgea.representation.graph.numeric.functiongraph;
 
 import com.google.common.graph.*;
 import it.units.malelab.jgea.core.IndependentFactory;
+import it.units.malelab.jgea.representation.graph.numeric.Constant;
+import it.units.malelab.jgea.representation.graph.numeric.Input;
+import it.units.malelab.jgea.representation.graph.numeric.Node;
+import it.units.malelab.jgea.representation.graph.numeric.Output;
 
 import java.util.Random;
 
@@ -27,14 +31,14 @@ import java.util.Random;
  * @created 2020/08/04
  * @project jgea
  */
-public class ShallowGraphFactory implements IndependentFactory<ValueGraph<Node, Double>> {
+public class ShallowSparseFactory implements IndependentFactory<ValueGraph<Node, Double>> {
   private final double sparsity;
   private final double mu;
   private final double sigma;
   private final int nInputs;
   private final int nOutputs;
 
-  public ShallowGraphFactory(double sparsity, double mu, double sigma, int nInputs, int nOutputs) {
+  public ShallowSparseFactory(double sparsity, double mu, double sigma, int nInputs, int nOutputs) {
     this.sparsity = sparsity;
     this.mu = mu;
     this.sigma = sigma;

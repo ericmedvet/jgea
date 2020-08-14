@@ -27,29 +27,6 @@ import java.util.function.Function;
  */
 public class IndexedNode<C> {
 
-  public interface Indexer {
-    int generate(int predecessorIndex, int successorIndex, int nSiblings);
-  }
-
-  public static Indexer incrementerIndexer(int start) {
-    return new Indexer() {
-      private int counter = start;
-      private final Map<int[], Integer> counterMap = new HashMap<>();
-
-      @Override
-      public synchronized int generate(int predecessorIndex, int successorIndex, int nSiblings) {
-        int[] key = new int[]{predecessorIndex, successorIndex, nSiblings};
-        Integer index = counterMap.get(key);
-        if (index == null) {
-          index = counter;
-          counterMap.put(key, counter);
-          counter = counter + 1;
-        }
-        return index;
-      }
-    };
-  }
-
   public static <H, K extends H> Function<K, IndexedNode<H>> hashMapper(Class<H> c) {
     return k -> new IndexedNode<>(Objects.hash(k.getClass(), k), k);
   }

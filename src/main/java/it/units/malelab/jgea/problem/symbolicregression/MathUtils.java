@@ -21,20 +21,68 @@ import it.units.malelab.jgea.core.util.Sized;
 import org.apache.commons.math3.stat.StatUtils;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
  */
 public class MathUtils {
 
+  private static class FromMultivariateRealFunction implements RealFunction {
+    private final Function<double[], double[]> innerF;
+
+    public FromMultivariateRealFunction(Function<double[], double[]> innerF) {
+      this.innerF = innerF;
+    }
+
+    @Override
+    public double apply(double... input) {
+      return innerF.apply(input)[0];
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      FromMultivariateRealFunction that = (FromMultivariateRealFunction) o;
+      return innerF.equals(that.innerF);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(innerF);
+    }
+
+    @Override
+    public String toString() {
+      return innerF.toString();
+    }
+  }
+
+  private static class SizedFromMultivariateRealFunction extends FromMultivariateRealFunction implements Sized {
+    private final int size;
+
+    public SizedFromMultivariateRealFunction(Function<double[], double[]> innerF) {
+      super(innerF);
+      if (innerF instanceof Sized) {
+        size = ((Sized) innerF).size();
+      } else {
+        size = 0;
+      }
+    }
+
+    @Override
+    public int size() {
+      return size;
+    }
+  }
+
   private static class ScaledRealFunction implements RealFunction {
     private final RealFunction innerF;
     private final double a;
     private final double b;
 
-    // TODO this is wrong: see https://link.springer.com/content/pdf/10.1023/B:GENP.0000030195.77571.f9.pdf
     public ScaledRealFunction(RealFunction innerF, SymbolicRegressionFitness symbolicRegressionFitness) {
       this.innerF = innerF;
       double[] targetYs = symbolicRegressionFitness.getPoints().stream()
@@ -105,6 +153,10 @@ public class MathUtils {
 
   public static UnaryOperator<RealFunction> linearScaler(SymbolicRegressionFitness symbolicRegressionFitness) {
     return f -> (f instanceof Sized) ? new SizedScaledRealFunction(f, symbolicRegressionFitness) : new ScaledRealFunction(f, symbolicRegressionFitness);
+  }
+
+  public static Function<Function<double[], double[]>, RealFunction> fromMultivariateBuilder() {
+    return f -> (f instanceof Sized) ? new SizedFromMultivariateRealFunction(f) : new FromMultivariateRealFunction(f);
   }
 
   public static double[] equispacedValues(double min, double max, double step) {

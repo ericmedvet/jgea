@@ -25,6 +25,7 @@ import it.units.malelab.jgea.core.util.Sized;
 import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
 import it.units.malelab.jgea.problem.extraction.Extractor;
 import it.units.malelab.jgea.problem.extraction.RegexExtractionProblem;
+import it.units.malelab.jgea.representation.graph.numeric.Node;
 
 import java.util.*;
 import java.util.function.Function;
@@ -37,35 +38,16 @@ import java.util.stream.Collectors;
  */
 public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
 
-  public static class Node {
-    private final int index;
+  public static class State extends Node {
     private final boolean accepting;
 
-    public Node(int index, boolean accepting) {
-      this.index = index;
+    public State(int index, boolean accepting) {
+      super(index);
       this.accepting = accepting;
-    }
-
-    public int getIndex() {
-      return index;
     }
 
     public boolean isAccepting() {
       return accepting;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      Node node = (Node) o;
-      return index == node.index &&
-          accepting == node.accepting;
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(index, accepting);
     }
 
     @Override
@@ -75,34 +57,34 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
     }
   }
 
-  private final ValueGraph<Node, Set<S>> graph;
-  private final Node startingNode;
+  private final ValueGraph<State, Set<S>> graph;
+  private final State startingState;
 
-  public static <R> Function<ValueGraph<Node, Set<R>>, DeterministicFiniteAutomaton<R>> builder(Node startingNode) {
-    return nodeSetValueGraph -> new DeterministicFiniteAutomaton<>(nodeSetValueGraph, startingNode);
+  public static <R> Function<ValueGraph<State, Set<R>>, DeterministicFiniteAutomaton<R>> builder(State startingState) {
+    return nodeSetValueGraph -> new DeterministicFiniteAutomaton<>(nodeSetValueGraph, startingState);
   }
 
-  public DeterministicFiniteAutomaton(ValueGraph<Node, Set<S>> graph, Node startingNode) {
+  public DeterministicFiniteAutomaton(ValueGraph<State, Set<S>> graph, State startingState) {
     //check if the graph is valid
     //is directed
     if (!graph.isDirected()) {
       throw new IllegalArgumentException("Invalid graph: indirected");
     }
     //no same S on two edges from a node
-    for (Node node : graph.nodes()) {
-      for (Node successor1 : graph.successors(node)) {
-        for (Node successor2 : graph.successors(node)) {
+    for (State state : graph.nodes()) {
+      for (State successor1 : graph.successors(state)) {
+        for (State successor2 : graph.successors(state)) {
           if (successor1.equals(successor2)) {
             continue;
           }
           Set<S> intersection = Sets.intersection(
-              graph.edgeValue(node, successor1).orElse(Collections.EMPTY_SET),
-              graph.edgeValue(node, successor2).orElse(Collections.EMPTY_SET)
+              graph.edgeValue(state, successor1).orElse(Collections.EMPTY_SET),
+              graph.edgeValue(state, successor2).orElse(Collections.EMPTY_SET)
           );
           if (!intersection.isEmpty()) {
             throw new IllegalArgumentException(String.format(
                 "Invalid graph: multiple transitions from %s to %s and %s for symbols %s",
-                node,
+                state,
                 successor1, successor2,
                 intersection
             ));
@@ -111,18 +93,18 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
       }
     }
     this.graph = graph;
-    this.startingNode = startingNode;
+    this.startingState = startingState;
   }
 
   @Override
   public Set<Range<Integer>> extract(List<S> sequence) {
     Set<Range<Integer>> ranges = new LinkedHashSet<>();
-    Node current = startingNode;
+    State current = startingState;
     int lastStart = 0;
     for (int i = 0; i < sequence.size(); i++) {
-      Node next = next(current, sequence.get(i));
+      State next = next(current, sequence.get(i));
       if (next == null) {
-        current = startingNode;
+        current = startingState;
         lastStart = i + 1;
       } else {
         current = next;
@@ -136,9 +118,9 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
 
   @Override
   public boolean match(List<S> sequence) {
-    Node current = startingNode;
+    State current = startingState;
     for (S s : sequence) {
-      Node next = next(current, s);
+      State next = next(current, s);
       if (next == null) {
         return false;
       }
@@ -147,9 +129,9 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
     return current.isAccepting();
   }
 
-  private Node next(Node current, S s) {
-    Set<Node> successors = graph.successors(current);
-    for (Node successor : successors) {
+  private State next(State current, S s) {
+    Set<State> successors = graph.successors(current);
+    for (State successor : successors) {
       Optional<Set<S>> symbols = graph.edgeValue(current, successor);
       if (symbols.isPresent() && symbols.get().contains(s)) {
         return successor;
@@ -169,11 +151,11 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
   }
 
   public static void main(String[] args) {
-    Node s0 = new Node(0, false);
-    Node s1 = new Node(1, false);
-    Node s2 = new Node(2, true);
-    ValueGraph<Node, Set<Character>> g = ValueGraphBuilder.directed().allowsSelfLoops(true)
-        .<Node, Set<Character>>immutable()
+    State s0 = new State(0, false);
+    State s1 = new State(1, false);
+    State s2 = new State(2, true);
+    ValueGraph<State, Set<Character>> g = ValueGraphBuilder.directed().allowsSelfLoops(true)
+        .<State, Set<Character>>immutable()
         .addNode(s0)
         .addNode(s1)
         .addNode(s2)

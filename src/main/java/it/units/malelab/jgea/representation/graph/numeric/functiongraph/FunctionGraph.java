@@ -15,16 +15,21 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.representation.graph.multivariatefunction;
+package it.units.malelab.jgea.representation.graph.numeric.functiongraph;
 
 import com.google.common.graph.Graphs;
 import com.google.common.graph.ValueGraph;
 import it.units.malelab.jgea.core.util.Sized;
-import it.units.malelab.jgea.representation.graph.GraphUtils;
+import it.units.malelab.jgea.representation.graph.numeric.Constant;
+import it.units.malelab.jgea.representation.graph.numeric.Input;
+import it.units.malelab.jgea.representation.graph.numeric.Node;
+import it.units.malelab.jgea.representation.graph.numeric.Output;
+import it.units.malelab.jgea.representation.graph.numeric.operatorgraph.OperatorNode;
 
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -32,24 +37,49 @@ import java.util.stream.Collectors;
  * @created 2020/08/04
  * @project jgea
  */
-public class MultivariateRealFunctionGraph implements Function<double[], double[]>, Sized {
+public class FunctionGraph implements Function<double[], double[]>, Sized {
 
   private final ValueGraph<Node, Double> graph;
 
-  public static Function<ValueGraph<Node, Double>, MultivariateRealFunctionGraph> builder() {
-    return MultivariateRealFunctionGraph::new;
+  public static Function<ValueGraph<Node, Double>, FunctionGraph> builder() {
+    return FunctionGraph::new;
   }
 
-  public MultivariateRealFunctionGraph(ValueGraph<Node, Double> graph) {
-    //check if the graph is valid
-    //is directed
+  public static Predicate<ValueGraph<Node, Double>> checker() {
+    return graph -> {
+      try {
+        check(graph);
+      } catch (IllegalArgumentException e) {
+        return false;
+      }
+      return true;
+    };
+  }
+
+  public static void check(ValueGraph<Node, Double> graph) {
     if (!graph.isDirected()) {
       throw new IllegalArgumentException("Invalid graph: indirected");
     }
-    //is acyclic
-    if (graph.allowsSelfLoops()) {
-      throw new IllegalArgumentException("Invalid graph: it does not prevent self loops");
+    if (Graphs.hasCycle(graph.asGraph())) {
+      throw new IllegalArgumentException("Invalid graph: it has cycles");
     }
+    for (Node n : graph.nodes()) {
+      if (!((n instanceof Input)
+          || (n instanceof Output)
+          || (n instanceof FunctionNode)
+          || (n instanceof Constant)
+      )) {
+        throw new IllegalArgumentException(String.format(
+            "Invalid graph: node %s is of wrong type %s",
+            n,
+            n.getClass()
+        ));
+      }
+    }
+  }
+
+  public FunctionGraph(ValueGraph<Node, Double> graph) {
+    check(graph);
     this.graph = graph;
   }
 
@@ -107,7 +137,7 @@ public class MultivariateRealFunctionGraph implements Function<double[], double[
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    MultivariateRealFunctionGraph that = (MultivariateRealFunctionGraph) o;
+    FunctionGraph that = (FunctionGraph) o;
     return graph.equals(that.graph);
   }
 

@@ -21,6 +21,7 @@ package it.units.malelab.jgea.core.operator;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Predicate;
 
 /**
  * @author eric
@@ -42,6 +43,14 @@ public interface Crossover<G> extends GeneticOperator<G> {
 
   static <K> Crossover<K> randomCopy() {
     return (g1, g2, random) -> random.nextBoolean() ? g1 : g2;
+  }
+
+  default Crossover<G> withChecker(Predicate<G> checker) {
+    Crossover<G> thisCrossover = this;
+    return (parent1, parent2, random) -> {
+      G child = thisCrossover.recombine(parent1, parent2, random);
+      return checker.test(child) ? child : (random.nextBoolean() ? parent1 : parent2);
+    };
   }
 
 }

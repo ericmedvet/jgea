@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.representation.graph.multivariatefunction;
+package it.units.malelab.jgea.representation.graph.numeric;
 
 import java.util.Objects;
 
@@ -25,7 +25,7 @@ import java.util.Objects;
  * @project jgea
  */
 public abstract class Node {
-  private final int index;
+  protected final int index;
 
   public Node(int index) {
     this.index = index;

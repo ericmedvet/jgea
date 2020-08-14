@@ -15,9 +15,10 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.representation.graph.multivariatefunction;
+package it.units.malelab.jgea.representation.graph.numeric.functiongraph;
 
 import it.units.malelab.jgea.core.IndependentFactory;
+import it.units.malelab.jgea.representation.graph.numeric.Node;
 
 import java.util.Objects;
 import java.util.Random;
@@ -40,7 +41,7 @@ public class FunctionNode extends Node implements Function<Double, Double> {
   }
 
   public static IndependentFactory<FunctionNode> sequentialIndexFactory(BaseFunction... functions) {
-    return new IndependentFactory<FunctionNode>() {
+    return new IndependentFactory<>() {
       int index = 0;
 
       @Override
@@ -59,6 +60,10 @@ public class FunctionNode extends Node implements Function<Double, Double> {
   @Override
   public Double apply(Double x) {
     return function.apply(x);
+  }
+
+  public BaseFunction getFunction() {
+    return function;
   }
 
   @Override

@@ -35,7 +35,9 @@ import it.units.malelab.jgea.problem.image.ImageReconstruction;
 import it.units.malelab.jgea.problem.image.ImageUtils;
 import it.units.malelab.jgea.problem.symbolicregression.*;
 import it.units.malelab.jgea.representation.graph.*;
-import it.units.malelab.jgea.representation.graph.multivariatefunction.*;
+import it.units.malelab.jgea.representation.graph.numeric.functiongraph.*;
+import it.units.malelab.jgea.representation.graph.numeric.Node;
+import it.units.malelab.jgea.representation.graph.numeric.Output;
 
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -79,9 +81,9 @@ public class ImageExample extends Worker {
     );
     Map<String, Evolver<?, RealFunction, Double>> evolvers = Map.ofEntries(
         Map.entry("graph-seq-ga", new StandardEvolver<ValueGraph<Node, Double>, RealFunction, Double>(
-            MultivariateRealFunctionGraph.builder()
-                .andThen(GraphBasedRealFunction.builder()),
-            new ShallowGraphFactory(0d, 0d, 1d, 2, 1),
+            FunctionGraph.builder()
+                .andThen(MathUtils.fromMultivariateBuilder()),
+            new ShallowSparseFactory(0d, 0d, 1d, 2, 1),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
             Map.of(
