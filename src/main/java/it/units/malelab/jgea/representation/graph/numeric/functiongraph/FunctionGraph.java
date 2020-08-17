@@ -101,7 +101,9 @@ public class FunctionGraph implements Function<double[], double[]>, Sized {
 
   @Override
   public String toString() {
-    return graph.toString();
+    return graph.edges().stream()
+        .map(e -> String.format("%s-[%.3f]->%s", e.source(), graph.edgeValue(e).get(), e.target()))
+        .collect(Collectors.joining(","));
   }
 
   public int nInputs() {

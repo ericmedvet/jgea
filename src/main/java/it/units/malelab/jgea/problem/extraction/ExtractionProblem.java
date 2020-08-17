@@ -25,9 +25,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author eric
@@ -54,11 +51,11 @@ public class ExtractionProblem<S> implements ProblemWithValidation<Extractor<S>,
     final List<S> finalLearningSequence = learningSequence;
     final List<S> finalValidationSequence = validationSequence;
     Set<Range<Integer>> learningDesiredExtractions = extractors.stream()
-        .map(e -> e.extractLargest(finalLearningSequence))
+        .map(e -> e.extractNonOverlapping(finalLearningSequence))
         .reduce(Sets::union)
         .orElse((Set<Range<Integer>>) Collections.EMPTY_SET);
     Set<Range<Integer>> validationDesiredExtractions = extractors.stream()
-        .map(e -> e.extractLargest(finalValidationSequence))
+        .map(e -> e.extractNonOverlapping(finalValidationSequence))
         .reduce(Sets::union)
         .orElse((Set<Range<Integer>>) Collections.EMPTY_SET);
     fitnessFunction = new ExtractionFitness<>(finalLearningSequence, learningDesiredExtractions, metrics);

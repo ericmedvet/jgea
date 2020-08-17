@@ -350,7 +350,7 @@ public class SymbolicRegressionComparison extends Worker {
             true,
             diversityMaxAttempts
         )),
-        Map.entry("fgraph-lim-speciated", p -> new SpeciatedEvolver<ValueGraph<Node, Double>, RealFunction>(
+        Map.entry("fgraph-lim-speciated", p -> new SpeciatedEvolver<ValueGraph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
@@ -387,7 +387,7 @@ public class SymbolicRegressionComparison extends Worker {
             },
             0.75
         )),
-        Map.entry("fgraph-seq-speciated", p -> new SpeciatedEvolver<ValueGraph<Node, Double>, RealFunction>(
+        Map.entry("fgraph-seq-speciated", p -> new SpeciatedEvolver<ValueGraph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
@@ -507,7 +507,7 @@ public class SymbolicRegressionComparison extends Worker {
             nPop,
             true
         )),
-        Map.entry("fgraph-hash-speciated", p -> new SpeciatedEvolver<ValueGraph<IndexedNode<Node>, Double>, RealFunction>(
+        Map.entry("fgraph-hash-speciated", p -> new SpeciatedEvolver<ValueGraph<IndexedNode<Node>, Double>, RealFunction, Double>(
             GraphUtils.mapper((Function<IndexedNode<Node>, Node>) IndexedNode::content, (Function<Collection<Double>, Double>) Misc::first)
                 .andThen(FunctionGraph.builder())
                 .andThen(MathUtils.fromMultivariateBuilder())

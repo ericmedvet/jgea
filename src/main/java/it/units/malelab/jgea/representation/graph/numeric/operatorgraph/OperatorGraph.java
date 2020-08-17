@@ -184,7 +184,7 @@ public class OperatorGraph implements Function<double[], double[]>, Sized {
     if (node instanceof Constant) {
       return ((Constant) node).getValue();
     }
-    double[] inValues = graph.predecessors(node).stream()
+    double[] inValues = graph.predecessors(node).stream() // TODO sort predecessors according to some criterion
         .mapToDouble(n -> outValue(n, input))
         .toArray();
     if (node instanceof Output) {

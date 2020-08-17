@@ -148,4 +148,10 @@ public class Misc {
     return vs[values.length / 2];
   }
 
+  public static <K> K median(Collection<K> ks, Comparator<? super K> comparator) {
+    List<K> all = new ArrayList<>(ks);
+    all.sort(comparator);
+    return all.get(all.size() / 2);
+  }
+
 }

@@ -19,7 +19,10 @@ package it.units.malelab.jgea.representation.graph.finiteautomata;
 
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
+import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraph;
+import com.google.common.graph.ValueGraphBuilder;
+import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.util.Sized;
 import it.units.malelab.jgea.problem.extraction.Extractor;
 import it.units.malelab.jgea.representation.graph.numeric.Node;
@@ -55,6 +58,18 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
     }
   }
 
+  public static IndependentFactory<State> sequentialStateFactory(final int startingIndex, double acceptanceRate) {
+    return new IndependentFactory<>() {
+      private int localStartingIndex = startingIndex;
+
+      @Override
+      public State build(Random random) {
+        localStartingIndex = localStartingIndex + 1;
+        return new State(localStartingIndex - 1, random.nextDouble() < acceptanceRate);
+      }
+    };
+  }
+
   private final ValueGraph<State, Set<S>> graph;
   private final State startingState;
 
@@ -73,8 +88,11 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
     if (!graph.isDirected()) {
       throw new IllegalArgumentException("Invalid graph: indirected");
     }
-    if (graph.nodes().stream().filter(s -> s.isAccepting()).count() == 0) {
-      throw new IllegalArgumentException("Invalid graph: no accepting nodes");
+    if (graph.nodes().stream().filter(s -> s.getIndex() == 0).count() != 1) {
+      throw new IllegalArgumentException(String.format(
+          "Invalid graph: wrong number of starting nodes: %d instead of 1",
+          graph.nodes().stream().filter(s -> s.getIndex() == 0).count()
+      ));
     }
     for (State state : graph.nodes()) {
       Set<Set<K>> outgoingEdgeValues = graph.incidentEdges(state).stream()
@@ -97,13 +115,13 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
   }
 
   public static <R> Function<ValueGraph<State, Set<R>>, DeterministicFiniteAutomaton<R>> builder(State startingState) {
-    return nodeSetValueGraph -> new DeterministicFiniteAutomaton<>(nodeSetValueGraph, startingState);
+    return nodeSetValueGraph -> new DeterministicFiniteAutomaton<>(nodeSetValueGraph);
   }
 
-  public DeterministicFiniteAutomaton(ValueGraph<State, Set<S>> graph, State startingState) {
+  public DeterministicFiniteAutomaton(ValueGraph<State, Set<S>> graph) {
     check(graph);
     this.graph = graph;
-    this.startingState = startingState;
+    this.startingState = graph.nodes().stream().filter(s -> s.getIndex() == 0).findFirst().get();
   }
 
   @Override
@@ -112,15 +130,14 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
     State current = startingState;
     int lastStart = 0;
     for (int i = 0; i < sequence.size(); i++) {
-      State next = next(current, sequence.get(i));
-      if (next == null) {
+      if (current.isAccepting()) {
+        ranges.add(Range.closedOpen(lastStart, i));
+      }
+      current = next(current, sequence.get(i));
+      if (current == null) {
         current = startingState;
+        i = lastStart;
         lastStart = i + 1;
-      } else {
-        current = next;
-        if (current.isAccepting()) {
-          ranges.add(Range.closedOpen(lastStart, i));
-        }
       }
     }
     return ranges;
@@ -157,7 +174,15 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
 
   @Override
   public String toString() {
-    return graph.toString();
+    return graph.edges().stream()
+        .map(e -> String.format("%s-[%s]->%s",
+            e.source(),
+            graph.edgeValue(e).get().stream()
+                .sorted()
+                .map(Objects::toString)
+                .collect(Collectors.joining()),
+            e.target()))
+        .collect(Collectors.joining(","));
   }
 
 }

@@ -38,11 +38,11 @@ import java.util.stream.Collectors;
  * @created 2020/08/12
  * @project jgea
  */
-public class SpeciatedEvolver<G, S> extends StandardEvolver<G, S, Double> {
+public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
   private final int minSpeciesSizeForElitism;
-  private final Distance<Individual<G, S, Double>> distance;
+  private final Distance<Individual<G, S, F>> distance;
   private final double distanceThreshold;
-  private final Function<Collection<Individual<G, S, Double>>, Individual<G, S, Double>> representerSelector;
+  private final Function<Collection<Individual<G, S, F>>, Individual<G, S, F>> representerSelector;
   private final double rankBase;
 
   private static final Logger L = Logger.getLogger(SpeciatedEvolver.class.getName());
@@ -50,13 +50,13 @@ public class SpeciatedEvolver<G, S> extends StandardEvolver<G, S, Double> {
   public SpeciatedEvolver(
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
-      PartialComparator<? super Individual<G, S, Double>> individualComparator,
+      PartialComparator<? super Individual<G, S, F>> individualComparator,
       int populationSize,
       Map<GeneticOperator<G>, Double> operators,
       int minSpeciesSizeForElitism,
-      Distance<Individual<G, S, Double>> distance,
+      Distance<Individual<G, S, F>> distance,
       double distanceThreshold,
-      Function<Collection<Individual<G, S, Double>>, Individual<G, S, Double>> representerSelector,
+      Function<Collection<Individual<G, S, F>>, Individual<G, S, F>> representerSelector,
       double rankBase) {
     super(solutionMapper, genotypeFactory, individualComparator, populationSize, operators, null, new Worst(), populationSize, false);
     this.minSpeciesSizeForElitism = minSpeciesSizeForElitism;
@@ -67,22 +67,22 @@ public class SpeciatedEvolver<G, S> extends StandardEvolver<G, S, Double> {
   }
 
   @Override
-  protected Collection<Individual<G, S, Double>> buildOffspring(
-      PartiallyOrderedCollection<Individual<G, S, Double>> orderedPopulation,
-      Function<S, Double> fitnessFunction,
+  protected Collection<Individual<G, S, F>> buildOffspring(
+      PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation,
+      Function<S, F> fitnessFunction,
       Random random,
       ExecutorService executor,
       State state) throws ExecutionException, InterruptedException {
-    Collection<Individual<G, S, Double>> parents = orderedPopulation.all();
-    Collection<Individual<G, S, Double>> offspring = new ArrayList<>();
+    Collection<Individual<G, S, F>> parents = orderedPopulation.all();
+    Collection<Individual<G, S, F>> offspring = new ArrayList<>();
     //partition in species
-    List<List<Individual<G, S, Double>>> allSpecies = new ArrayList<>();
-    for (Individual<G, S, Double> individual : orderedPopulation.all()) {
+    List<List<Individual<G, S, F>>> allSpecies = new ArrayList<>();
+    for (Individual<G, S, F> individual : orderedPopulation.all()) {
       List<Double> distances = allSpecies.stream()
           .map(s -> distance.apply(individual, s.get(0)))
           .collect(Collectors.toList());
       if (distances.isEmpty()) {
-        List<Individual<G, S, Double>> newSpecies = new ArrayList<>();
+        List<Individual<G, S, F>> newSpecies = new ArrayList<>();
         newSpecies.add(individual);
         allSpecies.add(newSpecies);
       } else {
@@ -95,7 +95,7 @@ public class SpeciatedEvolver<G, S> extends StandardEvolver<G, S, Double> {
         if (distances.get(closestIndex) < distanceThreshold) {
           allSpecies.get(closestIndex).add(individual);
         } else {
-          List<Individual<G, S, Double>> newSpecies = new ArrayList<>();
+          List<Individual<G, S, F>> newSpecies = new ArrayList<>();
           newSpecies.add(individual);
           allSpecies.add(newSpecies);
         }
@@ -106,13 +106,13 @@ public class SpeciatedEvolver<G, S> extends StandardEvolver<G, S, Double> {
         allSpecies.stream().map(List::size).collect(Collectors.toList())
     ));
     //put elites
-    Individual<G, S, Double> best = parents.stream()
+    Individual<G, S, F> best = parents.stream()
         .reduce((i1, i2) -> individualComparator.compare(i1, i2).equals(PartialComparator.PartialComparatorOutcome.BEFORE) ? i1 : i2)
         .get();
     offspring.add(best);
-    for (List<Individual<G, S, Double>> species : allSpecies) {
+    for (List<Individual<G, S, F>> species : allSpecies) {
       if (species.size() >= minSpeciesSizeForElitism) {
-        Individual<G, S, Double> speciesBest = species.stream()
+        Individual<G, S, F> speciesBest = species.stream()
             .reduce((i1, i2) -> individualComparator.compare(i1, i2).equals(PartialComparator.PartialComparatorOutcome.BEFORE) ? i1 : i2)
             .get();
         offspring.add(speciesBest);
@@ -120,16 +120,16 @@ public class SpeciatedEvolver<G, S> extends StandardEvolver<G, S, Double> {
     }
     //assign remaining offspring size
     int remaining = populationSize - offspring.size();
-    List<Individual<G, S, Double>> representers = allSpecies.stream()
+    List<Individual<G, S, F>> representers = allSpecies.stream()
         .map(s -> representerSelector.apply(s))
         .collect(Collectors.toList());
     L.fine(String.format("Representers determined for %d species: fitnesses are %s",
         allSpecies.size(),
         representers.stream()
-            .map(i -> String.format("%.3f", i.getFitness()))
+            .map(i -> String.format("%s", i.getFitness()))
             .collect(Collectors.toList())
     ));
-    List<Individual<G, S, Double>> sortedRepresenters = new ArrayList<>(representers);
+    List<Individual<G, S, F>> sortedRepresenters = new ArrayList<>(representers);
     Collections.sort(sortedRepresenters, individualComparator.comparator());
     List<Double> weights = representers.stream()
         .map(r -> Math.pow(rankBase, sortedRepresenters.indexOf(r)))
@@ -152,7 +152,7 @@ public class SpeciatedEvolver<G, S> extends StandardEvolver<G, S, Double> {
     List<G> offspringGenotypes = new ArrayList<>(remaining);
     for (int i = 0; i < allSpecies.size(); i++) {
       int size = sizes.get(i);
-      List<Individual<G, S, Double>> species = allSpecies.get(i);
+      List<Individual<G, S, F>> species = allSpecies.get(i);
       Collections.sort(species, individualComparator.comparator());
       List<G> speciesOffspringGenotypes = new ArrayList<>();
       int counter = 0;

@@ -21,6 +21,7 @@ import com.google.common.collect.Range;
 import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
 import it.units.malelab.jgea.problem.extraction.ExtractionProblem;
 import it.units.malelab.jgea.problem.extraction.Extractor;
+import it.units.malelab.jgea.problem.extraction.RegexBasedExtractor;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 
 import java.util.*;
@@ -33,9 +34,9 @@ import java.util.stream.Collectors;
  */
 public class RegexExtractionProblem extends ExtractionProblem<Character> {
 
-  public static RegexExtractionProblem ternary(int size, long seed, ExtractionFitness.Metric... metrics) {
+  public static RegexExtractionProblem varAlphabet(int symbols, int size, long seed, ExtractionFitness.Metric... metrics) {
     List<String> regexes = List.of("000000", "111(00)?+(11)++", "(110110)++");
-    String text = buildText(size, regexes, "012", 100, new Random(seed));
+    String text = buildText(size, regexes, "0123456789".substring(0, Math.min(symbols, 10)), 100, new Random(seed));
     return new RegexExtractionProblem(new LinkedHashSet<>(regexes), text, 5, (int) seed % (size / 3), metrics);
   }
 
@@ -70,59 +71,12 @@ public class RegexExtractionProblem extends ExtractionProblem<Character> {
 
   public RegexExtractionProblem(Set<String> regexes, String text, int folds, int i, ExtractionFitness.Metric... metrics) {
     super(
-        regexes.stream().map(RegexExtractionProblem::fromRegex).collect(Collectors.toSet()),
+        regexes.stream().map(RegexBasedExtractor::new).collect(Collectors.toSet()),
         text.chars().mapToObj(c -> (char) c).collect(Collectors.toList()),
         folds, i, metrics
     );
     this.regexes = regexes;
     this.text = text;
-  }
-
-  public static Extractor<Character> fromRegex(String pattern) {
-    return new Extractor<>() {
-      @Override
-      public Set<Range<Integer>> extract(List<Character> sequence) {
-        String string = sequence.stream()
-            .map(String::valueOf)
-            .collect(Collectors.joining());
-        if (Pattern.compile(pattern).matcher("").matches()) {
-          return (Set<Range<Integer>>)Collections.EMPTY_SET; // TODO think if ok
-        }
-        Matcher matcher = Pattern.compile(pattern).matcher(string);
-        Set<Range<Integer>> extractions = new LinkedHashSet<>();
-        int s = 0;
-        while (matcher.find(s)) {
-          Range<Integer> extraction = Range.openClosed(matcher.start(), matcher.end());
-          s = extraction.upperEndpoint();
-          extractions.add(extraction);
-        }
-        return extractions;
-      }
-
-      @Override
-      public boolean match(List<Character> sequence) {
-        String string = sequence.stream()
-            .map(String::valueOf)
-            .collect(Collectors.joining());
-        Matcher matcher = Pattern.compile(pattern).matcher(string);
-        return matcher.matches();
-      }
-
-      @Override
-      public int hashCode() {
-        return pattern.hashCode();
-      }
-
-      @Override
-      public boolean equals(Object obj) {
-        return toString().equals(obj.toString()); // TODO make a separate private class and implement this properly
-      }
-
-      @Override
-      public String toString() {
-        return pattern;
-      }
-    };
   }
 
   public Set<String> getRegexes() {

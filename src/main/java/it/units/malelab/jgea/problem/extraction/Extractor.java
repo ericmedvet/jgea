@@ -19,9 +19,7 @@ package it.units.malelab.jgea.problem.extraction;
 
 import com.google.common.collect.Range;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author eric
@@ -33,25 +31,35 @@ public interface Extractor<S> {
 
   boolean match(List<S> sequence);
 
-  default Set<Range<Integer>> extractLargest(List<S> sequence) {
-    // TODO make more efficient by sorting and exluding
-    Set<Range<Integer>> all = extract(sequence);
-    Set<Range<Integer>> largest = new LinkedHashSet<>();
-    for (Range<Integer> range : all) {
-      boolean enclosed = false;
-      for (Range<Integer> other : all) {
-        if (range.equals(other)) {
-          continue;
-        }
-        if (other.encloses(range)) {
-          enclosed = true;
+  default Set<Range<Integer>> extractNonOverlapping(List<S> sequence) {
+    List<Range<Integer>> all = new ArrayList<>(extract(sequence));
+    all.sort(Comparator.comparing(Range::lowerEndpoint));
+    boolean[] discarded = new boolean[all.size()];
+    for (int i = 0; i < all.size(); i++) {
+      if (discarded[i]) {
+        continue;
+      }
+      for (int j = i + 1; j < all.size(); j++) {
+        if (all.get(j).lowerEndpoint() >= all.get(i).upperEndpoint()) {
           break;
         }
-      }
-      if (!enclosed) {
-        largest.add(range);
+        if (discarded[j]) {
+          continue;
+        }
+        if (all.get(j).encloses(all.get(i))) {
+          discarded[i] = true;
+          break;
+        } else {
+          discarded[j] = true;
+        }
       }
     }
-    return largest;
+    Set<Range<Integer>> kept = new LinkedHashSet<>();
+    for (int i = 0; i < all.size(); i++) {
+      if (!discarded[i]) {
+        kept.add(all.get(i));
+      }
+    }
+    return kept;
   }
 }

@@ -18,11 +18,13 @@
 package it.units.malelab.jgea.problem.extraction;
 
 import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
 import it.units.malelab.jgea.core.util.WithNames;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author eric
@@ -34,9 +36,9 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
     ONE_MINUS_PREC,
     ONE_MINUS_REC,
     ONE_MINUS_FM,
-    CHAR_FNR,
-    CHAR_FPR,
-    CHAR_ERROR;
+    SYMBOL_FNR,
+    SYMBOL_FPR,
+    SYMBOL_ERROR;
 
   }
 
@@ -45,15 +47,18 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
     private final List<S> sequence;
     private final Set<Range<Integer>> desiredExtractions;
     private final List<Metric> metrics;
-    private final double posChars;
+    private final Set<Integer> desiredExtractedSymbolIndexes;
 
     public Aggregator(List<S> sequence, Set<Range<Integer>> desiredExtractions, Metric... metrics) {
       this.sequence = sequence;
       this.desiredExtractions = desiredExtractions;
       this.metrics = Arrays.asList(metrics);
-      posChars = desiredExtractions.stream()
-          .mapToInt(range -> (range.upperEndpoint() - range.lowerEndpoint()))
-          .sum();
+      desiredExtractedSymbolIndexes = desiredExtractions.stream()
+          .map(r -> IntStream.range(r.lowerEndpoint(), r.upperEndpoint())
+              .mapToObj(i -> i)
+              .collect(Collectors.toSet()))
+          .reduce(Sets::union)
+          .orElse(Set.of());
     }
 
     @Override
@@ -70,18 +75,21 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
         values.put(Metric.ONE_MINUS_REC, 1 - recall);
         values.put(Metric.ONE_MINUS_FM, 1 - fMeasure);
       }
-      if (metrics.contains(Metric.CHAR_ERROR) || metrics.contains(Metric.CHAR_FNR) || metrics.contains(Metric.CHAR_FPR)) {
-        double asPosChars = extractions.stream()
-            .mapToInt(range -> (range.upperEndpoint() - range.lowerEndpoint()))
-            .sum();
-        double truePosChars = extractions.stream()
-            .mapToInt(e -> intersections(e, desiredExtractions).stream().mapToInt(range -> (range.upperEndpoint() - range.lowerEndpoint())).sum())
-            .sum();
-        double falseNegChars = posChars - truePosChars;
-        double falsePosChars = asPosChars - truePosChars;
-        values.put(Metric.CHAR_FPR, falsePosChars / ((double) sequence.size() - posChars));
-        values.put(Metric.CHAR_FNR, falseNegChars / posChars);
-        values.put(Metric.CHAR_ERROR, (falseNegChars + falsePosChars) / (double) sequence.size());
+      if (metrics.contains(Metric.SYMBOL_ERROR) || metrics.contains(Metric.SYMBOL_FNR) || metrics.contains(Metric.SYMBOL_FPR)) {
+        //TODO might be maybe faster with bit algebra
+        Set<Integer> extractedSymbolIndexes = extractions.stream()
+            .map(r -> IntStream.range(r.lowerEndpoint(), r.upperEndpoint())
+                .mapToObj(i -> i)
+                .collect(Collectors.toSet()))
+            .reduce(Sets::union)
+            .orElse(Set.of());
+        double truePositiveChars = Sets.intersection(desiredExtractedSymbolIndexes, extractedSymbolIndexes).size();
+        double falseNegativeChars = desiredExtractedSymbolIndexes.size() - truePositiveChars;
+        double falsePositiveChars = extractedSymbolIndexes.size() - truePositiveChars;
+        double trueNegativeChars = sequence.size() - falsePositiveChars - truePositiveChars - falseNegativeChars;
+        values.put(Metric.SYMBOL_FPR, falsePositiveChars / (trueNegativeChars + falsePositiveChars));
+        values.put(Metric.SYMBOL_FNR, falseNegativeChars / (truePositiveChars + falseNegativeChars));
+        values.put(Metric.SYMBOL_ERROR, (falsePositiveChars + falseNegativeChars) / (double) sequence.size());
       }
       List<Double> results = new ArrayList<>(metrics.size());
       for (Metric metric : metrics) {
@@ -138,7 +146,7 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
 
   @Override
   public List<Double> apply(Extractor<S> e) {
-    return aggregator.apply(e.extractLargest(aggregator.sequence));
+    return aggregator.apply(e.extractNonOverlapping(aggregator.sequence));
   }
 
   @Override

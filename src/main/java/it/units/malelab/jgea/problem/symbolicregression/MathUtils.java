@@ -29,10 +29,10 @@ import java.util.function.UnaryOperator;
  */
 public class MathUtils {
 
-  private static class FromMultivariateRealFunction implements RealFunction {
+  private static class MultivariateBasedRealFunction implements RealFunction {
     private final Function<double[], double[]> innerF;
 
-    public FromMultivariateRealFunction(Function<double[], double[]> innerF) {
+    public MultivariateBasedRealFunction(Function<double[], double[]> innerF) {
       this.innerF = innerF;
     }
 
@@ -45,7 +45,7 @@ public class MathUtils {
     public boolean equals(Object o) {
       if (this == o) return true;
       if (o == null || getClass() != o.getClass()) return false;
-      FromMultivariateRealFunction that = (FromMultivariateRealFunction) o;
+      MultivariateBasedRealFunction that = (MultivariateBasedRealFunction) o;
       return innerF.equals(that.innerF);
     }
 
@@ -60,10 +60,10 @@ public class MathUtils {
     }
   }
 
-  private static class SizedFromMultivariateRealFunction extends FromMultivariateRealFunction implements Sized {
+  private static class SizedMultivariateBasedRealFunction extends MultivariateBasedRealFunction implements Sized {
     private final int size;
 
-    public SizedFromMultivariateRealFunction(Function<double[], double[]> innerF) {
+    public SizedMultivariateBasedRealFunction(Function<double[], double[]> innerF) {
       super(innerF);
       if (innerF instanceof Sized) {
         size = ((Sized) innerF).size();
@@ -156,7 +156,7 @@ public class MathUtils {
   }
 
   public static Function<Function<double[], double[]>, RealFunction> fromMultivariateBuilder() {
-    return f -> (f instanceof Sized) ? new SizedFromMultivariateRealFunction(f) : new FromMultivariateRealFunction(f);
+    return f -> (f instanceof Sized) ? new SizedMultivariateBasedRealFunction(f) : new MultivariateBasedRealFunction(f);
   }
 
   public static double[] equispacedValues(double min, double max, double step) {
