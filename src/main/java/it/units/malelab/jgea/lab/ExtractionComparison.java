@@ -32,7 +32,6 @@ import it.units.malelab.jgea.core.listener.collector.*;
 import it.units.malelab.jgea.core.operator.Crossover;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.order.LexicoGraphical;
-import it.units.malelab.jgea.core.order.ParetoDominance;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
@@ -425,7 +424,9 @@ public class ExtractionComparison extends Worker {
                 Listener.onExecutor((listenerFactory.getBaseFileName() == null) ?
                         listener(collectors.toArray(DataCollector[]::new)) :
                         listenerFactory.build(collectors.toArray(DataCollector[]::new))
-                    , executorService));
+                    , executorService
+                )
+            );
             L.info(String.format("Done %s: %d solutions in %4.1fs",
                 keys,
                 solutions.size(),
