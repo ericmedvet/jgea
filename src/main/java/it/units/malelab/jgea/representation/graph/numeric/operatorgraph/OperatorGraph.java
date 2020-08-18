@@ -26,6 +26,7 @@ import it.units.malelab.jgea.representation.graph.numeric.Input;
 import it.units.malelab.jgea.representation.graph.numeric.Node;
 import it.units.malelab.jgea.representation.graph.numeric.Output;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -184,7 +185,10 @@ public class OperatorGraph implements Function<double[], double[]>, Sized {
     if (node instanceof Constant) {
       return ((Constant) node).getValue();
     }
-    double[] inValues = graph.predecessors(node).stream() // TODO sort predecessors according to some criterion
+    double[] inValues = graph.predecessors(node).stream()
+        .sorted(Comparator
+            .comparing((Node n) -> n.getClass().getName())
+            .thenComparingInt(Node::getIndex))
         .mapToDouble(n -> outValue(n, input))
         .toArray();
     if (node instanceof Output) {
