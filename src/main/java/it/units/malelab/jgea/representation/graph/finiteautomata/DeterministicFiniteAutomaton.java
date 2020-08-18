@@ -114,7 +114,7 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
     }
   }
 
-  public static <R> Function<ValueGraph<State, Set<R>>, DeterministicFiniteAutomaton<R>> builder(State startingState) {
+  public static <R> Function<ValueGraph<State, Set<R>>, DeterministicFiniteAutomaton<R>> builder() {
     return nodeSetValueGraph -> new DeterministicFiniteAutomaton<>(nodeSetValueGraph);
   }
 

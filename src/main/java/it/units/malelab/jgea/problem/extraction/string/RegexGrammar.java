@@ -17,6 +17,8 @@
 
 package it.units.malelab.jgea.problem.extraction.string;
 
+import com.google.common.collect.Sets;
+import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 
 import java.util.ArrayList;
@@ -33,19 +35,32 @@ import java.util.stream.Collectors;
 public class RegexGrammar extends Grammar<String> {
 
   public enum Option {
-    OR, QUANTIFIERS, BOUNDED_QUANTIFIERS, CHAR_CLASS, NEGATED_CHAR_CLASS, NON_CAPTURING_GROUP, ANY, ENHANCED_CONCATENATION
+    OR, QUANTIFIERS, NON_EMPTY_QUANTIFIER, BOUNDED_QUANTIFIERS, CHAR_CLASS, NEGATED_CHAR_CLASS, NON_CAPTURING_GROUP, ANY, ENHANCED_CONCATENATION
   }
 
   public static final String TO_BE_ESCAPED = "{}[]()?+*.\\^";
 
   public RegexGrammar(Collection<String> texts, Set<Option> options) {
-    this(texts.stream()
-        .reduce((s1, s2) -> s1 + s2)
-        .get()
-        .chars()
-        .mapToObj(c -> (char) c)
-        .filter(c -> (c.toString().matches("[\\Wa-zA-Z0-9]")))
-        .collect(Collectors.toCollection(TreeSet::new)), options);
+    this(
+        texts.stream()
+            .map(s -> s.chars()
+                .mapToObj(c -> (char) c)
+                .collect(Collectors.toSet()))
+            .reduce(Sets::union)
+            .orElse(Set.of()),
+        options
+    );
+  }
+
+  public RegexGrammar(ExtractionFitness<Character> fitness, Set<Option> options) {
+    this(
+        fitness.getDesiredExtractions().stream()
+            .map(r -> fitness.getSequence().subList(r.lowerEndpoint(), r.upperEndpoint()).stream()
+                .collect(Collectors.toSet()))
+            .reduce(Sets::union)
+            .orElse(Set.of()),
+        options
+    );
   }
 
   public RegexGrammar(Set<Character> alphabet, Set<Option> options) {
@@ -63,6 +78,11 @@ public class RegexGrammar extends Grammar<String> {
     if (options.contains(Option.QUANTIFIERS)) {
       getRules().get("<term>").add(l("<element>", "<quantifier>"));
       getRules().put("<quantifier>", l(l("?+"), l("++"), l("*+")));
+    }
+    getRules().put("<term>", l(l("<element>")));
+    if (options.contains(Option.NON_EMPTY_QUANTIFIER)) {
+      getRules().get("<term>").add(l("<element>", "<quantifier>"));
+      getRules().put("<quantifier>", l(l("++")));
     }
     if (options.contains(Option.BOUNDED_QUANTIFIERS)) {
       getRules().get("<term>").add(l("<element>", "{", "<digit>", ",", "<digit>", "}"));

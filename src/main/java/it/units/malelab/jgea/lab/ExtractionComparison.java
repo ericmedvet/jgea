@@ -32,6 +32,7 @@ import it.units.malelab.jgea.core.listener.collector.*;
 import it.units.malelab.jgea.core.operator.Crossover;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.order.LexicoGraphical;
+import it.units.malelab.jgea.core.order.ParetoDominance;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
@@ -84,19 +85,19 @@ public class ExtractionComparison extends Worker {
     int nTournament = 5;
     int diversityMaxAttempts = 100;
     int nIterations = i(a("nIterations", "50"));
-    String evolverNamePattern = a("evolver", ".*");
+    String evolverNamePattern = a("evolver", "dfa.*");
     int[] seeds = ri(a("seed", "0:1"));
     double graphEdgeAdditionRate = 3d;
     double graphEdgeMutationRate = 1d;
     double graphEdgeRemovalRate = 0d;
     double graphNodeAdditionRate = 1d;
     double graphCrossoverRate = 1d;
-    Set<RegexGrammar.Option> options = Set.of(RegexGrammar.Option.NON_CAPTURING_GROUP, RegexGrammar.Option.ANY, RegexGrammar.Option.OR);
-    ExtractionFitness.Metric[] metrics = new ExtractionFitness.Metric[]{ExtractionFitness.Metric.SYMBOL_ERROR, ExtractionFitness.Metric.ONE_MINUS_FM};
+    Set<RegexGrammar.Option> options = Set.of(RegexGrammar.Option.NON_CAPTURING_GROUP, RegexGrammar.Option.ANY, RegexGrammar.Option.OR, RegexGrammar.Option.ENHANCED_CONCATENATION);
+    ExtractionFitness.Metric[] metrics = new ExtractionFitness.Metric[]{ExtractionFitness.Metric.SYMBOL_WEIGHTED_ERROR};
     Map<String, RegexExtractionProblem> problems = Map.of(
         "synthetic-2-5", RegexExtractionProblem.varAlphabet(2, 5, 1, metrics),
         "synthetic-3-5", RegexExtractionProblem.varAlphabet(3, 5, 1, metrics),
-        "synthetic-3-20", RegexExtractionProblem.varAlphabet(3, 20, 1, metrics)
+        "synthetic-4-10", RegexExtractionProblem.varAlphabet(4, 10, 1, metrics)
     );
     MultiFileListenerFactory<Object, RealFunction, List<Double>> listenerFactory = new MultiFileListenerFactory<>(
         a("dir", "."),
@@ -104,13 +105,13 @@ public class ExtractionComparison extends Worker {
     );
     Map<String, Function<RegexExtractionProblem, Evolver<?, Extractor<Character>, List<Double>>>> evolvers = new TreeMap<>(Map.ofEntries(
         Map.entry("cfgtree-ga", p -> {
-          RegexGrammar g = new RegexGrammar(List.of(p.getText()), options);
+          RegexGrammar g = new RegexGrammar(p.getFitnessFunction(), options);
           return new StandardEvolver<Tree<String>, Extractor<Character>, List<Double>>(
               (Tree<String> tree) -> new RegexBasedExtractor(tree.leaves().stream()
                   .map(Tree::content)
                   .collect(Collectors.joining())),
               new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
-              new LexicoGraphical(0, 1).on(Individual::getFitness),
+              new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).on(Individual::getFitness),
               nPop,
               Map.of(
                   new SameRootSubtreeCrossover<>(maxHeight + 4), 0.8d,
@@ -128,18 +129,16 @@ public class ExtractionComparison extends Worker {
               sets -> sets.stream().reduce(Sets::union).orElse(Set.of())
           );
           Set<Character> positiveChars = p.getFitnessFunction().getDesiredExtractions().stream()
-              .map(r -> p.getText().substring(r.lowerEndpoint(), r.upperEndpoint()).chars()
-                  .mapToObj(c -> (char) c)
-                  .collect(Collectors.toSet()))
+              .map(r -> p.getFitnessFunction().getSequence().subList(r.lowerEndpoint(), r.upperEndpoint()).stream().collect(Collectors.toSet()))
               .reduce(Sets::union)
               .orElse(Set.of());
           Predicate<ValueGraph<DeterministicFiniteAutomaton.State, Set<Character>>> checker = DeterministicFiniteAutomaton.checker();
           return new SpeciatedEvolver<ValueGraph<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>, Extractor<Character>, List<Double>>(
               graphMapper
-                  .andThen(DeterministicFiniteAutomaton.builder(new DeterministicFiniteAutomaton.State(0, false))),
+                  .andThen(DeterministicFiniteAutomaton.builder()),
               new ShallowDFAFactory<Character>(2, positiveChars)
                   .then(GraphUtils.mapper(IndexedNode.incrementerMapper(DeterministicFiniteAutomaton.State.class), Misc::first)),
-              new LexicoGraphical(0, 1).on(Individual::getFitness),
+              new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).on(Individual::getFitness),
               nPop,
               Map.of(
                   new IndexedNodeAddition<DeterministicFiniteAutomaton.State, DeterministicFiniteAutomaton.State, Set<Character>>(
@@ -179,12 +178,191 @@ public class ExtractionComparison extends Worker {
               0.25,
               individuals -> {
                 Individual<ValueGraph<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>, Extractor<Character>, List<Double>> r = Misc.first(individuals);
-                return new Individual<ValueGraph<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>, Extractor<Character>, List<Double>>(
+                return new Individual<>(
                     r.getGenotype(),
                     r.getSolution(),
                     Misc.median(
                         individuals.stream().map(Individual::getFitness).collect(Collectors.toList()),
-                        new LexicoGraphical(0, 1).comparator()
+                        new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparator()
+                    ),
+                    r.getBirthIteration()
+                );
+              },
+              0.75
+          );
+        }),
+        Map.entry("dfa-seq-speciated", p -> {
+          Set<Character> positiveChars = p.getFitnessFunction().getDesiredExtractions().stream()
+              .map(r -> p.getFitnessFunction().getSequence().subList(r.lowerEndpoint(), r.upperEndpoint()).stream().collect(Collectors.toSet()))
+              .reduce(Sets::union)
+              .orElse(Set.of());
+          Predicate<ValueGraph<DeterministicFiniteAutomaton.State, Set<Character>>> checker = DeterministicFiniteAutomaton.checker();
+          return new SpeciatedEvolver<ValueGraph<DeterministicFiniteAutomaton.State, Set<Character>>, Extractor<Character>, List<Double>>(
+              DeterministicFiniteAutomaton.builder(),
+              new ShallowDFAFactory<Character>(2, positiveChars),
+              new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).on(Individual::getFitness),
+              nPop,
+              Map.of(
+                  new NodeAddition<DeterministicFiniteAutomaton.State, Set<Character>>(
+                      DeterministicFiniteAutomaton.sequentialStateFactory(2, 0.5),
+                      Mutation.copy(),
+                      Mutation.copy()
+                  ).withChecker(checker), graphNodeAdditionRate,
+                  new EdgeModification<DeterministicFiniteAutomaton.State, Set<Character>>(
+                      (cs, r) -> {
+                        if (cs.size() == positiveChars.size()) {
+                          return Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
+                        }
+                        if (cs.size() <= 1) {
+                          return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Set.of(Misc.pickRandomly(positiveChars, r));
+                        }
+                        return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
+                      },
+                      1d
+                  ).withChecker(checker), graphEdgeMutationRate,
+                  new EdgeAddition<DeterministicFiniteAutomaton.State, Set<Character>>(
+                      r -> Set.of(Misc.pickRandomly(positiveChars, r)),
+                      true
+                  ).withChecker(checker), graphEdgeAdditionRate,
+                  new EdgeRemoval<DeterministicFiniteAutomaton.State, Set<Character>>(
+                      s -> s.getIndex() == 0
+                  ).withChecker(checker), graphEdgeRemovalRate,
+                  new AlignedCrossover<DeterministicFiniteAutomaton.State, Set<Character>>(
+                      Crossover.randomCopy(),
+                      s -> s.getIndex() == 0,
+                      false
+                  ).withChecker(checker), graphCrossoverRate
+              ),
+              5,
+              (new Jaccard()).on(i -> i.getGenotype().nodes()),
+              0.25,
+              individuals -> {
+                Individual<ValueGraph<DeterministicFiniteAutomaton.State, Set<Character>>, Extractor<Character>, List<Double>> r = Misc.first(individuals);
+                return new Individual<>(
+                    r.getGenotype(),
+                    r.getSolution(),
+                    Misc.median(
+                        individuals.stream().map(Individual::getFitness).collect(Collectors.toList()),
+                        new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparator()
+                    ),
+                    r.getBirthIteration()
+                );
+              },
+              0.75
+          );
+        }),
+        Map.entry("dfa-hash+-ga", p -> {
+          Function<ValueGraph<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>, ValueGraph<DeterministicFiniteAutomaton.State, Set<Character>>> graphMapper = GraphUtils.mapper(
+              IndexedNode::content,
+              sets -> sets.stream().reduce(Sets::union).orElse(Set.of())
+          );
+          Set<Character> positiveChars = p.getFitnessFunction().getDesiredExtractions().stream()
+              .map(r -> p.getFitnessFunction().getSequence().subList(r.lowerEndpoint(), r.upperEndpoint()).stream().collect(Collectors.toSet()))
+              .reduce(Sets::union)
+              .orElse(Set.of());
+          Predicate<ValueGraph<DeterministicFiniteAutomaton.State, Set<Character>>> checker = DeterministicFiniteAutomaton.checker();
+          return new StandardEvolver<ValueGraph<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>, Extractor<Character>, List<Double>>(
+              graphMapper
+                  .andThen(DeterministicFiniteAutomaton.builder()),
+              new ShallowDFAFactory<Character>(2, positiveChars)
+                  .then(GraphUtils.mapper(IndexedNode.incrementerMapper(DeterministicFiniteAutomaton.State.class), Misc::first)),
+              new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).on(Individual::getFitness),
+              nPop,
+              Map.of(
+                  new IndexedNodeAddition<DeterministicFiniteAutomaton.State, DeterministicFiniteAutomaton.State, Set<Character>>(
+                      DeterministicFiniteAutomaton.sequentialStateFactory(2, 0.5),
+                      s -> s.getIndex(),
+                      2,
+                      Mutation.copy(),
+                      Mutation.copy()
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
+                  new EdgeModification<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
+                      (cs, r) -> {
+                        if (cs.size() == positiveChars.size()) {
+                          return Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
+                        }
+                        if (cs.size() <= 1) {
+                          return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Set.of(Misc.pickRandomly(positiveChars, r));
+                        }
+                        return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
+                      },
+                      1d
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphEdgeMutationRate,
+                  new EdgeAddition<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
+                      r -> Set.of(Misc.pickRandomly(positiveChars, r)),
+                      true
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphEdgeAdditionRate,
+                  new EdgeRemoval<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
+                      s -> s.content().getIndex() == 0
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphEdgeRemovalRate,
+                  new AlignedCrossover<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
+                      Crossover.randomCopy(),
+                      s -> s.content().getIndex() == 0,
+                      false
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
+              ),
+              new Tournament(nTournament),
+              new Worst(),
+              nPop,
+              true
+          );
+        }),
+        Map.entry("dfa-hash+-speciated-noxover", p -> {
+          Function<ValueGraph<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>, ValueGraph<DeterministicFiniteAutomaton.State, Set<Character>>> graphMapper = GraphUtils.mapper(
+              IndexedNode::content,
+              sets -> sets.stream().reduce(Sets::union).orElse(Set.of())
+          );
+          Set<Character> positiveChars = p.getFitnessFunction().getDesiredExtractions().stream()
+              .map(r -> p.getFitnessFunction().getSequence().subList(r.lowerEndpoint(), r.upperEndpoint()).stream().collect(Collectors.toSet()))
+              .reduce(Sets::union)
+              .orElse(Set.of());
+          Predicate<ValueGraph<DeterministicFiniteAutomaton.State, Set<Character>>> checker = DeterministicFiniteAutomaton.checker();
+          return new SpeciatedEvolver<ValueGraph<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>, Extractor<Character>, List<Double>>(
+              graphMapper
+                  .andThen(DeterministicFiniteAutomaton.builder()),
+              new ShallowDFAFactory<Character>(2, positiveChars)
+                  .then(GraphUtils.mapper(IndexedNode.incrementerMapper(DeterministicFiniteAutomaton.State.class), Misc::first)),
+              new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).on(Individual::getFitness),
+              nPop,
+              Map.of(
+                  new IndexedNodeAddition<DeterministicFiniteAutomaton.State, DeterministicFiniteAutomaton.State, Set<Character>>(
+                      DeterministicFiniteAutomaton.sequentialStateFactory(2, 0.5),
+                      s -> s.getIndex(),
+                      2,
+                      Mutation.copy(),
+                      Mutation.copy()
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
+                  new EdgeModification<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
+                      (cs, r) -> {
+                        if (cs.size() == positiveChars.size()) {
+                          return Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
+                        }
+                        if (cs.size() <= 1) {
+                          return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Set.of(Misc.pickRandomly(positiveChars, r));
+                        }
+                        return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
+                      },
+                      1d
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphEdgeMutationRate,
+                  new EdgeAddition<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
+                      r -> Set.of(Misc.pickRandomly(positiveChars, r)),
+                      true
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphEdgeAdditionRate,
+                  new EdgeRemoval<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
+                      s -> s.content().getIndex() == 0
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphEdgeRemovalRate
+              ),
+              5,
+              (new Jaccard()).on(i -> i.getGenotype().nodes()),
+              0.25,
+              individuals -> {
+                Individual<ValueGraph<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>, Extractor<Character>, List<Double>> r = Misc.first(individuals);
+                return new Individual<>(
+                    r.getGenotype(),
+                    r.getSolution(),
+                    Misc.median(
+                        individuals.stream().map(Individual::getFitness).collect(Collectors.toList()),
+                        new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparator()
                     ),
                     r.getBirthIteration()
                 );

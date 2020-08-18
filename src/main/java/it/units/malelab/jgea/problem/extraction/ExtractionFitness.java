@@ -38,7 +38,8 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
     ONE_MINUS_FM,
     SYMBOL_FNR,
     SYMBOL_FPR,
-    SYMBOL_ERROR;
+    SYMBOL_ERROR,
+    SYMBOL_WEIGHTED_ERROR;
 
   }
 
@@ -47,18 +48,15 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
     private final List<S> sequence;
     private final Set<Range<Integer>> desiredExtractions;
     private final List<Metric> metrics;
-    private final Set<Integer> desiredExtractedSymbolIndexes;
+    private final BitSet desiredExtractionMask;
+    private final int positiveSymbols;
 
     public Aggregator(List<S> sequence, Set<Range<Integer>> desiredExtractions, Metric... metrics) {
       this.sequence = sequence;
       this.desiredExtractions = desiredExtractions;
       this.metrics = Arrays.asList(metrics);
-      desiredExtractedSymbolIndexes = desiredExtractions.stream()
-          .map(r -> IntStream.range(r.lowerEndpoint(), r.upperEndpoint())
-              .mapToObj(i -> i)
-              .collect(Collectors.toSet()))
-          .reduce(Sets::union)
-          .orElse(Set.of());
+      desiredExtractionMask = buildMask(desiredExtractions, sequence.size());
+      positiveSymbols = desiredExtractionMask.cardinality();
     }
 
     @Override
@@ -75,21 +73,21 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
         values.put(Metric.ONE_MINUS_REC, 1 - recall);
         values.put(Metric.ONE_MINUS_FM, 1 - fMeasure);
       }
-      if (metrics.contains(Metric.SYMBOL_ERROR) || metrics.contains(Metric.SYMBOL_FNR) || metrics.contains(Metric.SYMBOL_FPR)) {
-        //TODO might be maybe faster with bit algebra
-        Set<Integer> extractedSymbolIndexes = extractions.stream()
-            .map(r -> IntStream.range(r.lowerEndpoint(), r.upperEndpoint())
-                .mapToObj(i -> i)
-                .collect(Collectors.toSet()))
-            .reduce(Sets::union)
-            .orElse(Set.of());
-        double truePositiveChars = Sets.intersection(desiredExtractedSymbolIndexes, extractedSymbolIndexes).size();
-        double falseNegativeChars = desiredExtractedSymbolIndexes.size() - truePositiveChars;
-        double falsePositiveChars = extractedSymbolIndexes.size() - truePositiveChars;
-        double trueNegativeChars = sequence.size() - falsePositiveChars - truePositiveChars - falseNegativeChars;
-        values.put(Metric.SYMBOL_FPR, falsePositiveChars / (trueNegativeChars + falsePositiveChars));
-        values.put(Metric.SYMBOL_FNR, falseNegativeChars / (truePositiveChars + falseNegativeChars));
-        values.put(Metric.SYMBOL_ERROR, (falsePositiveChars + falseNegativeChars) / (double) sequence.size());
+      if (metrics.contains(Metric.SYMBOL_ERROR) || metrics.contains(Metric.SYMBOL_FNR) || metrics.contains(Metric.SYMBOL_FPR) || metrics.contains(Metric.SYMBOL_WEIGHTED_ERROR)) {
+        BitSet extractionMask = buildMask(extractions, sequence.size());
+        int extractedSymbols = extractionMask.cardinality();
+        extractionMask.and(desiredExtractionMask);
+        double truePositiveSymbols = extractionMask.cardinality();
+        double falseNegativeSymbols = positiveSymbols - truePositiveSymbols;
+        double falsePositiveSymbols = extractedSymbols - truePositiveSymbols;
+        double trueNegativeChars = desiredExtractionMask.length() - falsePositiveSymbols - truePositiveSymbols - falseNegativeSymbols;
+        values.put(Metric.SYMBOL_FPR, falsePositiveSymbols / (trueNegativeChars + falsePositiveSymbols));
+        values.put(Metric.SYMBOL_FNR, falseNegativeSymbols / (truePositiveSymbols + falseNegativeSymbols));
+        values.put(Metric.SYMBOL_ERROR, (falsePositiveSymbols + falseNegativeSymbols) / (double) sequence.size());
+        values.put(
+            Metric.SYMBOL_WEIGHTED_ERROR,
+            (falsePositiveSymbols / (trueNegativeChars + falsePositiveSymbols) + falseNegativeSymbols / (truePositiveSymbols + falseNegativeSymbols)) / 2d
+        );
       }
       List<Double> results = new ArrayList<>(metrics.size());
       for (Metric metric : metrics) {
@@ -152,6 +150,12 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
   @Override
   public List<String> names() {
     return aggregator.metrics.stream().map(m -> m.toString().toLowerCase().replace("_", ".")).collect(Collectors.toList());
+  }
+
+  private static BitSet buildMask(Set<Range<Integer>> extractions, int size) {
+    BitSet bitSet = new BitSet(size);
+    extractions.forEach(r -> bitSet.set(r.lowerEndpoint(), r.upperEndpoint()));
+    return bitSet;
   }
 
 }
