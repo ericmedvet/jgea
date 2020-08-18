@@ -166,11 +166,10 @@ public class CMAESEvolver<S, F extends Comparable<F>> extends AbstractIterativeE
       Function<? super List<Double>, ? extends S> solutionMapper,
       Factory<? extends List<Double>> genotypeFactory,
       PartialComparator<? super Individual<List<Double>, S, F>> individualComparator,
-      int size,
       double initMin,
       double initMax) {
     super(solutionMapper, genotypeFactory, individualComparator);
-    this.size = size;
+    this.size = genotypeFactory.build(1, new Random(0)).get(0).size();
     this.initMin = initMin;
     this.initMax = initMax;
 

@@ -82,10 +82,10 @@ public class Example extends Worker {
   public void run() {
     //runOneMax();
     //runLinearPoints();
-    runSymbolicRegression();
+    //runSymbolicRegression();
     //runSymbolicRegressionMO();
     //runGrammarBasedParity();
-    //runSphere();
+    runSphere();
     //runRastrigin();
   }
 
@@ -417,7 +417,6 @@ public class Example extends Worker {
             Function.identity(),
             new FixedLengthListFactory<>(10, new UniformDoubleFactory(-10, 10)),
             PartialComparator.from(Double.class).on(Individual::getFitness),
-            10,
             -10,
             10
         )
@@ -466,7 +465,6 @@ public class Example extends Worker {
             Function.identity(),
             new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
             PartialComparator.from(Double.class).on(Individual::getFitness),
-            10,
             -5.12,
             5.12
         )

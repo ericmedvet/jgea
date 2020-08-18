@@ -51,7 +51,7 @@ public abstract class Worker implements Runnable {
 
   protected final static Logger L = Logger.getLogger(Worker.class.getName());
 
-  public Worker(String[] args) throws FileNotFoundException {
+  public Worker(String[] args) {
     this.args = args;
     executorService = Executors.newFixedThreadPool(i(Args.a(args, "threads", Integer.toString(Runtime.getRuntime().availableProcessors()))));
     run();

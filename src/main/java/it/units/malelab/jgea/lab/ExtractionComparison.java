@@ -390,7 +390,8 @@ public class ExtractionComparison extends Worker {
           ));
           try {
             RegexExtractionProblem p = problemEntry.getValue();
-            List<DataCollector<?, ? super Extractor<Character>, ? super Double>> collectors = List.of(new Static(keys),
+            List<DataCollector<?, ? super Extractor<Character>, ? super Double>> collectors = List.of(
+                new Static(keys),
                 new Basic(),
                 new Population(),
                 new Diversity(),
