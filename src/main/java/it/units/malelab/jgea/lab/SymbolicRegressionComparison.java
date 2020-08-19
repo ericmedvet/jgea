@@ -286,11 +286,11 @@ public class SymbolicRegressionComparison extends Worker {
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
                 ), graphNodeAdditionRate,
-                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), graphEdgeMutationRate,
+                new EdgeModification<>((w, r) -> w + r.nextGaussian(), 1d), graphEdgeMutationRate,
                 new EdgeAddition<>(Random::nextGaussian, false), graphEdgeAdditionRate,
                 new EdgeRemoval<>(node -> node instanceof Output), graphEdgeRemovalRate,
                 new AlignedCrossover<>(
-                    (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
+                    (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
                     node -> node instanceof Output,
                     false
                 ), graphCrossoverRate
@@ -313,7 +313,7 @@ public class SymbolicRegressionComparison extends Worker {
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
                 ), graphNodeAdditionRate,
-                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), graphEdgeMutationRate,
+                new EdgeModification<>((w, r) -> w + r.nextGaussian(), 1d), graphEdgeMutationRate,
                 new EdgeAddition<>(Random::nextGaussian, false), graphEdgeAdditionRate,
                 new EdgeRemoval<>(node -> node instanceof Output), graphEdgeRemovalRate
             ),
@@ -335,11 +335,11 @@ public class SymbolicRegressionComparison extends Worker {
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
                 ), graphNodeAdditionRate,
-                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), graphEdgeMutationRate,
+                new EdgeModification<>((w, r) -> w + r.nextGaussian(), 1d), graphEdgeMutationRate,
                 new EdgeAddition<>(Random::nextGaussian, false), graphEdgeAdditionRate,
                 new EdgeRemoval<>(node -> node instanceof Output), graphEdgeRemovalRate,
                 new AlignedCrossover<>(
-                    (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
+                    (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
                     node -> node instanceof Output,
                     false
                 ), graphCrossoverRate
@@ -363,11 +363,11 @@ public class SymbolicRegressionComparison extends Worker {
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
                 ), graphNodeAdditionRate,
-                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), graphEdgeMutationRate,
+                new EdgeModification<>((w, r) -> w + r.nextGaussian(), 1d), graphEdgeMutationRate,
                 new EdgeAddition<>(Random::nextGaussian, false), graphEdgeAdditionRate,
                 new EdgeRemoval<>(node -> node instanceof Output), graphEdgeRemovalRate,
                 new AlignedCrossover<>(
-                    (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
+                    (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
                     node -> node instanceof Output,
                     false
                 ), graphCrossoverRate
@@ -400,11 +400,11 @@ public class SymbolicRegressionComparison extends Worker {
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
                 ), graphNodeAdditionRate,
-                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), graphEdgeMutationRate,
+                new EdgeModification<>((w, r) -> w + r.nextGaussian(), 1d), graphEdgeMutationRate,
                 new EdgeAddition<>(Random::nextGaussian, false), graphEdgeAdditionRate,
                 new EdgeRemoval<>(node -> node instanceof Output), graphEdgeRemovalRate,
                 new AlignedCrossover<>(
-                    (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
+                    (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
                     node -> node instanceof Output,
                     false
                 ), graphCrossoverRate
@@ -437,11 +437,11 @@ public class SymbolicRegressionComparison extends Worker {
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
                 ), graphNodeAdditionRate,
-                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), graphEdgeMutationRate,
+                new EdgeModification<>((w, r) -> w + r.nextGaussian(), 1d), graphEdgeMutationRate,
                 new EdgeAddition<>(Random::nextGaussian, false), graphEdgeAdditionRate,
                 new EdgeRemoval<>(node -> node instanceof Output), graphEdgeRemovalRate,
                 new AlignedCrossover<>(
-                    (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
+                    (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
                     node -> node instanceof Output,
                     false
                 ), graphCrossoverRate
@@ -493,11 +493,11 @@ public class SymbolicRegressionComparison extends Worker {
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
                 ), graphNodeAdditionRate,
-                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), graphEdgeMutationRate,
+                new EdgeModification<>((w, r) -> w + r.nextGaussian(), 1d), graphEdgeMutationRate,
                 new EdgeAddition<>(Random::nextGaussian, false), graphEdgeAdditionRate,
                 new EdgeRemoval<>(node -> node.content() instanceof Output), graphEdgeRemovalRate,
                 new AlignedCrossover<>(
-                    (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
+                    (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
                     node -> node.content() instanceof Output,
                     false
                 ), graphCrossoverRate
@@ -523,11 +523,11 @@ public class SymbolicRegressionComparison extends Worker {
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
                 ), graphNodeAdditionRate,
-                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), graphEdgeMutationRate,
+                new EdgeModification<>((w, r) -> w + r.nextGaussian(), 1d), graphEdgeMutationRate,
                 new EdgeAddition<>(Random::nextGaussian, false), graphEdgeAdditionRate,
                 new EdgeRemoval<>(node -> node.content() instanceof Output), graphEdgeRemovalRate,
                 new AlignedCrossover<>(
-                    (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
+                    (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
                     node -> node.content() instanceof Output,
                     false
                 ), graphCrossoverRate
@@ -564,11 +564,11 @@ public class SymbolicRegressionComparison extends Worker {
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
                 ), graphNodeAdditionRate,
-                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), graphEdgeMutationRate,
+                new EdgeModification<>((w, r) -> w + r.nextGaussian(), 1d), graphEdgeMutationRate,
                 new EdgeAddition<>(Random::nextGaussian, false), graphEdgeAdditionRate,
                 new EdgeRemoval<>(node -> node.content() instanceof Output), graphEdgeRemovalRate,
                 new AlignedCrossover<>(
-                    (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
+                    (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
                     node -> node.content() instanceof Output,
                     false
                 ), graphCrossoverRate
@@ -652,7 +652,7 @@ public class SymbolicRegressionComparison extends Worker {
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
                 ), graphNodeAdditionRate,
-                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), graphEdgeMutationRate,
+                new EdgeModification<>((w, r) -> w + r.nextGaussian(), 1d), graphEdgeMutationRate,
                 new EdgeAddition<>(Random::nextGaussian, false), graphEdgeAdditionRate,
                 new EdgeRemoval<>(node -> node.content() instanceof Output), graphEdgeRemovalRate
             ),
@@ -684,7 +684,7 @@ public class SymbolicRegressionComparison extends Worker {
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
                 ), graphNodeAdditionRate,
-                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), graphEdgeMutationRate,
+                new EdgeModification<>((w, r) -> w + r.nextGaussian(), 1d), graphEdgeMutationRate,
                 new EdgeAddition<>(Random::nextGaussian, false), graphEdgeAdditionRate,
                 new EdgeRemoval<>(node -> node instanceof Output), graphEdgeRemovalRate
             ),
@@ -706,11 +706,11 @@ public class SymbolicRegressionComparison extends Worker {
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
                 ), graphNodeAdditionRate,
-                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), graphEdgeMutationRate,
+                new EdgeModification<>((w, r) -> w + r.nextGaussian(), 1d), graphEdgeMutationRate,
                 new EdgeAddition<>(Random::nextGaussian, false), graphEdgeAdditionRate,
                 new EdgeRemoval<>(node -> node instanceof Output), graphEdgeRemovalRate,
                 new AlignedCrossover<>(
-                    (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
+                    (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
                     node -> node instanceof Output,
                     false
                 ), graphCrossoverRate
