@@ -15,10 +15,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.problem.extraction;
+package it.units.malelab.jgea.problem.extraction.string;
 
 import com.google.common.collect.Range;
 import it.units.malelab.jgea.core.util.Sized;
+import it.units.malelab.jgea.problem.extraction.Extractor;
 
 import java.util.LinkedHashSet;
 import java.util.List;

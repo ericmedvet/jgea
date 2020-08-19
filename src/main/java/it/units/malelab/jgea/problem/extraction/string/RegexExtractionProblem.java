@@ -17,12 +17,8 @@
 
 package it.units.malelab.jgea.problem.extraction.string;
 
-import com.google.common.collect.Range;
 import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
 import it.units.malelab.jgea.problem.extraction.ExtractionProblem;
-import it.units.malelab.jgea.problem.extraction.Extractor;
-import it.units.malelab.jgea.problem.extraction.RegexBasedExtractor;
-import it.units.malelab.jgea.representation.grammar.Grammar;
 
 import java.util.*;
 import java.util.regex.Matcher;

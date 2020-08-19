@@ -277,7 +277,7 @@ public class SymbolicRegressionComparison extends Worker {
             FunctionGraph.builder()
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(1d, 0d, 1d, p.arity(), 1),
+            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
             Map.of(
@@ -304,7 +304,7 @@ public class SymbolicRegressionComparison extends Worker {
             FunctionGraph.builder()
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(1d, 0d, 1d, p.arity(), 1),
+            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
             Map.of(
@@ -326,7 +326,7 @@ public class SymbolicRegressionComparison extends Worker {
             FunctionGraph.builder()
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(1d, 0d, 1d, p.arity(), 1),
+            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
             Map.of(
@@ -354,7 +354,7 @@ public class SymbolicRegressionComparison extends Worker {
             FunctionGraph.builder()
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(1d, 0d, 1d, p.arity(), 1),
+            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
             Map.of(
@@ -391,7 +391,7 @@ public class SymbolicRegressionComparison extends Worker {
             FunctionGraph.builder()
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(1d, 0d, 1d, p.arity(), 1),
+            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
             Map.of(
@@ -428,7 +428,7 @@ public class SymbolicRegressionComparison extends Worker {
             FunctionGraph.builder()
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(1d, 0d, 1d, p.arity(), 1),
+            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
             Map.of(
@@ -482,7 +482,7 @@ public class SymbolicRegressionComparison extends Worker {
                 .andThen(FunctionGraph.builder())
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(1d, 0d, 1d, p.arity(), 1)
+            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1)
                 .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
@@ -512,7 +512,7 @@ public class SymbolicRegressionComparison extends Worker {
                 .andThen(FunctionGraph.builder())
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(1d, 0d, 1d, p.arity(), 1)
+            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1)
                 .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
@@ -552,7 +552,7 @@ public class SymbolicRegressionComparison extends Worker {
                 .andThen(FunctionGraph.builder())
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(1d, 0d, 1d, p.arity(), 1)
+            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1)
                 .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
@@ -640,7 +640,7 @@ public class SymbolicRegressionComparison extends Worker {
                 .andThen(FunctionGraph.builder())
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(1d, 0d, 1d, p.arity(), 1)
+            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1)
                 .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
@@ -675,7 +675,7 @@ public class SymbolicRegressionComparison extends Worker {
             FunctionGraph.builder()
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(1d, 0d, 1d, p.arity(), 1),
+            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
             Map.of(
@@ -697,7 +697,7 @@ public class SymbolicRegressionComparison extends Worker {
             FunctionGraph.builder()
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(1d, 0d, 1d, p.arity(), 1),
+            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
             PartialComparator.from(Double.class).on(Individual::getFitness),
             nPop,
             Map.of(

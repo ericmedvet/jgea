@@ -38,7 +38,7 @@ import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.distance.Jaccard;
 import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
 import it.units.malelab.jgea.problem.extraction.Extractor;
-import it.units.malelab.jgea.problem.extraction.RegexBasedExtractor;
+import it.units.malelab.jgea.problem.extraction.string.RegexBasedExtractor;
 import it.units.malelab.jgea.problem.extraction.string.RegexExtractionProblem;
 import it.units.malelab.jgea.problem.extraction.string.RegexGrammar;
 import it.units.malelab.jgea.problem.symbolicregression.RealFunction;
