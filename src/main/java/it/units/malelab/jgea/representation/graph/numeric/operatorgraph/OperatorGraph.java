@@ -17,15 +17,15 @@
 
 package it.units.malelab.jgea.representation.graph.numeric.operatorgraph;
 
-import com.google.common.graph.Graphs;
-import com.google.common.graph.ValueGraph;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.core.util.Sized;
+import it.units.malelab.jgea.representation.graph.Graph;
 import it.units.malelab.jgea.representation.graph.numeric.Constant;
 import it.units.malelab.jgea.representation.graph.numeric.Input;
 import it.units.malelab.jgea.representation.graph.numeric.Node;
 import it.units.malelab.jgea.representation.graph.numeric.Output;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -39,11 +39,11 @@ import java.util.stream.Collectors;
  * @created 2020/08/04
  * @project jgea
  */
-public class OperatorGraph implements Function<double[], double[]>, Sized {
+public class OperatorGraph implements Function<double[], double[]>, Sized, Serializable {
 
-  public static class Edge {
+  public static class NonValuedArc {
 
-    private Edge() {
+    private NonValuedArc() {
     }
 
     @Override
@@ -53,7 +53,7 @@ public class OperatorGraph implements Function<double[], double[]>, Sized {
 
     @Override
     public boolean equals(Object obj) {
-      return obj instanceof Edge;
+      return obj instanceof NonValuedArc;
     }
 
     @Override
@@ -62,15 +62,15 @@ public class OperatorGraph implements Function<double[], double[]>, Sized {
     }
   }
 
-  public final static Edge EDGE = new Edge();
+  public final static NonValuedArc NON_VALUED_ARC = new NonValuedArc();
 
-  private final ValueGraph<Node, Edge> graph;
+  private final Graph<Node, NonValuedArc> graph;
 
-  public static Function<ValueGraph<Node, Edge>, OperatorGraph> builder() {
+  public static Function<Graph<Node, NonValuedArc>, OperatorGraph> builder() {
     return OperatorGraph::new;
   }
 
-  public static Predicate<ValueGraph<Node, Edge>> checker() {
+  public static Predicate<Graph<Node, NonValuedArc>> checker() {
     return graph -> {
       try {
         check(graph);
@@ -81,11 +81,8 @@ public class OperatorGraph implements Function<double[], double[]>, Sized {
     };
   }
 
-  public static void check(ValueGraph<Node, Edge> graph) {
-    if (!graph.isDirected()) {
-      throw new IllegalArgumentException("Invalid graph: indirected");
-    }
-    if (Graphs.hasCycle(graph.asGraph())) {
+  public static void check(Graph<Node, NonValuedArc> graph) {
+    if (graph.hasCycles()) {
       throw new IllegalArgumentException("Invalid graph: it has cycles");
     }
     for (Node n : graph.nodes()) {
@@ -121,7 +118,7 @@ public class OperatorGraph implements Function<double[], double[]>, Sized {
     }
   }
 
-  public OperatorGraph(ValueGraph<Node, Edge> graph) {
+  public OperatorGraph(Graph<Node, NonValuedArc> graph) {
     //check if the graph is valid
     check(graph);
     this.graph = graph;
@@ -140,7 +137,7 @@ public class OperatorGraph implements Function<double[], double[]>, Sized {
 
   @Override
   public int size() {
-    return graph.nodes().size() + graph.edges().size();
+    return graph.size();
   }
 
   @Override
@@ -165,7 +162,7 @@ public class OperatorGraph implements Function<double[], double[]>, Sized {
         .sorted()
         .collect(Collectors.toList());
     if (!predecessors.isEmpty()) {
-      s = s + "(" + predecessors.stream().collect(Collectors.joining(",")) + ")";
+      s = s + "(" + String.join(",", predecessors) + ")";
     }
     return s;
   }

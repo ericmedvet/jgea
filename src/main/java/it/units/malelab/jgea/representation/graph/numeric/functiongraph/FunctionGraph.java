@@ -17,15 +17,14 @@
 
 package it.units.malelab.jgea.representation.graph.numeric.functiongraph;
 
-import com.google.common.graph.Graphs;
-import com.google.common.graph.ValueGraph;
 import it.units.malelab.jgea.core.util.Sized;
+import it.units.malelab.jgea.representation.graph.Graph;
 import it.units.malelab.jgea.representation.graph.numeric.Constant;
 import it.units.malelab.jgea.representation.graph.numeric.Input;
 import it.units.malelab.jgea.representation.graph.numeric.Node;
 import it.units.malelab.jgea.representation.graph.numeric.Output;
-import it.units.malelab.jgea.representation.graph.numeric.operatorgraph.OperatorNode;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -37,15 +36,15 @@ import java.util.stream.Collectors;
  * @created 2020/08/04
  * @project jgea
  */
-public class FunctionGraph implements Function<double[], double[]>, Sized {
+public class FunctionGraph implements Function<double[], double[]>, Sized, Serializable {
 
-  private final ValueGraph<Node, Double> graph;
+  private final Graph<Node, Double> graph;
 
-  public static Function<ValueGraph<Node, Double>, FunctionGraph> builder() {
+  public static Function<Graph<Node, Double>, FunctionGraph> builder() {
     return FunctionGraph::new;
   }
 
-  public static Predicate<ValueGraph<Node, Double>> checker() {
+  public static Predicate<Graph<Node, Double>> checker() {
     return graph -> {
       try {
         check(graph);
@@ -56,11 +55,8 @@ public class FunctionGraph implements Function<double[], double[]>, Sized {
     };
   }
 
-  public static void check(ValueGraph<Node, Double> graph) {
-    if (!graph.isDirected()) {
-      throw new IllegalArgumentException("Invalid graph: indirected");
-    }
-    if (Graphs.hasCycle(graph.asGraph())) {
+  public static void check(Graph<Node, Double> graph) {
+    if (graph.hasCycles()) {
       throw new IllegalArgumentException("Invalid graph: it has cycles");
     }
     for (Node n : graph.nodes()) {
@@ -78,7 +74,7 @@ public class FunctionGraph implements Function<double[], double[]>, Sized {
     }
   }
 
-  public FunctionGraph(ValueGraph<Node, Double> graph) {
+  public FunctionGraph(Graph<Node, Double> graph) {
     check(graph);
     this.graph = graph;
   }
@@ -96,13 +92,13 @@ public class FunctionGraph implements Function<double[], double[]>, Sized {
 
   @Override
   public int size() {
-    return graph.nodes().size() + graph.edges().size();
+    return graph.size();
   }
 
   @Override
   public String toString() {
-    return graph.edges().stream()
-        .map(e -> String.format("%s-[%.3f]->%s", e.source(), graph.edgeValue(e).get(), e.target()))
+    return graph.arcs().stream()
+        .map(e -> String.format("%s-[%.3f]->%s", e.getSource(), graph.getArcValue(e), e.getTarget()))
         .collect(Collectors.joining(","));
   }
 
@@ -124,7 +120,7 @@ public class FunctionGraph implements Function<double[], double[]>, Sized {
     Set<Node> predecessors = graph.predecessors(node);
     double sum = 0d;
     for (Node predecessor : predecessors) {
-      sum = sum + graph.edgeValue(predecessor, node).orElse(0d) * outValue(predecessor, input);
+      sum = sum + graph.getArcValue(predecessor, node) * outValue(predecessor, input);
     }
     if (node instanceof Output) {
       return sum;

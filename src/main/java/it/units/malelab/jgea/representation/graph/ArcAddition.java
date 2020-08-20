@@ -17,10 +17,6 @@
 
 package it.units.malelab.jgea.representation.graph;
 
-import com.google.common.graph.Graphs;
-import com.google.common.graph.ImmutableValueGraph;
-import com.google.common.graph.MutableValueGraph;
-import com.google.common.graph.ValueGraph;
 import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.operator.Mutation;
 
@@ -34,22 +30,18 @@ import java.util.Random;
  * @created 2020/07/13
  * @project jgea
  */
-public class EdgeAddition<N, E> implements Mutation<ValueGraph<N, E>> {
-  private final IndependentFactory<E> edgeFactory;
+public class ArcAddition<N, A> implements Mutation<Graph<N, A>> {
+  private final IndependentFactory<A> arcFactory;
   private final boolean allowCycles;
 
-  public EdgeAddition(IndependentFactory<E> edgeFactory, boolean allowCycles) {
-    this.edgeFactory = edgeFactory;
+  public ArcAddition(IndependentFactory<A> arcFactory, boolean allowCycles) {
+    this.arcFactory = arcFactory;
     this.allowCycles = allowCycles;
   }
 
-  public IndependentFactory<E> getEdgeFactory() {
-    return edgeFactory;
-  }
-
   @Override
-  public ValueGraph<N, E> mutate(ValueGraph<N, E> parent, Random random) {
-    MutableValueGraph<N, E> child = Graphs.copyOf(parent);
+  public Graph<N, A> mutate(Graph<N, A> parent, Random random) {
+    Graph<N, A> child = LinkedHashGraph.copyOf(parent);
     if (!parent.nodes().isEmpty()) {
       List<N> fromNodes = new ArrayList<>(child.nodes());
       List<N> toNodes = new ArrayList<>(child.nodes());
@@ -58,10 +50,10 @@ public class EdgeAddition<N, E> implements Mutation<ValueGraph<N, E>> {
       boolean added = false;
       for (N fromNode : fromNodes) {
         for (N toNode : toNodes) {
-          if (!fromNode.equals(toNode) && !child.hasEdgeConnecting(fromNode, toNode)) {
-            child.putEdgeValue(fromNode, toNode, edgeFactory.build(random));
-            if (!allowCycles && Graphs.hasCycle(child.asGraph())) {
-              child.removeEdge(fromNode, toNode);
+          if (!fromNode.equals(toNode) && !child.hasArc(fromNode, toNode)) {
+            child.setArcValue(fromNode, toNode, arcFactory.build(random));
+            if (!allowCycles && child.hasCycles()) {
+              child.removeArc(fromNode, toNode);
             } else {
               added = true;
               break;
@@ -73,6 +65,6 @@ public class EdgeAddition<N, E> implements Mutation<ValueGraph<N, E>> {
         }
       }
     }
-    return ImmutableValueGraph.copyOf(child);
+    return child;
   }
 }

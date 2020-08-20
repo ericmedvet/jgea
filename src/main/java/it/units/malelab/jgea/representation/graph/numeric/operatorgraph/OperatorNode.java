@@ -84,6 +84,6 @@ public class OperatorNode extends Node implements RealFunction {
 
   @Override
   public String toString() {
-    return String.format("o%d[%s]", getIndex(), operator.toString().toLowerCase());
+    return String.format("op%d[%s]", getIndex(), operator.toString().toLowerCase());
   }
 }

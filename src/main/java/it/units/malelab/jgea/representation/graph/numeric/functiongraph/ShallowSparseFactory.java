@@ -17,8 +17,9 @@
 
 package it.units.malelab.jgea.representation.graph.numeric.functiongraph;
 
-import com.google.common.graph.*;
 import it.units.malelab.jgea.core.IndependentFactory;
+import it.units.malelab.jgea.representation.graph.Graph;
+import it.units.malelab.jgea.representation.graph.LinkedHashGraph;
 import it.units.malelab.jgea.representation.graph.numeric.Constant;
 import it.units.malelab.jgea.representation.graph.numeric.Input;
 import it.units.malelab.jgea.representation.graph.numeric.Node;
@@ -31,7 +32,7 @@ import java.util.Random;
  * @created 2020/08/04
  * @project jgea
  */
-public class ShallowSparseFactory implements IndependentFactory<ValueGraph<Node, Double>> {
+public class ShallowSparseFactory implements IndependentFactory<Graph<Node, Double>> {
   private final double sparsity;
   private final double mu;
   private final double sigma;
@@ -47,8 +48,8 @@ public class ShallowSparseFactory implements IndependentFactory<ValueGraph<Node,
   }
 
   @Override
-  public ValueGraph<Node, Double> build(Random random) {
-    MutableValueGraph<Node, Double> g = ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+  public Graph<Node, Double> build(Random random) {
+    Graph<Node, Double> g = new LinkedHashGraph<>();
     Input[] inputs = new Input[nInputs];
     Output[] outputs = new Output[nOutputs];
     Constant constant = new Constant(0, 1d);
@@ -64,15 +65,15 @@ public class ShallowSparseFactory implements IndependentFactory<ValueGraph<Node,
     for (int i = 0; i < nInputs; i++) {
       for (int o = 0; o < nOutputs; o++) {
         if (random.nextDouble() < (1d - sparsity)) {
-          g.putEdgeValue(inputs[i], outputs[o], random.nextGaussian() * sigma + mu);
+          g.setArcValue(inputs[i], outputs[o], random.nextGaussian() * sigma + mu);
         }
       }
     }
     for (int o = 0; o < nOutputs; o++) {
       if (random.nextDouble() < (1d - sparsity)) {
-        g.putEdgeValue(constant, outputs[o], random.nextGaussian() * sigma + mu);
+        g.setArcValue(constant, outputs[o], random.nextGaussian() * sigma + mu);
       }
     }
-    return ImmutableValueGraph.copyOf(g);
+    return g;
   }
 }

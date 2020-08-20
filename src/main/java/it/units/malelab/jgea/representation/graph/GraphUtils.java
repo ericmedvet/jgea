@@ -17,9 +17,6 @@
 
 package it.units.malelab.jgea.representation.graph;
 
-import com.google.common.graph.*;
-import it.units.malelab.jgea.core.operator.Mutation;
-
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -31,49 +28,41 @@ import java.util.function.Predicate;
  */
 public class GraphUtils {
 
-  public static <N> void removeUnconnectedNodes(MutableValueGraph<N, ?> graph, Predicate<N> unremovableNodePredicate) {
+  public static <N> void removeUnconnectedNodes(Graph<N, ?> graph, Predicate<N> unremovableNodePredicate) {
     while (true) {
       Set<N> toRemoveNodes = new LinkedHashSet<>();
       for (N node : graph.nodes()) {
-        if (!unremovableNodePredicate.test(node) && (graph.inDegree(node) == 0) && (graph.outDegree(node) == 0)) {
+        if (!unremovableNodePredicate.test(node) && (graph.predecessors(node).isEmpty()) && (graph.successors(node).isEmpty())) {
           toRemoveNodes.add(node);
         }
       }
       if (!toRemoveNodes.isEmpty()) {
-        toRemoveNodes.forEach(n -> graph.removeNode(n));
+        toRemoveNodes.forEach(graph::removeNode);
       } else {
         break;
       }
     }
   }
 
-  public static <N1, E1, N2, E2> ValueGraph<N2, E2> map(ValueGraph<N1, E1> fromGraph, Function<N1, N2> nodeF, Function<Collection<E1>, E2> edgeF) {
-    MutableValueGraph<N2, E2> toGraph = ((fromGraph.isDirected()) ? ValueGraphBuilder.directed() : ValueGraphBuilder.undirected()).allowsSelfLoops(fromGraph.allowsSelfLoops()).build();
+  public static <N1, A1, N2, A2> Graph<N2, A2> transform(Graph<N1, A1> fromGraph, Function<N1, N2> nodeF, Function<Collection<A1>, A2> arcF) {
+    Graph<N2, A2> toGraph = new LinkedHashGraph<>();
     for (N1 fromNode : fromGraph.nodes()) {
       toGraph.addNode(nodeF.apply(fromNode));
     }
-    Map<EndpointPair<N2>, Collection<E1>> edgeMap = new HashMap<>();
-    for (EndpointPair<N1> fromEndpointPair : fromGraph.edges()) {
-      EndpointPair<N2> toEndpointPair;
-      if (fromEndpointPair.isOrdered()) {
-        toEndpointPair = EndpointPair.ordered(nodeF.apply(fromEndpointPair.source()), nodeF.apply(fromEndpointPair.target()));
-      } else {
-        toEndpointPair = EndpointPair.ordered(nodeF.apply(fromEndpointPair.nodeU()), nodeF.apply(fromEndpointPair.nodeV()));
-      }
-      Optional<E1> optionalEdge = fromGraph.edgeValue(fromEndpointPair);
-      if (optionalEdge.isPresent()) {
-        Collection<E1> fromEdges = edgeMap.getOrDefault(toEndpointPair, new ArrayList<>());
-        fromEdges.add(optionalEdge.get());
-        edgeMap.put(toEndpointPair, fromEdges);
-      }
+    Map<Graph.Arc<N2>, Collection<A1>> arcMap = new HashMap<>();
+    for (Graph.Arc<N1> fromArc : fromGraph.arcs()) {
+      Graph.Arc<N2> toArc = Graph.Arc.of(nodeF.apply(fromArc.getSource()), nodeF.apply(fromArc.getTarget()));
+      Collection<A1> fromArcValues = arcMap.getOrDefault(toArc, new ArrayList<>());
+      fromArcValues.add(fromGraph.getArcValue(fromArc));
+      arcMap.put(toArc, fromArcValues);
     }
-    for (Map.Entry<EndpointPair<N2>, Collection<E1>> toEntry : edgeMap.entrySet()) {
-      toGraph.putEdgeValue(toEntry.getKey(), edgeF.apply(toEntry.getValue()));
+    for (Map.Entry<Graph.Arc<N2>, Collection<A1>> entry : arcMap.entrySet()) {
+      toGraph.setArcValue(entry.getKey(), arcF.apply(entry.getValue()));
     }
-    return ImmutableValueGraph.copyOf(toGraph);
+    return toGraph;
   }
 
-  public static <N1, E1, N2, E2> Function<ValueGraph<N1, E1>, ValueGraph<N2, E2>> mapper(Function<N1, N2> nodeF, Function<Collection<E1>, E2> edgeF) {
-    return graph -> map(graph, nodeF, edgeF);
+  public static <N1, A1, N2, A> Function<Graph<N1, A1>, Graph<N2, A>> mapper(Function<N1, N2> nodeF, Function<Collection<A1>, A> arcF) {
+    return graph -> transform(graph, nodeF, arcF);
   }
 }

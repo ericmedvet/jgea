@@ -17,7 +17,6 @@
 
 package it.units.malelab.jgea.representation.graph;
 
-import com.google.common.graph.*;
 import it.units.malelab.jgea.core.operator.Crossover;
 
 import java.util.LinkedHashSet;
@@ -30,44 +29,32 @@ import java.util.function.Predicate;
  * @created 2020/07/13
  * @project jgea
  */
-public class AlignedCrossover<N, E> implements Crossover<ValueGraph<N, E>> {
+public class AlignedCrossover<N, A> implements Crossover<Graph<N, A>> {
 
-  private final Crossover<E> edgeCrossover;
+  private final Crossover<A> edgeCrossover;
   private final Predicate<N> unremovableNodePredicate;
   private final boolean allowCycles;
 
-  public AlignedCrossover(Crossover<E> edgeCrossover, Predicate<N> unremovableNodePredicate, boolean allowCycles) {
+  public AlignedCrossover(Crossover<A> edgeCrossover, Predicate<N> unremovableNodePredicate, boolean allowCycles) {
     this.edgeCrossover = edgeCrossover;
     this.unremovableNodePredicate = unremovableNodePredicate;
     this.allowCycles = allowCycles;
   }
 
-  public Crossover<E> getEdgeCrossover() {
-    return edgeCrossover;
-  }
-
-  public Predicate<N> getUnremovableNodePredicate() {
-    return unremovableNodePredicate;
-  }
-
-  public boolean isAllowCycles() {
-    return allowCycles;
-  }
-
   @Override
-  public ValueGraph<N, E> recombine(ValueGraph<N, E> parent1, ValueGraph<N, E> parent2, Random random) {
-    MutableValueGraph<N, E> child = ValueGraphBuilder.from(parent1).build();
+  public Graph<N, A> recombine(Graph<N, A> parent1, Graph<N, A> parent2, Random random) {
+    Graph<N, A> child = new LinkedHashGraph<>();
     //add all nodes
-    parent1.nodes().forEach(n -> child.addNode(n));
-    parent2.nodes().forEach(n -> child.addNode(n));
+    parent1.nodes().forEach(child::addNode);
+    parent2.nodes().forEach(child::addNode);
     //iterate over child edges
-    Set<EndpointPair<N>> endpointPairs = new LinkedHashSet<>();
-    endpointPairs.addAll(parent1.edges());
-    endpointPairs.addAll(parent2.edges());
-    for (EndpointPair<N> endpointPair : endpointPairs) {
-      E edge1 = parent1.edgeValue(endpointPair.nodeU(), endpointPair.nodeV()).orElse(null);
-      E edge2 = parent2.edgeValue(endpointPair.nodeU(), endpointPair.nodeV()).orElse(null);
-      E childEdge;
+    Set<Graph.Arc<N>> arcs = new LinkedHashSet<>();
+    arcs.addAll(parent1.arcs());
+    arcs.addAll(parent2.arcs());
+    for (Graph.Arc<N> arc : arcs) {
+      A edge1 = parent1.getArcValue(arc);
+      A edge2 = parent2.getArcValue(arc);
+      A childEdge;
       if (edge1 == null) {
         childEdge = random.nextBoolean() ? edge2 : null;
       } else if (edge2 == null) {
@@ -76,14 +63,14 @@ public class AlignedCrossover<N, E> implements Crossover<ValueGraph<N, E>> {
         childEdge = edgeCrossover.recombine(edge1, edge2, random);
       }
       if (childEdge != null) {
-        child.putEdgeValue(endpointPair.nodeU(), endpointPair.nodeV(), childEdge);
-        if (!allowCycles && Graphs.hasCycle(child.asGraph())) {
-          child.removeEdge(endpointPair.nodeU(), endpointPair.nodeV());
+        child.setArcValue(arc, childEdge);
+        if (!allowCycles && child.hasCycles()) {
+          child.removeArc(arc);
         }
       }
     }
     //remove unconnected nodes
     GraphUtils.removeUnconnectedNodes(child, unremovableNodePredicate);
-    return ImmutableValueGraph.copyOf(child);
+    return child;
   }
 }

@@ -17,26 +17,22 @@
 
 package it.units.malelab.jgea.representation.graph.numeric.operatorgraph;
 
-import com.google.common.graph.ImmutableValueGraph;
-import com.google.common.graph.MutableValueGraph;
-import com.google.common.graph.ValueGraph;
-import com.google.common.graph.ValueGraphBuilder;
 import it.units.malelab.jgea.core.IndependentFactory;
+import it.units.malelab.jgea.representation.graph.Graph;
+import it.units.malelab.jgea.representation.graph.LinkedHashGraph;
 import it.units.malelab.jgea.representation.graph.numeric.Constant;
 import it.units.malelab.jgea.representation.graph.numeric.Input;
 import it.units.malelab.jgea.representation.graph.numeric.Node;
 import it.units.malelab.jgea.representation.graph.numeric.Output;
 
-import java.util.Arrays;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
  * @created 2020/08/14
  * @project jgea
  */
-public class ShallowFactory implements IndependentFactory<ValueGraph<Node, OperatorGraph.Edge>> {
+public class ShallowFactory implements IndependentFactory<Graph<Node, OperatorGraph.NonValuedArc>> {
   private final int nInputs;
   private final int nOutputs;
   private final Constant[] constants;
@@ -51,8 +47,8 @@ public class ShallowFactory implements IndependentFactory<ValueGraph<Node, Opera
   }
 
   @Override
-  public ValueGraph<Node, OperatorGraph.Edge> build(Random random) {
-    MutableValueGraph<Node, OperatorGraph.Edge> g = ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+  public Graph<Node, OperatorGraph.NonValuedArc> build(Random random) {
+    Graph<Node, OperatorGraph.NonValuedArc> g = new LinkedHashGraph<>();
     Input[] inputs = new Input[nInputs];
     Output[] outputs = new Output[nOutputs];
     for (int i = 0; i < nInputs; i++) {
@@ -72,11 +68,11 @@ public class ShallowFactory implements IndependentFactory<ValueGraph<Node, Opera
     }
     for (int o = 0; o < nOutputs; o++) {
       if (random.nextBoolean()) {
-        g.putEdgeValue(inputs[random.nextInt(inputs.length)], outputs[o], OperatorGraph.EDGE);
+        g.setArcValue(inputs[random.nextInt(inputs.length)], outputs[o], OperatorGraph.NON_VALUED_ARC);
       } else {
-        g.putEdgeValue(constants[random.nextInt(constants.length)], outputs[o], OperatorGraph.EDGE);
+        g.setArcValue(constants[random.nextInt(constants.length)], outputs[o], OperatorGraph.NON_VALUED_ARC);
       }
     }
-    return ImmutableValueGraph.copyOf(g);
+    return g;
   }
 }

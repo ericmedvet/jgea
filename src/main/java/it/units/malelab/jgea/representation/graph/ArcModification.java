@@ -17,9 +17,7 @@
 
 package it.units.malelab.jgea.representation.graph;
 
-import com.google.common.graph.*;
 import it.units.malelab.jgea.core.operator.Mutation;
-import it.units.malelab.jgea.core.util.Misc;
 
 import java.util.Random;
 
@@ -28,34 +26,24 @@ import java.util.Random;
  * @created 2020/07/10
  * @project jgea
  */
-public class EdgeModification<N, E> implements Mutation<ValueGraph<N, E>> {
-  private final Mutation<E> edgeMutation;
+public class ArcModification<N, A> implements Mutation<Graph<N, A>> {
+  private final Mutation<A> arcMutation;
   private final double rate;
 
-  public EdgeModification(Mutation<E> edgeMutation, double rate) {
-    this.edgeMutation = edgeMutation;
+  public ArcModification(Mutation<A> arcMutation, double rate) {
+    this.arcMutation = arcMutation;
     this.rate = rate;
   }
 
-  public Mutation<E> getEdgeMutation() {
-    return edgeMutation;
-  }
-
-  public double getRate() {
-    return rate;
-  }
-
   @Override
-  public ValueGraph<N, E> mutate(ValueGraph<N, E> parent, Random random) {
-    MutableValueGraph<N, E> child = Graphs.copyOf(parent);
-    if (!child.edges().isEmpty()) {
-      for (EndpointPair<N> endpointPair : child.edges()) {
-        if (random.nextDouble()<rate) {
-          E edge = child.edgeValue(endpointPair.nodeU(), endpointPair.nodeV()).get();
-          child.putEdgeValue(endpointPair.nodeU(), endpointPair.nodeV(), edgeMutation.mutate(edge, random));
-        }
+  public Graph<N, A> mutate(Graph<N, A> parent, Random random) {
+    Graph<N, A> child = LinkedHashGraph.copyOf(parent);
+    for (Graph.Arc<N> arc : child.arcs()) {
+      if (random.nextDouble() < rate) {
+        A arcValue = child.getArcValue(arc);
+        child.setArcValue(arc, arcMutation.mutate(arcValue, random));
       }
     }
-    return ImmutableValueGraph.copyOf(child);
+    return child;
   }
 }

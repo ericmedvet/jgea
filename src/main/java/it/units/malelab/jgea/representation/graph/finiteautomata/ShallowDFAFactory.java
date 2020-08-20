@@ -17,12 +17,10 @@
 
 package it.units.malelab.jgea.representation.graph.finiteautomata;
 
-import com.google.common.graph.ImmutableValueGraph;
-import com.google.common.graph.MutableValueGraph;
-import com.google.common.graph.ValueGraph;
-import com.google.common.graph.ValueGraphBuilder;
 import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.util.Misc;
+import it.units.malelab.jgea.representation.graph.Graph;
+import it.units.malelab.jgea.representation.graph.LinkedHashGraph;
 
 import java.util.Random;
 import java.util.Set;
@@ -32,27 +30,27 @@ import java.util.Set;
  * @created 2020/08/17
  * @project jgea
  */
-public class ShallowDFAFactory<C> implements IndependentFactory<ValueGraph<DeterministicFiniteAutomaton.State, Set<C>>> {
+public class ShallowDFAFactory<C> implements IndependentFactory<Graph<DeterministicFiniteAutomaton.State, Set<C>>> {
 
   private final int nOfStates;
-  private final Set<C> edgeLabels;
+  private final Set<C> arcLabels;
 
-  public ShallowDFAFactory(int nOfStates, Set<C> edgeLabels) {
+  public ShallowDFAFactory(int nOfStates, Set<C> arcLabels) {
     this.nOfStates = nOfStates;
-    this.edgeLabels = edgeLabels;
+    this.arcLabels = arcLabels;
   }
 
   @Override
-  public ValueGraph<DeterministicFiniteAutomaton.State, Set<C>> build(Random random) {
-    MutableValueGraph<DeterministicFiniteAutomaton.State, Set<C>> g = ValueGraphBuilder.directed().allowsSelfLoops(true).build();
+  public Graph<DeterministicFiniteAutomaton.State, Set<C>> build(Random random) {
+    Graph<DeterministicFiniteAutomaton.State, Set<C>> g = new LinkedHashGraph();
     DeterministicFiniteAutomaton.State[] states = new DeterministicFiniteAutomaton.State[nOfStates];
     for (int i = 0; i < nOfStates; i++) {
       states[i] = new DeterministicFiniteAutomaton.State(i, i == nOfStates - 1);
       g.addNode(states[i]);
       if (i > 0) {
-        g.putEdgeValue(states[i - 1], states[i], Set.of(Misc.pickRandomly(edgeLabels, random)));
+        g.setArcValue(states[i - 1], states[i], Set.of(Misc.pickRandomly(arcLabels, random)));
       }
     }
-    return ImmutableValueGraph.copyOf(g);
+    return g;
   }
 }

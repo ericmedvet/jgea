@@ -17,7 +17,6 @@
 
 package it.units.malelab.jgea.representation.graph;
 
-import com.google.common.graph.*;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.util.Misc;
 
@@ -29,25 +28,21 @@ import java.util.function.Predicate;
  * @created 2020/07/10
  * @project jgea
  */
-public class EdgeRemoval<N, E> implements Mutation<ValueGraph<N, E>> {
+public class ArcRemoval<N, A> implements Mutation<Graph<N, A>> {
   private final Predicate<N> unremovableNodePredicate;
 
-  public EdgeRemoval(Predicate<N> unremovableNodePredicate) {
+  public ArcRemoval(Predicate<N> unremovableNodePredicate) {
     this.unremovableNodePredicate = unremovableNodePredicate;
   }
 
-  public Predicate<N> getUnremovableNodePredicate() {
-    return unremovableNodePredicate;
-  }
-
   @Override
-  public ValueGraph<N, E> mutate(ValueGraph<N, E> parent, Random random) {
-    MutableValueGraph<N, E> child = Graphs.copyOf(parent);
-    if (!child.edges().isEmpty()) {
-      EndpointPair<N> endpointPair = Misc.pickRandomly(child.edges(), random);
-      child.removeEdge(endpointPair.nodeU(), endpointPair.nodeV());
+  public Graph<N, A> mutate(Graph<N, A> parent, Random random) {
+    Graph<N, A> child = LinkedHashGraph.copyOf(parent);
+    if (!child.arcs().isEmpty()) {
+      Graph.Arc<N> arc = Misc.pickRandomly(child.arcs(), random);
+      child.removeArc(arc);
     }
     GraphUtils.removeUnconnectedNodes(child, unremovableNodePredicate);
-    return ImmutableValueGraph.copyOf(child);
+    return child;
   }
 }

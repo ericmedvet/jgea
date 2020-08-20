@@ -19,14 +19,13 @@ package it.units.malelab.jgea.representation.graph.finiteautomata;
 
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
-import com.google.common.graph.MutableValueGraph;
-import com.google.common.graph.ValueGraph;
-import com.google.common.graph.ValueGraphBuilder;
 import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.util.Sized;
 import it.units.malelab.jgea.problem.extraction.Extractor;
+import it.units.malelab.jgea.representation.graph.Graph;
 import it.units.malelab.jgea.representation.graph.numeric.Node;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -37,7 +36,7 @@ import java.util.stream.Collectors;
  * @created 2020/08/03
  * @project jgea
  */
-public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
+public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized, Serializable {
 
   public static class State extends Node {
     private final boolean accepting;
@@ -70,10 +69,10 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
     };
   }
 
-  private final ValueGraph<State, Set<S>> graph;
+  private final Graph<State, Set<S>> graph;
   private final State startingState;
 
-  public static <K> Predicate<ValueGraph<State, Set<K>>> checker() {
+  public static <K> Predicate<Graph<State, Set<K>>> checker() {
     return graph -> {
       try {
         check(graph);
@@ -84,10 +83,7 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
     };
   }
 
-  public static <K> void check(ValueGraph<State, Set<K>> graph) {
-    if (!graph.isDirected()) {
-      throw new IllegalArgumentException("Invalid graph: indirected");
-    }
+  public static <K> void check(Graph<State, Set<K>> graph) {
     if (graph.nodes().stream().filter(s -> s.getIndex() == 0).count() != 1) {
       throw new IllegalArgumentException(String.format(
           "Invalid graph: wrong number of starting nodes: %d instead of 1",
@@ -95,12 +91,12 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
       ));
     }
     for (State state : graph.nodes()) {
-      Set<Set<K>> outgoingEdgeValues = graph.incidentEdges(state).stream()
-          .filter(e -> e.source().equals(state))
-          .map(e -> graph.edgeValue(e).orElse(new HashSet<>()))
+      Set<Set<K>> outgoingArcValues = graph.arcs().stream()
+          .filter(a -> a.getSource().equals(state))
+          .map(graph::getArcValue)
           .collect(Collectors.toSet());
-      if (outgoingEdgeValues.size() > 1) {
-        Set<K> intersection = outgoingEdgeValues.stream()
+      if (outgoingArcValues.size() > 1) {
+        Set<K> intersection = outgoingArcValues.stream()
             .reduce(Sets::intersection)
             .orElse(new HashSet<>());
         if (!intersection.isEmpty()) {
@@ -114,11 +110,11 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
     }
   }
 
-  public static <R> Function<ValueGraph<State, Set<R>>, DeterministicFiniteAutomaton<R>> builder() {
-    return nodeSetValueGraph -> new DeterministicFiniteAutomaton<>(nodeSetValueGraph);
+  public static <R> Function<Graph<State, Set<R>>, DeterministicFiniteAutomaton<R>> builder() {
+    return DeterministicFiniteAutomaton::new;
   }
 
-  public DeterministicFiniteAutomaton(ValueGraph<State, Set<S>> graph) {
+  public DeterministicFiniteAutomaton(Graph<State, Set<S>> graph) {
     check(graph);
     this.graph = graph;
     this.startingState = graph.nodes().stream().filter(s -> s.getIndex() == 0).findFirst().get();
@@ -159,8 +155,8 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
   private State next(State current, S s) {
     Set<State> successors = graph.successors(current);
     for (State successor : successors) {
-      Optional<Set<S>> symbols = graph.edgeValue(current, successor);
-      if (symbols.isPresent() && symbols.get().contains(s)) {
+      Set<S> symbols = graph.getArcValue(current, successor);
+      if (symbols != null && symbols.contains(s)) {
         return successor;
       }
     }
@@ -169,19 +165,19 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized {
 
   @Override
   public int size() {
-    return graph.nodes().size() + graph.edges().size();
+    return graph.size();
   }
 
   @Override
   public String toString() {
-    return graph.edges().stream()
-        .map(e -> String.format("%s-[%s]->%s",
-            e.source(),
-            graph.edgeValue(e).get().stream()
+    return graph.arcs().stream()
+        .map(a -> String.format("%s-[%s]->%s",
+            a.getTarget(),
+            graph.getArcValue(a).stream()
                 .sorted()
                 .map(Objects::toString)
                 .collect(Collectors.joining()),
-            e.target()))
+            a.getTarget()))
         .collect(Collectors.joining(","));
   }
 

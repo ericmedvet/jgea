@@ -18,7 +18,6 @@
 package it.units.malelab.jgea.lab;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.graph.ValueGraph;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.Evolver;
@@ -33,11 +32,15 @@ import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.problem.image.ImageReconstruction;
 import it.units.malelab.jgea.problem.image.ImageUtils;
-import it.units.malelab.jgea.problem.symbolicregression.*;
+import it.units.malelab.jgea.problem.symbolicregression.MathUtils;
+import it.units.malelab.jgea.problem.symbolicregression.RealFunction;
 import it.units.malelab.jgea.representation.graph.*;
-import it.units.malelab.jgea.representation.graph.numeric.functiongraph.*;
 import it.units.malelab.jgea.representation.graph.numeric.Node;
 import it.units.malelab.jgea.representation.graph.numeric.Output;
+import it.units.malelab.jgea.representation.graph.numeric.functiongraph.BaseFunction;
+import it.units.malelab.jgea.representation.graph.numeric.functiongraph.FunctionGraph;
+import it.units.malelab.jgea.representation.graph.numeric.functiongraph.FunctionNode;
+import it.units.malelab.jgea.representation.graph.numeric.functiongraph.ShallowSparseFactory;
 
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -80,7 +83,7 @@ public class ImageExample extends Worker {
         a("file", null)
     );
     Map<String, Evolver<?, RealFunction, Double>> evolvers = Map.ofEntries(
-        Map.entry("graph-seq-ga", new StandardEvolver<ValueGraph<Node, Double>, RealFunction, Double>(
+        Map.entry("graph-seq-ga", new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
                 .andThen(MathUtils.fromMultivariateBuilder()),
             new ShallowSparseFactory(0d, 0d, 1d, 2, 1),
@@ -92,9 +95,9 @@ public class ImageExample extends Worker {
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
                 ), 1d,
-                new EdgeModification<>((w, random) -> w + random.nextGaussian(), 1d), 5d,
-                new EdgeAddition<>(Random::nextGaussian, false), 1d,
-                new EdgeRemoval<>(node -> node instanceof Output), 0.1d,
+                new ArcModification<>((w, random) -> w + random.nextGaussian(), 1d), 5d,
+                new ArcAddition<>(Random::nextGaussian, false), 1d,
+                new ArcRemoval<>(node -> node instanceof Output), 0.1d,
                 new AlignedCrossover<>(
                     (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
                     node -> node instanceof Output,
