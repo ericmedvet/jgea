@@ -11,7 +11,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="jgea" target="13" />
+      <module name="jgea" target="14" />
     </bytecodeTargetLevel>
   </component>
 </project>
