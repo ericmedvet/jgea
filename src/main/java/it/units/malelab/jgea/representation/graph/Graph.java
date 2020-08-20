@@ -19,6 +19,7 @@ package it.units.malelab.jgea.representation.graph;
 
 import it.units.malelab.jgea.core.util.Sized;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -30,7 +31,7 @@ import java.util.stream.Collectors;
  * @project jgea
  */
 public interface Graph<N, A> extends Sized {
-  class Arc<N> {
+  class Arc<N> implements Serializable {
     private final N source;
     private final N target;
 
