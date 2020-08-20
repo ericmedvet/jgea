@@ -84,7 +84,7 @@ public class ImageExample extends Worker {
             FunctionGraph.builder()
                 .andThen(MathUtils.fromMultivariateBuilder()),
             new ShallowSparseFactory(0d, 0d, 1d, 2, 1),
-            PartialComparator.from(Double.class).on(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::getFitness),
             nPop,
             Map.of(
                 new NodeAddition<>(

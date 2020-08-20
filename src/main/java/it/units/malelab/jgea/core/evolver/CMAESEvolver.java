@@ -266,7 +266,7 @@ public class CMAESEvolver<S, F extends Comparable<F>> extends AbstractIterativeE
     List<Individual<List<Double>, S, F>> bestMuPoints = population
         .all()
         .stream()
-        .sorted(Comparator.comparing(Individual::getFitness))
+        .sorted(individualComparator.comparator())
         .limit(mu)
         .collect(Collectors.toList());
     double[] distrMean = state.getDistrMean();

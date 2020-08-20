@@ -61,7 +61,7 @@ public interface PartialComparator<K> {
     };
   }
 
-  default <C> PartialComparator<C> on(Function<? super C, ? extends K> function) {
+  default <C> PartialComparator<C> comparing(Function<? super C, ? extends K> function) {
     return (c1, c2) -> compare(function.apply(c1), function.apply(c2));
   }
 

@@ -106,7 +106,7 @@ public class RobotContactsDE extends Worker {
               StandardEvolver<List<Double>, List<Double>, List<Double>> evolver = new StandardEvolver<>(
                   Function.identity(),
                   new FixedLengthListFactory<>(nContact * 2, new UniformDoubleFactory(-1, 1)),
-                  new LexicoGraphical(seq(fitness.getValue().length)).reversed().on(Individual::getFitness),
+                  new LexicoGraphical(seq(fitness.getValue().length)).reversed().comparing(Individual::getFitness),
                   population,
                   Map.of(new GeometricCrossover().andThen(new GaussianMutation(0.1d)), 1d),
                   new Tournament(3),

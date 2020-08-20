@@ -100,7 +100,7 @@ public class IntrinsicDimensionAssessment extends Worker {
           StandardEvolver<BitString, List<Tree<Element>>, Double> evolver = new StandardEvolver<>(
               mapper.andThen(problem.getSolutionMapper()),
               new BitStringFactory(genotypeSize),
-              PartialComparator.from(Double.class).on(Individual::getFitness),
+              PartialComparator.from(Double.class).comparing(Individual::getFitness),
               population,
               operators,
               new Tournament(3),

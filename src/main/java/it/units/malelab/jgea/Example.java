@@ -96,18 +96,18 @@ public class Example extends Worker {
         new RandomSearch<>(
             Function.identity(),
             new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
-            PartialComparator.from(Double.class).on(Individual::getFitness)
+            PartialComparator.from(Double.class).comparing(Individual::getFitness)
         ),
         new RandomWalk<>(
             Function.identity(),
             new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
-            PartialComparator.from(Double.class).on(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::getFitness),
             new GaussianMutation(0.01d)
         ),
         new StandardEvolver<>(
             Function.identity(),
             new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
-            PartialComparator.from(Double.class).on(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::getFitness),
             100,
             Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
             new Tournament(5),
@@ -148,18 +148,18 @@ public class Example extends Worker {
         new RandomSearch<>(
             Function.identity(),
             new BitStringFactory(100),
-            PartialComparator.from(Double.class).on(Individual::getFitness)
+            PartialComparator.from(Double.class).comparing(Individual::getFitness)
         ),
         new RandomWalk<>(
             Function.identity(),
             new BitStringFactory(100),
-            PartialComparator.from(Double.class).on(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::getFitness),
             new BitFlipMutation(0.01d)
         ),
         new StandardEvolver<>(
             Function.identity(),
             new BitStringFactory(100),
-            PartialComparator.from(Double.class).on(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::getFitness),
             100,
             Map.of(
                 new UniformCrossover<>(new BitStringFactory(100)), 0.8d,
@@ -173,7 +173,7 @@ public class Example extends Worker {
         new StandardWithEnforcedDiversityEvolver<>(
             Function.identity(),
             new BitStringFactory(100),
-            PartialComparator.from(Double.class).on(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::getFitness),
             100,
             Map.of(
                 new UniformCrossover<>(new BitStringFactory(100)), 0.8d,
@@ -223,7 +223,7 @@ public class Example extends Worker {
                 .andThen(n -> TreeBasedRealFunction.from(n, "x"))
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
-            PartialComparator.from(Double.class).on(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::getFitness),
             100,
             Map.of(
                 new SameRootSubtreeCrossover<>(12), 0.8d,
@@ -239,7 +239,7 @@ public class Example extends Worker {
                 .andThen(n -> TreeBasedRealFunction.from(n, "x"))
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new GrammarRampedHalfAndHalf<>(3, 12, srGrammar).withOptimisticUniqueness(100),
-            PartialComparator.from(Double.class).on(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::getFitness),
             100,
             Map.of(
                 new SameRootSubtreeCrossover<>(12), 0.8d,
@@ -295,7 +295,7 @@ public class Example extends Worker {
                 .andThen(n -> TreeBasedRealFunction.from(n, "x"))
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
-            new ParetoDominance<>(Double.class).on(Individual::getFitness),
+            new ParetoDominance<>(Double.class).comparing(Individual::getFitness),
             100,
             Map.of(
                 new SameRootSubtreeCrossover<>(12), 0.8d,
@@ -311,7 +311,7 @@ public class Example extends Worker {
                 .andThen(n -> TreeBasedRealFunction.from(n, "x"))
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new GrammarRampedHalfAndHalf<>(3, 12, srGrammar).withOptimisticUniqueness(100),
-            new ParetoDominance<>(Double.class).on(Individual::getFitness),
+            new ParetoDominance<>(Double.class).comparing(Individual::getFitness),
             100,
             Map.of(
                 new SameRootSubtreeCrossover<>(12), 0.8d,
@@ -367,7 +367,7 @@ public class Example extends Worker {
     Evolver<Tree<String>, List<Tree<Element>>, Double> evolver = new StandardEvolver<>(
         new it.units.malelab.jgea.problem.booleanfunction.FormulaMapper(),
         new GrammarRampedHalfAndHalf<>(3, 12, p.getGrammar()),
-        PartialComparator.from(Double.class).on(Individual::getFitness),
+        PartialComparator.from(Double.class).comparing(Individual::getFitness),
         100,
         Map.of(
             new SameRootSubtreeCrossover<>(12), 0.8d,
@@ -405,7 +405,7 @@ public class Example extends Worker {
         new StandardEvolver<>(
             Function.identity(),
             new FixedLengthListFactory<>(10, new UniformDoubleFactory(-10, 10)),
-            PartialComparator.from(Double.class).on(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::getFitness),
             100,
             Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
             new Tournament(5),
@@ -416,7 +416,7 @@ public class Example extends Worker {
         new CMAESEvolver<>(
             Function.identity(),
             new FixedLengthListFactory<>(10, new UniformDoubleFactory(-10, 10)),
-            PartialComparator.from(Double.class).on(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::getFitness),
             -10,
             10
         )
@@ -453,7 +453,7 @@ public class Example extends Worker {
         new StandardEvolver<>(
             Function.identity(),
             new FixedLengthListFactory<>(10, new UniformDoubleFactory(-5.12, 5.12)),
-            PartialComparator.from(Double.class).on(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::getFitness),
             100,
             Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
             new Tournament(5),
@@ -464,7 +464,7 @@ public class Example extends Worker {
         new CMAESEvolver<>(
             Function.identity(),
             new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
-            PartialComparator.from(Double.class).on(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::getFitness),
             -5.12,
             5.12
         )

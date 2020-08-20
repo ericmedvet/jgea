@@ -150,7 +150,7 @@ public class RepresentationEvolution extends Worker {
             Evolver<Tree<String>, Pair<Tree<Element>, Tree<Element>>, List<Double>> evolver = new StandardWithEnforcedDiversityEvolver<>(
                 mapperGeneration.getSolutionMapper(),
                 new GrammarRampedHalfAndHalf<>(3, learningDepth, mapperGeneration.getGrammar()),
-                PartialComparator.from(Double.class).on(new Linearization(weights).compose(Individual::getFitness)),
+                PartialComparator.from(Double.class).comparing(new Linearization(weights).compose(Individual::getFitness)),
                 learningPopulation,
                 operators,
                 new Tournament(3),
@@ -276,7 +276,7 @@ public class RepresentationEvolution extends Worker {
       StandardEvolver innerEvolver = new StandardEvolver(
           recursiveMapper.andThen(innerProblemEntry.getValue().getProblem().getSolutionMapper()),
           new BitStringFactory(validationGenotypeSize),
-          PartialComparator.from(Double.class).on((Function<Individual<?, ?, Double>, Double>) Individual::getFitness),
+          PartialComparator.from(Double.class).comparing((Function<Individual<?, ?, Double>, Double>) Individual::getFitness),
           validationPopulation,
           innerOperators,
           new Tournament(3),
