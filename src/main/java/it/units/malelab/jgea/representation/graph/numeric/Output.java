@@ -17,6 +17,8 @@
 
 package it.units.malelab.jgea.representation.graph.numeric;
 
+import it.units.malelab.jgea.representation.graph.Node;
+
 /**
  * @author eric
  * @created 2020/08/04

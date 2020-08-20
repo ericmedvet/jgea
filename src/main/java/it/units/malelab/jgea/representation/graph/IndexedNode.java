@@ -17,6 +17,7 @@
 
 package it.units.malelab.jgea.representation.graph;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
 
@@ -25,7 +26,7 @@ import java.util.function.Function;
  * @created 2020/08/11
  * @project jgea
  */
-public class IndexedNode<C> {
+public class IndexedNode<C> implements Serializable {
 
   public static <H, K extends H> Function<K, IndexedNode<H>> hashMapper(Class<H> c) {
     return k -> new IndexedNode<>(Objects.hash(k.getClass(), k), k);

@@ -46,7 +46,7 @@ import it.units.malelab.jgea.representation.grammar.cfggp.GrammarRampedHalfAndHa
 import it.units.malelab.jgea.representation.graph.*;
 import it.units.malelab.jgea.representation.graph.finiteautomata.DeterministicFiniteAutomaton;
 import it.units.malelab.jgea.representation.graph.finiteautomata.ShallowDFAFactory;
-import it.units.malelab.jgea.representation.graph.numeric.Node;
+import it.units.malelab.jgea.representation.graph.Node;
 import it.units.malelab.jgea.representation.tree.SameRootSubtreeCrossover;
 import it.units.malelab.jgea.representation.tree.Tree;
 

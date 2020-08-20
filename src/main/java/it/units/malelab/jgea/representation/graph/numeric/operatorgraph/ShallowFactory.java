@@ -22,7 +22,7 @@ import it.units.malelab.jgea.representation.graph.Graph;
 import it.units.malelab.jgea.representation.graph.LinkedHashGraph;
 import it.units.malelab.jgea.representation.graph.numeric.Constant;
 import it.units.malelab.jgea.representation.graph.numeric.Input;
-import it.units.malelab.jgea.representation.graph.numeric.Node;
+import it.units.malelab.jgea.representation.graph.Node;
 import it.units.malelab.jgea.representation.graph.numeric.Output;
 
 import java.util.Random;

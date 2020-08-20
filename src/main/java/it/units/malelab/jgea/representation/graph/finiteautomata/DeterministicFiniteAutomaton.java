@@ -23,7 +23,7 @@ import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.util.Sized;
 import it.units.malelab.jgea.problem.extraction.Extractor;
 import it.units.malelab.jgea.representation.graph.Graph;
-import it.units.malelab.jgea.representation.graph.numeric.Node;
+import it.units.malelab.jgea.representation.graph.Node;
 
 import java.io.Serializable;
 import java.util.*;

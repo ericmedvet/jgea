@@ -35,7 +35,7 @@ import it.units.malelab.jgea.problem.image.ImageUtils;
 import it.units.malelab.jgea.problem.symbolicregression.MathUtils;
 import it.units.malelab.jgea.problem.symbolicregression.RealFunction;
 import it.units.malelab.jgea.representation.graph.*;
-import it.units.malelab.jgea.representation.graph.numeric.Node;
+import it.units.malelab.jgea.representation.graph.Node;
 import it.units.malelab.jgea.representation.graph.numeric.Output;
 import it.units.malelab.jgea.representation.graph.numeric.functiongraph.BaseFunction;
 import it.units.malelab.jgea.representation.graph.numeric.functiongraph.FunctionGraph;

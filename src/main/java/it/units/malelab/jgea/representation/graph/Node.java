@@ -15,8 +15,9 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.units.malelab.jgea.representation.graph.numeric;
+package it.units.malelab.jgea.representation.graph;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -24,7 +25,7 @@ import java.util.Objects;
  * @created 2020/08/04
  * @project jgea
  */
-public abstract class Node {
+public abstract class Node implements Serializable {
   protected final int index;
 
   public Node(int index) {

@@ -19,9 +19,7 @@ package it.units.malelab.jgea.representation.graph.numeric.operatorgraph;
 
 import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.problem.symbolicregression.RealFunction;
-import it.units.malelab.jgea.representation.graph.numeric.Node;
-import it.units.malelab.jgea.representation.graph.numeric.functiongraph.BaseFunction;
-import it.units.malelab.jgea.representation.graph.numeric.functiongraph.FunctionNode;
+import it.units.malelab.jgea.representation.graph.Node;
 
 import java.util.Objects;
 import java.util.Random;
