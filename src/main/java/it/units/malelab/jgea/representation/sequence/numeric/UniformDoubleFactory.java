@@ -37,6 +37,6 @@ public class UniformDoubleFactory implements IndependentFactory<Double> {
 
   @Override
   public Double build(Random random) {
-    return random.nextDouble() * (max - min) + max;
+    return random.nextDouble() * (max - min) + min;
   }
 }
