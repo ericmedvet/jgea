@@ -1,0 +1,38 @@
+plugins {
+    id 'java-library'
+    id 'idea'
+    id 'com.github.johnrengelman.shadow' version '6.0.0'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_14
+    targetCompatibility = JavaVersion.VERSION_14
+}
+
+version = '1.2.0'
+def junitVersion = '5.6.2'
+
+dependencies {
+    implementation 'org.apache.commons:commons-math3:3.6.1'
+    implementation 'com.google.guava:guava:29.0-jre'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+dependencies {
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
+}
+
+shadowJar {
+    archiveBaseName = 'shadow'
+    classifier = ''
+    archiveVersion = ''
+}
