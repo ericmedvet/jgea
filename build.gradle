@@ -14,14 +14,7 @@ java {
     targetCompatibility = JavaVersion.VERSION_14
 }
 
-compileJava {
-    options.incremental = true
-    options.encoding = 'UTF-8'
-    //options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-    options.compilerArgs << "-Xlint:all"
-}
-
-version = '1.2.1'
+version = '1.2.0'
 def junitVersion = '5.6.2'
 
 dependencies {
@@ -40,6 +33,6 @@ dependencies {
 
 shadowJar {
     archiveBaseName = 'shadow'
-    archiveClassifier = ''
+    classifier = ''
     archiveVersion = ''
 }
