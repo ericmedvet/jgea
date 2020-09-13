@@ -47,25 +47,26 @@ public class MultiFileListenerFactory<G, S, F> {
     streams = new HashMap<>();
   }
 
-  public String getBaseDirName() {
-    return baseDirName;
-  }
+    public String getBaseDirName() {
+        return baseDirName;
+    }
 
-  public String getBaseFileName() {
-    return baseFileName;
-  }
+    public String getBaseFileName() {
+        return baseFileName;
+    }
 
-  public Listener<G, S, F> build(DataCollector<? super G, ? super S, ? super F>... collectors) {
-    return new PrintStreamListener<G, S, F>(null, false, 0, ";", ";", collectors) {
-      @Override
-      public void listen(Event<? extends G, ? extends S, ? extends F> event) {
-        //collect items
-        List<List<Item>> items = collectItems(event);
-        //retrieve printstream
-        List<String> names = items.stream()
-            .map(is -> is.stream().map(Item::getName))
-            .reduce(Stream::concat)
-            .get()
+    @SafeVarargs
+    public final Listener<G, S, F> build(DataCollector<? super G, ? super S, ? super F>... collectors) {
+        return new PrintStreamListener<G, S, F>(null, false, 0, ";", ";", collectors) {
+            @Override
+            public void listen(Event<? extends G, ? extends S, ? extends F> event) {
+                //collect items
+                List<List<Item>> items = collectItems(event);
+                //retrieve printstream
+                List<String> names = items.stream()
+                        .map(is -> is.stream().map(Item::getName))
+                        .reduce(Stream::concat)
+                        .get()
             .collect(Collectors.toList());
         PrintStream ps = null;
         synchronized (streams) {

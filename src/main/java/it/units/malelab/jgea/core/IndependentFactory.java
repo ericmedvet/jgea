@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -38,10 +37,12 @@ public interface IndependentFactory<T> extends Factory<T> {
 
   T build(Random random);
 
-  static <K> IndependentFactory<K> picker(K... ks) {
-    return random -> ks[random.nextInt(ks.length)];
-  }
+    @SafeVarargs
+    static <K> IndependentFactory<K> picker(K... ks) {
+        return random -> ks[random.nextInt(ks.length)];
+    }
 
+    @SafeVarargs
   static <K> IndependentFactory<K> oneOf(IndependentFactory<K>... factories) {
     return random -> factories[random.nextInt(factories.length)].build(random);
   }

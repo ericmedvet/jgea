@@ -39,51 +39,52 @@ public interface Evolver<G, S, F> {
       ExecutorService executor,
       Listener<? super G, ? super S, ? super F> listener) throws InterruptedException, ExecutionException;
 
-  class State implements Serializable {
-    private int iterations = 0;
-    private int births = 0;
-    private int fitnessEvaluations = 0;
-    private long elapsedMillis = 0;
+    @SuppressWarnings("serial")
+    class State implements Serializable {
+        private int iterations = 0;
+        private int births = 0;
+        private int fitnessEvaluations = 0;
+        private long elapsedMillis = 0;
 
-    public int getIterations() {
-      return iterations;
+        public int getIterations() {
+            return iterations;
+        }
+
+        public void setIterations(int iterations) {
+            this.iterations = iterations;
+        }
+
+        public int getBirths() {
+            return births;
+        }
+
+        public void setBirths(int births) {
+            this.births = births;
+        }
+
+        public int getFitnessEvaluations() {
+            return fitnessEvaluations;
+        }
+
+        public void setFitnessEvaluations(int fitnessEvaluations) {
+            this.fitnessEvaluations = fitnessEvaluations;
+        }
+
+        public long getElapsedMillis() {
+            return elapsedMillis;
+        }
+
+        public void setElapsedMillis(long elapsedMillis) {
+            this.elapsedMillis = elapsedMillis;
+        }
+
+        public void incIterations(int n) {
+            setIterations(getIterations() + n);
+        }
+
+        public void incBirths(int n) {
+            setBirths(getBirths() + n);
+        }
+
     }
-
-    public void setIterations(int iterations) {
-      this.iterations = iterations;
-    }
-
-    public int getBirths() {
-      return births;
-    }
-
-    public void setBirths(int births) {
-      this.births = births;
-    }
-
-    public int getFitnessEvaluations() {
-      return fitnessEvaluations;
-    }
-
-    public void setFitnessEvaluations(int fitnessEvaluations) {
-      this.fitnessEvaluations = fitnessEvaluations;
-    }
-
-    public long getElapsedMillis() {
-      return elapsedMillis;
-    }
-
-    public void setElapsedMillis(long elapsedMillis) {
-      this.elapsedMillis = elapsedMillis;
-    }
-
-    public void incIterations(int n) {
-      setIterations(getIterations() + n);
-    }
-
-    public void incBirths(int n) {
-      setBirths(getBirths() + n);
-    }
-
-  }
 }
