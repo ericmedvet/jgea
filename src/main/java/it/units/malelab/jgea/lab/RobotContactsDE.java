@@ -35,7 +35,10 @@ import it.units.malelab.jgea.representation.sequence.numeric.GeometricCrossover;
 import it.units.malelab.jgea.representation.sequence.numeric.UniformDoubleFactory;
 
 import java.io.FileNotFoundException;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -103,15 +106,15 @@ public class RobotContactsDE extends Worker {
                   fitness.getValue()
               );
               StandardEvolver<List<Double>, List<Double>, List<Double>> evolver = new StandardEvolver<>(
-                  Function.identity(),
-                  new FixedLengthListFactory<>(nContact * 2, new UniformDoubleFactory(-1, 1)),
-                  new LexicoGraphical(seq(fitness.getValue().length)).reversed().comparing(Individual::getFitness),
-                  population,
-                  Map.of(new GeometricCrossover().andThen(new GaussianMutation(0.1d)), 1d),
-                  new Tournament(3),
-                  new Worst(),
-                  population,
-                  true
+                      Function.identity(),
+                      new FixedLengthListFactory<>(nContact * 2, new UniformDoubleFactory(-1, 1)),
+                      new LexicoGraphical(seq(fitness.getValue().length)).reversed().comparing(f -> fitness.getValue()),
+                      population,
+                      Map.of(new GeometricCrossover().andThen(new GaussianMutation(0.1d)), 1d),
+                      new Tournament(3),
+                      new Worst(),
+                      population,
+                      true
               );
               Random random = new Random(run);
               Map<String, String> keys = new LinkedHashMap<>();

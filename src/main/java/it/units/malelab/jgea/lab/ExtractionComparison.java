@@ -45,7 +45,6 @@ import it.units.malelab.jgea.representation.grammar.cfggp.GrammarRampedHalfAndHa
 import it.units.malelab.jgea.representation.graph.*;
 import it.units.malelab.jgea.representation.graph.finiteautomata.DeterministicFiniteAutomaton;
 import it.units.malelab.jgea.representation.graph.finiteautomata.ShallowDFAFactory;
-import it.units.malelab.jgea.representation.graph.Node;
 import it.units.malelab.jgea.representation.tree.SameRootSubtreeCrossover;
 import it.units.malelab.jgea.representation.tree.Tree;
 
@@ -105,20 +104,20 @@ public class ExtractionComparison extends Worker {
         Map.entry("cfgtree-ga", p -> {
           RegexGrammar g = new RegexGrammar(p.getFitnessFunction(), options);
           return new StandardEvolver<Tree<String>, Extractor<Character>, List<Double>>(
-              (Tree<String> tree) -> new RegexBasedExtractor(tree.leaves().stream()
-                  .map(Tree::content)
-                  .collect(Collectors.joining())),
-              new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
-              new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparing(Individual::getFitness),
-              nPop,
-              Map.of(
-                  new SameRootSubtreeCrossover<>(maxHeight + 4), 0.8d,
-                  new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
-              ),
-              new Tournament(nTournament),
-              new Worst(),
-              nPop,
-              true
+                  (Tree<String> tree) -> new RegexBasedExtractor(tree.leaves().stream()
+                          .map(Tree::content)
+                          .collect(Collectors.joining())),
+                  new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
+                  new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparing(whatever -> p.getFitnessFunction()),
+                  nPop,
+                  Map.of(
+                          new SameRootSubtreeCrossover<>(maxHeight + 4), 0.8d,
+                          new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
+                  ),
+                  new Tournament(nTournament),
+                  new Worst(),
+                  nPop,
+                  true
           );
         }),
         Map.entry("dfa-hash+-speciated", p -> {
@@ -132,21 +131,21 @@ public class ExtractionComparison extends Worker {
               .orElse(Set.of());
           Predicate<Graph<DeterministicFiniteAutomaton.State, Set<Character>>> checker = DeterministicFiniteAutomaton.checker();
           return new SpeciatedEvolver<Graph<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>, Extractor<Character>, List<Double>>(
-              graphMapper
-                  .andThen(DeterministicFiniteAutomaton.builder()),
-              new ShallowDFAFactory<Character>(2, positiveChars)
-                  .then(GraphUtils.mapper(IndexedNode.incrementerMapper(DeterministicFiniteAutomaton.State.class), Misc::first)),
-              new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparing(Individual::getFitness),
-              nPop,
-              Map.of(
-                  new IndexedNodeAddition<DeterministicFiniteAutomaton.State, DeterministicFiniteAutomaton.State, Set<Character>>(
-                      DeterministicFiniteAutomaton.sequentialStateFactory(2, 0.5),
-                      Node::getIndex,
-                      2,
-                      Mutation.copy(),
-                      Mutation.copy()
-                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
-                  new ArcModification<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
+                  graphMapper
+                          .andThen(DeterministicFiniteAutomaton.builder()),
+                  new ShallowDFAFactory<Character>(2, positiveChars)
+                          .then(GraphUtils.mapper(IndexedNode.incrementerMapper(DeterministicFiniteAutomaton.State.class), Misc::first)),
+                  new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparing(whatever -> p.getFitnessFunction()),
+                  nPop,
+                  Map.of(
+                          new IndexedNodeAddition<DeterministicFiniteAutomaton.State, DeterministicFiniteAutomaton.State, Set<Character>>(
+                                  DeterministicFiniteAutomaton.sequentialStateFactory(2, 0.5),
+                                  Node::getIndex,
+                                  2,
+                                  Mutation.copy(),
+                                  Mutation.copy()
+                          ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
+                          new ArcModification<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
                       (cs, r) -> {
                         if (cs.size() == positiveChars.size()) {
                           return Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
@@ -196,19 +195,19 @@ public class ExtractionComparison extends Worker {
               .orElse(Set.of());
           Predicate<Graph<DeterministicFiniteAutomaton.State, Set<Character>>> checker = DeterministicFiniteAutomaton.checker();
           return new SpeciatedEvolver<Graph<DeterministicFiniteAutomaton.State, Set<Character>>, Extractor<Character>, List<Double>>(
-              DeterministicFiniteAutomaton.builder(),
-              new ShallowDFAFactory<Character>(2, positiveChars),
-              new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparing(Individual::getFitness),
-              nPop,
-              Map.of(
-                  new NodeAddition<DeterministicFiniteAutomaton.State, Set<Character>>(
-                      DeterministicFiniteAutomaton.sequentialStateFactory(2, 0.5),
-                      Mutation.copy(),
-                      Mutation.copy()
-                  ).withChecker(checker), graphNodeAdditionRate,
-                  new ArcModification<DeterministicFiniteAutomaton.State, Set<Character>>(
-                      (cs, r) -> {
-                        if (cs.size() == positiveChars.size()) {
+                  DeterministicFiniteAutomaton.builder(),
+                  new ShallowDFAFactory<Character>(2, positiveChars),
+                  new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparing(whatever -> p.getFitnessFunction()),
+                  nPop,
+                  Map.of(
+                          new NodeAddition<DeterministicFiniteAutomaton.State, Set<Character>>(
+                                  DeterministicFiniteAutomaton.sequentialStateFactory(2, 0.5),
+                                  Mutation.copy(),
+                                  Mutation.copy()
+                          ).withChecker(checker), graphNodeAdditionRate,
+                          new ArcModification<DeterministicFiniteAutomaton.State, Set<Character>>(
+                                  (cs, r) -> {
+                                      if (cs.size() == positiveChars.size()) {
                           return Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
                         }
                         if (cs.size() <= 1) {
@@ -260,21 +259,21 @@ public class ExtractionComparison extends Worker {
               .orElse(Set.of());
           Predicate<Graph<DeterministicFiniteAutomaton.State, Set<Character>>> checker = DeterministicFiniteAutomaton.checker();
           return new StandardEvolver<Graph<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>, Extractor<Character>, List<Double>>(
-              graphMapper
-                  .andThen(DeterministicFiniteAutomaton.builder()),
-              new ShallowDFAFactory<Character>(2, positiveChars)
-                  .then(GraphUtils.mapper(IndexedNode.incrementerMapper(DeterministicFiniteAutomaton.State.class), Misc::first)),
-              new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparing(Individual::getFitness),
-              nPop,
-              Map.of(
-                  new IndexedNodeAddition<DeterministicFiniteAutomaton.State, DeterministicFiniteAutomaton.State, Set<Character>>(
-                      DeterministicFiniteAutomaton.sequentialStateFactory(2, 0.5),
-                      Node::getIndex,
-                      2,
-                      Mutation.copy(),
-                      Mutation.copy()
-                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
-                  new ArcModification<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
+                  graphMapper
+                          .andThen(DeterministicFiniteAutomaton.builder()),
+                  new ShallowDFAFactory<Character>(2, positiveChars)
+                          .then(GraphUtils.mapper(IndexedNode.incrementerMapper(DeterministicFiniteAutomaton.State.class), Misc::first)),
+                  new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparing(whatever -> p.getFitnessFunction()),
+                  nPop,
+                  Map.of(
+                          new IndexedNodeAddition<DeterministicFiniteAutomaton.State, DeterministicFiniteAutomaton.State, Set<Character>>(
+                                  DeterministicFiniteAutomaton.sequentialStateFactory(2, 0.5),
+                                  Node::getIndex,
+                                  2,
+                                  Mutation.copy(),
+                                  Mutation.copy()
+                          ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
+                          new ArcModification<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
                       (cs, r) -> {
                         if (cs.size() == positiveChars.size()) {
                           return Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
@@ -316,21 +315,21 @@ public class ExtractionComparison extends Worker {
               .orElse(Set.of());
           Predicate<Graph<DeterministicFiniteAutomaton.State, Set<Character>>> checker = DeterministicFiniteAutomaton.checker();
           return new SpeciatedEvolver<Graph<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>, Extractor<Character>, List<Double>>(
-              graphMapper
-                  .andThen(DeterministicFiniteAutomaton.builder()),
-              new ShallowDFAFactory<Character>(2, positiveChars)
-                  .then(GraphUtils.mapper(IndexedNode.incrementerMapper(DeterministicFiniteAutomaton.State.class), Misc::first)),
-              new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparing(Individual::getFitness),
-              nPop,
-              Map.of(
-                  new IndexedNodeAddition<DeterministicFiniteAutomaton.State, DeterministicFiniteAutomaton.State, Set<Character>>(
-                      DeterministicFiniteAutomaton.sequentialStateFactory(2, 0.5),
-                      Node::getIndex,
-                      2,
-                      Mutation.copy(),
-                      Mutation.copy()
-                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
-                  new ArcModification<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
+                  graphMapper
+                          .andThen(DeterministicFiniteAutomaton.builder()),
+                  new ShallowDFAFactory<Character>(2, positiveChars)
+                          .then(GraphUtils.mapper(IndexedNode.incrementerMapper(DeterministicFiniteAutomaton.State.class), Misc::first)),
+                  new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparing(whatever -> p.getFitnessFunction()),
+                  nPop,
+                  Map.of(
+                          new IndexedNodeAddition<DeterministicFiniteAutomaton.State, DeterministicFiniteAutomaton.State, Set<Character>>(
+                                  DeterministicFiniteAutomaton.sequentialStateFactory(2, 0.5),
+                                  Node::getIndex,
+                                  2,
+                                  Mutation.copy(),
+                                  Mutation.copy()
+                          ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
+                          new ArcModification<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
                       (cs, r) -> {
                         if (cs.size() == positiveChars.size()) {
                           return Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));

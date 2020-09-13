@@ -23,30 +23,30 @@ import java.util.List;
  * @created 2020/06/17
  * @project jgea
  */
-public class LexicoGraphical implements PartialComparator<List<? extends Comparable<?>>> {
+public class LexicoGraphical<K extends Comparable<? super K>> implements PartialComparator<List<K>> {
 
-  private final int[] order;
+    private final int[] order;
 
-  public LexicoGraphical(int... order) {
-    this.order = order;
-  }
-
-  @Override
-  public PartialComparatorOutcome compare(List<? extends Comparable<?>> k1, List<? extends Comparable<?>> k2) {
-    if (k1.size() != k2.size()) {
-      return PartialComparatorOutcome.NOT_COMPARABLE;
+    public LexicoGraphical(int... order) {
+        this.order = order;
     }
-    for (int i : order) {
-      Comparable o1 = k1.get(i);
-      Comparable o2 = k2.get(i);
-      int outcome = o1.compareTo(o2);
-      if (outcome < 0) {
-        return PartialComparatorOutcome.BEFORE;
-      }
-      if (outcome > 0) {
-        return PartialComparatorOutcome.AFTER;
-      }
-    }
+
+    @Override
+    public PartialComparatorOutcome compare(List<K> k1, List<K> k2) {
+        if (k1.size() != k2.size()) {
+            return PartialComparatorOutcome.NOT_COMPARABLE;
+        }
+        for (int i : order) {
+            K o1 = k1.get(i);
+            K o2 = k2.get(i);
+            int outcome = o1.compareTo(o2);
+            if (outcome < 0) {
+                return PartialComparatorOutcome.BEFORE;
+            }
+            if (outcome > 0) {
+                return PartialComparatorOutcome.AFTER;
+            }
+        }
     return PartialComparatorOutcome.SAME;
   }
 }
