@@ -29,6 +29,7 @@ import java.util.Objects;
  *
  * @author eric
  */
+@SuppressWarnings("serial")
 public class Triplet<F, S, T> extends Pair<F, S> {
 
   private final T third;

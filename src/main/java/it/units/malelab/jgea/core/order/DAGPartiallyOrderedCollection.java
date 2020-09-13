@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * @project jgea
  */
 public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollection<T> {
-
+  @SuppressWarnings("serial")
   private static class Node<T1> implements Serializable {
     private final T1 content;
     private final Collection<Node<T1>> beforeNodes = new ArrayList<>();

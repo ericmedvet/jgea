@@ -21,20 +21,15 @@
  */
 package it.units.malelab.jgea.core.listener;
 
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.IllegalFormatException;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import it.units.malelab.jgea.core.listener.collector.DataCollector;
 import it.units.malelab.jgea.core.listener.collector.Item;
 
+import java.io.PrintStream;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -55,36 +50,37 @@ public class PrintStreamListener<G, S, F> implements Listener<G, S, F> {
 
   private final static Logger L = Logger.getLogger(PrintStreamListener.class.getName());
 
-  public PrintStreamListener(
-      PrintStream ps,
-      boolean format,
-      int headerInterval,
-      String innerSeparator,
-      String outerSeparator,
-      DataCollector<? super G, ? super S, ? super F>... collectors) {
-    this.ps = ps;
-    this.format = format;
-    this.headerInterval = headerInterval;
-    this.innerSeparator = innerSeparator;
-    this.outerSeparator = outerSeparator;
-    this.collectors = Arrays.asList(collectors);
-    firstItems = new ArrayList<>();
-    sizes = new ArrayList<>();
-    lines = 0;
-  }
-
-  @Override
-  public void listen(Event<? extends G, ? extends S, ? extends F> event) {
-    //collect items
-    List<List<Item>> items = collectItems(event);
-    //possibly print headers
-    if ((lines == 0) || ((headerInterval > 0) && (event.getState().getIterations() % headerInterval == 0))) {
-      String headers = buildHeadersString();
-      synchronized (ps) {
-        ps.println(headers);
-      }
+    @SafeVarargs
+    public PrintStreamListener(
+            PrintStream ps,
+            boolean format,
+            int headerInterval,
+            String innerSeparator,
+            String outerSeparator,
+            DataCollector<? super G, ? super S, ? super F>... collectors) {
+        this.ps = ps;
+        this.format = format;
+        this.headerInterval = headerInterval;
+        this.innerSeparator = innerSeparator;
+        this.outerSeparator = outerSeparator;
+        this.collectors = Arrays.asList(collectors);
+        firstItems = new ArrayList<>();
+        sizes = new ArrayList<>();
+        lines = 0;
     }
-    //print values: collectors
+
+    @Override
+    public void listen(Event<? extends G, ? extends S, ? extends F> event) {
+        //collect items
+        List<List<Item>> items = collectItems(event);
+        //possibly print headers
+        if ((lines == 0) || ((headerInterval > 0) && (event.getState().getIterations() % headerInterval == 0))) {
+            String headers = buildHeadersString();
+            synchronized (ps) {
+                ps.println(headers);
+            }
+        }
+        //print values: collectors
     String data = buildDataString(items);
     synchronized (ps) {
       ps.println(data);

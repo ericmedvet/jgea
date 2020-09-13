@@ -19,11 +19,11 @@ package it.units.malelab.jgea.core;
 
 import java.io.Serializable;
 import java.util.Objects;
-import java.util.function.Function;
 
 /**
  * @author eric
  */
+@SuppressWarnings("serial")
 public class Individual<G, S, F> implements Serializable {
 
   private final G genotype;

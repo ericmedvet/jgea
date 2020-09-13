@@ -89,91 +89,92 @@ public class CMAESEvolver<S, F extends Comparable<F>> extends AbstractIterativeE
 
   private static final Logger L = Logger.getLogger(CMAESEvolver.class.getName());
 
-  protected class CMAESState extends State {
-    // Step-size
-    private double stepSize = 0.5;
-    // Mean value of the search distribution
-    private double[] distrMean = new double[size];
-    // Evolution path for step-size
-    private double[] sEvolutionPath = new double[size];
-    // Evolution path for covariance matrix, a sequence of successive (normalized) steps, the strategy
-    // takes over a number of generations
-    private double[] CEvolutionPath = new double[size];
-    // Orthogonal matrix. Columns of B are eigenvectors of C with unit length and correspond to the diagonal
-    // element of D
-    private RealMatrix B = MatrixUtils.createRealIdentityMatrix(size);
-    // Diagonal matrix. The diagonal elements of D are square roots of eigenvalues of C and correspond to the
-    // respective columns of B
-    private RealMatrix D = MatrixUtils.createRealIdentityMatrix(size);
-    // Covariance matrix at the current generation
-    private RealMatrix C = MatrixUtils.createRealIdentityMatrix(size);
-    // Last generation when the eigendecomposition was calculated
-    private int lastEigenUpdate = 0;
+    @SuppressWarnings("serial")
+    protected class CMAESState extends State {
+        // Step-size
+        private double stepSize = 0.5;
+        // Mean value of the search distribution
+        private double[] distrMean = new double[size];
+        // Evolution path for step-size
+        private double[] sEvolutionPath = new double[size];
+        // Evolution path for covariance matrix, a sequence of successive (normalized) steps, the strategy
+        // takes over a number of generations
+        private double[] CEvolutionPath = new double[size];
+        // Orthogonal matrix. Columns of B are eigenvectors of C with unit length and correspond to the diagonal
+        // element of D
+        private RealMatrix B = MatrixUtils.createRealIdentityMatrix(size);
+        // Diagonal matrix. The diagonal elements of D are square roots of eigenvalues of C and correspond to the
+        // respective columns of B
+        private RealMatrix D = MatrixUtils.createRealIdentityMatrix(size);
+        // Covariance matrix at the current generation
+        private RealMatrix C = MatrixUtils.createRealIdentityMatrix(size);
+        // Last generation when the eigendecomposition was calculated
+        private int lastEigenUpdate = 0;
 
-    public double getStepSize() {
-      return stepSize;
-    }
+        public double getStepSize() {
+            return stepSize;
+        }
 
-    public void setStepSize(double stepSize) {
-      this.stepSize = stepSize;
-    }
+        public void setStepSize(double stepSize) {
+            this.stepSize = stepSize;
+        }
 
-    public double[] getDistrMean() {
-      return distrMean;
-    }
+        public double[] getDistrMean() {
+            return distrMean;
+        }
 
-    public void setDistrMean(double[] distrMean) {
-      this.distrMean = distrMean;
-    }
+        public void setDistrMean(double[] distrMean) {
+            this.distrMean = distrMean;
+        }
 
-    public double[] getsEvolutionPath() {
-      return sEvolutionPath;
-    }
+        public double[] getsEvolutionPath() {
+            return sEvolutionPath;
+        }
 
-    public void setsEvolutionPath(double[] sEvolutionPath) {
-      this.sEvolutionPath = sEvolutionPath;
-    }
+        public void setsEvolutionPath(double[] sEvolutionPath) {
+            this.sEvolutionPath = sEvolutionPath;
+        }
 
-    public double[] getCEvolutionPath() {
-      return CEvolutionPath;
-    }
+        public double[] getCEvolutionPath() {
+            return CEvolutionPath;
+        }
 
-    public void setCEvolutionPath(double[] CEvolutionPath) {
-      this.CEvolutionPath = CEvolutionPath;
-    }
+        public void setCEvolutionPath(double[] CEvolutionPath) {
+            this.CEvolutionPath = CEvolutionPath;
+        }
 
-    public RealMatrix getB() {
-      return B;
-    }
+        public RealMatrix getB() {
+            return B;
+        }
 
-    public void setB(RealMatrix b) {
-      B = b;
-    }
+        public void setB(RealMatrix b) {
+            B = b;
+        }
 
-    public RealMatrix getD() {
-      return D;
-    }
+        public RealMatrix getD() {
+            return D;
+        }
 
-    public void setD(RealMatrix d) {
-      D = d;
-    }
+        public void setD(RealMatrix d) {
+            D = d;
+        }
 
-    public RealMatrix getC() {
-      return C;
-    }
+        public RealMatrix getC() {
+            return C;
+        }
 
-    public void setC(RealMatrix c) {
-      C = c;
-    }
+        public void setC(RealMatrix c) {
+            C = c;
+        }
 
-    public int getLastEigenUpdate() {
-      return lastEigenUpdate;
-    }
+        public int getLastEigenUpdate() {
+            return lastEigenUpdate;
+        }
 
-    public void setLastEigenUpdate(int lastEigenUpdate) {
-      this.lastEigenUpdate = lastEigenUpdate;
+        public void setLastEigenUpdate(int lastEigenUpdate) {
+            this.lastEigenUpdate = lastEigenUpdate;
+        }
     }
-  }
 
   /**
    * Constructs a new CMA-ES instance using default parameters.

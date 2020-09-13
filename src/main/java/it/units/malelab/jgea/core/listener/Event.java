@@ -27,6 +27,7 @@ import java.io.Serializable;
  * @created 2020/06/16
  * @project jgea
  */
+@SuppressWarnings("serial")
 public class Event<G, S, F> implements Serializable {
 
   private final Evolver.State state;

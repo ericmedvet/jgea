@@ -20,8 +20,6 @@ import com.google.common.collect.Range;
 import it.units.malelab.jgea.distance.Distance;
 
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -42,13 +40,14 @@ public class Misc {
     return modified;
   }
 
-  public static <K, V> Map<K, V> merge(Map<K, V>... maps) {
-    Map<K, V> map = new LinkedHashMap<>();
-    for (Map<K, V> currentMap : maps) {
-      map.putAll(currentMap);
+    @SafeVarargs
+    public static <K, V> Map<K, V> merge(Map<K, V>... maps) {
+        Map<K, V> map = new LinkedHashMap<>();
+        for (Map<K, V> currentMap : maps) {
+            map.putAll(currentMap);
+        }
+        return map;
     }
-    return map;
-  }
 
   public static <T> T pickRandomly(Map<T, Double> options, Random random) {
     double sum = 0;
