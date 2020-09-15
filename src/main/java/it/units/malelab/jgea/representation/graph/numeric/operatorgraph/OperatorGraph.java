@@ -114,6 +114,20 @@ public class OperatorGraph implements Function<double[], double[]>, Sized, Seria
             ((OperatorNode) n).getOperator().maxArity()
         ));
       }
+      if ((n instanceof Constant || n instanceof Input) && graph.predecessors(n).size()>0) {
+        throw new IllegalArgumentException(String.format(
+            "Invalid graph: constant/input node %s has more than 0 predecessors (%d)",
+            n,
+            graph.predecessors(n).size()
+        ));
+      }
+      if ((n instanceof Output) && graph.successors(n).size()>0) {
+        throw new IllegalArgumentException(String.format(
+            "Invalid graph: output node %s has more than 0 successors (%d)",
+            n,
+            graph.predecessors(n).size()
+        ));
+      }
     }
   }
 
