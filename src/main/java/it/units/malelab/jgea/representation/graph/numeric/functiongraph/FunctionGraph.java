@@ -18,9 +18,9 @@ package it.units.malelab.jgea.representation.graph.numeric.functiongraph;
 
 import it.units.malelab.jgea.core.util.Sized;
 import it.units.malelab.jgea.representation.graph.Graph;
+import it.units.malelab.jgea.representation.graph.Node;
 import it.units.malelab.jgea.representation.graph.numeric.Constant;
 import it.units.malelab.jgea.representation.graph.numeric.Input;
-import it.units.malelab.jgea.representation.graph.Node;
 import it.units.malelab.jgea.representation.graph.numeric.Output;
 
 import java.io.Serializable;
@@ -68,6 +68,20 @@ public class FunctionGraph implements Function<double[], double[]>, Sized, Seria
             "Invalid graph: node %s is of wrong type %s",
             n,
             n.getClass()
+        ));
+      }
+      if ((n instanceof Constant || n instanceof Input) && graph.predecessors(n).size()>0) {
+        throw new IllegalArgumentException(String.format(
+            "Invalid graph: constant/input node %s has more than 0 predecessors (%d)",
+            n,
+            graph.predecessors(n).size()
+        ));
+      }
+      if ((n instanceof Output) && graph.successors(n).size() > 0) {
+        throw new IllegalArgumentException(String.format(
+            "Invalid graph: output node %s has more than 0 successors (%d)",
+            n,
+            graph.predecessors(n).size()
         ));
       }
     }

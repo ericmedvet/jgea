@@ -56,7 +56,12 @@ public class GraphUtils {
       arcMap.put(toArc, fromArcValues);
     }
     for (Map.Entry<Graph.Arc<N2>, Collection<A1>> entry : arcMap.entrySet()) {
-      toGraph.setArcValue(entry.getKey(), arcF.apply(entry.getValue()));
+      try { //TODO remove
+        toGraph.setArcValue(entry.getKey(), arcF.apply(entry.getValue()));
+      } catch (IllegalArgumentException e) {
+        System.out.println("OCIO!");
+        e.printStackTrace();
+      }
     }
     return toGraph;
   }

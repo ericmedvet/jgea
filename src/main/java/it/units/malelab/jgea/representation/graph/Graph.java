@@ -142,7 +142,11 @@ public interface Graph<N, A> extends Sized {
       throw new RuntimeException();
     }
     visited.add(node);
-    graph.successors(node).forEach(s -> recursivelyVisit(graph, s, visited));
+    graph.successors(node).forEach(s -> {
+      Set<M> updated = new HashSet<>(visited);
+      updated.add(node);
+      recursivelyVisit(graph, s, updated);
+    });
   }
 
   @Override

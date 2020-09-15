@@ -51,18 +51,18 @@ public class AlignedCrossover<N, A> implements Crossover<Graph<N, A>> {
     arcs.addAll(parent1.arcs());
     arcs.addAll(parent2.arcs());
     for (Graph.Arc<N> arc : arcs) {
-      A edge1 = parent1.getArcValue(arc);
-      A edge2 = parent2.getArcValue(arc);
-      A childEdge;
-      if (edge1 == null) {
-        childEdge = random.nextBoolean() ? edge2 : null;
-      } else if (edge2 == null) {
-        childEdge = random.nextBoolean() ? edge1 : null;
+      A arc1 = parent1.getArcValue(arc);
+      A arc2 = parent2.getArcValue(arc);
+      A childArc;
+      if (arc1 == null) {
+        childArc = random.nextBoolean() ? arc2 : null;
+      } else if (arc2 == null) {
+        childArc = random.nextBoolean() ? arc1 : null;
       } else {
-        childEdge = edgeCrossover.recombine(edge1, edge2, random);
+        childArc = edgeCrossover.recombine(arc1, arc2, random);
       }
-      if (childEdge != null) {
-        child.setArcValue(arc, childEdge);
+      if (childArc != null) {
+        child.setArcValue(arc, childArc);
         if (!allowCycles && child.hasCycles()) {
           child.removeArc(arc);
         }
