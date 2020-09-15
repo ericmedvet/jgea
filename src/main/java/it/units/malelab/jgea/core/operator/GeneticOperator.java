@@ -30,7 +30,7 @@ public interface GeneticOperator<G> {
 
   default GeneticOperator<G> andThen(GeneticOperator<G> other) {
     final GeneticOperator<G> thisOperator = this;
-    return new GeneticOperator<G>() {
+    return new GeneticOperator<>() {
       @Override
       public int arity() {
         return thisOperator.arity();

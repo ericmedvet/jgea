@@ -85,9 +85,9 @@ public class ExtractionComparison extends Worker {
     int nIterations = i(a("nIterations", "50"));
     String evolverNamePattern = a("evolver", "dfa.*");
     int[] seeds = ri(a("seed", "0:1"));
-    double graphEdgeAdditionRate = 3d;
-    double graphEdgeMutationRate = 1d;
-    double graphEdgeRemovalRate = 0d;
+    double graphArcAdditionRate = 3d;
+    double graphArcMutationRate = 1d;
+    double graphArcRemovalRate = 0d;
     double graphNodeAdditionRate = 1d;
     double graphCrossoverRate = 1d;
     Set<RegexGrammar.Option> options = Set.of(RegexGrammar.Option.NON_CAPTURING_GROUP, RegexGrammar.Option.ANY, RegexGrammar.Option.OR, RegexGrammar.Option.ENHANCED_CONCATENATION);
@@ -157,14 +157,14 @@ public class ExtractionComparison extends Worker {
                         return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
                       },
                       1d
-                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphEdgeMutationRate,
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcMutationRate,
                   new ArcAddition<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
                       r -> Set.of(Misc.pickRandomly(positiveChars, r)),
                       true
-                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphEdgeAdditionRate,
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
                   new ArcRemoval<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
                       s -> s.content().getIndex() == 0
-                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphEdgeRemovalRate,
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate,
                   new AlignedCrossover<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
                       Crossover.randomCopy(),
                       s -> s.content().getIndex() == 0,
@@ -217,14 +217,14 @@ public class ExtractionComparison extends Worker {
                         return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
                       },
                       1d
-                  ).withChecker(checker), graphEdgeMutationRate,
+                  ).withChecker(checker), graphArcMutationRate,
                   new ArcAddition<DeterministicFiniteAutomaton.State, Set<Character>>(
                       r -> Set.of(Misc.pickRandomly(positiveChars, r)),
                       true
-                  ).withChecker(checker), graphEdgeAdditionRate,
+                  ).withChecker(checker), graphArcAdditionRate,
                   new ArcRemoval<DeterministicFiniteAutomaton.State, Set<Character>>(
                       s -> s.getIndex() == 0
-                  ).withChecker(checker), graphEdgeRemovalRate,
+                  ).withChecker(checker), graphArcRemovalRate,
                   new AlignedCrossover<DeterministicFiniteAutomaton.State, Set<Character>>(
                       Crossover.randomCopy(),
                       s -> s.getIndex() == 0,
@@ -285,14 +285,14 @@ public class ExtractionComparison extends Worker {
                         return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
                       },
                       1d
-                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphEdgeMutationRate,
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcMutationRate,
                   new ArcAddition<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
                       r -> Set.of(Misc.pickRandomly(positiveChars, r)),
                       true
-                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphEdgeAdditionRate,
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
                   new ArcRemoval<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
                       s -> s.content().getIndex() == 0
-                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphEdgeRemovalRate,
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate,
                   new AlignedCrossover<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
                       Crossover.randomCopy(),
                       s -> s.content().getIndex() == 0,
@@ -341,14 +341,14 @@ public class ExtractionComparison extends Worker {
                         return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
                       },
                       1d
-                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphEdgeMutationRate,
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcMutationRate,
                   new ArcAddition<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
                       r -> Set.of(Misc.pickRandomly(positiveChars, r)),
                       true
-                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphEdgeAdditionRate,
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
                   new ArcRemoval<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
                       s -> s.content().getIndex() == 0
-                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphEdgeRemovalRate
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate
               ),
               5,
               (new Jaccard()).on(i -> i.getGenotype().nodes()),
