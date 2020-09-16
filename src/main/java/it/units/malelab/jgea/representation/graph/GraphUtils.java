@@ -16,6 +16,14 @@
 
 package it.units.malelab.jgea.representation.graph;
 
+import it.units.malelab.jgea.core.IndependentFactory;
+import it.units.malelab.jgea.core.operator.GeneticOperator;
+import it.units.malelab.jgea.core.util.Misc;
+import it.units.malelab.jgea.representation.graph.numeric.functiongraph.BaseFunction;
+import it.units.malelab.jgea.representation.graph.numeric.functiongraph.FunctionGraph;
+import it.units.malelab.jgea.representation.graph.numeric.functiongraph.FunctionNode;
+import it.units.malelab.jgea.representation.graph.numeric.functiongraph.ShallowSparseFactory;
+
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -44,6 +52,12 @@ public class GraphUtils {
   }
 
   public static <N1, A1, N2, A2> Graph<N2, A2> transform(Graph<N1, A1> fromGraph, Function<N1, N2> nodeF, Function<Collection<A1>, A2> arcF) {
+    nodeF = Misc.cached(nodeF, fromGraph.nodes().size()); // this way the function is granted to be injective from an equals() perspective
+    /*
+     this way the function is granted to be injective from an equals() perspective
+     i.e., if n1.equals(n1p), then n2.equals(n2p).
+     hence, arc addition will not fail
+     */
     Graph<N2, A2> toGraph = new LinkedHashGraph<>();
     for (N1 fromNode : fromGraph.nodes()) {
       toGraph.addNode(nodeF.apply(fromNode));
@@ -56,17 +70,48 @@ public class GraphUtils {
       arcMap.put(toArc, fromArcValues);
     }
     for (Map.Entry<Graph.Arc<N2>, Collection<A1>> entry : arcMap.entrySet()) {
-      try { //TODO remove
-        toGraph.setArcValue(entry.getKey(), arcF.apply(entry.getValue()));
-      } catch (IllegalArgumentException e) {
-        System.out.println("OCIO!");
-        e.printStackTrace();
-      }
+      toGraph.setArcValue(entry.getKey(), arcF.apply(entry.getValue()));
     }
     return toGraph;
   }
 
   public static <N1, A1, N2, A> Function<Graph<N1, A1>, Graph<N2, A>> mapper(Function<N1, N2> nodeF, Function<Collection<A1>, A> arcF) {
     return graph -> transform(graph, nodeF, arcF);
+  }
+
+  public static void main(String[] args) {
+    BaseFunction[] baseFunctions = new BaseFunction[]{BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.PROT_INVERSE, BaseFunction.SQ};
+    Function<Graph<IndexedNode<Node>, Double>, Graph<Node, Double>> graphMapper = GraphUtils.mapper(
+        IndexedNode::content,
+        Misc::first
+    );
+    Predicate<Graph<Node, Double>> checker = FunctionGraph.checker();
+    IndependentFactory<Graph<IndexedNode<Node>, Double>> factory = new ShallowSparseFactory(0d, 0d, 1d, 1, 1)
+        .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first));
+    List<GeneticOperator<Graph<IndexedNode<Node>, Double>>> ops = List.of(
+        new NodeAddition<>(
+            FunctionNode.sequentialIndexFactory(baseFunctions)
+                .then(IndexedNode.hashMapper(Node.class)),
+            (w, r) -> w,
+            (w, r) -> r.nextGaussian()
+        ),
+        new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d),
+        new ArcAddition<IndexedNode<Node>, Double>(Random::nextGaussian, false).withChecker(g -> checker.test(graphMapper.apply(g)))
+    );
+    Random r = new Random(1);
+    List<Graph<IndexedNode<Node>, Double>> gs = new ArrayList<>();
+    gs.add(factory.build(r));
+    for (int i = 0; i < 8; i++) {
+      System.out.printf("i=%d size=%d%n", i, gs.size());
+      List<Graph<IndexedNode<Node>, Double>> newGs = new ArrayList<>();
+      for (Graph<IndexedNode<Node>, Double> g : gs) {
+        for (GeneticOperator<Graph<IndexedNode<Node>, Double>> op : ops) {
+          Graph<IndexedNode<Node>, Double> child = op.apply(List.of(g), r).get(0);
+          newGs.add(child);
+          graphMapper.apply(child);
+        }
+      }
+      gs.addAll(newGs);
+    }
   }
 }

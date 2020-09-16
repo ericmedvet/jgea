@@ -96,7 +96,7 @@ public class SymbolicRegressionComparison extends Worker {
     double graphArcMutationRate = 1d;
     double graphArcRemovalRate = 0d;
     double graphNodeAdditionRate = 1d;
-    double graphCrossoverRate = 0d; //TODO restore to 1d
+    double graphCrossoverRate = 1d;
     SymbolicRegressionFitness.Metric metric = SymbolicRegressionFitness.Metric.MSE;
     Operator[] operators = new Operator[]{Operator.ADDITION, Operator.SUBTRACTION, Operator.MULTIPLICATION, Operator.PROT_DIVISION, Operator.PROT_LOG};
     BaseOperator[] baseOperators = new BaseOperator[]{BaseOperator.ADDITION, BaseOperator.SUBTRACTION, BaseOperator.MULTIPLICATION, BaseOperator.PROT_DIVISION, BaseOperator.PROT_LOG};
