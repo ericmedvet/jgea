@@ -280,12 +280,12 @@ public class SymbolicRegressionComparison extends Worker {
             PartialComparator.from(Double.class).comparing(Individual::getFitness),
             nPop,
             Map.of(
-                new NodeAddition<>(
+                new NodeAddition<Node, Double>(
                     FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
-                ), graphNodeAdditionRate,
-                new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
+                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
                 new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
                 new AlignedCrossover<Node, Double>(
@@ -307,12 +307,12 @@ public class SymbolicRegressionComparison extends Worker {
             PartialComparator.from(Double.class).comparing(Individual::getFitness),
             nPop,
             Map.of(
-                new NodeAddition<>(
+                new NodeAddition<Node, Double>(
                     FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
-                ), graphNodeAdditionRate,
-                new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
+                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
                 new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate
             ),
@@ -329,12 +329,12 @@ public class SymbolicRegressionComparison extends Worker {
             PartialComparator.from(Double.class).comparing(Individual::getFitness),
             nPop,
             Map.of(
-                new NodeAddition<>(
+                new NodeAddition<Node, Double>(
                     FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
-                ), graphNodeAdditionRate,
-                new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
+                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
                 new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate
             ),
@@ -361,12 +361,12 @@ public class SymbolicRegressionComparison extends Worker {
             PartialComparator.from(Double.class).comparing(Individual::getFitness),
             nPop,
             Map.of(
-                new NodeAddition<>(
+                new NodeAddition<Node, Double>(
                     FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
-                ), graphNodeAdditionRate,
-                new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
+                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
                 new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
                 new AlignedCrossover<Node, Double>(
@@ -389,12 +389,12 @@ public class SymbolicRegressionComparison extends Worker {
             PartialComparator.from(Double.class).comparing(Individual::getFitness),
             nPop,
             Map.of(
-                new NodeAddition<>(
+                new NodeAddition<Node, Double>(
                     FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
-                ), graphNodeAdditionRate,
-                new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
+                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
                 new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
                 new AlignedCrossover<Node, Double>(
@@ -426,12 +426,12 @@ public class SymbolicRegressionComparison extends Worker {
             PartialComparator.from(Double.class).comparing(Individual::getFitness),
             nPop,
             Map.of(
-                new NodeAddition<>(
+                new NodeAddition<Node, Double>(
                     FunctionNode.sequentialIndexFactory(baseFunctions),
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
-                ), graphNodeAdditionRate,
-                new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
+                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
                 new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
                 new AlignedCrossover<Node, Double>(
@@ -463,12 +463,12 @@ public class SymbolicRegressionComparison extends Worker {
             PartialComparator.from(Double.class).comparing(Individual::getFitness),
             nPop,
             Map.of(
-                new NodeAddition<>(
+                new NodeAddition<Node, Double>(
                     FunctionNode.sequentialIndexFactory(baseFunctions),
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
-                ), graphNodeAdditionRate,
-                new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
+                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
                 new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
                 new AlignedCrossover<Node, Double>(
@@ -555,13 +555,13 @@ public class SymbolicRegressionComparison extends Worker {
               PartialComparator.from(Double.class).comparing(Individual::getFitness),
               nPop,
               Map.of(
-                  new NodeAddition<>(
+                  new NodeAddition<IndexedNode<Node>, Double>(
                       FunctionNode.sequentialIndexFactory(baseFunctions)
                           .then(IndexedNode.hashMapper(Node.class)),
                       (w, r) -> w,
                       (w, r) -> r.nextGaussian()
-                  ), graphNodeAdditionRate,
-                  new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
+                  new ArcModification<IndexedNode<Node>, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcMutationRate,
                   new ArcAddition<IndexedNode<Node>, Double>(Random::nextGaussian, false).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
                   new ArcRemoval<IndexedNode<Node>, Double>(node -> node.content() instanceof Output).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate,
                   new AlignedCrossover<IndexedNode<Node>, Double>(
@@ -592,13 +592,13 @@ public class SymbolicRegressionComparison extends Worker {
               PartialComparator.from(Double.class).comparing(Individual::getFitness),
               nPop,
               Map.of(
-                  new NodeAddition<>(
+                  new NodeAddition<IndexedNode<Node>, Double>(
                       FunctionNode.sequentialIndexFactory(baseFunctions)
                           .then(IndexedNode.hashMapper(Node.class)),
                       (w, r) -> w,
                       (w, r) -> r.nextGaussian()
-                  ), graphNodeAdditionRate,
-                  new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
+                  new ArcModification<IndexedNode<Node>, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcMutationRate,
                   new ArcAddition<IndexedNode<Node>, Double>(Random::nextGaussian, false).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
                   new ArcRemoval<IndexedNode<Node>, Double>(node -> node.content() instanceof Output).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate,
                   new AlignedCrossover<IndexedNode<Node>, Double>(
@@ -639,14 +639,14 @@ public class SymbolicRegressionComparison extends Worker {
               PartialComparator.from(Double.class).comparing(Individual::getFitness),
               nPop,
               Map.of(
-                  new IndexedNodeAddition<>(
+                  new IndexedNodeAddition<FunctionNode, Node, Double>(
                       FunctionNode.sequentialIndexFactory(baseFunctions),
                       n -> (n instanceof FunctionNode) ? ((FunctionNode) n).getFunction().hashCode() : 0,
                       p.arity() + 1 + 1,
                       (w, r) -> w,
                       (w, r) -> r.nextGaussian()
-                  ), graphNodeAdditionRate,
-                  new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
+                  new ArcModification<IndexedNode<Node>, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcMutationRate,
                   new ArcAddition<IndexedNode<Node>, Double>(Random::nextGaussian, false).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
                   new ArcRemoval<IndexedNode<Node>, Double>(node -> node.content() instanceof Output).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate,
                   new AlignedCrossover<IndexedNode<Node>, Double>(
@@ -734,14 +734,14 @@ public class SymbolicRegressionComparison extends Worker {
               PartialComparator.from(Double.class).comparing(Individual::getFitness),
               nPop,
               Map.of(
-                  new IndexedNodeAddition<>(
+                  new IndexedNodeAddition<FunctionNode, Node, Double>(
                       FunctionNode.sequentialIndexFactory(baseFunctions),
                       n -> (n instanceof FunctionNode) ? ((FunctionNode) n).getFunction().hashCode() : 0,
                       p.arity() + 1 + 1,
                       (w, r) -> w,
                       (w, r) -> r.nextGaussian()
-                  ), graphNodeAdditionRate,
-                  new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
+                  new ArcModification<IndexedNode<Node>, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcMutationRate,
                   new ArcAddition<IndexedNode<Node>, Double>(Random::nextGaussian, false).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
                   new ArcRemoval<IndexedNode<Node>, Double>(node -> node.content() instanceof Output).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate
               ),
@@ -769,12 +769,12 @@ public class SymbolicRegressionComparison extends Worker {
             PartialComparator.from(Double.class).comparing(Individual::getFitness),
             nPop,
             Map.of(
-                new NodeAddition<>(
+                new NodeAddition<Node, Double>(
                     FunctionNode.sequentialIndexFactory(baseFunctions),
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
-                ), graphNodeAdditionRate,
-                new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
+                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
                 new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate
             ),
@@ -791,12 +791,12 @@ public class SymbolicRegressionComparison extends Worker {
             PartialComparator.from(Double.class).comparing(Individual::getFitness),
             nPop,
             Map.of(
-                new NodeAddition<>(
+                new NodeAddition<Node, Double>(
                     FunctionNode.sequentialIndexFactory(baseFunctions),
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
-                ), graphNodeAdditionRate,
-                new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
+                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
                 new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
                 new AlignedCrossover<Node, Double>(
