@@ -90,7 +90,7 @@ public class SymbolicRegressionComparison extends Worker {
     int nTournament = 5;
     int diversityMaxAttempts = 100;
     int nIterations = i(a("nIterations", "50"));
-    String evolverNamePattern = a("evolver", ".*graph-.*");
+    String evolverNamePattern = a("evolver", "fgraph-hash+-speciated");
     int[] seeds = ri(a("seed", "0:1"));
     double graphArcAdditionRate = 3d;
     double graphArcMutationRate = 1d;
@@ -288,11 +288,11 @@ public class SymbolicRegressionComparison extends Worker {
                 new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
                 new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
-                new AlignedCrossover<>(
+                new AlignedCrossover<Node, Double>(
                     (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
                     node -> node instanceof Output,
                     false
-                ), graphCrossoverRate
+                ).withChecker(FunctionGraph.checker()), graphCrossoverRate
             ),
             new Tournament(nTournament),
             new Worst(),
@@ -369,11 +369,11 @@ public class SymbolicRegressionComparison extends Worker {
                 new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
                 new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
-                new AlignedCrossover<>(
+                new AlignedCrossover<Node, Double>(
                     (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
                     node -> node instanceof Output,
                     false
-                ), graphCrossoverRate
+                ).withChecker(FunctionGraph.checker()), graphCrossoverRate
             ),
             new Tournament(nTournament),
             new Worst(),
@@ -397,11 +397,11 @@ public class SymbolicRegressionComparison extends Worker {
                 new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
                 new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
-                new AlignedCrossover<>(
+                new AlignedCrossover<Node, Double>(
                     (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
                     node -> node instanceof Output,
                     false
-                ), graphCrossoverRate
+                ).withChecker(FunctionGraph.checker()), graphCrossoverRate
             ),
             5,
             (new Jaccard()).on(i -> i.getGenotype().nodes()),
@@ -434,11 +434,11 @@ public class SymbolicRegressionComparison extends Worker {
                 new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
                 new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
-                new AlignedCrossover<>(
+                new AlignedCrossover<Node, Double>(
                     (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
                     node -> node instanceof Output,
                     false
-                ), graphCrossoverRate
+                ).withChecker(FunctionGraph.checker()), graphCrossoverRate
             ),
             5,
             (new Jaccard()).on(i -> i.getGenotype().nodes()),
@@ -471,11 +471,11 @@ public class SymbolicRegressionComparison extends Worker {
                 new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
                 new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
-                new AlignedCrossover<>(
+                new AlignedCrossover<Node, Double>(
                     (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
                     node -> node instanceof Output,
                     false
-                ), graphCrossoverRate
+                ).withChecker(FunctionGraph.checker()), graphCrossoverRate
             ),
             new Tournament(nTournament),
             new Worst(),
@@ -564,11 +564,11 @@ public class SymbolicRegressionComparison extends Worker {
                   new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
                   new ArcAddition<IndexedNode<Node>, Double>(Random::nextGaussian, false).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
                   new ArcRemoval<IndexedNode<Node>, Double>(node -> node.content() instanceof Output).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate,
-                  new AlignedCrossover<>(
+                  new AlignedCrossover<IndexedNode<Node>, Double>(
                       (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
                       node -> node.content() instanceof Output,
                       false
-                  ), graphCrossoverRate
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
               ),
               new Tournament(nTournament),
               new Worst(),
@@ -601,11 +601,11 @@ public class SymbolicRegressionComparison extends Worker {
                   new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
                   new ArcAddition<IndexedNode<Node>, Double>(Random::nextGaussian, false).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
                   new ArcRemoval<IndexedNode<Node>, Double>(node -> node.content() instanceof Output).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate,
-                  new AlignedCrossover<>(
+                  new AlignedCrossover<IndexedNode<Node>, Double>(
                       (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
                       node -> node.content() instanceof Output,
                       false
-                  ), graphCrossoverRate
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
               ),
               5,
               (new Jaccard()).on(i -> i.getGenotype().nodes()),
@@ -649,11 +649,11 @@ public class SymbolicRegressionComparison extends Worker {
                   new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
                   new ArcAddition<IndexedNode<Node>, Double>(Random::nextGaussian, false).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
                   new ArcRemoval<IndexedNode<Node>, Double>(node -> node.content() instanceof Output).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate,
-                  new AlignedCrossover<>(
+                  new AlignedCrossover<IndexedNode<Node>, Double>(
                       (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
                       node -> node.content() instanceof Output,
                       false
-                  ), graphCrossoverRate
+                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
               ),
               5,
               (new Jaccard()).on(i -> i.getGenotype().nodes()),
@@ -799,11 +799,11 @@ public class SymbolicRegressionComparison extends Worker {
                 new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
                 new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
-                new AlignedCrossover<>(
+                new AlignedCrossover<Node, Double>(
                     (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
                     node -> node instanceof Output,
                     false
-                ), graphCrossoverRate
+                ).withChecker(FunctionGraph.checker()), graphCrossoverRate
             ),
             new Tournament(nTournament),
             new Worst(),
