@@ -321,6 +321,38 @@ public class SymbolicRegressionComparison extends Worker {
             nPop,
             true
         )),
+        Map.entry("fgraph-lim-speciated-noxover", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
+            FunctionGraph.builder()
+                .andThen(MathUtils.fromMultivariateBuilder())
+                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
+            PartialComparator.from(Double.class).comparing(Individual::getFitness),
+            nPop,
+            Map.of(
+                new NodeAddition<>(
+                    FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
+                    (w, r) -> w,
+                    (w, r) -> r.nextGaussian()
+                ), graphNodeAdditionRate,
+                new ArcModification<>((w, r) -> w + r.nextGaussian(), 1d), graphArcMutationRate,
+                new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
+                new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate
+            ),
+            5,
+            (new Jaccard()).on(i -> i.getGenotype().nodes()),
+            0.25,
+            individuals -> {
+              double[] fitnesses = individuals.stream().mapToDouble(i -> i.getFitness()).toArray();
+              Individual<Graph<Node, Double>, RealFunction, Double> r = Misc.first(individuals);
+              return new Individual<>(
+                  r.getGenotype(),
+                  r.getSolution(),
+                  Misc.median(fitnesses),
+                  r.getBirthIteration()
+              );
+            },
+            0.75
+        )),
         Map.entry("fgraph-lim-gadiv", p -> new StandardWithEnforcedDiversityEvolver<Graph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
                 .andThen(MathUtils.fromMultivariateBuilder())
@@ -475,6 +507,37 @@ public class SymbolicRegressionComparison extends Worker {
             new Worst(),
             nPop,
             true
+        )),
+        Map.entry("ograph-seq-speciated-noxover", p -> new SpeciatedEvolver<Graph<Node, OperatorGraph.NonValuedArc>, RealFunction, Double>(
+            OperatorGraph.builder()
+                .andThen(MathUtils.fromMultivariateBuilder())
+                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+            new ShallowFactory(p.arity(), 1, constants),
+            PartialComparator.from(Double.class).comparing(Individual::getFitness),
+            nPop,
+            Map.of(
+                new NodeAddition<Node, OperatorGraph.NonValuedArc>(
+                    OperatorNode.sequentialIndexFactory(baseOperators),
+                    Mutation.copy(),
+                    Mutation.copy()
+                ).withChecker(OperatorGraph.checker()), graphNodeAdditionRate,
+                new ArcAddition<Node, OperatorGraph.NonValuedArc>(r -> OperatorGraph.NON_VALUED_ARC, false).withChecker(OperatorGraph.checker()), graphArcAdditionRate,
+                new ArcRemoval<Node, OperatorGraph.NonValuedArc>(node -> node instanceof Output).withChecker(OperatorGraph.checker()), graphArcRemovalRate
+            ),
+            5,
+            (new Jaccard()).on(i -> i.getGenotype().nodes()),
+            0.25,
+            individuals -> {
+              double[] fitnesses = individuals.stream().mapToDouble(i -> i.getFitness()).toArray();
+              Individual<Graph<Node, OperatorGraph.NonValuedArc>, RealFunction, Double> r = Misc.first(individuals);
+              return new Individual<>(
+                  r.getGenotype(),
+                  r.getSolution(),
+                  Misc.median(fitnesses),
+                  r.getBirthIteration()
+              );
+            },
+            0.75
         )),
         Map.entry("fgraph-hash-ga", p -> {
           Function<Graph<IndexedNode<Node>, Double>, Graph<Node, Double>> graphMapper = GraphUtils.mapper(

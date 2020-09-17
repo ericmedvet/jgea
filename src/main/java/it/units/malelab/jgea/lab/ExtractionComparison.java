@@ -94,6 +94,7 @@ public class ExtractionComparison extends Worker {
     Map<String, RegexExtractionProblem> problems = Map.of(
         "synthetic-2-5", RegexExtractionProblem.varAlphabet(2, 5, 1, metrics),
         "synthetic-3-5", RegexExtractionProblem.varAlphabet(3, 5, 1, metrics),
+        "synthetic-4-8", RegexExtractionProblem.varAlphabet(4, 8, 1, metrics),
         "synthetic-4-10", RegexExtractionProblem.varAlphabet(4, 10, 1, metrics)
     );
     MultiFileListenerFactory<Object, RealFunction, List<Double>> listenerFactory = new MultiFileListenerFactory<>(
@@ -229,6 +230,61 @@ public class ExtractionComparison extends Worker {
                       s -> s.getIndex() == 0,
                       false
                   ).withChecker(checker), graphCrossoverRate
+              ),
+              5,
+              (new Jaccard()).on(i -> i.getGenotype().nodes()),
+              0.25,
+              individuals -> {
+                Individual<Graph<DeterministicFiniteAutomaton.State, Set<Character>>, Extractor<Character>, List<Double>> r = Misc.first(individuals);
+                return new Individual<>(
+                    r.getGenotype(),
+                    r.getSolution(),
+                    Misc.median(
+                        individuals.stream().map(Individual::getFitness).collect(Collectors.toList()),
+                        new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparator()
+                    ),
+                    r.getBirthIteration()
+                );
+              },
+              0.75
+          );
+        }),
+        Map.entry("dfa-seq-speciated-noxover", p -> {
+          Set<Character> positiveChars = p.getFitnessFunction().getDesiredExtractions().stream()
+              .map(r -> p.getFitnessFunction().getSequence().subList(r.lowerEndpoint(), r.upperEndpoint()).stream().collect(Collectors.toSet()))
+              .reduce(Sets::union)
+              .orElse(Set.of());
+          Predicate<Graph<DeterministicFiniteAutomaton.State, Set<Character>>> checker = DeterministicFiniteAutomaton.checker();
+          return new SpeciatedEvolver<Graph<DeterministicFiniteAutomaton.State, Set<Character>>, Extractor<Character>, List<Double>>(
+              DeterministicFiniteAutomaton.builder(),
+              new ShallowDFAFactory<Character>(2, positiveChars),
+              new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparing(Individual::getFitness),
+              nPop,
+              Map.of(
+                  new NodeAddition<DeterministicFiniteAutomaton.State, Set<Character>>(
+                      DeterministicFiniteAutomaton.sequentialStateFactory(2, 0.5),
+                      Mutation.copy(),
+                      Mutation.copy()
+                  ).withChecker(checker), graphNodeAdditionRate,
+                  new ArcModification<DeterministicFiniteAutomaton.State, Set<Character>>(
+                      (cs, r) -> {
+                        if (cs.size() == positiveChars.size()) {
+                          return Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
+                        }
+                        if (cs.size() <= 1) {
+                          return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Set.of(Misc.pickRandomly(positiveChars, r));
+                        }
+                        return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
+                      },
+                      1d
+                  ).withChecker(checker), graphArcMutationRate,
+                  new ArcAddition<DeterministicFiniteAutomaton.State, Set<Character>>(
+                      r -> Set.of(Misc.pickRandomly(positiveChars, r)),
+                      true
+                  ).withChecker(checker), graphArcAdditionRate,
+                  new ArcRemoval<DeterministicFiniteAutomaton.State, Set<Character>>(
+                      s -> s.getIndex() == 0
+                  ).withChecker(checker), graphArcRemovalRate
               ),
               5,
               (new Jaccard()).on(i -> i.getGenotype().nodes()),
