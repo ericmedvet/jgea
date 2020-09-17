@@ -19,6 +19,7 @@ package it.units.malelab.jgea.core.listener;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
+import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.Serializable;
 
@@ -33,7 +34,7 @@ public class Event<G, S, F> implements Serializable {
   private final PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation;
 
   public Event(Evolver.State state, PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation) {
-    this.state = state;
+    this.state = SerializationUtils.clone(state); // it has to be a snapshot of the current state //TODO but find a better way
     this.orderedPopulation = orderedPopulation;
   }
 
