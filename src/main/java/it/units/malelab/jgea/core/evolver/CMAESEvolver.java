@@ -110,6 +110,21 @@ public class CMAESEvolver<S, F extends Comparable<F>> extends AbstractIterativeE
     // Last generation when the eigendecomposition was calculated
     private int lastEigenUpdate = 0;
 
+    public CMAESState() {
+    }
+
+    public CMAESState(int iterations, int births, int fitnessEvaluations, long elapsedMillis, double stepSize, double[] distrMean, double[] sEvolutionPath, double[] CEvolutionPath, RealMatrix b, RealMatrix d, RealMatrix c, int lastEigenUpdate) {
+      super(iterations, births, fitnessEvaluations, elapsedMillis);
+      this.stepSize = stepSize;
+      this.distrMean = distrMean;
+      this.sEvolutionPath = sEvolutionPath;
+      this.CEvolutionPath = CEvolutionPath;
+      B = b;
+      D = d;
+      C = c;
+      this.lastEigenUpdate = lastEigenUpdate;
+    }
+
     public double getStepSize() {
       return stepSize;
     }
@@ -172,6 +187,24 @@ public class CMAESEvolver<S, F extends Comparable<F>> extends AbstractIterativeE
 
     public void setLastEigenUpdate(int lastEigenUpdate) {
       this.lastEigenUpdate = lastEigenUpdate;
+    }
+
+    @Override
+    public State copy() {
+      return new CMAESState(
+          getIterations(),
+          getBirths(),
+          getFitnessEvaluations(),
+          getElapsedMillis(),
+          stepSize,
+          Arrays.copyOf(distrMean, distrMean.length),
+          Arrays.copyOf(sEvolutionPath, sEvolutionPath.length),
+          Arrays.copyOf(CEvolutionPath, CEvolutionPath.length),
+          B.copy(),
+          D.copy(),
+          C.copy(),
+          lastEigenUpdate
+      );
     }
   }
 

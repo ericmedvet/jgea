@@ -19,7 +19,6 @@ package it.units.malelab.jgea.core.evolver;
 import it.units.malelab.jgea.core.listener.Event;
 import it.units.malelab.jgea.core.listener.Listener;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
@@ -39,11 +38,21 @@ public interface Evolver<G, S, F> {
       ExecutorService executor,
       Listener<? super G, ? super S, ? super F> listener) throws InterruptedException, ExecutionException;
 
-  class State implements Serializable {
+  class State {
     private int iterations = 0;
     private int births = 0;
     private int fitnessEvaluations = 0;
     private long elapsedMillis = 0;
+
+    public State() {
+    }
+
+    public State(int iterations, int births, int fitnessEvaluations, long elapsedMillis) {
+      this.iterations = iterations;
+      this.births = births;
+      this.fitnessEvaluations = fitnessEvaluations;
+      this.elapsedMillis = elapsedMillis;
+    }
 
     public int getIterations() {
       return iterations;
@@ -85,5 +94,8 @@ public interface Evolver<G, S, F> {
       setBirths(getBirths() + n);
     }
 
+    public State copy() {
+      return new State(iterations, births, fitnessEvaluations, elapsedMillis);
+    }
   }
 }
