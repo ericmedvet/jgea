@@ -21,11 +21,10 @@ import it.units.malelab.jgea.representation.tree.Tree;
 import java.util.function.Function;
 
 /**
- *
  * @author eric
  */
 public abstract class GrammarBasedMapper<G, T> implements Function<G, Tree<T>> {
-  
+
   protected final Grammar<T> grammar;
 
   public GrammarBasedMapper(Grammar<T> grammar) {
@@ -35,5 +34,5 @@ public abstract class GrammarBasedMapper<G, T> implements Function<G, Tree<T>> {
   public Grammar<T> getGrammar() {
     return grammar;
   }
-  
+
 }

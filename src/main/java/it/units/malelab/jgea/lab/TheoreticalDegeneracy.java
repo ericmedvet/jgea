@@ -18,27 +18,19 @@ package it.units.malelab.jgea.lab;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
-import it.units.malelab.jgea.representation.tree.Tree;
-import it.units.malelab.jgea.representation.sequence.bit.BitString;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedMapper;
 import it.units.malelab.jgea.representation.grammar.ge.HierarchicalMapper;
 import it.units.malelab.jgea.representation.grammar.ge.StandardGEMapper;
 import it.units.malelab.jgea.representation.grammar.ge.WeightedHierarchicalMapper;
+import it.units.malelab.jgea.representation.sequence.bit.BitString;
+import it.units.malelab.jgea.representation.tree.Tree;
+import org.apache.commons.math3.stat.StatUtils;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
-
-import org.apache.commons.math3.stat.StatUtils;
 
 /**
  * @author eric

@@ -25,7 +25,6 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- *
  * @author eric
  */
 @SuppressWarnings("serial")

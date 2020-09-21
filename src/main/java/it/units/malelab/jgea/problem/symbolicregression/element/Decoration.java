@@ -24,11 +24,10 @@ package it.units.malelab.jgea.problem.symbolicregression.element;
 import java.util.Objects;
 
 /**
- *
  * @author eric
  */
 public class Decoration implements Element {
-  
+
   private final String string;
 
   public Decoration(String string) {
@@ -61,5 +60,5 @@ public class Decoration implements Element {
     }
     return true;
   }
-  
+
 }

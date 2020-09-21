@@ -23,7 +23,6 @@ package it.units.malelab.jgea.problem.symbolicregression.element;
 
 import it.units.malelab.jgea.problem.symbolicregression.RealFunction;
 
-import java.util.function.Function;
 import java.util.function.ToIntFunction;
 
 /**

@@ -19,14 +19,7 @@ package it.units.malelab.jgea.representation.grammar;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.core.util.Triplet;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author eric

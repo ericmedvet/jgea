@@ -16,12 +16,6 @@
 
 package it.units.malelab.jgea.representation.tree;
 
-import it.units.malelab.jgea.core.IndependentFactory;
-import it.units.malelab.jgea.core.util.Misc;
-
-import java.util.HashSet;
-import java.util.Random;
-
 /**
  * @author eric
  * @created 2020/08/05

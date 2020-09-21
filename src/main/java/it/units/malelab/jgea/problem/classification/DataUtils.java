@@ -19,9 +19,7 @@ package it.units.malelab.jgea.problem.classification;
 import it.units.malelab.jgea.core.util.Pair;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 /**

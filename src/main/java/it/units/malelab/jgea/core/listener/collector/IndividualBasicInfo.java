@@ -18,9 +18,9 @@ package it.units.malelab.jgea.core.listener.collector;
 
 import com.google.common.graph.ValueGraph;
 import it.units.malelab.jgea.core.Individual;
-import it.units.malelab.jgea.core.util.Sized;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.core.util.Pair;
+import it.units.malelab.jgea.core.util.Sized;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -71,7 +71,7 @@ public class IndividualBasicInfo<F> implements Function<Individual<? extends Obj
       }
     }
     if (o instanceof ValueGraph) {
-      return ((ValueGraph<?, ?>) o).nodes().size()+((ValueGraph<?, ?>) o).edges().size();
+      return ((ValueGraph<?, ?>) o).nodes().size() + ((ValueGraph<?, ?>) o).edges().size();
     }
     return null;
   }

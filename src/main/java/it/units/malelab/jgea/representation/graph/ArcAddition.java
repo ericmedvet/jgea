@@ -17,10 +17,12 @@
 package it.units.malelab.jgea.representation.graph;
 
 import it.units.malelab.jgea.core.IndependentFactory;
-import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.operator.Mutation;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 
 /**
  * @author eric
@@ -64,5 +66,5 @@ public class ArcAddition<N, A> implements Mutation<Graph<N, A>> {
     }
     return child;
   }
-  
+
 }

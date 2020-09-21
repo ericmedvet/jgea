@@ -16,10 +16,10 @@
 
 package it.units.malelab.jgea.representation.grammar.ge;
 
-import it.units.malelab.jgea.representation.tree.Tree;
-import it.units.malelab.jgea.representation.sequence.bit.BitString;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedMapper;
+import it.units.malelab.jgea.representation.sequence.bit.BitString;
+import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.util.List;
 

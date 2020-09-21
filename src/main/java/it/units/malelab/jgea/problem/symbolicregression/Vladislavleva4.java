@@ -16,7 +16,6 @@
 
 package it.units.malelab.jgea.problem.symbolicregression;
 
-import java.util.Arrays;
 import java.util.Random;
 
 /**

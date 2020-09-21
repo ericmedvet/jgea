@@ -17,11 +17,11 @@
 package it.units.malelab.jgea.representation.grammar.ge;
 
 import com.google.common.collect.Range;
-import it.units.malelab.jgea.representation.tree.Tree;
-import it.units.malelab.jgea.representation.sequence.bit.BitString;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedMapper;
 import it.units.malelab.jgea.representation.grammar.GrammarUtils;
+import it.units.malelab.jgea.representation.sequence.bit.BitString;
+import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.util.ArrayList;
 import java.util.List;

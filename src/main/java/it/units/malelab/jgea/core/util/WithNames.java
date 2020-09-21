@@ -24,11 +24,10 @@ package it.units.malelab.jgea.core.util;
 import java.util.List;
 
 /**
- *
  * @author eric
  */
 public interface WithNames {
-  
+
   List<String> names();
-  
+
 }

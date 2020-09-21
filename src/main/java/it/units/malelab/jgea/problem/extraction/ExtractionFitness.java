@@ -17,13 +17,11 @@
 package it.units.malelab.jgea.problem.extraction;
 
 import com.google.common.collect.Range;
-import com.google.common.collect.Sets;
 import it.units.malelab.jgea.core.util.WithNames;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * @author eric

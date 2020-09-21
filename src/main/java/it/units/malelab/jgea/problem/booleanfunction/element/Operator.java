@@ -17,18 +17,17 @@
 package it.units.malelab.jgea.problem.booleanfunction.element;
 
 /**
- *
  * @author eric
  */
 public enum Operator implements Element {
-  
+
   AND(".and"),
   AND1NOT(".and1not"),
   OR(".or"),
   XOR(".xor"),
   NOT(".not"),
   IF(".if");
-  
+
   private final String string;
 
   Operator(String string) {
@@ -39,5 +38,5 @@ public enum Operator implements Element {
   public String toString() {
     return string;
   }
-  
+
 }

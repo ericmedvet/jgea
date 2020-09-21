@@ -19,9 +19,9 @@ package it.units.malelab.jgea.representation.graph.numeric.operatorgraph;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.core.util.Sized;
 import it.units.malelab.jgea.representation.graph.Graph;
+import it.units.malelab.jgea.representation.graph.Node;
 import it.units.malelab.jgea.representation.graph.numeric.Constant;
 import it.units.malelab.jgea.representation.graph.numeric.Input;
-import it.units.malelab.jgea.representation.graph.Node;
 import it.units.malelab.jgea.representation.graph.numeric.Output;
 
 import java.io.Serializable;
@@ -114,14 +114,14 @@ public class OperatorGraph implements Function<double[], double[]>, Sized, Seria
             ((OperatorNode) n).getOperator().maxArity()
         ));
       }
-      if ((n instanceof Constant || n instanceof Input) && graph.predecessors(n).size()>0) {
+      if ((n instanceof Constant || n instanceof Input) && graph.predecessors(n).size() > 0) {
         throw new IllegalArgumentException(String.format(
             "Invalid graph: constant/input node %s has more than 0 predecessors (%d)",
             n,
             graph.predecessors(n).size()
         ));
       }
-      if ((n instanceof Output) && graph.successors(n).size()>0) {
+      if ((n instanceof Output) && graph.successors(n).size() > 0) {
         throw new IllegalArgumentException(String.format(
             "Invalid graph: output node %s has more than 0 successors (%d)",
             n,

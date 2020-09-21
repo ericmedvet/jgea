@@ -17,8 +17,8 @@
 package it.units.malelab.jgea.representation.grammar.ge;
 
 import com.google.common.collect.Range;
-import it.units.malelab.jgea.representation.sequence.bit.BitString;
 import it.units.malelab.jgea.representation.grammar.Grammar;
+import it.units.malelab.jgea.representation.sequence.bit.BitString;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
  * @author eric
  */
 public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {

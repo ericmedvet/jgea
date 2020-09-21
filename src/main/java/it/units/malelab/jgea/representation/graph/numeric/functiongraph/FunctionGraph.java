@@ -70,7 +70,7 @@ public class FunctionGraph implements Function<double[], double[]>, Sized, Seria
             n.getClass()
         ));
       }
-      if ((n instanceof Constant || n instanceof Input) && graph.predecessors(n).size()>0) {
+      if ((n instanceof Constant || n instanceof Input) && graph.predecessors(n).size() > 0) {
         throw new IllegalArgumentException(String.format(
             "Invalid graph: constant/input node %s has more than 0 predecessors (%d)",
             n,
