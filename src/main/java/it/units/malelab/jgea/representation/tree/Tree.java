@@ -90,6 +90,10 @@ public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>> {
     return children.get(i);
   }
 
+  public Tree<C> parent() {
+    return parent;
+  }
+
   public boolean isLeaf() {
     return children.isEmpty();
   }
@@ -166,9 +170,8 @@ public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>> {
 
   @Override
   public String toString() {
-    String s = content.toString() +
-        (children.isEmpty() ? "" : ("[" + children.stream().map(Tree::toString).collect(Collectors.joining(",")) + "]"));
-    return s;
+    return content.toString() +
+            (children.isEmpty() ? "" : ("[" + children.stream().map(Tree::toString).collect(Collectors.joining(",")) + "]"));
   }
 
   public void prettyPrint(PrintStream ps) {
