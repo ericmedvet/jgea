@@ -17,10 +17,10 @@
 package it.units.malelab.jgea.representation.grammar.cfggp;
 
 import it.units.malelab.jgea.core.Factory;
-import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarUtils;
+import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.util.ArrayList;
 import java.util.List;

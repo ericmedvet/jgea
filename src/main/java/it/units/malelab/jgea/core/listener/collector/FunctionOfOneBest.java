@@ -17,10 +17,7 @@
 package it.units.malelab.jgea.core.listener.collector;
 
 import it.units.malelab.jgea.core.Individual;
-import it.units.malelab.jgea.core.listener.Event;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 

@@ -16,10 +16,9 @@
 
 package it.units.malelab.jgea.core.listener.collector;
 
-import it.units.malelab.jgea.core.Individual;
-
-import java.util.*;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author eric

@@ -18,17 +18,17 @@ package it.units.malelab.jgea.core.evolver;
 
 import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.Individual;
+import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.selector.Selector;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import it.units.malelab.jgea.core.operator.Mutation;
 
 /**
  * @author Eric Medvet <eric.medvet@gmail.com>

@@ -18,34 +18,28 @@ package it.units.malelab.jgea.lab;
 
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.Individual;
-import it.units.malelab.jgea.core.order.PartialComparator;
-import it.units.malelab.jgea.core.util.Misc;
-import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
-import it.units.malelab.jgea.representation.sequence.bit.BitString;
-import it.units.malelab.jgea.representation.sequence.bit.BitStringFactory;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.MultiFileListenerFactory;
-import it.units.malelab.jgea.core.listener.collector.Basic;
-import it.units.malelab.jgea.core.listener.collector.BestInfo;
-import it.units.malelab.jgea.core.listener.collector.Diversity;
-import it.units.malelab.jgea.core.listener.collector.IntrinsicDimension;
-import it.units.malelab.jgea.core.listener.collector.Population;
-import it.units.malelab.jgea.core.listener.collector.Static;
-import it.units.malelab.jgea.core.listener.collector.Suffix;
-import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
+import it.units.malelab.jgea.core.listener.collector.*;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
-import it.units.malelab.jgea.representation.sequence.SameTwoPointsCrossover;
+import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
+import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.distance.BitStringHamming;
 import it.units.malelab.jgea.distance.Distance;
+import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
+import it.units.malelab.jgea.problem.booleanfunction.element.Element;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedMapper;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 import it.units.malelab.jgea.representation.grammar.ge.WeightedHierarchicalMapper;
-import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
-import it.units.malelab.jgea.problem.booleanfunction.element.Element;
+import it.units.malelab.jgea.representation.sequence.SameTwoPointsCrossover;
+import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
+import it.units.malelab.jgea.representation.sequence.bit.BitString;
+import it.units.malelab.jgea.representation.sequence.bit.BitStringFactory;
+import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -57,7 +51,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static it.units.malelab.jgea.core.util.Args.*;
+import static it.units.malelab.jgea.core.util.Args.i;
+import static it.units.malelab.jgea.core.util.Args.l;
 
 /**
  * @author eric

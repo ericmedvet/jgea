@@ -21,20 +21,15 @@
  */
 package it.units.malelab.jgea.core.listener;
 
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.IllegalFormatException;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import it.units.malelab.jgea.core.listener.collector.DataCollector;
 import it.units.malelab.jgea.core.listener.collector.Item;
 
+import java.io.PrintStream;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**

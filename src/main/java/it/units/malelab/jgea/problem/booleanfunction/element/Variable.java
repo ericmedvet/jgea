@@ -19,11 +19,10 @@ package it.units.malelab.jgea.problem.booleanfunction.element;
 import java.util.Objects;
 
 /**
- *
  * @author eric
  */
 public class Variable implements Element {
-  
+
   private final String string;
 
   public Variable(String string) {
@@ -56,5 +55,5 @@ public class Variable implements Element {
     }
     return true;
   }
-  
+
 }

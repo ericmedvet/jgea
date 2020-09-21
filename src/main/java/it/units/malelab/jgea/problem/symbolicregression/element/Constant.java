@@ -22,11 +22,10 @@
 package it.units.malelab.jgea.problem.symbolicregression.element;
 
 /**
- *
  * @author eric
  */
 public class Constant implements Element {
-  
+
   private final double value;
 
   public Constant(double value) {
@@ -63,5 +62,5 @@ public class Constant implements Element {
     }
     return true;
   }
-  
+
 }

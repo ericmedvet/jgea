@@ -16,11 +16,11 @@
 
 package it.units.malelab.jgea.problem.booleanfunction;
 
-import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.core.fitness.BooleanFunctionFitness;
+import it.units.malelab.jgea.problem.booleanfunction.element.Element;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
-import it.units.malelab.jgea.problem.booleanfunction.element.Element;
+import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.io.File;
 import java.io.IOException;

@@ -21,12 +21,11 @@ import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import java.util.Random;
 
 /**
- *
  * @author eric
  */
 @FunctionalInterface
 public interface Selector<T> {
-  
+
   <K extends T> K select(PartiallyOrderedCollection<K> ks, Random random);
 
 }

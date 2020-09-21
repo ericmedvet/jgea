@@ -17,7 +17,6 @@
 package it.units.malelab.jgea.problem.mapper.element;
 
 /**
- *
  * @author eric
  */
 public enum Variable implements Element {
@@ -26,7 +25,7 @@ public enum Variable implements Element {
   DEPTH("depth"),
   GL_COUNT_R("g_count_r"),
   GL_COUNT_RW("g_count_rw");
-  
+
   private final String grammarName;
 
   Variable(String grammarName) {
@@ -36,5 +35,5 @@ public enum Variable implements Element {
   public String getGrammarName() {
     return grammarName;
   }
-  
+
 }

@@ -20,12 +20,7 @@ import com.google.common.collect.Sets;
 import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**

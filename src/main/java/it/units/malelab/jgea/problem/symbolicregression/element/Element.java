@@ -22,11 +22,10 @@
 package it.units.malelab.jgea.problem.symbolicregression.element;
 
 /**
- *
  * @author eric
  */
 public interface Element {
-  
+
   String toString();
-  
+
 }

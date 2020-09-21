@@ -35,7 +35,10 @@ import it.units.malelab.jgea.representation.sequence.numeric.GeometricCrossover;
 import it.units.malelab.jgea.representation.sequence.numeric.UniformDoubleFactory;
 
 import java.io.FileNotFoundException;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.logging.Level;

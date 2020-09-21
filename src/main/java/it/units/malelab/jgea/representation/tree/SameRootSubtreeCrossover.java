@@ -16,7 +16,6 @@
 
 package it.units.malelab.jgea.representation.tree;
 
-import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.operator.Crossover;
 
 import java.util.*;
