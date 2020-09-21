@@ -16,9 +16,9 @@
 
 package it.units.malelab.jgea.problem.synthetic;
 
-import it.units.malelab.jgea.representation.tree.Tree;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
+import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.util.ArrayList;
 import java.util.Arrays;

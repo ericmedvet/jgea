@@ -19,16 +19,11 @@ package it.units.malelab.jgea.core.listener.collector;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.listener.Event;
 import it.units.malelab.jgea.distance.Distance;
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 /**
  * @author eric

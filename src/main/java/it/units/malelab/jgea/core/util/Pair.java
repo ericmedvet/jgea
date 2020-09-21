@@ -22,12 +22,9 @@
 package it.units.malelab.jgea.core.util;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 /**
- *
  * @author eric
  */
 public class Pair<F, S> implements Serializable {

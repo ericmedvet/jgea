@@ -17,11 +17,10 @@
 package it.units.malelab.jgea.problem.mapper.element;
 
 /**
- *
  * @author eric
  */
 public class NumericConstant implements Element {
-  
+
   private final double value;
 
   public NumericConstant(double value) {

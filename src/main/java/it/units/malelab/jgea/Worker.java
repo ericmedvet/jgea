@@ -18,19 +18,16 @@ package it.units.malelab.jgea;
 
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.PrintStreamListener;
-
-import java.io.FileNotFoundException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import it.units.malelab.jgea.core.listener.collector.DataCollector;
 import it.units.malelab.jgea.core.util.Args;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import static it.units.malelab.jgea.core.util.Args.*;
+import static it.units.malelab.jgea.core.util.Args.i;
 
 /**
  * @author eric

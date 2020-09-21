@@ -16,11 +16,11 @@
 
 package it.units.malelab.jgea.problem.mapper;
 
-import it.units.malelab.jgea.representation.tree.Tree;
-import it.units.malelab.jgea.representation.sequence.bit.BitString;
+import it.units.malelab.jgea.problem.mapper.element.Element;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.ge.WeightedHierarchicalMapper;
-import it.units.malelab.jgea.problem.mapper.element.Element;
+import it.units.malelab.jgea.representation.sequence.bit.BitString;
+import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.util.ArrayList;
 import java.util.List;

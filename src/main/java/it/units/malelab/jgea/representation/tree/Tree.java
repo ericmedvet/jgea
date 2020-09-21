@@ -171,7 +171,7 @@ public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>> {
   @Override
   public String toString() {
     return content.toString() +
-            (children.isEmpty() ? "" : ("[" + children.stream().map(Tree::toString).collect(Collectors.joining(",")) + "]"));
+        (children.isEmpty() ? "" : ("[" + children.stream().map(Tree::toString).collect(Collectors.joining(",")) + "]"));
   }
 
   public void prettyPrint(PrintStream ps) {

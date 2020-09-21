@@ -18,12 +18,10 @@ package it.units.malelab.jgea.core.selector;
 
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.util.Misc;
-import java.util.Collection;
-import java.util.List;
+
 import java.util.Random;
 
 /**
- *
  * @author eric
  */
 public class Worst implements Selector<Object> {

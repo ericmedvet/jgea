@@ -16,12 +16,8 @@
 
 package it.units.malelab.jgea.problem.symbolicregression;
 
+import it.units.malelab.jgea.problem.symbolicregression.element.*;
 import it.units.malelab.jgea.representation.tree.Tree;
-import it.units.malelab.jgea.problem.symbolicregression.element.Constant;
-import it.units.malelab.jgea.problem.symbolicregression.element.Decoration;
-import it.units.malelab.jgea.problem.symbolicregression.element.Element;
-import it.units.malelab.jgea.problem.symbolicregression.element.Operator;
-import it.units.malelab.jgea.problem.symbolicregression.element.Variable;
 
 import java.util.function.Function;
 

@@ -20,8 +20,6 @@ import com.google.common.collect.Range;
 import it.units.malelab.jgea.distance.Distance;
 
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 

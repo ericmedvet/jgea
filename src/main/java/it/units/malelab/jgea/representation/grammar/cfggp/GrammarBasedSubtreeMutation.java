@@ -16,14 +16,13 @@
 
 package it.units.malelab.jgea.representation.grammar.cfggp;
 
-import it.units.malelab.jgea.representation.tree.Tree;
+import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.representation.grammar.Grammar;
+import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-
-import it.units.malelab.jgea.core.operator.Mutation;
 
 /**
  * @author eric

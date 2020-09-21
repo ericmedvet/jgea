@@ -16,12 +16,8 @@
 
 package it.units.malelab.jgea.problem.booleanfunction;
 
+import it.units.malelab.jgea.problem.booleanfunction.element.*;
 import it.units.malelab.jgea.representation.tree.Tree;
-import it.units.malelab.jgea.problem.booleanfunction.element.Constant;
-import it.units.malelab.jgea.problem.booleanfunction.element.Decoration;
-import it.units.malelab.jgea.problem.booleanfunction.element.Element;
-import it.units.malelab.jgea.problem.booleanfunction.element.Operator;
-import it.units.malelab.jgea.problem.booleanfunction.element.Variable;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

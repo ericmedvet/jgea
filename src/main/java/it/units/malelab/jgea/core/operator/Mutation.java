@@ -17,11 +17,12 @@
 package it.units.malelab.jgea.core.operator;
 
 import it.units.malelab.jgea.core.util.Misc;
-import it.units.malelab.jgea.core.util.Pair;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * @author eric

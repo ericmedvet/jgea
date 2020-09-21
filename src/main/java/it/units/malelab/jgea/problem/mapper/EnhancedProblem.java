@@ -20,7 +20,6 @@ import it.units.malelab.jgea.distance.Distance;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 
 /**
- *
  * @author eric
  */
 public class EnhancedProblem<N, S, F> {

@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- *
  * @author eric
  */
 public class Triplet<F, S, T> extends Pair<F, S> {
