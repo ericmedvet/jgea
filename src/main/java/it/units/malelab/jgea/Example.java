@@ -415,9 +415,7 @@ public class Example extends Worker {
         new CMAESEvolver<>(
             Function.identity(),
             new FixedLengthListFactory<>(10, new UniformDoubleFactory(-10, 10)),
-            PartialComparator.from(Double.class).comparing(Individual::getFitness),
-            -10,
-            10
+            PartialComparator.from(Double.class).comparing(Individual::getFitness)
         )
     );
     for (Evolver<List<Double>, List<Double>, Double> evolver : evolvers) {
@@ -462,10 +460,8 @@ public class Example extends Worker {
         ),
         new CMAESEvolver<>(
             Function.identity(),
-            new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
-            PartialComparator.from(Double.class).comparing(Individual::getFitness),
-            -5.12,
-            5.12
+            new FixedLengthListFactory<>(10, new UniformDoubleFactory(-5.12, 5.12)),
+            PartialComparator.from(Double.class).comparing(Individual::getFitness)
         )
     );
     for (Evolver<List<Double>, List<Double>, Double> evolver : evolvers) {
