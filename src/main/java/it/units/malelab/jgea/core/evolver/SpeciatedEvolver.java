@@ -24,6 +24,7 @@ import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.distance.Distance;
+import it.units.malelab.jgea.representation.graph.LinkedHashGraph;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;

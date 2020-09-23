@@ -29,7 +29,7 @@ public class Individual<G, S, F> implements Serializable {
   private final S solution;
   private final F fitness;
   private final int birthIteration;
-
+  
   public Individual(G genotype, S solution, F fitness, int birthIteration) {
     this.genotype = genotype;
     this.solution = solution;

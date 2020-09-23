@@ -43,6 +43,7 @@ import it.units.malelab.jgea.problem.symbolicregression.element.Variable;
 import it.units.malelab.jgea.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
 import it.units.malelab.jgea.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
 import it.units.malelab.jgea.representation.graph.*;
+import it.units.malelab.jgea.representation.graph.numeric.Input;
 import it.units.malelab.jgea.representation.graph.numeric.Output;
 import it.units.malelab.jgea.representation.graph.numeric.functiongraph.BaseFunction;
 import it.units.malelab.jgea.representation.graph.numeric.functiongraph.FunctionGraph;
@@ -89,8 +90,8 @@ public class SymbolicRegressionComparison extends Worker {
     int maxNodes = i(a("maxNodes", "20"));
     int nTournament = 5;
     int diversityMaxAttempts = 100;
-    int nIterations = i(a("nIterations", "50"));
-    String evolverNamePattern = a("evolver", "fgraph-hash+-speciated");
+    int nIterations = i(a("nIterations", "100"));
+    String evolverNamePattern = a("evolver", "ograph-hash\\+-speciated");
     int[] seeds = ri(a("seed", "0:1"));
     double graphArcAdditionRate = 3d;
     double graphArcMutationRate = 1d;
@@ -287,10 +288,12 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
                 new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
+                new ArcRemoval<Node, Double>(
+                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                ).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
                 new AlignedCrossover<Node, Double>(
                     (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
-                    node -> node instanceof Output,
+                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
                     false
                 ).withChecker(FunctionGraph.checker()), graphCrossoverRate
             ),
@@ -314,7 +317,9 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
                 new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate
+                new ArcRemoval<Node, Double>(
+                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
             ),
             new Tournament(nTournament),
             new Worst(),
@@ -336,7 +341,9 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
                 new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate
+                new ArcRemoval<Node, Double>(
+                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
             ),
             5,
             (new Jaccard()).on(i -> i.getGenotype().nodes()),
@@ -368,7 +375,9 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
                 new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate
+                new ArcRemoval<Node, Double>(
+                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
             ),
             5,
             (new Jaccard()).on(i -> i.getGenotype().nodes()),
@@ -400,10 +409,12 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
                 new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
+                new ArcRemoval<Node, Double>(
+                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                ), graphArcRemovalRate,
                 new AlignedCrossover<Node, Double>(
                     (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
-                    node -> node instanceof Output,
+                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
                     false
                 ).withChecker(FunctionGraph.checker()), graphCrossoverRate
             ),
@@ -428,10 +439,12 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
                 new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
+                new ArcRemoval<Node, Double>(
+                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                ), graphArcRemovalRate,
                 new AlignedCrossover<Node, Double>(
                     (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
-                    node -> node instanceof Output,
+                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
                     false
                 ).withChecker(FunctionGraph.checker()), graphCrossoverRate
             ),
@@ -465,10 +478,12 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
                 new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
+                new ArcRemoval<Node, Double>(
+                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                ).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
                 new AlignedCrossover<Node, Double>(
                     (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
-                    node -> node instanceof Output,
+                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
                     false
                 ).withChecker(FunctionGraph.checker()), graphCrossoverRate
             ),
@@ -502,10 +517,12 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
                 new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
+                new ArcRemoval<Node, Double>(
+                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                ).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
                 new AlignedCrossover<Node, Double>(
                     (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
-                    node -> node instanceof Output,
+                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
                     false
                 ).withChecker(FunctionGraph.checker()), graphCrossoverRate
             ),
@@ -528,10 +545,12 @@ public class SymbolicRegressionComparison extends Worker {
                     Mutation.copy()
                 ).withChecker(OperatorGraph.checker()), graphNodeAdditionRate,
                 new ArcAddition<Node, OperatorGraph.NonValuedArc>(r -> OperatorGraph.NON_VALUED_ARC, false).withChecker(OperatorGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, OperatorGraph.NonValuedArc>(node -> node instanceof Output).withChecker(OperatorGraph.checker()), graphArcRemovalRate,
+                new ArcRemoval<Node, OperatorGraph.NonValuedArc>(
+                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                ).withChecker(OperatorGraph.checker()), graphArcRemovalRate,
                 new AlignedCrossover<Node, OperatorGraph.NonValuedArc>(
                     Crossover.randomCopy(),
-                    node -> node instanceof Output,
+                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
                     false
                 ).withChecker(OperatorGraph.checker()), graphCrossoverRate
             ),
@@ -554,7 +573,9 @@ public class SymbolicRegressionComparison extends Worker {
                     Mutation.copy()
                 ).withChecker(OperatorGraph.checker()), graphNodeAdditionRate,
                 new ArcAddition<Node, OperatorGraph.NonValuedArc>(r -> OperatorGraph.NON_VALUED_ARC, false).withChecker(OperatorGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, OperatorGraph.NonValuedArc>(node -> node instanceof Output).withChecker(OperatorGraph.checker()), graphArcRemovalRate
+                new ArcRemoval<Node, OperatorGraph.NonValuedArc>(
+                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                ).withChecker(OperatorGraph.checker()), graphArcRemovalRate
             ),
             5,
             (new Jaccard()).on(i -> i.getGenotype().nodes()),
@@ -726,8 +747,10 @@ public class SymbolicRegressionComparison extends Worker {
                       Mutation.copy(),
                       Mutation.copy()
                   ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
-                  new ArcAddition<IndexedNode<Node>, OperatorGraph.NonValuedArc>(r -> OperatorGraph.NON_VALUED_ARC, false).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
-                  new ArcRemoval<IndexedNode<Node>, OperatorGraph.NonValuedArc>(node -> node.content() instanceof Output).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate,
+                  new ArcAddition<IndexedNode<Node>, OperatorGraph.NonValuedArc>(r -> OperatorGraph.NON_VALUED_ARC, false)
+                      .withChecker(g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
+                  new ArcRemoval<IndexedNode<Node>, OperatorGraph.NonValuedArc>(node -> node.content() instanceof Output)
+                      .withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate,
                   new AlignedCrossover<IndexedNode<Node>, OperatorGraph.NonValuedArc>(
                       Crossover.randomCopy(),
                       node -> node.content() instanceof Output,
@@ -808,7 +831,9 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
                 new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate
+                new ArcRemoval<Node, Double>(
+                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
             ),
             new Tournament(nTournament),
             new Worst(),
@@ -830,10 +855,12 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
                 new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
                 new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, Double>(node -> node instanceof Output).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
+                new ArcRemoval<Node, Double>(
+                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                ).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
                 new AlignedCrossover<Node, Double>(
                     (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
-                    node -> node instanceof Output,
+                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
                     false
                 ).withChecker(FunctionGraph.checker()), graphCrossoverRate
             ),

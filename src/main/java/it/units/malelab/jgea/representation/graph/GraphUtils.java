@@ -27,6 +27,7 @@ import it.units.malelab.jgea.representation.graph.numeric.functiongraph.ShallowS
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -52,19 +53,27 @@ public class GraphUtils {
   }
 
   public static <N1, A1, N2, A2> Graph<N2, A2> transform(Graph<N1, A1> fromGraph, Function<N1, N2> nodeF, Function<Collection<A1>, A2> arcF) {
-    nodeF = Misc.cached(nodeF, fromGraph.nodes().size()); // this way the function is granted to be injective from an equals() perspective
-    /*
-     this way the function is granted to be injective from an equals() perspective
-     i.e., if n1.equals(n1p), then n2.equals(n2p).
-     hence, arc addition will not fail
-     */
     Graph<N2, A2> toGraph = new LinkedHashGraph<>();
     for (N1 fromNode : fromGraph.nodes()) {
       toGraph.addNode(nodeF.apply(fromNode));
     }
     Map<Graph.Arc<N2>, Collection<A1>> arcMap = new HashMap<>();
     for (Graph.Arc<N1> fromArc : fromGraph.arcs()) {
-      Graph.Arc<N2> toArc = Graph.Arc.of(nodeF.apply(fromArc.getSource()), nodeF.apply(fromArc.getTarget()));
+      N1 fromSourceNode = fromGraph.nodes().stream().filter(n -> n.equals(fromArc.getSource())).findFirst().orElse(null);
+      N1 fromTargetNode = fromGraph.nodes().stream().filter(n -> n.equals(fromArc.getTarget())).findFirst().orElse(null);
+      if (fromSourceNode==null||fromTargetNode==null) {
+        throw new IllegalStateException("Cannot find source or target nodes");
+      }
+      Graph.Arc<N2> toArc = Graph.Arc.of(nodeF.apply(fromSourceNode), nodeF.apply(fromTargetNode));
+      if (!toGraph.nodes().contains(toArc.getSource()) || !toGraph.nodes().contains(toArc.getTarget())) {
+
+        System.out.println(fromArc);
+        System.out.println(toArc);
+        System.out.println(fromGraph.nodes().stream().filter(n -> n.equals(fromArc.getSource())).collect(Collectors.toList()));
+        System.out.println(fromGraph.nodes().stream().filter(n -> n.equals(fromArc.getTarget())).collect(Collectors.toList()));
+
+        System.out.println("OCIO!");
+      }
       Collection<A1> fromArcValues = arcMap.getOrDefault(toArc, new ArrayList<>());
       fromArcValues.add(fromGraph.getArcValue(fromArc));
       arcMap.put(toArc, fromArcValues);
