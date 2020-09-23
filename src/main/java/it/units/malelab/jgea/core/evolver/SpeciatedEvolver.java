@@ -87,7 +87,7 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
       } else {
         int closestIndex = 0;
         for (int i = 1; i < distances.size(); i++) {
-          if (distances.get(i) < closestIndex) {
+          if (distances.get(i) < distances.get(closestIndex)) {
             closestIndex = i;
           }
         }
