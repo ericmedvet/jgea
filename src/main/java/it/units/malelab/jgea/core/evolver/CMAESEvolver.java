@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 
 public class CMAESEvolver<S, F extends Comparable<F>> extends AbstractIterativeEvolver<List<Double>, S, F> {
 
+  // TODO check which of the fields should be part of a run, not ea params (e.g., size)
   /**
    * Population size, sample size, number of offspring, λ.
    */
@@ -46,14 +47,6 @@ public class CMAESEvolver<S, F extends Comparable<F>> extends AbstractIterativeE
    * Problem dimensionality.
    */
   protected final int size;
-  /**
-   * Endpoint of the initial search points.
-   */
-  protected final double initMin;
-  /**
-   * Endpoint of the initial search points.
-   */
-  protected final double initMax;
   /**
    * Recombination weights.
    */
@@ -214,14 +207,9 @@ public class CMAESEvolver<S, F extends Comparable<F>> extends AbstractIterativeE
   public CMAESEvolver(
       Function<? super List<Double>, ? extends S> solutionMapper,
       Factory<? extends List<Double>> genotypeFactory,
-      PartialComparator<? super Individual<List<Double>, S, F>> individualComparator,
-      double initMin,
-      double initMax) {
+      PartialComparator<? super Individual<List<Double>, S, F>> individualComparator) {
     super(solutionMapper, genotypeFactory, individualComparator);
     this.size = genotypeFactory.build(1, new Random(0)).get(0).size();
-    this.initMin = initMin;
-    this.initMax = initMax;
-
     // initialize selection and recombination parameters
     lambda = 4 + (int) Math.floor(3 * Math.log(size));
     mu = (int) Math.floor(lambda / 2d);
@@ -260,11 +248,8 @@ public class CMAESEvolver<S, F extends Comparable<F>> extends AbstractIterativeE
   @Override
   protected Collection<Individual<List<Double>, S, F>> initPopulation(Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     // objective variables initial point
-    double[] distrMean = ((CMAESState) state).getDistrMean();
-    for (int i = 0; i < size; i++) {
-      distrMean[i] = random.nextDouble() * (initMax - initMin) + initMin;
-    }
-    ((CMAESState) state).setDistrMean(distrMean);
+    List<Double> point = genotypeFactory.build(1, random).get(0);
+    ((CMAESState) state).setDistrMean(point.stream().mapToDouble(d -> d).toArray());
     List<Individual<List<Double>, S, F>> population = samplePopulation(fitnessFunction, random, executor, (CMAESState) state);
     return population;
   }
