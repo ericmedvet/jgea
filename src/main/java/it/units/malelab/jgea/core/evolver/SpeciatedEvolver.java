@@ -121,7 +121,7 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
     //assign remaining offspring size
     int remaining = populationSize - offspring.size();
     List<Individual<G, S, F>> representers = allSpecies.stream()
-        .map(s -> representerSelector.apply(s))
+        .map(representerSelector)
         .collect(Collectors.toList());
     L.fine(String.format("Representers determined for %d species: fitnesses are %s",
         allSpecies.size(),
@@ -130,7 +130,7 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
             .collect(Collectors.toList())
     ));
     List<Individual<G, S, F>> sortedRepresenters = new ArrayList<>(representers);
-    Collections.sort(sortedRepresenters, individualComparator.comparator());
+    sortedRepresenters.sort(individualComparator.comparator());
     List<Double> weights = representers.stream()
         .map(r -> Math.pow(rankBase, sortedRepresenters.indexOf(r)))
         .collect(Collectors.toList());
@@ -153,7 +153,7 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
     for (int i = 0; i < allSpecies.size(); i++) {
       int size = sizes.get(i);
       List<Individual<G, S, F>> species = allSpecies.get(i);
-      Collections.sort(species, individualComparator.comparator());
+      species.sort(individualComparator.comparator());
       List<G> speciesOffspringGenotypes = new ArrayList<>();
       int counter = 0;
       while (speciesOffspringGenotypes.size() < size) {
