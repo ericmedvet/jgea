@@ -55,7 +55,6 @@ import it.units.malelab.jgea.representation.graph.numeric.operatorgraph.Operator
 import it.units.malelab.jgea.representation.graph.numeric.operatorgraph.ShallowFactory;
 import it.units.malelab.jgea.representation.tree.*;
 
-import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -75,11 +74,11 @@ import static it.units.malelab.jgea.core.util.Args.ri;
 // /usr/lib/jvm/jdk-14.0.1/bin/java -cp ~/IdeaProjects/jgea/out/artifacts/jgea_jar/jgea.jar it.units.malelab.jgea.lab.SymbolicRegressionComparison seed=0:10 file=results-%s.txt
 public class SymbolicRegressionComparison extends Worker {
 
-  public SymbolicRegressionComparison(String[] args) throws FileNotFoundException {
+  public SymbolicRegressionComparison(String[] args) {
     super(args);
   }
 
-  public static void main(String[] args) throws FileNotFoundException {
+  public static void main(String[] args) {
     new SymbolicRegressionComparison(args);
   }
 

@@ -48,7 +48,6 @@ import it.units.malelab.jgea.representation.graph.finiteautomata.ShallowDFAFacto
 import it.units.malelab.jgea.representation.tree.SameRootSubtreeCrossover;
 import it.units.malelab.jgea.representation.tree.Tree;
 
-import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -67,11 +66,11 @@ import static it.units.malelab.jgea.core.util.Args.ri;
  */
 public class ExtractionComparison extends Worker {
 
-  public ExtractionComparison(String[] args) throws FileNotFoundException {
+  public ExtractionComparison(String[] args) {
     super(args);
   }
 
-  public static void main(String[] args) throws FileNotFoundException {
+  public static void main(String[] args) {
     new ExtractionComparison(args);
   }
 
