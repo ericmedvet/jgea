@@ -23,6 +23,7 @@ import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.evolver.SpeciatedEvolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
+import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversityEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.MultiFileListenerFactory;
@@ -118,6 +119,26 @@ public class ExtractionComparison extends Worker {
               new Worst(),
               nPop,
               true
+          );
+        }),
+        Map.entry("cfgtree-gadiv", p -> {
+          RegexGrammar g = new RegexGrammar(p.getFitnessFunction(), options);
+          return new StandardWithEnforcedDiversityEvolver<Tree<String>, Extractor<Character>, List<Double>>(
+              (Tree<String> tree) -> new RegexBasedExtractor(tree.leaves().stream()
+                  .map(Tree::content)
+                  .collect(Collectors.joining())),
+              new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
+              new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparing(Individual::getFitness),
+              nPop,
+              Map.of(
+                  new SameRootSubtreeCrossover<>(maxHeight + 4), 0.8d,
+                  new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
+              ),
+              new Tournament(nTournament),
+              new Worst(),
+              nPop,
+              true,
+              diversityMaxAttempts
           );
         }),
         Map.entry("dfa-hash+-speciated", p -> {
