@@ -46,6 +46,16 @@ public interface Evolver<G, S, F> {
         private int fitnessEvaluations = 0;
         private long elapsedMillis = 0;
 
+        public State() {
+        }
+
+        public State(int iterations, int births, int fitnessEvaluations, long elapsedMillis) {
+            this.iterations = iterations;
+            this.births = births;
+            this.fitnessEvaluations = fitnessEvaluations;
+            this.elapsedMillis = elapsedMillis;
+        }
+
         public int getIterations() {
             return iterations;
         }
@@ -86,5 +96,8 @@ public interface Evolver<G, S, F> {
             setBirths(getBirths() + n);
         }
 
+        public State copy() {
+            return new State(iterations, births, fitnessEvaluations, elapsedMillis);
+        }
     }
 }
