@@ -52,19 +52,16 @@ public interface DataCollector<G, S, F> {
       Class<?> matchedTransformerType = transformers.keySet().stream().filter(returnType::isAssignableFrom).findAny().orElse(null);
       String name = m.getName().substring(m.getName().startsWith("get") ? 3 : 2);
       name = name.substring(0, 1).toLowerCase() + name.substring(1);
-      if (matchedFormatType != null) {
-        try {
+      name = transform(name);
+      try {
+        Object field = m.invoke(o);
+        if (matchedFormatType != null) {
           items.add(new Item(
               name,
               matchedTransformerType != null ? transformers.get(matchedTransformerType).apply(m.invoke(o)) : m.invoke(o),
               formats.get(matchedFormatType)
           ));
-        } catch (IllegalAccessException | InvocationTargetException e) {
-          // ignore
-        }
-      } else if (recursive) {
-        try {
-          Object field = m.invoke(o);
+        } else if (recursive) {
           if (field != null) {
             String finalName = name;
             items.addAll(fromBean(field, recursive, formats, transformers).stream()
@@ -72,12 +69,28 @@ public interface DataCollector<G, S, F> {
                 .collect(Collectors.toList())
             );
           }
-        } catch (IllegalAccessException | InvocationTargetException e) {
-          // ignore
         }
+      } catch (IllegalAccessException | InvocationTargetException e) {
+        // ignore
+        // TODO should put some notification
+        e.printStackTrace();
       }
     }
     return items;
+  }
+
+  private static String transform(String name) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < name.length(); i++) {
+      char c = name.charAt(i);
+      if (Character.isUpperCase(c)) {
+        sb.append(".");
+        sb.append(Character.toLowerCase(c));
+      } else {
+        sb.append(c);
+      }
+    }
+    return sb.toString();
   }
 
 }
