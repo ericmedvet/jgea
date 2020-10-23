@@ -22,11 +22,10 @@ import it.units.malelab.jgea.core.listener.collector.Item;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -34,56 +33,38 @@ import java.util.stream.Collectors;
 public class FileListenerFactory<G, S, F> implements ListnerFactory<G, S, F> {
 
   private final String filePathName;
-  private final List<String> firstNames;
+  private final List<List<PrintStreamListener.Column>> columnGroups;
   private PrintStream ps;
 
   private final static Logger L = Logger.getLogger(FileListenerFactory.class.getName());
 
   public FileListenerFactory(String filePathName) {
     this.filePathName = filePathName;
-    firstNames = new ArrayList<>();
+    columnGroups = new ArrayList<>();
   }
 
   @Override
-  public Listener<G, S, F> build(DataCollector<? super G, ? super S, ? super F>... collectors) {
-    return new PrintStreamListener<G, S, F>(null, false, 0, ";", ";", collectors) {
-      @Override
-      public void listen(Event<? extends G, ? extends S, ? extends F> event) {
-        //collect items
-        List<List<Item>> items = collectItems(event);
-        //check consistency of item names
-        if (!firstNames.isEmpty()) {
-          List<String> currentNames = items.stream()
-              .flatMap(Collection::stream)
-              .map(Item::getName)
-              .collect(Collectors.toList());
-          if (!currentNames.equals(firstNames)) {
-            L.warning(String.format("%d items received, %d expected", currentNames.size(), firstNames.size()));
-          }
+  public Listener<G, S, F> build(DataCollector<? super G, ? super S, ? super F>... collectorArray) {
+    List<DataCollector<? super G, ? super S, ? super F>> collectors = Arrays.asList(collectorArray);
+    L.warning(String.format("Building new listener with %d collectors", collectors.size()));
+    return event -> {
+      List<List<Item>> itemGroups = PrintStreamListener.collectItems(event, collectors);
+      if (columnGroups.isEmpty()) {
+        columnGroups.addAll(PrintStreamListener.buildColumnGroups(itemGroups, false));
+        try {
+          ps = new PrintStream(filePathName);
+          L.log(Level.INFO, String.format("New output file %s created", filePathName));
+        } catch (FileNotFoundException ex) {
+          L.log(Level.SEVERE, String.format("Cannot create output file %s", filePathName), ex);
+          ps = System.out;
         }
-        //retrieve printstream
-        synchronized (firstNames) {
-          if (firstNames.isEmpty()) {
-            firstNames.addAll(items.stream()
-                .flatMap(Collection::stream)
-                .map(Item::getName)
-                .collect(Collectors.toList()));
-            try {
-              ps = new PrintStream(filePathName);
-              L.log(Level.INFO, String.format("New output file %s created", filePathName));
-            } catch (FileNotFoundException ex) {
-              L.log(Level.SEVERE, String.format("Cannot create output file %s", filePathName), ex);
-              ps = System.out;
-            }
-            String headersString = buildHeadersString();
-            ps.println(headersString);
-          }
+        synchronized (columnGroups) {
+          ps.println(PrintStreamListener.buildHeaderString(columnGroups, ";", ";", false));
         }
-        //print values: collectors
-        String data = buildDataString(items);
-        synchronized (firstNames) {
-          ps.println(data);
-        }
+      }
+      PrintStreamListener.checkConsistency(itemGroups, columnGroups);
+      synchronized (columnGroups) {
+        ps.println(PrintStreamListener.buildDataString(itemGroups, columnGroups, ";", ";", false));
       }
     };
   }

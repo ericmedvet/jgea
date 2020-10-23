@@ -22,13 +22,12 @@ import it.units.malelab.jgea.core.listener.collector.Item;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author eric
@@ -37,7 +36,7 @@ public class MultiFileListenerFactory<G, S, F> implements ListnerFactory<G, S, F
 
   private final String baseDirName;
   private final String baseFileName;
-  private final Map<List<String>, PrintStream> streams;
+  private final Map<List<List<PrintStreamListener.Column>>, PrintStream> streams;
 
   private final static Logger L = Logger.getLogger(MultiFileListenerFactory.class.getName());
 
@@ -56,42 +55,30 @@ public class MultiFileListenerFactory<G, S, F> implements ListnerFactory<G, S, F
   }
 
   @Override
-  public Listener<G, S, F> build(DataCollector<? super G, ? super S, ? super F>... collectors) {
-    return new PrintStreamListener<G, S, F>(null, false, 0, ";", ";", collectors) {
-      @Override
-      public void listen(Event<? extends G, ? extends S, ? extends F> event) {
-        //collect items
-        List<List<Item>> items = collectItems(event);
-        //retrieve printstream
-        List<String> names = items.stream()
-            .map(is -> is.stream().map(Item::getName))
-            .reduce(Stream::concat)
-            .get()
-            .collect(Collectors.toList());
-        PrintStream ps = null;
-        synchronized (streams) {
-          ps = streams.get(names);
-          if (ps == null) {
-            String fileName = baseDirName + File.separator + String.format(baseFileName, Integer.toHexString(names.hashCode()));
-            try {
-              ps = new PrintStream(fileName);
-              L.log(Level.INFO, String.format("New output file %s created", fileName));
-            } catch (FileNotFoundException ex) {
-              L.log(Level.SEVERE, String.format("Cannot create output file %s", fileName), ex);
-              ps = System.out;
-            }
-            String headersString = buildHeadersString();
-            synchronized (streams) {
-              streams.put(names, ps);
-              ps.println(headersString);
-            }
-          }
+  public Listener<G, S, F> build(DataCollector<? super G, ? super S, ? super F>... collectorArray) {
+    List<DataCollector<? super G, ? super S, ? super F>> collectors = Arrays.asList(collectorArray);
+    L.warning(String.format("Building new listener with %d collectors", collectors.size()));
+    return event -> {
+      List<List<Item>> itemGroups = PrintStreamListener.collectItems(event, collectors);
+      List<List<PrintStreamListener.Column>> columnGroups = PrintStreamListener.buildColumnGroups(itemGroups, false);
+      PrintStream ps = streams.get(columnGroups);
+      if (ps == null) {
+        String fileName = baseDirName + File.separator + String.format(baseFileName, Integer.toHexString(columnGroups.hashCode()));
+        try {
+          ps = new PrintStream(fileName);
+          L.log(Level.INFO, String.format("New output file %s created", fileName));
+        } catch (FileNotFoundException ex) {
+          L.log(Level.SEVERE, String.format("Cannot create output file %s", fileName), ex);
+          ps = System.out;
         }
-        //print values: collectors
-        String data = buildDataString(items);
         synchronized (streams) {
-          ps.println(data);
+          ps.println(PrintStreamListener.buildHeaderString(columnGroups, ";", ";", false));
         }
+
+      }
+      PrintStreamListener.checkConsistency(itemGroups, columnGroups);
+      synchronized (streams) {
+        ps.println(PrintStreamListener.buildDataString(itemGroups, columnGroups, ";", ";", false));
       }
     };
   }

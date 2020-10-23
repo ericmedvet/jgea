@@ -37,6 +37,45 @@ import java.util.stream.Collectors;
  */
 public class PrintStreamListener<G, S, F> implements Listener<G, S, F> {
 
+  protected static class Column {
+    private final String name;
+    private final String format;
+    private final int size;
+
+    public Column(String name, String format, int size) {
+      this.name = name;
+      this.format = format;
+      this.size = size;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public String getFormat() {
+      return format;
+    }
+
+    public int getSize() {
+      return size;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      Column column = (Column) o;
+      return size == column.size &&
+          Objects.equals(name, column.name) &&
+          Objects.equals(format, column.format);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(name, format, size);
+    }
+  }
+
   private final PrintStream ps;
   private final boolean format;
   private final int headerInterval;
@@ -44,14 +83,13 @@ public class PrintStreamListener<G, S, F> implements Listener<G, S, F> {
   private final String outerSeparator;
   private final List<DataCollector<? super G, ? super S, ? super F>> collectors;
 
-  private final List<List<Item>> firstItems;
-  private final List<List<Integer>> sizes;
+  private final List<List<Column>> columnGroups;
 
   private int lines;
-  private List<String> firstNames;
 
   private final static Logger L = Logger.getLogger(PrintStreamListener.class.getName());
 
+  @SafeVarargs
   public PrintStreamListener(
       PrintStream ps,
       boolean format,
@@ -65,123 +103,104 @@ public class PrintStreamListener<G, S, F> implements Listener<G, S, F> {
     this.innerSeparator = innerSeparator;
     this.outerSeparator = outerSeparator;
     this.collectors = Arrays.asList(collectors);
-    firstItems = new ArrayList<>();
-    sizes = new ArrayList<>();
+    columnGroups = new ArrayList<>();
     lines = 0;
   }
 
   @Override
   public void listen(Event<? extends G, ? extends S, ? extends F> event) {
     //collect items
-    List<List<Item>> items = collectItems(event);
-    //check consistency of item names
-    if (!firstItems.isEmpty()) {
-      List<String> currentNames = items.stream()
-          .flatMap(Collection::stream)
-          .map(Item::getName)
-          .collect(Collectors.toList());
-      if (!currentNames.equals(firstNames)) {
-        L.warning(String.format("%d items received, %d expected", currentNames.size(), firstNames.size()));
-      }
+    List<List<Item>> itemGroups = collectItems(event, collectors);
+    //possibly init columns
+    if (columnGroups.isEmpty()) {
+      columnGroups.addAll(buildColumnGroups(itemGroups, format));
     }
+    //check consistency of item names
+    checkConsistency(itemGroups, columnGroups);
     //possibly print headers
     if ((lines == 0) || ((headerInterval > 0) && (event.getState().getIterations() % headerInterval == 0))) {
-      String headers = buildHeadersString();
+      String headers = buildHeaderString(columnGroups, innerSeparator, outerSeparator, format);
       synchronized (ps) {
         ps.println(headers);
       }
     }
     //print values: collectors
-    String data = buildDataString(items);
+    String line = buildDataString(itemGroups, columnGroups, innerSeparator, outerSeparator, format);
     synchronized (ps) {
-      ps.println(data);
+      ps.println(line);
+      lines = lines + 1;
     }
   }
 
-  protected List<List<Item>> collectItems(final Event<? extends G, ? extends S, ? extends F> event) {
-    List<List<Item>> items = new ArrayList<>();
+  public static List<List<Column>> buildColumnGroups(List<List<Item>> itemGroups, boolean format) {
+    return itemGroups.stream().map(items -> items.stream().map(
+        item -> new Column(
+            item.getName(),
+            item.getFormat(),
+            format ? formatName(item.getName(), item.getFormat()).length() : item.getName().length()
+        ))
+        .collect(Collectors.toList())
+    ).collect(Collectors.toList());
+  }
+
+  public static <G, S, F> List<List<Item>> collectItems(final Event<? extends G, ? extends S, ? extends F> event, List<DataCollector<? super G, ? super S, ? super F>> collectors) {
+    List<List<Item>> itemGroups = new ArrayList<>();
     //collect
     for (DataCollector<? super G, ? super S, ? super F> collector : collectors) {
       try {
-        items.add(collector.collect(event));
+        itemGroups.add(collector.collect(event));
       } catch (Throwable t) {
         L.log(Level.WARNING, String.format("Cannot collect from %s due to %s", collector.getClass().getSimpleName(), t), t);
       }
     }
-    synchronized (firstItems) {
-      if (firstItems.isEmpty()) {
-        firstItems.addAll(items);
-        sizes.addAll(firstItems.stream()
-            .map(is -> is.stream()
-                .map(
-                    i -> format ? formatName(i.getName(), i.getFormat()).length() : i.getName().length()
-                ).collect(Collectors.toList())
-            )
-            .collect(Collectors.toList()));
-        firstNames = firstItems.stream()
-            .flatMap(Collection::stream)
-            .map(Item::getName)
-            .collect(Collectors.toList());
-      }
-    }
-    return items;
+    return itemGroups;
   }
 
-  protected String buildDataString(List<List<Item>> items) {
-    Map<String, Item> map = items.stream()
+  public static String buildDataString(List<List<Item>> itemGroups, List<List<Column>> columnGroups, String innerSeparator, String outerSeparator, boolean format) {
+    Map<String, Item> map = itemGroups.stream()
         .flatMap(Collection::stream)
         .collect(Collectors.toMap(Item::getName, i -> i));
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < firstItems.size(); i++) {
-      for (int j = 0; j < firstItems.get(i).size(); j++) {
-        String name = firstItems.get(i).get(j).getName();
-        Item item = map.get(name);
-        Object value = item == null ? null : item.getValue();
-        int size = sizes.get(i).get(j);
-        if (value == null) {
-          sb.append(format ? justify("", sizes.get(i).get(j)) : "");
-        } else {
-          String string = string = value.toString();
-          if (format) {
-            try {
-              string = String.format(firstItems.get(i).get(j).getFormat(), value);
-            } catch (IllegalFormatException ex) {
-              L.log(Level.WARNING, String.format("Cannot format value for item %s", name), ex);
-            }
-          }
-          sb.append(format ? justify(string, size) : string);
-        }
-        if (j != firstItems.get(i).size() - 1) {
-          sb.append(innerSeparator);
-        }
-      }
-      if (i != firstItems.size() - 1) {
-        sb.append(outerSeparator);
-      }
-    }
-    lines = lines + 1;
-    return sb.toString();
+    return columnGroups.stream().map(
+        columns -> columns.stream().map(
+            column -> toString(map.get(column.getName()), column, format)
+        ).collect(Collectors.joining(innerSeparator))
+    ).collect(Collectors.joining(outerSeparator));
   }
 
-  public String buildHeadersString() {
-    StringBuilder sb = new StringBuilder();
-    //print header: collectors
-    for (int i = 0; i < firstItems.size(); i++) {
-      for (int j = 0; j < firstItems.get(i).size(); j++) {
-        String name = format ? formatName(firstItems.get(i).get(j).getName(), firstItems.get(i).get(j).getFormat()) : firstItems.get(i).get(j).getName();
-        sb.append(name);
-        if (j != firstItems.get(i).size() - 1) {
-          sb.append(innerSeparator);
-        }
-      }
-      if (i != firstItems.size() - 1) {
-        sb.append(outerSeparator);
-      }
-    }
-    return sb.toString();
+  public static String buildHeaderString(List<List<Column>> columnGroups, String innerSeparator, String outerSeparator, boolean format) {
+    return columnGroups.stream().map(
+        columns -> columns.stream().map(
+            column -> format ? formatName(column.getName(), column.getFormat()) : column.getName()
+        ).collect(Collectors.joining(innerSeparator))
+    ).collect(Collectors.joining(outerSeparator));
   }
 
-  private String formatName(String name, String format) {
+  public static void checkConsistency(List<List<Item>> itemGroups, List<List<Column>> columnGroups) {
+    List<String> currentNames = itemGroups.stream().flatMap(Collection::stream).map(Item::getName).collect(Collectors.toList());
+    List<String> expectedNames = columnGroups.stream().flatMap(Collection::stream).map(Column::getName).collect(Collectors.toList());
+    if (!currentNames.equals(expectedNames)) {
+      L.warning(String.format("%d items received, %d expected", currentNames.size(), expectedNames.size()));
+    }
+  }
+
+  private static String toString(Item item, Column column, boolean format) {
+    Object value = item == null ? null : item.getValue();
+    if (value == null) {
+      return format ? justify("", column.getSize()) : "";
+    } else {
+      String string = string = value.toString();
+      if (format) {
+        try {
+          string = String.format(column.getFormat(), value);
+        } catch (IllegalFormatException ex) {
+          L.log(Level.WARNING, String.format("Cannot format value for item %s", column.getName()), ex);
+        }
+      }
+      return format ? justify(string, column.getSize()) : string;
+    }
+  }
+
+  private static String formatName(String name, String format) {
     String acronym = "";
     String[] pieces = name.split("\\.");
     for (String piece : pieces) {
@@ -191,7 +210,7 @@ public class PrintStreamListener<G, S, F> implements Listener<G, S, F> {
     return acronym;
   }
 
-  private int formatSize(String format) {
+  private static int formatSize(String format) {
     int size = 0;
     Matcher matcher = Pattern.compile("\\d++").matcher(format);
     if (matcher.find()) {
@@ -204,7 +223,7 @@ public class PrintStreamListener<G, S, F> implements Listener<G, S, F> {
     return String.format(format, (Object[]) null).length();
   }
 
-  private String justify(String s, int length) {
+  private static String justify(String s, int length) {
     if (s.length() > length) {
       return s.substring(0, length);
     }
