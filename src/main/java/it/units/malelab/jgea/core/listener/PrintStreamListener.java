@@ -46,7 +46,9 @@ public class PrintStreamListener<G, S, F> implements Listener<G, S, F> {
 
   private final List<List<Item>> firstItems;
   private final List<List<Integer>> sizes;
+
   private int lines;
+  private List<String> firstNames;
 
   private final static Logger L = Logger.getLogger(PrintStreamListener.class.getName());
 
@@ -72,6 +74,16 @@ public class PrintStreamListener<G, S, F> implements Listener<G, S, F> {
   public void listen(Event<? extends G, ? extends S, ? extends F> event) {
     //collect items
     List<List<Item>> items = collectItems(event);
+    //check consistency of item names
+    if (!firstItems.isEmpty()) {
+      List<String> currentNames = items.stream()
+          .flatMap(Collection::stream)
+          .map(Item::getName)
+          .collect(Collectors.toList());
+      if (!currentNames.equals(firstNames)) {
+        L.warning(String.format("%d items received, %d expected", currentNames.size(), firstNames.size()));
+      }
+    }
     //possibly print headers
     if ((lines == 0) || ((headerInterval > 0) && (event.getState().getIterations() % headerInterval == 0))) {
       String headers = buildHeadersString();
@@ -96,40 +108,48 @@ public class PrintStreamListener<G, S, F> implements Listener<G, S, F> {
         L.log(Level.WARNING, String.format("Cannot collect from %s due to %s", collector.getClass().getSimpleName(), t), t);
       }
     }
-    if (firstItems.isEmpty()) {
-      firstItems.addAll(items);
-      sizes.addAll(firstItems.stream()
-          .map(is -> is.stream().map(
-              i -> formatName(i.getName(), i.getFormat(), format).length()
-          ).collect(Collectors.toList()))
-          .collect(Collectors.toList()));
+    synchronized (firstItems) {
+      if (firstItems.isEmpty()) {
+        firstItems.addAll(items);
+        sizes.addAll(firstItems.stream()
+            .map(is -> is.stream()
+                .map(
+                    i -> format ? formatName(i.getName(), i.getFormat()).length() : i.getName().length()
+                ).collect(Collectors.toList())
+            )
+            .collect(Collectors.toList()));
+        firstNames = firstItems.stream()
+            .flatMap(Collection::stream)
+            .map(Item::getName)
+            .collect(Collectors.toList());
+      }
     }
     return items;
   }
 
   protected String buildDataString(List<List<Item>> items) {
-    List<Map<String, Item>> maps = items.stream()
-        .map(cItems -> cItems.stream().collect(Collectors.toMap(Item::getName, i -> i)))
-        .collect(Collectors.toList());
+    Map<String, Item> map = items.stream()
+        .flatMap(Collection::stream)
+        .collect(Collectors.toMap(Item::getName, i -> i));
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < firstItems.size(); i++) {
       for (int j = 0; j < firstItems.get(i).size(); j++) {
         String name = firstItems.get(i).get(j).getName();
-        Object value = maps.get(i).get(name).getValue();
-        if (format) {
-          try {
-            sb.append(pad(
-                String.format(firstItems.get(i).get(j).getFormat(), value),
-                sizes.get(i).get(j), format
-            ));
-          } catch (IllegalFormatException ex) {
-            sb.append(pad(
-                (value != null) ? value.toString() : "",
-                sizes.get(i).get(j), format
-            ));
-          }
+        Item item = map.get(name);
+        Object value = item == null ? null : item.getValue();
+        int size = sizes.get(i).get(j);
+        if (value == null) {
+          sb.append(format ? justify("", sizes.get(i).get(j)) : "");
         } else {
-          sb.append((value != null) ? value.toString() : "");
+          String string = string = value.toString();
+          if (format) {
+            try {
+              string = String.format(firstItems.get(i).get(j).getFormat(), value);
+            } catch (IllegalFormatException ex) {
+              L.log(Level.WARNING, String.format("Cannot format value for item %s", name), ex);
+            }
+          }
+          sb.append(format ? justify(string, size) : string);
         }
         if (j != firstItems.get(i).size() - 1) {
           sb.append(innerSeparator);
@@ -148,7 +168,8 @@ public class PrintStreamListener<G, S, F> implements Listener<G, S, F> {
     //print header: collectors
     for (int i = 0; i < firstItems.size(); i++) {
       for (int j = 0; j < firstItems.get(i).size(); j++) {
-        sb.append(formatName(firstItems.get(i).get(j).getName(), firstItems.get(i).get(j).getFormat(), format));
+        String name = format ? formatName(firstItems.get(i).get(j).getName(), firstItems.get(i).get(j).getFormat()) : firstItems.get(i).get(j).getName();
+        sb.append(name);
         if (j != firstItems.get(i).size() - 1) {
           sb.append(innerSeparator);
         }
@@ -160,16 +181,13 @@ public class PrintStreamListener<G, S, F> implements Listener<G, S, F> {
     return sb.toString();
   }
 
-  private String formatName(String name, String format, boolean doFormat) {
-    if (!doFormat) {
-      return name;
-    }
+  private String formatName(String name, String format) {
     String acronym = "";
     String[] pieces = name.split("\\.");
     for (String piece : pieces) {
       acronym = acronym + piece.substring(0, 1);
     }
-    acronym = pad(acronym, formatSize(format), doFormat);
+    acronym = justify(acronym, formatSize(format));
     return acronym;
   }
 
@@ -186,8 +204,11 @@ public class PrintStreamListener<G, S, F> implements Listener<G, S, F> {
     return String.format(format, (Object[]) null).length();
   }
 
-  private String pad(String s, int length, boolean doFormat) {
-    while (doFormat && (s.length() < length)) {
+  private String justify(String s, int length) {
+    if (s.length() > length) {
+      return s.substring(0, length);
+    }
+    while (s.length() < length) {
       s = " " + s;
     }
     return s;

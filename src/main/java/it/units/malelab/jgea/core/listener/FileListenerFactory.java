@@ -19,40 +19,29 @@ package it.units.malelab.jgea.core.listener;
 import it.units.malelab.jgea.core.listener.collector.DataCollector;
 import it.units.malelab.jgea.core.listener.collector.Item;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author eric
  */
-public class MultiFileListenerFactory<G, S, F> implements ListnerFactory<G, S, F> {
+public class FileListenerFactory<G, S, F> implements ListnerFactory<G, S, F> {
 
-  private final String baseDirName;
-  private final String baseFileName;
-  private final Map<List<String>, PrintStream> streams;
+  private final String filePathName;
+  private final List<String> firstNames;
+  private PrintStream ps;
 
-  private final static Logger L = Logger.getLogger(MultiFileListenerFactory.class.getName());
+  private final static Logger L = Logger.getLogger(FileListenerFactory.class.getName());
 
-  public MultiFileListenerFactory(String baseDirName, String baseFileName) {
-    this.baseDirName = baseDirName;
-    this.baseFileName = baseFileName;
-    streams = new HashMap<>();
-  }
-
-  public String getBaseDirName() {
-    return baseDirName;
-  }
-
-  public String getBaseFileName() {
-    return baseFileName;
+  public FileListenerFactory(String filePathName) {
+    this.filePathName = filePathName;
+    firstNames = new ArrayList<>();
   }
 
   @Override
@@ -62,34 +51,37 @@ public class MultiFileListenerFactory<G, S, F> implements ListnerFactory<G, S, F
       public void listen(Event<? extends G, ? extends S, ? extends F> event) {
         //collect items
         List<List<Item>> items = collectItems(event);
+        //check consistency of item names
+        if (!firstNames.isEmpty()) {
+          List<String> currentNames = items.stream()
+              .flatMap(Collection::stream)
+              .map(Item::getName)
+              .collect(Collectors.toList());
+          if (!currentNames.equals(firstNames)) {
+            L.warning(String.format("%d items received, %d expected", currentNames.size(), firstNames.size()));
+          }
+        }
         //retrieve printstream
-        List<String> names = items.stream()
-            .map(is -> is.stream().map(Item::getName))
-            .reduce(Stream::concat)
-            .get()
-            .collect(Collectors.toList());
-        PrintStream ps = null;
-        synchronized (streams) {
-          ps = streams.get(names);
-          if (ps == null) {
-            String fileName = baseDirName + File.separator + String.format(baseFileName, Integer.toHexString(names.hashCode()));
+        synchronized (firstNames) {
+          if (firstNames.isEmpty()) {
+            firstNames.addAll(items.stream()
+                .flatMap(Collection::stream)
+                .map(Item::getName)
+                .collect(Collectors.toList()));
             try {
-              ps = new PrintStream(fileName);
-              L.log(Level.INFO, String.format("New output file %s created", fileName));
+              ps = new PrintStream(filePathName);
+              L.log(Level.INFO, String.format("New output file %s created", filePathName));
             } catch (FileNotFoundException ex) {
-              L.log(Level.SEVERE, String.format("Cannot create output file %s", fileName), ex);
+              L.log(Level.SEVERE, String.format("Cannot create output file %s", filePathName), ex);
               ps = System.out;
             }
             String headersString = buildHeadersString();
-            synchronized (streams) {
-              streams.put(names, ps);
-              ps.println(headersString);
-            }
+            ps.println(headersString);
           }
         }
         //print values: collectors
         String data = buildDataString(items);
-        synchronized (streams) {
+        synchronized (firstNames) {
           ps.println(data);
         }
       }
