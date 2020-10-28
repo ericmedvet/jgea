@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -72,8 +74,7 @@ public interface DataCollector<G, S, F> {
         }
       } catch (IllegalAccessException | InvocationTargetException e) {
         // ignore
-        // TODO should put some notification
-        e.printStackTrace();
+        Logger.getLogger(DataCollector.class.getName()).log(Level.WARNING, String.format("Cannot extract items from bean due to %s", e), e);
       }
     }
     return items;
