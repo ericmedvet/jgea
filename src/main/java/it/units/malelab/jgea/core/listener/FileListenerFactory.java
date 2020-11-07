@@ -46,7 +46,7 @@ public class FileListenerFactory<G, S, F> implements ListnerFactory<G, S, F> {
   @Override
   public Listener<G, S, F> build(DataCollector<? super G, ? super S, ? super F>... collectorArray) {
     List<DataCollector<? super G, ? super S, ? super F>> collectors = Arrays.asList(collectorArray);
-    L.warning(String.format("Building new listener with %d collectors", collectors.size()));
+    L.info(String.format("Building new listener with %d collectors", collectors.size()));
     return event -> {
       List<List<Item>> itemGroups = PrintStreamListener.collectItems(event, collectors);
       if (columnGroups.isEmpty()) {
