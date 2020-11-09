@@ -66,6 +66,7 @@ public class MultiFileListenerFactory<G, S, F> implements ListnerFactory<G, S, F
         String fileName = baseDirName + File.separator + String.format(baseFileName, Integer.toHexString(columnGroups.hashCode()));
         try {
           ps = new PrintStream(fileName);
+          streams.put(columnGroups, ps);
           L.log(Level.INFO, String.format("New output file %s created", fileName));
         } catch (FileNotFoundException ex) {
           L.log(Level.SEVERE, String.format("Cannot create output file %s", fileName), ex);
