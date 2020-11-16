@@ -161,6 +161,7 @@ public class Example {
 
 ## Research papers based on JGEA
 The list includes paper published from 2018 on.
+- Medvet, Bartoli, [GraphEA: a Versatile Representation and Evolutionary Algorithm for Graphs](http://medvet.inginf.units.it/publications/grapheaaversatilerepresentationandevolutionaryalgorithmforgraphs), Workshop on Evolutionary and Population-based Optimization (WEPO@AIxIA), 2020
 - Medvet, Bartoli, De Lorenzo, Seriani, [Design, Validation, and Case Studies of 2D-VSR-Sim, an Optimization-friendly Simulator of 2-D Voxel-based Soft Robots](http://medvet.inginf.units.it/publications/designvalidationandcasestudiesofdvsrsimanoptimizationfriendlysimulatorofdvoxelbasedsoftrobots), arXiv, 2020
 - Medvet, Seriani, Bartoli, Gallina, [Evolutionary Optimization of Sliding Contact Positions in Powered Floor Systems for Mobile Robots](http://medvet.inginf.units.it/publications/evolutionaryoptimizationofslidingcontactpositionsinpoweredfloorsystemsformobilerobots), at - Automatisierungstechnik, 2020
 - Medvet, Bartoli, De Lorenzo, Fidel, [Evolution of Distributed Neural Controllers for Voxel-based Soft Robots](http://medvet.inginf.units.it/publications/evolutionofdistributedneuralcontrollersforvoxelbasedsoftrobots), ACM Genetic and Evolutionary Computation Conference (GECCO), 2020, Cancun (Mexico)
