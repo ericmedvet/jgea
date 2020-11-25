@@ -20,21 +20,21 @@ public class PrintStreamPopulationListener<G, S, F> implements Listener<G, S, F>
     @SafeVarargs
     public PrintStreamPopulationListener(PrintStreamListener<G, S, F> listener,
                                          Function<Individual<? extends G, ? extends S, ? extends F>, List<Item>>... individualCollectors) {
-        decoratedListener = listener;
+        this.decoratedListener = listener;
         this.individualCollectors = Stream.of(individualCollectors);
     }
 
     @Override
     public void listen(Event<? extends G, ? extends S, ? extends F> event) {
         //collect items at population level
-        List<List<Item>> commonGroups = PrintStreamListener.collectItems(event, decoratedListener.getCollectors());
+        List<List<Item>> commonGroups = PrintStreamListener.collectItems(event, this.decoratedListener.getCollectors());
         //collect items at individual level
         List<List<Item>> itemGroups = new ArrayList<>();
         for (Individual<? extends G, ? extends S, ? extends F> individual : event.getOrderedPopulation().all()) {
             itemGroups.addAll(commonGroups);
             itemGroups.addAll(this.individualCollectors.map(c -> c.apply(individual)).collect(Collectors.toList()));
             //delegate printing to decorated listener
-            decoratedListener.print(itemGroups, event);
+            this.decoratedListener.print(itemGroups, event);
             itemGroups.clear();
         }
     }
