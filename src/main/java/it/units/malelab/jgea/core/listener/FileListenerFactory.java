@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 /**
  * @author eric
  */
-public class FileListenerFactory<G, S, F> implements ListnerFactory<G, S, F> {
+public class FileListenerFactory<G, S, F> implements ListenerFactory<G, S, F> {
 
   private final String filePathName;
   private final List<List<PrintStreamListener.Column>> columnGroups;

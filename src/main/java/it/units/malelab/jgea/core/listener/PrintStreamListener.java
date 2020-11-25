@@ -111,6 +111,10 @@ public class PrintStreamListener<G, S, F> implements Listener<G, S, F> {
   public void listen(Event<? extends G, ? extends S, ? extends F> event) {
     //collect items
     List<List<Item>> itemGroups = collectItems(event, collectors);
+    print(itemGroups, event);
+  }
+
+  public void print(List<List<Item>> itemGroups, Event<? extends G, ? extends S, ? extends F> event) {
     //possibly init columns
     if (columnGroups.isEmpty()) {
       columnGroups.addAll(buildColumnGroups(itemGroups, format));
@@ -130,6 +134,10 @@ public class PrintStreamListener<G, S, F> implements Listener<G, S, F> {
       ps.println(line);
       lines = lines + 1;
     }
+  }
+
+  public List<DataCollector<? super G, ? super S, ? super F>> getCollectors() {
+    return collectors;
   }
 
   public static List<List<Column>> buildColumnGroups(List<List<Item>> itemGroups, boolean format) {
@@ -188,7 +196,7 @@ public class PrintStreamListener<G, S, F> implements Listener<G, S, F> {
     if (value == null) {
       return format ? justify("", column.getSize()) : "";
     } else {
-      String string = string = value.toString();
+      String string = value.toString();
       if (format) {
         try {
           string = String.format(column.getFormat(), value);

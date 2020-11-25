@@ -32,7 +32,7 @@ import java.util.logging.Logger;
 /**
  * @author eric
  */
-public class MultiFileListenerFactory<G, S, F> implements ListnerFactory<G, S, F> {
+public class MultiFileListenerFactory<G, S, F> implements ListenerFactory<G, S, F> {
 
   private final String baseDirName;
   private final String baseFileName;
