@@ -22,9 +22,7 @@ import it.units.malelab.jgea.distance.Distance;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
-import java.util.stream.IntStream;
 
 /**
  * @author eric
@@ -178,12 +176,16 @@ public class Misc {
     return barplot(values, min, max);
   }
 
+  public static String barplot(double[] values, int l) {
+    return barplot(resize(values, l));
+  }
+
   public static String barplot(List<? extends Number> values) {
     return barplot(values.stream().mapToDouble(Number::doubleValue).toArray());
   }
 
   public static String barplot(List<? extends Number> values, int l) {
-    return barplot(resize(values.stream().mapToDouble(Number::doubleValue).toArray(), l));
+    return barplot(values.stream().mapToDouble(Number::doubleValue).toArray(), l);
   }
 
   public static String histogram(List<? extends Number> values, int bins) {

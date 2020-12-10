@@ -16,7 +16,6 @@
 
 package it.units.malelab.jgea.core.listener.collector;
 
-import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.listener.Event;
 import it.units.malelab.jgea.core.util.Misc;
 
@@ -27,7 +26,7 @@ import java.util.stream.Collectors;
 /**
  * @author eric
  */
-public class PopulationHistograms implements DataCollector<Object, Object, Number> {
+public class PopulationHistograms implements DataCollector<Object, Object, Object> {
 
   private final int bins;
 
@@ -40,7 +39,7 @@ public class PopulationHistograms implements DataCollector<Object, Object, Numbe
   }
 
   @Override
-  public List<Item> collect(Event<?, ?, ? extends Number> event) {
+  public List<Item> collect(Event<?, ?, ?> event) {
     List<Integer> genoSizes = event.getOrderedPopulation().all().stream()
         .map(i -> IndividualBasicInfo.size(i.getGenotype()))
         .filter(Objects::nonNull)
@@ -52,14 +51,10 @@ public class PopulationHistograms implements DataCollector<Object, Object, Numbe
     List<Integer> ages = event.getOrderedPopulation().all().stream()
         .map(i -> event.getState().getIterations() - i.getBirthIteration())
         .collect(Collectors.toList());
-    List<Number> fitnesses = event.getOrderedPopulation().all().stream()
-        .map(Individual::getFitness)
-        .collect(Collectors.toList());
     return List.of(
         new Item("population.genotype.size.barplot", Misc.histogram(genoSizes, bins), "%" + bins + "s"),
         new Item("population.solution.size.barplot", Misc.histogram(solutionSizes, bins), "%" + bins + "s"),
-        new Item("population.age.barplot", Misc.histogram(ages, bins), "%" + bins + "s"),
-        new Item("population.fitness.barplot", Misc.histogram(fitnesses, bins), "%" + bins + "s")
+        new Item("population.age.barplot", Misc.histogram(ages, bins), "%" + bins + "s")
     );
   }
 
