@@ -28,16 +28,22 @@ import java.util.stream.Collectors;
 public class Static implements DataCollector<Object, Object, Object> {
 
   private final Map<String, ?> values;
+  private final List<Item> items;
 
   public Static(Map<String, ?> values) {
     this.values = values;
+    items = values.entrySet().stream()
+        .map(entry -> new Item(
+            entry.getKey(),
+            entry.getValue(),
+            "%" + Math.max(entry.getValue().toString().length(), 1) + "." + Math.max(entry.getValue().toString().length(), 1) + "s")
+        )
+        .collect(Collectors.toList());
   }
 
   @Override
   public List<Item> collect(Event<?, ?, ?> event) {
-    return values.entrySet().stream()
-        .map(entry -> new Item(entry.getKey(), entry.getValue(), "%" + entry.getValue().toString().length() + "." + entry.getValue().toString().length() + "s"))
-        .collect(Collectors.toList());
+    return items;
   }
 
 }
