@@ -891,6 +891,7 @@ public class SymbolicRegressionComparison extends Worker {
             List<DataCollector<?, ? super RealFunction, ? super Double>> collectors = List.of(new Static(keys),
                 new Basic(),
                 new Population(),
+                new PopulationHistograms(),
                 new Diversity(),
                 new BestInfo("%7.5f"),
                 new FunctionOfOneBest<>(i -> List.of(new Item(
