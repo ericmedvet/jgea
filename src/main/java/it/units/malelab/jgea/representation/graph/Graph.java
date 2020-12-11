@@ -26,8 +26,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author eric
- * @created 2020/08/20
- * @project jgea
  */
 public interface Graph<N, A> extends Sized {
   class Arc<N> implements Serializable {

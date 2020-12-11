@@ -23,8 +23,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author eric
- * @created 2020/08/05
- * @project jgea
  */
 public class SameRootSubtreeCrossover<N> implements Crossover<Tree<N>> {
 

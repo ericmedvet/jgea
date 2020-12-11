@@ -25,8 +25,6 @@ import java.util.function.Function;
 
 /**
  * @author eric
- * @created 2020/08/04
- * @project jgea
  */
 public class FunctionNode extends Node implements Function<Double, Double> {
 

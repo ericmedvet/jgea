@@ -24,8 +24,6 @@ import java.util.Random;
 
 /**
  * @author eric
- * @created 2020/07/10
- * @project jgea
  */
 public class NodeAddition<N, A> implements Mutation<Graph<N, A>> {
   private final IndependentFactory<? extends N> nodeFactory;

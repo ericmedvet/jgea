@@ -26,8 +26,6 @@ import java.util.Random;
 
 /**
  * @author eric
- * @created 2020/07/13
- * @project jgea
  */
 public class ArcAddition<N, A> implements Mutation<Graph<N, A>> {
   private final IndependentFactory<A> arcFactory;

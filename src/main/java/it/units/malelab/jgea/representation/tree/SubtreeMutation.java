@@ -24,8 +24,6 @@ import java.util.Random;
 
 /**
  * @author eric
- * @created 2020/08/05
- * @project jgea
  */
 public class SubtreeMutation<N> implements Mutation<Tree<N>> {
 

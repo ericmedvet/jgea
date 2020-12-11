@@ -26,8 +26,6 @@ import java.util.function.Function;
 
 /**
  * @author eric
- * @created 2020/06/17
- * @project jgea
  */
 public class FunctionOfFirsts<G, S, F> implements DataCollector<G, S, F> {
 

@@ -24,8 +24,6 @@ import java.util.function.Function;
 
 /**
  * @author eric
- * @created 2020/08/11
- * @project jgea
  */
 public class IndexedNode<C> implements Serializable {
 

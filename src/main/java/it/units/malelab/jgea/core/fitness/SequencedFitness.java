@@ -7,8 +7,6 @@ import java.util.function.Function;
 
 /**
  * @author eric
- * @created 2020/10/28
- * @project jgea
  */
 public class SequencedFitness<S, F> implements Function<S, F> {
   private final SortedMap<Long, Function<S, F>> functions;

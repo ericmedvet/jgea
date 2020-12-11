@@ -22,8 +22,6 @@ import java.util.Set;
 
 /**
  * @author eric
- * @created 2020/08/12
- * @project jgea
  */
 public class Jaccard implements Distance<Set<?>> {
   @Override

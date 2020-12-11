@@ -30,8 +30,6 @@ import java.util.function.Function;
 
 /**
  * @author eric
- * @created 2020/06/16
- * @project jgea
  */
 public class RandomSearch<G, S, F> extends AbstractIterativeEvolver<G, S, F> {
 

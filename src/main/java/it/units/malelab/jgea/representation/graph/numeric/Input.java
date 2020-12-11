@@ -20,8 +20,6 @@ import it.units.malelab.jgea.representation.graph.Node;
 
 /**
  * @author eric
- * @created 2020/08/04
- * @project jgea
  */
 public class Input extends Node {
   public Input(int index) {

@@ -28,8 +28,6 @@ import java.util.Random;
 
 /**
  * @author eric
- * @created 2020/08/04
- * @project jgea
  */
 public class ShallowSparseFactory implements IndependentFactory<Graph<Node, Double>> {
   private final double sparsity;

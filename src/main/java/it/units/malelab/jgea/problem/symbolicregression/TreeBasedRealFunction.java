@@ -25,8 +25,6 @@ import java.util.Objects;
 
 /**
  * @author eric
- * @created 2020/08/03
- * @project jgea
  */
 public class TreeBasedRealFunction implements RealFunction, Sized {
 

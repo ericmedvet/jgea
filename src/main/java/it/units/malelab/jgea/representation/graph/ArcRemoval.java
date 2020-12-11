@@ -24,8 +24,6 @@ import java.util.function.Predicate;
 
 /**
  * @author eric
- * @created 2020/07/10
- * @project jgea
  */
 public class ArcRemoval<N, A> implements Mutation<Graph<N, A>> {
   private final Predicate<N> unremovableNodePredicate;

@@ -30,8 +30,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author eric
- * @created 2020/08/17
- * @project jgea
  */
 public class RegexBasedExtractor implements Extractor<Character>, Sized {
 

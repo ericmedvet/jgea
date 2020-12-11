@@ -22,8 +22,6 @@ import java.util.Objects;
 
 /**
  * @author eric
- * @created 2020/08/06
- * @project jgea
  */
 public class Constant extends Node {
 

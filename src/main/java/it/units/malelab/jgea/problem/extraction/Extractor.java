@@ -22,8 +22,6 @@ import java.util.*;
 
 /**
  * @author eric
- * @created 2020/08/03
- * @project jgea
  */
 public interface Extractor<S> {
   Set<Range<Integer>> extract(List<S> sequence);

@@ -24,8 +24,6 @@ import java.io.Serializable;
 
 /**
  * @author eric
- * @created 2020/06/16
- * @project jgea
  */
 public class Event<G, S, F> implements Serializable {
 

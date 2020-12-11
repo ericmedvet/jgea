@@ -38,8 +38,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author eric
- * @created 2020/06/16
- * @project jgea
  */
 public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S, F> {
 

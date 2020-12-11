@@ -28,8 +28,6 @@ import java.util.Random;
 
 /**
  * @author eric
- * @created 2020/08/14
- * @project jgea
  */
 public class ShallowFactory implements IndependentFactory<Graph<Node, OperatorGraph.NonValuedArc>> {
   private final int nInputs;

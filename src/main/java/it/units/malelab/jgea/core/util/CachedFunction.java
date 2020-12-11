@@ -25,8 +25,6 @@ import java.util.function.Function;
 
 /**
  * @author eric
- * @created 2020/06/19
- * @project jgea
  */
 public class CachedFunction<T, R> implements Function<T, R> {
 

@@ -52,8 +52,6 @@ import static it.units.malelab.jgea.core.util.Args.*;
 
 /**
  * @author eric
- * @created 2020/08/05
- * @project jgea
  */
 
 // /usr/lib/jvm/jdk-14.0.1/bin/java -cp ~/IdeaProjects/jgea/out/artifacts/jgea_jar/jgea.jar it.units.malelab.jgea.lab.SymbolicRegressionComparison seed=0:10 file=results-%s.txt

@@ -21,8 +21,6 @@ import java.util.*;
 
 /**
  * @author eric
- * @created 2020/08/20
- * @project jgea
  */
 public class LinkedHashGraph<N, A> implements Graph<N, A>, Serializable {
   private final Set<N> nodes;

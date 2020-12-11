@@ -18,8 +18,6 @@ package it.units.malelab.jgea.representation.tree;
 
 /**
  * @author eric
- * @created 2020/08/05
- * @project jgea
  */
 public class TreeUtils {
 

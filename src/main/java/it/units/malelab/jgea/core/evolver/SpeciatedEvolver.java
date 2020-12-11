@@ -35,8 +35,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author eric
- * @created 2020/08/12
- * @project jgea
  */
 public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
   private final int minSpeciesSizeForElitism;

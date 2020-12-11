@@ -20,8 +20,6 @@ import java.util.function.Function;
 
 /**
  * @author eric
- * @created 2020/08/04
- * @project jgea
  */
 public enum BaseFunction implements Function<Double, Double> {
   IDENTITY(x -> x),

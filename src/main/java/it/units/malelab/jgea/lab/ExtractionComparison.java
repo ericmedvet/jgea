@@ -62,8 +62,6 @@ import static it.units.malelab.jgea.core.util.Args.ri;
 
 /**
  * @author eric
- * @created 2020/08/14
- * @project jgea
  */
 public class ExtractionComparison extends Worker {
 

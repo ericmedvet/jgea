@@ -20,8 +20,6 @@ import java.util.*;
 
 /**
  * @author eric
- * @created 2020/08/05
- * @project jgea
  */
 public interface ThinList<T> extends List<T> {
 

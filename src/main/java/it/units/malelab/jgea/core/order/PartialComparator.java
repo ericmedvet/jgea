@@ -22,8 +22,6 @@ import java.util.function.Function;
 
 /**
  * @author eric
- * @created 2020/06/17
- * @project jgea
  */
 @FunctionalInterface
 public interface PartialComparator<K> {

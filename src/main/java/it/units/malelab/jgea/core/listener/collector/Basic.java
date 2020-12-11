@@ -29,9 +29,9 @@ public class Basic implements DataCollector<Object, Object, Object> {
   @Override
   public List<Item> collect(Event<?, ?, ?> event) {
     return Arrays.asList(
-        new Item("iterations", event.getState().getIterations(), "%4d"),
-        new Item("births", event.getState().getBirths(), "%8d"),
-        new Item("fitness.evaluations", event.getState().getFitnessEvaluations(), "%6d"),
+        new Item("iterations", event.getState().getIterations(), "%3d"),
+        new Item("births", event.getState().getBirths(), "%5d"),
+        new Item("fitness.evaluations", event.getState().getFitnessEvaluations(), "%5d"),
         new Item("elapsed.sec", (double) event.getState().getElapsedMillis() / 1000d, "%6.1f")
     );
   }

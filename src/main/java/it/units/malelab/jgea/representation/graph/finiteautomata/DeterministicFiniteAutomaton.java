@@ -32,8 +32,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author eric
- * @created 2020/08/03
- * @project jgea
  */
 public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized, Serializable {
 

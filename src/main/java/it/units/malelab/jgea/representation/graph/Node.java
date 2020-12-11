@@ -21,8 +21,6 @@ import java.util.Objects;
 
 /**
  * @author eric
- * @created 2020/08/04
- * @project jgea
  */
 public abstract class Node implements Serializable {
   protected final int index;

@@ -25,8 +25,6 @@ import java.util.function.BiFunction;
 
 /**
  * @author eric
- * @created 2020/06/19
- * @project jgea
  */
 public class CachedBiFunction<T, U, R> implements BiFunction<T, U, R> {
 
