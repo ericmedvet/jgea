@@ -168,7 +168,7 @@ public class RepresentationEvolution extends Worker {
             Random random = new Random(learningRun);
             System.out.printf("%s%n", keys);
             try {
-              Listener<Object, Object, Object> listener = learningListenerFactory.build(
+              Listener<Object, Object, Object> listener = learningListenerFactory.build(List.of(
                   new Static(keys),
                   new Basic(),
                   new Population(),
@@ -176,7 +176,7 @@ public class RepresentationEvolution extends Worker {
                   //new FunctionOfOneBest<>("best.validation", (FitnessFunction) mapperGeneration.getValidationFunction().cached(10000), "%5.3f"),
                   new Diversity(),
                   new BestPrinter(BestPrinter.Part.GENOTYPE)
-              );
+              ));
               Collection<Pair<Tree<Element>, Tree<Element>>> mapperPairs = evolver.solve(
                   mapperGeneration.getFitnessFunction(), new Iterations(learningIterations), random, executorService,
                   Listener.onExecutor(listener, executorService)
@@ -292,13 +292,13 @@ public class RepresentationEvolution extends Worker {
       Random innerRandom = new Random(validationRun);
       innerEvolver.solve(
           innerProblemEntry.getValue().getProblem().getFitnessFunction(), new Iterations(validationIterations),
-          innerRandom, executorService, Listener.onExecutor(validationListenerFactory.build(
+          innerRandom, executorService, Listener.onExecutor(validationListenerFactory.build(List.of(
               new Static(innerKeys),
               new Basic(),
               new Population(),
               new BestInfo("%5.3f"),
               new Diversity()
-              ), executorService
+              )), executorService
           ));
     }
   }

@@ -111,7 +111,7 @@ public class IntrinsicDimensionAssessment extends Worker {
           Random random = new Random(run);
           try {
             evolver.solve(problem.getFitnessFunction(), new Iterations(iterations), random, executorService,
-                Listener.onExecutor(listenerFactory.build(
+                Listener.onExecutor(listenerFactory.build(List.of(
                     new Static(keys),
                     new Basic(),
                     new Population(),
@@ -119,7 +119,7 @@ public class IntrinsicDimensionAssessment extends Worker {
                     new Diversity(),
                     new Suffix<>("unique", new IntrinsicDimension<>(hamming, true)),
                     new Suffix<>("all", new IntrinsicDimension<>(hamming, false))
-                    ), executorService
+                    )), executorService
                 ));
           } catch (InterruptedException | ExecutionException ex) {
             L.log(Level.SEVERE, String.format("Cannot solve problem: %s", ex), ex);

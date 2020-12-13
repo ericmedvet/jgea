@@ -18,6 +18,8 @@ package it.units.malelab.jgea.core.listener;
 
 import it.units.malelab.jgea.core.listener.collector.DataCollector;
 
+import java.util.List;
+
 public interface ListenerFactory<G, S, F> {
-  Listener<G, S, F> build(DataCollector<? super G, ? super S, ? super F>... collectors);
+  Listener<G, S, F> build(List<DataCollector<? super G, ? super S, ? super F>> collectors);
 }

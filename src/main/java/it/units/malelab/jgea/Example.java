@@ -123,7 +123,7 @@ public class Example extends Worker {
             new TargetFitness<>(0d).or(new Iterations(100)),
             r,
             executorService,
-            listener(
+            listener(List.of(
                 new Basic(),
                 new Population(),
                 new Diversity(),
@@ -132,7 +132,7 @@ public class Example extends Worker {
                     "solution",
                     i.getSolution().stream().map(d -> String.format("%5.2f", d)).collect(Collectors.joining(",")),
                     "%s")))
-            ));
+            )));
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
       } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();
@@ -193,12 +193,12 @@ public class Example extends Worker {
             new TargetFitness<>(0d).or(new Iterations(1000)),
             r,
             executorService,
-            listener(
+            listener(List.of(
                 new Basic(),
                 new Population(),
                 new BestInfo("%5.3f"),
                 new BestPrinter(BestPrinter.Part.GENOTYPE)
-            ));
+            )));
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
       } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();
@@ -259,7 +259,7 @@ public class Example extends Worker {
             new TargetFitness<>(0d).or(new Iterations(100)),
             r,
             executorService,
-            listener(
+            listener(List.of(
                 new Basic(),
                 new Population(),
                 new Diversity(),
@@ -270,7 +270,7 @@ public class Example extends Worker {
                     "%5.3f"
                 ))),
                 new BestPrinter(BestPrinter.Part.SOLUTION)
-            ));
+            )));
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
       } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();
@@ -334,7 +334,7 @@ public class Example extends Worker {
             new Iterations(3),
             r,
             executorService,
-            listener(
+            listener(List.of(
                 new Basic(),
                 new Population(),
                 new Diversity(),
@@ -346,7 +346,7 @@ public class Example extends Worker {
                     "%5.3f"
                 ))),
                 new BestPrinter(BestPrinter.Part.SOLUTION)
-            ));
+            )));
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
       } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();
@@ -383,13 +383,12 @@ public class Example extends Worker {
           new Iterations(100),
           r,
           executorService,
-          Listener.onExecutor(new PrintStreamListener<>(
-              System.out, true, 10, " ", "|",
+          Listener.onExecutor(listener(List.of(
               new Basic(),
               new Population(),
               new Diversity(),
               new BestInfo("%5.3f")
-          ), executorService)
+          )), executorService)
       );
       System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
     } catch (InterruptedException | ExecutionException e) {
@@ -426,7 +425,7 @@ public class Example extends Worker {
             new TargetFitness<>(0d).or(new Iterations(100)),
             r,
             executorService,
-            listener(
+            listener(List.of(
                 new Basic(),
                 new Population(),
                 new Diversity(),
@@ -435,7 +434,7 @@ public class Example extends Worker {
                     "solution",
                     i.getSolution().stream().map(d -> String.format("%5.2f", d)).collect(Collectors.joining(",")),
                     "%s")))
-            ));
+            )));
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
       } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();
@@ -472,7 +471,7 @@ public class Example extends Worker {
             new TargetFitness<>(0d).or(new Iterations(100)),
             r,
             executorService,
-            listener(
+            listener(List.of(
                 new Basic(),
                 new Population(),
                 new Diversity(),
@@ -481,7 +480,7 @@ public class Example extends Worker {
                     "solution",
                     i.getSolution().stream().map(d -> String.format("%5.2f", d)).collect(Collectors.joining(",")),
                     "%s")))
-            ));
+            )));
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
       } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();

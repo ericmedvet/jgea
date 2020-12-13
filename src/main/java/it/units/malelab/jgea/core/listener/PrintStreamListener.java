@@ -89,20 +89,19 @@ public class PrintStreamListener<G, S, F> implements Listener<G, S, F> {
 
   private final static Logger L = Logger.getLogger(PrintStreamListener.class.getName());
 
-  @SafeVarargs
   public PrintStreamListener(
       PrintStream ps,
       boolean format,
       int headerInterval,
       String innerSeparator,
       String outerSeparator,
-      DataCollector<? super G, ? super S, ? super F>... collectors) {
+      List<DataCollector<? super G, ? super S, ? super F>> collectors) {
     this.ps = ps;
     this.format = format;
     this.headerInterval = headerInterval;
     this.innerSeparator = innerSeparator;
     this.outerSeparator = outerSeparator;
-    this.collectors = Arrays.asList(collectors);
+    this.collectors = collectors;
     columnGroups = new ArrayList<>();
     lines = 0;
   }

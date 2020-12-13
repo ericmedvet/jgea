@@ -578,7 +578,7 @@ public class SymbolicRegressionComparison extends Worker {
             (new Jaccard()).on(i -> i.getGenotype().nodes()),
             0.25,
             individuals -> {
-              double[] fitnesses = individuals.stream().mapToDouble(i -> i.getFitness()).toArray();
+              double[] fitnesses = individuals.stream().mapToDouble(Individual::getFitness).toArray();
               Individual<Graph<Node, OperatorGraph.NonValuedArc>, RealFunction, Double> r = Misc.first(individuals);
               return new Individual<>(
                   r.getGenotype(),
@@ -886,7 +886,8 @@ public class SymbolicRegressionComparison extends Worker {
               "evolver", evolverEntry.getKey()
           ));
           try {
-            List<DataCollector<?, ? super RealFunction, ? super Double>> collectors = List.of(new Static(keys),
+            List<DataCollector<? super Object, ? super RealFunction, ? super Double>> collectors = List.of(
+                new Static(keys),
                 new Basic(),
                 new Population(),
                 new PopulationHistograms(),
@@ -908,8 +909,8 @@ public class SymbolicRegressionComparison extends Worker {
                 new Random(seed),
                 executorService,
                 Listener.onExecutor((listenerFactory.getBaseFileName() == null) ?
-                        listener(collectors.toArray(DataCollector[]::new)) :
-                        listenerFactory.build(collectors.toArray(DataCollector[]::new))
+                        listener(collectors) :
+                        listenerFactory.build(collectors)
                     , executorService));
             L.info(String.format("Done %s: %d solutions in %4.1fs",
                 keys,

@@ -135,7 +135,7 @@ public class RobotContactsDE extends Worker {
               };
               Misc.cached(toArray.andThen(problem.getMinContactsFunction()), evaluations);
               try {
-                evolver.solve(problem.getFitnessFunction(), new FitnessEvaluations(evaluations), random, executorService, Listener.onExecutor(listenerFactory.build(
+                evolver.solve(problem.getFitnessFunction(), new FitnessEvaluations(evaluations), random, executorService, Listener.onExecutor(listenerFactory.build(List.of(
                     new Static(keys),
                     new Basic(),
                     new Population(),
@@ -146,7 +146,7 @@ public class RobotContactsDE extends Worker {
                     //new FunctionOfBest("avg.balance", problem.getAvgBalanceFunction().cached(evaluations), "%%5.3f"),
                     //new FunctionOfBest("contacts", problem.getValidContactsFunction().cached(evaluations), "%2d"),
                     new BestPrinter(BestPrinter.Part.GENOTYPE)
-                ), executorService));
+                )), executorService));
               } catch (InterruptedException | ExecutionException ex) {
                 L.log(Level.SEVERE, String.format("Cannot solve problem: %s", ex), ex);
               }

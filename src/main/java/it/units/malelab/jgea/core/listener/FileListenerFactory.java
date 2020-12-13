@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,8 +44,7 @@ public class FileListenerFactory<G, S, F> implements ListenerFactory<G, S, F> {
   }
 
   @Override
-  public Listener<G, S, F> build(DataCollector<? super G, ? super S, ? super F>... collectorArray) {
-    List<DataCollector<? super G, ? super S, ? super F>> collectors = Arrays.asList(collectorArray);
+  public Listener<G, S, F> build(List<DataCollector<? super G, ? super S, ? super F>> collectors) {
     L.info(String.format("Building new listener with %d collectors", collectors.size()));
     return event -> {
       List<List<Item>> itemGroups = PrintStreamListener.collectItems(event, collectors);

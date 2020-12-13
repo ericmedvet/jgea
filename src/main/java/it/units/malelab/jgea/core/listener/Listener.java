@@ -27,7 +27,7 @@ public interface Listener<G, S, F> {
   void listen(Event<? extends G, ? extends S, ? extends F> event);
 
   static Listener<Object, Object, Object> deaf() {
-    return (Listener<Object, Object, Object>) event -> {
+    return event -> {
     };
   }
 

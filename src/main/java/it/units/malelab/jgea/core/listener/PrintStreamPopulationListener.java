@@ -17,11 +17,10 @@ public class PrintStreamPopulationListener<G, S, F> implements Listener<G, S, F>
     private final PrintStreamListener<G, S, F> decoratedListener;
     private final Stream<Function<Individual<? extends G, ? extends S, ? extends F>, List<Item>>> individualCollectors;
 
-    @SafeVarargs
     public PrintStreamPopulationListener(PrintStreamListener<G, S, F> listener,
-                                         Function<Individual<? extends G, ? extends S, ? extends F>, List<Item>>... individualCollectors) {
+                                         List<Function<Individual<? extends G, ? extends S, ? extends F>, List<Item>>> individualCollectors) {
         this.decoratedListener = listener;
-        this.individualCollectors = Stream.of(individualCollectors);
+        this.individualCollectors = individualCollectors.stream();
     }
 
     @Override

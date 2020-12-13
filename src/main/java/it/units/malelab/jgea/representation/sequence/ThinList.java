@@ -66,6 +66,7 @@ public interface ThinList<T> extends List<T> {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   default <T1> T1[] toArray(T1[] a) {
     return (T1[]) toArray();
   }

@@ -95,7 +95,7 @@ public class ExtractionComparison extends Worker {
         "synthetic-4-8", RegexExtractionProblem.varAlphabet(4, 8, 1, metrics),
         "synthetic-4-10", RegexExtractionProblem.varAlphabet(4, 10, 1, metrics)
     );
-    MultiFileListenerFactory<Object, RealFunction, List<Double>> listenerFactory = new MultiFileListenerFactory<>(
+    MultiFileListenerFactory<Object, Extractor<Character>, List<Double>> listenerFactory = new MultiFileListenerFactory<>(
         a("dir", "."),
         a("file", null)
     );
@@ -461,7 +461,7 @@ public class ExtractionComparison extends Worker {
           ));
           try {
             RegexExtractionProblem p = problemEntry.getValue();
-            List<DataCollector<?, ? super Extractor<Character>, ? super Double>> collectors = List.of(
+            List<DataCollector<? super Object, ? super Extractor<Character>, ? super List<Double>>> collectors = List.of(
                 new Static(keys),
                 new Basic(),
                 new Population(),
@@ -488,14 +488,14 @@ public class ExtractionComparison extends Worker {
             Stopwatch stopwatch = Stopwatch.createStarted();
             Evolver<?, Extractor<Character>, List<Double>> evolver = evolverEntry.getValue().apply(p);
             L.info(String.format("Starting %s", keys));
-            Collection<RealFunction> solutions = evolver.solve(
+            Collection<Extractor<Character>> solutions = evolver.solve(
                 Misc.cached(p.getFitnessFunction(), 10000),
                 new Iterations(nIterations),
                 new Random(seed),
                 executorService,
                 Listener.onExecutor((listenerFactory.getBaseFileName() == null) ?
-                        listener(collectors.toArray(DataCollector[]::new)) :
-                        listenerFactory.build(collectors.toArray(DataCollector[]::new))
+                        listener(collectors) :
+                        listenerFactory.build(collectors)
                     , executorService
                 )
             );

@@ -16,14 +16,22 @@
 
 package it.units.malelab.jgea;
 
+import it.units.malelab.jgea.core.Individual;
+import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.PrintStreamListener;
+import it.units.malelab.jgea.core.listener.collector.BestInfo;
 import it.units.malelab.jgea.core.listener.collector.DataCollector;
+import it.units.malelab.jgea.core.listener.collector.FunctionOfOneBest;
+import it.units.malelab.jgea.core.listener.collector.Item;
 import it.units.malelab.jgea.core.util.Args;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Function;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
@@ -58,7 +66,7 @@ public abstract class Worker implements Runnable {
     return Args.a(args, name, defaultValue);
   }
 
-  protected <G, S, F> Listener<G, S, F> listener(DataCollector<? super G, ? super S, ? super F>... collectors) {
+  public static <G, S, F> Listener<G, S, F> listener(List<DataCollector<? super G, ? super S, ? super F>> collectors) {
     return new PrintStreamListener<>(System.out, true, 10, " ", " | ", collectors);
   }
 

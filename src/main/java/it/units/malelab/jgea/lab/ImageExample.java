@@ -137,13 +137,13 @@ public class ImageExample extends Worker {
                   } catch (IOException e) {
                     L.severe(String.format("Cannot write file due to %s", e));
                   }
-                }).then(listenerFactory.build(
+                }).then(listenerFactory.build(List.of(
                     new Static(keys),
                     new Basic(),
                     new Population(),
                     new Diversity(),
                     new BestInfo("%7.5f")
-                )), executorService)
+                ))), executorService)
             );
             L.info(String.format("Done %s: %d solutions in %4.1fs",
                 keys,
