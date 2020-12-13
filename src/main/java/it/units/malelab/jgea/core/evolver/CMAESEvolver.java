@@ -31,7 +31,7 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class CMAESEvolver<S, F extends Comparable<F>> extends AbstractIterativeEvolver<List<Double>, S, F> {
+public class CMAESEvolver<S, F> extends AbstractIterativeEvolver<List<Double>, S, F> {
 
   // TODO check which of the fields should be part of a run, not ea params (e.g., size)
   /**
