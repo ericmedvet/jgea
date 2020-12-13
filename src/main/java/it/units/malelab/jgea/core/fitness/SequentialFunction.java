@@ -8,13 +8,13 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class SequencedFitness<S, F> implements Function<S, F> {
+public class SequentialFunction<S, F> implements Function<S, F> {
   private final SortedMap<Long, Function<S, F>> functions;
   private long nOfInvocations;
   private long nextThreshold;
   private Function<S, F> currentFunction;
 
-  public SequencedFitness(Map<Long, Function<S, F>> functions) {
+  public SequentialFunction(Map<Long, Function<S, F>> functions) {
     // should not be used with caching
     this.functions = new TreeMap<>(functions);
     reset();
