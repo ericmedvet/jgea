@@ -17,35 +17,21 @@
 package it.units.malelab.jgea.core.listener.collector;
 
 import it.units.malelab.jgea.core.Individual;
-import it.units.malelab.jgea.core.listener.Event;
-import it.units.malelab.jgea.core.util.Misc;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
  */
-public class FitnessHistogram implements DataCollector<Object, Object, Number> {
-
-  private final int bins;
+public class FitnessHistogram extends Histogram<Object, Object, Number> {
 
   public FitnessHistogram(int bins) {
-    this.bins = bins;
+    super(
+        Individual::getFitness,
+        "fitness",
+        bins);
   }
 
   public FitnessHistogram() {
     this(8);
-  }
-
-  @Override
-  public List<Item> collect(Event<?, ?, ? extends Number> event) {
-    List<Number> fitnesses = event.getOrderedPopulation().all().stream()
-        .map(Individual::getFitness)
-        .collect(Collectors.toList());
-    return List.of(
-        new Item("population.fitness.histogram", Misc.histogram(fitnesses, bins), "%" + bins + "s")
-    );
   }
 
 }
