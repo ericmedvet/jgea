@@ -22,7 +22,9 @@ import it.units.malelab.jgea.distance.Distance;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 
 /**
  * @author eric
@@ -197,7 +199,7 @@ public class Misc {
       int i = Math.min((int) Math.floor((v - min) / (max - min) * (double) bins), bins - 1);
       counts[i] = counts[i] + 1;
     }
-    return barplot(counts, 0, vs.length);
+    return barplot(counts, 0, Arrays.stream(counts).max().orElse(0));
   }
 
 }
