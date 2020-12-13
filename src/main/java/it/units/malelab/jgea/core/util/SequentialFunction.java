@@ -1,4 +1,4 @@
-package it.units.malelab.jgea.core.fitness;
+package it.units.malelab.jgea.core.util;
 
 import java.util.Map;
 import java.util.SortedMap;
