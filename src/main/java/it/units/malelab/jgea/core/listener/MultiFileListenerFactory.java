@@ -64,18 +64,24 @@ public class MultiFileListenerFactory<G, S, F> implements ListenerFactory<G, S, 
       PrintStream ps = streams.get(columnGroups);
       if (ps == null) {
         String fileName = baseDirName + File.separator + String.format(baseFileName, Integer.toHexString(columnGroups.hashCode()));
+        String localFileName = fileName;
+        while (new File(localFileName).exists()) {
+          localFileName = localFileName + ".newer";
+        }
+        if (!localFileName.equals(fileName)) {
+          L.log(Level.WARNING, String.format("Given file name (%s) exists; will save results on %s", fileName, localFileName));
+        }
         try {
-          ps = new PrintStream(fileName);
+          ps = new PrintStream(localFileName);
           streams.put(columnGroups, ps);
-          L.log(Level.INFO, String.format("New output file %s created", fileName));
+          L.log(Level.INFO, String.format("New output file %s created", localFileName));
         } catch (FileNotFoundException ex) {
-          L.log(Level.SEVERE, String.format("Cannot create output file %s", fileName), ex);
+          L.log(Level.SEVERE, String.format("Cannot create output file %s", localFileName), ex);
           ps = System.out;
         }
         synchronized (streams) {
           ps.println(PrintStreamListener.buildHeaderString(columnGroups, ";", ";", false));
         }
-
       }
       PrintStreamListener.checkConsistency(itemGroups, columnGroups);
       synchronized (streams) {

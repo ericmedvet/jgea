@@ -19,6 +19,7 @@ package it.units.malelab.jgea.core.listener;
 import it.units.malelab.jgea.core.listener.collector.DataCollector;
 import it.units.malelab.jgea.core.listener.collector.Item;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -51,11 +52,18 @@ public class FileListenerFactory<G, S, F> implements ListenerFactory<G, S, F> {
       List<List<Item>> itemGroups = PrintStreamListener.collectItems(event, collectors);
       if (columnGroups.isEmpty()) {
         columnGroups.addAll(PrintStreamListener.buildColumnGroups(itemGroups, false));
+        String pathName = filePathName;
+        while (new File(pathName).exists()) {
+          pathName = pathName + ".newer";
+        }
+        if (!pathName.equals(filePathName)) {
+          L.log(Level.WARNING, String.format("Given file name (%s) exists; will save results on %s", filePathName, pathName));
+        }
         try {
-          ps = new PrintStream(filePathName);
-          L.log(Level.INFO, String.format("New output file %s created", filePathName));
+          ps = new PrintStream(pathName);
+          L.log(Level.INFO, String.format("New output file %s created", pathName));
         } catch (FileNotFoundException ex) {
-          L.log(Level.SEVERE, String.format("Cannot create output file %s", filePathName), ex);
+          L.log(Level.SEVERE, String.format("Cannot create output file %s", pathName), ex);
           ps = System.out;
         }
         synchronized (columnGroups) {
