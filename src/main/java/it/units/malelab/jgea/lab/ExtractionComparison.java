@@ -23,6 +23,7 @@ import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversityEvolver;
+import it.units.malelab.jgea.core.evolver.speciation.LazySpeciator;
 import it.units.malelab.jgea.core.evolver.speciation.SpeciatedEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.listener.Listener;
@@ -189,7 +190,7 @@ public class ExtractionComparison extends Worker {
                   ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
               ),
               5,
-              (new Jaccard()).on(i -> i.getGenotype().nodes()),
+              new LazySpeciator<>((new Jaccard()).on(i -> i.getGenotype().nodes()),
               0.25,
               individuals -> {
                 Individual<Graph<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>, Extractor<Character>, List<Double>> r = Misc.first(individuals);
@@ -202,7 +203,7 @@ public class ExtractionComparison extends Worker {
                     ),
                     r.getBirthIteration()
                 );
-              },
+              }),
               0.75
           );
         }),
@@ -249,7 +250,7 @@ public class ExtractionComparison extends Worker {
                   ).withChecker(checker), graphCrossoverRate
               ),
               5,
-              (new Jaccard()).on(i -> i.getGenotype().nodes()),
+              new LazySpeciator<>((new Jaccard()).on(i -> i.getGenotype().nodes()),
               0.25,
               individuals -> {
                 Individual<Graph<DeterministicFiniteAutomaton.State, Set<Character>>, Extractor<Character>, List<Double>> r = Misc.first(individuals);
@@ -262,7 +263,7 @@ public class ExtractionComparison extends Worker {
                     ),
                     r.getBirthIteration()
                 );
-              },
+              }),
               0.75
           );
         }),
@@ -304,7 +305,7 @@ public class ExtractionComparison extends Worker {
                   ).withChecker(checker), graphArcRemovalRate
               ),
               5,
-              (new Jaccard()).on(i -> i.getGenotype().nodes()),
+              new LazySpeciator<>((new Jaccard()).on(i -> i.getGenotype().nodes()),
               0.25,
               individuals -> {
                 Individual<Graph<DeterministicFiniteAutomaton.State, Set<Character>>, Extractor<Character>, List<Double>> r = Misc.first(individuals);
@@ -317,7 +318,7 @@ public class ExtractionComparison extends Worker {
                     ),
                     r.getBirthIteration()
                 );
-              },
+              }),
               0.75
           );
         }),
@@ -423,7 +424,7 @@ public class ExtractionComparison extends Worker {
                   ).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate
               ),
               5,
-              (new Jaccard()).on(i -> i.getGenotype().nodes()),
+              new LazySpeciator<>((new Jaccard()).on(i -> i.getGenotype().nodes()),
               0.25,
               individuals -> {
                 Individual<Graph<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>, Extractor<Character>, List<Double>> r = Misc.first(individuals);
@@ -436,7 +437,7 @@ public class ExtractionComparison extends Worker {
                     ),
                     r.getBirthIteration()
                 );
-              },
+              }),
               0.75
           );
         })
