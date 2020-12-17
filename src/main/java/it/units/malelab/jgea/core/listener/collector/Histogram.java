@@ -2,7 +2,7 @@ package it.units.malelab.jgea.core.listener.collector;
 
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.listener.Event;
-import it.units.malelab.jgea.core.util.Misc;
+import it.units.malelab.jgea.core.util.TextPlotter;
 
 import java.util.List;
 import java.util.function.Function;
@@ -29,7 +29,7 @@ public class Histogram<G, S, F> implements DataCollector<G, S, F> {
         .map(function)
         .collect(Collectors.toList());
     return List.of(
-        new Item("population." + name + ".histogram", Misc.histogram(values, bins), "%" + bins + "s")
+        new Item("population." + name + ".histogram", TextPlotter.histogram(values, bins), "%" + bins + "s")
     );
   }
 }
