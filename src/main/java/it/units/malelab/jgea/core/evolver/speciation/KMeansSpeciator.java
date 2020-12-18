@@ -18,39 +18,79 @@ package it.units.malelab.jgea.core.evolver.speciation;
 
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
+import it.units.malelab.jgea.distance.Distance;
 import org.apache.commons.math3.ml.clustering.CentroidCluster;
 import org.apache.commons.math3.ml.clustering.Clusterable;
 import org.apache.commons.math3.ml.clustering.KMeansPlusPlusClusterer;
+import org.apache.commons.math3.ml.distance.DistanceMeasure;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author federico
  */
 public class KMeansSpeciator<G, S, F> implements Speciator<Individual<G, S, F>> {
-  private final KMeansPlusPlusClusterer<Clusterable> kmeans;
-  private final Function<Individual<G, S, F>, Clusterable> converter;
 
-  public KMeansSpeciator(KMeansPlusPlusClusterer<Clusterable> kmeans, Function<Individual<G, S, F>, Clusterable> converter) {
-    this.kmeans = kmeans;
+  private final KMeansPlusPlusClusterer<ClusterableIndividual> kMeans;
+  private final Function<Individual<G, S, F>, double[]> converter;
+  private final Distance<double[]> distance;
+
+  private class ClusterableIndividual implements Clusterable {
+    private final Individual<G, S, F> individual;
+    private double[] point;
+
+    public ClusterableIndividual(Individual<G, S, F> individual) {
+      this.individual = individual;
+    }
+
+    @Override
+    public double[] getPoint() {
+      if (point == null) {
+        point = converter.apply(individual);
+      }
+      return point;
+    }
+  }
+
+  public KMeansSpeciator(int k, int maxIterations, Distance<double[]> distance, Function<Individual<G, S, F>, double[]> converter) {
+    this.kMeans = new KMeansPlusPlusClusterer<>(
+        k,
+        maxIterations,
+        (DistanceMeasure) distance::apply
+    );
     this.converter = converter;
+    this.distance = distance;
   }
 
   @Override
   public Collection<Species<Individual<G, S, F>>> speciate(PartiallyOrderedCollection<Individual<G, S, F>> population) {
-    Map<Clusterable, Individual<G, S, F>> fromClusterableToIndividual = population.all().stream().collect(Collectors.toMap(converter, Function.identity()));
-    Collection<CentroidCluster<Clusterable>> clusteringOutput = kmeans.cluster(fromClusterableToIndividual.keySet());
-    List<Species<Individual<G, S, F>>> allSpecies = new ArrayList<>();
-    for (CentroidCluster<Clusterable> c : clusteringOutput) {
-      allSpecies.add(new Species<Individual<G, S, F>>(c.getPoints().stream().map(fromClusterableToIndividual::get).collect(Collectors.toList()),
-          individuals -> fromClusterableToIndividual.get(c.getCenter())));
-    }
-    return allSpecies;
+    Collection<ClusterableIndividual> points = population.all().stream()
+        .map(ClusterableIndividual::new)
+        .collect(Collectors.toList());
+    List<CentroidCluster<ClusterableIndividual>> clusters = kMeans.cluster(points);
+    List<ClusterableIndividual> representers = clusters.stream().map(c -> {
+      ClusterableIndividual closest = c.getPoints().get(0);
+      double closestD = distance.apply(closest.point, c.getCenter().getPoint());
+      for (int i = 0; i < c.getPoints().size(); i++) {
+        double d = distance.apply(c.getPoints().get(i).point, c.getCenter().getPoint());
+        if (d < closestD) {
+          closestD = d;
+          closest = c.getPoints().get(i);
+        }
+      }
+      return closest;
+    }).collect(Collectors.toList());
+    return IntStream.range(0, clusters.size())
+        .mapToObj(i -> new Species<>(
+            clusters.get(i).getPoints().stream()
+                .map(ci -> ci.individual)
+                .collect(Collectors.toList()),
+            representers.get(i).individual
+        )).collect(Collectors.toList());
   }
 
 }

@@ -18,38 +18,25 @@ package it.units.malelab.jgea.core.evolver.speciation;
 
 import java.util.Collection;
 import java.util.Objects;
-import java.util.function.Function;
 
 /**
  * @author eric
  */
 public class Species<T> {
-  private Collection<T> elements;
-  private final Function<Collection<T>, T> representerSelector;
+  private final Collection<T> elements;
+  private final T representative;
 
-  public Species(Collection<T> elements, Function<Collection<T>, T> representerSelector) {
+  public Species(Collection<T> elements, T representative) {
     this.elements = elements;
-    this.representerSelector = representerSelector;
-  }
-
-  public T getRepresentative() {
-    return representerSelector.apply(elements);
+    this.representative = representative;
   }
 
   public Collection<T> getElements() {
     return elements;
   }
 
-  public void addElement(T newElement) {
-    elements.add(newElement);
-  }
-
-  @Override
-  public String toString() {
-    return "Species{" +
-        "elements=" + elements +
-        ", representerSelector=" + representerSelector +
-        '}';
+  public T getRepresentative() {
+    return representative;
   }
 
   @Override
@@ -57,13 +44,19 @@ public class Species<T> {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Species<?> species = (Species<?>) o;
-    return Objects.equals(elements, species.elements) &&
-        Objects.equals(representerSelector, species.representerSelector);
+    return Objects.equals(elements, species.elements) && Objects.equals(representative, species.representative);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(elements, representerSelector);
+    return Objects.hash(elements, representative);
   }
 
+  @Override
+  public String toString() {
+    return "Species{" +
+        "elements=" + elements +
+        ", representative=" + representative +
+        '}';
+  }
 }

@@ -190,20 +190,10 @@ public class ExtractionComparison extends Worker {
                   ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
               ),
               5,
-              new LazySpeciator<>((new Jaccard()).on(i -> i.getGenotype().nodes()),
-              0.25,
-              individuals -> {
-                Individual<Graph<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>, Extractor<Character>, List<Double>> r = Misc.first(individuals);
-                return new Individual<>(
-                    r.getGenotype(),
-                    r.getSolution(),
-                    Misc.median(
-                        individuals.stream().map(Individual::getFitness).collect(Collectors.toList()),
-                        new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparator()
-                    ),
-                    r.getBirthIteration()
-                );
-              }),
+              new LazySpeciator<>(
+                  (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                  0.25
+              ),
               0.75
           );
         }),
@@ -250,20 +240,10 @@ public class ExtractionComparison extends Worker {
                   ).withChecker(checker), graphCrossoverRate
               ),
               5,
-              new LazySpeciator<>((new Jaccard()).on(i -> i.getGenotype().nodes()),
-              0.25,
-              individuals -> {
-                Individual<Graph<DeterministicFiniteAutomaton.State, Set<Character>>, Extractor<Character>, List<Double>> r = Misc.first(individuals);
-                return new Individual<>(
-                    r.getGenotype(),
-                    r.getSolution(),
-                    Misc.median(
-                        individuals.stream().map(Individual::getFitness).collect(Collectors.toList()),
-                        new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparator()
-                    ),
-                    r.getBirthIteration()
-                );
-              }),
+              new LazySpeciator<>(
+                  (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                  0.25
+              ),
               0.75
           );
         }),
@@ -305,20 +285,10 @@ public class ExtractionComparison extends Worker {
                   ).withChecker(checker), graphArcRemovalRate
               ),
               5,
-              new LazySpeciator<>((new Jaccard()).on(i -> i.getGenotype().nodes()),
-              0.25,
-              individuals -> {
-                Individual<Graph<DeterministicFiniteAutomaton.State, Set<Character>>, Extractor<Character>, List<Double>> r = Misc.first(individuals);
-                return new Individual<>(
-                    r.getGenotype(),
-                    r.getSolution(),
-                    Misc.median(
-                        individuals.stream().map(Individual::getFitness).collect(Collectors.toList()),
-                        new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparator()
-                    ),
-                    r.getBirthIteration()
-                );
-              }),
+              new LazySpeciator<>(
+                  (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                  0.25
+              ),
               0.75
           );
         }),
@@ -424,20 +394,10 @@ public class ExtractionComparison extends Worker {
                   ).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate
               ),
               5,
-              new LazySpeciator<>((new Jaccard()).on(i -> i.getGenotype().nodes()),
-              0.25,
-              individuals -> {
-                Individual<Graph<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>, Extractor<Character>, List<Double>> r = Misc.first(individuals);
-                return new Individual<>(
-                    r.getGenotype(),
-                    r.getSolution(),
-                    Misc.median(
-                        individuals.stream().map(Individual::getFitness).collect(Collectors.toList()),
-                        new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparator()
-                    ),
-                    r.getBirthIteration()
-                );
-              }),
+              new LazySpeciator<>(
+                  (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                  0.25
+              ),
               0.75
           );
         })

@@ -23,7 +23,6 @@ import it.units.malelab.jgea.distance.Distance;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -32,24 +31,23 @@ import java.util.stream.Collectors;
 public class LazySpeciator<G, S, F> implements Speciator<Individual<G, S, F>> {
   private final Distance<Individual<G, S, F>> distance;
   private final double distanceThreshold;
-  private final Function<Collection<Individual<G, S, F>>, Individual<G, S, F>> representerSelector;
 
-  public LazySpeciator(Distance<Individual<G, S, F>> distance, double distanceThreshold,
-                       Function<Collection<Individual<G, S, F>>, Individual<G, S, F>> representerSelector) {
+  public LazySpeciator(Distance<Individual<G, S, F>> distance, double distanceThreshold) {
     this.distance = distance;
     this.distanceThreshold = distanceThreshold;
-    this.representerSelector = representerSelector;
   }
 
   @Override
   public Collection<Species<Individual<G, S, F>>> speciate(PartiallyOrderedCollection<Individual<G, S, F>> population) {
-    List<Species<Individual<G, S, F>>> allSpecies = new ArrayList<>();
+    List<List<Individual<G, S, F>>> clusters = new ArrayList<>();
     for (Individual<G, S, F> individual : population.all()) {
-      List<Double> distances = allSpecies.stream()
-          .map(s -> distance.apply(individual, s.getRepresentative()))
+      List<Double> distances = clusters.stream()
+          .map(c -> distance.apply(individual, c.get(0)))
           .collect(Collectors.toList());
       if (distances.isEmpty()) {
-        allSpecies.add(new Species<>(List.of(individual), representerSelector));
+        List<Individual<G, S, F>> cluster = new ArrayList<>();
+        cluster.add(individual);
+        clusters.add(cluster);
       } else {
         int closestIndex = 0;
         for (int i = 1; i < distances.size(); i++) {
@@ -58,13 +56,17 @@ public class LazySpeciator<G, S, F> implements Speciator<Individual<G, S, F>> {
           }
         }
         if (distances.get(closestIndex) < distanceThreshold) {
-          allSpecies.get(closestIndex).addElement(individual);
+          clusters.get(closestIndex).add(individual);
         } else {
-          allSpecies.add(new Species<>(List.of(individual), representerSelector));
+          List<Individual<G, S, F>> cluster = new ArrayList<>();
+          cluster.add(individual);
+          clusters.add(cluster);
         }
       }
     }
-    return allSpecies;
+    return clusters.stream()
+        .map(c -> new Species<>(c, c.get(0)))
+        .collect(Collectors.toList());
   }
 
 }
