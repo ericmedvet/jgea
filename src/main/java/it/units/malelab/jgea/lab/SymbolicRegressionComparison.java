@@ -23,6 +23,7 @@ import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversityEvolver;
+import it.units.malelab.jgea.core.evolver.speciation.LazySpeciator;
 import it.units.malelab.jgea.core.evolver.speciation.SpeciatedEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.listener.Listener;
@@ -343,7 +344,7 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
             ),
             5,
-            (new Jaccard()).on(i -> i.getGenotype().nodes()),
+            new LazySpeciator<>((new Jaccard()).on(i -> i.getGenotype().nodes()),
             0.25,
             individuals -> {
               double[] fitnesses = individuals.stream().mapToDouble(i -> i.getFitness()).toArray();
@@ -354,7 +355,7 @@ public class SymbolicRegressionComparison extends Worker {
                   Misc.median(fitnesses),
                   r.getBirthIteration()
               );
-            },
+            }),
             0.75
         )),
         Map.entry("fgraph-seq-speciated-noxover", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
@@ -377,7 +378,7 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
             ),
             5,
-            (new Jaccard()).on(i -> i.getGenotype().nodes()),
+            new LazySpeciator<>((new Jaccard()).on(i -> i.getGenotype().nodes()),
             0.25,
             individuals -> {
               double[] fitnesses = individuals.stream().mapToDouble(i -> i.getFitness()).toArray();
@@ -388,7 +389,7 @@ public class SymbolicRegressionComparison extends Worker {
                   Misc.median(fitnesses),
                   r.getBirthIteration()
               );
-            },
+            }),
             0.75
         )),
         Map.entry("fgraph-lim-gadiv", p -> new StandardWithEnforcedDiversityEvolver<Graph<Node, Double>, RealFunction, Double>(
@@ -446,7 +447,7 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphCrossoverRate
             ),
             5,
-            (new Jaccard()).on(i -> i.getGenotype().nodes()),
+            new LazySpeciator<>((new Jaccard()).on(i -> i.getGenotype().nodes()),
             0.25,
             individuals -> {
               double[] fitnesses = individuals.stream().mapToDouble(i -> i.getFitness()).toArray();
@@ -457,7 +458,7 @@ public class SymbolicRegressionComparison extends Worker {
                   Misc.median(fitnesses),
                   r.getBirthIteration()
               );
-            },
+            }),
             0.75
         )),
         Map.entry("fgraph-seq-speciated", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
@@ -485,7 +486,7 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphCrossoverRate
             ),
             5,
-            (new Jaccard()).on(i -> i.getGenotype().nodes()),
+            new LazySpeciator<>((new Jaccard()).on(i -> i.getGenotype().nodes()),
             0.25,
             individuals -> {
               double[] fitnesses = individuals.stream().mapToDouble(i -> i.getFitness()).toArray();
@@ -496,7 +497,7 @@ public class SymbolicRegressionComparison extends Worker {
                   Misc.median(fitnesses),
                   r.getBirthIteration()
               );
-            },
+            }),
             0.75
         )),
         Map.entry("fgraph-seq-ga", p -> new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
@@ -575,7 +576,7 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(OperatorGraph.checker()), graphArcRemovalRate
             ),
             5,
-            (new Jaccard()).on(i -> i.getGenotype().nodes()),
+            new LazySpeciator<>((new Jaccard()).on(i -> i.getGenotype().nodes()),
             0.25,
             individuals -> {
               double[] fitnesses = individuals.stream().mapToDouble(Individual::getFitness).toArray();
@@ -586,7 +587,7 @@ public class SymbolicRegressionComparison extends Worker {
                   Misc.median(fitnesses),
                   r.getBirthIteration()
               );
-            },
+            }),
             0.75
         )),
         Map.entry("fgraph-hash-ga", p -> {
@@ -658,7 +659,7 @@ public class SymbolicRegressionComparison extends Worker {
                   ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
               ),
               5,
-              (new Jaccard()).on(i -> i.getGenotype().nodes()),
+              new LazySpeciator<>((new Jaccard()).on(i -> i.getGenotype().nodes()),
               0.25,
               individuals -> {
                 double[] fitnesses = individuals.stream().mapToDouble(Individual::getFitness).toArray();
@@ -669,7 +670,7 @@ public class SymbolicRegressionComparison extends Worker {
                     Misc.median(fitnesses),
                     r.getBirthIteration()
                 );
-              },
+              }),
               0.75
           );
         }),
@@ -706,7 +707,7 @@ public class SymbolicRegressionComparison extends Worker {
                   ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
               ),
               5,
-              (new Jaccard()).on(i -> i.getGenotype().nodes()),
+              new LazySpeciator<>((new Jaccard()).on(i -> i.getGenotype().nodes()),
               0.25,
               individuals -> {
                 double[] fitnesses = individuals.stream().mapToDouble(Individual::getFitness).toArray();
@@ -717,7 +718,7 @@ public class SymbolicRegressionComparison extends Worker {
                     Misc.median(fitnesses),
                     r.getBirthIteration()
                 );
-              },
+              }),
               0.75
           );
         }),
@@ -755,7 +756,7 @@ public class SymbolicRegressionComparison extends Worker {
                   ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
               ),
               5,
-              (new Jaccard()).on(i -> i.getGenotype().nodes()),
+              new LazySpeciator<>((new Jaccard()).on(i -> i.getGenotype().nodes()),
               0.25,
               individuals -> {
                 double[] fitnesses = individuals.stream().mapToDouble(Individual::getFitness).toArray();
@@ -766,7 +767,7 @@ public class SymbolicRegressionComparison extends Worker {
                     Misc.median(fitnesses),
                     r.getBirthIteration()
                 );
-              },
+              }),
               0.75
           );
         }),
@@ -798,7 +799,7 @@ public class SymbolicRegressionComparison extends Worker {
                   new ArcRemoval<IndexedNode<Node>, Double>(node -> node.content() instanceof Output).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate
               ),
               5,
-              (new Jaccard()).on(i -> i.getGenotype().nodes()),
+              new LazySpeciator<>((new Jaccard()).on(i -> i.getGenotype().nodes()),
               0.25,
               individuals -> {
                 double[] fitnesses = individuals.stream().mapToDouble(Individual::getFitness).toArray();
@@ -809,7 +810,7 @@ public class SymbolicRegressionComparison extends Worker {
                     Misc.median(fitnesses),
                     r.getBirthIteration()
                 );
-              },
+              }),
               0.75
           );
         }),

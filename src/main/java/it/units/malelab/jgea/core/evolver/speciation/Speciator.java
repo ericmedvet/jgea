@@ -16,8 +16,15 @@
 
 package it.units.malelab.jgea.core.evolver.speciation;
 
+import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
+
 import java.util.Collection;
 
+/**
+ * @author eric
+ */
 public interface Speciator<T> {
-  Collection<Species<T>> speciate(Collection<T> all);
+
+  Collection<Species<T>> speciate(PartiallyOrderedCollection<T> all);
+
 }

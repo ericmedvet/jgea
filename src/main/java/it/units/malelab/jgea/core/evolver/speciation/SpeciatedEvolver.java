@@ -67,7 +67,7 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
     Collection<Individual<G, S, F>> parents = orderedPopulation.all();
     Collection<Individual<G, S, F>> offspring = new ArrayList<>();
     //partition in species
-    List<Species<Individual<G, S, F>>> allSpecies = new ArrayList<>(speciator.speciate(parents));
+    List<Species<Individual<G, S, F>>> allSpecies = new ArrayList<>(speciator.speciate(orderedPopulation));
     L.fine(String.format("Population speciated in %d species of sizes %s",
         allSpecies.size(),
         allSpecies.stream().map(s -> s.getElements().size()).collect(Collectors.toList())
