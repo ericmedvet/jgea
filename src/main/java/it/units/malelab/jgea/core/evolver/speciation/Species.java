@@ -47,9 +47,9 @@ public class Species<T> {
   @Override
   public String toString() {
     return "Species{" +
-            "elements=" + elements +
-            ", representerSelector=" + representerSelector +
-            '}';
+        "elements=" + elements +
+        ", representerSelector=" + representerSelector +
+        '}';
   }
 
   @Override
@@ -58,7 +58,7 @@ public class Species<T> {
     if (o == null || getClass() != o.getClass()) return false;
     Species<?> species = (Species<?>) o;
     return Objects.equals(elements, species.elements) &&
-            Objects.equals(representerSelector, species.representerSelector);
+        Objects.equals(representerSelector, species.representerSelector);
   }
 
   @Override

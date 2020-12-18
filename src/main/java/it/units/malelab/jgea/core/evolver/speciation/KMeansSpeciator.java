@@ -22,7 +22,10 @@ import org.apache.commons.math3.ml.clustering.CentroidCluster;
 import org.apache.commons.math3.ml.clustering.Clusterable;
 import org.apache.commons.math3.ml.clustering.KMeansPlusPlusClusterer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -30,24 +33,24 @@ import java.util.stream.Collectors;
  * @author federico
  */
 public class KMeansSpeciator<G, S, F> implements Speciator<Individual<G, S, F>> {
-    private final KMeansPlusPlusClusterer<Clusterable> kmeans;
-    private final Function<Individual<G, S, F>, Clusterable> converter;
+  private final KMeansPlusPlusClusterer<Clusterable> kmeans;
+  private final Function<Individual<G, S, F>, Clusterable> converter;
 
-    public KMeansSpeciator(KMeansPlusPlusClusterer<Clusterable> kmeans, Function<Individual<G, S, F>, Clusterable> converter) {
-        this.kmeans = kmeans;
-        this.converter = converter;
-    }
+  public KMeansSpeciator(KMeansPlusPlusClusterer<Clusterable> kmeans, Function<Individual<G, S, F>, Clusterable> converter) {
+    this.kmeans = kmeans;
+    this.converter = converter;
+  }
 
-    @Override
-    public Collection<Species<Individual<G, S, F>>> speciate(PartiallyOrderedCollection<Individual<G, S, F>> population) {
-        Map<Clusterable, Individual<G, S, F>> fromClusterableToIndividual = population.all().stream().collect(Collectors.toMap(converter, Function.identity()));
-        Collection<CentroidCluster<Clusterable>> clusteringOutput = kmeans.cluster(fromClusterableToIndividual.keySet());
-        List<Species<Individual<G, S, F>>> allSpecies = new ArrayList<>();
-        for (CentroidCluster<Clusterable> c : clusteringOutput) {
-            allSpecies.add(new Species<Individual<G, S, F>>(c.getPoints().stream().map(fromClusterableToIndividual::get).collect(Collectors.toList()),
-                    individuals -> fromClusterableToIndividual.get(c.getCenter())));
-        }
-        return allSpecies;
+  @Override
+  public Collection<Species<Individual<G, S, F>>> speciate(PartiallyOrderedCollection<Individual<G, S, F>> population) {
+    Map<Clusterable, Individual<G, S, F>> fromClusterableToIndividual = population.all().stream().collect(Collectors.toMap(converter, Function.identity()));
+    Collection<CentroidCluster<Clusterable>> clusteringOutput = kmeans.cluster(fromClusterableToIndividual.keySet());
+    List<Species<Individual<G, S, F>>> allSpecies = new ArrayList<>();
+    for (CentroidCluster<Clusterable> c : clusteringOutput) {
+      allSpecies.add(new Species<Individual<G, S, F>>(c.getPoints().stream().map(fromClusterableToIndividual::get).collect(Collectors.toList()),
+          individuals -> fromClusterableToIndividual.get(c.getCenter())));
     }
+    return allSpecies;
+  }
 
 }
