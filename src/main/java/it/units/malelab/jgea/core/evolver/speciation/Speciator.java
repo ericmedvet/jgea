@@ -24,6 +24,7 @@ import java.util.Collection;
  * @author eric
  */
 public interface Speciator<T> {
+
   Collection<Species<T>> speciate(PartiallyOrderedCollection<T> all);
 
 }

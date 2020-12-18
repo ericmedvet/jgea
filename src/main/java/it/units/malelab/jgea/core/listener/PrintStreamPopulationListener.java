@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package it.units.malelab.jgea.core.listener;
 
 import it.units.malelab.jgea.core.Individual;
@@ -27,15 +28,12 @@ import java.util.stream.Collectors;
  * @author federico
  */
 public class PrintStreamPopulationListener<G, S, F> implements Listener<G, S, F> {
-
-    // private boolean start;
     private final PrintStreamListener<G, S, F> decoratedListener;
     private final List<Function<Individual<? extends G, ? extends S, ? extends F>, List<Item>>> individualCollectors;
 
     @SafeVarargs
     public PrintStreamPopulationListener(PrintStreamListener<G, S, F> listener,
                                          Function<Individual<? extends G, ? extends S, ? extends F>, List<Item>>... individualCollectors) {
-        // this.start = true;
         this.decoratedListener = listener;
         this.individualCollectors = List.of(individualCollectors);
     }

@@ -17,7 +17,6 @@
 package it.units.malelab.jgea.core.evolver.speciation;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -28,8 +27,8 @@ public class Species<T> {
   private Collection<T> elements;
   private final Function<Collection<T>, T> representerSelector;
 
-  public Species(T firstElement, Function<Collection<T>, T> representerSelector) {
-    this.elements = List.of(firstElement);
+  public Species(Collection<T> elements, Function<Collection<T>, T> representerSelector) {
+    this.elements = elements;
     this.representerSelector = representerSelector;
   }
 
