@@ -40,10 +40,7 @@ public class KMeansSpeciator<G, S, F> implements Speciator<Individual<G, S, F>> 
 
     @Override
     public Collection<Species<Individual<G, S, F>>> speciate(PartiallyOrderedCollection<Individual<G, S, F>> population) {
-        Map<Clusterable, Individual<G, S, F>> fromClusterableToIndividual = new HashMap<>();
-        for (Individual<G, S, F> individual : population.all()) {
-            fromClusterableToIndividual.put(converter.apply(individual), individual);
-        }
+        Map<Clusterable, Individual<G, S, F>> fromClusterableToIndividual = population.all().stream().collect(Collectors.toMap(converter, Function.identity()));
         Collection<CentroidCluster<Clusterable>> clusteringOutput = kmeans.cluster(fromClusterableToIndividual.keySet());
         List<Species<Individual<G, S, F>>> allSpecies = new ArrayList<>();
         for (CentroidCluster<Clusterable> c : clusteringOutput) {
