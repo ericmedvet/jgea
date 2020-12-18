@@ -17,7 +17,7 @@
 package it.units.malelab.jgea.core.listener.collector;
 
 import it.units.malelab.jgea.core.listener.Event;
-import it.units.malelab.jgea.core.util.Misc;
+import it.units.malelab.jgea.core.util.TextPlotter;
 
 import java.util.List;
 import java.util.Objects;
@@ -52,9 +52,9 @@ public class PopulationHistograms implements DataCollector<Object, Object, Objec
         .map(i -> event.getState().getIterations() - i.getBirthIteration())
         .collect(Collectors.toList());
     return List.of(
-        new Item("population.genotype.size.barplot", Misc.histogram(genoSizes, bins), "%" + bins + "s"),
-        new Item("population.solution.size.barplot", Misc.histogram(solutionSizes, bins), "%" + bins + "s"),
-        new Item("population.age.barplot", Misc.histogram(ages, bins), "%" + bins + "s")
+        new Item("population.genotype.size.barplot", TextPlotter.histogram(genoSizes, bins), "%" + bins + "s"),
+        new Item("population.solution.size.barplot", TextPlotter.histogram(solutionSizes, bins), "%" + bins + "s"),
+        new Item("population.age.barplot", TextPlotter.histogram(ages, bins), "%" + bins + "s")
     );
   }
 

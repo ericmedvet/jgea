@@ -22,7 +22,6 @@ import it.units.malelab.jgea.core.listener.collector.Item;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +55,7 @@ public class MultiFileListenerFactory<G, S, F> implements ListenerFactory<G, S, 
 
   @Override
   public Listener<G, S, F> build(List<DataCollector<? super G, ? super S, ? super F>> collectors) {
-    L.info(String.format("Building new listener with %d collectors", collectors.size()));
+    L.fine(String.format("Building new listener with %d collectors", collectors.size()));
     return event -> {
       List<List<Item>> itemGroups = PrintStreamListener.collectItems(event, collectors);
       List<List<PrintStreamListener.Column>> columnGroups = PrintStreamListener.buildColumnGroups(itemGroups, false);

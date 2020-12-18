@@ -22,16 +22,11 @@ import it.units.malelab.jgea.distance.Distance;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
-import java.util.stream.IntStream;
 
 /**
  * @author eric
  */
 public class Misc {
-
-  private static final String BARPLOT_VALS = "▁▂▃▄▅▆▇";
 
   private Misc() {
     /* prevent instantiation */
@@ -65,7 +60,7 @@ public class Misc {
       }
       d = d - option.getValue();
     }
-    return (T) options.keySet().toArray()[0];
+    return first(options.keySet());
   }
 
   public static List<Range<Integer>> slices(Range<Integer> range, int pieces) {
@@ -154,52 +149,6 @@ public class Misc {
     List<K> all = new ArrayList<>(ks);
     all.sort(comparator);
     return all.get(all.size() / 2);
-  }
-
-  private static double[] resize(double[] values, int l) {
-    double[] resized = new double[l];
-    for (int i = 0; i < l; i++) {
-      resized[i] = values[Math.min((int) Math.round((double) i / (double) l * (double) values.length), values.length - 1)];
-    }
-    return resized;
-  }
-
-  private static String barplot(double[] values, double min, double max) {
-    StringBuilder sb = new StringBuilder();
-    for (double value : values) {
-      sb.append(BARPLOT_VALS.charAt((int) Math.round(Math.max(Math.min((value - min) / (max - min), 1d), 0d) * ((double) BARPLOT_VALS.length() - 1d))));
-    }
-    return sb.toString();
-  }
-
-  public static String barplot(double[] values) {
-    double min = DoubleStream.of(values).min().orElse(0);
-    double max = DoubleStream.of(values).max().orElse(0);
-    return barplot(values, min, max);
-  }
-
-  public static String barplot(double[] values, int l) {
-    return barplot(resize(values, l));
-  }
-
-  public static String barplot(List<? extends Number> values) {
-    return barplot(values.stream().mapToDouble(Number::doubleValue).toArray());
-  }
-
-  public static String barplot(List<? extends Number> values, int l) {
-    return barplot(values.stream().mapToDouble(Number::doubleValue).toArray(), l);
-  }
-
-  public static String histogram(List<? extends Number> values, int bins) {
-    double[] vs = values.stream().mapToDouble(Number::doubleValue).toArray();
-    double min = DoubleStream.of(vs).min().orElse(0);
-    double max = DoubleStream.of(vs).max().orElse(0);
-    double[] counts = new double[bins];
-    for (double v : vs) {
-      int i = Math.min((int) Math.floor((v - min) / (max - min) * (double) bins), bins - 1);
-      counts[i] = counts[i] + 1;
-    }
-    return barplot(counts, 0, Arrays.stream(counts).max().orElse(0));
   }
 
 }
