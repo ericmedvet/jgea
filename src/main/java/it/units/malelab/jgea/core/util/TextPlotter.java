@@ -2,6 +2,7 @@ package it.units.malelab.jgea.core.util;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.DoubleStream;
 
 public class TextPlotter {
@@ -10,6 +11,24 @@ public class TextPlotter {
   private static final String HORIZONTAL_PART_FILLER = "▏▎▍▌▋▊▉█";
   private static final char FILLER = '█';
   private static final char EMPTY = '░';
+  private final static Map<String, Character> GRID_MAP = Map.ofEntries(
+      Map.entry("0000", ' '),
+      Map.entry("0010", '▖'),
+      Map.entry("0001", '▗'),
+      Map.entry("1000", '▘'),
+      Map.entry("0100", '▝'),
+      Map.entry("1001", '▚'),
+      Map.entry("0110", '▞'),
+      Map.entry("1010", '▌'),
+      Map.entry("0101", '▐'),
+      Map.entry("0011", '▄'),
+      Map.entry("1100", '▀'),
+      Map.entry("1011", '▙'),
+      Map.entry("0111", '▟'),
+      Map.entry("1110", '▛'),
+      Map.entry("1101", '▜'),
+      Map.entry("1111", '█')
+  );
 
   public TextPlotter() {
   }
@@ -75,6 +94,41 @@ public class TextPlotter {
       counts[i] = counts[i] + 1;
     }
     return barplot(counts, 0, Arrays.stream(counts).max().orElse(0));
+  }
+
+  public static String binaryMap(boolean[][] b, int l) {
+    float bW = b.length;
+    float bH = b.length;
+    float mW = 2 * l;
+    float mH = 2;
+    boolean[][] m = new boolean[(int) mW][(int) mH];
+    for (float mX = 0; mX < mW; mX++) {
+      for (float mY = 0; mY < mH; mY++) {
+        float minX = mX / mW * bW;
+        float maxX = (mX + 1) / mW * bW;
+        float minY = mY / mH * bH;
+        float maxY = (mY + 1) / mH * bH;
+        float w = Math.max(1, Math.round(maxX - minX));
+        float h = Math.max(1, Math.round(maxY - minY));
+        float count = 0;
+        for (int bX = (int) Math.floor(minX); bX < Math.floor(minX + w); bX++) {
+          for (int bY = (int) Math.floor(minY); bY < Math.floor(minY + h); bY++) {
+            count = count + (b[bX][bY] ? 1 : 0);
+          }
+        }
+        m[(int) mX][(int) mY] = count / (w * h) > .5;
+      }
+    }
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < l; i++) {
+      String k = "" +
+          (m[i * 2][1] ? '1' : '0') +
+          (m[i * 2 + 1][1] ? '1' : '0') +
+          (m[i * 2][0] ? '1' : '0') +
+          (m[i * 2 + 1][0] ? '1' : '0');
+      sb.append(GRID_MAP.get(k));
+    }
+    return sb.toString();
   }
 
 }
