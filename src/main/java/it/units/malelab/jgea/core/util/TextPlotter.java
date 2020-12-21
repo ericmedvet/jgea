@@ -98,7 +98,7 @@ public class TextPlotter {
 
   public static String binaryMap(boolean[][] b, int l) {
     float bW = b.length;
-    float bH = b.length;
+    float bH = b[0].length;
     float mW = 2 * l;
     float mH = 2;
     boolean[][] m = new boolean[(int) mW][(int) mH];
@@ -111,8 +111,8 @@ public class TextPlotter {
         float w = Math.max(1, Math.round(maxX - minX));
         float h = Math.max(1, Math.round(maxY - minY));
         float count = 0;
-        for (int bX = (int) Math.floor(minX); bX < Math.floor(minX + w); bX++) {
-          for (int bY = (int) Math.floor(minY); bY < Math.floor(minY + h); bY++) {
+        for (int bX = (int) Math.floor(minX); bX < (int) Math.floor(minX + w); bX++) {
+          for (int bY = (int) Math.floor(minY); bY < (int) Math.floor(minY + h); bY++) {
             count = count + (b[bX][bY] ? 1 : 0);
           }
         }
