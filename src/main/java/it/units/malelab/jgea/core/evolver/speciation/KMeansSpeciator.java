@@ -71,6 +71,9 @@ public class KMeansSpeciator<G, S, F> implements Speciator<Individual<G, S, F>> 
     Collection<ClusterableIndividual> points = population.all().stream()
         .map(ClusterableIndividual::new)
         .collect(Collectors.toList());
+    if (points.stream().mapToInt(p -> p.getPoint().length).distinct().count() != 1) {
+      throw new RuntimeException("all points to be clustered must have same length");
+    }
     List<CentroidCluster<ClusterableIndividual>> clusters = kMeans.cluster(points);
     List<ClusterableIndividual> representers = clusters.stream().map(c -> {
       ClusterableIndividual closest = c.getPoints().get(0);
