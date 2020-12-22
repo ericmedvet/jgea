@@ -23,6 +23,7 @@ import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversityEvolver;
+import it.units.malelab.jgea.core.evolver.speciation.KMeansSpeciator;
 import it.units.malelab.jgea.core.evolver.speciation.LazySpeciator;
 import it.units.malelab.jgea.core.evolver.speciation.SpeciatedEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
@@ -55,6 +56,7 @@ import it.units.malelab.jgea.representation.graph.numeric.operatorgraph.Operator
 import it.units.malelab.jgea.representation.graph.numeric.operatorgraph.OperatorNode;
 import it.units.malelab.jgea.representation.graph.numeric.operatorgraph.ShallowFactory;
 import it.units.malelab.jgea.representation.tree.*;
+import org.apache.commons.math3.ml.clustering.KMeansPlusPlusClusterer;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -324,7 +326,31 @@ public class SymbolicRegressionComparison extends Worker {
             nPop,
             true
         )),
-        Map.entry("fgraph-lim-speciated-noxover", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
+        Map.entry("fgraph-lim-speciated-noxover-kmeans", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
+                    FunctionGraph.builder()
+                            .andThen(MathUtils.fromMultivariateBuilder())
+                            .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                    new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
+                    PartialComparator.from(Double.class).comparing(Individual::getFitness),
+                    nPop,
+                    Map.of(
+                            new NodeAddition<Node, Double>(
+                                    FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
+                                    (w, r) -> w,
+                                    (w, r) -> r.nextGaussian()
+                            ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                            new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
+                            new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
+                            new ArcRemoval<Node, Double>(
+                                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                            ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
+                    ),
+                    5,
+                    new KMeansSpeciator<Graph<Node, Double>, RealFunction, Double>(5, 1000, (x, y) -> (new Jaccard()).on(a -> new HashSet<>(Collections.singletonList(a))).apply(x, y),
+                            i -> i.getGenotype().nodes().stream().mapToDouble(Node::getIndex).toArray()),
+                    0.75
+            )),
+            Map.entry("fgraph-lim-speciated-noxover", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
