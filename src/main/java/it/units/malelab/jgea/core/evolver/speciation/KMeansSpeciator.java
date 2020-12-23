@@ -77,7 +77,6 @@ public class KMeansSpeciator<G, S, F> implements Speciator<Individual<G, S, F>> 
 
   @Override
   public Collection<Species<Individual<G, S, F>>> speciate(PartiallyOrderedCollection<Individual<G, S, F>> population) {
-    System.out.println("start");
     Collection<ClusterableIndividual> points = population.all().stream()
         .map(ClusterableIndividual::new)
         .collect(Collectors.toList());
@@ -102,7 +101,6 @@ public class KMeansSpeciator<G, S, F> implements Speciator<Individual<G, S, F>> 
       }
       return closest;
     }).collect(Collectors.toList());
-    System.out.println("end");
     return IntStream.range(0, clusters.size())
         .mapToObj(i -> new Species<>(
             clusters.get(i).getPoints().stream()
