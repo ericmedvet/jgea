@@ -64,7 +64,7 @@ public class KMeansSpeciator<G, S, F> implements Speciator<Individual<G, S, F>> 
   public KMeansSpeciator(int k, int maxIterations, Distance<double[]> distance, Function<Individual<G, S, F>, double[]> converter) {
     if (k != -1) {
       this.kMeans = new KMeansPlusPlusClusterer<>(
-              2,
+              k,
               maxIterations,
               (DistanceMeasure) distance::apply
       );
