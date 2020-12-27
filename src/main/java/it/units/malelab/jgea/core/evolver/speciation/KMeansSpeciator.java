@@ -138,13 +138,16 @@ public class KMeansSpeciator<G, S, F> implements Speciator<Individual<G, S, F>> 
     }
     double maxSilhouette = Double.NEGATIVE_INFINITY;
     List<CentroidCluster<ClusterableIndividual>> clusters = new ArrayList<>();
+    List<CentroidCluster<ClusterableIndividual>> result = new ArrayList<>();
     for (int nClusters=1; nClusters < Math.min(13, points.size()); ++nClusters) {
-      List<CentroidCluster<ClusterableIndividual>> result = (new KMeansPlusPlusClusterer<ClusterableIndividual>(nClusters, maxIterations, (DistanceMeasure) distance::apply)).cluster(points);
+      result.addAll((new KMeansPlusPlusClusterer<ClusterableIndividual>(nClusters, maxIterations, (DistanceMeasure) distance::apply)).cluster(points));
       double silhouette = computeSilhouette(result, points.size());
       if (silhouette > maxSilhouette) {
+        clusters.clear();
         maxSilhouette = silhouette;
-        clusters = result;
+        clusters.addAll(result);
       }
+      result.clear();
     }
     return clusters;
   }
