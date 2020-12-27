@@ -138,7 +138,7 @@ public class KMeansSpeciator<G, S, F> implements Speciator<Individual<G, S, F>> 
     }
     double maxSilhouette = Double.NEGATIVE_INFINITY;
     List<CentroidCluster<ClusterableIndividual>> clusters = new ArrayList<>();
-    for (int nClusters=2; nClusters < 10; ++nClusters) {
+    for (int nClusters=1; nClusters < Math.min(13, points.size()); ++nClusters) {
       List<CentroidCluster<ClusterableIndividual>> result = (new KMeansPlusPlusClusterer<ClusterableIndividual>(nClusters, maxIterations, (DistanceMeasure) distance::apply)).cluster(points);
       double silhouette = computeSilhouette(result, points.size());
       if (silhouette > maxSilhouette) {
@@ -151,19 +151,16 @@ public class KMeansSpeciator<G, S, F> implements Speciator<Individual<G, S, F>> 
 
   private double computeSilhouette(List<CentroidCluster<ClusterableIndividual>> clusters, int n) {
     double[] s = new double[n];
-    Map<double[], List<double[]>> points = clusters.stream().collect(Collectors.toMap(c -> c.getCenter().getPoint(),
-            c -> c.getPoints().stream().map(Clusterable::getPoint).collect(Collectors.toList())));
     int k = 0;
-    double a, b;
-    for (Map.Entry<double[], List<double[]>> entry : points.entrySet()) {
-      List<double[]> cluster = entry.getValue();
-      for (double[] point : cluster) {
-        if (cluster.size() == 1) {
+    for (CentroidCluster<ClusterableIndividual> cluster : clusters) {
+      double[][] points = cluster.getPoints().stream().map(Clusterable::getPoint).toArray(double[][]::new);
+      for (double[] point : points) {
+        if (points.length == 1) {
           s[k++] = 0.0;
           continue;
         }
-        a = cluster.stream().filter(p -> System.identityHashCode(p) != System.identityHashCode(point)).mapToDouble(p -> distance.apply(p, point)).average().getAsDouble();
-        b = points.entrySet().stream().filter(e -> System.identityHashCode(e.getKey()) != System.identityHashCode(entry.getKey())).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> distance.apply(p, point)).average().getAsDouble()).min().getAsDouble();
+        double a = Arrays.stream(points).filter(p -> p != point).mapToDouble(p -> distance.apply(p, point)).average().getAsDouble();
+        double b = clusters.stream().filter(c -> c != cluster).mapToDouble(c -> c.getPoints().stream().mapToDouble(ci -> distance.apply(ci.getPoint(), point)).average().orElse(0.0)).min().orElse(0.0);
         if (a < b) {
           s[k++] = 1.0 - (a / b);
         }
