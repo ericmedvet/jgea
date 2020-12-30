@@ -37,6 +37,7 @@ import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.distance.Jaccard;
+import it.units.malelab.jgea.distance.LNorm;
 import it.units.malelab.jgea.problem.symbolicregression.*;
 import it.units.malelab.jgea.problem.symbolicregression.element.Constant;
 import it.units.malelab.jgea.problem.symbolicregression.element.Element;
@@ -106,8 +107,8 @@ public class SymbolicRegressionComparison extends Worker {
     List<SymbolicRegressionProblem> problems = List.of(
         new Nguyen7(metric, 1),
         new Keijzer6(metric),
-        new Polynomial4(metric),
-        new Pagie1(metric)
+        new Polynomial4(metric)//,
+        // new Pagie1(metric)
     );
     MultiFileListenerFactory<Object, RealFunction, Double> listenerFactory = new MultiFileListenerFactory<>(
         a("dir", "."),
@@ -346,7 +347,7 @@ public class SymbolicRegressionComparison extends Worker {
                             ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
                     ),
                     5,
-                    new KMeansSpeciator<Graph<Node, Double>, RealFunction, Double>(5, 1000, (x, y) -> (new Jaccard()).on(a -> new HashSet<>(Collections.singletonList(a))).apply(x, y),
+                    new KMeansSpeciator<Graph<Node, Double>, RealFunction, Double>(5, 300, (x, y) -> (new Jaccard()).on(a -> new HashSet<>(Collections.singletonList(a))).apply(x, y),
                             i -> i.getGenotype().nodes().stream().mapToDouble(Node::getIndex).toArray()),
                     0.75
             )),
