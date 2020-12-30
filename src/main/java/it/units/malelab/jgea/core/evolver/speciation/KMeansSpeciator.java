@@ -24,7 +24,10 @@ import org.apache.commons.math3.ml.clustering.Clusterable;
 import org.apache.commons.math3.ml.clustering.KMeansPlusPlusClusterer;
 import org.apache.commons.math3.ml.distance.DistanceMeasure;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -64,9 +67,9 @@ public class KMeansSpeciator<G, S, F> implements Speciator<Individual<G, S, F>> 
   public KMeansSpeciator(int k, int maxIterations, Distance<double[]> distance, Function<Individual<G, S, F>, double[]> converter) {
     if (k != -1) {
       this.kMeans = new KMeansPlusPlusClusterer<>(
-              k,
-              maxIterations,
-              (DistanceMeasure) distance::apply
+          k,
+          maxIterations,
+          (DistanceMeasure) distance::apply
       );
     }
     this.k = k;
@@ -111,25 +114,26 @@ public class KMeansSpeciator<G, S, F> implements Speciator<Individual<G, S, F>> 
   }
 
   private void normalizePoints(Collection<ClusterableIndividual> points) {
-    int length = points.stream().mapToInt(p -> p.getPoint().length).distinct().findAny().getAsInt();
+    int length = points.stream().mapToInt(p -> p.getPoint().length).distinct().findAny().orElse(0);
     double[] maxValues = new double[length];
     double[] minValues = new double[length];
-    for (int i=0; i < length; ++i) {
+    for (int i = 0; i < length; ++i) {
       int finalI = i;
-      maxValues[i] = points.stream().mapToDouble(p -> p.getPoint()[finalI]).max().getAsDouble();
-      minValues[i] = points.stream().mapToDouble(p -> p.getPoint()[finalI]).min().getAsDouble();
+      maxValues[i] = points.stream().mapToDouble(p -> p.getPoint()[finalI]).max().orElse(1d);
+      minValues[i] = points.stream().mapToDouble(p -> p.getPoint()[finalI]).min().orElse(0d);
     }
-    points.forEach(p -> {double[] oldPoint = p.getPoint();
+    points.forEach(p -> {
+      double[] oldPoint = p.getPoint();
       double[] temp = new double[length];
-      for (int i=0; i < length; ++i) {
+      for (int i = 0; i < length; ++i) {
         if (maxValues[i] - minValues[i] == 0.0) {
           temp[i] = 1.0;
-        }
-        else {
+        } else {
           temp[i] = (oldPoint[i] - minValues[i]) / (maxValues[i] - minValues[i]);
         }
       }
-      p.setPoint(temp);});
+      p.setPoint(temp);
+    });
   }
 
   private List<CentroidCluster<ClusterableIndividual>> clusterPoints(Collection<ClusterableIndividual> points) {
@@ -139,7 +143,7 @@ public class KMeansSpeciator<G, S, F> implements Speciator<Individual<G, S, F>> 
     double maxSilhouette = Double.NEGATIVE_INFINITY;
     List<CentroidCluster<ClusterableIndividual>> clusters = new ArrayList<>();
     List<CentroidCluster<ClusterableIndividual>> result = new ArrayList<>();
-    for (int nClusters=1; nClusters < Math.min(13, points.size()); ++nClusters) {
+    for (int nClusters = 1; nClusters < Math.min(13, points.size()); ++nClusters) {
       result.addAll((new KMeansPlusPlusClusterer<ClusterableIndividual>(nClusters, maxIterations, (DistanceMeasure) distance::apply)).cluster(points));
       double silhouette = computeSilhouette(result, points.size());
       if (silhouette > maxSilhouette) {
@@ -166,16 +170,14 @@ public class KMeansSpeciator<G, S, F> implements Speciator<Individual<G, S, F>> 
         double b = clusters.stream().filter(c -> c != cluster).mapToDouble(c -> c.getPoints().stream().mapToDouble(ci -> distance.apply(ci.getPoint(), point)).average().orElse(0.0)).min().orElse(0.0);
         if (a < b) {
           s[k++] = 1.0 - (a / b);
-        }
-        else if (a == b) {
+        } else if (a == b) {
           s[k++] = 0.0;
-        }
-        else {
+        } else {
           s[k++] = (b / a) - 1.0;
         }
       }
     }
-    return Arrays.stream(s).average().getAsDouble();
+    return Arrays.stream(s).average().orElse(0);
   }
 
 }
