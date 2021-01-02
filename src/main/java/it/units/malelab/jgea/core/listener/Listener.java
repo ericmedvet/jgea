@@ -16,6 +16,7 @@
 
 package it.units.malelab.jgea.core.listener;
 
+import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -26,23 +27,46 @@ public interface Listener<G, S, F> {
 
   void listen(Event<? extends G, ? extends S, ? extends F> event);
 
+  default void listenLast(Collection<? extends S> solutions) {
+  }
+
   static Listener<Object, Object, Object> deaf() {
     return event -> {
     };
   }
 
   default Listener<G, S, F> then(Listener<? super G, ? super S, ? super F> other) {
-    return (Event<? extends G, ? extends S, ? extends F> event) -> {
-      listen(event);
-      other.listen(event);
+    Listener<G, S, F> thisListener = this;
+    return new Listener<>() {
+      @Override
+      public void listen(Event<? extends G, ? extends S, ? extends F> event) {
+        thisListener.listen(event);
+        other.listen(event);
+      }
+
+      @Override
+      public void listenLast(Collection<? extends S> solutions) {
+        thisListener.listenLast(solutions);
+        other.listenLast(solutions);
+      }
     };
   }
 
   static <G1, S1, F1> Listener<G1, S1, F1> onExecutor(final Listener<G1, S1, F1> listener, final ExecutorService executor) {
-    return (final Event<? extends G1, ? extends S1, ? extends F1> event) -> {
-      executor.submit(() -> {
-        listener.listen(event);
-      });
+    return new Listener<>() {
+      @Override
+      public void listen(Event<? extends G1, ? extends S1, ? extends F1> event) {
+        executor.submit(() -> {
+          listener.listen(event);
+        });
+      }
+
+      @Override
+      public void listenLast(Collection<? extends S1> solutions) {
+        executor.submit(() -> {
+          listener.listenLast(solutions);
+        });
+      }
     };
   }
 
