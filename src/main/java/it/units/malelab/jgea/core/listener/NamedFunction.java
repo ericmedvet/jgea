@@ -1,4 +1,4 @@
-package it.units.malelab.jgea.core.listener.collector2;
+package it.units.malelab.jgea.core.listener;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;

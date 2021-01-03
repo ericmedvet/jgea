@@ -22,11 +22,8 @@ import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.evolver.*;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.evolver.stopcondition.TargetFitness;
-import it.units.malelab.jgea.core.listener.Event;
-import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.core.listener.*;
 import it.units.malelab.jgea.core.listener.collector.*;
-import it.units.malelab.jgea.core.listener.collector2.NamedFunction;
-import it.units.malelab.jgea.core.listener.collector2.TableListener;
 import it.units.malelab.jgea.core.order.ParetoDominance;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.selector.Tournament;
@@ -63,7 +60,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static it.units.malelab.jgea.core.listener.collector2.NamedFunctions.*;
+import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
 
 /**
  * @author eric
@@ -163,7 +160,11 @@ public class Example extends Worker {
         birthIteration().of(best()),
         solution().reformat("%30.30s").of(best())
     );
-    Listener<Object, Object, Double> listener = Listener.onExecutor(new TableListener<>(functions, System.out, 10, true), executorService);
+    Listener<Object, Object, Double> listener = Listener.onExecutor(
+        new TableListener<>(functions, System.out, 10, true)
+            .then(new CSVListener<>(functions, new File("/home/eric/example.csv"))),
+        executorService
+    );
     List<Evolver<BitString, BitString, Double>> evolvers = List.of(
         new RandomSearch<>(
             Function.identity(),
@@ -216,7 +217,7 @@ public class Example extends Worker {
             executorService,
             listener
         );
-        listener.listenLast(solutions);
+        listener.listenSolutions(solutions);
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
       } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();

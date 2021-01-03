@@ -27,7 +27,10 @@ public interface Listener<G, S, F> {
 
   void listen(Event<? extends G, ? extends S, ? extends F> event);
 
-  default void listenLast(Collection<? extends S> solutions) {
+  default void listenSolutions(Collection<? extends S> solutions) {
+  }
+
+  default void shutdown() {
   }
 
   static Listener<Object, Object, Object> deaf() {
@@ -45,9 +48,9 @@ public interface Listener<G, S, F> {
       }
 
       @Override
-      public void listenLast(Collection<? extends S> solutions) {
-        thisListener.listenLast(solutions);
-        other.listenLast(solutions);
+      public void listenSolutions(Collection<? extends S> solutions) {
+        thisListener.listenSolutions(solutions);
+        other.listenSolutions(solutions);
       }
     };
   }
@@ -62,9 +65,9 @@ public interface Listener<G, S, F> {
       }
 
       @Override
-      public void listenLast(Collection<? extends S1> solutions) {
+      public void listenSolutions(Collection<? extends S1> solutions) {
         executor.submit(() -> {
-          listener.listenLast(solutions);
+          listener.listenSolutions(solutions);
         });
       }
     };

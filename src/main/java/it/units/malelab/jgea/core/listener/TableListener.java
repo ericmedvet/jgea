@@ -1,7 +1,5 @@
-package it.units.malelab.jgea.core.listener.collector2;
+package it.units.malelab.jgea.core.listener;
 
-import it.units.malelab.jgea.core.listener.Event;
-import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.util.Pair;
 
 import java.io.PrintStream;
@@ -113,7 +111,7 @@ public class TableListener<G, S, F> implements Listener<G, S, F> {
   }
 
   @Override
-  public void listenLast(Collection<? extends S> solutions) {
+  public void listenSolutions(Collection<? extends S> solutions) {
     synchronized (ps) {
       lineCounter = 0;
     }

@@ -1,9 +1,7 @@
-package it.units.malelab.jgea.core.listener.collector2;
+package it.units.malelab.jgea.core.listener;
 
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.Evolver;
-import it.units.malelab.jgea.core.listener.Event;
-import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.collector.IndividualBasicInfo;
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
 import it.units.malelab.jgea.core.order.PartialComparator;
@@ -18,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author eric on 2021/01/02 for jgea
@@ -112,6 +109,14 @@ public class NamedFunctions {
     return function::apply;
   }
 
+  public static <F, T> NamedFunction<F, T> f(String name, String format, Map<String, Function<F, T>> functions) {
+    return NamedFunction.build(
+        name,
+        format,
+        f -> functions.get(name).apply(f)
+    );
+  }
+
   public static NamedFunction<Collection<?>, Double> uniqueness() {
     return NamedFunction.build(
         "uniqueness",
@@ -169,7 +174,7 @@ public class NamedFunctions {
     return constant(name, "%" + l + "." + l + "s", value);
   }
 
-  public static <G, S, F, T> NamedFunction<Event<? extends G, ? extends S, ? extends F>, T> constant(String name, String format, Map<String,T> values) {
+  public static <G, S, F, T> NamedFunction<Event<? extends G, ? extends S, ? extends F>, T> constant(String name, String format, Map<String, T> values) {
     return NamedFunction.build(
         name,
         format,

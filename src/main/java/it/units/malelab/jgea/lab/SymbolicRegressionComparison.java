@@ -27,9 +27,10 @@ import it.units.malelab.jgea.core.evolver.speciation.KMeansSpeciator;
 import it.units.malelab.jgea.core.evolver.speciation.LazySpeciator;
 import it.units.malelab.jgea.core.evolver.speciation.SpeciatedEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
+import it.units.malelab.jgea.core.listener.Event;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.MultiFileListenerFactory;
-import it.units.malelab.jgea.core.listener.collector.*;
+import it.units.malelab.jgea.core.listener.NamedFunction;
+import it.units.malelab.jgea.core.listener.TableListener;
 import it.units.malelab.jgea.core.operator.Crossover;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.order.PartialComparator;
@@ -37,7 +38,6 @@ import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.distance.Jaccard;
-import it.units.malelab.jgea.distance.LNorm;
 import it.units.malelab.jgea.problem.symbolicregression.*;
 import it.units.malelab.jgea.problem.symbolicregression.element.Constant;
 import it.units.malelab.jgea.problem.symbolicregression.element.Element;
@@ -57,7 +57,6 @@ import it.units.malelab.jgea.representation.graph.numeric.operatorgraph.Operator
 import it.units.malelab.jgea.representation.graph.numeric.operatorgraph.OperatorNode;
 import it.units.malelab.jgea.representation.graph.numeric.operatorgraph.ShallowFactory;
 import it.units.malelab.jgea.representation.tree.*;
-import org.apache.commons.math3.ml.clustering.KMeansPlusPlusClusterer;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -66,6 +65,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
 import static it.units.malelab.jgea.core.util.Args.i;
 import static it.units.malelab.jgea.core.util.Args.ri;
 
@@ -110,10 +110,31 @@ public class SymbolicRegressionComparison extends Worker {
         new Polynomial4(metric)//,
         // new Pagie1(metric)
     );
-    MultiFileListenerFactory<Object, RealFunction, Double> listenerFactory = new MultiFileListenerFactory<>(
-        a("dir", "."),
-        a("file", null)
+    //listeners
+    Map<String, String> keys = new HashMap<>();
+    Map<String, Function<RealFunction, Double>> validation = new HashMap<>();
+    List<NamedFunction<Event<?, ? extends RealFunction, ? extends Double>, ?>> functions = List.of(
+        constant("seed", "%2.2s", keys),
+        constant("problem", "%10.10s", keys),
+        constant("evolver", "%20.20s", keys),
+        iterations(),
+        births(),
+        elapsedSeconds(),
+        size().of(all()),
+        size().of(firsts()),
+        size().of(lasts()),
+        uniqueness().of(map(genotype())).of(all()),
+        uniqueness().of(map(solution())).of(all()),
+        uniqueness().of(map(fitness())).of(all()),
+        hist(8).of(map(fitness())).of(all()),
+        size().of(genotype()).of(best()),
+        size().of(solution()).of(best()),
+        birthIteration().of(best()),
+        fitness().reformat("%5.3f").of(best()),
+        f("validation", "%5.3f", validation).of(solution()).of(best()),
+        solution().reformat("%30.30s").of(best())
     );
+    Listener<Object, RealFunction, Double> listener = Listener.onExecutor(new TableListener<>(functions, System.out, 10, true), executorService);
     Map<String, Function<SymbolicRegressionProblem, Evolver<?, RealFunction, Double>>> evolvers = new TreeMap<>(Map.ofEntries(
         Map.entry("tree-ga", p -> {
           IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
@@ -328,30 +349,30 @@ public class SymbolicRegressionComparison extends Worker {
             true
         )),
         Map.entry("fgraph-lim-speciated-noxover-kmeans", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
-                    FunctionGraph.builder()
-                            .andThen(MathUtils.fromMultivariateBuilder())
-                            .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-                    new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-                    PartialComparator.from(Double.class).comparing(Individual::getFitness),
-                    nPop,
-                    Map.of(
-                            new NodeAddition<Node, Double>(
-                                    FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
-                                    (w, r) -> w,
-                                    (w, r) -> r.nextGaussian()
-                            ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
-                            new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
-                            new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                            new ArcRemoval<Node, Double>(
-                                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
-                            ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
-                    ),
-                    5,
-                    new KMeansSpeciator<Graph<Node, Double>, RealFunction, Double>(5, 300, (x, y) -> (new Jaccard()).on(a -> new HashSet<>(Collections.singletonList(a))).apply(x, y),
-                            i -> i.getGenotype().nodes().stream().mapToDouble(Node::getIndex).toArray()),
-                    0.75
-            )),
-            Map.entry("fgraph-lim-speciated-noxover", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
+            FunctionGraph.builder()
+                .andThen(MathUtils.fromMultivariateBuilder())
+                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
+            PartialComparator.from(Double.class).comparing(Individual::getFitness),
+            nPop,
+            Map.of(
+                new NodeAddition<Node, Double>(
+                    FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
+                    (w, r) -> w,
+                    (w, r) -> r.nextGaussian()
+                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
+                new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
+                new ArcRemoval<Node, Double>(
+                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
+            ),
+            5,
+            new KMeansSpeciator<Graph<Node, Double>, RealFunction, Double>(5, 300, (x, y) -> (new Jaccard()).on(a -> new HashSet<>(Collections.singletonList(a))).apply(x, y),
+                i -> i.getGenotype().nodes().stream().mapToDouble(Node::getIndex).toArray()),
+            0.75
+        )),
+        Map.entry("fgraph-lim-speciated-noxover", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
@@ -835,27 +856,12 @@ public class SymbolicRegressionComparison extends Worker {
     //run
     for (int seed : seeds) {
       for (SymbolicRegressionProblem problem : problems) {
+        validation.put("validation", problem.getValidationFunction());
         for (Map.Entry<String, Function<SymbolicRegressionProblem, Evolver<?, RealFunction, Double>>> evolverEntry : evolvers.entrySet()) {
-          Map<String, String> keys = new TreeMap<>(Map.of(
-              "seed", Integer.toString(seed),
-              "problem", problem.getClass().getSimpleName().toLowerCase(),
-              "evolver", evolverEntry.getKey()
-          ));
+          keys.put("seed", Integer.toString(seed));
+          keys.put("problem", problem.getClass().getSimpleName().toLowerCase());
+          keys.put("evolver", evolverEntry.getKey());
           try {
-            List<DataCollector<? super Object, ? super RealFunction, ? super Double>> collectors = List.of(
-                new Static(keys),
-                new Basic(),
-                new Population(),
-                new PopulationHistograms(),
-                new Diversity(),
-                new BestInfo("%7.5f"),
-                new FunctionOfOneBest<>(i -> List.of(new Item(
-                    "validation.fitness",
-                    problem.getValidationFunction().apply(i.getSolution()),
-                    "%7.5f"
-                ))),
-                new BestPrinter(BestPrinter.Part.SOLUTION, "%80.80s")
-            );
             Stopwatch stopwatch = Stopwatch.createStarted();
             Evolver<?, RealFunction, Double> evolver = evolverEntry.getValue().apply(problem);
             L.info(String.format("Starting %s", keys));
@@ -864,10 +870,9 @@ public class SymbolicRegressionComparison extends Worker {
                 new Iterations(nIterations),
                 new Random(seed),
                 executorService,
-                Listener.onExecutor((listenerFactory.getBaseFileName() == null) ?
-                        listener(collectors) :
-                        listenerFactory.build(collectors)
-                    , executorService));
+                listener
+            );
+            listener.listenSolutions(solutions);
             L.info(String.format("Done %s: %d solutions in %4.1fs",
                 keys,
                 solutions.size(),
