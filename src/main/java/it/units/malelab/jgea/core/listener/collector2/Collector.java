@@ -58,7 +58,7 @@ public interface Collector<G, S, F, O> extends Function<Event<? extends G, ? ext
     };
   }
 
-  public static void main(String[] args) {
+  static void main(String[] args) {
     List<Collector<?,?,?,?>> collectors = List.of(
       new Iterations(),
       new ElapsedSeconds(),
