@@ -182,6 +182,15 @@ public class NamedFunctions {
     );
   }
 
+  @SuppressWarnings("unchecked")
+  public static <T>  NamedFunction<Object, T> as(Class<T> clazz) {
+    return NamedFunction.build(
+        "as["+clazz.getSimpleName()+"]",
+        "%s",
+        o -> (T)o
+    );
+  }
+
   public static void main(String[] args) {
     Random random = new Random(1);
     List<List<Double>> genotypes = new FixedLengthListFactory<>(2, new UniformDoubleFactory(0, 1)).build(100, random);

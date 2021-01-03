@@ -22,8 +22,12 @@ import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.evolver.*;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.evolver.stopcondition.TargetFitness;
-import it.units.malelab.jgea.core.listener.*;
+import it.units.malelab.jgea.core.listener.Event;
+import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.core.listener.NamedFunction;
+import it.units.malelab.jgea.core.listener.TableListener;
 import it.units.malelab.jgea.core.listener.collector.*;
+import it.units.malelab.jgea.core.listener.telegram.TelegramListener;
 import it.units.malelab.jgea.core.order.ParetoDominance;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.selector.Tournament;
@@ -162,7 +166,15 @@ public class Example extends Worker {
     );
     Listener<Object, Object, Double> listener = Listener.onExecutor(
         new TableListener<>(functions, System.out, 10, true)
-            .then(new CSVListener<>(functions, new File("/home/eric/example.csv"))),
+            //.then(new CSVListener<>(functions, new File("/home/eric/example.csv")))
+            .then(new TelegramListener<>(
+                "xxx", 207490209,
+                functions,
+                List.of(
+                    TelegramListener.xy(iterations(), as(Double.class).of(fitness()).of(best()))
+                ),
+                List.of()
+            )),
         executorService
     );
     List<Evolver<BitString, BitString, Double>> evolvers = List.of(
@@ -207,6 +219,7 @@ public class Example extends Worker {
             100
         )
     );
+    evolvers = evolvers.subList(2, 4);
     for (Evolver<BitString, BitString, Double> evolver : evolvers) {
       keys.put("evolver", evolver.getClass().getSimpleName());
       try {
