@@ -22,9 +22,11 @@ import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.evolver.*;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.evolver.stopcondition.TargetFitness;
+import it.units.malelab.jgea.core.listener.Event;
 import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.PrintStreamListener;
 import it.units.malelab.jgea.core.listener.collector.*;
+import it.units.malelab.jgea.core.listener.collector2.NamedFunction;
+import it.units.malelab.jgea.core.listener.collector2.TableListener;
 import it.units.malelab.jgea.core.order.ParetoDominance;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.selector.Tournament;
@@ -56,13 +58,12 @@ import it.units.malelab.jgea.representation.tree.Tree;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static it.units.malelab.jgea.core.listener.collector2.NamedFunctions.*;
 
 /**
  * @author eric
@@ -79,12 +80,12 @@ public class Example extends Worker {
 
   @Override
   public void run() {
-    //runOneMax();
+    runOneMax();
     //runLinearPoints();
     //runSymbolicRegression();
     //runSymbolicRegressionMO();
     //runGrammarBasedParity();
-    runSphere();
+    //runSphere();
     //runRastrigin();
   }
 
@@ -143,6 +144,26 @@ public class Example extends Worker {
   public void runOneMax() {
     Random r = new Random(1);
     Problem<BitString, Double> p = new OneMax();
+    Map<String, String> keys = new HashMap<>();
+    List<NamedFunction<Event<?, ?, ? extends Double>, ?>> functions = List.of(
+        constant("evolver", "%20.20s", keys),
+        iterations(),
+        births(),
+        elapsedSeconds(),
+        size().of(all()),
+        size().of(firsts()),
+        size().of(lasts()),
+        uniqueness().of(map(genotype())).of(all()),
+        uniqueness().of(map(solution())).of(all()),
+        uniqueness().of(map(fitness())).of(all()),
+        hist(8).of(map(fitness())).of(all()),
+        size().of(genotype()).of(best()),
+        size().of(solution()).of(best()),
+        fitness().reformat("%5.3f").of(best()),
+        birthIteration().of(best()),
+        solution().reformat("%30.30s").of(best())
+    );
+    Listener<Object, Object, Double> listener = Listener.onExecutor(new TableListener<>(functions, System.out, 10, true), executorService);
     List<Evolver<BitString, BitString, Double>> evolvers = List.of(
         new RandomSearch<>(
             Function.identity(),
@@ -186,19 +207,16 @@ public class Example extends Worker {
         )
     );
     for (Evolver<BitString, BitString, Double> evolver : evolvers) {
-      System.out.println(evolver.getClass().getSimpleName());
+      keys.put("evolver", evolver.getClass().getSimpleName());
       try {
         Collection<BitString> solutions = evolver.solve(
             Misc.cached(p.getFitnessFunction(), 10000),
             new TargetFitness<>(0d).or(new Iterations(1000)),
             r,
             executorService,
-            listener(List.of(
-                new Basic(),
-                new Population(),
-                new BestInfo("%5.3f"),
-                new BestPrinter(BestPrinter.Part.GENOTYPE)
-            )));
+            listener
+        );
+        listener.listenLast(solutions);
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
       } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();

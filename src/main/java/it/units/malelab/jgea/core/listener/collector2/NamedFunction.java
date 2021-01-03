@@ -1,0 +1,135 @@
+package it.units.malelab.jgea.core.listener.collector2;
+
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
+/**
+ * @author eric on 2021/01/02 for jgea
+ */
+@FunctionalInterface
+public interface NamedFunction<F, T> extends Function<F, T> {
+
+  BiFunction<String, String, String> NAME_COMPOSER = (after, before) -> before + "→" + after;
+
+  default String getFormat() {
+    return "%s";
+  }
+
+  default String getName() {
+    return getClass().getSimpleName();
+  }
+
+  default <V> NamedFunction<V, T> of(NamedFunction<? super V, ? extends F> before) {
+    NamedFunction<F, T> thisNamedFunction = this;
+    return new NamedFunction<>() {
+      @Override
+      public String getFormat() {
+        return thisNamedFunction.getFormat();
+      }
+
+      @Override
+      public String getName() {
+        return NAME_COMPOSER.apply(thisNamedFunction.getName(), before.getName());
+      }
+
+      @Override
+      public T apply(V v) {
+        return thisNamedFunction.apply(before.apply(v));
+      }
+    };
+  }
+
+  default <V> NamedFunction<F, V> then(NamedFunction<? super T, ? extends V> after) {
+    NamedFunction<F, T> thisNamedFunction = this;
+    return new NamedFunction<>() {
+      @Override
+      public String getFormat() {
+        return after.getFormat();
+      }
+
+      @Override
+      public String getName() {
+        return NAME_COMPOSER.apply(after.getName(), thisNamedFunction.getName());
+      }
+
+      @Override
+      public V apply(F f) {
+        return after.apply(thisNamedFunction.apply(f));
+      }
+    };
+  }
+
+  static <F, T> NamedFunction<F, T> build(String name, String format, Function<F, T> function) {
+    return new NamedFunction<F, T>() {
+      @Override
+      public String getFormat() {
+        return format;
+      }
+
+      @Override
+      public String getName() {
+        return name;
+      }
+
+      @Override
+      public T apply(F f) {
+        return function.apply(f);
+      }
+    };
+  }
+
+  default NamedFunction<F, T> rename(String name) {
+    NamedFunction<F, T> thisNamedFunction = this;
+    return new NamedFunction<F, T>() {
+      @Override
+      public String getFormat() {
+        return thisNamedFunction.getFormat();
+      }
+
+      @Override
+      public String getName() {
+        return name;
+      }
+
+      @Override
+      public T apply(F f) {
+        return thisNamedFunction.apply(f);
+      }
+    };
+  }
+
+  default NamedFunction<F, T> reformat(String format) {
+    NamedFunction<F, T> thisNamedFunction = this;
+    return new NamedFunction<>() {
+      @Override
+      public String getFormat() {
+        return format;
+      }
+
+      @Override
+      public String getName() {
+        return thisNamedFunction.getName();
+      }
+
+      @Override
+      public T apply(F f) {
+        return thisNamedFunction.apply(f);
+      }
+    };
+  }
+
+  static String name(Function<?, ?> function) {
+    if (function instanceof NamedFunction<?, ?>) {
+      return ((NamedFunction<?, ?>) function).getName();
+    }
+    return function.getClass().getSimpleName();
+  }
+
+  static String format(Function<?, ?> function) {
+    if (function instanceof NamedFunction<?, ?>) {
+      return ((NamedFunction<?, ?>) function).getFormat();
+    }
+    return "%s";
+  }
+
+}
