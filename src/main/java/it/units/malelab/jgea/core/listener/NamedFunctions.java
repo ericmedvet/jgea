@@ -2,19 +2,14 @@ package it.units.malelab.jgea.core.listener;
 
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.Evolver;
-import it.units.malelab.jgea.core.listener.collector.IndividualBasicInfo;
-import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
-import it.units.malelab.jgea.core.order.PartialComparator;
-import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.util.Misc;
+import it.units.malelab.jgea.core.util.Pair;
+import it.units.malelab.jgea.core.util.Sized;
 import it.units.malelab.jgea.core.util.TextPlotter;
-import it.units.malelab.jgea.representation.sequence.FixedLengthListFactory;
-import it.units.malelab.jgea.representation.sequence.numeric.UniformDoubleFactory;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.function.Function;
 
 /**
@@ -158,7 +153,7 @@ public class NamedFunctions {
   }
 
   public static NamedFunction<Object, Number> size() {
-    return NamedFunction.build("size", "%3d", IndividualBasicInfo::size);
+    return NamedFunction.build("size", "%3d", NamedFunctions::size);
   }
 
   public static <G, S, F, T> NamedFunction<Event<? extends G, ? extends S, ? extends F>, T> constant(String name, String format, T value) {
@@ -183,55 +178,34 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unchecked")
-  public static <T>  NamedFunction<Object, T> as(Class<T> clazz) {
+  public static <T> NamedFunction<Object, T> as(Class<T> clazz) {
     return NamedFunction.build(
-        "as["+clazz.getSimpleName()+"]",
+        "as[" + clazz.getSimpleName() + "]",
         "%s",
-        o -> (T)o
+        o -> (T) o
     );
   }
 
-  public static void main(String[] args) {
-    Random random = new Random(1);
-    List<List<Double>> genotypes = new FixedLengthListFactory<>(2, new UniformDoubleFactory(0, 1)).build(100, random);
-    List<Individual<List<Double>, String, Double>> individuals = genotypes.stream()
-        .map(g -> new Individual<>(
-            g,
-            String.format("%3.1f;%3.1f", g.get(0), g.get(1)),
-            g.get(0) + g.get(1),
-            0
-        ))
-        .collect(java.util.stream.Collectors.toList());
-    PartiallyOrderedCollection<Individual<List<Double>, String, Double>> poc = new DAGPartiallyOrderedCollection<>(
-        PartialComparator.from(Double.class).comparing(Individual::getFitness)
-    );
-    individuals.forEach(poc::add);
-    Event<List<Double>, String, Double> event = new Event<>(new Evolver.State(1, individuals.size(), individuals.size(), 1050), poc);
-
-    Listener<Object, Object, Double> l = listener(List.of(
-        iterations(),
-        elapsedSeconds(),
-        size().of(all()),
-        size().of(firsts()),
-        size().of(solution()).of(best()),
-        f((Function<Individual<?, ?, ?>, Integer>) Individual::getBirthIteration).of(best()),
-        fitness().reformat("%4.2f").of(one()).of(firsts()),
-        birthIteration().of(one()).of(lasts()),
-        uniqueness().of(map(solution())).of(all()),
-        uniqueness().of(map(fitness())).of(all()),
-        uniqueness().of(map(genotype())).of(all()),
-        hist(8).of(map(fitness())).of(all())
-    ));
-    l.listen(event);
-
+  public static Integer size(Object o) {
+    if (o instanceof Sized) {
+      return ((Sized) o).size();
+    }
+    if (o instanceof Collection) {
+      if (Misc.first((Collection<?>) o) instanceof Sized) {
+        return ((Collection<?>) o).stream().mapToInt(i -> ((Sized) i).size()).sum();
+      }
+      return ((Collection<?>) o).size();
+    }
+    if (o instanceof String) {
+      return ((String) o).length();
+    }
+    if (o instanceof Pair) {
+      Integer firstSize = size(((Pair<?, ?>) o).first());
+      Integer secondSize = size(((Pair<?, ?>) o).second());
+      if ((firstSize != null) && (secondSize != null)) {
+        return firstSize + secondSize;
+      }
+    }
+    return null;
   }
-
-  private static <G, S, F> Listener<G, S, F> listener(List<NamedFunction<Event<? extends G, ? extends S, ? extends F>, ?>> funs) {
-    return e -> funs.forEach(collector -> System.out.printf(
-        "%30.30s: " + collector.getFormat() + "%n",
-        collector.getName(),
-        collector.apply(e)
-    ));
-  }
-
 }

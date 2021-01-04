@@ -3,7 +3,7 @@ package it.units.malelab.jgea.core.listener.telegram;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.request.SendPhoto;
-import it.units.malelab.jgea.core.listener.Accumulator;
+import it.units.malelab.jgea.core.listener.Consumer;
 import it.units.malelab.jgea.core.listener.Event;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.NamedFunction;
@@ -24,8 +24,8 @@ import java.util.stream.Collectors;
  */
 public class TelegramListener<G, S, F> implements Listener<G, S, F> {
 
-  public static <G, S, F> Accumulator<G, S, F, String> lastEventPrinter(List<NamedFunction<Event<? extends G, ? extends S, ? extends F>, ?>> functions) {
-    return new Accumulator<>() {
+  public static <G, S, F> Consumer<G, S, F, String> lastEventPrinter(List<NamedFunction<Event<? extends G, ? extends S, ? extends F>, ?>> functions) {
+    return new Consumer<>() {
 
       private Event<? extends G, ? extends S, ? extends F> lastEvent;
 
@@ -34,7 +34,7 @@ public class TelegramListener<G, S, F> implements Listener<G, S, F> {
       }
 
       @Override
-      public String get() {
+      public String produce() {
         return functions.stream()
             .map(f -> String.format(
                 "%s : " + f.getFormat() + "",
@@ -54,7 +54,7 @@ public class TelegramListener<G, S, F> implements Listener<G, S, F> {
   private static final Logger L = Logger.getLogger(TelegramListener.class.getName());
 
   private final long chatId;
-  private final List<Accumulator<G, S, F, ?>> accumulators;
+  private final List<Consumer<G, S, F, ?>> accumulators;
   private final List<Function<Collection<? extends S>, ?>> solutionsProcessors;
 
   private final OkHttpClient client;
@@ -63,7 +63,7 @@ public class TelegramListener<G, S, F> implements Listener<G, S, F> {
   public TelegramListener(
       String botToken,
       long chatId,
-      List<Accumulator<G, S, F, ?>> accumulators,
+      List<Consumer<G, S, F, ?>> accumulators,
       List<Function<Collection<? extends S>, ?>> solutionsProcessors
   ) {
     this.chatId = chatId;
@@ -86,9 +86,9 @@ public class TelegramListener<G, S, F> implements Listener<G, S, F> {
   public void listenSolutions(Collection<? extends S> solutions) {
     List<Object> outcomes = new ArrayList<>();
     //consume accumulators
-    for (Accumulator<G, S, F, ?> accumulator : accumulators) {
+    for (Consumer<G, S, F, ?> accumulator : accumulators) {
       try {
-        outcomes.add(accumulator.get());
+        outcomes.add(accumulator.produce());
       } catch (Throwable e) {
         L.warning(String.format(
             "Cannot get outcome of accumulator %s: %s",
@@ -122,7 +122,7 @@ public class TelegramListener<G, S, F> implements Listener<G, S, F> {
       }
     }
     //clear series
-    accumulators.forEach(Accumulator::clear);
+    accumulators.forEach(Consumer::clear);
   }
 
   private void sendText(String string) {

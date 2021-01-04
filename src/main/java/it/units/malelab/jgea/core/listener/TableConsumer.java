@@ -9,12 +9,12 @@ import java.util.stream.Collectors;
 /**
  * @author eric on 2021/01/04 for jgea
  */
-public class TableAccumulator<G, S, F, O> implements Accumulator<G, S, F, Table<O>> {
+public class TableConsumer<G, S, F, O> implements Consumer<G, S, F, Table<O>> {
 
   private final List<NamedFunction<Event<? extends G, ? extends S, ? extends F>, ? extends O>> functions;
   private final Table<O> table;
 
-  public TableAccumulator(List<NamedFunction<Event<? extends G, ? extends S, ? extends F>, ? extends O>> functions) {
+  public TableConsumer(List<NamedFunction<Event<? extends G, ? extends S, ? extends F>, ? extends O>> functions) {
     this.functions = functions;
     table = new ArrayTable<>(functions.stream().map(NamedFunction::getName).collect(Collectors.toList()));
   }
@@ -25,15 +25,16 @@ public class TableAccumulator<G, S, F, O> implements Accumulator<G, S, F, Table<
   }
 
   @Override
-  public Table<O> get() {
+  public Table<O> produce() {
     return table;
   }
 
   @Override
-  public void listen(Event<? extends G, ? extends S, ? extends F> event) {
+  public void consume(Event<? extends G, ? extends S, ? extends F> event) {
     table.addRow(functions.stream()
         .map(f -> f.apply(event))
         .collect(Collectors.toList())
     );
   }
+
 }

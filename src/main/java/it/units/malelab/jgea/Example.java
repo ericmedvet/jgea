@@ -165,13 +165,13 @@ public class Example extends Worker {
     );
 
 
-    TableAccumulator<Object, Object, Double, Number> fitnessTabler = new TableAccumulator<>(List.of(
+    TableConsumer<Object, Object, Double, Number> fitnessTabler = new TableConsumer<>(List.of(
         iterations(),
         as(Double.class).of(fitness()).of(best())
     ));
 
     Listener<Object, Object, Double> listener = Listener.onExecutor(
-        new TabularListener<>(functions, System.out, 10, false)
+        new TabularPrinter<>(functions, System.out, 10, false)
             //.then(new CSVListener<>(functions, new File("/home/eric/example.csv")))
             .then(new TelegramListener<>(
                 "1462661025:AAFM8n2qRYI_ZylUHvwGUalrX0Bgh1nDEmY", 207490209,

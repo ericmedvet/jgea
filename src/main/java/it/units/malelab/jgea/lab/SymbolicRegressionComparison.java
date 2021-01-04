@@ -30,7 +30,7 @@ import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.listener.Event;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.NamedFunction;
-import it.units.malelab.jgea.core.listener.TabularListener;
+import it.units.malelab.jgea.core.listener.TabularPrinter;
 import it.units.malelab.jgea.core.operator.Crossover;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.order.PartialComparator;
@@ -134,7 +134,7 @@ public class SymbolicRegressionComparison extends Worker {
         f("validation", "%5.3f", validation).of(solution()).of(best()),
         solution().reformat("%30.30s").of(best())
     );
-    Listener<Object, RealFunction, Double> listener = Listener.onExecutor(new TabularListener<>(functions, System.out, 10, true), executorService);
+    Listener<Object, RealFunction, Double> listener = Listener.onExecutor(new TabularPrinter<>(functions, System.out, 10, true), executorService);
     Map<String, Function<SymbolicRegressionProblem, Evolver<?, RealFunction, Double>>> evolvers = new TreeMap<>(Map.ofEntries(
         Map.entry("tree-ga", p -> {
           IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(

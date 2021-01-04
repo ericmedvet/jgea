@@ -3,7 +3,6 @@ package it.units.malelab.jgea.core.listener;
 import it.units.malelab.jgea.core.util.Pair;
 
 import java.io.PrintStream;
-import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,7 +11,7 @@ import java.util.stream.Collectors;
 /**
  * @author eric on 2021/01/03 for jgea
  */
-public class TabularListener<G, S, F> implements Listener<G, S, F> {
+public class TabularPrinter<G, S, F> implements Consumer.Factory<G, S, F, Void> {
 
   private final static String SEP = " ";
   private final static String COLLAPSER_REGEX = "[.→\\[\\]]+";
@@ -24,9 +23,7 @@ public class TabularListener<G, S, F> implements Listener<G, S, F> {
   private final String header;
   private final String legend;
 
-  private int lineCounter;
-
-  public TabularListener(
+  public TabularPrinter(
       List<NamedFunction<Event<? extends G, ? extends S, ? extends F>, ?>> functions,
       PrintStream ps,
       int headerInterval,
@@ -53,7 +50,33 @@ public class TabularListener<G, S, F> implements Listener<G, S, F> {
             p.first().getFormat()
         ))
         .collect(Collectors.joining("\n"));
-    lineCounter = 0;
+  }
+
+  @Override
+  public Consumer<G, S, F, Void> build() {
+    if (legendFlag) {
+      ps.println(legend);
+    }
+    return new Consumer<>() {
+      int lineCounter = 0;
+
+      @Override
+      public void consume(Event<? extends G, ? extends S, ? extends F> event) {
+        String s = pairs.stream()
+            .map(p -> justify(
+                String.format(p.first().getFormat(), p.first().apply(event)),
+                p.second()
+            ))
+            .collect(Collectors.joining(SEP));
+        synchronized (ps) {
+          if (headerInterval > 1 && (lineCounter % headerInterval == 0)) {
+            ps.println(header);
+          }
+          ps.println(s);
+          lineCounter = lineCounter + 1;
+        }
+      }
+    };
   }
 
   private static String collapse(String name) {
@@ -88,33 +111,6 @@ public class TabularListener<G, S, F> implements Listener<G, S, F> {
     }
     s = sBuilder.toString();
     return s;
-  }
-
-  @Override
-  public void listen(Event<? extends G, ? extends S, ? extends F> event) {
-    String s = pairs.stream()
-        .map(p -> justify(
-            String.format(p.first().getFormat(), p.first().apply(event)),
-            p.second()
-        ))
-        .collect(Collectors.joining(SEP));
-    synchronized (ps) {
-      if (legendFlag && lineCounter == 0) {
-        ps.println(legend);
-      }
-      if (headerInterval > 1 && (lineCounter % headerInterval == 0)) {
-        ps.println(header);
-      }
-      ps.println(s);
-      lineCounter = lineCounter + 1;
-    }
-  }
-
-  @Override
-  public void listenSolutions(Collection<? extends S> solutions) {
-    synchronized (ps) {
-      lineCounter = 0;
-    }
   }
 
 }
