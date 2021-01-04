@@ -22,16 +22,14 @@ import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.evolver.*;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.evolver.stopcondition.TargetFitness;
-import it.units.malelab.jgea.core.listener.Event;
-import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.NamedFunction;
-import it.units.malelab.jgea.core.listener.TableListener;
+import it.units.malelab.jgea.core.listener.*;
 import it.units.malelab.jgea.core.listener.collector.*;
 import it.units.malelab.jgea.core.listener.telegram.TelegramListener;
 import it.units.malelab.jgea.core.order.ParetoDominance;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
+import it.units.malelab.jgea.core.util.ImagePlotters;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.core.util.Sized;
 import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
@@ -143,6 +141,7 @@ public class Example extends Worker {
   }
 
   public void runOneMax() {
+    int size = 100;
     Random r = new Random(1);
     Problem<BitString, Double> p = new OneMax();
     Map<String, String> keys = new HashMap<>();
@@ -164,14 +163,21 @@ public class Example extends Worker {
         birthIteration().of(best()),
         solution().reformat("%30.30s").of(best())
     );
+
+
+    TableAccumulator<Object, Object, Double, Number> fitnessTabler = new TableAccumulator<>(List.of(
+        iterations(),
+        as(Double.class).of(fitness()).of(best())
+    ));
+
     Listener<Object, Object, Double> listener = Listener.onExecutor(
-        new TableListener<>(functions, System.out, 10, true)
+        new TabularListener<>(functions, System.out, 10, false)
             //.then(new CSVListener<>(functions, new File("/home/eric/example.csv")))
             .then(new TelegramListener<>(
-                "xxx", 207490209,
-                functions,
+                "1462661025:AAFM8n2qRYI_ZylUHvwGUalrX0Bgh1nDEmY", 207490209,
                 List.of(
-                    TelegramListener.xy(iterations(), as(Double.class).of(fitness()).of(best()))
+                    fitnessTabler.on(ImagePlotters.xyLines(800, 600)),
+                    TelegramListener.lastEventPrinter(functions)
                 ),
                 List.of()
             )),
@@ -180,22 +186,22 @@ public class Example extends Worker {
     List<Evolver<BitString, BitString, Double>> evolvers = List.of(
         new RandomSearch<>(
             Function.identity(),
-            new BitStringFactory(100),
+            new BitStringFactory(size),
             PartialComparator.from(Double.class).comparing(Individual::getFitness)
         ),
         new RandomWalk<>(
             Function.identity(),
-            new BitStringFactory(100),
+            new BitStringFactory(size),
             PartialComparator.from(Double.class).comparing(Individual::getFitness),
             new BitFlipMutation(0.01d)
         ),
         new StandardEvolver<>(
             Function.identity(),
-            new BitStringFactory(100),
+            new BitStringFactory(size),
             PartialComparator.from(Double.class).comparing(Individual::getFitness),
             100,
             Map.of(
-                new UniformCrossover<>(new BitStringFactory(100)), 0.8d,
+                new UniformCrossover<>(new BitStringFactory(size)), 0.8d,
                 new BitFlipMutation(0.01d), 0.2d
             ),
             new Tournament(5),
@@ -205,7 +211,7 @@ public class Example extends Worker {
         ),
         new StandardWithEnforcedDiversityEvolver<>(
             Function.identity(),
-            new BitStringFactory(100),
+            new BitStringFactory(size),
             PartialComparator.from(Double.class).comparing(Individual::getFitness),
             100,
             Map.of(
@@ -219,7 +225,7 @@ public class Example extends Worker {
             100
         )
     );
-    evolvers = evolvers.subList(2, 4);
+    evolvers = evolvers.subList(2, 3);
     for (Evolver<BitString, BitString, Double> evolver : evolvers) {
       keys.put("evolver", evolver.getClass().getSimpleName());
       try {

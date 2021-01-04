@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 /**
  * @author eric on 2021/01/03 for jgea
  */
-public class TableListener<G, S, F> implements Listener<G, S, F> {
+public class TabularListener<G, S, F> implements Listener<G, S, F> {
 
   private final static String SEP = " ";
   private final static String COLLAPSER_REGEX = "[.→\\[\\]]+";
@@ -26,7 +26,7 @@ public class TableListener<G, S, F> implements Listener<G, S, F> {
 
   private int lineCounter;
 
-  public TableListener(
+  public TabularListener(
       List<NamedFunction<Event<? extends G, ? extends S, ? extends F>, ?>> functions,
       PrintStream ps,
       int headerInterval,
