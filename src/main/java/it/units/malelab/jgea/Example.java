@@ -19,11 +19,11 @@ package it.units.malelab.jgea;
 import com.google.common.collect.Range;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.Problem;
+import it.units.malelab.jgea.core.consumer.*;
+import it.units.malelab.jgea.core.consumer.telegram.TelegramUpdater;
 import it.units.malelab.jgea.core.evolver.*;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.evolver.stopcondition.TargetFitness;
-import it.units.malelab.jgea.core.consumer.*;
-import it.units.malelab.jgea.core.consumer.telegram.TelegramUpdater;
 import it.units.malelab.jgea.core.order.ParetoDominance;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.selector.Tournament;
@@ -157,13 +157,10 @@ public class Example extends Worker {
     Random r = new Random(1);
     Problem<BitString, Double> p = new OneMax();
     Map<String, String> keys = new HashMap<>();
-
     List<NamedFunction<Event<?, ?, ? extends Double>, ?>> keysFunctions = List.of(
         constant("evolver", "%20.20s", keys)
     );
-
-    List<NamedFunction<Event<?, ?, ? extends Double>, ?>> functions = List.of(
-        constant("evolver", "%20.20s", keys),
+    List<NamedFunction<Event<?, ?, ? extends Double>, ?>> basicFunctions = List.of(
         iterations(),
         births(),
         elapsedSeconds(),
@@ -184,7 +181,7 @@ public class Example extends Worker {
         new TelegramUpdater<>(
             "xxx", 207490209,
             List.of(
-                new LastEventPrinter<>(functions),
+                new LastEventPrinter<>(basicFunctions),
                 new TableBuilder<Object, Object, Double, Number>(List.of(
                     iterations(),
                     as(Double.class).of(fitness()).of(best()),
@@ -201,7 +198,10 @@ public class Example extends Worker {
             List.of()
         ),
         new TabularPrinter<>(
-            functions,
+            Misc.concat(List.of(
+                keysFunctions,
+                basicFunctions
+            )),
             System.out,
             10,
             true

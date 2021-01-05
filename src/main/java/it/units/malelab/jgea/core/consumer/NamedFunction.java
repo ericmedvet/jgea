@@ -1,8 +1,10 @@
 package it.units.malelab.jgea.core.consumer;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author eric on 2021/01/02 for jgea
@@ -40,6 +42,10 @@ public interface NamedFunction<F, T> extends Function<F, T> {
     };
   }
 
+  default <V> List<NamedFunction<V, ? extends T>> of(List<NamedFunction<V, ? extends F>> befores) {
+    return befores.stream().map(this::of).collect(Collectors.toList());
+  }
+
   default <V> NamedFunction<F, V> then(NamedFunction<? super T, ? extends V> after) {
     NamedFunction<F, T> thisNamedFunction = this;
     return new NamedFunction<>() {
@@ -60,8 +66,12 @@ public interface NamedFunction<F, T> extends Function<F, T> {
     };
   }
 
+  static <F,T,V> List<NamedFunction<F, V>> then(NamedFunction<F, T> before, List<NamedFunction<T, V>> afters) {
+    return afters.stream().map(after -> before.then(after)).collect(Collectors.toList());
+  }
+
   static <F, T> NamedFunction<F, T> build(String name, String format, Function<F, T> function) {
-    return new NamedFunction<F, T>() {
+    return new NamedFunction<>() {
       @Override
       public String getFormat() {
         return format;
