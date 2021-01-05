@@ -66,8 +66,8 @@ public interface NamedFunction<F, T> extends Function<F, T> {
     };
   }
 
-  static <F,T,V> List<NamedFunction<F, V>> then(NamedFunction<F, T> before, List<NamedFunction<T, V>> afters) {
-    return afters.stream().map(after -> before.then(after)).collect(Collectors.toList());
+  static <F,T,V> List<NamedFunction<F, ? extends V>> then(NamedFunction<F, T> before, List<NamedFunction<T, ? extends V>> afters) {
+    return afters.stream().map(before::then).collect(Collectors.toList());
   }
 
   static <F, T> NamedFunction<F, T> build(String name, String format, Function<F, T> function) {

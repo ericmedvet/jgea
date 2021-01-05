@@ -76,10 +76,10 @@ public class TelegramUpdater<G, S, F> implements Consumer.Factory<G, S, F, Void>
         }
         for (Function<Collection<? extends S>, ?> processor : functions) {
           try {
-            processor.apply(solutions);
+            outcomes.add(processor.apply(solutions));
           } catch (Throwable e) {
             L.warning(String.format(
-                "Cannot processo solutions with %s: %s",
+                "Cannot process solutions with %s: %s",
                 processor.getClass().getSimpleName(),
                 e
             ));

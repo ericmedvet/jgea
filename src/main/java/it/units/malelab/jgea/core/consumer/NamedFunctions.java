@@ -134,12 +134,12 @@ public class NamedFunctions {
     return function::apply;
   }
 
-  public static <F, T> NamedFunction<F, T> f(String name, String format, Map<String, Function<F, T>> functions) {
-    return NamedFunction.build(
-        name,
-        format,
-        f -> functions.get(name).apply(f)
-    );
+  public static <F, T> NamedFunction<F, T> f(String name, Function<F, T> function) {
+    return NamedFunction.build(name, "%s", function);
+  }
+
+  public static <F, T> NamedFunction<F, T> f(String name, String format, Function<F, T> function) {
+    return NamedFunction.build(name, format, function);
   }
 
   public static NamedFunction<Collection<?>, Double> uniqueness() {

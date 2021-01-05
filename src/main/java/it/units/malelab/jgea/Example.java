@@ -177,6 +177,11 @@ public class Example extends Worker {
         hist(8).of(map(fitness())).of(all()),
         solution().reformat("%30.30s").of(best())
     );
+
+    NamedFunction<Double,Integer> fii1 = i -> (int)(i+1);
+    NamedFunction<Double,Integer> fii2 = i -> (int)(i+2);
+    List<NamedFunction<Double,?>> fiis = List.of(fii1,fii2);
+
     List<Consumer.Factory<Object, Object, Double, Void>> factories = List.of(
         new TelegramUpdater<>(
             "xxx", 207490209,
@@ -200,7 +205,8 @@ public class Example extends Worker {
         new TabularPrinter<>(
             Misc.concat(List.of(
                 keysFunctions,
-                basicFunctions
+                basicFunctions,
+                NamedFunction.then(as(Double.class).of(fitness()).of(best()), fiis)
             )),
             System.out,
             10,
