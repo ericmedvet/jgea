@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package it.units.malelab.jgea.core.listener;
+package it.units.malelab.jgea.core.consumer;
 
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.Evolver;

@@ -1,4 +1,4 @@
-package it.units.malelab.jgea.core.listener;
+package it.units.malelab.jgea.core.consumer;
 
 import org.apache.commons.csv.CSVFormat;
 

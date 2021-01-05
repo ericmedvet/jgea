@@ -22,9 +22,8 @@ import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.evolver.*;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.evolver.stopcondition.TargetFitness;
-import it.units.malelab.jgea.core.listener.*;
-import it.units.malelab.jgea.core.listener.collector.*;
-import it.units.malelab.jgea.core.listener.telegram.TelegramListener;
+import it.units.malelab.jgea.core.consumer.*;
+import it.units.malelab.jgea.core.consumer.telegram.TelegramUpdater;
 import it.units.malelab.jgea.core.order.ParetoDominance;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.selector.Tournament;
@@ -62,12 +61,29 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
+import static it.units.malelab.jgea.core.consumer.NamedFunctions.*;
 
 /**
  * @author eric
  */
 public class Example extends Worker {
+
+  private final static List<NamedFunction<Event<?, ?, ? extends Double>, ?>> BASIC_DOUBLE_FUNCTIONS = List.of(
+      iterations(),
+      births(),
+      elapsedSeconds(),
+      size().of(all()),
+      size().of(firsts()),
+      size().of(lasts()),
+      uniqueness().of(map(genotype())).of(all()),
+      uniqueness().of(map(solution())).of(all()),
+      uniqueness().of(map(fitness())).of(all()),
+      size().of(genotype()).of(best()),
+      size().of(solution()).of(best()),
+      birthIteration().of(best()),
+      fitness().reformat("%5.3f").of(best()),
+      hist(8).of(map(fitness())).of(all())
+  );
 
   public Example(String[] args) throws FileNotFoundException {
     super(args);
@@ -89,6 +105,10 @@ public class Example extends Worker {
   }
 
   public void runLinearPoints() {
+    TabularPrinter<Object, Object, Double> tabularPrinter = new TabularPrinter<>(
+        BASIC_DOUBLE_FUNCTIONS,
+        System.out, 10, true
+    );
     Random r = new Random(1);
     Problem<List<Double>, Double> p = new LinearPoints();
     List<Evolver<List<Double>, List<Double>, Double>> evolvers = List.of(
@@ -123,16 +143,8 @@ public class Example extends Worker {
             new TargetFitness<>(0d).or(new Iterations(100)),
             r,
             executorService,
-            listener(List.of(
-                new Basic(),
-                new Population(),
-                new Diversity(),
-                new BestInfo("%5.3f"),
-                new FunctionOfOneBest<>(i -> List.of(new Item(
-                    "solution",
-                    i.getSolution().stream().map(d -> String.format("%5.2f", d)).collect(Collectors.joining(",")),
-                    "%s")))
-            )));
+            tabularPrinter.build().deferred(executorService)
+        );
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
       } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();
@@ -156,32 +168,43 @@ public class Example extends Worker {
         uniqueness().of(map(genotype())).of(all()),
         uniqueness().of(map(solution())).of(all()),
         uniqueness().of(map(fitness())).of(all()),
-        hist(8).of(map(fitness())).of(all()),
         size().of(genotype()).of(best()),
         size().of(solution()).of(best()),
-        fitness().reformat("%5.3f").of(best()),
         birthIteration().of(best()),
+        fitness().reformat("%5.3f").of(best()),
+        hist(8).of(map(fitness())).of(all()),
         solution().reformat("%30.30s").of(best())
     );
-
-
-    TableConsumer<Object, Object, Double, Number> fitnessTabler = new TableConsumer<>(List.of(
-        iterations(),
-        as(Double.class).of(fitness()).of(best())
-    ));
-
-    Listener<Object, Object, Double> listener = Listener.onExecutor(
-        new TabularPrinter<>(functions, System.out, 10, false)
-            //.then(new CSVListener<>(functions, new File("/home/eric/example.csv")))
-            .then(new TelegramListener<>(
-                "1462661025:AAFM8n2qRYI_ZylUHvwGUalrX0Bgh1nDEmY", 207490209,
-                List.of(
-                    fitnessTabler.on(ImagePlotters.xyLines(800, 600)),
-                    TelegramListener.lastEventPrinter(functions)
-                ),
-                List.of()
-            )),
-        executorService
+    List<Consumer.Factory<Object, Object, Double, Void>> factories = List.of(
+        new TelegramUpdater<>(
+            "1462661025:AAFM8n2qRYI_ZylUHvwGUalrX0Bgh1nDEmY", 207490209,
+            List.of(
+                new LastEventPrinter<>(functions),
+                new TableBuilder<Object, Object, Double, Number>(List.of(
+                    iterations(),
+                    as(Double.class).of(fitness()).of(best()),
+                    max(Double::compare).of(map(fitness())).of(all()),
+                    median(Double::compare).of(map(fitness())).of(all())
+                )).then(ImagePlotters.xyLines(600, 400)),
+                new TableBuilder<Object, Object, Double, Number>(List.of(
+                    iterations(),
+                    uniqueness().of(map(genotype())).of(all()),
+                    uniqueness().of(map(solution())).of(all()),
+                    uniqueness().of(map(fitness())).of(all())
+                )).then(ImagePlotters.xyLines(600, 400))
+            ),
+            List.of()
+        ),
+        new TabularPrinter<>(
+            BASIC_DOUBLE_FUNCTIONS,
+            System.out,
+            10,
+            true
+        ),
+        new CSVPrinter<>(
+            BASIC_DOUBLE_FUNCTIONS,
+            new File("/home/eric/examples.txt")
+        )
     );
     List<Evolver<BitString, BitString, Double>> evolvers = List.of(
         new RandomSearch<>(
@@ -228,23 +251,32 @@ public class Example extends Worker {
     evolvers = evolvers.subList(2, 3);
     for (Evolver<BitString, BitString, Double> evolver : evolvers) {
       keys.put("evolver", evolver.getClass().getSimpleName());
+      Consumer<Object, Object, Double, ?> consumer = Consumer.of(factories.stream()
+          .map(Consumer.Factory::build)
+          .collect(Collectors.toList()))
+          .deferred(executorService);
       try {
         Collection<BitString> solutions = evolver.solve(
             Misc.cached(p.getFitnessFunction(), 10000),
             new TargetFitness<>(0d).or(new Iterations(1000)),
             r,
             executorService,
-            listener
+            consumer
         );
-        listener.listenSolutions(solutions);
+        consumer.consume(solutions);
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
       } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();
       }
     }
+    factories.forEach(Consumer.Factory::shutdown);
   }
 
   public void runSymbolicRegression() {
+    TabularPrinter<Object, Object, Double> tabularPrinter = new TabularPrinter<>(
+        BASIC_DOUBLE_FUNCTIONS,
+        System.out, 10, true
+    );
     Random r = new Random(1);
     SymbolicRegressionProblem p = new Nguyen7(SymbolicRegressionFitness.Metric.MSE, 1);
     Grammar<String> srGrammar;
@@ -297,18 +329,8 @@ public class Example extends Worker {
             new TargetFitness<>(0d).or(new Iterations(100)),
             r,
             executorService,
-            listener(List.of(
-                new Basic(),
-                new Population(),
-                new Diversity(),
-                new BestInfo("%5.3f"),
-                new FunctionOfOneBest<>(i -> List.of(new Item(
-                    "validation.fitness",
-                    p.getValidationFunction().apply(i.getSolution()),
-                    "%5.3f"
-                ))),
-                new BestPrinter(BestPrinter.Part.SOLUTION)
-            )));
+            tabularPrinter.build().deferred(executorService)
+        );
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
       } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();
@@ -317,6 +339,26 @@ public class Example extends Worker {
   }
 
   public void runSymbolicRegressionMO() {
+    TabularPrinter<Object, Object, List<Double>> tabularPrinter = new TabularPrinter<>(
+        List.of(
+            iterations(),
+            births(),
+            elapsedSeconds(),
+            size().of(all()),
+            size().of(firsts()),
+            size().of(lasts()),
+            uniqueness().of(map(genotype())).of(all()),
+            uniqueness().of(map(solution())).of(all()),
+            uniqueness().of(map(fitness())).of(all()),
+            size().of(genotype()).of(best()),
+            size().of(solution()).of(best()),
+            birthIteration().of(best()),
+            nth(0).reformat("%5.3f").of(fitness()).of(best()),
+            nth(1).reformat("%2.0f").of(fitness()).of(best())
+            //hist(8).of(map(fitness())).of(all())
+        ),
+        System.out, 10, true
+    );
     Random r = new Random(1);
     SymbolicRegressionProblem p = new Nguyen7(SymbolicRegressionFitness.Metric.MSE, 1);
     Grammar<String> srGrammar;
@@ -372,19 +414,8 @@ public class Example extends Worker {
             new Iterations(3),
             r,
             executorService,
-            listener(List.of(
-                new Basic(),
-                new Population(),
-                new Diversity(),
-                new BestInfo("%5.3f", "%2.0f"),
-                new FunctionOfFirsts<>(bests -> List.of(new Item("firsts.fitnesses", bests.stream().map(i -> i.getFitness().toString()).collect(Collectors.joining(", ")), "%s"))),
-                new FunctionOfOneBest<>(i -> List.of(new Item(
-                    "validation.fitness",
-                    p.getValidationFunction().apply(i.getSolution()),
-                    "%5.3f"
-                ))),
-                new BestPrinter(BestPrinter.Part.SOLUTION)
-            )));
+            tabularPrinter.build().deferred(executorService)
+        );
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
       } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();
@@ -393,6 +424,10 @@ public class Example extends Worker {
   }
 
   public void runGrammarBasedParity() {
+    TabularPrinter<Object, Object, Double> tabularPrinter = new TabularPrinter<>(
+        BASIC_DOUBLE_FUNCTIONS,
+        System.out, 10, true
+    );
     Random r = new Random(1);
     GrammarBasedProblem<String, List<Tree<Element>>, Double> p;
     try {
@@ -421,12 +456,7 @@ public class Example extends Worker {
           new Iterations(100),
           r,
           executorService,
-          Listener.onExecutor(listener(List.of(
-              new Basic(),
-              new Population(),
-              new Diversity(),
-              new BestInfo("%5.3f")
-          )), executorService)
+          tabularPrinter.build().deferred(executorService)
       );
       System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
     } catch (InterruptedException | ExecutionException e) {
@@ -435,6 +465,10 @@ public class Example extends Worker {
   }
 
   public void runSphere() {
+    TabularPrinter<Object, Object, Double> tabularPrinter = new TabularPrinter<>(
+        BASIC_DOUBLE_FUNCTIONS,
+        System.out, 10, true
+    );
     Random r = new Random(1);
     Problem<List<Double>, Double> p = new Sphere();
     List<Evolver<List<Double>, List<Double>, Double>> evolvers = List.of(
@@ -463,16 +497,8 @@ public class Example extends Worker {
             new TargetFitness<>(0d).or(new Iterations(100)),
             r,
             executorService,
-            listener(List.of(
-                new Basic(),
-                new Population(),
-                new Diversity(),
-                new BestInfo("%5.3f"),
-                new FunctionOfOneBest<>(i -> List.of(new Item(
-                    "solution",
-                    i.getSolution().stream().map(d -> String.format("%5.2f", d)).collect(Collectors.joining(",")),
-                    "%s")))
-            )));
+            tabularPrinter.build().deferred(executorService)
+        );
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
       } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();
@@ -481,6 +507,10 @@ public class Example extends Worker {
   }
 
   public void runRastrigin() {
+    TabularPrinter<Object, Object, Double> tabularPrinter = new TabularPrinter<>(
+        BASIC_DOUBLE_FUNCTIONS,
+        System.out, 10, true
+    );
     Random r = new Random(1);
     Problem<List<Double>, Double> p = new Rastrigin();
     List<Evolver<List<Double>, List<Double>, Double>> evolvers = List.of(
@@ -509,16 +539,8 @@ public class Example extends Worker {
             new TargetFitness<>(0d).or(new Iterations(100)),
             r,
             executorService,
-            listener(List.of(
-                new Basic(),
-                new Population(),
-                new Diversity(),
-                new BestInfo("%5.3f"),
-                new FunctionOfOneBest<>(i -> List.of(new Item(
-                    "solution",
-                    i.getSolution().stream().map(d -> String.format("%5.2f", d)).collect(Collectors.joining(",")),
-                    "%s")))
-            )));
+            tabularPrinter.build().deferred(executorService)
+        );
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
       } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();

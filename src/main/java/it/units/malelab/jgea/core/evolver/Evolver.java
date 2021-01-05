@@ -16,8 +16,8 @@
 
 package it.units.malelab.jgea.core.evolver;
 
-import it.units.malelab.jgea.core.listener.Event;
-import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.core.consumer.Consumer;
+import it.units.malelab.jgea.core.consumer.Event;
 
 import java.util.Collection;
 import java.util.Random;
@@ -36,7 +36,7 @@ public interface Evolver<G, S, F> {
       Predicate<? super Event<G, S, F>> stopCondition,
       Random random,
       ExecutorService executor,
-      Listener<? super G, ? super S, ? super F> listener) throws InterruptedException, ExecutionException;
+      Consumer<? super G, ? super S, ? super F, ?> consumer) throws InterruptedException, ExecutionException;
 
   class State {
     private int iterations = 0;

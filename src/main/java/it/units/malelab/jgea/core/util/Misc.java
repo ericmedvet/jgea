@@ -22,6 +22,7 @@ import it.units.malelab.jgea.distance.Distance;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -130,7 +131,7 @@ public class Misc {
 
   public static <T> Distance<T> cached(Distance<T> function, long size) {
     final CachedBiFunction<T, T, Double> cached = new CachedBiFunction<>(function, size);
-    return (t1, t2) -> cached.apply(t1, t2);
+    return cached::apply;
   }
 
   public static double median(double... values) {
@@ -149,6 +150,10 @@ public class Misc {
     List<K> all = new ArrayList<>(ks);
     all.sort(comparator);
     return all.get(all.size() / 2);
+  }
+
+  public static <K> List<K> concat(List<List<? extends K>> lists) {
+    return lists.stream().flatMap(List::stream).collect(Collectors.toList());
   }
 
 }

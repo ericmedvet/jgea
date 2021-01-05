@@ -16,7 +16,7 @@
 
 package it.units.malelab.jgea.core.evolver.stopcondition;
 
-import it.units.malelab.jgea.core.listener.Event;
+import it.units.malelab.jgea.core.consumer.Event;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;

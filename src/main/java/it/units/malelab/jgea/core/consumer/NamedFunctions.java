@@ -1,4 +1,4 @@
-package it.units.malelab.jgea.core.listener;
+package it.units.malelab.jgea.core.consumer;
 
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.Evolver;
@@ -7,9 +7,7 @@ import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.core.util.Sized;
 import it.units.malelab.jgea.core.util.TextPlotter;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -92,7 +90,39 @@ public class NamedFunctions {
     );
   }
 
-  public static <F, T> NamedFunction<Collection<? extends F>, List<T>> map(NamedFunction<F, T> mapper) {
+  public static <T> NamedFunction<Collection<? extends T>, T> max(Comparator<T> comparator) {
+    return NamedFunction.build(
+        "max",
+        "%s",
+        ts -> ts.stream().max(comparator).orElse(null)
+    );
+  }
+
+  public static <T> NamedFunction<Collection<? extends T>, T> min(Comparator<T> comparator) {
+    return NamedFunction.build(
+        "min",
+        "%s",
+        ts -> ts.stream().min(comparator).orElse(null)
+    );
+  }
+
+  public static <T> NamedFunction<Collection<? extends T>, T> median(Comparator<T> comparator) {
+    return NamedFunction.build(
+        "median",
+        "%s",
+        ts -> Misc.median(ts, comparator)
+    );
+  }
+
+  public static <T> NamedFunction<List<? extends T>, T> nth(int index) {
+    return NamedFunction.build(
+        "[" + index + "]",
+        "%s",
+        Misc::first
+    );
+  }
+
+  public static <F, T> NamedFunction<Collection<? extends F>, Collection<T>> map(NamedFunction<F, T> mapper) {
     return NamedFunction.build(
         "map[" + mapper.getName() + "]",
         "%s",
@@ -128,11 +158,12 @@ public class NamedFunctions {
     );
   }
 
-  public static NamedFunction<List<? extends Number>, String> hist(int bins) {
+  @SuppressWarnings("unchecked")
+  public static NamedFunction<Collection<? extends Number>, String> hist(int bins) {
     return NamedFunction.build(
         "hist",
         "%" + bins + "." + bins + "s",
-        values -> TextPlotter.histogram(values, bins)
+        values -> TextPlotter.histogram(values instanceof List ? (List<? extends Number>) values : new ArrayList<>(values), bins)
     );
   }
 
@@ -208,4 +239,5 @@ public class NamedFunctions {
     }
     return null;
   }
+
 }

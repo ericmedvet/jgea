@@ -26,9 +26,7 @@ import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversityEvolver;
 import it.units.malelab.jgea.core.evolver.speciation.LazySpeciator;
 import it.units.malelab.jgea.core.evolver.speciation.SpeciatedEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
-import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.MultiFileListenerFactory;
-import it.units.malelab.jgea.core.listener.collector.*;
+import it.units.malelab.jgea.core.consumer.*;
 import it.units.malelab.jgea.core.operator.Crossover;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.order.LexicoGraphical;
@@ -49,6 +47,7 @@ import it.units.malelab.jgea.representation.graph.finiteautomata.ShallowDFAFacto
 import it.units.malelab.jgea.representation.tree.SameRootSubtreeCrossover;
 import it.units.malelab.jgea.representation.tree.Tree;
 
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -57,6 +56,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static it.units.malelab.jgea.core.consumer.NamedFunctions.*;
 import static it.units.malelab.jgea.core.util.Args.i;
 import static it.units.malelab.jgea.core.util.Args.ri;
 
@@ -95,10 +95,34 @@ public class ExtractionComparison extends Worker {
         "synthetic-4-8", RegexExtractionProblem.varAlphabet(4, 8, 1, metrics),
         "synthetic-4-10", RegexExtractionProblem.varAlphabet(4, 10, 1, metrics)
     );
-    MultiFileListenerFactory<Object, Extractor<Character>, List<Double>> listenerFactory = new MultiFileListenerFactory<>(
-        a("dir", "."),
-        a("file", null)
+    //consumers
+    Map<String, Object> keys = new HashMap<>();
+    List<NamedFunction<Event<?, ? extends Extractor<Character>, ? extends List<Double>>, ?>> functions = List.of(
+        constant("seed", "%2d", keys),
+        constant("problem", "%20.20s", keys),
+        constant("evolver", "%20.20s", keys),
+        iterations(),
+        births(),
+        elapsedSeconds(),
+        size().of(all()),
+        size().of(firsts()),
+        size().of(lasts()),
+        uniqueness().of(map(genotype())).of(all()),
+        uniqueness().of(map(solution())).of(all()),
+        uniqueness().of(map(fitness())).of(all()),
+        size().of(genotype()).of(best()),
+        size().of(solution()).of(best()),
+        nth(0).reformat("%5.3f").of(fitness()).of(best()),
+        birthIteration().of(best()),
+        // TODO put validation, num of extractions, hist of fitnesses
+        solution().reformat("%30.30s").of(best())
     );
+    List<Consumer.Factory<Object, Extractor<Character>, List<Double>, Void>> factories = new ArrayList<>();
+    factories.add(new TabularPrinter<>(functions, System.out, 10, true));
+    if (a("file", null) != null) {
+      factories.add(new CSVPrinter<>(functions, new File(a("file", null))));
+    }
+    //evolvers
     Map<String, Function<RegexExtractionProblem, Evolver<?, Extractor<Character>, List<Double>>>> evolvers = new TreeMap<>(Map.ofEntries(
         Map.entry("cfgtree-ga", p -> {
           RegexGrammar g = new RegexGrammar(p.getFitnessFunction(), options);
@@ -414,37 +438,17 @@ public class ExtractionComparison extends Worker {
     for (int seed : seeds) {
       for (Map.Entry<String, RegexExtractionProblem> problemEntry : problems.entrySet()) {
         for (Map.Entry<String, Function<RegexExtractionProblem, Evolver<?, Extractor<Character>, List<Double>>>> evolverEntry : evolvers.entrySet()) {
-          Map<String, String> keys = new TreeMap<>(Map.of(
-              "seed", Integer.toString(seed),
+          keys.putAll(Map.of(
+              "seed", seed,
               "problem", problemEntry.getKey(),
               "evolver", evolverEntry.getKey()
           ));
+          Consumer<Object, Extractor<Character>, List<Double>, ?> consumer = Consumer.of(factories.stream()
+              .map(Consumer.Factory::build)
+              .collect(Collectors.toList()))
+              .deferred(executorService);
           try {
             RegexExtractionProblem p = problemEntry.getValue();
-            List<DataCollector<? super Object, ? super Extractor<Character>, ? super List<Double>>> collectors = List.of(
-                new Static(keys),
-                new Basic(),
-                new Population(),
-                new Diversity(),
-                new BestInfo("%7.5f"),
-                new FunctionOfOneBest<>(i -> {
-                  List<Double> f = p.getValidationFunction().apply(i.getSolution());
-                  return IntStream.range(0, f.size())
-                      .mapToObj(n -> new Item(
-                          "validation.fitness.obj." + n,
-                          f.get(n),
-                          "%7.5f"
-                      )).collect(Collectors.toList());
-                }),
-                new FunctionOfOneBest<>(i ->
-                    List.of(new Item(
-                        "num.extractions",
-                        i.getSolution().extractNonOverlapping(p.getFitnessFunction().getSequence()).size(),
-                        "%4d"
-                    ))
-                ),
-                new BestPrinter(BestPrinter.Part.SOLUTION, "%60.60s")
-            );
             Stopwatch stopwatch = Stopwatch.createStarted();
             Evolver<?, Extractor<Character>, List<Double>> evolver = evolverEntry.getValue().apply(p);
             L.info(String.format("Starting %s", keys));
@@ -453,12 +457,9 @@ public class ExtractionComparison extends Worker {
                 new Iterations(nIterations),
                 new Random(seed),
                 executorService,
-                Listener.onExecutor((listenerFactory.getBaseFileName() == null) ?
-                        listener(collectors) :
-                        listenerFactory.build(collectors)
-                    , executorService
-                )
+                consumer
             );
+            consumer.consume(solutions);
             L.info(String.format("Done %s: %d solutions in %4.1fs",
                 keys,
                 solutions.size(),
@@ -474,5 +475,6 @@ public class ExtractionComparison extends Worker {
         }
       }
     }
+    factories.forEach(Consumer.Factory::shutdown);
   }
 }

@@ -22,15 +22,12 @@ import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
-import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.MultiFileListenerFactory;
-import it.units.malelab.jgea.core.listener.collector.*;
+import it.units.malelab.jgea.core.consumer.*;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.problem.image.ImageReconstruction;
-import it.units.malelab.jgea.problem.image.ImageUtils;
 import it.units.malelab.jgea.problem.symbolicregression.MathUtils;
 import it.units.malelab.jgea.problem.symbolicregression.RealFunction;
 import it.units.malelab.jgea.representation.graph.*;
@@ -47,7 +44,9 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
+import static it.units.malelab.jgea.core.consumer.NamedFunctions.*;
 import static it.units.malelab.jgea.core.util.Args.*;
 
 /**
@@ -74,10 +73,31 @@ public class ImageExample extends Worker {
     //BaseFunction[] baseFunctions = new BaseFunction[]{BaseFunction.STEP, BaseFunction.GAUSSIAN, BaseFunction.PROT_INVERSE, BaseFunction.SQ, BaseFunction.SAW, BaseFunction.SIN};
     BaseFunction[] baseFunctions = new BaseFunction[]{BaseFunction.GAUSSIAN, BaseFunction.SIN, BaseFunction.SQ};
     List<String> images = l(a("images", "/home/eric/experiments/2020-graphea/image/glasses-32x32.png"));
-    MultiFileListenerFactory<Object, RealFunction, Double> listenerFactory = new MultiFileListenerFactory<>(
-        a("dir", "."),
-        a("file", null)
+    //consumers
+    Map<String, Object> keys = new HashMap<>();
+    List<NamedFunction<Event<?, ? extends RealFunction, ? extends Double>, ?>> functions = List.of(
+        constant("seed", "%2d", keys),
+        constant("image", "%20.20s", keys),
+        constant("evolver", "%20.20s", keys),
+        iterations(),
+        births(),
+        elapsedSeconds(),
+        size().of(all()),
+        size().of(firsts()),
+        size().of(lasts()),
+        uniqueness().of(map(genotype())).of(all()),
+        uniqueness().of(map(solution())).of(all()),
+        uniqueness().of(map(fitness())).of(all()),
+        size().of(genotype()).of(best()),
+        size().of(solution()).of(best()),
+        fitness().reformat("%5.3f").of(best()),
+        birthIteration().of(best())
     );
+    List<Consumer.Factory<Object, RealFunction, Double, Void>> factories = new ArrayList<>();
+    factories.add(new TabularPrinter<>(functions, System.out, 10, true));
+    if (a("file", null) != null) {
+      factories.add(new CSVPrinter<>(functions, new File(a("file", null))));
+    }
     Map<String, Evolver<?, RealFunction, Double>> evolvers = Map.ofEntries(
         Map.entry("graph-seq-ga", new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
@@ -110,13 +130,17 @@ public class ImageExample extends Worker {
     for (int seed : seeds) {
       for (String image : images) {
         for (Map.Entry<String, Evolver<?, RealFunction, Double>> evolverEntry : evolvers.entrySet()) {
-          Map<String, String> keys = new TreeMap<>(Map.of(
+          keys.putAll(Map.of(
               "seed", Integer.toString(seed),
               "image", image.split(File.separator)[image.split(File.separator).length - 1],
               "evolver", evolverEntry.getKey()
           ));
           try {
             ImageReconstruction problem = new ImageReconstruction(ImageIO.read(new File(image)), true);
+            Consumer<Object, RealFunction, Double, ?> consumer = Consumer.of(factories.stream()
+                .map(Consumer.Factory::build)
+                .collect(Collectors.toList()))
+                .deferred(executorService);
             Stopwatch stopwatch = Stopwatch.createStarted();
             Evolver<?, RealFunction, Double> evolver = evolverEntry.getValue();
             L.info(String.format("Starting %s", keys));
@@ -125,26 +149,9 @@ public class ImageExample extends Worker {
                 new Iterations(nIterations),
                 new Random(seed),
                 executorService,
-                Listener.onExecutor(((Listener<Object, RealFunction, Double>) event -> {
-                  RealFunction best = Misc.first(event.getOrderedPopulation().firsts()).getSolution();
-                  try {
-                    ImageIO.write(
-                        ImageUtils.render(best, 100, 100, true),
-                        "png",
-                        new File(image.replaceFirst("\\.[a-z]+",
-                            ".e" + evolverEntry.getKey() + ".g" + event.getState().getIterations() + ".png"))
-                    );
-                  } catch (IOException e) {
-                    L.severe(String.format("Cannot write file due to %s", e));
-                  }
-                }).then(listenerFactory.build(List.of(
-                    new Static(keys),
-                    new Basic(),
-                    new Population(),
-                    new Diversity(),
-                    new BestInfo("%7.5f")
-                ))), executorService)
+                consumer
             );
+            consumer.consume(solutions);
             L.info(String.format("Done %s: %d solutions in %4.1fs",
                 keys,
                 solutions.size(),
