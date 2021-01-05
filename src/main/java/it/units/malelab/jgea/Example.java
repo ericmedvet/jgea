@@ -157,6 +157,11 @@ public class Example extends Worker {
     Random r = new Random(1);
     Problem<BitString, Double> p = new OneMax();
     Map<String, String> keys = new HashMap<>();
+
+    List<NamedFunction<Event<?, ?, ? extends Double>, ?>> keysFunctions = List.of(
+        constant("evolver", "%20.20s", keys)
+    );
+
     List<NamedFunction<Event<?, ?, ? extends Double>, ?>> functions = List.of(
         constant("evolver", "%20.20s", keys),
         iterations(),
@@ -196,7 +201,7 @@ public class Example extends Worker {
             List.of()
         ),
         new TabularPrinter<>(
-            BASIC_DOUBLE_FUNCTIONS,
+            functions,
             System.out,
             10,
             true
