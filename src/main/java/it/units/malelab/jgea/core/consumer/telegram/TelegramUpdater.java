@@ -3,6 +3,7 @@ package it.units.malelab.jgea.core.consumer.telegram;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.request.SendPhoto;
+import com.pengrad.telegrambot.response.SendResponse;
 import it.units.malelab.jgea.core.consumer.Consumer;
 import it.units.malelab.jgea.core.consumer.Event;
 import okhttp3.OkHttpClient;
@@ -103,10 +104,13 @@ public class TelegramUpdater<G, S, F> implements Consumer.Factory<G, S, F, Void>
 
   private void sendText(String string) {
     try {
-      bot.execute(new SendMessage(
+      SendResponse response = bot.execute(new SendMessage(
           chatId,
           string
       ));
+      if (!response.isOk()) {
+        L.warning(String.format("Response is not ok: %s", response.toString()));
+      }
     } catch (Throwable t) {
       L.warning(String.format("Cannot send text: %s", t));
     }
@@ -117,10 +121,13 @@ public class TelegramUpdater<G, S, F> implements Consumer.Factory<G, S, F, Void>
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ImageIO.write(image, "png", baos);
       baos.close();
-      bot.execute(new SendPhoto(
+      SendResponse response = bot.execute(new SendPhoto(
           chatId,
           baos.toByteArray()
       ));
+      if (!response.isOk()) {
+        L.warning(String.format("Response is not ok: %s", response.toString()));
+      }
     } catch (Throwable t) {
       L.warning(String.format("Cannot send image: %s", t));
     }

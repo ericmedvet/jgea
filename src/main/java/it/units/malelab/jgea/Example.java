@@ -177,7 +177,7 @@ public class Example extends Worker {
     );
     List<Consumer.Factory<Object, Object, Double, Void>> factories = List.of(
         new TelegramUpdater<>(
-            "1462661025:AAFM8n2qRYI_ZylUHvwGUalrX0Bgh1nDEmY", 207490209,
+            "xxx", 207490209,
             List.of(
                 new LastEventPrinter<>(functions),
                 new TableBuilder<Object, Object, Double, Number>(List.of(
@@ -200,10 +200,6 @@ public class Example extends Worker {
             System.out,
             10,
             true
-        ),
-        new CSVPrinter<>(
-            BASIC_DOUBLE_FUNCTIONS,
-            new File("/home/eric/examples.txt")
         )
     );
     List<Evolver<BitString, BitString, Double>> evolvers = List.of(
