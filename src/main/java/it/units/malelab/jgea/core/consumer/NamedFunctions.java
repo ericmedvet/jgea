@@ -19,7 +19,7 @@ public class NamedFunctions {
   }
 
   public static <G, S, F> NamedFunction<Event<? extends G, ? extends S, ? extends F>, Evolver.State> state() {
-    return NamedFunction.build(
+    return f(
         "state",
         "%s",
         Event::getState
@@ -27,7 +27,7 @@ public class NamedFunctions {
   }
 
   public static <G, S, F> NamedFunction<Event<? extends G, ? extends S, ? extends F>, Integer> iterations() {
-    return NamedFunction.build(
+    return f(
         "iterations",
         "%4d",
         e -> e.getState().getIterations()
@@ -35,7 +35,7 @@ public class NamedFunctions {
   }
 
   public static <G, S, F> NamedFunction<Event<? extends G, ? extends S, ? extends F>, Integer> births() {
-    return NamedFunction.build(
+    return f(
         "births",
         "%5d",
         e -> e.getState().getBirths()
@@ -43,7 +43,7 @@ public class NamedFunctions {
   }
 
   public static <G, S, F> NamedFunction<Event<? extends G, ? extends S, ? extends F>, Integer> fitnessEvaluations() {
-    return NamedFunction.build(
+    return f(
         "fitness.evaluations",
         "%5d",
         e -> e.getState().getFitnessEvaluations()
@@ -51,7 +51,7 @@ public class NamedFunctions {
   }
 
   public static <G, S, F> NamedFunction<Event<? extends G, ? extends S, ? extends F>, Float> elapsedSeconds() {
-    return NamedFunction.build(
+    return f(
         "elapsed.seconds",
         "%5.1f",
         e -> e.getState().getElapsedMillis() / 1000f
@@ -59,7 +59,7 @@ public class NamedFunctions {
   }
 
   public static <G, S, F> NamedFunction<Event<? extends G, ? extends S, ? extends F>, Collection<? extends Individual<? extends G, ? extends S, ? extends F>>> firsts() {
-    return NamedFunction.build(
+    return f(
         "firsts",
         "%s",
         e -> e.getOrderedPopulation().firsts()
@@ -67,7 +67,7 @@ public class NamedFunctions {
   }
 
   public static <G, S, F> NamedFunction<Event<? extends G, ? extends S, ? extends F>, Collection<? extends Individual<? extends G, ? extends S, ? extends F>>> lasts() {
-    return NamedFunction.build(
+    return f(
         "lasts",
         "%s",
         e -> e.getOrderedPopulation().lasts()
@@ -75,7 +75,7 @@ public class NamedFunctions {
   }
 
   public static <G, S, F> NamedFunction<Event<? extends G, ? extends S, ? extends F>, Collection<? extends Individual<? extends G, ? extends S, ? extends F>>> all() {
-    return NamedFunction.build(
+    return f(
         "all",
         "%s",
         e -> e.getOrderedPopulation().all()
@@ -83,7 +83,7 @@ public class NamedFunctions {
   }
 
   public static <T> NamedFunction<Collection<? extends T>, T> one() {
-    return NamedFunction.build(
+    return f(
         "one",
         "%s",
         Misc::first
@@ -91,7 +91,7 @@ public class NamedFunctions {
   }
 
   public static <T> NamedFunction<Collection<? extends T>, T> max(Comparator<T> comparator) {
-    return NamedFunction.build(
+    return f(
         "max",
         "%s",
         ts -> ts.stream().max(comparator).orElse(null)
@@ -99,7 +99,7 @@ public class NamedFunctions {
   }
 
   public static <T> NamedFunction<Collection<? extends T>, T> min(Comparator<T> comparator) {
-    return NamedFunction.build(
+    return f(
         "min",
         "%s",
         ts -> ts.stream().min(comparator).orElse(null)
@@ -107,7 +107,7 @@ public class NamedFunctions {
   }
 
   public static <T> NamedFunction<Collection<? extends T>, T> median(Comparator<T> comparator) {
-    return NamedFunction.build(
+    return f(
         "median",
         "%s",
         ts -> Misc.median(ts, comparator)
@@ -115,7 +115,7 @@ public class NamedFunctions {
   }
 
   public static <T> NamedFunction<List<? extends T>, T> nth(int index) {
-    return NamedFunction.build(
+    return f(
         "[" + index + "]",
         "%s",
         Misc::first
@@ -123,7 +123,7 @@ public class NamedFunctions {
   }
 
   public static <F, T> NamedFunction<Collection<? extends F>, Collection<T>> map(NamedFunction<F, T> mapper) {
-    return NamedFunction.build(
+    return f(
         "map[" + mapper.getName() + "]",
         "%s",
         individuals -> individuals.stream().map(mapper).collect(java.util.stream.Collectors.toList())
@@ -135,7 +135,7 @@ public class NamedFunctions {
   }
 
   public static <F, T> NamedFunction<F, T> f(String name, Function<F, T> function) {
-    return NamedFunction.build(name, "%s", function);
+    return f(name, "%s", function);
   }
 
   public static <F, T> NamedFunction<F, T> f(String name, String format, Function<F, T> function) {
@@ -143,7 +143,7 @@ public class NamedFunctions {
   }
 
   public static NamedFunction<Collection<?>, Double> uniqueness() {
-    return NamedFunction.build(
+    return f(
         "uniqueness",
         "%4.2f",
         ts -> (double) ts.stream().distinct().count() / (double) ts.size()
@@ -151,7 +151,7 @@ public class NamedFunctions {
   }
 
   public static <G, S, F> NamedFunction<Event<? extends G, ? extends S, ? extends F>, Individual<? extends G, ? extends S, ? extends F>> best() {
-    return NamedFunction.build(
+    return f(
         "best",
         "%s",
         e -> Misc.first(e.getOrderedPopulation().firsts())
@@ -160,7 +160,7 @@ public class NamedFunctions {
 
   @SuppressWarnings("unchecked")
   public static NamedFunction<Collection<? extends Number>, String> hist(int bins) {
-    return NamedFunction.build(
+    return f(
         "hist",
         "%" + bins + "." + bins + "s",
         values -> TextPlotter.histogram(values instanceof List ? (List<? extends Number>) values : new ArrayList<>(values), bins)
@@ -168,27 +168,27 @@ public class NamedFunctions {
   }
 
   public static <G> NamedFunction<Individual<? extends G, ?, ?>, G> genotype() {
-    return NamedFunction.build("genotype", "%s", Individual::getGenotype);
+    return f("genotype", "%s", Individual::getGenotype);
   }
 
   public static <S> NamedFunction<Individual<?, ? extends S, ?>, S> solution() {
-    return NamedFunction.build("solution", "%s", Individual::getSolution);
+    return f("solution", "%s", Individual::getSolution);
   }
 
   public static <F> NamedFunction<Individual<?, ?, ? extends F>, F> fitness() {
-    return NamedFunction.build("fitness", "%s", Individual::getFitness);
+    return f("fitness", "%s", Individual::getFitness);
   }
 
   public static NamedFunction<Individual<?, ?, ?>, Integer> birthIteration() {
-    return NamedFunction.build("birth.iteration", "%4d", Individual::getBirthIteration);
+    return f("birth.iteration", "%4d", Individual::getBirthIteration);
   }
 
   public static NamedFunction<Object, Number> size() {
-    return NamedFunction.build("size", "%3d", NamedFunctions::size);
+    return f("size", "%3d", NamedFunctions::size);
   }
 
   public static <G, S, F, T> NamedFunction<Event<? extends G, ? extends S, ? extends F>, T> constant(String name, String format, T value) {
-    return NamedFunction.build(
+    return f(
         name,
         format,
         e -> value
@@ -196,12 +196,11 @@ public class NamedFunctions {
   }
 
   public static <G, S, F, T> NamedFunction<Event<? extends G, ? extends S, ? extends F>, T> constant(String name, T value) {
-    int l = value.toString().length();
-    return constant(name, "%" + l + "." + l + "s", value);
+    return constant(name, NamedFunction.format(value.toString().length()), value);
   }
 
   public static <G, S, F, T> NamedFunction<Event<? extends G, ? extends S, ? extends F>, T> constant(String name, String format, Map<String, T> values) {
-    return NamedFunction.build(
+    return f(
         name,
         format,
         e -> values.get(name)
@@ -210,7 +209,7 @@ public class NamedFunctions {
 
   @SuppressWarnings("unchecked")
   public static <T> NamedFunction<Object, T> as(Class<T> clazz) {
-    return NamedFunction.build(
+    return f(
         "as[" + clazz.getSimpleName() + "]",
         "%s",
         o -> (T) o

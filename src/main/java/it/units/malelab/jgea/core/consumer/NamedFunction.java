@@ -1,6 +1,5 @@
 package it.units.malelab.jgea.core.consumer;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -145,6 +144,10 @@ public interface NamedFunction<F, T> extends Function<F, T> {
 
   static String formatOfLongest(List<?> items) {
     int l = items.stream().map(Object::toString).mapToInt(String::length).max().orElse(1);
+    return format(l);
+  }
+
+  static String format(int l) {
     return "%" + l + "." + l + "s";
   }
 

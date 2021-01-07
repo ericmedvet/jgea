@@ -41,6 +41,7 @@ public class Misc {
     return modified;
   }
 
+  @SafeVarargs
   public static <K, V> Map<K, V> merge(Map<K, V>... maps) {
     Map<K, V> map = new LinkedHashMap<>();
     for (Map<K, V> currentMap : maps) {
@@ -103,13 +104,14 @@ public class Misc {
     }
     List<Range<Integer>> ranges = new ArrayList<>(sizes.size());
     int offset = range.lowerEndpoint();
-    for (int i = 0; i < rangeSize.length; i++) {
-      ranges.add(Range.closedOpen(offset, offset + rangeSize[i]));
-      offset = offset + rangeSize[i];
+    for (int j : rangeSize) {
+      ranges.add(Range.closedOpen(offset, offset + j));
+      offset = offset + j;
     }
     return ranges;
   }
 
+  @SuppressWarnings("unchecked")
   public static <T> T pickRandomly(Collection<T> ts, Random random) {
     return (T) ts.toArray()[random.nextInt(ts.size())];
   }
