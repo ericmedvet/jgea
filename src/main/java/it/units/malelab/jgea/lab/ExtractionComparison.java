@@ -20,13 +20,13 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.Individual;
+import it.units.malelab.jgea.core.consumer.*;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversityEvolver;
 import it.units.malelab.jgea.core.evolver.speciation.LazySpeciator;
 import it.units.malelab.jgea.core.evolver.speciation.SpeciatedEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
-import it.units.malelab.jgea.core.consumer.*;
 import it.units.malelab.jgea.core.operator.Crossover;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.order.LexicoGraphical;
@@ -107,9 +107,9 @@ public class ExtractionComparison extends Worker {
         size().of(all()),
         size().of(firsts()),
         size().of(lasts()),
-        uniqueness().of(map(genotype())).of(all()),
-        uniqueness().of(map(solution())).of(all()),
-        uniqueness().of(map(fitness())).of(all()),
+        uniqueness().of(each(genotype())).of(all()),
+        uniqueness().of(each(solution())).of(all()),
+        uniqueness().of(each(fitness())).of(all()),
         size().of(genotype()).of(best()),
         size().of(solution()).of(best()),
         nth(0).reformat("%5.3f").of(fitness()).of(best()),

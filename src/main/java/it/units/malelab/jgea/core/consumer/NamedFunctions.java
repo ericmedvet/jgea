@@ -122,7 +122,7 @@ public class NamedFunctions {
     );
   }
 
-  public static <F, T> NamedFunction<Collection<? extends F>, Collection<T>> map(NamedFunction<F, T> mapper) {
+  public static <F, T> NamedFunction<Collection<? extends F>, Collection<T>> each(NamedFunction<F, T> mapper) {
     return f(
         "map[" + mapper.getName() + "]",
         "%s",

@@ -75,14 +75,14 @@ public class Example extends Worker {
       size().of(all()),
       size().of(firsts()),
       size().of(lasts()),
-      uniqueness().of(map(genotype())).of(all()),
-      uniqueness().of(map(solution())).of(all()),
-      uniqueness().of(map(fitness())).of(all()),
+      uniqueness().of(each(genotype())).of(all()),
+      uniqueness().of(each(solution())).of(all()),
+      uniqueness().of(each(fitness())).of(all()),
       size().of(genotype()).of(best()),
       size().of(solution()).of(best()),
       birthIteration().of(best()),
       fitness().reformat("%5.3f").of(best()),
-      hist(8).of(map(fitness())).of(all())
+      hist(8).of(each(fitness())).of(all())
   );
 
   public Example(String[] args) throws FileNotFoundException {
@@ -167,14 +167,14 @@ public class Example extends Worker {
         size().of(all()),
         size().of(firsts()),
         size().of(lasts()),
-        uniqueness().of(map(genotype())).of(all()),
-        uniqueness().of(map(solution())).of(all()),
-        uniqueness().of(map(fitness())).of(all()),
+        uniqueness().of(each(genotype())).of(all()),
+        uniqueness().of(each(solution())).of(all()),
+        uniqueness().of(each(fitness())).of(all()),
         size().of(genotype()).of(best()),
         size().of(solution()).of(best()),
         birthIteration().of(best()),
         fitness().reformat("%5.3f").of(best()),
-        hist(8).of(map(fitness())).of(all()),
+        hist(8).of(each(fitness())).of(all()),
         solution().reformat("%30.30s").of(best())
     );
 
@@ -190,14 +190,14 @@ public class Example extends Worker {
                 new TableBuilder<Object, Object, Double, Number>(List.of(
                     iterations(),
                     as(Double.class).of(fitness()).of(best()),
-                    max(Double::compare).of(map(fitness())).of(all()),
-                    median(Double::compare).of(map(fitness())).of(all())
+                    max(Double::compare).of(each(fitness())).of(all()),
+                    median(Double::compare).of(each(fitness())).of(all())
                 )).then(ImagePlotters.xyLines(600, 400)),
                 new TableBuilder<Object, Object, Double, Number>(List.of(
                     iterations(),
-                    uniqueness().of(map(genotype())).of(all()),
-                    uniqueness().of(map(solution())).of(all()),
-                    uniqueness().of(map(fitness())).of(all())
+                    uniqueness().of(each(genotype())).of(all()),
+                    uniqueness().of(each(solution())).of(all()),
+                    uniqueness().of(each(fitness())).of(all())
                 )).then(ImagePlotters.xyLines(600, 400))
             ),
             List.of()
@@ -354,9 +354,9 @@ public class Example extends Worker {
             size().of(all()),
             size().of(firsts()),
             size().of(lasts()),
-            uniqueness().of(map(genotype())).of(all()),
-            uniqueness().of(map(solution())).of(all()),
-            uniqueness().of(map(fitness())).of(all()),
+            uniqueness().of(each(genotype())).of(all()),
+            uniqueness().of(each(solution())).of(all()),
+            uniqueness().of(each(fitness())).of(all()),
             size().of(genotype()).of(best()),
             size().of(solution()).of(best()),
             birthIteration().of(best()),

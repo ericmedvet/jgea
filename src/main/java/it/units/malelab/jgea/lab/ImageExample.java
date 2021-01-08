@@ -19,10 +19,10 @@ package it.units.malelab.jgea.lab;
 import com.google.common.base.Stopwatch;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.Individual;
+import it.units.malelab.jgea.core.consumer.*;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
-import it.units.malelab.jgea.core.consumer.*;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
@@ -85,9 +85,9 @@ public class ImageExample extends Worker {
         size().of(all()),
         size().of(firsts()),
         size().of(lasts()),
-        uniqueness().of(map(genotype())).of(all()),
-        uniqueness().of(map(solution())).of(all()),
-        uniqueness().of(map(fitness())).of(all()),
+        uniqueness().of(each(genotype())).of(all()),
+        uniqueness().of(each(solution())).of(all()),
+        uniqueness().of(each(fitness())).of(all()),
         size().of(genotype()).of(best()),
         size().of(solution()).of(best()),
         fitness().reformat("%5.3f").of(best()),

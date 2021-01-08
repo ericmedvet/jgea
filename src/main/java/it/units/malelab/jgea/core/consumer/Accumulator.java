@@ -1,9 +1,11 @@
 package it.units.malelab.jgea.core.consumer;
 
+import it.units.malelab.jgea.core.Individual;
+import it.units.malelab.jgea.core.evolver.Evolver;
+import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
+import it.units.malelab.jgea.core.order.PartialComparator;
+import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.util.Table;
-import it.units.malelab.jgea.problem.symbolicregression.element.Element;
-import it.units.malelab.jgea.representation.sequence.bit.BitString;
-import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.util.List;
 
@@ -17,33 +19,51 @@ public interface Accumulator<I, O> {
     return null;
   }
 
-  class Evolver<G, S, F> {
+  class Evolver2<G, S, F> {
+    private final G g;
+    private final S s;
+    private final F f;
+
+    public Evolver2(G g, S s, F f) {
+      this.g = g;
+      this.s = s;
+      this.f = f;
+    }
+
     public void go(Accumulator<Event<? super G, ? super S, ? super F>, ?> accumulator) {
+      Evolver.State state = new Evolver.State();
+      PartiallyOrderedCollection<Individual<G, S, F>> pop = new DAGPartiallyOrderedCollection<>((k1, k2) -> PartialComparator.PartialComparatorOutcome.NOT_COMPARABLE);
+      pop.add(new Individual<>(g, s, f, 0));
+      accumulator.take(new Event<>(state, pop));
     }
   }
 
   class Tabler<I, C> implements Accumulator<I, Table<C>> {
-    public Tabler(List<NamedFunction<I, C>> functions) {
+    private final List<NamedFunction<? super I, ? extends C>> functions;
+
+    public Tabler(List<NamedFunction<? super I, ? extends C>> functions) {
+      this.functions = functions;
+    }
+
+    @Override
+    public void take(I i) {
+      functions.forEach(f -> System.out.printf("%s: " + f.getFormat() + "%n", f.getName(), f.apply(i)));
     }
   }
 
   static void main(String[] args) {
-    NamedFunction<Event<? super BitString, ? super Tree<Element>, ? super Double>, Number> bestSize = size().of(best());
-    Evolver<BitString, Tree<Element>, Double> evolver = new Evolver<>();
-    Tabler<Event<? super BitString, ? super Tree<Element>, ? super Double>, Number> tabler = new Tabler<>(List.of(
-        bestSize,
-        size().of(best()),
+    NamedFunction<Event<? super String, ? super String, ? super Double>, ? extends Number> bestSize = size().of(best());
+    Evolver2<String, String, Double> evolver = new Evolver2<>("g", "s", 2.1d);
+    Tabler<Event<? super String, ? super String, ? super Double>, ? extends Number> tabler = new Tabler<>(List.of(
+        size().of(solution()).of(best()),
         size().of(genotype()).of(best())
     ));
     evolver.go(tabler);
     evolver.go(new Tabler<>(List.of(
-        bestSize,
-        size().of(best()),
-        size().of(genotype()).of(best())
-    )));
-    evolver.go(new Tabler<>(List.of(
-        size().of(best()),
-        size().of(genotype()).of(best())
+        size().of(solution()).of(best()),
+        size().of(genotype()).of(best()),
+        as(Double.class).of(fitness()).of(best()),
+        max(Double::compare).of(each(as(Double.class).of(fitness()))).of(all())
     )));
   }
 
