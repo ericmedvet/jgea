@@ -1,86 +1,67 @@
-package it.units.malelab.jgea.core.consumer.telegram;
+package it.units.malelab.jgea.core.listener.telegram;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.request.SendPhoto;
 import com.pengrad.telegrambot.response.SendResponse;
-import it.units.malelab.jgea.core.consumer.Consumer;
-import it.units.malelab.jgea.core.consumer.Event;
-import okhttp3.OkHttpClient;
+import it.units.malelab.jgea.core.listener.Accumulator;
+import it.units.malelab.jgea.core.listener.Listener;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
  * @author eric on 2021/01/03 for jgea
  */
-public class TelegramUpdater<G, S, F> implements Consumer.Factory<G, S, F, Void> {
+public class TelegramUpdater<E> implements Listener.Factory<E> {
 
   private static final Logger L = Logger.getLogger(TelegramUpdater.class.getName());
 
   private final long chatId;
-  private final List<Consumer.Factory<G, S, F, ?>> factories;
-  private final List<Function<Collection<? extends S>, ?>> functions;
+  private final List<Accumulator.Factory<E, ?>> factories;
 
-  private final OkHttpClient client;
   private TelegramBot bot;
 
   public TelegramUpdater(
+      List<Accumulator.Factory<E, ?>> factories,
       String botToken,
-      long chatId,
-      List<Consumer.Factory<G, S, F, ?>> factories,
-      List<Function<Collection<? extends S>, ?>> functions
+      long chatId
   ) {
     this.chatId = chatId;
     this.factories = factories;
-    this.functions = functions;
-    client = new OkHttpClient();
     try {
-      bot = new TelegramBot.Builder(botToken).okHttpClient(client).build();
+      bot = new TelegramBot(botToken);
     } catch (RuntimeException e) {
       L.severe(String.format("Cannot create bot: %s", e));
     }
   }
 
   @Override
-  public Consumer<G, S, F, Void> build() {
-    return new Consumer<>() {
-      private final List<Consumer<G, S, F, ?>> consumers = factories.stream().map(Factory::build).collect(Collectors.toList());
+  public Listener<E> build() {
+    return new Listener<>() {
+      private final List<Accumulator<E, ?>> accumulators = factories.stream().map(Accumulator.Factory::build).collect(Collectors.toList());
 
       @Override
-      public void consume(Event<? extends G, ? extends S, ? extends F> event) {
-        consumers.forEach(consumer -> consumer.consume(event));
+      public void listen(E e) {
+        accumulators.forEach(a -> a.listen(e));
       }
 
       @Override
-      public void consume(Collection<? extends S> solutions) {
+      public void done() {
         List<Object> outcomes = new ArrayList<>();
         //consume accumulators
-        for (Consumer<G, S, F, ?> consumer : consumers) {
+        for (Accumulator<E, ?> accumulator : accumulators) {
           try {
-            outcomes.add(consumer.produce());
+            outcomes.add(accumulator.get());
           } catch (Throwable e) {
             L.warning(String.format(
                 "Cannot get outcome of accumulator %s: %s",
-                consumer.getClass().getSimpleName(),
-                e
-            ));
-          }
-        }
-        for (Function<Collection<? extends S>, ?> processor : functions) {
-          try {
-            outcomes.add(processor.apply(solutions));
-          } catch (Throwable e) {
-            L.warning(String.format(
-                "Cannot process solutions with %s: %s",
-                processor.getClass().getSimpleName(),
+                accumulator.getClass().getSimpleName(),
                 e
             ));
           }

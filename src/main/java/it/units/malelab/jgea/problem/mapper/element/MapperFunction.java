@@ -19,7 +19,7 @@ package it.units.malelab.jgea.problem.mapper.element;
 /**
  * @author eric
  */
-public enum Function implements Element {
+public enum MapperFunction implements Element {
 
   SIZE("size"), WEIGHT("weight"), WEIGHT_R("weight_r"), INT("int"),
   ADD("+"), SUBTRACT("-"), MULT("*"), DIVIDE("/"), REMAINDER("%"),
@@ -34,7 +34,7 @@ public enum Function implements Element {
 
   private final String grammarName;
 
-  Function(String grammarName) {
+  MapperFunction(String grammarName) {
     this.grammarName = grammarName;
   }
 

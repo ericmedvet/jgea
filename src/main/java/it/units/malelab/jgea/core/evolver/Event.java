@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package it.units.malelab.jgea.core.consumer;
+package it.units.malelab.jgea.core.evolver;
 
 import it.units.malelab.jgea.core.Individual;
-import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 
 import java.io.Serializable;

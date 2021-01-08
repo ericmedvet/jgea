@@ -19,7 +19,7 @@ public class ImagePlotters {
   private ImagePlotters() {
   }
 
-  public static Function<Table<Number>, BufferedImage> xyLines(int w, int h) {
+  public static Function<Table<? extends Number>, BufferedImage> xyLines(int w, int h) {
     return data -> {
       if (data.nColumns() < 2) {
         throw new IllegalArgumentException(String.format(

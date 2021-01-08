@@ -1,4 +1,4 @@
-package it.units.malelab.jgea.core.consumer;
+package it.units.malelab.jgea.core.listener;
 
 import java.util.List;
 import java.util.function.BiFunction;
@@ -12,6 +12,10 @@ import java.util.stream.Collectors;
 public interface NamedFunction<F, T> extends Function<F, T> {
 
   BiFunction<String, String, String> NAME_COMPOSER = (after, before) -> before + "→" + after;
+
+  default String applyAndFormat(F f) {
+    return String.format(getFormat(), apply(f));
+  }
 
   default String getFormat() {
     return "%s";
@@ -65,7 +69,7 @@ public interface NamedFunction<F, T> extends Function<F, T> {
     };
   }
 
-  static <F,T,V> List<NamedFunction<F, ? extends V>> then(NamedFunction<F, T> before, List<NamedFunction<T, ? extends V>> afters) {
+  static <F, T, V> List<NamedFunction<F, ? extends V>> then(NamedFunction<F, T> before, List<NamedFunction<T, ? extends V>> afters) {
     return afters.stream().map(before::then).collect(Collectors.toList());
   }
 

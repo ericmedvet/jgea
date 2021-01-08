@@ -19,10 +19,14 @@ package it.units.malelab.jgea.lab;
 import com.google.common.base.Stopwatch;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.Individual;
-import it.units.malelab.jgea.core.consumer.*;
+import it.units.malelab.jgea.core.evolver.Event;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
+import it.units.malelab.jgea.core.listener.CSVPrinter;
+import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.core.listener.NamedFunction;
+import it.units.malelab.jgea.core.listener.TabularPrinter;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
@@ -44,9 +48,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
-import static it.units.malelab.jgea.core.consumer.NamedFunctions.*;
+import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
 import static it.units.malelab.jgea.core.util.Args.*;
 
 /**
@@ -73,9 +76,9 @@ public class ImageExample extends Worker {
     //BaseFunction[] baseFunctions = new BaseFunction[]{BaseFunction.STEP, BaseFunction.GAUSSIAN, BaseFunction.PROT_INVERSE, BaseFunction.SQ, BaseFunction.SAW, BaseFunction.SIN};
     BaseFunction[] baseFunctions = new BaseFunction[]{BaseFunction.GAUSSIAN, BaseFunction.SIN, BaseFunction.SQ};
     List<String> images = l(a("images", "/home/eric/experiments/2020-graphea/image/glasses-32x32.png"));
-    //consumers
+    //listeners
     Map<String, Object> keys = new HashMap<>();
-    List<NamedFunction<Event<?, ? extends RealFunction, ? extends Double>, ?>> functions = List.of(
+    List<NamedFunction<? super Event<?, ?, ? extends Double>, ?>> functions = List.of(
         constant("seed", "%2d", keys),
         constant("image", "%20.20s", keys),
         constant("evolver", "%20.20s", keys),
@@ -93,10 +96,12 @@ public class ImageExample extends Worker {
         fitness().reformat("%5.3f").of(best()),
         birthIteration().of(best())
     );
-    List<Consumer.Factory<Object, RealFunction, Double, Void>> factories = new ArrayList<>();
-    factories.add(new TabularPrinter<>(functions, System.out, 10, true));
+    Listener.Factory<Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(functions);
     if (a("file", null) != null) {
-      factories.add(new CSVPrinter<>(functions, new File(a("file", null))));
+      listenerFactory = Listener.Factory.all(List.of(
+          listenerFactory,
+          new CSVPrinter<>(functions, new File(a("file", null)))
+      ));
     }
     Map<String, Evolver<?, RealFunction, Double>> evolvers = Map.ofEntries(
         Map.entry("graph-seq-ga", new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
@@ -137,10 +142,6 @@ public class ImageExample extends Worker {
           ));
           try {
             ImageReconstruction problem = new ImageReconstruction(ImageIO.read(new File(image)), true);
-            Consumer<Object, RealFunction, Double, ?> consumer = Consumer.of(factories.stream()
-                .map(Consumer.Factory::build)
-                .collect(Collectors.toList()))
-                .deferred(executorService);
             Stopwatch stopwatch = Stopwatch.createStarted();
             Evolver<?, RealFunction, Double> evolver = evolverEntry.getValue();
             L.info(String.format("Starting %s", keys));
@@ -149,9 +150,8 @@ public class ImageExample extends Worker {
                 new Iterations(nIterations),
                 new Random(seed),
                 executorService,
-                consumer
+                listenerFactory.build().deferred(executorService)
             );
-            consumer.consume(solutions);
             L.info(String.format("Done %s: %d solutions in %4.1fs",
                 keys,
                 solutions.size(),
@@ -166,6 +166,7 @@ public class ImageExample extends Worker {
         }
       }
     }
+    listenerFactory.shutdown();
   }
 
 }

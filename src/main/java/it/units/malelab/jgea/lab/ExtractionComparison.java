@@ -16,49 +16,7 @@
 
 package it.units.malelab.jgea.lab;
 
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.Sets;
 import it.units.malelab.jgea.Worker;
-import it.units.malelab.jgea.core.Individual;
-import it.units.malelab.jgea.core.consumer.*;
-import it.units.malelab.jgea.core.evolver.Evolver;
-import it.units.malelab.jgea.core.evolver.StandardEvolver;
-import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversityEvolver;
-import it.units.malelab.jgea.core.evolver.speciation.LazySpeciator;
-import it.units.malelab.jgea.core.evolver.speciation.SpeciatedEvolver;
-import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
-import it.units.malelab.jgea.core.operator.Crossover;
-import it.units.malelab.jgea.core.operator.Mutation;
-import it.units.malelab.jgea.core.order.LexicoGraphical;
-import it.units.malelab.jgea.core.selector.Tournament;
-import it.units.malelab.jgea.core.selector.Worst;
-import it.units.malelab.jgea.core.util.Misc;
-import it.units.malelab.jgea.distance.Jaccard;
-import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
-import it.units.malelab.jgea.problem.extraction.Extractor;
-import it.units.malelab.jgea.problem.extraction.string.RegexBasedExtractor;
-import it.units.malelab.jgea.problem.extraction.string.RegexExtractionProblem;
-import it.units.malelab.jgea.problem.extraction.string.RegexGrammar;
-import it.units.malelab.jgea.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
-import it.units.malelab.jgea.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
-import it.units.malelab.jgea.representation.graph.*;
-import it.units.malelab.jgea.representation.graph.finiteautomata.DeterministicFiniteAutomaton;
-import it.units.malelab.jgea.representation.graph.finiteautomata.ShallowDFAFactory;
-import it.units.malelab.jgea.representation.tree.SameRootSubtreeCrossover;
-import it.units.malelab.jgea.representation.tree.Tree;
-
-import java.io.File;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import static it.units.malelab.jgea.core.consumer.NamedFunctions.*;
-import static it.units.malelab.jgea.core.util.Args.i;
-import static it.units.malelab.jgea.core.util.Args.ri;
 
 /**
  * @author eric
@@ -75,6 +33,7 @@ public class ExtractionComparison extends Worker {
 
   @Override
   public void run() {
+    /*
     int nPop = i(a("nPop", "100"));
     int maxHeight = i(a("maxHeight", "13"));
     int nTournament = 5;
@@ -476,5 +435,7 @@ public class ExtractionComparison extends Worker {
       }
     }
     factories.forEach(Consumer.Factory::shutdown);
+
+     */
   }
 }

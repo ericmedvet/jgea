@@ -1,4 +1,4 @@
-package it.units.malelab.jgea.core.consumer;
+package it.units.malelab.jgea.core.listener;
 
 import it.units.malelab.jgea.core.util.Pair;
 
@@ -11,20 +11,24 @@ import java.util.stream.Collectors;
 /**
  * @author eric on 2021/01/03 for jgea
  */
-public class TabularPrinter<G, S, F> implements Consumer.Factory<G, S, F, Void> {
+public class TabularPrinter<E> implements Listener.Factory<E> {
 
   private final static String SEP = " ";
   private final static String COLLAPSER_REGEX = "[.→\\[\\]]+";
 
-  private final List<Pair<? extends NamedFunction<Event<? extends G, ? extends S, ? extends F>, ?>, Integer>> pairs;
+  private final List<Pair<? extends NamedFunction<? super E, ?>, Integer>> pairs;
   private final PrintStream ps;
   private final int headerInterval;
   private final boolean legendFlag;
   private final String header;
   private final String legend;
 
+  public TabularPrinter(List<NamedFunction<? super E, ?>> functions) {
+    this(functions, System.out, 10, true);
+  }
+
   public TabularPrinter(
-      List<NamedFunction<Event<? extends G, ? extends S, ? extends F>, ?>> functions,
+      List<NamedFunction<? super E, ?>> functions,
       PrintStream ps,
       int headerInterval,
       boolean legendFlag
@@ -53,21 +57,24 @@ public class TabularPrinter<G, S, F> implements Consumer.Factory<G, S, F, Void> 
   }
 
   @Override
-  public Consumer<G, S, F, Void> build() {
+  public Listener<E> build() {
     if (legendFlag) {
       ps.println(legend);
     }
-    return new Consumer<>() {
+    return new Listener<>() {
       int lineCounter = 0;
 
       @Override
-      public void consume(Event<? extends G, ? extends S, ? extends F> event) {
+      public void listen(E e) {
         String s = pairs.stream()
             .map(p -> justify(
-                String.format(p.first().getFormat(), p.first().apply(event)),
+                String.format(p.first().getFormat(), p.first().apply(e)),
                 p.second()
             ))
             .collect(Collectors.joining(SEP));
+        if (s.isEmpty()) {
+          return;
+        }
         synchronized (ps) {
           if (headerInterval > 1 && (lineCounter % headerInterval == 0)) {
             ps.println(header);

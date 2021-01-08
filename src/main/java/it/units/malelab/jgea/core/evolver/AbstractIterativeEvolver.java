@@ -19,8 +19,7 @@ package it.units.malelab.jgea.core.evolver;
 import com.google.common.base.Stopwatch;
 import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.Individual;
-import it.units.malelab.jgea.core.consumer.Consumer;
-import it.units.malelab.jgea.core.consumer.Event;
+import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
@@ -54,7 +53,7 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
   }
 
   @Override
-  public Collection<S> solve(Function<S, F> fitnessFunction, Predicate<? super Event<G, S, F>> stopCondition, Random random, ExecutorService executor, Consumer<? super G, ? super S, ? super F, ?> consumer) throws InterruptedException, ExecutionException {
+  public Collection<S> solve(Function<S, F> fitnessFunction, Predicate<? super Event<G, S, F>> stopCondition, Random random, ExecutorService executor, Listener<? super Event<G, S, F>> listener) throws InterruptedException, ExecutionException {
     State state = initState();
     Stopwatch stopwatch = Stopwatch.createStarted();
     Collection<Individual<G, S, F>> population = initPopulation(fitnessFunction, random, executor, state);
@@ -63,7 +62,7 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
       PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation = new DAGPartiallyOrderedCollection<>(population, individualComparator);
       state.setElapsedMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS));
       Event<G, S, F> event = new Event<>(state, orderedPopulation);
-      consumer.consume(event);
+      listener.listen(event);
       if (stopCondition.test(event)) {
         L.fine(String.format("Stop condition met: %s", stopCondition.toString()));
         break;
@@ -72,6 +71,7 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
       L.fine(String.format("Population updated: %d individuals", population.size()));
       state.incIterations(1);
     }
+    listener.done();
     return new DAGPartiallyOrderedCollection<>(population, individualComparator).firsts().stream()
         .map(Individual::getSolution)
         .collect(Collectors.toList());

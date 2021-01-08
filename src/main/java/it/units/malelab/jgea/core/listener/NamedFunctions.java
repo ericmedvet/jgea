@@ -1,6 +1,7 @@
-package it.units.malelab.jgea.core.consumer;
+package it.units.malelab.jgea.core.listener;
 
 import it.units.malelab.jgea.core.Individual;
+import it.units.malelab.jgea.core.evolver.Event;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.core.util.Pair;
