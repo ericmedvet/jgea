@@ -18,7 +18,7 @@ public interface Listener<E> {
   default Listener<E> deferred(ExecutorService executorService) {
     Listener<E> thisListener = this;
     final Logger L = Logger.getLogger(Listener.class.getName());
-    return new Listener<E>() {
+    return new Listener<>() {
       @Override
       public void listen(E e) {
         executorService.submit(() -> {
@@ -83,6 +83,10 @@ public interface Listener<E> {
     Listener<E> build();
 
     default void shutdown() {
+    }
+
+    default Factory<E> and(Factory<E> other) {
+      return Factory.all(List.of(this, other));
     }
 
     static <E> Factory<E> all(List<? extends Listener.Factory<? super E>> factories) {

@@ -79,9 +79,9 @@ public class ImageExample extends Worker {
     //listeners
     Map<String, Object> keys = new HashMap<>();
     List<NamedFunction<? super Event<?, ?, ? extends Double>, ?>> functions = List.of(
-        constant("seed", "%2d", keys),
-        constant("image", "%20.20s", keys),
-        constant("evolver", "%20.20s", keys),
+        namedConstant("seed", "%2d", keys),
+        namedConstant("image", "%20.20s", keys),
+        namedConstant("evolver", "%20.20s", keys),
         iterations(),
         births(),
         elapsedSeconds(),

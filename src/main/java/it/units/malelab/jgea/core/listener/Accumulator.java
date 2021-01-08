@@ -50,6 +50,7 @@ public interface Accumulator<E, O> extends Listener<E> {
         }
       };
     }
+
   }
 
 }

@@ -116,12 +116,12 @@ public class SymbolicRegressionComparison extends Worker {
     //consumers
     Map<String, Object> keys = new HashMap<>();
     List<NamedFunction<? super Event<?, ?, ? extends Double>, ?>> functions = List.of(
-        constant("seed", "%2d", keys),
-        constant("problem", NamedFunction.formatOfLongest(
+        namedConstant("seed", "%2d", keys),
+        namedConstant("problem", NamedFunction.formatOfLongest(
             problems.stream().map(p -> p.getClass().getSimpleName())
                 .collect(Collectors.toList())),
             keys),
-        constant("evolver", "%20.20s", keys),
+        namedConstant("evolver", "%20.20s", keys),
         iterations(),
         births(),
         elapsedSeconds(),

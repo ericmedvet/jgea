@@ -160,7 +160,7 @@ public class Example extends Worker {
     Problem<BitString, Double> p = new OneMax();
     Map<String, String> keys = new HashMap<>();
     List<NamedFunction<Event<?, ?, ?>, ?>> keysFunctions = List.of(
-        constant("evolver", "%20.20s", keys)
+        namedConstant("evolver", "%20.20s", keys)
     );
     Listener.Factory<Event<?, ?, ? extends Double>> listenerFactory = Listener.Factory.all(List.of(
         new TelegramUpdater<>(List.of(
