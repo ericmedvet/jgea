@@ -8,6 +8,8 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -89,7 +91,20 @@ public class CSVPrinter<E> implements Listener.Factory<E> {
   private static File check(File file) {
     String originalFileName = file.getPath();
     while (file.exists()) {
-      file = new File(file.getPath() + ".newer");
+      String newName = null;
+      Matcher mNum = Pattern.compile("\\((?<n>[0-9]+)\\)\\.\\w+$").matcher(file.getPath());
+      if (newName == null && mNum.find()) {
+        int n = Integer.parseInt(mNum.group("n"));
+        newName = newName = new StringBuilder(file.getPath()).replace(mNum.start("n"), mNum.end("n"), Integer.toString(n + 1)).toString();
+      }
+      Matcher mExtension = Pattern.compile("\\.\\w+$").matcher(file.getPath());
+      if (newName == null && mExtension.find()) {
+        newName = new StringBuilder(file.getPath()).replace(mExtension.start(), mExtension.end(), ".(1)" + mExtension.group()).toString();
+      }
+      if (newName == null) {
+        newName = file.getPath() + ".newer";
+      }
+      file = new File(newName);
     }
     if (!file.getPath().equals(originalFileName)) {
       L.log(Level.WARNING, String.format("Given file name (%s) exists; will write on %s", originalFileName, file.getPath()));

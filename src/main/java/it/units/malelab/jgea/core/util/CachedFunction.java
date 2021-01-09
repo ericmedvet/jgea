@@ -20,6 +20,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheStats;
 
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
@@ -29,7 +30,7 @@ import java.util.function.Function;
 public class CachedFunction<T, R> implements Function<T, R> {
 
   private final Function<T, R> function;
-  private final Cache<T, R> cache;
+  private final Cache<T, Optional<R>> cache;
   private long innerInvocations;
 
   public CachedFunction(Function<T, R> function, long size) {
@@ -40,10 +41,15 @@ public class CachedFunction<T, R> implements Function<T, R> {
   @Override
   public R apply(T t) {
     try {
-      return cache.get(t, () -> {
+      Optional<R> optional = cache.get(t, () -> {
         innerInvocations = innerInvocations + 1;
-        return function.apply(t);
+        R r = function.apply(t);
+        if (r != null) {
+          return Optional.of(r);
+        }
+        return Optional.empty();
       });
+      return optional.orElse(null);
     } catch (ExecutionException ex) {
       throw new RuntimeException(ex);
     }

@@ -87,7 +87,11 @@ public interface NamedFunction<F, T> extends Function<F, T> {
 
       @Override
       public T apply(F f) {
-        return function.apply(f);
+        try {
+          return function.apply(f);
+        } catch (Throwable t) {
+          throw new RuntimeException(String.format("Cannot compute function %s: %s", getName(), t), t);
+        }
       }
     };
   }

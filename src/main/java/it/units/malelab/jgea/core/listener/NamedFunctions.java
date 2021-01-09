@@ -71,7 +71,7 @@ public class NamedFunctions {
   }
 
   public static <T> NamedFunction<List<? extends T>, T> nth(int index) {
-    return f("[" + index + "]", Misc::first);
+    return f("[" + index + "]", l -> l.get(index));
   }
 
   public static <F, T> NamedFunction<Collection<? extends F>, Collection<T>> each(NamedFunction<F, T> mapper) {
