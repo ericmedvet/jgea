@@ -1,8 +1,10 @@
 package it.units.malelab.jgea.core.listener.telegram;
 
 import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.request.SendDocument;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.request.SendPhoto;
+import com.pengrad.telegrambot.request.SendVideo;
 import com.pengrad.telegrambot.response.SendResponse;
 import it.units.malelab.jgea.core.listener.Accumulator;
 import it.units.malelab.jgea.core.listener.Listener;
@@ -10,8 +12,10 @@ import it.units.malelab.jgea.core.listener.Listener;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -21,6 +25,7 @@ import java.util.stream.Collectors;
 public class TelegramUpdater<E> implements Listener.Factory<E> {
 
   private static final Logger L = Logger.getLogger(TelegramUpdater.class.getName());
+  private static final Set<String> VIDEO_FILE_EXTENSIONS = Set.of("mpg", "avi", "mp4");
 
   private final long chatId;
   private final List<Accumulator.Factory<E, ?>> factories;
@@ -72,6 +77,20 @@ public class TelegramUpdater<E> implements Listener.Factory<E> {
             sendText((String) outcome);
           } else if (outcome instanceof BufferedImage) {
             sendImage((BufferedImage) outcome);
+          } else if (outcome instanceof File) {
+            File file = (File) outcome;
+            if (!file.exists()) {
+              L.info(String.format(
+                  "File %s does not exist, cannot send",
+                  file
+              ));
+            } else {
+              if (VIDEO_FILE_EXTENSIONS.stream().anyMatch(e -> file.getPath().endsWith("." + e))) {
+                sendVideo(file);
+              } else {
+                sendDocument(file);
+              }
+            }
           } else {
             L.info(String.format(
                 "Skip outcome of accumulator: do not know how to handle %s",
@@ -111,6 +130,34 @@ public class TelegramUpdater<E> implements Listener.Factory<E> {
       }
     } catch (Throwable t) {
       L.warning(String.format("Cannot send image: %s", t));
+    }
+  }
+
+  private void sendVideo(File file) {
+    try {
+      SendResponse response = bot.execute(new SendVideo(
+          chatId,
+          file
+      ));
+      if (!response.isOk()) {
+        L.warning(String.format("Response is not ok: %s", response.toString()));
+      }
+    } catch (Throwable t) {
+      L.warning(String.format("Cannot send video: %s", t));
+    }
+  }
+
+  private void sendDocument(File file) {
+    try {
+      SendResponse response = bot.execute(new SendDocument(
+          chatId,
+          file
+      ));
+      if (!response.isOk()) {
+        L.warning(String.format("Response is not ok: %s", response.toString()));
+      }
+    } catch (Throwable t) {
+      L.warning(String.format("Cannot send document: %s", t));
     }
   }
 

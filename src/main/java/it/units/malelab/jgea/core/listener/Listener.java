@@ -51,6 +51,11 @@ public interface Listener<E> {
     };
   }
 
+  static <E> Listener<E> deaf() {
+    return e -> {
+    };
+  }
+
   static <E, F> Listener<F> forEach(Function<F, Collection<E>> splitter, Listener<E> listener) {
     return new Listener<>() {
       @Override
@@ -102,5 +107,25 @@ public interface Listener<E> {
         }
       };
     }
+
+    static <F, E> Factory<F> forEach(Function<F, Collection<E>> splitter, Listener.Factory<E> factory) {
+      return new Factory<>() {
+        @Override
+        public Listener<F> build() {
+          return Listener.forEach(splitter, factory.build());
+        }
+
+        @Override
+        public void shutdown() {
+          factory.shutdown();
+        }
+      };
+    }
+
+    static <E> Factory<E> deaf() {
+      return Listener::deaf;
+    }
+
   }
+
 }

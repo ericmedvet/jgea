@@ -32,6 +32,10 @@ public class ImagePlotters {
           .xAxisTitle(data.names().get(0))
           .theme(Styler.ChartTheme.XChart)
           .build();
+      if (data.nColumns() == 2) {
+        chart.setYAxisTitle(data.names().get(1));
+        chart.getStyler().setLegendVisible(false);
+      }
       chart.getStyler().setDefaultSeriesRenderStyle(XYSeries.XYSeriesRenderStyle.Line);
       chart.getStyler().setSeriesMarkers(new Marker[]{SeriesMarkers.NONE});
       chart.getStyler().setYAxisDecimalPattern("#.##");
