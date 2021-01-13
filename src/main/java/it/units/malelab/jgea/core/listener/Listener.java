@@ -51,6 +51,24 @@ public interface Listener<E> {
     };
   }
 
+  default Listener<E> onLast() {
+    Listener<E> thisListener = this;
+    return new Listener<>() {
+      E lastE;
+
+      @Override
+      public void listen(E e) {
+        lastE = e;
+      }
+
+      @Override
+      public void done() {
+        thisListener.listen(lastE);
+        thisListener.done();
+      }
+    };
+  }
+
   static <E> Listener<E> deaf() {
     return e -> {
     };
@@ -92,6 +110,21 @@ public interface Listener<E> {
 
     default Factory<E> and(Factory<E> other) {
       return Factory.all(List.of(this, other));
+    }
+
+    default Factory<E> onLast() {
+      Factory<E> thisFactory = this;
+      return new Factory<>() {
+        @Override
+        public Listener<E> build() {
+          return thisFactory.build().onLast();
+        }
+
+        @Override
+        public void shutdown() {
+          thisFactory.shutdown();
+        }
+      };
     }
 
     static <E> Factory<E> all(List<? extends Listener.Factory<? super E>> factories) {
