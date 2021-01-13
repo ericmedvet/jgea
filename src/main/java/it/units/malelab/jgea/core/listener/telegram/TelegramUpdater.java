@@ -13,6 +13,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -44,6 +46,21 @@ public class TelegramUpdater<E> implements Listener.Factory<E> {
     } catch (RuntimeException e) {
       L.severe(String.format("Cannot create bot: %s", e));
     }
+    sendText(String.format(
+        "%s started on %s: will send updates with %d accumulators",
+        TelegramUpdater.class.getSimpleName(),
+        getMachineName(),
+        factories.size()
+    ));
+  }
+
+  @Override
+  public void shutdown() {
+    sendText(String.format(
+        "%s shutting down on %s",
+        TelegramUpdater.class.getSimpleName(),
+        getMachineName()
+    ));
   }
 
   @Override
@@ -159,6 +176,17 @@ public class TelegramUpdater<E> implements Listener.Factory<E> {
     } catch (Throwable t) {
       L.warning(String.format("Cannot send document: %s", t));
     }
+  }
+
+  private static String getMachineName() {
+    String user = System.getProperty("user.name");
+    String hostName = "unknown";
+    try {
+      hostName = InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException e) {
+      //ignore
+    }
+    return user + "@" + hostName;
   }
 
 }
