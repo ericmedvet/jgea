@@ -76,6 +76,10 @@ public class TelegramUpdater<E> implements Listener.Factory<E> {
       @Override
       public void done() {
         List<Object> outcomes = new ArrayList<>();
+        sendText(String.format(
+            "done() on %s",
+            getMachineName()
+        ));
         //consume accumulators
         for (Accumulator<E, ?> accumulator : accumulators) {
           try {

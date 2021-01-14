@@ -100,11 +100,11 @@ public class Example extends Worker {
   @Override
   public void run() {
     //runLinearPoints();
-    runOneMax();
+    //runOneMax();
     //runSymbolicRegression();
     //runSymbolicRegressionMO();
     //runGrammarBasedParity();
-    //runSphere();
+    runSphere();
     //runRastrigin();
   }
 
@@ -436,6 +436,15 @@ public class Example extends Worker {
             Function.identity(),
             new FixedLengthListFactory<>(10, new UniformDoubleFactory(-10, 10)),
             PartialComparator.from(Double.class).comparing(Individual::getFitness)
+        ),
+        new BasicEvolutionaryStrategy<>(
+            Function.identity(),
+            new FixedLengthListFactory<>(10, new UniformDoubleFactory(-10, 10)),
+            PartialComparator.from(Double.class).comparing(Individual::getFitness),
+            0.1d,
+            100,
+            25,
+            1
         )
     );
     for (Evolver<List<Double>, List<Double>, Double> evolver : evolvers) {
