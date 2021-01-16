@@ -28,10 +28,7 @@ import it.units.malelab.jgea.core.evolver.speciation.KMeansSpeciator;
 import it.units.malelab.jgea.core.evolver.speciation.LazySpeciator;
 import it.units.malelab.jgea.core.evolver.speciation.SpeciatedEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
-import it.units.malelab.jgea.core.listener.CSVPrinter;
-import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.NamedFunction;
-import it.units.malelab.jgea.core.listener.TabularPrinter;
+import it.units.malelab.jgea.core.listener.*;
 import it.units.malelab.jgea.core.operator.Crossover;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.order.PartialComparator;
@@ -114,14 +111,12 @@ public class SymbolicRegressionComparison extends Worker {
         // new Pagie1(metric)
     );
     //consumers
-    Map<String, Object> keys = new HashMap<>();
     List<NamedFunction<? super Event<?, ?, ? extends Double>, ?>> functions = List.of(
-        namedConstant("seed", "%2d", keys),
-        namedConstant("problem", NamedFunction.formatOfLongest(
+        eventAttribute("seed", "%2d"),
+        eventAttribute("problem", NamedFunction.formatOfLongest(
             problems.stream().map(p -> p.getClass().getSimpleName())
-                .collect(Collectors.toList())),
-            keys),
-        namedConstant("evolver", "%20.20s", keys),
+                .collect(Collectors.toList()))),
+        eventAttribute("evolver", "%20.20s"),
         iterations(),
         births(),
         elapsedSeconds(),
@@ -869,9 +864,15 @@ public class SymbolicRegressionComparison extends Worker {
     for (int seed : seeds) {
       for (SymbolicRegressionProblem problem : problems) {
         for (Map.Entry<String, Function<SymbolicRegressionProblem, Evolver<?, RealFunction, Double>>> evolverEntry : evolvers.entrySet()) {
-          keys.put("seed", seed);
-          keys.put("problem", problem.getClass().getSimpleName().toLowerCase());
-          keys.put("evolver", evolverEntry.getKey());
+          Map<String,Object> keys = Map.ofEntries(
+              Map.entry("seed", seed),
+              Map.entry("problem", problem.getClass().getSimpleName().toLowerCase()),
+              Map.entry("evolver", evolverEntry.getKey())
+          );
+          Listener<Event<?, ?, ? extends Double>> listener = Listener.all(List.of(
+              new EventAugmenter(keys),
+              listenerFactory.build()
+          )).deferred(executorService);
           try {
             Stopwatch stopwatch = Stopwatch.createStarted();
             Evolver<?, RealFunction, Double> evolver = evolverEntry.getValue().apply(problem);
@@ -881,7 +882,7 @@ public class SymbolicRegressionComparison extends Worker {
                 new Iterations(nIterations),
                 new Random(seed),
                 executorService,
-                listenerFactory.build().deferred(executorService)
+                listener
             );
             L.info(String.format("Done %s: %d solutions in %4.1fs",
                 keys,

@@ -100,11 +100,11 @@ public class Example extends Worker {
   @Override
   public void run() {
     //runLinearPoints();
-    //runOneMax();
+    runOneMax();
     //runSymbolicRegression();
     //runSymbolicRegressionMO();
     //runGrammarBasedParity();
-    runSphere();
+    //runSphere();
     //runRastrigin();
   }
 
@@ -158,9 +158,8 @@ public class Example extends Worker {
     int size = 100;
     Random r = new Random(1);
     Problem<BitString, Double> p = new OneMax();
-    Map<String, String> keys = new HashMap<>();
     List<NamedFunction<Event<?, ?, ?>, ?>> keysFunctions = List.of(
-        namedConstant("evolver", "%20.20s", keys)
+        eventAttribute("evolver", "%20.20s")
     );
     Listener.Factory<Event<?, ?, ? extends Double>> listenerFactory = Listener.Factory.all(List.of(
         new TelegramUpdater<>(List.of(
@@ -230,14 +229,17 @@ public class Example extends Worker {
     );
     evolvers = evolvers.subList(2, 3);
     for (Evolver<BitString, BitString, Double> evolver : evolvers) {
-      keys.put("evolver", evolver.getClass().getSimpleName());
+      Listener<Event<?, ?, ? extends Double>> listener = Listener.all(List.of(
+          new EventAugmenter(Map.ofEntries(Map.entry("evolver", evolver.getClass().getSimpleName()))),
+          listenerFactory.build()
+      )).deferred(executorService);
       try {
         Collection<BitString> solutions = evolver.solve(
             Misc.cached(p.getFitnessFunction(), 10000),
             new TargetFitness<>(0d).or(new Iterations(1000)),
             r,
             executorService,
-            listenerFactory.build().deferred(executorService)
+            listener
         );
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
       } catch (InterruptedException | ExecutionException e) {

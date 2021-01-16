@@ -8,7 +8,10 @@ import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.core.util.Sized;
 import it.units.malelab.jgea.core.util.TextPlotter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -143,12 +146,12 @@ public class NamedFunctions {
     return constant(name, NamedFunction.format(value.toString().length()), value);
   }
 
-  public static <G, S, F, T> NamedFunction<Event<? extends G, ? extends S, ? extends F>, T> namedConstant(String name, Map<String, T> values) {
-    return f(name, e -> values.get(name));
+  public static <G, S, F> NamedFunction<Event<? extends G, ? extends S, ? extends F>, Object> eventAttribute(String name) {
+    return f(name, e -> e.getAttributes().get(name));
   }
 
-  public static <G, S, F, T> NamedFunction<Event<? extends G, ? extends S, ? extends F>, T> namedConstant(String name, String format, Map<String, T> values) {
-    return f(name, format, e -> values.get(name));
+  public static <G, S, F> NamedFunction<Event<? extends G, ? extends S, ? extends F>, Object> eventAttribute(String name, String format) {
+    return f(name, format, e -> e.getAttributes().get(name));
   }
 
   @SuppressWarnings("unchecked")

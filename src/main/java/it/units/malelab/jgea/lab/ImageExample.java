@@ -23,10 +23,7 @@ import it.units.malelab.jgea.core.evolver.Event;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
-import it.units.malelab.jgea.core.listener.CSVPrinter;
-import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.NamedFunction;
-import it.units.malelab.jgea.core.listener.TabularPrinter;
+import it.units.malelab.jgea.core.listener.*;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
@@ -77,11 +74,10 @@ public class ImageExample extends Worker {
     BaseFunction[] baseFunctions = new BaseFunction[]{BaseFunction.GAUSSIAN, BaseFunction.SIN, BaseFunction.SQ};
     List<String> images = l(a("images", "/home/eric/experiments/2020-graphea/image/glasses-32x32.png"));
     //listeners
-    Map<String, Object> keys = new HashMap<>();
     List<NamedFunction<? super Event<?, ?, ? extends Double>, ?>> functions = List.of(
-        namedConstant("seed", "%2d", keys),
-        namedConstant("image", "%20.20s", keys),
-        namedConstant("evolver", "%20.20s", keys),
+        eventAttribute("seed", "%2d"),
+        eventAttribute("image", "%20.20s"),
+        eventAttribute("evolver", "%20.20s"),
         iterations(),
         births(),
         elapsedSeconds(),
@@ -135,22 +131,26 @@ public class ImageExample extends Worker {
     for (int seed : seeds) {
       for (String image : images) {
         for (Map.Entry<String, Evolver<?, RealFunction, Double>> evolverEntry : evolvers.entrySet()) {
-          keys.putAll(Map.of(
+          Map<String, Object> keys = Map.of(
               "seed", Integer.toString(seed),
               "image", image.split(File.separator)[image.split(File.separator).length - 1],
               "evolver", evolverEntry.getKey()
-          ));
+          );
           try {
             ImageReconstruction problem = new ImageReconstruction(ImageIO.read(new File(image)), true);
             Stopwatch stopwatch = Stopwatch.createStarted();
             Evolver<?, RealFunction, Double> evolver = evolverEntry.getValue();
+            Listener<Event<?, ?, ? extends Double>> listener = Listener.all(List.of(
+                new EventAugmenter(keys),
+                listenerFactory.build()
+            )).deferred(executorService);
             L.info(String.format("Starting %s", keys));
             Collection<RealFunction> solutions = evolver.solve(
                 Misc.cached(problem.getFitnessFunction(), 10000),
                 new Iterations(nIterations),
                 new Random(seed),
                 executorService,
-                listenerFactory.build().deferred(executorService)
+                listener
             );
             L.info(String.format("Done %s: %d solutions in %4.1fs",
                 keys,
