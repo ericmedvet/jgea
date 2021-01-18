@@ -32,14 +32,14 @@ public class BasicEvolutionaryStrategy<S, F> extends AbstractIterativeEvolver<Li
 
   private final double sigma;
   private final int populationSize;
-  private final int offspringSize;
+  private final int parentsSize;
   private final int eliteSize;
 
-  public BasicEvolutionaryStrategy(Function<? super List<Double>, ? extends S> solutionMapper, Factory<? extends List<Double>> genotypeFactory, PartialComparator<? super Individual<List<Double>, S, F>> individualComparator, double sigma, int populationSize, int offspringSize, int eliteSize) {
+  public BasicEvolutionaryStrategy(Function<? super List<Double>, ? extends S> solutionMapper, Factory<? extends List<Double>> genotypeFactory, PartialComparator<? super Individual<List<Double>, S, F>> individualComparator, double sigma, int populationSize, int parentsSize, int eliteSize) {
     super(solutionMapper, genotypeFactory, individualComparator);
     this.sigma = sigma;
     this.populationSize = populationSize;
-    this.offspringSize = offspringSize;
+    this.parentsSize = parentsSize;
     this.eliteSize = eliteSize;
   }
 
@@ -54,7 +54,7 @@ public class BasicEvolutionaryStrategy<S, F> extends AbstractIterativeEvolver<Li
     List<Individual<List<Double>, S, F>> parents = new ArrayList<>();
     List<Individual<List<Double>, S, F>> elite = new ArrayList<>();
     //extract parents
-    while (parents.size() < offspringSize) {
+    while (parents.size() < parentsSize) {
       Individual<List<Double>, S, F> best = all.stream()
           .reduce((i1, i2) -> individualComparator.compare(i1, i2).equals(PartialComparator.PartialComparatorOutcome.BEFORE) ? i1 : i2)
           .orElse(all.get(0));
