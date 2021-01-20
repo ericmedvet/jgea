@@ -160,6 +160,7 @@ public class Example {
         listenerFactory.build().deferred(executorService)
     );
     System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
+    listenerFactory.shutdown();
   }
 }
 ```
