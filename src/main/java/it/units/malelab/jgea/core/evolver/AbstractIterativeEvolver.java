@@ -111,7 +111,6 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
               individual.getGenotypeBirthIteration()
           );
         }).collect(Collectors.toList());
-    state.incBirths(individuals.size());
     state.setFitnessEvaluations(individuals.size());
     return getAll(executor.invokeAll(callables));
   }
