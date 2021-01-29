@@ -130,11 +130,11 @@ public class NamedFunctions {
     return f("fitness", Individual::getFitness);
   }
 
-  public static NamedFunction<Individual<?, ?, ?>, Integer> birthIteration() {
+  public static <G, S, F> NamedFunction<Individual<? extends G, ? extends S, ? extends F>, Integer> birthIteration() {
     return f("birth.iteration", "%4d", Individual::getBirthIteration);
   }
 
-  public static NamedFunction<Individual<?, ?, ?>, Integer> genotypeBirthIteration() {
+  public static <G, S, F> NamedFunction<Individual<? extends G, ? extends S, ? extends F>, Integer> genotypeBirthIteration() {
     return f("genotype.birth.iteration", "%4d", Individual::getGenotypeBirthIteration);
   }
 
@@ -185,5 +185,6 @@ public class NamedFunctions {
     }
     return null;
   }
+
 
 }
