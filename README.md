@@ -103,7 +103,8 @@ public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> 
       Selector<? super Individual<? super G, ? super S, ? super F>> parentSelector,
       Selector<? super Individual<? super G, ? super S, ? super F>> unsurvivalSelector,
       int offspringSize,
-      boolean overlapping) { /* ... */}
+      boolean overlapping,
+      boolean remap) { /* ... */}
 }
 ```
 `StandardEvolver` automatically exploits parallelism using the `ExecutorService` parameter of `solve()`.
@@ -140,7 +141,8 @@ public class Example {
         new Tournament(3),
         new Worst(),
         100,
-        true
+        true,
+        false
     );
     Listener.Factory<Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(List.of(
         iterations(),
