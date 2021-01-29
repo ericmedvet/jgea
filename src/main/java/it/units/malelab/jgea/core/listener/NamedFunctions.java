@@ -134,6 +134,10 @@ public class NamedFunctions {
     return f("birth.iteration", "%4d", Individual::getBirthIteration);
   }
 
+  public static NamedFunction<Individual<?, ?, ?>, Integer> genotypeBirthIteration() {
+    return f("genotype.birth.iteration", "%4d", Individual::getGenotypeBirthIteration);
+  }
+
   public static NamedFunction<Object, Number> size() {
     return f("size", "%3d", NamedFunctions::size);
   }

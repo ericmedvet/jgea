@@ -16,7 +16,51 @@
 
 package it.units.malelab.jgea.lab;
 
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.Sets;
 import it.units.malelab.jgea.Worker;
+import it.units.malelab.jgea.core.Individual;
+import it.units.malelab.jgea.core.evolver.Event;
+import it.units.malelab.jgea.core.evolver.Evolver;
+import it.units.malelab.jgea.core.evolver.StandardEvolver;
+import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversityEvolver;
+import it.units.malelab.jgea.core.evolver.speciation.LazySpeciator;
+import it.units.malelab.jgea.core.evolver.speciation.SpeciatedEvolver;
+import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
+import it.units.malelab.jgea.core.listener.*;
+import it.units.malelab.jgea.core.operator.Crossover;
+import it.units.malelab.jgea.core.operator.Mutation;
+import it.units.malelab.jgea.core.order.LexicoGraphical;
+import it.units.malelab.jgea.core.selector.Tournament;
+import it.units.malelab.jgea.core.selector.Worst;
+import it.units.malelab.jgea.core.util.Misc;
+import it.units.malelab.jgea.distance.Jaccard;
+import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
+import it.units.malelab.jgea.problem.extraction.Extractor;
+import it.units.malelab.jgea.problem.extraction.string.RegexBasedExtractor;
+import it.units.malelab.jgea.problem.extraction.string.RegexExtractionProblem;
+import it.units.malelab.jgea.problem.extraction.string.RegexGrammar;
+import it.units.malelab.jgea.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
+import it.units.malelab.jgea.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
+import it.units.malelab.jgea.representation.graph.*;
+import it.units.malelab.jgea.representation.graph.finiteautomata.DeterministicFiniteAutomaton;
+import it.units.malelab.jgea.representation.graph.finiteautomata.ShallowDFAFactory;
+import it.units.malelab.jgea.representation.tree.SameRootSubtreeCrossover;
+import it.units.malelab.jgea.representation.tree.Tree;
+
+import java.io.File;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
+import static it.units.malelab.jgea.core.util.Args.i;
+import static it.units.malelab.jgea.core.util.Args.ri;
 
 /**
  * @author eric
@@ -33,7 +77,7 @@ public class ExtractionComparison extends Worker {
 
   @Override
   public void run() {
-    /*
+
     int nPop = i(a("nPop", "100"));
     int maxHeight = i(a("maxHeight", "13"));
     int nTournament = 5;
@@ -56,7 +100,7 @@ public class ExtractionComparison extends Worker {
     );
     //consumers
     Map<String, Object> keys = new HashMap<>();
-    List<NamedFunction<Event<?, ? extends Extractor<Character>, ? extends List<Double>>, ?>> functions = List.of(
+    List<NamedFunction<? super Event<?, ? extends Extractor<Character>, ? extends List<Double>>, ?>> functions = List.of(
         constant("seed", "%2d", keys),
         constant("problem", "%20.20s", keys),
         constant("evolver", "%20.20s", keys),
@@ -76,10 +120,12 @@ public class ExtractionComparison extends Worker {
         // TODO put validation, num of extractions, hist of fitnesses
         solution().reformat("%30.30s").of(best())
     );
-    List<Consumer.Factory<Object, Extractor<Character>, List<Double>, Void>> factories = new ArrayList<>();
-    factories.add(new TabularPrinter<>(functions, System.out, 10, true));
+    Listener.Factory<Event<?, ? extends Extractor<Character>, ? extends List<Double>>> listenerFactory = new TabularPrinter<>(functions);
     if (a("file", null) != null) {
-      factories.add(new CSVPrinter<>(functions, new File(a("file", null))));
+      listenerFactory = Listener.Factory.all(List.of(
+          listenerFactory,
+          new CSVPrinter<>(functions, new File(a("file", null)))
+      ));
     }
     //evolvers
     Map<String, Function<RegexExtractionProblem, Evolver<?, Extractor<Character>, List<Double>>>> evolvers = new TreeMap<>(Map.ofEntries(
@@ -99,7 +145,8 @@ public class ExtractionComparison extends Worker {
               new Tournament(nTournament),
               new Worst(),
               nPop,
-              true
+              true,
+              false
           );
         }),
         Map.entry("cfgtree-gadiv", p -> {
@@ -119,6 +166,7 @@ public class ExtractionComparison extends Worker {
               new Worst(),
               nPop,
               true,
+              false,
               diversityMaxAttempts
           );
         }),
@@ -177,7 +225,8 @@ public class ExtractionComparison extends Worker {
                   (new Jaccard()).on(i -> i.getGenotype().nodes()),
                   0.25
               ),
-              0.75
+              0.75,
+              false
           );
         }),
         Map.entry("dfa-seq-speciated", p -> {
@@ -227,7 +276,8 @@ public class ExtractionComparison extends Worker {
                   (new Jaccard()).on(i -> i.getGenotype().nodes()),
                   0.25
               ),
-              0.75
+              0.75,
+              false
           );
         }),
         Map.entry("dfa-seq-speciated-noxover", p -> {
@@ -272,7 +322,8 @@ public class ExtractionComparison extends Worker {
                   (new Jaccard()).on(i -> i.getGenotype().nodes()),
                   0.25
               ),
-              0.75
+              0.75,
+              false
           );
         }),
         Map.entry("dfa-hash+-ga", p -> {
@@ -328,7 +379,8 @@ public class ExtractionComparison extends Worker {
               new Tournament(nTournament),
               new Worst(),
               nPop,
-              true
+              true,
+              false
           );
         }),
         Map.entry("dfa-hash+-speciated-noxover", p -> {
@@ -381,7 +433,8 @@ public class ExtractionComparison extends Worker {
                   (new Jaccard()).on(i -> i.getGenotype().nodes()),
                   0.25
               ),
-              0.75
+              0.75,
+              false
           );
         })
     ));
@@ -402,10 +455,10 @@ public class ExtractionComparison extends Worker {
               "problem", problemEntry.getKey(),
               "evolver", evolverEntry.getKey()
           ));
-          Consumer<Object, Extractor<Character>, List<Double>, ?> consumer = Consumer.of(factories.stream()
-              .map(Consumer.Factory::build)
-              .collect(Collectors.toList()))
-              .deferred(executorService);
+          Listener<Event<?, ? extends Extractor<Character>, ? extends List<Double>>> listener = Listener.all(List.of(
+              new EventAugmenter(keys),
+              listenerFactory.build()
+          )).deferred(executorService);
           try {
             RegexExtractionProblem p = problemEntry.getValue();
             Stopwatch stopwatch = Stopwatch.createStarted();
@@ -416,9 +469,8 @@ public class ExtractionComparison extends Worker {
                 new Iterations(nIterations),
                 new Random(seed),
                 executorService,
-                consumer
+                listener
             );
-            consumer.consume(solutions);
             L.info(String.format("Done %s: %d solutions in %4.1fs",
                 keys,
                 solutions.size(),
@@ -434,8 +486,6 @@ public class ExtractionComparison extends Worker {
         }
       }
     }
-    factories.forEach(Consumer.Factory::shutdown);
-
-     */
+    listenerFactory.shutdown();
   }
 }

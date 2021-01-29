@@ -34,13 +34,15 @@ public class BasicEvolutionaryStrategy<S, F> extends AbstractIterativeEvolver<Li
   private final int populationSize;
   private final int parentsSize;
   private final int eliteSize;
+  private final boolean remap;
 
-  public BasicEvolutionaryStrategy(Function<? super List<Double>, ? extends S> solutionMapper, Factory<? extends List<Double>> genotypeFactory, PartialComparator<? super Individual<List<Double>, S, F>> individualComparator, double sigma, int populationSize, int parentsSize, int eliteSize) {
+  public BasicEvolutionaryStrategy(Function<? super List<Double>, ? extends S> solutionMapper, Factory<? extends List<Double>> genotypeFactory, PartialComparator<? super Individual<List<Double>, S, F>> individualComparator, double sigma, int populationSize, int parentsSize, int eliteSize, boolean remap) {
     super(solutionMapper, genotypeFactory, individualComparator);
     this.sigma = sigma;
     this.populationSize = populationSize;
     this.parentsSize = parentsSize;
     this.eliteSize = eliteSize;
+    this.remap = remap;
   }
 
   @Override
@@ -85,8 +87,12 @@ public class BasicEvolutionaryStrategy<S, F> extends AbstractIterativeEvolver<Li
           .collect(Collectors.toList()));
     }
     List<Individual<List<Double>, S, F>> offspring = new ArrayList<>();
-    offspring.addAll(elite);
-    offspring.addAll(buildIndividuals(offspringGenotypes, solutionMapper, fitnessFunction, executor, state));
+    if (remap) {
+      offspring.addAll(remap(elite, solutionMapper, fitnessFunction, executor, state));
+    } else {
+      offspring.addAll(elite);
+    }
+    offspring.addAll(map(offspringGenotypes, solutionMapper, fitnessFunction, executor, state));
     return offspring;
   }
 

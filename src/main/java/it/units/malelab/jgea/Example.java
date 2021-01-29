@@ -56,7 +56,10 @@ import it.units.malelab.jgea.representation.tree.Tree;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -133,7 +136,8 @@ public class Example extends Worker {
             new Tournament(5),
             new Worst(),
             100,
-            true
+            true,
+            false
         )
     );
     for (Evolver<List<Double>, List<Double>, Double> evolver : evolvers) {
@@ -209,7 +213,8 @@ public class Example extends Worker {
             new Tournament(5),
             new Worst(),
             100,
-            true
+            true,
+            false
         ),
         new StandardWithEnforcedDiversityEvolver<>(
             Function.identity(),
@@ -224,6 +229,7 @@ public class Example extends Worker {
             new Worst(),
             100,
             true,
+            false,
             100
         )
     );
@@ -275,7 +281,8 @@ public class Example extends Worker {
             new Tournament(5),
             new Worst(),
             100,
-            true
+            true,
+            false
         ),
         new StandardWithEnforcedDiversityEvolver<>(
             new FormulaMapper()
@@ -292,6 +299,7 @@ public class Example extends Worker {
             new Worst(),
             100,
             true,
+            false,
             1000
         )
     );
@@ -340,7 +348,8 @@ public class Example extends Worker {
             new Tournament(5),
             new Worst(),
             100,
-            true
+            true,
+            false
         ),
         new StandardWithEnforcedDiversityEvolver<>(
             new FormulaMapper()
@@ -357,6 +366,7 @@ public class Example extends Worker {
             new Worst(),
             100,
             true,
+            false,
             1000
         )
     );
@@ -402,7 +412,8 @@ public class Example extends Worker {
         new Tournament(3),
         new Worst(),
         100,
-        true
+        true,
+        false
     );
     try {
       Collection<List<Tree<Element>>> solutions = evolver.solve(
@@ -432,7 +443,8 @@ public class Example extends Worker {
             new Tournament(5),
             new Worst(),
             100,
-            true
+            true,
+            false
         ),
         new CMAESEvolver<>(
             Function.identity(),
@@ -446,7 +458,8 @@ public class Example extends Worker {
             0.1d,
             100,
             25,
-            1
+            1,
+            false
         )
     );
     for (Evolver<List<Double>, List<Double>, Double> evolver : evolvers) {
@@ -480,7 +493,8 @@ public class Example extends Worker {
             new Tournament(5),
             new Worst(),
             100,
-            true
+            true,
+            false
         ),
         new CMAESEvolver<>(
             Function.identity(),

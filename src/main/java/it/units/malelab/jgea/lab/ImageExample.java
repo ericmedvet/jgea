@@ -124,7 +124,8 @@ public class ImageExample extends Worker {
             new Tournament(nTournament),
             new Worst(),
             nPop,
-            true
+            true,
+            false
         ))
     );
     //run

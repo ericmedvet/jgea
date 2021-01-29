@@ -170,7 +170,8 @@ public class SymbolicRegressionComparison extends Worker {
               new Tournament(nTournament),
               new Worst(),
               nPop,
-              true
+              true,
+              false
           );
         }),
         Map.entry("tree-ga-noxover", p -> {
@@ -199,7 +200,8 @@ public class SymbolicRegressionComparison extends Worker {
               new Tournament(nTournament),
               new Worst(),
               nPop,
-              true
+              true,
+              false
           );
         }),
         Map.entry("tree-gadiv", p -> {
@@ -230,6 +232,7 @@ public class SymbolicRegressionComparison extends Worker {
               new Worst(),
               nPop,
               true,
+              false,
               diversityMaxAttempts
           );
         }),
@@ -253,7 +256,8 @@ public class SymbolicRegressionComparison extends Worker {
               new Tournament(nTournament),
               new Worst(),
               nPop,
-              true
+              true,
+              false
           );
         }),
         Map.entry("cfgtree-ga-noxover", p -> {
@@ -275,7 +279,8 @@ public class SymbolicRegressionComparison extends Worker {
               new Tournament(nTournament),
               new Worst(),
               nPop,
-              true
+              true,
+              false
           );
         }),
         Map.entry("cfgtree-gadiv", p -> {
@@ -299,6 +304,7 @@ public class SymbolicRegressionComparison extends Worker {
               new Worst(),
               nPop,
               true,
+              false,
               diversityMaxAttempts
           );
         }),
@@ -329,7 +335,8 @@ public class SymbolicRegressionComparison extends Worker {
             new Tournament(nTournament),
             new Worst(),
             nPop,
-            true
+            true,
+            false
         )),
         Map.entry("fgraph-lim-ga-noxover", p -> new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
@@ -353,7 +360,8 @@ public class SymbolicRegressionComparison extends Worker {
             new Tournament(nTournament),
             new Worst(),
             nPop,
-            true
+            true,
+            false
         )),
         Map.entry("fgraph-lim-speciated-noxover-kmeans", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
@@ -377,7 +385,8 @@ public class SymbolicRegressionComparison extends Worker {
             5,
             new KMeansSpeciator<Graph<Node, Double>, RealFunction, Double>(5, 300, (x, y) -> (new Jaccard()).on(a -> new HashSet<>(Collections.singletonList(a))).apply(x, y),
                 i -> i.getGenotype().nodes().stream().mapToDouble(Node::getIndex).toArray()),
-            0.75
+            0.75,
+            false
         )),
         Map.entry("fgraph-lim-speciated-noxover", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
@@ -403,7 +412,8 @@ public class SymbolicRegressionComparison extends Worker {
                 (new Jaccard()).on(i -> i.getGenotype().nodes()),
                 0.25
             ),
-            0.75
+            0.75,
+            false
         )),
         Map.entry("fgraph-seq-speciated-noxover", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
@@ -429,7 +439,8 @@ public class SymbolicRegressionComparison extends Worker {
                 (new Jaccard()).on(i -> i.getGenotype().nodes()),
                 0.25
             ),
-            0.75
+            0.75,
+            false
         )),
         Map.entry("fgraph-lim-gadiv", p -> new StandardWithEnforcedDiversityEvolver<Graph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
@@ -459,6 +470,7 @@ public class SymbolicRegressionComparison extends Worker {
             new Worst(),
             nPop,
             true,
+            false,
             diversityMaxAttempts
         )),
         Map.entry("fgraph-lim-speciated", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
@@ -490,7 +502,8 @@ public class SymbolicRegressionComparison extends Worker {
                 (new Jaccard()).on(i -> i.getGenotype().nodes()),
                 0.25
             ),
-            0.75
+            0.75,
+            false
         )),
         Map.entry("fgraph-seq-speciated", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
@@ -521,7 +534,8 @@ public class SymbolicRegressionComparison extends Worker {
                 (new Jaccard()).on(i -> i.getGenotype().nodes()),
                 0.25
             ),
-            0.75
+            0.75,
+            false
         )),
         Map.entry("fgraph-seq-ga", p -> new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
@@ -550,7 +564,8 @@ public class SymbolicRegressionComparison extends Worker {
             new Tournament(nTournament),
             new Worst(),
             nPop,
-            true
+            true,
+            false
         )),
         Map.entry("ograph-seq-ga", p -> new StandardEvolver<Graph<Node, OperatorGraph.NonValuedArc>, RealFunction, Double>(
             OperatorGraph.builder()
@@ -578,7 +593,8 @@ public class SymbolicRegressionComparison extends Worker {
             new Tournament(nTournament),
             new Worst(),
             nPop,
-            true
+            true,
+            false
         )),
         Map.entry("ograph-seq-speciated-noxover", p -> new SpeciatedEvolver<Graph<Node, OperatorGraph.NonValuedArc>, RealFunction, Double>(
             OperatorGraph.builder()
@@ -603,7 +619,8 @@ public class SymbolicRegressionComparison extends Worker {
                 (new Jaccard()).on(i -> i.getGenotype().nodes()),
                 0.25
             ),
-            0.75
+            0.75,
+            false
         )),
         Map.entry("fgraph-hash-ga", p -> {
           Function<Graph<IndexedNode<Node>, Double>, Graph<Node, Double>> graphMapper = GraphUtils.mapper(
@@ -639,7 +656,8 @@ public class SymbolicRegressionComparison extends Worker {
               new Tournament(nTournament),
               new Worst(),
               nPop,
-              true
+              true,
+              false
           );
         }),
         Map.entry("fgraph-hash-speciated", p -> {
@@ -678,7 +696,8 @@ public class SymbolicRegressionComparison extends Worker {
                   (new Jaccard()).on(i -> i.getGenotype().nodes()),
                   0.25
               ),
-              0.75
+              0.75,
+              false
           );
         }),
         Map.entry("fgraph-hash+-speciated", p -> {
@@ -718,7 +737,8 @@ public class SymbolicRegressionComparison extends Worker {
                   (new Jaccard()).on(i -> i.getGenotype().nodes()),
                   0.25
               ),
-              0.75
+              0.75,
+              false
           );
         }),
         Map.entry("ograph-hash+-speciated", p -> {
@@ -759,7 +779,8 @@ public class SymbolicRegressionComparison extends Worker {
                   (new Jaccard()).on(i -> i.getGenotype().nodes()),
                   0.25
               ),
-              0.75
+              0.75,
+              false
           );
         }),
         Map.entry("fgraph-hash+-speciated-noxover", p -> {
@@ -794,7 +815,8 @@ public class SymbolicRegressionComparison extends Worker {
                   (new Jaccard()).on(i -> i.getGenotype().nodes()),
                   0.25
               ),
-              0.75
+              0.75,
+              false
           );
         }),
         Map.entry("fgraph-seq-ga-noxover", p -> new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
@@ -819,7 +841,8 @@ public class SymbolicRegressionComparison extends Worker {
             new Tournament(nTournament),
             new Worst(),
             nPop,
-            true
+            true,
+            false
         )),
         Map.entry("fgraph-seq-gadiv", p -> new StandardWithEnforcedDiversityEvolver<Graph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
@@ -849,6 +872,7 @@ public class SymbolicRegressionComparison extends Worker {
             new Worst(),
             nPop,
             true,
+            false,
             diversityMaxAttempts
         ))
     ));

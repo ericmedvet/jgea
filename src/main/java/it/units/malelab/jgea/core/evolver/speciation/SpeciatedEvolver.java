@@ -50,8 +50,9 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
       Map<GeneticOperator<G>, Double> operators,
       int minSpeciesSizeForElitism,
       Speciator<Individual<G, S, F>> speciator,
-      double rankBase) {
-    super(solutionMapper, genotypeFactory, individualComparator, populationSize, operators, null, new Worst(), populationSize, false);
+      double rankBase,
+      boolean remap) {
+    super(solutionMapper, genotypeFactory, individualComparator, populationSize, operators, null, new Worst(), populationSize, false, remap);
     this.minSpeciesSizeForElitism = minSpeciesSizeForElitism;
     this.speciator = speciator;
     this.rankBase = rankBase;
@@ -73,17 +74,21 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
         allSpecies.stream().map(s -> s.getElements().size()).collect(Collectors.toList())
     ));
     //put elites
-    Individual<G, S, F> best = parents.stream()
+    Collection<Individual<G, S, F>> elite = new ArrayList<>();
+    parents.stream()
         .reduce((i1, i2) -> individualComparator.compare(i1, i2).equals(PartialComparator.PartialComparatorOutcome.BEFORE) ? i1 : i2)
-        .get();
-    offspring.add(best);
+        .ifPresent(elite::add);
     for (Species<Individual<G, S, F>> species : allSpecies) {
       if (species.getElements().size() >= minSpeciesSizeForElitism) {
-        Individual<G, S, F> speciesBest = species.getElements().stream()
+        species.getElements().stream()
             .reduce((i1, i2) -> individualComparator.compare(i1, i2).equals(PartialComparator.PartialComparatorOutcome.BEFORE) ? i1 : i2)
-            .get();
-        offspring.add(speciesBest);
+            .ifPresent(elite::add);
       }
+    }
+    if (remap) {
+      offspring.addAll(remap(elite, solutionMapper, fitnessFunction, executor, state));
+    } else {
+      offspring.addAll(elite);
     }
     //assign remaining offspring size
     int remaining = populationSize - offspring.size();
@@ -135,7 +140,7 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
       offspringGenotypes.addAll(speciesOffspringGenotypes);
     }
     //merge
-    offspring.addAll(buildIndividuals(offspringGenotypes, solutionMapper, fitnessFunction, executor, state));
+    offspring.addAll(map(offspringGenotypes, solutionMapper, fitnessFunction, executor, state));
     return offspring;
   }
 
