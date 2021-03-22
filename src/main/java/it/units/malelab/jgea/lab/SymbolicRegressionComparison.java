@@ -20,14 +20,15 @@ import com.google.common.base.Stopwatch;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.Individual;
+import it.units.malelab.jgea.core.evolver.Event;
 import it.units.malelab.jgea.core.evolver.Evolver;
-import it.units.malelab.jgea.core.evolver.SpeciatedEvolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversityEvolver;
+import it.units.malelab.jgea.core.evolver.speciation.KMeansSpeciator;
+import it.units.malelab.jgea.core.evolver.speciation.LazySpeciator;
+import it.units.malelab.jgea.core.evolver.speciation.SpeciatedEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
-import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.MultiFileListenerFactory;
-import it.units.malelab.jgea.core.listener.collector.*;
+import it.units.malelab.jgea.core.listener.*;
 import it.units.malelab.jgea.core.operator.Crossover;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.order.PartialComparator;
@@ -55,6 +56,7 @@ import it.units.malelab.jgea.representation.graph.numeric.operatorgraph.Operator
 import it.units.malelab.jgea.representation.graph.numeric.operatorgraph.ShallowFactory;
 import it.units.malelab.jgea.representation.tree.*;
 
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -62,13 +64,12 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
 import static it.units.malelab.jgea.core.util.Args.i;
 import static it.units.malelab.jgea.core.util.Args.ri;
 
 /**
  * @author eric
- * @created 2020/08/05
- * @project jgea
  */
 
 // /usr/lib/jvm/jdk-14.0.1/bin/java -cp ~/IdeaProjects/jgea/out/artifacts/jgea_jar/jgea.jar it.units.malelab.jgea.lab.SymbolicRegressionComparison seed=0:10 file=results-%s.txt
@@ -84,6 +85,7 @@ public class SymbolicRegressionComparison extends Worker {
 
   @Override
   public void run() {
+
     int nPop = i(a("nPop", "100"));
     int maxHeight = i(a("maxHeight", "10"));
     int maxNodes = i(a("maxNodes", "20"));
@@ -105,13 +107,41 @@ public class SymbolicRegressionComparison extends Worker {
     List<SymbolicRegressionProblem> problems = List.of(
         new Nguyen7(metric, 1),
         new Keijzer6(metric),
-        new Polynomial4(metric),
-        new Pagie1(metric)
+        new Polynomial4(metric)//,
+        // new Pagie1(metric)
     );
-    MultiFileListenerFactory<Object, RealFunction, Double> listenerFactory = new MultiFileListenerFactory<>(
-        a("dir", "."),
-        a("file", null)
+    //consumers
+    List<NamedFunction<? super Event<?, ?, ? extends Double>, ?>> functions = List.of(
+        eventAttribute("seed", "%2d"),
+        eventAttribute("problem", NamedFunction.formatOfLongest(
+            problems.stream().map(p -> p.getClass().getSimpleName())
+                .collect(Collectors.toList()))),
+        eventAttribute("evolver", "%20.20s"),
+        iterations(),
+        births(),
+        elapsedSeconds(),
+        size().of(all()),
+        size().of(firsts()),
+        size().of(lasts()),
+        uniqueness().of(each(genotype())).of(all()),
+        uniqueness().of(each(solution())).of(all()),
+        uniqueness().of(each(fitness())).of(all()),
+        size().of(genotype()).of(best()),
+        size().of(solution()).of(best()),
+        birthIteration().of(best()),
+        fitness().reformat("%5.3f").of(best()),
+        hist(8).of(each(fitness())).of(all()),
+        // TODO put validation, hist of fitnesses
+        solution().reformat("%30.30s").of(best())
     );
+    Listener.Factory<Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(functions);
+    if (a("file", null) != null) {
+      listenerFactory = Listener.Factory.all(List.of(
+          listenerFactory,
+          new CSVPrinter<>(functions, new File(a("file", null)))
+      ));
+    }
+    //evolvers
     Map<String, Function<SymbolicRegressionProblem, Evolver<?, RealFunction, Double>>> evolvers = new TreeMap<>(Map.ofEntries(
         Map.entry("tree-ga", p -> {
           IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
@@ -140,7 +170,8 @@ public class SymbolicRegressionComparison extends Worker {
               new Tournament(nTournament),
               new Worst(),
               nPop,
-              true
+              true,
+              false
           );
         }),
         Map.entry("tree-ga-noxover", p -> {
@@ -169,7 +200,8 @@ public class SymbolicRegressionComparison extends Worker {
               new Tournament(nTournament),
               new Worst(),
               nPop,
-              true
+              true,
+              false
           );
         }),
         Map.entry("tree-gadiv", p -> {
@@ -200,6 +232,7 @@ public class SymbolicRegressionComparison extends Worker {
               new Worst(),
               nPop,
               true,
+              false,
               diversityMaxAttempts
           );
         }),
@@ -223,7 +256,8 @@ public class SymbolicRegressionComparison extends Worker {
               new Tournament(nTournament),
               new Worst(),
               nPop,
-              true
+              true,
+              false
           );
         }),
         Map.entry("cfgtree-ga-noxover", p -> {
@@ -245,7 +279,8 @@ public class SymbolicRegressionComparison extends Worker {
               new Tournament(nTournament),
               new Worst(),
               nPop,
-              true
+              true,
+              false
           );
         }),
         Map.entry("cfgtree-gadiv", p -> {
@@ -269,6 +304,7 @@ public class SymbolicRegressionComparison extends Worker {
               new Worst(),
               nPop,
               true,
+              false,
               diversityMaxAttempts
           );
         }),
@@ -299,7 +335,8 @@ public class SymbolicRegressionComparison extends Worker {
             new Tournament(nTournament),
             new Worst(),
             nPop,
-            true
+            true,
+            false
         )),
         Map.entry("fgraph-lim-ga-noxover", p -> new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
@@ -323,7 +360,33 @@ public class SymbolicRegressionComparison extends Worker {
             new Tournament(nTournament),
             new Worst(),
             nPop,
-            true
+            true,
+            false
+        )),
+        Map.entry("fgraph-lim-speciated-noxover-kmeans", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
+            FunctionGraph.builder()
+                .andThen(MathUtils.fromMultivariateBuilder())
+                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
+            PartialComparator.from(Double.class).comparing(Individual::getFitness),
+            nPop,
+            Map.of(
+                new NodeAddition<Node, Double>(
+                    FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
+                    (w, r) -> w,
+                    (w, r) -> r.nextGaussian()
+                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
+                new ArcAddition<Node, Double>(Random::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
+                new ArcRemoval<Node, Double>(
+                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
+            ),
+            5,
+            new KMeansSpeciator<Graph<Node, Double>, RealFunction, Double>(5, 300, (x, y) -> (new Jaccard()).on(a -> new HashSet<>(Collections.singletonList(a))).apply(x, y),
+                i -> i.getGenotype().nodes().stream().mapToDouble(Node::getIndex).toArray()),
+            0.75,
+            false
         )),
         Map.entry("fgraph-lim-speciated-noxover", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
@@ -345,19 +408,12 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
             ),
             5,
-            (new Jaccard()).on(i -> i.getGenotype().nodes()),
-            0.25,
-            individuals -> {
-              double[] fitnesses = individuals.stream().mapToDouble(i -> i.getFitness()).toArray();
-              Individual<Graph<Node, Double>, RealFunction, Double> r = Misc.first(individuals);
-              return new Individual<>(
-                  r.getGenotype(),
-                  r.getSolution(),
-                  Misc.median(fitnesses),
-                  r.getBirthIteration()
-              );
-            },
-            0.75
+            new LazySpeciator<>(
+                (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                0.25
+            ),
+            0.75,
+            false
         )),
         Map.entry("fgraph-seq-speciated-noxover", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
@@ -379,19 +435,12 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
             ),
             5,
-            (new Jaccard()).on(i -> i.getGenotype().nodes()),
-            0.25,
-            individuals -> {
-              double[] fitnesses = individuals.stream().mapToDouble(i -> i.getFitness()).toArray();
-              Individual<Graph<Node, Double>, RealFunction, Double> r = Misc.first(individuals);
-              return new Individual<>(
-                  r.getGenotype(),
-                  r.getSolution(),
-                  Misc.median(fitnesses),
-                  r.getBirthIteration()
-              );
-            },
-            0.75
+            new LazySpeciator<>(
+                (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                0.25
+            ),
+            0.75,
+            false
         )),
         Map.entry("fgraph-lim-gadiv", p -> new StandardWithEnforcedDiversityEvolver<Graph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
@@ -421,6 +470,7 @@ public class SymbolicRegressionComparison extends Worker {
             new Worst(),
             nPop,
             true,
+            false,
             diversityMaxAttempts
         )),
         Map.entry("fgraph-lim-speciated", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
@@ -448,19 +498,12 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphCrossoverRate
             ),
             5,
-            (new Jaccard()).on(i -> i.getGenotype().nodes()),
-            0.25,
-            individuals -> {
-              double[] fitnesses = individuals.stream().mapToDouble(i -> i.getFitness()).toArray();
-              Individual<Graph<Node, Double>, RealFunction, Double> r = Misc.first(individuals);
-              return new Individual<>(
-                  r.getGenotype(),
-                  r.getSolution(),
-                  Misc.median(fitnesses),
-                  r.getBirthIteration()
-              );
-            },
-            0.75
+            new LazySpeciator<>(
+                (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                0.25
+            ),
+            0.75,
+            false
         )),
         Map.entry("fgraph-seq-speciated", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
@@ -487,19 +530,12 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphCrossoverRate
             ),
             5,
-            (new Jaccard()).on(i -> i.getGenotype().nodes()),
-            0.25,
-            individuals -> {
-              double[] fitnesses = individuals.stream().mapToDouble(i -> i.getFitness()).toArray();
-              Individual<Graph<Node, Double>, RealFunction, Double> r = Misc.first(individuals);
-              return new Individual<>(
-                  r.getGenotype(),
-                  r.getSolution(),
-                  Misc.median(fitnesses),
-                  r.getBirthIteration()
-              );
-            },
-            0.75
+            new LazySpeciator<>(
+                (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                0.25
+            ),
+            0.75,
+            false
         )),
         Map.entry("fgraph-seq-ga", p -> new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
@@ -528,7 +564,8 @@ public class SymbolicRegressionComparison extends Worker {
             new Tournament(nTournament),
             new Worst(),
             nPop,
-            true
+            true,
+            false
         )),
         Map.entry("ograph-seq-ga", p -> new StandardEvolver<Graph<Node, OperatorGraph.NonValuedArc>, RealFunction, Double>(
             OperatorGraph.builder()
@@ -556,7 +593,8 @@ public class SymbolicRegressionComparison extends Worker {
             new Tournament(nTournament),
             new Worst(),
             nPop,
-            true
+            true,
+            false
         )),
         Map.entry("ograph-seq-speciated-noxover", p -> new SpeciatedEvolver<Graph<Node, OperatorGraph.NonValuedArc>, RealFunction, Double>(
             OperatorGraph.builder()
@@ -577,19 +615,12 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(OperatorGraph.checker()), graphArcRemovalRate
             ),
             5,
-            (new Jaccard()).on(i -> i.getGenotype().nodes()),
-            0.25,
-            individuals -> {
-              double[] fitnesses = individuals.stream().mapToDouble(i -> i.getFitness()).toArray();
-              Individual<Graph<Node, OperatorGraph.NonValuedArc>, RealFunction, Double> r = Misc.first(individuals);
-              return new Individual<>(
-                  r.getGenotype(),
-                  r.getSolution(),
-                  Misc.median(fitnesses),
-                  r.getBirthIteration()
-              );
-            },
-            0.75
+            new LazySpeciator<>(
+                (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                0.25
+            ),
+            0.75,
+            false
         )),
         Map.entry("fgraph-hash-ga", p -> {
           Function<Graph<IndexedNode<Node>, Double>, Graph<Node, Double>> graphMapper = GraphUtils.mapper(
@@ -625,7 +656,8 @@ public class SymbolicRegressionComparison extends Worker {
               new Tournament(nTournament),
               new Worst(),
               nPop,
-              true
+              true,
+              false
           );
         }),
         Map.entry("fgraph-hash-speciated", p -> {
@@ -660,19 +692,12 @@ public class SymbolicRegressionComparison extends Worker {
                   ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
               ),
               5,
-              (new Jaccard()).on(i -> i.getGenotype().nodes()),
-              0.25,
-              individuals -> {
-                double[] fitnesses = individuals.stream().mapToDouble(Individual::getFitness).toArray();
-                Individual<Graph<IndexedNode<Node>, Double>, RealFunction, Double> r = Misc.first(individuals);
-                return new Individual<>(
-                    r.getGenotype(),
-                    r.getSolution(),
-                    Misc.median(fitnesses),
-                    r.getBirthIteration()
-                );
-              },
-              0.75
+              new LazySpeciator<>(
+                  (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                  0.25
+              ),
+              0.75,
+              false
           );
         }),
         Map.entry("fgraph-hash+-speciated", p -> {
@@ -708,19 +733,12 @@ public class SymbolicRegressionComparison extends Worker {
                   ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
               ),
               5,
-              (new Jaccard()).on(i -> i.getGenotype().nodes()),
-              0.25,
-              individuals -> {
-                double[] fitnesses = individuals.stream().mapToDouble(Individual::getFitness).toArray();
-                Individual<Graph<IndexedNode<Node>, Double>, RealFunction, Double> r = Misc.first(individuals);
-                return new Individual<>(
-                    r.getGenotype(),
-                    r.getSolution(),
-                    Misc.median(fitnesses),
-                    r.getBirthIteration()
-                );
-              },
-              0.75
+              new LazySpeciator<>(
+                  (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                  0.25
+              ),
+              0.75,
+              false
           );
         }),
         Map.entry("ograph-hash+-speciated", p -> {
@@ -757,19 +775,12 @@ public class SymbolicRegressionComparison extends Worker {
                   ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
               ),
               5,
-              (new Jaccard()).on(i -> i.getGenotype().nodes()),
-              0.25,
-              individuals -> {
-                double[] fitnesses = individuals.stream().mapToDouble(Individual::getFitness).toArray();
-                Individual<Graph<IndexedNode<Node>, OperatorGraph.NonValuedArc>, RealFunction, Double> r = Misc.first(individuals);
-                return new Individual<>(
-                    r.getGenotype(),
-                    r.getSolution(),
-                    Misc.median(fitnesses),
-                    r.getBirthIteration()
-                );
-              },
-              0.75
+              new LazySpeciator<>(
+                  (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                  0.25
+              ),
+              0.75,
+              false
           );
         }),
         Map.entry("fgraph-hash+-speciated-noxover", p -> {
@@ -800,19 +811,12 @@ public class SymbolicRegressionComparison extends Worker {
                   new ArcRemoval<IndexedNode<Node>, Double>(node -> node.content() instanceof Output).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate
               ),
               5,
-              (new Jaccard()).on(i -> i.getGenotype().nodes()),
-              0.25,
-              individuals -> {
-                double[] fitnesses = individuals.stream().mapToDouble(Individual::getFitness).toArray();
-                Individual<Graph<IndexedNode<Node>, Double>, RealFunction, Double> r = Misc.first(individuals);
-                return new Individual<>(
-                    r.getGenotype(),
-                    r.getSolution(),
-                    Misc.median(fitnesses),
-                    r.getBirthIteration()
-                );
-              },
-              0.75
+              new LazySpeciator<>(
+                  (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                  0.25
+              ),
+              0.75,
+              false
           );
         }),
         Map.entry("fgraph-seq-ga-noxover", p -> new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
@@ -837,7 +841,8 @@ public class SymbolicRegressionComparison extends Worker {
             new Tournament(nTournament),
             new Worst(),
             nPop,
-            true
+            true,
+            false
         )),
         Map.entry("fgraph-seq-gadiv", p -> new StandardWithEnforcedDiversityEvolver<Graph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
@@ -867,6 +872,7 @@ public class SymbolicRegressionComparison extends Worker {
             new Worst(),
             nPop,
             true,
+            false,
             diversityMaxAttempts
         ))
     ));
@@ -882,24 +888,16 @@ public class SymbolicRegressionComparison extends Worker {
     for (int seed : seeds) {
       for (SymbolicRegressionProblem problem : problems) {
         for (Map.Entry<String, Function<SymbolicRegressionProblem, Evolver<?, RealFunction, Double>>> evolverEntry : evolvers.entrySet()) {
-          Map<String, String> keys = new TreeMap<>(Map.of(
-              "seed", Integer.toString(seed),
-              "problem", problem.getClass().getSimpleName().toLowerCase(),
-              "evolver", evolverEntry.getKey()
-          ));
+          Map<String,Object> keys = Map.ofEntries(
+              Map.entry("seed", seed),
+              Map.entry("problem", problem.getClass().getSimpleName().toLowerCase()),
+              Map.entry("evolver", evolverEntry.getKey())
+          );
+          Listener<Event<?, ?, ? extends Double>> listener = Listener.all(List.of(
+              new EventAugmenter(keys),
+              listenerFactory.build()
+          )).deferred(executorService);
           try {
-            List<DataCollector<?, ? super RealFunction, ? super Double>> collectors = List.of(new Static(keys),
-                new Basic(),
-                new Population(),
-                new Diversity(),
-                new BestInfo("%7.5f"),
-                new FunctionOfOneBest<>(i -> List.of(new Item(
-                    "validation.fitness",
-                    problem.getValidationFunction().apply(i.getSolution()),
-                    "%7.5f"
-                ))),
-                new BestPrinter(BestPrinter.Part.SOLUTION, "%80.80s")
-            );
             Stopwatch stopwatch = Stopwatch.createStarted();
             Evolver<?, RealFunction, Double> evolver = evolverEntry.getValue().apply(problem);
             L.info(String.format("Starting %s", keys));
@@ -908,10 +906,8 @@ public class SymbolicRegressionComparison extends Worker {
                 new Iterations(nIterations),
                 new Random(seed),
                 executorService,
-                Listener.onExecutor((listenerFactory.getBaseFileName() == null) ?
-                        listener(collectors.toArray(DataCollector[]::new)) :
-                        listenerFactory.build(collectors.toArray(DataCollector[]::new))
-                    , executorService));
+                listener
+            );
             L.info(String.format("Done %s: %d solutions in %4.1fs",
                 keys,
                 solutions.size(),
@@ -927,6 +923,7 @@ public class SymbolicRegressionComparison extends Worker {
         }
       }
     }
+    listenerFactory.shutdown();
   }
 
   private static String[] vars(int n) {

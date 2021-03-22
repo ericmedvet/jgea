@@ -20,8 +20,6 @@ import java.util.*;
 
 /**
  * @author eric
- * @created 2020/08/05
- * @project jgea
  */
 public interface ThinList<T> extends List<T> {
 
@@ -68,6 +66,7 @@ public interface ThinList<T> extends List<T> {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   default <T1> T1[] toArray(T1[] a) {
     return (T1[]) toArray();
   }

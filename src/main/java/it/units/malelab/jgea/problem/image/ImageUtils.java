@@ -22,8 +22,6 @@ import java.awt.image.BufferedImage;
 
 /**
  * @author eric
- * @created 2020/08/10
- * @project jgea
  */
 public class ImageUtils {
   private ImageUtils() {

@@ -16,7 +16,7 @@
 
 package it.units.malelab.jgea.core.evolver.stopcondition;
 
-import it.units.malelab.jgea.core.listener.Event;
+import it.units.malelab.jgea.core.evolver.Event;
 
 import java.util.function.Predicate;
 

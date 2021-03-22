@@ -14,31 +14,32 @@
  * limitations under the License.
  */
 
-package it.units.malelab.jgea.core.listener.collector;
-
-import it.units.malelab.jgea.core.listener.Event;
-
-import java.util.List;
-import java.util.stream.Collectors;
+package it.units.malelab.jgea.problem.mapper.element;
 
 /**
  * @author eric
  */
-public class Prefix<G, S, F> implements DataCollector<G, S, F> {
+public enum MapperFunction implements Element {
 
-  private final String prefix;
-  private final DataCollector<G, S, F> collector;
+  SIZE("size"), WEIGHT("weight"), WEIGHT_R("weight_r"), INT("int"),
+  ADD("+"), SUBTRACT("-"), MULT("*"), DIVIDE("/"), REMAINDER("%"),
+  LENGTH("length"), MAX_INDEX("max_index"), MIN_INDEX("min_index"),
+  GET("get"),
+  SEQ("seq"),
+  REPEAT("repeat"),
+  ROTATE_DX("rotate_dx"), ROTATE_SX("rotate_sx"), SUBSTRING("substring"),
+  SPLIT("split"),
+  SPLIT_W("split_w"),
+  APPLY("apply");
 
-  public Prefix(String prefix, DataCollector<G, S, F> collector) {
-    this.prefix = prefix;
-    this.collector = collector;
+  private final String grammarName;
+
+  MapperFunction(String grammarName) {
+    this.grammarName = grammarName;
   }
 
-  @Override
-  public List<Item> collect(Event<? extends G, ? extends S, ? extends F> event) {
-    return collector.collect(event).stream()
-        .map(i -> i.prefixed(prefix))
-        .collect(Collectors.toList());
+  public String getGrammarName() {
+    return grammarName;
   }
 
 }

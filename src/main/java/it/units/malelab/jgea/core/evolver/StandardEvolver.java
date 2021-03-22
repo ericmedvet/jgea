@@ -47,6 +47,7 @@ public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> 
   protected final Selector<? super Individual<? super G, ? super S, ? super F>> unsurvivalSelector;
   protected final int offspringSize;
   protected final boolean overlapping;
+  protected final boolean remap;
 
   private static final Logger L = Logger.getLogger(StandardEvolver.class.getName());
 
@@ -59,7 +60,8 @@ public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> 
       Selector<? super Individual<? super G, ? super S, ? super F>> parentSelector,
       Selector<? super Individual<? super G, ? super S, ? super F>> unsurvivalSelector,
       int offspringSize,
-      boolean overlapping) {
+      boolean overlapping,
+      boolean remap) {
     super(solutionMapper, genotypeFactory, individualComparator);
     this.populationSize = populationSize;
     this.operators = operators;
@@ -67,6 +69,7 @@ public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> 
     this.unsurvivalSelector = unsurvivalSelector;
     this.offspringSize = offspringSize;
     this.overlapping = overlapping;
+    this.remap = remap;
   }
 
   @Override
@@ -79,7 +82,11 @@ public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> 
     Collection<Individual<G, S, F>> offspring = buildOffspring(orderedPopulation, fitnessFunction, random, executor, state);
     L.fine(String.format("Offspring built: %d individuals", offspring.size()));
     if (overlapping) {
-      offspring.addAll(orderedPopulation.all());
+      if (remap) {
+        offspring.addAll(remap(orderedPopulation.all(), solutionMapper, fitnessFunction, executor, state));
+      } else {
+        offspring.addAll(orderedPopulation.all());
+      }
       L.fine(String.format("Offspring merged with parents: %d individuals", offspring.size()));
     }
     offspring = trimPopulation(offspring, random);
@@ -98,7 +105,7 @@ public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> 
       }
       offspringGenotypes.addAll(operator.apply(parentGenotypes, random));
     }
-    return AbstractIterativeEvolver.buildIndividuals(offspringGenotypes, solutionMapper, fitnessFunction, executor, state);
+    return AbstractIterativeEvolver.map(offspringGenotypes, solutionMapper, fitnessFunction, executor, state);
   }
 
   protected Collection<Individual<G, S, F>> trimPopulation(Collection<Individual<G, S, F>> population, Random random) {

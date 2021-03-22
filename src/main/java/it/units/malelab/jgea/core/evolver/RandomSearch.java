@@ -30,8 +30,6 @@ import java.util.function.Function;
 
 /**
  * @author eric
- * @created 2020/06/16
- * @project jgea
  */
 public class RandomSearch<G, S, F> extends AbstractIterativeEvolver<G, S, F> {
 
@@ -50,7 +48,7 @@ public class RandomSearch<G, S, F> extends AbstractIterativeEvolver<G, S, F> {
   @Override
   protected Collection<Individual<G, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     G genotype = genotypeFactory.build(1, random).get(0);
-    Collection<Individual<G, S, F>> offspring = AbstractIterativeEvolver.buildIndividuals(List.of(genotype), solutionMapper, fitnessFunction, executor, state);
+    Collection<Individual<G, S, F>> offspring = AbstractIterativeEvolver.map(List.of(genotype), solutionMapper, fitnessFunction, executor, state);
     Individual<G, S, F> newIndividual = offspring.iterator().next();
     Individual<G, S, F> currentIndividual = orderedPopulation.firsts().iterator().next();
     if (individualComparator.compare(newIndividual, currentIndividual).equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {

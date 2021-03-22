@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package it.units.malelab.jgea.core.evolver;
+package it.units.malelab.jgea.core.evolver.speciation;
 
 import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.Individual;
+import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
-import it.units.malelab.jgea.distance.Distance;
-import it.units.malelab.jgea.representation.graph.LinkedHashGraph;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -35,14 +34,10 @@ import java.util.stream.Collectors;
 
 /**
  * @author eric
- * @created 2020/08/12
- * @project jgea
  */
 public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
   private final int minSpeciesSizeForElitism;
-  private final Distance<Individual<G, S, F>> distance;
-  private final double distanceThreshold;
-  private final Function<Collection<Individual<G, S, F>>, Individual<G, S, F>> representerSelector;
+  private final Speciator<Individual<G, S, F>> speciator;
   private final double rankBase;
 
   private static final Logger L = Logger.getLogger(SpeciatedEvolver.class.getName());
@@ -54,15 +49,12 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
       int populationSize,
       Map<GeneticOperator<G>, Double> operators,
       int minSpeciesSizeForElitism,
-      Distance<Individual<G, S, F>> distance,
-      double distanceThreshold,
-      Function<Collection<Individual<G, S, F>>, Individual<G, S, F>> representerSelector,
-      double rankBase) {
-    super(solutionMapper, genotypeFactory, individualComparator, populationSize, operators, null, new Worst(), populationSize, false);
+      Speciator<Individual<G, S, F>> speciator,
+      double rankBase,
+      boolean remap) {
+    super(solutionMapper, genotypeFactory, individualComparator, populationSize, operators, null, new Worst(), populationSize, false, remap);
     this.minSpeciesSizeForElitism = minSpeciesSizeForElitism;
-    this.distance = distance;
-    this.distanceThreshold = distanceThreshold;
-    this.representerSelector = representerSelector;
+    this.speciator = speciator;
     this.rankBase = rankBase;
   }
 
@@ -76,52 +68,32 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
     Collection<Individual<G, S, F>> parents = orderedPopulation.all();
     Collection<Individual<G, S, F>> offspring = new ArrayList<>();
     //partition in species
-    List<List<Individual<G, S, F>>> allSpecies = new ArrayList<>();
-    for (Individual<G, S, F> individual : orderedPopulation.all()) {
-      List<Double> distances = allSpecies.stream()
-          .map(s -> distance.apply(individual, s.get(0)))
-          .collect(Collectors.toList());
-      if (distances.isEmpty()) {
-        List<Individual<G, S, F>> newSpecies = new ArrayList<>();
-        newSpecies.add(individual);
-        allSpecies.add(newSpecies);
-      } else {
-        int closestIndex = 0;
-        for (int i = 1; i < distances.size(); i++) {
-          if (distances.get(i) < distances.get(closestIndex)) {
-            closestIndex = i;
-          }
-        }
-        if (distances.get(closestIndex) < distanceThreshold) {
-          allSpecies.get(closestIndex).add(individual);
-        } else {
-          List<Individual<G, S, F>> newSpecies = new ArrayList<>();
-          newSpecies.add(individual);
-          allSpecies.add(newSpecies);
-        }
-      }
-    }
+    List<Species<Individual<G, S, F>>> allSpecies = new ArrayList<>(speciator.speciate(orderedPopulation));
     L.fine(String.format("Population speciated in %d species of sizes %s",
         allSpecies.size(),
-        allSpecies.stream().map(List::size).collect(Collectors.toList())
+        allSpecies.stream().map(s -> s.getElements().size()).collect(Collectors.toList())
     ));
     //put elites
-    Individual<G, S, F> best = parents.stream()
+    Collection<Individual<G, S, F>> elite = new ArrayList<>();
+    parents.stream()
         .reduce((i1, i2) -> individualComparator.compare(i1, i2).equals(PartialComparator.PartialComparatorOutcome.BEFORE) ? i1 : i2)
-        .get();
-    offspring.add(best);
-    for (List<Individual<G, S, F>> species : allSpecies) {
-      if (species.size() >= minSpeciesSizeForElitism) {
-        Individual<G, S, F> speciesBest = species.stream()
+        .ifPresent(elite::add);
+    for (Species<Individual<G, S, F>> species : allSpecies) {
+      if (species.getElements().size() >= minSpeciesSizeForElitism) {
+        species.getElements().stream()
             .reduce((i1, i2) -> individualComparator.compare(i1, i2).equals(PartialComparator.PartialComparatorOutcome.BEFORE) ? i1 : i2)
-            .get();
-        offspring.add(speciesBest);
+            .ifPresent(elite::add);
       }
+    }
+    if (remap) {
+      offspring.addAll(remap(elite, solutionMapper, fitnessFunction, executor, state));
+    } else {
+      offspring.addAll(elite);
     }
     //assign remaining offspring size
     int remaining = populationSize - offspring.size();
     List<Individual<G, S, F>> representers = allSpecies.stream()
-        .map(representerSelector)
+        .map(Species::getRepresentative)
         .collect(Collectors.toList());
     L.fine(String.format("Representers determined for %d species: fitnesses are %s",
         allSpecies.size(),
@@ -152,7 +124,7 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
     List<G> offspringGenotypes = new ArrayList<>(remaining);
     for (int i = 0; i < allSpecies.size(); i++) {
       int size = sizes.get(i);
-      List<Individual<G, S, F>> species = allSpecies.get(i);
+      List<Individual<G, S, F>> species = new ArrayList<>(allSpecies.get(i).getElements());
       species.sort(individualComparator.comparator());
       List<G> speciesOffspringGenotypes = new ArrayList<>();
       int counter = 0;
@@ -168,7 +140,7 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
       offspringGenotypes.addAll(speciesOffspringGenotypes);
     }
     //merge
-    offspring.addAll(buildIndividuals(offspringGenotypes, solutionMapper, fitnessFunction, executor, state));
+    offspring.addAll(map(offspringGenotypes, solutionMapper, fitnessFunction, executor, state));
     return offspring;
   }
 

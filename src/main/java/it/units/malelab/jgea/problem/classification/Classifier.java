@@ -18,8 +18,6 @@ package it.units.malelab.jgea.problem.classification;
 
 /**
  * @author eric
- * @created 2020/08/04
- * @project jgea
  */
 public interface Classifier<O, L extends Enum<L>> {
   L classify(O o);

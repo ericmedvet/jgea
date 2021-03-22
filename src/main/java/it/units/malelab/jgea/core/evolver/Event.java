@@ -14,27 +14,28 @@
  * limitations under the License.
  */
 
-package it.units.malelab.jgea.core.listener;
+package it.units.malelab.jgea.core.evolver;
 
 import it.units.malelab.jgea.core.Individual;
-import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author eric
- * @created 2020/06/16
- * @project jgea
  */
 public class Event<G, S, F> implements Serializable {
 
   private final Evolver.State state;
   private final PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation;
+  private final Map<String, Object> attributes;
 
   public Event(Evolver.State state, PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation) {
     this.state = state.copy();
     this.orderedPopulation = orderedPopulation;
+    attributes = new HashMap<>();
   }
 
   public Evolver.State getState() {
@@ -43,5 +44,9 @@ public class Event<G, S, F> implements Serializable {
 
   public PartiallyOrderedCollection<Individual<G, S, F>> getOrderedPopulation() {
     return orderedPopulation;
+  }
+
+  public Map<String, Object> getAttributes() {
+    return attributes;
   }
 }

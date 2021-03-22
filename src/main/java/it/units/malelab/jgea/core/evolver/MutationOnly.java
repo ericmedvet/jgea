@@ -43,8 +43,9 @@ public class MutationOnly<G, S, F> extends StandardEvolver<G, S, F> {
       PartialComparator<? super Individual<G, S, F>> individualComparator,
       int populationSize,
       Selector<? super Individual<? super G, ? super S, ? super F>> unsurvivalSelector,
-      Mutation<G> mutation) {
-    super(solutionMapper, genotypeFactory, individualComparator, populationSize, null, null, unsurvivalSelector, 0, true);
+      Mutation<G> mutation,
+      boolean remap) {
+    super(solutionMapper, genotypeFactory, individualComparator, populationSize, null, null, unsurvivalSelector, 0, true, remap);
     this.mutation = mutation;
   }
 
@@ -53,6 +54,6 @@ public class MutationOnly<G, S, F> extends StandardEvolver<G, S, F> {
     Collection<G> offspringGenotypes = orderedPopulation.all().stream()
         .map(i -> mutation.mutate(i.getGenotype(), random))
         .collect(Collectors.toList());
-    return AbstractIterativeEvolver.buildIndividuals(offspringGenotypes, solutionMapper, fitnessFunction, executor, state);
+    return AbstractIterativeEvolver.map(offspringGenotypes, solutionMapper, fitnessFunction, executor, state);
   }
 }

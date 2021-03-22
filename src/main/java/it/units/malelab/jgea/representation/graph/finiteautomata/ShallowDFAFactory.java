@@ -26,8 +26,6 @@ import java.util.Set;
 
 /**
  * @author eric
- * @created 2020/08/17
- * @project jgea
  */
 public class ShallowDFAFactory<C> implements IndependentFactory<Graph<DeterministicFiniteAutomaton.State, Set<C>>> {
 

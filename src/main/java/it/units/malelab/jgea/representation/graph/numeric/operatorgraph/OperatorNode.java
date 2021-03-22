@@ -25,8 +25,6 @@ import java.util.Random;
 
 /**
  * @author eric
- * @created 2020/08/14
- * @project jgea
  */
 public class OperatorNode extends Node implements RealFunction {
 

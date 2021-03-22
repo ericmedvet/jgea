@@ -45,18 +45,19 @@ where `C` is the space of classifiers, `O` is the space of observations (or inst
 The EA is described by a class implementing the `Evolver` interface.
 `Evolver` is parametrized with three types that potentially represent the genotype (`G`), solution (`S`), and fitness (`F`) spaces:
 ```java
+
 public interface Evolver<G, S, F> {
   Collection<S> solve(
       Function<S, F> fitnessFunction,
       Predicate<? super Event<G, S, F>> stopCondition,
       Random random,
       ExecutorService executor,
-      Listener<? super G, ? super S, ? super F> listener) throws InterruptedException, ExecutionException;
+      Listener<? super Event<G, S, F>> listener) throws InterruptedException, ExecutionException;
 }
 ```
 In general, any `Evolver` can be used to solve any `Problem` with suitable `S`, `F` by invoking `solve()` on the problem fitness function.
 The genotype space `G` is the one in which the search is actually performed by applying the genetic operators: items in `G` are mapped to items in `S`, i.e., to solutions, with a mapper, that, when required, is one of the parameters of the EA, that are fields of the class implementing `Evolver` in JGEA.
-Note that some EAs might support only the case in which `G` = `S`.
+Note that some EAs might support only the case in which `G` = `S`; other my constraint `G` or `S` or both to be a given type (e.g., `List<Double>`).
 
 An `Evolver` solves a problem when the `solve()` method is invoked; that is, invoking `solve()` corresponds to performing an **evolutionary run** (also called evolutionary search or simply evolution).
 
@@ -102,7 +103,8 @@ public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> 
       Selector<? super Individual<? super G, ? super S, ? super F>> parentSelector,
       Selector<? super Individual<? super G, ? super S, ? super F>> unsurvivalSelector,
       int offspringSize,
-      boolean overlapping) { /* ... */}
+      boolean overlapping,
+      boolean remap) { /* ... */}
 }
 ```
 `StandardEvolver` automatically exploits parallelism using the `ExecutorService` parameter of `solve()`.
@@ -139,41 +141,49 @@ public class Example {
         new Tournament(3),
         new Worst(),
         100,
-        true
+        true,
+        false
     );
+    Listener.Factory<Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(List.of(
+        iterations(),
+        births(),
+        elapsedSeconds(),
+        uniqueness().of(each(genotype())).of(all()),
+        size().of(solution()).of(best()),
+        birthIteration().of(best()),
+        fitness().reformat("%5.3f").of(best()),
+        hist(8).of(each(fitness())).of(all())
+    ));
     Collection<List<Tree<Element>>> solutions = evolver.solve(
-      Misc.cached(p.getFitnessFunction(), 10000),
-      new Iterations(100),
-      r,
-      executorService,
-      Listener.onExecutor(new PrintStreamListener<>(
-          System.out, true, 10, " ", "|",
-          new Basic(),
-          new Population(),
-          new Diversity(),
-          new BestInfo("%5.3f")
-      ), executorService)
+        Misc.cached(p.getFitnessFunction(), 10000),
+        new Iterations(100),
+        r,
+        executorService,
+        listenerFactory.build().deferred(executorService)
     );
     System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
+    listenerFactory.shutdown();
   }
 }
 ```
+Methods inside the constructor of `TabularPrinter` are static methods of the class `NamedFunctions` that returns functions that take an evolution `Event` and returns an object that will be printed as a table cell.
 
 ## Research papers based on JGEA
 The list includes paper published from 2018 on.
-- Medvet, Bartoli, [GraphEA: a Versatile Representation and Evolutionary Algorithm for Graphs](http://medvet.inginf.units.it/publications/grapheaaversatilerepresentationandevolutionaryalgorithmforgraphs), Workshop on Evolutionary and Population-based Optimization (WEPO@AIxIA), 2020
-- Medvet, Bartoli, De Lorenzo, Seriani, [Design, Validation, and Case Studies of 2D-VSR-Sim, an Optimization-friendly Simulator of 2-D Voxel-based Soft Robots](http://medvet.inginf.units.it/publications/designvalidationandcasestudiesofdvsrsimanoptimizationfriendlysimulatorofdvoxelbasedsoftrobots), arXiv, 2020
-- Medvet, Seriani, Bartoli, Gallina, [Evolutionary Optimization of Sliding Contact Positions in Powered Floor Systems for Mobile Robots](http://medvet.inginf.units.it/publications/evolutionaryoptimizationofslidingcontactpositionsinpoweredfloorsystemsformobilerobots), at - Automatisierungstechnik, 2020
-- Medvet, Bartoli, De Lorenzo, Fidel, [Evolution of Distributed Neural Controllers for Voxel-based Soft Robots](http://medvet.inginf.units.it/publications/evolutionofdistributedneuralcontrollersforvoxelbasedsoftrobots), ACM Genetic and Evolutionary Computation Conference (GECCO), 2020, Cancun (Mexico)
-- Bartoli, De Lorenzo, Medvet, Squillero, [Multi-level Diversity Promotion Strategies for Grammar-guided Genetic Programming](http://medvet.inginf.units.it/publications/multileveldiversitypromotionstrategiesforgrammarguidedgeneticprogramming), Applied Soft Computing, 2019
-- Medvet, Seriani, Bartoli, Gallina, [Design of Powered Floor Systems for Mobile Robots with Differential Evolution](http://medvet.inginf.units.it/publications/designofpoweredfloorsystemsformobilerobotswithdifferentialevolution), 22nd European Conference on the Applications of Evolutionary Computation (EvoApplication), 2019, Leipzig (Germany)
-- Bartoli, Castelli, Medvet, [Weighted Hierarchical Grammatical Evolution](http://medvet.inginf.units.it/publications/weightedhierarchicalgrammaticalevolution), IEEE Transactions on Cybernetics, 2018
-- Medvet, Virgolin, Castelli, Bosman, Gonçalves, Tušar, [Unveiling Evolutionary Algorithm Representation with DU Maps](http://medvet.inginf.units.it/publications/unveilingevolutionaryalgorithmrepresentationwithdumaps), Genetic Programming and Evolvable Machines, 2018
-- Medvet, Bartoli, De Lorenzo, Tarlao, [Designing Automatically a Representation for Grammatical Evolution](http://medvet.inginf.units.it/publications/designingautomaticallyarepresentationforgrammaticalevolution), Genetic Programming and Evolvable Machines, 2018
-- Medvet, Bartoli, De Lorenzo, Tarlao, [GOMGE: Gene-pool Optimal Mixing on Grammatical Evolution](http://medvet.inginf.units.it/publications/gomgegenepooloptimalmixingongrammaticalevolution), 15th International Conference on Parallel Problem Solving from Nature (PPSN), 2018, Coimbra (Portugal)
-- Medvet, Bartoli, De Lorenzo, [Exploring the Application of GOMEA to Bit-string GE](http://medvet.inginf.units.it/publications/exploringtheapplicationofgomeatobitstringge), ACM Genetic and Evolutionary Computation Conference (GECCO), 2018, Kyoto (Japan)
-- Medvet, Bartoli, [On the Automatic Design of a Representation for Grammar-based Genetic Programming](http://medvet.inginf.units.it/publications/ontheautomaticdesignofarepresentationforgrammarbasedgeneticprogramming), 21st European Conference on Genetic Programming (EuroGP), 2018, Parma (Italy)
-- Medvet, Bartoli, Ansuini, Tarlao, [Observing the Population Dynamics in GE by means of the Intrinsic Dimension](http://medvet.inginf.units.it/publications/observingthepopulationdynamicsingebymeansoftheintrinsicdimension), Evolutionary Machine Learning workshop at International Conference on Parallel Problem Solving from Nature (EML@PPSN), 2018, Coimbra (Portugal)
+- Ferigo, Iacca, Medvet, [Beyond Body Shape and Brain: Evolving the Sensory Apparatus of Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2021-c-fim-beyond/); 24th European Conference on the Applications of Evolutionary Computation (EvoAPPS); 2021
+- Medvet, Bartoli, [GraphEA: a Versatile Representation and Evolutionary Algorithm for Graphs](https://medvet.inginf.units.it/publications/2020-c-mb-graphea/), Workshop on Evolutionary and Population-based Optimization (WEPO@AIxIA), 2020
+- Medvet, Bartoli, De Lorenzo, Seriani, [Design, Validation, and Case Studies of 2D-VSR-Sim, an Optimization-friendly Simulator of 2-D Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2020-p-mbds-design/), arXiv, 2020
+- Medvet, Seriani, Bartoli, Gallina, [Evolutionary Optimization of Sliding Contact Positions in Powered Floor Systems for Mobile Robots](https://medvet.inginf.units.it/publications/2020-j-msbg-evolutionary/), at - Automatisierungstechnik, 2020
+- Medvet, Bartoli, De Lorenzo, Fidel, [Evolution of Distributed Neural Controllers for Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2020-c-mbdf-evolution/), ACM Genetic and Evolutionary Computation Conference (GECCO), 2020, Cancun (Mexico)
+- Bartoli, De Lorenzo, Medvet, Squillero, [Multi-level Diversity Promotion Strategies for Grammar-guided Genetic Programming](https://medvet.inginf.units.it/publications/2019-j-bdms-multi/), Applied Soft Computing, 2019
+- Medvet, Seriani, Bartoli, Gallina, [Design of Powered Floor Systems for Mobile Robots with Differential Evolution](https://medvet.inginf.units.it/publications/2019-c-msbg-design/), 22nd European Conference on the Applications of Evolutionary Computation (EvoApplication), 2019, Leipzig (Germany)
+- Bartoli, Castelli, Medvet, [Weighted Hierarchical Grammatical Evolution](https://medvet.inginf.units.it/publications/2018-j-bcm-weighted/), IEEE Transactions on Cybernetics, 2018
+- Medvet, Virgolin, Castelli, Bosman, Gonçalves, Tušar, [Unveiling Evolutionary Algorithm Representation with DU Maps](https://medvet.inginf.units.it/publications/2018-j-mvcbgt-unveiling/), Genetic Programming and Evolvable Machines, 2018
+- Medvet, Bartoli, De Lorenzo, Tarlao, [Designing Automatically a Representation for Grammatical Evolution](https://medvet.inginf.units.it/publications/2018-j-mbdt-designing/), Genetic Programming and Evolvable Machines, 2018
+- Medvet, Bartoli, De Lorenzo, Tarlao, [GOMGE: Gene-pool Optimal Mixing on Grammatical Evolution](https://medvet.inginf.units.it/publications/2018-c-mbdt-gomge/), 15th International Conference on Parallel Problem Solving from Nature (PPSN), 2018, Coimbra (Portugal)
+- Medvet, Bartoli, De Lorenzo, [Exploring the Application of GOMEA to Bit-string GE](https://medvet.inginf.units.it/publications/2018-c-mbd-exploring/), ACM Genetic and Evolutionary Computation Conference (GECCO), 2018, Kyoto (Japan)
+- Medvet, Bartoli, [On the Automatic Design of a Representation for Grammar-based Genetic Programming](https://medvet.inginf.units.it/publications/2018-c-mb-automatic/), 21st European Conference on Genetic Programming (EuroGP), 2018, Parma (Italy)
+- Medvet, Bartoli, Ansuini, Tarlao, [Observing the Population Dynamics in GE by means of the Intrinsic Dimension](https://medvet.inginf.units.it/publications/2018-c-mbat-observing/), Evolutionary Machine Learning workshop at International Conference on Parallel Problem Solving from Nature (EML@PPSN), 2018, Coimbra (Portugal)
 
 ## References
 1. De Jong, Kenneth. "Evolutionary computation: a unified approach." Proceedings of the 2016 on Genetic and Evolutionary Computation Conference Companion. 2016.

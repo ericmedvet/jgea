@@ -22,8 +22,6 @@ import java.util.Random;
 
 /**
  * @author eric
- * @created 2020/08/05
- * @project jgea
  */
 public class UniformDoubleFactory implements IndependentFactory<Double> {
   private final double min;

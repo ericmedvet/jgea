@@ -24,8 +24,6 @@ import java.util.Random;
 
 /**
  * @author eric
- * @created 2020/08/05
- * @project jgea
  */
 public class ElementWiseCrossover<E, L extends List<E>> implements Crossover<L> {
   private final IndependentFactory<L> factory;

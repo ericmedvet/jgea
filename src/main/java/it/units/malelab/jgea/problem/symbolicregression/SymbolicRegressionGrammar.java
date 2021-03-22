@@ -28,8 +28,6 @@ import java.util.stream.Stream;
 
 /**
  * @author eric
- * @created 2020/08/05
- * @project jgea
  */
 public class SymbolicRegressionGrammar extends Grammar<String> {
   public SymbolicRegressionGrammar(List<Operator> operators, List<String> variables, List<Double> constants) {

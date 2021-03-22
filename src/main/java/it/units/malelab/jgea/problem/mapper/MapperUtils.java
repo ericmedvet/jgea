@@ -18,7 +18,7 @@ package it.units.malelab.jgea.problem.mapper;
 
 import com.google.common.collect.Range;
 import it.units.malelab.jgea.problem.mapper.element.Element;
-import it.units.malelab.jgea.problem.mapper.element.Function;
+import it.units.malelab.jgea.problem.mapper.element.MapperFunction;
 import it.units.malelab.jgea.problem.mapper.element.NumericConstant;
 import it.units.malelab.jgea.problem.mapper.element.Variable;
 import it.units.malelab.jgea.representation.grammar.ge.HierarchicalMapper;
@@ -68,7 +68,7 @@ public class MapperUtils {
         return variable;
       }
     }
-    for (Function function : Function.values()) {
+    for (MapperFunction function : MapperFunction.values()) {
       if (function.getGrammarName().equals(string)) {
         return function;
       }
@@ -96,8 +96,8 @@ public class MapperUtils {
           result = (double) globalCounter.getAndIncrement();
           break;
       }
-    } else if (tree.content() instanceof Function) {
-      switch (((Function) tree.content())) {
+    } else if (tree.content() instanceof MapperFunction) {
+      switch (((MapperFunction) tree.content())) {
         case SIZE:
           result = (double) ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).size();
           break;
@@ -197,7 +197,7 @@ public class MapperUtils {
           break;
         case APPLY:
           result = apply(
-              (Function) tree.child(0).content(),
+              (MapperFunction) tree.child(0).content(),
               ((List) compute(tree.child(1), g, values, depth, globalCounter)),
               (tree.nChildren() >= 3) ? compute(tree.child(2), g, values, depth, globalCounter) : null
           );
@@ -314,7 +314,7 @@ public class MapperUtils {
     return l;
   }
 
-  private static List apply(Function function, List inputList, Object arg) {
+  private static List apply(MapperFunction function, List inputList, Object arg) {
     List outputList = new ArrayList(inputList.size());
     for (Object repeatedArg : inputList) {
       switch (function) {

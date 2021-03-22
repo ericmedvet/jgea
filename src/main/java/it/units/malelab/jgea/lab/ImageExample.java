@@ -19,18 +19,16 @@ package it.units.malelab.jgea.lab;
 import com.google.common.base.Stopwatch;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.Individual;
+import it.units.malelab.jgea.core.evolver.Event;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
-import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.MultiFileListenerFactory;
-import it.units.malelab.jgea.core.listener.collector.*;
+import it.units.malelab.jgea.core.listener.*;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.problem.image.ImageReconstruction;
-import it.units.malelab.jgea.problem.image.ImageUtils;
 import it.units.malelab.jgea.problem.symbolicregression.MathUtils;
 import it.units.malelab.jgea.problem.symbolicregression.RealFunction;
 import it.units.malelab.jgea.representation.graph.*;
@@ -48,12 +46,11 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
 import static it.units.malelab.jgea.core.util.Args.*;
 
 /**
  * @author eric
- * @created 2020/08/05
- * @project jgea
  */
 
 // /usr/lib/jvm/jdk-14.0.1/bin/java -cp ~/IdeaProjects/jgea/out/artifacts/jgea_jar/jgea.jar it.units.malelab.jgea.lab.SymbolicRegressionComparison seed=0:10 file=results-%s.txt
@@ -76,10 +73,32 @@ public class ImageExample extends Worker {
     //BaseFunction[] baseFunctions = new BaseFunction[]{BaseFunction.STEP, BaseFunction.GAUSSIAN, BaseFunction.PROT_INVERSE, BaseFunction.SQ, BaseFunction.SAW, BaseFunction.SIN};
     BaseFunction[] baseFunctions = new BaseFunction[]{BaseFunction.GAUSSIAN, BaseFunction.SIN, BaseFunction.SQ};
     List<String> images = l(a("images", "/home/eric/experiments/2020-graphea/image/glasses-32x32.png"));
-    MultiFileListenerFactory<Object, RealFunction, Double> listenerFactory = new MultiFileListenerFactory<>(
-        a("dir", "."),
-        a("file", null)
+    //listeners
+    List<NamedFunction<? super Event<?, ?, ? extends Double>, ?>> functions = List.of(
+        eventAttribute("seed", "%2d"),
+        eventAttribute("image", "%20.20s"),
+        eventAttribute("evolver", "%20.20s"),
+        iterations(),
+        births(),
+        elapsedSeconds(),
+        size().of(all()),
+        size().of(firsts()),
+        size().of(lasts()),
+        uniqueness().of(each(genotype())).of(all()),
+        uniqueness().of(each(solution())).of(all()),
+        uniqueness().of(each(fitness())).of(all()),
+        size().of(genotype()).of(best()),
+        size().of(solution()).of(best()),
+        fitness().reformat("%5.3f").of(best()),
+        birthIteration().of(best())
     );
+    Listener.Factory<Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(functions);
+    if (a("file", null) != null) {
+      listenerFactory = Listener.Factory.all(List.of(
+          listenerFactory,
+          new CSVPrinter<>(functions, new File(a("file", null)))
+      ));
+    }
     Map<String, Evolver<?, RealFunction, Double>> evolvers = Map.ofEntries(
         Map.entry("graph-seq-ga", new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
             FunctionGraph.builder()
@@ -105,47 +124,34 @@ public class ImageExample extends Worker {
             new Tournament(nTournament),
             new Worst(),
             nPop,
-            true
+            true,
+            false
         ))
     );
     //run
     for (int seed : seeds) {
       for (String image : images) {
         for (Map.Entry<String, Evolver<?, RealFunction, Double>> evolverEntry : evolvers.entrySet()) {
-          Map<String, String> keys = new TreeMap<>(Map.of(
+          Map<String, Object> keys = Map.of(
               "seed", Integer.toString(seed),
               "image", image.split(File.separator)[image.split(File.separator).length - 1],
               "evolver", evolverEntry.getKey()
-          ));
+          );
           try {
             ImageReconstruction problem = new ImageReconstruction(ImageIO.read(new File(image)), true);
             Stopwatch stopwatch = Stopwatch.createStarted();
             Evolver<?, RealFunction, Double> evolver = evolverEntry.getValue();
+            Listener<Event<?, ?, ? extends Double>> listener = Listener.all(List.of(
+                new EventAugmenter(keys),
+                listenerFactory.build()
+            )).deferred(executorService);
             L.info(String.format("Starting %s", keys));
             Collection<RealFunction> solutions = evolver.solve(
                 Misc.cached(problem.getFitnessFunction(), 10000),
                 new Iterations(nIterations),
                 new Random(seed),
                 executorService,
-                Listener.onExecutor(((Listener<Object, RealFunction, Double>) event -> {
-                  RealFunction best = Misc.first(event.getOrderedPopulation().firsts()).getSolution();
-                  try {
-                    ImageIO.write(
-                        ImageUtils.render(best, 100, 100, true),
-                        "png",
-                        new File(image.replaceFirst("\\.[a-z]+",
-                            ".e" + evolverEntry.getKey() + ".g" + event.getState().getIterations() + ".png"))
-                    );
-                  } catch (IOException e) {
-                    L.severe(String.format("Cannot write file due to %s", e));
-                  }
-                }).then(listenerFactory.build(
-                    new Static(keys),
-                    new Basic(),
-                    new Population(),
-                    new Diversity(),
-                    new BestInfo("%7.5f")
-                )), executorService)
+                listener
             );
             L.info(String.format("Done %s: %d solutions in %4.1fs",
                 keys,
@@ -161,6 +167,7 @@ public class ImageExample extends Worker {
         }
       }
     }
+    listenerFactory.shutdown();
   }
 
 }

@@ -24,8 +24,6 @@ import java.util.function.Function;
 
 /**
  * @author eric
- * @created 2020/08/10
- * @project jgea
  */
 public class ImageReconstruction implements Problem<RealFunction, Double> {
 

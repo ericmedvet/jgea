@@ -26,8 +26,6 @@ import java.util.function.ToIntFunction;
 
 /**
  * @author eric
- * @created 2020/08/04
- * @project jgea
  */
 public class RampedHalfAndHalf<N> implements Factory<Tree<N>> {
   private final int minHeight;

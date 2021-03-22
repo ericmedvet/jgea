@@ -35,8 +35,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author eric
- * @created 2020/08/04
- * @project jgea
  */
 public class OperatorGraph implements Function<double[], double[]>, Sized, Serializable {
 

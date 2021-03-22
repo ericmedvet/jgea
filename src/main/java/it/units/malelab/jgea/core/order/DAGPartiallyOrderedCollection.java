@@ -23,8 +23,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author eric
- * @created 2020/06/16
- * @project jgea
  */
 public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollection<T> {
 

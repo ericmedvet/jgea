@@ -41,6 +41,7 @@ public interface IndependentFactory<T> extends Factory<T> {
     return random -> ks[random.nextInt(ks.length)];
   }
 
+  @SafeVarargs
   static <K> IndependentFactory<K> oneOf(IndependentFactory<K>... factories) {
     return random -> factories[random.nextInt(factories.length)].build(random);
   }

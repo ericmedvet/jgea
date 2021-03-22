@@ -27,8 +27,6 @@ import java.util.function.ToIntFunction;
 
 /**
  * @author eric
- * @created 2020/08/11
- * @project jgea
  */
 public class IndexedNodeAddition<M extends N, N, A> implements Mutation<Graph<IndexedNode<N>, A>> {
 

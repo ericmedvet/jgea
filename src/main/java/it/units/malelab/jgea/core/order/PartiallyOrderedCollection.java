@@ -22,8 +22,6 @@ import java.util.Collection;
 
 /**
  * @author eric
- * @created 2020/06/17
- * @project jgea
  */
 public interface PartiallyOrderedCollection<T> extends Sized {
   Collection<T> all();

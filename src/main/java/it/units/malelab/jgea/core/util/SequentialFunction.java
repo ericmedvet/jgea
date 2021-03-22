@@ -1,4 +1,4 @@
-package it.units.malelab.jgea.core.fitness;
+package it.units.malelab.jgea.core.util;
 
 import java.util.Map;
 import java.util.SortedMap;
@@ -7,16 +7,14 @@ import java.util.function.Function;
 
 /**
  * @author eric
- * @created 2020/10/28
- * @project jgea
  */
-public class SequencedFitness<S, F> implements Function<S, F> {
+public class SequentialFunction<S, F> implements Function<S, F> {
   private final SortedMap<Long, Function<S, F>> functions;
   private long nOfInvocations;
   private long nextThreshold;
   private Function<S, F> currentFunction;
 
-  public SequencedFitness(Map<Long, Function<S, F>> functions) {
+  public SequentialFunction(Map<Long, Function<S, F>> functions) {
     // should not be used with caching
     this.functions = new TreeMap<>(functions);
     reset();

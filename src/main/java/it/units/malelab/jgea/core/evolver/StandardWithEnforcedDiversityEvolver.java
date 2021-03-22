@@ -48,6 +48,7 @@ public class StandardWithEnforcedDiversityEvolver<G, S, F> extends StandardEvolv
         evolver.unsurvivalSelector,
         evolver.offspringSize,
         evolver.overlapping,
+        evolver.remap,
         maxAttempts
     );
   }
@@ -62,8 +63,9 @@ public class StandardWithEnforcedDiversityEvolver<G, S, F> extends StandardEvolv
       Selector<? super Individual<? super G, ? super S, ? super F>> unsurvivalSelector,
       int offspringSize,
       boolean overlapping,
+      boolean remap,
       int maxAttempts) {
-    super(solutionMapper, genotypeFactory, individualComparator, populationSize, operators, parentSelector, unsurvivalSelector, offspringSize, overlapping);
+    super(solutionMapper, genotypeFactory, individualComparator, populationSize, operators, parentSelector, unsurvivalSelector, offspringSize, remap, overlapping);
     this.maxAttempts = maxAttempts;
   }
 
@@ -95,6 +97,6 @@ public class StandardWithEnforcedDiversityEvolver<G, S, F> extends StandardEvolv
         attempts = attempts + 1;
       }
     }
-    return AbstractIterativeEvolver.buildIndividuals(offspringGenotypes, solutionMapper, fitnessFunction, executor, state);
+    return AbstractIterativeEvolver.map(offspringGenotypes, solutionMapper, fitnessFunction, executor, state);
   }
 }

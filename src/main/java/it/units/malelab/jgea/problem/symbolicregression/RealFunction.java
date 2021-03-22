@@ -20,8 +20,6 @@ import java.util.function.Function;
 
 /**
  * @author eric
- * @created 2020/08/03
- * @project jgea
  */
 @FunctionalInterface
 public interface RealFunction extends Function<Double[], Double> {

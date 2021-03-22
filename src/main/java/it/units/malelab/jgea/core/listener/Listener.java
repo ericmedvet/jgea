@@ -1,49 +1,164 @@
-/*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package it.units.malelab.jgea.core.listener;
 
+
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Function;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
-/**
- * @author eric
- */
 @FunctionalInterface
-public interface Listener<G, S, F> {
+public interface Listener<E> {
+  void listen(E e);
 
-  void listen(Event<? extends G, ? extends S, ? extends F> event);
+  default void done() {
+  }
 
-  static Listener<Object, Object, Object> deaf() {
-    return (Listener<Object, Object, Object>) event -> {
+  default Listener<E> deferred(ExecutorService executorService) {
+    Listener<E> thisListener = this;
+    final Logger L = Logger.getLogger(Listener.class.getName());
+    return new Listener<>() {
+      @Override
+      public void listen(E e) {
+        executorService.submit(() -> {
+          try {
+            thisListener.listen(e);
+          } catch (RuntimeException ex) {
+            L.warning(String.format(
+                "Listener %s cannot list event: %s",
+                thisListener.getClass().getSimpleName(),
+                ex
+            ));
+          }
+        });
+      }
+
+      @Override
+      public void done() {
+        executorService.submit(() -> {
+          try {
+            thisListener.done();
+          } catch (RuntimeException ex) {
+            L.warning(String.format(
+                "Listener %s cannot list event: %s",
+                thisListener.getClass().getSimpleName(),
+                ex
+            ));
+          }
+        });
+      }
     };
   }
 
-  default Listener<G, S, F> then(Listener<? super G, ? super S, ? super F> other) {
-    return (Event<? extends G, ? extends S, ? extends F> event) -> {
-      listen(event);
-      other.listen(event);
+  default Listener<E> onLast() {
+    Listener<E> thisListener = this;
+    return new Listener<>() {
+      E lastE;
+
+      @Override
+      public void listen(E e) {
+        lastE = e;
+      }
+
+      @Override
+      public void done() {
+        thisListener.listen(lastE);
+        thisListener.done();
+      }
     };
   }
 
-  static <G1, S1, F1> Listener<G1, S1, F1> onExecutor(final Listener<G1, S1, F1> listener, final ExecutorService executor) {
-    return (final Event<? extends G1, ? extends S1, ? extends F1> event) -> {
-      executor.submit(() -> {
-        listener.listen(event);
-      });
+  static <E> Listener<E> deaf() {
+    return e -> {
     };
+  }
+
+  static <E, F> Listener<F> forEach(Function<F, Collection<E>> splitter, Listener<E> listener) {
+    return new Listener<>() {
+      @Override
+      public void listen(F f) {
+        splitter.apply(f).forEach(listener::listen);
+      }
+
+      @Override
+      public void done() {
+        listener.done();
+      }
+    };
+  }
+
+  static <E> Listener<E> all(List<Listener<? super E>> listeners) {
+    return new Listener<>() {
+      @Override
+      public void listen(E e) {
+        listeners.forEach(l -> l.listen(e));
+      }
+
+      @Override
+      public void done() {
+        listeners.forEach(Listener::done);
+      }
+    };
+  }
+
+  interface Factory<E> {
+    Listener<E> build();
+
+    default void shutdown() {
+    }
+
+    default Factory<E> and(Factory<E> other) {
+      return Factory.all(List.of(this, other));
+    }
+
+    default Factory<E> onLast() {
+      Factory<E> thisFactory = this;
+      return new Factory<>() {
+        @Override
+        public Listener<E> build() {
+          return thisFactory.build().onLast();
+        }
+
+        @Override
+        public void shutdown() {
+          thisFactory.shutdown();
+        }
+      };
+    }
+
+    static <E> Factory<E> all(List<? extends Listener.Factory<? super E>> factories) {
+      return new Factory<>() {
+        @Override
+        public Listener<E> build() {
+          return Listener.all(factories.stream().map(Factory::build).collect(Collectors.toList()));
+        }
+
+        @Override
+        public void shutdown() {
+          factories.forEach(Factory::shutdown);
+        }
+      };
+    }
+
+    static <F, E> Factory<F> forEach(Function<F, Collection<E>> splitter, Listener.Factory<E> factory) {
+      return new Factory<>() {
+        @Override
+        public Listener<F> build() {
+          return Listener.forEach(splitter, factory.build());
+        }
+
+        @Override
+        public void shutdown() {
+          factory.shutdown();
+        }
+      };
+    }
+
+    static <E> Factory<E> deaf() {
+      return Listener::deaf;
+    }
+
   }
 
 }

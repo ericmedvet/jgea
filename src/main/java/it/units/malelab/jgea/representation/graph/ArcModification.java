@@ -22,8 +22,6 @@ import java.util.Random;
 
 /**
  * @author eric
- * @created 2020/07/10
- * @project jgea
  */
 public class ArcModification<N, A> implements Mutation<Graph<N, A>> {
   private final Mutation<A> arcMutation;

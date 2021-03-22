@@ -22,6 +22,7 @@ import it.units.malelab.jgea.distance.Distance;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -40,6 +41,7 @@ public class Misc {
     return modified;
   }
 
+  @SafeVarargs
   public static <K, V> Map<K, V> merge(Map<K, V>... maps) {
     Map<K, V> map = new LinkedHashMap<>();
     for (Map<K, V> currentMap : maps) {
@@ -60,7 +62,7 @@ public class Misc {
       }
       d = d - option.getValue();
     }
-    return (T) options.keySet().toArray()[0];
+    return first(options.keySet());
   }
 
   public static List<Range<Integer>> slices(Range<Integer> range, int pieces) {
@@ -102,13 +104,14 @@ public class Misc {
     }
     List<Range<Integer>> ranges = new ArrayList<>(sizes.size());
     int offset = range.lowerEndpoint();
-    for (int i = 0; i < rangeSize.length; i++) {
-      ranges.add(Range.closedOpen(offset, offset + rangeSize[i]));
-      offset = offset + rangeSize[i];
+    for (int j : rangeSize) {
+      ranges.add(Range.closedOpen(offset, offset + j));
+      offset = offset + j;
     }
     return ranges;
   }
 
+  @SuppressWarnings("unchecked")
   public static <T> T pickRandomly(Collection<T> ts, Random random) {
     return (T) ts.toArray()[random.nextInt(ts.size())];
   }
@@ -130,7 +133,7 @@ public class Misc {
 
   public static <T> Distance<T> cached(Distance<T> function, long size) {
     final CachedBiFunction<T, T, Double> cached = new CachedBiFunction<>(function, size);
-    return (t1, t2) -> cached.apply(t1, t2);
+    return cached::apply;
   }
 
   public static double median(double... values) {
@@ -149,6 +152,10 @@ public class Misc {
     List<K> all = new ArrayList<>(ks);
     all.sort(comparator);
     return all.get(all.size() / 2);
+  }
+
+  public static <K> List<K> concat(List<List<? extends K>> lists) {
+    return lists.stream().flatMap(List::stream).collect(Collectors.toList());
   }
 
 }

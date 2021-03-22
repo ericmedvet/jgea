@@ -16,9 +16,6 @@
 
 package it.units.malelab.jgea;
 
-import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.PrintStreamListener;
-import it.units.malelab.jgea.core.listener.collector.DataCollector;
 import it.units.malelab.jgea.core.util.Args;
 
 import java.io.IOException;
@@ -56,10 +53,6 @@ public abstract class Worker implements Runnable {
 
   protected String a(String name, String defaultValue) {
     return Args.a(args, name, defaultValue);
-  }
-
-  protected <G, S, F> Listener<G, S, F> listener(DataCollector<? super G, ? super S, ? super F>... collectors) {
-    return new PrintStreamListener<>(System.out, true, 10, " ", " | ", collectors);
   }
 
 }

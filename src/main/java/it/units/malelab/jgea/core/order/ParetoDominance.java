@@ -20,8 +20,6 @@ import java.util.List;
 
 /**
  * @author eric
- * @created 2020/06/17
- * @project jgea
  */
 public class ParetoDominance<C extends Comparable<C>> implements PartialComparator<List<? extends C>> {
 

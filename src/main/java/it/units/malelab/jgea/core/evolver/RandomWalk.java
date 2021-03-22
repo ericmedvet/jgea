@@ -31,8 +31,6 @@ import java.util.function.Function;
 
 /**
  * @author eric
- * @created 2020/06/16
- * @project jgea
  */
 public class RandomWalk<G, S, F> extends AbstractIterativeEvolver<G, S, F> {
 
@@ -50,14 +48,14 @@ public class RandomWalk<G, S, F> extends AbstractIterativeEvolver<G, S, F> {
   @Override
   protected Collection<Individual<G, S, F>> initPopulation(Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     G genotype = genotypeFactory.build(1, random).get(0);
-    return AbstractIterativeEvolver.buildIndividuals(List.of(genotype), solutionMapper, fitnessFunction, executor, state);
+    return AbstractIterativeEvolver.map(List.of(genotype), solutionMapper, fitnessFunction, executor, state);
   }
 
   @Override
   protected Collection<Individual<G, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<G, S, F>> population, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     Individual<G, S, F> currentIndividual = population.firsts().iterator().next();
     G genotype = mutation.mutate(currentIndividual.getGenotype(), random);
-    Collection<Individual<G, S, F>> offspring = AbstractIterativeEvolver.buildIndividuals(List.of(genotype), solutionMapper, fitnessFunction, executor, state);
+    Collection<Individual<G, S, F>> offspring = AbstractIterativeEvolver.map(List.of(genotype), solutionMapper, fitnessFunction, executor, state);
     Individual<G, S, F> newIndividual = offspring.iterator().next();
     if (individualComparator.compare(newIndividual, currentIndividual).equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
       return List.of(newIndividual);

@@ -14,32 +14,17 @@
  * limitations under the License.
  */
 
-package it.units.malelab.jgea.problem.mapper.element;
+package it.units.malelab.jgea.core.evolver.speciation;
+
+import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
+
+import java.util.Collection;
 
 /**
  * @author eric
  */
-public enum Function implements Element {
+public interface Speciator<T> {
 
-  SIZE("size"), WEIGHT("weight"), WEIGHT_R("weight_r"), INT("int"),
-  ADD("+"), SUBTRACT("-"), MULT("*"), DIVIDE("/"), REMAINDER("%"),
-  LENGTH("length"), MAX_INDEX("max_index"), MIN_INDEX("min_index"),
-  GET("get"),
-  SEQ("seq"),
-  REPEAT("repeat"),
-  ROTATE_DX("rotate_dx"), ROTATE_SX("rotate_sx"), SUBSTRING("substring"),
-  SPLIT("split"),
-  SPLIT_W("split_w"),
-  APPLY("apply");
-
-  private final String grammarName;
-
-  Function(String grammarName) {
-    this.grammarName = grammarName;
-  }
-
-  public String getGrammarName() {
-    return grammarName;
-  }
+  Collection<Species<T>> speciate(PartiallyOrderedCollection<T> all);
 
 }

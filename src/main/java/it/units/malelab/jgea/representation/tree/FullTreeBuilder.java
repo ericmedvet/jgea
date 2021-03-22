@@ -23,8 +23,6 @@ import java.util.function.ToIntFunction;
 
 /**
  * @author eric
- * @created 2020/08/05
- * @project jgea
  */
 public class FullTreeBuilder<N> implements TreeBuilder<N> {
 

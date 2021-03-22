@@ -25,8 +25,6 @@ import java.util.function.Predicate;
 
 /**
  * @author eric
- * @created 2020/07/13
- * @project jgea
  */
 public class AlignedCrossover<N, A> implements Crossover<Graph<N, A>> {
 
