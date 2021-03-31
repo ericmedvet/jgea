@@ -28,7 +28,7 @@ public interface Listener<E> {
             thisListener.listen(e);
           } catch (RuntimeException ex) {
             L.warning(String.format(
-                "Listener %s cannot list event: %s",
+                "Listener %s cannot listen event: %s",
                 thisListener.getClass().getSimpleName(),
                 ex
             ));
@@ -43,7 +43,7 @@ public interface Listener<E> {
             thisListener.done();
           } catch (RuntimeException ex) {
             L.warning(String.format(
-                "Listener %s cannot list event: %s",
+                "Listener %s cannot listen event: %s",
                 thisListener.getClass().getSimpleName(),
                 ex
             ));
@@ -187,7 +187,7 @@ public interface Listener<E> {
                       innerListener.listen(e);
                     } catch (RuntimeException ex) {
                       L.warning(String.format(
-                          "Listener %s cannot list event: %s",
+                          "Listener %s cannot listen event: %s",
                           innerListener.getClass().getSimpleName(),
                           ex
                       ));
@@ -208,7 +208,7 @@ public interface Listener<E> {
                       innerListener.done();
                     } catch (RuntimeException ex) {
                       L.warning(String.format(
-                          "Listener %s cannot list event: %s",
+                          "Listener %s cannot listen event: %s",
                           innerListener.getClass().getSimpleName(),
                           ex
                       ));
