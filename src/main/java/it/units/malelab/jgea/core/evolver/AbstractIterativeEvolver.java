@@ -80,8 +80,9 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
 
   protected abstract Collection<Individual<G, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException;
 
-  protected static <G1, S1, F1> List<Individual<G1, S1, F1>> map(Collection<? extends G1> genotypes, Function<? super G1, ? extends S1> solutionMapper, Function<? super S1, ? extends F1> fitnessFunction, ExecutorService executor, State state) throws InterruptedException, ExecutionException {
-    List<Callable<Individual<G1, S1, F1>>> callables = genotypes.stream()
+  protected static <G1, S1, F1> List<Individual<G1, S1, F1>> map(Collection<? extends G1> genotypes, Collection<Individual<G1, S1, F1>> individuals, Function<? super G1, ? extends S1> solutionMapper, Function<? super S1, ? extends F1> fitnessFunction, ExecutorService executor, State state) throws InterruptedException, ExecutionException {
+    List<Callable<Individual<G1, S1, F1>>> callables = new ArrayList<>(genotypes.size() + individuals.size());
+    callables.addAll(genotypes.stream()
         .map(genotype -> (Callable<Individual<G1, S1, F1>>) () -> {
           S1 solution = solutionMapper.apply(genotype);
           F1 fitness = fitnessFunction.apply(solution);
@@ -92,14 +93,8 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
               state.getIterations(),
               state.getIterations()
           );
-        }).collect(Collectors.toList());
-    state.incBirths(genotypes.size());
-    state.incFitnessEvaluations(genotypes.size());
-    return getAll(executor.invokeAll(callables));
-  }
-
-  protected static <G1, S1, F1> List<Individual<G1, S1, F1>> remap(Collection<Individual<G1, S1, F1>> individuals, Function<? super G1, ? extends S1> solutionMapper, Function<? super S1, ? extends F1> fitnessFunction, ExecutorService executor, State state) throws InterruptedException, ExecutionException {
-    List<Callable<Individual<G1, S1, F1>>> callables = individuals.stream()
+        }).collect(Collectors.toList()));
+    callables.addAll(individuals.stream()
         .map(individual -> (Callable<Individual<G1, S1, F1>>) () -> {
           S1 solution = solutionMapper.apply(individual.getGenotype());
           F1 fitness = fitnessFunction.apply(solution);
@@ -110,8 +105,9 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
               state.getIterations(),
               individual.getGenotypeBirthIteration()
           );
-        }).collect(Collectors.toList());
-    state.incFitnessEvaluations(individuals.size());
+        }).collect(Collectors.toList()));
+    state.incBirths(genotypes.size());
+    state.incFitnessEvaluations(genotypes.size() + individuals.size());
     return getAll(executor.invokeAll(callables));
   }
 
@@ -125,7 +121,7 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
 
   protected Collection<Individual<G, S, F>> initPopulation(int n, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     Collection<? extends G> genotypes = genotypeFactory.build(n, random);
-    return AbstractIterativeEvolver.map(genotypes, solutionMapper, fitnessFunction, executor, state);
+    return AbstractIterativeEvolver.map(genotypes, List.of(), solutionMapper, fitnessFunction, executor, state);
   }
 
   protected State initState() {

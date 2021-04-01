@@ -24,6 +24,7 @@ import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.selector.Selector;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -54,6 +55,6 @@ public class MutationOnly<G, S, F> extends StandardEvolver<G, S, F> {
     Collection<G> offspringGenotypes = orderedPopulation.all().stream()
         .map(i -> mutation.mutate(i.getGenotype(), random))
         .collect(Collectors.toList());
-    return AbstractIterativeEvolver.map(offspringGenotypes, solutionMapper, fitnessFunction, executor, state);
+    return AbstractIterativeEvolver.map(offspringGenotypes, List.of(), solutionMapper, fitnessFunction, executor, state);
   }
 }

@@ -88,11 +88,11 @@ public class BasicEvolutionaryStrategy<S, F> extends AbstractIterativeEvolver<Li
     }
     List<Individual<List<Double>, S, F>> offspring = new ArrayList<>();
     if (remap) {
-      offspring.addAll(remap(elite, solutionMapper, fitnessFunction, executor, state));
+      offspring.addAll(map(offspringGenotypes, elite, solutionMapper, fitnessFunction, executor, state));
     } else {
       offspring.addAll(elite);
+      offspring.addAll(map(offspringGenotypes, List.of(), solutionMapper, fitnessFunction, executor, state));
     }
-    offspring.addAll(map(offspringGenotypes, solutionMapper, fitnessFunction, executor, state));
     return offspring;
   }
 
