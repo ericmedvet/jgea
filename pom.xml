@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>it.units.malelab</groupId>
     <artifactId>JGEA</artifactId>
-    <version>1.7.0</version>
+    <version>1.7.2</version>
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>29.0-jre</version>
+            <version>30.0-jre</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

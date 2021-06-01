@@ -290,7 +290,7 @@ public class CMAESEvolver<S, F> extends AbstractIterativeEvolver<List<Double>, S
       }
       genotypes.add(genotype);
     }
-    return AbstractIterativeEvolver.map(genotypes, solutionMapper, fitnessFunction, executor, state);
+    return AbstractIterativeEvolver.map(genotypes, List.of(), solutionMapper, fitnessFunction, executor, state);
   }
 
   protected void updateDistribution(

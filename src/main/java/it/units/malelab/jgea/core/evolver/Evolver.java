@@ -77,6 +77,10 @@ public interface Evolver<G, S, F> {
       this.fitnessEvaluations = fitnessEvaluations;
     }
 
+    public void incFitnessEvaluations(int fitnessEvaluations) {
+      setFitnessEvaluations(getFitnessEvaluations() + fitnessEvaluations);
+    }
+
     public long getElapsedMillis() {
       return elapsedMillis;
     }

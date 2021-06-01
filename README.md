@@ -170,7 +170,9 @@ Methods inside the constructor of `TabularPrinter` are static methods of the cla
 
 ## Research papers based on JGEA
 The list includes paper published from 2018 on.
+- Medvet, Bartoli, Pigozzi, Rochelli; [Biodiversity in Evolved Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2021-c-mbpr-biodiversity/); ACM Genetic and Evolutionary Computation Conference (GECCO); 2021
 - Ferigo, Iacca, Medvet, [Beyond Body Shape and Brain: Evolving the Sensory Apparatus of Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2021-c-fim-beyond/); 24th European Conference on the Applications of Evolutionary Computation (EvoAPPS); 2021
+- Medvet, Bartoli; [Evolutionary Optimization of Graphs with GraphEA](https://medvet.inginf.units.it/publications/2020-c-mb-evolutionary/); 19th International Conference of the Italian Association for Artificial Intelligence (AIxIA); 2020
 - Medvet, Bartoli, [GraphEA: a Versatile Representation and Evolutionary Algorithm for Graphs](https://medvet.inginf.units.it/publications/2020-c-mb-graphea/), Workshop on Evolutionary and Population-based Optimization (WEPO@AIxIA), 2020
 - Medvet, Bartoli, De Lorenzo, Seriani, [Design, Validation, and Case Studies of 2D-VSR-Sim, an Optimization-friendly Simulator of 2-D Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2020-p-mbds-design/), arXiv, 2020
 - Medvet, Seriani, Bartoli, Gallina, [Evolutionary Optimization of Sliding Contact Positions in Powered Floor Systems for Mobile Robots](https://medvet.inginf.units.it/publications/2020-j-msbg-evolutionary/), at - Automatisierungstechnik, 2020

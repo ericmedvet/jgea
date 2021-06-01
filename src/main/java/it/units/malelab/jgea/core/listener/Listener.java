@@ -4,12 +4,14 @@ package it.units.malelab.jgea.core.listener;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @FunctionalInterface
 public interface Listener<E> {
+
   void listen(E e);
 
   default void done() {
@@ -26,7 +28,7 @@ public interface Listener<E> {
             thisListener.listen(e);
           } catch (RuntimeException ex) {
             L.warning(String.format(
-                "Listener %s cannot list event: %s",
+                "Listener %s cannot listen event: %s",
                 thisListener.getClass().getSimpleName(),
                 ex
             ));
@@ -41,7 +43,7 @@ public interface Listener<E> {
             thisListener.done();
           } catch (RuntimeException ex) {
             L.warning(String.format(
-                "Listener %s cannot list event: %s",
+                "Listener %s cannot listen event: %s",
                 thisListener.getClass().getSimpleName(),
                 ex
             ));
@@ -126,6 +128,120 @@ public interface Listener<E> {
         }
       };
     }
+
+    default Factory<E> robust() {
+      final Factory<E> thisFactory = this;
+      final Logger L = Logger.getLogger(Listener.class.getName());
+      final AtomicInteger counter = new AtomicInteger(0);
+      return new Factory<E>() {
+        @Override
+        public Listener<E> build() {
+          final Listener<E> innerListener = thisFactory.build();
+          return new Listener<E>() {
+            @Override
+            public void listen(E e) {
+              if (counter.get() == -1) {
+                L.warning("listen() invoked on a shutdown factory");
+                return;
+              }
+              counter.incrementAndGet();
+              try {
+                innerListener.listen(e);
+              } finally {
+                synchronized (counter) {
+                  counter.decrementAndGet();
+                  counter.notifyAll();
+                }
+              }
+            }
+
+            @Override
+            public void done() {
+              if (counter.get() == -1) {
+                L.warning("listen() invoked on a shutdown factory");
+                return;
+              }
+              counter.incrementAndGet();
+              try {
+                innerListener.done();
+              } finally {
+                synchronized (counter) {
+                  counter.decrementAndGet();
+                  counter.notifyAll();
+                }
+              }
+            }
+
+            @Override
+            public Listener<E> deferred(ExecutorService executorService) {
+              return new Listener<E>() {
+                @Override
+                public void listen(E e) {
+                  if (counter.get() == -1) {
+                    L.warning("listen() invoked on a shutdown factory");
+                    return;
+                  }
+                  counter.incrementAndGet();
+                  executorService.submit(() -> {
+                    try {
+                      innerListener.listen(e);
+                    } catch (RuntimeException ex) {
+                      L.warning(String.format(
+                          "Listener %s cannot listen event: %s",
+                          innerListener.getClass().getSimpleName(),
+                          ex
+                      ));
+                    } finally {
+                      synchronized (counter) {
+                        counter.decrementAndGet();
+                        counter.notifyAll();
+                      }
+                    }
+                  });
+                }
+
+                @Override
+                public void done() {
+                  counter.incrementAndGet();
+                  executorService.submit(() -> {
+                    try {
+                      innerListener.done();
+                    } catch (RuntimeException ex) {
+                      L.warning(String.format(
+                          "Listener %s cannot listen event: %s",
+                          innerListener.getClass().getSimpleName(),
+                          ex
+                      ));
+                    } finally {
+                      synchronized (counter) {
+                        counter.decrementAndGet();
+                        counter.notifyAll();
+                      }
+                    }
+                  });
+                }
+              };
+            }
+          };
+        }
+
+        @Override
+        public void shutdown() {
+          while (counter.get() > 0) {
+            synchronized (counter) {
+              try {
+                counter.wait();
+              } catch (InterruptedException e) {
+                //ignore
+              }
+            }
+          }
+          counter.set(-1);
+          thisFactory.shutdown();
+        }
+      };
+    }
+
 
     static <E> Factory<E> all(List<? extends Listener.Factory<? super E>> factories) {
       return new Factory<>() {

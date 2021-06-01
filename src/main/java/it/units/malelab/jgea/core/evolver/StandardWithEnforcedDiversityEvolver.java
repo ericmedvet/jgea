@@ -97,6 +97,6 @@ public class StandardWithEnforcedDiversityEvolver<G, S, F> extends StandardEvolv
         attempts = attempts + 1;
       }
     }
-    return AbstractIterativeEvolver.map(offspringGenotypes, solutionMapper, fitnessFunction, executor, state);
+    return AbstractIterativeEvolver.map(offspringGenotypes, List.of(), solutionMapper, fitnessFunction, executor, state);
   }
 }

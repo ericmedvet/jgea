@@ -83,7 +83,7 @@ public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> 
     L.fine(String.format("Offspring built: %d individuals", offspring.size()));
     if (overlapping) {
       if (remap) {
-        offspring.addAll(remap(orderedPopulation.all(), solutionMapper, fitnessFunction, executor, state));
+        offspring.addAll(map(List.of(), orderedPopulation.all(), solutionMapper, fitnessFunction, executor, state));
       } else {
         offspring.addAll(orderedPopulation.all());
       }
@@ -105,7 +105,7 @@ public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> 
       }
       offspringGenotypes.addAll(operator.apply(parentGenotypes, random));
     }
-    return AbstractIterativeEvolver.map(offspringGenotypes, solutionMapper, fitnessFunction, executor, state);
+    return map(offspringGenotypes, List.of(), solutionMapper, fitnessFunction, executor, state);
   }
 
   protected Collection<Individual<G, S, F>> trimPopulation(Collection<Individual<G, S, F>> population, Random random) {

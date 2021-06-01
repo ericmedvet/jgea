@@ -85,13 +85,8 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
             .ifPresent(elite::add);
       }
     }
-    if (remap) {
-      offspring.addAll(remap(elite, solutionMapper, fitnessFunction, executor, state));
-    } else {
-      offspring.addAll(elite);
-    }
     //assign remaining offspring size
-    int remaining = populationSize - offspring.size();
+    int remaining = populationSize - elite.size();
     List<Individual<G, S, F>> representers = allSpecies.stream()
         .map(Species::getRepresentative)
         .collect(Collectors.toList());
@@ -140,7 +135,12 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
       offspringGenotypes.addAll(speciesOffspringGenotypes);
     }
     //merge
-    offspring.addAll(map(offspringGenotypes, solutionMapper, fitnessFunction, executor, state));
+    if (remap) {
+      offspring.addAll(map(offspringGenotypes, elite, solutionMapper, fitnessFunction, executor, state));
+    } else {
+      offspring.addAll(elite);
+      offspring.addAll(map(offspringGenotypes, List.of(), solutionMapper, fitnessFunction, executor, state));
+    }
     return offspring;
   }
 
