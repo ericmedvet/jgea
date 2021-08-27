@@ -26,8 +26,8 @@ import it.units.malelab.jgea.core.listener.*;
 import it.units.malelab.jgea.core.listener.telegram.TelegramUpdater;
 import it.units.malelab.jgea.core.order.ParetoDominance;
 import it.units.malelab.jgea.core.order.PartialComparator;
+import it.units.malelab.jgea.core.selector.Last;
 import it.units.malelab.jgea.core.selector.Tournament;
-import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.ImagePlotters;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.core.util.Sized;
@@ -134,7 +134,7 @@ public class Example extends Worker {
             100,
             Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
             new Tournament(5),
-            new Worst(),
+            new Last(),
             100,
             true,
             false
@@ -211,7 +211,7 @@ public class Example extends Worker {
                 new BitFlipMutation(0.01d), 0.2d
             ),
             new Tournament(5),
-            new Worst(),
+            new Last(),
             100,
             true,
             false
@@ -226,7 +226,7 @@ public class Example extends Worker {
                 new BitFlipMutation(0.01d), 0.2d
             ),
             new Tournament(5),
-            new Worst(),
+            new Last(),
             100,
             true,
             false,
@@ -279,7 +279,7 @@ public class Example extends Worker {
                 new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d
             ),
             new Tournament(5),
-            new Worst(),
+            new Last(),
             100,
             true,
             false
@@ -296,7 +296,7 @@ public class Example extends Worker {
                 new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d
             ),
             new Tournament(5),
-            new Worst(),
+            new Last(),
             100,
             true,
             false,
@@ -346,7 +346,7 @@ public class Example extends Worker {
                 new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d
             ),
             new Tournament(5),
-            new Worst(),
+            new Last(),
             100,
             true,
             false
@@ -363,7 +363,7 @@ public class Example extends Worker {
                 new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d
             ),
             new Tournament(5),
-            new Worst(),
+            new Last(),
             100,
             true,
             false,
@@ -410,7 +410,7 @@ public class Example extends Worker {
             new GrammarBasedSubtreeMutation<>(12, p.getGrammar()), 0.2d
         ),
         new Tournament(3),
-        new Worst(),
+        new Last(),
         100,
         true,
         false
@@ -441,7 +441,7 @@ public class Example extends Worker {
             100,
             Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
             new Tournament(5),
-            new Worst(),
+            new Last(),
             100,
             true,
             false
@@ -491,7 +491,7 @@ public class Example extends Worker {
             100,
             Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
             new Tournament(5),
-            new Worst(),
+            new Last(),
             100,
             true,
             false

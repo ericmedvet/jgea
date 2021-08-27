@@ -24,7 +24,7 @@ import java.util.Random;
 /**
  * @author eric
  */
-public class Worst implements Selector<Object> {
+public class Last implements Selector<Object> {
 
   @Override
   public <K> K select(PartiallyOrderedCollection<K> ks, Random random) {
@@ -33,7 +33,7 @@ public class Worst implements Selector<Object> {
 
   @Override
   public String toString() {
-    return "Worst{" + '}';
+    return "Last{" + '}';
   }
 
 }

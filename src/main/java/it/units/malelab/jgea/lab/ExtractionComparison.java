@@ -31,8 +31,8 @@ import it.units.malelab.jgea.core.listener.*;
 import it.units.malelab.jgea.core.operator.Crossover;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.order.LexicoGraphical;
+import it.units.malelab.jgea.core.selector.Last;
 import it.units.malelab.jgea.core.selector.Tournament;
-import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.distance.Jaccard;
 import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
@@ -52,7 +52,6 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -143,7 +142,7 @@ public class ExtractionComparison extends Worker {
                   new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
               ),
               new Tournament(nTournament),
-              new Worst(),
+              new Last(),
               nPop,
               true,
               false
@@ -163,7 +162,7 @@ public class ExtractionComparison extends Worker {
                   new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
               ),
               new Tournament(nTournament),
-              new Worst(),
+              new Last(),
               nPop,
               true,
               false,
@@ -377,7 +376,7 @@ public class ExtractionComparison extends Worker {
                   ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
               ),
               new Tournament(nTournament),
-              new Worst(),
+              new Last(),
               nPop,
               true,
               false

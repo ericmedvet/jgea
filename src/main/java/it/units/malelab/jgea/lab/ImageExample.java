@@ -25,8 +25,8 @@ import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.listener.*;
 import it.units.malelab.jgea.core.order.PartialComparator;
+import it.units.malelab.jgea.core.selector.Last;
 import it.units.malelab.jgea.core.selector.Tournament;
-import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.problem.image.ImageReconstruction;
 import it.units.malelab.jgea.problem.symbolicregression.MathUtils;
@@ -42,7 +42,10 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -122,7 +125,7 @@ public class ImageExample extends Worker {
                 ), 1d
             ),
             new Tournament(nTournament),
-            new Worst(),
+            new Last(),
             nPop,
             true,
             false

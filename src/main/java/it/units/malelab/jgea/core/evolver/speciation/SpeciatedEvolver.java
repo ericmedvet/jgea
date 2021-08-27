@@ -22,7 +22,7 @@ import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
-import it.units.malelab.jgea.core.selector.Worst;
+import it.units.malelab.jgea.core.selector.Last;
 import it.units.malelab.jgea.core.util.Misc;
 
 import java.util.*;
@@ -52,7 +52,7 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
       Speciator<Individual<G, S, F>> speciator,
       double rankBase,
       boolean remap) {
-    super(solutionMapper, genotypeFactory, individualComparator, populationSize, operators, null, new Worst(), populationSize, false, remap);
+    super(solutionMapper, genotypeFactory, individualComparator, populationSize, operators, null, new Last(), populationSize, false, remap);
     this.minSpeciesSizeForElitism = minSpeciesSizeForElitism;
     this.speciator = speciator;
     this.rankBase = rankBase;

@@ -32,8 +32,8 @@ import it.units.malelab.jgea.core.listener.*;
 import it.units.malelab.jgea.core.operator.Crossover;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.order.PartialComparator;
+import it.units.malelab.jgea.core.selector.Last;
 import it.units.malelab.jgea.core.selector.Tournament;
-import it.units.malelab.jgea.core.selector.Worst;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.distance.Jaccard;
 import it.units.malelab.jgea.problem.symbolicregression.*;
@@ -168,7 +168,7 @@ public class SymbolicRegressionComparison extends Worker {
                   )), 0.2d
               ),
               new Tournament(nTournament),
-              new Worst(),
+              new Last(),
               nPop,
               true,
               false
@@ -198,7 +198,7 @@ public class SymbolicRegressionComparison extends Worker {
                   )), 0.2d
               ),
               new Tournament(nTournament),
-              new Worst(),
+              new Last(),
               nPop,
               true,
               false
@@ -229,7 +229,7 @@ public class SymbolicRegressionComparison extends Worker {
                   )), 0.2d
               ),
               new Tournament(nTournament),
-              new Worst(),
+              new Last(),
               nPop,
               true,
               false,
@@ -254,7 +254,7 @@ public class SymbolicRegressionComparison extends Worker {
                   new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
               ),
               new Tournament(nTournament),
-              new Worst(),
+              new Last(),
               nPop,
               true,
               false
@@ -277,7 +277,7 @@ public class SymbolicRegressionComparison extends Worker {
                   new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
               ),
               new Tournament(nTournament),
-              new Worst(),
+              new Last(),
               nPop,
               true,
               false
@@ -301,7 +301,7 @@ public class SymbolicRegressionComparison extends Worker {
                   new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
               ),
               new Tournament(nTournament),
-              new Worst(),
+              new Last(),
               nPop,
               true,
               false,
@@ -333,7 +333,7 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphCrossoverRate
             ),
             new Tournament(nTournament),
-            new Worst(),
+            new Last(),
             nPop,
             true,
             false
@@ -358,7 +358,7 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
             ),
             new Tournament(nTournament),
-            new Worst(),
+            new Last(),
             nPop,
             true,
             false
@@ -467,7 +467,7 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphCrossoverRate
             ),
             new Tournament(nTournament),
-            new Worst(),
+            new Last(),
             nPop,
             true,
             false,
@@ -562,7 +562,7 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphCrossoverRate
             ),
             new Tournament(nTournament),
-            new Worst(),
+            new Last(),
             nPop,
             true,
             false
@@ -591,7 +591,7 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(OperatorGraph.checker()), graphCrossoverRate
             ),
             new Tournament(nTournament),
-            new Worst(),
+            new Last(),
             nPop,
             true,
             false
@@ -654,7 +654,7 @@ public class SymbolicRegressionComparison extends Worker {
                   ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
               ),
               new Tournament(nTournament),
-              new Worst(),
+              new Last(),
               nPop,
               true,
               false
@@ -839,7 +839,7 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
             ),
             new Tournament(nTournament),
-            new Worst(),
+            new Last(),
             nPop,
             true,
             false
@@ -869,7 +869,7 @@ public class SymbolicRegressionComparison extends Worker {
                 ).withChecker(FunctionGraph.checker()), graphCrossoverRate
             ),
             new Tournament(nTournament),
-            new Worst(),
+            new Last(),
             nPop,
             true,
             false,
@@ -888,7 +888,7 @@ public class SymbolicRegressionComparison extends Worker {
     for (int seed : seeds) {
       for (SymbolicRegressionProblem problem : problems) {
         for (Map.Entry<String, Function<SymbolicRegressionProblem, Evolver<?, RealFunction, Double>>> evolverEntry : evolvers.entrySet()) {
-          Map<String,Object> keys = Map.ofEntries(
+          Map<String, Object> keys = Map.ofEntries(
               Map.entry("seed", seed),
               Map.entry("problem", problem.getClass().getSimpleName().toLowerCase()),
               Map.entry("evolver", evolverEntry.getKey())
