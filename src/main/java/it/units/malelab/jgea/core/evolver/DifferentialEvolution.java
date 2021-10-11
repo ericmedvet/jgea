@@ -54,6 +54,13 @@ public class DifferentialEvolution<S, F> extends AbstractIterativeEvolver<List<D
     @Override
     protected Collection<Individual<List<Double>, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<List<Double>, S, F>> population, Function<S, F> function, Random random, ExecutorService executorService, State state) throws ExecutionException, InterruptedException {
       List<Individual<List<Double>, S, F>> offspring = new ArrayList<>(population.all());
+      if (this.remap) {
+        // we remap all parents, regardless of their fate
+        offspring.addAll(map(List.of(), population.all(), this.solutionMapper, function, executorService, state));
+      }
+      else {
+        offspring.addAll(population.all());
+      }
       List<Integer> indexes = IntStream.range(0, population.size()).boxed().collect(Collectors.toList());
       int i = 0;
       for (Individual<List<Double>, S, F> parent : offspring) {
@@ -70,9 +77,6 @@ public class DifferentialEvolution<S, F> extends AbstractIterativeEvolver<List<D
         Individual<List<Double>, S, F> trialIndividual = (Individual<List<Double>, S, F>) map(List.of(trial), List.of(), this.solutionMapper, function, executorService, state).get(0);
         if (this.individualComparator.compare(trialIndividual, parent).equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
           offspring.set(i, trialIndividual);
-        }
-        else if (this.remap) {
-          offspring.set(i, map(List.of(), List.of(parent), this.solutionMapper, function, executorService, state).get(0));
         }
         ++i;
       }
