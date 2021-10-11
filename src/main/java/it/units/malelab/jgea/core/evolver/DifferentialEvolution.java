@@ -69,11 +69,13 @@ public class DifferentialEvolution<S, F> extends AbstractIterativeEvolver<List<D
     L.fine(String.format("Trials evaluated: %d individuals", trialGenotypes.size()));
     for (int i = 0, j = this.populationSize; i < this.populationSize && j < offspring.size(); ++i, ++j) {
       if (this.individualComparator.compare(offspring.get(i), offspring.get(j)).equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
-        offspring.remove(j--);
+        offspring.remove(j);
+        j = j - 1;
       }
       else {
-        offspring.remove(i--);
-        --j;
+        offspring.remove(i);
+        i = i - 1;
+        j = j - 1;
       }
     }
     L.fine(String.format("Population selected: %d individuals", offspring.size()));
