@@ -9,6 +9,7 @@ import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
+import it.units.malelab.jgea.core.util.Misc;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,8 +19,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * @author federico
@@ -56,47 +55,59 @@ public class DifferentialEvolution<S, F> extends AbstractIterativeEvolver<List<D
 
   @Override
   protected Collection<Individual<List<Double>, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<List<Double>, S, F>> population, Function<S, F> function, Random random, ExecutorService executorService, State state) throws ExecutionException, InterruptedException {
-    List<Individual<List<Double>, S, F>> offspring = new ArrayList<>(population.all());
-    if (remap) {
+    List<Individual<List<Double>, S, F>> offspring = new ArrayList<>(this.populationSize * 2);
+    Collection<List<Double>> trialGenotypes = this.computeTrials(population, random);
+    L.fine(String.format("Trials computed: %d individuals", trialGenotypes.size()));
+    if (this.remap) {
       // we remap all parents, regardless of their fate
-      offspring.addAll(map(List.of(), population.all(), solutionMapper, function, executorService, state));
-    } else {
+      offspring.addAll(map(trialGenotypes, population.all(), this.solutionMapper, function, executorService, state));
+    }
+    else {
+      offspring.addAll(map(trialGenotypes, List.of(), this.solutionMapper, function, executorService, state));
       offspring.addAll(population.all());
     }
-    List<Integer> indexes = IntStream.range(0, population.size()).boxed().collect(Collectors.toList());
-    int i = 0;
-    for (Individual<List<Double>, S, F> parent : offspring) {
+    L.fine(String.format("Trials evaluated: %d individuals", trialGenotypes.size()));
+    for (int i = 0, j = this.populationSize; i < this.populationSize && j < offspring.size(); ++i, ++j) {
+      if (this.individualComparator.compare(offspring.get(i), offspring.get(j)).equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
+        offspring.remove(j);
+        j = j - 1;
+      }
+      else {
+        offspring.remove(i);
+        i = i - 1;
+        j = j - 1;
+      }
+    }
+    L.fine(String.format("Population selected: %d individuals", offspring.size()));
+    return offspring;
+  }
+
+  protected List<Double> pickParents(PartiallyOrderedCollection<Individual<List<Double>, S, F>> population, Random random, List<Double> prev) {//List<Integer> indexes, Random random) {
+    List<Double> current = prev;
+    while (current == prev) {
+      current = Misc.pickRandomly(population.all(), random).getGenotype();
+    }
+    return current;
+  }
+
+  protected Collection<List<Double>> computeTrials(PartiallyOrderedCollection<Individual<List<Double>, S, F>> population, Random random) {
+    Collection<List<Double>> trialGenotypes = new ArrayList<>(this.populationSize);
+    for (Individual<List<Double>, S, F> parent : population.all()) {
       List<Double> x = parent.getGenotype();
       List<Double> trial = new ArrayList<>(x.size());
-      int[] abc = pickParents(indexes, random);
+      List<Double> a = this.pickParents(population, random, x);
+      List<Double> b = this.pickParents(population, random, a);
+      List<Double> c = this.pickParents(population, random, b);
       for (int j = 0; j < x.size(); ++j) {
-        if (random.nextDouble() < crossoverProb) {
-          trial.add(offspring.get(abc[0]).getGenotype().get(j) + differentialWeight * (offspring.get(abc[1]).getGenotype().get(j) - offspring.get(abc[2]).getGenotype().get(j)));
+        if (random.nextDouble() < this.crossoverProb) {
+          trial.add(a.get(j) + this.differentialWeight * (b.get(j) - c.get(j)));
         } else {
           trial.add(x.get(j));
         }
       }
-      Individual<List<Double>, S, F> trialIndividual = (Individual<List<Double>, S, F>) map(List.of(trial), List.of(), solutionMapper, function, executorService, state).get(0);
-      if (individualComparator.compare(trialIndividual, parent).equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
-        offspring.set(i, trialIndividual);
-      }
-      i = i + 1;
+      trialGenotypes.add(trial);
     }
-    L.fine(String.format("Trials computed: %d individuals", offspring.size()));
-    return offspring;
-  }
-
-  protected static int[] pickParents(List<Integer> indexes, Random random) {
-    int a = indexes.get(random.nextInt(indexes.size()));
-    int b = -1;
-    while (b != a) {
-      b = indexes.get(random.nextInt(indexes.size()));
-    }
-    int c = -1;
-    while (c != b) {
-      c = indexes.get(random.nextInt(indexes.size()));
-    }
-    return new int[]{a, b, c};
+    return trialGenotypes;
   }
 
 }
