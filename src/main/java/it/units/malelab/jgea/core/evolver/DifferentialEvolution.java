@@ -93,9 +93,9 @@ public class DifferentialEvolution<S, F> extends AbstractIterativeEvolver<List<D
     for (Individual<List<Double>, S, F> parent : population.all()) {
       List<Double> x = parent.getGenotype();
       List<Double> trial = new ArrayList<>(x.size());
-      List<Double> a = this.pickParents(population, random, x);
-      List<Double> b = this.pickParents(population, random, a);
-      List<Double> c = this.pickParents(population, random, b);
+      List<Double> a = pickParents(population, random, x);
+      List<Double> b = pickParents(population, random, a);
+      List<Double> c = pickParents(population, random, b);
       for (int j = 0; j < x.size(); ++j) {
         if (random.nextDouble() < crossoverProb) {
           trial.add(a.get(j) + differentialWeight * (b.get(j) - c.get(j)));
