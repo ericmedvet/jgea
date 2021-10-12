@@ -56,6 +56,10 @@ public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>> {
     return t;
   }
 
+  public static <K> Tree<K> of(K content) {
+    return new Tree<>(content, null);
+  }
+
   public static <K, H> Tree<H> map(Tree<K> other, Function<K, H> mapper) {
     Tree<H> t = Tree.of(mapper.apply(other.content));
     for (Tree<K> child : other.children) {
