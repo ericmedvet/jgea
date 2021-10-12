@@ -17,6 +17,7 @@
 package it.units.malelab.jgea.core.operator;
 
 import it.units.malelab.jgea.core.util.Misc;
+import it.units.malelab.jgea.core.util.Pair;
 
 import java.util.Collections;
 import java.util.List;
@@ -48,6 +49,13 @@ public interface Mutation<G> extends GeneticOperator<G> {
 
   static <K> Mutation<K> oneOf(Map<Mutation<K>, Double> operators) {
     return (k, random) -> Misc.pickRandomly(operators, random).mutate(k, random);
+  }
+
+  static <G1, G2> Mutation<Pair<G1, G2>> pair(Mutation<G1> mutation1, Mutation<G2> mutation2) {
+    return (p, random) -> Pair.of(
+        mutation1.mutate(p.first(), random),
+        mutation2.mutate(p.second(), random)
+    );
   }
 
   default Mutation<G> withChecker(Predicate<? super G> checker) {
