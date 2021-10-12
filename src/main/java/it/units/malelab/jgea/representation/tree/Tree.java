@@ -48,7 +48,7 @@ public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>> {
     return t;
   }
 
-  public static <K> Tree<K> of(K content, Tree<K>... children) {
+  public static <K> Tree<K> of(K content, List<Tree<K>> children) {
     Tree<K> t = new Tree<>(content, null);
     for (Tree<K> child : children) {
       t.addChild(child);
