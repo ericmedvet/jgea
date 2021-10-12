@@ -50,29 +50,27 @@ public class DifferentialEvolution<S, F> extends AbstractIterativeEvolver<List<D
 
   @Override
   protected Collection<Individual<List<Double>, S, F>> initPopulation(Function<S, F> function, Random random, ExecutorService executorService, State state) throws ExecutionException, InterruptedException {
-    return this.initPopulation(this.populationSize, function, random, executorService, state);
+    return initPopulation(populationSize, function, random, executorService, state);
   }
 
   @Override
   protected Collection<Individual<List<Double>, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<List<Double>, S, F>> population, Function<S, F> function, Random random, ExecutorService executorService, State state) throws ExecutionException, InterruptedException {
-    List<Individual<List<Double>, S, F>> offspring = new ArrayList<>(this.populationSize * 2);
-    Collection<List<Double>> trialGenotypes = this.computeTrials(population, random);
+    List<Individual<List<Double>, S, F>> offspring = new ArrayList<>(populationSize * 2);
+    Collection<List<Double>> trialGenotypes = computeTrials(population, random);
     L.fine(String.format("Trials computed: %d individuals", trialGenotypes.size()));
-    if (this.remap) {
+    if (remap) {
       // we remap all parents, regardless of their fate
-      offspring.addAll(map(trialGenotypes, population.all(), this.solutionMapper, function, executorService, state));
-    }
-    else {
-      offspring.addAll(map(trialGenotypes, List.of(), this.solutionMapper, function, executorService, state));
+      offspring.addAll(map(trialGenotypes, population.all(), solutionMapper, function, executorService, state));
+    } else {
+      offspring.addAll(map(trialGenotypes, List.of(), solutionMapper, function, executorService, state));
       offspring.addAll(population.all());
     }
     L.fine(String.format("Trials evaluated: %d individuals", trialGenotypes.size()));
-    for (int i = 0, j = this.populationSize; i < this.populationSize && j < offspring.size(); ++i, ++j) {
-      if (this.individualComparator.compare(offspring.get(i), offspring.get(j)).equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
+    for (int i = 0, j = populationSize; i < populationSize && j < offspring.size(); ++i, ++j) {
+      if (individualComparator.compare(offspring.get(i), offspring.get(j)).equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
         offspring.remove(j);
         j = j - 1;
-      }
-      else {
+      } else {
         offspring.remove(i);
         i = i - 1;
         j = j - 1;
@@ -91,7 +89,7 @@ public class DifferentialEvolution<S, F> extends AbstractIterativeEvolver<List<D
   }
 
   protected Collection<List<Double>> computeTrials(PartiallyOrderedCollection<Individual<List<Double>, S, F>> population, Random random) {
-    Collection<List<Double>> trialGenotypes = new ArrayList<>(this.populationSize);
+    Collection<List<Double>> trialGenotypes = new ArrayList<>(populationSize);
     for (Individual<List<Double>, S, F> parent : population.all()) {
       List<Double> x = parent.getGenotype();
       List<Double> trial = new ArrayList<>(x.size());
@@ -99,8 +97,8 @@ public class DifferentialEvolution<S, F> extends AbstractIterativeEvolver<List<D
       List<Double> b = this.pickParents(population, random, a);
       List<Double> c = this.pickParents(population, random, b);
       for (int j = 0; j < x.size(); ++j) {
-        if (random.nextDouble() < this.crossoverProb) {
-          trial.add(a.get(j) + this.differentialWeight * (b.get(j) - c.get(j)));
+        if (random.nextDouble() < crossoverProb) {
+          trial.add(a.get(j) + differentialWeight * (b.get(j) - c.get(j)));
         } else {
           trial.add(x.get(j));
         }
