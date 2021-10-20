@@ -27,7 +27,7 @@ import java.util.function.Function;
 public interface PartialComparator<K> {
 
   enum PartialComparatorOutcome {
-    BEFORE, AFTER, SAME, NOT_COMPARABLE;
+    BEFORE, AFTER, SAME, NOT_COMPARABLE
   }
 
   PartialComparatorOutcome compare(K k1, K k2);
@@ -60,6 +60,17 @@ public interface PartialComparator<K> {
 
   default <C> PartialComparator<C> comparing(Function<? super C, ? extends K> function) {
     return (c1, c2) -> compare(function.apply(c1), function.apply(c2));
+  } // TODO should be made static and consistent with the corresponding method of Comparator
+
+  default PartialComparator<K> thenComparing(PartialComparator<? super K> other) {
+    PartialComparator<K> thisComparator = this;
+    return (k1, k2) -> {
+      PartialComparatorOutcome outcome = thisComparator.compare(k1, k2);
+      if (!outcome.equals(PartialComparatorOutcome.SAME)) {
+        return outcome;
+      }
+      return other.compare(k1, k2);
+    };
   }
 
   default PartialComparator<K> reversed() {
@@ -95,4 +106,5 @@ public interface PartialComparator<K> {
       return 0;
     };
   }
+
 }
