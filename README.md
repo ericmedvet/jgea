@@ -170,6 +170,7 @@ Methods inside the constructor of `TabularPrinter` are static methods of the cla
 
 ## Research papers based on JGEA
 The list includes paper published from 2018 on.
+- Pigozzi, Medvet, Nenzi; [Mining Road Traffic Rules with Signal Temporal Logic and Grammar-based Genetic Programming](https://medvet.inginf.units.it/publications/2021-j-pmn-mining/); Applied Sciences; 2021
 - Nadizar, Medvet, Pellegrino, Zullich, Nichele; [On the Effects of Pruning on Evolved Neural Controllers for Soft Robots](https://medvet.inginf.units.it/publications/2021-c-nmpzn-effects/); Workshop on Neuroevolution at Work (NEWK@GECCO); 2021
 - Talamini, Medvet, Nichele; [Criticality-driven Evolution of Adaptable Morphologies of Voxel-Based Soft-Robots](https://medvet.inginf.units.it/publications/2021-j-tmn-criticality/); Frontiers in Robotics and AI; 2021
 - Medvet, Bartoli, Pigozzi, Rochelli; [Biodiversity in Evolved Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2021-c-mbpr-biodiversity/); ACM Genetic and Evolutionary Computation Conference (GECCO); 2021
