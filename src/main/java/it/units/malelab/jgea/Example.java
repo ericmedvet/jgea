@@ -22,13 +22,14 @@ import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.evolver.*;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
 import it.units.malelab.jgea.core.evolver.stopcondition.TargetFitness;
-import it.units.malelab.jgea.core.listener.*;
-import it.units.malelab.jgea.core.listener.telegram.TelegramUpdater;
+import it.units.malelab.jgea.core.listener.EventAugmenter;
+import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.core.listener.NamedFunction;
+import it.units.malelab.jgea.core.listener.TabularPrinter;
 import it.units.malelab.jgea.core.order.ParetoDominance;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.selector.Last;
 import it.units.malelab.jgea.core.selector.Tournament;
-import it.units.malelab.jgea.core.util.ImagePlotters;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.core.util.Sized;
 import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
@@ -62,7 +63,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
 
@@ -159,14 +159,14 @@ public class Example extends Worker {
 
 
   public void runOneMax() {
-    int size = 100;
+    int size = 1000;
     Random r = new Random(1);
     Problem<BitString, Double> p = new OneMax();
     List<NamedFunction<Event<?, ?, ?>, ?>> keysFunctions = List.of(
         eventAttribute("evolver", "%20.20s")
     );
     Listener.Factory<Event<?, ?, ? extends Double>> listenerFactory = Listener.Factory.all(List.of(
-        new TelegramUpdater<>(List.of(
+        /*new TelegramUpdater<>(List.of(
             new TableBuilder<Event<?, ?, ? extends Double>, Number>(List.of(
                 iterations(),
                 as(Double.class).of(fitness()).of(best()),
@@ -182,7 +182,7 @@ public class Example extends Worker {
             Accumulator.Factory.<Event<?, ?, ? extends Double>>last().then(e -> BASIC_FUNCTIONS.stream()
                 .map(f -> f.getName() + ": " + f.applyAndFormat(e))
                 .collect(Collectors.joining("\n")))
-        ), "xxx", 207490209),
+        ), "xxx", 207490209),*/
         new TabularPrinter<>(Misc.concat(List.of(
             keysFunctions,
             BASIC_FUNCTIONS,
@@ -233,7 +233,7 @@ public class Example extends Worker {
             100
         )
     );
-    evolvers = evolvers.subList(2, 3);
+    evolvers = evolvers.subList(2, 4);
     for (Evolver<BitString, BitString, Double> evolver : evolvers) {
       Listener<Event<?, ?, ? extends Double>> listener = Listener.all(List.of(
           new EventAugmenter(Map.ofEntries(Map.entry("evolver", evolver.getClass().getSimpleName()))),

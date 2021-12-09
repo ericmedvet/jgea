@@ -65,7 +65,7 @@ public class StandardWithEnforcedDiversityEvolver<G, S, F> extends StandardEvolv
       boolean overlapping,
       boolean remap,
       int maxAttempts) {
-    super(solutionMapper, genotypeFactory, individualComparator, populationSize, operators, parentSelector, unsurvivalSelector, offspringSize, remap, overlapping);
+    super(solutionMapper, genotypeFactory, individualComparator, populationSize, operators, parentSelector, unsurvivalSelector, offspringSize, overlapping, remap);
     this.maxAttempts = maxAttempts;
   }
 
