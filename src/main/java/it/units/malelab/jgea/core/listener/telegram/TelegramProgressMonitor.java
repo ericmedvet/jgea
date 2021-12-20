@@ -3,10 +3,10 @@ package it.units.malelab.jgea.core.listener.telegram;
 import it.units.malelab.jgea.core.listener.ProgressMonitor;
 import it.units.malelab.jgea.core.util.TextPlotter;
 
-public class TelegramProgressMonitor extends TelegramUtils implements ProgressMonitor {
+public class TelegramProgressMonitor extends TelegramClient implements ProgressMonitor {
 
-  public TelegramProgressMonitor(String botToken,long chatId) {
-    super(botToken,chatId);
+  public TelegramProgressMonitor(String botToken, long chatId) {
+    super(botToken, chatId);
   }
 
   @Override

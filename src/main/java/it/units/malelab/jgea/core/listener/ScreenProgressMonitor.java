@@ -2,32 +2,27 @@ package it.units.malelab.jgea.core.listener;
 
 import it.units.malelab.jgea.core.util.TextPlotter;
 
-import java.util.logging.Logger;
+import java.io.PrintStream;
 
 public class ScreenProgressMonitor implements ProgressMonitor {
 
-  private final Logger L;
+  private final PrintStream ps;
 
-  public ScreenProgressMonitor(Logger L) {
-    this.L = L;
-  }
-
-  public ScreenProgressMonitor() {
-    L = Logger.getLogger(ProgressMonitor.class.getName());
+  public ScreenProgressMonitor(PrintStream ps) {
+    this.ps = ps;
   }
 
   @Override
   public void notify(double progress, String message) {
-    L.info(String.format("Progress %s %s",
+    ps.printf(
+        "Progress %s %s%n",
         TextPlotter.horizontalBar(progress, 0, 1, 8),
         message
-    ));
+    );
   }
 
   @Override
   public void notify(double progress) {
-    L.info(String.format("Progress %s",
-        TextPlotter.horizontalBar(progress, 0, 1, 8)
-    ));
+    notify(progress, "");
   }
 }

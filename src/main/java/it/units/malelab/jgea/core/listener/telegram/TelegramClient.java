@@ -16,7 +16,7 @@ import java.net.UnknownHostException;
 import java.util.Set;
 import java.util.logging.Logger;
 
-public class TelegramUtils {
+public class TelegramClient {
 
   protected static final Logger L = Logger.getLogger(TelegramUpdater.class.getName());
   protected static final Set<String> VIDEO_FILE_EXTENSIONS = Set.of("mpg", "avi", "mp4");
@@ -24,7 +24,7 @@ public class TelegramUtils {
   protected TelegramBot bot;
   protected final long chatId;
 
-  public TelegramUtils(String botToken, long chatId) {
+  public TelegramClient(String botToken, long chatId) {
     this.chatId = chatId;
     try {
       bot = new TelegramBot(botToken);
