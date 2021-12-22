@@ -170,16 +170,45 @@ Methods inside the constructor of `TabularPrinter` are static methods of the cla
 
 ## Research papers based on JGEA
 The list includes paper published from 2018 on.
-- Pigozzi, Medvet, Nenzi; [Mining Road Traffic Rules with Signal Temporal Logic and Grammar-based Genetic Programming](https://medvet.inginf.units.it/publications/2021-j-pmn-mining/); Applied Sciences; 2021
-- Nadizar, Medvet, Pellegrino, Zullich, Nichele; [On the Effects of Pruning on Evolved Neural Controllers for Soft Robots](https://medvet.inginf.units.it/publications/2021-c-nmpzn-effects/); Workshop on Neuroevolution at Work (NEWK@GECCO); 2021
-- Talamini, Medvet, Nichele; [Criticality-driven Evolution of Adaptable Morphologies of Voxel-Based Soft-Robots](https://medvet.inginf.units.it/publications/2021-j-tmn-criticality/); Frontiers in Robotics and AI; 2021
-- Medvet, Bartoli, Pigozzi, Rochelli; [Biodiversity in Evolved Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2021-c-mbpr-biodiversity/); ACM Genetic and Evolutionary Computation Conference (GECCO); 2021
-- Ferigo, Iacca, Medvet, [Beyond Body Shape and Brain: Evolving the Sensory Apparatus of Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2021-c-fim-beyond/); 24th European Conference on the Applications of Evolutionary Computation (EvoAPPS); 2021
-- Medvet, Bartoli; [Evolutionary Optimization of Graphs with GraphEA](https://medvet.inginf.units.it/publications/2020-c-mb-evolutionary/); 19th International Conference of the Italian Association for Artificial Intelligence (AIxIA); 2020
-- Medvet, Bartoli, [GraphEA: a Versatile Representation and Evolutionary Algorithm for Graphs](https://medvet.inginf.units.it/publications/2020-c-mb-graphea/), Workshop on Evolutionary and Population-based Optimization (WEPO@AIxIA), 2020
-- Medvet, Bartoli, De Lorenzo, Seriani, [Design, Validation, and Case Studies of 2D-VSR-Sim, an Optimization-friendly Simulator of 2-D Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2020-p-mbds-design/), arXiv, 2020
-- Medvet, Seriani, Bartoli, Gallina, [Evolutionary Optimization of Sliding Contact Positions in Powered Floor Systems for Mobile Robots](https://medvet.inginf.units.it/publications/2020-j-msbg-evolutionary/), at - Automatisierungstechnik, 2020
-- Medvet, Bartoli, De Lorenzo, Fidel, [Evolution of Distributed Neural Controllers for Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2020-c-mbdf-evolution/), ACM Genetic and Evolutionary Computation Conference (GECCO), 2020, Cancun (Mexico)
+- Ferigo, Iacca, Medvet,
+  Pigozzi; [Evolving Hebbian Learning Rules in Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2021-p-fimp-evolving/)
+  ; IEEE TechRxiv; 2021
+- Ferigo, Medvet,
+  Iacca; [Optimizing the Sensory Apparatus of Voxel-based Soft Robots through Evolution and Babbling](https://medvet.inginf.units.it/publications/2021-j-fmi-optimizing/)
+  ; Springer Nature Computer Science; 2021
+- Nadizar, Medvet, Nichele, Huse Ramstad, Pellegrino,
+  Zullich; [Merging Pruning and Neuroevolution: towards Robust and Efficient Controllers for Modular Soft Robots](https://medvet.inginf.units.it/publications/2021-j-nmnhpz-merging/)
+  ; Knowledge Engineering Review (KER); 2021
+- Pigozzi, Medvet,
+  Nenzi; [Mining Road Traffic Rules with Signal Temporal Logic and Grammar-based Genetic Programming](https://medvet.inginf.units.it/publications/2021-j-pmn-mining/)
+  ; Applied Sciences; 2021
+- Nadizar, Medvet, Pellegrino, Zullich,
+  Nichele; [On the Effects of Pruning on Evolved Neural Controllers for Soft Robots](https://medvet.inginf.units.it/publications/2021-c-nmpzn-effects/)
+  ; Workshop on Neuroevolution at Work (NEWK@GECCO); 2021
+- Talamini, Medvet,
+  Nichele; [Criticality-driven Evolution of Adaptable Morphologies of Voxel-Based Soft-Robots](https://medvet.inginf.units.it/publications/2021-j-tmn-criticality/)
+  ; Frontiers in Robotics and AI; 2021
+- Medvet, Bartoli, Pigozzi,
+  Rochelli; [Biodiversity in Evolved Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2021-c-mbpr-biodiversity/)
+  ; ACM Genetic and Evolutionary Computation Conference (GECCO); 2021
+- Ferigo, Iacca,
+  Medvet, [Beyond Body Shape and Brain: Evolving the Sensory Apparatus of Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2021-c-fim-beyond/)
+  ; 24th European Conference on the Applications of Evolutionary Computation (EvoAPPS); 2021
+- Medvet,
+  Bartoli; [Evolutionary Optimization of Graphs with GraphEA](https://medvet.inginf.units.it/publications/2020-c-mb-evolutionary/)
+  ; 19th International Conference of the Italian Association for Artificial Intelligence (AIxIA); 2020
+- Medvet,
+  Bartoli, [GraphEA: a Versatile Representation and Evolutionary Algorithm for Graphs](https://medvet.inginf.units.it/publications/2020-c-mb-graphea/)
+  , Workshop on Evolutionary and Population-based Optimization (WEPO@AIxIA), 2020
+- Medvet, Bartoli, De Lorenzo,
+  Seriani, [Design, Validation, and Case Studies of 2D-VSR-Sim, an Optimization-friendly Simulator of 2-D Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2020-p-mbds-design/)
+  , arXiv, 2020
+- Medvet, Seriani, Bartoli,
+  Gallina, [Evolutionary Optimization of Sliding Contact Positions in Powered Floor Systems for Mobile Robots](https://medvet.inginf.units.it/publications/2020-j-msbg-evolutionary/)
+  , at - Automatisierungstechnik, 2020
+- Medvet, Bartoli, De Lorenzo,
+  Fidel, [Evolution of Distributed Neural Controllers for Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2020-c-mbdf-evolution/)
+  , ACM Genetic and Evolutionary Computation Conference (GECCO), 2020, Cancun (Mexico)
 - Bartoli, De Lorenzo, Medvet, Squillero, [Multi-level Diversity Promotion Strategies for Grammar-guided Genetic Programming](https://medvet.inginf.units.it/publications/2019-j-bdms-multi/), Applied Soft Computing, 2019
 - Medvet, Seriani, Bartoli, Gallina, [Design of Powered Floor Systems for Mobile Robots with Differential Evolution](https://medvet.inginf.units.it/publications/2019-c-msbg-design/), 22nd European Conference on the Applications of Evolutionary Computation (EvoApplication), 2019, Leipzig (Germany)
 - Bartoli, Castelli, Medvet, [Weighted Hierarchical Grammatical Evolution](https://medvet.inginf.units.it/publications/2018-j-bcm-weighted/), IEEE Transactions on Cybernetics, 2018
