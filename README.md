@@ -168,6 +168,7 @@ public class Example {
 ```
 Methods inside the constructor of `TabularPrinter` are static methods of the class `NamedFunctions` that returns functions that take an evolution `Event` and returns an object that will be printed as a table cell.
 
+[comment]: <> (@formatter:off)
 ## Research papers based on JGEA
 The list includes paper published from 2018 on.
 - Ferigo, Iacca, Medvet, Pigozzi; [Evolving Hebbian Learning Rules in Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2021-p-fimp-evolving/); IEEE TechRxiv; 2021
@@ -190,45 +191,12 @@ The list includes paper published from 2018 on.
 - Medvet, Bartoli, De Lorenzo, Tarlao, [Designing Automatically a Representation for Grammatical Evolution](https://medvet.inginf.units.it/publications/2018-j-mbdt-designing/), Genetic Programming and Evolvable Machines, 2018
 - Medvet, Bartoli, De Lorenzo, Tarlao, [GOMGE: Gene-pool Optimal Mixing on Grammatical Evolution](https://medvet.inginf.units.it/publications/2018-c-mbdt-gomge/), 15th International Conference on Parallel Problem Solving from Nature (PPSN), 2018, Coimbra (Portugal)
 - Medvet, Bartoli, De Lorenzo, [Exploring the Application of GOMEA to Bit-string GE](https://medvet.inginf.units.it/publications/2018-c-mbd-exploring/), ACM Genetic and Evolutionary Computation Conference (GECCO), 2018, Kyoto (Japan)
--
-Medvet,
-Bartoli, [On the Automatic Design of a Representation for Grammar-based Genetic Programming](https://medvet.inginf.units.it/publications/2018-c-mb-automatic/)
-,
-21st
-European
-Conference
-on
-Genetic
-Programming (
-EuroGP)
-,
-2018,
-Parma (
-Italy)
--
-Medvet,
-Bartoli,
-Ansuini,
-Tarlao, [Observing the Population Dynamics in GE by means of the Intrinsic Dimension](https://medvet.inginf.units.it/publications/2018-c-mbat-observing/)
-,
-Evolutionary
-Machine
-Learning
-workshop
-at
-International
-Conference
-on
-Parallel
-Problem
-Solving
-from
-Nature (
-EML@PPSN)
-,
-2018,
-Coimbra (
-Portugal)
+- Medvet, Bartoli, [On the Automatic Design of a Representation for Grammar-based Genetic Programming](https://medvet.inginf.units.it/publications/2018-c-mb-automatic/), 21st European Conference on Genetic Programming (EuroGP), 2018, Parma (Italy)
+- Medvet, Bartoli, Ansuini, Tarlao, [Observing the Population Dynamics in GE by means of the Intrinsic Dimension](https://medvet.inginf.units.it/publications/2018-c-mbat-observing/), Evolutionary Machine Learning workshop at International Conference on Parallel Problem Solving from Nature (EML@PPSN), 2018, Coimbra (Portugal)
+  
+[comment]: <> (@formatter:on)
 
 ## References
-1. De Jong, Kenneth. "Evolutionary computation: a unified approach." Proceedings of the 2016 on Genetic and Evolutionary Computation Conference Companion. 2016.
+
+1. De Jong, Kenneth. "Evolutionary computation: a unified approach." Proceedings of the 2016 on Genetic and Evolutionary
+   Computation Conference Companion. 2016.
