@@ -27,7 +27,6 @@ import it.units.malelab.jgea.representation.graph.numeric.functiongraph.ShallowS
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -67,8 +66,8 @@ public class GraphUtils {
 
         System.out.println(fromArc);
         System.out.println(toArc);
-        System.out.println(fromGraph.nodes().stream().filter(n -> n.equals(fromArc.getSource())).collect(Collectors.toList()));
-        System.out.println(fromGraph.nodes().stream().filter(n -> n.equals(fromArc.getTarget())).collect(Collectors.toList()));
+        System.out.println(fromGraph.nodes().stream().filter(n -> n.equals(fromArc.getSource())).toList());
+        System.out.println(fromGraph.nodes().stream().filter(n -> n.equals(fromArc.getTarget())).toList());
 
         System.out.println("OCIO!");
       }

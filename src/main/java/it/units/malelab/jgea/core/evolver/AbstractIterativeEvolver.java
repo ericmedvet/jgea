@@ -29,7 +29,6 @@ import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -70,7 +69,7 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
     listener.done();
     return new DAGPartiallyOrderedCollection<>(population, individualComparator).firsts().stream()
         .map(Individual::solution)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   protected abstract Collection<Individual<G, S, F>> initPopulation(Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException;

@@ -171,7 +171,7 @@ public class OperatorGraph implements Function<double[], double[]>, Sized, Seria
     List<String> predecessors = graph.predecessors(n).stream()
         .map(this::nodeToString)
         .sorted()
-        .collect(Collectors.toList());
+        .toList();
     if (!predecessors.isEmpty()) {
       s = s + "(" + String.join(",", predecessors) + ")";
     }

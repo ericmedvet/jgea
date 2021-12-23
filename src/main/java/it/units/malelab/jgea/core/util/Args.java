@@ -17,7 +17,6 @@ package it.units.malelab.jgea.core.util;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -74,19 +73,19 @@ public class Args {
   }
 
   public static List<String> l(String s) {
-    return Arrays.stream(s.split(OPTIONS_SEP)).collect(Collectors.toList());
+    return Arrays.stream(s.split(OPTIONS_SEP)).toList();
   }
 
   public static List<Integer> i(List<String> strings) {
-    return strings.stream().map(Integer::parseInt).collect(Collectors.toList());
+    return strings.stream().map(Integer::parseInt).toList();
   }
 
   public static List<Double> d(List<String> strings) {
-    return strings.stream().map(Double::parseDouble).collect(Collectors.toList());
+    return strings.stream().map(Double::parseDouble).toList();
   }
 
   public static List<Boolean> b(List<String> strings) {
-    return strings.stream().map(Boolean::parseBoolean).collect(Collectors.toList());
+    return strings.stream().map(Boolean::parseBoolean).toList();
   }
 
 }

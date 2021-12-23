@@ -21,7 +21,6 @@ import it.units.malelab.jgea.core.util.WithNames;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -146,7 +145,7 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
 
   @Override
   public List<String> names() {
-    return aggregator.metrics.stream().map(m -> m.toString().toLowerCase().replace("_", ".")).collect(Collectors.toList());
+    return aggregator.metrics.stream().map(m -> m.toString().toLowerCase().replace("_", ".")).toList();
   }
 
   private static BitSet buildMask(Set<Range<Integer>> extractions, int size) {

@@ -22,7 +22,6 @@ import it.units.malelab.jgea.distance.Distance;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -155,7 +154,7 @@ public class Misc {
   }
 
   public static <K> List<K> concat(List<List<? extends K>> lists) {
-    return lists.stream().flatMap(List::stream).collect(Collectors.toList());
+    return lists.stream().flatMap(List::stream).toList();
   }
 
 }

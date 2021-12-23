@@ -9,7 +9,6 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -70,7 +69,7 @@ public class BasicEvolutionaryStrategy<S, F> extends AbstractIterativeEvolver<Li
     if (parents.stream().map(i -> i.genotype().size()).distinct().count() > 1) {
       throw new IllegalStateException(String.format(
           "Genotype size should be the same for all parents: found different sizes %s",
-          parents.stream().map(i -> i.genotype().size()).distinct().collect(Collectors.toList())
+          parents.stream().map(i -> i.genotype().size()).distinct().toList()
       ));
     }
     int l = parents.get(0).genotype().size();
@@ -84,7 +83,7 @@ public class BasicEvolutionaryStrategy<S, F> extends AbstractIterativeEvolver<Li
     while (offspringGenotypes.size() < populationSize - eliteSize) {
       offspringGenotypes.add(s.getMeans().stream()
           .map(m -> m + random.nextGaussian() * sigma)
-          .collect(Collectors.toList()));
+          .toList());
     }
     List<Individual<List<Double>, S, F>> offspring = new ArrayList<>();
     if (remap) {

@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -78,7 +77,7 @@ public class ClassificationFitness<O, L extends Enum<L>> extends CaseBasedFitnes
         List<Pair<Integer, Integer>> pairs = classErrorRate.apply(predictedLabels);
         return pairs.stream()
             .map(p -> ((double) p.first() / (double) p.second()))
-            .collect(Collectors.toList());
+            .toList();
       };
     }
     if (metric.equals(Metric.ERROR_RATE)) {
@@ -106,9 +105,9 @@ public class ClassificationFitness<O, L extends Enum<L>> extends CaseBasedFitnes
 
   public ClassificationFitness(List<Pair<O, L>> data, Metric errorMetric) {
     super(
-        data.stream().map(Pair::first).collect(Collectors.toList()),
+        data.stream().map(Pair::first).toList(),
         (c, o) -> c.classify(o),
-        getAggregator(data.stream().map(Pair::second).collect(Collectors.toList()), errorMetric)
+        getAggregator(data.stream().map(Pair::second).toList(), errorMetric)
     );
     this.data = data;
     names = new ArrayList<>();

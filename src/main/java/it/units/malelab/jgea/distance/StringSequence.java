@@ -17,7 +17,6 @@
 package it.units.malelab.jgea.distance;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -32,7 +31,7 @@ public class StringSequence implements Distance<String> {
 
   @Override
   public Double apply(String string1, String string2) {
-    return innerDistance.apply(string1.chars().mapToObj(c -> (char) c).collect(Collectors.toList()), string2.chars().mapToObj(c -> (char) c).collect(Collectors.toList()));
+    return innerDistance.apply(string1.chars().mapToObj(c -> (char) c).toList(), string2.chars().mapToObj(c -> (char) c).toList());
   }
 
 }

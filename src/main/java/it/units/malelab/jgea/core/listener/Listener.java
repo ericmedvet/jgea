@@ -7,7 +7,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 @FunctionalInterface
 public interface Listener<E> {
@@ -247,7 +246,7 @@ public interface Listener<E> {
       return new Factory<>() {
         @Override
         public Listener<E> build() {
-          return Listener.all(factories.stream().map(Factory::build).collect(Collectors.toList()));
+          return Listener.all(factories.stream().map(Factory::build).toList());
         }
 
         @Override

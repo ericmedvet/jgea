@@ -50,7 +50,7 @@ public class GrammarBasedTextFlaggingProblem extends TextFlaggingProblem impleme
       };
     };
     if (alphabet == null) {
-      grammar = new RegexGrammar(data.stream().map(Pair::first).collect(Collectors.toList()), options);
+      grammar = new RegexGrammar(data.stream().map(Pair::first).toList(), options);
     } else {
       grammar = new RegexGrammar(alphabet, options);
     }

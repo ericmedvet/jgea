@@ -114,7 +114,7 @@ public class SymbolicRegressionComparison extends Worker {
         eventAttribute("seed", "%2d"),
         eventAttribute("problem", NamedFunction.formatOfLongest(
             problems.stream().map(p -> p.getClass().getSimpleName())
-                .collect(Collectors.toList()))),
+                .toList())),
         eventAttribute("evolver", "%20.20s"),
         iterations(),
         births(),
@@ -239,7 +239,7 @@ public class SymbolicRegressionComparison extends Worker {
           SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
               List.of(operators),
               List.of(vars(p.arity())),
-              Arrays.stream(constants).mapToObj(d -> (Double) d).collect(Collectors.toList())
+              Arrays.stream(constants).mapToObj(d -> (Double) d).toList()
           );
           return new StandardEvolver<Tree<String>, RealFunction, Double>(
               new FormulaMapper()
@@ -263,7 +263,7 @@ public class SymbolicRegressionComparison extends Worker {
           SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
               List.of(operators),
               List.of(vars(p.arity())),
-              Arrays.stream(constants).mapToObj(d -> (Double) d).collect(Collectors.toList())
+              Arrays.stream(constants).mapToObj(d -> (Double) d).toList()
           );
           return new StandardEvolver<Tree<String>, RealFunction, Double>(
               new FormulaMapper()
@@ -286,7 +286,7 @@ public class SymbolicRegressionComparison extends Worker {
           SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
               List.of(operators),
               List.of(vars(p.arity())),
-              Arrays.stream(constants).mapToObj(d -> (Double) d).collect(Collectors.toList())
+              Arrays.stream(constants).mapToObj(d -> (Double) d).toList()
           );
           return new StandardWithEnforcedDiversityEvolver<Tree<String>, RealFunction, Double>(
               new FormulaMapper()

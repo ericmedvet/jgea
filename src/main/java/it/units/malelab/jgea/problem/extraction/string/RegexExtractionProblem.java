@@ -70,7 +70,7 @@ public class RegexExtractionProblem extends ExtractionProblem<Character> {
   public RegexExtractionProblem(Set<String> regexes, String text, int folds, int i, ExtractionFitness.Metric... metrics) {
     super(
         regexes.stream().map(RegexBasedExtractor::new).collect(Collectors.toSet()),
-        text.chars().mapToObj(c -> (char) c).collect(Collectors.toList()),
+        text.chars().mapToObj(c -> (char) c).toList(),
         folds, i, metrics
     );
     this.regexes = regexes;

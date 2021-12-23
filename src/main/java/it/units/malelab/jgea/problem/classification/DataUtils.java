@@ -20,7 +20,6 @@ import it.units.malelab.jgea.core.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -32,11 +31,11 @@ public class DataUtils {
     data.stream().map(Pair::second).distinct().forEach((L l) -> {
       List<Pair<O, L>> currentSubset = data.stream()
           .filter((Pair<O, L> pair) -> (pair.second().equals(l)))
-          .collect(Collectors.toList());
+          .toList();
       subset.addAll(
           currentSubset.stream()
               .skip(currentSubset.size() / n * i)
-              .limit(currentSubset.size() / n).collect(Collectors.toList()));
+              .limit(currentSubset.size() / n).toList());
     });
     return subset;
   }

@@ -36,7 +36,7 @@ public class BinaryTextFlaggingProblem extends GrammarBasedTextFlaggingProblem {
   private static List<Pair<String, Label>> buildData(String[] regexes, String alphabet, int length, int size, Random random) {
     List<String> positives = new ArrayList<>();
     List<String> negatives = new ArrayList<>();
-    List<Pattern> patterns = Stream.of(regexes).map(Pattern::compile).collect(Collectors.toList());
+    List<Pattern> patterns = Stream.of(regexes).map(Pattern::compile).toList();
     while ((positives.size() < size) || (negatives.size() < size)) {
       StringBuilder sb = new StringBuilder();
       while (sb.length() < length) {
@@ -54,8 +54,8 @@ public class BinaryTextFlaggingProblem extends GrammarBasedTextFlaggingProblem {
     }
     //return
     List<Pair<String, Label>> data = new ArrayList<>();
-    data.addAll(positives.stream().map(s -> Pair.of(s, Label.FOUND)).collect(Collectors.toList()));
-    data.addAll(negatives.stream().map(s -> Pair.of(s, Label.NOT_FOUND)).collect(Collectors.toList()));
+    data.addAll(positives.stream().map(s -> Pair.of(s, Label.FOUND)).toList());
+    data.addAll(negatives.stream().map(s -> Pair.of(s, Label.NOT_FOUND)).toList());
     return data;
   }
 

@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -36,8 +35,8 @@ public class FileTextFlaggingProblem extends GrammarBasedTextFlaggingProblem {
 
   private static List<Pair<String, Label>> buildData(String positiveFileName, String negativeFileName) throws IOException {
     List<Pair<String, Label>> data = new ArrayList<>();
-    data.addAll(Files.lines(Paths.get(positiveFileName)).map(s -> Pair.of(s, Label.FOUND)).collect(Collectors.toList()));
-    data.addAll(Files.lines(Paths.get(negativeFileName)).map(s -> Pair.of(s, Label.NOT_FOUND)).collect(Collectors.toList()));
+    data.addAll(Files.lines(Paths.get(positiveFileName)).map(s -> Pair.of(s, Label.FOUND)).toList());
+    data.addAll(Files.lines(Paths.get(negativeFileName)).map(s -> Pair.of(s, Label.NOT_FOUND)).toList());
     return data;
   }
 

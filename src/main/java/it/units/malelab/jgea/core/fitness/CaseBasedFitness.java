@@ -19,7 +19,6 @@ package it.units.malelab.jgea.core.fitness;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -52,7 +51,7 @@ public class CaseBasedFitness<S, C, CF, AF> implements Function<S, AF> {
   public AF apply(S s) {
     List<CF> caseFitnesses = cases.stream()
         .map(o -> caseFunction.apply(s, o))
-        .collect(Collectors.toList());
+        .toList();
     return aggregateFunction.apply(caseFitnesses);
   }
 }

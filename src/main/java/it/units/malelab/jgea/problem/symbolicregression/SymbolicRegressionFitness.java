@@ -20,7 +20,6 @@ import it.units.malelab.jgea.core.fitness.CaseBasedFitness;
 
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -56,7 +55,7 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<RealFunction, do
     super(
         points,
         (f, x) -> f.apply(x) - targetFunction.apply(x),
-        errs -> metric.apply(errs, points.stream().map(targetFunction::apply).collect(Collectors.toList()))
+        errs -> metric.apply(errs, points.stream().map(targetFunction::apply).toList())
     );
     this.targetFunction = targetFunction;
     this.points = points;

@@ -29,7 +29,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public class CMAESEvolver<S, F> extends AbstractIterativeEvolver<List<Double>, S, F> {
 
@@ -302,7 +301,7 @@ public class CMAESEvolver<S, F> extends AbstractIterativeEvolver<List<Double>, S
         .stream()
         .sorted(individualComparator.comparator())
         .limit(mu)
-        .collect(Collectors.toList());
+        .toList();
     double[] distrMean = state.getDistrMean();
     double[] oldDistrMean = Arrays.copyOf(distrMean, distrMean.length);
     double[] artmp = new double[size];

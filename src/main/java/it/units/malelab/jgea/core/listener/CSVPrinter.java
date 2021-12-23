@@ -10,7 +10,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * @author eric on 2021/01/03 for jgea
@@ -35,7 +34,7 @@ public class CSVPrinter<E> implements Listener.Factory<E> {
   @Override
   public Listener<E> build() {
     return e -> {
-      List<Object> values = functions.stream().map(f -> f.apply(e)).collect(Collectors.toList());
+      List<Object> values = functions.stream().map(f -> f.apply(e)).toList();
       synchronized (file) {
         if (printer == null) {
           File actualFile = check(file);
@@ -46,7 +45,7 @@ public class CSVPrinter<E> implements Listener.Factory<E> {
             return;
           }
           try {
-            printer.printRecord(functions.stream().map(NamedFunction::getName).collect(Collectors.toList()));
+            printer.printRecord(functions.stream().map(NamedFunction::getName).toList());
           } catch (IOException ex) {
             L.warning(String.format("Cannot print header: %s", ex));
             return;

@@ -23,7 +23,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -75,7 +74,7 @@ public interface Factory<T> {
     Factory<T> thisFactory = this;
     return (n, random) -> thisFactory.build(n, random).stream()
         .map(f::apply)
-        .collect(Collectors.toList());
+        .toList();
   }
 
 }

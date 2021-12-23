@@ -125,7 +125,7 @@ public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>> {
   }
 
   public List<C> visitLeaves() {
-    return leaves().stream().map(Tree::content).collect(Collectors.toList());
+    return leaves().stream().map(Tree::content).toList();
   }
 
   public List<Tree<C>> leaves() {

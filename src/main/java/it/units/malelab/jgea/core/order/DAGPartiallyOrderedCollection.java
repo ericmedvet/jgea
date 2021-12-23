@@ -51,8 +51,8 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
     public String toString() {
       return "Node{" +
           "content=" + content +
-          ", before=" + beforeNodes.stream().map(Node::getContent).collect(Collectors.toList()) +
-          ", after=" + afterNodes.stream().map(Node::getContent).collect(Collectors.toList()) +
+          ", before=" + beforeNodes.stream().map(Node::getContent).toList() +
+          ", after=" + afterNodes.stream().map(Node::getContent).toList() +
           '}';
     }
   }

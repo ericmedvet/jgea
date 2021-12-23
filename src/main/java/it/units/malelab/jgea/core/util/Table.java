@@ -30,20 +30,20 @@ public interface Table<T> {
     checkIndex("x", x, nColumns());
     return IntStream.range(0, nRows())
         .mapToObj(y -> get(x, y))
-        .collect(Collectors.toList());
+        .toList();
   }
 
   default List<T> row(int y) {
     checkIndex("y", y, nRows());
     return IntStream.range(0, nColumns())
         .mapToObj(x -> get(x, y))
-        .collect(Collectors.toList());
+        .toList();
   }
 
   default List<Pair<String, List<T>>> columns() {
     return IntStream.range(0, nColumns())
         .mapToObj(x -> Pair.of(names().get(x), column(x)))
-        .collect(Collectors.toList());
+        .toList();
   }
 
   default List<List<Pair<String, T>>> rows() {
@@ -51,8 +51,8 @@ public interface Table<T> {
     return IntStream.range(0, nRows())
         .mapToObj(y -> IntStream.range(0, nColumns)
             .mapToObj(x -> Pair.of(names().get(x), get(x, y)))
-            .collect(Collectors.toList())
-        ).collect(Collectors.toList());
+            .toList()
+        ).toList();
   }
 
   default List<T> column(String name) {
@@ -116,7 +116,7 @@ public interface Table<T> {
   default <K> Table<K> map(Function<T, K> function) {
     Table<K> table = new ArrayTable<>(names());
     for (int y = 0; y < nRows(); y++) {
-      table.addRow(row(y).stream().map(function).collect(Collectors.toList()));
+      table.addRow(row(y).stream().map(function).toList());
     }
     return table;
   }

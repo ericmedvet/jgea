@@ -39,7 +39,7 @@ public class Text implements GrammarBasedProblem<String, String, Double> {
     private final Distance<List<Character>> distance;
 
     public FitnessFunction(String targetString) {
-      target = targetString.chars().mapToObj(c -> (char) c).collect(Collectors.toList());
+      target = targetString.chars().mapToObj(c -> (char) c).toList();
       this.distance = new Edit<>();
     }
 
@@ -47,7 +47,7 @@ public class Text implements GrammarBasedProblem<String, String, Double> {
     public Double apply(String string) {
       double d = (double) distance.apply(
           target,
-          string.chars().mapToObj(c -> (char) c).collect(Collectors.toList())
+          string.chars().mapToObj(c -> (char) c).toList()
       ) / (double) target.size();
       return d;
     }

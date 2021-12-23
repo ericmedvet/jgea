@@ -33,7 +33,6 @@ import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -101,7 +100,7 @@ public class FitnessFunction implements
     }
     return valuesLists.stream()
         .map(valuesList -> valuesList.stream().mapToDouble(Double::doubleValue).average().orElse(Double.NaN))
-        .collect(Collectors.toList());
+        .toList();
   }
 
   protected <N, S, F> List<Double> apply(Pair<Tree<Element>, Tree<Element>> pair, EnhancedProblem<N, S, F> problem) {
@@ -116,7 +115,7 @@ public class FitnessFunction implements
     List<S> solutions = genotypes.stream()
         .map(g -> recursiveMapper.apply(g))
         .map(t -> problem.getProblem().getSolutionMapper().apply(t))
-        .collect(Collectors.toList());
+        .toList();
     Multiset<S> multiset = LinkedHashMultiset.create();
     multiset.addAll(solutions);
     //compute properties
@@ -152,7 +151,7 @@ public class FitnessFunction implements
 
   @Override
   public List<String> names() {
-    return properties.stream().map(p -> p.toString().toLowerCase().replace("_", ".")).collect(Collectors.toList());
+    return properties.stream().map(p -> p.toString().toLowerCase().replace("_", ".")).toList();
   }
 
 }
