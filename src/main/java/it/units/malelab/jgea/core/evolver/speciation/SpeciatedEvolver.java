@@ -36,6 +36,14 @@ import java.util.stream.Collectors;
  * @author eric
  */
 public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
+
+  public record Species<T>(Collection<T> elements, T representative) {
+  }
+
+  public interface Speciator<T> {
+    Collection<Species<T>> speciate(PartiallyOrderedCollection<T> all);
+  }
+
   private final int minSpeciesSizeForElitism;
   private final Speciator<Individual<G, S, F>> speciator;
   private final double rankBase;

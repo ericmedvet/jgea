@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 /**
  * @author federico
  */
-public class LazySpeciator<G, S, F> implements Speciator<Individual<G, S, F>> {
+public class LazySpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Individual<G, S, F>> {
   private final Distance<Individual<G, S, F>> distance;
   private final double distanceThreshold;
 
@@ -38,7 +38,7 @@ public class LazySpeciator<G, S, F> implements Speciator<Individual<G, S, F>> {
   }
 
   @Override
-  public Collection<Species<Individual<G, S, F>>> speciate(PartiallyOrderedCollection<Individual<G, S, F>> population) {
+  public Collection<SpeciatedEvolver.Species<Individual<G, S, F>>> speciate(PartiallyOrderedCollection<Individual<G, S, F>> population) {
     List<List<Individual<G, S, F>>> clusters = new ArrayList<>();
     for (Individual<G, S, F> individual : population.all()) {
       List<Double> distances = clusters.stream()
@@ -65,7 +65,7 @@ public class LazySpeciator<G, S, F> implements Speciator<Individual<G, S, F>> {
       }
     }
     return clusters.stream()
-        .map(c -> new Species<>(c, c.get(0)))
+        .map(c -> new SpeciatedEvolver.Species<>(c, c.get(0)))
         .collect(Collectors.toList());
   }
 

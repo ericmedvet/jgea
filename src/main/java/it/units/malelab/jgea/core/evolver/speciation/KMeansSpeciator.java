@@ -35,7 +35,7 @@ import java.util.stream.IntStream;
 /**
  * @author federico
  */
-public class KMeansSpeciator<G, S, F> implements Speciator<Individual<G, S, F>> {
+public class KMeansSpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Individual<G, S, F>> {
 
   private KMeansPlusPlusClusterer<ClusterableIndividual> kMeans = null;
   private final int k;
@@ -79,7 +79,7 @@ public class KMeansSpeciator<G, S, F> implements Speciator<Individual<G, S, F>> 
   }
 
   @Override
-  public Collection<Species<Individual<G, S, F>>> speciate(PartiallyOrderedCollection<Individual<G, S, F>> population) {
+  public Collection<SpeciatedEvolver.Species<Individual<G, S, F>>> speciate(PartiallyOrderedCollection<Individual<G, S, F>> population) {
     Collection<ClusterableIndividual> points = population.all().stream()
         .map(ClusterableIndividual::new)
         .collect(Collectors.toList());
@@ -105,7 +105,7 @@ public class KMeansSpeciator<G, S, F> implements Speciator<Individual<G, S, F>> 
       return closest;
     }).collect(Collectors.toList());
     return IntStream.range(0, clusters.size())
-        .mapToObj(i -> new Species<>(
+        .mapToObj(i -> new SpeciatedEvolver.Species<>(
             clusters.get(i).getPoints().stream()
                 .map(ci -> ci.individual)
                 .collect(Collectors.toList()),
