@@ -17,7 +17,6 @@
 package it.units.malelab.jgea.core.evolver;
 
 import it.units.malelab.jgea.core.Factory;
-import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
@@ -37,14 +36,35 @@ public class MutationOnly<G, S, F> extends StandardEvolver<G, S, F> {
 
   private final Mutation<G> mutation;
 
-  public MutationOnly(Function<? super G, ? extends S> solutionMapper, Factory<? extends G> genotypeFactory, PartialComparator<? super Individual<G, S, F>> individualComparator, int populationSize, Selector<? super Individual<? super G, ? super S, ? super F>> unsurvivalSelector, Mutation<G> mutation, boolean remap) {
-    super(solutionMapper, genotypeFactory, individualComparator, populationSize, null, null, unsurvivalSelector, 0, true, remap);
+  public MutationOnly(
+      Function<? super G, ? extends S> solutionMapper,
+      Factory<? extends G> genotypeFactory,
+      PartialComparator<? super Individual<G, S, F>> individualComparator,
+      int populationSize,
+      Selector<? super Individual<? super G, ? super S, ? super F>> unsurvivalSelector,
+      Mutation<G> mutation,
+      boolean remap
+  ) {
+    super(
+        solutionMapper, genotypeFactory, individualComparator, populationSize, null, null, unsurvivalSelector, 0, true,
+        remap
+    );
     this.mutation = mutation;
   }
 
   @Override
-  protected Collection<Individual<G, S, F>> buildOffspring(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
-    Collection<G> offspringGenotypes = orderedPopulation.all().stream().map(i -> mutation.mutate(i.genotype(), random)).toList();
-    return AbstractIterativeEvolver.map(offspringGenotypes, List.of(), solutionMapper, fitnessFunction, executor, state);
+  protected Collection<Individual<G, S, F>> buildOffspring(
+      PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation,
+      Function<S, F> fitnessFunction,
+      RandomGenerator random,
+      ExecutorService executor,
+      State state
+  ) throws ExecutionException, InterruptedException {
+    Collection<G> offspringGenotypes = orderedPopulation.all()
+        .stream()
+        .map(i -> mutation.mutate(i.genotype(), random))
+        .toList();
+    return AbstractIterativeEvolver.map(
+        offspringGenotypes, List.of(), solutionMapper, fitnessFunction, executor, state);
   }
 }

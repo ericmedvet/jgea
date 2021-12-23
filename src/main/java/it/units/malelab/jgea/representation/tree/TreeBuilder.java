@@ -16,7 +16,6 @@
 
 package it.units.malelab.jgea.representation.tree;
 
-import java.util.Random;
 import java.util.random.RandomGenerator;
 
 /**

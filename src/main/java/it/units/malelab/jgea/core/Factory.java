@@ -30,8 +30,6 @@ import java.util.random.RandomGenerator;
 @FunctionalInterface
 public interface Factory<T> {
 
-  List<T> build(int n, RandomGenerator random);
-
   static <T1, T2> Factory<Pair<T1, T2>> pair(Factory<T1> factory1, Factory<T2> factory2) {
     return (n, random) -> {
       List<T1> t1s = factory1.build(n, random);
@@ -51,6 +49,20 @@ public interface Factory<T> {
     };
   }
 
+  List<T> build(int n, RandomGenerator random);
+
+  default IndependentFactory<T> independent() {
+    Factory<T> thisFactory = this;
+    return random -> thisFactory.build(1, random).get(0);
+  }
+
+  default <K> Factory<K> then(Function<T, K> f) {
+    Factory<T> thisFactory = this;
+    return (n, random) -> thisFactory.build(n, random).stream()
+        .map(f)
+        .toList();
+  }
+
   default Factory<T> withOptimisticUniqueness(int maxAttempts) {
     Factory<T> innerFactory = this;
     return (n, random) -> {
@@ -63,18 +75,6 @@ public interface Factory<T> {
       ts.addAll(innerFactory.build(n - ts.size(), random));
       return ts;
     };
-  }
-
-  default IndependentFactory<T> independent() {
-    Factory<T> thisFactory = this;
-    return random -> thisFactory.build(1, random).get(0);
-  }
-
-  default <K> Factory<K> then(Function<T, K> f) {
-    Factory<T> thisFactory = this;
-    return (n, random) -> thisFactory.build(n, random).stream()
-        .map(f::apply)
-        .toList();
   }
 
 }

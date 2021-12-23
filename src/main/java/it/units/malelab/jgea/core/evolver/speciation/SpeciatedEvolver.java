@@ -17,7 +17,6 @@
 package it.units.malelab.jgea.core.evolver.speciation;
 
 import it.units.malelab.jgea.core.Factory;
-import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.order.PartialComparator;
@@ -40,44 +39,73 @@ import java.util.random.RandomGenerator;
  */
 public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
 
-  public record Species<T>(Collection<T> elements, T representative) {}
-
-  public interface Speciator<T> {
-    Collection<Species<T>> speciate(PartiallyOrderedCollection<T> all);
-  }
-
+  private static final Logger L = Logger.getLogger(SpeciatedEvolver.class.getName());
   private final int minSpeciesSizeForElitism;
   private final Speciator<Individual<G, S, F>> speciator;
   private final double rankBase;
 
-  private static final Logger L = Logger.getLogger(SpeciatedEvolver.class.getName());
-
-  public SpeciatedEvolver(Function<? super G, ? extends S> solutionMapper, Factory<? extends G> genotypeFactory, PartialComparator<? super Individual<G, S, F>> individualComparator, int populationSize, Map<GeneticOperator<G>, Double> operators, int minSpeciesSizeForElitism, Speciator<Individual<G, S, F>> speciator, double rankBase, boolean remap) {
-    super(solutionMapper, genotypeFactory, individualComparator, populationSize, operators, null, new Last(), populationSize, false, remap);
+  public SpeciatedEvolver(
+      Function<? super G, ? extends S> solutionMapper,
+      Factory<? extends G> genotypeFactory,
+      PartialComparator<? super Individual<G, S, F>> individualComparator,
+      int populationSize,
+      Map<GeneticOperator<G>, Double> operators,
+      int minSpeciesSizeForElitism,
+      Speciator<Individual<G, S, F>> speciator,
+      double rankBase,
+      boolean remap
+  ) {
+    super(
+        solutionMapper, genotypeFactory, individualComparator, populationSize, operators, null, new Last(),
+        populationSize, false, remap
+    );
     this.minSpeciesSizeForElitism = minSpeciesSizeForElitism;
     this.speciator = speciator;
     this.rankBase = rankBase;
   }
 
+  public interface Speciator<T> {
+    Collection<Species<T>> speciate(PartiallyOrderedCollection<T> all);
+  }
+
+  public record Species<T>(Collection<T> elements, T representative) {}
+
   @Override
-  protected Collection<Individual<G, S, F>> buildOffspring(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<G, S, F>> buildOffspring(
+      PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation,
+      Function<S, F> fitnessFunction,
+      RandomGenerator random,
+      ExecutorService executor,
+      State state
+  ) throws ExecutionException, InterruptedException {
     Collection<Individual<G, S, F>> parents = orderedPopulation.all();
     Collection<Individual<G, S, F>> offspring = new ArrayList<>();
     //partition in species
     List<Species<Individual<G, S, F>>> allSpecies = new ArrayList<>(speciator.speciate(orderedPopulation));
-    L.fine(String.format("Population speciated in %d species of sizes %s", allSpecies.size(), allSpecies.stream().map(s -> s.elements().size()).toList()));
+    L.fine(String.format("Population speciated in %d species of sizes %s", allSpecies.size(),
+        allSpecies.stream().map(s -> s.elements().size()).toList()
+    ));
     //put elites
     Collection<Individual<G, S, F>> elite = new ArrayList<>();
-    parents.stream().reduce((i1, i2) -> individualComparator.compare(i1, i2).equals(PartialComparator.PartialComparatorOutcome.BEFORE) ? i1 : i2).ifPresent(elite::add);
+    parents.stream()
+        .reduce((i1, i2) -> individualComparator.compare(i1, i2)
+            .equals(PartialComparator.PartialComparatorOutcome.BEFORE) ? i1 : i2)
+        .ifPresent(elite::add);
     for (Species<Individual<G, S, F>> species : allSpecies) {
       if (species.elements().size() >= minSpeciesSizeForElitism) {
-        species.elements().stream().reduce((i1, i2) -> individualComparator.compare(i1, i2).equals(PartialComparator.PartialComparatorOutcome.BEFORE) ? i1 : i2).ifPresent(elite::add);
+        species.elements()
+            .stream()
+            .reduce((i1, i2) -> individualComparator.compare(i1, i2)
+                .equals(PartialComparator.PartialComparatorOutcome.BEFORE) ? i1 : i2)
+            .ifPresent(elite::add);
       }
     }
     //assign remaining offspring size
     int remaining = populationSize - elite.size();
     List<Individual<G, S, F>> representers = allSpecies.stream().map(Species::representative).toList();
-    L.fine(String.format("Representers determined for %d species: fitnesses are %s", allSpecies.size(), representers.stream().map(i -> String.format("%s", i.fitness())).toList()));
+    L.fine(String.format("Representers determined for %d species: fitnesses are %s", allSpecies.size(),
+        representers.stream().map(i -> String.format("%s", i.fitness())).toList()
+    ));
     List<Individual<G, S, F>> sortedRepresenters = new ArrayList<>(representers);
     sortedRepresenters.sort(individualComparator.comparator());
     List<Double> weights = representers.stream().map(r -> Math.pow(rankBase, sortedRepresenters.indexOf(r))).toList();

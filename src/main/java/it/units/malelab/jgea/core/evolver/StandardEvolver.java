@@ -22,7 +22,6 @@
 package it.units.malelab.jgea.core.evolver;
 
 import it.units.malelab.jgea.core.Factory;
-import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
 import it.units.malelab.jgea.core.order.PartialComparator;
@@ -45,6 +44,7 @@ import java.util.random.RandomGenerator;
  */
 public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> {
 
+  private static final Logger L = Logger.getLogger(StandardEvolver.class.getName());
   protected final int populationSize;
   protected final Map<GeneticOperator<G>, Double> operators;
   protected final Selector<? super Individual<? super G, ? super S, ? super F>> parentSelector;
@@ -52,8 +52,6 @@ public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> 
   protected final int offspringSize;
   protected final boolean overlapping;
   protected final boolean remap;
-
-  private static final Logger L = Logger.getLogger(StandardEvolver.class.getName());
 
   public StandardEvolver(
       Function<? super G, ? extends S> solutionMapper,
@@ -65,7 +63,8 @@ public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> 
       Selector<? super Individual<? super G, ? super S, ? super F>> unsurvivalSelector,
       int offspringSize,
       boolean overlapping,
-      boolean remap) {
+      boolean remap
+  ) {
     super(solutionMapper, genotypeFactory, individualComparator);
     this.populationSize = populationSize;
     this.operators = operators;
@@ -76,14 +75,46 @@ public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> 
     this.remap = remap;
   }
 
+  protected Collection<Individual<G, S, F>> buildOffspring(
+      PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation,
+      Function<S, F> fitnessFunction,
+      RandomGenerator random,
+      ExecutorService executor,
+      State state
+  ) throws ExecutionException, InterruptedException {
+    Collection<G> offspringGenotypes = new ArrayList<>();
+    while (offspringGenotypes.size() < offspringSize) {
+      GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
+      List<G> parentGenotypes = new ArrayList<>(operator.arity());
+      for (int j = 0; j < operator.arity(); j++) {
+        Individual<G, S, F> parent = parentSelector.select(orderedPopulation, random);
+        parentGenotypes.add(parent.genotype());
+      }
+      offspringGenotypes.addAll(operator.apply(parentGenotypes, random));
+    }
+    return map(offspringGenotypes, List.of(), solutionMapper, fitnessFunction, executor, state);
+  }
+
   @Override
-  protected Collection<Individual<G, S, F>> initPopulation(Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<G, S, F>> initPopulation(
+      Function<S, F> fitnessFunction,
+      RandomGenerator random,
+      ExecutorService executor,
+      State state
+  ) throws ExecutionException, InterruptedException {
     return initPopulation(populationSize, fitnessFunction, random, executor, state);
   }
 
   @Override
-  protected Collection<Individual<G, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
-    Collection<Individual<G, S, F>> offspring = buildOffspring(orderedPopulation, fitnessFunction, random, executor, state);
+  protected Collection<Individual<G, S, F>> updatePopulation(
+      PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation,
+      Function<S, F> fitnessFunction,
+      RandomGenerator random,
+      ExecutorService executor,
+      State state
+  ) throws ExecutionException, InterruptedException {
+    Collection<Individual<G, S, F>> offspring = buildOffspring(
+        orderedPopulation, fitnessFunction, random, executor, state);
     L.fine(String.format("Offspring built: %d individuals", offspring.size()));
     if (overlapping) {
       if (remap) {
@@ -98,22 +129,12 @@ public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> 
     return offspring;
   }
 
-  protected Collection<Individual<G, S, F>> buildOffspring(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
-    Collection<G> offspringGenotypes = new ArrayList<>();
-    while (offspringGenotypes.size() < offspringSize) {
-      GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
-      List<G> parentGenotypes = new ArrayList<>(operator.arity());
-      for (int j = 0; j < operator.arity(); j++) {
-        Individual<G, S, F> parent = parentSelector.select(orderedPopulation, random);
-        parentGenotypes.add(parent.genotype());
-      }
-      offspringGenotypes.addAll(operator.apply(parentGenotypes, random));
-    }
-    return map(offspringGenotypes, List.of(), solutionMapper, fitnessFunction, executor, state);
-  }
-
-  protected Collection<Individual<G, S, F>> trimPopulation(Collection<Individual<G, S, F>> population, RandomGenerator random) {
-    PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation = new DAGPartiallyOrderedCollection<>(population, individualComparator);
+  protected Collection<Individual<G, S, F>> trimPopulation(
+      Collection<Individual<G, S, F>> population,
+      RandomGenerator random
+  ) {
+    PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation = new DAGPartiallyOrderedCollection<>(
+        population, individualComparator);
     while (orderedPopulation.size() > populationSize) {
       Individual<G, S, F> toRemoveIndividual = unsurvivalSelector.select(orderedPopulation, random);
       orderedPopulation.remove(toRemoveIndividual);

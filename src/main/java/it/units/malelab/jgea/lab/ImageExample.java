@@ -18,7 +18,6 @@ package it.units.malelab.jgea.lab;
 
 import com.google.common.base.Stopwatch;
 import it.units.malelab.jgea.Worker;
-import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
@@ -107,7 +106,7 @@ public class ImageExample extends Worker {
             FunctionGraph.builder()
                 .andThen(MathUtils.fromMultivariateBuilder()),
             new ShallowSparseFactory(0d, 0d, 1d, 2, 1),
-            PartialComparator.from(Double.class).comparing(Individual::fitness),
+            PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
             nPop,
             Map.of(
                 new NodeAddition<>(
@@ -156,13 +155,15 @@ public class ImageExample extends Worker {
                 executorService,
                 listener
             );
-            L.info(String.format("Done %s: %d solutions in %4.1fs",
+            L.info(String.format(
+                "Done %s: %d solutions in %4.1fs",
                 keys,
                 solutions.size(),
                 (double) stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000d
             ));
           } catch (InterruptedException | ExecutionException | IOException e) {
-            L.severe(String.format("Cannot complete %s due to %s",
+            L.severe(String.format(
+                "Cannot complete %s due to %s",
                 keys,
                 e
             ));

@@ -20,7 +20,6 @@ import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.operator.Crossover;
 
 import java.util.List;
-import java.util.Random;
 import java.util.random.RandomGenerator;
 
 /**

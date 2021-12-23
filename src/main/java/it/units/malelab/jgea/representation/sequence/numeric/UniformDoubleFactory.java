@@ -18,7 +18,6 @@ package it.units.malelab.jgea.representation.sequence.numeric;
 
 import it.units.malelab.jgea.core.IndependentFactory;
 
-import java.util.Random;
 import java.util.random.RandomGenerator;
 
 /**

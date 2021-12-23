@@ -22,7 +22,6 @@ import it.units.malelab.jgea.core.util.Misc;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Random;
 import java.util.random.RandomGenerator;
 
 /**
@@ -44,7 +43,8 @@ public class Tournament implements Selector<Object> {
       tournament.add(Misc.pickRandomly(all, random));
     }
     if (ks instanceof DAGPartiallyOrderedCollection) {
-      PartiallyOrderedCollection<K> poTournament = new DAGPartiallyOrderedCollection<>(tournament, ((DAGPartiallyOrderedCollection<K>) ks).getPartialComparator());
+      PartiallyOrderedCollection<K> poTournament = new DAGPartiallyOrderedCollection<>(
+          tournament, ((DAGPartiallyOrderedCollection<K>) ks).getPartialComparator());
       tournament.clear();
       tournament.addAll(poTournament.firsts());
     }

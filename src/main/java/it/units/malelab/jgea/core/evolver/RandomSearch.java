@@ -17,7 +17,6 @@
 package it.units.malelab.jgea.core.evolver;
 
 import it.units.malelab.jgea.core.Factory;
-import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 
@@ -36,22 +35,36 @@ public class RandomSearch<G, S, F> extends AbstractIterativeEvolver<G, S, F> {
   public RandomSearch(
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
-      PartialComparator<? super Individual<G, S, F>> individualComparator) {
+      PartialComparator<? super Individual<G, S, F>> individualComparator
+  ) {
     super(solutionMapper, genotypeFactory, individualComparator);
   }
 
   @Override
-  protected Collection<Individual<G, S, F>> initPopulation(Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<G, S, F>> initPopulation(
+      Function<S, F> fitnessFunction,
+      RandomGenerator random,
+      ExecutorService executor,
+      State state
+  ) throws ExecutionException, InterruptedException {
     return initPopulation(1, fitnessFunction, random, executor, state);
   }
 
   @Override
-  protected Collection<Individual<G, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<G, S, F>> updatePopulation(
+      PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation,
+      Function<S, F> fitnessFunction,
+      RandomGenerator random,
+      ExecutorService executor,
+      State state
+  ) throws ExecutionException, InterruptedException {
     G genotype = genotypeFactory.build(1, random).get(0);
-    Collection<Individual<G, S, F>> offspring = AbstractIterativeEvolver.map(List.of(genotype), List.of(), solutionMapper, fitnessFunction, executor, state);
+    Collection<Individual<G, S, F>> offspring = AbstractIterativeEvolver.map(
+        List.of(genotype), List.of(), solutionMapper, fitnessFunction, executor, state);
     Individual<G, S, F> newIndividual = offspring.iterator().next();
     Individual<G, S, F> currentIndividual = orderedPopulation.firsts().iterator().next();
-    if (individualComparator.compare(newIndividual, currentIndividual).equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
+    if (individualComparator.compare(newIndividual, currentIndividual)
+        .equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
       return List.of(newIndividual);
     }
     return List.of(currentIndividual);

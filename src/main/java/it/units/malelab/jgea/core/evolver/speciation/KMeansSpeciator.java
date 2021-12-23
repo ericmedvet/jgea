@@ -16,7 +16,7 @@
 
 package it.units.malelab.jgea.core.evolver.speciation;
 
-import it.units.malelab.jgea.core.Individual;
+import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.distance.Distance;
 import org.apache.commons.math3.ml.clustering.CentroidCluster;
@@ -34,19 +34,38 @@ import java.util.stream.IntStream;
 /**
  * @author federico
  */
-public class KMeansSpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Individual<G, S, F>> {
+public class KMeansSpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Evolver.Individual<G, S, F>> {
 
-  private KMeansPlusPlusClusterer<ClusterableIndividual> kMeans = null;
   private final int k;
   private final int maxIterations;
-  private final Function<Individual<G, S, F>, double[]> converter;
+  private final Function<Evolver.Individual<G, S, F>, double[]> converter;
   private final Distance<double[]> distance;
+  private KMeansPlusPlusClusterer<ClusterableIndividual> kMeans = null;
+
+  public KMeansSpeciator(
+      int k,
+      int maxIterations,
+      Distance<double[]> distance,
+      Function<Evolver.Individual<G, S, F>, double[]> converter
+  ) {
+    if (k != -1) {
+      this.kMeans = new KMeansPlusPlusClusterer<>(
+          k,
+          maxIterations,
+          (DistanceMeasure) distance::apply
+      );
+    }
+    this.k = k;
+    this.maxIterations = maxIterations;
+    this.converter = converter;
+    this.distance = distance;
+  }
 
   private class ClusterableIndividual implements Clusterable {
-    private final Individual<G, S, F> individual;
+    private final Evolver.Individual<G, S, F> individual;
     private double[] point;
 
-    public ClusterableIndividual(Individual<G, S, F> individual) {
+    public ClusterableIndividual(Evolver.Individual<G, S, F> individual) {
       this.individual = individual;
     }
 
@@ -63,22 +82,89 @@ public class KMeansSpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Indi
     }
   }
 
-  public KMeansSpeciator(int k, int maxIterations, Distance<double[]> distance, Function<Individual<G, S, F>, double[]> converter) {
+  private List<CentroidCluster<ClusterableIndividual>> clusterPoints(Collection<ClusterableIndividual> points) {
     if (k != -1) {
-      this.kMeans = new KMeansPlusPlusClusterer<>(
-          k,
-          maxIterations,
-          (DistanceMeasure) distance::apply
-      );
+      return kMeans.cluster(points);
     }
-    this.k = k;
-    this.maxIterations = maxIterations;
-    this.converter = converter;
-    this.distance = distance;
+    double maxSilhouette = Double.NEGATIVE_INFINITY;
+    List<CentroidCluster<ClusterableIndividual>> clusters = new ArrayList<>();
+    List<CentroidCluster<ClusterableIndividual>> result = new ArrayList<>();
+    for (int nClusters = 1; nClusters < Math.min(13, points.size()); ++nClusters) {
+      result.addAll((new KMeansPlusPlusClusterer<ClusterableIndividual>(nClusters, maxIterations,
+          (DistanceMeasure) distance::apply
+      )).cluster(points));
+      double silhouette = computeSilhouette(result, points.size());
+      if (silhouette > maxSilhouette) {
+        clusters.clear();
+        maxSilhouette = silhouette;
+        clusters.addAll(result);
+      }
+      result.clear();
+    }
+    return clusters;
+  }
+
+  private double computeSilhouette(List<CentroidCluster<ClusterableIndividual>> clusters, int n) {
+    double[] s = new double[n];
+    int k = 0;
+    for (CentroidCluster<ClusterableIndividual> cluster : clusters) {
+      double[][] points = cluster.getPoints().stream().map(Clusterable::getPoint).toArray(double[][]::new);
+      for (double[] point : points) {
+        if (points.length == 1) {
+          s[k++] = 0.0;
+          continue;
+        }
+        double a = Arrays.stream(points)
+            .filter(p -> p != point)
+            .mapToDouble(p -> distance.apply(p, point))
+            .average()
+            .orElse(0d);
+        double b = clusters.stream()
+            .filter(c -> c != cluster)
+            .mapToDouble(c -> c.getPoints()
+                .stream()
+                .mapToDouble(ci -> distance.apply(ci.getPoint(), point))
+                .average()
+                .orElse(0.0))
+            .min()
+            .orElse(0.0);
+        if (a < b) {
+          s[k++] = 1.0 - (a / b);
+        } else if (a == b) {
+          s[k++] = 0.0;
+        } else {
+          s[k++] = (b / a) - 1.0;
+        }
+      }
+    }
+    return Arrays.stream(s).average().orElse(0);
+  }
+
+  private void normalizePoints(Collection<ClusterableIndividual> points) {
+    int length = points.stream().mapToInt(p -> p.getPoint().length).distinct().findAny().orElse(0);
+    double[] maxValues = new double[length];
+    double[] minValues = new double[length];
+    for (int i = 0; i < length; ++i) {
+      int finalI = i;
+      maxValues[i] = points.stream().mapToDouble(p -> p.getPoint()[finalI]).max().orElse(1d);
+      minValues[i] = points.stream().mapToDouble(p -> p.getPoint()[finalI]).min().orElse(0d);
+    }
+    points.forEach(p -> {
+      double[] oldPoint = p.getPoint();
+      double[] temp = new double[length];
+      for (int i = 0; i < length; ++i) {
+        if (maxValues[i] - minValues[i] == 0.0) {
+          temp[i] = 1.0;
+        } else {
+          temp[i] = (oldPoint[i] - minValues[i]) / (maxValues[i] - minValues[i]);
+        }
+      }
+      p.setPoint(temp);
+    });
   }
 
   @Override
-  public Collection<SpeciatedEvolver.Species<Individual<G, S, F>>> speciate(PartiallyOrderedCollection<Individual<G, S, F>> population) {
+  public Collection<SpeciatedEvolver.Species<Evolver.Individual<G, S, F>>> speciate(PartiallyOrderedCollection<Evolver.Individual<G, S, F>> population) {
     Collection<ClusterableIndividual> points = population.all().stream()
         .map(ClusterableIndividual::new)
         .toList();
@@ -106,73 +192,6 @@ public class KMeansSpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Indi
                 .toList(),
             representers.get(i).individual
         )).toList();
-  }
-
-  private void normalizePoints(Collection<ClusterableIndividual> points) {
-    int length = points.stream().mapToInt(p -> p.getPoint().length).distinct().findAny().orElse(0);
-    double[] maxValues = new double[length];
-    double[] minValues = new double[length];
-    for (int i = 0; i < length; ++i) {
-      int finalI = i;
-      maxValues[i] = points.stream().mapToDouble(p -> p.getPoint()[finalI]).max().orElse(1d);
-      minValues[i] = points.stream().mapToDouble(p -> p.getPoint()[finalI]).min().orElse(0d);
-    }
-    points.forEach(p -> {
-      double[] oldPoint = p.getPoint();
-      double[] temp = new double[length];
-      for (int i = 0; i < length; ++i) {
-        if (maxValues[i] - minValues[i] == 0.0) {
-          temp[i] = 1.0;
-        } else {
-          temp[i] = (oldPoint[i] - minValues[i]) / (maxValues[i] - minValues[i]);
-        }
-      }
-      p.setPoint(temp);
-    });
-  }
-
-  private List<CentroidCluster<ClusterableIndividual>> clusterPoints(Collection<ClusterableIndividual> points) {
-    if (k != -1) {
-      return kMeans.cluster(points);
-    }
-    double maxSilhouette = Double.NEGATIVE_INFINITY;
-    List<CentroidCluster<ClusterableIndividual>> clusters = new ArrayList<>();
-    List<CentroidCluster<ClusterableIndividual>> result = new ArrayList<>();
-    for (int nClusters = 1; nClusters < Math.min(13, points.size()); ++nClusters) {
-      result.addAll((new KMeansPlusPlusClusterer<ClusterableIndividual>(nClusters, maxIterations, (DistanceMeasure) distance::apply)).cluster(points));
-      double silhouette = computeSilhouette(result, points.size());
-      if (silhouette > maxSilhouette) {
-        clusters.clear();
-        maxSilhouette = silhouette;
-        clusters.addAll(result);
-      }
-      result.clear();
-    }
-    return clusters;
-  }
-
-  private double computeSilhouette(List<CentroidCluster<ClusterableIndividual>> clusters, int n) {
-    double[] s = new double[n];
-    int k = 0;
-    for (CentroidCluster<ClusterableIndividual> cluster : clusters) {
-      double[][] points = cluster.getPoints().stream().map(Clusterable::getPoint).toArray(double[][]::new);
-      for (double[] point : points) {
-        if (points.length == 1) {
-          s[k++] = 0.0;
-          continue;
-        }
-        double a = Arrays.stream(points).filter(p -> p != point).mapToDouble(p -> distance.apply(p, point)).average().orElse(0d);
-        double b = clusters.stream().filter(c -> c != cluster).mapToDouble(c -> c.getPoints().stream().mapToDouble(ci -> distance.apply(ci.getPoint(), point)).average().orElse(0.0)).min().orElse(0.0);
-        if (a < b) {
-          s[k++] = 1.0 - (a / b);
-        } else if (a == b) {
-          s[k++] = 0.0;
-        } else {
-          s[k++] = (b / a) - 1.0;
-        }
-      }
-    }
-    return Arrays.stream(s).average().orElse(0);
   }
 
 }

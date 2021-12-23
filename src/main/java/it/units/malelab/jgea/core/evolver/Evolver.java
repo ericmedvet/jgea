@@ -16,7 +16,6 @@
 
 package it.units.malelab.jgea.core.evolver;
 
-import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 
@@ -34,80 +33,29 @@ import java.util.random.RandomGenerator;
  */
 public interface Evolver<G, S, F> {
 
+  interface State {
+    State copy();
+
+    int getBirths();
+
+    long getElapsedMillis();
+
+    int getFitnessEvaluations();
+
+    int getIterations();
+  }
+
+  record Event<G, S, F>(State state, PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation,
+                        Map<String, Object> attributes) implements Serializable {}
+
+  record Individual<G, S, F>(G genotype, S solution, F fitness, int fitnessMappingIteration,
+                             int genotypeBirthIteration) implements Serializable {}
+
   Collection<S> solve(
       Function<S, F> fitnessFunction,
       Predicate<? super Event<G, S, F>> stopCondition,
       RandomGenerator random,
       ExecutorService executor,
-      Listener<? super Event<G, S, F>> listener) throws InterruptedException, ExecutionException;
-
-  record Event<G, S, F>(State state, PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation,
-                        Map<String, Object> attributes) implements Serializable {
-  }
-
-  class State {
-    private int iterations = 0;
-    private int births = 0;
-    private int fitnessEvaluations = 0;
-    private long elapsedMillis = 0;
-
-    public State() {
-    }
-
-    public State(int iterations, int births, int fitnessEvaluations, long elapsedMillis) {
-      this.iterations = iterations;
-      this.births = births;
-      this.fitnessEvaluations = fitnessEvaluations;
-      this.elapsedMillis = elapsedMillis;
-    }
-
-    public int getIterations() {
-      return iterations;
-    }
-
-    public void setIterations(int iterations) {
-      this.iterations = iterations;
-    }
-
-    public int getBirths() {
-      return births;
-    }
-
-    public void setBirths(int births) {
-      this.births = births;
-    }
-
-    public int getFitnessEvaluations() {
-      return fitnessEvaluations;
-    }
-
-    public void setFitnessEvaluations(int fitnessEvaluations) {
-      this.fitnessEvaluations = fitnessEvaluations;
-    }
-
-    public void incFitnessEvaluations(int fitnessEvaluations) {
-      setFitnessEvaluations(getFitnessEvaluations() + fitnessEvaluations);
-    }
-
-    public long getElapsedMillis() {
-      return elapsedMillis;
-    }
-
-    public void setElapsedMillis(long elapsedMillis) {
-      this.elapsedMillis = elapsedMillis;
-    }
-
-    public void incIterations(int n) {
-      setIterations(getIterations() + n);
-    }
-
-    public void incBirths(int n) {
-      setBirths(getBirths() + n);
-    }
-
-    public State copy() {
-      return new State(iterations, births, fitnessEvaluations, elapsedMillis);
-    }
-  }
-
+      Listener<? super Event<G, S, F>> listener
+  ) throws InterruptedException, ExecutionException;
 }

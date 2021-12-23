@@ -26,6 +26,18 @@ import java.util.random.RandomGenerator;
  */
 public interface IndependentFactory<T> extends Factory<T> {
 
+  T build(RandomGenerator random);
+
+  @SafeVarargs
+  static <K> IndependentFactory<K> oneOf(IndependentFactory<K>... factories) {
+    return random -> factories[random.nextInt(factories.length)].build(random);
+  }
+
+  @SafeVarargs
+  static <K> IndependentFactory<K> picker(K... ks) {
+    return random -> ks[random.nextInt(ks.length)];
+  }
+
   @Override
   default List<T> build(int n, RandomGenerator random) {
     List<T> ts = new ArrayList<>();
@@ -33,18 +45,6 @@ public interface IndependentFactory<T> extends Factory<T> {
       ts.add(build(random));
     }
     return ts;
-  }
-
-  T build(RandomGenerator random);
-
-  @SafeVarargs
-  static <K> IndependentFactory<K> picker(K... ks) {
-    return random -> ks[random.nextInt(ks.length)];
-  }
-
-  @SafeVarargs
-  static <K> IndependentFactory<K> oneOf(IndependentFactory<K>... factories) {
-    return random -> factories[random.nextInt(factories.length)].build(random);
   }
 
   default <K> IndependentFactory<K> then(Function<T, K> f) {

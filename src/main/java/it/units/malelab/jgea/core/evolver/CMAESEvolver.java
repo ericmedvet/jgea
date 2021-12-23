@@ -17,7 +17,6 @@
 package it.units.malelab.jgea.core.evolver;
 
 import it.units.malelab.jgea.core.Factory;
-import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import org.apache.commons.math3.linear.EigenDecomposition;
@@ -34,6 +33,7 @@ import java.util.random.RandomGenerator;
 public class CMAESEvolver<S, F> extends AbstractIterativeEvolver<List<Double>, S, F> {
 
   // TODO check which of the fields should be part of a run, not ea params (e.g., size)
+  private static final Logger L = Logger.getLogger(CMAESEvolver.class.getName());
   /**
    * Population size, sample size, number of offspring, λ.
    */
@@ -80,134 +80,14 @@ public class CMAESEvolver<S, F> extends AbstractIterativeEvolver<List<Double>, S
    */
   protected final double damps;
 
-  private static final Logger L = Logger.getLogger(CMAESEvolver.class.getName());
-
-  protected class CMAESState extends State {
-    // Step-size
-    private double stepSize = 0.5;
-    // Mean value of the search distribution
-    private double[] distrMean = new double[size];
-    // Evolution path for step-size
-    private double[] sEvolutionPath = new double[size];
-    // Evolution path for covariance matrix, a sequence of successive (normalized) steps, the strategy
-    // takes over a number of generations
-    private double[] CEvolutionPath = new double[size];
-    // Orthogonal matrix. Columns of B are eigenvectors of C with unit length and correspond to the diagonal
-    // element of D
-    private RealMatrix B = MatrixUtils.createRealIdentityMatrix(size);
-    // Diagonal matrix. The diagonal elements of D are square roots of eigenvalues of C and correspond to the
-    // respective columns of B
-    private RealMatrix D = MatrixUtils.createRealIdentityMatrix(size);
-    // Covariance matrix at the current generation
-    private RealMatrix C = MatrixUtils.createRealIdentityMatrix(size);
-    // Last generation when the eigendecomposition was calculated
-    private int lastEigenUpdate = 0;
-
-    public CMAESState() {
-    }
-
-    public CMAESState(int iterations, int births, int fitnessEvaluations, long elapsedMillis, double stepSize, double[] distrMean, double[] sEvolutionPath, double[] CEvolutionPath, RealMatrix b, RealMatrix d, RealMatrix c, int lastEigenUpdate) {
-      super(iterations, births, fitnessEvaluations, elapsedMillis);
-      this.stepSize = stepSize;
-      this.distrMean = distrMean;
-      this.sEvolutionPath = sEvolutionPath;
-      this.CEvolutionPath = CEvolutionPath;
-      B = b;
-      D = d;
-      C = c;
-      this.lastEigenUpdate = lastEigenUpdate;
-    }
-
-    public double getStepSize() {
-      return stepSize;
-    }
-
-    public void setStepSize(double stepSize) {
-      this.stepSize = stepSize;
-    }
-
-    public double[] getDistrMean() {
-      return distrMean;
-    }
-
-    public void setDistrMean(double[] distrMean) {
-      this.distrMean = distrMean;
-    }
-
-    public double[] getsEvolutionPath() {
-      return sEvolutionPath;
-    }
-
-    public void setsEvolutionPath(double[] sEvolutionPath) {
-      this.sEvolutionPath = sEvolutionPath;
-    }
-
-    public double[] getCEvolutionPath() {
-      return CEvolutionPath;
-    }
-
-    public void setCEvolutionPath(double[] CEvolutionPath) {
-      this.CEvolutionPath = CEvolutionPath;
-    }
-
-    public RealMatrix getB() {
-      return B;
-    }
-
-    public void setB(RealMatrix b) {
-      B = b;
-    }
-
-    public RealMatrix getD() {
-      return D;
-    }
-
-    public void setD(RealMatrix d) {
-      D = d;
-    }
-
-    public RealMatrix getC() {
-      return C;
-    }
-
-    public void setC(RealMatrix c) {
-      C = c;
-    }
-
-    public int getLastEigenUpdate() {
-      return lastEigenUpdate;
-    }
-
-    public void setLastEigenUpdate(int lastEigenUpdate) {
-      this.lastEigenUpdate = lastEigenUpdate;
-    }
-
-    @Override
-    public State copy() {
-      return new CMAESState(
-          getIterations(),
-          getBirths(),
-          getFitnessEvaluations(),
-          getElapsedMillis(),
-          stepSize,
-          Arrays.copyOf(distrMean, distrMean.length),
-          Arrays.copyOf(sEvolutionPath, sEvolutionPath.length),
-          Arrays.copyOf(CEvolutionPath, CEvolutionPath.length),
-          B.copy(),
-          D.copy(),
-          C.copy(),
-          lastEigenUpdate
-      );
-    }
-  }
-
   /**
    * Constructs a new CMA-ES instance using default parameters.
    */
   public CMAESEvolver(
       Function<? super List<Double>, ? extends S> solutionMapper,
       Factory<? extends List<Double>> genotypeFactory,
-      PartialComparator<? super Individual<List<Double>, S, F>> individualComparator) {
+      PartialComparator<? super Individual<List<Double>, S, F>> individualComparator
+  ) {
     super(solutionMapper, genotypeFactory, individualComparator);
     this.size = genotypeFactory.build(1, new Random(0)).get(0).size();
     // initialize selection and recombination parameters
@@ -240,22 +120,181 @@ public class CMAESEvolver<S, F> extends AbstractIterativeEvolver<List<Double>, S
     chiN = Math.sqrt(size) * (1d - 1d / (4d * size) + 1d / (21d * Math.pow(size, 2)));
   }
 
-  @Override
-  protected State initState() {
-    return new CMAESState();
+  protected class CMAESState extends State {
+    // Step-size
+    private double stepSize = 0.5;
+    // Mean value of the search distribution
+    private double[] distrMean = new double[size];
+    // Evolution path for step-size
+    private double[] sEvolutionPath = new double[size];
+    // Evolution path for covariance matrix, a sequence of successive (normalized) steps, the strategy
+    // takes over a number of generations
+    private double[] CEvolutionPath = new double[size];
+    // Orthogonal matrix. Columns of B are eigenvectors of C with unit length and correspond to the diagonal
+    // element of D
+    private RealMatrix B = MatrixUtils.createRealIdentityMatrix(size);
+    // Diagonal matrix. The diagonal elements of D are square roots of eigenvalues of C and correspond to the
+    // respective columns of B
+    private RealMatrix D = MatrixUtils.createRealIdentityMatrix(size);
+    // Covariance matrix at the current generation
+    private RealMatrix C = MatrixUtils.createRealIdentityMatrix(size);
+    // Last generation when the eigendecomposition was calculated
+    private int lastEigenUpdate = 0;
+
+    public CMAESState() {
+    }
+
+    public CMAESState(
+        int iterations,
+        int births,
+        int fitnessEvaluations,
+        long elapsedMillis,
+        double stepSize,
+        double[] distrMean,
+        double[] sEvolutionPath,
+        double[] CEvolutionPath,
+        RealMatrix b,
+        RealMatrix d,
+        RealMatrix c,
+        int lastEigenUpdate
+    ) {
+      super(iterations, births, fitnessEvaluations, elapsedMillis);
+      this.stepSize = stepSize;
+      this.distrMean = distrMean;
+      this.sEvolutionPath = sEvolutionPath;
+      this.CEvolutionPath = CEvolutionPath;
+      B = b;
+      D = d;
+      C = c;
+      this.lastEigenUpdate = lastEigenUpdate;
+    }
+
+    @Override
+    public State copy() {
+      return new CMAESState(
+          getIterations(),
+          getBirths(),
+          getFitnessEvaluations(),
+          getElapsedMillis(),
+          stepSize,
+          Arrays.copyOf(distrMean, distrMean.length),
+          Arrays.copyOf(sEvolutionPath, sEvolutionPath.length),
+          Arrays.copyOf(CEvolutionPath, CEvolutionPath.length),
+          B.copy(),
+          D.copy(),
+          C.copy(),
+          lastEigenUpdate
+      );
+    }
+
+    public RealMatrix getB() {
+      return B;
+    }
+
+    public void setB(RealMatrix b) {
+      B = b;
+    }
+
+    public RealMatrix getC() {
+      return C;
+    }
+
+    public void setC(RealMatrix c) {
+      C = c;
+    }
+
+    public double[] getCEvolutionPath() {
+      return CEvolutionPath;
+    }
+
+    public void setCEvolutionPath(double[] CEvolutionPath) {
+      this.CEvolutionPath = CEvolutionPath;
+    }
+
+    public RealMatrix getD() {
+      return D;
+    }
+
+    public void setD(RealMatrix d) {
+      D = d;
+    }
+
+    public double[] getDistrMean() {
+      return distrMean;
+    }
+
+    public void setDistrMean(double[] distrMean) {
+      this.distrMean = distrMean;
+    }
+
+    public int getLastEigenUpdate() {
+      return lastEigenUpdate;
+    }
+
+    public void setLastEigenUpdate(int lastEigenUpdate) {
+      this.lastEigenUpdate = lastEigenUpdate;
+    }
+
+    public double getStepSize() {
+      return stepSize;
+    }
+
+    public void setStepSize(double stepSize) {
+      this.stepSize = stepSize;
+    }
+
+    public double[] getsEvolutionPath() {
+      return sEvolutionPath;
+    }
+
+    public void setsEvolutionPath(double[] sEvolutionPath) {
+      this.sEvolutionPath = sEvolutionPath;
+    }
+  }
+
+  protected void eigenDecomposition(CMAESState state) {
+    L.fine(String.format("Eigen decomposition of covariance matrix (i=%d)", state.getIterations()));
+    state.setLastEigenUpdate(state.getIterations());
+    EigenDecomposition eig = new EigenDecomposition(state.getC());
+    // normalized eigenvectors
+    RealMatrix B = eig.getV();
+    RealMatrix D = eig.getD();
+    for (int i = 0; i < size; i++) {
+      // numerical problem?
+      if (D.getEntry(i, i) < 0) {
+        L.warning("An eigenvalue has become negative");
+        D.setEntry(i, i, 0d);
+      }
+      // D contains standard deviations now
+      D.setEntry(i, i, Math.sqrt(D.getEntry(i, i)));
+    }
+    state.setB(B);
+    state.setD(D);
   }
 
   @Override
-  protected Collection<Individual<List<Double>, S, F>> initPopulation(Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<List<Double>, S, F>> initPopulation(
+      Function<S, F> fitnessFunction,
+      RandomGenerator random,
+      ExecutorService executor,
+      State state
+  ) throws ExecutionException, InterruptedException {
     // objective variables initial point
     List<Double> point = genotypeFactory.build(1, random).get(0);
     ((CMAESState) state).setDistrMean(point.stream().mapToDouble(d -> d).toArray());
-    List<Individual<List<Double>, S, F>> population = samplePopulation(fitnessFunction, random, executor, (CMAESState) state);
+    List<Individual<List<Double>, S, F>> population = samplePopulation(
+        fitnessFunction, random, executor, (CMAESState) state);
     return population;
   }
 
   @Override
-  protected Collection<Individual<List<Double>, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<List<Double>, S, F>> orderedPopulation, Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<List<Double>, S, F>> updatePopulation(
+      PartiallyOrderedCollection<Individual<List<Double>, S, F>> orderedPopulation,
+      Function<S, F> fitnessFunction,
+      RandomGenerator random,
+      ExecutorService executor,
+      State state
+  ) throws ExecutionException, InterruptedException {
     updateDistribution(orderedPopulation, (CMAESState) state);
     // update B and D from C
     if ((state.getIterations() - ((CMAESState) state).getLastEigenUpdate()) > (1d / (c1 + cmu) / size / 10d)) {
@@ -268,11 +307,22 @@ public class CMAESEvolver<S, F> extends AbstractIterativeEvolver<List<Double>, S
       ((CMAESState) state).setStepSize(stepSize);
       L.warning("Flat fitness, consider reformulating the objective");
     }
-    List<Individual<List<Double>, S, F>> newPopulation = samplePopulation(fitnessFunction, random, executor, (CMAESState) state);
+    List<Individual<List<Double>, S, F>> newPopulation = samplePopulation(
+        fitnessFunction, random, executor, (CMAESState) state);
     return newPopulation;
   }
 
-  protected List<Individual<List<Double>, S, F>> samplePopulation(Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, CMAESState state) throws ExecutionException, InterruptedException {
+  @Override
+  protected State initState() {
+    return new CMAESState();
+  }
+
+  protected List<Individual<List<Double>, S, F>> samplePopulation(
+      Function<S, F> fitnessFunction,
+      RandomGenerator random,
+      ExecutorService executor,
+      CMAESState state
+  ) throws ExecutionException, InterruptedException {
     List<List<Double>> genotypes = new ArrayList<>();
     while (genotypes.size() < lambda) {
       // new point
@@ -295,7 +345,8 @@ public class CMAESEvolver<S, F> extends AbstractIterativeEvolver<List<Double>, S
 
   protected void updateDistribution(
       final PartiallyOrderedCollection<Individual<List<Double>, S, F>> population,
-      final CMAESState state) {
+      final CMAESState state
+  ) {
     // best mu ranked points
     List<Individual<List<Double>, S, F>> bestMuPoints = population
         .all()
@@ -353,7 +404,11 @@ public class CMAESEvolver<S, F> extends AbstractIterativeEvolver<List<Double>, S
         double rankOneUpdate = CEvolutionPath[i] * CEvolutionPath[j] + (1 - hsig) * cc * (2 - cc) * C.getEntry(i, j);
         double rankMuUpdate = 0d;
         for (int k = 0; k < mu; k++) {
-          rankMuUpdate += weights[k] * ((bestMuPoints.get(k).genotype().get(i) - oldDistrMean[i]) / state.getStepSize()) * ((bestMuPoints.get(k).genotype().get(j) - oldDistrMean[j]) / state.getStepSize());
+          rankMuUpdate += weights[k] * ((bestMuPoints.get(k)
+              .genotype()
+              .get(i) - oldDistrMean[i]) / state.getStepSize()) * ((bestMuPoints.get(k)
+              .genotype()
+              .get(j) - oldDistrMean[j]) / state.getStepSize());
         }
         C.setEntry(i, j, (1 - c1 - cmu) * C.getEntry(i, j) + c1 * rankOneUpdate + cmu * rankMuUpdate);
         if (i != j) {
@@ -368,25 +423,5 @@ public class CMAESEvolver<S, F> extends AbstractIterativeEvolver<List<Double>, S
     double stepSize = state.getStepSize();
     stepSize *= Math.exp((cs / damps) * ((psNorm / chiN) - 1));
     state.setStepSize(stepSize);
-  }
-
-  protected void eigenDecomposition(CMAESState state) {
-    L.fine(String.format("Eigen decomposition of covariance matrix (i=%d)", state.getIterations()));
-    state.setLastEigenUpdate(state.getIterations());
-    EigenDecomposition eig = new EigenDecomposition(state.getC());
-    // normalized eigenvectors
-    RealMatrix B = eig.getV();
-    RealMatrix D = eig.getD();
-    for (int i = 0; i < size; i++) {
-      // numerical problem?
-      if (D.getEntry(i, i) < 0) {
-        L.warning("An eigenvalue has become negative");
-        D.setEntry(i, i, 0d);
-      }
-      // D contains standard deviations now
-      D.setEntry(i, i, Math.sqrt(D.getEntry(i, i)));
-    }
-    state.setB(B);
-    state.setD(D);
   }
 }

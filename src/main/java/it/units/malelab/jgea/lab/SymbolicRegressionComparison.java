@@ -19,7 +19,6 @@ package it.units.malelab.jgea.lab;
 import com.google.common.base.Stopwatch;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.IndependentFactory;
-import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversityEvolver;
@@ -77,6 +76,17 @@ public class SymbolicRegressionComparison extends Worker {
 
   public static void main(String[] args) {
     new SymbolicRegressionComparison(args);
+  }
+
+  private static String[] vars(int n) {
+    if (n == 1) {
+      return new String[]{"x"};
+    }
+    String[] vars = new String[n];
+    for (int i = 0; i < n; i++) {
+      vars[i] = "x" + i;
+    }
+    return vars;
   }
 
   @Override
@@ -138,745 +148,821 @@ public class SymbolicRegressionComparison extends Worker {
       ));
     }
     //evolvers
-    Map<String, Function<SymbolicRegressionProblem, Evolver<?, RealFunction, Double>>> evolvers = new TreeMap<>(Map.ofEntries(
-        Map.entry("tree-ga", p -> {
-          IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
-              IndependentFactory.picker(Arrays.stream(vars(p.arity())).sequential().map(Element.Variable::new).toArray(Element.Variable[]::new)),
-              IndependentFactory.picker(Arrays.stream(constants).mapToObj(Element.Constant::new).toArray(Element.Constant[]::new))
-          );
-          return new StandardEvolver<Tree<Element>, RealFunction, Double>(
-              ((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(t, vars(p.arity())))
-                  .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-              new RampedHalfAndHalf<>(
-                  4, maxHeight,
-                  Element.Operator.arityFunction(),
-                  IndependentFactory.picker(operators),
-                  terminalFactory
-              ),
-              PartialComparator.from(Double.class).comparing(Individual::fitness),
-              nPop,
-              Map.of(
-                  new SubtreeCrossover<>(maxHeight), 0.8d,
-                  new SubtreeMutation<>(maxHeight, new GrowTreeBuilder<>(
+    Map<String, Function<SymbolicRegressionProblem, Evolver<?, RealFunction, Double>>> evolvers = new TreeMap<>(
+        Map.ofEntries(
+            Map.entry("tree-ga", p -> {
+              IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
+                  IndependentFactory.picker(Arrays.stream(vars(p.arity()))
+                      .sequential()
+                      .map(Element.Variable::new)
+                      .toArray(Element.Variable[]::new)),
+                  IndependentFactory.picker(
+                      Arrays.stream(constants).mapToObj(Element.Constant::new).toArray(Element.Constant[]::new))
+              );
+              return new StandardEvolver<Tree<Element>, RealFunction, Double>(
+                  ((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(t, vars(p.arity())))
+                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                  new RampedHalfAndHalf<>(
+                      4, maxHeight,
                       Element.Operator.arityFunction(),
                       IndependentFactory.picker(operators),
                       terminalFactory
-                  )), 0.2d
-              ),
-              new Tournament(nTournament),
-              new Last(),
-              nPop,
-              true,
-              false
-          );
-        }),
-        Map.entry("tree-ga-noxover", p -> {
-          IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
-              IndependentFactory.picker(Arrays.stream(vars(p.arity())).sequential().map(Element.Variable::new).toArray(Element.Variable[]::new)),
-              IndependentFactory.picker(Arrays.stream(constants).mapToObj(Element.Constant::new).toArray(Element.Constant[]::new))
-          );
-          return new StandardEvolver<Tree<Element>, RealFunction, Double>(
-              ((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(t, vars(p.arity())))
-                  .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-              new RampedHalfAndHalf<>(
-                  4, maxHeight,
-                  Element.Operator.arityFunction(),
-                  IndependentFactory.picker(operators),
-                  terminalFactory
-              ),
-              PartialComparator.from(Double.class).comparing(Individual::fitness),
-              nPop,
-              Map.of(
-                  new SubtreeMutation<>(maxHeight, new GrowTreeBuilder<>(
+                  ),
+                  PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                  nPop,
+                  Map.of(
+                      new SubtreeCrossover<>(maxHeight), 0.8d,
+                      new SubtreeMutation<>(maxHeight, new GrowTreeBuilder<>(
+                          Element.Operator.arityFunction(),
+                          IndependentFactory.picker(operators),
+                          terminalFactory
+                      )), 0.2d
+                  ),
+                  new Tournament(nTournament),
+                  new Last(),
+                  nPop,
+                  true,
+                  false
+              );
+            }),
+            Map.entry("tree-ga-noxover", p -> {
+              IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
+                  IndependentFactory.picker(Arrays.stream(vars(p.arity()))
+                      .sequential()
+                      .map(Element.Variable::new)
+                      .toArray(Element.Variable[]::new)),
+                  IndependentFactory.picker(
+                      Arrays.stream(constants).mapToObj(Element.Constant::new).toArray(Element.Constant[]::new))
+              );
+              return new StandardEvolver<Tree<Element>, RealFunction, Double>(
+                  ((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(t, vars(p.arity())))
+                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                  new RampedHalfAndHalf<>(
+                      4, maxHeight,
                       Element.Operator.arityFunction(),
                       IndependentFactory.picker(operators),
                       terminalFactory
-                  )), 0.2d
-              ),
-              new Tournament(nTournament),
-              new Last(),
-              nPop,
-              true,
-              false
-          );
-        }),
-        Map.entry("tree-gadiv", p -> {
-          IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
-              IndependentFactory.picker(Arrays.stream(vars(p.arity())).sequential().map(Element.Variable::new).toArray(Element.Variable[]::new)),
-              IndependentFactory.picker(Arrays.stream(constants).mapToObj(Element.Constant::new).toArray(Element.Constant[]::new))
-          );
-          return new StandardWithEnforcedDiversityEvolver<Tree<Element>, RealFunction, Double>(
-              ((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(t, vars(p.arity())))
-                  .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-              new RampedHalfAndHalf<>(
-                  4, maxHeight,
-                  Element.Operator.arityFunction(),
-                  IndependentFactory.picker(operators),
-                  terminalFactory
-              ),
-              PartialComparator.from(Double.class).comparing(Individual::fitness),
-              nPop,
-              Map.of(
-                  new SubtreeCrossover<>(maxHeight), 0.8d,
-                  new SubtreeMutation<>(maxHeight, new GrowTreeBuilder<>(
+                  ),
+                  PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                  nPop,
+                  Map.of(
+                      new SubtreeMutation<>(maxHeight, new GrowTreeBuilder<>(
+                          Element.Operator.arityFunction(),
+                          IndependentFactory.picker(operators),
+                          terminalFactory
+                      )), 0.2d
+                  ),
+                  new Tournament(nTournament),
+                  new Last(),
+                  nPop,
+                  true,
+                  false
+              );
+            }),
+            Map.entry("tree-gadiv", p -> {
+              IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
+                  IndependentFactory.picker(Arrays.stream(vars(p.arity()))
+                      .sequential()
+                      .map(Element.Variable::new)
+                      .toArray(Element.Variable[]::new)),
+                  IndependentFactory.picker(
+                      Arrays.stream(constants).mapToObj(Element.Constant::new).toArray(Element.Constant[]::new))
+              );
+              return new StandardWithEnforcedDiversityEvolver<Tree<Element>, RealFunction, Double>(
+                  ((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(t, vars(p.arity())))
+                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                  new RampedHalfAndHalf<>(
+                      4, maxHeight,
                       Element.Operator.arityFunction(),
                       IndependentFactory.picker(operators),
                       terminalFactory
-                  )), 0.2d
-              ),
-              new Tournament(nTournament),
-              new Last(),
-              nPop,
-              true,
-              false,
-              diversityMaxAttempts
-          );
-        }),
-        Map.entry("cfgtree-ga", p -> {
-          SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
-              List.of(operators),
-              List.of(vars(p.arity())),
-              Arrays.stream(constants).mapToObj(d -> (Double) d).toList()
-          );
-          return new StandardEvolver<Tree<String>, RealFunction, Double>(
-              new FormulaMapper()
-                  .andThen(n -> TreeBasedRealFunction.from(n, vars(p.arity())))
-                  .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-              new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
-              PartialComparator.from(Double.class).comparing(Individual::fitness),
-              nPop,
-              Map.of(
-                  new SameRootSubtreeCrossover<>(maxHeight + 4), 0.8d,
-                  new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
-              ),
-              new Tournament(nTournament),
-              new Last(),
-              nPop,
-              true,
-              false
-          );
-        }),
-        Map.entry("cfgtree-ga-noxover", p -> {
-          SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
-              List.of(operators),
-              List.of(vars(p.arity())),
-              Arrays.stream(constants).mapToObj(d -> (Double) d).toList()
-          );
-          return new StandardEvolver<Tree<String>, RealFunction, Double>(
-              new FormulaMapper()
-                  .andThen(n -> TreeBasedRealFunction.from(n, vars(p.arity())))
-                  .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-              new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
-              PartialComparator.from(Double.class).comparing(Individual::fitness),
-              nPop,
-              Map.of(
-                  new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
-              ),
-              new Tournament(nTournament),
-              new Last(),
-              nPop,
-              true,
-              false
-          );
-        }),
-        Map.entry("cfgtree-gadiv", p -> {
-          SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
-              List.of(operators),
-              List.of(vars(p.arity())),
-              Arrays.stream(constants).mapToObj(d -> (Double) d).toList()
-          );
-          return new StandardWithEnforcedDiversityEvolver<Tree<String>, RealFunction, Double>(
-              new FormulaMapper()
-                  .andThen(n -> TreeBasedRealFunction.from(n, vars(p.arity())))
-                  .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-              new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
-              PartialComparator.from(Double.class).comparing(Individual::fitness),
-              nPop,
-              Map.of(
-                  new SameRootSubtreeCrossover<>(maxHeight + 4), 0.8d,
-                  new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
-              ),
-              new Tournament(nTournament),
-              new Last(),
-              nPop,
-              true,
-              false,
-              diversityMaxAttempts
-          );
-        }),
-        Map.entry("fgraph-lim-ga", p -> new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
-            FunctionGraph.builder()
-                .andThen(MathUtils.fromMultivariateBuilder())
-                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::fitness),
-            nPop,
-            Map.of(
-                new NodeAddition<Node, Double>(
-                    FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
-                    (w, r) -> w,
-                    (w, r) -> r.nextGaussian()
-                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
-                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
-                new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, Double>(
-                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
-                ).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
-                new AlignedCrossover<Node, Double>(
-                    (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
-                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
+                  ),
+                  PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                  nPop,
+                  Map.of(
+                      new SubtreeCrossover<>(maxHeight), 0.8d,
+                      new SubtreeMutation<>(maxHeight, new GrowTreeBuilder<>(
+                          Element.Operator.arityFunction(),
+                          IndependentFactory.picker(operators),
+                          terminalFactory
+                      )), 0.2d
+                  ),
+                  new Tournament(nTournament),
+                  new Last(),
+                  nPop,
+                  true,
+                  false,
+                  diversityMaxAttempts
+              );
+            }),
+            Map.entry("cfgtree-ga", p -> {
+              SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
+                  List.of(operators),
+                  List.of(vars(p.arity())),
+                  Arrays.stream(constants).mapToObj(d -> (Double) d).toList()
+              );
+              return new StandardEvolver<Tree<String>, RealFunction, Double>(
+                  new FormulaMapper()
+                      .andThen(n -> TreeBasedRealFunction.from(n, vars(p.arity())))
+                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                  new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
+                  PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                  nPop,
+                  Map.of(
+                      new SameRootSubtreeCrossover<>(maxHeight + 4), 0.8d,
+                      new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
+                  ),
+                  new Tournament(nTournament),
+                  new Last(),
+                  nPop,
+                  true,
+                  false
+              );
+            }),
+            Map.entry("cfgtree-ga-noxover", p -> {
+              SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
+                  List.of(operators),
+                  List.of(vars(p.arity())),
+                  Arrays.stream(constants).mapToObj(d -> (Double) d).toList()
+              );
+              return new StandardEvolver<Tree<String>, RealFunction, Double>(
+                  new FormulaMapper()
+                      .andThen(n -> TreeBasedRealFunction.from(n, vars(p.arity())))
+                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                  new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
+                  PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                  nPop,
+                  Map.of(
+                      new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
+                  ),
+                  new Tournament(nTournament),
+                  new Last(),
+                  nPop,
+                  true,
+                  false
+              );
+            }),
+            Map.entry("cfgtree-gadiv", p -> {
+              SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
+                  List.of(operators),
+                  List.of(vars(p.arity())),
+                  Arrays.stream(constants).mapToObj(d -> (Double) d).toList()
+              );
+              return new StandardWithEnforcedDiversityEvolver<Tree<String>, RealFunction, Double>(
+                  new FormulaMapper()
+                      .andThen(n -> TreeBasedRealFunction.from(n, vars(p.arity())))
+                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                  new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
+                  PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                  nPop,
+                  Map.of(
+                      new SameRootSubtreeCrossover<>(maxHeight + 4), 0.8d,
+                      new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
+                  ),
+                  new Tournament(nTournament),
+                  new Last(),
+                  nPop,
+                  true,
+                  false,
+                  diversityMaxAttempts
+              );
+            }),
+            Map.entry("fgraph-lim-ga", p -> new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
+                FunctionGraph.builder()
+                    .andThen(MathUtils.fromMultivariateBuilder())
+                    .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
+                PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                nPop,
+                Map.of(
+                    new NodeAddition<Node, Double>(
+                        FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
+                        (w, r) -> w,
+                        (w, r) -> r.nextGaussian()
+                    ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                    new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(
+                        FunctionGraph.checker()), graphArcMutationRate,
+                    new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(
+                        FunctionGraph.checker()), graphArcAdditionRate,
+                    new ArcRemoval<Node, Double>(
+                        node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                    ).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
+                    new AlignedCrossover<Node, Double>(
+                        (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
+                        node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
+                        false
+                    ).withChecker(FunctionGraph.checker()), graphCrossoverRate
+                ),
+                new Tournament(nTournament),
+                new Last(),
+                nPop,
+                true,
+                false
+            )),
+            Map.entry("fgraph-lim-ga-noxover", p -> new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
+                FunctionGraph.builder()
+                    .andThen(MathUtils.fromMultivariateBuilder())
+                    .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
+                PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                nPop,
+                Map.of(
+                    new NodeAddition<Node, Double>(
+                        FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
+                        (w, r) -> w,
+                        (w, r) -> r.nextGaussian()
+                    ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                    new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(
+                        FunctionGraph.checker()), graphArcMutationRate,
+                    new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(
+                        FunctionGraph.checker()), graphArcAdditionRate,
+                    new ArcRemoval<Node, Double>(
+                        node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                    ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
+                ),
+                new Tournament(nTournament),
+                new Last(),
+                nPop,
+                true,
+                false
+            )),
+            Map.entry(
+                "fgraph-lim-speciated-noxover-kmeans",
+                p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
+                    FunctionGraph.builder()
+                        .andThen(MathUtils.fromMultivariateBuilder())
+                        .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                    new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
+                    PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                    nPop,
+                    Map.of(
+                        new NodeAddition<Node, Double>(
+                            FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
+                            (w, r) -> w,
+                            (w, r) -> r.nextGaussian()
+                        ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                        new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(
+                            FunctionGraph.checker()), graphArcMutationRate,
+                        new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(
+                            FunctionGraph.checker()), graphArcAdditionRate,
+                        new ArcRemoval<Node, Double>(
+                            node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                        ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
+                    ),
+                    5,
+                    new KMeansSpeciator<Graph<Node, Double>, RealFunction, Double>(5, 300,
+                        (x, y) -> (new Jaccard()).on(a -> new HashSet<>(Collections.singletonList(a))).apply(x, y),
+                        i -> i.genotype().nodes().stream().mapToDouble(Node::getIndex).toArray()
+                    ),
+                    0.75,
                     false
-                ).withChecker(FunctionGraph.checker()), graphCrossoverRate
+                )
             ),
-            new Tournament(nTournament),
-            new Last(),
-            nPop,
-            true,
-            false
-        )),
-        Map.entry("fgraph-lim-ga-noxover", p -> new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
-            FunctionGraph.builder()
-                .andThen(MathUtils.fromMultivariateBuilder())
-                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::fitness),
-            nPop,
-            Map.of(
-                new NodeAddition<Node, Double>(
-                    FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
-                    (w, r) -> w,
-                    (w, r) -> r.nextGaussian()
-                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
-                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
-                new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, Double>(
-                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
-                ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
-            ),
-            new Tournament(nTournament),
-            new Last(),
-            nPop,
-            true,
-            false
-        )),
-        Map.entry("fgraph-lim-speciated-noxover-kmeans", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
-            FunctionGraph.builder()
-                .andThen(MathUtils.fromMultivariateBuilder())
-                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::fitness),
-            nPop,
-            Map.of(
-                new NodeAddition<Node, Double>(
-                    FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
-                    (w, r) -> w,
-                    (w, r) -> r.nextGaussian()
-                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
-                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
-                new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, Double>(
-                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
-                ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
-            ),
-            5,
-            new KMeansSpeciator<Graph<Node, Double>, RealFunction, Double>(5, 300, (x, y) -> (new Jaccard()).on(a -> new HashSet<>(Collections.singletonList(a))).apply(x, y),
-                i -> i.genotype().nodes().stream().mapToDouble(Node::getIndex).toArray()),
-            0.75,
-            false
-        )),
-        Map.entry("fgraph-lim-speciated-noxover", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
-            FunctionGraph.builder()
-                .andThen(MathUtils.fromMultivariateBuilder())
-                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::fitness),
-            nPop,
-            Map.of(
-                new NodeAddition<Node, Double>(
-                    FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
-                    (w, r) -> w,
-                    (w, r) -> r.nextGaussian()
-                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
-                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
-                new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, Double>(
-                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
-                ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
-            ),
-            5,
-            new LazySpeciator<>(
-                (new Jaccard()).on(i -> i.genotype().nodes()),
-                0.25
-            ),
-            0.75,
-            false
-        )),
-        Map.entry("fgraph-seq-speciated-noxover", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
-            FunctionGraph.builder()
-                .andThen(MathUtils.fromMultivariateBuilder())
-                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::fitness),
-            nPop,
-            Map.of(
-                new NodeAddition<Node, Double>(
-                    FunctionNode.sequentialIndexFactory(baseFunctions),
-                    (w, r) -> w,
-                    (w, r) -> r.nextGaussian()
-                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
-                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
-                new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, Double>(
-                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
-                ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
-            ),
-            5,
-            new LazySpeciator<>(
-                (new Jaccard()).on(i -> i.genotype().nodes()),
-                0.25
-            ),
-            0.75,
-            false
-        )),
-        Map.entry("fgraph-lim-gadiv", p -> new StandardWithEnforcedDiversityEvolver<Graph<Node, Double>, RealFunction, Double>(
-            FunctionGraph.builder()
-                .andThen(MathUtils.fromMultivariateBuilder())
-                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::fitness),
-            nPop,
-            Map.of(
-                new NodeAddition<Node, Double>(
-                    FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
-                    (w, r) -> w,
-                    (w, r) -> r.nextGaussian()
-                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
-                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
-                new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, Double>(
-                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
-                ), graphArcRemovalRate,
-                new AlignedCrossover<Node, Double>(
-                    (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
-                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
+            Map.entry(
+                "fgraph-lim-speciated-noxover", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
+                    FunctionGraph.builder()
+                        .andThen(MathUtils.fromMultivariateBuilder())
+                        .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                    new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
+                    PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                    nPop,
+                    Map.of(
+                        new NodeAddition<Node, Double>(
+                            FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
+                            (w, r) -> w,
+                            (w, r) -> r.nextGaussian()
+                        ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                        new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(
+                            FunctionGraph.checker()), graphArcMutationRate,
+                        new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(
+                            FunctionGraph.checker()), graphArcAdditionRate,
+                        new ArcRemoval<Node, Double>(
+                            node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                        ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
+                    ),
+                    5,
+                    new LazySpeciator<>(
+                        (new Jaccard()).on(i -> i.genotype().nodes()),
+                        0.25
+                    ),
+                    0.75,
                     false
-                ).withChecker(FunctionGraph.checker()), graphCrossoverRate
-            ),
-            new Tournament(nTournament),
-            new Last(),
-            nPop,
-            true,
-            false,
-            diversityMaxAttempts
-        )),
-        Map.entry("fgraph-lim-speciated", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
-            FunctionGraph.builder()
-                .andThen(MathUtils.fromMultivariateBuilder())
-                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::fitness),
-            nPop,
-            Map.of(
-                new NodeAddition<Node, Double>(
-                    FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
-                    (w, r) -> w,
-                    (w, r) -> r.nextGaussian()
-                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
-                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
-                new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, Double>(
-                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
-                ), graphArcRemovalRate,
-                new AlignedCrossover<Node, Double>(
-                    (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
-                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
+                )),
+            Map.entry(
+                "fgraph-seq-speciated-noxover", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
+                    FunctionGraph.builder()
+                        .andThen(MathUtils.fromMultivariateBuilder())
+                        .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                    new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
+                    PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                    nPop,
+                    Map.of(
+                        new NodeAddition<Node, Double>(
+                            FunctionNode.sequentialIndexFactory(baseFunctions),
+                            (w, r) -> w,
+                            (w, r) -> r.nextGaussian()
+                        ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                        new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(
+                            FunctionGraph.checker()), graphArcMutationRate,
+                        new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(
+                            FunctionGraph.checker()), graphArcAdditionRate,
+                        new ArcRemoval<Node, Double>(
+                            node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                        ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
+                    ),
+                    5,
+                    new LazySpeciator<>(
+                        (new Jaccard()).on(i -> i.genotype().nodes()),
+                        0.25
+                    ),
+                    0.75,
                     false
-                ).withChecker(FunctionGraph.checker()), graphCrossoverRate
+                )),
+            Map.entry(
+                "fgraph-lim-gadiv",
+                p -> new StandardWithEnforcedDiversityEvolver<Graph<Node, Double>, RealFunction, Double>(
+                    FunctionGraph.builder()
+                        .andThen(MathUtils.fromMultivariateBuilder())
+                        .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                    new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
+                    PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                    nPop,
+                    Map.of(
+                        new NodeAddition<Node, Double>(
+                            FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
+                            (w, r) -> w,
+                            (w, r) -> r.nextGaussian()
+                        ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                        new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(
+                            FunctionGraph.checker()), graphArcMutationRate,
+                        new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(
+                            FunctionGraph.checker()), graphArcAdditionRate,
+                        new ArcRemoval<Node, Double>(
+                            node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                        ), graphArcRemovalRate,
+                        new AlignedCrossover<Node, Double>(
+                            (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
+                            node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
+                            false
+                        ).withChecker(FunctionGraph.checker()), graphCrossoverRate
+                    ),
+                    new Tournament(nTournament),
+                    new Last(),
+                    nPop,
+                    true,
+                    false,
+                    diversityMaxAttempts
+                )
             ),
-            5,
-            new LazySpeciator<>(
-                (new Jaccard()).on(i -> i.genotype().nodes()),
-                0.25
-            ),
-            0.75,
-            false
-        )),
-        Map.entry("fgraph-seq-speciated", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
-            FunctionGraph.builder()
-                .andThen(MathUtils.fromMultivariateBuilder())
-                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::fitness),
-            nPop,
-            Map.of(
-                new NodeAddition<Node, Double>(
-                    FunctionNode.sequentialIndexFactory(baseFunctions),
-                    (w, r) -> w,
-                    (w, r) -> r.nextGaussian()
-                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
-                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
-                new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, Double>(
-                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
-                ).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
-                new AlignedCrossover<Node, Double>(
-                    (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
-                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
+            Map.entry("fgraph-lim-speciated", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
+                FunctionGraph.builder()
+                    .andThen(MathUtils.fromMultivariateBuilder())
+                    .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
+                PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                nPop,
+                Map.of(
+                    new NodeAddition<Node, Double>(
+                        FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
+                        (w, r) -> w,
+                        (w, r) -> r.nextGaussian()
+                    ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                    new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(
+                        FunctionGraph.checker()), graphArcMutationRate,
+                    new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(
+                        FunctionGraph.checker()), graphArcAdditionRate,
+                    new ArcRemoval<Node, Double>(
+                        node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                    ), graphArcRemovalRate,
+                    new AlignedCrossover<Node, Double>(
+                        (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
+                        node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
+                        false
+                    ).withChecker(FunctionGraph.checker()), graphCrossoverRate
+                ),
+                5,
+                new LazySpeciator<>(
+                    (new Jaccard()).on(i -> i.genotype().nodes()),
+                    0.25
+                ),
+                0.75,
+                false
+            )),
+            Map.entry("fgraph-seq-speciated", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
+                FunctionGraph.builder()
+                    .andThen(MathUtils.fromMultivariateBuilder())
+                    .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
+                PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                nPop,
+                Map.of(
+                    new NodeAddition<Node, Double>(
+                        FunctionNode.sequentialIndexFactory(baseFunctions),
+                        (w, r) -> w,
+                        (w, r) -> r.nextGaussian()
+                    ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                    new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(
+                        FunctionGraph.checker()), graphArcMutationRate,
+                    new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(
+                        FunctionGraph.checker()), graphArcAdditionRate,
+                    new ArcRemoval<Node, Double>(
+                        node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                    ).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
+                    new AlignedCrossover<Node, Double>(
+                        (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
+                        node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
+                        false
+                    ).withChecker(FunctionGraph.checker()), graphCrossoverRate
+                ),
+                5,
+                new LazySpeciator<>(
+                    (new Jaccard()).on(i -> i.genotype().nodes()),
+                    0.25
+                ),
+                0.75,
+                false
+            )),
+            Map.entry("fgraph-seq-ga", p -> new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
+                FunctionGraph.builder()
+                    .andThen(MathUtils.fromMultivariateBuilder())
+                    .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
+                PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                nPop,
+                Map.of(
+                    new NodeAddition<Node, Double>(
+                        FunctionNode.sequentialIndexFactory(baseFunctions),
+                        (w, r) -> w,
+                        (w, r) -> r.nextGaussian()
+                    ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                    new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(
+                        FunctionGraph.checker()), graphArcMutationRate,
+                    new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(
+                        FunctionGraph.checker()), graphArcAdditionRate,
+                    new ArcRemoval<Node, Double>(
+                        node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                    ).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
+                    new AlignedCrossover<Node, Double>(
+                        (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
+                        node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
+                        false
+                    ).withChecker(FunctionGraph.checker()), graphCrossoverRate
+                ),
+                new Tournament(nTournament),
+                new Last(),
+                nPop,
+                true,
+                false
+            )),
+            Map.entry(
+                "ograph-seq-ga",
+                p -> new StandardEvolver<Graph<Node, OperatorGraph.NonValuedArc>, RealFunction, Double>(
+                    OperatorGraph.builder()
+                        .andThen(MathUtils.fromMultivariateBuilder())
+                        .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                    new ShallowFactory(p.arity(), 1, constants),
+                    PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                    nPop,
+                    Map.of(
+                        new NodeAddition<Node, OperatorGraph.NonValuedArc>(
+                            OperatorNode.sequentialIndexFactory(baseOperators),
+                            Mutation.copy(),
+                            Mutation.copy()
+                        ).withChecker(OperatorGraph.checker()), graphNodeAdditionRate,
+                        new ArcAddition<Node, OperatorGraph.NonValuedArc>(
+                            r -> OperatorGraph.NON_VALUED_ARC, false).withChecker(OperatorGraph.checker()),
+                        graphArcAdditionRate,
+                        new ArcRemoval<Node, OperatorGraph.NonValuedArc>(
+                            node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                        ).withChecker(OperatorGraph.checker()), graphArcRemovalRate,
+                        new AlignedCrossover<Node, OperatorGraph.NonValuedArc>(
+                            Crossover.randomCopy(),
+                            node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
+                            false
+                        ).withChecker(OperatorGraph.checker()), graphCrossoverRate
+                    ),
+                    new Tournament(nTournament),
+                    new Last(),
+                    nPop,
+                    true,
                     false
-                ).withChecker(FunctionGraph.checker()), graphCrossoverRate
+                )
             ),
-            5,
-            new LazySpeciator<>(
-                (new Jaccard()).on(i -> i.genotype().nodes()),
-                0.25
-            ),
-            0.75,
-            false
-        )),
-        Map.entry("fgraph-seq-ga", p -> new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
-            FunctionGraph.builder()
-                .andThen(MathUtils.fromMultivariateBuilder())
-                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::fitness),
-            nPop,
-            Map.of(
-                new NodeAddition<Node, Double>(
-                    FunctionNode.sequentialIndexFactory(baseFunctions),
-                    (w, r) -> w,
-                    (w, r) -> r.nextGaussian()
-                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
-                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
-                new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, Double>(
-                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
-                ).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
-                new AlignedCrossover<Node, Double>(
-                    (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
-                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
+            Map.entry(
+                "ograph-seq-speciated-noxover",
+                p -> new SpeciatedEvolver<Graph<Node, OperatorGraph.NonValuedArc>, RealFunction, Double>(
+                    OperatorGraph.builder()
+                        .andThen(MathUtils.fromMultivariateBuilder())
+                        .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                    new ShallowFactory(p.arity(), 1, constants),
+                    PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                    nPop,
+                    Map.of(
+                        new NodeAddition<Node, OperatorGraph.NonValuedArc>(
+                            OperatorNode.sequentialIndexFactory(baseOperators),
+                            Mutation.copy(),
+                            Mutation.copy()
+                        ).withChecker(OperatorGraph.checker()), graphNodeAdditionRate,
+                        new ArcAddition<Node, OperatorGraph.NonValuedArc>(
+                            r -> OperatorGraph.NON_VALUED_ARC, false).withChecker(OperatorGraph.checker()),
+                        graphArcAdditionRate,
+                        new ArcRemoval<Node, OperatorGraph.NonValuedArc>(
+                            node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                        ).withChecker(OperatorGraph.checker()), graphArcRemovalRate
+                    ),
+                    5,
+                    new LazySpeciator<>(
+                        (new Jaccard()).on(i -> i.genotype().nodes()),
+                        0.25
+                    ),
+                    0.75,
                     false
-                ).withChecker(FunctionGraph.checker()), graphCrossoverRate
+                )
             ),
-            new Tournament(nTournament),
-            new Last(),
-            nPop,
-            true,
-            false
-        )),
-        Map.entry("ograph-seq-ga", p -> new StandardEvolver<Graph<Node, OperatorGraph.NonValuedArc>, RealFunction, Double>(
-            OperatorGraph.builder()
-                .andThen(MathUtils.fromMultivariateBuilder())
-                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowFactory(p.arity(), 1, constants),
-            PartialComparator.from(Double.class).comparing(Individual::fitness),
-            nPop,
-            Map.of(
-                new NodeAddition<Node, OperatorGraph.NonValuedArc>(
-                    OperatorNode.sequentialIndexFactory(baseOperators),
-                    Mutation.copy(),
-                    Mutation.copy()
-                ).withChecker(OperatorGraph.checker()), graphNodeAdditionRate,
-                new ArcAddition<Node, OperatorGraph.NonValuedArc>(r -> OperatorGraph.NON_VALUED_ARC, false).withChecker(OperatorGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, OperatorGraph.NonValuedArc>(
-                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
-                ).withChecker(OperatorGraph.checker()), graphArcRemovalRate,
-                new AlignedCrossover<Node, OperatorGraph.NonValuedArc>(
-                    Crossover.randomCopy(),
-                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
-                    false
-                ).withChecker(OperatorGraph.checker()), graphCrossoverRate
-            ),
-            new Tournament(nTournament),
-            new Last(),
-            nPop,
-            true,
-            false
-        )),
-        Map.entry("ograph-seq-speciated-noxover", p -> new SpeciatedEvolver<Graph<Node, OperatorGraph.NonValuedArc>, RealFunction, Double>(
-            OperatorGraph.builder()
-                .andThen(MathUtils.fromMultivariateBuilder())
-                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowFactory(p.arity(), 1, constants),
-            PartialComparator.from(Double.class).comparing(Individual::fitness),
-            nPop,
-            Map.of(
-                new NodeAddition<Node, OperatorGraph.NonValuedArc>(
-                    OperatorNode.sequentialIndexFactory(baseOperators),
-                    Mutation.copy(),
-                    Mutation.copy()
-                ).withChecker(OperatorGraph.checker()), graphNodeAdditionRate,
-                new ArcAddition<Node, OperatorGraph.NonValuedArc>(r -> OperatorGraph.NON_VALUED_ARC, false).withChecker(OperatorGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, OperatorGraph.NonValuedArc>(
-                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
-                ).withChecker(OperatorGraph.checker()), graphArcRemovalRate
-            ),
-            5,
-            new LazySpeciator<>(
-                (new Jaccard()).on(i -> i.genotype().nodes()),
-                0.25
-            ),
-            0.75,
-            false
-        )),
-        Map.entry("fgraph-hash-ga", p -> {
-          Function<Graph<IndexedNode<Node>, Double>, Graph<Node, Double>> graphMapper = GraphUtils.mapper(
-              IndexedNode::content,
-              Misc::first
-          );
-          Predicate<Graph<Node, Double>> checker = FunctionGraph.checker();
-          return new StandardEvolver<Graph<IndexedNode<Node>, Double>, RealFunction, Double>(
-              graphMapper
-                  .andThen(FunctionGraph.builder())
-                  .andThen(MathUtils.fromMultivariateBuilder())
-                  .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-              new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1)
-                  .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
-              PartialComparator.from(Double.class).comparing(Individual::fitness),
-              nPop,
-              Map.of(
-                  new NodeAddition<IndexedNode<Node>, Double>(
-                      FunctionNode.sequentialIndexFactory(baseFunctions)
-                          .then(IndexedNode.hashMapper(Node.class)),
-                      (w, r) -> w,
-                      (w, r) -> r.nextGaussian()
-                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
-                  new ArcModification<IndexedNode<Node>, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcMutationRate,
-                  new ArcAddition<IndexedNode<Node>, Double>(RandomGenerator::nextGaussian, false).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
-                  new ArcRemoval<IndexedNode<Node>, Double>(node -> node.content() instanceof Output).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate,
-                  new AlignedCrossover<IndexedNode<Node>, Double>(
-                      (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
-                      node -> node.content() instanceof Output,
-                      false
-                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
-              ),
-              new Tournament(nTournament),
-              new Last(),
-              nPop,
-              true,
-              false
-          );
-        }),
-        Map.entry("fgraph-hash-speciated", p -> {
-          Function<Graph<IndexedNode<Node>, Double>, Graph<Node, Double>> graphMapper = GraphUtils.mapper(
-              IndexedNode::content,
-              Misc::first
-          );
-          Predicate<Graph<Node, Double>> checker = FunctionGraph.checker();
-          return new SpeciatedEvolver<Graph<IndexedNode<Node>, Double>, RealFunction, Double>(
-              graphMapper
-                  .andThen(FunctionGraph.builder())
-                  .andThen(MathUtils.fromMultivariateBuilder())
-                  .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-              new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1)
-                  .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
-              PartialComparator.from(Double.class).comparing(Individual::fitness),
-              nPop,
-              Map.of(
-                  new NodeAddition<IndexedNode<Node>, Double>(
-                      FunctionNode.sequentialIndexFactory(baseFunctions)
-                          .then(IndexedNode.hashMapper(Node.class)),
-                      (w, r) -> w,
-                      (w, r) -> r.nextGaussian()
-                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
-                  new ArcModification<IndexedNode<Node>, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcMutationRate,
-                  new ArcAddition<IndexedNode<Node>, Double>(RandomGenerator::nextGaussian, false).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
-                  new ArcRemoval<IndexedNode<Node>, Double>(node -> node.content() instanceof Output).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate,
-                  new AlignedCrossover<IndexedNode<Node>, Double>(
-                      (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
-                      node -> node.content() instanceof Output,
-                      false
-                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
-              ),
-              5,
-              new LazySpeciator<>(
-                  (new Jaccard()).on(i -> i.genotype().nodes()),
-                  0.25
-              ),
-              0.75,
-              false
-          );
-        }),
-        Map.entry("fgraph-hash+-speciated", p -> {
-          Function<Graph<IndexedNode<Node>, Double>, Graph<Node, Double>> graphMapper = GraphUtils.mapper(
-              IndexedNode::content,
-              Misc::first
-          );
-          Predicate<Graph<Node, Double>> checker = FunctionGraph.checker();
-          return new SpeciatedEvolver<>(
-              GraphUtils.mapper((Function<IndexedNode<Node>, Node>) IndexedNode::content, (Function<Collection<Double>, Double>) Misc::first)
-                  .andThen(FunctionGraph.builder())
-                  .andThen(MathUtils.fromMultivariateBuilder())
-                  .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-              new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1)
-                  .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
-              PartialComparator.from(Double.class).comparing(Individual::fitness),
-              nPop,
-              Map.of(
-                  new IndexedNodeAddition<FunctionNode, Node, Double>(
-                      FunctionNode.sequentialIndexFactory(baseFunctions),
-                      n -> (n instanceof FunctionNode) ? ((FunctionNode) n).getFunction().hashCode() : 0,
-                      p.arity() + 1 + 1,
-                      (w, r) -> w,
-                      (w, r) -> r.nextGaussian()
-                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
-                  new ArcModification<IndexedNode<Node>, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcMutationRate,
-                  new ArcAddition<IndexedNode<Node>, Double>(RandomGenerator::nextGaussian, false).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
-                  new ArcRemoval<IndexedNode<Node>, Double>(node -> node.content() instanceof Output).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate,
-                  new AlignedCrossover<IndexedNode<Node>, Double>(
-                      (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
-                      node -> node.content() instanceof Output,
-                      false
-                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
-              ),
-              5,
-              new LazySpeciator<>(
-                  (new Jaccard()).on(i -> i.genotype().nodes()),
-                  0.25
-              ),
-              0.75,
-              false
-          );
-        }),
-        Map.entry("ograph-hash+-speciated", p -> {
-          Function<Graph<IndexedNode<Node>, OperatorGraph.NonValuedArc>, Graph<Node, OperatorGraph.NonValuedArc>> graphMapper = GraphUtils.mapper(
-              IndexedNode::content,
-              Misc::first
-          );
-          Predicate<Graph<Node, OperatorGraph.NonValuedArc>> checker = OperatorGraph.checker();
-          return new SpeciatedEvolver<>(
-              graphMapper
-                  .andThen(OperatorGraph.builder())
-                  .andThen(MathUtils.fromMultivariateBuilder())
-                  .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-              new ShallowFactory(p.arity(), 1, constants)
-                  .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
-              PartialComparator.from(Double.class).comparing(Individual::fitness),
-              nPop,
-              Map.of(
-                  new IndexedNodeAddition<OperatorNode, Node, OperatorGraph.NonValuedArc>(
-                      OperatorNode.sequentialIndexFactory(baseOperators),
-                      n -> (n instanceof OperatorNode) ? ((OperatorNode) n).getOperator().hashCode() : 0,
-                      p.arity() + 1 + constants.length,
-                      Mutation.copy(),
-                      Mutation.copy()
-                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
-                  new ArcAddition<IndexedNode<Node>, OperatorGraph.NonValuedArc>(r -> OperatorGraph.NON_VALUED_ARC, false)
-                      .withChecker(g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
-                  new ArcRemoval<IndexedNode<Node>, OperatorGraph.NonValuedArc>(node -> node.content() instanceof Output)
-                      .withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate,
-                  new AlignedCrossover<IndexedNode<Node>, OperatorGraph.NonValuedArc>(
-                      Crossover.randomCopy(),
-                      node -> node.content() instanceof Output,
-                      false
-                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
-              ),
-              5,
-              new LazySpeciator<>(
-                  (new Jaccard()).on(i -> i.genotype().nodes()),
-                  0.25
-              ),
-              0.75,
-              false
-          );
-        }),
-        Map.entry("fgraph-hash+-speciated-noxover", p -> {
-          Function<Graph<IndexedNode<Node>, Double>, Graph<Node, Double>> graphMapper = GraphUtils.mapper(
-              IndexedNode::content,
-              Misc::first
-          );
-          Predicate<Graph<Node, Double>> checker = FunctionGraph.checker();
-          return new SpeciatedEvolver<>(
-              graphMapper
-                  .andThen(FunctionGraph.builder())
-                  .andThen(MathUtils.fromMultivariateBuilder())
-                  .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-              new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1)
-                  .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
-              PartialComparator.from(Double.class).comparing(Individual::fitness),
-              nPop,
-              Map.of(
-                  new IndexedNodeAddition<FunctionNode, Node, Double>(
-                      FunctionNode.sequentialIndexFactory(baseFunctions),
-                      n -> (n instanceof FunctionNode) ? ((FunctionNode) n).getFunction().hashCode() : 0,
-                      p.arity() + 1 + 1,
-                      (w, r) -> w,
-                      (w, r) -> r.nextGaussian()
-                  ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
-                  new ArcModification<IndexedNode<Node>, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcMutationRate,
-                  new ArcAddition<IndexedNode<Node>, Double>(RandomGenerator::nextGaussian, false).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
-                  new ArcRemoval<IndexedNode<Node>, Double>(node -> node.content() instanceof Output).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate
-              ),
-              5,
-              new LazySpeciator<>(
-                  (new Jaccard()).on(i -> i.genotype().nodes()),
-                  0.25
-              ),
-              0.75,
-              false
-          );
-        }),
-        Map.entry("fgraph-seq-ga-noxover", p -> new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
-            FunctionGraph.builder()
-                .andThen(MathUtils.fromMultivariateBuilder())
-                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::fitness),
-            nPop,
-            Map.of(
-                new NodeAddition<Node, Double>(
-                    FunctionNode.sequentialIndexFactory(baseFunctions),
-                    (w, r) -> w,
-                    (w, r) -> r.nextGaussian()
-                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
-                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
-                new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, Double>(
-                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
-                ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
-            ),
-            new Tournament(nTournament),
-            new Last(),
-            nPop,
-            true,
-            false
-        )),
-        Map.entry("fgraph-seq-gadiv", p -> new StandardWithEnforcedDiversityEvolver<Graph<Node, Double>, RealFunction, Double>(
-            FunctionGraph.builder()
-                .andThen(MathUtils.fromMultivariateBuilder())
-                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::fitness),
-            nPop,
-            Map.of(
-                new NodeAddition<Node, Double>(
-                    FunctionNode.sequentialIndexFactory(baseFunctions),
-                    (w, r) -> w,
-                    (w, r) -> r.nextGaussian()
-                ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
-                new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()), graphArcMutationRate,
-                new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(FunctionGraph.checker()), graphArcAdditionRate,
-                new ArcRemoval<Node, Double>(
-                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
-                ).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
-                new AlignedCrossover<Node, Double>(
-                    (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
-                    node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
-                    false
-                ).withChecker(FunctionGraph.checker()), graphCrossoverRate
-            ),
-            new Tournament(nTournament),
-            new Last(),
-            nPop,
-            true,
-            false,
-            diversityMaxAttempts
-        ))
-    ));
+            Map.entry("fgraph-hash-ga", p -> {
+              Function<Graph<IndexedNode<Node>, Double>, Graph<Node, Double>> graphMapper = GraphUtils.mapper(
+                  IndexedNode::content,
+                  Misc::first
+              );
+              Predicate<Graph<Node, Double>> checker = FunctionGraph.checker();
+              return new StandardEvolver<Graph<IndexedNode<Node>, Double>, RealFunction, Double>(
+                  graphMapper
+                      .andThen(FunctionGraph.builder())
+                      .andThen(MathUtils.fromMultivariateBuilder())
+                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                  new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1)
+                      .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
+                  PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                  nPop,
+                  Map.of(
+                      new NodeAddition<IndexedNode<Node>, Double>(
+                          FunctionNode.sequentialIndexFactory(baseFunctions)
+                              .then(IndexedNode.hashMapper(Node.class)),
+                          (w, r) -> w,
+                          (w, r) -> r.nextGaussian()
+                      ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
+                      new ArcModification<IndexedNode<Node>, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(
+                          g -> checker.test(graphMapper.apply(g))), graphArcMutationRate,
+                      new ArcAddition<IndexedNode<Node>, Double>(RandomGenerator::nextGaussian, false).withChecker(
+                          g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
+                      new ArcRemoval<IndexedNode<Node>, Double>(node -> node.content() instanceof Output).withChecker(
+                          g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate,
+                      new AlignedCrossover<IndexedNode<Node>, Double>(
+                          (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
+                          node -> node.content() instanceof Output,
+                          false
+                      ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
+                  ),
+                  new Tournament(nTournament),
+                  new Last(),
+                  nPop,
+                  true,
+                  false
+              );
+            }),
+            Map.entry("fgraph-hash-speciated", p -> {
+              Function<Graph<IndexedNode<Node>, Double>, Graph<Node, Double>> graphMapper = GraphUtils.mapper(
+                  IndexedNode::content,
+                  Misc::first
+              );
+              Predicate<Graph<Node, Double>> checker = FunctionGraph.checker();
+              return new SpeciatedEvolver<Graph<IndexedNode<Node>, Double>, RealFunction, Double>(
+                  graphMapper
+                      .andThen(FunctionGraph.builder())
+                      .andThen(MathUtils.fromMultivariateBuilder())
+                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                  new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1)
+                      .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
+                  PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                  nPop,
+                  Map.of(
+                      new NodeAddition<IndexedNode<Node>, Double>(
+                          FunctionNode.sequentialIndexFactory(baseFunctions)
+                              .then(IndexedNode.hashMapper(Node.class)),
+                          (w, r) -> w,
+                          (w, r) -> r.nextGaussian()
+                      ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
+                      new ArcModification<IndexedNode<Node>, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(
+                          g -> checker.test(graphMapper.apply(g))), graphArcMutationRate,
+                      new ArcAddition<IndexedNode<Node>, Double>(RandomGenerator::nextGaussian, false).withChecker(
+                          g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
+                      new ArcRemoval<IndexedNode<Node>, Double>(node -> node.content() instanceof Output).withChecker(
+                          g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate,
+                      new AlignedCrossover<IndexedNode<Node>, Double>(
+                          (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
+                          node -> node.content() instanceof Output,
+                          false
+                      ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
+                  ),
+                  5,
+                  new LazySpeciator<>(
+                      (new Jaccard()).on(i -> i.genotype().nodes()),
+                      0.25
+                  ),
+                  0.75,
+                  false
+              );
+            }),
+            Map.entry("fgraph-hash+-speciated", p -> {
+              Function<Graph<IndexedNode<Node>, Double>, Graph<Node, Double>> graphMapper = GraphUtils.mapper(
+                  IndexedNode::content,
+                  Misc::first
+              );
+              Predicate<Graph<Node, Double>> checker = FunctionGraph.checker();
+              return new SpeciatedEvolver<>(
+                  GraphUtils.mapper(
+                          (Function<IndexedNode<Node>, Node>) IndexedNode::content,
+                          (Function<Collection<Double>, Double>) Misc::first
+                      )
+                      .andThen(FunctionGraph.builder())
+                      .andThen(MathUtils.fromMultivariateBuilder())
+                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                  new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1)
+                      .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
+                  PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                  nPop,
+                  Map.of(
+                      new IndexedNodeAddition<FunctionNode, Node, Double>(
+                          FunctionNode.sequentialIndexFactory(baseFunctions),
+                          n -> (n instanceof FunctionNode) ? ((FunctionNode) n).getFunction().hashCode() : 0,
+                          p.arity() + 1 + 1,
+                          (w, r) -> w,
+                          (w, r) -> r.nextGaussian()
+                      ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
+                      new ArcModification<IndexedNode<Node>, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(
+                          g -> checker.test(graphMapper.apply(g))), graphArcMutationRate,
+                      new ArcAddition<IndexedNode<Node>, Double>(RandomGenerator::nextGaussian, false).withChecker(
+                          g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
+                      new ArcRemoval<IndexedNode<Node>, Double>(node -> node.content() instanceof Output).withChecker(
+                          g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate,
+                      new AlignedCrossover<IndexedNode<Node>, Double>(
+                          (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
+                          node -> node.content() instanceof Output,
+                          false
+                      ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
+                  ),
+                  5,
+                  new LazySpeciator<>(
+                      (new Jaccard()).on(i -> i.genotype().nodes()),
+                      0.25
+                  ),
+                  0.75,
+                  false
+              );
+            }),
+            Map.entry("ograph-hash+-speciated", p -> {
+              Function<Graph<IndexedNode<Node>, OperatorGraph.NonValuedArc>, Graph<Node, OperatorGraph.NonValuedArc>> graphMapper = GraphUtils.mapper(
+                  IndexedNode::content,
+                  Misc::first
+              );
+              Predicate<Graph<Node, OperatorGraph.NonValuedArc>> checker = OperatorGraph.checker();
+              return new SpeciatedEvolver<>(
+                  graphMapper
+                      .andThen(OperatorGraph.builder())
+                      .andThen(MathUtils.fromMultivariateBuilder())
+                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                  new ShallowFactory(p.arity(), 1, constants)
+                      .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
+                  PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                  nPop,
+                  Map.of(
+                      new IndexedNodeAddition<OperatorNode, Node, OperatorGraph.NonValuedArc>(
+                          OperatorNode.sequentialIndexFactory(baseOperators),
+                          n -> (n instanceof OperatorNode) ? ((OperatorNode) n).getOperator().hashCode() : 0,
+                          p.arity() + 1 + constants.length,
+                          Mutation.copy(),
+                          Mutation.copy()
+                      ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
+                      new ArcAddition<IndexedNode<Node>, OperatorGraph.NonValuedArc>(
+                          r -> OperatorGraph.NON_VALUED_ARC, false)
+                          .withChecker(g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
+                      new ArcRemoval<IndexedNode<Node>, OperatorGraph.NonValuedArc>(
+                          node -> node.content() instanceof Output)
+                          .withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate,
+                      new AlignedCrossover<IndexedNode<Node>, OperatorGraph.NonValuedArc>(
+                          Crossover.randomCopy(),
+                          node -> node.content() instanceof Output,
+                          false
+                      ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
+                  ),
+                  5,
+                  new LazySpeciator<>(
+                      (new Jaccard()).on(i -> i.genotype().nodes()),
+                      0.25
+                  ),
+                  0.75,
+                  false
+              );
+            }),
+            Map.entry("fgraph-hash+-speciated-noxover", p -> {
+              Function<Graph<IndexedNode<Node>, Double>, Graph<Node, Double>> graphMapper = GraphUtils.mapper(
+                  IndexedNode::content,
+                  Misc::first
+              );
+              Predicate<Graph<Node, Double>> checker = FunctionGraph.checker();
+              return new SpeciatedEvolver<>(
+                  graphMapper
+                      .andThen(FunctionGraph.builder())
+                      .andThen(MathUtils.fromMultivariateBuilder())
+                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                  new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1)
+                      .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
+                  PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                  nPop,
+                  Map.of(
+                      new IndexedNodeAddition<FunctionNode, Node, Double>(
+                          FunctionNode.sequentialIndexFactory(baseFunctions),
+                          n -> (n instanceof FunctionNode) ? ((FunctionNode) n).getFunction().hashCode() : 0,
+                          p.arity() + 1 + 1,
+                          (w, r) -> w,
+                          (w, r) -> r.nextGaussian()
+                      ).withChecker(g -> checker.test(graphMapper.apply(g))), graphNodeAdditionRate,
+                      new ArcModification<IndexedNode<Node>, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(
+                          g -> checker.test(graphMapper.apply(g))), graphArcMutationRate,
+                      new ArcAddition<IndexedNode<Node>, Double>(RandomGenerator::nextGaussian, false).withChecker(
+                          g -> checker.test(graphMapper.apply(g))), graphArcAdditionRate,
+                      new ArcRemoval<IndexedNode<Node>, Double>(node -> node.content() instanceof Output).withChecker(
+                          g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate
+                  ),
+                  5,
+                  new LazySpeciator<>(
+                      (new Jaccard()).on(i -> i.genotype().nodes()),
+                      0.25
+                  ),
+                  0.75,
+                  false
+              );
+            }),
+            Map.entry("fgraph-seq-ga-noxover", p -> new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
+                FunctionGraph.builder()
+                    .andThen(MathUtils.fromMultivariateBuilder())
+                    .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
+                PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                nPop,
+                Map.of(
+                    new NodeAddition<Node, Double>(
+                        FunctionNode.sequentialIndexFactory(baseFunctions),
+                        (w, r) -> w,
+                        (w, r) -> r.nextGaussian()
+                    ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                    new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(
+                        FunctionGraph.checker()), graphArcMutationRate,
+                    new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(
+                        FunctionGraph.checker()), graphArcAdditionRate,
+                    new ArcRemoval<Node, Double>(
+                        node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                    ).withChecker(FunctionGraph.checker()), graphArcRemovalRate
+                ),
+                new Tournament(nTournament),
+                new Last(),
+                nPop,
+                true,
+                false
+            )),
+            Map.entry(
+                "fgraph-seq-gadiv",
+                p -> new StandardWithEnforcedDiversityEvolver<Graph<Node, Double>, RealFunction, Double>(
+                    FunctionGraph.builder()
+                        .andThen(MathUtils.fromMultivariateBuilder())
+                        .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                    new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
+                    PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+                    nPop,
+                    Map.of(
+                        new NodeAddition<Node, Double>(
+                            FunctionNode.sequentialIndexFactory(baseFunctions),
+                            (w, r) -> w,
+                            (w, r) -> r.nextGaussian()
+                        ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+                        new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(
+                            FunctionGraph.checker()), graphArcMutationRate,
+                        new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(
+                            FunctionGraph.checker()), graphArcAdditionRate,
+                        new ArcRemoval<Node, Double>(
+                            node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+                        ).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
+                        new AlignedCrossover<Node, Double>(
+                            (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
+                            node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
+                            false
+                        ).withChecker(FunctionGraph.checker()), graphCrossoverRate
+                    ),
+                    new Tournament(nTournament),
+                    new Last(),
+                    nPop,
+                    true,
+                    false,
+                    diversityMaxAttempts
+                )
+            )
+        ));
     //filter evolvers
     evolvers = evolvers.entrySet().stream()
         .filter(e -> e.getKey().matches(evolverNamePattern))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    L.info(String.format("Going to test with %d evolvers: %s%n",
+    L.info(String.format(
+        "Going to test with %d evolvers: %s%n",
         evolvers.size(),
         evolvers.keySet()
     ));
@@ -904,13 +990,15 @@ public class SymbolicRegressionComparison extends Worker {
                 executorService,
                 listener
             );
-            L.info(String.format("Done %s: %d solutions in %4.1fs",
+            L.info(String.format(
+                "Done %s: %d solutions in %4.1fs",
                 keys,
                 solutions.size(),
                 (double) stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000d
             ));
           } catch (InterruptedException | ExecutionException e) {
-            L.severe(String.format("Cannot complete %s due to %s",
+            L.severe(String.format(
+                "Cannot complete %s due to %s",
                 keys,
                 e
             ));
@@ -920,16 +1008,5 @@ public class SymbolicRegressionComparison extends Worker {
       }
     }
     listenerFactory.shutdown();
-  }
-
-  private static String[] vars(int n) {
-    if (n == 1) {
-      return new String[]{"x"};
-    }
-    String[] vars = new String[n];
-    for (int i = 0; i < n; i++) {
-      vars[i] = "x" + i;
-    }
-    return vars;
   }
 }
