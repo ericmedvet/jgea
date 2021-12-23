@@ -36,10 +36,6 @@ import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.distance.Jaccard;
 import it.units.malelab.jgea.problem.symbolicregression.*;
-import it.units.malelab.jgea.problem.symbolicregression.element.Constant;
-import it.units.malelab.jgea.problem.symbolicregression.element.Element;
-import it.units.malelab.jgea.problem.symbolicregression.element.Operator;
-import it.units.malelab.jgea.problem.symbolicregression.element.Variable;
 import it.units.malelab.jgea.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
 import it.units.malelab.jgea.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
 import it.units.malelab.jgea.representation.graph.*;
@@ -99,7 +95,7 @@ public class SymbolicRegressionComparison extends Worker {
     double graphNodeAdditionRate = 1d;
     double graphCrossoverRate = 1d;
     SymbolicRegressionFitness.Metric metric = SymbolicRegressionFitness.Metric.MSE;
-    Operator[] operators = new Operator[]{Operator.ADDITION, Operator.SUBTRACTION, Operator.MULTIPLICATION, Operator.PROT_DIVISION, Operator.PROT_LOG};
+    Element.Operator[] operators = new Element.Operator[]{Element.Operator.ADDITION, Element.Operator.SUBTRACTION, Element.Operator.MULTIPLICATION, Element.Operator.PROT_DIVISION, Element.Operator.PROT_LOG};
     BaseOperator[] baseOperators = new BaseOperator[]{BaseOperator.ADDITION, BaseOperator.SUBTRACTION, BaseOperator.MULTIPLICATION, BaseOperator.PROT_DIVISION, BaseOperator.PROT_LOG};
     BaseFunction[] baseFunctions = new BaseFunction[]{BaseFunction.RE_LU, BaseFunction.GAUSSIAN, BaseFunction.PROT_INVERSE, BaseFunction.SQ};
     double[] constants = new double[]{0.1, 1d, 10d};
@@ -144,15 +140,15 @@ public class SymbolicRegressionComparison extends Worker {
     Map<String, Function<SymbolicRegressionProblem, Evolver<?, RealFunction, Double>>> evolvers = new TreeMap<>(Map.ofEntries(
         Map.entry("tree-ga", p -> {
           IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
-              IndependentFactory.picker(Arrays.stream(vars(p.arity())).sequential().map(Variable::new).toArray(Variable[]::new)),
-              IndependentFactory.picker(Arrays.stream(constants).mapToObj(Constant::new).toArray(Constant[]::new))
+              IndependentFactory.picker(Arrays.stream(vars(p.arity())).sequential().map(Element.Variable::new).toArray(Element.Variable[]::new)),
+              IndependentFactory.picker(Arrays.stream(constants).mapToObj(Element.Constant::new).toArray(Element.Constant[]::new))
           );
           return new StandardEvolver<Tree<Element>, RealFunction, Double>(
               ((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(t, vars(p.arity())))
                   .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
               new RampedHalfAndHalf<>(
                   4, maxHeight,
-                  Operator.arityFunction(),
+                  Element.Operator.arityFunction(),
                   IndependentFactory.picker(operators),
                   terminalFactory
               ),
@@ -161,7 +157,7 @@ public class SymbolicRegressionComparison extends Worker {
               Map.of(
                   new SubtreeCrossover<>(maxHeight), 0.8d,
                   new SubtreeMutation<>(maxHeight, new GrowTreeBuilder<>(
-                      Operator.arityFunction(),
+                      Element.Operator.arityFunction(),
                       IndependentFactory.picker(operators),
                       terminalFactory
                   )), 0.2d
@@ -175,15 +171,15 @@ public class SymbolicRegressionComparison extends Worker {
         }),
         Map.entry("tree-ga-noxover", p -> {
           IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
-              IndependentFactory.picker(Arrays.stream(vars(p.arity())).sequential().map(Variable::new).toArray(Variable[]::new)),
-              IndependentFactory.picker(Arrays.stream(constants).mapToObj(Constant::new).toArray(Constant[]::new))
+              IndependentFactory.picker(Arrays.stream(vars(p.arity())).sequential().map(Element.Variable::new).toArray(Element.Variable[]::new)),
+              IndependentFactory.picker(Arrays.stream(constants).mapToObj(Element.Constant::new).toArray(Element.Constant[]::new))
           );
           return new StandardEvolver<Tree<Element>, RealFunction, Double>(
               ((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(t, vars(p.arity())))
                   .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
               new RampedHalfAndHalf<>(
                   4, maxHeight,
-                  Operator.arityFunction(),
+                  Element.Operator.arityFunction(),
                   IndependentFactory.picker(operators),
                   terminalFactory
               ),
@@ -191,7 +187,7 @@ public class SymbolicRegressionComparison extends Worker {
               nPop,
               Map.of(
                   new SubtreeMutation<>(maxHeight, new GrowTreeBuilder<>(
-                      Operator.arityFunction(),
+                      Element.Operator.arityFunction(),
                       IndependentFactory.picker(operators),
                       terminalFactory
                   )), 0.2d
@@ -205,15 +201,15 @@ public class SymbolicRegressionComparison extends Worker {
         }),
         Map.entry("tree-gadiv", p -> {
           IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
-              IndependentFactory.picker(Arrays.stream(vars(p.arity())).sequential().map(Variable::new).toArray(Variable[]::new)),
-              IndependentFactory.picker(Arrays.stream(constants).mapToObj(Constant::new).toArray(Constant[]::new))
+              IndependentFactory.picker(Arrays.stream(vars(p.arity())).sequential().map(Element.Variable::new).toArray(Element.Variable[]::new)),
+              IndependentFactory.picker(Arrays.stream(constants).mapToObj(Element.Constant::new).toArray(Element.Constant[]::new))
           );
           return new StandardWithEnforcedDiversityEvolver<Tree<Element>, RealFunction, Double>(
               ((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(t, vars(p.arity())))
                   .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
               new RampedHalfAndHalf<>(
                   4, maxHeight,
-                  Operator.arityFunction(),
+                  Element.Operator.arityFunction(),
                   IndependentFactory.picker(operators),
                   terminalFactory
               ),
@@ -222,7 +218,7 @@ public class SymbolicRegressionComparison extends Worker {
               Map.of(
                   new SubtreeCrossover<>(maxHeight), 0.8d,
                   new SubtreeMutation<>(maxHeight, new GrowTreeBuilder<>(
-                      Operator.arityFunction(),
+                      Element.Operator.arityFunction(),
                       IndependentFactory.picker(operators),
                       terminalFactory
                   )), 0.2d

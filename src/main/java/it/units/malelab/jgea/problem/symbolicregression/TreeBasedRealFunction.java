@@ -17,7 +17,6 @@
 package it.units.malelab.jgea.problem.symbolicregression;
 
 import it.units.malelab.jgea.core.util.Sized;
-import it.units.malelab.jgea.problem.symbolicregression.element.*;
 import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.util.Arrays;
@@ -58,21 +57,21 @@ public class TreeBasedRealFunction implements RealFunction, Sized {
           x.length
       ));
     }
-    if (tree.content() instanceof Decoration) {
+    if (tree.content() instanceof Element.Decoration) {
       throw new RuntimeException(String.format(
           "Cannot compute: decoration node %s found",
           tree.content()
       ));
     }
-    if (tree.content() instanceof Variable) {
-      int index = Arrays.binarySearch(varNames, tree.content().toString());
+    if (tree.content() instanceof Element.Variable) {
+      int index = Arrays.binarySearch(varNames, ((Element.Variable) tree.content()).name());
       if (index < 0) {
-        throw new RuntimeException(String.format("Undefined variable: %s", tree.content().toString()));
+        throw new RuntimeException(String.format("Undefined variable: %s", ((Element.Variable) tree.content()).name()));
       }
       return x[index];
     }
-    if (tree.content() instanceof Constant) {
-      return ((Constant) tree.content()).getValue();
+    if (tree.content() instanceof Element.Constant) {
+      return ((Element.Constant) tree.content()).value();
     }
     double[] childrenValues = new double[tree.nChildren()];
     int i = 0;
@@ -81,7 +80,7 @@ public class TreeBasedRealFunction implements RealFunction, Sized {
       childrenValues[i] = childValue;
       i = i + 1;
     }
-    return ((Operator) tree.content()).apply(childrenValues);
+    return ((Element.Operator) tree.content()).apply(childrenValues);
   }
 
   public Tree<Element> getNode() {

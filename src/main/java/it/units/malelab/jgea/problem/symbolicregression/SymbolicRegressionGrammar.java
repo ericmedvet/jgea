@@ -16,7 +16,6 @@
 
 package it.units.malelab.jgea.problem.symbolicregression;
 
-import it.units.malelab.jgea.problem.symbolicregression.element.Operator;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 
 import java.util.Collections;
@@ -30,10 +29,10 @@ import java.util.stream.Stream;
  * @author eric
  */
 public class SymbolicRegressionGrammar extends Grammar<String> {
-  public SymbolicRegressionGrammar(List<Operator> operators, List<String> variables, List<Double> constants) {
+  public SymbolicRegressionGrammar(List<Element.Operator> operators, List<String> variables, List<Double> constants) {
     setStartingSymbol("<e>");
     SortedSet<Integer> arities = operators.stream()
-        .map(Operator::arity)
+        .map(Element.Operator::arity)
         .collect(Collectors.toCollection(TreeSet::new));
     List<List<String>> eProductions = arities.stream()
         .map(a -> Stream.concat(List.of(String.format("<o%d>", a)).stream(), Collections.nCopies(a, "<e>").stream())

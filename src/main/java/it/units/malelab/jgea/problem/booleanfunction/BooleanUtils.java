@@ -38,7 +38,10 @@ public class BooleanUtils {
 
   public static Boolean compute(Tree<Element> tree, Map<String, Boolean> values) {
     if (tree.content() instanceof Element.Decoration) {
-      return null;
+      throw new RuntimeException(String.format(
+          "Cannot compute: decoration node %s found",
+          tree.content()
+      ));
     }
     if (tree.content() instanceof Element.Variable) {
       Boolean result = values.get(((Element.Variable) tree.content()).name());

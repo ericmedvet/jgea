@@ -16,7 +16,6 @@
 
 package it.units.malelab.jgea.problem.symbolicregression;
 
-import it.units.malelab.jgea.problem.symbolicregression.element.*;
 import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.util.function.Function;
@@ -42,21 +41,21 @@ public class FormulaMapper implements Function<Tree<String>, Tree<Element>> {
   }
 
   private static Element fromString(String string) {
-    for (Operator operator : Operator.values()) {
+    for (Element.Operator operator : Element.Operator.values()) {
       if (operator.toString().equals(string)) {
         return operator;
       }
     }
     try {
       double value = Double.parseDouble(string);
-      return new Constant(value);
+      return new Element.Constant(value);
     } catch (NumberFormatException ex) {
       //just ignore
     }
     if (string.matches("[a-zA-Z]\\w*")) {
-      return new Variable(string);
+      return new Element.Variable(string);
     }
-    return new Decoration(string);
+    return new Element.Decoration(string);
   }
 
 }
