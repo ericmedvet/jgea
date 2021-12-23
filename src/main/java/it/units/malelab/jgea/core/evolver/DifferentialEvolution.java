@@ -83,7 +83,7 @@ public class DifferentialEvolution<S, F> extends AbstractIterativeEvolver<List<D
   protected List<Double> pickParents(PartiallyOrderedCollection<Individual<List<Double>, S, F>> population, Random random, List<Double> prev) {//List<Integer> indexes, Random random) {
     List<Double> current = prev;
     while (current == prev) {
-      current = Misc.pickRandomly(population.all(), random).getGenotype();
+      current = Misc.pickRandomly(population.all(), random).genotype();
     }
     return current;
   }
@@ -91,7 +91,7 @@ public class DifferentialEvolution<S, F> extends AbstractIterativeEvolver<List<D
   protected Collection<List<Double>> computeTrials(PartiallyOrderedCollection<Individual<List<Double>, S, F>> population, Random random) {
     Collection<List<Double>> trialGenotypes = new ArrayList<>(populationSize);
     for (Individual<List<Double>, S, F> parent : population.all()) {
-      List<Double> x = parent.getGenotype();
+      List<Double> x = parent.genotype();
       List<Double> trial = new ArrayList<>(x.size());
       List<Double> a = pickParents(population, random, x);
       List<Double> b = pickParents(population, random, a);

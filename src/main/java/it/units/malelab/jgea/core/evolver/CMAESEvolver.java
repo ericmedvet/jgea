@@ -310,7 +310,7 @@ public class CMAESEvolver<S, F> extends AbstractIterativeEvolver<List<Double>, S
     for (int i = 0; i < size; i++) {
       distrMean[i] = 0;
       for (int j = 0; j < mu; j++) {
-        distrMean[i] += weights[j] * bestMuPoints.get(j).getGenotype().get(i);
+        distrMean[i] += weights[j] * bestMuPoints.get(j).genotype().get(i);
       }
       artmp[i] = (distrMean[i] - oldDistrMean[i]) / state.getStepSize();
     }
@@ -353,7 +353,7 @@ public class CMAESEvolver<S, F> extends AbstractIterativeEvolver<List<Double>, S
         double rankOneUpdate = CEvolutionPath[i] * CEvolutionPath[j] + (1 - hsig) * cc * (2 - cc) * C.getEntry(i, j);
         double rankMuUpdate = 0d;
         for (int k = 0; k < mu; k++) {
-          rankMuUpdate += weights[k] * ((bestMuPoints.get(k).getGenotype().get(i) - oldDistrMean[i]) / state.getStepSize()) * ((bestMuPoints.get(k).getGenotype().get(j) - oldDistrMean[j]) / state.getStepSize());
+          rankMuUpdate += weights[k] * ((bestMuPoints.get(k).genotype().get(i) - oldDistrMean[i]) / state.getStepSize()) * ((bestMuPoints.get(k).genotype().get(j) - oldDistrMean[j]) / state.getStepSize());
         }
         C.setEntry(i, j, (1 - c1 - cmu) * C.getEntry(i, j) + c1 * rankOneUpdate + cmu * rankMuUpdate);
         if (i != j) {

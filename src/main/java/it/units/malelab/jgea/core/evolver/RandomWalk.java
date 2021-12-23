@@ -54,7 +54,7 @@ public class RandomWalk<G, S, F> extends AbstractIterativeEvolver<G, S, F> {
   @Override
   protected Collection<Individual<G, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<G, S, F>> population, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     Individual<G, S, F> currentIndividual = population.firsts().iterator().next();
-    G genotype = mutation.mutate(currentIndividual.getGenotype(), random);
+    G genotype = mutation.mutate(currentIndividual.genotype(), random);
     Collection<Individual<G, S, F>> offspring = AbstractIterativeEvolver.map(List.of(genotype), List.of(), solutionMapper, fitnessFunction, executor, state);
     Individual<G, S, F> newIndividual = offspring.iterator().next();
     if (individualComparator.compare(newIndividual, currentIndividual).equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {

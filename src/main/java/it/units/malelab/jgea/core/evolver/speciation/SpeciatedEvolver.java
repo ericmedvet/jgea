@@ -71,7 +71,7 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
     List<Species<Individual<G, S, F>>> allSpecies = new ArrayList<>(speciator.speciate(orderedPopulation));
     L.fine(String.format("Population speciated in %d species of sizes %s",
         allSpecies.size(),
-        allSpecies.stream().map(s -> s.getElements().size()).collect(Collectors.toList())
+        allSpecies.stream().map(s -> s.elements().size()).collect(Collectors.toList())
     ));
     //put elites
     Collection<Individual<G, S, F>> elite = new ArrayList<>();
@@ -79,8 +79,8 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
         .reduce((i1, i2) -> individualComparator.compare(i1, i2).equals(PartialComparator.PartialComparatorOutcome.BEFORE) ? i1 : i2)
         .ifPresent(elite::add);
     for (Species<Individual<G, S, F>> species : allSpecies) {
-      if (species.getElements().size() >= minSpeciesSizeForElitism) {
-        species.getElements().stream()
+      if (species.elements().size() >= minSpeciesSizeForElitism) {
+        species.elements().stream()
             .reduce((i1, i2) -> individualComparator.compare(i1, i2).equals(PartialComparator.PartialComparatorOutcome.BEFORE) ? i1 : i2)
             .ifPresent(elite::add);
       }
@@ -88,19 +88,17 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
     //assign remaining offspring size
     int remaining = populationSize - elite.size();
     List<Individual<G, S, F>> representers = allSpecies.stream()
-        .map(Species::getRepresentative)
-        .collect(Collectors.toList());
+        .map(Species::representative).toList();
     L.fine(String.format("Representers determined for %d species: fitnesses are %s",
         allSpecies.size(),
         representers.stream()
-            .map(i -> String.format("%s", i.getFitness()))
+            .map(i -> String.format("%s", i.fitness()))
             .collect(Collectors.toList())
     ));
     List<Individual<G, S, F>> sortedRepresenters = new ArrayList<>(representers);
     sortedRepresenters.sort(individualComparator.comparator());
     List<Double> weights = representers.stream()
-        .map(r -> Math.pow(rankBase, sortedRepresenters.indexOf(r)))
-        .collect(Collectors.toList());
+        .map(r -> Math.pow(rankBase, sortedRepresenters.indexOf(r))).toList();
     double weightSum = weights.stream()
         .mapToDouble(Double::doubleValue)
         .sum();
@@ -119,7 +117,7 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
     List<G> offspringGenotypes = new ArrayList<>(remaining);
     for (int i = 0; i < allSpecies.size(); i++) {
       int size = sizes.get(i);
-      List<Individual<G, S, F>> species = new ArrayList<>(allSpecies.get(i).getElements());
+      List<Individual<G, S, F>> species = new ArrayList<>(allSpecies.get(i).elements());
       species.sort(individualComparator.comparator());
       List<G> speciesOffspringGenotypes = new ArrayList<>();
       int counter = 0;
@@ -127,7 +125,7 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
         GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
         List<G> parentGenotypes = new ArrayList<>(operator.arity());
         while (parentGenotypes.size() < operator.arity()) {
-          parentGenotypes.add(species.get(counter % species.size()).getGenotype());
+          parentGenotypes.add(species.get(counter % species.size()).genotype());
           counter = counter + 1;
         }
         speciesOffspringGenotypes.addAll(operator.apply(parentGenotypes, random));

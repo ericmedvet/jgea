@@ -53,7 +53,7 @@ public class MutationOnly<G, S, F> extends StandardEvolver<G, S, F> {
   @Override
   protected Collection<Individual<G, S, F>> buildOffspring(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     Collection<G> offspringGenotypes = orderedPopulation.all().stream()
-        .map(i -> mutation.mutate(i.getGenotype(), random))
+        .map(i -> mutation.mutate(i.genotype(), random))
         .collect(Collectors.toList());
     return AbstractIterativeEvolver.map(offspringGenotypes, List.of(), solutionMapper, fitnessFunction, executor, state);
   }

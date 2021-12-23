@@ -59,7 +59,7 @@ import static it.units.malelab.jgea.core.util.Args.*;
 // /usr/lib/jvm/jdk-14.0.1/bin/java -cp ~/IdeaProjects/jgea/out/artifacts/jgea_jar/jgea.jar it.units.malelab.jgea.lab.SymbolicRegressionComparison seed=0:10 file=results-%s.txt
 public class ImageExample extends Worker {
 
-  public ImageExample(String[] args) throws FileNotFoundException {
+  public ImageExample(String[] args) {
     super(args);
   }
 
@@ -93,7 +93,7 @@ public class ImageExample extends Worker {
         size().of(genotype()).of(best()),
         size().of(solution()).of(best()),
         fitness().reformat("%5.3f").of(best()),
-        birthIteration().of(best())
+        fitnessMappingIteration().of(best())
     );
     Listener.Factory<Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(functions);
     if (a("file", null) != null) {
@@ -107,7 +107,7 @@ public class ImageExample extends Worker {
             FunctionGraph.builder()
                 .andThen(MathUtils.fromMultivariateBuilder()),
             new ShallowSparseFactory(0d, 0d, 1d, 2, 1),
-            PartialComparator.from(Double.class).comparing(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::fitness),
             nPop,
             Map.of(
                 new NodeAddition<>(

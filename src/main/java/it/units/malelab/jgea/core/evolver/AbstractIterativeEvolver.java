@@ -63,7 +63,7 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
       Event<G, S, F> event = new Event<>(state, orderedPopulation);
       listener.listen(event);
       if (stopCondition.test(event)) {
-        L.fine(String.format("Stop condition met: %s", stopCondition.toString()));
+        L.fine(String.format("Stop condition met: %s", stopCondition));
         break;
       }
       population = updatePopulation(orderedPopulation, fitnessFunction, random, executor, state);
@@ -72,7 +72,7 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
     }
     listener.done();
     return new DAGPartiallyOrderedCollection<>(population, individualComparator).firsts().stream()
-        .map(Individual::getSolution)
+        .map(Individual::solution)
         .collect(Collectors.toList());
   }
 
@@ -93,19 +93,19 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
               state.getIterations(),
               state.getIterations()
           );
-        }).collect(Collectors.toList()));
+        }).toList());
     callables.addAll(individuals.stream()
         .map(individual -> (Callable<Individual<G1, S1, F1>>) () -> {
-          S1 solution = solutionMapper.apply(individual.getGenotype());
+          S1 solution = solutionMapper.apply(individual.genotype());
           F1 fitness = fitnessFunction.apply(solution);
           return new Individual<>(
-              individual.getGenotype(),
+              individual.genotype(),
               solution,
               fitness,
               state.getIterations(),
-              individual.getGenotypeBirthIteration()
+              individual.genotypeBirthIteration()
           );
-        }).collect(Collectors.toList()));
+        }).toList());
     state.incBirths(genotypes.size());
     state.incFitnessEvaluations(genotypes.size() + individuals.size());
     return getAll(executor.invokeAll(callables));

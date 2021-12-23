@@ -33,7 +33,7 @@ public class TargetFitness<F> implements Predicate<Event<?, ?, F>> {
 
   @Override
   public boolean test(Event<?, ?, F> event) {
-    return event.getOrderedPopulation().all().stream().anyMatch(i -> targetFitness.equals(i.getFitness()));
+    return event.getOrderedPopulation().all().stream().anyMatch(i -> targetFitness.equals(i.fitness()));
   }
 
   @Override

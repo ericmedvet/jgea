@@ -22,41 +22,6 @@ import java.util.Objects;
 /**
  * @author eric
  */
-public class Species<T> {
-  private final Collection<T> elements;
-  private final T representative;
+public record Species<T>(Collection<T> elements, T representative) {
 
-  public Species(Collection<T> elements, T representative) {
-    this.elements = elements;
-    this.representative = representative;
-  }
-
-  public Collection<T> getElements() {
-    return elements;
-  }
-
-  public T getRepresentative() {
-    return representative;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    Species<?> species = (Species<?>) o;
-    return Objects.equals(elements, species.elements) && Objects.equals(representative, species.representative);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(elements, representative);
-  }
-
-  @Override
-  public String toString() {
-    return "Species{" +
-        "elements=" + elements +
-        ", representative=" + representative +
-        '}';
-  }
 }

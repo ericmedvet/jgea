@@ -18,68 +18,14 @@ package it.units.malelab.jgea.core;
 
 
 import java.io.Serializable;
-import java.util.Objects;
 
 /**
  * @author eric
  */
-public class Individual<G, S, F> implements Serializable {
-
-  private final G genotype;
-  private final S solution;
-  private final F fitness;
-  private final int birthIteration;
-  private final int genotypeBirthIteration;
-
-  public Individual(G genotype, S solution, F fitness, int birthIteration, int genotypeBirthIteration) {
-    this.genotype = genotype;
-    this.solution = solution;
-    this.fitness = fitness;
-    this.birthIteration = birthIteration;
-    this.genotypeBirthIteration = genotypeBirthIteration;
-  }
-
-  public G getGenotype() {
-    return genotype;
-  }
-
-  public S getSolution() {
-    return solution;
-  }
-
-  public F getFitness() {
-    return fitness;
-  }
-
-  public int getBirthIteration() {
-    return birthIteration;
-  }
-
-  public int getGenotypeBirthIteration() {
-    return genotypeBirthIteration;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    Individual<?, ?, ?> that = (Individual<?, ?, ?>) o;
-    return birthIteration == that.birthIteration && genotypeBirthIteration == that.genotypeBirthIteration && genotype.equals(that.genotype) && solution.equals(that.solution) && fitness.equals(that.fitness);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(genotype, solution, fitness, birthIteration, genotypeBirthIteration);
-  }
-
-  @Override
-  public String toString() {
-    return "Individual{" +
-        "genotype=" + genotype +
-        ", solution=" + solution +
-        ", fitness=" + fitness +
-        ", birthIteration=" + birthIteration +
-        ", genotypeBirthIteration=" + genotypeBirthIteration +
-        '}';
-  }
-}
+public record Individual<G, S, F>(
+    G genotype,
+    S solution,
+    F fitness,
+    int fitnessMappingIteration,
+    int genotypeBirthIteration
+) implements Serializable {}

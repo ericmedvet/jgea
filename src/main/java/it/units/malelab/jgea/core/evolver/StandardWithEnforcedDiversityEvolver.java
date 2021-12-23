@@ -72,7 +72,7 @@ public class StandardWithEnforcedDiversityEvolver<G, S, F> extends StandardEvolv
   @Override
   protected Collection<Individual<G, S, F>> buildOffspring(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     Collection<G> offspringGenotypes = new ArrayList<>();
-    Collection<G> existingGenotypes = orderedPopulation.all().stream().map(Individual::getGenotype).collect(Collectors.toList());
+    Collection<G> existingGenotypes = orderedPopulation.all().stream().map(Individual::genotype).toList();
     while (offspringGenotypes.size() < offspringSize) {
       GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
       List<G> parentGenotypes = new ArrayList<>(operator.arity());
@@ -81,7 +81,7 @@ public class StandardWithEnforcedDiversityEvolver<G, S, F> extends StandardEvolv
         parentGenotypes.clear();
         for (int j = 0; j < operator.arity(); j++) {
           Individual<G, S, F> parent = parentSelector.select(orderedPopulation, random);
-          parentGenotypes.add(parent.getGenotype());
+          parentGenotypes.add(parent.genotype());
         }
         List<G> childGenotypes = new ArrayList<>(operator.apply(parentGenotypes, random));
         boolean added = false;

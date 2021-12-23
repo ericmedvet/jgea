@@ -119,23 +119,23 @@ public class NamedFunctions {
   }
 
   public static <G> NamedFunction<Individual<? extends G, ?, ?>, G> genotype() {
-    return f("genotype", Individual::getGenotype);
+    return f("genotype", Individual::genotype);
   }
 
   public static <S> NamedFunction<Individual<?, ? extends S, ?>, S> solution() {
-    return f("solution", Individual::getSolution);
+    return f("solution", Individual::solution);
   }
 
   public static <F> NamedFunction<Individual<?, ?, ? extends F>, F> fitness() {
-    return f("fitness", Individual::getFitness);
+    return f("fitness", Individual::fitness);
   }
 
-  public static <G, S, F> NamedFunction<Individual<? extends G, ? extends S, ? extends F>, Integer> birthIteration() {
-    return f("birth.iteration", "%4d", Individual::getBirthIteration);
+  public static <G, S, F> NamedFunction<Individual<? extends G, ? extends S, ? extends F>, Integer> fitnessMappingIteration() {
+    return f("birth.iteration", "%4d", Individual::fitnessMappingIteration);
   }
 
   public static <G, S, F> NamedFunction<Individual<? extends G, ? extends S, ? extends F>, Integer> genotypeBirthIteration() {
-    return f("genotype.birth.iteration", "%4d", Individual::getGenotypeBirthIteration);
+    return f("genotype.birth.iteration", "%4d", Individual::genotypeBirthIteration);
   }
 
   public static NamedFunction<Object, Number> size() {

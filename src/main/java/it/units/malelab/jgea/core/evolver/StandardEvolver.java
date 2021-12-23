@@ -101,7 +101,7 @@ public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> 
       List<G> parentGenotypes = new ArrayList<>(operator.arity());
       for (int j = 0; j < operator.arity(); j++) {
         Individual<G, S, F> parent = parentSelector.select(orderedPopulation, random);
-        parentGenotypes.add(parent.getGenotype());
+        parentGenotypes.add(parent.genotype());
       }
       offspringGenotypes.addAll(operator.apply(parentGenotypes, random));
     }

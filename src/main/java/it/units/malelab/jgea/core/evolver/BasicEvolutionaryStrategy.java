@@ -67,16 +67,16 @@ public class BasicEvolutionaryStrategy<S, F> extends AbstractIterativeEvolver<Li
       }
     }
     //update mean
-    if (parents.stream().map(i -> i.getGenotype().size()).distinct().count() > 1) {
+    if (parents.stream().map(i -> i.genotype().size()).distinct().count() > 1) {
       throw new IllegalStateException(String.format(
           "Genotype size should be the same for all parents: found different sizes %s",
-          parents.stream().map(i -> i.getGenotype().size()).distinct().collect(Collectors.toList())
+          parents.stream().map(i -> i.genotype().size()).distinct().collect(Collectors.toList())
       ));
     }
-    int l = parents.get(0).getGenotype().size();
+    int l = parents.get(0).genotype().size();
     final double[] sums = new double[l];
     ESState s = ((ESState) state);
-    parents.forEach(i -> IntStream.range(0, l).forEach(j -> sums[j] = sums[j] + i.getGenotype().get(j)));
+    parents.forEach(i -> IntStream.range(0, l).forEach(j -> sums[j] = sums[j] + i.genotype().get(j)));
     s.getMeans().clear();
     Arrays.stream(sums).forEach(v -> s.getMeans().add(v / (double) parents.size()));
     //build offspring
