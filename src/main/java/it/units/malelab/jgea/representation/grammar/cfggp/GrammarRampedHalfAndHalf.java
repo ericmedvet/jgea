@@ -22,7 +22,7 @@ import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -42,7 +42,7 @@ public class GrammarRampedHalfAndHalf<T> implements Factory<Tree<T>> {
   }
 
   @Override
-  public List<Tree<T>> build(int n, Random random) {
+  public List<Tree<T>> build(int n, RandomGenerator random) {
     List<Tree<T>> trees = new ArrayList<>();
     //full
     int height = minHeight;

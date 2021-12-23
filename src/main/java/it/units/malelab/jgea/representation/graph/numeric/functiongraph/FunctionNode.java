@@ -20,8 +20,8 @@ import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.representation.graph.Node;
 
 import java.util.Objects;
-import java.util.Random;
 import java.util.function.Function;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -42,7 +42,7 @@ public class FunctionNode extends Node implements Function<Double, Double> {
       int index = 0;
 
       @Override
-      public FunctionNode build(Random random) {
+      public FunctionNode build(RandomGenerator random) {
         index = index + 1;
         return new FunctionNode(index, functions[random.nextInt(functions.length)]);
       }

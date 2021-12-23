@@ -18,8 +18,8 @@ package it.units.malelab.jgea.representation.tree;
 
 import it.units.malelab.jgea.core.IndependentFactory;
 
-import java.util.Random;
 import java.util.function.ToIntFunction;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -37,7 +37,7 @@ public class GrowTreeBuilder<N> implements TreeBuilder<N> {
   }
 
   @Override
-  public Tree<N> build(Random random, int h) {
+  public Tree<N> build(RandomGenerator random, int h) {
     if (h == 1) {
       return Tree.of(terminalFactory.build(random));
     }

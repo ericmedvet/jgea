@@ -23,11 +23,11 @@ import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -37,7 +37,7 @@ public interface Evolver<G, S, F> {
   Collection<S> solve(
       Function<S, F> fitnessFunction,
       Predicate<? super Event<G, S, F>> stopCondition,
-      Random random,
+      RandomGenerator random,
       ExecutorService executor,
       Listener<? super Event<G, S, F>> listener) throws InterruptedException, ExecutionException;
 

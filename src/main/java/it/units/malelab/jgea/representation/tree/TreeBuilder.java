@@ -17,12 +17,13 @@
 package it.units.malelab.jgea.representation.tree;
 
 import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
  */
 public interface TreeBuilder<N> {
 
-  Tree<N> build(Random random, int height);
+  Tree<N> build(RandomGenerator random, int height);
 
 }

@@ -29,6 +29,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.logging.Logger;
+import java.util.random.RandomGenerator;
 
 public class CMAESEvolver<S, F> extends AbstractIterativeEvolver<List<Double>, S, F> {
 
@@ -245,7 +246,7 @@ public class CMAESEvolver<S, F> extends AbstractIterativeEvolver<List<Double>, S
   }
 
   @Override
-  protected Collection<Individual<List<Double>, S, F>> initPopulation(Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<List<Double>, S, F>> initPopulation(Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     // objective variables initial point
     List<Double> point = genotypeFactory.build(1, random).get(0);
     ((CMAESState) state).setDistrMean(point.stream().mapToDouble(d -> d).toArray());
@@ -254,7 +255,7 @@ public class CMAESEvolver<S, F> extends AbstractIterativeEvolver<List<Double>, S
   }
 
   @Override
-  protected Collection<Individual<List<Double>, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<List<Double>, S, F>> orderedPopulation, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<List<Double>, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<List<Double>, S, F>> orderedPopulation, Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     updateDistribution(orderedPopulation, (CMAESState) state);
     // update B and D from C
     if ((state.getIterations() - ((CMAESState) state).getLastEigenUpdate()) > (1d / (c1 + cmu) / size / 10d)) {
@@ -271,7 +272,7 @@ public class CMAESEvolver<S, F> extends AbstractIterativeEvolver<List<Double>, S
     return newPopulation;
   }
 
-  protected List<Individual<List<Double>, S, F>> samplePopulation(Function<S, F> fitnessFunction, Random random, ExecutorService executor, CMAESState state) throws ExecutionException, InterruptedException {
+  protected List<Individual<List<Double>, S, F>> samplePopulation(Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, CMAESState state) throws ExecutionException, InterruptedException {
     List<List<Double>> genotypes = new ArrayList<>();
     while (genotypes.size() < lambda) {
       // new point

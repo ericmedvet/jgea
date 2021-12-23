@@ -30,11 +30,15 @@ import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.selector.Selector;
 import it.units.malelab.jgea.core.util.Misc;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.logging.Logger;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -73,12 +77,12 @@ public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> 
   }
 
   @Override
-  protected Collection<Individual<G, S, F>> initPopulation(Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<G, S, F>> initPopulation(Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     return initPopulation(populationSize, fitnessFunction, random, executor, state);
   }
 
   @Override
-  protected Collection<Individual<G, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<G, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     Collection<Individual<G, S, F>> offspring = buildOffspring(orderedPopulation, fitnessFunction, random, executor, state);
     L.fine(String.format("Offspring built: %d individuals", offspring.size()));
     if (overlapping) {
@@ -94,7 +98,7 @@ public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> 
     return offspring;
   }
 
-  protected Collection<Individual<G, S, F>> buildOffspring(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<G, S, F>> buildOffspring(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     Collection<G> offspringGenotypes = new ArrayList<>();
     while (offspringGenotypes.size() < offspringSize) {
       GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
@@ -108,7 +112,7 @@ public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> 
     return map(offspringGenotypes, List.of(), solutionMapper, fitnessFunction, executor, state);
   }
 
-  protected Collection<Individual<G, S, F>> trimPopulation(Collection<Individual<G, S, F>> population, Random random) {
+  protected Collection<Individual<G, S, F>> trimPopulation(Collection<Individual<G, S, F>> population, RandomGenerator random) {
     PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation = new DAGPartiallyOrderedCollection<>(population, individualComparator);
     while (orderedPopulation.size() > populationSize) {
       Individual<G, S, F> toRemoveIndividual = unsurvivalSelector.select(orderedPopulation, random);

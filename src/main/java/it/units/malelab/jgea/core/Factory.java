@@ -21,8 +21,8 @@ import it.units.malelab.jgea.core.util.Pair;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.function.Function;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -30,7 +30,7 @@ import java.util.function.Function;
 @FunctionalInterface
 public interface Factory<T> {
 
-  List<T> build(int n, Random random);
+  List<T> build(int n, RandomGenerator random);
 
   static <T1, T2> Factory<Pair<T1, T2>> pair(Factory<T1> factory1, Factory<T2> factory2) {
     return (n, random) -> {

@@ -20,7 +20,7 @@ import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.operator.Mutation;
 
 import java.util.List;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -37,7 +37,7 @@ public class ProbabilisticMutation<E, L extends List<E>> implements Mutation<L> 
   }
 
   @Override
-  public L mutate(L parent, Random random) {
+  public L mutate(L parent, RandomGenerator random) {
     L child = factory.build(random);
     for (int i = 0; i < parent.size(); i++) {
       E e = (random.nextDouble() < p) ? mutation.mutate(parent.get(i), random) : parent.get(i);

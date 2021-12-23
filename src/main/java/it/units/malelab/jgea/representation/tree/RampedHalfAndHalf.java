@@ -21,8 +21,8 @@ import it.units.malelab.jgea.core.IndependentFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.function.ToIntFunction;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -41,7 +41,7 @@ public class RampedHalfAndHalf<N> implements Factory<Tree<N>> {
   }
 
   @Override
-  public List<Tree<N>> build(int n, Random random) {
+  public List<Tree<N>> build(int n, RandomGenerator random) {
     List<Tree<N>> trees = new ArrayList<>();
     //full
     int height = minHeight;

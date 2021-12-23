@@ -18,7 +18,7 @@ package it.units.malelab.jgea.core.selector;
 
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -26,6 +26,6 @@ import java.util.Random;
 @FunctionalInterface
 public interface Selector<T> {
 
-  <K extends T> K select(PartiallyOrderedCollection<K> ks, Random random);
+  <K extends T> K select(PartiallyOrderedCollection<K> ks, RandomGenerator random);
 
 }

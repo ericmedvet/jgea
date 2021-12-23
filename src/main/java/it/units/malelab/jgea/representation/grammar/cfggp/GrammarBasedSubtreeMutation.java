@@ -17,12 +17,12 @@
 package it.units.malelab.jgea.representation.grammar.cfggp;
 
 import it.units.malelab.jgea.core.operator.Mutation;
+import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.tree.Tree;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -38,10 +38,9 @@ public class GrammarBasedSubtreeMutation<T> implements Mutation<Tree<T>> {
   }
 
   @Override
-  public Tree<T> mutate(Tree<T> parent, Random random) {
+  public Tree<T> mutate(Tree<T> parent, RandomGenerator random) {
     Tree<T> child = Tree.copyOf(parent);
-    List<Tree<T>> nonTerminalTrees = child.topSubtrees();
-    Collections.shuffle(nonTerminalTrees, random);
+    List<Tree<T>> nonTerminalTrees = Misc.shuffle(child.topSubtrees(), random);
     boolean done = false;
     for (Tree<T> toReplaceSubTree : nonTerminalTrees) {
       Tree<T> newSubTree = factory.build(

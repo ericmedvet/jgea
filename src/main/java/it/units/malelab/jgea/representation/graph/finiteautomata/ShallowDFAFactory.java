@@ -21,8 +21,8 @@ import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.representation.graph.Graph;
 import it.units.malelab.jgea.representation.graph.LinkedHashGraph;
 
-import java.util.Random;
 import java.util.Set;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -38,7 +38,7 @@ public class ShallowDFAFactory<C> implements IndependentFactory<Graph<Determinis
   }
 
   @Override
-  public Graph<DeterministicFiniteAutomaton.State, Set<C>> build(Random random) {
+  public Graph<DeterministicFiniteAutomaton.State, Set<C>> build(RandomGenerator random) {
     Graph<DeterministicFiniteAutomaton.State, Set<C>> g = new LinkedHashGraph<>();
     DeterministicFiniteAutomaton.State[] states = new DeterministicFiniteAutomaton.State[nOfStates];
     for (int i = 0; i < nOfStates; i++) {

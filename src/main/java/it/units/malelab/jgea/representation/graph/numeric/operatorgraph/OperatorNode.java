@@ -21,7 +21,7 @@ import it.units.malelab.jgea.problem.symbolicregression.RealFunction;
 import it.units.malelab.jgea.representation.graph.Node;
 
 import java.util.Objects;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -42,7 +42,7 @@ public class OperatorNode extends Node implements RealFunction {
       int index = 0;
 
       @Override
-      public OperatorNode build(Random random) {
+      public OperatorNode build(RandomGenerator random) {
         index = index + 1;
         return new OperatorNode(index, operators[random.nextInt(operators.length)]);
       }

@@ -18,7 +18,7 @@ package it.units.malelab.jgea.representation.sequence.bit;
 
 import it.units.malelab.jgea.core.operator.Mutation;
 
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -32,7 +32,7 @@ public class BitFlipMutation implements Mutation<BitString> {
   }
 
   @Override
-  public BitString mutate(BitString parent, Random random) {
+  public BitString mutate(BitString parent, RandomGenerator random) {
     BitString newG = BitString.copyOf(parent);
     for (int i = 0; i < newG.size(); i++) {
       if (random.nextDouble() <= p) {

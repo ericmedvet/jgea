@@ -18,7 +18,7 @@ package it.units.malelab.jgea.representation.graph;
 
 import it.units.malelab.jgea.core.operator.Mutation;
 
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -33,7 +33,7 @@ public class ArcModification<N, A> implements Mutation<Graph<N, A>> {
   }
 
   @Override
-  public Graph<N, A> mutate(Graph<N, A> parent, Random random) {
+  public Graph<N, A> mutate(Graph<N, A> parent, RandomGenerator random) {
     Graph<N, A> child = LinkedHashGraph.copyOf(parent);
     for (Graph.Arc<N> arc : child.arcs()) {
       if (random.nextDouble() < rate) {

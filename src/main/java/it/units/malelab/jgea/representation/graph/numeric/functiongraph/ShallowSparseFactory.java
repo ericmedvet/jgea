@@ -24,7 +24,7 @@ import it.units.malelab.jgea.representation.graph.numeric.Constant;
 import it.units.malelab.jgea.representation.graph.numeric.Input;
 import it.units.malelab.jgea.representation.graph.numeric.Output;
 
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -45,7 +45,7 @@ public class ShallowSparseFactory implements IndependentFactory<Graph<Node, Doub
   }
 
   @Override
-  public Graph<Node, Double> build(Random random) {
+  public Graph<Node, Double> build(RandomGenerator random) {
     Graph<Node, Double> g = new LinkedHashGraph<>();
     Input[] inputs = new Input[nInputs];
     Output[] outputs = new Output[nOutputs];

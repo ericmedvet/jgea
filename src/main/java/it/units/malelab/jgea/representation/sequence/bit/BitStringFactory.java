@@ -18,7 +18,7 @@ package it.units.malelab.jgea.representation.sequence.bit;
 
 import it.units.malelab.jgea.core.IndependentFactory;
 
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -32,7 +32,7 @@ public class BitStringFactory implements IndependentFactory<BitString> {
   }
 
   @Override
-  public BitString build(Random random) {
+  public BitString build(RandomGenerator random) {
     BitString bitString = new BitString(size);
     for (int i = 0; i < size; i++) {
       bitString.set(i, random.nextBoolean());

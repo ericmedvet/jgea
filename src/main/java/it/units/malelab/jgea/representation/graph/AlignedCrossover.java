@@ -19,9 +19,9 @@ package it.units.malelab.jgea.representation.graph;
 import it.units.malelab.jgea.core.operator.Crossover;
 
 import java.util.LinkedHashSet;
-import java.util.Random;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -39,7 +39,7 @@ public class AlignedCrossover<N, A> implements Crossover<Graph<N, A>> {
   }
 
   @Override
-  public Graph<N, A> recombine(Graph<N, A> parent1, Graph<N, A> parent2, Random random) {
+  public Graph<N, A> recombine(Graph<N, A> parent1, Graph<N, A> parent2, RandomGenerator random) {
     Graph<N, A> child = new LinkedHashGraph<>();
     //add all nodes
     parent1.nodes().forEach(child::addNode);

@@ -17,10 +17,10 @@
 package it.units.malelab.jgea.representation.tree;
 
 import it.units.malelab.jgea.core.operator.Crossover;
+import it.units.malelab.jgea.core.util.Misc;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -34,11 +34,9 @@ public class SubtreeCrossover<N> implements Crossover<Tree<N>> {
   }
 
   @Override
-  public Tree<N> recombine(Tree<N> parent1, Tree<N> parent2, Random random) {
-    List<Tree<N>> subtrees1 = parent1.topSubtrees();
-    List<Tree<N>> subtrees2 = parent2.topSubtrees();
-    Collections.shuffle(subtrees1, random);
-    Collections.shuffle(subtrees2, random);
+  public Tree<N> recombine(Tree<N> parent1, Tree<N> parent2, RandomGenerator random) {
+    List<Tree<N>> subtrees1 = Misc.shuffle(parent1.topSubtrees(), random);
+    List<Tree<N>> subtrees2 = Misc.shuffle(parent2.topSubtrees(), random);
     for (Tree<N> subtree1 : subtrees1) {
       for (Tree<N> subtree2 : subtrees2) {
         if (subtree1.depth() + subtree2.height() <= maxHeight) {

@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.random.RandomGenerator;
 
 import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
 import static it.units.malelab.jgea.core.util.Args.*;
@@ -115,7 +116,7 @@ public class ImageExample extends Worker {
                     (w, r) -> r.nextGaussian()
                 ), 1d,
                 new ArcModification<>((w, random) -> w + random.nextGaussian(), 1d), 5d,
-                new ArcAddition<>(Random::nextGaussian, false), 1d,
+                new ArcAddition<>(RandomGenerator::nextGaussian, false), 1d,
                 new ArcRemoval<>(node -> node instanceof Output), 0.1d,
                 new AlignedCrossover<>(
                     (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),

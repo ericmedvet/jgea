@@ -20,7 +20,7 @@ import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.util.Misc;
 
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -43,7 +43,7 @@ public class NodeAddition<N, A> implements Mutation<Graph<N, A>> {
   }
 
   @Override
-  public Graph<N, A> mutate(Graph<N, A> parent, Random random) {
+  public Graph<N, A> mutate(Graph<N, A> parent, RandomGenerator random) {
     N newNode = nodeFactory.build(random);
     if (parent.nodes().contains(newNode)) {
       return parent;

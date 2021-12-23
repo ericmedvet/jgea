@@ -23,6 +23,7 @@ import it.units.malelab.jgea.core.util.Misc;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -36,7 +37,7 @@ public class Tournament implements Selector<Object> {
   }
 
   @Override
-  public <K extends Object> K select(PartiallyOrderedCollection<K> ks, Random random) {
+  public <K extends Object> K select(PartiallyOrderedCollection<K> ks, RandomGenerator random) {
     Collection<K> all = ks.all();
     Collection<K> tournament = new ArrayList<>();
     for (int i = 0; i < size; i++) {

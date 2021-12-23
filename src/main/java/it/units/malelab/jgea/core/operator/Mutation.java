@@ -22,8 +22,8 @@ import it.units.malelab.jgea.core.util.Pair;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.function.Predicate;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -37,11 +37,11 @@ public interface Mutation<G> extends GeneticOperator<G> {
   }
 
   @Override
-  default List<? extends G> apply(List<? extends G> gs, Random random) {
+  default List<? extends G> apply(List<? extends G> gs, RandomGenerator random) {
     return Collections.singletonList(mutate(gs.get(0), random));
   }
 
-  G mutate(G g, Random random);
+  G mutate(G g, RandomGenerator random);
 
   static <K> Mutation<K> copy() {
     return (k, random) -> k;

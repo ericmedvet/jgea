@@ -23,8 +23,8 @@ import it.units.malelab.jgea.core.util.Misc;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.function.ToIntFunction;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -85,7 +85,7 @@ public class IndexedNodeAddition<M extends N, N, A> implements Mutation<Graph<In
   }
 
   @Override
-  public Graph<IndexedNode<N>, A> mutate(Graph<IndexedNode<N>, A> parent, Random random) {
+  public Graph<IndexedNode<N>, A> mutate(Graph<IndexedNode<N>, A> parent, RandomGenerator random) {
     Graph<IndexedNode<N>, A> child = LinkedHashGraph.copyOf(parent);
     if (!child.arcs().isEmpty()) {
       M newNode = nodeFactory.build(random);

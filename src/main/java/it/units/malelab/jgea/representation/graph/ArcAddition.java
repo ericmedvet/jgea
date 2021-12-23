@@ -18,11 +18,11 @@ package it.units.malelab.jgea.representation.graph;
 
 import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.operator.Mutation;
+import it.units.malelab.jgea.core.util.Misc;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -37,13 +37,11 @@ public class ArcAddition<N, A> implements Mutation<Graph<N, A>> {
   }
 
   @Override
-  public Graph<N, A> mutate(Graph<N, A> parent, Random random) {
+  public Graph<N, A> mutate(Graph<N, A> parent, RandomGenerator random) {
     Graph<N, A> child = LinkedHashGraph.copyOf(parent);
     if (!parent.nodes().isEmpty()) {
-      List<N> fromNodes = new ArrayList<>(child.nodes());
-      List<N> toNodes = new ArrayList<>(child.nodes());
-      Collections.shuffle(fromNodes, random);
-      Collections.shuffle(toNodes, random);
+      List<N> fromNodes = Misc.shuffle(new ArrayList<>(child.nodes()), random);
+      List<N> toNodes = Misc.shuffle(new ArrayList<>(child.nodes()), random);
       boolean added = false;
       for (N fromNode : fromNodes) {
         for (N toNode : toNodes) {

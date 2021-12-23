@@ -20,7 +20,7 @@ import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.util.Misc;
 
 import java.util.List;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -36,7 +36,7 @@ public class SubtreeMutation<N> implements Mutation<Tree<N>> {
   }
 
   @Override
-  public Tree<N> mutate(Tree<N> parent, Random random) {
+  public Tree<N> mutate(Tree<N> parent, RandomGenerator random) {
     if (parent.height() > maxHeight) {
       return parent;
     }

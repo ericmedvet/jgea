@@ -5,10 +5,14 @@ import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
+import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
 /**
@@ -45,12 +49,12 @@ public class BasicEvolutionaryStrategy<S, F> extends AbstractIterativeEvolver<Li
   }
 
   @Override
-  protected Collection<Individual<List<Double>, S, F>> initPopulation(Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<List<Double>, S, F>> initPopulation(Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     return initPopulation(populationSize, fitnessFunction, random, executor, state);
   }
 
   @Override
-  protected Collection<Individual<List<Double>, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<List<Double>, S, F>> orderedPopulation, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<List<Double>, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<List<Double>, S, F>> orderedPopulation, Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     List<Individual<List<Double>, S, F>> all = new ArrayList<>(orderedPopulation.all());
     List<Individual<List<Double>, S, F>> parents = new ArrayList<>();
     List<Individual<List<Double>, S, F>> elite = new ArrayList<>();

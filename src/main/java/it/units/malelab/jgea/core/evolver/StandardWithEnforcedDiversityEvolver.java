@@ -24,11 +24,14 @@ import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.selector.Selector;
 import it.units.malelab.jgea.core.util.Misc;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.random.RandomGenerator;
 
 /**
  * @author Eric Medvet <eric.medvet@gmail.com>
@@ -70,7 +73,7 @@ public class StandardWithEnforcedDiversityEvolver<G, S, F> extends StandardEvolv
   }
 
   @Override
-  protected Collection<Individual<G, S, F>> buildOffspring(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<G, S, F>> buildOffspring(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     Collection<G> offspringGenotypes = new ArrayList<>();
     Collection<G> existingGenotypes = orderedPopulation.all().stream().map(Individual::genotype).toList();
     while (offspringGenotypes.size() < offspringSize) {

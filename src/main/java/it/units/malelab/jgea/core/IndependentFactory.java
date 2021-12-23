@@ -18,8 +18,8 @@ package it.units.malelab.jgea.core;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.function.Function;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -27,7 +27,7 @@ import java.util.function.Function;
 public interface IndependentFactory<T> extends Factory<T> {
 
   @Override
-  default List<T> build(int n, Random random) {
+  default List<T> build(int n, RandomGenerator random) {
     List<T> ts = new ArrayList<>();
     for (int i = 0; i < n; i++) {
       ts.add(build(random));
@@ -35,8 +35,9 @@ public interface IndependentFactory<T> extends Factory<T> {
     return ts;
   }
 
-  T build(Random random);
+  T build(RandomGenerator random);
 
+  @SafeVarargs
   static <K> IndependentFactory<K> picker(K... ks) {
     return random -> ks[random.nextInt(ks.length)];
   }

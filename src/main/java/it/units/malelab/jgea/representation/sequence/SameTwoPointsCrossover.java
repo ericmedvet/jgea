@@ -21,7 +21,7 @@ import it.units.malelab.jgea.core.operator.Crossover;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -35,7 +35,7 @@ public class SameTwoPointsCrossover<E, L extends List<E>> implements Crossover<L
   }
 
   @Override
-  public L recombine(L parent1, L parent2, Random random) {
+  public L recombine(L parent1, L parent2, RandomGenerator random) {
     int cut = random.nextInt(Math.min(parent1.size(), parent2.size()));
     List<E> list = new ArrayList<>(parent1.subList(0, cut));
     list.addAll(parent2.subList(cut, parent2.size()));

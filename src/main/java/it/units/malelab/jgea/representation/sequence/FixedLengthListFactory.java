@@ -20,7 +20,7 @@ import it.units.malelab.jgea.core.IndependentFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -35,7 +35,7 @@ public class FixedLengthListFactory<T> implements IndependentFactory<List<T>> {
   }
 
   @Override
-  public List<T> build(Random random) {
+  public List<T> build(RandomGenerator random) {
     return new ArrayList<>(factory.build(length, random));
   }
 }

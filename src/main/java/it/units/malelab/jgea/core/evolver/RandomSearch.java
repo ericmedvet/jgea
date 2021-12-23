@@ -23,10 +23,10 @@ import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -41,12 +41,12 @@ public class RandomSearch<G, S, F> extends AbstractIterativeEvolver<G, S, F> {
   }
 
   @Override
-  protected Collection<Individual<G, S, F>> initPopulation(Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<G, S, F>> initPopulation(Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     return initPopulation(1, fitnessFunction, random, executor, state);
   }
 
   @Override
-  protected Collection<Individual<G, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<G, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation, Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     G genotype = genotypeFactory.build(1, random).get(0);
     Collection<Individual<G, S, F>> offspring = AbstractIterativeEvolver.map(List.of(genotype), List.of(), solutionMapper, fitnessFunction, executor, state);
     Individual<G, S, F> newIndividual = offspring.iterator().next();

@@ -21,8 +21,8 @@ import it.units.malelab.jgea.core.util.Pair;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.function.Predicate;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -36,11 +36,11 @@ public interface Crossover<G> extends GeneticOperator<G> {
   }
 
   @Override
-  default List<? extends G> apply(List<? extends G> gs, Random random) {
+  default List<? extends G> apply(List<? extends G> gs, RandomGenerator random) {
     return Collections.singletonList(recombine(gs.get(0), gs.get(1), random));
   }
 
-  G recombine(G g1, G g2, Random random);
+  G recombine(G g1, G g2, RandomGenerator random);
 
   static <K> Crossover<K> randomCopy() {
     return (g1, g2, random) -> random.nextBoolean() ? g1 : g2;

@@ -24,10 +24,10 @@ import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -46,13 +46,13 @@ public class RandomWalk<G, S, F> extends AbstractIterativeEvolver<G, S, F> {
   }
 
   @Override
-  protected Collection<Individual<G, S, F>> initPopulation(Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<G, S, F>> initPopulation(Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     G genotype = genotypeFactory.build(1, random).get(0);
     return AbstractIterativeEvolver.map(List.of(genotype), List.of(), solutionMapper, fitnessFunction, executor, state);
   }
 
   @Override
-  protected Collection<Individual<G, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<G, S, F>> population, Function<S, F> fitnessFunction, Random random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<G, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<G, S, F>> population, Function<S, F> fitnessFunction, RandomGenerator random, ExecutorService executor, State state) throws ExecutionException, InterruptedException {
     Individual<G, S, F> currentIndividual = population.firsts().iterator().next();
     G genotype = mutation.mutate(currentIndividual.genotype(), random);
     Collection<Individual<G, S, F>> offspring = AbstractIterativeEvolver.map(List.of(genotype), List.of(), solutionMapper, fitnessFunction, executor, state);

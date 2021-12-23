@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 
 /**
@@ -59,7 +60,7 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized, Ser
       private int localStartingIndex = startingIndex;
 
       @Override
-      public State build(Random random) {
+      public State build(RandomGenerator random) {
         localStartingIndex = localStartingIndex + 1;
         return new State(localStartingIndex - 1, random.nextDouble() < acceptanceRate);
       }

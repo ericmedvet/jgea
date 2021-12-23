@@ -25,7 +25,7 @@ import it.units.malelab.jgea.representation.tree.Tree;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -46,7 +46,7 @@ public class GrowGrammarTreeFactory<T> implements Factory<Tree<T>> {
   }
 
   @Override
-  public List<Tree<T>> build(int n, Random random) {
+  public List<Tree<T>> build(int n, RandomGenerator random) {
     List<Tree<T>> trees = new ArrayList<>();
     while (trees.size() < n) {
       trees.add(build(random, maxHeight));
@@ -54,7 +54,7 @@ public class GrowGrammarTreeFactory<T> implements Factory<Tree<T>> {
     return trees;
   }
 
-  public Tree<T> build(Random random, int targetDepth) {
+  public Tree<T> build(RandomGenerator random, int targetDepth) {
     Tree<T> tree = null;
     for (int i = 0; i < MAX_ATTEMPTS; i++) {
       tree = build(random, grammar.getStartingSymbol(), targetDepth);
@@ -75,7 +75,7 @@ public class GrowGrammarTreeFactory<T> implements Factory<Tree<T>> {
     return Pair.of(min, max);
   }
 
-  public Tree<T> build(Random random, T symbol, int targetDepth) {
+  public Tree<T> build(RandomGenerator random, T symbol, int targetDepth) {
     if (targetDepth < 0) {
       return null;
     }

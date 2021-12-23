@@ -22,7 +22,9 @@ import it.units.malelab.jgea.distance.Distance;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author eric
@@ -50,7 +52,7 @@ public class Misc {
     return map;
   }
 
-  public static <T> T pickRandomly(Map<T, Double> options, Random random) {
+  public static <T> T pickRandomly(Map<T, Double> options, RandomGenerator random) {
     double sum = 0;
     for (Double rate : options.values()) {
       sum = sum + rate;
@@ -112,7 +114,7 @@ public class Misc {
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> T pickRandomly(Collection<T> ts, Random random) {
+  public static <T> T pickRandomly(Collection<T> ts, RandomGenerator random) {
     return (T) ts.toArray()[random.nextInt(ts.size())];
   }
 
@@ -156,6 +158,17 @@ public class Misc {
 
   public static <K> List<K> concat(List<List<? extends K>> lists) {
     return lists.stream().flatMap(List::stream).collect(Collectors.toList());
+  }
+
+  public static <K> List<K> shuffle(List<K> list, RandomGenerator random) {
+    List<Integer> indexes = new ArrayList<>(IntStream.range(0, list.size()).boxed().toList());
+    List<Integer> shuffledIndexes = new ArrayList<>(indexes.size());
+    while (!indexes.isEmpty()) {
+      int indexOfIndex = indexes.size() == 1 ? 0 : random.nextInt(indexes.size());
+      shuffledIndexes.add(indexes.get(indexOfIndex));
+      indexes.remove(indexOfIndex);
+    }
+    return shuffledIndexes.stream().map(list::get).toList();
   }
 
 }

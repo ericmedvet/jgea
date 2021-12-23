@@ -14,11 +14,11 @@ import it.units.malelab.jgea.core.util.Misc;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.logging.Logger;
+import java.util.random.RandomGenerator;
 
 /**
  * @author federico
@@ -49,12 +49,12 @@ public class DifferentialEvolution<S, F> extends AbstractIterativeEvolver<List<D
   }
 
   @Override
-  protected Collection<Individual<List<Double>, S, F>> initPopulation(Function<S, F> function, Random random, ExecutorService executorService, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<List<Double>, S, F>> initPopulation(Function<S, F> function, RandomGenerator random, ExecutorService executorService, State state) throws ExecutionException, InterruptedException {
     return initPopulation(populationSize, function, random, executorService, state);
   }
 
   @Override
-  protected Collection<Individual<List<Double>, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<List<Double>, S, F>> population, Function<S, F> function, Random random, ExecutorService executorService, State state) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<List<Double>, S, F>> updatePopulation(PartiallyOrderedCollection<Individual<List<Double>, S, F>> population, Function<S, F> function, RandomGenerator random, ExecutorService executorService, State state) throws ExecutionException, InterruptedException {
     List<Individual<List<Double>, S, F>> offspring = new ArrayList<>(populationSize * 2);
     Collection<List<Double>> trialGenotypes = computeTrials(population, random);
     L.fine(String.format("Trials computed: %d individuals", trialGenotypes.size()));
@@ -80,7 +80,7 @@ public class DifferentialEvolution<S, F> extends AbstractIterativeEvolver<List<D
     return offspring;
   }
 
-  protected List<Double> pickParents(PartiallyOrderedCollection<Individual<List<Double>, S, F>> population, Random random, List<Double> prev) {//List<Integer> indexes, Random random) {
+  protected List<Double> pickParents(PartiallyOrderedCollection<Individual<List<Double>, S, F>> population, RandomGenerator random, List<Double> prev) {//List<Integer> indexes, Random random) {
     List<Double> current = prev;
     while (current == prev) {
       current = Misc.pickRandomly(population.all(), random).genotype();
@@ -88,7 +88,7 @@ public class DifferentialEvolution<S, F> extends AbstractIterativeEvolver<List<D
     return current;
   }
 
-  protected Collection<List<Double>> computeTrials(PartiallyOrderedCollection<Individual<List<Double>, S, F>> population, Random random) {
+  protected Collection<List<Double>> computeTrials(PartiallyOrderedCollection<Individual<List<Double>, S, F>> population, RandomGenerator random) {
     Collection<List<Double>> trialGenotypes = new ArrayList<>(populationSize);
     for (Individual<List<Double>, S, F> parent : population.all()) {
       List<Double> x = parent.genotype();

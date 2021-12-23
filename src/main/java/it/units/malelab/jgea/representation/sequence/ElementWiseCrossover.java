@@ -20,7 +20,7 @@ import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.operator.Crossover;
 
 import java.util.List;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -35,7 +35,7 @@ public class ElementWiseCrossover<E, L extends List<E>> implements Crossover<L> 
   }
 
   @Override
-  public L recombine(L parent1, L parent2, Random random) {
+  public L recombine(L parent1, L parent2, RandomGenerator random) {
     L child = factory.build(random);
     for (int i = 0; i < Math.min(parent1.size(), parent2.size()); i++) {
       E e = crossover.recombine(parent1.get(i), parent2.get(i), random);

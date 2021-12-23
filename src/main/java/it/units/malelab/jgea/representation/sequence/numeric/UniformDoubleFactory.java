@@ -19,6 +19,7 @@ package it.units.malelab.jgea.representation.sequence.numeric;
 import it.units.malelab.jgea.core.IndependentFactory;
 
 import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -33,7 +34,7 @@ public class UniformDoubleFactory implements IndependentFactory<Double> {
   }
 
   @Override
-  public Double build(Random random) {
+  public Double build(RandomGenerator random) {
     return random.nextDouble() * (max - min) + min;
   }
 }

@@ -3,7 +3,7 @@ package it.units.malelab.jgea.core.selector;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.util.Misc;
 
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author federico
@@ -11,7 +11,7 @@ import java.util.Random;
 public class First implements Selector<Object> {
 
   @Override
-  public <K> K select(PartiallyOrderedCollection<K> ks, Random random) {
+  public <K> K select(PartiallyOrderedCollection<K> ks, RandomGenerator random) {
     return Misc.pickRandomly(ks.firsts(), random);
   }
 

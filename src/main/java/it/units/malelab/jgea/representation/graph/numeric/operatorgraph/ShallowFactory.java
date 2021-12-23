@@ -24,7 +24,7 @@ import it.units.malelab.jgea.representation.graph.numeric.Constant;
 import it.units.malelab.jgea.representation.graph.numeric.Input;
 import it.units.malelab.jgea.representation.graph.numeric.Output;
 
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
@@ -44,7 +44,7 @@ public class ShallowFactory implements IndependentFactory<Graph<Node, OperatorGr
   }
 
   @Override
-  public Graph<Node, OperatorGraph.NonValuedArc> build(Random random) {
+  public Graph<Node, OperatorGraph.NonValuedArc> build(RandomGenerator random) {
     Graph<Node, OperatorGraph.NonValuedArc> g = new LinkedHashGraph<>();
     Input[] inputs = new Input[nInputs];
     Output[] outputs = new Output[nOutputs];
@@ -60,8 +60,8 @@ public class ShallowFactory implements IndependentFactory<Graph<Node, OperatorGr
       inputs[i] = new Input(i);
       g.addNode(inputs[i]);
     }
-    for (int c = 0; c < constants.length; c++) {
-      g.addNode(constants[c]);
+    for (Constant constant : constants) {
+      g.addNode(constant);
     }
     for (int o = 0; o < nOutputs; o++) {
       if (random.nextBoolean()) {
