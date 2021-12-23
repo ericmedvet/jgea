@@ -8,7 +8,7 @@ public interface ProgressMonitor {
   void notify(double progress, String message);
 
   default void notify(double progress) {
-    notify(progress, null);
+    notify(progress, "");
   }
 
   static ProgressMonitor all(List<ProgressMonitor> progressMonitors) {

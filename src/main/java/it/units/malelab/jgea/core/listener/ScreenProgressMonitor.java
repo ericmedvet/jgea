@@ -15,7 +15,7 @@ public class ScreenProgressMonitor implements ProgressMonitor {
   @Override
   public void notify(double progress, String message) {
     ps.printf(
-        "Progress %s %s%n",
+        "Progress: %s %s%n",
         TextPlotter.horizontalBar(progress, 0, 1, 8),
         message
     );

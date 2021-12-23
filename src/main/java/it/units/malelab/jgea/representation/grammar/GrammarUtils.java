@@ -17,7 +17,6 @@
 package it.units.malelab.jgea.representation.grammar;
 
 import it.units.malelab.jgea.core.util.Pair;
-import it.units.malelab.jgea.core.util.Triplet;
 
 import java.util.*;
 
@@ -25,6 +24,11 @@ import java.util.*;
  * @author eric
  */
 public class GrammarUtils {
+
+  private record Triplet<F, S, T>(F first, S second, T third) {
+  }
+
+  ;
 
   public static <T> Map<T, Pair<Double, Double>> computeSymbolsMinMaxDepths(Grammar<T> g) {
     Map<T, Pair<Integer, Boolean>> minDepths = computeSymbolsMinDepths(g);
@@ -87,14 +91,14 @@ public class GrammarUtils {
 
   private static <T> Map<T, Triplet<Double, Boolean, Set<T>>> computeSymbolsMaxDepths(Grammar<T> g) {
     Map<T, Triplet<Double, Boolean, Set<T>>> map = new HashMap<>();
-    map.put(g.getStartingSymbol(), Triplet.of(0d, false, (Set<T>) new HashSet<T>()));
+    map.put(g.getStartingSymbol(), new Triplet<>(0d, false, new HashSet<T>()));
     for (List<List<T>> options : g.getRules().values()) {
       for (List<T> option : options) {
         for (T symbol : option) {
           if (!g.getRules().containsKey(symbol)) {
-            map.put(symbol, Triplet.of(1d, true, (Set<T>) Collections.EMPTY_SET));
+            map.put(symbol, new Triplet<>(1d, true, Set.of()));
           } else {
-            map.put(symbol, Triplet.of(0d, false, (Set<T>) new HashSet<T>()));
+            map.put(symbol, new Triplet<>(0d, false, new HashSet<T>()));
           }
         }
       }
@@ -104,7 +108,7 @@ public class GrammarUtils {
       boolean changed = false;
       for (T nonTerminal : g.getRules().keySet()) {
         Triplet<Double, Boolean, Set<T>> triplet = map.get(nonTerminal);
-        Set<T> dependencies = new HashSet<>(triplet.getThird());
+        Set<T> dependencies = new HashSet<>(triplet.third());
         if (triplet.second()) {
           //this non-terminal is definitely resolved
           continue;
@@ -119,7 +123,7 @@ public class GrammarUtils {
             optionAllResolved = optionAllResolved && optionSymbolTriplet.second();
             optionMaxDepth = Math.max(optionMaxDepth, optionSymbolTriplet.first());
             dependencies.add(optionSymbol);
-            dependencies.addAll(optionSymbolTriplet.getThird());
+            dependencies.addAll(optionSymbolTriplet.third());
           }
           allResolved = allResolved && optionAllResolved;
           maxDepth = Math.max(maxDepth, optionMaxDepth + 1);
@@ -128,7 +132,7 @@ public class GrammarUtils {
           allResolved = true;
           maxDepth = Double.POSITIVE_INFINITY;
         }
-        Triplet<Double, Boolean, Set<T>> newTriplet = Triplet.of(maxDepth, allResolved, dependencies);
+        Triplet<Double, Boolean, Set<T>> newTriplet = new Triplet<>(maxDepth, allResolved, dependencies);
         if (!newTriplet.equals(triplet)) {
           map.put(nonTerminal, newTriplet);
           changed = true;

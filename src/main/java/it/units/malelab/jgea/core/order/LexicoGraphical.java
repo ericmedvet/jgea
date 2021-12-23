@@ -21,22 +21,22 @@ import java.util.List;
 /**
  * @author eric
  */
-public class LexicoGraphical implements PartialComparator<List<? extends Comparable<?>>> {
+public class LexicoGraphical<C extends Comparable<C>> implements PartialComparator<List<? extends C>> {
 
   private final int[] order;
 
-  public LexicoGraphical(int... order) {
+  public LexicoGraphical(Class<C> cClass, int... order) {
     this.order = order;
   }
 
   @Override
-  public PartialComparatorOutcome compare(List<? extends Comparable<?>> k1, List<? extends Comparable<?>> k2) {
+  public PartialComparatorOutcome compare(List<? extends C> k1, List<? extends C> k2) {
     if (k1.size() != k2.size()) {
       return PartialComparatorOutcome.NOT_COMPARABLE;
     }
     for (int i : order) {
-      Comparable o1 = k1.get(i);
-      Comparable o2 = k2.get(i);
+      C o1 = k1.get(i);
+      C o2 = k2.get(i);
       int outcome = o1.compareTo(o2);
       if (outcome < 0) {
         return PartialComparatorOutcome.BEFORE;

@@ -134,7 +134,7 @@ public class ExtractionComparison extends Worker {
                   .map(Tree::content)
                   .collect(Collectors.joining())),
               new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
-              new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparing(Individual::fitness),
+              new LexicoGraphical<>(Double.class, IntStream.range(0, metrics.length).toArray()).comparing(Individual::fitness),
               nPop,
               Map.of(
                   new SameRootSubtreeCrossover<>(maxHeight + 4), 0.8d,
@@ -154,7 +154,7 @@ public class ExtractionComparison extends Worker {
                   .map(Tree::content)
                   .collect(Collectors.joining())),
               new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
-              new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparing(Individual::fitness),
+              new LexicoGraphical<>(Double.class, IntStream.range(0, metrics.length).toArray()).comparing(Individual::fitness),
               nPop,
               Map.of(
                   new SameRootSubtreeCrossover<>(maxHeight + 4), 0.8d,
@@ -183,7 +183,7 @@ public class ExtractionComparison extends Worker {
                   .andThen(DeterministicFiniteAutomaton.builder()),
               new ShallowDFAFactory<Character>(2, positiveChars)
                   .then(GraphUtils.mapper(IndexedNode.incrementerMapper(DeterministicFiniteAutomaton.State.class), Misc::first)),
-              new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparing(Individual::fitness),
+              new LexicoGraphical<>(Double.class, IntStream.range(0, metrics.length).toArray()).comparing(Individual::fitness),
               nPop,
               Map.of(
                   new IndexedNodeAddition<DeterministicFiniteAutomaton.State, DeterministicFiniteAutomaton.State, Set<Character>>(
@@ -236,7 +236,7 @@ public class ExtractionComparison extends Worker {
           return new SpeciatedEvolver<Graph<DeterministicFiniteAutomaton.State, Set<Character>>, Extractor<Character>, List<Double>>(
               DeterministicFiniteAutomaton.builder(),
               new ShallowDFAFactory<Character>(2, positiveChars),
-              new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparing(Individual::fitness),
+              new LexicoGraphical<>(Double.class, IntStream.range(0, metrics.length).toArray()).comparing(Individual::fitness),
               nPop,
               Map.of(
                   new NodeAddition<DeterministicFiniteAutomaton.State, Set<Character>>(
@@ -287,7 +287,7 @@ public class ExtractionComparison extends Worker {
           return new SpeciatedEvolver<Graph<DeterministicFiniteAutomaton.State, Set<Character>>, Extractor<Character>, List<Double>>(
               DeterministicFiniteAutomaton.builder(),
               new ShallowDFAFactory<Character>(2, positiveChars),
-              new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparing(Individual::fitness),
+              new LexicoGraphical<>(Double.class, IntStream.range(0, metrics.length).toArray()).comparing(Individual::fitness),
               nPop,
               Map.of(
                   new NodeAddition<DeterministicFiniteAutomaton.State, Set<Character>>(
@@ -339,7 +339,7 @@ public class ExtractionComparison extends Worker {
                   .andThen(DeterministicFiniteAutomaton.builder()),
               new ShallowDFAFactory<Character>(2, positiveChars)
                   .then(GraphUtils.mapper(IndexedNode.incrementerMapper(DeterministicFiniteAutomaton.State.class), Misc::first)),
-              new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparing(Individual::fitness),
+              new LexicoGraphical<>(Double.class, IntStream.range(0, metrics.length).toArray()).comparing(Individual::fitness),
               nPop,
               Map.of(
                   new IndexedNodeAddition<DeterministicFiniteAutomaton.State, DeterministicFiniteAutomaton.State, Set<Character>>(
@@ -396,7 +396,7 @@ public class ExtractionComparison extends Worker {
                   .andThen(DeterministicFiniteAutomaton.builder()),
               new ShallowDFAFactory<Character>(2, positiveChars)
                   .then(GraphUtils.mapper(IndexedNode.incrementerMapper(DeterministicFiniteAutomaton.State.class), Misc::first)),
-              new LexicoGraphical(IntStream.range(0, metrics.length).toArray()).comparing(Individual::fitness),
+              new LexicoGraphical<>(Double.class, IntStream.range(0, metrics.length).toArray()).comparing(Individual::fitness),
               nPop,
               Map.of(
                   new IndexedNodeAddition<DeterministicFiniteAutomaton.State, DeterministicFiniteAutomaton.State, Set<Character>>(
