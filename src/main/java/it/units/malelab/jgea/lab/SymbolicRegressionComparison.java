@@ -128,7 +128,7 @@ public class SymbolicRegressionComparison extends Worker {
         uniqueness().of(each(fitness())).of(all()),
         size().of(genotype()).of(best()),
         size().of(solution()).of(best()),
-        birthIteration().of(best()),
+        fitnessMappingIteration().of(best()),
         fitness().reformat("%5.3f").of(best()),
         hist(8).of(each(fitness())).of(all()),
         // TODO put validation, hist of fitnesses
@@ -157,7 +157,7 @@ public class SymbolicRegressionComparison extends Worker {
                   IndependentFactory.picker(operators),
                   terminalFactory
               ),
-              PartialComparator.from(Double.class).comparing(Individual::getFitness),
+              PartialComparator.from(Double.class).comparing(Individual::fitness),
               nPop,
               Map.of(
                   new SubtreeCrossover<>(maxHeight), 0.8d,
@@ -188,7 +188,7 @@ public class SymbolicRegressionComparison extends Worker {
                   IndependentFactory.picker(operators),
                   terminalFactory
               ),
-              PartialComparator.from(Double.class).comparing(Individual::getFitness),
+              PartialComparator.from(Double.class).comparing(Individual::fitness),
               nPop,
               Map.of(
                   new SubtreeMutation<>(maxHeight, new GrowTreeBuilder<>(
@@ -218,7 +218,7 @@ public class SymbolicRegressionComparison extends Worker {
                   IndependentFactory.picker(operators),
                   terminalFactory
               ),
-              PartialComparator.from(Double.class).comparing(Individual::getFitness),
+              PartialComparator.from(Double.class).comparing(Individual::fitness),
               nPop,
               Map.of(
                   new SubtreeCrossover<>(maxHeight), 0.8d,
@@ -247,7 +247,7 @@ public class SymbolicRegressionComparison extends Worker {
                   .andThen(n -> TreeBasedRealFunction.from(n, vars(p.arity())))
                   .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
               new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
-              PartialComparator.from(Double.class).comparing(Individual::getFitness),
+              PartialComparator.from(Double.class).comparing(Individual::fitness),
               nPop,
               Map.of(
                   new SameRootSubtreeCrossover<>(maxHeight + 4), 0.8d,
@@ -271,7 +271,7 @@ public class SymbolicRegressionComparison extends Worker {
                   .andThen(n -> TreeBasedRealFunction.from(n, vars(p.arity())))
                   .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
               new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
-              PartialComparator.from(Double.class).comparing(Individual::getFitness),
+              PartialComparator.from(Double.class).comparing(Individual::fitness),
               nPop,
               Map.of(
                   new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
@@ -294,7 +294,7 @@ public class SymbolicRegressionComparison extends Worker {
                   .andThen(n -> TreeBasedRealFunction.from(n, vars(p.arity())))
                   .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
               new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
-              PartialComparator.from(Double.class).comparing(Individual::getFitness),
+              PartialComparator.from(Double.class).comparing(Individual::fitness),
               nPop,
               Map.of(
                   new SameRootSubtreeCrossover<>(maxHeight + 4), 0.8d,
@@ -313,7 +313,7 @@ public class SymbolicRegressionComparison extends Worker {
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::fitness),
             nPop,
             Map.of(
                 new NodeAddition<Node, Double>(
@@ -343,7 +343,7 @@ public class SymbolicRegressionComparison extends Worker {
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::fitness),
             nPop,
             Map.of(
                 new NodeAddition<Node, Double>(
@@ -368,7 +368,7 @@ public class SymbolicRegressionComparison extends Worker {
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::fitness),
             nPop,
             Map.of(
                 new NodeAddition<Node, Double>(
@@ -384,7 +384,7 @@ public class SymbolicRegressionComparison extends Worker {
             ),
             5,
             new KMeansSpeciator<Graph<Node, Double>, RealFunction, Double>(5, 300, (x, y) -> (new Jaccard()).on(a -> new HashSet<>(Collections.singletonList(a))).apply(x, y),
-                i -> i.getGenotype().nodes().stream().mapToDouble(Node::getIndex).toArray()),
+                i -> i.genotype().nodes().stream().mapToDouble(Node::getIndex).toArray()),
             0.75,
             false
         )),
@@ -393,7 +393,7 @@ public class SymbolicRegressionComparison extends Worker {
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::fitness),
             nPop,
             Map.of(
                 new NodeAddition<Node, Double>(
@@ -409,7 +409,7 @@ public class SymbolicRegressionComparison extends Worker {
             ),
             5,
             new LazySpeciator<>(
-                (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                (new Jaccard()).on(i -> i.genotype().nodes()),
                 0.25
             ),
             0.75,
@@ -420,7 +420,7 @@ public class SymbolicRegressionComparison extends Worker {
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::fitness),
             nPop,
             Map.of(
                 new NodeAddition<Node, Double>(
@@ -436,7 +436,7 @@ public class SymbolicRegressionComparison extends Worker {
             ),
             5,
             new LazySpeciator<>(
-                (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                (new Jaccard()).on(i -> i.genotype().nodes()),
                 0.25
             ),
             0.75,
@@ -447,7 +447,7 @@ public class SymbolicRegressionComparison extends Worker {
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::fitness),
             nPop,
             Map.of(
                 new NodeAddition<Node, Double>(
@@ -478,7 +478,7 @@ public class SymbolicRegressionComparison extends Worker {
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::fitness),
             nPop,
             Map.of(
                 new NodeAddition<Node, Double>(
@@ -499,7 +499,7 @@ public class SymbolicRegressionComparison extends Worker {
             ),
             5,
             new LazySpeciator<>(
-                (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                (new Jaccard()).on(i -> i.genotype().nodes()),
                 0.25
             ),
             0.75,
@@ -510,7 +510,7 @@ public class SymbolicRegressionComparison extends Worker {
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::fitness),
             nPop,
             Map.of(
                 new NodeAddition<Node, Double>(
@@ -531,7 +531,7 @@ public class SymbolicRegressionComparison extends Worker {
             ),
             5,
             new LazySpeciator<>(
-                (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                (new Jaccard()).on(i -> i.genotype().nodes()),
                 0.25
             ),
             0.75,
@@ -542,7 +542,7 @@ public class SymbolicRegressionComparison extends Worker {
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::fitness),
             nPop,
             Map.of(
                 new NodeAddition<Node, Double>(
@@ -572,7 +572,7 @@ public class SymbolicRegressionComparison extends Worker {
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new ShallowFactory(p.arity(), 1, constants),
-            PartialComparator.from(Double.class).comparing(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::fitness),
             nPop,
             Map.of(
                 new NodeAddition<Node, OperatorGraph.NonValuedArc>(
@@ -601,7 +601,7 @@ public class SymbolicRegressionComparison extends Worker {
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new ShallowFactory(p.arity(), 1, constants),
-            PartialComparator.from(Double.class).comparing(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::fitness),
             nPop,
             Map.of(
                 new NodeAddition<Node, OperatorGraph.NonValuedArc>(
@@ -616,7 +616,7 @@ public class SymbolicRegressionComparison extends Worker {
             ),
             5,
             new LazySpeciator<>(
-                (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                (new Jaccard()).on(i -> i.genotype().nodes()),
                 0.25
             ),
             0.75,
@@ -635,7 +635,7 @@ public class SymbolicRegressionComparison extends Worker {
                   .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
               new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1)
                   .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
-              PartialComparator.from(Double.class).comparing(Individual::getFitness),
+              PartialComparator.from(Double.class).comparing(Individual::fitness),
               nPop,
               Map.of(
                   new NodeAddition<IndexedNode<Node>, Double>(
@@ -673,7 +673,7 @@ public class SymbolicRegressionComparison extends Worker {
                   .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
               new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1)
                   .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
-              PartialComparator.from(Double.class).comparing(Individual::getFitness),
+              PartialComparator.from(Double.class).comparing(Individual::fitness),
               nPop,
               Map.of(
                   new NodeAddition<IndexedNode<Node>, Double>(
@@ -693,7 +693,7 @@ public class SymbolicRegressionComparison extends Worker {
               ),
               5,
               new LazySpeciator<>(
-                  (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                  (new Jaccard()).on(i -> i.genotype().nodes()),
                   0.25
               ),
               0.75,
@@ -713,7 +713,7 @@ public class SymbolicRegressionComparison extends Worker {
                   .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
               new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1)
                   .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
-              PartialComparator.from(Double.class).comparing(Individual::getFitness),
+              PartialComparator.from(Double.class).comparing(Individual::fitness),
               nPop,
               Map.of(
                   new IndexedNodeAddition<FunctionNode, Node, Double>(
@@ -734,7 +734,7 @@ public class SymbolicRegressionComparison extends Worker {
               ),
               5,
               new LazySpeciator<>(
-                  (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                  (new Jaccard()).on(i -> i.genotype().nodes()),
                   0.25
               ),
               0.75,
@@ -754,7 +754,7 @@ public class SymbolicRegressionComparison extends Worker {
                   .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
               new ShallowFactory(p.arity(), 1, constants)
                   .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
-              PartialComparator.from(Double.class).comparing(Individual::getFitness),
+              PartialComparator.from(Double.class).comparing(Individual::fitness),
               nPop,
               Map.of(
                   new IndexedNodeAddition<OperatorNode, Node, OperatorGraph.NonValuedArc>(
@@ -776,7 +776,7 @@ public class SymbolicRegressionComparison extends Worker {
               ),
               5,
               new LazySpeciator<>(
-                  (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                  (new Jaccard()).on(i -> i.genotype().nodes()),
                   0.25
               ),
               0.75,
@@ -796,7 +796,7 @@ public class SymbolicRegressionComparison extends Worker {
                   .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
               new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1)
                   .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
-              PartialComparator.from(Double.class).comparing(Individual::getFitness),
+              PartialComparator.from(Double.class).comparing(Individual::fitness),
               nPop,
               Map.of(
                   new IndexedNodeAddition<FunctionNode, Node, Double>(
@@ -812,7 +812,7 @@ public class SymbolicRegressionComparison extends Worker {
               ),
               5,
               new LazySpeciator<>(
-                  (new Jaccard()).on(i -> i.getGenotype().nodes()),
+                  (new Jaccard()).on(i -> i.genotype().nodes()),
                   0.25
               ),
               0.75,
@@ -824,7 +824,7 @@ public class SymbolicRegressionComparison extends Worker {
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::fitness),
             nPop,
             Map.of(
                 new NodeAddition<Node, Double>(
@@ -849,7 +849,7 @@ public class SymbolicRegressionComparison extends Worker {
                 .andThen(MathUtils.fromMultivariateBuilder())
                 .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
             new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-            PartialComparator.from(Double.class).comparing(Individual::getFitness),
+            PartialComparator.from(Double.class).comparing(Individual::fitness),
             nPop,
             Map.of(
                 new NodeAddition<Node, Double>(
