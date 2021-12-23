@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author eric on 2021/01/03 for jgea
@@ -42,7 +43,7 @@ public class TelegramUpdater<E> extends TelegramClient implements Listener.Facto
   @Override
   public Listener<E> build() {
     return new Listener<>() {
-      private final List<Accumulator<E, ?>> accumulators = factories.stream().map(Accumulator.Factory::build).toList();
+      private final List<Accumulator<E, ?>> accumulators = factories.stream().map(Accumulator.Factory::build).collect(Collectors.toList());
 
       @Override
       public void listen(E e) {

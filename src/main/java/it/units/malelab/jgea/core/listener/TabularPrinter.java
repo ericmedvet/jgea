@@ -51,7 +51,7 @@ public class TabularPrinter<E> implements Listener.Factory<E> {
   ) {
     this.pairs = functions.stream()
         .map(f -> Pair.of(f, Math.max(collapse(f.getName()).length(), formatSize(f.getFormat()))))
-        .toList();
+        .collect(Collectors.toList());
     this.ps = ps;
     this.headerInterval = headerInterval;
     this.showLegend = showLegend;
@@ -88,7 +88,7 @@ public class TabularPrinter<E> implements Listener.Factory<E> {
       public void listen(E e) {
         List<Object> values = pairs.stream()
             .map(p -> p.first().apply(e))
-            .toList();
+            .collect(Collectors.toList());
         String s = IntStream.range(0, pairs.size())
             .mapToObj(i -> format(
                 values.get(i),

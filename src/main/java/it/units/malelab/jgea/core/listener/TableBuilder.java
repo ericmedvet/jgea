@@ -4,6 +4,7 @@ import it.units.malelab.jgea.core.util.ArrayTable;
 import it.units.malelab.jgea.core.util.Table;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author eric on 2021/01/04 for jgea
@@ -34,7 +35,7 @@ public class TableBuilder<E, O> implements Accumulator.Factory<E, Table<O>> {
       public void listen(E e) {
         table.addRow(functions.stream()
             .map(f -> f.apply(e))
-            .toList()
+            .collect(Collectors.toList())
         );
       }
     };

@@ -3,6 +3,7 @@ package it.units.malelab.jgea.core.listener;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author eric on 2021/01/02 for jgea
@@ -45,7 +46,7 @@ public interface NamedFunction<F, T> extends Function<F, T> {
   }
 
   default <V> List<NamedFunction<V, ? extends T>> of(List<NamedFunction<V, ? extends F>> befores) {
-    return befores.stream().map(this::of).toList();
+    return befores.stream().map(this::of).collect(Collectors.toList());
   }
 
   default <V> NamedFunction<F, V> then(NamedFunction<? super T, ? extends V> after) {
@@ -69,7 +70,7 @@ public interface NamedFunction<F, T> extends Function<F, T> {
   }
 
   static <F, T, V> List<NamedFunction<F, ? extends V>> then(NamedFunction<F, T> before, List<NamedFunction<T, ? extends V>> afters) {
-    return afters.stream().map(before::then).toList();
+    return afters.stream().map(before::then).collect(Collectors.toList());
   }
 
   static <F, T> NamedFunction<F, T> build(String name, String format, Function<F, T> function) {
