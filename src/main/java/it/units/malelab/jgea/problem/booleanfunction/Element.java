@@ -14,29 +14,41 @@
  * limitations under the License.
  */
 
-package it.units.malelab.jgea.problem.booleanfunction.element;
+package it.units.malelab.jgea.problem.booleanfunction;
 
 /**
  * @author eric
  */
-public enum Operator implements Element {
+public interface Element {
 
-  AND(".and"),
-  AND1NOT(".and1not"),
-  OR(".or"),
-  XOR(".xor"),
-  NOT(".not"),
-  IF(".if");
+  String toString();
 
-  private final String string;
+  record Variable(String name) implements Element {}
 
-  Operator(String string) {
-    this.string = string;
+  enum Operator implements Element {
+
+    AND(".and"), AND1NOT(".and1not"), OR(".or"), XOR(".xor"), NOT(".not"), IF(".if");
+
+    private final String string;
+
+    Operator(String string) {
+      this.string = string;
+    }
+
+    @Override
+    public String toString() {
+      return string;
+    }
+
   }
 
-  @Override
-  public String toString() {
-    return string;
-  }
+  record Decoration(String string) implements Element {}
 
+  record Constant(boolean value) implements Element {
+
+    @Override
+    public String toString() {
+      return Boolean.toString(value);
+    }
+  }
 }

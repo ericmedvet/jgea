@@ -16,7 +16,6 @@
 
 package it.units.malelab.jgea.problem.booleanfunction;
 
-import it.units.malelab.jgea.problem.booleanfunction.element.*;
 import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.util.ArrayList;
@@ -59,21 +58,21 @@ public class FormulaMapper implements Function<Tree<String>, List<Tree<Element>>
   }
 
   private static Element fromString(String string) {
-    for (Operator operator : Operator.values()) {
+    for (Element.Operator operator : Element.Operator.values()) {
       if (operator.toString().equals(string)) {
         return operator;
       }
     }
     if (string.equals("0")) {
-      return new Constant(false);
+      return new Element.Constant(false);
     }
     if (string.equals("1")) {
-      return new Constant(true);
+      return new Element.Constant(true);
     }
     if (string.matches("[a-zA-Z]+[0-9.]+")) {
-      return new Variable(string);
+      return new Element.Variable(string);
     }
-    return new Decoration(string);
+    return new Element.Decoration(string);
   }
 
 }

@@ -17,7 +17,7 @@
 package it.units.malelab.jgea.core.fitness;
 
 import it.units.malelab.jgea.problem.booleanfunction.BooleanUtils;
-import it.units.malelab.jgea.problem.booleanfunction.element.Element;
+import it.units.malelab.jgea.problem.booleanfunction.Element;
 import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.util.Arrays;

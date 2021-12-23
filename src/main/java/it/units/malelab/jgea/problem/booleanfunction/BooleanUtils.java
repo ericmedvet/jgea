@@ -16,7 +16,6 @@
 
 package it.units.malelab.jgea.problem.booleanfunction;
 
-import it.units.malelab.jgea.problem.booleanfunction.element.*;
 import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.util.ArrayList;
@@ -38,18 +37,18 @@ public class BooleanUtils {
   }
 
   public static Boolean compute(Tree<Element> tree, Map<String, Boolean> values) {
-    if (tree.content() instanceof Decoration) {
+    if (tree.content() instanceof Element.Decoration) {
       return null;
     }
-    if (tree.content() instanceof Variable) {
-      Boolean result = values.get(tree.content().toString());
+    if (tree.content() instanceof Element.Variable) {
+      Boolean result = values.get(((Element.Variable) tree.content()).name());
       if (result == null) {
-        throw new RuntimeException(String.format("Undefined variable: %s", tree.content().toString()));
+        throw new RuntimeException(String.format("Undefined variable: %s", ((Element.Variable) tree.content()).name()));
       }
       return result;
     }
-    if (tree.content() instanceof Constant) {
-      return ((Constant) tree.content()).getValue();
+    if (tree.content() instanceof Element.Constant) {
+      return ((Element.Constant) tree.content()).value();
     }
     boolean[] childrenValues = new boolean[tree.nChildren()];
     int i = 0;
@@ -60,25 +59,18 @@ public class BooleanUtils {
         i = i + 1;
       }
     }
-    return compute((Operator) tree.content(), childrenValues);
+    return compute((Element.Operator) tree.content(), childrenValues);
   }
 
-  private static boolean compute(Operator operator, boolean... operands) {
-    switch (operator) {
-      case AND:
-        return operands[0] && operands[1];
-      case AND1NOT:
-        return (!operands[0]) && operands[1];
-      case OR:
-        return operands[0] || operands[1];
-      case XOR:
-        return operands[0] ^ operands[1];
-      case NOT:
-        return !operands[0];
-      case IF:
-        return operands[0] ? operands[1] : operands[2];
-    }
-    return false;
+  private static boolean compute(Element.Operator operator, boolean... operands) {
+    return switch (operator) {
+      case AND -> operands[0] && operands[1];
+      case AND1NOT -> (!operands[0]) && operands[1];
+      case OR -> operands[0] || operands[1];
+      case XOR -> operands[0] ^ operands[1];
+      case NOT -> !operands[0];
+      case IF -> operands[0] ? operands[1] : operands[2];
+    };
   }
 
   public static Map<String, boolean[]> buildCompleteCases(String... names) {
