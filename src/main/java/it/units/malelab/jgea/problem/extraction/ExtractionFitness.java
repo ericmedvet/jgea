@@ -17,7 +17,6 @@
 package it.units.malelab.jgea.problem.extraction;
 
 import com.google.common.collect.Range;
-import it.units.malelab.jgea.core.util.WithNames;
 
 import java.util.*;
 import java.util.function.Function;
@@ -25,7 +24,7 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>>, WithNames {
+public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>> {
 
   public enum Metric {
 
@@ -141,11 +140,6 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
   @Override
   public List<Double> apply(Extractor<S> e) {
     return aggregator.apply(e.extractNonOverlapping(aggregator.sequence));
-  }
-
-  @Override
-  public List<String> names() {
-    return aggregator.metrics.stream().map(m -> m.toString().toLowerCase().replace("_", ".")).toList();
   }
 
   private static BitSet buildMask(Set<Range<Integer>> extractions, int size) {

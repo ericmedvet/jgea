@@ -24,7 +24,6 @@ package it.units.malelab.jgea.core.fitness;
 import com.google.common.collect.EnumMultiset;
 import com.google.common.collect.Multiset;
 import it.units.malelab.jgea.core.util.Pair;
-import it.units.malelab.jgea.core.util.WithNames;
 import it.units.malelab.jgea.problem.classification.Classifier;
 
 import java.util.ArrayList;
@@ -35,7 +34,7 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class ClassificationFitness<O, L extends Enum<L>> extends CaseBasedFitness<Classifier<O, L>, O, L, List<Double>> implements WithNames {
+public class ClassificationFitness<O, L extends Enum<L>> extends CaseBasedFitness<Classifier<O, L>, O, L, List<Double>> {
 
   public enum Metric {
     CLASS_ERROR_RATE, ERROR_RATE, BALANCED_ERROR_RATE
@@ -125,11 +124,6 @@ public class ClassificationFitness<O, L extends Enum<L>> extends CaseBasedFitnes
 
   public ClassificationFitness<O, L> changeMetric(Metric metric) {
     return new ClassificationFitness<>(data, metric);
-  }
-
-  @Override
-  public List<String> names() {
-    return names;
   }
 
 }

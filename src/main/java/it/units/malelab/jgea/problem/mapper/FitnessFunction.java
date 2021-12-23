@@ -20,7 +20,6 @@ import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.util.Pair;
-import it.units.malelab.jgea.core.util.WithNames;
 import it.units.malelab.jgea.distance.Distance;
 import it.units.malelab.jgea.distance.Hamming;
 import it.units.malelab.jgea.problem.mapper.element.Element;
@@ -38,8 +37,7 @@ import java.util.function.Function;
  * @author eric
  */
 public class FitnessFunction implements
-    Function<Pair<Tree<Element>, Tree<Element>>, List<Double>>,
-    WithNames {
+    Function<Pair<Tree<Element>, Tree<Element>>, List<Double>> {
 
   private final static int EXPRESSIVENESS_DEPTH = 2;
 
@@ -147,11 +145,6 @@ public class FitnessFunction implements
       }
     }
     return dists;
-  }
-
-  @Override
-  public List<String> names() {
-    return properties.stream().map(p -> p.toString().toLowerCase().replace("_", ".")).toList();
   }
 
 }
