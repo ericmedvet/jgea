@@ -28,13 +28,7 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
 
   public enum Metric {
 
-    ONE_MINUS_PREC,
-    ONE_MINUS_REC,
-    ONE_MINUS_FM,
-    SYMBOL_FNR,
-    SYMBOL_FPR,
-    SYMBOL_ERROR,
-    SYMBOL_WEIGHTED_ERROR;
+    ONE_MINUS_PREC, ONE_MINUS_REC, ONE_MINUS_FM, SYMBOL_FNR, SYMBOL_FPR, SYMBOL_ERROR, SYMBOL_WEIGHTED_ERROR;
 
   }
 
@@ -79,10 +73,7 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
         values.put(Metric.SYMBOL_FPR, falsePositiveSymbols / (trueNegativeChars + falsePositiveSymbols));
         values.put(Metric.SYMBOL_FNR, falseNegativeSymbols / (truePositiveSymbols + falseNegativeSymbols));
         values.put(Metric.SYMBOL_ERROR, (falsePositiveSymbols + falseNegativeSymbols) / (double) sequence.size());
-        values.put(
-            Metric.SYMBOL_WEIGHTED_ERROR,
-            (falsePositiveSymbols / (trueNegativeChars + falsePositiveSymbols) + falseNegativeSymbols / (truePositiveSymbols + falseNegativeSymbols)) / 2d
-        );
+        values.put(Metric.SYMBOL_WEIGHTED_ERROR, (falsePositiveSymbols / (trueNegativeChars + falsePositiveSymbols) + falseNegativeSymbols / (truePositiveSymbols + falseNegativeSymbols)) / 2d);
       }
       List<Double> results = new ArrayList<>(metrics.size());
       for (Metric metric : metrics) {

@@ -17,10 +17,6 @@
 package it.units.malelab.jgea.problem.mapper;
 
 import com.google.common.collect.Range;
-import it.units.malelab.jgea.problem.mapper.element.Element;
-import it.units.malelab.jgea.problem.mapper.element.MapperFunction;
-import it.units.malelab.jgea.problem.mapper.element.NumericConstant;
-import it.units.malelab.jgea.problem.mapper.element.Variable;
 import it.units.malelab.jgea.representation.grammar.ge.HierarchicalMapper;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
 import it.units.malelab.jgea.representation.tree.Tree;
@@ -59,16 +55,16 @@ public class MapperUtils {
   private static Element fromString(String string) {
     try {
       double value = Double.parseDouble(string);
-      return new NumericConstant(value);
+      return new Element.NumericConstant(value);
     } catch (NumberFormatException ex) {
       //just ignore
     }
-    for (Variable variable : Variable.values()) {
+    for (Element.Variable variable : Element.Variable.values()) {
       if (variable.getGrammarName().equals(string)) {
         return variable;
       }
     }
-    for (MapperFunction function : MapperFunction.values()) {
+    for (Element.MapperFunction function : Element.MapperFunction.values()) {
       if (function.getGrammarName().equals(string)) {
         return function;
       }
@@ -78,8 +74,8 @@ public class MapperUtils {
 
   public static Object compute(Tree<Element> tree, BitString g, List<Double> values, int depth, AtomicInteger globalCounter) {
     Object result = null;
-    if (tree.content() instanceof Variable) {
-      switch (((Variable) tree.content())) {
+    if (tree.content() instanceof Element.Variable) {
+      switch (((Element.Variable) tree.content())) {
         case GENOTYPE:
           result = g;
           break;
@@ -96,8 +92,8 @@ public class MapperUtils {
           result = (double) globalCounter.getAndIncrement();
           break;
       }
-    } else if (tree.content() instanceof MapperFunction) {
-      switch (((MapperFunction) tree.content())) {
+    } else if (tree.content() instanceof Element.MapperFunction) {
+      switch (((Element.MapperFunction) tree.content())) {
         case SIZE:
           result = (double) ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).size();
           break;
@@ -197,14 +193,14 @@ public class MapperUtils {
           break;
         case APPLY:
           result = apply(
-              (MapperFunction) tree.child(0).content(),
+              (Element.MapperFunction) tree.child(0).content(),
               ((List) compute(tree.child(1), g, values, depth, globalCounter)),
               (tree.nChildren() >= 3) ? compute(tree.child(2), g, values, depth, globalCounter) : null
           );
           break;
       }
-    } else if (tree.content() instanceof NumericConstant) {
-      result = ((NumericConstant) tree.content()).getValue();
+    } else if (tree.content() instanceof Element.NumericConstant) {
+      result = ((Element.NumericConstant) tree.content()).value();
     }
     return result;
   }
@@ -314,7 +310,7 @@ public class MapperUtils {
     return l;
   }
 
-  private static List apply(MapperFunction function, List inputList, Object arg) {
+  private static List apply(Element.MapperFunction function, List inputList, Object arg) {
     List outputList = new ArrayList(inputList.size());
     for (Object repeatedArg : inputList) {
       switch (function) {

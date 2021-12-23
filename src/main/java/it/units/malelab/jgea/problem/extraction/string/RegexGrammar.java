@@ -115,6 +115,7 @@ public class RegexGrammar extends Grammar<String> {
     return c;
   }
 
+  @SafeVarargs
   private <T> List<T> l(T... ts) {
     return new ArrayList<>(Arrays.asList(ts));
   }

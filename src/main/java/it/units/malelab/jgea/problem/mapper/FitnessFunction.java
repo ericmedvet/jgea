@@ -22,7 +22,6 @@ import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.distance.Distance;
 import it.units.malelab.jgea.distance.Hamming;
-import it.units.malelab.jgea.problem.mapper.element.Element;
 import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
 import it.units.malelab.jgea.representation.sequence.bit.BitStringFactory;

@@ -21,7 +21,6 @@ import com.google.common.collect.Sets;
 import it.units.malelab.jgea.core.ProblemWithValidation;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -52,11 +51,11 @@ public class ExtractionProblem<S> implements ProblemWithValidation<Extractor<S>,
     Set<Range<Integer>> learningDesiredExtractions = extractors.stream()
         .map(e -> e.extractNonOverlapping(finalLearningSequence))
         .reduce(Sets::union)
-        .orElse((Set<Range<Integer>>) Collections.EMPTY_SET);
+        .orElse(Set.of());
     Set<Range<Integer>> validationDesiredExtractions = extractors.stream()
         .map(e -> e.extractNonOverlapping(finalValidationSequence))
         .reduce(Sets::union)
-        .orElse((Set<Range<Integer>>) Collections.EMPTY_SET);
+        .orElse(Set.of());
     fitnessFunction = new ExtractionFitness<>(finalLearningSequence, learningDesiredExtractions, metrics);
     validationFunction = new ExtractionFitness<>(finalValidationSequence, validationDesiredExtractions, metrics);
   }

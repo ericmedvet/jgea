@@ -34,7 +34,7 @@ public class DataUtils {
           .toList();
       subset.addAll(
           currentSubset.stream()
-              .skip(currentSubset.size() / n * i)
+              .skip((long) currentSubset.size() / n * i)
               .limit(currentSubset.size() / n).toList());
     });
     return subset;
