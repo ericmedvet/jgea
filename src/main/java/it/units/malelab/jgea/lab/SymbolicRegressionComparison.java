@@ -20,7 +20,6 @@ import com.google.common.base.Stopwatch;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.Individual;
-import it.units.malelab.jgea.core.evolver.Event;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversityEvolver;
@@ -111,7 +110,7 @@ public class SymbolicRegressionComparison extends Worker {
         // new Pagie1(metric)
     );
     //consumers
-    List<NamedFunction<? super Event<?, ?, ? extends Double>, ?>> functions = List.of(
+    List<NamedFunction<? super Evolver.Event<?, ?, ? extends Double>, ?>> functions = List.of(
         eventAttribute("seed", "%2d"),
         eventAttribute("problem", NamedFunction.formatOfLongest(
             problems.stream().map(p -> p.getClass().getSimpleName())
@@ -134,7 +133,7 @@ public class SymbolicRegressionComparison extends Worker {
         // TODO put validation, hist of fitnesses
         solution().reformat("%30.30s").of(best())
     );
-    Listener.Factory<Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(functions);
+    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(functions);
     if (a("file", null) != null) {
       listenerFactory = Listener.Factory.all(List.of(
           listenerFactory,
@@ -893,7 +892,7 @@ public class SymbolicRegressionComparison extends Worker {
               Map.entry("problem", problem.getClass().getSimpleName().toLowerCase()),
               Map.entry("evolver", evolverEntry.getKey())
           );
-          Listener<Event<?, ?, ? extends Double>> listener = Listener.all(List.of(
+          Listener<Evolver.Event<?, ?, ? extends Double>> listener = Listener.all(List.of(
               new EventAugmenter(keys),
               listenerFactory.build()
           )).deferred(executorService);

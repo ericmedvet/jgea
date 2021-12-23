@@ -16,9 +16,13 @@
 
 package it.units.malelab.jgea.core.evolver;
 
+import it.units.malelab.jgea.core.Individual;
 import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 
+import java.io.Serializable;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -36,6 +40,10 @@ public interface Evolver<G, S, F> {
       Random random,
       ExecutorService executor,
       Listener<? super Event<G, S, F>> listener) throws InterruptedException, ExecutionException;
+
+  record Event<G, S, F>(State state, PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation,
+                        Map<String, Object> attributes) implements Serializable {
+  }
 
   class State {
     private int iterations = 0;
@@ -101,4 +109,5 @@ public interface Evolver<G, S, F> {
       return new State(iterations, births, fitnessEvaluations, elapsedMillis);
     }
   }
+
 }

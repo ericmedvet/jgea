@@ -16,14 +16,14 @@
 
 package it.units.malelab.jgea.core.evolver.stopcondition;
 
-import it.units.malelab.jgea.core.evolver.Event;
+import it.units.malelab.jgea.core.evolver.Evolver;
 
 import java.util.function.Predicate;
 
 /**
  * @author eric
  */
-public class FitnessEvaluations implements Predicate<Event<?, ?, ?>> {
+public class FitnessEvaluations implements Predicate<Evolver.Event<?, ?, ?>> {
 
   private final long n;
 
@@ -32,8 +32,8 @@ public class FitnessEvaluations implements Predicate<Event<?, ?, ?>> {
   }
 
   @Override
-  public boolean test(Event<?, ?, ?> event) {
-    return event.getState().getFitnessEvaluations() >= n;
+  public boolean test(Evolver.Event<?, ?, ?> event) {
+    return event.state().getFitnessEvaluations() >= n;
   }
 
   @Override

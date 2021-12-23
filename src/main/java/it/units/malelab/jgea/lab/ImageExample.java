@@ -19,7 +19,6 @@ package it.units.malelab.jgea.lab;
 import com.google.common.base.Stopwatch;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.Individual;
-import it.units.malelab.jgea.core.evolver.Event;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
@@ -77,7 +76,7 @@ public class ImageExample extends Worker {
     BaseFunction[] baseFunctions = new BaseFunction[]{BaseFunction.GAUSSIAN, BaseFunction.SIN, BaseFunction.SQ};
     List<String> images = l(a("images", "/home/eric/experiments/2020-graphea/image/glasses-32x32.png"));
     //listeners
-    List<NamedFunction<? super Event<?, ?, ? extends Double>, ?>> functions = List.of(
+    List<NamedFunction<? super Evolver.Event<?, ?, ? extends Double>, ?>> functions = List.of(
         eventAttribute("seed", "%2d"),
         eventAttribute("image", "%20.20s"),
         eventAttribute("evolver", "%20.20s"),
@@ -95,7 +94,7 @@ public class ImageExample extends Worker {
         fitness().reformat("%5.3f").of(best()),
         fitnessMappingIteration().of(best())
     );
-    Listener.Factory<Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(functions);
+    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(functions);
     if (a("file", null) != null) {
       listenerFactory = Listener.Factory.all(List.of(
           listenerFactory,
@@ -144,7 +143,7 @@ public class ImageExample extends Worker {
             ImageReconstruction problem = new ImageReconstruction(ImageIO.read(new File(image)), true);
             Stopwatch stopwatch = Stopwatch.createStarted();
             Evolver<?, RealFunction, Double> evolver = evolverEntry.getValue();
-            Listener<Event<?, ?, ? extends Double>> listener = Listener.all(List.of(
+            Listener<Evolver.Event<?, ?, ? extends Double>> listener = Listener.all(List.of(
                 new EventAugmenter(keys),
                 listenerFactory.build()
             )).deferred(executorService);

@@ -16,14 +16,14 @@
 
 package it.units.malelab.jgea.core.evolver.stopcondition;
 
-import it.units.malelab.jgea.core.evolver.Event;
+import it.units.malelab.jgea.core.evolver.Evolver;
 
 import java.util.function.Predicate;
 
 /**
  * @author eric
  */
-public class TargetFitness<F> implements Predicate<Event<?, ?, F>> {
+public class TargetFitness<F> implements Predicate<Evolver.Event<?, ?, F>> {
 
   private final F targetFitness;
 
@@ -32,8 +32,8 @@ public class TargetFitness<F> implements Predicate<Event<?, ?, F>> {
   }
 
   @Override
-  public boolean test(Event<?, ?, F> event) {
-    return event.getOrderedPopulation().all().stream().anyMatch(i -> targetFitness.equals(i.fitness()));
+  public boolean test(Evolver.Event<?, ?, F> event) {
+    return event.orderedPopulation().all().stream().anyMatch(i -> targetFitness.equals(i.fitness()));
   }
 
   @Override

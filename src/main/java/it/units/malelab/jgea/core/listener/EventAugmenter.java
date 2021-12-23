@@ -1,13 +1,13 @@
 package it.units.malelab.jgea.core.listener;
 
-import it.units.malelab.jgea.core.evolver.Event;
+import it.units.malelab.jgea.core.evolver.Evolver;
 
 import java.util.Map;
 
 /**
  * @author eric on 2021/01/16 for jgea
  */
-public class EventAugmenter implements Listener<Event<?, ?, ?>> {
+public class EventAugmenter implements Listener<Evolver.Event<?, ?, ?>> {
 
   private final Map<String, ?> attributes;
 
@@ -16,7 +16,7 @@ public class EventAugmenter implements Listener<Event<?, ?, ?>> {
   }
 
   @Override
-  public void listen(Event<?, ?, ?> event) {
-    attributes.forEach((key, value) -> event.getAttributes().put(key, value));
+  public void listen(Evolver.Event<?, ?, ?> event) {
+    attributes.forEach((key, value) -> event.attributes().put(key, value));
   }
 }

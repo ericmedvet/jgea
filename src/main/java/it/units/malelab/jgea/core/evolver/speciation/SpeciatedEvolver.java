@@ -30,7 +30,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * @author eric
@@ -79,7 +78,7 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
     List<Species<Individual<G, S, F>>> allSpecies = new ArrayList<>(speciator.speciate(orderedPopulation));
     L.fine(String.format("Population speciated in %d species of sizes %s",
         allSpecies.size(),
-        allSpecies.stream().map(s -> s.elements().size()).collect(Collectors.toList())
+        allSpecies.stream().map(s -> s.elements().size()).toList()
     ));
     //put elites
     Collection<Individual<G, S, F>> elite = new ArrayList<>();
@@ -101,7 +100,7 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
         allSpecies.size(),
         representers.stream()
             .map(i -> String.format("%s", i.fitness()))
-            .collect(Collectors.toList())
+            .toList()
     ));
     List<Individual<G, S, F>> sortedRepresenters = new ArrayList<>(representers);
     sortedRepresenters.sort(individualComparator.comparator());
@@ -112,7 +111,7 @@ public class SpeciatedEvolver<G, S, F> extends StandardEvolver<G, S, F> {
         .sum();
     List<Integer> sizes = weights.stream()
         .map(w -> (int) Math.floor(w / weightSum * (double) remaining))
-        .collect(Collectors.toList());
+        .toList();
     int sizeSum = sizes.stream()
         .mapToInt(Integer::intValue)
         .sum();

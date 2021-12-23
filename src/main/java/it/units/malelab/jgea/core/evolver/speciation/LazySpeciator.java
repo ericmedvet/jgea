@@ -23,7 +23,6 @@ import it.units.malelab.jgea.distance.Distance;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author federico
@@ -42,8 +41,7 @@ public class LazySpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Indivi
     List<List<Individual<G, S, F>>> clusters = new ArrayList<>();
     for (Individual<G, S, F> individual : population.all()) {
       List<Double> distances = clusters.stream()
-          .map(c -> distance.apply(individual, c.get(0)))
-          .collect(Collectors.toList());
+          .map(c -> distance.apply(individual, c.get(0))).toList();
       if (distances.isEmpty()) {
         List<Individual<G, S, F>> cluster = new ArrayList<>();
         cluster.add(individual);
@@ -66,7 +64,7 @@ public class LazySpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Indivi
     }
     return clusters.stream()
         .map(c -> new SpeciatedEvolver.Species<>(c, c.get(0)))
-        .collect(Collectors.toList());
+        .toList();
   }
 
 }

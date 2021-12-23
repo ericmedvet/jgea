@@ -20,7 +20,6 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.Individual;
-import it.units.malelab.jgea.core.evolver.Event;
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.evolver.StandardWithEnforcedDiversityEvolver;
@@ -99,7 +98,7 @@ public class ExtractionComparison extends Worker {
     );
     //consumers
     Map<String, Object> keys = new HashMap<>();
-    List<NamedFunction<? super Event<?, ? extends Extractor<Character>, ? extends List<Double>>, ?>> functions = List.of(
+    List<NamedFunction<? super Evolver.Event<?, ? extends Extractor<Character>, ? extends List<Double>>, ?>> functions = List.of(
         constant("seed", "%2d", keys),
         constant("problem", "%20.20s", keys),
         constant("evolver", "%20.20s", keys),
@@ -119,7 +118,7 @@ public class ExtractionComparison extends Worker {
         // TODO put validation, num of extractions, hist of fitnesses
         solution().reformat("%30.30s").of(best())
     );
-    Listener.Factory<Event<?, ? extends Extractor<Character>, ? extends List<Double>>> listenerFactory = new TabularPrinter<>(functions);
+    Listener.Factory<Evolver.Event<?, ? extends Extractor<Character>, ? extends List<Double>>> listenerFactory = new TabularPrinter<>(functions);
     if (a("file", null) != null) {
       listenerFactory = Listener.Factory.all(List.of(
           listenerFactory,
@@ -454,7 +453,7 @@ public class ExtractionComparison extends Worker {
               "problem", problemEntry.getKey(),
               "evolver", evolverEntry.getKey()
           ));
-          Listener<Event<?, ? extends Extractor<Character>, ? extends List<Double>>> listener = Listener.all(List.of(
+          Listener<Evolver.Event<?, ? extends Extractor<Character>, ? extends List<Double>>> listener = Listener.all(List.of(
               new EventAugmenter(keys),
               listenerFactory.build()
           )).deferred(executorService);

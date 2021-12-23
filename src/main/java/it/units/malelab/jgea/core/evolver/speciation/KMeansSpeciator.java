@@ -29,7 +29,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -82,16 +81,12 @@ public class KMeansSpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Indi
   public Collection<SpeciatedEvolver.Species<Individual<G, S, F>>> speciate(PartiallyOrderedCollection<Individual<G, S, F>> population) {
     Collection<ClusterableIndividual> points = population.all().stream()
         .map(ClusterableIndividual::new)
-        .collect(Collectors.toList());
-
+        .toList();
     if (points.stream().mapToInt(p -> p.getPoint().length).distinct().count() != 1) {
       throw new RuntimeException("all points to be clustered must have same length");
     }
-
     normalizePoints(points);
-
     List<CentroidCluster<ClusterableIndividual>> clusters = clusterPoints(points);
-
     List<ClusterableIndividual> representers = clusters.stream().map(c -> {
       ClusterableIndividual closest = c.getPoints().get(0);
       double closestD = distance.apply(closest.point, c.getCenter().getPoint());
@@ -103,14 +98,14 @@ public class KMeansSpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Indi
         }
       }
       return closest;
-    }).collect(Collectors.toList());
+    }).toList();
     return IntStream.range(0, clusters.size())
         .mapToObj(i -> new SpeciatedEvolver.Species<>(
             clusters.get(i).getPoints().stream()
                 .map(ci -> ci.individual)
-                .collect(Collectors.toList()),
+                .toList(),
             representers.get(i).individual
-        )).collect(Collectors.toList());
+        )).toList();
   }
 
   private void normalizePoints(Collection<ClusterableIndividual> points) {
@@ -166,7 +161,7 @@ public class KMeansSpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Indi
           s[k++] = 0.0;
           continue;
         }
-        double a = Arrays.stream(points).filter(p -> p != point).mapToDouble(p -> distance.apply(p, point)).average().getAsDouble();
+        double a = Arrays.stream(points).filter(p -> p != point).mapToDouble(p -> distance.apply(p, point)).average().orElse(0d);
         double b = clusters.stream().filter(c -> c != cluster).mapToDouble(c -> c.getPoints().stream().mapToDouble(ci -> distance.apply(ci.getPoint(), point)).average().orElse(0.0)).min().orElse(0.0);
         if (a < b) {
           s[k++] = 1.0 - (a / b);

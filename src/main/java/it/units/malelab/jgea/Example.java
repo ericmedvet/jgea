@@ -71,7 +71,7 @@ import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
  */
 public class Example extends Worker {
 
-  public final static List<NamedFunction<Event<?, ?, ?>, ?>> BASIC_FUNCTIONS = List.of(
+  public final static List<NamedFunction<Evolver.Event<?, ?, ?>, ?>> BASIC_FUNCTIONS = List.of(
       iterations(),
       births(),
       elapsedSeconds(),
@@ -86,7 +86,7 @@ public class Example extends Worker {
       fitnessMappingIteration().of(best())
   );
 
-  public final static List<NamedFunction<Event<?, ?, ? extends Double>, ?>> DOUBLE_FUNCTIONS = List.of(
+  public final static List<NamedFunction<Evolver.Event<?, ?, ? extends Double>, ?>> DOUBLE_FUNCTIONS = List.of(
       fitness().reformat("%5.3f").of(best()),
       hist(8).of(each(fitness())).of(all()),
       max(Double::compare).reformat("%5.3f").of(each(fitness())).of(all())
@@ -112,7 +112,7 @@ public class Example extends Worker {
   }
 
   public void runLinearPoints() {
-    Listener.Factory<Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
+    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
     Random r = new Random(1);
     Problem<List<Double>, Double> p = new LinearPoints();
     List<Evolver<List<Double>, List<Double>, Double>> evolvers = List.of(
@@ -162,10 +162,10 @@ public class Example extends Worker {
     int size = 1000;
     Random r = new Random(1);
     Problem<BitString, Double> p = new OneMax();
-    List<NamedFunction<Event<?, ?, ?>, ?>> keysFunctions = List.of(
+    List<NamedFunction<Evolver.Event<?, ?, ?>, ?>> keysFunctions = List.of(
         eventAttribute("evolver", "%20.20s")
     );
-    Listener.Factory<Event<?, ?, ? extends Double>> listenerFactory = Listener.Factory.all(List.of(
+    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = Listener.Factory.all(List.of(
         /*new TelegramUpdater<>(List.of(
             new TableBuilder<Event<?, ?, ? extends Double>, Number>(List.of(
                 iterations(),
@@ -235,7 +235,7 @@ public class Example extends Worker {
     );
     evolvers = evolvers.subList(2, 4);
     for (Evolver<BitString, BitString, Double> evolver : evolvers) {
-      Listener<Event<?, ?, ? extends Double>> listener = Listener.all(List.of(
+      Listener<Evolver.Event<?, ?, ? extends Double>> listener = Listener.all(List.of(
           new EventAugmenter(Map.ofEntries(Map.entry("evolver", evolver.getClass().getSimpleName()))),
           listenerFactory.build()
       )).deferred(executorService);
@@ -256,7 +256,7 @@ public class Example extends Worker {
   }
 
   public void runSymbolicRegression() {
-    Listener.Factory<Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
+    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
     Random r = new Random(1);
     SymbolicRegressionProblem p = new Nguyen7(SymbolicRegressionFitness.Metric.MSE, 1);
     Grammar<String> srGrammar;
@@ -321,7 +321,7 @@ public class Example extends Worker {
   }
 
   public void runSymbolicRegressionMO() {
-    Listener.Factory<Event<?, ?, ? extends List<Double>>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(BASIC_FUNCTIONS)));
+    Listener.Factory<Evolver.Event<?, ?, ? extends List<Double>>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(BASIC_FUNCTIONS)));
     //as(Double.class).of(nth(0)).of(fitness()).of(best())
     //as(Double.class).of(nth(1)).of(fitness()).of(best())
     Random r = new Random(1);
@@ -391,7 +391,7 @@ public class Example extends Worker {
   }
 
   public void runGrammarBasedParity() {
-    Listener.Factory<Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
+    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
     Random r = new Random(1);
     GrammarBasedProblem<String, List<Tree<Element>>, Double> p;
     try {
@@ -430,7 +430,7 @@ public class Example extends Worker {
   }
 
   public void runSphere() {
-    Listener.Factory<Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
+    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
     Random r = new Random(1);
     Problem<List<Double>, Double> p = new Sphere();
     List<Evolver<List<Double>, List<Double>, Double>> evolvers = List.of(
@@ -480,7 +480,7 @@ public class Example extends Worker {
   }
 
   public void runRastrigin() {
-    Listener.Factory<Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
+    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
     Random r = new Random(1);
     Problem<List<Double>, Double> p = new Rastrigin();
     List<Evolver<List<Double>, List<Double>, Double>> evolvers = List.of(

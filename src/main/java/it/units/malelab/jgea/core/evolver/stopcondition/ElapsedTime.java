@@ -16,7 +16,7 @@
 
 package it.units.malelab.jgea.core.evolver.stopcondition;
 
-import it.units.malelab.jgea.core.evolver.Event;
+import it.units.malelab.jgea.core.evolver.Evolver;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -24,7 +24,7 @@ import java.util.function.Predicate;
 /**
  * @author eric
  */
-public class ElapsedTime implements Predicate<Event<?, ?, ?>> {
+public class ElapsedTime implements Predicate<Evolver.Event<?, ?, ?>> {
 
   private final double t;
   private final TimeUnit timeUnit;
@@ -43,9 +43,9 @@ public class ElapsedTime implements Predicate<Event<?, ?, ?>> {
   }
 
   @Override
-  public boolean test(Event<?, ?, ?> event) {
+  public boolean test(Evolver.Event<?, ?, ?> event) {
     long tMillis = TimeUnit.MILLISECONDS.convert((long) t, timeUnit);
-    return event.getState().getElapsedMillis() > tMillis;
+    return event.state().getElapsedMillis() > tMillis;
   }
 
   @Override

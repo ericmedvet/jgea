@@ -24,10 +24,7 @@ import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -60,7 +57,7 @@ public abstract class AbstractIterativeEvolver<G, S, F> implements Evolver<G, S,
     while (true) {
       PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation = new DAGPartiallyOrderedCollection<>(population, individualComparator);
       state.setElapsedMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS));
-      Event<G, S, F> event = new Event<>(state, orderedPopulation);
+      Event<G, S, F> event = new Event<>(state, orderedPopulation, Map.of());
       listener.listen(event);
       if (stopCondition.test(event)) {
         L.fine(String.format("Stop condition met: %s", stopCondition));
