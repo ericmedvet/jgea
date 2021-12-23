@@ -27,14 +27,11 @@ import java.util.List;
  */
 public class GeometricCrossover extends ElementWiseCrossover<Double, List<Double>> {
 
-  private final Range<Double> range;
-
   public GeometricCrossover(Range<Double> range) {
     super(
         random -> new ArrayList<>(),
         (v1, v2, random) -> v1 + (v2 - v1) * (random.nextDouble() * (range.upperEndpoint() - range.lowerEndpoint()) + range.lowerEndpoint())
     );
-    this.range = range;
   }
 
   public GeometricCrossover() {

@@ -20,9 +20,10 @@ import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.util.Misc;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Random;
 import java.util.function.ToIntFunction;
 
 /**
@@ -129,72 +130,6 @@ public class IndexedNodeAddition<M extends N, N, A> implements Mutation<Graph<In
       child.setArcValue(indexedNode, arc.getTarget(), newArcValueFrom);
     }
     return child;
-  }
-
-  public static void main(String[] args) {
-    Random r = new Random();
-    IndependentFactory<Graph<String, Integer>> factory = random -> {
-      Graph<String, Integer> g = new LinkedHashGraph<>();
-      g.addNode("i");
-      g.addNode("o");
-      g.setArcValue("i", "o", 1);
-      return g;
-    };
-    AtomicInteger atomicInteger = new AtomicInteger();
-    IndependentFactory<String> mFactory = random -> "m" + atomicInteger.getAndIncrement();
-    Graph<String, Integer> g = factory.build(r);
-    System.out.println(g);
-    NodeAddition<String, Integer> mut = new NodeAddition<>(
-        mFactory,
-        (a, random) -> a,
-        (a, random) -> a
-    );
-    for (int i = 0; i < 10; i++) {
-      g = mut.mutate(g, r);
-      System.out.println(g);
-    }
-
-
-    Function<Graph<String, Integer>, Graph<IndexedNode<String>, Integer>> mapper = GraphUtils.mapper(
-        c -> new IndexedNode<>(c.equals("i") ? 0 : 1, c),
-        Collection::size
-    );
-    Function<Graph<IndexedNode<String>, Integer>, Graph<String, Integer>> inverseMapper = GraphUtils.mapper(
-        IndexedNode::content,
-        Collection::size
-    );
-
-    System.out.println("\nINDEXED\n");
-    IndexedNodeAddition<String, String, Integer> iMut = new IndexedNodeAddition<>(
-        mFactory,
-        c -> 0,
-        2,
-        (a, random) -> a,
-        (a, random) -> a
-    );
-    Graph<IndexedNode<String>, Integer> iG = mapper.apply(factory.build(r));
-    System.out.println(iG);
-    for (int i = 0; i < 10; i++) {
-      iG = iMut.mutate(iG, r);
-      System.out.printf("   %2d %s%n", iG.size(), iG);
-      System.out.printf("-> %2d %s%n", inverseMapper.apply(iG).size(), inverseMapper.apply(iG));
-    }
-
-    Graph<IndexedNode<String>, Integer> iG0 = mapper.apply(factory.build(r));
-    AlignedCrossover<IndexedNode<String>, Integer> aXOver = new AlignedCrossover<>(
-        (g1, g2, random) -> g1,
-        s -> false,
-        true
-    );
-    for (int i = 0; i < 3; i++) {
-      Graph<IndexedNode<String>, Integer> iG1 = iMut.mutate(iG0, r);
-      Graph<IndexedNode<String>, Integer> iG2 = iMut.mutate(iG0, r);
-      System.out.printf("%2d %s -> %2d %s%n", iG1.size(), iG1, inverseMapper.apply(iG1).size(), inverseMapper.apply(iG1));
-      System.out.printf("%2d %s -> %2d %s%n", iG2.size(), iG2, inverseMapper.apply(iG2).size(), inverseMapper.apply(iG2));
-      Graph<IndexedNode<String>, Integer> xIG = aXOver.recombine(iG1, iG2, r);
-      System.out.printf("aXOver: %2d %s -> %2d %s%n", xIG.size(), xIG, inverseMapper.apply(xIG).size(), inverseMapper.apply(xIG));
-    }
-
   }
 
 }

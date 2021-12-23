@@ -24,7 +24,7 @@ import java.util.function.Function;
 public enum BaseFunction implements Function<Double, Double> {
   IDENTITY(x -> x),
   SQ(x -> x * x),
-  EXP(x -> Math.exp(x)),
+  EXP(Math::exp),
   SIN(Math::sin),
   RE_LU(x -> (x < 0) ? 0d : x),
   ABS(Math::abs),

@@ -25,7 +25,7 @@ public interface ThinList<T> extends List<T> {
 
   @Override
   default Iterator<T> iterator() {
-    return new Iterator<T>() {
+    return new Iterator<>() {
       int i = 0;
 
       @Override
