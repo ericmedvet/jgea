@@ -65,7 +65,7 @@ public class GrowGrammarTreeFactory<T> implements Factory<Tree<T>> {
     return tree;
   }
 
-  protected <T> Pair<Double, Double> optionMinMaxDepth(List<T> option) {
+  protected Pair<Double, Double> optionMinMaxDepth(List<T> option) {
     double min = 0d;
     double max = 0d;
     for (T symbol : option) {

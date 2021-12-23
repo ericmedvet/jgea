@@ -50,7 +50,7 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
     while (true) {
       Tree<T> treeToBeReplaced = null;
       for (Tree<T> node : tree.leaves()) {
-        if (grammar.getRules().keySet().contains(node.content())) {
+        if (grammar.getRules().containsKey(node.content())) {
           treeToBeReplaced = node;
           break;
         }

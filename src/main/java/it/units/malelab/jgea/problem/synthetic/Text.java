@@ -45,7 +45,7 @@ public class Text implements GrammarBasedProblem<String, String, Double> {
 
     @Override
     public Double apply(String string) {
-      double d = (double) distance.apply(
+      double d = distance.apply(
           target,
           string.chars().mapToObj(c -> (char) c).toList()
       ) / (double) target.size();

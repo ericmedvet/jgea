@@ -26,10 +26,10 @@ public class Sphere implements Problem<List<Double>, Double> {
   private static class FitnessFunction implements Function<List<Double>, Double> {
 
     @Override
-    public Double apply(List<Double> s) {
+    public Double apply(List<Double> vs) {
       double sum = 0.0;
-      for (int i = 0; i < s.size(); i++) {
-        sum += s.get(i) * s.get(i);
+      for (Double v : vs) {
+        sum += v * v;
       }
       return sum;
     }

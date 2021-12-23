@@ -28,7 +28,7 @@ public class SymbolicRegressionProblem implements ProblemWithValidation<RealFunc
 
   private final SymbolicRegressionFitness trainingFitness;
   private final SymbolicRegressionFitness validationFitness;
-  private RealFunction targetFunction;
+  private final RealFunction targetFunction;
 
   public SymbolicRegressionProblem(RealFunction targetFunction, List<double[]> trainingPoints, List<double[]> validationPoints, SymbolicRegressionFitness.Metric metric) {
     this.targetFunction = targetFunction;

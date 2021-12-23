@@ -195,10 +195,12 @@ public class KLandscapes implements
     return grammar;
   }
 
+  @SafeVarargs
   private static <T> List<T> l(T... ts) {
     return Arrays.asList(ts);
   }
 
+  @SafeVarargs
   private static <T> List<T> c(List<T>... tss) {
     List<T> list = new ArrayList<>();
     for (List<T> ts : tss) {
@@ -207,6 +209,7 @@ public class KLandscapes implements
     return list;
   }
 
+  @SafeVarargs
   private static <T> List<T> r(int n, T... ts) {
     List<T> list = new ArrayList<>(n * ts.length);
     for (int i = 0; i < n; i++) {

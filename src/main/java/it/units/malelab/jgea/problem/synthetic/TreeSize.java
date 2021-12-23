@@ -55,10 +55,12 @@ public class TreeSize implements GrammarBasedProblem<Boolean, Tree<Boolean>, Dou
     return fitnessFunction;
   }
 
+  @SafeVarargs
   private static <T> List<T> l(T... ts) {
     return Arrays.asList(ts);
   }
 
+  @SafeVarargs
   private static <T> List<T> r(int n, T... ts) {
     List<T> list = new ArrayList<>(n * ts.length);
     for (int i = 0; i < n; i++) {

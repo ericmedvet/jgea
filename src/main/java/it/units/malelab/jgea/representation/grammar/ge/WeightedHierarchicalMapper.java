@@ -48,7 +48,7 @@ public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
     for (List<List<T>> options : grammar.getRules().values()) {
       for (List<T> option : options) {
         for (T symbol : option) {
-          if (!weightsMap.keySet().contains(symbol)) {
+          if (!weightsMap.containsKey(symbol)) {
             weightsMap.put(symbol, countOptions(symbol, 0, expressivenessDepth, grammar));
           }
         }
@@ -108,7 +108,7 @@ public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
     if (!weightOptions) {
       return super.optionSliceWeight(slice);
     }
-    return (double) slice.count();
+    return slice.count();
   }
 
   @Override

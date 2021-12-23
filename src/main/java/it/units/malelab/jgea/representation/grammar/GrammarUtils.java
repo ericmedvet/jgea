@@ -25,10 +25,7 @@ import java.util.*;
  */
 public class GrammarUtils {
 
-  private record Triplet<F, S, T>(F first, S second, T third) {
-  }
-
-  ;
+  private record Triplet<F, S, T>(F first, S second, T third) {}
 
   public static <T> Map<T, Pair<Double, Double>> computeSymbolsMinMaxDepths(Grammar<T> g) {
     Map<T, Pair<Integer, Boolean>> minDepths = computeSymbolsMinDepths(g);

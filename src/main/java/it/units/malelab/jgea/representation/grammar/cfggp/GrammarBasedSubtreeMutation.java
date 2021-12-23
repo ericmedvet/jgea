@@ -30,7 +30,7 @@ import java.util.Random;
 public class GrammarBasedSubtreeMutation<T> implements Mutation<Tree<T>> {
 
   private final int maxDepth;
-  private GrowGrammarTreeFactory<T> factory;
+  private final GrowGrammarTreeFactory<T> factory;
 
   public GrammarBasedSubtreeMutation(int maxDepth, Grammar<T> grammar) {
     this.maxDepth = maxDepth;
@@ -44,7 +44,11 @@ public class GrammarBasedSubtreeMutation<T> implements Mutation<Tree<T>> {
     Collections.shuffle(nonTerminalTrees, random);
     boolean done = false;
     for (Tree<T> toReplaceSubTree : nonTerminalTrees) {
-      Tree<T> newSubTree = factory.build(random, toReplaceSubTree.content(), toReplaceSubTree.height());
+      Tree<T> newSubTree = factory.build(
+          random,
+          toReplaceSubTree.content(),
+          toReplaceSubTree.height() // TODO should use maxDepth
+      );
       if (newSubTree != null) {
         toReplaceSubTree.clearChildren();
         newSubTree.childStream().forEach(toReplaceSubTree::addChild);
