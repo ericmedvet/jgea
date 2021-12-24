@@ -28,10 +28,6 @@ import java.util.stream.Collectors;
  */
 public class RegexGrammar extends Grammar<String> {
 
-  public enum Option {
-    OR, QUANTIFIERS, NON_EMPTY_QUANTIFIER, BOUNDED_QUANTIFIERS, CHAR_CLASS, NEGATED_CHAR_CLASS, NON_CAPTURING_GROUP, ANY, ENHANCED_CONCATENATION
-  }
-
   public static final String TO_BE_ESCAPED = "{}[]()?+*.\\^";
 
   public RegexGrammar(Collection<String> texts, Set<Option> options) {
@@ -106,6 +102,10 @@ public class RegexGrammar extends Grammar<String> {
       getRules().get("<constChar>").add(l(escape(character.toString())));
     }
     setStartingSymbol("<regex>");
+  }
+
+  public enum Option {
+    OR, QUANTIFIERS, NON_EMPTY_QUANTIFIER, BOUNDED_QUANTIFIERS, CHAR_CLASS, NEGATED_CHAR_CLASS, NON_CAPTURING_GROUP, ANY, ENHANCED_CONCATENATION
   }
 
   private String escape(String c) {

@@ -32,35 +32,26 @@ import java.util.function.Function;
  */
 public class BooleanFunctionFitness extends CaseBasedFitness<List<Tree<Element>>, boolean[], Boolean, Double> {
 
+  public BooleanFunctionFitness(TargetFunction targetFunction, List<boolean[]> observations) {
+    super(observations, new Error(targetFunction), new ErrorRate());
+  }
+
   public interface TargetFunction extends Function<boolean[], boolean[]> {
     String[] varNames();
 
     static TargetFunction from(final Function<boolean[], boolean[]> function, final String... varNames) {
       return new TargetFunction() {
         @Override
-        public String[] varNames() {
-          return varNames;
-        }
-
-        @Override
         public boolean[] apply(boolean[] values) {
           return function.apply(values);
         }
+
+        @Override
+        public String[] varNames() {
+          return varNames;
+        }
       };
     }
-  }
-
-  private static class ErrorRate implements Function<List<Boolean>, Double> {
-
-    @Override
-    public Double apply(List<Boolean> vs) {
-      double errors = 0;
-      for (Boolean v : vs) {
-        errors = errors + (v ? 0d : 1d);
-      }
-      return errors / (double) vs.size();
-    }
-
   }
 
   private static class Error implements BiFunction<List<Tree<Element>>, boolean[], Boolean> {
@@ -83,8 +74,17 @@ public class BooleanFunctionFitness extends CaseBasedFitness<List<Tree<Element>>
 
   }
 
-  public BooleanFunctionFitness(TargetFunction targetFunction, List<boolean[]> observations) {
-    super(observations, new Error(targetFunction), new ErrorRate());
+  private static class ErrorRate implements Function<List<Boolean>, Double> {
+
+    @Override
+    public Double apply(List<Boolean> vs) {
+      double errors = 0;
+      for (Boolean v : vs) {
+        errors = errors + (v ? 0d : 1d);
+      }
+      return errors / (double) vs.size();
+    }
+
   }
 
 }

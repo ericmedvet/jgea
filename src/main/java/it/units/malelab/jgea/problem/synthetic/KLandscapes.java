@@ -60,58 +60,30 @@ public class KLandscapes implements
     grammar = buildGrammar(nTerminals, nNonTerminals, arity);
   }
 
-  @Override
-  public Grammar<String> getGrammar() {
+  private static Grammar<String> buildGrammar(int nTerminals, int nNonTerminals, int arity) {
+    Grammar<String> grammar = new Grammar<>();
+    grammar.setStartingSymbol("N");
+    grammar.getRules().put("N", l(c(l("n"), r(arity, "N")), l("t")));
+    List<List<String>> nonTerminalConstOptions = new ArrayList<>();
+    for (int i = 0; i < nNonTerminals; i++) {
+      nonTerminalConstOptions.add(l("n" + i));
+    }
+    grammar.getRules().put("n", nonTerminalConstOptions);
+    List<List<String>> terminalConstOptions = new ArrayList<>();
+    for (int i = 0; i < nTerminals; i++) {
+      terminalConstOptions.add(l("t" + i));
+    }
+    grammar.getRules().put("t", terminalConstOptions);
     return grammar;
   }
 
-  @Override
-  public Tree<String> apply(Tree<String> original) {
-    if (original == null) {
-      return original;
+  @SafeVarargs
+  private static <T> List<T> c(List<T>... tss) {
+    List<T> list = new ArrayList<>();
+    for (List<T> ts : tss) {
+      list.addAll(ts);
     }
-    Tree<String> tree = Tree.of(original.child(0).child(0).content());
-    if (original.height() > 1) {
-      //is a non terminal node
-      for (Tree<String> orginalChild : original) {
-        if (orginalChild.content().equals("N")) {
-          tree.addChild(apply(orginalChild));
-        }
-      }
-    }
-    return tree;
-  }
-
-  @Override
-  public Function<Tree<String>, Tree<String>> getSolutionMapper() {
-    return this;
-  }
-
-  @Override
-  public Function<Tree<String>, Double> getFitnessFunction() {
-    Random random = new Random(1l);
-    final Map<String, Double> v = new LinkedHashMap<>();
-    final Map<Pair<String, String>, Double> w = new LinkedHashMap<>();
-    //fill v map
-    for (int i = 0; i < nTerminals; i++) {
-      v.put("t" + i, random.nextDouble() * (vRange.upperEndpoint() - vRange.lowerEndpoint()) + vRange.lowerEndpoint());
-    }
-    for (int i = 0; i < nNonTerminals; i++) {
-      v.put("n" + i, random.nextDouble() * (vRange.upperEndpoint() - vRange.lowerEndpoint()) + vRange.lowerEndpoint());
-    }
-    //fill w map
-    for (int j = 0; j < nNonTerminals; j++) {
-      for (int i = 0; i < nTerminals; i++) {
-        w.put(Pair.of("n" + j, "t" + i), random.nextDouble() * (wRange.upperEndpoint() - wRange.lowerEndpoint()) + wRange.lowerEndpoint());
-      }
-      for (int i = 0; i < nNonTerminals; i++) {
-        w.put(Pair.of("n" + j, "n" + i), random.nextDouble() * (wRange.upperEndpoint() - wRange.lowerEndpoint()) + wRange.lowerEndpoint());
-      }
-    }
-    //prepare fitness
-    final double optimumFitness = f(optimum(k, nTerminals, nNonTerminals, arity, v, w), k, v, w);
-    //build function
-    return t -> (1d - f(t, k, v, w) / optimumFitness);
+    return list;
   }
 
   protected static double f(Tree<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
@@ -131,7 +103,38 @@ public class KLandscapes implements
     return sum;
   }
 
-  protected static Tree<String> optimum(int k, int nTerminals, int nNonTerminals, int arity, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
+  @SafeVarargs
+  private static <T> List<T> l(T... ts) {
+    return Arrays.asList(ts);
+  }
+
+  protected static Tree<String> levelEqualTree(int[] indexes, int arity) {
+    if (indexes.length == 1) {
+      return Tree.of("t" + indexes[0]);
+    }
+    Tree<String> tree = Tree.of("n" + indexes[0]);
+    for (int i = 0; i < arity; i++) {
+      tree.addChild(levelEqualTree(Arrays.copyOfRange(indexes, 1, indexes.length), arity));
+    }
+    return tree;
+  }
+
+  protected static double maxFK(Tree<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
+    double max = fK(tree, k, v, w);
+    for (Tree<String> child : tree) {
+      max = Math.max(max, maxFK(child, k, v, w));
+    }
+    return max;
+  }
+
+  protected static Tree<String> optimum(
+      int k,
+      int nTerminals,
+      int nNonTerminals,
+      int arity,
+      Map<String, Double> v,
+      Map<Pair<String, String>, Double> w
+  ) {
     Tree<String> optimum = null;
     double maxFitness = Double.NEGATIVE_INFINITY;
     for (int d = 1; d <= k + 1; d++) {
@@ -159,56 +162,6 @@ public class KLandscapes implements
     return optimum;
   }
 
-  protected static Tree<String> levelEqualTree(int[] indexes, int arity) {
-    if (indexes.length == 1) {
-      return Tree.of("t" + indexes[0]);
-    }
-    Tree<String> tree = Tree.of("n" + indexes[0]);
-    for (int i = 0; i < arity; i++) {
-      tree.addChild(levelEqualTree(Arrays.copyOfRange(indexes, 1, indexes.length), arity));
-    }
-    return tree;
-  }
-
-  protected static double maxFK(Tree<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
-    double max = fK(tree, k, v, w);
-    for (Tree<String> child : tree) {
-      max = Math.max(max, maxFK(child, k, v, w));
-    }
-    return max;
-  }
-
-  private static Grammar<String> buildGrammar(int nTerminals, int nNonTerminals, int arity) {
-    Grammar<String> grammar = new Grammar<>();
-    grammar.setStartingSymbol("N");
-    grammar.getRules().put("N", l(c(l("n"), r(arity, "N")), l("t")));
-    List<List<String>> nonTerminalConstOptions = new ArrayList<>();
-    for (int i = 0; i < nNonTerminals; i++) {
-      nonTerminalConstOptions.add(l("n" + i));
-    }
-    grammar.getRules().put("n", nonTerminalConstOptions);
-    List<List<String>> terminalConstOptions = new ArrayList<>();
-    for (int i = 0; i < nTerminals; i++) {
-      terminalConstOptions.add(l("t" + i));
-    }
-    grammar.getRules().put("t", terminalConstOptions);
-    return grammar;
-  }
-
-  @SafeVarargs
-  private static <T> List<T> l(T... ts) {
-    return Arrays.asList(ts);
-  }
-
-  @SafeVarargs
-  private static <T> List<T> c(List<T>... tss) {
-    List<T> list = new ArrayList<>();
-    for (List<T> ts : tss) {
-      list.addAll(ts);
-    }
-    return list;
-  }
-
   @SafeVarargs
   private static <T> List<T> r(int n, T... ts) {
     List<T> list = new ArrayList<>(n * ts.length);
@@ -216,6 +169,66 @@ public class KLandscapes implements
       list.addAll(l(ts));
     }
     return list;
+  }
+
+  @Override
+  public Tree<String> apply(Tree<String> original) {
+    if (original == null) {
+      return original;
+    }
+    Tree<String> tree = Tree.of(original.child(0).child(0).content());
+    if (original.height() > 1) {
+      //is a non terminal node
+      for (Tree<String> orginalChild : original) {
+        if (orginalChild.content().equals("N")) {
+          tree.addChild(apply(orginalChild));
+        }
+      }
+    }
+    return tree;
+  }
+
+  @Override
+  public Function<Tree<String>, Double> getFitnessFunction() {
+    Random random = new Random(1l);
+    final Map<String, Double> v = new LinkedHashMap<>();
+    final Map<Pair<String, String>, Double> w = new LinkedHashMap<>();
+    //fill v map
+    for (int i = 0; i < nTerminals; i++) {
+      v.put("t" + i, random.nextDouble() * (vRange.upperEndpoint() - vRange.lowerEndpoint()) + vRange.lowerEndpoint());
+    }
+    for (int i = 0; i < nNonTerminals; i++) {
+      v.put("n" + i, random.nextDouble() * (vRange.upperEndpoint() - vRange.lowerEndpoint()) + vRange.lowerEndpoint());
+    }
+    //fill w map
+    for (int j = 0; j < nNonTerminals; j++) {
+      for (int i = 0; i < nTerminals; i++) {
+        w.put(
+            Pair.of("n" + j, "t" + i),
+            random.nextDouble() * (wRange.upperEndpoint() - wRange.lowerEndpoint()) + wRange.lowerEndpoint()
+        );
+      }
+      for (int i = 0; i < nNonTerminals; i++) {
+        w.put(
+            Pair.of("n" + j, "n" + i),
+            random.nextDouble() * (wRange.upperEndpoint() - wRange.lowerEndpoint()) + wRange.lowerEndpoint()
+        );
+      }
+    }
+    //prepare fitness
+    final double optimumFitness = f(optimum(k, nTerminals, nNonTerminals, arity, v, w), k, v, w);
+    //build function
+    return t -> (1d - f(t, k, v, w) / optimumFitness);
+  }
+
+  @Override
+  public Grammar<String> getGrammar() {
+    return grammar;
+  }
+
+  @Override
+  public Function<Tree<String>, Tree<String>> getSolutionMapper() {
+    return this;
   }
 
 }

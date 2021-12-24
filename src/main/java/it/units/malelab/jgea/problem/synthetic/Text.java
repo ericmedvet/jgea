@@ -33,6 +33,17 @@ import java.util.stream.Collectors;
  */
 public class Text implements GrammarBasedProblem<String, String, Double> {
 
+  private final Grammar<String> grammar;
+  private final Function<Tree<String>, String> solutionMapper;
+  private final Function<String, Double> fitnessFunction;
+  public Text(String targetString) throws IOException {
+    grammar = Grammar.fromFile(new File("grammars/text.bnf"));
+    solutionMapper = (Tree<String> tree) -> tree.leaves().stream()
+        .map(Tree::content)
+        .collect(Collectors.joining()).replace("_", " ");
+    fitnessFunction = new FitnessFunction(targetString);
+  }
+
   private static class FitnessFunction implements Function<String, Double> {
 
     private final List<Character> target;
@@ -54,16 +65,9 @@ public class Text implements GrammarBasedProblem<String, String, Double> {
 
   }
 
-  private final Grammar<String> grammar;
-  private final Function<Tree<String>, String> solutionMapper;
-  private final Function<String, Double> fitnessFunction;
-
-  public Text(String targetString) throws IOException {
-    grammar = Grammar.fromFile(new File("grammars/text.bnf"));
-    solutionMapper = (Tree<String> tree) -> tree.leaves().stream()
-        .map(Tree::content)
-        .collect(Collectors.joining()).replace("_", " ");
-    fitnessFunction = new FitnessFunction(targetString);
+  @Override
+  public Function<String, Double> getFitnessFunction() {
+    return fitnessFunction;
   }
 
   @Override
@@ -74,11 +78,6 @@ public class Text implements GrammarBasedProblem<String, String, Double> {
   @Override
   public Function<Tree<String>, String> getSolutionMapper() {
     return solutionMapper;
-  }
-
-  @Override
-  public Function<String, Double> getFitnessFunction() {
-    return fitnessFunction;
   }
 
 }

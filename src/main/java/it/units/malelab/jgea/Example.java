@@ -86,7 +86,8 @@ public class Example extends Worker {
   );
 
   public final static List<NamedFunction<Evolver.Event<?, ?, ? extends Double>, ?>> DOUBLE_FUNCTIONS = List.of(
-      fitness().reformat("%5.3f").of(best()),
+      fitness().reformat(
+          "%5.3f").of(best()),
       hist(8).of(each(fitness())).of(all()),
       max(Double::compare).reformat("%5.3f").of(each(fitness())).of(all())
   );
@@ -102,8 +103,8 @@ public class Example extends Worker {
   @Override
   public void run() {
     //runLinearPoints();
-    runOneMax();
-    //runSymbolicRegression();
+    //runOneMax();
+    runSymbolicRegression();
     //runSymbolicRegressionMO();
     //runGrammarBasedParity();
     //runSphere();
@@ -111,8 +112,10 @@ public class Example extends Worker {
   }
 
   public void runGrammarBasedParity() {
-    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(
-        Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
+    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(
+        BASIC_FUNCTIONS,
+        DOUBLE_FUNCTIONS
+    )));
     Random r = new Random(1);
     GrammarBasedProblem<String, List<Tree<Element>>, Double> p;
     try {
@@ -126,10 +129,7 @@ public class Example extends Worker {
         new GrammarRampedHalfAndHalf<>(3, 12, p.getGrammar()),
         PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
         100,
-        Map.of(
-            new SameRootSubtreeCrossover<>(12), 0.8d,
-            new GrammarBasedSubtreeMutation<>(12, p.getGrammar()), 0.2d
-        ),
+        Map.of(new SameRootSubtreeCrossover<>(12), 0.8d, new GrammarBasedSubtreeMutation<>(12, p.getGrammar()), 0.2d),
         new Tournament(3),
         new Last(),
         100,
@@ -151,35 +151,33 @@ public class Example extends Worker {
   }
 
   public void runLinearPoints() {
-    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(
-        Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
+    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(
+        BASIC_FUNCTIONS,
+        DOUBLE_FUNCTIONS
+    )));
     Random r = new Random(1);
     Problem<List<Double>, Double> p = new LinearPoints();
-    List<Evolver<List<Double>, List<Double>, Double>> evolvers = List.of(
-        new RandomSearch<>(
-            Function.identity(),
-            new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
-            PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness)
-        ),
-        new RandomWalk<>(
-            Function.identity(),
-            new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
-            PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
-            new GaussianMutation(0.01d)
-        ),
-        new StandardEvolver<>(
-            Function.identity(),
-            new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
-            PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
-            100,
-            Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
-            new Tournament(5),
-            new Last(),
-            100,
-            true,
-            false
-        )
-    );
+    List<Evolver<List<Double>, List<Double>, Double>> evolvers = List.of(new RandomSearch<>(
+        Function.identity(),
+        new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
+        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness)
+    ), new RandomWalk<>(
+        Function.identity(),
+        new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
+        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+        new GaussianMutation(0.01d)
+    ), new StandardEvolver<>(
+        Function.identity(),
+        new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
+        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+        100,
+        Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
+        new Tournament(5),
+        new Last(),
+        100,
+        true,
+        false
+    ));
     for (Evolver<List<Double>, List<Double>, Double> evolver : evolvers) {
       System.out.println(evolver.getClass().getSimpleName());
       try {
@@ -201,9 +199,7 @@ public class Example extends Worker {
     int size = 1000;
     Random r = new Random(1);
     Problem<BitString, Double> p = new OneMax();
-    List<NamedFunction<Evolver.Event<?, ?, ?>, ?>> keysFunctions = List.of(
-        eventAttribute("evolver", "%20.20s")
-    );
+    List<NamedFunction<Evolver.Event<?, ?, ?>, ?>> keysFunctions = List.of(eventAttribute("evolver", "%20.20s"));
     Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = Listener.Factory.all(List.of(
         /*new TelegramUpdater<>(List.of(
             new TableBuilder<Event<?, ?, ? extends Double>, Number>(List.of(
@@ -222,60 +218,45 @@ public class Example extends Worker {
                 .map(f -> f.getName() + ": " + f.applyAndFormat(e))
                 .collect(Collectors.joining("\n")))
         ), "xxx", 207490209),*/
-        new TabularPrinter<>(Misc.concat(List.of(
-            keysFunctions,
-            BASIC_FUNCTIONS,
-            DOUBLE_FUNCTIONS
-        )))
+        new TabularPrinter<>(Misc.concat(List.of(keysFunctions, BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)))));
+    List<Evolver<BitString, BitString, Double>> evolvers = List.of(new RandomSearch<>(
+        Function.identity(),
+        new BitStringFactory(size),
+        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness)
+    ), new RandomWalk<>(
+        Function.identity(),
+        new BitStringFactory(size),
+        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+        new BitFlipMutation(0.01d)
+    ), new StandardEvolver<>(
+        Function.identity(),
+        new BitStringFactory(size),
+        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+        100,
+        Map.of(new UniformCrossover<>(new BitStringFactory(size)), 0.8d, new BitFlipMutation(0.01d), 0.2d),
+        new Tournament(5),
+        new Last(),
+        100,
+        true,
+        false
+    ), new StandardWithEnforcedDiversityEvolver<>(
+        Function.identity(),
+        new BitStringFactory(size),
+        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+        100,
+        Map.of(new UniformCrossover<>(new BitStringFactory(100)), 0.8d, new BitFlipMutation(0.01d), 0.2d),
+        new Tournament(5),
+        new Last(),
+        100,
+        true,
+        false,
+        100
     ));
-    List<Evolver<BitString, BitString, Double>> evolvers = List.of(
-        new RandomSearch<>(
-            Function.identity(),
-            new BitStringFactory(size),
-            PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness)
-        ),
-        new RandomWalk<>(
-            Function.identity(),
-            new BitStringFactory(size),
-            PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
-            new BitFlipMutation(0.01d)
-        ),
-        new StandardEvolver<>(
-            Function.identity(),
-            new BitStringFactory(size),
-            PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
-            100,
-            Map.of(
-                new UniformCrossover<>(new BitStringFactory(size)), 0.8d,
-                new BitFlipMutation(0.01d), 0.2d
-            ),
-            new Tournament(5),
-            new Last(),
-            100,
-            true,
-            false
-        ),
-        new StandardWithEnforcedDiversityEvolver<>(
-            Function.identity(),
-            new BitStringFactory(size),
-            PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
-            100,
-            Map.of(
-                new UniformCrossover<>(new BitStringFactory(100)), 0.8d,
-                new BitFlipMutation(0.01d), 0.2d
-            ),
-            new Tournament(5),
-            new Last(),
-            100,
-            true,
-            false,
-            100
-        )
-    );
     evolvers = evolvers.subList(2, 4);
     for (Evolver<BitString, BitString, Double> evolver : evolvers) {
       Listener<Evolver.Event<?, ?, ? extends Double>> listener = Listener.all(List.of(
-          new EventAugmenter(Map.ofEntries(Map.entry("evolver", evolver.getClass().getSimpleName()))),
+          new EventAugmenter(Map.ofEntries(
+              Map.entry("evolver", evolver.getClass().getSimpleName()))),
           listenerFactory.build()
       )).deferred(executorService);
       try {
@@ -295,29 +276,28 @@ public class Example extends Worker {
   }
 
   public void runRastrigin() {
-    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(
-        Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
+    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(
+        BASIC_FUNCTIONS,
+        DOUBLE_FUNCTIONS
+    )));
     Random r = new Random(1);
     Problem<List<Double>, Double> p = new Rastrigin();
-    List<Evolver<List<Double>, List<Double>, Double>> evolvers = List.of(
-        new StandardEvolver<>(
-            Function.identity(),
-            new FixedLengthListFactory<>(10, new UniformDoubleFactory(-5.12, 5.12)),
-            PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
-            100,
-            Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
-            new Tournament(5),
-            new Last(),
-            100,
-            true,
-            false
-        ),
-        new CMAESEvolver<>(
-            Function.identity(),
-            new FixedLengthListFactory<>(10, new UniformDoubleFactory(-5.12, 5.12)),
-            PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness)
-        )
-    );
+    List<Evolver<List<Double>, List<Double>, Double>> evolvers = List.of(new StandardEvolver<>(
+        Function.identity(),
+        new FixedLengthListFactory<>(10, new UniformDoubleFactory(-5.12, 5.12)),
+        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+        100,
+        Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
+        new Tournament(5),
+        new Last(),
+        100,
+        true,
+        false
+    ), new CMAESEvolver<>(
+        Function.identity(),
+        new FixedLengthListFactory<>(10, new UniformDoubleFactory(-5.12, 5.12)),
+        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness)
+    ));
     for (Evolver<List<Double>, List<Double>, Double> evolver : evolvers) {
       System.out.println(evolver.getClass().getSimpleName());
       try {
@@ -336,39 +316,37 @@ public class Example extends Worker {
   }
 
   public void runSphere() {
-    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(
-        Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
+    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(
+        BASIC_FUNCTIONS,
+        DOUBLE_FUNCTIONS
+    )));
     Random r = new Random(1);
     Problem<List<Double>, Double> p = new Sphere();
-    List<Evolver<List<Double>, List<Double>, Double>> evolvers = List.of(
-        new StandardEvolver<>(
-            Function.identity(),
-            new FixedLengthListFactory<>(10, new UniformDoubleFactory(-10, 10)),
-            PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
-            100,
-            Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
-            new Tournament(5),
-            new Last(),
-            100,
-            true,
-            false
-        ),
-        new CMAESEvolver<>(
-            Function.identity(),
-            new FixedLengthListFactory<>(10, new UniformDoubleFactory(-10, 10)),
-            PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness)
-        ),
-        new BasicEvolutionaryStrategy<>(
-            Function.identity(),
-            new FixedLengthListFactory<>(10, new UniformDoubleFactory(-10, 10)),
-            PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
-            0.1d,
-            100,
-            25,
-            1,
-            false
-        )
-    );
+    List<Evolver<List<Double>, List<Double>, Double>> evolvers = List.of(new StandardEvolver<>(
+        Function.identity(),
+        new FixedLengthListFactory<>(10, new UniformDoubleFactory(-10, 10)),
+        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+        100,
+        Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
+        new Tournament(5),
+        new Last(),
+        100,
+        true,
+        false
+    ), new CMAESEvolver<>(
+        Function.identity(),
+        new FixedLengthListFactory<>(10, new UniformDoubleFactory(-10, 10)),
+        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness)
+    ), new BasicEvolutionaryStrategy<>(
+        Function.identity(),
+        new FixedLengthListFactory<>(10, new UniformDoubleFactory(-10, 10)),
+        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+        0.1d,
+        100,
+        25,
+        1,
+        false
+    ));
     for (Evolver<List<Double>, List<Double>, Double> evolver : evolvers) {
       System.out.println(evolver.getClass().getSimpleName());
       try {
@@ -387,8 +365,10 @@ public class Example extends Worker {
   }
 
   public void runSymbolicRegression() {
-    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(
-        Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
+    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(
+        BASIC_FUNCTIONS,
+        DOUBLE_FUNCTIONS
+    )));
     Random r = new Random(1);
     SymbolicRegressionProblem p = new Nguyen7(SymbolicRegressionFitness.Metric.MSE, 1);
     Grammar<String> srGrammar;
@@ -398,43 +378,33 @@ public class Example extends Worker {
       e.printStackTrace();
       return;
     }
-    List<Evolver<Tree<String>, RealFunction, Double>> evolvers = List.of(
-        new StandardEvolver<>(
-            new FormulaMapper()
-                .andThen(n -> TreeBasedRealFunction.from(n, "x"))
-                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
-            PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
-            100,
-            Map.of(
-                new SameRootSubtreeCrossover<>(12), 0.8d,
-                new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d
-            ),
-            new Tournament(5),
-            new Last(),
-            100,
-            true,
-            false
-        ),
-        new StandardWithEnforcedDiversityEvolver<>(
-            new FormulaMapper()
-                .andThen(n -> TreeBasedRealFunction.from(n, "x"))
-                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new GrammarRampedHalfAndHalf<>(3, 12, srGrammar).withOptimisticUniqueness(100),
-            PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
-            100,
-            Map.of(
-                new SameRootSubtreeCrossover<>(12), 0.8d,
-                new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d
-            ),
-            new Tournament(5),
-            new Last(),
-            100,
-            true,
-            false,
-            1000
-        )
-    );
+    List<Evolver<Tree<String>, RealFunction, Double>> evolvers = List.of(new StandardEvolver<>(
+        new FormulaMapper().andThen(
+                n -> TreeBasedRealFunction.from(n, "x"))
+            .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+        new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
+        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+        100,
+        Map.of(new SameRootSubtreeCrossover<>(12), 0.8d, new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d),
+        new Tournament(5),
+        new Last(),
+        100,
+        true,
+        false
+    ), new StandardWithEnforcedDiversityEvolver<>(
+        new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(n, "x"))
+            .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+        new GrammarRampedHalfAndHalf<>(3, 12, srGrammar).withOptimisticUniqueness(100),
+        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+        100,
+        Map.of(new SameRootSubtreeCrossover<>(12), 0.8d, new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d),
+        new Tournament(5),
+        new Last(),
+        100,
+        true,
+        false,
+        1000
+    ));
     for (Evolver<Tree<String>, RealFunction, Double> evolver : evolvers) {
       System.out.println(evolver.getClass().getSimpleName());
       try {
@@ -453,8 +423,8 @@ public class Example extends Worker {
   }
 
   public void runSymbolicRegressionMO() {
-    Listener.Factory<Evolver.Event<?, ?, ? extends List<Double>>> listenerFactory = new TabularPrinter<>(
-        Misc.concat(List.of(BASIC_FUNCTIONS)));
+    Listener.Factory<Evolver.Event<?, ?, ? extends List<Double>>> listenerFactory = new TabularPrinter<>(Misc.concat(
+        List.of(BASIC_FUNCTIONS)));
     //as(Double.class).of(nth(0)).of(fitness()).of(best())
     //as(Double.class).of(nth(1)).of(fitness()).of(best())
     Random r = new Random(1);
@@ -466,43 +436,33 @@ public class Example extends Worker {
       e.printStackTrace();
       return;
     }
-    List<Evolver<Tree<String>, RealFunction, List<Double>>> evolvers = List.of(
-        new StandardEvolver<>(
-            new FormulaMapper()
-                .andThen(n -> TreeBasedRealFunction.from(n, "x"))
-                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
-            new ParetoDominance<>(Double.class).comparing(Evolver.Individual::fitness),
-            100,
-            Map.of(
-                new SameRootSubtreeCrossover<>(12), 0.8d,
-                new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d
-            ),
-            new Tournament(5),
-            new Last(),
-            100,
-            true,
-            false
-        ),
-        new StandardWithEnforcedDiversityEvolver<>(
-            new FormulaMapper()
-                .andThen(n -> TreeBasedRealFunction.from(n, "x"))
-                .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
-            new GrammarRampedHalfAndHalf<>(3, 12, srGrammar).withOptimisticUniqueness(100),
-            new ParetoDominance<>(Double.class).comparing(Evolver.Individual::fitness),
-            100,
-            Map.of(
-                new SameRootSubtreeCrossover<>(12), 0.8d,
-                new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d
-            ),
-            new Tournament(5),
-            new Last(),
-            100,
-            true,
-            false,
-            1000
-        )
-    );
+    List<Evolver<Tree<String>, RealFunction, List<Double>>> evolvers = List.of(new StandardEvolver<>(
+        new FormulaMapper().andThen(
+                n -> TreeBasedRealFunction.from(n, "x"))
+            .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+        new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
+        new ParetoDominance<>(Double.class).comparing(Evolver.Individual::fitness),
+        100,
+        Map.of(new SameRootSubtreeCrossover<>(12), 0.8d, new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d),
+        new Tournament(5),
+        new Last(),
+        100,
+        true,
+        false
+    ), new StandardWithEnforcedDiversityEvolver<>(
+        new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(n, "x"))
+            .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+        new GrammarRampedHalfAndHalf<>(3, 12, srGrammar).withOptimisticUniqueness(100),
+        new ParetoDominance<>(Double.class).comparing(Evolver.Individual::fitness),
+        100,
+        Map.of(new SameRootSubtreeCrossover<>(12), 0.8d, new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d),
+        new Tournament(5),
+        new Last(),
+        100,
+        true,
+        false,
+        1000
+    ));
     for (Evolver<Tree<String>, RealFunction, List<Double>> evolver : evolvers) {
       System.out.println(evolver.getClass().getSimpleName());
       try {

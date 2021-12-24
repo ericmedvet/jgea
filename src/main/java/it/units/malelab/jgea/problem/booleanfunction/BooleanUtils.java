@@ -28,6 +28,43 @@ import java.util.Map;
  */
 public class BooleanUtils {
 
+  public static Map<String, boolean[]> buildCompleteCases(String... names) {
+    Map<String, boolean[]> map = new LinkedHashMap<>();
+    for (String name : names) {
+      map.put(name, new boolean[(int) Math.pow(2, names.length)]);
+    }
+    for (int i = 0; i < Math.pow(2, names.length); i++) {
+      for (int j = 0; j < names.length; j++) {
+        map.get(names[j])[i] = (i & (int) Math.pow(2, j)) > 0;
+      }
+    }
+    return map;
+  }
+
+  public static List<boolean[]> buildCompleteObservations(String... names) {
+    Map<String, boolean[]> cases = buildCompleteCases(names);
+    List<boolean[]> observations = new ArrayList<>();
+    for (int i = 0; i < cases.get(names[0]).length; i++) {
+      boolean[] observation = new boolean[names.length];
+      for (int j = 0; j < names.length; j++) {
+        observation[j] = cases.get(names[j])[i];
+      }
+      observations.add(observation);
+    }
+    return observations;
+  }
+
+  private static boolean compute(Element.Operator operator, boolean... operands) {
+    return switch (operator) {
+      case AND -> operands[0] && operands[1];
+      case AND1NOT -> (!operands[0]) && operands[1];
+      case OR -> operands[0] || operands[1];
+      case XOR -> operands[0] ^ operands[1];
+      case NOT -> !operands[0];
+      case IF -> operands[0] ? operands[1] : operands[2];
+    };
+  }
+
   public static boolean[] compute(List<Tree<Element>> formulas, Map<String, Boolean> values) {
     boolean[] result = new boolean[formulas.size()];
     for (int i = 0; i < result.length; i++) {
@@ -63,43 +100,6 @@ public class BooleanUtils {
       }
     }
     return compute((Element.Operator) tree.content(), childrenValues);
-  }
-
-  private static boolean compute(Element.Operator operator, boolean... operands) {
-    return switch (operator) {
-      case AND -> operands[0] && operands[1];
-      case AND1NOT -> (!operands[0]) && operands[1];
-      case OR -> operands[0] || operands[1];
-      case XOR -> operands[0] ^ operands[1];
-      case NOT -> !operands[0];
-      case IF -> operands[0] ? operands[1] : operands[2];
-    };
-  }
-
-  public static Map<String, boolean[]> buildCompleteCases(String... names) {
-    Map<String, boolean[]> map = new LinkedHashMap<>();
-    for (String name : names) {
-      map.put(name, new boolean[(int) Math.pow(2, names.length)]);
-    }
-    for (int i = 0; i < Math.pow(2, names.length); i++) {
-      for (int j = 0; j < names.length; j++) {
-        map.get(names[j])[i] = (i & (int) Math.pow(2, j)) > 0;
-      }
-    }
-    return map;
-  }
-
-  public static List<boolean[]> buildCompleteObservations(String... names) {
-    Map<String, boolean[]> cases = buildCompleteCases(names);
-    List<boolean[]> observations = new ArrayList<>();
-    for (int i = 0; i < cases.get(names[0]).length; i++) {
-      boolean[] observation = new boolean[names.length];
-      for (int j = 0; j < names.length; j++) {
-        observation[j] = cases.get(names[j])[i];
-      }
-      observations.add(observation);
-    }
-    return observations;
   }
 
   public static int fromBinary(boolean[] bits) {

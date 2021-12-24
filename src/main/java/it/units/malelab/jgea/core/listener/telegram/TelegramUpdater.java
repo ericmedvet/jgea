@@ -32,18 +32,11 @@ public class TelegramUpdater<E> extends TelegramClient implements Listener.Facto
   }
 
   @Override
-  public void shutdown() {
-    sendText(String.format(
-        "%s shutting down on %s",
-        TelegramUpdater.class.getSimpleName(),
-        getMachineName()
-    ));
-  }
-
-  @Override
   public Listener<E> build() {
     return new Listener<>() {
-      private final List<Accumulator<E, ?>> accumulators = factories.stream().map(Accumulator.Factory::build).collect(Collectors.toList());
+      private final List<Accumulator<E, ?>> accumulators = factories.stream()
+          .map(Accumulator.Factory::build)
+          .collect(Collectors.toList());
 
       @Override
       public void listen(E e) {
@@ -98,6 +91,15 @@ public class TelegramUpdater<E> extends TelegramClient implements Listener.Facto
         }
       }
     };
+  }
+
+  @Override
+  public void shutdown() {
+    sendText(String.format(
+        "%s shutting down on %s",
+        TelegramUpdater.class.getSimpleName(),
+        getMachineName()
+    ));
   }
 
 }

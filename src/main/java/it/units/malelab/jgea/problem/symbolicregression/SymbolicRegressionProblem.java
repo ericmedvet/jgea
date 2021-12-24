@@ -30,15 +30,19 @@ public class SymbolicRegressionProblem implements ProblemWithValidation<RealFunc
   private final SymbolicRegressionFitness validationFitness;
   private final RealFunction targetFunction;
 
-  public SymbolicRegressionProblem(RealFunction targetFunction, List<double[]> trainingPoints, List<double[]> validationPoints, SymbolicRegressionFitness.Metric metric) {
+  public SymbolicRegressionProblem(
+      RealFunction targetFunction,
+      List<double[]> trainingPoints,
+      List<double[]> validationPoints,
+      SymbolicRegressionFitness.Metric metric
+  ) {
     this.targetFunction = targetFunction;
     trainingFitness = new SymbolicRegressionFitness(targetFunction, trainingPoints, metric);
     validationFitness = new SymbolicRegressionFitness(targetFunction, validationPoints, metric);
   }
 
-  @Override
-  public Function<RealFunction, Double> getValidationFunction() {
-    return validationFitness;
+  public int arity() {
+    return trainingFitness.arity();
   }
 
   @Override
@@ -50,7 +54,8 @@ public class SymbolicRegressionProblem implements ProblemWithValidation<RealFunc
     return targetFunction;
   }
 
-  public int arity() {
-    return trainingFitness.arity();
+  @Override
+  public Function<RealFunction, Double> getValidationFunction() {
+    return validationFitness;
   }
 }

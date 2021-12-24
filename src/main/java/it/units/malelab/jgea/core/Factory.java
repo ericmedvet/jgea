@@ -30,6 +30,8 @@ import java.util.random.RandomGenerator;
 @FunctionalInterface
 public interface Factory<T> {
 
+  List<T> build(int n, RandomGenerator random);
+
   static <T1, T2> Factory<Pair<T1, T2>> pair(Factory<T1> factory1, Factory<T2> factory2) {
     return (n, random) -> {
       List<T1> t1s = factory1.build(n, random);
@@ -48,8 +50,6 @@ public interface Factory<T> {
       return pairs;
     };
   }
-
-  List<T> build(int n, RandomGenerator random);
 
   default IndependentFactory<T> independent() {
     Factory<T> thisFactory = this;

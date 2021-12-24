@@ -65,16 +65,6 @@ public class GrowGrammarTreeFactory<T> implements Factory<Tree<T>> {
     return tree;
   }
 
-  protected Pair<Double, Double> optionMinMaxDepth(List<T> option) {
-    double min = 0d;
-    double max = 0d;
-    for (T symbol : option) {
-      min = Math.max(min, nonTerminalDepths.get(symbol).first());
-      max = Math.max(max, nonTerminalDepths.get(symbol).second());
-    }
-    return Pair.of(min, max);
-  }
-
   public Tree<T> build(RandomGenerator random, T symbol, int targetDepth) {
     if (targetDepth < 0) {
       return null;
@@ -123,6 +113,16 @@ public class GrowGrammarTreeFactory<T> implements Factory<Tree<T>> {
       }
     }
     return tree;
+  }
+
+  protected Pair<Double, Double> optionMinMaxDepth(List<T> option) {
+    double min = 0d;
+    double max = 0d;
+    for (T symbol : option) {
+      min = Math.max(min, nonTerminalDepths.get(symbol).first());
+      max = Math.max(max, nonTerminalDepths.get(symbol).second());
+    }
+    return Pair.of(min, max);
   }
 
 }

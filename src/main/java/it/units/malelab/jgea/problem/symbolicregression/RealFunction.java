@@ -23,11 +23,11 @@ import java.util.function.Function;
  */
 @FunctionalInterface
 public interface RealFunction extends Function<Double[], Double> {
+  double apply(double... input);
+
   @Override
   default Double apply(Double[] input) {
     return apply(input);
   }
-
-  double apply(double... input);
 
 }

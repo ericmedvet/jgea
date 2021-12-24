@@ -58,21 +58,21 @@ public enum BaseOperator implements RealFunction {
   }
 
   @Override
-  public String toString() {
-    return string;
-  }
-
-  public int minArity() {
-    return minArity;
+  public double apply(double... input) {
+    return function.apply(input);
   }
 
   public int maxArity() {
     return maxArity;
   }
 
+  public int minArity() {
+    return minArity;
+  }
+
   @Override
-  public double apply(double... input) {
-    return function.apply(input);
+  public String toString() {
+    return string;
   }
 
 }

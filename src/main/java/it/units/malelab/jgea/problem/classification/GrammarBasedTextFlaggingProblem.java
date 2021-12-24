@@ -38,7 +38,15 @@ public class GrammarBasedTextFlaggingProblem extends TextFlaggingProblem impleme
   private final Grammar<String> grammar;
   private final Function<Tree<String>, Classifier<String, TextFlaggingProblem.Label>> solutionMapper;
 
-  public GrammarBasedTextFlaggingProblem(Set<Character> alphabet, Set<RegexGrammar.Option> options, List<Pair<String, Label>> data, int folds, int i, ClassificationFitness.Metric learningErrorMetric, ClassificationFitness.Metric validationErrorMetric) {
+  public GrammarBasedTextFlaggingProblem(
+      Set<Character> alphabet,
+      Set<RegexGrammar.Option> options,
+      List<Pair<String, Label>> data,
+      int folds,
+      int i,
+      ClassificationFitness.Metric learningErrorMetric,
+      ClassificationFitness.Metric validationErrorMetric
+  ) {
     super(data, folds, i, learningErrorMetric, validationErrorMetric);
     solutionMapper = (Tree<String> tree) -> {
       String regex = tree.leaves().stream()

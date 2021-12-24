@@ -31,6 +31,40 @@ import java.util.random.RandomGenerator;
  */
 public class IndexedNodeAddition<M extends N, N, A> implements Mutation<Graph<IndexedNode<N>, A>> {
 
+  private final IndependentFactory<M> nodeFactory;
+  private final ToIntFunction<N> nodeTyper;
+  private final Mutation<A> toNewNodeArcMutation;
+  private final Mutation<A> fromNewNodeArcMutation;
+  private final Mutation<A> existingArcMutation;
+  private final Map<IndexKey, Integer> counterMap;
+  private int counter;
+  public IndexedNodeAddition(
+      IndependentFactory<M> nodeFactory,
+      ToIntFunction<N> nodeTyper,
+      int counterInitialValue,
+      Mutation<A> toNewNodeArcMutation,
+      Mutation<A> fromNewNodeArcMutation,
+      Mutation<A> existingArcMutation
+  ) {
+    this.nodeFactory = nodeFactory;
+    this.nodeTyper = nodeTyper;
+    counter = counterInitialValue;
+    this.toNewNodeArcMutation = toNewNodeArcMutation;
+    this.fromNewNodeArcMutation = fromNewNodeArcMutation;
+    this.existingArcMutation = existingArcMutation;
+    counterMap = new HashMap<>();
+  }
+
+  public IndexedNodeAddition(
+      IndependentFactory<M> nodeFactory,
+      ToIntFunction<N> nodeTyper,
+      int counterInitialValue,
+      Mutation<A> toNewNodeArcMutation,
+      Mutation<A> fromNewNodeArcMutation
+  ) {
+    this(nodeFactory, nodeTyper, counterInitialValue, toNewNodeArcMutation, fromNewNodeArcMutation, null);
+  }
+
   private static class IndexKey {
     protected final int srcIndex;
     protected final int dstIndex;
@@ -45,43 +79,22 @@ public class IndexedNodeAddition<M extends N, N, A> implements Mutation<Graph<In
     }
 
     @Override
+    public int hashCode() {
+      return Objects.hash(srcIndex, dstIndex, type, nOfSiblings);
+    }
+
+    @Override
     public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (this == o)
+        return true;
+      if (o == null || getClass() != o.getClass())
+        return false;
       IndexKey indexKey = (IndexKey) o;
       return srcIndex == indexKey.srcIndex &&
           dstIndex == indexKey.dstIndex &&
           type == indexKey.type &&
           nOfSiblings == indexKey.nOfSiblings;
     }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(srcIndex, dstIndex, type, nOfSiblings);
-    }
-  }
-
-  private final IndependentFactory<M> nodeFactory;
-  private final ToIntFunction<N> nodeTyper;
-  private final Mutation<A> toNewNodeArcMutation;
-  private final Mutation<A> fromNewNodeArcMutation;
-  private final Mutation<A> existingArcMutation;
-
-  private int counter;
-  private final Map<IndexKey, Integer> counterMap;
-
-  public IndexedNodeAddition(IndependentFactory<M> nodeFactory, ToIntFunction<N> nodeTyper, int counterInitialValue, Mutation<A> toNewNodeArcMutation, Mutation<A> fromNewNodeArcMutation, Mutation<A> existingArcMutation) {
-    this.nodeFactory = nodeFactory;
-    this.nodeTyper = nodeTyper;
-    counter = counterInitialValue;
-    this.toNewNodeArcMutation = toNewNodeArcMutation;
-    this.fromNewNodeArcMutation = fromNewNodeArcMutation;
-    this.existingArcMutation = existingArcMutation;
-    counterMap = new HashMap<>();
-  }
-
-  public IndexedNodeAddition(IndependentFactory<M> nodeFactory, ToIntFunction<N> nodeTyper, int counterInitialValue, Mutation<A> toNewNodeArcMutation, Mutation<A> fromNewNodeArcMutation) {
-    this(nodeFactory, nodeTyper, counterInitialValue, toNewNodeArcMutation, fromNewNodeArcMutation, null);
   }
 
   @Override

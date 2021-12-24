@@ -34,7 +34,13 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
   private final Tree<Element> genoAssigner;
   private final int maxMappingDepth;
 
-  public RecursiveMapper(Tree<Element> optionChooser, Tree<Element> genoAssigner, int maxMappingDepth, int maxDepth, Grammar<T> grammar) {
+  public RecursiveMapper(
+      Tree<Element> optionChooser,
+      Tree<Element> genoAssigner,
+      int maxMappingDepth,
+      int maxDepth,
+      Grammar<T> grammar
+  ) {
     super(maxDepth, grammar);
     this.maxMappingDepth = maxMappingDepth;
     this.optionChooser = optionChooser;
@@ -61,9 +67,17 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
     }
     if (depth >= maxMappingDepth) {
       List<Integer> shortestOptionIndexTies = shortestOptionIndexesMap.get(symbol);
-      List<T> shortestOption = grammar.getRules().get(symbol).get(shortestOptionIndexTies.get(finalizationGlobalCounter.getAndIncrement() % shortestOptionIndexTies.size()));
+      List<T> shortestOption = grammar.getRules()
+          .get(symbol)
+          .get(shortestOptionIndexTies.get(finalizationGlobalCounter.getAndIncrement() % shortestOptionIndexTies.size()));
       for (T optionSymbol : shortestOption) {
-        tree.addChild(mapRecursively(optionSymbol, genotype, mappingGlobalCounter, finalizationGlobalCounter, depth + 1));
+        tree.addChild(mapRecursively(
+            optionSymbol,
+            genotype,
+            mappingGlobalCounter,
+            finalizationGlobalCounter,
+            depth + 1
+        ));
       }
       return tree;
     }
@@ -86,7 +100,13 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
     for (T optionSymbol : options.get(optionIndex)) {
       expressivenesses.add((double) weightsMap.getOrDefault(optionSymbol, 1));
     }
-    List<BitString> pieces = ((List<BitString>) MapperUtils.compute(genoAssigner, genotype, expressivenesses, depth, mappingGlobalCounter));
+    List<BitString> pieces = ((List<BitString>) MapperUtils.compute(
+        genoAssigner,
+        genotype,
+        expressivenesses,
+        depth,
+        mappingGlobalCounter
+    ));
     for (int i = 0; i < options.get(optionIndex).size(); i++) {
       BitString piece;
       if (pieces.size() > i) {

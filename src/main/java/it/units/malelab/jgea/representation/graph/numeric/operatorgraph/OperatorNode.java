@@ -30,6 +30,11 @@ public class OperatorNode extends Node implements RealFunction {
 
   private final BaseOperator operator;
 
+  public OperatorNode(int index, BaseOperator operator) {
+    super(index);
+    this.operator = operator;
+  }
+
   public static IndependentFactory<OperatorNode> limitedIndexFactory(int limit, BaseOperator... operators) {
     return random -> new OperatorNode(
         random.nextInt(limit),
@@ -49,11 +54,6 @@ public class OperatorNode extends Node implements RealFunction {
     };
   }
 
-  public OperatorNode(int index, BaseOperator operator) {
-    super(index);
-    this.operator = operator;
-  }
-
   @Override
   public double apply(double... input) {
     return operator.apply(input);
@@ -61,20 +61,23 @@ public class OperatorNode extends Node implements RealFunction {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    if (!super.equals(o)) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    if (!super.equals(o))
+      return false;
     OperatorNode that = (OperatorNode) o;
     return operator == that.operator;
-  }
-
-  public BaseOperator getOperator() {
-    return operator;
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(super.hashCode(), operator);
+  }
+
+  public BaseOperator getOperator() {
+    return operator;
   }
 
   @Override

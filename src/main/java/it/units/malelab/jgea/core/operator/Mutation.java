@@ -31,16 +31,6 @@ import java.util.random.RandomGenerator;
 @FunctionalInterface
 public interface Mutation<G> extends GeneticOperator<G> {
 
-  @Override
-  default int arity() {
-    return 1;
-  }
-
-  @Override
-  default List<? extends G> apply(List<? extends G> gs, RandomGenerator random) {
-    return Collections.singletonList(mutate(gs.get(0), random));
-  }
-
   G mutate(G g, RandomGenerator random);
 
   static <K> Mutation<K> copy() {
@@ -56,6 +46,16 @@ public interface Mutation<G> extends GeneticOperator<G> {
         mutation1.mutate(p.first(), random),
         mutation2.mutate(p.second(), random)
     );
+  }
+
+  @Override
+  default int arity() {
+    return 1;
+  }
+
+  @Override
+  default List<? extends G> apply(List<? extends G> gs, RandomGenerator random) {
+    return Collections.singletonList(mutate(gs.get(0), random));
   }
 
   default Mutation<G> withChecker(Predicate<? super G> checker) {

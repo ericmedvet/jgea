@@ -40,21 +40,6 @@ public class TreeSize implements GrammarBasedProblem<Boolean, Tree<Boolean>, Dou
     fitnessFunction = (Tree<Boolean> tree) -> 1d / (double) tree.size();
   }
 
-  @Override
-  public Grammar<Boolean> getGrammar() {
-    return grammar;
-  }
-
-  @Override
-  public Function<Tree<Boolean>, Tree<Boolean>> getSolutionMapper() {
-    return Function.identity();
-  }
-
-  @Override
-  public Function<Tree<Boolean>, Double> getFitnessFunction() {
-    return fitnessFunction;
-  }
-
   @SafeVarargs
   private static <T> List<T> l(T... ts) {
     return Arrays.asList(ts);
@@ -67,6 +52,21 @@ public class TreeSize implements GrammarBasedProblem<Boolean, Tree<Boolean>, Dou
       list.addAll(l(ts));
     }
     return list;
+  }
+
+  @Override
+  public Function<Tree<Boolean>, Double> getFitnessFunction() {
+    return fitnessFunction;
+  }
+
+  @Override
+  public Grammar<Boolean> getGrammar() {
+    return grammar;
+  }
+
+  @Override
+  public Function<Tree<Boolean>, Tree<Boolean>> getSolutionMapper() {
+    return Function.identity();
   }
 
 }

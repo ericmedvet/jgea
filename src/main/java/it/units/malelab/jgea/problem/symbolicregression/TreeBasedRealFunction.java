@@ -35,20 +35,6 @@ public class TreeBasedRealFunction implements RealFunction, Sized {
     this.varNames = varNames;
   }
 
-  public static TreeBasedRealFunction from(Tree<Element> tree, String... varNames) {
-    return new TreeBasedRealFunction(tree, varNames);
-  }
-
-  @Override
-  public int size() {
-    return tree.size();
-  }
-
-  @Override
-  public double apply(double... input) {
-    return compute(tree, input, varNames);
-  }
-
   private static double compute(Tree<Element> tree, double[] x, String[] varNames) {
     if (varNames.length != x.length) {
       throw new IllegalArgumentException(String.format(
@@ -83,6 +69,15 @@ public class TreeBasedRealFunction implements RealFunction, Sized {
     return ((Element.Operator) tree.content()).apply(childrenValues);
   }
 
+  public static TreeBasedRealFunction from(Tree<Element> tree, String... varNames) {
+    return new TreeBasedRealFunction(tree, varNames);
+  }
+
+  @Override
+  public double apply(double... input) {
+    return compute(tree, input, varNames);
+  }
+
   public Tree<Element> getNode() {
     return tree;
   }
@@ -92,24 +87,31 @@ public class TreeBasedRealFunction implements RealFunction, Sized {
   }
 
   @Override
-  public String toString() {
-    return tree.toString();
+  public int hashCode() {
+    int result = Objects.hash(tree);
+    result = 31 * result + Arrays.hashCode(varNames);
+    return result;
   }
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
     TreeBasedRealFunction that = (TreeBasedRealFunction) o;
     return tree.equals(that.tree) &&
         Arrays.equals(varNames, that.varNames);
   }
 
   @Override
-  public int hashCode() {
-    int result = Objects.hash(tree);
-    result = 31 * result + Arrays.hashCode(varNames);
-    return result;
+  public String toString() {
+    return tree.toString();
+  }
+
+  @Override
+  public int size() {
+    return tree.size();
   }
 }
 

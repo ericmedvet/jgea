@@ -26,12 +26,31 @@ import java.util.function.BiFunction;
  */
 public class SymbolicRegressionFitness extends CaseBasedFitness<RealFunction, double[], Double, Double> {
 
+  private final RealFunction targetFunction;
+  private final List<double[]> points;
+  private final int arity;
+  private final Metric metric;
+  public SymbolicRegressionFitness(RealFunction targetFunction, List<double[]> points, Metric metric) {
+    super(
+        points,
+        (f, x) -> f.apply(x) - targetFunction.apply(x),
+        errs -> metric.apply(errs, points.stream().map(targetFunction::apply).toList())
+    );
+    this.targetFunction = targetFunction;
+    this.points = points;
+    this.arity = points.get(0).length;
+    this.metric = metric;
+  }
+
   public enum Metric implements BiFunction<List<Double>, List<Double>, Double> {
 
     MAE((errs, ys) -> errs.stream().mapToDouble(Math::abs).average().orElse(Double.NaN)),
     MSE((errs, ys) -> errs.stream().mapToDouble(err -> err * err).average().orElse(Double.NaN)),
     RMSE((errs, ys) -> Math.sqrt(errs.stream().mapToDouble(err -> err * err).average().orElse(Double.NaN))),
-    NMSE((errs, ys) -> errs.stream().mapToDouble(err -> err * err).average().orElse(Double.NaN) / ys.stream().mapToDouble(y -> y * y).average().orElse(1d));
+    NMSE((errs, ys) -> errs.stream().mapToDouble(err -> err * err).average().orElse(Double.NaN) / ys.stream()
+        .mapToDouble(y -> y * y)
+        .average()
+        .orElse(1d));
 
     private final BiFunction<List<Double>, List<Double>, Double> function;
 
@@ -46,36 +65,19 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<RealFunction, do
     }
   }
 
-  private final RealFunction targetFunction;
-  private final List<double[]> points;
-  private final int arity;
-  private final Metric metric;
-
-  public SymbolicRegressionFitness(RealFunction targetFunction, List<double[]> points, Metric metric) {
-    super(
-        points,
-        (f, x) -> f.apply(x) - targetFunction.apply(x),
-        errs -> metric.apply(errs, points.stream().map(targetFunction::apply).toList())
-    );
-    this.targetFunction = targetFunction;
-    this.points = points;
-    this.arity = points.get(0).length;
-    this.metric = metric;
-  }
-
-  public RealFunction getTargetFunction() {
-    return targetFunction;
-  }
-
-  public List<double[]> getPoints() {
-    return points;
-  }
-
   public int arity() {
     return arity;
   }
 
   public Metric getMetric() {
     return metric;
+  }
+
+  public List<double[]> getPoints() {
+    return points;
+  }
+
+  public RealFunction getTargetFunction() {
+    return targetFunction;
   }
 }

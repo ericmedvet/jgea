@@ -24,6 +24,21 @@ import java.util.*;
 public interface ThinList<T> extends List<T> {
 
   @Override
+  default boolean isEmpty() {
+    return size() == 0;
+  }
+
+  @Override
+  default boolean contains(Object o) {
+    for (T t : this) {
+      if (t.equals(o)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @Override
   default Iterator<T> iterator() {
     return new Iterator<>() {
       int i = 0;
@@ -39,21 +54,6 @@ public interface ThinList<T> extends List<T> {
         return get(i - 1);
       }
     };
-  }
-
-  @Override
-  default boolean isEmpty() {
-    return size() == 0;
-  }
-
-  @Override
-  default boolean contains(Object o) {
-    for (T t : this) {
-      if (t.equals(o)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   @Override

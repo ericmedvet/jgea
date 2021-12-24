@@ -49,16 +49,16 @@ public class CachedBiFunction<T, U, R> implements BiFunction<T, U, R> {
     }
   }
 
-  public void reset() {
-    cache.asMap().clear();
-    innerInvocations = 0;
-  }
-
   public CacheStats getCacheStats() {
     return cache.stats();
   }
 
   public long getInnerInvocations() {
     return innerInvocations;
+  }
+
+  public void reset() {
+    cache.asMap().clear();
+    innerInvocations = 0;
   }
 }

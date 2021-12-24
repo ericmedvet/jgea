@@ -33,7 +33,31 @@ public class BinaryTextFlaggingProblem extends GrammarBasedTextFlaggingProblem {
   private final static String[] REGEXES = new String[]{"101010...010101", "11111...11111", "(11110000)++"};
   private final static String ALPHABET = "01";
 
-  private static List<Pair<String, Label>> buildData(String[] regexes, String alphabet, int length, int size, Random random) {
+  public BinaryTextFlaggingProblem(
+      int size,
+      int length,
+      long seed,
+      int folds,
+      int i,
+      ClassificationFitness.Metric learningErrorMetric,
+      ClassificationFitness.Metric validationErrorMetric,
+      RegexGrammar.Option... options
+  ) {
+    super(new TreeSet<>(ALPHABET.chars().mapToObj(c -> (char) c).collect(Collectors.toSet())),
+        new LinkedHashSet<>(Arrays.asList(options)),
+        buildData(REGEXES, ALPHABET, length, size, new Random(seed)),
+        folds, i,
+        learningErrorMetric, validationErrorMetric
+    );
+  }
+
+  private static List<Pair<String, Label>> buildData(
+      String[] regexes,
+      String alphabet,
+      int length,
+      int size,
+      Random random
+  ) {
     List<String> positives = new ArrayList<>();
     List<String> negatives = new ArrayList<>();
     List<Pattern> patterns = Stream.of(regexes).map(Pattern::compile).toList();
@@ -57,14 +81,6 @@ public class BinaryTextFlaggingProblem extends GrammarBasedTextFlaggingProblem {
     data.addAll(positives.stream().map(s -> Pair.of(s, Label.FOUND)).toList());
     data.addAll(negatives.stream().map(s -> Pair.of(s, Label.NOT_FOUND)).toList());
     return data;
-  }
-
-  public BinaryTextFlaggingProblem(int size, int length, long seed, int folds, int i, ClassificationFitness.Metric learningErrorMetric, ClassificationFitness.Metric validationErrorMetric, RegexGrammar.Option... options) {
-    super(new TreeSet<>(ALPHABET.chars().mapToObj(c -> (char) c).collect(Collectors.toSet())),
-        new LinkedHashSet<>(Arrays.asList(options)),
-        buildData(REGEXES, ALPHABET, length, size, new Random(seed)),
-        folds, i,
-        learningErrorMetric, validationErrorMetric);
   }
 
 }

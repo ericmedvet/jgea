@@ -20,9 +20,8 @@ public class TelegramClient {
 
   protected static final Logger L = Logger.getLogger(TelegramUpdater.class.getName());
   protected static final Set<String> VIDEO_FILE_EXTENSIONS = Set.of("mpg", "avi", "mp4");
-
-  protected TelegramBot bot;
   protected final long chatId;
+  protected TelegramBot bot;
 
   public TelegramClient(String botToken, long chatId) {
     this.chatId = chatId;
@@ -33,17 +32,28 @@ public class TelegramClient {
     }
   }
 
-  protected void sendText(String string) {
+  protected static String getMachineName() {
+    String user = System.getProperty("user.name");
+    String hostName = "unknown";
     try {
-      SendResponse response = bot.execute(new SendMessage(
+      hostName = InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException e) {
+      //ignore
+    }
+    return user + "@" + hostName;
+  }
+
+  protected void sendDocument(File file) {
+    try {
+      SendResponse response = bot.execute(new SendDocument(
           chatId,
-          string
+          file
       ));
       if (!response.isOk()) {
         L.warning(String.format("Response is not ok: %s", response.toString()));
       }
     } catch (Throwable t) {
-      L.warning(String.format("Cannot send text: %s", t));
+      L.warning(String.format("Cannot send document: %s", t));
     }
   }
 
@@ -64,6 +74,20 @@ public class TelegramClient {
     }
   }
 
+  protected void sendText(String string) {
+    try {
+      SendResponse response = bot.execute(new SendMessage(
+          chatId,
+          string
+      ));
+      if (!response.isOk()) {
+        L.warning(String.format("Response is not ok: %s", response.toString()));
+      }
+    } catch (Throwable t) {
+      L.warning(String.format("Cannot send text: %s", t));
+    }
+  }
+
   protected void sendVideo(File file) {
     try {
       SendResponse response = bot.execute(new SendVideo(
@@ -76,31 +100,6 @@ public class TelegramClient {
     } catch (Throwable t) {
       L.warning(String.format("Cannot send video: %s", t));
     }
-  }
-
-  protected void sendDocument(File file) {
-    try {
-      SendResponse response = bot.execute(new SendDocument(
-          chatId,
-          file
-      ));
-      if (!response.isOk()) {
-        L.warning(String.format("Response is not ok: %s", response.toString()));
-      }
-    } catch (Throwable t) {
-      L.warning(String.format("Cannot send document: %s", t));
-    }
-  }
-
-  protected static String getMachineName() {
-    String user = System.getProperty("user.name");
-    String hostName = "unknown";
-    try {
-      hostName = InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException e) {
-      //ignore
-    }
-    return user + "@" + hostName;
   }
 
 

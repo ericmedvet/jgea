@@ -59,11 +59,6 @@ public class RegexBasedExtractor implements Extractor<Character>, Sized {
   }
 
   @Override
-  public Set<Range<Integer>> extractNonOverlapping(List<Character> sequence) {
-    return extract(sequence);
-  }
-
-  @Override
   public boolean match(List<Character> sequence) {
     String string = sequence.stream()
         .map(String::valueOf)
@@ -73,16 +68,8 @@ public class RegexBasedExtractor implements Extractor<Character>, Sized {
   }
 
   @Override
-  public int size() {
-    return regex.length();
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    RegexBasedExtractor that = (RegexBasedExtractor) o;
-    return regex.equals(that.regex);
+  public Set<Range<Integer>> extractNonOverlapping(List<Character> sequence) {
+    return extract(sequence);
   }
 
   @Override
@@ -91,8 +78,23 @@ public class RegexBasedExtractor implements Extractor<Character>, Sized {
   }
 
   @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    RegexBasedExtractor that = (RegexBasedExtractor) o;
+    return regex.equals(that.regex);
+  }
+
+  @Override
   public String toString() {
     return regex;
+  }
+
+  @Override
+  public int size() {
+    return regex.length();
   }
 
 }

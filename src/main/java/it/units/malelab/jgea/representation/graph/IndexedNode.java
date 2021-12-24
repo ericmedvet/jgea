@@ -27,6 +27,14 @@ import java.util.function.Function;
  */
 public class IndexedNode<C> implements Serializable {
 
+  private final int index;
+  private final C content;
+
+  public IndexedNode(int index, C content) {
+    this.index = index;
+    this.content = content;
+  }
+
   public static <H, K extends H> Function<K, IndexedNode<H>> hashMapper(Class<H> c) {
     return k -> new IndexedNode<>(Objects.hash(k.getClass(), k), k);
   }
@@ -47,28 +55,8 @@ public class IndexedNode<C> implements Serializable {
     };
   }
 
-  private final int index;
-  private final C content;
-
-  public IndexedNode(int index, C content) {
-    this.index = index;
-    this.content = content;
-  }
-
-  public int index() {
-    return index;
-  }
-
   public C content() {
     return content;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    IndexedNode<?> that = (IndexedNode<?>) o;
-    return index == that.index;
   }
 
   @Override
@@ -77,7 +65,21 @@ public class IndexedNode<C> implements Serializable {
   }
 
   @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    IndexedNode<?> that = (IndexedNode<?>) o;
+    return index == that.index;
+  }
+
+  @Override
   public String toString() {
     return content + "[" + index + "]";
+  }
+
+  public int index() {
+    return index;
   }
 }

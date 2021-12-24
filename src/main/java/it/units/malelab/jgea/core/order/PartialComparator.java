@@ -58,35 +58,6 @@ public interface PartialComparator<K> {
     };
   }
 
-  default <C> PartialComparator<C> comparing(Function<? super C, ? extends K> function) {
-    return (c1, c2) -> compare(function.apply(c1), function.apply(c2));
-  } // TODO should be made static and consistent with the corresponding method of Comparator
-
-  default PartialComparator<K> thenComparing(PartialComparator<? super K> other) {
-    PartialComparator<K> thisComparator = this;
-    return (k1, k2) -> {
-      PartialComparatorOutcome outcome = thisComparator.compare(k1, k2);
-      if (!outcome.equals(PartialComparatorOutcome.SAME)) {
-        return outcome;
-      }
-      return other.compare(k1, k2);
-    };
-  }
-
-  default PartialComparator<K> reversed() {
-    PartialComparator<K> thisComparator = this;
-    return (k1, k2) -> {
-      PartialComparatorOutcome outcome = thisComparator.compare(k1, k2);
-      if (outcome.equals(PartialComparatorOutcome.BEFORE)) {
-        return PartialComparatorOutcome.AFTER;
-      }
-      if (outcome.equals(PartialComparatorOutcome.AFTER)) {
-        return PartialComparatorOutcome.BEFORE;
-      }
-      return outcome;
-    };
-  }
-
   default Comparator<K> comparator() {
     PartialComparator<K> thisPartialComparator = this;
     return (o1, o2) -> {
@@ -104,6 +75,35 @@ public interface PartialComparator<K> {
         return 1;
       }
       return 0;
+    };
+  }
+
+  default <C> PartialComparator<C> comparing(Function<? super C, ? extends K> function) {
+    return (c1, c2) -> compare(function.apply(c1), function.apply(c2));
+  } // TODO should be made static and consistent with the corresponding method of Comparator
+
+  default PartialComparator<K> reversed() {
+    PartialComparator<K> thisComparator = this;
+    return (k1, k2) -> {
+      PartialComparatorOutcome outcome = thisComparator.compare(k1, k2);
+      if (outcome.equals(PartialComparatorOutcome.BEFORE)) {
+        return PartialComparatorOutcome.AFTER;
+      }
+      if (outcome.equals(PartialComparatorOutcome.AFTER)) {
+        return PartialComparatorOutcome.BEFORE;
+      }
+      return outcome;
+    };
+  }
+
+  default PartialComparator<K> thenComparing(PartialComparator<? super K> other) {
+    PartialComparator<K> thisComparator = this;
+    return (k1, k2) -> {
+      PartialComparatorOutcome outcome = thisComparator.compare(k1, k2);
+      if (!outcome.equals(PartialComparatorOutcome.SAME)) {
+        return outcome;
+      }
+      return other.compare(k1, k2);
     };
   }
 

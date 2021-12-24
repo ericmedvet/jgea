@@ -33,6 +33,32 @@ import java.util.function.Function;
  */
 public class MultipleOutputParallelMultiplier implements GrammarBasedProblem<String, List<Tree<Element>>, Double> {
 
+  private final Grammar<String> grammar;
+  private final Function<Tree<String>, List<Tree<Element>>> solutionMapper;
+  private final Function<List<Tree<Element>>, Double> fitnessFunction;
+  public MultipleOutputParallelMultiplier(final int size) throws IOException {
+    grammar = Grammar.fromFile(new File("grammars/boolean-parity-var.bnf"));
+    List<List<String>> vars = new ArrayList<>();
+    for (int j = 0; j < 2; j++) {
+      for (int i = 0; i < size; i++) {
+        vars.add(Collections.singletonList("b" + j + "." + i));
+      }
+    }
+    grammar.getRules().put("<v>", vars);
+    List<String> output = new ArrayList<>();
+    for (int i = 0; i < 2 * size; i++) {
+      output.add("<e>");
+    }
+    grammar.getRules().put(FormulaMapper.MULTIPLE_OUTPUT_NON_TERMINAL, Collections.singletonList(output));
+    grammar.setStartingSymbol(FormulaMapper.MULTIPLE_OUTPUT_NON_TERMINAL);
+    solutionMapper = new FormulaMapper();
+    TargetFunction targetFunction = new TargetFunction(size);
+    fitnessFunction = new BooleanFunctionFitness(
+        targetFunction,
+        BooleanUtils.buildCompleteObservations(targetFunction.varNames)
+    );
+  }
+
   private static class TargetFunction implements BooleanFunctionFitness.TargetFunction {
 
     private final int size;
@@ -66,31 +92,9 @@ public class MultipleOutputParallelMultiplier implements GrammarBasedProblem<Str
 
   }
 
-  private final Grammar<String> grammar;
-  private final Function<Tree<String>, List<Tree<Element>>> solutionMapper;
-  private final Function<List<Tree<Element>>, Double> fitnessFunction;
-
-  public MultipleOutputParallelMultiplier(final int size) throws IOException {
-    grammar = Grammar.fromFile(new File("grammars/boolean-parity-var.bnf"));
-    List<List<String>> vars = new ArrayList<>();
-    for (int j = 0; j < 2; j++) {
-      for (int i = 0; i < size; i++) {
-        vars.add(Collections.singletonList("b" + j + "." + i));
-      }
-    }
-    grammar.getRules().put("<v>", vars);
-    List<String> output = new ArrayList<>();
-    for (int i = 0; i < 2 * size; i++) {
-      output.add("<e>");
-    }
-    grammar.getRules().put(FormulaMapper.MULTIPLE_OUTPUT_NON_TERMINAL, Collections.singletonList(output));
-    grammar.setStartingSymbol(FormulaMapper.MULTIPLE_OUTPUT_NON_TERMINAL);
-    solutionMapper = new FormulaMapper();
-    TargetFunction targetFunction = new TargetFunction(size);
-    fitnessFunction = new BooleanFunctionFitness(
-        targetFunction,
-        BooleanUtils.buildCompleteObservations(targetFunction.varNames)
-    );
+  @Override
+  public Function<List<Tree<Element>>, Double> getFitnessFunction() {
+    return fitnessFunction;
   }
 
   @Override
@@ -101,11 +105,6 @@ public class MultipleOutputParallelMultiplier implements GrammarBasedProblem<Str
   @Override
   public Function<Tree<String>, List<Tree<Element>>> getSolutionMapper() {
     return solutionMapper;
-  }
-
-  @Override
-  public Function<List<Tree<Element>>, Double> getFitnessFunction() {
-    return fitnessFunction;
   }
 
 }

@@ -39,8 +39,8 @@ public class LinkedHashGraph<N, A> implements Graph<N, A>, Serializable {
   }
 
   @Override
-  public Set<N> nodes() {
-    return nodes;
+  public void addNode(N node) {
+    nodes.add(node);
   }
 
   @Override
@@ -49,8 +49,18 @@ public class LinkedHashGraph<N, A> implements Graph<N, A>, Serializable {
   }
 
   @Override
-  public void addNode(N node) {
-    nodes.add(node);
+  public A getArcValue(Arc<N> arc) {
+    return arcs.get(arc);
+  }
+
+  @Override
+  public Set<N> nodes() {
+    return nodes;
+  }
+
+  @Override
+  public boolean removeArc(Arc<N> arc) {
+    return arcs.remove(arc) != null;
   }
 
   @Override
@@ -73,27 +83,19 @@ public class LinkedHashGraph<N, A> implements Graph<N, A>, Serializable {
   }
 
   @Override
-  public boolean removeArc(Arc<N> arc) {
-    return arcs.remove(arc) != null;
-  }
-
-  @Override
-  public A getArcValue(Arc<N> arc) {
-    return arcs.get(arc);
+  public int hashCode() {
+    return Objects.hash(nodes, arcs);
   }
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
     LinkedHashGraph<?, ?> that = (LinkedHashGraph<?, ?>) o;
     return nodes.equals(that.nodes) &&
         arcs.equals(that.arcs);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(nodes, arcs);
   }
 
   @Override

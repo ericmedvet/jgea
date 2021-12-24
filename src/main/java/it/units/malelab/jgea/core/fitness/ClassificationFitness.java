@@ -36,6 +36,29 @@ import java.util.function.Function;
  */
 public class ClassificationFitness<O, L extends Enum<L>> extends CaseBasedFitness<Classifier<O, L>, O, L, List<Double>> {
 
+  private final List<Pair<O, L>> data;
+  private final List<String> names;
+
+  public ClassificationFitness(List<Pair<O, L>> data, Metric errorMetric) {
+    super(
+        data.stream().map(Pair::first).toList(),
+        (c, o) -> c.classify(o),
+        getAggregator(data.stream().map(Pair::second).toList(), errorMetric)
+    );
+    this.data = data;
+    names = new ArrayList<>();
+    if (errorMetric.equals(Metric.CLASS_ERROR_RATE)) {
+      L protoLabel = data.get(0).second();
+      for (L label : (L[]) protoLabel.getClass().getEnumConstants()) {
+        names.add(label.toString().toLowerCase() + ".error.rate");
+      }
+    } else if (errorMetric.equals(Metric.ERROR_RATE)) {
+      names.add("error.rate");
+    } else if (errorMetric.equals(Metric.BALANCED_ERROR_RATE)) {
+      names.add("balanced.error.rate");
+    }
+  }
+
   public enum Metric {
     CLASS_ERROR_RATE, ERROR_RATE, BALANCED_ERROR_RATE
   }
@@ -69,7 +92,10 @@ public class ClassificationFitness<O, L extends Enum<L>> extends CaseBasedFitnes
 
   }
 
-  private static <E extends Enum<E>> Function<List<E>, List<Double>> getAggregator(List<E> actualLabels, Metric metric) {
+  private static <E extends Enum<E>> Function<List<E>, List<Double>> getAggregator(
+      List<E> actualLabels,
+      Metric metric
+  ) {
     final ClassErrorRate<E> classErrorRate = new ClassErrorRate<>(actualLabels);
     if (metric.equals(Metric.CLASS_ERROR_RATE)) {
       return (List<E> predictedLabels) -> {
@@ -97,29 +123,6 @@ public class ClassificationFitness<O, L extends Enum<L>> extends CaseBasedFitnes
       };
     }
     return null;
-  }
-
-  private final List<Pair<O, L>> data;
-  private final List<String> names;
-
-  public ClassificationFitness(List<Pair<O, L>> data, Metric errorMetric) {
-    super(
-        data.stream().map(Pair::first).toList(),
-        (c, o) -> c.classify(o),
-        getAggregator(data.stream().map(Pair::second).toList(), errorMetric)
-    );
-    this.data = data;
-    names = new ArrayList<>();
-    if (errorMetric.equals(Metric.CLASS_ERROR_RATE)) {
-      L protoLabel = data.get(0).second();
-      for (L label : (L[]) protoLabel.getClass().getEnumConstants()) {
-        names.add(label.toString().toLowerCase() + ".error.rate");
-      }
-    } else if (errorMetric.equals(Metric.ERROR_RATE)) {
-      names.add("error.rate");
-    } else if (errorMetric.equals(Metric.BALANCED_ERROR_RATE)) {
-      names.add("balanced.error.rate");
-    }
   }
 
   public ClassificationFitness<O, L> changeMetric(Metric metric) {

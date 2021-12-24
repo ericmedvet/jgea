@@ -25,11 +25,19 @@ import java.util.function.Predicate;
  */
 public class GraphUtils {
 
+  public static <N1, A1, N2, A> Function<Graph<N1, A1>, Graph<N2, A>> mapper(
+      Function<N1, N2> nodeF,
+      Function<Collection<A1>, A> arcF
+  ) {
+    return graph -> transform(graph, nodeF, arcF);
+  }
+
   public static <N> void removeUnconnectedNodes(Graph<N, ?> graph, Predicate<N> unremovableNodePredicate) {
     while (true) {
       Set<N> toRemoveNodes = new LinkedHashSet<>();
       for (N node : graph.nodes()) {
-        if (!unremovableNodePredicate.test(node) && (graph.predecessors(node).isEmpty()) && (graph.successors(node).isEmpty())) {
+        if (!unremovableNodePredicate.test(node) && (graph.predecessors(node).isEmpty()) && (graph.successors(node)
+            .isEmpty())) {
           toRemoveNodes.add(node);
         }
       }
@@ -41,16 +49,28 @@ public class GraphUtils {
     }
   }
 
-  public static <N1, A1, N2, A2> Graph<N2, A2> transform(Graph<N1, A1> fromGraph, Function<N1, N2> nodeF, Function<Collection<A1>, A2> arcF) {
+  public static <N1, A1, N2, A2> Graph<N2, A2> transform(
+      Graph<N1, A1> fromGraph,
+      Function<N1, N2> nodeF,
+      Function<Collection<A1>, A2> arcF
+  ) {
     Graph<N2, A2> toGraph = new LinkedHashGraph<>();
     for (N1 fromNode : fromGraph.nodes()) {
       toGraph.addNode(nodeF.apply(fromNode));
     }
     Map<Graph.Arc<N2>, Collection<A1>> arcMap = new HashMap<>();
     for (Graph.Arc<N1> fromArc : fromGraph.arcs()) {
-      N1 fromSourceNode = fromGraph.nodes().stream().filter(n -> n.equals(fromArc.getSource())).findFirst().orElse(null);
-      N1 fromTargetNode = fromGraph.nodes().stream().filter(n -> n.equals(fromArc.getTarget())).findFirst().orElse(null);
-      if (fromSourceNode==null||fromTargetNode==null) {
+      N1 fromSourceNode = fromGraph.nodes()
+          .stream()
+          .filter(n -> n.equals(fromArc.getSource()))
+          .findFirst()
+          .orElse(null);
+      N1 fromTargetNode = fromGraph.nodes()
+          .stream()
+          .filter(n -> n.equals(fromArc.getTarget()))
+          .findFirst()
+          .orElse(null);
+      if (fromSourceNode == null || fromTargetNode == null) {
         throw new IllegalStateException("Cannot find source or target nodes");
       }
       Graph.Arc<N2> toArc = Graph.Arc.of(nodeF.apply(fromSourceNode), nodeF.apply(fromTargetNode));
@@ -71,10 +91,6 @@ public class GraphUtils {
       toGraph.setArcValue(entry.getKey(), arcF.apply(entry.getValue()));
     }
     return toGraph;
-  }
-
-  public static <N1, A1, N2, A> Function<Graph<N1, A1>, Graph<N2, A>> mapper(Function<N1, N2> nodeF, Function<Collection<A1>, A> arcF) {
-    return graph -> transform(graph, nodeF, arcF);
   }
 
 }

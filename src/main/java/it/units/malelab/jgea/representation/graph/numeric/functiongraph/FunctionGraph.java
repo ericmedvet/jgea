@@ -37,19 +37,13 @@ public class FunctionGraph implements Function<double[], double[]>, Sized, Seria
 
   private final Graph<Node, Double> graph;
 
-  public static Function<Graph<Node, Double>, FunctionGraph> builder() {
-    return FunctionGraph::new;
+  public FunctionGraph(Graph<Node, Double> graph) {
+    check(graph);
+    this.graph = graph;
   }
 
-  public static Predicate<Graph<Node, Double>> checker() {
-    return graph -> {
-      try {
-        check(graph);
-      } catch (IllegalArgumentException e) {
-        return false;
-      }
-      return true;
-    };
+  public static Function<Graph<Node, Double>, FunctionGraph> builder() {
+    return FunctionGraph::new;
   }
 
   public static void check(Graph<Node, Double> graph) {
@@ -85,14 +79,24 @@ public class FunctionGraph implements Function<double[], double[]>, Sized, Seria
     }
   }
 
-  public FunctionGraph(Graph<Node, Double> graph) {
-    check(graph);
-    this.graph = graph;
+  public static Predicate<Graph<Node, Double>> checker() {
+    return graph -> {
+      try {
+        check(graph);
+      } catch (IllegalArgumentException e) {
+        return false;
+      }
+      return true;
+    };
   }
 
   @Override
   public double[] apply(double[] input) {
-    Set<Output> outputs = graph.nodes().stream().filter(n -> n instanceof Output).map(n -> (Output) n).collect(Collectors.toSet());
+    Set<Output> outputs = graph.nodes()
+        .stream()
+        .filter(n -> n instanceof Output)
+        .map(n -> (Output) n)
+        .collect(Collectors.toSet());
     int outputSize = outputs.stream().mapToInt(Node::getIndex).max().orElse(0);
     double[] output = new double[outputSize + 1];
     for (Output outputNode : outputs) {
@@ -102,8 +106,18 @@ public class FunctionGraph implements Function<double[], double[]>, Sized, Seria
   }
 
   @Override
-  public int size() {
-    return graph.size();
+  public int hashCode() {
+    return Objects.hash(graph);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    FunctionGraph that = (FunctionGraph) o;
+    return graph.equals(that.graph);
   }
 
   @Override
@@ -143,15 +157,7 @@ public class FunctionGraph implements Function<double[], double[]>, Sized, Seria
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    FunctionGraph that = (FunctionGraph) o;
-    return graph.equals(that.graph);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(graph);
+  public int size() {
+    return graph.size();
   }
 }

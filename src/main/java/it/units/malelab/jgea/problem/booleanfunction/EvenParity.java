@@ -33,6 +33,24 @@ import java.util.function.Function;
  */
 public class EvenParity implements GrammarBasedProblem<String, List<Tree<Element>>, Double> {
 
+  private final Grammar<String> grammar;
+  private final Function<Tree<String>, List<Tree<Element>>> solutionMapper;
+  private final Function<List<Tree<Element>>, Double> fitnessFunction;
+  public EvenParity(final int size) throws IOException {
+    grammar = Grammar.fromFile(new File("grammars/boolean-parity-var.bnf"));
+    List<List<String>> vars = new ArrayList<>();
+    for (int i = 0; i < size; i++) {
+      vars.add(Collections.singletonList("b" + i));
+    }
+    grammar.getRules().put("<v>", vars);
+    solutionMapper = new FormulaMapper();
+    TargetFunction targetFunction = new TargetFunction(size);
+    fitnessFunction = new BooleanFunctionFitness(
+        targetFunction,
+        BooleanUtils.buildCompleteObservations(targetFunction.varNames)
+    );
+  }
+
   private static class TargetFunction implements BooleanFunctionFitness.TargetFunction {
 
     private final String[] varNames;
@@ -60,23 +78,9 @@ public class EvenParity implements GrammarBasedProblem<String, List<Tree<Element
 
   }
 
-  private final Grammar<String> grammar;
-  private final Function<Tree<String>, List<Tree<Element>>> solutionMapper;
-  private final Function<List<Tree<Element>>, Double> fitnessFunction;
-
-  public EvenParity(final int size) throws IOException {
-    grammar = Grammar.fromFile(new File("grammars/boolean-parity-var.bnf"));
-    List<List<String>> vars = new ArrayList<>();
-    for (int i = 0; i < size; i++) {
-      vars.add(Collections.singletonList("b" + i));
-    }
-    grammar.getRules().put("<v>", vars);
-    solutionMapper = new FormulaMapper();
-    TargetFunction targetFunction = new TargetFunction(size);
-    fitnessFunction = new BooleanFunctionFitness(
-        targetFunction,
-        BooleanUtils.buildCompleteObservations(targetFunction.varNames)
-    );
+  @Override
+  public Function<List<Tree<Element>>, Double> getFitnessFunction() {
+    return fitnessFunction;
   }
 
   @Override
@@ -87,11 +91,6 @@ public class EvenParity implements GrammarBasedProblem<String, List<Tree<Element
   @Override
   public Function<Tree<String>, List<Tree<Element>>> getSolutionMapper() {
     return solutionMapper;
-  }
-
-  @Override
-  public Function<List<Tree<Element>>, Double> getFitnessFunction() {
-    return fitnessFunction;
   }
 
 }

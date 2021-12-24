@@ -39,19 +39,19 @@ public class FitnessFunction implements
     Function<Pair<Tree<Element>, Tree<Element>>, List<Double>> {
 
   private final static int EXPRESSIVENESS_DEPTH = 2;
-
-  public enum Property {
-    DEGENERACY, NON_UNIFORMITY, NON_LOCALITY
-  }
-
   private final List<EnhancedProblem> problems;
   private final int maxMappingDepth;
   private final List<Property> properties;
-
   private final List<BitString> genotypes;
   private final double[] genotypeDistances;
-
-  public FitnessFunction(List<EnhancedProblem> problems, int genotypeSize, int n, int maxMappingDepth, List<Property> properties, long seed) {
+  public FitnessFunction(
+      List<EnhancedProblem> problems,
+      int genotypeSize,
+      int n,
+      int maxMappingDepth,
+      List<Property> properties,
+      long seed
+  ) {
     this.problems = problems;
     this.maxMappingDepth = maxMappingDepth;
     this.properties = properties;
@@ -71,13 +71,8 @@ public class FitnessFunction implements
     genotypeDistances = computeDistances(genotypes, new Hamming<>());
   }
 
-  private List<BitString> consecutiveMutations(BitString g, int n, GeneticOperator<BitString> mutation, Random random) {
-    Set<BitString> set = new LinkedHashSet<>();
-    while (set.size() < n) {
-      set.add(g);
-      g = mutation.apply(Collections.singletonList(g), random).get(0);
-    }
-    return new ArrayList<>(set);
+  public enum Property {
+    DEGENERACY, NON_UNIFORMITY, NON_LOCALITY
   }
 
   @Override
@@ -107,7 +102,8 @@ public class FitnessFunction implements
         pair.second(),
         maxMappingDepth,
         EXPRESSIVENESS_DEPTH,
-        problem.getProblem().getGrammar());
+        problem.getProblem().getGrammar()
+    );
     //map
     List<S> solutions = genotypes.stream()
         .map(g -> recursiveMapper.apply(g))
@@ -125,7 +121,10 @@ public class FitnessFunction implements
         values.add(Math.sqrt(StatUtils.variance(sizes)) / StatUtils.mean(sizes));
       } else if (property.equals(Property.NON_LOCALITY)) {
         double[] solutionDistances = computeDistances(solutions, problem.getDistance());
-        double locality = 1d - (1d + (new PearsonsCorrelation().correlation(genotypeDistances, solutionDistances))) / 2d;
+        double locality = 1d - (1d + (new PearsonsCorrelation().correlation(
+            genotypeDistances,
+            solutionDistances
+        ))) / 2d;
         values.add(Double.isNaN(locality) ? 1d : locality);
       } else {
         values.add(0d);
@@ -144,6 +143,15 @@ public class FitnessFunction implements
       }
     }
     return dists;
+  }
+
+  private List<BitString> consecutiveMutations(BitString g, int n, GeneticOperator<BitString> mutation, Random random) {
+    Set<BitString> set = new LinkedHashSet<>();
+    while (set.size() < n) {
+      set.add(g);
+      g = mutation.apply(Collections.singletonList(g), random).get(0);
+    }
+    return new ArrayList<>(set);
   }
 
 }

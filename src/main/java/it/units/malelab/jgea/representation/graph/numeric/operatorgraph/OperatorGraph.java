@@ -38,6 +38,15 @@ import java.util.stream.Collectors;
  */
 public class OperatorGraph implements Function<double[], double[]>, Sized, Serializable {
 
+  public final static NonValuedArc NON_VALUED_ARC = new NonValuedArc();
+  private final Graph<Node, NonValuedArc> graph;
+
+  public OperatorGraph(Graph<Node, NonValuedArc> graph) {
+    //check if the graph is valid
+    check(graph);
+    this.graph = graph;
+  }
+
   public static class NonValuedArc {
 
     private NonValuedArc() {
@@ -59,23 +68,8 @@ public class OperatorGraph implements Function<double[], double[]>, Sized, Seria
     }
   }
 
-  public final static NonValuedArc NON_VALUED_ARC = new NonValuedArc();
-
-  private final Graph<Node, NonValuedArc> graph;
-
   public static Function<Graph<Node, NonValuedArc>, OperatorGraph> builder() {
     return OperatorGraph::new;
-  }
-
-  public static Predicate<Graph<Node, NonValuedArc>> checker() {
-    return graph -> {
-      try {
-        check(graph);
-      } catch (IllegalArgumentException e) {
-        return false;
-      }
-      return true;
-    };
   }
 
   public static void check(Graph<Node, NonValuedArc> graph) {
@@ -129,15 +123,24 @@ public class OperatorGraph implements Function<double[], double[]>, Sized, Seria
     }
   }
 
-  public OperatorGraph(Graph<Node, NonValuedArc> graph) {
-    //check if the graph is valid
-    check(graph);
-    this.graph = graph;
+  public static Predicate<Graph<Node, NonValuedArc>> checker() {
+    return graph -> {
+      try {
+        check(graph);
+      } catch (IllegalArgumentException e) {
+        return false;
+      }
+      return true;
+    };
   }
 
   @Override
   public double[] apply(double[] input) {
-    Set<Output> outputs = graph.nodes().stream().filter(n -> n instanceof Output).map(n -> (Output) n).collect(Collectors.toSet());
+    Set<Output> outputs = graph.nodes()
+        .stream()
+        .filter(n -> n instanceof Output)
+        .map(n -> (Output) n)
+        .collect(Collectors.toSet());
     int outputSize = outputs.stream().mapToInt(Node::getIndex).max().orElse(0);
     double[] output = new double[outputSize + 1];
     for (Output outputNode : outputs) {
@@ -147,16 +150,35 @@ public class OperatorGraph implements Function<double[], double[]>, Sized, Seria
   }
 
   @Override
-  public int size() {
-    return graph.size();
+  public int hashCode() {
+    return Objects.hash(graph);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    OperatorGraph that = (OperatorGraph) o;
+    return graph.equals(that.graph);
   }
 
   @Override
   public String toString() {
     return graph.nodes().stream()
         .filter(n -> n instanceof Output)
-        .map(n -> n.toString() + "=" + ((graph.predecessors(n).isEmpty()) ? "0" : nodeToString(Misc.first(graph.predecessors(n)))))
+        .map(n -> n.toString() + "=" + ((graph.predecessors(n)
+            .isEmpty()) ? "0" : nodeToString(Misc.first(graph.predecessors(n)))))
         .collect(Collectors.joining(";"));
+  }
+
+  public int nInputs() {
+    return (int) graph.nodes().stream().filter(n -> n instanceof Input).count();
+  }
+
+  public int nOutputs() {
+    return (int) graph.nodes().stream().filter(n -> n instanceof Output).count();
   }
 
   private String nodeToString(Node n) {
@@ -176,14 +198,6 @@ public class OperatorGraph implements Function<double[], double[]>, Sized, Seria
       s = s + "(" + String.join(",", predecessors) + ")";
     }
     return s;
-  }
-
-  public int nInputs() {
-    return (int) graph.nodes().stream().filter(n -> n instanceof Input).count();
-  }
-
-  public int nOutputs() {
-    return (int) graph.nodes().stream().filter(n -> n instanceof Output).count();
   }
 
   private double outValue(Node node, double[] input) {
@@ -209,16 +223,8 @@ public class OperatorGraph implements Function<double[], double[]>, Sized, Seria
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    OperatorGraph that = (OperatorGraph) o;
-    return graph.equals(that.graph);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(graph);
+  public int size() {
+    return graph.size();
   }
 
 }

@@ -18,44 +18,6 @@ public class ArrayTable<T> implements Table<T> {
   }
 
   @Override
-  public List<T> row(int y) {
-    int nColumns = nColumns();
-    return values.subList(y * nColumns, (y + 1) * nColumns);
-  }
-
-  @Override
-  public int nRows() {
-    return values.size() / nColumns();
-  }
-
-  @Override
-  public int nColumns() {
-    return names.size();
-  }
-
-  @Override
-  public void set(int x, int y, T t) {
-    checkIndexes(x, y);
-    values.set(index(x, y), t);
-  }
-
-  @Override
-  public T get(int x, int y) {
-    checkIndexes(x, y);
-    return values.get(index(x, y));
-  }
-
-  @Override
-  public void clear() {
-    values.clear();
-  }
-
-  @Override
-  public List<String> names() {
-    return Collections.unmodifiableList(names);
-  }
-
-  @Override
   public void addColumn(String name, List<T> values) {
     if (values.size() != nRows()) {
       throw new IllegalArgumentException(String.format(
@@ -87,6 +49,44 @@ public class ArrayTable<T> implements Table<T> {
       ));
     }
     this.values.addAll(values);
+  }
+
+  @Override
+  public void clear() {
+    values.clear();
+  }
+
+  @Override
+  public T get(int x, int y) {
+    checkIndexes(x, y);
+    return values.get(index(x, y));
+  }
+
+  @Override
+  public int nColumns() {
+    return names.size();
+  }
+
+  @Override
+  public int nRows() {
+    return values.size() / nColumns();
+  }
+
+  @Override
+  public List<String> names() {
+    return Collections.unmodifiableList(names);
+  }
+
+  @Override
+  public void set(int x, int y, T t) {
+    checkIndexes(x, y);
+    values.set(index(x, y), t);
+  }
+
+  @Override
+  public List<T> row(int y) {
+    int nColumns = nColumns();
+    return values.subList(y * nColumns, (y + 1) * nColumns);
   }
 
   private int index(int x, int y) {

@@ -55,16 +55,16 @@ public class CachedFunction<T, R> implements Function<T, R> {
     }
   }
 
-  public void reset() {
-    cache.asMap().clear();
-    innerInvocations = 0;
-  }
-
   public CacheStats getCacheStats() {
     return cache.stats();
   }
 
   public long getInnerInvocations() {
     return innerInvocations;
+  }
+
+  public void reset() {
+    cache.asMap().clear();
+    innerInvocations = 0;
   }
 }

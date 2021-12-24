@@ -30,6 +30,24 @@ public class FormulaMapper implements Function<Tree<String>, List<Tree<Element>>
 
   public static final String MULTIPLE_OUTPUT_NON_TERMINAL = "<o>";
 
+  private static Element fromString(String string) {
+    for (Element.Operator operator : Element.Operator.values()) {
+      if (operator.toString().equals(string)) {
+        return operator;
+      }
+    }
+    if (string.equals("0")) {
+      return new Element.Constant(false);
+    }
+    if (string.equals("1")) {
+      return new Element.Constant(true);
+    }
+    if (string.matches("[a-zA-Z]+[0-9.]+")) {
+      return new Element.Variable(string);
+    }
+    return new Element.Decoration(string);
+  }
+
   @Override
   public List<Tree<Element>> apply(Tree<String> stringTree) {
     if (stringTree.content().equals(MULTIPLE_OUTPUT_NON_TERMINAL)) {
@@ -55,24 +73,6 @@ public class FormulaMapper implements Function<Tree<String>, List<Tree<Element>>
       tree.addChild(singleMap(stringTree.child(i)));
     }
     return tree;
-  }
-
-  private static Element fromString(String string) {
-    for (Element.Operator operator : Element.Operator.values()) {
-      if (operator.toString().equals(string)) {
-        return operator;
-      }
-    }
-    if (string.equals("0")) {
-      return new Element.Constant(false);
-    }
-    if (string.equals("1")) {
-      return new Element.Constant(true);
-    }
-    if (string.matches("[a-zA-Z]+[0-9.]+")) {
-      return new Element.Variable(string);
-    }
-    return new Element.Decoration(string);
   }
 
 }

@@ -20,6 +20,13 @@ public class SequentialFunction<S, F> implements Function<S, F> {
     reset();
   }
 
+  @Override
+  public F apply(S s) {
+    nOfInvocations = nOfInvocations + 1;
+    updateCurrentFunction();
+    return currentFunction.apply(s);
+  }
+
   public void reset() {
     nOfInvocations = 0;
     nextThreshold = functions.firstKey();
@@ -34,13 +41,6 @@ public class SequentialFunction<S, F> implements Function<S, F> {
       nextThreshold = functions.tailMap(nOfInvocations).firstKey();
       currentFunction = functions.get(nextThreshold);
     }
-  }
-
-  @Override
-  public F apply(S s) {
-    nOfInvocations = nOfInvocations + 1;
-    updateCurrentFunction();
-    return currentFunction.apply(s);
   }
 
 }

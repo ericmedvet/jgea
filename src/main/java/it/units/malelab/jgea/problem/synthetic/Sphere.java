@@ -23,6 +23,8 @@ import java.util.function.Function;
 
 public class Sphere implements Problem<List<Double>, Double> {
 
+  private final FitnessFunction fitnessFunction = new FitnessFunction();
+
   private static class FitnessFunction implements Function<List<Double>, Double> {
 
     @Override
@@ -34,8 +36,6 @@ public class Sphere implements Problem<List<Double>, Double> {
       return sum;
     }
   }
-
-  private final FitnessFunction fitnessFunction = new FitnessFunction();
 
   @Override
   public Function<List<Double>, Double> getFitnessFunction() {

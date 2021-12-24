@@ -7,10 +7,6 @@ public interface ProgressMonitor {
 
   void notify(double progress, String message);
 
-  default void notify(double progress) {
-    notify(progress, "");
-  }
-
   static ProgressMonitor all(List<ProgressMonitor> progressMonitors) {
     return new ProgressMonitor() {
       @Override
@@ -27,5 +23,9 @@ public interface ProgressMonitor {
 
   default ProgressMonitor and(ProgressMonitor other) {
     return all(List.of(this, other));
+  }
+
+  default void notify(double progress) {
+    notify(progress, "");
   }
 }

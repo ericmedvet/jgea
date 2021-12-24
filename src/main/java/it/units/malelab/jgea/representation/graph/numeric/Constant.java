@@ -32,15 +32,14 @@ public class Constant extends Node {
     this.value = value;
   }
 
-  public double getValue() {
-    return value;
-  }
-
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    if (!super.equals(o)) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    if (!super.equals(o))
+      return false;
     Constant constant = (Constant) o;
     return Double.compare(constant.value, value) == 0;
   }
@@ -48,6 +47,10 @@ public class Constant extends Node {
   @Override
   public int hashCode() {
     return Objects.hash(super.hashCode(), value);
+  }
+
+  public double getValue() {
+    return value;
   }
 
   @Override

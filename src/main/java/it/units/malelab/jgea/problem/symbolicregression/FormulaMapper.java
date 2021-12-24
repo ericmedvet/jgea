@@ -25,21 +25,6 @@ import java.util.function.Function;
  */
 public class FormulaMapper implements Function<Tree<String>, Tree<Element>> {
 
-  @Override
-  public Tree<Element> apply(Tree<String> stringTree) {
-    if (stringTree.isLeaf()) {
-      return Tree.of(fromString(stringTree.content()));
-    }
-    if (stringTree.nChildren() == 1) {
-      return apply(stringTree.child(0));
-    }
-    Tree<Element> tree = apply(stringTree.child(0));
-    for (int i = 1; i < stringTree.nChildren(); i++) {
-      tree.addChild(apply(stringTree.child(i)));
-    }
-    return tree;
-  }
-
   private static Element fromString(String string) {
     for (Element.Operator operator : Element.Operator.values()) {
       if (operator.toString().equals(string)) {
@@ -56,6 +41,21 @@ public class FormulaMapper implements Function<Tree<String>, Tree<Element>> {
       return new Element.Variable(string);
     }
     return new Element.Decoration(string);
+  }
+
+  @Override
+  public Tree<Element> apply(Tree<String> stringTree) {
+    if (stringTree.isLeaf()) {
+      return Tree.of(fromString(stringTree.content()));
+    }
+    if (stringTree.nChildren() == 1) {
+      return apply(stringTree.child(0));
+    }
+    Tree<Element> tree = apply(stringTree.child(0));
+    for (int i = 1; i < stringTree.nChildren(); i++) {
+      tree.addChild(apply(stringTree.child(i)));
+    }
+    return tree;
   }
 
 }

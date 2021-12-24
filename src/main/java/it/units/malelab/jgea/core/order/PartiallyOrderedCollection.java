@@ -24,6 +24,8 @@ import java.util.Collection;
  * @author eric
  */
 public interface PartiallyOrderedCollection<T> extends Sized {
+  void add(T t);
+
   Collection<T> all();
 
   Collection<T> firsts();
@@ -31,8 +33,6 @@ public interface PartiallyOrderedCollection<T> extends Sized {
   Collection<T> lasts();
 
   boolean remove(T t);
-
-  void add(T t);
 
   @Override
   default int size() {

@@ -10,58 +10,21 @@ import java.util.stream.IntStream;
  */
 public interface Table<T> {
 
-  int nRows();
-
-  int nColumns();
-
-  List<String> names();
-
-  void set(int x, int y, T t);
-
-  T get(int x, int y);
-
   void addColumn(String name, List<T> values);
 
   void addRow(List<T> values);
 
   void clear();
 
-  default List<T> column(int x) {
-    checkIndex("x", x, nColumns());
-    return IntStream.range(0, nRows())
-        .mapToObj(y -> get(x, y))
-        .toList();
-  }
+  T get(int x, int y);
 
-  default List<T> row(int y) {
-    checkIndex("y", y, nRows());
-    return IntStream.range(0, nColumns())
-        .mapToObj(x -> get(x, y))
-        .toList();
-  }
+  int nColumns();
 
-  default List<Pair<String, List<T>>> columns() {
-    return IntStream.range(0, nColumns())
-        .mapToObj(x -> Pair.of(names().get(x), column(x)))
-        .toList();
-  }
+  int nRows();
 
-  default List<List<Pair<String, T>>> rows() {
-    int nColumns = nColumns();
-    return IntStream.range(0, nRows())
-        .mapToObj(y -> IntStream.range(0, nColumns)
-            .mapToObj(x -> Pair.of(names().get(x), get(x, y)))
-            .toList()
-        ).toList();
-  }
+  List<String> names();
 
-  default List<T> column(String name) {
-    int x = names().indexOf(name);
-    if (x < 0) {
-      throw new IndexOutOfBoundsException(String.format("No column %s in the table", name));
-    }
-    return column(x);
-  }
+  void set(int x, int y, T t);
 
   private static void checkIndex(String name, int i, int maxExcluded) {
     if (i < 0 || i >= maxExcluded) {
@@ -77,6 +40,35 @@ public interface Table<T> {
   default void checkIndexes(int x, int y) {
     checkIndex("column", x, nColumns());
     checkIndex("column", y, nRows());
+  }
+
+  default List<T> column(String name) {
+    int x = names().indexOf(name);
+    if (x < 0) {
+      throw new IndexOutOfBoundsException(String.format("No column %s in the table", name));
+    }
+    return column(x);
+  }
+
+  default List<T> column(int x) {
+    checkIndex("x", x, nColumns());
+    return IntStream.range(0, nRows())
+        .mapToObj(y -> get(x, y))
+        .toList();
+  }
+
+  default List<Pair<String, List<T>>> columns() {
+    return IntStream.range(0, nColumns())
+        .mapToObj(x -> Pair.of(names().get(x), column(x)))
+        .toList();
+  }
+
+  default <K> Table<K> map(Function<T, K> function) {
+    Table<K> table = new ArrayTable<>(names());
+    for (int y = 0; y < nRows(); y++) {
+      table.addRow(row(y).stream().map(function).toList());
+    }
+    return table;
   }
 
   default String prettyPrint(String format) {
@@ -113,12 +105,20 @@ public interface Table<T> {
     return sb.toString();
   }
 
-  default <K> Table<K> map(Function<T, K> function) {
-    Table<K> table = new ArrayTable<>(names());
-    for (int y = 0; y < nRows(); y++) {
-      table.addRow(row(y).stream().map(function).toList());
-    }
-    return table;
+  default List<T> row(int y) {
+    checkIndex("y", y, nRows());
+    return IntStream.range(0, nColumns())
+        .mapToObj(x -> get(x, y))
+        .toList();
+  }
+
+  default List<List<Pair<String, T>>> rows() {
+    int nColumns = nColumns();
+    return IntStream.range(0, nRows())
+        .mapToObj(y -> IntStream.range(0, nColumns)
+            .mapToObj(x -> Pair.of(names().get(x), get(x, y)))
+            .toList()
+        ).toList();
   }
 
 }

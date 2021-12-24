@@ -30,45 +30,11 @@ public class Grammar<T> implements Serializable {
 
   public static final String RULE_ASSIGNMENT_STRING = "::=";
   public static final String RULE_OPTION_SEPARATOR_STRING = "|";
-
-  private T startingSymbol;
   private final Map<T, List<List<T>>> rules;
+  private T startingSymbol;
 
   public Grammar() {
     rules = new LinkedHashMap<>();
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    for (Map.Entry<T, List<List<T>>> rule : rules.entrySet()) {
-      sb.append(rule.getKey())
-          .append(" ")
-          .append(rule.getKey().equals(startingSymbol) ? "*" : "")
-          .append(RULE_ASSIGNMENT_STRING + " ");
-      for (List<T> option : rule.getValue()) {
-        for (T symbol : option) {
-          sb.append(symbol)
-              .append(" ");
-        }
-        sb.append(RULE_OPTION_SEPARATOR_STRING + " ");
-      }
-      sb.delete(sb.length() - 2 - RULE_OPTION_SEPARATOR_STRING.length(), sb.length());
-      sb.append("\n");
-    }
-    return sb.toString();
-  }
-
-  public T getStartingSymbol() {
-    return startingSymbol;
-  }
-
-  public void setStartingSymbol(T startingSymbol) {
-    this.startingSymbol = startingSymbol;
-  }
-
-  public Map<T, List<List<T>>> getRules() {
-    return rules;
   }
 
   public static Grammar<String> fromFile(File file) throws FileNotFoundException, IOException {
@@ -102,6 +68,39 @@ public class Grammar<T> implements Serializable {
     }
     br.close();
     return grammar;
+  }
+
+  public Map<T, List<List<T>>> getRules() {
+    return rules;
+  }
+
+  public T getStartingSymbol() {
+    return startingSymbol;
+  }
+
+  public void setStartingSymbol(T startingSymbol) {
+    this.startingSymbol = startingSymbol;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    for (Map.Entry<T, List<List<T>>> rule : rules.entrySet()) {
+      sb.append(rule.getKey())
+          .append(" ")
+          .append(rule.getKey().equals(startingSymbol) ? "*" : "")
+          .append(RULE_ASSIGNMENT_STRING + " ");
+      for (List<T> option : rule.getValue()) {
+        for (T symbol : option) {
+          sb.append(symbol)
+              .append(" ");
+        }
+        sb.append(RULE_OPTION_SEPARATOR_STRING + " ");
+      }
+      sb.delete(sb.length() - 2 - RULE_OPTION_SEPARATOR_STRING.length(), sb.length());
+      sb.append("\n");
+    }
+    return sb.toString();
   }
 
 }

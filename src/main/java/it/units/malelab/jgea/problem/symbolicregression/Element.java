@@ -25,15 +25,25 @@ import java.util.function.ToIntFunction;
 
 public interface Element {
 
-  String toString();
-
-  record Constant(double value) implements Element {}
-
-  record Decoration(String string) implements Element {}
-
   enum Operator implements Element, RealFunction {
 
-    ADDITION("+", x -> x[0] + x[1], 2), SUBTRACTION("-", x -> x[0] - x[1], 2), DIVISION("/", x -> x[0] / x[1], 2), PROT_DIVISION("p/", x -> (x[1] != 0d) ? (x[0] / x[1]) : 1, 2), MULTIPLICATION("*", x -> x[0] * x[1], 2), LOG("log", x -> Math.log(x[0]), 1), PROT_LOG("plog", x -> (x[0] > 0d) ? Math.log(x[0]) : 0d, 1), EXP("exp", x -> Math.exp(x[0]), 1), SIN("sin", x -> Math.sin(x[0]), 1), COS("cos", x -> Math.cos(x[0]), 1), INVERSE("1/", x -> 1d / x[0], 1), OPPOSITE("_", x -> 0d - x[0], 1), SQRT("√", x -> Math.sqrt(x[0]), 1), SQ("²", x -> Math.pow(x[0], 2d), 1);
+    ADDITION("+", x -> x[0] + x[1], 2), SUBTRACTION("-", x -> x[0] - x[1], 2), DIVISION(
+        "/",
+        x -> x[0] / x[1],
+        2
+    ), PROT_DIVISION("p/", x -> (x[1] != 0d) ? (x[0] / x[1]) : 1, 2), MULTIPLICATION("*", x -> x[0] * x[1], 2), LOG(
+        "log",
+        x -> Math.log(x[0]),
+        1
+    ), PROT_LOG("plog", x -> (x[0] > 0d) ? Math.log(x[0]) : 0d, 1), EXP("exp", x -> Math.exp(x[0]), 1), SIN(
+        "sin",
+        x -> Math.sin(x[0]),
+        1
+    ), COS("cos", x -> Math.cos(x[0]), 1), INVERSE("1/", x -> 1d / x[0], 1), OPPOSITE("_", x -> 0d - x[0], 1), SQRT(
+        "√",
+        x -> Math.sqrt(x[0]),
+        1
+    ), SQ("²", x -> Math.pow(x[0], 2d), 1);
 
     private final String string;
     private final RealFunction function;
@@ -45,13 +55,8 @@ public interface Element {
       this.arity = arity;
     }
 
-    @Override
-    public String toString() {
-      return string;
-    }
-
-    public int arity() {
-      return arity;
+    public static ToIntFunction<Element> arityFunction() {
+      return e -> (e instanceof Operator) ? ((Operator) e).arity : 0;
     }
 
     @Override
@@ -59,10 +64,21 @@ public interface Element {
       return function.apply(input);
     }
 
-    public static ToIntFunction<Element> arityFunction() {
-      return e -> (e instanceof Operator) ? ((Operator) e).arity : 0;
+    public int arity() {
+      return arity;
+    }
+
+    @Override
+    public String toString() {
+      return string;
     }
   }
 
+  record Constant(double value) implements Element {}
+
+  record Decoration(String string) implements Element {}
+
   record Variable(String name) implements Element {}
+
+  String toString();
 }

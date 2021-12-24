@@ -32,6 +32,41 @@ public class CSVPrinter<E> implements Listener.Factory<E> {
     lineCounter = 0;
   }
 
+  private static File check(File file) {
+    String originalFileName = file.getPath();
+    while (file.exists()) {
+      String newName = null;
+      Matcher mNum = Pattern.compile("\\((?<n>[0-9]+)\\)\\.\\w+$").matcher(file.getPath());
+      if (newName == null && mNum.find()) {
+        int n = Integer.parseInt(mNum.group("n"));
+        newName = newName = new StringBuilder(file.getPath()).replace(
+            mNum.start("n"),
+            mNum.end("n"),
+            Integer.toString(n + 1)
+        ).toString();
+      }
+      Matcher mExtension = Pattern.compile("\\.\\w+$").matcher(file.getPath());
+      if (newName == null && mExtension.find()) {
+        newName = new StringBuilder(file.getPath()).replace(
+            mExtension.start(),
+            mExtension.end(),
+            ".(1)" + mExtension.group()
+        ).toString();
+      }
+      if (newName == null) {
+        newName = file.getPath() + ".newer";
+      }
+      file = new File(newName);
+    }
+    if (!file.getPath().equals(originalFileName)) {
+      L.log(
+          Level.WARNING,
+          String.format("Given file name (%s) exists; will write on %s", originalFileName, file.getPath())
+      );
+    }
+    return file;
+  }
+
   @Override
   public Listener<E> build() {
     return e -> {
@@ -40,7 +75,10 @@ public class CSVPrinter<E> implements Listener.Factory<E> {
         if (printer == null) {
           File actualFile = check(file);
           try {
-            printer = new org.apache.commons.csv.CSVPrinter(new PrintStream(actualFile), CSVFormat.DEFAULT.withDelimiter(';'));
+            printer = new org.apache.commons.csv.CSVPrinter(
+                new PrintStream(actualFile),
+                CSVFormat.DEFAULT.withDelimiter(';')
+            );
           } catch (IOException ex) {
             L.severe(String.format("Cannot create CSVPrinter: %s", ex));
             return;
@@ -86,29 +124,5 @@ public class CSVPrinter<E> implements Listener.Factory<E> {
         L.warning(String.format("Cannot close CSVPrinter: %s", e));
       }
     }
-  }
-
-  private static File check(File file) {
-    String originalFileName = file.getPath();
-    while (file.exists()) {
-      String newName = null;
-      Matcher mNum = Pattern.compile("\\((?<n>[0-9]+)\\)\\.\\w+$").matcher(file.getPath());
-      if (newName == null && mNum.find()) {
-        int n = Integer.parseInt(mNum.group("n"));
-        newName = newName = new StringBuilder(file.getPath()).replace(mNum.start("n"), mNum.end("n"), Integer.toString(n + 1)).toString();
-      }
-      Matcher mExtension = Pattern.compile("\\.\\w+$").matcher(file.getPath());
-      if (newName == null && mExtension.find()) {
-        newName = new StringBuilder(file.getPath()).replace(mExtension.start(), mExtension.end(), ".(1)" + mExtension.group()).toString();
-      }
-      if (newName == null) {
-        newName = file.getPath() + ".newer";
-      }
-      file = new File(newName);
-    }
-    if (!file.getPath().equals(originalFileName)) {
-      L.log(Level.WARNING, String.format("Given file name (%s) exists; will write on %s", originalFileName, file.getPath()));
-    }
-    return file;
   }
 }

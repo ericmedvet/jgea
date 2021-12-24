@@ -44,12 +44,40 @@ public class MapperGeneration implements
   private final FitnessFunction validationFitnessFunction;
 
   public MapperGeneration(
-      List<EnhancedProblem> learningProblems, int learningGenotypeSize, int learningN, int learningMaxMappingDepth, List<FitnessFunction.Property> learningProperties,
-      List<EnhancedProblem> validationProblems, int validationN, int validationGenotypeSize, int validationMaxMappingDepth, List<FitnessFunction.Property> validationProperties,
-      long seed) throws IOException {
+      List<EnhancedProblem> learningProblems,
+      int learningGenotypeSize,
+      int learningN,
+      int learningMaxMappingDepth,
+      List<FitnessFunction.Property> learningProperties,
+      List<EnhancedProblem> validationProblems,
+      int validationN,
+      int validationGenotypeSize,
+      int validationMaxMappingDepth,
+      List<FitnessFunction.Property> validationProperties,
+      long seed
+  ) throws IOException {
     this.grammar = Grammar.fromFile(new File("grammars/mapper.bnf"));
-    learningFitnessFunction = new FitnessFunction(learningProblems, learningGenotypeSize, learningN, learningMaxMappingDepth, learningProperties, seed);
-    validationFitnessFunction = new FitnessFunction(validationProblems, validationGenotypeSize, validationN, validationMaxMappingDepth, validationProperties, seed);
+    learningFitnessFunction = new FitnessFunction(
+        learningProblems,
+        learningGenotypeSize,
+        learningN,
+        learningMaxMappingDepth,
+        learningProperties,
+        seed
+    );
+    validationFitnessFunction = new FitnessFunction(
+        validationProblems,
+        validationGenotypeSize,
+        validationN,
+        validationMaxMappingDepth,
+        validationProperties,
+        seed
+    );
+  }
+
+  @Override
+  public Function<Pair<Tree<Element>, Tree<Element>>, List<Double>> getFitnessFunction() {
+    return learningFitnessFunction;
   }
 
   @Override
@@ -64,11 +92,6 @@ public class MapperGeneration implements
       Tree<Element> genoAssigner = MapperUtils.transform(rawMappingTree.child(1));
       return Pair.of(optionChooser, genoAssigner);
     };
-  }
-
-  @Override
-  public Function<Pair<Tree<Element>, Tree<Element>>, List<Double>> getFitnessFunction() {
-    return learningFitnessFunction;
   }
 
   @Override

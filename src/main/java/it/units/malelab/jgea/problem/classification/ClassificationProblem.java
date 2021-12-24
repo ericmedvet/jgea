@@ -34,17 +34,18 @@ public class ClassificationProblem<O, L extends Enum<L>> implements ProblemWithV
   private final List<Pair<O, L>> learningData;
   private final List<Pair<O, L>> validationData;
 
-  public ClassificationProblem(List<Pair<O, L>> data, int folds, int i, ClassificationFitness.Metric learningMetric, ClassificationFitness.Metric validationMetric) {
+  public ClassificationProblem(
+      List<Pair<O, L>> data,
+      int folds,
+      int i,
+      ClassificationFitness.Metric learningMetric,
+      ClassificationFitness.Metric validationMetric
+  ) {
     validationData = DataUtils.fold(data, i, folds);
     learningData = new ArrayList<>(data);
     learningData.removeAll(validationData);
     this.fitnessFunction = new ClassificationFitness<>(learningData, learningMetric);
     this.validationFunction = new ClassificationFitness<>(validationData, validationMetric);
-  }
-
-  @Override
-  public Function<Classifier<O, L>, List<Double>> getValidationFunction() {
-    return validationFunction;
   }
 
   @Override
@@ -58,6 +59,11 @@ public class ClassificationProblem<O, L extends Enum<L>> implements ProblemWithV
 
   public List<Pair<O, L>> getValidationData() {
     return validationData;
+  }
+
+  @Override
+  public Function<Classifier<O, L>, List<Double>> getValidationFunction() {
+    return validationFunction;
   }
 
 }

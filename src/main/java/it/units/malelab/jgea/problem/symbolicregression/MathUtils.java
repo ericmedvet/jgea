@@ -41,39 +41,23 @@ public class MathUtils {
     }
 
     @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      MultivariateBasedRealFunction that = (MultivariateBasedRealFunction) o;
-      return innerF.equals(that.innerF);
-    }
-
-    @Override
     public int hashCode() {
       return Objects.hash(innerF);
     }
 
     @Override
-    public String toString() {
-      return innerF.toString();
-    }
-  }
-
-  private static class SizedMultivariateBasedRealFunction extends MultivariateBasedRealFunction implements Sized {
-    private final int size;
-
-    public SizedMultivariateBasedRealFunction(Function<double[], double[]> innerF) {
-      super(innerF);
-      if (innerF instanceof Sized) {
-        size = ((Sized) innerF).size();
-      } else {
-        size = 0;
-      }
+    public boolean equals(Object o) {
+      if (this == o)
+        return true;
+      if (o == null || getClass() != o.getClass())
+        return false;
+      MultivariateBasedRealFunction that = (MultivariateBasedRealFunction) o;
+      return innerF.equals(that.innerF);
     }
 
     @Override
-    public int size() {
-      return size;
+    public String toString() {
+      return innerF.toString();
     }
   }
 
@@ -102,24 +86,26 @@ public class MathUtils {
       a = targetMean - mean * b;
     }
 
-    public RealFunction getInnerF() {
-      return innerF;
-    }
-
     @Override
     public double apply(double... input) {
       return a + b * innerF.apply(input);
     }
 
+    public RealFunction getInnerF() {
+      return innerF;
+    }
+
     @Override
-    public String toString() {
-      return String.format("%.3f + %.3f * [%s]", a, b, innerF);
+    public int hashCode() {
+      return Objects.hash(innerF, a, b);
     }
 
     @Override
     public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (this == o)
+        return true;
+      if (o == null || getClass() != o.getClass())
+        return false;
       ScaledRealFunction that = (ScaledRealFunction) o;
       return Double.compare(that.a, a) == 0 &&
           Double.compare(that.b, b) == 0 &&
@@ -127,8 +113,26 @@ public class MathUtils {
     }
 
     @Override
-    public int hashCode() {
-      return Objects.hash(innerF, a, b);
+    public String toString() {
+      return String.format("%.3f + %.3f * [%s]", a, b, innerF);
+    }
+  }
+
+  private static class SizedMultivariateBasedRealFunction extends MultivariateBasedRealFunction implements Sized {
+    private final int size;
+
+    public SizedMultivariateBasedRealFunction(Function<double[], double[]> innerF) {
+      super(innerF);
+      if (innerF instanceof Sized) {
+        size = ((Sized) innerF).size();
+      } else {
+        size = 0;
+      }
+    }
+
+    @Override
+    public int size() {
+      return size;
     }
   }
 
@@ -150,12 +154,19 @@ public class MathUtils {
     }
   }
 
-  public static UnaryOperator<RealFunction> linearScaler(SymbolicRegressionFitness symbolicRegressionFitness) {
-    return f -> (f instanceof Sized) ? new SizedScaledRealFunction(f, symbolicRegressionFitness) : new ScaledRealFunction(f, symbolicRegressionFitness);
-  }
-
-  public static Function<Function<double[], double[]>, RealFunction> fromMultivariateBuilder() {
-    return f -> (f instanceof Sized) ? new SizedMultivariateBasedRealFunction(f) : new MultivariateBasedRealFunction(f);
+  public static List<double[]> cartesian(double[]... xs) {
+    int l = Arrays.stream(xs).mapToInt(x -> x.length).reduce(1, (v1, v2) -> v1 * v2);
+    List<double[]> list = new ArrayList<>(l);
+    for (int i = 0; i < l; i++) {
+      double[] x = new double[xs.length];
+      int c = i;
+      for (int j = 0; j < x.length; j++) {
+        x[j] = xs[j][c % xs[j].length];
+        c = Math.floorDiv(c, xs[j].length);
+      }
+      list.add(x);
+    }
+    return list;
   }
 
   public static double[] equispacedValues(double min, double max, double step) {
@@ -168,12 +179,15 @@ public class MathUtils {
     return values.stream().mapToDouble(Double::doubleValue).toArray();
   }
 
-  public static double[] uniformSample(double min, double max, int count, Random random) {
-    double[] values = new double[count];
-    for (int i = 0; i < count; i++) {
-      values[i] = random.nextDouble() * (max - min) + min;
-    }
-    return values;
+  public static Function<Function<double[], double[]>, RealFunction> fromMultivariateBuilder() {
+    return f -> (f instanceof Sized) ? new SizedMultivariateBasedRealFunction(f) : new MultivariateBasedRealFunction(f);
+  }
+
+  public static UnaryOperator<RealFunction> linearScaler(SymbolicRegressionFitness symbolicRegressionFitness) {
+    return f -> (f instanceof Sized) ? new SizedScaledRealFunction(
+        f,
+        symbolicRegressionFitness
+    ) : new ScaledRealFunction(f, symbolicRegressionFitness);
   }
 
   public static List<double[]> pairwise(double[]... xs) {
@@ -197,19 +211,12 @@ public class MathUtils {
     return list;
   }
 
-  public static List<double[]> cartesian(double[]... xs) {
-    int l = Arrays.stream(xs).mapToInt(x -> x.length).reduce(1, (v1, v2) -> v1 * v2);
-    List<double[]> list = new ArrayList<>(l);
-    for (int i = 0; i < l; i++) {
-      double[] x = new double[xs.length];
-      int c = i;
-      for (int j = 0; j < x.length; j++) {
-        x[j] = xs[j][c % xs[j].length];
-        c = Math.floorDiv(c, xs[j].length);
-      }
-      list.add(x);
+  public static double[] uniformSample(double min, double max, int count, Random random) {
+    double[] values = new double[count];
+    for (int i = 0; i < count; i++) {
+      values[i] = random.nextDouble() * (max - min) + min;
     }
-    return list;
+    return values;
   }
 
 }

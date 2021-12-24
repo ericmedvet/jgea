@@ -31,9 +31,12 @@ import static it.units.malelab.jgea.core.util.Args.i;
  */
 public abstract class Worker implements Runnable {
 
+  protected final static Logger L = Logger.getLogger(Worker.class.getName());
+
   static {
     try {
-      LogManager.getLogManager().readConfiguration(Worker.class.getClassLoader().getResourceAsStream("logging.properties"));
+      LogManager.getLogManager()
+          .readConfiguration(Worker.class.getClassLoader().getResourceAsStream("logging.properties"));
     } catch (IOException ex) {
       //ignore
     }
@@ -42,11 +45,13 @@ public abstract class Worker implements Runnable {
   protected final ExecutorService executorService;
   protected final String[] args;
 
-  protected final static Logger L = Logger.getLogger(Worker.class.getName());
-
   public Worker(String[] args) {
     this.args = args;
-    executorService = Executors.newFixedThreadPool(i(Args.a(args, "threads", Integer.toString(Runtime.getRuntime().availableProcessors()))));
+    executorService = Executors.newFixedThreadPool(i(Args.a(
+        args,
+        "threads",
+        Integer.toString(Runtime.getRuntime().availableProcessors())
+    )));
     run();
     executorService.shutdown();
   }

@@ -32,12 +32,12 @@ public class EnhancedProblem<N, S, F> {
     this.distance = distance;
   }
 
-  public GrammarBasedProblem<N, S, F> getProblem() {
-    return problem;
-  }
-
   public Distance<S> getDistance() {
     return distance;
+  }
+
+  public GrammarBasedProblem<N, S, F> getProblem() {
+    return problem;
   }
 
 }

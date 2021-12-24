@@ -21,10 +21,6 @@ package it.units.malelab.jgea.problem.booleanfunction;
  */
 public interface Element {
 
-  String toString();
-
-  record Variable(String name) implements Element {}
-
   enum Operator implements Element {
 
     AND(".and"), AND1NOT(".and1not"), OR(".or"), XOR(".xor"), NOT(".not"), IF(".if");
@@ -42,8 +38,6 @@ public interface Element {
 
   }
 
-  record Decoration(String string) implements Element {}
-
   record Constant(boolean value) implements Element {
 
     @Override
@@ -51,4 +45,10 @@ public interface Element {
       return Boolean.toString(value);
     }
   }
+
+  record Decoration(String string) implements Element {}
+
+  record Variable(String name) implements Element {}
+
+  String toString();
 }

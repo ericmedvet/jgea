@@ -31,48 +31,43 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class MapperUtils {
 
-  public static Tree<Element> transform(Tree<String> stringTree) {
-    if (stringTree.isLeaf()) {
-      Element element = fromString(stringTree.content());
-      if (element == null) {
-        return null;
+  private static List apply(Element.MapperFunction function, List inputList, Object arg) {
+    List outputList = new ArrayList(inputList.size());
+    for (Object repeatedArg : inputList) {
+      switch (function) {
+        case SIZE:
+          outputList.add((double) ((BitString) repeatedArg).size());
+          break;
+        case WEIGHT:
+          outputList.add((double) ((BitString) repeatedArg).count());
+          break;
+        case WEIGHT_R:
+          outputList.add((double) ((BitString) repeatedArg).count() / (double) ((BitString) repeatedArg).size());
+          break;
+        case INT:
+          outputList.add((double) ((BitString) repeatedArg).toInt());
+          break;
+        case ROTATE_SX:
+          outputList.add(rotateSx((BitString) arg, ((Double) repeatedArg).intValue()));
+          break;
+        case ROTATE_DX:
+          outputList.add(rotateDx((BitString) arg, ((Double) repeatedArg).intValue()));
+          break;
+        case SUBSTRING:
+          outputList.add(substring((BitString) arg, ((Double) repeatedArg).intValue()));
+          break;
       }
-      return Tree.of(element);
     }
-    if (stringTree.nChildren() == 1) {
-      return transform(stringTree.child(0));
-    }
-    Tree<Element> tree = transform(stringTree.child(0));
-    for (int i = 1; i < stringTree.nChildren(); i++) {
-      Tree<Element> child = transform(stringTree.child(i));
-      if (child != null) { //discard decorations
-        tree.addChild(child);
-      }
-    }
-    return tree;
+    return outputList;
   }
 
-  private static Element fromString(String string) {
-    try {
-      double value = Double.parseDouble(string);
-      return new Element.NumericConstant(value);
-    } catch (NumberFormatException ex) {
-      //just ignore
-    }
-    for (Element.Variable variable : Element.Variable.values()) {
-      if (variable.getGrammarName().equals(string)) {
-        return variable;
-      }
-    }
-    for (Element.MapperFunction function : Element.MapperFunction.values()) {
-      if (function.getGrammarName().equals(string)) {
-        return function;
-      }
-    }
-    return null;
-  }
-
-  public static Object compute(Tree<Element> tree, BitString g, List<Double> values, int depth, AtomicInteger globalCounter) {
+  public static Object compute(
+      Tree<Element> tree,
+      BitString g,
+      List<Double> values,
+      int depth,
+      AtomicInteger globalCounter
+  ) {
     Object result = null;
     if (tree.content() instanceof Element.Variable) {
       switch (((Element.Variable) tree.content())) {
@@ -205,6 +200,346 @@ public class MapperUtils {
     return result;
   }
 
+  private static List concat(List l1, List l2) {
+    List l = new ArrayList(l1);
+    l.addAll(l2);
+    return l;
+  }
+
+  private static Element fromString(String string) {
+    try {
+      double value = Double.parseDouble(string);
+      return new Element.NumericConstant(value);
+    } catch (NumberFormatException ex) {
+      //just ignore
+    }
+    for (Element.Variable variable : Element.Variable.values()) {
+      if (variable.getGrammarName().equals(string)) {
+        return variable;
+      }
+    }
+    for (Element.MapperFunction function : Element.MapperFunction.values()) {
+      if (function.getGrammarName().equals(string)) {
+        return function;
+      }
+    }
+    return null;
+  }
+
+  private static <T> T getFromList(List<T> list, int n) {
+    n = Math.min(n, list.size() - 1);
+    n = Math.max(0, n);
+    return list.get(n);
+  }
+
+  public static Tree<String> getGERawTree(int codonLength) {
+    return node(
+        "<mapper>",
+        node(
+            "<n>",
+            node(
+                "<fun_n_g>",
+                node("int")
+            ),
+            node("("),
+            node(
+                "<g>",
+                node(
+                    "<fun_g_g,n>",
+                    node("substring")
+                ),
+                node("("),
+                node(
+                    "<g>",
+                    node(
+                        "<fun_g_g,n>",
+                        node("rotate_sx")
+                    ),
+                    node("("),
+                    node(
+                        "<g>",
+                        node(
+                            "<var_g>",
+                            node("g")
+                        )
+                    ),
+                    node(","),
+                    node(
+                        "<n>",
+                        node(
+                            "<fun_n_n,n>",
+                            node("*")
+                        ),
+                        node("("),
+                        node(
+                            "<n>",
+                            node(
+                                "<var_n>",
+                                node("g_count_rw")
+                            )
+                        ),
+                        node(","),
+                        node(
+                            "<n>",
+                            node(
+                                "<const_n>",
+                                node(Integer.toString(codonLength))
+                            )
+                        ),
+                        node(")")
+                    ),
+                    node(")")
+                ),
+                node(","),
+                node(
+                    "<n>",
+                    node(
+                        "<const_n>",
+                        node(Integer.toString(codonLength))
+                    )
+                ),
+                node(")")
+            ),
+            node(")")
+        ),
+        node(
+            "<lg>",
+            node(
+                "<fun_lg_g,n>",
+                node("repeat")
+            ),
+            node("("),
+            node(
+                "<g>",
+                node(
+                    "<var_g>",
+                    node("g")
+                )
+            ),
+            node(","),
+            node(
+                "<n>",
+                node(
+                    "<fun_n_ln>",
+                    node("length")
+                ),
+                node("("),
+                node(
+                    "<ln>",
+                    node(
+                        "<var_ln>",
+                        node("ln")
+                    )
+                ),
+                node(")")
+            ),
+            node(")")
+        )
+    );
+  }
+
+  public static Tree<String> getHGERawTree() {
+    return node(
+        "<mapper>",
+        node(
+            "<n>",
+            node(
+                "<fun_n_ln>",
+                node("max_index")
+            ),
+            node("("),
+            node(
+                "<ln>",
+                node("apply"),
+                node("("),
+                node(
+                    "<fun_n_g>",
+                    node("weight_r")
+                ),
+                node(","),
+                node(
+                    "<lg>",
+                    node(
+                        "<fun_lg_g,n>",
+                        node("split")
+                    ),
+                    node("("),
+                    node(
+                        "<g>",
+                        node(
+                            "<var_g>",
+                            node("g")
+                        )
+                    ),
+                    node(","),
+                    node(
+                        "<n>",
+                        node(
+                            "<fun_n_ln>",
+                            node("length")
+                        ),
+                        node("("),
+                        node(
+                            "<ln>",
+                            node(
+                                "<var_ln>",
+                                node("ln")
+                            )
+                        ),
+                        node(")")
+                    ),
+                    node(")")
+                ),
+                node(")")
+            ),
+            node(")")
+        ),
+        node(
+            "<lg>",
+            node(
+                "<fun_lg_g,n>",
+                node("split")
+            ),
+            node("("),
+            node(
+                "<g>",
+                node(
+                    "<var_g>",
+                    node("g")
+                )
+            ),
+            node(","),
+            node(
+                "<n>",
+                node(
+                    "<fun_n_ln>",
+                    node("length")
+                ),
+                node("("),
+                node(
+                    "<ln>",
+                    node(
+                        "<var_ln>",
+                        node("ln")
+                    )
+                ),
+                node(")")
+            ),
+            node(")")
+        )
+    );
+  }
+
+  public static Tree<String> getWHGERawTree() {
+    return node(
+        "<mapper>",
+        node(
+            "<n>",
+            node(
+                "<fun_n_ln>",
+                node("max_index")
+            ),
+            node("("),
+            node(
+                "<ln>",
+                node("apply"),
+                node("("),
+                node(
+                    "<fun_n_g>",
+                    node("weight_r")
+                ),
+                node(","),
+                node(
+                    "<lg>",
+                    node(
+                        "<fun_lg_g,n>",
+                        node("split")
+                    ),
+                    node("("),
+                    node(
+                        "<g>",
+                        node(
+                            "<var_g>",
+                            node("g")
+                        )
+                    ),
+                    node(","),
+                    node(
+                        "<n>",
+                        node(
+                            "<fun_n_ln>",
+                            node("length")
+                        ),
+                        node("("),
+                        node(
+                            "<ln>",
+                            node(
+                                "<var_ln>",
+                                node("ln")
+                            )
+                        ),
+                        node(")")
+                    ),
+                    node(")")
+                ),
+                node(")")
+            ),
+            node(")")
+        ),
+        node(
+            "<lg>",
+            node(
+                "<fun_lg_g,ln>",
+                node("split_w")
+            ),
+            node("("),
+            node(
+                "<g>",
+                node(
+                    "<var_g>",
+                    node("g")
+                )
+            ),
+            node(","),
+            node(
+                "<ln>",
+                node(
+                    "<var_ln>",
+                    node("ln")
+                )
+            ),
+            node(")")
+        )
+    );
+  }
+
+  private static List list(Object item) {
+    List l = new ArrayList(1);
+    l.add(item);
+    return l;
+  }
+
+  private static int maxIndex(List<Double> list, double mult) {
+    if (list.isEmpty()) {
+      return 0;
+    }
+    int index = 0;
+    for (int i = 1; i < list.size(); i++) {
+      if (mult * list.get(i) > mult * list.get(index)) {
+        index = i;
+      }
+    }
+    return index;
+  }
+
+  private static <T> Tree<T> node(T content, Tree<T>... children) {
+    Tree<T> tree = Tree.of(content);
+    for (Tree<T> child : children) {
+      tree.addChild(child);
+    }
+    return tree;
+  }
+
   private static double protectedDivision(double d1, double d2) {
     if (d2 == 0) {
       return 0d;
@@ -217,6 +552,20 @@ public class MapperUtils {
       return 0d;
     }
     return d1 % d2;
+  }
+
+  private static <T> List<T> repeat(T element, int n, int maxN) {
+    if (n <= 0) {
+      return Collections.singletonList(element);
+    }
+    if (n > maxN) {
+      n = maxN;
+    }
+    List<T> list = new ArrayList<>(n);
+    for (int i = 0; i < n; i++) {
+      list.add(element);
+    }
+    return list;
   }
 
   private static BitString rotateDx(BitString g, int n) {
@@ -247,14 +596,18 @@ public class MapperUtils {
     return copy;
   }
 
-  private static BitString substring(BitString g, int to) {
-    if (to <= 0) {
-      return new BitString(0);
+  private static List<Double> seq(int n, int maxN) {
+    if (n > maxN) {
+      n = maxN;
     }
-    if (g.size() == 0) {
-      return g;
+    if (n < 1) {
+      n = 1;
     }
-    return g.slice(0, Math.min(to, g.size()));
+    List<Double> list = new ArrayList<>(n);
+    for (int i = 0; i < n; i++) {
+      list.add((double) i);
+    }
+    return list;
   }
 
   private static List<BitString> split(BitString g, int n, int maxN) {
@@ -298,313 +651,35 @@ public class MapperUtils {
     return g.slices(ranges);
   }
 
-  private static List list(Object item) {
-    List l = new ArrayList(1);
-    l.add(item);
-    return l;
+  private static BitString substring(BitString g, int to) {
+    if (to <= 0) {
+      return new BitString(0);
+    }
+    if (g.size() == 0) {
+      return g;
+    }
+    return g.slice(0, Math.min(to, g.size()));
   }
 
-  private static List concat(List l1, List l2) {
-    List l = new ArrayList(l1);
-    l.addAll(l2);
-    return l;
-  }
-
-  private static List apply(Element.MapperFunction function, List inputList, Object arg) {
-    List outputList = new ArrayList(inputList.size());
-    for (Object repeatedArg : inputList) {
-      switch (function) {
-        case SIZE:
-          outputList.add((double) ((BitString) repeatedArg).size());
-          break;
-        case WEIGHT:
-          outputList.add((double) ((BitString) repeatedArg).count());
-          break;
-        case WEIGHT_R:
-          outputList.add((double) ((BitString) repeatedArg).count() / (double) ((BitString) repeatedArg).size());
-          break;
-        case INT:
-          outputList.add((double) ((BitString) repeatedArg).toInt());
-          break;
-        case ROTATE_SX:
-          outputList.add(rotateSx((BitString) arg, ((Double) repeatedArg).intValue()));
-          break;
-        case ROTATE_DX:
-          outputList.add(rotateDx((BitString) arg, ((Double) repeatedArg).intValue()));
-          break;
-        case SUBSTRING:
-          outputList.add(substring((BitString) arg, ((Double) repeatedArg).intValue()));
-          break;
+  public static Tree<Element> transform(Tree<String> stringTree) {
+    if (stringTree.isLeaf()) {
+      Element element = fromString(stringTree.content());
+      if (element == null) {
+        return null;
       }
+      return Tree.of(element);
     }
-    return outputList;
-  }
-
-  private static <T> List<T> repeat(T element, int n, int maxN) {
-    if (n <= 0) {
-      return Collections.singletonList(element);
+    if (stringTree.nChildren() == 1) {
+      return transform(stringTree.child(0));
     }
-    if (n > maxN) {
-      n = maxN;
-    }
-    List<T> list = new ArrayList<>(n);
-    for (int i = 0; i < n; i++) {
-      list.add(element);
-    }
-    return list;
-  }
-
-  private static <T> T getFromList(List<T> list, int n) {
-    n = Math.min(n, list.size() - 1);
-    n = Math.max(0, n);
-    return list.get(n);
-  }
-
-  private static int maxIndex(List<Double> list, double mult) {
-    if (list.isEmpty()) {
-      return 0;
-    }
-    int index = 0;
-    for (int i = 1; i < list.size(); i++) {
-      if (mult * list.get(i) > mult * list.get(index)) {
-        index = i;
+    Tree<Element> tree = transform(stringTree.child(0));
+    for (int i = 1; i < stringTree.nChildren(); i++) {
+      Tree<Element> child = transform(stringTree.child(i));
+      if (child != null) { //discard decorations
+        tree.addChild(child);
       }
-    }
-    return index;
-  }
-
-  private static List<Double> seq(int n, int maxN) {
-    if (n > maxN) {
-      n = maxN;
-    }
-    if (n < 1) {
-      n = 1;
-    }
-    List<Double> list = new ArrayList<>(n);
-    for (int i = 0; i < n; i++) {
-      list.add((double) i);
-    }
-    return list;
-  }
-
-  private static <T> Tree<T> node(T content, Tree<T>... children) {
-    Tree<T> tree = Tree.of(content);
-    for (Tree<T> child : children) {
-      tree.addChild(child);
     }
     return tree;
-  }
-
-  public static Tree<String> getGERawTree(int codonLength) {
-    return node("<mapper>",
-        node("<n>",
-            node("<fun_n_g>",
-                node("int")
-            ),
-            node("("),
-            node("<g>",
-                node("<fun_g_g,n>",
-                    node("substring")
-                ),
-                node("("),
-                node("<g>",
-                    node("<fun_g_g,n>",
-                        node("rotate_sx")
-                    ),
-                    node("("),
-                    node("<g>",
-                        node("<var_g>",
-                            node("g")
-                        )
-                    ),
-                    node(","),
-                    node("<n>",
-                        node("<fun_n_n,n>",
-                            node("*")
-                        ),
-                        node("("),
-                        node("<n>",
-                            node("<var_n>",
-                                node("g_count_rw")
-                            )),
-                        node(","),
-                        node("<n>",
-                            node("<const_n>",
-                                node(Integer.toString(codonLength))
-                            )),
-                        node(")")
-                    ),
-                    node(")")
-                ),
-                node(","),
-                node("<n>",
-                    node("<const_n>",
-                        node(Integer.toString(codonLength))
-                    )
-                ),
-                node(")")
-            ),
-            node(")")
-        ),
-        node("<lg>",
-            node("<fun_lg_g,n>",
-                node("repeat")
-            ),
-            node("("),
-            node("<g>",
-                node("<var_g>",
-                    node("g")
-                )
-            ),
-            node(","),
-            node("<n>",
-                node("<fun_n_ln>",
-                    node("length")
-                ),
-                node("("),
-                node("<ln>",
-                    node("<var_ln>",
-                        node("ln")
-                    )
-                ),
-                node(")")
-            ),
-            node(")")
-        )
-    );
-  }
-
-  public static Tree<String> getWHGERawTree() {
-    return node("<mapper>",
-        node("<n>",
-            node("<fun_n_ln>",
-                node("max_index")
-            ),
-            node("("),
-            node("<ln>",
-                node("apply"),
-                node("("),
-                node("<fun_n_g>",
-                    node("weight_r")),
-                node(","),
-                node("<lg>",
-                    node("<fun_lg_g,n>",
-                        node("split")
-                    ),
-                    node("("),
-                    node("<g>",
-                        node("<var_g>",
-                            node("g")
-                        )
-                    ),
-                    node(","),
-                    node("<n>",
-                        node("<fun_n_ln>",
-                            node("length")
-                        ),
-                        node("("),
-                        node("<ln>",
-                            node("<var_ln>",
-                                node("ln")
-                            )
-                        ),
-                        node(")")
-                    ),
-                    node(")")
-                ),
-                node(")")
-            ),
-            node(")")
-        ),
-        node("<lg>",
-            node("<fun_lg_g,ln>",
-                node("split_w")
-            ),
-            node("("),
-            node("<g>",
-                node("<var_g>",
-                    node("g")
-                )
-            ),
-            node(","),
-            node("<ln>",
-                node("<var_ln>",
-                    node("ln")
-                )
-            ),
-            node(")")
-        )
-    );
-  }
-
-  public static Tree<String> getHGERawTree() {
-    return node("<mapper>",
-        node("<n>",
-            node("<fun_n_ln>",
-                node("max_index")
-            ),
-            node("("),
-            node("<ln>",
-                node("apply"),
-                node("("),
-                node("<fun_n_g>",
-                    node("weight_r")),
-                node(","),
-                node("<lg>",
-                    node("<fun_lg_g,n>",
-                        node("split")
-                    ),
-                    node("("),
-                    node("<g>",
-                        node("<var_g>",
-                            node("g")
-                        )
-                    ),
-                    node(","),
-                    node("<n>",
-                        node("<fun_n_ln>",
-                            node("length")
-                        ),
-                        node("("),
-                        node("<ln>",
-                            node("<var_ln>",
-                                node("ln")
-                            )
-                        ),
-                        node(")")
-                    ),
-                    node(")")
-                ),
-                node(")")
-            ),
-            node(")")
-        ),
-        node("<lg>",
-            node("<fun_lg_g,n>",
-                node("split")
-            ),
-            node("("),
-            node("<g>",
-                node("<var_g>",
-                    node("g")
-                )
-            ),
-            node(","),
-            node("<n>",
-                node("<fun_n_ln>",
-                    node("length")
-                ),
-                node("("),
-                node("<ln>",
-                    node("<var_ln>",
-                        node("ln")
-                    )
-                ),
-                node(")")
-            ),
-            node(")")
-        )
-    );
   }
 
 }

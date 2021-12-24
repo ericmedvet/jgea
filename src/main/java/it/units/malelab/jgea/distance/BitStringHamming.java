@@ -28,7 +28,11 @@ public class BitStringHamming implements Distance<BitString> {
   @Override
   public Double apply(BitString b1, BitString b2) {
     if (b1.size() != b2.size()) {
-      throw new IllegalArgumentException(String.format("Sequences size should be the same (%d vs. %d)", b1.size(), b2.size()));
+      throw new IllegalArgumentException(String.format(
+          "Sequences size should be the same (%d vs. %d)",
+          b1.size(),
+          b2.size()
+      ));
     }
     BitSet xored = b1.asBitSet();
     xored.xor(b2.asBitSet());

@@ -30,6 +30,11 @@ public class FunctionNode extends Node implements Function<Double, Double> {
 
   private final BaseFunction function;
 
+  public FunctionNode(int index, BaseFunction function) {
+    super(index);
+    this.function = function;
+  }
+
   public static IndependentFactory<FunctionNode> limitedIndexFactory(int limit, BaseFunction... functions) {
     return random -> new FunctionNode(
         random.nextInt(limit),
@@ -49,25 +54,19 @@ public class FunctionNode extends Node implements Function<Double, Double> {
     };
   }
 
-  public FunctionNode(int index, BaseFunction function) {
-    super(index);
-    this.function = function;
-  }
-
   @Override
   public Double apply(Double x) {
     return function.apply(x);
   }
 
-  public BaseFunction getFunction() {
-    return function;
-  }
-
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    if (!super.equals(o)) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    if (!super.equals(o))
+      return false;
     FunctionNode that = (FunctionNode) o;
     return function == that.function;
   }
@@ -75,6 +74,10 @@ public class FunctionNode extends Node implements Function<Double, Double> {
   @Override
   public int hashCode() {
     return Objects.hash(super.hashCode(), function);
+  }
+
+  public BaseFunction getFunction() {
+    return function;
   }
 
   @Override

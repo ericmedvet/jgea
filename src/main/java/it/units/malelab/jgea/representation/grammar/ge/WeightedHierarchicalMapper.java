@@ -39,7 +39,12 @@ public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
     this(expressivenessDepth, false, true, grammar);
   }
 
-  public WeightedHierarchicalMapper(int expressivenessDepth, boolean weightOptions, boolean weightChildren, Grammar<T> grammar) {
+  public WeightedHierarchicalMapper(
+      int expressivenessDepth,
+      boolean weightOptions,
+      boolean weightChildren,
+      Grammar<T> grammar
+  ) {
     super(grammar);
     this.expressivenessDepth = expressivenessDepth;
     this.weightOptions = weightOptions;
@@ -104,14 +109,6 @@ public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
   }
 
   @Override
-  protected double optionSliceWeight(BitString slice) {
-    if (!weightOptions) {
-      return super.optionSliceWeight(slice);
-    }
-    return slice.count();
-  }
-
-  @Override
   protected List<Range<Integer>> getOptionSlices(Range<Integer> range, List<List<T>> options) {
     if (!weightOptions) {
       return super.getOptionSlices(range, options);
@@ -125,6 +122,14 @@ public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
       sizes.add(w);
     }
     return slices(range, sizes);
+  }
+
+  @Override
+  protected double optionSliceWeight(BitString slice) {
+    if (!weightOptions) {
+      return super.optionSliceWeight(slice);
+    }
+    return slice.count();
   }
 
   @Override

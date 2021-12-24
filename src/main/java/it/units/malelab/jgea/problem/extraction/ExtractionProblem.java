@@ -32,14 +32,21 @@ public class ExtractionProblem<S> implements ProblemWithValidation<Extractor<S>,
   private final ExtractionFitness<S> fitnessFunction;
   private final ExtractionFitness<S> validationFunction;
 
-  public ExtractionProblem(Set<Extractor<S>> extractors, List<S> sequence, int folds, int i, ExtractionFitness.Metric... metrics) {
+  public ExtractionProblem(
+      Set<Extractor<S>> extractors,
+      List<S> sequence,
+      int folds,
+      int i,
+      ExtractionFitness.Metric... metrics
+  ) {
     List<S> learningSequence = new ArrayList<>();
     List<S> validationSequence = new ArrayList<>();
     double foldLength = (double) sequence.size() / (double) folds;
     for (int n = 0; n < folds; n++) {
       List<S> piece = sequence.subList(
           (int) Math.round(foldLength * (double) n),
-          (n == folds - 1) ? sequence.size() : ((int) Math.round(foldLength * (double) (n + 1))));
+          (n == folds - 1) ? sequence.size() : ((int) Math.round(foldLength * (double) (n + 1)))
+      );
       if (n == i) {
         validationSequence = piece;
       } else {

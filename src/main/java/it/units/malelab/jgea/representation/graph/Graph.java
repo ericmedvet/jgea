@@ -50,17 +50,19 @@ public interface Graph<N, A> extends Sized {
     }
 
     @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      Arc<?> arc = (Arc<?>) o;
-      return source.equals(arc.source) &&
-          target.equals(arc.target);
+    public int hashCode() {
+      return Objects.hash(source, target);
     }
 
     @Override
-    public int hashCode() {
-      return Objects.hash(source, target);
+    public boolean equals(Object o) {
+      if (this == o)
+        return true;
+      if (o == null || getClass() != o.getClass())
+        return false;
+      Arc<?> arc = (Arc<?>) o;
+      return source.equals(arc.source) &&
+          target.equals(arc.target);
     }
 
     @Override
@@ -69,27 +71,31 @@ public interface Graph<N, A> extends Sized {
     }
   }
 
-  Set<N> nodes();
+  void addNode(N node);
 
   Set<Arc<N>> arcs();
 
-  void addNode(N node);
+  A getArcValue(Arc<N> arc);
+
+  Set<N> nodes();
+
+  boolean removeArc(Arc<N> arc);
 
   boolean removeNode(N node);
 
   void setArcValue(Arc<N> arc, A value);
 
-  default void setArcValue(N source, N target, A value) {
-    setArcValue(Arc.of(source, target), value);
+  private static <M> void recursivelyVisit(Graph<M, ?> graph, M node, Set<M> visited) {
+    if (visited.contains(node)) {
+      throw new RuntimeException();
+    }
+    visited.add(node);
+    graph.successors(node).forEach(s -> {
+      Set<M> updated = new HashSet<>(visited);
+      updated.add(node);
+      recursivelyVisit(graph, s, updated);
+    });
   }
-
-  boolean removeArc(Arc<N> arc);
-
-  default boolean removeArc(N source, N target) {
-    return removeArc(Arc.of(source, target));
-  }
-
-  A getArcValue(Arc<N> arc);
 
   default A getArcValue(N source, N target) {
     return getArcValue(Arc.of(source, target));
@@ -101,20 +107,6 @@ public interface Graph<N, A> extends Sized {
 
   default boolean hasArc(N source, N target) {
     return hasArc(Arc.of(source, target));
-  }
-
-  default Set<N> predecessors(N node) {
-    return arcs().stream()
-        .filter(a -> a.getTarget().equals(node))
-        .map(Arc::getSource)
-        .collect(Collectors.toSet());
-  }
-
-  default Set<N> successors(N node) {
-    return arcs().stream()
-        .filter(a -> a.getSource().equals(node))
-        .map(Arc::getTarget)
-        .collect(Collectors.toSet());
   }
 
   default boolean hasCycles() {
@@ -135,21 +127,31 @@ public interface Graph<N, A> extends Sized {
     }
   }
 
-  private static <M> void recursivelyVisit(Graph<M, ?> graph, M node, Set<M> visited) {
-    if (visited.contains(node)) {
-      throw new RuntimeException();
-    }
-    visited.add(node);
-    graph.successors(node).forEach(s -> {
-      Set<M> updated = new HashSet<>(visited);
-      updated.add(node);
-      recursivelyVisit(graph, s, updated);
-    });
+  default Set<N> predecessors(N node) {
+    return arcs().stream()
+        .filter(a -> a.getTarget().equals(node))
+        .map(Arc::getSource)
+        .collect(Collectors.toSet());
+  }
+
+  default boolean removeArc(N source, N target) {
+    return removeArc(Arc.of(source, target));
+  }
+
+  default void setArcValue(N source, N target, A value) {
+    setArcValue(Arc.of(source, target), value);
   }
 
   @Override
   default int size() {
     return nodes().size() + arcs().size();
+  }
+
+  default Set<N> successors(N node) {
+    return arcs().stream()
+        .filter(a -> a.getSource().equals(node))
+        .map(Arc::getTarget)
+        .collect(Collectors.toSet());
   }
 
 }

@@ -35,23 +35,23 @@ public class CaseBasedFitness<S, C, CF, AF> implements Function<S, AF> {
     this.aggregateFunction = aggregateFunction;
   }
 
-  public List<C> getCases() {
-    return cases;
-  }
-
-  public BiFunction<S, C, CF> getCaseFunction() {
-    return caseFunction;
-  }
-
-  public Function<List<CF>, AF> getAggregateFunction() {
-    return aggregateFunction;
-  }
-
   @Override
   public AF apply(S s) {
     List<CF> caseFitnesses = cases.stream()
         .map(o -> caseFunction.apply(s, o))
         .toList();
     return aggregateFunction.apply(caseFitnesses);
+  }
+
+  public Function<List<CF>, AF> getAggregateFunction() {
+    return aggregateFunction;
+  }
+
+  public BiFunction<S, C, CF> getCaseFunction() {
+    return caseFunction;
+  }
+
+  public List<C> getCases() {
+    return cases;
   }
 }

@@ -26,6 +26,18 @@ import java.util.stream.Collectors;
  */
 public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollection<T> {
 
+  private final Collection<Node<Collection<T>>> nodes;
+  private final PartialComparator<? super T> partialComparator;
+  public DAGPartiallyOrderedCollection(PartialComparator<? super T> partialComparator) {
+    this.nodes = new ArrayList<>();
+    this.partialComparator = partialComparator;
+  }
+
+  public DAGPartiallyOrderedCollection(Collection<? extends T> ts, PartialComparator<? super T> partialComparator) {
+    this(partialComparator);
+    ts.forEach(this::add);
+  }
+
   private static class Node<T1> implements Serializable {
     private final T1 content;
     private final Collection<Node<T1>> beforeNodes = new ArrayList<>();
@@ -35,16 +47,16 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
       this.content = content;
     }
 
-    public T1 getContent() {
-      return content;
+    public Collection<Node<T1>> getAfterNodes() {
+      return afterNodes;
     }
 
     public Collection<Node<T1>> getBeforeNodes() {
       return beforeNodes;
     }
 
-    public Collection<Node<T1>> getAfterNodes() {
-      return afterNodes;
+    public T1 getContent() {
+      return content;
     }
 
     @Override
@@ -57,17 +69,54 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
     }
   }
 
-  private final Collection<Node<Collection<T>>> nodes;
-  private final PartialComparator<? super T> partialComparator;
-
-  public DAGPartiallyOrderedCollection(PartialComparator<? super T> partialComparator) {
-    this.nodes = new ArrayList<>();
-    this.partialComparator = partialComparator;
+  private static <T1> Node<Collection<T1>> newNode(T1 t) {
+    Collection<T1> ts = new ArrayList<>();
+    ts.add(t);
+    return new Node<>(ts);
   }
 
-  public DAGPartiallyOrderedCollection(Collection<? extends T> ts, PartialComparator<? super T> partialComparator) {
-    this(partialComparator);
-    ts.forEach(this::add);
+  @Override
+  public void add(T t) {
+    for (Node<Collection<T>> node : nodes) {
+      PartialComparator.PartialComparatorOutcome outcome = partialComparator.compare(
+          t,
+          node.getContent().iterator().next()
+      );
+      if (outcome.equals(PartialComparator.PartialComparatorOutcome.SAME)) {
+        node.getContent().add(t);
+        return;
+      }
+    }
+    Node<Collection<T>> newNode = newNode(t);
+    for (Node<Collection<T>> node : nodes) {
+      PartialComparator.PartialComparatorOutcome outcome = partialComparator.compare(
+          t,
+          node.getContent().iterator().next()
+      );
+      if (outcome.equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
+        node.getBeforeNodes().add(newNode);
+        newNode.getAfterNodes().add(node);
+      } else if (outcome.equals(PartialComparator.PartialComparatorOutcome.AFTER)) {
+        node.getAfterNodes().add(newNode);
+        newNode.getBeforeNodes().add(node);
+      }
+    }
+    nodes.add(newNode);
+  }
+
+  @Override
+  public Collection<T> all() {
+    return Collections.unmodifiableCollection(filterNodes(n -> true));
+  }
+
+  @Override
+  public Collection<T> firsts() {
+    return Collections.unmodifiableCollection(filterNodes(n -> n.getBeforeNodes().isEmpty()));
+  }
+
+  @Override
+  public Collection<T> lasts() {
+    return Collections.unmodifiableCollection(filterNodes(n -> n.getAfterNodes().isEmpty()));
   }
 
   @Override
@@ -92,35 +141,6 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
     return removed;
   }
 
-  @Override
-  public void add(T t) {
-    for (Node<Collection<T>> node : nodes) {
-      PartialComparator.PartialComparatorOutcome outcome = partialComparator.compare(t, node.getContent().iterator().next());
-      if (outcome.equals(PartialComparator.PartialComparatorOutcome.SAME)) {
-        node.getContent().add(t);
-        return;
-      }
-    }
-    Node<Collection<T>> newNode = newNode(t);
-    for (Node<Collection<T>> node : nodes) {
-      PartialComparator.PartialComparatorOutcome outcome = partialComparator.compare(t, node.getContent().iterator().next());
-      if (outcome.equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
-        node.getBeforeNodes().add(newNode);
-        newNode.getAfterNodes().add(node);
-      } else if (outcome.equals(PartialComparator.PartialComparatorOutcome.AFTER)) {
-        node.getAfterNodes().add(newNode);
-        newNode.getBeforeNodes().add(node);
-      }
-    }
-    nodes.add(newNode);
-  }
-
-  private static <T1> Node<Collection<T1>> newNode(T1 t) {
-    Collection<T1> ts = new ArrayList<>();
-    ts.add(t);
-    return new Node<>(ts);
-  }
-
   private Collection<T> filterNodes(Predicate<Node<Collection<T>>> predicate) {
     return nodes.stream()
         .filter(predicate)
@@ -131,21 +151,6 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
           return c;
         })
         .get();
-  }
-
-  @Override
-  public Collection<T> all() {
-    return Collections.unmodifiableCollection(filterNodes(n -> true));
-  }
-
-  @Override
-  public Collection<T> firsts() {
-    return Collections.unmodifiableCollection(filterNodes(n -> n.getBeforeNodes().isEmpty()));
-  }
-
-  @Override
-  public Collection<T> lasts() {
-    return Collections.unmodifiableCollection(filterNodes(n -> n.getAfterNodes().isEmpty()));
   }
 
   public PartialComparator<? super T> getPartialComparator() {

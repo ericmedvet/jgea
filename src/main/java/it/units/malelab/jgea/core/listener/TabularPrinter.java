@@ -74,15 +74,67 @@ public class TabularPrinter<E> implements Listener.Factory<E> {
         .collect(Collectors.joining("\n"));
   }
 
+  private static String collapse(String name) {
+    StringBuilder acronym = new StringBuilder();
+    String[] pieces = name.split(COLLAPSER_REGEX);
+    for (String piece : pieces) {
+      acronym.append(piece.charAt(0));
+    }
+    return acronym.toString();
+  }
+
+  private static int formatSize(String format) {
+    int size = 0;
+    Matcher matcher = Pattern.compile("\\d++").matcher(format);
+    if (matcher.find()) {
+      size = Integer.parseInt(matcher.group());
+      if (format.contains("+")) {
+        size = size + 1;
+      }
+      return size;
+    }
+    return String.format(format, (Object[]) null).length();
+  }
+
+  private static String justify(String s, int length) {
+    if (s.length() > length) {
+      return s.substring(0, length);
+    }
+    StringBuilder sBuilder = new StringBuilder(s);
+    while (sBuilder.length() < length) {
+      sBuilder.insert(0, " ");
+    }
+    s = sBuilder.toString();
+    return s;
+  }
+
+  private static char variation(Object current, Object last) {
+    if (current == null || last == null) {
+      return ' ';
+    }
+    if (!(current instanceof Number) || !(last instanceof Number)) {
+      return ' ';
+    }
+    double currentN = ((Number) current).doubleValue();
+    double lastN = ((Number) last).doubleValue();
+    if (currentN < lastN) {
+      return VARIATION_DOWN;
+    }
+    if (currentN > lastN) {
+      return VARIATION_UP;
+    }
+    return VARIATION_SAME;
+  }
+
   @Override
   public Listener<E> build() {
     if (showLegend) {
       ps.println(legend);
     }
     return new Listener<>() {
-      int lineCounter = 0;
       final Object[] lastValues = new Object[pairs.size()];
       final Object[] secondLastValues = new Object[pairs.size()];
+      int lineCounter = 0;
 
       @Override
       public void listen(E e) {
@@ -139,58 +191,6 @@ public class TabularPrinter<E> implements Listener.Factory<E> {
       return s + currentVariation;
     }
     return s;
-  }
-
-  private static String collapse(String name) {
-    StringBuilder acronym = new StringBuilder();
-    String[] pieces = name.split(COLLAPSER_REGEX);
-    for (String piece : pieces) {
-      acronym.append(piece.charAt(0));
-    }
-    return acronym.toString();
-  }
-
-  private static int formatSize(String format) {
-    int size = 0;
-    Matcher matcher = Pattern.compile("\\d++").matcher(format);
-    if (matcher.find()) {
-      size = Integer.parseInt(matcher.group());
-      if (format.contains("+")) {
-        size = size + 1;
-      }
-      return size;
-    }
-    return String.format(format, (Object[]) null).length();
-  }
-
-  private static String justify(String s, int length) {
-    if (s.length() > length) {
-      return s.substring(0, length);
-    }
-    StringBuilder sBuilder = new StringBuilder(s);
-    while (sBuilder.length() < length) {
-      sBuilder.insert(0, " ");
-    }
-    s = sBuilder.toString();
-    return s;
-  }
-
-  private static char variation(Object current, Object last) {
-    if (current == null || last == null) {
-      return ' ';
-    }
-    if (!(current instanceof Number) || !(last instanceof Number)) {
-      return ' ';
-    }
-    double currentN = ((Number) current).doubleValue();
-    double lastN = ((Number) last).doubleValue();
-    if (currentN < lastN) {
-      return VARIATION_DOWN;
-    }
-    if (currentN > lastN) {
-      return VARIATION_UP;
-    }
-    return VARIATION_SAME;
   }
 
 }

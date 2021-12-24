@@ -28,10 +28,9 @@ import java.util.List;
  */
 public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
 
+  public static final String BIT_USAGES_INDEX_NAME = "bitUsages";
   private final int codonLength;
   private final int maxWraps;
-
-  public static final String BIT_USAGES_INDEX_NAME = "bitUsages";
 
   public StandardGEMapper(int codonLength, int maxWraps, Grammar<T> grammar) {
     super(grammar);
@@ -69,7 +68,8 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
       List<List<T>> options = grammar.getRules().get(treeToBeReplaced.content());
       int optionIndex = 0;
       if (options.size() > 1) {
-        optionIndex = genotype.slice(currentCodonIndex * codonLength, (currentCodonIndex + 1) * codonLength).toInt() % options.size();
+        optionIndex = genotype.slice(currentCodonIndex * codonLength, (currentCodonIndex + 1) * codonLength)
+            .toInt() % options.size();
         currentCodonIndex = currentCodonIndex + 1;
       }
       //add children

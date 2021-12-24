@@ -36,6 +36,15 @@ import java.util.stream.Collectors;
  */
 public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized, Serializable {
 
+  private final Graph<State, Set<S>> graph;
+  private final State startingState;
+
+  public DeterministicFiniteAutomaton(Graph<State, Set<S>> graph) {
+    check(graph);
+    this.graph = graph;
+    this.startingState = graph.nodes().stream().filter(s -> s.getIndex() == 0).findFirst().get();
+  }
+
   public static class State extends Node {
     private final boolean accepting;
 
@@ -55,30 +64,8 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized, Ser
     }
   }
 
-  public static IndependentFactory<State> sequentialStateFactory(final int startingIndex, double acceptanceRate) {
-    return new IndependentFactory<>() {
-      private int localStartingIndex = startingIndex;
-
-      @Override
-      public State build(RandomGenerator random) {
-        localStartingIndex = localStartingIndex + 1;
-        return new State(localStartingIndex - 1, random.nextDouble() < acceptanceRate);
-      }
-    };
-  }
-
-  private final Graph<State, Set<S>> graph;
-  private final State startingState;
-
-  public static <K> Predicate<Graph<State, Set<K>>> checker() {
-    return graph -> {
-      try {
-        check(graph);
-      } catch (IllegalArgumentException e) {
-        return false;
-      }
-      return true;
-    };
+  public static <R> Function<Graph<State, Set<R>>, DeterministicFiniteAutomaton<R>> builder() {
+    return DeterministicFiniteAutomaton::new;
   }
 
   public static <K> void check(Graph<State, Set<K>> graph) {
@@ -108,14 +95,27 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized, Ser
     }
   }
 
-  public static <R> Function<Graph<State, Set<R>>, DeterministicFiniteAutomaton<R>> builder() {
-    return DeterministicFiniteAutomaton::new;
+  public static <K> Predicate<Graph<State, Set<K>>> checker() {
+    return graph -> {
+      try {
+        check(graph);
+      } catch (IllegalArgumentException e) {
+        return false;
+      }
+      return true;
+    };
   }
 
-  public DeterministicFiniteAutomaton(Graph<State, Set<S>> graph) {
-    check(graph);
-    this.graph = graph;
-    this.startingState = graph.nodes().stream().filter(s -> s.getIndex() == 0).findFirst().get();
+  public static IndependentFactory<State> sequentialStateFactory(final int startingIndex, double acceptanceRate) {
+    return new IndependentFactory<>() {
+      private int localStartingIndex = startingIndex;
+
+      @Override
+      public State build(RandomGenerator random) {
+        localStartingIndex = localStartingIndex + 1;
+        return new State(localStartingIndex - 1, random.nextDouble() < acceptanceRate);
+      }
+    };
   }
 
   @Override
@@ -169,13 +169,15 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized, Ser
   @Override
   public String toString() {
     return graph.arcs().stream()
-        .map(a -> String.format("%s-[%s]->%s",
+        .map(a -> String.format(
+            "%s-[%s]->%s",
             a.getTarget(),
             graph.getArcValue(a).stream()
                 .sorted()
                 .map(Objects::toString)
                 .collect(Collectors.joining()),
-            a.getTarget()))
+            a.getTarget()
+        ))
         .collect(Collectors.joining(","));
   }
 

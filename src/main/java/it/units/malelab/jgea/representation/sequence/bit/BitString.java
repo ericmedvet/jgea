@@ -33,10 +33,6 @@ public class BitString implements ThinList<Boolean> {
   private final int length;
   private final BitSet bitSet;
 
-  public static BitString copyOf(BitString other) {
-    return new BitString(other.length, other.bitSet);
-  }
-
   public BitString(String bits) {
     this(bits.length());
     for (int i = 0; i < length; i++) {
@@ -54,89 +50,29 @@ public class BitString implements ThinList<Boolean> {
     this.bitSet = bitSet.get(0, length);
   }
 
-  @Override
-  public int size() {
-    return length;
-  }
-
-  public BitString slice(int fromIndex, int toIndex) {
-    checkIndexes(fromIndex, toIndex);
-    return new BitString(toIndex - fromIndex, bitSet.get(fromIndex, toIndex));
-  }
-
-  public int count() {
-    return bitSet.cardinality();
-  }
-
-  public int toInt() {
-    BitString genotype = this;
-    if (length > Integer.SIZE / 2) {
-      genotype = compress(Integer.SIZE / 2);
-    }
-    if (genotype.bitSet.toLongArray().length <= 0) {
-      return 0;
-    }
-    return (int) genotype.bitSet.toLongArray()[0];
-  }
-
-  public void set(int fromIndex, BitString other) {
-    checkIndexes(fromIndex, fromIndex + other.size());
-    for (int i = 0; i < other.size(); i++) {
-      bitSet.set(fromIndex + i, other.bitSet.get(i));
-    }
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(length + ":");
-    for (int i = 0; i < length; i++) {
-      if (i > 0 && i % 8 == 0) {
-        sb.append('-');
-      }
-      sb.append(bitSet.get(i) ? '1' : '0');
-    }
-    return sb.toString();
-  }
-
-  public String toFlatString() {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < length; i++) {
-      sb.append(bitSet.get(i) ? '1' : '0');
-    }
-    return sb.toString();
-  }
-
-  @Override
-  public Boolean get(int index) {
-    checkIndexes(index, index + 1);
-    return bitSet.get(index);
-  }
-
-  public void flip() {
-    bitSet.flip(0, length);
-  }
-
-  public void flip(int index) {
-    checkIndexes(index, index + 1);
-    bitSet.flip(index);
-  }
-
-  public void flip(int fromIndex, int toIndex) {
-    checkIndexes(fromIndex, toIndex);
-    bitSet.flip(fromIndex, toIndex);
-  }
-
-  public BitString or(BitString other) {
-    BitSet ored = (BitSet) bitSet.clone();
-    ored.or(other.bitSet);
-    return new BitString(length, ored);
+  public static BitString copyOf(BitString other) {
+    return new BitString(other.length, other.bitSet);
   }
 
   public BitString and(BitString other) {
     BitSet anded = (BitSet) bitSet.clone();
     anded.and(other.bitSet);
     return new BitString(length, anded);
+  }
+
+  public BitString append(BitString genotype) {
+    BitString resultGenotype = new BitString(length + genotype.length);
+    if (length > 0) {
+      resultGenotype.set(0, this);
+    }
+    resultGenotype.set(length, genotype);
+    return resultGenotype;
+  }
+
+  public BitSet asBitSet() {
+    BitSet copy = new BitSet(length);
+    copy.or(bitSet);
+    return copy;
   }
 
   private void checkIndexes(int fromIndex, int toIndex) {
@@ -151,12 +87,6 @@ public class BitString implements ThinList<Boolean> {
     }
   }
 
-  public BitSet asBitSet() {
-    BitSet copy = new BitSet(length);
-    copy.or(bitSet);
-    return copy;
-  }
-
   public BitString compress(int newLength) {
     BitString compressed = new BitString(newLength);
     List<BitString> slices = slices(Misc.slices(Range.closedOpen(0, length), newLength));
@@ -166,28 +96,22 @@ public class BitString implements ThinList<Boolean> {
     return compressed;
   }
 
-  public List<BitString> slices(final List<Range<Integer>> ranges) {
-    List<BitString> genotypes = new ArrayList<>(ranges.size());
-    for (Range<Integer> range : ranges) {
-      genotypes.add(slice(range));
-    }
-    return genotypes;
+  public int count() {
+    return bitSet.cardinality();
   }
 
-  public BitString slice(Range<Integer> range) {
-    if ((range.upperEndpoint() - range.lowerEndpoint()) == 0) {
-      return new BitString(0);
-    }
-    return slice(range.lowerEndpoint(), range.upperEndpoint());
+  public void flip() {
+    bitSet.flip(0, length);
   }
 
-  public BitString append(BitString genotype) {
-    BitString resultGenotype = new BitString(length + genotype.length);
-    if (length > 0) {
-      resultGenotype.set(0, this);
-    }
-    resultGenotype.set(length, genotype);
-    return resultGenotype;
+  public void flip(int index) {
+    checkIndexes(index, index + 1);
+    bitSet.flip(index);
+  }
+
+  public void flip(int fromIndex, int toIndex) {
+    checkIndexes(fromIndex, toIndex);
+    bitSet.flip(fromIndex, toIndex);
   }
 
   @Override
@@ -217,11 +141,48 @@ public class BitString implements ThinList<Boolean> {
   }
 
   @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(length + ":");
+    for (int i = 0; i < length; i++) {
+      if (i > 0 && i % 8 == 0) {
+        sb.append('-');
+      }
+      sb.append(bitSet.get(i) ? '1' : '0');
+    }
+    return sb.toString();
+  }
+
+  public BitString or(BitString other) {
+    BitSet ored = (BitSet) bitSet.clone();
+    ored.or(other.bitSet);
+    return new BitString(length, ored);
+  }
+
+  public void set(int fromIndex, BitString other) {
+    checkIndexes(fromIndex, fromIndex + other.size());
+    for (int i = 0; i < other.size(); i++) {
+      bitSet.set(fromIndex + i, other.bitSet.get(i));
+    }
+  }
+
+  @Override
+  public int size() {
+    return length;
+  }
+
+  @Override
   public boolean add(Boolean b) {
     BitString tail = new BitString(1);
     tail.set(0, b);
     append(tail);
     return true;
+  }
+
+  @Override
+  public Boolean get(int index) {
+    checkIndexes(index, index + 1);
+    return bitSet.get(index);
   }
 
   @Override
@@ -235,5 +196,44 @@ public class BitString implements ThinList<Boolean> {
   @Override
   public Boolean remove(int index) {
     throw new UnsupportedOperationException();
+  }
+
+  public BitString slice(int fromIndex, int toIndex) {
+    checkIndexes(fromIndex, toIndex);
+    return new BitString(toIndex - fromIndex, bitSet.get(fromIndex, toIndex));
+  }
+
+  public BitString slice(Range<Integer> range) {
+    if ((range.upperEndpoint() - range.lowerEndpoint()) == 0) {
+      return new BitString(0);
+    }
+    return slice(range.lowerEndpoint(), range.upperEndpoint());
+  }
+
+  public List<BitString> slices(final List<Range<Integer>> ranges) {
+    List<BitString> genotypes = new ArrayList<>(ranges.size());
+    for (Range<Integer> range : ranges) {
+      genotypes.add(slice(range));
+    }
+    return genotypes;
+  }
+
+  public String toFlatString() {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < length; i++) {
+      sb.append(bitSet.get(i) ? '1' : '0');
+    }
+    return sb.toString();
+  }
+
+  public int toInt() {
+    BitString genotype = this;
+    if (length > Integer.SIZE / 2) {
+      genotype = compress(Integer.SIZE / 2);
+    }
+    if (genotype.bitSet.toLongArray().length <= 0) {
+      return 0;
+    }
+    return (int) genotype.bitSet.toLongArray()[0];
   }
 }

@@ -21,7 +21,30 @@ package it.units.malelab.jgea.problem.mapper;
  */
 public interface Element {
 
-  String toString();
+  enum MapperFunction implements Element {
+
+    SIZE("size"), WEIGHT("weight"), WEIGHT_R("weight_r"), INT("int"),
+    ADD("+"), SUBTRACT("-"), MULT("*"), DIVIDE("/"), REMAINDER("%"),
+    LENGTH("length"), MAX_INDEX("max_index"), MIN_INDEX("min_index"),
+    GET("get"),
+    SEQ("seq"),
+    REPEAT("repeat"),
+    ROTATE_DX("rotate_dx"), ROTATE_SX("rotate_sx"), SUBSTRING("substring"),
+    SPLIT("split"),
+    SPLIT_W("split_w"),
+    APPLY("apply");
+
+    private final String grammarName;
+
+    MapperFunction(String grammarName) {
+      this.grammarName = grammarName;
+    }
+
+    public String getGrammarName() {
+      return grammarName;
+    }
+
+  }
 
   enum Variable implements Element {
     GENOTYPE("g"),
@@ -51,28 +74,5 @@ public interface Element {
 
   }
 
-  enum MapperFunction implements Element {
-
-    SIZE("size"), WEIGHT("weight"), WEIGHT_R("weight_r"), INT("int"),
-    ADD("+"), SUBTRACT("-"), MULT("*"), DIVIDE("/"), REMAINDER("%"),
-    LENGTH("length"), MAX_INDEX("max_index"), MIN_INDEX("min_index"),
-    GET("get"),
-    SEQ("seq"),
-    REPEAT("repeat"),
-    ROTATE_DX("rotate_dx"), ROTATE_SX("rotate_sx"), SUBSTRING("substring"),
-    SPLIT("split"),
-    SPLIT_W("split_w"),
-    APPLY("apply");
-
-    private final String grammarName;
-
-    MapperFunction(String grammarName) {
-      this.grammarName = grammarName;
-    }
-
-    public String getGrammarName() {
-      return grammarName;
-    }
-
-  }
+  String toString();
 }
