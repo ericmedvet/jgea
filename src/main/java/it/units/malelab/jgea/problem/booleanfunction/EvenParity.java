@@ -36,6 +36,7 @@ public class EvenParity implements GrammarBasedProblem<String, List<Tree<Element
   private final Grammar<String> grammar;
   private final Function<Tree<String>, List<Tree<Element>>> solutionMapper;
   private final Function<List<Tree<Element>>, Double> fitnessFunction;
+
   public EvenParity(final int size) throws IOException {
     grammar = Grammar.fromFile(new File("grammars/boolean-parity-var.bnf"));
     List<List<String>> vars = new ArrayList<>();

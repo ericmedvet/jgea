@@ -37,6 +37,7 @@ public class RobotPowerSupplyGeometry implements Problem<List<Double>, List<Doub
   private final boolean symmetric;
   private final FitnessFunction fitnessFunction;
   private final List<Objective> objectives;
+
   public RobotPowerSupplyGeometry(
       double w,
       double v,

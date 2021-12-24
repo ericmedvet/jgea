@@ -30,6 +30,7 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<RealFunction, do
   private final List<double[]> points;
   private final int arity;
   private final Metric metric;
+
   public SymbolicRegressionFitness(RealFunction targetFunction, List<double[]> points, Metric metric) {
     super(
         points,

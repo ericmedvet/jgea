@@ -44,6 +44,7 @@ public class FitnessFunction implements
   private final List<Property> properties;
   private final List<BitString> genotypes;
   private final double[] genotypeDistances;
+
   public FitnessFunction(
       List<EnhancedProblem> problems,
       int genotypeSize,

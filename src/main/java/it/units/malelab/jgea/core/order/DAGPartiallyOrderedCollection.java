@@ -28,6 +28,7 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
 
   private final Collection<Node<Collection<T>>> nodes;
   private final PartialComparator<? super T> partialComparator;
+
   public DAGPartiallyOrderedCollection(PartialComparator<? super T> partialComparator) {
     this.nodes = new ArrayList<>();
     this.partialComparator = partialComparator;

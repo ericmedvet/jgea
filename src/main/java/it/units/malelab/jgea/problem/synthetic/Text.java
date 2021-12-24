@@ -36,6 +36,7 @@ public class Text implements GrammarBasedProblem<String, String, Double> {
   private final Grammar<String> grammar;
   private final Function<Tree<String>, String> solutionMapper;
   private final Function<String, Double> fitnessFunction;
+
   public Text(String targetString) throws IOException {
     grammar = Grammar.fromFile(new File("grammars/text.bnf"));
     solutionMapper = (Tree<String> tree) -> tree.leaves().stream()

@@ -38,6 +38,7 @@ public class IndexedNodeAddition<M extends N, N, A> implements Mutation<Graph<In
   private final Mutation<A> existingArcMutation;
   private final Map<IndexKey, Integer> counterMap;
   private int counter;
+
   public IndexedNodeAddition(
       IndependentFactory<M> nodeFactory,
       ToIntFunction<N> nodeTyper,
