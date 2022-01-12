@@ -149,7 +149,7 @@ public class ImageExample extends Worker {
             )).deferred(executorService);
             L.info(String.format("Starting %s", keys));
             Collection<RealFunction> solutions = evolver.solve(
-                Misc.cached(problem.getFitnessFunction(), 10000),
+                Misc.cached(problem, 10000),
                 new Iterations(nIterations),
                 new Random(seed),
                 executorService,

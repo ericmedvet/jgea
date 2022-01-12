@@ -19,37 +19,25 @@ package it.units.malelab.jgea.problem.synthetic;
 import it.units.malelab.jgea.core.Problem;
 
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * @author eric
  */
 public class LinearPoints implements Problem<List<Double>, Double> {
 
-  private final FitnessFunction fitnessFunction = new FitnessFunction();
-
-  private static class FitnessFunction implements Function<List<Double>, Double> {
-
-    @Override
-    public Double apply(List<Double> s) {
-      if (s.size() <= 1) {
-        return 0d;
-      }
-      double m = (s.get(s.size() - 1) - s.get(0)) / (double) s.size();
-      double q = s.get(0);
-      double sumOfSquaredErrors = 0;
-      for (int i = 0; i < s.size(); i++) {
-        double error = s.get(i) - (m * (double) i + q);
-        sumOfSquaredErrors = sumOfSquaredErrors + error * error;
-      }
-      return sumOfSquaredErrors / (double) s.size();
-    }
-
-  }
-
   @Override
-  public Function<List<Double>, Double> getFitnessFunction() {
-    return fitnessFunction;
+  public Double apply(List<Double> s) {
+    if (s.size() <= 1) {
+      return 0d;
+    }
+    double m = (s.get(s.size() - 1) - s.get(0)) / (double) s.size();
+    double q = s.get(0);
+    double sumOfSquaredErrors = 0;
+    for (int i = 0; i < s.size(); i++) {
+      double error = s.get(i) - (m * (double) i + q);
+      sumOfSquaredErrors = sumOfSquaredErrors + error * error;
+    }
+    return sumOfSquaredErrors / (double) s.size();
   }
 
 }

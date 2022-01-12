@@ -80,8 +80,8 @@ public class EvenParity implements GrammarBasedProblem<String, List<Tree<Element
   }
 
   @Override
-  public Function<List<Tree<Element>>, Double> getFitnessFunction() {
-    return fitnessFunction;
+  public Double apply(List<Tree<Element>> trees) {
+    return fitnessFunction.apply(trees);
   }
 
   @Override

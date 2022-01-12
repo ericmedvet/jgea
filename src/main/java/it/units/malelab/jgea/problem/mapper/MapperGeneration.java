@@ -35,9 +35,8 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class MapperGeneration implements
-    GrammarBasedProblem<String, Pair<Tree<Element>, Tree<Element>>, List<Double>>,
-    ProblemWithValidation<Pair<Tree<Element>, Tree<Element>>, List<Double>> {
+@SuppressWarnings("rawtypes")
+public class MapperGeneration implements GrammarBasedProblem<String, Pair<Tree<Element>, Tree<Element>>, List<Double>>, ProblemWithValidation<Pair<Tree<Element>, Tree<Element>>, List<Double>> {
 
   private final Grammar<String> grammar;
   private final FitnessFunction learningFitnessFunction;
@@ -76,8 +75,8 @@ public class MapperGeneration implements
   }
 
   @Override
-  public Function<Pair<Tree<Element>, Tree<Element>>, List<Double>> getFitnessFunction() {
-    return learningFitnessFunction;
+  public List<Double> apply(Pair<Tree<Element>, Tree<Element>> treeTreePair) {
+    return learningFitnessFunction.apply(treeTreePair);
   }
 
   @Override

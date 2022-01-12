@@ -132,7 +132,7 @@ public class ExtractionComparison extends Worker {
     Map<String, Function<RegexExtractionProblem, Evolver<?, Extractor<Character>, List<Double>>>> evolvers = new TreeMap<>(
         Map.ofEntries(
             Map.entry("cfgtree-ga", p -> {
-              RegexGrammar g = new RegexGrammar(p.getFitnessFunction(), options);
+              RegexGrammar g = new RegexGrammar(p, options);
               return new StandardEvolver<Tree<String>, Extractor<Character>, List<Double>>(
                   (Tree<String> tree) -> new RegexBasedExtractor(tree.leaves().stream()
                       .map(Tree::content)
@@ -153,7 +153,7 @@ public class ExtractionComparison extends Worker {
               );
             }),
             Map.entry("cfgtree-gadiv", p -> {
-              RegexGrammar g = new RegexGrammar(p.getFitnessFunction(), options);
+              RegexGrammar g = new RegexGrammar(p, options);
               return new StandardWithEnforcedDiversityEvolver<Tree<String>, Extractor<Character>, List<Double>>(
                   (Tree<String> tree) -> new RegexBasedExtractor(tree.leaves().stream()
                       .map(Tree::content)
@@ -179,8 +179,8 @@ public class ExtractionComparison extends Worker {
                   IndexedNode::content,
                   sets -> sets.stream().reduce(Sets::union).orElse(Set.of())
               );
-              Set<Character> positiveChars = p.getFitnessFunction().getDesiredExtractions().stream()
-                  .map(r -> p.getFitnessFunction()
+              Set<Character> positiveChars = p.getDesiredExtractions().stream()
+                  .map(r -> p
                       .getSequence()
                       .subList(r.lowerEndpoint(), r.upperEndpoint())
                       .stream()
@@ -191,7 +191,7 @@ public class ExtractionComparison extends Worker {
               return new SpeciatedEvolver<Graph<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>, Extractor<Character>, List<Double>>(
                   graphMapper
                       .andThen(DeterministicFiniteAutomaton.builder()),
-                  new ShallowDFAFactory<Character>(2, positiveChars)
+                  new ShallowDFAFactory<>(2, positiveChars)
                       .then(GraphUtils.mapper(
                           IndexedNode.incrementerMapper(DeterministicFiniteAutomaton.State.class),
                           Misc::first
@@ -245,8 +245,8 @@ public class ExtractionComparison extends Worker {
               );
             }),
             Map.entry("dfa-seq-speciated", p -> {
-              Set<Character> positiveChars = p.getFitnessFunction().getDesiredExtractions().stream()
-                  .map(r -> p.getFitnessFunction()
+              Set<Character> positiveChars = p.getDesiredExtractions().stream()
+                  .map(r -> p
                       .getSequence()
                       .subList(r.lowerEndpoint(), r.upperEndpoint())
                       .stream()
@@ -304,8 +304,8 @@ public class ExtractionComparison extends Worker {
               );
             }),
             Map.entry("dfa-seq-speciated-noxover", p -> {
-              Set<Character> positiveChars = p.getFitnessFunction().getDesiredExtractions().stream()
-                  .map(r -> p.getFitnessFunction()
+              Set<Character> positiveChars = p.getDesiredExtractions().stream()
+                  .map(r -> p
                       .getSequence()
                       .subList(r.lowerEndpoint(), r.upperEndpoint())
                       .stream()
@@ -362,8 +362,8 @@ public class ExtractionComparison extends Worker {
                   IndexedNode::content,
                   sets -> sets.stream().reduce(Sets::union).orElse(Set.of())
               );
-              Set<Character> positiveChars = p.getFitnessFunction().getDesiredExtractions().stream()
-                  .map(r -> p.getFitnessFunction()
+              Set<Character> positiveChars = p.getDesiredExtractions().stream()
+                  .map(r -> p
                       .getSequence()
                       .subList(r.lowerEndpoint(), r.upperEndpoint())
                       .stream()
@@ -430,8 +430,8 @@ public class ExtractionComparison extends Worker {
                   IndexedNode::content,
                   sets -> sets.stream().reduce(Sets::union).orElse(Set.of())
               );
-              Set<Character> positiveChars = p.getFitnessFunction().getDesiredExtractions().stream()
-                  .map(r -> p.getFitnessFunction()
+              Set<Character> positiveChars = p.getDesiredExtractions().stream()
+                  .map(r -> p
                       .getSequence()
                       .subList(r.lowerEndpoint(), r.upperEndpoint())
                       .stream()
@@ -520,7 +520,7 @@ public class ExtractionComparison extends Worker {
             Evolver<?, Extractor<Character>, List<Double>> evolver = evolverEntry.getValue().apply(p);
             L.info(String.format("Starting %s", keys));
             Collection<Extractor<Character>> solutions = evolver.solve(
-                Misc.cached(p.getFitnessFunction(), 10000),
+                Misc.cached(p, 10000),
                 new Iterations(nIterations),
                 new Random(seed),
                 executorService,

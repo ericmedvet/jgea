@@ -35,40 +35,25 @@ public class Text implements GrammarBasedProblem<String, String, Double> {
 
   private final Grammar<String> grammar;
   private final Function<Tree<String>, String> solutionMapper;
-  private final Function<String, Double> fitnessFunction;
+  private final List<Character> target;
+  private final Distance<List<Character>> distance;
 
   public Text(String targetString) throws IOException {
     grammar = Grammar.fromFile(new File("grammars/text.bnf"));
     solutionMapper = (Tree<String> tree) -> tree.leaves().stream()
         .map(Tree::content)
         .collect(Collectors.joining()).replace("_", " ");
-    fitnessFunction = new FitnessFunction(targetString);
-  }
-
-  private static class FitnessFunction implements Function<String, Double> {
-
-    private final List<Character> target;
-    private final Distance<List<Character>> distance;
-
-    public FitnessFunction(String targetString) {
-      target = targetString.chars().mapToObj(c -> (char) c).toList();
-      this.distance = new Edit<>();
-    }
-
-    @Override
-    public Double apply(String string) {
-      double d = distance.apply(
-          target,
-          string.chars().mapToObj(c -> (char) c).toList()
-      ) / (double) target.size();
-      return d;
-    }
-
+    target = targetString.chars().mapToObj(c -> (char) c).toList();
+    this.distance = new Edit<>();
   }
 
   @Override
-  public Function<String, Double> getFitnessFunction() {
-    return fitnessFunction;
+  public Double apply(String string) {
+    double d = distance.apply(
+        target,
+        string.chars().mapToObj(c -> (char) c).toList()
+    ) / (double) target.size();
+    return d;
   }
 
   @Override

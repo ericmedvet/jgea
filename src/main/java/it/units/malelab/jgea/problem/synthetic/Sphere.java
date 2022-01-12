@@ -19,26 +19,16 @@ package it.units.malelab.jgea.problem.synthetic;
 import it.units.malelab.jgea.core.Problem;
 
 import java.util.List;
-import java.util.function.Function;
 
 public class Sphere implements Problem<List<Double>, Double> {
 
-  private final FitnessFunction fitnessFunction = new FitnessFunction();
-
-  private static class FitnessFunction implements Function<List<Double>, Double> {
-
-    @Override
-    public Double apply(List<Double> vs) {
-      double sum = 0.0;
-      for (Double v : vs) {
-        sum += v * v;
-      }
-      return sum;
-    }
-  }
-
   @Override
-  public Function<List<Double>, Double> getFitnessFunction() {
-    return fitnessFunction;
+  public Double apply(List<Double> vs) {
+    double sum = 0.0;
+    for (Double v : vs) {
+      sum += v * v;
+    }
+    return sum;
   }
+
 }

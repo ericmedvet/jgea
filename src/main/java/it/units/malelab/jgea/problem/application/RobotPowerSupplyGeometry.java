@@ -92,6 +92,11 @@ public class RobotPowerSupplyGeometry implements Problem<List<Double>, List<Doub
 
   }
 
+  @Override
+  public List<Double> apply(List<Double> doubles) {
+    return fitnessFunction.apply(doubles);
+  }
+
   private double avgDistanceToValidClosest(double[] a) {
     List<double[]> validPins = validPins(a);
     if (validPins.size() <= 1) {
@@ -129,11 +134,6 @@ public class RobotPowerSupplyGeometry implements Problem<List<Double>, List<Doub
 
   public Function<double[], Double> getAvgDistFunction() {
     return a -> avgDistanceToValidClosest(scale(a));
-  }
-
-  @Override
-  public Function<List<Double>, List<Double>> getFitnessFunction() {
-    return fitnessFunction;
   }
 
   public Function<double[], Double> getMinContactsFunction() {

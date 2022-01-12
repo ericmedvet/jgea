@@ -138,7 +138,7 @@ public class Example extends Worker {
     );
     try {
       Collection<List<Tree<Element>>> solutions = evolver.solve(
-          Misc.cached(p.getFitnessFunction(), 10000),
+          Misc.cached(p, 10000),
           new Iterations(100),
           r,
           executorService,
@@ -182,7 +182,7 @@ public class Example extends Worker {
       System.out.println(evolver.getClass().getSimpleName());
       try {
         Collection<List<Double>> solutions = evolver.solve(
-            p.getFitnessFunction(),
+            p,
             new TargetFitness<>(0d).or(new Iterations(100)),
             r,
             executorService,
@@ -261,7 +261,7 @@ public class Example extends Worker {
       )).deferred(executorService);
       try {
         Collection<BitString> solutions = evolver.solve(
-            Misc.cached(p.getFitnessFunction(), 10000),
+            Misc.cached(p, 10000),
             new TargetFitness<>(0d).or(new Iterations(1000)),
             r,
             executorService,
@@ -302,7 +302,7 @@ public class Example extends Worker {
       System.out.println(evolver.getClass().getSimpleName());
       try {
         Collection<List<Double>> solutions = evolver.solve(
-            p.getFitnessFunction(),
+            p,
             new TargetFitness<>(0d).or(new Iterations(100)),
             r,
             executorService,
@@ -351,7 +351,7 @@ public class Example extends Worker {
       System.out.println(evolver.getClass().getSimpleName());
       try {
         Collection<List<Double>> solutions = evolver.solve(
-            p.getFitnessFunction(),
+            p,
             new TargetFitness<>(0d).or(new Iterations(100)),
             r,
             executorService,
@@ -381,7 +381,7 @@ public class Example extends Worker {
     List<Evolver<Tree<String>, RealFunction, Double>> evolvers = List.of(new StandardEvolver<>(
         new FormulaMapper().andThen(
                 n -> TreeBasedRealFunction.from(n, "x"))
-            .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+            .andThen(MathUtils.linearScaler(p)),
         new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
         PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
         100,
@@ -393,7 +393,7 @@ public class Example extends Worker {
         false
     ), new StandardWithEnforcedDiversityEvolver<>(
         new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(n, "x"))
-            .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+            .andThen(MathUtils.linearScaler(p)),
         new GrammarRampedHalfAndHalf<>(3, 12, srGrammar).withOptimisticUniqueness(100),
         PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
         100,
@@ -409,7 +409,7 @@ public class Example extends Worker {
       System.out.println(evolver.getClass().getSimpleName());
       try {
         Collection<RealFunction> solutions = evolver.solve(
-            Misc.cached(p.getFitnessFunction(), 10000),
+            Misc.cached(p, 10000),
             new TargetFitness<>(0d).or(new Iterations(100)),
             r,
             executorService,
@@ -439,7 +439,7 @@ public class Example extends Worker {
     List<Evolver<Tree<String>, RealFunction, List<Double>>> evolvers = List.of(new StandardEvolver<>(
         new FormulaMapper().andThen(
                 n -> TreeBasedRealFunction.from(n, "x"))
-            .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+            .andThen(MathUtils.linearScaler(p)),
         new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
         new ParetoDominance<>(Double.class).comparing(Evolver.Individual::fitness),
         100,
@@ -451,7 +451,7 @@ public class Example extends Worker {
         false
     ), new StandardWithEnforcedDiversityEvolver<>(
         new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(n, "x"))
-            .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+            .andThen(MathUtils.linearScaler(p)),
         new GrammarRampedHalfAndHalf<>(3, 12, srGrammar).withOptimisticUniqueness(100),
         new ParetoDominance<>(Double.class).comparing(Evolver.Individual::fitness),
         100,
@@ -468,7 +468,7 @@ public class Example extends Worker {
       try {
         Collection<RealFunction> solutions = evolver.solve(
             f -> List.of(
-                p.getFitnessFunction().apply(f),
+                p.apply(f),
                 (f instanceof Sized) ? ((Sized) f).size() : Double.POSITIVE_INFINITY
             ),
             new Iterations(3),

@@ -19,17 +19,13 @@ package it.units.malelab.jgea.problem.synthetic;
 import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
 
-import java.util.function.Function;
-
 /**
  * @author eric
  */
 public class OneMax implements Problem<BitString, Double> {
 
-  private final Function<BitString, Double> fitnessFunction = b -> 1d - (double) b.count() / (double) b.size();
-
   @Override
-  public Function<BitString, Double> getFitnessFunction() {
-    return fitnessFunction;
+  public Double apply(BitString b) {
+    return 1d - (double) b.count() / (double) b.size();
   }
 }

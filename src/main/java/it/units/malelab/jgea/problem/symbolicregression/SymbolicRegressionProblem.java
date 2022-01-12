@@ -24,9 +24,8 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class SymbolicRegressionProblem implements ProblemWithValidation<RealFunction, Double> {
+public class SymbolicRegressionProblem extends SymbolicRegressionFitness implements ProblemWithValidation<RealFunction, Double> {
 
-  private final SymbolicRegressionFitness trainingFitness;
   private final SymbolicRegressionFitness validationFitness;
   private final RealFunction targetFunction;
 
@@ -36,19 +35,11 @@ public class SymbolicRegressionProblem implements ProblemWithValidation<RealFunc
       List<double[]> validationPoints,
       SymbolicRegressionFitness.Metric metric
   ) {
+    super(targetFunction, trainingPoints, metric);
     this.targetFunction = targetFunction;
-    trainingFitness = new SymbolicRegressionFitness(targetFunction, trainingPoints, metric);
     validationFitness = new SymbolicRegressionFitness(targetFunction, validationPoints, metric);
   }
 
-  public int arity() {
-    return trainingFitness.arity();
-  }
-
-  @Override
-  public Function<RealFunction, Double> getFitnessFunction() {
-    return trainingFitness;
-  }
 
   public RealFunction getTargetFunction() {
     return targetFunction;

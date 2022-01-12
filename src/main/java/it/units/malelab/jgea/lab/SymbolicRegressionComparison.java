@@ -161,7 +161,7 @@ public class SymbolicRegressionComparison extends Worker {
               );
               return new StandardEvolver<Tree<Element>, RealFunction, Double>(
                   ((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(t, vars(p.arity())))
-                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                      .andThen(MathUtils.linearScaler(p)),
                   new RampedHalfAndHalf<>(
                       4, maxHeight,
                       Element.Operator.arityFunction(),
@@ -196,7 +196,7 @@ public class SymbolicRegressionComparison extends Worker {
               );
               return new StandardEvolver<Tree<Element>, RealFunction, Double>(
                   ((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(t, vars(p.arity())))
-                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                      .andThen(MathUtils.linearScaler(p)),
                   new RampedHalfAndHalf<>(
                       4, maxHeight,
                       Element.Operator.arityFunction(),
@@ -230,7 +230,7 @@ public class SymbolicRegressionComparison extends Worker {
               );
               return new StandardWithEnforcedDiversityEvolver<Tree<Element>, RealFunction, Double>(
                   ((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(t, vars(p.arity())))
-                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                      .andThen(MathUtils.linearScaler(p)),
                   new RampedHalfAndHalf<>(
                       4, maxHeight,
                       Element.Operator.arityFunction(),
@@ -264,7 +264,7 @@ public class SymbolicRegressionComparison extends Worker {
               return new StandardEvolver<Tree<String>, RealFunction, Double>(
                   new FormulaMapper()
                       .andThen(n -> TreeBasedRealFunction.from(n, vars(p.arity())))
-                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                      .andThen(MathUtils.linearScaler(p)),
                   new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
                   PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
                   nPop,
@@ -288,7 +288,7 @@ public class SymbolicRegressionComparison extends Worker {
               return new StandardEvolver<Tree<String>, RealFunction, Double>(
                   new FormulaMapper()
                       .andThen(n -> TreeBasedRealFunction.from(n, vars(p.arity())))
-                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                      .andThen(MathUtils.linearScaler(p)),
                   new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
                   PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
                   nPop,
@@ -311,7 +311,7 @@ public class SymbolicRegressionComparison extends Worker {
               return new StandardWithEnforcedDiversityEvolver<Tree<String>, RealFunction, Double>(
                   new FormulaMapper()
                       .andThen(n -> TreeBasedRealFunction.from(n, vars(p.arity())))
-                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                      .andThen(MathUtils.linearScaler(p)),
                   new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
                   PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
                   nPop,
@@ -330,7 +330,7 @@ public class SymbolicRegressionComparison extends Worker {
             Map.entry("fgraph-lim-ga", p -> new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
                 FunctionGraph.builder()
                     .andThen(MathUtils.fromMultivariateBuilder())
-                    .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                    .andThen(MathUtils.linearScaler(p)),
                 new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
                 PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
                 nPop,
@@ -362,7 +362,7 @@ public class SymbolicRegressionComparison extends Worker {
             Map.entry("fgraph-lim-ga-noxover", p -> new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
                 FunctionGraph.builder()
                     .andThen(MathUtils.fromMultivariateBuilder())
-                    .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                    .andThen(MathUtils.linearScaler(p)),
                 new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
                 PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
                 nPop,
@@ -391,7 +391,7 @@ public class SymbolicRegressionComparison extends Worker {
                 p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
                     FunctionGraph.builder()
                         .andThen(MathUtils.fromMultivariateBuilder())
-                        .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                        .andThen(MathUtils.linearScaler(p)),
                     new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
                     PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
                     nPop,
@@ -422,7 +422,7 @@ public class SymbolicRegressionComparison extends Worker {
                 "fgraph-lim-speciated-noxover", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
                     FunctionGraph.builder()
                         .andThen(MathUtils.fromMultivariateBuilder())
-                        .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                        .andThen(MathUtils.linearScaler(p)),
                     new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
                     PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
                     nPop,
@@ -452,7 +452,7 @@ public class SymbolicRegressionComparison extends Worker {
                 "fgraph-seq-speciated-noxover", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
                     FunctionGraph.builder()
                         .andThen(MathUtils.fromMultivariateBuilder())
-                        .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                        .andThen(MathUtils.linearScaler(p)),
                     new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
                     PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
                     nPop,
@@ -483,7 +483,7 @@ public class SymbolicRegressionComparison extends Worker {
                 p -> new StandardWithEnforcedDiversityEvolver<Graph<Node, Double>, RealFunction, Double>(
                     FunctionGraph.builder()
                         .andThen(MathUtils.fromMultivariateBuilder())
-                        .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                        .andThen(MathUtils.linearScaler(p)),
                     new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
                     PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
                     nPop,
@@ -517,7 +517,7 @@ public class SymbolicRegressionComparison extends Worker {
             Map.entry("fgraph-lim-speciated", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
                 FunctionGraph.builder()
                     .andThen(MathUtils.fromMultivariateBuilder())
-                    .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                    .andThen(MathUtils.linearScaler(p)),
                 new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
                 PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
                 nPop,
@@ -551,7 +551,7 @@ public class SymbolicRegressionComparison extends Worker {
             Map.entry("fgraph-seq-speciated", p -> new SpeciatedEvolver<Graph<Node, Double>, RealFunction, Double>(
                 FunctionGraph.builder()
                     .andThen(MathUtils.fromMultivariateBuilder())
-                    .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                    .andThen(MathUtils.linearScaler(p)),
                 new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
                 PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
                 nPop,
@@ -585,7 +585,7 @@ public class SymbolicRegressionComparison extends Worker {
             Map.entry("fgraph-seq-ga", p -> new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
                 FunctionGraph.builder()
                     .andThen(MathUtils.fromMultivariateBuilder())
-                    .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                    .andThen(MathUtils.linearScaler(p)),
                 new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
                 PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
                 nPop,
@@ -619,7 +619,7 @@ public class SymbolicRegressionComparison extends Worker {
                 p -> new StandardEvolver<Graph<Node, OperatorGraph.NonValuedArc>, RealFunction, Double>(
                     OperatorGraph.builder()
                         .andThen(MathUtils.fromMultivariateBuilder())
-                        .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                        .andThen(MathUtils.linearScaler(p)),
                     new ShallowFactory(p.arity(), 1, constants),
                     PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
                     nPop,
@@ -653,7 +653,7 @@ public class SymbolicRegressionComparison extends Worker {
                 p -> new SpeciatedEvolver<Graph<Node, OperatorGraph.NonValuedArc>, RealFunction, Double>(
                     OperatorGraph.builder()
                         .andThen(MathUtils.fromMultivariateBuilder())
-                        .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                        .andThen(MathUtils.linearScaler(p)),
                     new ShallowFactory(p.arity(), 1, constants),
                     PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
                     nPop,
@@ -689,7 +689,7 @@ public class SymbolicRegressionComparison extends Worker {
                   graphMapper
                       .andThen(FunctionGraph.builder())
                       .andThen(MathUtils.fromMultivariateBuilder())
-                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                      .andThen(MathUtils.linearScaler(p)),
                   new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1)
                       .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
                   PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
@@ -730,7 +730,7 @@ public class SymbolicRegressionComparison extends Worker {
                   graphMapper
                       .andThen(FunctionGraph.builder())
                       .andThen(MathUtils.fromMultivariateBuilder())
-                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                      .andThen(MathUtils.linearScaler(p)),
                   new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1)
                       .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
                   PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
@@ -776,7 +776,7 @@ public class SymbolicRegressionComparison extends Worker {
                       )
                       .andThen(FunctionGraph.builder())
                       .andThen(MathUtils.fromMultivariateBuilder())
-                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                      .andThen(MathUtils.linearScaler(p)),
                   new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1)
                       .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
                   PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
@@ -820,7 +820,7 @@ public class SymbolicRegressionComparison extends Worker {
                   graphMapper
                       .andThen(OperatorGraph.builder())
                       .andThen(MathUtils.fromMultivariateBuilder())
-                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                      .andThen(MathUtils.linearScaler(p)),
                   new ShallowFactory(p.arity(), 1, constants)
                       .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
                   PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
@@ -864,7 +864,7 @@ public class SymbolicRegressionComparison extends Worker {
                   graphMapper
                       .andThen(FunctionGraph.builder())
                       .andThen(MathUtils.fromMultivariateBuilder())
-                      .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                      .andThen(MathUtils.linearScaler(p)),
                   new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1)
                       .then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
                   PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
@@ -896,7 +896,7 @@ public class SymbolicRegressionComparison extends Worker {
             Map.entry("fgraph-seq-ga-noxover", p -> new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
                 FunctionGraph.builder()
                     .andThen(MathUtils.fromMultivariateBuilder())
-                    .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                    .andThen(MathUtils.linearScaler(p)),
                 new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
                 PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
                 nPop,
@@ -925,7 +925,7 @@ public class SymbolicRegressionComparison extends Worker {
                 p -> new StandardWithEnforcedDiversityEvolver<Graph<Node, Double>, RealFunction, Double>(
                     FunctionGraph.builder()
                         .andThen(MathUtils.fromMultivariateBuilder())
-                        .andThen(MathUtils.linearScaler((SymbolicRegressionFitness) p.getFitnessFunction())),
+                        .andThen(MathUtils.linearScaler(p)),
                     new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
                     PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
                     nPop,
@@ -984,7 +984,7 @@ public class SymbolicRegressionComparison extends Worker {
             Evolver<?, RealFunction, Double> evolver = evolverEntry.getValue().apply(problem);
             L.info(String.format("Starting %s", keys));
             Collection<RealFunction> solutions = evolver.solve(
-                Misc.cached(problem.getFitnessFunction(), 10000),
+                Misc.cached(problem, 10000),
                 new Iterations(nIterations),
                 new Random(seed),
                 executorService,

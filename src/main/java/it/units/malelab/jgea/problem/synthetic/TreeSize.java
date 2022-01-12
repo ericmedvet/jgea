@@ -31,13 +31,16 @@ import java.util.function.Function;
 public class TreeSize implements GrammarBasedProblem<Boolean, Tree<Boolean>, Double> {
 
   private final Grammar<Boolean> grammar;
-  private final Function<Tree<Boolean>, Double> fitnessFunction;
 
   public TreeSize(int nonTerminals, int terminals) {
     this.grammar = new Grammar<>();
     grammar.setStartingSymbol(false);
     grammar.getRules().put(false, l(r(nonTerminals, false), r(terminals, true)));
-    fitnessFunction = (Tree<Boolean> tree) -> 1d / (double) tree.size();
+  }
+
+  @Override
+  public Double apply(Tree<Boolean> booleanTree) {
+    return 1d / (double) booleanTree.size();
   }
 
   @SafeVarargs
@@ -52,11 +55,6 @@ public class TreeSize implements GrammarBasedProblem<Boolean, Tree<Boolean>, Dou
       list.addAll(l(ts));
     }
     return list;
-  }
-
-  @Override
-  public Function<Tree<Boolean>, Double> getFitnessFunction() {
-    return fitnessFunction;
   }
 
   @Override

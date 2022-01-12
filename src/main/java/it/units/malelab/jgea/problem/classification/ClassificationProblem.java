@@ -44,13 +44,13 @@ public class ClassificationProblem<O, L extends Enum<L>> implements ProblemWithV
     validationData = DataUtils.fold(data, i, folds);
     learningData = new ArrayList<>(data);
     learningData.removeAll(validationData);
-    this.fitnessFunction = new ClassificationFitness<>(learningData, learningMetric);
-    this.validationFunction = new ClassificationFitness<>(validationData, validationMetric);
+    fitnessFunction = new ClassificationFitness<>(learningData, learningMetric);
+    validationFunction = new ClassificationFitness<>(validationData, validationMetric);
   }
 
   @Override
-  public Function<Classifier<O, L>, List<Double>> getFitnessFunction() {
-    return fitnessFunction;
+  public List<Double> apply(Classifier<O, L> classifier) {
+    return fitnessFunction.apply(classifier);
   }
 
   public List<Pair<O, L>> getLearningData() {

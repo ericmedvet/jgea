@@ -94,8 +94,8 @@ public class MultipleOutputParallelMultiplier implements GrammarBasedProblem<Str
   }
 
   @Override
-  public Function<List<Tree<Element>>, Double> getFitnessFunction() {
-    return fitnessFunction;
+  public Double apply(List<Tree<Element>> trees) {
+    return fitnessFunction.apply(trees);
   }
 
   @Override

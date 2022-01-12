@@ -28,9 +28,7 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class KLandscapes implements
-    GrammarBasedProblem<String, Tree<String>, Double>,
-    Function<Tree<String>, Tree<String>> {
+public class KLandscapes implements GrammarBasedProblem<String, Tree<String>, Double> {
 
   private final static int ARITY = 2;
   private final static Range<Double> V_RANGE = Range.closed(-1d, 1d);
@@ -46,6 +44,9 @@ public class KLandscapes implements
   private final int nTerminals;
   private final int nNonTerminals;
 
+  private final Function<Tree<String>, Double> fitnessFunction;
+  private final Function<Tree<String>, Tree<String>> solutionMapper;
+
   public KLandscapes(int k) {
     this(k, ARITY, V_RANGE, W_RANGE, N_TERMINALS, N_NON_TERMINALS);
   }
@@ -58,6 +59,8 @@ public class KLandscapes implements
     this.nTerminals = nTerminals;
     this.nNonTerminals = nNonTerminals;
     grammar = buildGrammar(nTerminals, nNonTerminals, arity);
+    fitnessFunction = buildFitnessFunction();
+    solutionMapper = buildSolutionMapper();
   }
 
   private static Grammar<String> buildGrammar(int nTerminals, int nNonTerminals, int arity) {
@@ -77,6 +80,10 @@ public class KLandscapes implements
     return grammar;
   }
 
+  private static Function<Tree<String>, Tree<String>> buildSolutionMapper() {
+    return KLandscapes::convertTree;
+  }
+
   @SafeVarargs
   private static <T> List<T> c(List<T>... tss) {
     List<T> list = new ArrayList<>();
@@ -84,6 +91,22 @@ public class KLandscapes implements
       list.addAll(ts);
     }
     return list;
+  }
+
+  private static Tree<String> convertTree(Tree<String> original) {
+    if (original == null) {
+      return original;
+    }
+    Tree<String> tree = Tree.of(original.child(0).child(0).content());
+    if (original.height() > 1) {
+      //is a non terminal node
+      for (Tree<String> orginalChild : original) {
+        if (orginalChild.content().equals("N")) {
+          tree.addChild(convertTree(orginalChild));
+        }
+      }
+    }
+    return tree;
   }
 
   protected static double f(Tree<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
@@ -128,12 +151,7 @@ public class KLandscapes implements
   }
 
   protected static Tree<String> optimum(
-      int k,
-      int nTerminals,
-      int nNonTerminals,
-      int arity,
-      Map<String, Double> v,
-      Map<Pair<String, String>, Double> w
+      int k, int nTerminals, int nNonTerminals, int arity, Map<String, Double> v, Map<Pair<String, String>, Double> w
   ) {
     Tree<String> optimum = null;
     double maxFitness = Double.NEGATIVE_INFINITY;
@@ -172,24 +190,11 @@ public class KLandscapes implements
   }
 
   @Override
-  public Tree<String> apply(Tree<String> original) {
-    if (original == null) {
-      return original;
-    }
-    Tree<String> tree = Tree.of(original.child(0).child(0).content());
-    if (original.height() > 1) {
-      //is a non terminal node
-      for (Tree<String> orginalChild : original) {
-        if (orginalChild.content().equals("N")) {
-          tree.addChild(apply(orginalChild));
-        }
-      }
-    }
-    return tree;
+  public Double apply(Tree<String> t) {
+    return fitnessFunction.apply(t);
   }
 
-  @Override
-  public Function<Tree<String>, Double> getFitnessFunction() {
+  private Function<Tree<String>, Double> buildFitnessFunction() {
     Random random = new Random(1l);
     final Map<String, Double> v = new LinkedHashMap<>();
     final Map<Pair<String, String>, Double> w = new LinkedHashMap<>();
@@ -228,7 +233,6 @@ public class KLandscapes implements
 
   @Override
   public Function<Tree<String>, Tree<String>> getSolutionMapper() {
-    return this;
+    return solutionMapper;
   }
-
 }
