@@ -1,9 +1,7 @@
 package it.units.malelab.jgea.core.solver;
 
 import it.units.malelab.jgea.core.Factory;
-import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
-import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 
 import java.time.LocalDateTime;
@@ -19,29 +17,26 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
-public abstract class AbstractPopulationBasedSolver<T extends AbstractPopulationBasedSolver.State<G, S, F>, G, S, F> implements IterativeSolver<T, S, F> {
+public abstract class AbstractPopulationIterativeBasedSolver<T extends AbstractPopulationIterativeBasedSolver.State<G, S, F>, P extends QualityBasedProblem<S, F>, G, S, F> implements IterativeSolver<T, P, S> {
 
   protected final Function<? super G, ? extends S> solutionMapper;
   protected final Factory<? extends G> genotypeFactory;
-  protected final PartialComparator<? super Individual<G, S, F>> individualComparator;
   protected final int populationSize;
-  private final Predicate<? super State<G, S, F>> stopCondition;
+  private final Predicate<? super T> stopCondition;
 
-  public AbstractPopulationBasedSolver(
+  public AbstractPopulationIterativeBasedSolver(
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       int populationSize,
-      PartialComparator<? super Individual<G, S, F>> individualComparator,
-      Predicate<? super State<G, S, F>> stopCondition
+      Predicate<? super T> stopCondition
   ) {
     this.solutionMapper = solutionMapper;
     this.genotypeFactory = genotypeFactory;
     this.populationSize = populationSize;
-    this.individualComparator = individualComparator;
     this.stopCondition = stopCondition;
   }
 
-  public static final class State<G, S, F> implements BaseState, POSetPopulationState<G, S, F> {
+  public static class State<G, S, F> implements BaseState, POSetPopulationState<G, S, F> {
     private final LocalDateTime startingDateTime;
     private long nOfBirths = 0;
     private long nOfFitnessEvaluations = 0;
@@ -90,6 +85,10 @@ public abstract class AbstractPopulationBasedSolver<T extends AbstractPopulation
       nOfBirths = nOfBirths + n;
     }
 
+    public void incNOfIterations() {
+      incNOfIterations(1);
+    }
+
     public void incNOfIterations(long n) {
       nOfIterations = nOfIterations + n;
     }
@@ -99,7 +98,7 @@ public abstract class AbstractPopulationBasedSolver<T extends AbstractPopulation
     }
   }
 
-  protected abstract T initState(Problem<S, F> problem, RandomGenerator random, ExecutorService executor);
+  protected abstract T initState(P problem, RandomGenerator random, ExecutorService executor);
 
   private static <T> List<T> getAll(List<Future<T>> futures) throws SolverException {
     List<T> results = new ArrayList<>();
@@ -113,7 +112,7 @@ public abstract class AbstractPopulationBasedSolver<T extends AbstractPopulation
     return results;
   }
 
-  protected static <T extends AbstractPopulationBasedSolver.State<G, S, F>, G, S, F> List<Individual<G, S, F>> map(
+  protected static <T extends AbstractPopulationIterativeBasedSolver.State<G, S, F>, G, S, F> List<Individual<G, S, F>> map(
       Collection<? extends G> genotypes,
       Collection<Individual<G, S, F>> individuals,
       Function<? super G, ? extends S> solutionMapper,
@@ -149,24 +148,31 @@ public abstract class AbstractPopulationBasedSolver<T extends AbstractPopulation
 
   @Override
   public Collection<S> extractSolutions(
-      Problem<S, F> problem, RandomGenerator random, ExecutorService executor, T state
+      P problem, RandomGenerator random, ExecutorService executor, T state
   ) {
     return state.getBestIndividuals().stream().map(Individual::solution).toList();
   }
 
   @Override
-  public T init(Problem<S, F> problem, RandomGenerator random, ExecutorService executor) throws SolverException {
+  public T init(P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
     T state = initState(problem, random, executor);
     state.setPopulation(new DAGPartiallyOrderedCollection<>(
-        map(genotypeFactory.build(populationSize, random), List.of(), solutionMapper, problem, executor, state),
-        individualComparator
+        map(
+            genotypeFactory.build(populationSize, random),
+            List.of(),
+            solutionMapper,
+            problem.qualityMapper(),
+            executor,
+            state
+        ),
+        (k1, k2) -> problem.qualityComparator().compare(k1.fitness(), k2.fitness())
     ));
     return state;
   }
 
   @Override
   public boolean terminate(
-      Problem<S, F> problem, RandomGenerator random, ExecutorService executor, T state
+      P problem, RandomGenerator random, ExecutorService executor, T state
   ) {
     return stopCondition.test(state);
   }
