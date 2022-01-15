@@ -15,7 +15,7 @@ import java.util.stream.IntStream;
 
 public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativeBasedSolver<SimpleEvolutionaryStrategy.State<S, Q>, TotalOrderQualityBasedProblem<S, Q>, List<Double>, S, Q> {
 
-  private final double parentRatio;
+  private final int nOfParents;
   private final double sigma;
 
   public SimpleEvolutionaryStrategy(
@@ -23,11 +23,11 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
       Factory<? extends List<Double>> genotypeFactory,
       int populationSize,
       Predicate<? super State<S, Q>> stopCondition,
-      double parentRatio,
+      int nOfParents,
       double sigma
   ) {
     super(solutionMapper, genotypeFactory, populationSize, stopCondition);
-    this.parentRatio = parentRatio;
+    this.nOfParents = nOfParents;
     this.sigma = sigma;
   }
 
@@ -65,7 +65,7 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
     List<Individual<List<Double>, S, Q>> parents = state.getAllIndividuals()
         .stream()
         .sorted((i1, i2) -> problem.totalOrderComparator().compare(i1.fitness(), i2.fitness()))
-        .limit(Math.round(populationSize * parentRatio))
+        .limit(Math.round(nOfParents))
         .toList();
     //compute mean
     if (parents.stream().map(i -> i.genotype().size()).distinct().count() > 1) {
@@ -95,7 +95,7 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
     //update state
     state.setPopulation(new DAGPartiallyOrderedCollection<>(
         offspring,
-        (k1, k2) -> problem.qualityComparator().compare(k1.fitness(), k2.fitness())
+        (i1, i2) -> compare(i1, i2, problem)
     ));
     state.incNOfIterations();
     state.updateElapsedMillis();

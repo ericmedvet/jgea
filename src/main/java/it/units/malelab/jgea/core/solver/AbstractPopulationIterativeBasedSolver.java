@@ -2,6 +2,7 @@ package it.units.malelab.jgea.core.solver;
 
 import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
+import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 
 import java.time.LocalDateTime;
@@ -17,7 +18,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
-public abstract class AbstractPopulationIterativeBasedSolver<T extends AbstractPopulationIterativeBasedSolver.State<G, S, F>, P extends QualityBasedProblem<S, F>, G, S, F> implements IterativeSolver<T, P, S> {
+public abstract class AbstractPopulationIterativeBasedSolver<T extends AbstractPopulationIterativeBasedSolver.State<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q> implements IterativeSolver<T, P, S> {
 
   protected final Function<? super G, ? extends S> solutionMapper;
   protected final Factory<? extends G> genotypeFactory;
@@ -36,13 +37,13 @@ public abstract class AbstractPopulationIterativeBasedSolver<T extends AbstractP
     this.stopCondition = stopCondition;
   }
 
-  public static class State<G, S, F> implements BaseState, POSetPopulationState<G, S, F> {
+  public static class State<G, S, Q> implements BaseState, POSetPopulationState<G, S, Q> {
     private final LocalDateTime startingDateTime;
     private long nOfBirths = 0;
     private long nOfFitnessEvaluations = 0;
     private long nOfIterations = 0;
     private long elapsedMillis = 0;
-    private PartiallyOrderedCollection<Individual<G, S, F>> population;
+    private PartiallyOrderedCollection<Individual<G, S, Q>> population;
 
     public State(LocalDateTime startingDate) {
       this.startingDateTime = startingDate;
@@ -73,11 +74,11 @@ public abstract class AbstractPopulationIterativeBasedSolver<T extends AbstractP
     }
 
     @Override
-    public PartiallyOrderedCollection<Individual<G, S, F>> getPopulation() {
+    public PartiallyOrderedCollection<Individual<G, S, Q>> getPopulation() {
       return population;
     }
 
-    public void setPopulation(PartiallyOrderedCollection<Individual<G, S, F>> population) {
+    public void setPopulation(PartiallyOrderedCollection<Individual<G, S, Q>> population) {
       this.population = population;
     }
 
@@ -146,6 +147,12 @@ public abstract class AbstractPopulationIterativeBasedSolver<T extends AbstractP
     }
   }
 
+  protected PartialComparator.PartialComparatorOutcome compare(
+      Individual<G, S, Q> i1, Individual<G, S, Q> i2, P problem
+  ) {
+    return problem.qualityComparator().compare(i1.fitness(), i2.fitness());
+  }
+
   @Override
   public Collection<S> extractSolutions(
       P problem, RandomGenerator random, ExecutorService executor, T state
@@ -156,17 +163,14 @@ public abstract class AbstractPopulationIterativeBasedSolver<T extends AbstractP
   @Override
   public T init(P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
     T state = initState(problem, random, executor);
-    state.setPopulation(new DAGPartiallyOrderedCollection<>(
-        map(
-            genotypeFactory.build(populationSize, random),
-            List.of(),
-            solutionMapper,
-            problem.qualityMapper(),
-            executor,
-            state
-        ),
-        (k1, k2) -> problem.qualityComparator().compare(k1.fitness(), k2.fitness())
-    ));
+    state.setPopulation(new DAGPartiallyOrderedCollection<>(map(
+        genotypeFactory.build(populationSize, random),
+        List.of(),
+        solutionMapper,
+        problem.qualityMapper(),
+        executor,
+        state
+    ), (i1, i2) -> compare(i1, i2, problem)));
     return state;
   }
 
