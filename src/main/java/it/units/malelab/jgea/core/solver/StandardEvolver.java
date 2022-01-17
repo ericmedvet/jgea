@@ -19,14 +19,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.units.malelab.jgea.core.evolver;
+package it.units.malelab.jgea.core.solver;
 
 import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.selector.Selector;
-import it.units.malelab.jgea.core.solver.*;
 import it.units.malelab.jgea.core.util.Misc;
 
 import java.util.ArrayList;
@@ -133,6 +132,7 @@ public class StandardEvolver<T extends POSetPopulationState<G, S, Q>, P extends 
     }
     offspring = trimPopulation(offspring, problem, random);
     L.fine(String.format("Offspring trimmed: %d individuals", offspring.size()));
+    //update state
     state.setPopulation(new DAGPartiallyOrderedCollection<>(offspring, comparator(problem)));
     state.incNOfIterations();
     state.updateElapsedMillis();

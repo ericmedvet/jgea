@@ -17,11 +17,11 @@
 package it.units.malelab.jgea.core.evolver.speciation;
 
 import it.units.malelab.jgea.core.Factory;
-import it.units.malelab.jgea.core.evolver.StandardEvolver;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.selector.Last;
+import it.units.malelab.jgea.core.solver.StandardEvolver;
 import it.units.malelab.jgea.core.util.Misc;
 
 import java.util.ArrayList;

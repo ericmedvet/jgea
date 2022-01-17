@@ -21,6 +21,7 @@ import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.selector.Selector;
+import it.units.malelab.jgea.core.solver.StandardEvolver;
 
 import java.util.Collection;
 import java.util.List;
