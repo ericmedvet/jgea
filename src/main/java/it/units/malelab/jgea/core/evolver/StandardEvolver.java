@@ -24,122 +24,118 @@ package it.units.malelab.jgea.core.evolver;
 import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
-import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.selector.Selector;
+import it.units.malelab.jgea.core.solver.*;
 import it.units.malelab.jgea.core.util.Misc;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.random.RandomGenerator;
 
 /**
  * @author eric
  */
-public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> {
+public class StandardEvolver<T extends POSetPopulationState<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q> extends AbstractPopulationIterativeBasedSolver<T, P, G, S, Q> {
 
   private static final Logger L = Logger.getLogger(StandardEvolver.class.getName());
-  protected final int populationSize;
   protected final Map<GeneticOperator<G>, Double> operators;
-  protected final Selector<? super Individual<? super G, ? super S, ? super F>> parentSelector;
-  protected final Selector<? super Individual<? super G, ? super S, ? super F>> unsurvivalSelector;
+  protected final Selector<? super Individual<? super G, ? super S, ? super Q>> parentSelector;
+  protected final Selector<? super Individual<? super G, ? super S, ? super Q>> unsurvivalSelector;
   protected final int offspringSize;
   protected final boolean overlapping;
   protected final boolean remap;
+  protected final BiFunction<P, RandomGenerator, T> stateInitializer;
 
   public StandardEvolver(
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
-      PartialComparator<? super Individual<G, S, F>> individualComparator,
       int populationSize,
+      Predicate<? super T> stopCondition,
       Map<GeneticOperator<G>, Double> operators,
-      Selector<? super Individual<? super G, ? super S, ? super F>> parentSelector,
-      Selector<? super Individual<? super G, ? super S, ? super F>> unsurvivalSelector,
+      Selector<? super Individual<? super G, ? super S, ? super Q>> parentSelector,
+      Selector<? super Individual<? super G, ? super S, ? super Q>> unsurvivalSelector,
       int offspringSize,
       boolean overlapping,
-      boolean remap
+      boolean remap,
+      BiFunction<P, RandomGenerator, T> stateInitializer
   ) {
-    super(solutionMapper, genotypeFactory, individualComparator);
-    this.populationSize = populationSize;
+    super(solutionMapper, genotypeFactory, populationSize, stopCondition);
     this.operators = operators;
     this.parentSelector = parentSelector;
     this.unsurvivalSelector = unsurvivalSelector;
     this.offspringSize = offspringSize;
     this.overlapping = overlapping;
     this.remap = remap;
+    this.stateInitializer = stateInitializer;
   }
 
-  protected Collection<Individual<G, S, F>> buildOffspring(
-      PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation,
-      Function<S, F> fitnessFunction,
-      RandomGenerator random,
-      ExecutorService executor,
-      State state
-  ) throws ExecutionException, InterruptedException {
+  protected Collection<Individual<G, S, Q>> buildOffspring(
+      T state, P problem, RandomGenerator random, ExecutorService executor
+  ) throws SolverException {
     Collection<G> offspringGenotypes = new ArrayList<>();
     while (offspringGenotypes.size() < offspringSize) {
       GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
       List<G> parentGenotypes = new ArrayList<>(operator.arity());
       for (int j = 0; j < operator.arity(); j++) {
-        Individual<G, S, F> parent = parentSelector.select(orderedPopulation, random);
+        Individual<G, S, Q> parent = parentSelector.select(state.getPopulation(), random);
         parentGenotypes.add(parent.genotype());
       }
       offspringGenotypes.addAll(operator.apply(parentGenotypes, random));
     }
-    return map(offspringGenotypes, List.of(), solutionMapper, fitnessFunction, executor, state);
+    return map(offspringGenotypes, List.of(), solutionMapper, problem.qualityMapper(), executor, state);
   }
 
   @Override
-  protected Collection<Individual<G, S, F>> initPopulation(
-      Function<S, F> fitnessFunction,
-      RandomGenerator random,
-      ExecutorService executor,
-      State state
-  ) throws ExecutionException, InterruptedException {
-    return initPopulation(populationSize, fitnessFunction, random, executor, state);
+  protected T initState(P problem, RandomGenerator random, ExecutorService executor) {
+    return stateInitializer.apply(problem, random);
   }
 
-  @Override
-  protected Collection<Individual<G, S, F>> updatePopulation(
-      PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation,
-      Function<S, F> fitnessFunction,
-      RandomGenerator random,
-      ExecutorService executor,
-      State state
-  ) throws ExecutionException, InterruptedException {
-    Collection<Individual<G, S, F>> offspring = buildOffspring(
-        orderedPopulation, fitnessFunction, random, executor, state);
-    L.fine(String.format("Offspring built: %d individuals", offspring.size()));
-    if (overlapping) {
-      if (remap) {
-        offspring.addAll(map(List.of(), orderedPopulation.all(), solutionMapper, fitnessFunction, executor, state));
-      } else {
-        offspring.addAll(orderedPopulation.all());
-      }
-      L.fine(String.format("Offspring merged with parents: %d individuals", offspring.size()));
-    }
-    offspring = trimPopulation(offspring, random);
-    L.fine(String.format("Offspring trimmed: %d individuals", offspring.size()));
-    return offspring;
-  }
-
-  protected Collection<Individual<G, S, F>> trimPopulation(
-      Collection<Individual<G, S, F>> population,
-      RandomGenerator random
+  protected Collection<Individual<G, S, Q>> trimPopulation(
+      Collection<Individual<G, S, Q>> population, P problem, RandomGenerator random
   ) {
-    PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation = new DAGPartiallyOrderedCollection<>(
-        population, individualComparator);
+    PartiallyOrderedCollection<Individual<G, S, Q>> orderedPopulation = new DAGPartiallyOrderedCollection<>(
+        population,
+        comparator(problem)
+    );
     while (orderedPopulation.size() > populationSize) {
-      Individual<G, S, F> toRemoveIndividual = unsurvivalSelector.select(orderedPopulation, random);
+      Individual<G, S, Q> toRemoveIndividual = unsurvivalSelector.select(orderedPopulation, random);
       orderedPopulation.remove(toRemoveIndividual);
     }
     return orderedPopulation.all();
+  }
+
+  @Override
+  public void update(P problem, RandomGenerator random, ExecutorService executor, T state) throws SolverException {
+    Collection<Individual<G, S, Q>> offspring = buildOffspring(state, problem, random, executor);
+    L.fine(String.format("Offspring built: %d individuals", offspring.size()));
+    if (overlapping) {
+      if (remap) {
+        offspring.addAll(map(
+            List.of(),
+            state.getPopulation().all(),
+            solutionMapper,
+            problem.qualityMapper(),
+            executor,
+            state
+        ));
+      } else {
+        offspring.addAll(state.getPopulation().all());
+      }
+      L.fine(String.format("Offspring merged with parents: %d individuals", offspring.size()));
+    }
+    offspring = trimPopulation(offspring, problem, random);
+    L.fine(String.format("Offspring trimmed: %d individuals", offspring.size()));
+    state.setPopulation(new DAGPartiallyOrderedCollection<>(offspring, comparator(problem)));
+    state.incNOfIterations();
+    state.updateElapsedMillis();
   }
 
 }

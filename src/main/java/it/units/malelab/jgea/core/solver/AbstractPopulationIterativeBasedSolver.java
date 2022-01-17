@@ -81,10 +81,8 @@ public abstract class AbstractPopulationIterativeBasedSolver<T extends POSetPopu
     }
   }
 
-  protected PartialComparator.PartialComparatorOutcome compare(
-      Individual<G, S, Q> i1, Individual<G, S, Q> i2, P problem
-  ) {
-    return problem.qualityComparator().compare(i1.fitness(), i2.fitness());
+  protected PartialComparator<Individual<G, S, Q>> comparator(P problem) {
+    return (i1, i2) -> problem.qualityComparator().compare(i1.fitness(), i2.fitness());
   }
 
   @Override
@@ -104,7 +102,7 @@ public abstract class AbstractPopulationIterativeBasedSolver<T extends POSetPopu
         problem.qualityMapper(),
         executor,
         state
-    ), (i1, i2) -> compare(i1, i2, problem)));
+    ), comparator(problem)));
     return state;
   }
 

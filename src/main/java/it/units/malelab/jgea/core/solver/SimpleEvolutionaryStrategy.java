@@ -121,7 +121,7 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
         state
     );
     //update state
-    state.setPopulation(new DAGPartiallyOrderedCollection<>(offspring, (i1, i2) -> compare(i1, i2, problem)));
+    state.setPopulation(new DAGPartiallyOrderedCollection<>(offspring, comparator(problem)));
     state.incNOfIterations();
     state.updateElapsedMillis();
   }
