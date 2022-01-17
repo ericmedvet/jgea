@@ -3,10 +3,7 @@ package it.units.malelab.jgea.core.solver;
 import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
 import it.units.malelab.jgea.core.order.PartialComparator;
-import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -18,7 +15,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
-public abstract class AbstractPopulationIterativeBasedSolver<T extends AbstractPopulationIterativeBasedSolver.State<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q> implements IterativeSolver<T, P, S> {
+public abstract class AbstractPopulationIterativeBasedSolver<T extends POSetPopulationState<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q> implements IterativeSolver<T, P, S> {
 
   protected final Function<? super G, ? extends S> solutionMapper;
   protected final Factory<? extends G> genotypeFactory;
@@ -37,79 +34,6 @@ public abstract class AbstractPopulationIterativeBasedSolver<T extends AbstractP
     this.stopCondition = stopCondition;
   }
 
-  public static class State<G, S, Q> implements BaseState, POSetPopulationState<G, S, Q> {
-    private final LocalDateTime startingDateTime;
-    private long nOfBirths = 0;
-    private long nOfFitnessEvaluations = 0;
-    private long nOfIterations = 0;
-    private long elapsedMillis = 0;
-    private PartiallyOrderedCollection<Individual<G, S, Q>> population;
-
-    public State(LocalDateTime startingDate) {
-      this.startingDateTime = startingDate;
-    }
-
-    @Override
-    public long getElapsedMillis() {
-      return elapsedMillis;
-    }
-
-    @Override
-    public long getNOfIterations() {
-      return nOfIterations;
-    }
-
-    @Override
-    public long getNOfBirths() {
-      return nOfBirths;
-    }
-
-    @Override
-    public long getNOfFitnessEvaluations() {
-      return nOfFitnessEvaluations;
-    }
-
-    @Override
-    public PartiallyOrderedCollection<Individual<G, S, Q>> getPopulation() {
-      return population;
-    }
-
-    public void setPopulation(PartiallyOrderedCollection<Individual<G, S, Q>> population) {
-      this.population = population;
-    }
-
-    public void incNOfBirths(long n) {
-      nOfBirths = nOfBirths + n;
-    }
-
-    public void incNOfFitnessEvaluations(long n) {
-      nOfFitnessEvaluations = nOfFitnessEvaluations + n;
-    }
-
-    public void incNOfIterations() {
-      incNOfIterations(1);
-    }
-
-    public void incNOfIterations(long n) {
-      nOfIterations = nOfIterations + n;
-    }
-
-    @Override
-    public String toString() {
-      return "State{" +
-          "startingDateTime=" + startingDateTime +
-          ", nOfBirths=" + nOfBirths +
-          ", nOfFitnessEvaluations=" + nOfFitnessEvaluations +
-          ", nOfIterations=" + nOfIterations +
-          ", elapsedMillis=" + elapsedMillis +
-          '}';
-    }
-
-    public void updateElapsedMillis() {
-      elapsedMillis = ChronoUnit.MILLIS.between(startingDateTime, LocalDateTime.now());
-    }
-  }
-
   protected abstract T initState(P problem, RandomGenerator random, ExecutorService executor);
 
   private static <T> List<T> getAll(List<Future<T>> futures) throws SolverException {
@@ -124,7 +48,7 @@ public abstract class AbstractPopulationIterativeBasedSolver<T extends AbstractP
     return results;
   }
 
-  protected static <T extends AbstractPopulationIterativeBasedSolver.State<G, S, F>, G, S, F> List<Individual<G, S, F>> map(
+  protected static <T extends POSetPopulationState<G, S, F>, G, S, F> List<Individual<G, S, F>> map(
       Collection<? extends G> genotypes,
       Collection<Individual<G, S, F>> individuals,
       Function<? super G, ? extends S> solutionMapper,
@@ -140,11 +64,10 @@ public abstract class AbstractPopulationIterativeBasedSolver<T extends AbstractP
     }).toList());
     callables.addAll(individuals.stream().map(individual -> (Callable<Individual<G, S, F>>) () -> {
       S solution = solutionMapper.apply(individual.genotype());
-      F fitness = fitnessFunction.apply(solution);
       return new Individual<>(
           individual.genotype(),
           solution,
-          fitness,
+          fitnessFunction.apply(solution),
           state.getNOfIterations(),
           individual.genotypeBirthIteration()
       );
@@ -168,7 +91,7 @@ public abstract class AbstractPopulationIterativeBasedSolver<T extends AbstractP
   public Collection<S> extractSolutions(
       P problem, RandomGenerator random, ExecutorService executor, T state
   ) {
-    return state.getBestIndividuals().stream().map(Individual::solution).toList();
+    return state.getPopulation().firsts().stream().map(Individual::solution).toList();
   }
 
   @Override

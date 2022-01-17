@@ -16,6 +16,7 @@ import java.util.function.Function;
 import java.util.random.RandomGenerator;
 
 public class Main {
+
   public static void main(String[] args) {
     RandomGenerator r = new Random(0);
     ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -38,14 +39,12 @@ public class Main {
         20,
         0.01
     );
-    IterativeSolver<? extends FlatPopulationState<List<Double>, List<Double>, Double>, TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>> solver = es;
-    Listener.Factory<? super FlatPopulationState<List<Double>, List<Double>, Double>> lFactory = new TabularPrinter<>(
+    IterativeSolver<? extends POSetPopulationState<List<Double>, List<Double>, Double>, TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>> solver = es;
+    Listener.Factory<? super POSetPopulationState<List<Double>, List<Double>, Double>> lFactory = new TabularPrinter<>(
         List.of(
-            NamedFunction.build("iterations", "%3d", BaseState::getNOfIterations),
-            NamedFunction.build(
-                "elapsed.seconds", "%5.2f", s -> s.getElapsedMillis() / 1000f),
-            NamedFunction.build(
-                "best.fitness", "%5.3f", s -> Misc.first(s.getBestIndividuals()).fitness())
+            NamedFunction.build("iterations", "%3d", State::getNOfIterations),
+            NamedFunction.build("elapsed.seconds", "%5.2f", s -> s.getElapsedMillis() / 1000f),
+            NamedFunction.build("best.fitness", "%5.3f", s -> Misc.first(s.getPopulation().firsts()).fitness())
         ),
         System.out,
         10,

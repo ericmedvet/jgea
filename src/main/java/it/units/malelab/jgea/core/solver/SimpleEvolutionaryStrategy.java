@@ -2,6 +2,7 @@ package it.units.malelab.jgea.core.solver;
 
 import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
+import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,11 +32,24 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
     this.sigma = sigma;
   }
 
-  public static class State<S, Q> extends AbstractPopulationIterativeBasedSolver.State<List<Double>, S, Q> {
+  public static class State<S, Q> extends POSetPopulationState<List<Double>, S, Q> {
     private double[] means;
 
-    public State(LocalDateTime startingDate) {
-      super(startingDate);
+    public State() {
+      means = new double[0];
+    }
+
+    protected State(
+        LocalDateTime startingDateTime,
+        long elapsedMillis,
+        long nOfIterations,
+        long nOfBirths,
+        long nOfFitnessEvaluations,
+        PartiallyOrderedCollection<Individual<List<Double>, S, Q>> population,
+        double[] means
+    ) {
+      super(startingDateTime, elapsedMillis, nOfIterations, nOfBirths, nOfFitnessEvaluations, population);
+      this.means = means;
     }
 
     public double[] getMeans() {
@@ -45,13 +59,26 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
     public void setMeans(double[] means) {
       this.means = means;
     }
+
+    @Override
+    public State<S, Q> immutableCopy() {
+      return new State<>(
+          startingDateTime,
+          elapsedMillis,
+          nOfIterations,
+          nOfBirths,
+          nOfFitnessEvaluations,
+          population.immutableCopy(),
+          Arrays.copyOf(means, means.length)
+      );
+    }
   }
 
   @Override
   protected SimpleEvolutionaryStrategy.State<S, Q> initState(
       TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor
   ) {
-    return new SimpleEvolutionaryStrategy.State<>(LocalDateTime.now());
+    return new SimpleEvolutionaryStrategy.State<>();
   }
 
   @Override
@@ -62,7 +89,8 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
       SimpleEvolutionaryStrategy.State<S, Q> state
   ) throws SolverException {
     //select parents
-    List<Individual<List<Double>, S, Q>> parents = state.getAllIndividuals()
+    List<Individual<List<Double>, S, Q>> parents = state.getPopulation()
+        .all()
         .stream()
         .sorted((i1, i2) -> problem.totalOrderComparator().compare(i1.fitness(), i2.fitness()))
         .limit(Math.round(nOfParents))
@@ -93,10 +121,7 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
         state
     );
     //update state
-    state.setPopulation(new DAGPartiallyOrderedCollection<>(
-        offspring,
-        (i1, i2) -> compare(i1, i2, problem)
-    ));
+    state.setPopulation(new DAGPartiallyOrderedCollection<>(offspring, (i1, i2) -> compare(i1, i2, problem)));
     state.incNOfIterations();
     state.updateElapsedMillis();
   }

@@ -6,28 +6,16 @@ import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 import java.util.random.RandomGenerator;
 
-public interface IterativeSolver<T extends IterativeSolver.State, P extends Problem<S>, S> extends Solver<P, S> {
-
-  interface State {
-    long getElapsedMillis();
-
-    long getNOfIterations();
-  }
+public interface IterativeSolver<T extends Copyable, P extends Problem<S>, S> extends Solver<P, S> {
 
   Collection<S> extractSolutions(
-      P problem,
-      RandomGenerator random,
-      ExecutorService executor,
-      T state
+      P problem, RandomGenerator random, ExecutorService executor, T state
   ) throws SolverException;
 
   T init(P problem, RandomGenerator random, ExecutorService executor) throws SolverException;
 
   boolean terminate(
-      P problem,
-      RandomGenerator random,
-      ExecutorService executor,
-      T state
+      P problem, RandomGenerator random, ExecutorService executor, T state
   ) throws SolverException;
 
   void update(P problem, RandomGenerator random, ExecutorService executor, T state) throws SolverException;
@@ -39,6 +27,7 @@ public interface IterativeSolver<T extends IterativeSolver.State, P extends Prob
     return solve(problem, random, executor, Listener.deaf());
   }
 
+  @SuppressWarnings("unchecked")
   default Collection<S> solve(
       P problem, RandomGenerator random, ExecutorService executor, Listener<? super T> listener
   ) throws SolverException {
@@ -46,7 +35,7 @@ public interface IterativeSolver<T extends IterativeSolver.State, P extends Prob
     listener.listen(state);
     while (!terminate(problem, random, executor, state)) {
       update(problem, random, executor, state);
-      listener.listen(state);
+      listener.listen((T) state.immutableCopy());
     }
     return extractSolutions(problem, random, executor, state);
   }
