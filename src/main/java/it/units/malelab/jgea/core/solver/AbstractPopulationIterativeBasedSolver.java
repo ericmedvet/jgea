@@ -55,6 +55,11 @@ public abstract class AbstractPopulationIterativeBasedSolver<T extends AbstractP
     }
 
     @Override
+    public long getNOfIterations() {
+      return nOfIterations;
+    }
+
+    @Override
     public long getNOfBirths() {
       return nOfBirths;
     }
@@ -62,15 +67,6 @@ public abstract class AbstractPopulationIterativeBasedSolver<T extends AbstractP
     @Override
     public long getNOfFitnessEvaluations() {
       return nOfFitnessEvaluations;
-    }
-
-    public void setNOfFitnessEvaluations(long n) {
-      nOfFitnessEvaluations = nOfFitnessEvaluations + n;
-    }
-
-    @Override
-    public long getNOfIterations() {
-      return nOfIterations;
     }
 
     @Override
@@ -86,6 +82,10 @@ public abstract class AbstractPopulationIterativeBasedSolver<T extends AbstractP
       nOfBirths = nOfBirths + n;
     }
 
+    public void incNOfFitnessEvaluations(long n) {
+      nOfFitnessEvaluations = nOfFitnessEvaluations + n;
+    }
+
     public void incNOfIterations() {
       incNOfIterations(1);
     }
@@ -94,8 +94,19 @@ public abstract class AbstractPopulationIterativeBasedSolver<T extends AbstractP
       nOfIterations = nOfIterations + n;
     }
 
+    @Override
+    public String toString() {
+      return "State{" +
+          "startingDateTime=" + startingDateTime +
+          ", nOfBirths=" + nOfBirths +
+          ", nOfFitnessEvaluations=" + nOfFitnessEvaluations +
+          ", nOfIterations=" + nOfIterations +
+          ", elapsedMillis=" + elapsedMillis +
+          '}';
+    }
+
     public void updateElapsedMillis() {
-      elapsedMillis = ChronoUnit.MILLIS.between(LocalDateTime.now(), startingDateTime);
+      elapsedMillis = ChronoUnit.MILLIS.between(startingDateTime, LocalDateTime.now());
     }
   }
 
@@ -139,7 +150,7 @@ public abstract class AbstractPopulationIterativeBasedSolver<T extends AbstractP
       );
     }).toList());
     state.incNOfBirths(genotypes.size());
-    state.incNOfIterations(genotypes.size() + individuals.size());
+    state.incNOfFitnessEvaluations(genotypes.size() + individuals.size());
     try {
       return getAll(executor.invokeAll(callables));
     } catch (InterruptedException e) {
