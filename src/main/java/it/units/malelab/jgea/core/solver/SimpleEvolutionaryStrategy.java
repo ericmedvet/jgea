@@ -100,4 +100,5 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
     state.incNOfIterations();
     state.updateElapsedMillis();
   }
+
 }

@@ -6,7 +6,13 @@ import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 import java.util.random.RandomGenerator;
 
-public interface IterativeSolver<T, P extends Problem<S>, S> extends Solver<P, S> {
+public interface IterativeSolver<T extends IterativeSolver.State, P extends Problem<S>, S> extends Solver<P, S> {
+
+  interface State {
+    long getElapsedMillis();
+
+    long getNOfIterations();
+  }
 
   Collection<S> extractSolutions(
       P problem,

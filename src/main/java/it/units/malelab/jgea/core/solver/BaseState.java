@@ -1,12 +1,8 @@
 package it.units.malelab.jgea.core.solver;
 
-public interface BaseState {
-
-  long getElapsedMillis();
+public interface BaseState extends IterativeSolver.State {
 
   long getNOfBirths();
 
   long getNOfFitnessEvaluations();
-
-  long getNOfIterations();
 }
