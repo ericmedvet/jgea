@@ -35,7 +35,7 @@ public class Main {
         Function.identity(),
         new FixedLengthListFactory<>(100, random -> random.nextDouble() * 2d - 1d),
         100,
-        s -> s.getNOfIterations() >= 20,
+        StopConditions.elapsedMillis(10000),
         20,
         0.01
     );
