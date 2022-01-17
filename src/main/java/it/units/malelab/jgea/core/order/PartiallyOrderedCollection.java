@@ -16,7 +16,7 @@
 
 package it.units.malelab.jgea.core.order;
 
-import it.units.malelab.jgea.core.solver.Copyable;
+import it.units.malelab.jgea.core.util.Copyable;
 import it.units.malelab.jgea.core.util.Sized;
 
 import java.util.Collection;
