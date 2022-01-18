@@ -20,6 +20,7 @@ import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
 import it.units.malelab.jgea.core.order.PartialComparator;
+import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 
 import java.util.Collection;
 import java.util.List;

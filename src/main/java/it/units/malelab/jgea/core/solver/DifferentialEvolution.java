@@ -9,6 +9,7 @@ import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
+import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.core.util.Misc;
 
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public class DifferentialEvolution<S, Q> extends AbstractPopulationIterativeBase
     this.crossoverProb = crossoverProb;
     this.remap = remap;
   }
-  
+
   protected static <S, Q> List<Double> pickParents(
       PartiallyOrderedCollection<Individual<List<Double>, S, Q>> population,
       RandomGenerator random,

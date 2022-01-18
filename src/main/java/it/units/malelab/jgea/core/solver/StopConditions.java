@@ -1,5 +1,8 @@
 package it.units.malelab.jgea.core.solver;
 
+import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
+import it.units.malelab.jgea.core.solver.state.State;
+
 import java.util.function.Predicate;
 
 public class StopConditions {

@@ -26,6 +26,7 @@ import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.selector.Selector;
+import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.core.util.Misc;
 
 import java.util.ArrayList;

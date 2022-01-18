@@ -1,8 +1,9 @@
-package it.units.malelab.jgea.core.solver;
+package it.units.malelab.jgea.core.solver.state;
 
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
+import it.units.malelab.jgea.core.solver.Individual;
 
 import java.time.LocalDateTime;
 

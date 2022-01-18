@@ -3,6 +3,8 @@ package it.units.malelab.jgea.core.solver;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.NamedFunction;
 import it.units.malelab.jgea.core.listener.TabularPrinter;
+import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
+import it.units.malelab.jgea.core.solver.state.State;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.representation.sequence.FixedLengthListFactory;
 

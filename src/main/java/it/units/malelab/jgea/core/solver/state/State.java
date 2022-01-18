@@ -1,4 +1,4 @@
-package it.units.malelab.jgea.core.solver;
+package it.units.malelab.jgea.core.solver.state;
 
 import it.units.malelab.jgea.core.util.Copyable;
 
