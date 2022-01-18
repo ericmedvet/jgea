@@ -100,6 +100,6 @@ public class StandardWithEnforcedDiversityEvolver<T extends POSetPopulationState
         attempts = attempts + 1;
       }
     }
-    return map(offspringGenotypes, List.of(), solutionMapper, problem.qualityMapper(), executor, state);
+    return map(offspringGenotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state);
   }
 }

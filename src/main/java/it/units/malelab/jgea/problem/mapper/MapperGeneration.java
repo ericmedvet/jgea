@@ -94,7 +94,7 @@ public class MapperGeneration implements GrammarBasedProblem<String, Pair<Tree<E
   }
 
   @Override
-  public Function<Pair<Tree<Element>, Tree<Element>>, List<Double>> getValidationFunction() {
+  public Function<Pair<Tree<Element>, Tree<Element>>, List<Double>> validationQualityFunction() {
     return validationFitnessFunction;
   }
 

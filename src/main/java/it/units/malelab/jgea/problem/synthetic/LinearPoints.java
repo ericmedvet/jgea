@@ -16,15 +16,16 @@
 
 package it.units.malelab.jgea.problem.synthetic;
 
-import it.units.malelab.jgea.core.Problem;
+import it.units.malelab.jgea.core.QualityBasedProblem;
 
 import java.util.List;
 
 /**
  * @author eric
  */
-public class LinearPoints implements Problem<List<Double>, Double> {
+public class LinearPoints implements QualityBasedProblem<List<Double>, Double> {
 
+  
   @Override
   public Double apply(List<Double> s) {
     if (s.size() <= 1) {

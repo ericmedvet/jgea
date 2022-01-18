@@ -67,7 +67,7 @@ public class ExtractionProblem<S> extends ExtractionFitness<S> implements Proble
     return Pair.of(builtSequence, desiredExtractions);
   }
 
-  public ExtractionFitness<S> getValidationFunction() {
+  public ExtractionFitness<S> validationQualityFunction() {
     return validationFunction;
   }
 

@@ -17,6 +17,7 @@
 package it.units.malelab.jgea.problem.synthetic;
 
 import com.google.common.collect.Range;
+import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
@@ -95,7 +96,7 @@ public class KLandscapes implements GrammarBasedProblem<String, Tree<String>, Do
 
   private static Tree<String> convertTree(Tree<String> original) {
     if (original == null) {
-      return original;
+      return null;
     }
     Tree<String> tree = Tree.of(original.child(0).child(0).content());
     if (original.height() > 1) {
@@ -189,11 +190,6 @@ public class KLandscapes implements GrammarBasedProblem<String, Tree<String>, Do
     return list;
   }
 
-  @Override
-  public Double apply(Tree<String> t) {
-    return fitnessFunction.apply(t);
-  }
-
   private Function<Tree<String>, Double> buildFitnessFunction() {
     Random random = new Random(1l);
     final Map<String, Double> v = new LinkedHashMap<>();
@@ -234,5 +230,15 @@ public class KLandscapes implements GrammarBasedProblem<String, Tree<String>, Do
   @Override
   public Function<Tree<String>, Tree<String>> getSolutionMapper() {
     return solutionMapper;
+  }
+
+  @Override
+  public PartialComparator<Double> qualityComparator() {
+    return PartialComparator.from(Double.class);
+  }
+
+  @Override
+  public Function<Tree<String>, Double> qualityFunction() {
+    return fitnessFunction;
   }
 }

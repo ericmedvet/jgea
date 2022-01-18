@@ -61,7 +61,7 @@ public class RandomWalk<P extends QualityBasedProblem<S, Q>, G, S, Q> extends Ab
     Individual<G, S, Q> currentIndividual = state.getPopulation().firsts().iterator().next();
     G genotype = mutation.mutate(currentIndividual.genotype(), random);
     Collection<Individual<G, S, Q>> offspring = map(
-        List.of(genotype), List.of(), solutionMapper, problem.qualityMapper(), executor, state);
+        List.of(genotype), List.of(), solutionMapper, problem.qualityFunction(), executor, state);
     Individual<G, S, Q> newIndividual = offspring.iterator().next();
     if (comparator(problem).compare(newIndividual, currentIndividual)
         .equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {

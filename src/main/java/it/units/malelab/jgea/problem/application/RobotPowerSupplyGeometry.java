@@ -16,7 +16,9 @@
 
 package it.units.malelab.jgea.problem.application;
 
-import it.units.malelab.jgea.core.Problem;
+import it.units.malelab.jgea.core.QualityBasedProblem;
+import it.units.malelab.jgea.core.order.ParetoDominance;
+import it.units.malelab.jgea.core.order.PartialComparator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,7 +28,9 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class RobotPowerSupplyGeometry implements Problem<List<Double>, List<Double>> {
+public class RobotPowerSupplyGeometry implements QualityBasedProblem<List<Double>, List<Double>> {
+
+  private final static PartialComparator<List<Double>> COMPARATOR = new ParetoDominance<>(Double.class);
 
   private final double w;
   private final double v;
@@ -92,10 +96,6 @@ public class RobotPowerSupplyGeometry implements Problem<List<Double>, List<Doub
 
   }
 
-  @Override
-  public List<Double> apply(List<Double> doubles) {
-    return fitnessFunction.apply(doubles);
-  }
 
   private double avgDistanceToValidClosest(double[] a) {
     List<double[]> validPins = validPins(a);
@@ -208,6 +208,16 @@ public class RobotPowerSupplyGeometry implements Problem<List<Double>, List<Doub
       }
     }
     return average ? (sum / (double) (steps * steps)) : min;
+  }
+
+  @Override
+  public PartialComparator<List<Double>> qualityComparator() {
+    return COMPARATOR;
+  }
+
+  @Override
+  public Function<List<Double>, List<Double>> qualityFunction() {
+    return fitnessFunction;
   }
 
   private double[] scale(double[] a) {

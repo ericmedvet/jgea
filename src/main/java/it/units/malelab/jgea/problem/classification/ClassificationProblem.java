@@ -62,7 +62,7 @@ public class ClassificationProblem<O, L extends Enum<L>> implements ProblemWithV
   }
 
   @Override
-  public Function<Classifier<O, L>, List<Double>> getValidationFunction() {
+  public Function<Classifier<O, L>, List<Double>> validationQualityFunction() {
     return validationFunction;
   }
 

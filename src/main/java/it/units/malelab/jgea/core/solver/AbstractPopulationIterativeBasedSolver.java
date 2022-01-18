@@ -101,7 +101,7 @@ public abstract class AbstractPopulationIterativeBasedSolver<T extends POSetPopu
         genotypeFactory.build(populationSize, random),
         List.of(),
         solutionMapper,
-        problem.qualityMapper(),
+        problem.qualityFunction(),
         executor,
         state
     ), comparator(problem)));

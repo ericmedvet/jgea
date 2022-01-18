@@ -147,10 +147,10 @@ public class SpeciatedEvolver<T extends POSetPopulationState<G, S, Q>, P extends
     }
     //merge
     if (remap) {
-      offspring.addAll(map(offspringGenotypes, elite, solutionMapper, problem.qualityMapper(), executor, state));
+      offspring.addAll(map(offspringGenotypes, elite, solutionMapper, problem.qualityFunction(), executor, state));
     } else {
       offspring.addAll(elite);
-      offspring.addAll(map(offspringGenotypes, List.of(), solutionMapper, problem.qualityMapper(), executor, state));
+      offspring.addAll(map(offspringGenotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state));
     }
     return offspring;
   }

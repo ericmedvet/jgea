@@ -130,7 +130,7 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
           offspringGenotypes,
           elites,
           solutionMapper,
-          problem.qualityMapper(),
+          problem.qualityFunction(),
           executor,
           state
       );
@@ -140,7 +140,7 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
           offspringGenotypes,
           List.of(),
           solutionMapper,
-          problem.qualityMapper(),
+          problem.qualityFunction(),
           executor,
           state
       ));

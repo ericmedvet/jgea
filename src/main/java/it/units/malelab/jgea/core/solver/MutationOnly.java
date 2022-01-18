@@ -71,6 +71,6 @@ public class MutationOnly<T extends POSetPopulationState<G, S, Q>, P extends Qua
         .stream()
         .map(i -> mutation.mutate(i.genotype(), random))
         .toList();
-    return map(offspringGenotypes, List.of(), solutionMapper, problem.qualityMapper(), executor, state);
+    return map(offspringGenotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state);
   }
 }

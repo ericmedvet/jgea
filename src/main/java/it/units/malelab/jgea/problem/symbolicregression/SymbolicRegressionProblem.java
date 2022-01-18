@@ -17,6 +17,7 @@
 package it.units.malelab.jgea.problem.symbolicregression;
 
 import it.units.malelab.jgea.core.ProblemWithValidation;
+import it.units.malelab.jgea.core.order.PartialComparator;
 
 import java.util.List;
 import java.util.function.Function;
@@ -24,8 +25,11 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class SymbolicRegressionProblem extends SymbolicRegressionFitness implements ProblemWithValidation<RealFunction, Double> {
+public class SymbolicRegressionProblem implements ProblemWithValidation<RealFunction, Double> {
 
+  private final static PartialComparator<Double> COMPARATOR = PartialComparator.from(Double.class);
+
+  private final SymbolicRegressionFitness fitness;
   private final SymbolicRegressionFitness validationFitness;
   private final RealFunction targetFunction;
 
@@ -35,18 +39,28 @@ public class SymbolicRegressionProblem extends SymbolicRegressionFitness impleme
       List<double[]> validationPoints,
       SymbolicRegressionFitness.Metric metric
   ) {
-    super(targetFunction, trainingPoints, metric);
     this.targetFunction = targetFunction;
+    this.fitness = new SymbolicRegressionFitness(targetFunction, trainingPoints, metric);
     validationFitness = new SymbolicRegressionFitness(targetFunction, validationPoints, metric);
   }
-
 
   public RealFunction getTargetFunction() {
     return targetFunction;
   }
 
   @Override
-  public Function<RealFunction, Double> getValidationFunction() {
+  public PartialComparator<Double> qualityComparator() {
+    return COMPARATOR;
+  }
+
+  @Override
+  public Function<RealFunction, Double> qualityFunction() {
+    return fitness;
+  }
+
+  @Override
+  public Function<RealFunction, Double> validationQualityFunction() {
     return validationFitness;
   }
+
 }

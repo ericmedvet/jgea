@@ -106,12 +106,12 @@ public class DifferentialEvolution<S, Q> extends AbstractPopulationIterativeBase
           trialGenotypes,
           state.getPopulation().all(),
           solutionMapper,
-          problem.qualityMapper(),
+          problem.qualityFunction(),
           executor,
           state
       ));
     } else {
-      offspring.addAll(map(trialGenotypes, List.of(), solutionMapper, problem.qualityMapper(), executor, state));
+      offspring.addAll(map(trialGenotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state));
       offspring.addAll(state.getPopulation().all());
     }
     L.fine(String.format("Trials evaluated: %d individuals", trialGenotypes.size()));

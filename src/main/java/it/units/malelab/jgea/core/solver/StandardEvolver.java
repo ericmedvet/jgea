@@ -91,7 +91,7 @@ public class StandardEvolver<T extends POSetPopulationState<G, S, Q>, P extends 
       }
       offspringGenotypes.addAll(operator.apply(parentGenotypes, random));
     }
-    return map(offspringGenotypes, List.of(), solutionMapper, problem.qualityMapper(), executor, state);
+    return map(offspringGenotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state);
   }
 
   @Override
@@ -123,7 +123,7 @@ public class StandardEvolver<T extends POSetPopulationState<G, S, Q>, P extends 
             List.of(),
             state.getPopulation().all(),
             solutionMapper,
-            problem.qualityMapper(),
+            problem.qualityFunction(),
             executor,
             state
         ));
