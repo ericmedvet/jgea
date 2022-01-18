@@ -37,7 +37,9 @@ public class Main {
         100,
         StopConditions.elapsedMillis(10000),
         20,
-        0.01
+        1,
+        0.01,
+        false
     );
     IterativeSolver<? extends POSetPopulationState<List<Double>, List<Double>, Double>, TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>> solver = es;
     Listener.Factory<? super POSetPopulationState<List<Double>, List<Double>, Double>> lFactory = new TabularPrinter<>(

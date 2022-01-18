@@ -17,8 +17,10 @@ import java.util.stream.IntStream;
 public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativeBasedSolver<SimpleEvolutionaryStrategy.State<S, Q>, TotalOrderQualityBasedProblem<S, Q>, List<Double>, S, Q> {
 
   // TODO add remap, add elitism
-  private final int nOfParents;
-  private final double sigma;
+  protected final int nOfParents;
+  protected final int nOfElites;
+  protected final double sigma;
+  protected final boolean remap;
 
   public SimpleEvolutionaryStrategy(
       Function<? super List<Double>, ? extends S> solutionMapper,
@@ -26,11 +28,15 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
       int populationSize,
       Predicate<? super State<S, Q>> stopCondition,
       int nOfParents,
-      double sigma
+      int nOfElites,
+      double sigma,
+      boolean remap
   ) {
     super(solutionMapper, genotypeFactory, populationSize, stopCondition);
     this.nOfParents = nOfParents;
+    this.nOfElites = nOfElites;
     this.sigma = sigma;
+    this.remap = remap;
   }
 
   public static class State<S, Q> extends POSetPopulationState<List<Double>, S, Q> {
@@ -89,13 +95,16 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
       ExecutorService executor,
       SimpleEvolutionaryStrategy.State<S, Q> state
   ) throws SolverException {
-    //select parents
-    List<Individual<List<Double>, S, Q>> parents = state.getPopulation()
+    //sort population
+    List<Individual<List<Double>, S, Q>> population = state.getPopulation()
         .all()
         .stream()
-        .sorted((i1, i2) -> problem.totalOrderComparator().compare(i1.fitness(), i2.fitness()))
-        .limit(Math.round(nOfParents))
+        .sorted(comparator(problem).comparator())
         .toList();
+    //select elites
+    List<Individual<List<Double>, S, Q>> elites = population.stream().limit(nOfElites).toList();
+    //select parents
+    List<Individual<List<Double>, S, Q>> parents = population.stream().limit(Math.round(nOfParents)).toList();
     //compute mean
     if (parents.stream().map(i -> i.genotype().size()).distinct().count() > 1) {
       throw new IllegalStateException(String.format(
@@ -110,17 +119,30 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
     state.setMeans(means);
     //generate offspring
     List<List<Double>> offspringGenotypes = new ArrayList<>();
-    while (offspringGenotypes.size() < populationSize) {
+    while (offspringGenotypes.size() < populationSize - elites.size()) {
       offspringGenotypes.add(Arrays.stream(means).map(m -> m + random.nextGaussian() * sigma).boxed().toList());
     }
-    List<Individual<List<Double>, S, Q>> offspring = map(
-        offspringGenotypes,
-        List.of(),
-        solutionMapper,
-        problem.qualityMapper(),
-        executor,
-        state
-    );
+    List<Individual<List<Double>, S, Q>> offspring = new ArrayList<>();
+    if (remap) {
+      map(
+          offspringGenotypes,
+          elites,
+          solutionMapper,
+          problem.qualityMapper(),
+          executor,
+          state
+      );
+    } else {
+      offspring.addAll(elites);
+      offspring.addAll(map(
+          offspringGenotypes,
+          List.of(),
+          solutionMapper,
+          problem.qualityMapper(),
+          executor,
+          state
+      ));
+    }
     //update state
     state.setPopulation(new DAGPartiallyOrderedCollection<>(offspring, comparator(problem)));
     state.incNOfIterations();
