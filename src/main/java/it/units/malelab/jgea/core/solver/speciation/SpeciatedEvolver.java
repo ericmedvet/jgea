@@ -17,12 +17,12 @@
 package it.units.malelab.jgea.core.solver.speciation;
 
 import it.units.malelab.jgea.core.Factory;
+import it.units.malelab.jgea.core.QualityBasedProblem;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.selector.Last;
 import it.units.malelab.jgea.core.solver.Individual;
-import it.units.malelab.jgea.core.solver.QualityBasedProblem;
 import it.units.malelab.jgea.core.solver.SolverException;
 import it.units.malelab.jgea.core.solver.StandardEvolver;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;

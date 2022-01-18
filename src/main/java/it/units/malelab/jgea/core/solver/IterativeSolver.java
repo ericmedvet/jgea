@@ -1,5 +1,6 @@
 package it.units.malelab.jgea.core.solver;
 
+import it.units.malelab.jgea.core.Problem;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.util.Copyable;
 

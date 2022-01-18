@@ -1,5 +1,7 @@
 package it.units.malelab.jgea.core.solver;
 
+import it.units.malelab.jgea.core.Problem;
+
 import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 import java.util.random.RandomGenerator;

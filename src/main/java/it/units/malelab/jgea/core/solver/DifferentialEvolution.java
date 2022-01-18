@@ -6,6 +6,7 @@
 package it.units.malelab.jgea.core.solver;
 
 import it.units.malelab.jgea.core.Factory;
+import it.units.malelab.jgea.core.TotalOrderQualityBasedProblem;
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
