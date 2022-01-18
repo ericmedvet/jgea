@@ -14,58 +14,61 @@
  * limitations under the License.
  */
 
-package it.units.malelab.jgea.core.evolver;
+package it.units.malelab.jgea.core.solver;
 
 import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.operator.Mutation;
-import it.units.malelab.jgea.core.order.PartialComparator;
-import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.selector.Selector;
-import it.units.malelab.jgea.core.solver.StandardEvolver;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
 /**
  * @author Eric Medvet <eric.medvet@gmail.com>
  */
-public class MutationOnly<G, S, F> extends StandardEvolver<G, S, F> {
+public class MutationOnly<T extends POSetPopulationState<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q> extends StandardEvolver<T, P, G, S, Q> {
 
   private final Mutation<G> mutation;
 
   public MutationOnly(
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
-      PartialComparator<? super Individual<G, S, F>> individualComparator,
       int populationSize,
-      Selector<? super Individual<? super G, ? super S, ? super F>> unsurvivalSelector,
-      Mutation<G> mutation,
-      boolean remap
+      Predicate<? super T> stopCondition,
+      Selector<? super Individual<? super G, ? super S, ? super Q>> unsurvivalSelector,
+      BiFunction<P, RandomGenerator, T> stateInitializer,
+      Mutation<G> mutation
   ) {
     super(
-        solutionMapper, genotypeFactory, individualComparator, populationSize, null, null, unsurvivalSelector, 0, true,
-        remap
+        solutionMapper,
+        genotypeFactory,
+        populationSize,
+        stopCondition,
+        Map.of(mutation, 1d),
+        null,
+        unsurvivalSelector,
+        0,
+        true,
+        false,
+        stateInitializer
     );
     this.mutation = mutation;
   }
 
   @Override
-  protected Collection<Individual<G, S, F>> buildOffspring(
-      PartiallyOrderedCollection<Individual<G, S, F>> orderedPopulation,
-      Function<S, F> fitnessFunction,
-      RandomGenerator random,
-      ExecutorService executor,
-      State state
-  ) throws ExecutionException, InterruptedException {
-    Collection<G> offspringGenotypes = orderedPopulation.all()
+  protected Collection<Individual<G, S, Q>> buildOffspring(
+      T state, P problem, RandomGenerator random, ExecutorService executor
+  ) throws SolverException {
+    Collection<G> offspringGenotypes = state.getPopulation().all()
         .stream()
         .map(i -> mutation.mutate(i.genotype(), random))
         .toList();
-    return AbstractIterativeEvolver.map(
-        offspringGenotypes, List.of(), solutionMapper, fitnessFunction, executor, state);
+    return map(offspringGenotypes, List.of(), solutionMapper, problem.qualityMapper(), executor, state);
   }
 }
