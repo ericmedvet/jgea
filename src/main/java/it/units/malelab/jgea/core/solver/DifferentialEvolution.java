@@ -3,9 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.units.malelab.jgea.core.evolver;
+package it.units.malelab.jgea.core.solver;
 
 import it.units.malelab.jgea.core.Factory;
+import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.util.Misc;
@@ -13,9 +14,9 @@ import it.units.malelab.jgea.core.util.Misc;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.random.RandomGenerator;
 
@@ -23,10 +24,9 @@ import java.util.random.RandomGenerator;
  * @author federico
  * DE/rand/1
  */
-public class DifferentialEvolution<S, F> extends AbstractIterativeEvolver<List<Double>, S, F> {
+public class DifferentialEvolution<S, Q> extends AbstractPopulationIterativeBasedSolver<POSetPopulationState<List<Double>, S, Q>, TotalOrderQualityBasedProblem<S, Q>, List<Double>, S, Q> {
 
   private static final Logger L = Logger.getLogger(DifferentialEvolution.class.getName());
-  protected final int populationSize;
   protected final double differentialWeight;
   protected final double crossoverProb;
   protected final boolean remap;
@@ -34,25 +34,36 @@ public class DifferentialEvolution<S, F> extends AbstractIterativeEvolver<List<D
   public DifferentialEvolution(
       Function<? super List<Double>, ? extends S> solutionMapper,
       Factory<? extends List<Double>> genotypeFactory,
-      PartialComparator<? super Individual<List<Double>, S, F>> individualComparator,
       int populationSize,
+      Predicate<? super POSetPopulationState<List<Double>, S, Q>> stopCondition,
       double differentialWeight,
       double crossoverProb,
       boolean remap
   ) {
-    super(solutionMapper, genotypeFactory, individualComparator);
-    this.populationSize = populationSize;
+    super(solutionMapper, genotypeFactory, populationSize, stopCondition);
     this.differentialWeight = differentialWeight;
     this.crossoverProb = crossoverProb;
     this.remap = remap;
   }
+  
+  protected static <S, Q> List<Double> pickParents(
+      PartiallyOrderedCollection<Individual<List<Double>, S, Q>> population,
+      RandomGenerator random,
+      List<Double> prev
+  ) {
+    List<Double> current = prev;
+    while (current == prev) {
+      current = Misc.pickRandomly(population.all(), random).genotype();
+    }
+    return current;
+  }
 
   protected Collection<List<Double>> computeTrials(
-      PartiallyOrderedCollection<Individual<List<Double>, S, F>> population,
+      PartiallyOrderedCollection<Individual<List<Double>, S, Q>> population,
       RandomGenerator random
   ) {
     Collection<List<Double>> trialGenotypes = new ArrayList<>(populationSize);
-    for (Individual<List<Double>, S, F> parent : population.all()) {
+    for (Individual<List<Double>, S, Q> parent : population.all()) {
       List<Double> x = parent.genotype();
       List<Double> trial = new ArrayList<>(x.size());
       List<Double> a = pickParents(population, random, x);
@@ -71,59 +82,52 @@ public class DifferentialEvolution<S, F> extends AbstractIterativeEvolver<List<D
   }
 
   @Override
-  protected Collection<Individual<List<Double>, S, F>> initPopulation(
-      Function<S, F> function,
-      RandomGenerator random,
-      ExecutorService executorService,
-      State state
-  ) throws ExecutionException, InterruptedException {
-    return initPopulation(populationSize, function, random, executorService, state);
+  protected POSetPopulationState<List<Double>, S, Q> initState(
+      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor
+  ) {
+    return new POSetPopulationState<>();
   }
 
   @Override
-  protected Collection<Individual<List<Double>, S, F>> updatePopulation(
-      PartiallyOrderedCollection<Individual<List<Double>, S, F>> population,
-      Function<S, F> function,
+  public void update(
+      TotalOrderQualityBasedProblem<S, Q> problem,
       RandomGenerator random,
-      ExecutorService executorService,
-      State state
-  ) throws ExecutionException, InterruptedException {
-    List<Individual<List<Double>, S, F>> offspring = new ArrayList<>(populationSize * 2);
-    Collection<List<Double>> trialGenotypes = computeTrials(population, random);
+      ExecutorService executor,
+      POSetPopulationState<List<Double>, S, Q> state
+  ) throws SolverException {
+    List<Individual<List<Double>, S, Q>> offspring = new ArrayList<>(populationSize * 2);
+    Collection<List<Double>> trialGenotypes = computeTrials(state.getPopulation(), random);
     L.fine(String.format("Trials computed: %d individuals", trialGenotypes.size()));
     if (remap) {
       // we remap all parents, regardless of their fate
-      offspring.addAll(map(trialGenotypes, population.all(), solutionMapper, function, executorService, state));
+      offspring.addAll(map(
+          trialGenotypes,
+          state.getPopulation().all(),
+          solutionMapper,
+          problem.qualityMapper(),
+          executor,
+          state
+      ));
     } else {
-      offspring.addAll(map(trialGenotypes, List.of(), solutionMapper, function, executorService, state));
-      offspring.addAll(population.all());
+      offspring.addAll(map(trialGenotypes, List.of(), solutionMapper, problem.qualityMapper(), executor, state));
+      offspring.addAll(state.getPopulation().all());
     }
     L.fine(String.format("Trials evaluated: %d individuals", trialGenotypes.size()));
     for (int i = 0, j = populationSize; i < populationSize && j < offspring.size(); ++i, ++j) {
-      if (individualComparator.compare(offspring.get(i), offspring.get(j))
+      if (comparator(problem).compare(offspring.get(i), offspring.get(j))
           .equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
         offspring.remove(j);
-        j = j - 1;
       } else {
         offspring.remove(i);
         i = i - 1;
-        j = j - 1;
       }
+      j = j - 1;
     }
     L.fine(String.format("Population selected: %d individuals", offspring.size()));
-    return offspring;
-  }
-
-  protected List<Double> pickParents(
-      PartiallyOrderedCollection<Individual<List<Double>, S, F>> population,
-      RandomGenerator random,
-      List<Double> prev
-  ) {//List<Integer> indexes, Random random) {
-    List<Double> current = prev;
-    while (current == prev) {
-      current = Misc.pickRandomly(population.all(), random).genotype();
-    }
-    return current;
+    //update state
+    state.setPopulation(new DAGPartiallyOrderedCollection<>(offspring, comparator(problem)));
+    state.incNOfIterations();
+    state.updateElapsedMillis();
   }
 
 }
