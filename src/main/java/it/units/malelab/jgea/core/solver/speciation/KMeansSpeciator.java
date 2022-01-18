@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package it.units.malelab.jgea.core.evolver.speciation;
+package it.units.malelab.jgea.core.solver.speciation;
 
 import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;

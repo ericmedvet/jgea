@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-package it.units.malelab.jgea.core.evolver;
+package it.units.malelab.jgea.core.solver;
 
 import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
 import it.units.malelab.jgea.core.selector.Selector;
-import it.units.malelab.jgea.core.solver.Individual;
-import it.units.malelab.jgea.core.solver.QualityBasedProblem;
-import it.units.malelab.jgea.core.solver.SolverException;
-import it.units.malelab.jgea.core.solver.StandardEvolver;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.core.util.Misc;
 
