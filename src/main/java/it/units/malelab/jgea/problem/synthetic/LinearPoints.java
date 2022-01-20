@@ -17,17 +17,17 @@
 package it.units.malelab.jgea.problem.synthetic;
 
 import it.units.malelab.jgea.core.QualityBasedProblem;
+import it.units.malelab.jgea.core.order.PartialComparator;
 
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * @author eric
  */
 public class LinearPoints implements QualityBasedProblem<List<Double>, Double> {
 
-  
-  @Override
-  public Double apply(List<Double> s) {
+  private final static Function<List<Double>, Double> FITNESS_FUNCTION = s -> {
     if (s.size() <= 1) {
       return 0d;
     }
@@ -39,6 +39,17 @@ public class LinearPoints implements QualityBasedProblem<List<Double>, Double> {
       sumOfSquaredErrors = sumOfSquaredErrors + error * error;
     }
     return sumOfSquaredErrors / (double) s.size();
+
+  };
+
+  @Override
+  public PartialComparator<Double> qualityComparator() {
+    return PartialComparator.from(Double.class);
+  }
+
+  @Override
+  public Function<List<Double>, Double> qualityFunction() {
+    return FITNESS_FUNCTION;
   }
 
 }
