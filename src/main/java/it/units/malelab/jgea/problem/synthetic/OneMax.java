@@ -16,8 +16,7 @@
 
 package it.units.malelab.jgea.problem.synthetic;
 
-import it.units.malelab.jgea.core.QualityBasedProblem;
-import it.units.malelab.jgea.core.order.PartialComparator;
+import it.units.malelab.jgea.core.ComparableQualityBasedProblem;
 import it.units.malelab.jgea.representation.sequence.bit.BitString;
 
 import java.util.function.Function;
@@ -25,17 +24,13 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class OneMax implements QualityBasedProblem<BitString, Double> {
+public class OneMax implements ComparableQualityBasedProblem<BitString, Double> {
 
   private final static Function<BitString, Double> FITNESS_FUNCTION = b -> 1d - (double) b.count() / (double) b.size();
 
   @Override
-  public PartialComparator<Double> qualityComparator() {
-    return PartialComparator.from(Double.class);
+  public Function<BitString, Double> qualityFunction() {
+    return FITNESS_FUNCTION;
   }
 
-  @Override
-  public Function<BitString, Double> qualityFunction() {
-    return null;
-  }
 }

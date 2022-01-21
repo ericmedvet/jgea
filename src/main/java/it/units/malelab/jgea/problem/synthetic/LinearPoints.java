@@ -16,8 +16,7 @@
 
 package it.units.malelab.jgea.problem.synthetic;
 
-import it.units.malelab.jgea.core.QualityBasedProblem;
-import it.units.malelab.jgea.core.order.PartialComparator;
+import it.units.malelab.jgea.core.ComparableQualityBasedProblem;
 
 import java.util.List;
 import java.util.function.Function;
@@ -25,7 +24,7 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class LinearPoints implements QualityBasedProblem<List<Double>, Double> {
+public class LinearPoints implements ComparableQualityBasedProblem<List<Double>, Double> {
 
   private final static Function<List<Double>, Double> FITNESS_FUNCTION = s -> {
     if (s.size() <= 1) {
@@ -41,11 +40,6 @@ public class LinearPoints implements QualityBasedProblem<List<Double>, Double> {
     return sumOfSquaredErrors / (double) s.size();
 
   };
-
-  @Override
-  public PartialComparator<Double> qualityComparator() {
-    return PartialComparator.from(Double.class);
-  }
 
   @Override
   public Function<List<Double>, Double> qualityFunction() {

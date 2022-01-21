@@ -16,26 +16,21 @@
 
 package it.units.malelab.jgea.problem.synthetic;
 
-import it.units.malelab.jgea.core.QualityBasedProblem;
-import it.units.malelab.jgea.core.order.PartialComparator;
+import it.units.malelab.jgea.core.ComparableQualityBasedProblem;
 
 import java.util.List;
 import java.util.function.Function;
 
-public class Rastrigin implements QualityBasedProblem<List<Double>, Double> {
+public class Rastrigin implements ComparableQualityBasedProblem<List<Double>, Double> {
 
   private final static Function<List<Double>, Double> FITNESS_FUNCTION = vs -> 10d * (double) vs.size() + vs.stream()
       .mapToDouble(v -> v * v - 10 * Math.cos(2 * Math.PI * v))
       .sum();
 
   @Override
-  public PartialComparator<Double> qualityComparator() {
-    return PartialComparator.from(Double.class);
-  }
-
-  @Override
   public Function<List<Double>, Double> qualityFunction() {
     return FITNESS_FUNCTION;
   }
+
 
 }

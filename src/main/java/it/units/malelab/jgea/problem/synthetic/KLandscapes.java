@@ -17,7 +17,7 @@
 package it.units.malelab.jgea.problem.synthetic;
 
 import com.google.common.collect.Range;
-import it.units.malelab.jgea.core.order.PartialComparator;
+import it.units.malelab.jgea.core.ComparableQualityBasedProblem;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
@@ -29,7 +29,7 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class KLandscapes implements GrammarBasedProblem<String, Tree<String>, Double> {
+public class KLandscapes implements GrammarBasedProblem<String, Tree<String>>, ComparableQualityBasedProblem<Tree<String>, Double> {
 
   private final static int ARITY = 2;
   private final static Range<Double> V_RANGE = Range.closed(-1d, 1d);
@@ -191,7 +191,7 @@ public class KLandscapes implements GrammarBasedProblem<String, Tree<String>, Do
   }
 
   private Function<Tree<String>, Double> buildFitnessFunction() {
-    Random random = new Random(1l);
+    Random random = new Random(1L);
     final Map<String, Double> v = new LinkedHashMap<>();
     final Map<Pair<String, String>, Double> w = new LinkedHashMap<>();
     //fill v map
@@ -233,12 +233,8 @@ public class KLandscapes implements GrammarBasedProblem<String, Tree<String>, Do
   }
 
   @Override
-  public PartialComparator<Double> qualityComparator() {
-    return PartialComparator.from(Double.class);
-  }
-
-  @Override
   public Function<Tree<String>, Double> qualityFunction() {
     return fitnessFunction;
   }
+
 }

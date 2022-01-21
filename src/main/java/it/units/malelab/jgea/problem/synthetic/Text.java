@@ -16,6 +16,7 @@
 
 package it.units.malelab.jgea.problem.synthetic;
 
+import it.units.malelab.jgea.core.ComparableQualityBasedProblem;
 import it.units.malelab.jgea.distance.Distance;
 import it.units.malelab.jgea.distance.Edit;
 import it.units.malelab.jgea.representation.grammar.Grammar;
@@ -31,10 +32,11 @@ import java.util.stream.Collectors;
 /**
  * @author eric
  */
-public class Text implements GrammarBasedProblem<String, String, Double> {
+public class Text implements GrammarBasedProblem<String, String>, ComparableQualityBasedProblem<String, Double> {
 
   private final Grammar<String> grammar;
   private final Function<Tree<String>, String> solutionMapper;
+  private final Function<String, Double> fitnessFunction;
   private final List<Character> target;
   private final Distance<List<Character>> distance;
 
@@ -45,15 +47,10 @@ public class Text implements GrammarBasedProblem<String, String, Double> {
         .collect(Collectors.joining()).replace("_", " ");
     target = targetString.chars().mapToObj(c -> (char) c).toList();
     this.distance = new Edit<>();
-  }
-
-  @Override
-  public Double apply(String string) {
-    double d = distance.apply(
+    fitnessFunction = string -> distance.apply(
         target,
         string.chars().mapToObj(c -> (char) c).toList()
     ) / (double) target.size();
-    return d;
   }
 
   @Override
@@ -64,6 +61,11 @@ public class Text implements GrammarBasedProblem<String, String, Double> {
   @Override
   public Function<Tree<String>, String> getSolutionMapper() {
     return solutionMapper;
+  }
+
+  @Override
+  public Function<String, Double> qualityFunction() {
+    return fitnessFunction;
   }
 
 }

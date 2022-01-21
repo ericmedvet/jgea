@@ -16,19 +16,20 @@
 
 package it.units.malelab.jgea.problem.synthetic;
 
-import it.units.malelab.jgea.core.Problem;
+import it.units.malelab.jgea.core.ComparableQualityBasedProblem;
 
 import java.util.List;
+import java.util.function.Function;
 
-public class Sphere implements Problem<List<Double>, Double> {
+public class Sphere implements ComparableQualityBasedProblem<List<Double>, Double> {
+
+  private final static Function<List<Double>, Double> FITNESS_FUNCTION = vs -> vs.stream()
+      .mapToDouble(v -> v * v)
+      .sum();
 
   @Override
-  public Double apply(List<Double> vs) {
-    double sum = 0.0;
-    for (Double v : vs) {
-      sum += v * v;
-    }
-    return sum;
+  public Function<List<Double>, Double> qualityFunction() {
+    return FITNESS_FUNCTION;
   }
 
 }

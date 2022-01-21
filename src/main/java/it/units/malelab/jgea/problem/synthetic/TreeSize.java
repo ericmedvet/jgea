@@ -16,43 +16,34 @@
 
 package it.units.malelab.jgea.problem.synthetic;
 
+import it.units.malelab.jgea.core.ComparableQualityBasedProblem;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
 /**
  * @author eric
  */
-public class TreeSize implements GrammarBasedProblem<Boolean, Tree<Boolean>, Double> {
+public class TreeSize implements GrammarBasedProblem<Boolean, Tree<Boolean>>, ComparableQualityBasedProblem<Tree<Boolean>, Double> {
 
+  private final static Function<Tree<Boolean>, Double> FITNESS_FUNCTION = t -> 1d / (double) t.size();
   private final Grammar<Boolean> grammar;
 
   public TreeSize(int nonTerminals, int terminals) {
     this.grammar = new Grammar<>();
     grammar.setStartingSymbol(false);
-    grammar.getRules().put(false, l(r(nonTerminals, false), r(terminals, true)));
-  }
-
-  @Override
-  public Double apply(Tree<Boolean> booleanTree) {
-    return 1d / (double) booleanTree.size();
-  }
-
-  @SafeVarargs
-  private static <T> List<T> l(T... ts) {
-    return Arrays.asList(ts);
+    grammar.getRules().put(false, List.of(r(nonTerminals, false), r(terminals, true)));
   }
 
   @SafeVarargs
   private static <T> List<T> r(int n, T... ts) {
     List<T> list = new ArrayList<>(n * ts.length);
     for (int i = 0; i < n; i++) {
-      list.addAll(l(ts));
+      list.addAll(List.of(ts));
     }
     return list;
   }
@@ -67,4 +58,8 @@ public class TreeSize implements GrammarBasedProblem<Boolean, Tree<Boolean>, Dou
     return Function.identity();
   }
 
+  @Override
+  public Function<Tree<Boolean>, Double> qualityFunction() {
+    return FITNESS_FUNCTION;
+  }
 }
