@@ -18,7 +18,9 @@ package it.units.malelab.jgea.problem.extraction;
 
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
-import it.units.malelab.jgea.core.ProblemWithValidation;
+import it.units.malelab.jgea.core.QualityBasedProblem;
+import it.units.malelab.jgea.core.order.ParetoDominance;
+import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.util.Pair;
 
 import java.util.ArrayList;
@@ -28,19 +30,22 @@ import java.util.Set;
 /**
  * @author eric
  */
-public class ExtractionProblem<S> extends ExtractionFitness<S> implements ProblemWithValidation<Extractor<S>, List<Double>> {
+public class ExtractionProblem<S> implements QualityBasedProblem<Extractor<S>, List<Double>> {
 
+  private final static PartialComparator<List<Double>> COMPARATOR = new ParetoDominance<>(Double.class);
+
+  private final ExtractionFitness<S> fitnessFunction;
   private final ExtractionFitness<S> validationFunction;
 
   public ExtractionProblem(
       Set<Extractor<S>> extractors, List<S> sequence, int folds, int i, ExtractionFitness.Metric... metrics
   ) {
-    super(
+    Pair<List<S>, Set<Range<Integer>>> validationDataset = buildDataset(extractors, sequence, folds, i, false);
+    fitnessFunction = new ExtractionFitness<>(
         buildDataset(extractors, sequence, folds, i, true).first(),
         buildDataset(extractors, sequence, folds, i, true).second(),
         metrics
     );
-    Pair<List<S>, Set<Range<Integer>>> validationDataset = buildDataset(extractors, sequence, folds, i, false);
     validationFunction = new ExtractionFitness<>(validationDataset.first(), validationDataset.second(), metrics);
   }
 
@@ -67,8 +72,17 @@ public class ExtractionProblem<S> extends ExtractionFitness<S> implements Proble
     return Pair.of(builtSequence, desiredExtractions);
   }
 
+  @Override
+  public PartialComparator<List<Double>> qualityComparator() {
+    return COMPARATOR;
+  }
+
+  @Override
+  public ExtractionFitness<S> qualityFunction() {
+    return fitnessFunction;
+  }
+
   public ExtractionFitness<S> validationQualityFunction() {
     return validationFunction;
   }
-
 }

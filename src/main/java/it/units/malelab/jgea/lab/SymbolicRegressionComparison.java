@@ -19,21 +19,14 @@ package it.units.malelab.jgea.lab;
 import com.google.common.base.Stopwatch;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.IndependentFactory;
-import it.units.malelab.jgea.core.evolver.Evolver;
-import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
-import it.units.malelab.jgea.core.listener.*;
-import it.units.malelab.jgea.core.operator.Crossover;
-import it.units.malelab.jgea.core.operator.Mutation;
-import it.units.malelab.jgea.core.order.PartialComparator;
+import it.units.malelab.jgea.core.listener.CSVPrinter;
+import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.core.listener.NamedFunction;
+import it.units.malelab.jgea.core.listener.TabularPrinter;
 import it.units.malelab.jgea.core.selector.Last;
 import it.units.malelab.jgea.core.selector.Tournament;
-import it.units.malelab.jgea.core.solver.StandardEvolver;
-import it.units.malelab.jgea.core.solver.StandardWithEnforcedDiversityEvolver;
-import it.units.malelab.jgea.core.solver.speciation.KMeansSpeciator;
-import it.units.malelab.jgea.core.solver.speciation.LazySpeciator;
-import it.units.malelab.jgea.core.solver.speciation.SpeciatedEvolver;
-import it.units.malelab.jgea.core.util.Misc;
-import it.units.malelab.jgea.distance.Jaccard;
+import it.units.malelab.jgea.core.solver.*;
+import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.problem.symbolicregression.*;
 import it.units.malelab.jgea.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
 import it.units.malelab.jgea.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
@@ -45,17 +38,12 @@ import it.units.malelab.jgea.representation.graph.numeric.functiongraph.Function
 import it.units.malelab.jgea.representation.graph.numeric.functiongraph.FunctionNode;
 import it.units.malelab.jgea.representation.graph.numeric.functiongraph.ShallowSparseFactory;
 import it.units.malelab.jgea.representation.graph.numeric.operatorgraph.BaseOperator;
-import it.units.malelab.jgea.representation.graph.numeric.operatorgraph.OperatorGraph;
-import it.units.malelab.jgea.representation.graph.numeric.operatorgraph.OperatorNode;
-import it.units.malelab.jgea.representation.graph.numeric.operatorgraph.ShallowFactory;
 import it.units.malelab.jgea.representation.tree.*;
 
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 
@@ -91,7 +79,6 @@ public class SymbolicRegressionComparison extends Worker {
 
   @Override
   public void run() {
-
     int nPop = i(a("nPop", "100"));
     int maxHeight = i(a("maxHeight", "10"));
     int maxNodes = i(a("maxNodes", "20"));
@@ -113,16 +100,17 @@ public class SymbolicRegressionComparison extends Worker {
     List<SymbolicRegressionProblem> problems = List.of(
         new Nguyen7(metric, 1),
         new Keijzer6(metric),
-        new Polynomial4(metric)//,
+        new Polynomial4(metric)
+        //,
         // new Pagie1(metric)
     );
     //consumers
-    List<NamedFunction<? super Evolver.Event<?, ?, ? extends Double>, ?>> functions = List.of(
-        eventAttribute("seed", "%2d"),
+    List<NamedFunction<? super POSetPopulationState<?, ?, ? extends Double>, ?>> functions = List.of(
+        /*eventAttribute("seed", "%2d"),
         eventAttribute("problem", NamedFunction.formatOfLongest(
             problems.stream().map(p -> p.getClass().getSimpleName())
                 .toList())),
-        eventAttribute("evolver", "%20.20s"),
+        eventAttribute("evolver", "%20.20s"),*/ // TODO restore attributes
         iterations(),
         births(),
         elapsedSeconds(),
@@ -140,7 +128,7 @@ public class SymbolicRegressionComparison extends Worker {
         // TODO put validation, hist of fitnesses
         solution().reformat("%30.30s").of(best())
     );
-    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(functions);
+    Listener.Factory<POSetPopulationState<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(functions);
     if (a("file", null) != null) {
       listenerFactory = Listener.Factory.all(List.of(
           listenerFactory,
@@ -148,217 +136,234 @@ public class SymbolicRegressionComparison extends Worker {
       ));
     }
     //evolvers
-    Map<String, Function<SymbolicRegressionProblem, Evolver<?, RealFunction, Double>>> evolvers = new TreeMap<>(
-        Map.ofEntries(
-            Map.entry("tree-ga", p -> {
-              IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
-                  IndependentFactory.picker(Arrays.stream(vars(p.arity()))
-                      .sequential()
-                      .map(Element.Variable::new)
-                      .toArray(Element.Variable[]::new)),
-                  IndependentFactory.picker(
-                      Arrays.stream(constants).mapToObj(Element.Constant::new).toArray(Element.Constant[]::new))
-              );
-              return new StandardEvolver<Tree<Element>, RealFunction, Double>(
-                  ((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(t, vars(p.arity())))
-                      .andThen(MathUtils.linearScaler(p)),
-                  new RampedHalfAndHalf<>(
-                      4, maxHeight,
+    Map<String, Function<SymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SymbolicRegressionProblem, RealFunction>>> solvers = new TreeMap<>();
+    solvers.put("tree-ga", p -> {
+      IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
+          IndependentFactory.picker(Arrays.stream(
+                  vars(p.qualityFunction().arity()))
+              .sequential()
+              .map(Element.Variable::new)
+              .toArray(Element.Variable[]::new)),
+          IndependentFactory.picker(Arrays.stream(constants)
+              .mapToObj(Element.Constant::new)
+              .toArray(Element.Constant[]::new))
+      );
+      return new StandardEvolver<>(
+          ((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(
+              t,
+              vars(p.qualityFunction().arity())
+          )).andThen(MathUtils.linearScaler(p.qualityFunction())),
+          new RampedHalfAndHalf<>(
+              4,
+              maxHeight,
+              Element.Operator.arityFunction(),
+              IndependentFactory.picker(operators),
+              terminalFactory
+          ),
+          nPop,
+          StopConditions.nOfIterations(nIterations),
+          Map.of(
+              new SubtreeCrossover<>(maxHeight),
+              0.8d,
+              new SubtreeMutation<>(
+                  maxHeight,
+                  new GrowTreeBuilder<>(
                       Element.Operator.arityFunction(),
                       IndependentFactory.picker(operators),
                       terminalFactory
-                  ),
-                  PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
-                  nPop,
-                  Map.of(
-                      new SubtreeCrossover<>(maxHeight), 0.8d,
-                      new SubtreeMutation<>(maxHeight, new GrowTreeBuilder<>(
-                          Element.Operator.arityFunction(),
-                          IndependentFactory.picker(operators),
-                          terminalFactory
-                      )), 0.2d
-                  ),
-                  new Tournament(nTournament),
-                  new Last(),
-                  nPop,
-                  true,
-                  false
-              );
-            }),
-            Map.entry("tree-ga-noxover", p -> {
-              IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
-                  IndependentFactory.picker(Arrays.stream(vars(p.arity()))
-                      .sequential()
-                      .map(Element.Variable::new)
-                      .toArray(Element.Variable[]::new)),
-                  IndependentFactory.picker(
-                      Arrays.stream(constants).mapToObj(Element.Constant::new).toArray(Element.Constant[]::new))
-              );
-              return new StandardEvolver<Tree<Element>, RealFunction, Double>(
-                  ((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(t, vars(p.arity())))
-                      .andThen(MathUtils.linearScaler(p)),
-                  new RampedHalfAndHalf<>(
-                      4, maxHeight,
-                      Element.Operator.arityFunction(),
-                      IndependentFactory.picker(operators),
-                      terminalFactory
-                  ),
-                  PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
-                  nPop,
-                  Map.of(
-                      new SubtreeMutation<>(maxHeight, new GrowTreeBuilder<>(
-                          Element.Operator.arityFunction(),
-                          IndependentFactory.picker(operators),
-                          terminalFactory
-                      )), 0.2d
-                  ),
-                  new Tournament(nTournament),
-                  new Last(),
-                  nPop,
-                  true,
-                  false
-              );
-            }),
-            Map.entry("tree-gadiv", p -> {
-              IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
-                  IndependentFactory.picker(Arrays.stream(vars(p.arity()))
-                      .sequential()
-                      .map(Element.Variable::new)
-                      .toArray(Element.Variable[]::new)),
-                  IndependentFactory.picker(
-                      Arrays.stream(constants).mapToObj(Element.Constant::new).toArray(Element.Constant[]::new))
-              );
-              return new StandardWithEnforcedDiversityEvolver<Tree<Element>, RealFunction, Double>(
-                  ((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(t, vars(p.arity())))
-                      .andThen(MathUtils.linearScaler(p)),
-                  new RampedHalfAndHalf<>(
-                      4, maxHeight,
-                      Element.Operator.arityFunction(),
-                      IndependentFactory.picker(operators),
-                      terminalFactory
-                  ),
-                  PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
-                  nPop,
-                  Map.of(
-                      new SubtreeCrossover<>(maxHeight), 0.8d,
-                      new SubtreeMutation<>(maxHeight, new GrowTreeBuilder<>(
-                          Element.Operator.arityFunction(),
-                          IndependentFactory.picker(operators),
-                          terminalFactory
-                      )), 0.2d
-                  ),
-                  new Tournament(nTournament),
-                  new Last(),
-                  nPop,
-                  true,
-                  false,
-                  diversityMaxAttempts
-              );
-            }),
-            Map.entry("cfgtree-ga", p -> {
-              SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
-                  List.of(operators),
-                  List.of(vars(p.arity())),
-                  Arrays.stream(constants).mapToObj(d -> (Double) d).toList()
-              );
-              return new StandardEvolver<Tree<String>, RealFunction, Double>(
-                  new FormulaMapper()
-                      .andThen(n -> TreeBasedRealFunction.from(n, vars(p.arity())))
-                      .andThen(MathUtils.linearScaler(p)),
-                  new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
-                  PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
-                  nPop,
-                  Map.of(
-                      new SameRootSubtreeCrossover<>(maxHeight + 4), 0.8d,
-                      new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
-                  ),
-                  new Tournament(nTournament),
-                  new Last(),
-                  nPop,
-                  true,
-                  false
-              );
-            }),
-            Map.entry("cfgtree-ga-noxover", p -> {
-              SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
-                  List.of(operators),
-                  List.of(vars(p.arity())),
-                  Arrays.stream(constants).mapToObj(d -> (Double) d).toList()
-              );
-              return new StandardEvolver<Tree<String>, RealFunction, Double>(
-                  new FormulaMapper()
-                      .andThen(n -> TreeBasedRealFunction.from(n, vars(p.arity())))
-                      .andThen(MathUtils.linearScaler(p)),
-                  new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
-                  PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
-                  nPop,
-                  Map.of(
-                      new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
-                  ),
-                  new Tournament(nTournament),
-                  new Last(),
-                  nPop,
-                  true,
-                  false
-              );
-            }),
-            Map.entry("cfgtree-gadiv", p -> {
-              SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
-                  List.of(operators),
-                  List.of(vars(p.arity())),
-                  Arrays.stream(constants).mapToObj(d -> (Double) d).toList()
-              );
-              return new StandardWithEnforcedDiversityEvolver<Tree<String>, RealFunction, Double>(
-                  new FormulaMapper()
-                      .andThen(n -> TreeBasedRealFunction.from(n, vars(p.arity())))
-                      .andThen(MathUtils.linearScaler(p)),
-                  new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
-                  PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
-                  nPop,
-                  Map.of(
-                      new SameRootSubtreeCrossover<>(maxHeight + 4), 0.8d,
-                      new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
-                  ),
-                  new Tournament(nTournament),
-                  new Last(),
-                  nPop,
-                  true,
-                  false,
-                  diversityMaxAttempts
-              );
-            }),
-            Map.entry("fgraph-lim-ga", p -> new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
-                FunctionGraph.builder()
-                    .andThen(MathUtils.fromMultivariateBuilder())
-                    .andThen(MathUtils.linearScaler(p)),
-                new ShallowSparseFactory(0d, 0d, 1d, p.arity(), 1),
-                PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
-                nPop,
-                Map.of(
-                    new NodeAddition<Node, Double>(
-                        FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
-                        (w, r) -> w,
-                        (w, r) -> r.nextGaussian()
-                    ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
-                    new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(
-                        FunctionGraph.checker()), graphArcMutationRate,
-                    new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(
-                        FunctionGraph.checker()), graphArcAdditionRate,
-                    new ArcRemoval<Node, Double>(
-                        node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
-                    ).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
-                    new AlignedCrossover<Node, Double>(
-                        (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
-                        node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
-                        false
-                    ).withChecker(FunctionGraph.checker()), graphCrossoverRate
-                ),
-                new Tournament(nTournament),
-                new Last(),
-                nPop,
-                true,
+                  )
+              ),
+              0.2d
+          ),
+          new Tournament(nTournament),
+          new Last(),
+          nPop,
+          true,
+          false,
+          (srp, r) -> new POSetPopulationState<>()
+      );
+    });
+    solvers.put("tree-ga-noxover", p -> {
+      IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
+          IndependentFactory.picker(Arrays.stream(vars(p.qualityFunction().arity()))
+              .sequential()
+              .map(Element.Variable::new)
+              .toArray(Element.Variable[]::new)),
+          IndependentFactory.picker(
+              Arrays.stream(constants).mapToObj(Element.Constant::new).toArray(Element.Constant[]::new))
+      );
+      return new StandardEvolver<>(
+          ((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(t, vars(p.qualityFunction().arity())))
+              .andThen(MathUtils.linearScaler(p.qualityFunction())),
+          new RampedHalfAndHalf<>(
+              4, maxHeight,
+              Element.Operator.arityFunction(),
+              IndependentFactory.picker(operators),
+              terminalFactory
+          ),
+          nPop,
+          StopConditions.nOfIterations(nIterations),
+          Map.of(
+              new SubtreeMutation<>(maxHeight, new GrowTreeBuilder<>(
+                  Element.Operator.arityFunction(),
+                  IndependentFactory.picker(operators),
+                  terminalFactory
+              )), 0.2d
+          ),
+          new Tournament(nTournament),
+          new Last(),
+          nPop,
+          true,
+          false,
+          (srp, r) -> new POSetPopulationState<>()
+      );
+    });
+    solvers.put("tree-gadiv", p -> {
+      IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
+          IndependentFactory.picker(Arrays.stream(vars(p.qualityFunction().arity()))
+              .sequential()
+              .map(Element.Variable::new)
+              .toArray(Element.Variable[]::new)),
+          IndependentFactory.picker(
+              Arrays.stream(constants).mapToObj(Element.Constant::new).toArray(Element.Constant[]::new))
+      );
+      return new StandardWithEnforcedDiversityEvolver<>(
+          ((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(t, vars(p.qualityFunction().arity())))
+              .andThen(MathUtils.linearScaler(p.qualityFunction())),
+          new RampedHalfAndHalf<>(
+              4, maxHeight,
+              Element.Operator.arityFunction(),
+              IndependentFactory.picker(operators),
+              terminalFactory
+          ),
+          nPop,
+          StopConditions.nOfIterations(nIterations),
+          Map.of(
+              new SubtreeCrossover<>(maxHeight), 0.8d,
+              new SubtreeMutation<>(maxHeight, new GrowTreeBuilder<>(
+                  Element.Operator.arityFunction(),
+                  IndependentFactory.picker(operators),
+                  terminalFactory
+              )), 0.2d
+          ),
+          new Tournament(nTournament),
+          new Last(),
+          nPop,
+          true,
+          false,
+          (srp, r) -> new POSetPopulationState<>(),
+          diversityMaxAttempts
+      );
+    });
+    solvers.put("cfgtree-ga", p -> {
+      SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
+          List.of(operators),
+          List.of(vars(p.qualityFunction().arity())),
+          Arrays.stream(constants).boxed().toList()
+      );
+      return new StandardEvolver<>(
+          new FormulaMapper()
+              .andThen(n -> TreeBasedRealFunction.from(n, vars(p.qualityFunction().arity())))
+              .andThen(MathUtils.linearScaler(p.qualityFunction())),
+          new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
+          nPop,
+          StopConditions.nOfIterations(nIterations),
+          Map.of(
+              new SameRootSubtreeCrossover<>(maxHeight + 4), 0.8d,
+              new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
+          ),
+          new Tournament(nTournament),
+          new Last(),
+          nPop,
+          true,
+          false,
+          (srp, r) -> new POSetPopulationState<>()
+      );
+    });
+    solvers.put("cfgtree-ga-noxover", p -> {
+      SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
+          List.of(operators),
+          List.of(vars(p.qualityFunction().arity())),
+          Arrays.stream(constants).boxed().toList()
+      );
+      return new StandardEvolver<>(
+          new FormulaMapper()
+              .andThen(n -> TreeBasedRealFunction.from(n, vars(p.qualityFunction().arity())))
+              .andThen(MathUtils.linearScaler(p.qualityFunction())),
+          new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
+          nPop,
+          StopConditions.nOfIterations(nIterations),
+          Map.of(
+              new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
+          ),
+          new Tournament(nTournament),
+          new Last(),
+          nPop,
+          true,
+          false,
+          (srp, r) -> new POSetPopulationState<>()
+      );
+    });
+    solvers.put("cfgtree-gadiv", p -> {
+      SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
+          List.of(operators),
+          List.of(vars(p.qualityFunction().arity())),
+          Arrays.stream(constants).boxed().toList()
+      );
+      return new StandardWithEnforcedDiversityEvolver<>(
+          new FormulaMapper()
+              .andThen(n -> TreeBasedRealFunction.from(n, vars(p.qualityFunction().arity())))
+              .andThen(MathUtils.linearScaler(p.qualityFunction())),
+          new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
+          nPop,
+          StopConditions.nOfIterations(nIterations),
+          Map.of(
+              new SameRootSubtreeCrossover<>(maxHeight + 4), 0.8d,
+              new GrammarBasedSubtreeMutation<>(maxHeight + 4, g), 0.2d
+          ),
+          new Tournament(nTournament),
+          new Last(),
+          nPop,
+          true,
+          false,
+          (srp, r) -> new POSetPopulationState<>(),
+          diversityMaxAttempts
+      );
+    });
+    solvers.put("fgraph-lim-ga", p -> new StandardEvolver<>(
+        FunctionGraph.builder()
+            .andThen(MathUtils.fromMultivariateBuilder())
+            .andThen(MathUtils.linearScaler(p.qualityFunction())),
+        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1),
+        nPop,
+        StopConditions.nOfIterations(nIterations),
+        Map.of(
+            new NodeAddition<Node, Double>(
+                FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
+                (w, r) -> w,
+                (w, r) -> r.nextGaussian()
+            ).withChecker(FunctionGraph.checker()), graphNodeAdditionRate,
+            new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(
+                FunctionGraph.checker()), graphArcMutationRate,
+            new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(
+                FunctionGraph.checker()), graphArcAdditionRate,
+            new ArcRemoval<Node, Double>(
+                node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)
+            ).withChecker(FunctionGraph.checker()), graphArcRemovalRate,
+            new AlignedCrossover<Node, Double>(
+                (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
+                node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output),
                 false
-            )),
+            ).withChecker(FunctionGraph.checker()), graphCrossoverRate
+        ),
+        new Tournament(nTournament),
+        new Last(),
+        nPop,
+        true,
+        false,
+        (srp, r) -> new POSetPopulationState<>()
+    ));
+    /*,
             Map.entry("fgraph-lim-ga-noxover", p -> new StandardEvolver<Graph<Node, Double>, RealFunction, Double>(
                 FunctionGraph.builder()
                     .andThen(MathUtils.fromMultivariateBuilder())
@@ -957,51 +962,40 @@ public class SymbolicRegressionComparison extends Worker {
                 )
             )
         ));
+        */
+
     //filter evolvers
-    evolvers = evolvers.entrySet().stream()
+    solvers = solvers.entrySet()
+        .stream()
         .filter(e -> e.getKey().matches(evolverNamePattern))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    L.info(String.format(
-        "Going to test with %d evolvers: %s%n",
-        evolvers.size(),
-        evolvers.keySet()
-    ));
+    L.info(String.format("Going to test with %d evolvers: %s%n", solvers.size(), solvers.keySet()));
     //run
     for (int seed : seeds) {
       for (SymbolicRegressionProblem problem : problems) {
-        for (Map.Entry<String, Function<SymbolicRegressionProblem, Evolver<?, RealFunction, Double>>> evolverEntry : evolvers.entrySet()) {
+        for (Map.Entry<String, Function<SymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SymbolicRegressionProblem, RealFunction>>> solverEntry : solvers.entrySet()) {
           Map<String, Object> keys = Map.ofEntries(
               Map.entry("seed", seed),
               Map.entry("problem", problem.getClass().getSimpleName().toLowerCase()),
-              Map.entry("evolver", evolverEntry.getKey())
+              Map.entry("evolver", solverEntry.getKey())
           );
-          Listener<Evolver.Event<?, ?, ? extends Double>> listener = Listener.all(List.of(
-              new EventAugmenter(keys),
-              listenerFactory.build()
-          )).deferred(executorService);
+          Listener<POSetPopulationState<?, ?, ? extends Double>> listener = Listener.all(List.of(
+              //new EventAugmenter(keys), // TODO restore attributes
+              listenerFactory.build())).deferred(executorService);
           try {
             Stopwatch stopwatch = Stopwatch.createStarted();
-            Evolver<?, RealFunction, Double> evolver = evolverEntry.getValue().apply(problem);
+            IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SymbolicRegressionProblem, RealFunction> solver = solverEntry.getValue()
+                .apply(problem);
             L.info(String.format("Starting %s", keys));
-            Collection<RealFunction> solutions = evolver.solve(
-                Misc.cached(problem, 10000),
-                new Iterations(nIterations),
-                new Random(seed),
-                executorService,
-                listener
-            );
+            Collection<RealFunction> solutions = solver.solve(problem, new Random(seed), executorService, listener);
             L.info(String.format(
                 "Done %s: %d solutions in %4.1fs",
                 keys,
                 solutions.size(),
                 (double) stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000d
             ));
-          } catch (InterruptedException | ExecutionException e) {
-            L.severe(String.format(
-                "Cannot complete %s due to %s",
-                keys,
-                e
-            ));
+          } catch (SolverException e) {
+            L.severe(String.format("Cannot complete %s due to %s", keys, e));
             e.printStackTrace();
           }
         }

@@ -76,6 +76,7 @@ public class FitnessFunction implements
     DEGENERACY, NON_UNIFORMITY, NON_LOCALITY
   }
 
+  @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
   public List<Double> apply(Pair<Tree<Element>, Tree<Element>> pair) {
     List<List<Double>> valuesLists = new ArrayList<>();
@@ -96,7 +97,7 @@ public class FitnessFunction implements
         .toList();
   }
 
-  protected <N, S, F> List<Double> apply(Pair<Tree<Element>, Tree<Element>> pair, EnhancedProblem<N, S, F> problem) {
+  protected <N, S> List<Double> apply(Pair<Tree<Element>, Tree<Element>> pair, EnhancedProblem<N, S> problem) {
     //build mapper
     RecursiveMapper<N> recursiveMapper = new RecursiveMapper<>(
         pair.first(),
@@ -107,7 +108,7 @@ public class FitnessFunction implements
     );
     //map
     List<S> solutions = genotypes.stream()
-        .map(g -> recursiveMapper.apply(g))
+        .map(recursiveMapper::apply)
         .map(t -> problem.getProblem().getSolutionMapper().apply(t))
         .toList();
     Multiset<S> multiset = LinkedHashMultiset.create();

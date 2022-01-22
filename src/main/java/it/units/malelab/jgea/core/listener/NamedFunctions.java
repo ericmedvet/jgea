@@ -1,6 +1,8 @@
 package it.units.malelab.jgea.core.listener;
 
-import it.units.malelab.jgea.core.evolver.Evolver;
+import it.units.malelab.jgea.core.solver.Individual;
+import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
+import it.units.malelab.jgea.core.solver.state.State;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.core.util.Sized;
@@ -23,8 +25,8 @@ public class NamedFunctions {
   private NamedFunctions() {
   }
 
-  public static <G, S, F> NamedFunction<Evolver.Event<? extends G, ? extends S, ? extends F>, Collection<? extends Evolver.Individual<? extends G, ? extends S, ? extends F>>> all() {
-    return f("all", e -> e.orderedPopulation().all());
+  public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Collection<? extends Individual<? extends G, ? extends S, ? extends F>>> all() {
+    return f("all", e -> e.getPopulation().all());
   }
 
   @SuppressWarnings("unchecked")
@@ -32,12 +34,12 @@ public class NamedFunctions {
     return f("as[" + clazz.getSimpleName() + "]", o -> (T) o);
   }
 
-  public static <G, S, F> NamedFunction<Evolver.Event<? extends G, ? extends S, ? extends F>, Evolver.Individual<? extends G, ? extends S, ? extends F>> best() {
-    return f("best", e -> Misc.first(e.orderedPopulation().firsts()));
+  public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Individual<? extends G, ? extends S, ? extends F>> best() {
+    return f("best", e -> Misc.first(e.getPopulation().firsts()));
   }
 
-  public static <G, S, F> NamedFunction<Evolver.Event<? extends G, ? extends S, ? extends F>, Integer> births() {
-    return f("births", "%5d", e -> e.state().getBirths());
+  public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Long> births() {
+    return f("births", "%5d", POSetPopulationState::getNOfBirths);
   }
 
   public static <F, T> NamedFunction<F, T> cachedF(String name, Function<F, T> function) {
@@ -52,7 +54,7 @@ public class NamedFunctions {
     return f(name, format, Misc.cached(function, size));
   }
 
-  public static <G, S, F, T> NamedFunction<Evolver.Event<? extends G, ? extends S, ? extends F>, T> constant(
+  public static <T> NamedFunction<State, T> constant(
       String name,
       String format,
       T value
@@ -60,7 +62,7 @@ public class NamedFunctions {
     return f(name, format, e -> value);
   }
 
-  public static <G, S, F, T> NamedFunction<Evolver.Event<? extends G, ? extends S, ? extends F>, T> constant(
+  public static <T> NamedFunction<State, T> constant(
       String name,
       T value
   ) {
@@ -74,21 +76,8 @@ public class NamedFunctions {
     );
   }
 
-  public static <G, S, F> NamedFunction<Evolver.Event<? extends G, ? extends S, ? extends F>, Float> elapsedSeconds() {
-    return f("elapsed.seconds", "%5.1f", e -> e.state().getElapsedMillis() / 1000f);
-  }
-
-  public static <G, S, F> NamedFunction<Evolver.Event<? extends G, ? extends S, ? extends F>, Object> eventAttribute(
-      String name
-  ) {
-    return f(name, e -> e.attributes().get(name));
-  }
-
-  public static <G, S, F> NamedFunction<Evolver.Event<? extends G, ? extends S, ? extends F>, Object> eventAttribute(
-      String name,
-      String format
-  ) {
-    return f(name, format, e -> e.attributes().get(name));
+  public static NamedFunction<State, Float> elapsedSeconds() {
+    return f("elapsed.seconds", "%5.1f", e -> e.getElapsedMillis() / 1000f);
   }
 
   public static <F, T> NamedFunction<F, T> f(String name, Function<F, T> function) {
@@ -99,28 +88,28 @@ public class NamedFunctions {
     return NamedFunction.build(name, format, function);
   }
 
-  public static <G, S, F> NamedFunction<Evolver.Event<? extends G, ? extends S, ? extends F>, Collection<? extends Evolver.Individual<? extends G, ? extends S, ? extends F>>> firsts() {
-    return f("firsts", e -> e.orderedPopulation().firsts());
+  public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Collection<? extends Individual<? extends G, ? extends S, ? extends F>>> firsts() {
+    return f("firsts", e -> e.getPopulation().firsts());
   }
 
-  public static <F> NamedFunction<Evolver.Individual<?, ?, ? extends F>, F> fitness() {
-    return f("fitness", Evolver.Individual::fitness);
+  public static <F> NamedFunction<Individual<?, ?, ? extends F>, F> fitness() {
+    return f("fitness", Individual::fitness);
   }
 
-  public static <G, S, F> NamedFunction<Evolver.Event<? extends G, ? extends S, ? extends F>, Integer> fitnessEvaluations() {
-    return f("fitness.evaluations", "%5d", e -> e.state().getFitnessEvaluations());
+  public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Long> fitnessEvaluations() {
+    return f("fitness.evaluations", "%5d", POSetPopulationState::getNOfFitnessEvaluations);
   }
 
-  public static <G, S, F> NamedFunction<Evolver.Individual<? extends G, ? extends S, ? extends F>, Integer> fitnessMappingIteration() {
-    return f("birth.iteration", "%4d", Evolver.Individual::fitnessMappingIteration);
+  public static <G, S, F> NamedFunction<Individual<? extends G, ? extends S, ? extends F>, Long> fitnessMappingIteration() {
+    return f("birth.iteration", "%4d", Individual::fitnessMappingIteration);
   }
 
-  public static <G> NamedFunction<Evolver.Individual<? extends G, ?, ?>, G> genotype() {
-    return f("genotype", Evolver.Individual::genotype);
+  public static <G> NamedFunction<Individual<? extends G, ?, ?>, G> genotype() {
+    return f("genotype", Individual::genotype);
   }
 
-  public static <G, S, F> NamedFunction<Evolver.Individual<? extends G, ? extends S, ? extends F>, Integer> genotypeBirthIteration() {
-    return f("genotype.birth.iteration", "%4d", Evolver.Individual::genotypeBirthIteration);
+  public static <G, S, F> NamedFunction<Individual<? extends G, ? extends S, ? extends F>, Long> genotypeBirthIteration() {
+    return f("genotype.birth.iteration", "%4d", Individual::genotypeBirthIteration);
   }
 
   @SuppressWarnings("unchecked")
@@ -131,12 +120,12 @@ public class NamedFunctions {
     );
   }
 
-  public static <G, S, F> NamedFunction<Evolver.Event<? extends G, ? extends S, ? extends F>, Integer> iterations() {
-    return f("iterations", "%4d", e -> e.state().getIterations());
+  public static NamedFunction<State, Long> iterations() {
+    return f("iterations", "%4d", e -> e.getNOfIterations());
   }
 
-  public static <G, S, F> NamedFunction<Evolver.Event<? extends G, ? extends S, ? extends F>, Collection<? extends Evolver.Individual<? extends G, ? extends S, ? extends F>>> lasts() {
-    return f("lasts", e -> e.orderedPopulation().lasts());
+  public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Collection<? extends Individual<? extends G, ? extends S, ? extends F>>> lasts() {
+    return f("lasts", e -> e.getPopulation().lasts());
   }
 
   public static <T> NamedFunction<Collection<? extends T>, T> max(Comparator<T> comparator) {
@@ -164,21 +153,21 @@ public class NamedFunctions {
   }
 
   public static Integer size(Object o) {
-    if (o instanceof Sized) {
-      return ((Sized) o).size();
+    if (o instanceof Sized s) {
+      return s.size();
     }
-    if (o instanceof Collection) {
-      if (Misc.first((Collection<?>) o) instanceof Sized) {
-        return ((Collection<?>) o).stream().mapToInt(i -> ((Sized) i).size()).sum();
+    if (o instanceof Collection<?> c) {
+      if (Misc.first(c) instanceof Sized s) {
+        return c.stream().mapToInt(i -> s.size()).sum();
       }
-      return ((Collection<?>) o).size();
+      return c.size();
     }
-    if (o instanceof String) {
-      return ((String) o).length();
+    if (o instanceof String s) {
+      return s.length();
     }
-    if (o instanceof Pair) {
-      Integer firstSize = size(((Pair<?, ?>) o).first());
-      Integer secondSize = size(((Pair<?, ?>) o).second());
+    if (o instanceof Pair p) {
+      Integer firstSize = size(p.first());
+      Integer secondSize = size(p.second());
       if ((firstSize != null) && (secondSize != null)) {
         return firstSize + secondSize;
       }
@@ -186,12 +175,8 @@ public class NamedFunctions {
     return null;
   }
 
-  public static <S> NamedFunction<Evolver.Individual<?, ? extends S, ?>, S> solution() {
-    return f("solution", Evolver.Individual::solution);
-  }
-
-  public static <G, S, F> NamedFunction<Evolver.Event<? extends G, ? extends S, ? extends F>, Evolver.State> state() {
-    return f("state", Evolver.Event::state);
+  public static <S> NamedFunction<Individual<?, ? extends S, ?>, S> solution() {
+    return f("solution", Individual::solution);
   }
 
   public static NamedFunction<Collection<?>, Double> uniqueness() {

@@ -18,16 +18,19 @@ package it.units.malelab.jgea.problem.classification;
 
 import it.units.malelab.jgea.core.ProblemWithValidation;
 import it.units.malelab.jgea.core.fitness.ClassificationFitness;
+import it.units.malelab.jgea.core.order.ParetoDominance;
+import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * @author eric
  */
 public class ClassificationProblem<O, L extends Enum<L>> implements ProblemWithValidation<Classifier<O, L>, List<Double>> {
+
+  private final static PartialComparator<List<Double>> COMPARATOR = new ParetoDominance<>(Double.class);
 
   private final ClassificationFitness<O, L> fitnessFunction;
   private final ClassificationFitness<O, L> validationFunction;
@@ -48,11 +51,6 @@ public class ClassificationProblem<O, L extends Enum<L>> implements ProblemWithV
     validationFunction = new ClassificationFitness<>(validationData, validationMetric);
   }
 
-  @Override
-  public List<Double> apply(Classifier<O, L> classifier) {
-    return fitnessFunction.apply(classifier);
-  }
-
   public List<Pair<O, L>> getLearningData() {
     return learningData;
   }
@@ -62,7 +60,17 @@ public class ClassificationProblem<O, L extends Enum<L>> implements ProblemWithV
   }
 
   @Override
-  public Function<Classifier<O, L>, List<Double>> validationQualityFunction() {
+  public PartialComparator<List<Double>> qualityComparator() {
+    return COMPARATOR;
+  }
+
+  @Override
+  public ClassificationFitness<O, L> qualityFunction() {
+    return fitnessFunction;
+  }
+
+  @Override
+  public ClassificationFitness<O, L> validationQualityFunction() {
     return validationFunction;
   }
 

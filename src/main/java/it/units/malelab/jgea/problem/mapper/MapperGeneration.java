@@ -22,6 +22,8 @@
 package it.units.malelab.jgea.problem.mapper;
 
 import it.units.malelab.jgea.core.ProblemWithValidation;
+import it.units.malelab.jgea.core.order.ParetoDominance;
+import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
@@ -36,7 +38,9 @@ import java.util.function.Function;
  * @author eric
  */
 @SuppressWarnings("rawtypes")
-public class MapperGeneration implements GrammarBasedProblem<String, Pair<Tree<Element>, Tree<Element>>, List<Double>>, ProblemWithValidation<Pair<Tree<Element>, Tree<Element>>, List<Double>> {
+public class MapperGeneration implements GrammarBasedProblem<String, Pair<Tree<Element>, Tree<Element>>>, ProblemWithValidation<Pair<Tree<Element>, Tree<Element>>, List<Double>> {
+
+  private final static PartialComparator<List<Double>> COMPARATOR = new ParetoDominance<>(Double.class);
 
   private final Grammar<String> grammar;
   private final FitnessFunction learningFitnessFunction;
@@ -75,11 +79,6 @@ public class MapperGeneration implements GrammarBasedProblem<String, Pair<Tree<E
   }
 
   @Override
-  public List<Double> apply(Pair<Tree<Element>, Tree<Element>> treeTreePair) {
-    return learningFitnessFunction.apply(treeTreePair);
-  }
-
-  @Override
   public Grammar<String> getGrammar() {
     return grammar;
   }
@@ -91,6 +90,16 @@ public class MapperGeneration implements GrammarBasedProblem<String, Pair<Tree<E
       Tree<Element> genoAssigner = MapperUtils.transform(rawMappingTree.child(1));
       return Pair.of(optionChooser, genoAssigner);
     };
+  }
+
+  @Override
+  public PartialComparator<List<Double>> qualityComparator() {
+    return COMPARATOR;
+  }
+
+  @Override
+  public Function<Pair<Tree<Element>, Tree<Element>>, List<Double>> qualityFunction() {
+    return learningFitnessFunction;
   }
 
   @Override

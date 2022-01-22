@@ -16,8 +16,8 @@
 
 package it.units.malelab.jgea.core.solver.speciation;
 
-import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
+import it.units.malelab.jgea.core.solver.Individual;
 import it.units.malelab.jgea.distance.Distance;
 import org.apache.commons.math3.ml.clustering.CentroidCluster;
 import org.apache.commons.math3.ml.clustering.Clusterable;
@@ -34,11 +34,11 @@ import java.util.stream.IntStream;
 /**
  * @author federico
  */
-public class KMeansSpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Evolver.Individual<G, S, F>> {
+public class KMeansSpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Individual<G, S, F>> {
 
   private final int k;
   private final int maxIterations;
-  private final Function<Evolver.Individual<G, S, F>, double[]> converter;
+  private final Function<Individual<G, S, F>, double[]> converter;
   private final Distance<double[]> distance;
   private KMeansPlusPlusClusterer<ClusterableIndividual> kMeans = null;
 
@@ -46,7 +46,7 @@ public class KMeansSpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Evol
       int k,
       int maxIterations,
       Distance<double[]> distance,
-      Function<Evolver.Individual<G, S, F>, double[]> converter
+      Function<Individual<G, S, F>, double[]> converter
   ) {
     if (k != -1) {
       this.kMeans = new KMeansPlusPlusClusterer<>(
@@ -62,10 +62,10 @@ public class KMeansSpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Evol
   }
 
   private class ClusterableIndividual implements Clusterable {
-    private final Evolver.Individual<G, S, F> individual;
+    private final Individual<G, S, F> individual;
     private double[] point;
 
-    public ClusterableIndividual(Evolver.Individual<G, S, F> individual) {
+    public ClusterableIndividual(Individual<G, S, F> individual) {
       this.individual = individual;
     }
 
@@ -164,7 +164,7 @@ public class KMeansSpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Evol
   }
 
   @Override
-  public Collection<SpeciatedEvolver.Species<Evolver.Individual<G, S, F>>> speciate(PartiallyOrderedCollection<Evolver.Individual<G, S, F>> population) {
+  public Collection<SpeciatedEvolver.Species<Individual<G, S, F>>> speciate(PartiallyOrderedCollection<Individual<G, S, F>> population) {
     Collection<ClusterableIndividual> points = population.all().stream()
         .map(ClusterableIndividual::new)
         .toList();

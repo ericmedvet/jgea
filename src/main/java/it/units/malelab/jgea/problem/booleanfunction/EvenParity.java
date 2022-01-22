@@ -16,6 +16,7 @@
 
 package it.units.malelab.jgea.problem.booleanfunction;
 
+import it.units.malelab.jgea.core.ComparableQualityBasedProblem;
 import it.units.malelab.jgea.core.fitness.BooleanFunctionFitness;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
@@ -31,7 +32,7 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class EvenParity implements GrammarBasedProblem<String, List<Tree<Element>>, Double> {
+public class EvenParity implements GrammarBasedProblem<String, List<Tree<Element>>>, ComparableQualityBasedProblem<List<Tree<Element>>, Double> {
 
   private final Grammar<String> grammar;
   private final Function<Tree<String>, List<Tree<Element>>> solutionMapper;
@@ -80,11 +81,6 @@ public class EvenParity implements GrammarBasedProblem<String, List<Tree<Element
   }
 
   @Override
-  public Double apply(List<Tree<Element>> trees) {
-    return fitnessFunction.apply(trees);
-  }
-
-  @Override
   public Grammar<String> getGrammar() {
     return grammar;
   }
@@ -92,6 +88,11 @@ public class EvenParity implements GrammarBasedProblem<String, List<Tree<Element
   @Override
   public Function<Tree<String>, List<Tree<Element>>> getSolutionMapper() {
     return solutionMapper;
+  }
+
+  @Override
+  public Function<List<Tree<Element>>, Double> qualityFunction() {
+    return fitnessFunction;
   }
 
 }

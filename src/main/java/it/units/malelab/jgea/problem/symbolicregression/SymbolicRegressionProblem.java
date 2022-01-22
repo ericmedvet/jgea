@@ -16,18 +16,15 @@
 
 package it.units.malelab.jgea.problem.symbolicregression;
 
+import it.units.malelab.jgea.core.ComparableQualityBasedProblem;
 import it.units.malelab.jgea.core.ProblemWithValidation;
-import it.units.malelab.jgea.core.order.PartialComparator;
 
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * @author eric
  */
-public class SymbolicRegressionProblem implements ProblemWithValidation<RealFunction, Double> {
-
-  private final static PartialComparator<Double> COMPARATOR = PartialComparator.from(Double.class);
+public class SymbolicRegressionProblem implements ComparableQualityBasedProblem<RealFunction, Double>, ProblemWithValidation<RealFunction, Double> {
 
   private final SymbolicRegressionFitness fitness;
   private final SymbolicRegressionFitness validationFitness;
@@ -49,17 +46,12 @@ public class SymbolicRegressionProblem implements ProblemWithValidation<RealFunc
   }
 
   @Override
-  public PartialComparator<Double> qualityComparator() {
-    return COMPARATOR;
-  }
-
-  @Override
-  public Function<RealFunction, Double> qualityFunction() {
+  public SymbolicRegressionFitness qualityFunction() {
     return fitness;
   }
 
   @Override
-  public Function<RealFunction, Double> validationQualityFunction() {
+  public SymbolicRegressionFitness validationQualityFunction() {
     return validationFitness;
   }
 

@@ -16,6 +16,7 @@
 
 package it.units.malelab.jgea.problem.classification;
 
+import it.units.malelab.jgea.core.QualityBasedProblem;
 import it.units.malelab.jgea.core.fitness.ClassificationFitness;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.problem.extraction.string.RegexGrammar;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 /**
  * @author eric
  */
-public class GrammarBasedTextFlaggingProblem extends TextFlaggingProblem implements GrammarBasedProblem<String, Classifier<String, TextFlaggingProblem.Label>, List<Double>> {
+public class GrammarBasedTextFlaggingProblem extends TextFlaggingProblem implements GrammarBasedProblem<String, Classifier<String, TextFlaggingProblem.Label>>, QualityBasedProblem<Classifier<String, TextFlaggingProblem.Label>, List<Double>> {
 
   private final Grammar<String> grammar;
   private final Function<Tree<String>, Classifier<String, TextFlaggingProblem.Label>> solutionMapper;

@@ -16,8 +16,8 @@
 
 package it.units.malelab.jgea.core.solver.speciation;
 
-import it.units.malelab.jgea.core.evolver.Evolver;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
+import it.units.malelab.jgea.core.solver.Individual;
 import it.units.malelab.jgea.distance.Distance;
 
 import java.util.ArrayList;
@@ -27,23 +27,22 @@ import java.util.List;
 /**
  * @author federico
  */
-public class LazySpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Evolver.Individual<G, S, F>> {
-  private final Distance<Evolver.Individual<G, S, F>> distance;
+public class LazySpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Individual<G, S, F>> {
+  private final Distance<Individual<G, S, F>> distance;
   private final double distanceThreshold;
 
-  public LazySpeciator(Distance<Evolver.Individual<G, S, F>> distance, double distanceThreshold) {
+  public LazySpeciator(Distance<Individual<G, S, F>> distance, double distanceThreshold) {
     this.distance = distance;
     this.distanceThreshold = distanceThreshold;
   }
 
   @Override
-  public Collection<SpeciatedEvolver.Species<Evolver.Individual<G, S, F>>> speciate(PartiallyOrderedCollection<Evolver.Individual<G, S, F>> population) {
-    List<List<Evolver.Individual<G, S, F>>> clusters = new ArrayList<>();
-    for (Evolver.Individual<G, S, F> individual : population.all()) {
-      List<Double> distances = clusters.stream()
-          .map(c -> distance.apply(individual, c.get(0))).toList();
+  public Collection<SpeciatedEvolver.Species<Individual<G, S, F>>> speciate(PartiallyOrderedCollection<Individual<G, S, F>> population) {
+    List<List<Individual<G, S, F>>> clusters = new ArrayList<>();
+    for (Individual<G, S, F> individual : population.all()) {
+      List<Double> distances = clusters.stream().map(c -> distance.apply(individual, c.get(0))).toList();
       if (distances.isEmpty()) {
-        List<Evolver.Individual<G, S, F>> cluster = new ArrayList<>();
+        List<Individual<G, S, F>> cluster = new ArrayList<>();
         cluster.add(individual);
         clusters.add(cluster);
       } else {
@@ -56,15 +55,13 @@ public class LazySpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Evolve
         if (distances.get(closestIndex) < distanceThreshold) {
           clusters.get(closestIndex).add(individual);
         } else {
-          List<Evolver.Individual<G, S, F>> cluster = new ArrayList<>();
+          List<Individual<G, S, F>> cluster = new ArrayList<>();
           cluster.add(individual);
           clusters.add(cluster);
         }
       }
     }
-    return clusters.stream()
-        .map(c -> new SpeciatedEvolver.Species<>(c, c.get(0)))
-        .toList();
+    return clusters.stream().map(c -> new SpeciatedEvolver.Species<>(c, c.get(0))).toList();
   }
 
 }

@@ -22,12 +22,12 @@ import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 /**
  * @author eric
  */
-public class EnhancedProblem<N, S, F> {
+public class EnhancedProblem<N, S> {
 
-  private final GrammarBasedProblem<N, S, F> problem;
+  private final GrammarBasedProblem<N, S> problem;
   private final Distance<S> distance;
 
-  public EnhancedProblem(GrammarBasedProblem<N, S, F> problem, Distance<S> distance) {
+  public EnhancedProblem(GrammarBasedProblem<N, S> problem, Distance<S> distance) {
     this.problem = problem;
     this.distance = distance;
   }
@@ -36,7 +36,7 @@ public class EnhancedProblem<N, S, F> {
     return distance;
   }
 
-  public GrammarBasedProblem<N, S, F> getProblem() {
+  public GrammarBasedProblem<N, S> getProblem() {
     return problem;
   }
 
