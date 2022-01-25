@@ -43,6 +43,7 @@ import java.util.random.RandomGenerator;
  * @author eric
  */
 public class SpeciatedEvolver<T extends POSetPopulationState<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q> extends StandardEvolver<T, P, G, S, Q> {
+  // TODO should have a speciated state!
 
   private static final Logger L = Logger.getLogger(SpeciatedEvolver.class.getName());
   private final int minSpeciesSizeForElitism;
@@ -55,7 +56,6 @@ public class SpeciatedEvolver<T extends POSetPopulationState<G, S, Q>, P extends
       int populationSize,
       Predicate<? super T> stopCondition,
       Map<GeneticOperator<G>, Double> operators,
-      int offspringSize,
       boolean remap,
       BiFunction<P, RandomGenerator, T> stateInitializer,
       int minSpeciesSizeForElitism,
@@ -70,7 +70,7 @@ public class SpeciatedEvolver<T extends POSetPopulationState<G, S, Q>, P extends
         operators,
         null,
         new Last(),
-        offspringSize,
+        populationSize,
         false,
         remap,
         stateInitializer

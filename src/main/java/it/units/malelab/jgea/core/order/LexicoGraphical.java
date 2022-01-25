@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * @author eric
  */
-public class LexicoGraphical<C extends Comparable<C>> implements PartialComparator<List<? extends C>> {
+public class LexicoGraphical<C extends Comparable<C>> implements PartialComparator<List<C>> {
 
   private final int[] order;
 
@@ -30,7 +30,7 @@ public class LexicoGraphical<C extends Comparable<C>> implements PartialComparat
   }
 
   @Override
-  public PartialComparatorOutcome compare(List<? extends C> k1, List<? extends C> k2) {
+  public PartialComparatorOutcome compare(List<C> k1, List<C> k2) {
     if (k1.size() != k2.size()) {
       return PartialComparatorOutcome.NOT_COMPARABLE;
     }
