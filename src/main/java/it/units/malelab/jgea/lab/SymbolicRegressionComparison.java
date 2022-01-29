@@ -19,7 +19,8 @@ package it.units.malelab.jgea.lab;
 import com.google.common.base.Stopwatch;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.IndependentFactory;
-import it.units.malelab.jgea.core.listener.*;
+import it.units.malelab.jgea.core.listener.Factory;
+import it.units.malelab.jgea.core.listener.NamedFunction;
 import it.units.malelab.jgea.core.operator.Crossover;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.selector.Last;
@@ -47,7 +48,6 @@ import it.units.malelab.jgea.representation.graph.numeric.operatorgraph.Operator
 import it.units.malelab.jgea.representation.graph.numeric.operatorgraph.ShallowFactory;
 import it.units.malelab.jgea.representation.tree.*;
 
-import java.io.File;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -136,13 +136,13 @@ public class SymbolicRegressionComparison extends Worker {
         // TODO put validation, hist of fitnesses
         solution().reformat("%30.30s").of(best())
     );
-    Factory<POSetPopulationState<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(functions);
+    Factory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory = Factory.deaf();/*new TabularPrinter<>(functions);
     if (a("file", null) != null) {
       listenerFactory = Factory.all(List.of(
           listenerFactory,
           new CSVPrinter<>(functions, new File(a("file", null)))
       ));
-    }
+    }*/  // TODO add functions
     //evolvers
     Map<String, Function<SymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SymbolicRegressionProblem, RealFunction>>> solvers = new TreeMap<>();
     solvers.put("tree-ga", p -> {
@@ -1034,15 +1034,17 @@ public class SymbolicRegressionComparison extends Worker {
               Map.entry("problem", problem.getClass().getSimpleName().toLowerCase()),
               Map.entry("evolver", solverEntry.getKey())
           );
-          Listener<POSetPopulationState<?, ?, ? extends Double>> listener = Listener.all(List.of(
-              //new EventAugmenter(keys), // TODO restore attributes
-              listenerFactory.build())).deferred(executorService);
           try {
             Stopwatch stopwatch = Stopwatch.createStarted();
             IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SymbolicRegressionProblem, RealFunction> solver = solverEntry.getValue()
                 .apply(problem);
             L.info(String.format("Starting %s", keys));
-            Collection<RealFunction> solutions = solver.solve(problem, new Random(seed), executorService, listener);
+            Collection<RealFunction> solutions = solver.solve(
+                problem,
+                new Random(seed),
+                executorService,
+                listenerFactory.build(keys).deferred(executorService)
+            );
             L.info(String.format(
                 "Done %s: %d solutions in %4.1fs",
                 keys,

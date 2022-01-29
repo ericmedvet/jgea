@@ -20,7 +20,6 @@ import com.google.common.collect.Range;
 import it.units.malelab.jgea.core.QualityBasedProblem;
 import it.units.malelab.jgea.core.TotalOrderQualityBasedProblem;
 import it.units.malelab.jgea.core.listener.Factory;
-import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.NamedFunction;
 import it.units.malelab.jgea.core.listener.TabularPrinter;
 import it.units.malelab.jgea.core.selector.Last;
@@ -101,8 +100,7 @@ public class Example extends Worker {
   }
 
   public void runGrammarBasedParity() {
-    Factory<POSetPopulationState<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(
-        List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
+    Factory<POSetPopulationState<?, ?, ? extends Double>, Void> listenerFactory = Factory.deaf();// new TabularPrinter<>(Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
     Random r = new Random(1);
     EvenParity p;
     try {
@@ -129,7 +127,7 @@ public class Example extends Worker {
           p,
           r,
           executorService,
-          listenerFactory.build().deferred(executorService)
+          listenerFactory.build(null).deferred(executorService)
       );
       System.out.printf("Found %d solutions with %s.%n", solutions.size(), solver.getClass().getSimpleName());
     } catch (SolverException e) {
@@ -138,8 +136,7 @@ public class Example extends Worker {
   }
 
   public void runLinearPoints() {
-    Factory<POSetPopulationState<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(
-        List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
+    Factory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory = Factory.deaf();//new TabularPrinter<>(Misc.concat(        List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
     Random r = new Random(1);
     TotalOrderQualityBasedProblem<List<Double>, Double> p = new LinearPoints();
     List<IterativeSolver<? extends POSetPopulationState<List<Double>, List<Double>, Double>, TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>>> solvers = new ArrayList<>();
@@ -184,7 +181,7 @@ public class Example extends Worker {
             p,
             r,
             executorService,
-            listenerFactory.build().deferred(executorService)
+            listenerFactory.build(Map.of()).deferred(executorService)
         );
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), solver.getClass().getSimpleName());
       } catch (SolverException e) {
@@ -197,9 +194,11 @@ public class Example extends Worker {
     int size = 1000;
     Random r = new Random(1);
     QualityBasedProblem<BitString, Double> p = new OneMax();
-    List<NamedFunction<? super POSetPopulationState<?, ?, ?>, ?>> keysFunctions = List.of(); // TODO restore eventAttribute("evolver", "%20.20s"));
-    Factory<POSetPopulationState<?, ?, ? extends Double>> listenerFactory = Factory.all(List.of(new TabularPrinter<>(
-        Misc.concat(List.of(keysFunctions, BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)))));
+    List<NamedFunction<? super POSetPopulationState<?, ?, ?>, ?>> keysFunctions = List.of();
+    Factory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory = Factory.all(List.of(new TabularPrinter<>(
+        Misc.concat(List.of(keysFunctions, BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)),
+        List.of(attribute("solver"))
+    )));
     List<IterativeSolver<? extends POSetPopulationState<?, BitString, Double>, QualityBasedProblem<BitString, Double>, BitString>> solvers = new ArrayList<>();
     solvers.add(new RandomSearch<>(
         Function.identity(),
@@ -240,11 +239,13 @@ public class Example extends Worker {
         100
     ));
     for (IterativeSolver<? extends POSetPopulationState<?, BitString, Double>, QualityBasedProblem<BitString, Double>, BitString> evolver : solvers) {
-      Listener<POSetPopulationState<?, ?, ? extends Double>> listener = Listener.all(List.of(
-          //new EventAugmenter(Map.ofEntries(Map.entry("evolver", evolver.getClass().getSimpleName()))), // TODO restore
-          listenerFactory.build())).deferred(executorService);
       try {
-        Collection<BitString> solutions = evolver.solve(p, r, executorService, listener);
+        Collection<BitString> solutions = evolver.solve(
+            p,
+            r,
+            executorService,
+            listenerFactory.build(Map.of("solver", evolver.getClass().getSimpleName())).deferred(executorService)
+        );
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
       } catch (SolverException e) {
         e.printStackTrace();
@@ -254,11 +255,11 @@ public class Example extends Worker {
   }
 
   public void runSymbolicRegression() {
-    Factory<? super POSetPopulationState<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(
+    Factory<? super POSetPopulationState<?, ?, ? extends Double>, Void> listenerFactory = Factory.deaf();/*new TabularPrinter<>(Misc.concat(
         List.of(
             BASIC_FUNCTIONS,
             DOUBLE_FUNCTIONS
-        )));
+        )));*/
     Random r = new Random(1);
     SymbolicRegressionProblem p = new Nguyen7(SymbolicRegressionFitness.Metric.MSE, 1);
     Grammar<String> srGrammar;
@@ -284,8 +285,10 @@ public class Example extends Worker {
         (srp, rnd) -> new POSetPopulationState<>()
     ));
     solvers.add(new StandardWithEnforcedDiversityEvolver<>(
-        new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(n, "x"))
-            .andThen(MathUtils.linearScaler(p.qualityFunction())),
+        new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(
+            n,
+            "x"
+        )).andThen(MathUtils.linearScaler(p.qualityFunction())),
         new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
         100,
         StopConditions.nOfIterations(100),
@@ -305,7 +308,7 @@ public class Example extends Worker {
             p,
             r,
             executorService,
-            listenerFactory.build().deferred(executorService)
+            listenerFactory.build(null).deferred(executorService)
         );
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), solver.getClass().getSimpleName());
       } catch (SolverException e) {

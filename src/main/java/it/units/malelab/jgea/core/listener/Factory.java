@@ -11,14 +11,14 @@ import java.util.stream.Collectors;
 /**
  * @author "Eric Medvet" on 2022/01/29 for jgea
  */
-public interface Factory<E> {
-  Listener<E> build();
+public interface Factory<E, K> {
+  Listener<E> build(K k);
 
-  static <E> Factory<E> all(List<? extends Factory<? super E>> factories) {
+  static <E, K> Factory<E, K> all(List<? extends Factory<? super E, ? super K>> factories) {
     return new Factory<>() {
       @Override
-      public Listener<E> build() {
-        return Listener.all(factories.stream().map(Factory::build).collect(Collectors.toList()));
+      public Listener<E> build(K k) {
+        return Listener.all(factories.stream().map(f -> f.build(k)).collect(Collectors.toList()));
       }
 
       @Override
@@ -28,15 +28,15 @@ public interface Factory<E> {
     };
   }
 
-  static <E> Factory<E> deaf() {
-    return Listener::deaf;
+  static <E, K> Factory<E, K> deaf() {
+    return k -> Listener.deaf();
   }
 
-  static <F, E> Factory<F> forEach(Function<F, Collection<E>> splitter, Factory<E> factory) {
+  static <F, E, K> Factory<F, K> forEach(Function<F, Collection<E>> splitter, Factory<E, K> factory) {
     return new Factory<>() {
       @Override
-      public Listener<F> build() {
-        return Listener.forEach(splitter, factory.build());
+      public Listener<F> build(K k) {
+        return Listener.forEach(splitter, factory.build(k));
       }
 
       @Override
@@ -46,12 +46,12 @@ public interface Factory<E> {
     };
   }
 
-  default <F> Factory<F> on(Function<F, E> function) {
-    Factory<E> inner = this;
+  default <F> Factory<F, K> on(Function<F, E> function) {
+    Factory<E, K> inner = this;
     return new Factory<>() {
       @Override
-      public Listener<F> build() {
-        return inner.build().on(function);
+      public Listener<F> build(K k) {
+        return inner.build(k).on(function);
       }
 
       @Override
@@ -61,12 +61,12 @@ public interface Factory<E> {
     };
   }
 
-  default Factory<E> onLast() {
-    Factory<E> thisFactory = this;
+  default Factory<E, K> onLast() {
+    Factory<E, K> thisFactory = this;
     return new Factory<>() {
       @Override
-      public Listener<E> build() {
-        return thisFactory.build().onLast();
+      public Listener<E> build(K k) {
+        return thisFactory.build(k).onLast();
       }
 
       @Override
@@ -76,15 +76,15 @@ public interface Factory<E> {
     };
   }
 
-  default Factory<E> robust() {
-    final Factory<E> thisFactory = this;
+  default Factory<E, K> robust() {
+    final Factory<E, K> thisFactory = this;
     final Logger L = Logger.getLogger(Listener.class.getName());
     final AtomicInteger counter = new AtomicInteger(0);
-    return new Factory<E>() {
+    return new Factory<E, K>() {
       @Override
-      public Listener<E> build() {
-        final Listener<E> innerListener = thisFactory.build();
-        return new Listener<E>() {
+      public Listener<E> build(K k) {
+        final Listener<E> innerListener = thisFactory.build(k);
+        return new Listener<>() {
           @Override
           public void listen(E e) {
             if (counter.get() == -1) {
@@ -104,7 +104,7 @@ public interface Factory<E> {
 
           @Override
           public Listener<E> deferred(ExecutorService executorService) {
-            return new Listener<E>() {
+            return new Listener<>() {
               @Override
               public void listen(E e) {
                 if (counter.get() == -1) {

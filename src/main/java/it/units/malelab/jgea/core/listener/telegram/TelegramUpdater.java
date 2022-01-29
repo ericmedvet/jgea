@@ -8,19 +8,16 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author eric on 2021/01/03 for jgea
  */
-public class TelegramUpdater<E> extends TelegramClient implements Factory<E> {
+public class TelegramUpdater<E, K> extends TelegramClient implements Factory<E, K> {
 
-  private final List<Accumulator.Factory<E, ?>> factories;
+  private final List<Accumulator.Factory<E, ?, K>> factories;
 
   public TelegramUpdater(
-      List<Accumulator.Factory<E, ?>> factories,
-      String botToken,
-      long chatId
+      List<Accumulator.Factory<E, ?, K>> factories, String botToken, long chatId
   ) {
     super(botToken, chatId);
     this.factories = factories;
@@ -33,11 +30,9 @@ public class TelegramUpdater<E> extends TelegramClient implements Factory<E> {
   }
 
   @Override
-  public Listener<E> build() {
+  public Listener<E> build(K k) {
     return new Listener<>() {
-      private final List<Accumulator<E, ?>> accumulators = factories.stream()
-          .map(Accumulator.Factory::build)
-          .collect(Collectors.toList());
+      private final List<? extends Accumulator<E, ?>> accumulators = factories.stream().map(f -> f.build(k)).toList();
 
       @Override
       public void listen(E e) {
@@ -47,10 +42,7 @@ public class TelegramUpdater<E> extends TelegramClient implements Factory<E> {
       @Override
       public void done() {
         List<Object> outcomes = new ArrayList<>();
-        sendText(String.format(
-            "done() on %s",
-            getMachineName()
-        ));
+        sendText(String.format("done() on %s", getMachineName()));
         //consume accumulators
         for (Accumulator<E, ?> accumulator : accumulators) {
           try {
@@ -65,17 +57,13 @@ public class TelegramUpdater<E> extends TelegramClient implements Factory<E> {
         }
         //consume outcomes
         for (Object outcome : outcomes) {
-          if (outcome instanceof String) {
-            sendText((String) outcome);
-          } else if (outcome instanceof BufferedImage) {
-            sendImage((BufferedImage) outcome);
-          } else if (outcome instanceof File) {
-            File file = (File) outcome;
+          if (outcome instanceof String string) {
+            sendText(string);
+          } else if (outcome instanceof BufferedImage image) {
+            sendImage(image);
+          } else if (outcome instanceof File file) {
             if (!file.exists()) {
-              L.info(String.format(
-                  "File %s does not exist, cannot send",
-                  file
-              ));
+              L.info(String.format("File %s does not exist, cannot send", file));
             } else {
               if (VIDEO_FILE_EXTENSIONS.stream().anyMatch(e -> file.getPath().endsWith("." + e))) {
                 sendVideo(file);
@@ -96,11 +84,7 @@ public class TelegramUpdater<E> extends TelegramClient implements Factory<E> {
 
   @Override
   public void shutdown() {
-    sendText(String.format(
-        "%s shutting down on %s",
-        TelegramUpdater.class.getSimpleName(),
-        getMachineName()
-    ));
+    sendText(String.format("%s shutting down on %s", TelegramUpdater.class.getSimpleName(), getMachineName()));
   }
 
 }

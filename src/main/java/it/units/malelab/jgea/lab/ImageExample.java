@@ -18,7 +18,9 @@ package it.units.malelab.jgea.lab;
 
 import com.google.common.base.Stopwatch;
 import it.units.malelab.jgea.Worker;
-import it.units.malelab.jgea.core.listener.*;
+import it.units.malelab.jgea.core.listener.CSVPrinter;
+import it.units.malelab.jgea.core.listener.Factory;
+import it.units.malelab.jgea.core.listener.NamedFunction;
 import it.units.malelab.jgea.core.selector.Last;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.solver.IterativeSolver;
@@ -90,11 +92,11 @@ public class ImageExample extends Worker {
         fitness().reformat("%5.3f").of(best()),
         fitnessMappingIteration().of(best())
     );
-    Factory<POSetPopulationState<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(functions);
+    Factory<? super POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory = Factory.deaf();/*new TabularPrinter<>(functions);*/  // TODO add functions
     if (a("file", null) != null) {
       listenerFactory = Factory.all(List.of(
           listenerFactory,
-          new CSVPrinter<>(functions, new File(a("file", null)))
+          new CSVPrinter<>(functions, List.of(), new File(a("file", null))) // TODO add functions
       ));
     }
     Map<String, IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, ImageReconstruction, RealFunction>> solvers = new TreeMap<>();
@@ -139,16 +141,12 @@ public class ImageExample extends Worker {
             ImageReconstruction problem = new ImageReconstruction(ImageIO.read(new File(image)), true);
             Stopwatch stopwatch = Stopwatch.createStarted();
             IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, ImageReconstruction, RealFunction> solver = solverEntry.getValue();
-            Listener<POSetPopulationState<?, ?, ? extends Double>> listener = Listener.all(List.of(
-                //new EventAugmenter(keys), // TODO restore attributes
-                listenerFactory.build()
-            )).deferred(executorService);
             L.info(String.format("Starting %s", keys));
             Collection<RealFunction> solutions = solver.solve(
                 problem,
                 new Random(seed),
                 executorService,
-                listener
+                listenerFactory.build(keys).deferred(executorService)
             );
             L.info(String.format(
                 "Done %s: %d solutions in %4.1fs",

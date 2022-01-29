@@ -4,11 +4,11 @@ package it.units.malelab.jgea.core.listener;
 import java.util.function.Function;
 
 public interface Accumulator<E, O> extends Listener<E> {
-  interface Factory<E, O> extends it.units.malelab.jgea.core.listener.Factory<E> {
-    Accumulator<E, O> build();
+  interface Factory<E, O, K> extends it.units.malelab.jgea.core.listener.Factory<E, K> {
+    Accumulator<E, O> build(K k);
 
-    static <E> Factory<E, E> last() {
-      return () -> new Accumulator<>() {
+    static <E, K> Factory<E, E, K> last() {
+      return k -> new Accumulator<>() {
         private E lastE;
 
         @Override
@@ -23,12 +23,12 @@ public interface Accumulator<E, O> extends Listener<E> {
       };
     }
 
-    default <P> Factory<E, P> then(Function<? super O, P> function) {
-      final Factory<E, O> thisFactory = this;
+    default <P> Factory<E, P, K> then(Function<? super O, P> function) {
+      final Factory<E, O, K> thisFactory = this;
       return new Factory<>() {
         @Override
-        public Accumulator<E, P> build() {
-          Accumulator<E, O> accumulator = thisFactory.build();
+        public Accumulator<E, P> build(K k) {
+          Accumulator<E, O> accumulator = thisFactory.build(k);
           return new Accumulator<>() {
             @Override
             public P get() {

@@ -8,10 +8,7 @@ import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.core.util.Sized;
 import it.units.malelab.jgea.core.util.TextPlotter;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -32,6 +29,18 @@ public class NamedFunctions {
   @SuppressWarnings("unchecked")
   public static <T> NamedFunction<Object, T> as(Class<T> clazz) {
     return f("as[" + clazz.getSimpleName() + "]", o -> (T) o);
+  }
+
+  public static <V> NamedFunction<Map<String, V>, V> attribute(String name) {
+    return f(name, "%" + name.length() + "s", map -> map.get(name));
+  }
+
+  public static <V> List<NamedFunction<? super Map<String, V>, V>> attributes(String... names) {
+    List<NamedFunction<? super Map<String, V>, V>> functions = new ArrayList<>();
+    for (String name : names) {
+      functions.add(attribute(name));
+    }
+    return functions;
   }
 
   public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Individual<? extends G, ? extends S, ? extends F>> best() {
@@ -55,16 +64,13 @@ public class NamedFunctions {
   }
 
   public static <T> NamedFunction<State, T> constant(
-      String name,
-      String format,
-      T value
+      String name, String format, T value
   ) {
     return f(name, format, e -> value);
   }
 
   public static <T> NamedFunction<State, T> constant(
-      String name,
-      T value
+      String name, T value
   ) {
     return constant(name, NamedFunction.format(value.toString().length()), value);
   }
@@ -114,14 +120,16 @@ public class NamedFunctions {
 
   @SuppressWarnings("unchecked")
   public static NamedFunction<Collection<? extends Number>, String> hist(int bins) {
-    return f("hist", NamedFunction.format(bins),
-        values -> TextPlotter.histogram(
-            values instanceof List ? (List<? extends Number>) values : new ArrayList<>(values), bins)
+    return f(
+        "hist",
+        NamedFunction.format(bins),
+        values -> TextPlotter.histogram(values instanceof List ? (List<? extends Number>) values : new ArrayList<>(
+            values), bins)
     );
   }
 
   public static NamedFunction<State, Long> iterations() {
-    return f("iterations", "%4d", e -> e.getNOfIterations());
+    return f("iterations", "%4d", State::getNOfIterations);
   }
 
   public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Collection<? extends Individual<? extends G, ? extends S, ? extends F>>> lasts() {
@@ -180,10 +188,7 @@ public class NamedFunctions {
   }
 
   public static NamedFunction<Collection<?>, Double> uniqueness() {
-    return f("uniqueness", "%4.2f",
-        ts -> (double) ts.stream().distinct().count() / (double) ts.size()
-    );
+    return f("uniqueness", "%4.2f", ts -> (double) ts.stream().distinct().count() / (double) ts.size());
   }
-
 
 }

@@ -1,5 +1,6 @@
 package it.units.malelab.jgea.core.listener;
 
+import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.core.util.Pair;
 
 import java.io.PrintStream;
@@ -12,7 +13,7 @@ import java.util.stream.IntStream;
 /**
  * @author eric on 2021/01/03 for jgea
  */
-public class TabularPrinter<E> implements Factory<E> {
+public class TabularPrinter<E, K> implements Factory<E, K> {
 
   private final static String COLOR_RESET = "\u001B[0m";
   private final static String COLOR_DOWN = "\u001B[31m";
@@ -27,7 +28,8 @@ public class TabularPrinter<E> implements Factory<E> {
   private final static String SEP = " ";
   private final static String COLLAPSER_REGEX = "[.→\\[\\]]+";
 
-  private final List<Pair<? extends NamedFunction<? super E, ?>, Integer>> pairs;
+  private final List<Pair<? extends NamedFunction<? super E, ?>, Integer>> ePairs;
+  private final List<Pair<? extends NamedFunction<? super K, ?>, Integer>> kPairs;
   private final PrintStream ps;
   private final int headerInterval;
   private final boolean showLegend;
@@ -37,19 +39,23 @@ public class TabularPrinter<E> implements Factory<E> {
   private final String header;
   private final String legend;
 
-  public TabularPrinter(List<NamedFunction<? super E, ?>> functions) {
-    this(functions, System.out, 10, true, true, true);
+  public TabularPrinter(List<NamedFunction<? super E, ?>> eFunctions, List<NamedFunction<? super K, ?>> kFunctions) {
+    this(eFunctions, kFunctions, System.out, 10, true, true, true);
   }
 
   public TabularPrinter(
-      List<NamedFunction<? super E, ?>> functions,
+      List<NamedFunction<? super E, ?>> eFunctions,
+      List<NamedFunction<? super K, ?>> kFunctions,
       PrintStream ps,
       int headerInterval,
       boolean showLegend,
       boolean showVariation,
       boolean useColors
   ) {
-    this.pairs = functions.stream()
+    ePairs = eFunctions.stream()
+        .map(f -> Pair.of(f, Math.max(collapse(f.getName()).length(), formatSize(f.getFormat()))))
+        .collect(Collectors.toList());
+    kPairs = kFunctions.stream()
         .map(f -> Pair.of(f, Math.max(collapse(f.getName()).length(), formatSize(f.getFormat()))))
         .collect(Collectors.toList());
     this.ps = ps;
@@ -57,11 +63,14 @@ public class TabularPrinter<E> implements Factory<E> {
     this.showLegend = showLegend;
     this.showVariation = showVariation;
     this.useColors = useColors;
-    header = pairs.stream()
-        .map(p -> justify(collapse(p.first().getName()), p.second() + (showVariation ? 1 : 0)))
-        .collect(Collectors.joining(SEP));
-    int w = pairs.stream().mapToInt(p -> collapse(p.first().getName()).length()).max().orElse(1);
-    legend = "Legend:\n" + pairs.stream()
+    List<String> kHeaders = kPairs.stream().map(p -> justify(collapse(p.first().getName()), p.second())).toList();
+    List<String> eHeaders = ePairs.stream()
+        .map(p -> justify(collapse(p.first().getName()), p.second()) + (showVariation ? " " : ""))
+        .toList();
+    header = String.join(SEP, Misc.concat(List.of(kHeaders, eHeaders)));
+    int w = ePairs.stream().mapToInt(p -> collapse(p.first().getName()).length()).max().orElse(1);
+    legend = "Legend:\n" + Misc.concat(List.of(kPairs, ePairs))
+        .stream()
         .map(p -> String.format(
             "%" + w + "." + w + "s → %s [%s]",
             collapse(p.first().getName()),
@@ -124,28 +133,30 @@ public class TabularPrinter<E> implements Factory<E> {
   }
 
   @Override
-  public Listener<E> build() {
+  public Listener<E> build(K k) {
     if (showLegend) {
       ps.println(legend);
     }
+    List<?> fixedValues = kPairs.stream().map(p -> p.first().apply(k)).toList();
+    final String fixedS = IntStream.range(0, kPairs.size())
+        .mapToObj(i -> format(fixedValues.get(i), kPairs.get(i).first().getFormat(), kPairs.get(i).second()))
+        .collect(Collectors.joining(SEP));
     return new Listener<>() {
-      final Object[] lastValues = new Object[pairs.size()];
-      final Object[] secondLastValues = new Object[pairs.size()];
+      final Object[] lastValues = new Object[ePairs.size()];
+      final Object[] secondLastValues = new Object[ePairs.size()];
       int lineCounter = 0;
 
       @Override
       public void listen(E e) {
-        List<?> values = pairs.stream().map(p -> p.first().apply(e)).toList();
-        String s = IntStream.range(0, pairs.size())
-            .mapToObj(i -> format(
-                values.get(i),
-                lastValues[i],
-                secondLastValues[i],
-                pairs.get(i).first().getFormat(),
-                pairs.get(i).second()
-            ))
-            .collect(Collectors.joining(SEP));
-        IntStream.range(0, pairs.size()).forEach(i -> {
+        List<?> values = ePairs.stream().map(p -> p.first().apply(e)).toList();
+        String s = IntStream.range(0, ePairs.size()).mapToObj(i -> format(
+            values.get(i),
+            lastValues[i],
+            secondLastValues[i],
+            ePairs.get(i).first().getFormat(),
+            ePairs.get(i).second()
+        )).collect(Collectors.joining(SEP));
+        IntStream.range(0, ePairs.size()).forEach(i -> {
           secondLastValues[i] = lastValues[i];
           lastValues[i] = values.get(i);
         });
@@ -156,11 +167,15 @@ public class TabularPrinter<E> implements Factory<E> {
           if (headerInterval > 1 && (lineCounter % headerInterval == 0)) {
             ps.println(header);
           }
-          ps.println(s);
+          ps.println((fixedS.isEmpty() ? "" : (fixedS + SEP)) + s);
           lineCounter = lineCounter + 1;
         }
       }
     };
+  }
+
+  private String format(Object currentValue, String format, int l) {
+    return justify(String.format(format, currentValue), l);
   }
 
   private String format(Object currentValue, Object lastValue, Object secondLastValue, String format, int l) {

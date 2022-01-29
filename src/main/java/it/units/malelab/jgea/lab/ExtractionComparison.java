@@ -20,7 +20,9 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.QualityBasedProblem;
-import it.units.malelab.jgea.core.listener.*;
+import it.units.malelab.jgea.core.listener.CSVPrinter;
+import it.units.malelab.jgea.core.listener.Factory;
+import it.units.malelab.jgea.core.listener.NamedFunction;
 import it.units.malelab.jgea.core.operator.Crossover;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.order.LexicoGraphical;
@@ -135,12 +137,12 @@ public class ExtractionComparison extends Worker {
         // TODO put validation, num of extractions, hist of fitnesses
         solution().reformat("%30.30s").of(best())
     );
-    Factory<POSetPopulationState<?, ? extends Extractor<Character>, ? extends List<Double>>> listenerFactory = new TabularPrinter<>(
-        functions);
+    Factory<POSetPopulationState<?, ? extends Extractor<Character>, ? extends List<Double>>, Map<String, Object>> listenerFactory = Factory.deaf();/*new TabularPrinter<>(
+        functions);*/  // TODO add functions
     if (a("file", null) != null) {
       listenerFactory = Factory.all(List.of(
           listenerFactory,
-          new CSVPrinter<>(functions, new File(a("file", null)))
+          new CSVPrinter<>(functions, List.of(), new File(a("file", null))) // TODO add functions
       ));
     }
     //evolvers
@@ -520,10 +522,6 @@ public class ExtractionComparison extends Worker {
       for (Map.Entry<String, RegexExtractionProblem> problemEntry : problems.entrySet()) {
         for (Map.Entry<String, Function<RegexExtractionProblem, IterativeSolver<? extends POSetPopulationState<?, Extractor<Character>, List<Double>>, QualityBasedProblem<Extractor<Character>, List<Double>>, Extractor<Character>>>> solverEntry : solvers.entrySet()) {
           keys.putAll(Map.of("seed", seed, "problem", problemEntry.getKey(), "evolver", solverEntry.getKey()));
-          Listener<POSetPopulationState<?, ? extends Extractor<Character>, ? extends List<Double>>> listener = Listener.all(
-              List.of(
-                  //new EventAugmenter(keys),
-                  listenerFactory.build())).deferred(executorService);
           try {
             RegexExtractionProblem p = problemEntry.getValue();
             Stopwatch stopwatch = Stopwatch.createStarted();
@@ -537,7 +535,7 @@ public class ExtractionComparison extends Worker {
                 )),
                 new Random(seed),
                 executorService,
-                listener
+                listenerFactory.build(keys).deferred(executorService)
             );
             L.info(String.format(
                 "Done %s: %d solutions in %4.1fs",

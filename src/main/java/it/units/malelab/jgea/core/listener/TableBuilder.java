@@ -1,30 +1,35 @@
 package it.units.malelab.jgea.core.listener;
 
 import it.units.malelab.jgea.core.util.ArrayTable;
+import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.core.util.Table;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author eric on 2021/01/04 for jgea
  */
-public class TableBuilder<E, O> implements Accumulator.Factory<E, Table<O>> {
+public class TableBuilder<E, O, K> implements Accumulator.Factory<E, Table<O>, K> {
 
-  private final List<NamedFunction<? super E, ? extends O>> functions;
+  private final List<NamedFunction<? super E, ? extends O>> eFunctions;
+  private final List<NamedFunction<? super K, ? extends O>> kFunctions;
 
-  public TableBuilder(List<NamedFunction<? super E, ? extends O>> functions) {
-    this.functions = functions;
+  public TableBuilder(
+      List<NamedFunction<? super E, ? extends O>> eFunctions, List<NamedFunction<? super K, ? extends O>> kFunctions
+  ) {
+    this.eFunctions = eFunctions;
+    this.kFunctions = kFunctions;
   }
 
   @Override
-  public Accumulator<E, Table<O>> build() {
+  public Accumulator<E, Table<O>> build(K k) {
+    List<? extends O> kValues = kFunctions.stream().map(f -> f.apply(k)).toList();
     return new Accumulator<>() {
 
-      private final Table<O> table = new ArrayTable<>(functions.stream()
+      private final Table<O> table = new ArrayTable<>(Misc.concat(List.of(kFunctions, eFunctions))
+          .stream()
           .map(NamedFunction::getName)
-          .toList()
-      );
+          .toList());
 
       @Override
       public Table<O> get() {
@@ -33,10 +38,8 @@ public class TableBuilder<E, O> implements Accumulator.Factory<E, Table<O>> {
 
       @Override
       public void listen(E e) {
-        table.addRow(functions.stream()
-            .map(f -> f.apply(e))
-            .collect(Collectors.toList())
-        );
+        List<? extends O> eValues = eFunctions.stream().map(f -> f.apply(e)).toList();
+        table.addRow(Misc.concat(List.of(kValues, eValues)));
       }
     };
   }
