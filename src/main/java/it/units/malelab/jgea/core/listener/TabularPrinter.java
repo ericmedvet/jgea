@@ -12,7 +12,7 @@ import java.util.stream.IntStream;
 /**
  * @author eric on 2021/01/03 for jgea
  */
-public class TabularPrinter<E> implements Listener.Factory<E> {
+public class TabularPrinter<E> implements Factory<E> {
 
   private final static String COLOR_RESET = "\u001B[0m";
   private final static String COLOR_DOWN = "\u001B[31m";
@@ -58,10 +58,7 @@ public class TabularPrinter<E> implements Listener.Factory<E> {
     this.showVariation = showVariation;
     this.useColors = useColors;
     header = pairs.stream()
-        .map(p -> justify(
-            collapse(p.first().getName()),
-            p.second() + (showVariation ? 1 : 0)
-        ))
+        .map(p -> justify(collapse(p.first().getName()), p.second() + (showVariation ? 1 : 0)))
         .collect(Collectors.joining(SEP));
     int w = pairs.stream().mapToInt(p -> collapse(p.first().getName()).length()).max().orElse(1);
     legend = "Legend:\n" + pairs.stream()
@@ -84,7 +81,7 @@ public class TabularPrinter<E> implements Listener.Factory<E> {
   }
 
   private static int formatSize(String format) {
-    int size = 0;
+    int size;
     Matcher matcher = Pattern.compile("\\d++").matcher(format);
     if (matcher.find()) {
       size = Integer.parseInt(matcher.group());
@@ -138,9 +135,7 @@ public class TabularPrinter<E> implements Listener.Factory<E> {
 
       @Override
       public void listen(E e) {
-        List<Object> values = pairs.stream()
-            .map(p -> p.first().apply(e))
-            .collect(Collectors.toList());
+        List<?> values = pairs.stream().map(p -> p.first().apply(e)).toList();
         String s = IntStream.range(0, pairs.size())
             .mapToObj(i -> format(
                 values.get(i),

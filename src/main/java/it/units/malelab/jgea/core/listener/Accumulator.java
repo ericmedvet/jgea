@@ -4,7 +4,7 @@ package it.units.malelab.jgea.core.listener;
 import java.util.function.Function;
 
 public interface Accumulator<E, O> extends Listener<E> {
-  interface Factory<E, O> extends Listener.Factory<E> {
+  interface Factory<E, O> extends it.units.malelab.jgea.core.listener.Factory<E> {
     Accumulator<E, O> build();
 
     static <E> Factory<E, E> last() {

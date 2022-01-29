@@ -19,6 +19,7 @@ package it.units.malelab.jgea;
 import com.google.common.collect.Range;
 import it.units.malelab.jgea.core.QualityBasedProblem;
 import it.units.malelab.jgea.core.TotalOrderQualityBasedProblem;
+import it.units.malelab.jgea.core.listener.Factory;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.NamedFunction;
 import it.units.malelab.jgea.core.listener.TabularPrinter;
@@ -100,7 +101,7 @@ public class Example extends Worker {
   }
 
   public void runGrammarBasedParity() {
-    Listener.Factory<POSetPopulationState<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(
+    Factory<POSetPopulationState<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(
         List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
     Random r = new Random(1);
     EvenParity p;
@@ -137,7 +138,7 @@ public class Example extends Worker {
   }
 
   public void runLinearPoints() {
-    Listener.Factory<POSetPopulationState<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(
+    Factory<POSetPopulationState<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(
         List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
     Random r = new Random(1);
     TotalOrderQualityBasedProblem<List<Double>, Double> p = new LinearPoints();
@@ -197,7 +198,7 @@ public class Example extends Worker {
     Random r = new Random(1);
     QualityBasedProblem<BitString, Double> p = new OneMax();
     List<NamedFunction<? super POSetPopulationState<?, ?, ?>, ?>> keysFunctions = List.of(); // TODO restore eventAttribute("evolver", "%20.20s"));
-    Listener.Factory<POSetPopulationState<?, ?, ? extends Double>> listenerFactory = Listener.Factory.all(List.of(new TabularPrinter<>(
+    Factory<POSetPopulationState<?, ?, ? extends Double>> listenerFactory = Factory.all(List.of(new TabularPrinter<>(
         Misc.concat(List.of(keysFunctions, BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)))));
     List<IterativeSolver<? extends POSetPopulationState<?, BitString, Double>, QualityBasedProblem<BitString, Double>, BitString>> solvers = new ArrayList<>();
     solvers.add(new RandomSearch<>(
@@ -253,7 +254,7 @@ public class Example extends Worker {
   }
 
   public void runSymbolicRegression() {
-    Listener.Factory<? super POSetPopulationState<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(
+    Factory<? super POSetPopulationState<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(
         List.of(
             BASIC_FUNCTIONS,
             DOUBLE_FUNCTIONS

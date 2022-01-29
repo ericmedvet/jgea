@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 /**
  * @author eric on 2021/01/03 for jgea
  */
-public class CSVPrinter<E> implements Listener.Factory<E> {
+public class CSVPrinter<E> implements Factory<E> {
 
   private static final Logger L = Logger.getLogger(CSVPrinter.class.getName());
   private static final int FLUSH_N = 10;

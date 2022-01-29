@@ -1,6 +1,7 @@
 package it.units.malelab.jgea.core.listener.telegram;
 
 import it.units.malelab.jgea.core.listener.Accumulator;
+import it.units.malelab.jgea.core.listener.Factory;
 import it.units.malelab.jgea.core.listener.Listener;
 
 import java.awt.image.BufferedImage;
@@ -12,7 +13,7 @@ import java.util.stream.Collectors;
 /**
  * @author eric on 2021/01/03 for jgea
  */
-public class TelegramUpdater<E> extends TelegramClient implements Listener.Factory<E> {
+public class TelegramUpdater<E> extends TelegramClient implements Factory<E> {
 
   private final List<Accumulator.Factory<E, ?>> factories;
 

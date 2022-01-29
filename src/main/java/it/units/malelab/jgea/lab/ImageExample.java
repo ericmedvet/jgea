@@ -18,10 +18,7 @@ package it.units.malelab.jgea.lab;
 
 import com.google.common.base.Stopwatch;
 import it.units.malelab.jgea.Worker;
-import it.units.malelab.jgea.core.listener.CSVPrinter;
-import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.NamedFunction;
-import it.units.malelab.jgea.core.listener.TabularPrinter;
+import it.units.malelab.jgea.core.listener.*;
 import it.units.malelab.jgea.core.selector.Last;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.solver.IterativeSolver;
@@ -93,9 +90,9 @@ public class ImageExample extends Worker {
         fitness().reformat("%5.3f").of(best()),
         fitnessMappingIteration().of(best())
     );
-    Listener.Factory<POSetPopulationState<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(functions);
+    Factory<POSetPopulationState<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(functions);
     if (a("file", null) != null) {
-      listenerFactory = Listener.Factory.all(List.of(
+      listenerFactory = Factory.all(List.of(
           listenerFactory,
           new CSVPrinter<>(functions, new File(a("file", null)))
       ));

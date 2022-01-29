@@ -19,10 +19,7 @@ package it.units.malelab.jgea.lab;
 import com.google.common.base.Stopwatch;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.IndependentFactory;
-import it.units.malelab.jgea.core.listener.CSVPrinter;
-import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.NamedFunction;
-import it.units.malelab.jgea.core.listener.TabularPrinter;
+import it.units.malelab.jgea.core.listener.*;
 import it.units.malelab.jgea.core.operator.Crossover;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.selector.Last;
@@ -139,9 +136,9 @@ public class SymbolicRegressionComparison extends Worker {
         // TODO put validation, hist of fitnesses
         solution().reformat("%30.30s").of(best())
     );
-    Listener.Factory<POSetPopulationState<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(functions);
+    Factory<POSetPopulationState<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(functions);
     if (a("file", null) != null) {
-      listenerFactory = Listener.Factory.all(List.of(
+      listenerFactory = Factory.all(List.of(
           listenerFactory,
           new CSVPrinter<>(functions, new File(a("file", null)))
       ));
