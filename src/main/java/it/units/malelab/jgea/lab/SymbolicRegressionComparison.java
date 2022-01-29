@@ -449,7 +449,6 @@ public class SymbolicRegressionComparison extends Worker {
             graphArcRemovalRate
         ),
         false,
-        (srp, r) -> new POSetPopulationState<>(),
         5,
         new KMeansSpeciator<>(
             5,
@@ -482,7 +481,6 @@ public class SymbolicRegressionComparison extends Worker {
             graphArcRemovalRate
         ),
         false,
-        (srp, r) -> new POSetPopulationState<>(),
         5,
         new LazySpeciator<>((new Jaccard()).on(i -> i.genotype().nodes()), 0.25),
         0.75
@@ -510,7 +508,6 @@ public class SymbolicRegressionComparison extends Worker {
             graphArcRemovalRate
         ),
         false,
-        (srp, r) -> new POSetPopulationState<>(),
         5,
         new LazySpeciator<>((new Jaccard()).on(i -> i.genotype().nodes()), 0.25),
         0.75
@@ -578,7 +575,6 @@ public class SymbolicRegressionComparison extends Worker {
             graphCrossoverRate
         ),
         false,
-        (srp, r) -> new POSetPopulationState<>(),
         5,
         new LazySpeciator<>((new Jaccard()).on(i -> i.genotype().nodes()), 0.25),
         0.75
@@ -612,7 +608,6 @@ public class SymbolicRegressionComparison extends Worker {
             graphCrossoverRate
         ),
         false,
-        (srp, r) -> new POSetPopulationState<>(),
         5,
         new LazySpeciator<>((new Jaccard()).on(i -> i.genotype().nodes()), 0.25),
         0.75
@@ -708,7 +703,6 @@ public class SymbolicRegressionComparison extends Worker {
             graphArcRemovalRate
         ),
         false,
-        (srp, r) -> new POSetPopulationState<>(),
         5,
         new LazySpeciator<>((new Jaccard()).on(i -> i.genotype().nodes()), 0.25),
         0.75
@@ -816,7 +810,6 @@ public class SymbolicRegressionComparison extends Worker {
               graphCrossoverRate
           ),
           false,
-          (srp, r) -> new POSetPopulationState<>(),
           5,
           new LazySpeciator<>((new Jaccard()).on(i -> i.genotype().nodes()), 0.25),
           0.75
@@ -875,7 +868,6 @@ public class SymbolicRegressionComparison extends Worker {
               graphCrossoverRate
           ),
           false,
-          (srp, r) -> new POSetPopulationState<>(),
           5,
           new LazySpeciator<>((new Jaccard()).on(i -> i.genotype().nodes()), 0.25),
           0.75
@@ -917,7 +909,6 @@ public class SymbolicRegressionComparison extends Worker {
               ).withChecker(g -> checker.test(graphMapper.apply(g))), graphCrossoverRate
           ),
           false,
-          (srp, r) -> new POSetPopulationState<>(),
           5,
           new LazySpeciator<>(
               (new Jaccard()).on(i -> i.genotype().nodes()),
@@ -957,7 +948,6 @@ public class SymbolicRegressionComparison extends Worker {
                   g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate
           ),
           false,
-          (srp, r) -> new POSetPopulationState<>(),
           5,
           new LazySpeciator<>(
               (new Jaccard()).on(i -> i.genotype().nodes()),

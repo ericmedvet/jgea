@@ -261,7 +261,6 @@ public class ExtractionComparison extends Worker {
               graphCrossoverRate
           ),
           false,
-          (ep, r) -> new POSetPopulationState<>(),
           5,
           new LazySpeciator<>((new Jaccard()).on(i -> i.genotype().nodes()), 0.25),
           0.75
@@ -324,7 +323,6 @@ public class ExtractionComparison extends Worker {
               graphCrossoverRate
           ),
           false,
-          (ep, r) -> new POSetPopulationState<>(),
           5,
           new LazySpeciator<>((new Jaccard()).on(i -> i.genotype().nodes()), 0.25),
           0.75
@@ -381,7 +379,6 @@ public class ExtractionComparison extends Worker {
               graphArcRemovalRate
           ),
           false,
-          (ep, r) -> new POSetPopulationState<>(),
           5,
           new LazySpeciator<>((new Jaccard()).on(i -> i.genotype().nodes()), 0.25),
           0.75
@@ -507,7 +504,6 @@ public class ExtractionComparison extends Worker {
               ).withChecker(g -> checker.test(graphMapper.apply(g))), graphArcRemovalRate
           ),
           false,
-          (ep, r) -> new POSetPopulationState<>(),
           5,
           new LazySpeciator<>(
               (new Jaccard()).on(i -> i.genotype().nodes()),
