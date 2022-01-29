@@ -28,12 +28,12 @@ import it.units.malelab.jgea.core.solver.StandardEvolver;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.core.util.Misc;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -42,9 +42,7 @@ import java.util.random.RandomGenerator;
 /**
  * @author eric
  */
-public class SpeciatedEvolver<T extends POSetPopulationState<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q> extends StandardEvolver<T, P, G, S, Q> {
-  // TODO should have a speciated state!
-
+public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q> extends StandardEvolver<SpeciatedEvolver.State<G, S, Q>, P, G, S, Q> {
   private static final Logger L = Logger.getLogger(SpeciatedEvolver.class.getName());
   private final int minSpeciesSizeForElitism;
   private final Speciator<Individual<G, S, Q>> speciator;
@@ -54,10 +52,9 @@ public class SpeciatedEvolver<T extends POSetPopulationState<G, S, Q>, P extends
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       int populationSize,
-      Predicate<? super T> stopCondition,
+      Predicate<? super State<G, S, Q>> stopCondition,
       Map<GeneticOperator<G>, Double> operators,
       boolean remap,
-      BiFunction<P, RandomGenerator, T> stateInitializer,
       int minSpeciesSizeForElitism,
       Speciator<Individual<G, S, Q>> speciator,
       double rankBase
@@ -73,7 +70,7 @@ public class SpeciatedEvolver<T extends POSetPopulationState<G, S, Q>, P extends
         populationSize,
         false,
         remap,
-        stateInitializer
+        (p, r) -> new State<>()
     );
     this.minSpeciesSizeForElitism = minSpeciesSizeForElitism;
     this.speciator = speciator;
@@ -86,15 +83,60 @@ public class SpeciatedEvolver<T extends POSetPopulationState<G, S, Q>, P extends
 
   public record Species<T>(Collection<T> elements, T representative) {}
 
+  public static class State<G, S, Q> extends POSetPopulationState<G, S, Q> {
+    private Collection<Species<Individual<G, S, Q>>> parentSpecies;
+
+    public State() {
+      parentSpecies = List.of();
+    }
+
+    protected State(
+        LocalDateTime startingDateTime,
+        long elapsedMillis,
+        long nOfIterations,
+        long nOfBirths,
+        long nOfFitnessEvaluations,
+        PartiallyOrderedCollection<Individual<G, S, Q>> population,
+        Collection<Species<Individual<G, S, Q>>> parentSpecies
+    ) {
+      super(startingDateTime, elapsedMillis, nOfIterations, nOfBirths, nOfFitnessEvaluations, population);
+      this.parentSpecies = parentSpecies;
+    }
+
+    public Collection<Species<Individual<G, S, Q>>> getParentSpecies() {
+      return parentSpecies;
+    }
+
+    public void setParentSpecies(Collection<Species<Individual<G, S, Q>>> parentSpecies) {
+      this.parentSpecies = parentSpecies;
+    }
+
+    @Override
+    public State<G, S, Q> immutableCopy() {
+      return new State<>(
+          startingDateTime,
+          elapsedMillis,
+          nOfIterations,
+          nOfBirths,
+          nOfFitnessEvaluations,
+          population.immutableCopy(),
+          new ArrayList<>(parentSpecies)
+      );
+    }
+  }
+
   @Override
   protected Collection<Individual<G, S, Q>> buildOffspring(
-      T state, P problem, RandomGenerator random, ExecutorService executor
+      State<G, S, Q> state, P problem, RandomGenerator random, ExecutorService executor
   ) throws SolverException {
     Collection<Individual<G, S, Q>> parents = state.getPopulation().all();
     Collection<Individual<G, S, Q>> offspring = new ArrayList<>();
     //partition in species
     List<Species<Individual<G, S, Q>>> allSpecies = new ArrayList<>(speciator.speciate(state.getPopulation()));
-    L.fine(String.format("Population speciated in %d species of sizes %s", allSpecies.size(),
+    state.setParentSpecies(allSpecies);
+    L.fine(String.format(
+        "Population speciated in %d species of sizes %s",
+        allSpecies.size(),
         allSpecies.stream().map(s -> s.elements().size()).toList()
     ));
     //put elites
@@ -115,7 +157,9 @@ public class SpeciatedEvolver<T extends POSetPopulationState<G, S, Q>, P extends
     //assign remaining offspring size
     int remaining = populationSize - elite.size();
     List<Individual<G, S, Q>> representers = allSpecies.stream().map(Species::representative).toList();
-    L.fine(String.format("Representers determined for %d species: fitnesses are %s", allSpecies.size(),
+    L.fine(String.format(
+        "Representers determined for %d species: fitnesses are %s",
+        allSpecies.size(),
         representers.stream().map(i -> String.format("%s", i.fitness())).toList()
     ));
     List<Individual<G, S, Q>> sortedRepresenters = new ArrayList<>(representers);

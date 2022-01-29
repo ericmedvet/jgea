@@ -18,7 +18,6 @@ import java.util.stream.IntStream;
 
 public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativeBasedSolver<SimpleEvolutionaryStrategy.State<S, Q>, TotalOrderQualityBasedProblem<S, Q>, List<Double>, S, Q> {
 
-  // TODO add remap, add elitism
   protected final int nOfParents;
   protected final int nOfElites;
   protected final double sigma;

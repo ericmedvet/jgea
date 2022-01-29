@@ -91,8 +91,8 @@ public class Example extends Worker {
   @Override
   public void run() {
     //runLinearPoints();
-    //runOneMax();
-    runSymbolicRegression();
+    runOneMax();
+    //runSymbolicRegression();
     //runSymbolicRegressionMO();
     //runGrammarBasedParity();
     //runSphere();
@@ -312,5 +312,5 @@ public class Example extends Worker {
       }
     }
   }
-  
+
 }
