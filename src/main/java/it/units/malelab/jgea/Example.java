@@ -17,35 +17,22 @@
 package it.units.malelab.jgea;
 
 import com.google.common.collect.Range;
-import it.units.malelab.jgea.core.Problem;
-import it.units.malelab.jgea.core.evolver.BasicEvolutionaryStrategy;
-import it.units.malelab.jgea.core.evolver.CMAESEvolver;
-import it.units.malelab.jgea.core.evolver.Evolver;
-import it.units.malelab.jgea.core.evolver.stopcondition.Iterations;
-import it.units.malelab.jgea.core.evolver.stopcondition.TargetFitness;
-import it.units.malelab.jgea.core.listener.EventAugmenter;
+import it.units.malelab.jgea.core.QualityBasedProblem;
+import it.units.malelab.jgea.core.TotalOrderQualityBasedProblem;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.NamedFunction;
 import it.units.malelab.jgea.core.listener.TabularPrinter;
-import it.units.malelab.jgea.core.order.ParetoDominance;
-import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.selector.Last;
 import it.units.malelab.jgea.core.selector.Tournament;
-import it.units.malelab.jgea.core.solver.RandomSearch;
-import it.units.malelab.jgea.core.solver.RandomWalk;
-import it.units.malelab.jgea.core.solver.StandardEvolver;
-import it.units.malelab.jgea.core.solver.StandardWithEnforcedDiversityEvolver;
+import it.units.malelab.jgea.core.solver.*;
+import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.core.util.Misc;
-import it.units.malelab.jgea.core.util.Sized;
 import it.units.malelab.jgea.problem.booleanfunction.Element;
 import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
 import it.units.malelab.jgea.problem.symbolicregression.*;
 import it.units.malelab.jgea.problem.synthetic.LinearPoints;
 import it.units.malelab.jgea.problem.synthetic.OneMax;
-import it.units.malelab.jgea.problem.synthetic.Rastrigin;
-import it.units.malelab.jgea.problem.synthetic.Sphere;
 import it.units.malelab.jgea.representation.grammar.Grammar;
-import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
 import it.units.malelab.jgea.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
 import it.units.malelab.jgea.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
 import it.units.malelab.jgea.representation.sequence.FixedLengthListFactory;
@@ -62,11 +49,7 @@ import it.units.malelab.jgea.representation.tree.Tree;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.ExecutionException;
+import java.util.*;
 import java.util.function.Function;
 
 import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
@@ -76,7 +59,7 @@ import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
  */
 public class Example extends Worker {
 
-  public final static List<NamedFunction<Evolver.Event<?, ?, ?>, ?>> BASIC_FUNCTIONS = List.of(
+  public final static List<NamedFunction<? super POSetPopulationState<?, ?, ?>, ?>> BASIC_FUNCTIONS = List.of(
       iterations(),
       births(),
       elapsedSeconds(),
@@ -91,9 +74,8 @@ public class Example extends Worker {
       fitnessMappingIteration().of(best())
   );
 
-  public final static List<NamedFunction<Evolver.Event<?, ?, ? extends Double>, ?>> DOUBLE_FUNCTIONS = List.of(
-      fitness().reformat(
-          "%5.3f").of(best()),
+  public final static List<NamedFunction<? super POSetPopulationState<?, ?, ? extends Double>, ?>> DOUBLE_FUNCTIONS = List.of(
+      fitness().reformat("%5.3f").of(best()),
       hist(8).of(each(fitness())).of(all()),
       max(Double::compare).reformat("%5.3f").of(each(fitness())).of(all())
   );
@@ -118,84 +100,93 @@ public class Example extends Worker {
   }
 
   public void runGrammarBasedParity() {
-    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(
-        BASIC_FUNCTIONS,
-        DOUBLE_FUNCTIONS
-    )));
+    Listener.Factory<POSetPopulationState<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(
+        List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
     Random r = new Random(1);
-    GrammarBasedProblem<String, List<Tree<Element>>, Double> p;
+    EvenParity p;
     try {
       p = new EvenParity(8);
     } catch (IOException e) {
       System.err.printf("Cannot load problem due to %s%n", e);
       return;
     }
-    Evolver<Tree<String>, List<Tree<Element>>, Double> evolver = new StandardEvolver<>(
+    IterativeSolver<POSetPopulationState<Tree<String>, List<Tree<Element>>, Double>, EvenParity, List<Tree<Element>>> solver = new StandardEvolver<>(
         new it.units.malelab.jgea.problem.booleanfunction.FormulaMapper(),
         new GrammarRampedHalfAndHalf<>(3, 12, p.getGrammar()),
-        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
         100,
+        StopConditions.nOfIterations(100),
         Map.of(new SameRootSubtreeCrossover<>(12), 0.8d, new GrammarBasedSubtreeMutation<>(12, p.getGrammar()), 0.2d),
         new Tournament(3),
         new Last(),
         100,
         true,
-        false
+        false,
+        (ep, tr) -> new POSetPopulationState<>()
     );
     try {
-      Collection<List<Tree<Element>>> solutions = evolver.solve(
-          Misc.cached(p, 10000),
-          new Iterations(100),
+      Collection<List<Tree<Element>>> solutions = solver.solve(
+          p,
           r,
           executorService,
           listenerFactory.build().deferred(executorService)
       );
-      System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
-    } catch (InterruptedException | ExecutionException e) {
+      System.out.printf("Found %d solutions with %s.%n", solutions.size(), solver.getClass().getSimpleName());
+    } catch (SolverException e) {
       e.printStackTrace();
     }
   }
 
   public void runLinearPoints() {
-    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(
-        BASIC_FUNCTIONS,
-        DOUBLE_FUNCTIONS
-    )));
+    Listener.Factory<POSetPopulationState<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(
+        List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
     Random r = new Random(1);
-    Problem<List<Double>, Double> p = new LinearPoints();
-    List<Evolver<List<Double>, List<Double>, Double>> evolvers = List.of(new RandomSearch<>(
+    TotalOrderQualityBasedProblem<List<Double>, Double> p = new LinearPoints();
+    List<IterativeSolver<? extends POSetPopulationState<List<Double>, List<Double>, Double>, TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>>> solvers = new ArrayList<>();
+    solvers.add(new RandomSearch<>(
         Function.identity(),
         new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
-        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness)
-    ), new RandomWalk<>(
+        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100))
+    ));
+    solvers.add(new RandomWalk<>(
         Function.identity(),
         new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
-        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
         new GaussianMutation(0.01d)
-    ), new StandardEvolver<>(
+    ));
+    solvers.add(new StandardEvolver<POSetPopulationState<List<Double>, List<Double>, Double>, TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>, List<Double>, Double>(
         Function.identity(),
         new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
-        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
         100,
+        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
         Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
         new Tournament(5),
         new Last(),
         100,
         true,
+        false,
+        (problem, random) -> new POSetPopulationState<>()
+    ));
+    solvers.add(new SimpleEvolutionaryStrategy<>(
+        Function.identity(),
+        new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
+        100,
+        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
+        25,
+        1,
+        0.1,
         false
     ));
-    for (Evolver<List<Double>, List<Double>, Double> evolver : evolvers) {
-      System.out.println(evolver.getClass().getSimpleName());
+    for (IterativeSolver<? extends POSetPopulationState<List<Double>, List<Double>, Double>, TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>> solver : solvers) {
+      System.out.println(solver.getClass().getSimpleName());
       try {
-        Collection<List<Double>> solutions = evolver.solve(
+        Collection<List<Double>> solutions = solver.solve(
             p,
-            new TargetFitness<>(0d).or(new Iterations(100)),
             r,
             executorService,
             listenerFactory.build().deferred(executorService)
         );
-        System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
-      } catch (InterruptedException | ExecutionException e) {
+        System.out.printf("Found %d solutions with %s.%n", solutions.size(), solver.getClass().getSimpleName());
+      } catch (SolverException e) {
         e.printStackTrace();
       }
     }
@@ -204,177 +195,69 @@ public class Example extends Worker {
   public void runOneMax() {
     int size = 1000;
     Random r = new Random(1);
-    Problem<BitString, Double> p = new OneMax();
-    List<NamedFunction<Evolver.Event<?, ?, ?>, ?>> keysFunctions = List.of(eventAttribute("evolver", "%20.20s"));
-    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = Listener.Factory.all(List.of(
-        /*new TelegramUpdater<>(List.of(
-            new TableBuilder<Event<?, ?, ? extends Double>, Number>(List.of(
-                iterations(),
-                as(Double.class).of(fitness()).of(best()),
-                max(Double::compare).of(each(fitness())).of(all()),
-                median(Double::compare).of(each(fitness())).of(all())
-            )).then(ImagePlotters.xyLines(400, 400)),
-            new TableBuilder<Event<?, ?, ? extends Double>, Number>(List.of(
-                iterations(),
-                uniqueness().of(each(genotype())).of(all()),
-                uniqueness().of(each(solution())).of(all()),
-                uniqueness().of(each(fitness())).of(all())
-            )).then(ImagePlotters.xyLines(400, 400)),
-            Accumulator.Factory.<Event<?, ?, ? extends Double>>last().then(e -> BASIC_FUNCTIONS.stream()
-                .map(f -> f.getName() + ": " + f.applyAndFormat(e))
-                .collect(Collectors.joining("\n")))
-        ), "xxx", 207490209),*/
-        new TabularPrinter<>(Misc.concat(List.of(keysFunctions, BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)))));
-    List<Evolver<BitString, BitString, Double>> evolvers = List.of(new RandomSearch<>(
+    QualityBasedProblem<BitString, Double> p = new OneMax();
+    List<NamedFunction<? super POSetPopulationState<?, ?, ?>, ?>> keysFunctions = List.of(); // TODO restore eventAttribute("evolver", "%20.20s"));
+    Listener.Factory<POSetPopulationState<?, ?, ? extends Double>> listenerFactory = Listener.Factory.all(List.of(new TabularPrinter<>(
+        Misc.concat(List.of(keysFunctions, BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)))));
+    List<IterativeSolver<? extends POSetPopulationState<?, BitString, Double>, QualityBasedProblem<BitString, Double>, BitString>> solvers = new ArrayList<>();
+    solvers.add(new RandomSearch<>(
         Function.identity(),
         new BitStringFactory(size),
-        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness)
-    ), new RandomWalk<>(
+        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100))
+    ));
+    solvers.add(new RandomWalk<>(
         Function.identity(),
         new BitStringFactory(size),
-        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
         new BitFlipMutation(0.01d)
-    ), new StandardEvolver<>(
+    ));
+    solvers.add(new StandardEvolver<POSetPopulationState<BitString, BitString, Double>, QualityBasedProblem<BitString, Double>, BitString, BitString, Double>(
         Function.identity(),
         new BitStringFactory(size),
-        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
         100,
+        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
         Map.of(new UniformCrossover<>(new BitStringFactory(size)), 0.8d, new BitFlipMutation(0.01d), 0.2d),
         new Tournament(5),
         new Last(),
         100,
         true,
-        false
-    ), new StandardWithEnforcedDiversityEvolver<>(
+        false,
+        (problem, random) -> new POSetPopulationState<>()
+    ));
+    solvers.add(new StandardWithEnforcedDiversityEvolver<POSetPopulationState<BitString, BitString, Double>, QualityBasedProblem<BitString, Double>, BitString, BitString, Double>(
         Function.identity(),
         new BitStringFactory(size),
-        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
         100,
-        Map.of(new UniformCrossover<>(new BitStringFactory(100)), 0.8d, new BitFlipMutation(0.01d), 0.2d),
+        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
+        Map.of(new UniformCrossover<>(new BitStringFactory(size)), 0.8d, new BitFlipMutation(0.01d), 0.2d),
         new Tournament(5),
         new Last(),
         100,
         true,
         false,
+        (problem, random) -> new POSetPopulationState<>(),
         100
     ));
-    evolvers = evolvers.subList(2, 4);
-    for (Evolver<BitString, BitString, Double> evolver : evolvers) {
-      Listener<Evolver.Event<?, ?, ? extends Double>> listener = Listener.all(List.of(
-          new EventAugmenter(Map.ofEntries(
-              Map.entry("evolver", evolver.getClass().getSimpleName()))),
-          listenerFactory.build()
-      )).deferred(executorService);
+    for (IterativeSolver<? extends POSetPopulationState<?, BitString, Double>, QualityBasedProblem<BitString, Double>, BitString> evolver : solvers) {
+      Listener<POSetPopulationState<?, ?, ? extends Double>> listener = Listener.all(List.of(
+          //new EventAugmenter(Map.ofEntries(Map.entry("evolver", evolver.getClass().getSimpleName()))), // TODO restore
+          listenerFactory.build())).deferred(executorService);
       try {
-        Collection<BitString> solutions = evolver.solve(
-            Misc.cached(p, 10000),
-            new TargetFitness<>(0d).or(new Iterations(1000)),
-            r,
-            executorService,
-            listener
-        );
+        Collection<BitString> solutions = evolver.solve(p, r, executorService, listener);
         System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
-      } catch (InterruptedException | ExecutionException e) {
+      } catch (SolverException e) {
         e.printStackTrace();
       }
     }
     listenerFactory.shutdown();
   }
 
-  public void runRastrigin() {
-    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(
-        BASIC_FUNCTIONS,
-        DOUBLE_FUNCTIONS
-    )));
-    Random r = new Random(1);
-    Problem<List<Double>, Double> p = new Rastrigin();
-    List<Evolver<List<Double>, List<Double>, Double>> evolvers = List.of(new StandardEvolver<>(
-        Function.identity(),
-        new FixedLengthListFactory<>(10, new UniformDoubleFactory(-5.12, 5.12)),
-        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
-        100,
-        Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
-        new Tournament(5),
-        new Last(),
-        100,
-        true,
-        false
-    ), new CMAESEvolver<>(
-        Function.identity(),
-        new FixedLengthListFactory<>(10, new UniformDoubleFactory(-5.12, 5.12)),
-        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness)
-    ));
-    for (Evolver<List<Double>, List<Double>, Double> evolver : evolvers) {
-      System.out.println(evolver.getClass().getSimpleName());
-      try {
-        Collection<List<Double>> solutions = evolver.solve(
-            p,
-            new TargetFitness<>(0d).or(new Iterations(100)),
-            r,
-            executorService,
-            listenerFactory.build().deferred(executorService)
-        );
-        System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
-      } catch (InterruptedException | ExecutionException e) {
-        e.printStackTrace();
-      }
-    }
-  }
-
-  public void runSphere() {
-    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(
-        BASIC_FUNCTIONS,
-        DOUBLE_FUNCTIONS
-    )));
-    Random r = new Random(1);
-    Problem<List<Double>, Double> p = new Sphere();
-    List<Evolver<List<Double>, List<Double>, Double>> evolvers = List.of(new StandardEvolver<>(
-        Function.identity(),
-        new FixedLengthListFactory<>(10, new UniformDoubleFactory(-10, 10)),
-        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
-        100,
-        Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
-        new Tournament(5),
-        new Last(),
-        100,
-        true,
-        false
-    ), new CMAESEvolver<>(
-        Function.identity(),
-        new FixedLengthListFactory<>(10, new UniformDoubleFactory(-10, 10)),
-        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness)
-    ), new BasicEvolutionaryStrategy<>(
-        Function.identity(),
-        new FixedLengthListFactory<>(10, new UniformDoubleFactory(-10, 10)),
-        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
-        0.1d,
-        100,
-        25,
-        1,
-        false
-    ));
-    for (Evolver<List<Double>, List<Double>, Double> evolver : evolvers) {
-      System.out.println(evolver.getClass().getSimpleName());
-      try {
-        Collection<List<Double>> solutions = evolver.solve(
-            p,
-            new TargetFitness<>(0d).or(new Iterations(100)),
-            r,
-            executorService,
-            listenerFactory.build().deferred(executorService)
-        );
-        System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
-      } catch (InterruptedException | ExecutionException e) {
-        e.printStackTrace();
-      }
-    }
-  }
-
   public void runSymbolicRegression() {
-    Listener.Factory<Evolver.Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(List.of(
-        BASIC_FUNCTIONS,
-        DOUBLE_FUNCTIONS
-    )));
+    Listener.Factory<? super POSetPopulationState<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(Misc.concat(
+        List.of(
+            BASIC_FUNCTIONS,
+            DOUBLE_FUNCTIONS
+        )));
     Random r = new Random(1);
     SymbolicRegressionProblem p = new Nguyen7(SymbolicRegressionFitness.Metric.MSE, 1);
     Grammar<String> srGrammar;
@@ -384,109 +267,50 @@ public class Example extends Worker {
       e.printStackTrace();
       return;
     }
-    List<Evolver<Tree<String>, RealFunction, Double>> evolvers = List.of(new StandardEvolver<>(
-        new FormulaMapper().andThen(
-                n -> TreeBasedRealFunction.from(n, "x"))
-            .andThen(MathUtils.linearScaler(p)),
-        new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
-        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
-        100,
-        Map.of(new SameRootSubtreeCrossover<>(12), 0.8d, new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d),
-        new Tournament(5),
-        new Last(),
-        100,
-        true,
-        false
-    ), new StandardWithEnforcedDiversityEvolver<>(
+    List<IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SymbolicRegressionProblem, RealFunction>> solvers = new ArrayList<>();
+    solvers.add(new StandardEvolver<>(
         new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(n, "x"))
-            .andThen(MathUtils.linearScaler(p)),
-        new GrammarRampedHalfAndHalf<>(3, 12, srGrammar).withOptimisticUniqueness(100),
-        PartialComparator.from(Double.class).comparing(Evolver.Individual::fitness),
+            .andThen(MathUtils.linearScaler(p.qualityFunction())),
+        new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
         100,
+        StopConditions.nOfIterations(100),
         Map.of(new SameRootSubtreeCrossover<>(12), 0.8d, new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d),
         new Tournament(5),
         new Last(),
         100,
         true,
         false,
-        1000
+        (srp, rnd) -> new POSetPopulationState<>()
     ));
-    for (Evolver<Tree<String>, RealFunction, Double> evolver : evolvers) {
-      System.out.println(evolver.getClass().getSimpleName());
-      try {
-        Collection<RealFunction> solutions = evolver.solve(
-            Misc.cached(p, 10000),
-            new TargetFitness<>(0d).or(new Iterations(100)),
-            r,
-            executorService,
-            listenerFactory.build().deferred(executorService)
-        );
-        System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
-      } catch (InterruptedException | ExecutionException e) {
-        e.printStackTrace();
-      }
-    }
-  }
-
-  public void runSymbolicRegressionMO() {
-    Listener.Factory<Evolver.Event<?, ?, ? extends List<Double>>> listenerFactory = new TabularPrinter<>(Misc.concat(
-        List.of(BASIC_FUNCTIONS)));
-    //as(Double.class).of(nth(0)).of(fitness()).of(best())
-    //as(Double.class).of(nth(1)).of(fitness()).of(best())
-    Random r = new Random(1);
-    SymbolicRegressionProblem p = new Nguyen7(SymbolicRegressionFitness.Metric.MSE, 1);
-    Grammar<String> srGrammar;
-    try {
-      srGrammar = Grammar.fromFile(new File("grammars/symbolic-regression-nguyen7.bnf"));
-    } catch (IOException e) {
-      e.printStackTrace();
-      return;
-    }
-    List<Evolver<Tree<String>, RealFunction, List<Double>>> evolvers = List.of(new StandardEvolver<>(
-        new FormulaMapper().andThen(
-                n -> TreeBasedRealFunction.from(n, "x"))
-            .andThen(MathUtils.linearScaler(p)),
-        new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
-        new ParetoDominance<>(Double.class).comparing(Evolver.Individual::fitness),
-        100,
-        Map.of(new SameRootSubtreeCrossover<>(12), 0.8d, new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d),
-        new Tournament(5),
-        new Last(),
-        100,
-        true,
-        false
-    ), new StandardWithEnforcedDiversityEvolver<>(
+    solvers.add(new StandardWithEnforcedDiversityEvolver<>(
         new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(n, "x"))
-            .andThen(MathUtils.linearScaler(p)),
-        new GrammarRampedHalfAndHalf<>(3, 12, srGrammar).withOptimisticUniqueness(100),
-        new ParetoDominance<>(Double.class).comparing(Evolver.Individual::fitness),
+            .andThen(MathUtils.linearScaler(p.qualityFunction())),
+        new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
         100,
+        StopConditions.nOfIterations(100),
         Map.of(new SameRootSubtreeCrossover<>(12), 0.8d, new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d),
         new Tournament(5),
         new Last(),
         100,
         true,
         false,
-        1000
+        (srp, rnd) -> new POSetPopulationState<>(),
+        100
     ));
-    for (Evolver<Tree<String>, RealFunction, List<Double>> evolver : evolvers) {
-      System.out.println(evolver.getClass().getSimpleName());
+    for (IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SymbolicRegressionProblem, RealFunction> solver : solvers) {
+      System.out.println(solver.getClass().getSimpleName());
       try {
-        Collection<RealFunction> solutions = evolver.solve(
-            f -> List.of(
-                p.apply(f),
-                (f instanceof Sized) ? ((Sized) f).size() : Double.POSITIVE_INFINITY
-            ),
-            new Iterations(3),
+        Collection<RealFunction> solutions = solver.solve(
+            p,
             r,
             executorService,
             listenerFactory.build().deferred(executorService)
         );
-        System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
-      } catch (InterruptedException | ExecutionException e) {
+        System.out.printf("Found %d solutions with %s.%n", solutions.size(), solver.getClass().getSimpleName());
+      } catch (SolverException e) {
         e.printStackTrace();
       }
     }
   }
-
+  
 }

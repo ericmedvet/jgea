@@ -25,4 +25,8 @@ public class StopConditions {
   public static Predicate<State> nOfIterations(final long n) {
     return s -> s.getNOfIterations() >= n;
   }
+
+  public static <F extends Comparable<F>> Predicate<POSetPopulationState<?, ?, ? extends F>> targetFitness(final F targetF) {
+    return s -> s.getPopulation().firsts().stream().map(Individual::fitness).anyMatch(f -> f.compareTo(targetF) <= 0);
+  }
 }
