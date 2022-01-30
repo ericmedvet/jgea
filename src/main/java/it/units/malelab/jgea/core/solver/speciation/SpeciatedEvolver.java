@@ -161,7 +161,9 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q> exte
     sortedRepresenters.sort(comparator(problem).comparator());
     List<Double> weights = representers.stream().map(r -> Math.pow(rankBase, sortedRepresenters.indexOf(r))).toList();
     double weightSum = weights.stream().mapToDouble(Double::doubleValue).sum();
-    List<Integer> sizes = weights.stream().map(w -> (int) Math.floor(w / weightSum * (double) remaining)).toList();
+    List<Integer> sizes = new ArrayList<>(weights.stream()
+        .map(w -> (int) Math.floor(w / weightSum * (double) remaining))
+        .toList());
     int sizeSum = sizes.stream().mapToInt(Integer::intValue).sum();
     sizes.set(0, sizes.get(0) + remaining - sizeSum);
     L.fine(String.format("Offspring sizes assigned to %d species: %s", allSpecies.size(), sizes));
