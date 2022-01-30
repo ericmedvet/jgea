@@ -86,8 +86,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
       }
       expressivenesses.add(expressiveness);
     }
-    int optionIndex = ((Double) MapperUtils.compute(
-        optionChooser,
+    int optionIndex = ((Double) MapperUtils.compute(optionChooser,
         genotype,
         expressivenesses,
         depth,
@@ -113,8 +112,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
       } else {
         piece = new BitString(0);
       }
-      tree.addChild(mapRecursively(
-          options.get(optionIndex).get(i),
+      tree.addChild(mapRecursively(options.get(optionIndex).get(i),
           piece,
           mappingGlobalCounter,
           finalizationGlobalCounter,

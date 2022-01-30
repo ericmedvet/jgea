@@ -234,7 +234,8 @@ public class SymbolicRegressionComparison extends Worker {
               .mapToObj(Element.Constant::new)
               .toArray(Element.Constant[]::new))
       );
-      return new StandardWithEnforcedDiversityEvolver<>(((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(t,
+      return new StandardWithEnforcedDiversityEvolver<>(((Function<Tree<Element>, RealFunction>) t -> new TreeBasedRealFunction(
+          t,
           vars(p.qualityFunction().arity())
       )).andThen(MathUtils.linearScaler(p.qualityFunction())),
           new RampedHalfAndHalf<>(4,
@@ -647,10 +648,12 @@ public class SymbolicRegressionComparison extends Worker {
       return new StandardEvolver<>(graphMapper.andThen(FunctionGraph.builder())
           .andThen(MathUtils.fromMultivariateBuilder())
           .andThen(MathUtils.linearScaler(p.qualityFunction())),
-          new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1).then(GraphUtils.mapper(
-              IndexedNode.incrementerMapper(Node.class),
-              Misc::first
-          )),
+          new ShallowSparseFactory(0d,
+              0d,
+              1d,
+              p.qualityFunction().arity(),
+              1
+          ).then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
           nPop,
           StopConditions.nOfIterations(nIterations),
           Map.of(new NodeAddition<IndexedNode<Node>, Double>(FunctionNode.sequentialIndexFactory(baseFunctions)
@@ -659,7 +662,8 @@ public class SymbolicRegressionComparison extends Worker {
                   (w, r) -> r.nextGaussian()
               ).withChecker(g -> checker.test(graphMapper.apply(g))),
               graphNodeAdditionRate,
-              new ArcModification<IndexedNode<Node>, Double>((w, r) -> w + r.nextGaussian(),
+              new ArcModification<IndexedNode<Node>, Double>(
+                  (w, r) -> w + r.nextGaussian(),
                   1d
               ).withChecker(g -> checker.test(graphMapper.apply(g))),
               graphArcMutationRate,
@@ -693,10 +697,12 @@ public class SymbolicRegressionComparison extends Worker {
       return new SpeciatedEvolver<>(graphMapper.andThen(FunctionGraph.builder())
           .andThen(MathUtils.fromMultivariateBuilder())
           .andThen(MathUtils.linearScaler(p.qualityFunction())),
-          new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1).then(GraphUtils.mapper(
-              IndexedNode.incrementerMapper(Node.class),
-              Misc::first
-          )),
+          new ShallowSparseFactory(0d,
+              0d,
+              1d,
+              p.qualityFunction().arity(),
+              1
+          ).then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
           nPop,
           StopConditions.nOfIterations(nIterations),
           Map.of(new NodeAddition<IndexedNode<Node>, Double>(FunctionNode.sequentialIndexFactory(baseFunctions)
@@ -705,7 +711,8 @@ public class SymbolicRegressionComparison extends Worker {
                   (w, r) -> r.nextGaussian()
               ).withChecker(g -> checker.test(graphMapper.apply(g))),
               graphNodeAdditionRate,
-              new ArcModification<IndexedNode<Node>, Double>((w, r) -> w + r.nextGaussian(),
+              new ArcModification<IndexedNode<Node>, Double>(
+                  (w, r) -> w + r.nextGaussian(),
                   1d
               ).withChecker(g -> checker.test(graphMapper.apply(g))),
               graphArcMutationRate,
@@ -740,10 +747,12 @@ public class SymbolicRegressionComparison extends Worker {
           .andThen(FunctionGraph.builder())
           .andThen(MathUtils.fromMultivariateBuilder())
           .andThen(MathUtils.linearScaler(p.qualityFunction())),
-          new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1).then(GraphUtils.mapper(
-              IndexedNode.incrementerMapper(Node.class),
-              Misc::first
-          )),
+          new ShallowSparseFactory(0d,
+              0d,
+              1d,
+              p.qualityFunction().arity(),
+              1
+          ).then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
           nPop,
           StopConditions.nOfIterations(nIterations),
           Map.of(new IndexedNodeAddition<FunctionNode, Node, Double>(FunctionNode.sequentialIndexFactory(baseFunctions),
@@ -777,17 +786,18 @@ public class SymbolicRegressionComparison extends Worker {
       );
     });
     solvers.put("ograph-hash+-speciated", p -> {
-      Function<Graph<IndexedNode<Node>, OperatorGraph.NonValuedArc>, Graph<Node, OperatorGraph.NonValuedArc>> graphMapper = GraphUtils.mapper(IndexedNode::content,
+      Function<Graph<IndexedNode<Node>, OperatorGraph.NonValuedArc>, Graph<Node, OperatorGraph.NonValuedArc>> graphMapper = GraphUtils.mapper(
+          IndexedNode::content,
           Misc::first
       );
       Predicate<Graph<Node, OperatorGraph.NonValuedArc>> checker = OperatorGraph.checker();
       return new SpeciatedEvolver<>(graphMapper.andThen(OperatorGraph.builder())
           .andThen(MathUtils.fromMultivariateBuilder())
           .andThen(MathUtils.linearScaler(p.qualityFunction())),
-          new ShallowFactory(p.qualityFunction().arity(),
-              1,
-              constants
-          ).then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
+          new ShallowFactory(p.qualityFunction().arity(), 1, constants).then(GraphUtils.mapper(
+              IndexedNode.incrementerMapper(Node.class),
+              Misc::first
+          )),
           nPop,
           StopConditions.nOfIterations(nIterations),
           Map.of(new IndexedNodeAddition<OperatorNode, Node, OperatorGraph.NonValuedArc>(OperatorNode.sequentialIndexFactory(
@@ -827,12 +837,10 @@ public class SymbolicRegressionComparison extends Worker {
       return new SpeciatedEvolver<>(graphMapper.andThen(FunctionGraph.builder())
           .andThen(MathUtils.fromMultivariateBuilder())
           .andThen(MathUtils.linearScaler(p.qualityFunction())),
-          new ShallowSparseFactory(0d,
-              0d,
-              1d,
-              p.qualityFunction().arity(),
-              1
-          ).then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
+          new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1).then(GraphUtils.mapper(
+              IndexedNode.incrementerMapper(Node.class),
+              Misc::first
+          )),
           nPop,
           StopConditions.nOfIterations(nIterations),
           Map.of(new IndexedNodeAddition<FunctionNode, Node, Double>(FunctionNode.sequentialIndexFactory(baseFunctions),
@@ -899,15 +907,9 @@ public class SymbolicRegressionComparison extends Worker {
                 (w, r) -> r.nextGaussian()
             ).withChecker(FunctionGraph.checker()),
             graphNodeAdditionRate,
-            new ArcModification<Node, Double>(
-                (w, r) -> w + r.nextGaussian(),
-                1d
-            ).withChecker(FunctionGraph.checker()),
+            new ArcModification<Node, Double>((w, r) -> w + r.nextGaussian(), 1d).withChecker(FunctionGraph.checker()),
             graphArcMutationRate,
-            new ArcAddition<Node, Double>(
-                RandomGenerator::nextGaussian,
-                false
-            ).withChecker(FunctionGraph.checker()),
+            new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(FunctionGraph.checker()),
             graphArcAdditionRate,
             new ArcRemoval<Node, Double>(node -> (node instanceof Input) || (node instanceof it.units.malelab.jgea.representation.graph.numeric.Constant) || (node instanceof Output)).withChecker(
                 FunctionGraph.checker()),

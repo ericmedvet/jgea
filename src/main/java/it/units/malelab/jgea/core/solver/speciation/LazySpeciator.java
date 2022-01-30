@@ -37,8 +37,9 @@ public class LazySpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Indivi
   }
 
   @Override
-  public Collection<SpeciatedEvolver.Species<Individual<G, S, F>>> speciate(PartiallyOrderedCollection<Individual<G,
-      S, F>> population) {
+  public Collection<SpeciatedEvolver.Species<Individual<G, S, F>>> speciate(
+      PartiallyOrderedCollection<Individual<G, S, F>> population
+  ) {
     List<List<Individual<G, S, F>>> clusters = new ArrayList<>();
     for (Individual<G, S, F> individual : population.all()) {
       List<Double> distances = clusters.stream().map(c -> distance.apply(individual, c.get(0))).toList();

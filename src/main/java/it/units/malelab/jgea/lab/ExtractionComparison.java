@@ -102,8 +102,7 @@ public class ExtractionComparison extends Worker {
         RegexExtractionProblem.varAlphabet(4, 8, 1, metrics),
         "synthetic-4-10",
         RegexExtractionProblem.varAlphabet(4, 10, 1, metrics)
-    ).entrySet().stream().map(e -> Pair.of(e.getKey(), e.getValue())).collect(Collectors.toMap(
-        Pair::first,
+    ).entrySet().stream().map(e -> Pair.of(e.getKey(), e.getValue())).collect(Collectors.toMap(Pair::first,
         Pair::second
     ));
 
@@ -393,13 +392,11 @@ public class ExtractionComparison extends Worker {
                   return Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
                 }
                 if (cs.size() <= 1) {
-                  return r.nextBoolean() ? Sets.union(
-                      cs,
+                  return r.nextBoolean() ? Sets.union(cs,
                       Sets.difference(positiveChars, cs)
                   ) : Set.of(Misc.pickRandomly(positiveChars, r));
                 }
-                return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(
-                    cs,
+                return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(cs,
                     Set.of(Misc.pickRandomly(cs, r))
                 );
               }, 1d).withChecker(g -> checker.test(graphMapper.apply(g))),
@@ -407,9 +404,7 @@ public class ExtractionComparison extends Worker {
               new ArcAddition<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(r -> Set.of(Misc.pickRandomly(
                   positiveChars,
                   r
-              )),
-                  true
-              ).withChecker(g -> checker.test(graphMapper.apply(g))),
+              )), true).withChecker(g -> checker.test(graphMapper.apply(g))),
               graphArcAdditionRate,
               new ArcRemoval<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(s -> s.content()
                   .getIndex() == 0).withChecker(g -> checker.test(graphMapper.apply(g))),
@@ -463,13 +458,11 @@ public class ExtractionComparison extends Worker {
                   return Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
                 }
                 if (cs.size() <= 1) {
-                  return r.nextBoolean() ? Sets.union(
-                      cs,
+                  return r.nextBoolean() ? Sets.union(cs,
                       Sets.difference(positiveChars, cs)
                   ) : Set.of(Misc.pickRandomly(positiveChars, r));
                 }
-                return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(
-                    cs,
+                return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(cs,
                     Set.of(Misc.pickRandomly(cs, r))
                 );
               }, 1d).withChecker(g -> checker.test(graphMapper.apply(g))),
@@ -477,9 +470,7 @@ public class ExtractionComparison extends Worker {
               new ArcAddition<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(r -> Set.of(Misc.pickRandomly(
                   positiveChars,
                   r
-              )),
-                  true
-              ).withChecker(g -> checker.test(graphMapper.apply(g))),
+              )), true).withChecker(g -> checker.test(graphMapper.apply(g))),
               graphArcAdditionRate,
               new ArcRemoval<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(s -> s.content()
                   .getIndex() == 0).withChecker(g -> checker.test(graphMapper.apply(g))),
@@ -492,8 +483,8 @@ public class ExtractionComparison extends Worker {
       );
     });
     //filter evolvers
-    solvers = solvers.entrySet().stream().filter(e -> e.getKey().matches(evolverNamePattern)).collect(Collectors.toMap(
-        Map.Entry::getKey,
+    solvers =
+        solvers.entrySet().stream().filter(e -> e.getKey().matches(evolverNamePattern)).collect(Collectors.toMap(Map.Entry::getKey,
         Map.Entry::getValue
     ));
     L.info(String.format("Going to test with %d evolvers: %s%n", solvers.size(), solvers.keySet()));

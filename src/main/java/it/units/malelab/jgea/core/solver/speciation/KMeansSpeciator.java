@@ -154,8 +154,9 @@ public class KMeansSpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Indi
   }
 
   @Override
-  public Collection<SpeciatedEvolver.Species<Individual<G, S, F>>> speciate(PartiallyOrderedCollection<Individual<G,
-      S, F>> population) {
+  public Collection<SpeciatedEvolver.Species<Individual<G, S, F>>> speciate(
+      PartiallyOrderedCollection<Individual<G, S, F>> population
+  ) {
     Collection<ClusterableIndividual> points = population.all().stream().map(ClusterableIndividual::new).toList();
     if (points.stream().mapToInt(p -> p.getPoint().length).distinct().count() != 1) {
       throw new RuntimeException("all points to be clustered must have same length");
@@ -174,13 +175,11 @@ public class KMeansSpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Indi
       }
       return closest;
     }).toList();
-    return IntStream.range(0, clusters.size())
-        .mapToObj(i -> new SpeciatedEvolver.Species<>(clusters.get(i)
-            .getPoints()
-            .stream()
-            .map(ci -> ci.individual)
-            .toList(), representers.get(i).individual))
-        .toList();
+    return IntStream.range(0, clusters.size()).mapToObj(i -> new SpeciatedEvolver.Species<>(clusters.get(i)
+        .getPoints()
+        .stream()
+        .map(ci -> ci.individual)
+        .toList(), representers.get(i).individual)).toList();
   }
 
 }

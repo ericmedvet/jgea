@@ -82,8 +82,8 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized, Ser
       if (outgoingArcValues.size() > 1) {
         Set<K> intersection = outgoingArcValues.stream().reduce(Sets::intersection).orElse(new HashSet<>());
         if (!intersection.isEmpty()) {
-          throw new IllegalArgumentException(String.format("Invalid graph: state %s has one or more outgoing symbols " +
-                  "(%s)",
+          throw new IllegalArgumentException(String.format("Invalid graph: state %s has one or more outgoing symbols "
+                  + "(%s)",
               state,
               intersection
           ));

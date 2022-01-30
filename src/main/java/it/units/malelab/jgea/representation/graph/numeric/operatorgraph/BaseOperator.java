@@ -30,32 +30,31 @@ import java.util.Arrays;
  */
 public enum BaseOperator implements RealFunction {
 
-  ADDITION("+", x -> Arrays.stream(x).sum(), 1, Integer.MAX_VALUE), SUBTRACTION(
-      "-",
+  ADDITION("+", x -> Arrays.stream(x).sum(), 1, Integer.MAX_VALUE), SUBTRACTION("-",
       x -> x[0] - (x.length == 1 ? 0d : x[1]),
       1,
       2
-  ), DIVISION("/", x -> x[0] / (x.length == 1 ? 1d : x[1]), 1, 2), PROT_DIVISION(
-      "p/",
-      x -> x.length == 1 ? x[0] : ((x[1] != 0d) ? (x[0] / x[1]) : 1d),
+  ), DIVISION(
+      "/",
+      x -> x[0] / (x.length == 1 ? 1d : x[1]),
       1,
       2
-  ), MULTIPLICATION("*", x -> Arrays.stream(x).reduce(1d, (v1, v2) -> v1 * v2), 1, Integer.MAX_VALUE), LOG(
-      "log",
-      x -> Math.log(x[0]),
+  ), PROT_DIVISION("p/", x -> x.length == 1 ? x[0] : ((x[1] != 0d) ? (x[0] / x[1]) : 1d), 1, 2), MULTIPLICATION(
+      "*",
+      x -> Arrays.stream(x).reduce(1d, (v1, v2) -> v1 * v2),
+      1,
+      Integer.MAX_VALUE
+  ), LOG("log", x -> Math.log(x[0]), 1, 1), PROT_LOG("plog", x -> (x[0] > 0d) ? Math.log(x[0]) : 0d, 1, 1), EXP(
+      "exp",
+      x -> Math.exp(x[0]),
       1,
       1
-  ), PROT_LOG("plog", x -> (x[0] > 0d) ? Math.log(x[0]) : 0d, 1, 1), EXP("exp", x -> Math.exp(x[0]), 1, 1), SIN(
-      "sin",
-      x -> Math.sin(x[0]),
+  ), SIN("sin", x -> Math.sin(x[0]), 1, 1), COS("cos", x -> Math.cos(x[0]), 1, 1), INVERSE(
+      "1/",
+      x -> 1d / x[0],
       1,
       1
-  ), COS("cos", x -> Math.cos(x[0]), 1, 1), INVERSE("1/", x -> 1d / x[0], 1, 1), OPPOSITE(
-      "_",
-      x -> 0d - x[0],
-      1,
-      1
-  ), SQRT("√", x -> Math.sqrt(x[0]), 1, 1), SQ("²", x -> Math.pow(x[0], 2d), 1, 1);
+  ), OPPOSITE("_", x -> 0d - x[0], 1, 1), SQRT("√", x -> Math.sqrt(x[0]), 1, 1), SQ("²", x -> Math.pow(x[0], 2d), 1, 1);
 
   private final String string;
   private final RealFunction function;

@@ -52,12 +52,10 @@ public class TabularPrinter<E, K> implements Factory<E, K> {
       boolean showVariation,
       boolean useColors
   ) {
-    ePairs = eFunctions.stream().map(f -> Pair.of(
-        f,
+    ePairs = eFunctions.stream().map(f -> Pair.of(f,
         Math.max(collapse(f.getName()).length(), formatSize(f.getFormat()))
     )).collect(Collectors.toList());
-    kPairs = kFunctions.stream().map(f -> Pair.of(
-        f,
+    kPairs = kFunctions.stream().map(f -> Pair.of(f,
         Math.max(collapse(f.getName()).length(), formatSize(f.getFormat()))
     )).collect(Collectors.toList());
     this.ps = ps;
@@ -66,8 +64,7 @@ public class TabularPrinter<E, K> implements Factory<E, K> {
     this.showVariation = showVariation;
     this.useColors = useColors;
     List<String> kHeaders = kPairs.stream().map(p -> justify(collapse(p.first().getName()), p.second())).toList();
-    List<String> eHeaders = ePairs.stream().map(p -> justify(
-        collapse(p.first().getName()),
+    List<String> eHeaders = ePairs.stream().map(p -> justify(collapse(p.first().getName()),
         p.second()
     ) + (showVariation ? " " : "")).toList();
     header = String.join(SEP, Misc.concat(List.of(kHeaders, eHeaders)));
@@ -140,11 +137,9 @@ public class TabularPrinter<E, K> implements Factory<E, K> {
       ps.println(legend);
     }
     List<?> fixedValues = kPairs.stream().map(p -> p.first().apply(k)).toList();
-    final String fixedS = IntStream.range(0, kPairs.size()).mapToObj(i -> format(
-        fixedValues.get(i),
-        kPairs.get(i).first().getFormat(),
-        kPairs.get(i).second()
-    )).collect(Collectors.joining(SEP));
+    final String fixedS = IntStream.range(0, kPairs.size())
+        .mapToObj(i -> format(fixedValues.get(i), kPairs.get(i).first().getFormat(), kPairs.get(i).second()))
+        .collect(Collectors.joining(SEP));
     return new Listener<>() {
       final Object[] lastValues = new Object[ePairs.size()];
       final Object[] secondLastValues = new Object[ePairs.size()];

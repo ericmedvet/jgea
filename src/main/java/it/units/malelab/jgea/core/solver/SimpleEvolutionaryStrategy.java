@@ -70,7 +70,8 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
 
     @Override
     public State<S, Q> immutableCopy() {
-      return new State<>(startingDateTime,
+      return new State<>(
+          startingDateTime,
           elapsedMillis,
           nOfIterations,
           nOfBirths,
