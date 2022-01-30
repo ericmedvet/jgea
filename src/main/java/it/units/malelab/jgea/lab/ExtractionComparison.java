@@ -525,7 +525,11 @@ public class ExtractionComparison extends Worker {
         for (Map.Entry<String, Function<RegexExtractionProblem, IterativeSolver<? extends POSetPopulationState<?,
             Extractor<Character>, List<Double>>, QualityBasedProblem<Extractor<Character>, List<Double>>,
             Extractor<Character>>>> solverEntry : solvers.entrySet()) {
-          keys.putAll(Map.of("seed", seed, "problem", problemEntry.getKey(), "evolver", solverEntry.getKey()));
+          keys.putAll(Map.ofEntries(
+              Map.entry("seed", seed),
+              Map.entry("problem", problemEntry.getKey()),
+              Map.entry("evolver", solverEntry.getKey())
+          ));
           try {
             RegexExtractionProblem p = problemEntry.getValue();
             Stopwatch stopwatch = Stopwatch.createStarted();

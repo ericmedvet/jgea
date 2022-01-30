@@ -21,6 +21,7 @@ import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.listener.CSVPrinter;
 import it.units.malelab.jgea.core.listener.Factory;
 import it.units.malelab.jgea.core.listener.NamedFunction;
+import it.units.malelab.jgea.core.listener.TabularPrinter;
 import it.units.malelab.jgea.core.selector.Last;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.solver.IterativeSolver;
@@ -77,9 +78,6 @@ public class ImageExample extends Worker {
     List<String> images = l(a("images", "/home/eric/experiments/2020-graphea/image/glasses-32x32.png"));
     //listeners
     List<NamedFunction<? super POSetPopulationState<?, ?, ? extends Double>, ?>> functions = List.of(
-        /*eventAttribute("seed", "%2d"),
-        eventAttribute("image", "%20.20s"),
-        eventAttribute("evolver", "%20.20s"),*/ // TODO restore attributes
         iterations(),
         births(),
         elapsedSeconds(),
@@ -94,22 +92,31 @@ public class ImageExample extends Worker {
         fitness().reformat("%5.3f").of(best()),
         fitnessMappingIteration().of(best())
     );
+    List<NamedFunction<? super Map<String, Object>, ?>> kFunctions = List.of(
+        attribute("seed").reformat("%2d"),
+        attribute("image").reformat("%20.20s"),
+        attribute("evolver").reformat("%20.20s")
+    );
     Factory<? super POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
-        Factory.deaf();/*new TabularPrinter<>(functions);*/  // TODO add functions
+        new TabularPrinter<>(functions, kFunctions);
     if (a("file", null) != null) {
-      listenerFactory = Factory.all(List.of(listenerFactory,
-          new CSVPrinter<>(functions, List.of(), new File(a("file", null)))
-          // TODO add functions
+      listenerFactory = Factory.all(List.of(
+          listenerFactory,
+          new CSVPrinter<>(functions, kFunctions, new File(a("file", null)))
       ));
     }
     Map<String, IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, ImageReconstruction,
         RealFunction>> solvers = new TreeMap<>();
-    solvers.put("graph-seq-ga",
-        new StandardEvolver<>(FunctionGraph.builder().andThen(MathUtils.fromMultivariateBuilder()),
+    solvers.put(
+        "graph-seq-ga",
+        new StandardEvolver<>(
+            FunctionGraph.builder().andThen(MathUtils.fromMultivariateBuilder()),
             new ShallowSparseFactory(0d, 0d, 1d, 2, 1),
             nPop,
             StopConditions.nOfIterations(nIterations),
-            Map.of(new NodeAddition<>(FunctionNode.sequentialIndexFactory(baseFunctions),
+            Map.of(
+                new NodeAddition<>(
+                    FunctionNode.sequentialIndexFactory(baseFunctions),
                     (w, r) -> w,
                     (w, r) -> r.nextGaussian()
                 ),
@@ -120,7 +127,8 @@ public class ImageExample extends Worker {
                 1d,
                 new ArcRemoval<>(node -> node instanceof Output),
                 0.1d,
-                new AlignedCrossover<>((w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
+                new AlignedCrossover<>(
+                    (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
                     node -> node instanceof Output,
                     false
                 ),
@@ -139,12 +147,19 @@ public class ImageExample extends Worker {
       for (String image : images) {
         for (Map.Entry<String, IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>,
             ImageReconstruction, RealFunction>> solverEntry : solvers.entrySet()) {
-          Map<String, Object> keys = Map.of("seed",
-              Integer.toString(seed),
-              "image",
-              image.split(File.separator)[image.split(File.separator).length - 1],
-              "evolver",
-              solverEntry.getKey()
+          Map<String, Object> keys = Map.ofEntries(
+              Map.entry(
+                  "seed",
+                  Integer.toString(seed)
+              ),
+              Map.entry(
+                  "image",
+                  image.split(File.separator)[image.split(File.separator).length - 1]
+              ),
+              Map.entry(
+                  "evolver",
+                  solverEntry.getKey()
+              )
           );
           try {
             ImageReconstruction problem = new ImageReconstruction(ImageIO.read(new File(image)), true);
@@ -152,12 +167,14 @@ public class ImageExample extends Worker {
             IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, ImageReconstruction,
                 RealFunction> solver = solverEntry.getValue();
             L.info(String.format("Starting %s", keys));
-            Collection<RealFunction> solutions = solver.solve(problem,
+            Collection<RealFunction> solutions = solver.solve(
+                problem,
                 new Random(seed),
                 executorService,
                 listenerFactory.build(keys).deferred(executorService)
             );
-            L.info(String.format("Done %s: %d solutions in %4.1fs",
+            L.info(String.format(
+                "Done %s: %d solutions in %4.1fs",
                 keys,
                 solutions.size(),
                 (double) stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000d
