@@ -43,7 +43,9 @@ public class SubtreeMutation<N> implements Mutation<Tree<N>> {
     List<Tree<N>> subtrees = parent.topSubtrees();
     Tree<N> toReplaceSubtree = Misc.pickRandomly(subtrees, random);
     int maxDepth = subtrees.stream().filter(s -> s.equals(toReplaceSubtree)).mapToInt(Tree::depth).max().orElse(0);
+    // TODO should select a depth randomly such that the resulting child is <= maxDepth
     Tree<N> newSubtree = builder.build(random, maxHeight - maxDepth);
+    // TODO there should be a parameter for choosing between replaceAll and replaceFirst
     return TreeUtils.replaceAll(Tree.copyOf(parent), toReplaceSubtree, newSubtree);
   }
 
