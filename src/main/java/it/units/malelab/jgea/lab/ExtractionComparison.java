@@ -23,6 +23,7 @@ import it.units.malelab.jgea.core.QualityBasedProblem;
 import it.units.malelab.jgea.core.listener.CSVPrinter;
 import it.units.malelab.jgea.core.listener.Factory;
 import it.units.malelab.jgea.core.listener.NamedFunction;
+import it.units.malelab.jgea.core.listener.TabularPrinter;
 import it.units.malelab.jgea.core.operator.Crossover;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.order.LexicoGraphical;
@@ -88,35 +89,28 @@ public class ExtractionComparison extends Worker {
     double graphArcRemovalRate = 0d;
     double graphNodeAdditionRate = 1d;
     double graphCrossoverRate = 1d;
-    Set<RegexGrammar.Option> options = Set.of(RegexGrammar.Option.NON_CAPTURING_GROUP,
+    Set<RegexGrammar.Option> options = Set.of(
+        RegexGrammar.Option.NON_CAPTURING_GROUP,
         RegexGrammar.Option.ANY,
         RegexGrammar.Option.OR,
         RegexGrammar.Option.ENHANCED_CONCATENATION
     );
     ExtractionFitness.Metric[] metrics = new ExtractionFitness.Metric[]{ExtractionFitness.Metric.SYMBOL_WEIGHTED_ERROR};
-    Map<String, RegexExtractionProblem> problems = Map.of("synthetic-2-5",
-        RegexExtractionProblem.varAlphabet(2, 5, 1, metrics),
-        "synthetic-3-5",
-        RegexExtractionProblem.varAlphabet(3, 5, 1, metrics),
-        "synthetic-4-8",
-        RegexExtractionProblem.varAlphabet(4, 8, 1, metrics),
-        "synthetic-4-10",
-        RegexExtractionProblem.varAlphabet(4, 10, 1, metrics)
-    ).entrySet().stream().map(e -> Pair.of(e.getKey(), e.getValue())).collect(Collectors.toMap(Pair::first,
+    Map<String, RegexExtractionProblem> problems = Map.ofEntries(
+        Map.entry(
+            "synthetic-2-5",
+            RegexExtractionProblem.varAlphabet(2, 5, 1, metrics)
+        ),
+        Map.entry("synthetic-3-5", RegexExtractionProblem.varAlphabet(3, 5, 1, metrics)),
+        Map.entry("synthetic-4-8", RegexExtractionProblem.varAlphabet(4, 8, 1, metrics)),
+        Map.entry("synthetic-4-10", RegexExtractionProblem.varAlphabet(4, 10, 1, metrics))
+    ).entrySet().stream().map(e -> Pair.of(e.getKey(), e.getValue())).collect(Collectors.toMap(
+        Pair::first,
         Pair::second
     ));
-
-    // new LexicoGraphical<>(Double.class, IntStream.range(0, metrics.length).toArray()).comparing(
-    //                      Evolver.Individual::fitness),
-
-
     //consumers
     Map<String, Object> keys = new HashMap<>();
     List<NamedFunction<? super POSetPopulationState<?, ? extends Extractor<Character>, ? extends List<Double>>, ?>> functions = List.of(
-        /*constant("seed", "%2d", keys),
-        constant("problem", "%20.20s", keys),
-        constant("evolver", "%20.20s", keys),*/
-        // TODO restore attributes
         iterations(),
         births(),
         elapsedSeconds(),
@@ -130,15 +124,21 @@ public class ExtractionComparison extends Worker {
         size().of(solution()).of(best()),
         nth(0).reformat("%5.3f").of(fitness()).of(best()),
         fitnessMappingIteration().of(best()),
-        // TODO put validation, num of extractions, hist of fitnesses
         solution().reformat("%30.30s").of(best())
     );
-    Factory<POSetPopulationState<?, ? extends Extractor<Character>, ? extends List<Double>>, Map<String, Object>> listenerFactory = Factory.deaf();/*new TabularPrinter<>(
-        functions);*/  // TODO add functions
+    List<NamedFunction<? super Map<String, Object>, ?>> kFunctions = List.of(
+        attribute("seed").reformat("%2d"),
+        attribute("problem").reformat("%20.20s"),
+        attribute("evolver").reformat("%20.20s")
+    );
+    Factory<POSetPopulationState<?, ? extends Extractor<Character>, ? extends List<Double>>, Map<String, Object>> listenerFactory = new TabularPrinter<>(
+        functions,
+        kFunctions
+    );
     if (a("file", null) != null) {
-      listenerFactory = Factory.all(List.of(listenerFactory,
-          new CSVPrinter<>(functions, List.of(), new File(a("file", null)))
-          // TODO add functions
+      listenerFactory = Factory.all(List.of(
+          listenerFactory,
+          new CSVPrinter<>(functions, kFunctions, new File(a("file", null)))
       ));
     }
     //evolvers
@@ -147,14 +147,16 @@ public class ExtractionComparison extends Worker {
         Extractor<Character>>>> solvers = new TreeMap<>();
     solvers.put("cfgtree-ga", p -> {
       RegexGrammar g = new RegexGrammar(p.qualityFunction(), options);
-      return new StandardEvolver<>(t -> new RegexBasedExtractor(t.leaves()
-          .stream()
-          .map(Tree::content)
-          .collect(Collectors.joining())),
+      return new StandardEvolver<>(
+          t -> new RegexBasedExtractor(t.leaves()
+              .stream()
+              .map(Tree::content)
+              .collect(Collectors.joining())),
           new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
           nPop,
           StopConditions.nOfIterations(nIterations),
-          Map.of(new SameRootSubtreeCrossover<>(maxHeight + 4),
+          Map.of(
+              new SameRootSubtreeCrossover<>(maxHeight + 4),
               0.8d,
               new GrammarBasedSubtreeMutation<>(maxHeight + 4, g),
               0.2d
@@ -169,14 +171,16 @@ public class ExtractionComparison extends Worker {
     });
     solvers.put("cfgtree-gadiv", p -> {
       RegexGrammar g = new RegexGrammar(p.qualityFunction(), options);
-      return new StandardWithEnforcedDiversityEvolver<>(tree -> new RegexBasedExtractor(tree.leaves()
-          .stream()
-          .map(Tree::content)
-          .collect(Collectors.joining())),
+      return new StandardWithEnforcedDiversityEvolver<>(
+          tree -> new RegexBasedExtractor(tree.leaves()
+              .stream()
+              .map(Tree::content)
+              .collect(Collectors.joining())),
           new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
           nPop,
           StopConditions.nOfIterations(nIterations),
-          Map.of(new SameRootSubtreeCrossover<>(maxHeight + 4),
+          Map.of(
+              new SameRootSubtreeCrossover<>(maxHeight + 4),
               0.8d,
               new GrammarBasedSubtreeMutation<>(maxHeight + 4, g),
               0.2d
@@ -193,9 +197,10 @@ public class ExtractionComparison extends Worker {
     solvers.put("dfa-hash+-speciated", p -> {
       Function<Graph<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>,
           Graph<DeterministicFiniteAutomaton.State, Set<Character>>> graphMapper =
-          GraphUtils.mapper(IndexedNode::content,
-          sets -> sets.stream().reduce(Sets::union).orElse(Set.of())
-      );
+          GraphUtils.mapper(
+              IndexedNode::content,
+              sets -> sets.stream().reduce(Sets::union).orElse(Set.of())
+          );
       Set<Character> positiveChars = p.qualityFunction()
           .getDesiredExtractions()
           .stream()
@@ -206,12 +211,14 @@ public class ExtractionComparison extends Worker {
           .orElse(Set.of());
       Predicate<Graph<DeterministicFiniteAutomaton.State, Set<Character>>> checker =
           DeterministicFiniteAutomaton.checker();
-      return new SpeciatedEvolver<>(graphMapper.andThen(DeterministicFiniteAutomaton.builder()),
+      return new SpeciatedEvolver<>(
+          graphMapper.andThen(DeterministicFiniteAutomaton.builder()),
           new ShallowDFAFactory<>(2, positiveChars).then(GraphUtils.mapper(IndexedNode.incrementerMapper(
               DeterministicFiniteAutomaton.State.class), Misc::first)),
           nPop,
           StopConditions.nOfIterations(nIterations),
-          Map.of(new IndexedNodeAddition<DeterministicFiniteAutomaton.State, DeterministicFiniteAutomaton.State,
+          Map.of(
+              new IndexedNodeAddition<DeterministicFiniteAutomaton.State, DeterministicFiniteAutomaton.State,
                   Set<Character>>(
                   DeterministicFiniteAutomaton.sequentialStateFactory(2, 0.5),
                   Node::getIndex,
@@ -225,11 +232,13 @@ public class ExtractionComparison extends Worker {
                   return Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
                 }
                 if (cs.size() <= 1) {
-                  return r.nextBoolean() ? Sets.union(cs,
+                  return r.nextBoolean() ? Sets.union(
+                      cs,
                       Sets.difference(positiveChars, cs)
                   ) : Set.of(Misc.pickRandomly(positiveChars, r));
                 }
-                return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(cs,
+                return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(
+                    cs,
                     Set.of(Misc.pickRandomly(cs, r))
                 );
               }, 1d).withChecker(g -> checker.test(graphMapper.apply(g))),
@@ -242,7 +251,8 @@ public class ExtractionComparison extends Worker {
               new ArcRemoval<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(s -> s.content()
                   .getIndex() == 0).withChecker(g -> checker.test(graphMapper.apply(g))),
               graphArcRemovalRate,
-              new AlignedCrossover<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(Crossover.randomCopy(),
+              new AlignedCrossover<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
+                  Crossover.randomCopy(),
                   s -> s.content().getIndex() == 0,
                   false
               ).withChecker(g -> checker.test(graphMapper.apply(g))),
@@ -265,11 +275,13 @@ public class ExtractionComparison extends Worker {
           .orElse(Set.of());
       Predicate<Graph<DeterministicFiniteAutomaton.State, Set<Character>>> checker =
           DeterministicFiniteAutomaton.checker();
-      return new SpeciatedEvolver<>(DeterministicFiniteAutomaton.builder(),
+      return new SpeciatedEvolver<>(
+          DeterministicFiniteAutomaton.builder(),
           new ShallowDFAFactory<>(2, positiveChars),
           nPop,
           StopConditions.nOfIterations(nIterations),
-          Map.of(new NodeAddition<DeterministicFiniteAutomaton.State, Set<Character>>(DeterministicFiniteAutomaton.sequentialStateFactory(
+          Map.of(
+              new NodeAddition<DeterministicFiniteAutomaton.State, Set<Character>>(DeterministicFiniteAutomaton.sequentialStateFactory(
                   2,
                   0.5
               ), Mutation.copy(), Mutation.copy()).withChecker(checker),
@@ -279,11 +291,13 @@ public class ExtractionComparison extends Worker {
                   return Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
                 }
                 if (cs.size() <= 1) {
-                  return r.nextBoolean() ? Sets.union(cs,
+                  return r.nextBoolean() ? Sets.union(
+                      cs,
                       Sets.difference(positiveChars, cs)
                   ) : Set.of(Misc.pickRandomly(positiveChars, r));
                 }
-                return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(cs,
+                return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(
+                    cs,
                     Set.of(Misc.pickRandomly(cs, r))
                 );
               }, 1d).withChecker(checker),
@@ -296,7 +310,8 @@ public class ExtractionComparison extends Worker {
               new ArcRemoval<DeterministicFiniteAutomaton.State, Set<Character>>(s -> s.getIndex() == 0).withChecker(
                   checker),
               graphArcRemovalRate,
-              new AlignedCrossover<DeterministicFiniteAutomaton.State, Set<Character>>(Crossover.randomCopy(),
+              new AlignedCrossover<DeterministicFiniteAutomaton.State, Set<Character>>(
+                  Crossover.randomCopy(),
                   s -> s.getIndex() == 0,
                   false
               ).withChecker(checker),
@@ -319,11 +334,13 @@ public class ExtractionComparison extends Worker {
           .orElse(Set.of());
       Predicate<Graph<DeterministicFiniteAutomaton.State, Set<Character>>> checker =
           DeterministicFiniteAutomaton.checker();
-      return new SpeciatedEvolver<>(DeterministicFiniteAutomaton.builder(),
+      return new SpeciatedEvolver<>(
+          DeterministicFiniteAutomaton.builder(),
           new ShallowDFAFactory<>(2, positiveChars),
           nPop,
           StopConditions.nOfIterations(nIterations),
-          Map.of(new NodeAddition<DeterministicFiniteAutomaton.State, Set<Character>>(DeterministicFiniteAutomaton.sequentialStateFactory(
+          Map.of(
+              new NodeAddition<DeterministicFiniteAutomaton.State, Set<Character>>(DeterministicFiniteAutomaton.sequentialStateFactory(
                   2,
                   0.5
               ), Mutation.copy(), Mutation.copy()).withChecker(checker),
@@ -333,11 +350,13 @@ public class ExtractionComparison extends Worker {
                   return Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
                 }
                 if (cs.size() <= 1) {
-                  return r.nextBoolean() ? Sets.union(cs,
+                  return r.nextBoolean() ? Sets.union(
+                      cs,
                       Sets.difference(positiveChars, cs)
                   ) : Set.of(Misc.pickRandomly(positiveChars, r));
                 }
-                return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(cs,
+                return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(
+                    cs,
                     Set.of(Misc.pickRandomly(cs, r))
                 );
               }, 1d).withChecker(checker),
@@ -360,9 +379,10 @@ public class ExtractionComparison extends Worker {
     solvers.put("dfa-hash+-ga", p -> {
       Function<Graph<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>,
           Graph<DeterministicFiniteAutomaton.State, Set<Character>>> graphMapper =
-          GraphUtils.mapper(IndexedNode::content,
-          sets -> sets.stream().reduce(Sets::union).orElse(Set.of())
-      );
+          GraphUtils.mapper(
+              IndexedNode::content,
+              sets -> sets.stream().reduce(Sets::union).orElse(Set.of())
+          );
       Set<Character> positiveChars = p.qualityFunction()
           .getDesiredExtractions()
           .stream()
@@ -373,12 +393,14 @@ public class ExtractionComparison extends Worker {
           .orElse(Set.of());
       Predicate<Graph<DeterministicFiniteAutomaton.State, Set<Character>>> checker =
           DeterministicFiniteAutomaton.checker();
-      return new StandardEvolver<>(graphMapper.andThen(DeterministicFiniteAutomaton.builder()),
+      return new StandardEvolver<>(
+          graphMapper.andThen(DeterministicFiniteAutomaton.builder()),
           new ShallowDFAFactory<>(2, positiveChars).then(GraphUtils.mapper(IndexedNode.incrementerMapper(
               DeterministicFiniteAutomaton.State.class), Misc::first)),
           nPop,
           StopConditions.nOfIterations(nIterations),
-          Map.of(new IndexedNodeAddition<DeterministicFiniteAutomaton.State, DeterministicFiniteAutomaton.State,
+          Map.of(
+              new IndexedNodeAddition<DeterministicFiniteAutomaton.State, DeterministicFiniteAutomaton.State,
                   Set<Character>>(
                   DeterministicFiniteAutomaton.sequentialStateFactory(2, 0.5),
                   Node::getIndex,
@@ -392,11 +414,13 @@ public class ExtractionComparison extends Worker {
                   return Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
                 }
                 if (cs.size() <= 1) {
-                  return r.nextBoolean() ? Sets.union(cs,
+                  return r.nextBoolean() ? Sets.union(
+                      cs,
                       Sets.difference(positiveChars, cs)
                   ) : Set.of(Misc.pickRandomly(positiveChars, r));
                 }
-                return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(cs,
+                return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(
+                    cs,
                     Set.of(Misc.pickRandomly(cs, r))
                 );
               }, 1d).withChecker(g -> checker.test(graphMapper.apply(g))),
@@ -409,7 +433,8 @@ public class ExtractionComparison extends Worker {
               new ArcRemoval<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(s -> s.content()
                   .getIndex() == 0).withChecker(g -> checker.test(graphMapper.apply(g))),
               graphArcRemovalRate,
-              new AlignedCrossover<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(Crossover.randomCopy(),
+              new AlignedCrossover<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>(
+                  Crossover.randomCopy(),
                   s -> s.content().getIndex() == 0,
                   false
               ).withChecker(g -> checker.test(graphMapper.apply(g))),
@@ -426,9 +451,10 @@ public class ExtractionComparison extends Worker {
     solvers.put("dfa-hash+-speciated-noxover", p -> {
       Function<Graph<IndexedNode<DeterministicFiniteAutomaton.State>, Set<Character>>,
           Graph<DeterministicFiniteAutomaton.State, Set<Character>>> graphMapper =
-          GraphUtils.mapper(IndexedNode::content,
-          sets -> sets.stream().reduce(Sets::union).orElse(Set.of())
-      );
+          GraphUtils.mapper(
+              IndexedNode::content,
+              sets -> sets.stream().reduce(Sets::union).orElse(Set.of())
+          );
       Set<Character> positiveChars = p.qualityFunction()
           .getDesiredExtractions()
           .stream()
@@ -439,12 +465,14 @@ public class ExtractionComparison extends Worker {
           .orElse(Set.of());
       Predicate<Graph<DeterministicFiniteAutomaton.State, Set<Character>>> checker =
           DeterministicFiniteAutomaton.checker();
-      return new SpeciatedEvolver<>(graphMapper.andThen(DeterministicFiniteAutomaton.builder()),
+      return new SpeciatedEvolver<>(
+          graphMapper.andThen(DeterministicFiniteAutomaton.builder()),
           new ShallowDFAFactory<>(2, positiveChars).then(GraphUtils.mapper(IndexedNode.incrementerMapper(
               DeterministicFiniteAutomaton.State.class), Misc::first)),
           nPop,
           StopConditions.nOfIterations(nIterations),
-          Map.of(new IndexedNodeAddition<DeterministicFiniteAutomaton.State, DeterministicFiniteAutomaton.State,
+          Map.of(
+              new IndexedNodeAddition<DeterministicFiniteAutomaton.State, DeterministicFiniteAutomaton.State,
                   Set<Character>>(
                   DeterministicFiniteAutomaton.sequentialStateFactory(2, 0.5),
                   Node::getIndex,
@@ -458,11 +486,13 @@ public class ExtractionComparison extends Worker {
                   return Sets.difference(cs, Set.of(Misc.pickRandomly(cs, r)));
                 }
                 if (cs.size() <= 1) {
-                  return r.nextBoolean() ? Sets.union(cs,
+                  return r.nextBoolean() ? Sets.union(
+                      cs,
                       Sets.difference(positiveChars, cs)
                   ) : Set.of(Misc.pickRandomly(positiveChars, r));
                 }
-                return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(cs,
+                return r.nextBoolean() ? Sets.union(cs, Sets.difference(positiveChars, cs)) : Sets.difference(
+                    cs,
                     Set.of(Misc.pickRandomly(cs, r))
                 );
               }, 1d).withChecker(g -> checker.test(graphMapper.apply(g))),
@@ -484,9 +514,10 @@ public class ExtractionComparison extends Worker {
     });
     //filter evolvers
     solvers =
-        solvers.entrySet().stream().filter(e -> e.getKey().matches(evolverNamePattern)).collect(Collectors.toMap(Map.Entry::getKey,
-        Map.Entry::getValue
-    ));
+        solvers.entrySet().stream().filter(e -> e.getKey().matches(evolverNamePattern)).collect(Collectors.toMap(
+            Map.Entry::getKey,
+            Map.Entry::getValue
+        ));
     L.info(String.format("Going to test with %d evolvers: %s%n", solvers.size(), solvers.keySet()));
     //run
     for (int seed : seeds) {
@@ -501,17 +532,20 @@ public class ExtractionComparison extends Worker {
             IterativeSolver<? extends POSetPopulationState<?, Extractor<Character>, List<Double>>,
                 QualityBasedProblem<Extractor<Character>, List<Double>>, Extractor<Character>> solver =
                 solverEntry.getValue()
-                .apply(p);
+                    .apply(p);
             L.info(String.format("Starting %s", keys));
             Collection<Extractor<Character>> solutions =
-                solver.solve(p.withComparator(new LexicoGraphical<>(Double.class,
-                    IntStream.range(0, metrics.length).toArray()
-                )),
-                new Random(seed),
-                executorService,
-                listenerFactory.build(keys).deferred(executorService)
-            );
-            L.info(String.format("Done %s: %d solutions in %4.1fs",
+                solver.solve(
+                    p.withComparator(new LexicoGraphical<>(
+                        Double.class,
+                        IntStream.range(0, metrics.length).toArray()
+                    )),
+                    new Random(seed),
+                    executorService,
+                    listenerFactory.build(keys).deferred(executorService)
+                );
+            L.info(String.format(
+                "Done %s: %d solutions in %4.1fs",
                 keys,
                 solutions.size(),
                 (double) stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000d
