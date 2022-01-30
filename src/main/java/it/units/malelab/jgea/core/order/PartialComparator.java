@@ -77,7 +77,7 @@ public interface PartialComparator<K> {
 
   default <C> PartialComparator<C> comparing(Function<? super C, ? extends K> function) {
     return (c1, c2) -> compare(function.apply(c1), function.apply(c2));
-  } // TODO should be made static and consistent with the corresponding method of Comparator
+  }
 
   default PartialComparator<K> reversed() {
     PartialComparator<K> thisComparator = this;
