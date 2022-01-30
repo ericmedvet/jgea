@@ -59,8 +59,8 @@ import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
  */
 public class Example extends Worker {
 
-  public final static List<NamedFunction<? super POSetPopulationState<?, ?, ?>, ?>> BASIC_FUNCTIONS = List.of(
-      iterations(),
+  public final static List<NamedFunction<? super POSetPopulationState<?, ?, ?>, ?>> BASIC_FUNCTIONS =
+      List.of(iterations(),
       births(),
       elapsedSeconds(),
       size().of(all()),
@@ -74,8 +74,8 @@ public class Example extends Worker {
       fitnessMappingIteration().of(best())
   );
 
-  public final static List<NamedFunction<? super POSetPopulationState<?, ?, ? extends Double>, ?>> DOUBLE_FUNCTIONS = List.of(
-      fitness().reformat("%5.3f").of(best()),
+  public final static List<NamedFunction<? super POSetPopulationState<?, ?, ? extends Double>, ?>> DOUBLE_FUNCTIONS =
+      List.of(fitness().reformat("%5.3f").of(best()),
       hist(8).of(each(fitness())).of(all()),
       max(Double::compare).reformat("%5.3f").of(each(fitness())).of(all())
   );
@@ -100,7 +100,10 @@ public class Example extends Worker {
   }
 
   public void runGrammarBasedParity() {
-    Factory<POSetPopulationState<?, ?, ? extends Double>, Void> listenerFactory = Factory.deaf();// new TabularPrinter<>(Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
+    Factory<POSetPopulationState<?, ?, ? extends Double>, Void> listenerFactory =
+        new TabularPrinter<>(Misc.concat(List.of(BASIC_FUNCTIONS,
+        DOUBLE_FUNCTIONS
+    )), List.of());
     Random r = new Random(1);
     EvenParity p;
     try {
@@ -123,8 +126,7 @@ public class Example extends Worker {
         (ep, tr) -> new POSetPopulationState<>()
     );
     try {
-      Collection<List<Tree<Element>>> solutions = solver.solve(
-          p,
+      Collection<List<Tree<Element>>> solutions = solver.solve(p,
           r,
           executorService,
           listenerFactory.build(null).deferred(executorService)
@@ -136,22 +138,25 @@ public class Example extends Worker {
   }
 
   public void runLinearPoints() {
-    Factory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory = Factory.deaf();//new TabularPrinter<>(Misc.concat(        List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)));
+    Factory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
+        new TabularPrinter<>(Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)),
+        List.of()
+    );
     Random r = new Random(1);
     TotalOrderQualityBasedProblem<List<Double>, Double> p = new LinearPoints();
-    List<IterativeSolver<? extends POSetPopulationState<List<Double>, List<Double>, Double>, TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>>> solvers = new ArrayList<>();
-    solvers.add(new RandomSearch<>(
-        Function.identity(),
+    List<IterativeSolver<? extends POSetPopulationState<List<Double>, List<Double>, Double>,
+        TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>>> solvers = new ArrayList<>();
+    solvers.add(new RandomSearch<>(Function.identity(),
         new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
         StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100))
     ));
-    solvers.add(new RandomWalk<>(
-        Function.identity(),
+    solvers.add(new RandomWalk<>(Function.identity(),
         new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
         StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
         new GaussianMutation(0.01d)
     ));
-    solvers.add(new StandardEvolver<POSetPopulationState<List<Double>, List<Double>, Double>, TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>, List<Double>, Double>(
+    solvers.add(new StandardEvolver<POSetPopulationState<List<Double>, List<Double>, Double>,
+        TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>, List<Double>, Double>(
         Function.identity(),
         new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
         100,
@@ -164,8 +169,7 @@ public class Example extends Worker {
         false,
         (problem, random) -> new POSetPopulationState<>()
     ));
-    solvers.add(new SimpleEvolutionaryStrategy<>(
-        Function.identity(),
+    solvers.add(new SimpleEvolutionaryStrategy<>(Function.identity(),
         new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
         100,
         StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
@@ -174,11 +178,11 @@ public class Example extends Worker {
         0.1,
         false
     ));
-    for (IterativeSolver<? extends POSetPopulationState<List<Double>, List<Double>, Double>, TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>> solver : solvers) {
+    for (IterativeSolver<? extends POSetPopulationState<List<Double>, List<Double>, Double>,
+        TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>> solver : solvers) {
       System.out.println(solver.getClass().getSimpleName());
       try {
-        Collection<List<Double>> solutions = solver.solve(
-            p,
+        Collection<List<Double>> solutions = solver.solve(p,
             r,
             executorService,
             listenerFactory.build(Map.of()).deferred(executorService)
@@ -195,23 +199,23 @@ public class Example extends Worker {
     Random r = new Random(1);
     QualityBasedProblem<BitString, Double> p = new OneMax();
     List<NamedFunction<? super POSetPopulationState<?, ?, ?>, ?>> keysFunctions = List.of();
-    Factory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory = Factory.all(List.of(new TabularPrinter<>(
-        Misc.concat(List.of(keysFunctions, BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)),
+    Factory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
+        Factory.all(List.of(new TabularPrinter<>(Misc.concat(List.of(keysFunctions, BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)),
         List.of(attribute("solver"))
     )));
-    List<IterativeSolver<? extends POSetPopulationState<?, BitString, Double>, QualityBasedProblem<BitString, Double>, BitString>> solvers = new ArrayList<>();
-    solvers.add(new RandomSearch<>(
-        Function.identity(),
+    List<IterativeSolver<? extends POSetPopulationState<?, BitString, Double>, QualityBasedProblem<BitString, Double>
+        , BitString>> solvers = new ArrayList<>();
+    solvers.add(new RandomSearch<>(Function.identity(),
         new BitStringFactory(size),
         StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100))
     ));
-    solvers.add(new RandomWalk<>(
-        Function.identity(),
+    solvers.add(new RandomWalk<>(Function.identity(),
         new BitStringFactory(size),
         StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
         new BitFlipMutation(0.01d)
     ));
-    solvers.add(new StandardEvolver<POSetPopulationState<BitString, BitString, Double>, QualityBasedProblem<BitString, Double>, BitString, BitString, Double>(
+    solvers.add(new StandardEvolver<POSetPopulationState<BitString, BitString, Double>, QualityBasedProblem<BitString
+        , Double>, BitString, BitString, Double>(
         Function.identity(),
         new BitStringFactory(size),
         100,
@@ -224,7 +228,8 @@ public class Example extends Worker {
         false,
         (problem, random) -> new POSetPopulationState<>()
     ));
-    solvers.add(new StandardWithEnforcedDiversityEvolver<POSetPopulationState<BitString, BitString, Double>, QualityBasedProblem<BitString, Double>, BitString, BitString, Double>(
+    solvers.add(new StandardWithEnforcedDiversityEvolver<POSetPopulationState<BitString, BitString, Double>,
+        QualityBasedProblem<BitString, Double>, BitString, BitString, Double>(
         Function.identity(),
         new BitStringFactory(size),
         100,
@@ -238,10 +243,10 @@ public class Example extends Worker {
         (problem, random) -> new POSetPopulationState<>(),
         100
     ));
-    for (IterativeSolver<? extends POSetPopulationState<?, BitString, Double>, QualityBasedProblem<BitString, Double>, BitString> evolver : solvers) {
+    for (IterativeSolver<? extends POSetPopulationState<?, BitString, Double>, QualityBasedProblem<BitString, Double>
+        , BitString> evolver : solvers) {
       try {
-        Collection<BitString> solutions = evolver.solve(
-            p,
+        Collection<BitString> solutions = evolver.solve(p,
             r,
             executorService,
             listenerFactory.build(Map.of("solver", evolver.getClass().getSimpleName())).deferred(executorService)
@@ -255,11 +260,9 @@ public class Example extends Worker {
   }
 
   public void runSymbolicRegression() {
-    Factory<? super POSetPopulationState<?, ?, ? extends Double>, Void> listenerFactory = Factory.deaf();/*new TabularPrinter<>(Misc.concat(
-        List.of(
-            BASIC_FUNCTIONS,
-            DOUBLE_FUNCTIONS
-        )));*/
+    Factory<? super POSetPopulationState<?, ?, ? extends Double>, Void> listenerFactory =
+        new TabularPrinter<>(Misc.concat(
+        List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)), List.of());
     Random r = new Random(1);
     SymbolicRegressionProblem p = new Nguyen7(SymbolicRegressionFitness.Metric.MSE, 1);
     Grammar<String> srGrammar;
@@ -269,10 +272,10 @@ public class Example extends Worker {
       e.printStackTrace();
       return;
     }
-    List<IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SymbolicRegressionProblem, RealFunction>> solvers = new ArrayList<>();
-    solvers.add(new StandardEvolver<>(
-        new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(n, "x"))
-            .andThen(MathUtils.linearScaler(p.qualityFunction())),
+    List<IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SymbolicRegressionProblem,
+        RealFunction>> solvers = new ArrayList<>();
+    solvers.add(new StandardEvolver<>(new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(n, "x"))
+        .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
         100,
         StopConditions.nOfIterations(100),
@@ -284,11 +287,9 @@ public class Example extends Worker {
         false,
         (srp, rnd) -> new POSetPopulationState<>()
     ));
-    solvers.add(new StandardWithEnforcedDiversityEvolver<>(
-        new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(
-            n,
-            "x"
-        )).andThen(MathUtils.linearScaler(p.qualityFunction())),
+    solvers.add(new StandardWithEnforcedDiversityEvolver<>(new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(n,
+        "x"
+    )).andThen(MathUtils.linearScaler(p.qualityFunction())),
         new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
         100,
         StopConditions.nOfIterations(100),
@@ -301,11 +302,11 @@ public class Example extends Worker {
         (srp, rnd) -> new POSetPopulationState<>(),
         100
     ));
-    for (IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SymbolicRegressionProblem, RealFunction> solver : solvers) {
+    for (IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SymbolicRegressionProblem,
+        RealFunction> solver : solvers) {
       System.out.println(solver.getClass().getSimpleName());
       try {
-        Collection<RealFunction> solutions = solver.solve(
-            p,
+        Collection<RealFunction> solutions = solver.solve(p,
             r,
             executorService,
             listenerFactory.build(null).deferred(executorService)
