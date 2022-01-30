@@ -18,10 +18,7 @@ package it.units.malelab.jgea.problem.symbolicregression;
 
 import it.units.malelab.jgea.representation.grammar.Grammar;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,8 +31,9 @@ public class SymbolicRegressionGrammar extends Grammar<String> {
     SortedSet<Integer> arities = operators.stream()
         .map(Element.Operator::arity)
         .collect(Collectors.toCollection(TreeSet::new));
-    List<List<String>> eProductions = arities.stream().map(a -> Stream.concat(List.of(String.format("<o%d>", a))
-        .stream(), Collections.nCopies(a, "<e>").stream()).toList()).toList();
+    List<List<String>> eProductions = new ArrayList<>(arities.stream()
+        .map(a -> Stream.concat(Stream.of(String.format("<o%d>", a)), Collections.nCopies(a, "<e>").stream()).toList())
+        .toList());
     eProductions.add(List.of("<v>"));
     eProductions.add(List.of("<c>"));
     getRules().put("<e>", eProductions);
