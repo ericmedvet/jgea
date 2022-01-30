@@ -36,10 +36,7 @@ public class OperatorNode extends Node implements RealFunction {
   }
 
   public static IndependentFactory<OperatorNode> limitedIndexFactory(int limit, BaseOperator... operators) {
-    return random -> new OperatorNode(
-        random.nextInt(limit),
-        operators[random.nextInt(operators.length)]
-    );
+    return random -> new OperatorNode(random.nextInt(limit), operators[random.nextInt(operators.length)]);
   }
 
   public static IndependentFactory<OperatorNode> sequentialIndexFactory(BaseOperator... operators) {
@@ -59,6 +56,15 @@ public class OperatorNode extends Node implements RealFunction {
     return operator.apply(input);
   }
 
+  public BaseOperator getOperator() {
+    return operator;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), operator);
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o)
@@ -69,15 +75,6 @@ public class OperatorNode extends Node implements RealFunction {
       return false;
     OperatorNode that = (OperatorNode) o;
     return operator == that.operator;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(super.hashCode(), operator);
-  }
-
-  public BaseOperator getOperator() {
-    return operator;
   }
 
   @Override

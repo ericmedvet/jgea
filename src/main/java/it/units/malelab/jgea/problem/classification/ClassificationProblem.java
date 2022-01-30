@@ -28,7 +28,8 @@ import java.util.List;
 /**
  * @author eric
  */
-public class ClassificationProblem<O, L extends Enum<L>> implements ProblemWithValidation<Classifier<O, L>, List<Double>> {
+public class ClassificationProblem<O, L extends Enum<L>> implements ProblemWithValidation<Classifier<O, L>,
+    List<Double>> {
 
   private final static PartialComparator<List<Double>> COMPARATOR = new ParetoDominance<>(Double.class);
 

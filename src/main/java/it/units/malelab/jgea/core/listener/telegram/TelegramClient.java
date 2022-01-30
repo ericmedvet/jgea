@@ -45,10 +45,7 @@ public class TelegramClient {
 
   protected void sendDocument(File file) {
     try {
-      SendResponse response = bot.execute(new SendDocument(
-          chatId,
-          file
-      ));
+      SendResponse response = bot.execute(new SendDocument(chatId, file));
       if (!response.isOk()) {
         L.warning(String.format("Response is not ok: %s", response.toString()));
       }
@@ -62,10 +59,7 @@ public class TelegramClient {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ImageIO.write(image, "png", baos);
       baos.close();
-      SendResponse response = bot.execute(new SendPhoto(
-          chatId,
-          baos.toByteArray()
-      ));
+      SendResponse response = bot.execute(new SendPhoto(chatId, baos.toByteArray()));
       if (!response.isOk()) {
         L.warning(String.format("Response is not ok: %s", response.toString()));
       }
@@ -76,10 +70,7 @@ public class TelegramClient {
 
   protected void sendText(String string) {
     try {
-      SendResponse response = bot.execute(new SendMessage(
-          chatId,
-          string
-      ));
+      SendResponse response = bot.execute(new SendMessage(chatId, string));
       if (!response.isOk()) {
         L.warning(String.format("Response is not ok: %s", response.toString()));
       }
@@ -90,10 +81,7 @@ public class TelegramClient {
 
   protected void sendVideo(File file) {
     try {
-      SendResponse response = bot.execute(new SendVideo(
-          chatId,
-          file
-      ));
+      SendResponse response = bot.execute(new SendVideo(chatId, file));
       if (!response.isOk()) {
         L.warning(String.format("Response is not ok: %s", response.toString()));
       }

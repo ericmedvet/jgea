@@ -38,7 +38,8 @@ import java.util.function.Function;
  * @author eric
  */
 @SuppressWarnings("rawtypes")
-public class MapperGeneration implements GrammarBasedProblem<String, Pair<Tree<Element>, Tree<Element>>>, ProblemWithValidation<Pair<Tree<Element>, Tree<Element>>, List<Double>> {
+public class MapperGeneration implements GrammarBasedProblem<String, Pair<Tree<Element>, Tree<Element>>>,
+    ProblemWithValidation<Pair<Tree<Element>, Tree<Element>>, List<Double>> {
 
   private final static PartialComparator<List<Double>> COMPARATOR = new ParetoDominance<>(Double.class);
 
@@ -60,16 +61,14 @@ public class MapperGeneration implements GrammarBasedProblem<String, Pair<Tree<E
       long seed
   ) throws IOException {
     this.grammar = Grammar.fromFile(new File("grammars/mapper.bnf"));
-    learningFitnessFunction = new FitnessFunction(
-        learningProblems,
+    learningFitnessFunction = new FitnessFunction(learningProblems,
         learningGenotypeSize,
         learningN,
         learningMaxMappingDepth,
         learningProperties,
         seed
     );
-    validationFitnessFunction = new FitnessFunction(
-        validationProblems,
+    validationFitnessFunction = new FitnessFunction(validationProblems,
         validationGenotypeSize,
         validationN,
         validationMaxMappingDepth,

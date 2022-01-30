@@ -37,8 +37,8 @@ public interface Factory<T> {
       List<T1> t1s = factory1.build(n, random);
       List<T2> t2s = factory2.build(n, random);
       if (t1s.size() != n || t2s.size() != n) {
-        throw new RuntimeException(String.format(
-            "The two internal factories produced a different number of elements: %d and %d",
+        throw new RuntimeException(String.format("The two internal factories produced a different number of elements:" +
+                " %d and %d",
             t1s.size(),
             t2s.size()
         ));
@@ -58,9 +58,7 @@ public interface Factory<T> {
 
   default <K> Factory<K> then(Function<T, K> f) {
     Factory<T> thisFactory = this;
-    return (n, random) -> thisFactory.build(n, random).stream()
-        .map(f)
-        .toList();
+    return (n, random) -> thisFactory.build(n, random).stream().map(f).toList();
   }
 
   default Factory<T> withOptimisticUniqueness(int maxAttempts) {

@@ -94,15 +94,11 @@ public class LinkedHashGraph<N, A> implements Graph<N, A>, Serializable {
     if (o == null || getClass() != o.getClass())
       return false;
     LinkedHashGraph<?, ?> that = (LinkedHashGraph<?, ?>) o;
-    return nodes.equals(that.nodes) &&
-        arcs.equals(that.arcs);
+    return nodes.equals(that.nodes) && arcs.equals(that.arcs);
   }
 
   @Override
   public String toString() {
-    return "{" +
-        "nodes=" + nodes +
-        ", arcs=" + arcs +
-        '}';
+    return "{" + "nodes=" + nodes + ", arcs=" + arcs + '}';
   }
 }

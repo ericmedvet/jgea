@@ -36,10 +36,7 @@ public class FunctionNode extends Node implements Function<Double, Double> {
   }
 
   public static IndependentFactory<FunctionNode> limitedIndexFactory(int limit, BaseFunction... functions) {
-    return random -> new FunctionNode(
-        random.nextInt(limit),
-        functions[random.nextInt(functions.length)]
-    );
+    return random -> new FunctionNode(random.nextInt(limit), functions[random.nextInt(functions.length)]);
   }
 
   public static IndependentFactory<FunctionNode> sequentialIndexFactory(BaseFunction... functions) {
@@ -59,6 +56,15 @@ public class FunctionNode extends Node implements Function<Double, Double> {
     return function.apply(x);
   }
 
+  public BaseFunction getFunction() {
+    return function;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), function);
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o)
@@ -69,15 +75,6 @@ public class FunctionNode extends Node implements Function<Double, Double> {
       return false;
     FunctionNode that = (FunctionNode) o;
     return function == that.function;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(super.hashCode(), function);
-  }
-
-  public BaseFunction getFunction() {
-    return function;
   }
 
   @Override

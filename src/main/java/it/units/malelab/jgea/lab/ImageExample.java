@@ -53,7 +53,8 @@ import static it.units.malelab.jgea.core.util.Args.*;
  * @author eric
  */
 
-// /usr/lib/jvm/jdk-14.0.1/bin/java -cp ~/IdeaProjects/jgea/out/artifacts/jgea_jar/jgea.jar it.units.malelab.jgea.lab.SymbolicRegressionComparison seed=0:10 file=results-%s.txt
+// /usr/lib/jvm/jdk-14.0.1/bin/java -cp ~/IdeaProjects/jgea/out/artifacts/jgea_jar/jgea.jar it.units.malelab.jgea.lab
+// .SymbolicRegressionComparison seed=0:10 file=results-%s.txt
 public class ImageExample extends Worker {
 
   public ImageExample(String[] args) {
@@ -70,7 +71,8 @@ public class ImageExample extends Worker {
     int nTournament = 3;
     int nIterations = i(a("nIterations", "250"));
     int[] seeds = ri(a("seed", "0:1"));
-    //BaseFunction[] baseFunctions = new BaseFunction[]{BaseFunction.STEP, BaseFunction.GAUSSIAN, BaseFunction.PROT_INVERSE, BaseFunction.SQ, BaseFunction.SAW, BaseFunction.SIN};
+    //BaseFunction[] baseFunctions = new BaseFunction[]{BaseFunction.STEP, BaseFunction.GAUSSIAN, BaseFunction
+    // .PROT_INVERSE, BaseFunction.SQ, BaseFunction.SAW, BaseFunction.SIN};
     BaseFunction[] baseFunctions = new BaseFunction[]{BaseFunction.GAUSSIAN, BaseFunction.SIN, BaseFunction.SQ};
     List<String> images = l(a("images", "/home/eric/experiments/2020-graphea/image/glasses-32x32.png"));
     //listeners
@@ -92,74 +94,76 @@ public class ImageExample extends Worker {
         fitness().reformat("%5.3f").of(best()),
         fitnessMappingIteration().of(best())
     );
-    Factory<? super POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory = Factory.deaf();/*new TabularPrinter<>(functions);*/  // TODO add functions
+    Factory<? super POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
+        Factory.deaf();/*new TabularPrinter<>(functions);*/  // TODO add functions
     if (a("file", null) != null) {
-      listenerFactory = Factory.all(List.of(
-          listenerFactory,
-          new CSVPrinter<>(functions, List.of(), new File(a("file", null))) // TODO add functions
+      listenerFactory = Factory.all(List.of(listenerFactory,
+          new CSVPrinter<>(functions, List.of(), new File(a("file", null)))
+          // TODO add functions
       ));
     }
-    Map<String, IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, ImageReconstruction, RealFunction>> solvers = new TreeMap<>();
-    solvers.put("graph-seq-ga", new StandardEvolver<>(
-        FunctionGraph.builder()
-            .andThen(MathUtils.fromMultivariateBuilder()),
-        new ShallowSparseFactory(0d, 0d, 1d, 2, 1),
-        nPop,
-        StopConditions.nOfIterations(nIterations),
-        Map.of(
-            new NodeAddition<>(
-                FunctionNode.sequentialIndexFactory(baseFunctions),
-                (w, r) -> w,
-                (w, r) -> r.nextGaussian()
-            ), 1d,
-            new ArcModification<>((w, random) -> w + random.nextGaussian(), 1d), 5d,
-            new ArcAddition<>(RandomGenerator::nextGaussian, false), 1d,
-            new ArcRemoval<>(node -> node instanceof Output), 0.1d,
-            new AlignedCrossover<>(
-                (w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
-                node -> node instanceof Output,
-                false
-            ), 1d
-        ),
-        new Tournament(nTournament),
-        new Last(),
-        nPop,
-        true,
-        false,
-        (srp, r) -> new POSetPopulationState<>()
-    ));
+    Map<String, IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, ImageReconstruction,
+        RealFunction>> solvers = new TreeMap<>();
+    solvers.put("graph-seq-ga",
+        new StandardEvolver<>(FunctionGraph.builder().andThen(MathUtils.fromMultivariateBuilder()),
+            new ShallowSparseFactory(0d, 0d, 1d, 2, 1),
+            nPop,
+            StopConditions.nOfIterations(nIterations),
+            Map.of(new NodeAddition<>(FunctionNode.sequentialIndexFactory(baseFunctions),
+                    (w, r) -> w,
+                    (w, r) -> r.nextGaussian()
+                ),
+                1d,
+                new ArcModification<>((w, random) -> w + random.nextGaussian(), 1d),
+                5d,
+                new ArcAddition<>(RandomGenerator::nextGaussian, false),
+                1d,
+                new ArcRemoval<>(node -> node instanceof Output),
+                0.1d,
+                new AlignedCrossover<>((w1, w2, random) -> w1 + (w2 - w1) * (random.nextDouble() * 3d - 1d),
+                    node -> node instanceof Output,
+                    false
+                ),
+                1d
+            ),
+            new Tournament(nTournament),
+            new Last(),
+            nPop,
+            true,
+            false,
+            (srp, r) -> new POSetPopulationState<>()
+        )
+    );
     //run
     for (int seed : seeds) {
       for (String image : images) {
-        for (Map.Entry<String, IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, ImageReconstruction, RealFunction>> solverEntry : solvers.entrySet()) {
-          Map<String, Object> keys = Map.of(
-              "seed", Integer.toString(seed),
-              "image", image.split(File.separator)[image.split(File.separator).length - 1],
-              "evolver", solverEntry.getKey()
+        for (Map.Entry<String, IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>,
+            ImageReconstruction, RealFunction>> solverEntry : solvers.entrySet()) {
+          Map<String, Object> keys = Map.of("seed",
+              Integer.toString(seed),
+              "image",
+              image.split(File.separator)[image.split(File.separator).length - 1],
+              "evolver",
+              solverEntry.getKey()
           );
           try {
             ImageReconstruction problem = new ImageReconstruction(ImageIO.read(new File(image)), true);
             Stopwatch stopwatch = Stopwatch.createStarted();
-            IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, ImageReconstruction, RealFunction> solver = solverEntry.getValue();
+            IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, ImageReconstruction,
+                RealFunction> solver = solverEntry.getValue();
             L.info(String.format("Starting %s", keys));
-            Collection<RealFunction> solutions = solver.solve(
-                problem,
+            Collection<RealFunction> solutions = solver.solve(problem,
                 new Random(seed),
                 executorService,
                 listenerFactory.build(keys).deferred(executorService)
             );
-            L.info(String.format(
-                "Done %s: %d solutions in %4.1fs",
+            L.info(String.format("Done %s: %d solutions in %4.1fs",
                 keys,
                 solutions.size(),
                 (double) stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000d
             ));
           } catch (SolverException | IOException e) {
-            L.severe(String.format(
-                "Cannot complete %s due to %s",
-                keys,
-                e
-            ));
+            L.severe(String.format("Cannot complete %s due to %s", keys, e));
           }
         }
       }

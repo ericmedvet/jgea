@@ -37,17 +37,13 @@ public class TreeBasedRealFunction implements RealFunction, Sized {
 
   private static double compute(Tree<Element> tree, double[] x, String[] varNames) {
     if (varNames.length != x.length) {
-      throw new IllegalArgumentException(String.format(
-          "Wrong number of arguments: %d expected, %d received",
+      throw new IllegalArgumentException(String.format("Wrong number of arguments: %d expected, %d received",
           varNames.length,
           x.length
       ));
     }
     if (tree.content() instanceof Element.Decoration) {
-      throw new RuntimeException(String.format(
-          "Cannot compute: decoration node %s found",
-          tree.content()
-      ));
+      throw new RuntimeException(String.format("Cannot compute: decoration node %s found", tree.content()));
     }
     if (tree.content() instanceof Element.Variable) {
       int index = Arrays.binarySearch(varNames, ((Element.Variable) tree.content()).name());
@@ -100,8 +96,7 @@ public class TreeBasedRealFunction implements RealFunction, Sized {
     if (o == null || getClass() != o.getClass())
       return false;
     TreeBasedRealFunction that = (TreeBasedRealFunction) o;
-    return tree.equals(that.tree) &&
-        Arrays.equals(varNames, that.varNames);
+    return tree.equals(that.tree) && Arrays.equals(varNames, that.varNames);
   }
 
   @Override

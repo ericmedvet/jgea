@@ -51,13 +51,8 @@ public class FunctionGraph implements Function<double[], double[]>, Sized, Seria
       throw new IllegalArgumentException("Invalid graph: it has cycles");
     }
     for (Node n : graph.nodes()) {
-      if (!((n instanceof Input)
-          || (n instanceof Output)
-          || (n instanceof FunctionNode)
-          || (n instanceof Constant)
-      )) {
-        throw new IllegalArgumentException(String.format(
-            "Invalid graph: node %s is of wrong type %s",
+      if (!((n instanceof Input) || (n instanceof Output) || (n instanceof FunctionNode) || (n instanceof Constant))) {
+        throw new IllegalArgumentException(String.format("Invalid graph: node %s is of wrong type %s",
             n,
             n.getClass()
         ));
@@ -70,8 +65,8 @@ public class FunctionGraph implements Function<double[], double[]>, Sized, Seria
         ));
       }
       if ((n instanceof Output) && graph.successors(n).size() > 0) {
-        throw new IllegalArgumentException(String.format(
-            "Invalid graph: output node %s has more than 0 successors (%d)",
+        throw new IllegalArgumentException(String.format("Invalid graph: output node %s has more than 0 successors " +
+                "(%d)",
             n,
             graph.predecessors(n).size()
         ));
@@ -92,11 +87,8 @@ public class FunctionGraph implements Function<double[], double[]>, Sized, Seria
 
   @Override
   public double[] apply(double[] input) {
-    Set<Output> outputs = graph.nodes()
-        .stream()
-        .filter(n -> n instanceof Output)
-        .map(n -> (Output) n)
-        .collect(Collectors.toSet());
+    Set<Output> outputs = graph.nodes().stream().filter(n -> n instanceof Output).map(n -> (Output) n).collect(
+        Collectors.toSet());
     int outputSize = outputs.stream().mapToInt(Node::getIndex).max().orElse(0);
     double[] output = new double[outputSize + 1];
     for (Output outputNode : outputs) {
@@ -122,9 +114,12 @@ public class FunctionGraph implements Function<double[], double[]>, Sized, Seria
 
   @Override
   public String toString() {
-    return graph.arcs().stream()
-        .map(e -> String.format("%s-[%.3f]->%s", e.getSource(), graph.getArcValue(e), e.getTarget()))
-        .collect(Collectors.joining(","));
+    return graph.arcs().stream().map(e -> String.format(
+        "%s-[%.3f]->%s",
+        e.getSource(),
+        graph.getArcValue(e),
+        e.getTarget()
+    )).collect(Collectors.joining(","));
   }
 
   public int nInputs() {

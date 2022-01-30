@@ -34,7 +34,9 @@ import java.util.stream.Collectors;
 /**
  * @author eric
  */
-public class GrammarBasedTextFlaggingProblem extends TextFlaggingProblem implements GrammarBasedProblem<String, Classifier<String, TextFlaggingProblem.Label>>, QualityBasedProblem<Classifier<String, TextFlaggingProblem.Label>, List<Double>> {
+public class GrammarBasedTextFlaggingProblem extends TextFlaggingProblem implements GrammarBasedProblem<String,
+    Classifier<String, TextFlaggingProblem.Label>>, QualityBasedProblem<Classifier<String, TextFlaggingProblem.Label>
+    , List<Double>> {
 
   private final Grammar<String> grammar;
   private final Function<Tree<String>, Classifier<String, TextFlaggingProblem.Label>> solutionMapper;
@@ -50,9 +52,7 @@ public class GrammarBasedTextFlaggingProblem extends TextFlaggingProblem impleme
   ) {
     super(data, folds, i, learningErrorMetric, validationErrorMetric);
     solutionMapper = (Tree<String> tree) -> {
-      String regex = tree.leaves().stream()
-          .map(Tree::content)
-          .collect(Collectors.joining());
+      String regex = tree.leaves().stream().map(Tree::content).collect(Collectors.joining());
       return (Classifier<String, Label>) s -> {
         Matcher matcher = Pattern.compile(regex).matcher(s);
         return matcher.find() ? Label.FOUND : Label.NOT_FOUND;

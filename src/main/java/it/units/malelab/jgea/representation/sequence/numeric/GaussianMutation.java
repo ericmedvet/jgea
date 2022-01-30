@@ -27,10 +27,6 @@ import java.util.List;
 public class GaussianMutation extends ProbabilisticMutation<Double, List<Double>> {
 
   public GaussianMutation(double sigma) {
-    super(
-        1d,
-        random -> new ArrayList<>(),
-        (v, random) -> v + random.nextGaussian() * sigma
-    );
+    super(1d, random -> new ArrayList<>(), (v, random) -> v + random.nextGaussian() * sigma);
   }
 }

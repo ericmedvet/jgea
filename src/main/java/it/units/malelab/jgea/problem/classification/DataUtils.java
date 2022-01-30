@@ -29,13 +29,11 @@ public class DataUtils {
   public static <O, L> List<Pair<O, L>> fold(List<Pair<O, L>> data, int i, int n) {
     List<Pair<O, L>> subset = new ArrayList<>();
     data.stream().map(Pair::second).distinct().forEach((L l) -> {
-      List<Pair<O, L>> currentSubset = data.stream()
-          .filter((Pair<O, L> pair) -> (pair.second().equals(l)))
-          .toList();
-      subset.addAll(
-          currentSubset.stream()
-              .skip((long) currentSubset.size() / n * i)
-              .limit(currentSubset.size() / n).toList());
+      List<Pair<O, L>> currentSubset = data.stream().filter((Pair<O, L> pair) -> (pair.second().equals(l))).toList();
+      subset.addAll(currentSubset.stream()
+          .skip((long) currentSubset.size() / n * i)
+          .limit(currentSubset.size() / n)
+          .toList());
     });
     return subset;
   }

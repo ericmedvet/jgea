@@ -1,16 +1,26 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2020 Eric Medvet <eric
+ * .medvet@gmail.com> (as eric)
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License,
+ *  Version 2.0 (the "License");
+ * you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the
+ * License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache
+ * .org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * Unless required by applicable law
+ * or agreed to in writing, software
+ * distributed under the License is
+ * distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS
+ * OF ANY KIND, either express or
+ * implied.
+ * See the License for the specific
+ * language governing permissions and
  * limitations under the License.
  */
 
@@ -109,7 +119,7 @@ public class Example extends Worker {
     try {
       p = new EvenParity(8);
     } catch (IOException e) {
-      System.err.printf("Cannot load problem due to %s%n", e);
+      System.err.printf("Cannot load problem due to" + " %s%n", e);
       return;
     }
     IterativeSolver<POSetPopulationState<Tree<String>, List<Tree<Element>>, Double>, EvenParity, List<Tree<Element>>> solver = new StandardEvolver<>(
@@ -131,7 +141,7 @@ public class Example extends Worker {
           executorService,
           listenerFactory.build(null).deferred(executorService)
       );
-      System.out.printf("Found %d solutions with %s.%n", solutions.size(), solver.getClass().getSimpleName());
+      System.out.printf("Found %d solutions with %s" + ".%n", solutions.size(), solver.getClass().getSimpleName());
     } catch (SolverException e) {
       e.printStackTrace();
     }
@@ -187,7 +197,7 @@ public class Example extends Worker {
             executorService,
             listenerFactory.build(Map.of()).deferred(executorService)
         );
-        System.out.printf("Found %d solutions with %s.%n", solutions.size(), solver.getClass().getSimpleName());
+        System.out.printf("Found %d solutions with " + "%s.%n", solutions.size(), solver.getClass().getSimpleName());
       } catch (SolverException e) {
         e.printStackTrace();
       }
@@ -251,7 +261,7 @@ public class Example extends Worker {
             executorService,
             listenerFactory.build(Map.of("solver", evolver.getClass().getSimpleName())).deferred(executorService)
         );
-        System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
+        System.out.printf("Found %d solutions with " + "%s.%n", solutions.size(), evolver.getClass().getSimpleName());
       } catch (SolverException e) {
         e.printStackTrace();
       }
@@ -267,7 +277,7 @@ public class Example extends Worker {
     SymbolicRegressionProblem p = new Nguyen7(SymbolicRegressionFitness.Metric.MSE, 1);
     Grammar<String> srGrammar;
     try {
-      srGrammar = Grammar.fromFile(new File("grammars/symbolic-regression-nguyen7.bnf"));
+      srGrammar = Grammar.fromFile(new File("grammars/symbolic" + "-regression-nguyen7" + ".bnf"));
     } catch (IOException e) {
       e.printStackTrace();
       return;

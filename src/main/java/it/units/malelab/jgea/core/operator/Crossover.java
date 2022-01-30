@@ -33,8 +33,7 @@ public interface Crossover<G> extends GeneticOperator<G> {
   G recombine(G g1, G g2, RandomGenerator random);
 
   static <G1, G2> Crossover<Pair<G1, G2>> pair(Crossover<G1> crossover1, Crossover<G2> crossover2) {
-    return (p1, p2, random) -> Pair.of(
-        crossover1.recombine(p1.first(), p2.first(), random),
+    return (p1, p2, random) -> Pair.of(crossover1.recombine(p1.first(), p2.first(), random),
         crossover2.recombine(p1.second(), p2.second(), random)
     );
   }
@@ -44,13 +43,13 @@ public interface Crossover<G> extends GeneticOperator<G> {
   }
 
   @Override
-  default int arity() {
-    return 2;
+  default List<? extends G> apply(List<? extends G> gs, RandomGenerator random) {
+    return Collections.singletonList(recombine(gs.get(0), gs.get(1), random));
   }
 
   @Override
-  default List<? extends G> apply(List<? extends G> gs, RandomGenerator random) {
-    return Collections.singletonList(recombine(gs.get(0), gs.get(1), random));
+  default int arity() {
+    return 2;
   }
 
   default Crossover<G> withChecker(Predicate<G> checker) {

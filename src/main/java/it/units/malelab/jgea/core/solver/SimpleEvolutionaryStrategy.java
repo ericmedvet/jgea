@@ -70,8 +70,7 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
 
     @Override
     public State<S, Q> immutableCopy() {
-      return new State<>(
-          startingDateTime,
+      return new State<>(startingDateTime,
           elapsedMillis,
           nOfIterations,
           nOfBirths,
@@ -125,24 +124,10 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
     }
     List<Individual<List<Double>, S, Q>> offspring = new ArrayList<>();
     if (remap) {
-      map(
-          offspringGenotypes,
-          elites,
-          solutionMapper,
-          problem.qualityFunction(),
-          executor,
-          state
-      );
+      map(offspringGenotypes, elites, solutionMapper, problem.qualityFunction(), executor, state);
     } else {
       offspring.addAll(elites);
-      offspring.addAll(map(
-          offspringGenotypes,
-          List.of(),
-          solutionMapper,
-          problem.qualityFunction(),
-          executor,
-          state
-      ));
+      offspring.addAll(map(offspringGenotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state));
     }
     //update state
     state.setPopulation(new DAGPartiallyOrderedCollection<>(offspring, comparator(problem)));

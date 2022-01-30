@@ -150,8 +150,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
   }
 
   public Tree<T> mapIteratively(BitString genotype, int[] bitUsages) {
-    Tree<EnhancedSymbol<T>> enhancedTree = Tree.of(new EnhancedSymbol<>(
-        grammar.getStartingSymbol(),
+    Tree<EnhancedSymbol<T>> enhancedTree = Tree.of(new EnhancedSymbol<>(grammar.getStartingSymbol(),
         Range.closedOpen(0, genotype.size())
     ));
     while (true) {

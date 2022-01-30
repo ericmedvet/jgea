@@ -26,8 +26,7 @@ import java.util.function.Predicate;
 public class GraphUtils {
 
   public static <N1, A1, N2, A> Function<Graph<N1, A1>, Graph<N2, A>> mapper(
-      Function<N1, N2> nodeF,
-      Function<Collection<A1>, A> arcF
+      Function<N1, N2> nodeF, Function<Collection<A1>, A> arcF
   ) {
     return graph -> transform(graph, nodeF, arcF);
   }
@@ -50,9 +49,7 @@ public class GraphUtils {
   }
 
   public static <N1, A1, N2, A2> Graph<N2, A2> transform(
-      Graph<N1, A1> fromGraph,
-      Function<N1, N2> nodeF,
-      Function<Collection<A1>, A2> arcF
+      Graph<N1, A1> fromGraph, Function<N1, N2> nodeF, Function<Collection<A1>, A2> arcF
   ) {
     Graph<N2, A2> toGraph = new LinkedHashGraph<>();
     for (N1 fromNode : fromGraph.nodes()) {

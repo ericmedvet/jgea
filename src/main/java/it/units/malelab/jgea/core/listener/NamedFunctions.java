@@ -22,7 +22,8 @@ public class NamedFunctions {
   private NamedFunctions() {
   }
 
-  public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Collection<? extends Individual<? extends G, ? extends S, ? extends F>>> all() {
+  public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Collection<?
+      extends Individual<? extends G, ? extends S, ? extends F>>> all() {
     return f("all", e -> e.getPopulation().all());
   }
 
@@ -43,7 +44,8 @@ public class NamedFunctions {
     return functions;
   }
 
-  public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Individual<? extends G, ? extends S, ? extends F>> best() {
+  public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Individual<?
+      extends G, ? extends S, ? extends F>> best() {
     return f("best", e -> Misc.first(e.getPopulation().firsts()));
   }
 
@@ -94,7 +96,8 @@ public class NamedFunctions {
     return NamedFunction.build(name, format, function);
   }
 
-  public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Collection<? extends Individual<? extends G, ? extends S, ? extends F>>> firsts() {
+  public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Collection<?
+      extends Individual<? extends G, ? extends S, ? extends F>>> firsts() {
     return f("firsts", e -> e.getPopulation().firsts());
   }
 
@@ -132,7 +135,8 @@ public class NamedFunctions {
     return f("iterations", "%4d", State::getNOfIterations);
   }
 
-  public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Collection<? extends Individual<? extends G, ? extends S, ? extends F>>> lasts() {
+  public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Collection<?
+      extends Individual<? extends G, ? extends S, ? extends F>>> lasts() {
     return f("lasts", e -> e.getPopulation().lasts());
   }
 

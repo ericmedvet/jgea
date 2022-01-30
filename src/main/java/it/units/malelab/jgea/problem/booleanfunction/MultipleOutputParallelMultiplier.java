@@ -32,7 +32,8 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class MultipleOutputParallelMultiplier implements GrammarBasedProblem<String, List<Tree<Element>>>, ComparableQualityBasedProblem<List<Tree<Element>>, Double> {
+public class MultipleOutputParallelMultiplier implements GrammarBasedProblem<String, List<Tree<Element>>>,
+    ComparableQualityBasedProblem<List<Tree<Element>>, Double> {
 
   private final Grammar<String> grammar;
   private final Function<Tree<String>, List<Tree<Element>>> solutionMapper;
@@ -55,8 +56,7 @@ public class MultipleOutputParallelMultiplier implements GrammarBasedProblem<Str
     grammar.setStartingSymbol(FormulaMapper.MULTIPLE_OUTPUT_NON_TERMINAL);
     solutionMapper = new FormulaMapper();
     TargetFunction targetFunction = new TargetFunction(size);
-    fitnessFunction = new BooleanFunctionFitness(
-        targetFunction,
+    fitnessFunction = new BooleanFunctionFitness(targetFunction,
         BooleanUtils.buildCompleteObservations(targetFunction.varNames)
     );
   }

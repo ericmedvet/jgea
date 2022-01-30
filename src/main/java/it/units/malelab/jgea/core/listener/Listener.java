@@ -55,8 +55,7 @@ public interface Listener<E> {
           try {
             thisListener.listen(e);
           } catch (RuntimeException ex) {
-            L.warning(String.format(
-                "Listener %s cannot listen() event: %s",
+            L.warning(String.format("Listener %s cannot listen() event: %s",
                 thisListener.getClass().getSimpleName(),
                 ex
             ));
@@ -70,8 +69,7 @@ public interface Listener<E> {
           try {
             thisListener.done();
           } catch (RuntimeException ex) {
-            L.warning(String.format(
-                "Listener %s cannot done() event: %s",
+            L.warning(String.format("Listener %s cannot done() event: %s",
                 thisListener.getClass().getSimpleName(),
                 ex
             ));

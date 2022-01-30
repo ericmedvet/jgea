@@ -34,10 +34,7 @@ public class ImageReconstruction implements ComparableQualityBasedProblem<RealFu
       double err = 0d;
       for (int x = 0; x < image.getWidth(); x++) {
         for (int y = 0; y < image.getHeight(); y++) {
-          double fOut = f.apply(
-              (double) x / (double) image.getWidth(),
-              (double) y / (double) image.getHeight()
-          );
+          double fOut = f.apply((double) x / (double) image.getWidth(), (double) y / (double) image.getHeight());
           if (normalize) {
             fOut = Math.tanh(fOut) / 2d + 0.5d;
           }

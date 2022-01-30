@@ -68,13 +68,12 @@ public class MathUtils {
 
     public ScaledRealFunction(RealFunction innerF, SymbolicRegressionFitness symbolicRegressionFitness) {
       this.innerF = innerF;
-      double[] targetYs = symbolicRegressionFitness.getPoints().stream()
+      double[] targetYs = symbolicRegressionFitness.getPoints()
+          .stream()
           .mapToDouble(p -> symbolicRegressionFitness.getTargetFunction().apply(p))
           .toArray();
       double targetMean = StatUtils.mean(targetYs);
-      double[] ys = symbolicRegressionFitness.getPoints().stream()
-          .mapToDouble(innerF::apply)
-          .toArray();
+      double[] ys = symbolicRegressionFitness.getPoints().stream().mapToDouble(innerF::apply).toArray();
       double mean = StatUtils.mean(ys);
       double nCovariance = 0d;
       double nVariance = 0d;
@@ -107,9 +106,7 @@ public class MathUtils {
       if (o == null || getClass() != o.getClass())
         return false;
       ScaledRealFunction that = (ScaledRealFunction) o;
-      return Double.compare(that.a, a) == 0 &&
-          Double.compare(that.b, b) == 0 &&
-          innerF.equals(that.innerF);
+      return Double.compare(that.a, a) == 0 && Double.compare(that.b, b) == 0 && innerF.equals(that.innerF);
     }
 
     @Override
@@ -184,8 +181,7 @@ public class MathUtils {
   }
 
   public static UnaryOperator<RealFunction> linearScaler(SymbolicRegressionFitness symbolicRegressionFitness) {
-    return f -> (f instanceof Sized) ? new SizedScaledRealFunction(
-        f,
+    return f -> (f instanceof Sized) ? new SizedScaledRealFunction(f,
         symbolicRegressionFitness
     ) : new ScaledRealFunction(f, symbolicRegressionFitness);
   }
@@ -194,9 +190,11 @@ public class MathUtils {
     int l = xs[0].length;
     for (int i = 1; i < xs.length; i++) {
       if (xs[i].length != l) {
-        throw new IllegalArgumentException(String.format(
-            "Invalid input arrays: %d-th lenght (%d) is different than 1st length (%d)",
-            i + 1, xs[i].length, l
+        throw new IllegalArgumentException(String.format("Invalid input arrays: %d-th lenght (%d) is different than " +
+                "1st length (%d)",
+            i + 1,
+            xs[i].length,
+            l
         ));
       }
     }

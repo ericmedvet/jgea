@@ -29,7 +29,8 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class KLandscapes implements GrammarBasedProblem<String, Tree<String>>, ComparableQualityBasedProblem<Tree<String>, Double> {
+public class KLandscapes implements GrammarBasedProblem<String, Tree<String>>,
+    ComparableQualityBasedProblem<Tree<String>, Double> {
 
   private final static int ARITY = 2;
   private final static Range<Double> V_RANGE = Range.closed(-1d, 1d);

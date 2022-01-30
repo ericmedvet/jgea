@@ -15,9 +15,7 @@ public class POSetPopulationState<G, S, F> extends State {
   public POSetPopulationState() {
     nOfBirths = 0;
     nOfFitnessEvaluations = 0;
-    population = new DAGPartiallyOrderedCollection<>(
-        (i1, i2) -> PartialComparator.PartialComparatorOutcome.SAME
-    );
+    population = new DAGPartiallyOrderedCollection<>((i1, i2) -> PartialComparator.PartialComparatorOutcome.SAME);
   }
 
   protected POSetPopulationState(
@@ -52,8 +50,7 @@ public class POSetPopulationState<G, S, F> extends State {
 
   @Override
   public POSetPopulationState<G, S, F> immutableCopy() {
-    return new POSetPopulationState<>(
-        startingDateTime,
+    return new POSetPopulationState<>(startingDateTime,
         elapsedMillis,
         nOfIterations,
         nOfBirths,

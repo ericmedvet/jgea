@@ -32,7 +32,8 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class EvenParity implements GrammarBasedProblem<String, List<Tree<Element>>>, ComparableQualityBasedProblem<List<Tree<Element>>, Double> {
+public class EvenParity implements GrammarBasedProblem<String, List<Tree<Element>>>,
+    ComparableQualityBasedProblem<List<Tree<Element>>, Double> {
 
   private final Grammar<String> grammar;
   private final Function<Tree<String>, List<Tree<Element>>> solutionMapper;
@@ -47,8 +48,7 @@ public class EvenParity implements GrammarBasedProblem<String, List<Tree<Element
     grammar.getRules().put("<v>", vars);
     solutionMapper = new FormulaMapper();
     TargetFunction targetFunction = new TargetFunction(size);
-    fitnessFunction = new BooleanFunctionFitness(
-        targetFunction,
+    fitnessFunction = new BooleanFunctionFitness(targetFunction,
         BooleanUtils.buildCompleteObservations(targetFunction.varNames)
     );
   }

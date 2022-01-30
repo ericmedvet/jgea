@@ -63,10 +63,7 @@ public interface PartialComparator<K> {
     return (o1, o2) -> {
       PartialComparatorOutcome outcome = thisPartialComparator.compare(o1, o2);
       if (outcome.equals(PartialComparatorOutcome.NOT_COMPARABLE)) {
-        throw new IllegalArgumentException(String.format(
-            "Cannot total order uncomparable items %s and %s",
-            o1, o2
-        ));
+        throw new IllegalArgumentException(String.format("Cannot total order uncomparable items %s and %s", o1, o2));
       }
       if (outcome.equals(PartialComparatorOutcome.BEFORE)) {
         return -1;

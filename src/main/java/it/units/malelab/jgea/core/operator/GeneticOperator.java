@@ -32,11 +32,6 @@ public interface GeneticOperator<G> {
     final GeneticOperator<G> thisOperator = this;
     return new GeneticOperator<>() {
       @Override
-      public int arity() {
-        return thisOperator.arity();
-      }
-
-      @Override
       public List<? extends G> apply(List<? extends G> parents, RandomGenerator random) {
         List<? extends G> intermediate = thisOperator.apply(parents, random);
         if (intermediate.size() < other.arity()) {
@@ -47,6 +42,11 @@ public interface GeneticOperator<G> {
           ));
         }
         return other.apply(intermediate, random);
+      }
+
+      @Override
+      public int arity() {
+        return thisOperator.arity();
       }
     };
   }

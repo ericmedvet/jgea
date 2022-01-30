@@ -31,9 +31,7 @@ public class FullTreeBuilder<N> implements TreeBuilder<N> {
   protected final IndependentFactory<N> terminalFactory;
 
   public FullTreeBuilder(
-      ToIntFunction<N> arityFunction,
-      IndependentFactory<N> nonTerminalFactory,
-      IndependentFactory<N> terminalFactory
+      ToIntFunction<N> arityFunction, IndependentFactory<N> nonTerminalFactory, IndependentFactory<N> terminalFactory
   ) {
     this.arityFunction = arityFunction;
     this.nonTerminalFactory = nonTerminalFactory;

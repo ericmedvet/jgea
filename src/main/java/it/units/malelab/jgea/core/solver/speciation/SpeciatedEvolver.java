@@ -141,17 +141,12 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q> exte
     ));
     //put elites
     Collection<Individual<G, S, Q>> elite = new ArrayList<>();
-    parents.stream()
-        .reduce((i1, i2) -> comparator(problem).compare(i1, i2)
-            .equals(PartialComparator.PartialComparatorOutcome.BEFORE) ? i1 : i2)
-        .ifPresent(elite::add);
+    parents.stream().reduce((i1, i2) -> comparator(problem).compare(i1, i2)
+        .equals(PartialComparator.PartialComparatorOutcome.BEFORE) ? i1 : i2).ifPresent(elite::add);
     for (Species<Individual<G, S, Q>> species : allSpecies) {
       if (species.elements().size() >= minSpeciesSizeForElitism) {
-        species.elements()
-            .stream()
-            .reduce((i1, i2) -> comparator(problem).compare(i1, i2)
-                .equals(PartialComparator.PartialComparatorOutcome.BEFORE) ? i1 : i2)
-            .ifPresent(elite::add);
+        species.elements().stream().reduce((i1, i2) -> comparator(problem).compare(i1, i2)
+            .equals(PartialComparator.PartialComparatorOutcome.BEFORE) ? i1 : i2).ifPresent(elite::add);
       }
     }
     //assign remaining offspring size

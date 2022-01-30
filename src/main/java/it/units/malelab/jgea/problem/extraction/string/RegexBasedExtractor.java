@@ -41,9 +41,7 @@ public class RegexBasedExtractor implements Extractor<Character>, Sized {
 
   @Override
   public Set<Range<Integer>> extract(List<Character> sequence) {
-    String string = sequence.stream()
-        .map(String::valueOf)
-        .collect(Collectors.joining());
+    String string = sequence.stream().map(String::valueOf).collect(Collectors.joining());
     if (Pattern.compile(regex).matcher("").matches()) {
       return Set.of();
     }
@@ -60,9 +58,7 @@ public class RegexBasedExtractor implements Extractor<Character>, Sized {
 
   @Override
   public boolean match(List<Character> sequence) {
-    String string = sequence.stream()
-        .map(String::valueOf)
-        .collect(Collectors.joining());
+    String string = sequence.stream().map(String::valueOf).collect(Collectors.joining());
     Matcher matcher = Pattern.compile(regex).matcher(string);
     return matcher.matches();
   }

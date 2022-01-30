@@ -34,21 +34,16 @@ public class SymbolicRegressionGrammar extends Grammar<String> {
     SortedSet<Integer> arities = operators.stream()
         .map(Element.Operator::arity)
         .collect(Collectors.toCollection(TreeSet::new));
-    List<List<String>> eProductions = arities.stream()
-        .map(a -> Stream.concat(List.of(String.format("<o%d>", a)).stream(), Collections.nCopies(a, "<e>").stream())
-            .toList())
-        .toList();
+    List<List<String>> eProductions = arities.stream().map(a -> Stream.concat(List.of(String.format("<o%d>", a))
+        .stream(), Collections.nCopies(a, "<e>").stream()).toList()).toList();
     eProductions.add(List.of("<v>"));
     eProductions.add(List.of("<c>"));
     getRules().put("<e>", eProductions);
-    arities.forEach(a -> getRules().put(String.format("<o%d>", a), operators.stream().filter(o -> o.arity() == a)
-        .map(o -> List.of(o.toString()))
-        .toList()));
-    getRules().put("<v>", variables.stream()
-        .map(List::of)
-        .toList());
-    getRules().put("<c>", constants.stream()
-        .map(c -> List.of(Double.toString(c)))
-        .toList());
+    arities.forEach(a -> getRules().put(
+        String.format("<o%d>", a),
+        operators.stream().filter(o -> o.arity() == a).map(o -> List.of(o.toString())).toList()
+    ));
+    getRules().put("<v>", variables.stream().map(List::of).toList());
+    getRules().put("<c>", constants.stream().map(c -> List.of(Double.toString(c))).toList());
   }
 }

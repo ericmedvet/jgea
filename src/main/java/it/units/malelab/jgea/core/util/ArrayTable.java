@@ -20,8 +20,7 @@ public class ArrayTable<T> implements Table<T> {
   @Override
   public void addColumn(String name, List<T> values) {
     if (values.size() != nRows()) {
-      throw new IllegalArgumentException(String.format(
-          "Wrong number of entries in new column: %d expected, %d found",
+      throw new IllegalArgumentException(String.format("Wrong number of entries in new column: %d expected, %d found",
           nRows(),
           values.size()
       ));
@@ -42,8 +41,7 @@ public class ArrayTable<T> implements Table<T> {
   @Override
   public void addRow(List<T> values) {
     if (values.size() != nColumns()) {
-      throw new IllegalArgumentException(String.format(
-          "Wrong number of entries in new row: %d expected, %d found",
+      throw new IllegalArgumentException(String.format("Wrong number of entries in new row: %d expected, %d found",
           nColumns(),
           values.size()
       ));

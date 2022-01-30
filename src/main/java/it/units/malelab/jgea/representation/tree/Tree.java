@@ -126,16 +126,13 @@ public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>> {
     if (o == null || getClass() != o.getClass())
       return false;
     Tree<?> tree = (Tree<?>) o;
-    return Objects.equals(content, tree.content) &&
-        children.equals(tree.children);
+    return Objects.equals(content, tree.content) && children.equals(tree.children);
   }
 
   @Override
   public String toString() {
-    return content.toString() +
-        (children.isEmpty() ? "" : ("[" + children.stream()
-            .map(Tree::toString)
-            .collect(Collectors.joining(",")) + "]"));
+    return content.toString() + (children.isEmpty() ? "" : ("[" + children.stream().map(Tree::toString).collect(
+        Collectors.joining(",")) + "]"));
   }
 
   public int height() {

@@ -24,7 +24,8 @@ import java.util.List;
 /**
  * @author eric
  */
-public class SymbolicRegressionProblem implements ComparableQualityBasedProblem<RealFunction, Double>, ProblemWithValidation<RealFunction, Double> {
+public class SymbolicRegressionProblem implements ComparableQualityBasedProblem<RealFunction, Double>,
+    ProblemWithValidation<RealFunction, Double> {
 
   private final SymbolicRegressionFitness fitness;
   private final SymbolicRegressionFitness validationFitness;

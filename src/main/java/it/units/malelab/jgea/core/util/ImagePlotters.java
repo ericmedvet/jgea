@@ -22,13 +22,12 @@ public class ImagePlotters {
   public static Function<Table<? extends Number>, BufferedImage> xyLines(int w, int h) {
     return data -> {
       if (data.nColumns() < 2) {
-        throw new IllegalArgumentException(String.format(
-            "Wrong number of data series: >1 expected, %d found",
+        throw new IllegalArgumentException(String.format("Wrong number of data series: >1 expected, %d found",
             data.nColumns()
         ));
       }
-      XYChart chart = new XYChartBuilder()
-          .width(w).height(h)
+      XYChart chart = new XYChartBuilder().width(w)
+          .height(h)
           .xAxisTitle(data.names().get(0))
           .theme(Styler.ChartTheme.XChart)
           .build();

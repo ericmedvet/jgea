@@ -11,8 +11,7 @@ public class TelegramProgressMonitor extends TelegramClient implements ProgressM
 
   @Override
   public void notify(double progress, String message) {
-    sendText(String.format(
-        "%s - progress %s %s",
+    sendText(String.format("%s - progress %s %s",
         getMachineName(),
         TextPlotter.horizontalBar(progress, 0, 1, 8),
         message
@@ -21,10 +20,6 @@ public class TelegramProgressMonitor extends TelegramClient implements ProgressM
 
   @Override
   public void notify(double progress) {
-    sendText(String.format(
-        "%s - progress %s",
-        getMachineName(),
-        TextPlotter.horizontalBar(progress, 0, 1, 8)
-    ));
+    sendText(String.format("%s - progress %s", getMachineName(), TextPlotter.horizontalBar(progress, 0, 1, 8)));
   }
 }

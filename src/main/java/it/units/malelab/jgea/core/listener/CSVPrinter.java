@@ -48,8 +48,7 @@ public class CSVPrinter<E, K> implements Factory<E, K> {
       }
       Matcher mExtension = Pattern.compile("\\.\\w+$").matcher(file.getPath());
       if (newName == null && mExtension.find()) {
-        newName = new StringBuilder(file.getPath()).replace(
-            mExtension.start(),
+        newName = new StringBuilder(file.getPath()).replace(mExtension.start(),
             mExtension.end(),
             ".(1)" + mExtension.group()
         ).toString();
@@ -60,8 +59,7 @@ public class CSVPrinter<E, K> implements Factory<E, K> {
       file = new File(newName);
     }
     if (!file.getPath().equals(originalFileName)) {
-      L.log(
-          Level.WARNING,
+      L.log(Level.WARNING,
           String.format("Given file name (%s) exists; will write on %s", originalFileName, file.getPath())
       );
     }
@@ -78,8 +76,7 @@ public class CSVPrinter<E, K> implements Factory<E, K> {
         if (printer == null) {
           File actualFile = check(file);
           try {
-            printer = new org.apache.commons.csv.CSVPrinter(
-                new PrintStream(actualFile),
+            printer = new org.apache.commons.csv.CSVPrinter(new PrintStream(actualFile),
                 CSVFormat.DEFAULT.withDelimiter(';')
             );
           } catch (IOException ex) {
@@ -92,8 +89,7 @@ public class CSVPrinter<E, K> implements Factory<E, K> {
             L.warning(String.format("Cannot print header: %s", ex));
             return;
           }
-          L.info(String.format(
-              "File %s created and header for %d columns written",
+          L.info(String.format("File %s created and header for %d columns written",
               actualFile.getPath(),
               eFunctions.size()
           ));

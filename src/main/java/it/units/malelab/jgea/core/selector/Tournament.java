@@ -44,7 +44,9 @@ public class Tournament implements Selector<Object> {
     }
     if (ks instanceof DAGPartiallyOrderedCollection) {
       PartiallyOrderedCollection<K> poTournament = new DAGPartiallyOrderedCollection<>(
-          tournament, ((DAGPartiallyOrderedCollection<K>) ks).getPartialComparator());
+          tournament,
+          ((DAGPartiallyOrderedCollection<K>) ks).getPartialComparator()
+      );
       tournament.clear();
       tournament.addAll(poTournament.firsts());
     }

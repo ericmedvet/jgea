@@ -43,20 +43,19 @@ public class BinaryTextFlaggingProblem extends GrammarBasedTextFlaggingProblem {
       ClassificationFitness.Metric validationErrorMetric,
       RegexGrammar.Option... options
   ) {
-    super(new TreeSet<>(ALPHABET.chars().mapToObj(c -> (char) c).collect(Collectors.toSet())),
+    super(
+        new TreeSet<>(ALPHABET.chars().mapToObj(c -> (char) c).collect(Collectors.toSet())),
         new LinkedHashSet<>(Arrays.asList(options)),
         buildData(REGEXES, ALPHABET, length, size, new Random(seed)),
-        folds, i,
-        learningErrorMetric, validationErrorMetric
+        folds,
+        i,
+        learningErrorMetric,
+        validationErrorMetric
     );
   }
 
   private static List<Pair<String, Label>> buildData(
-      String[] regexes,
-      String alphabet,
-      int length,
-      int size,
-      Random random
+      String[] regexes, String alphabet, int length, int size, Random random
   ) {
     List<String> positives = new ArrayList<>();
     List<String> negatives = new ArrayList<>();

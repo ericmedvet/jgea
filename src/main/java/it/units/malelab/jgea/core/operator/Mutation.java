@@ -42,20 +42,17 @@ public interface Mutation<G> extends GeneticOperator<G> {
   }
 
   static <G1, G2> Mutation<Pair<G1, G2>> pair(Mutation<G1> mutation1, Mutation<G2> mutation2) {
-    return (p, random) -> Pair.of(
-        mutation1.mutate(p.first(), random),
-        mutation2.mutate(p.second(), random)
-    );
-  }
-
-  @Override
-  default int arity() {
-    return 1;
+    return (p, random) -> Pair.of(mutation1.mutate(p.first(), random), mutation2.mutate(p.second(), random));
   }
 
   @Override
   default List<? extends G> apply(List<? extends G> gs, RandomGenerator random) {
     return Collections.singletonList(mutate(gs.get(0), random));
+  }
+
+  @Override
+  default int arity() {
+    return 1;
   }
 
   default Mutation<G> withChecker(Predicate<? super G> checker) {

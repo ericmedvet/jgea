@@ -45,13 +45,19 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<RealFunction, do
 
   public enum Metric implements BiFunction<List<Double>, List<Double>, Double> {
 
-    MAE((errs, ys) -> errs.stream().mapToDouble(Math::abs).average().orElse(Double.NaN)),
-    MSE((errs, ys) -> errs.stream().mapToDouble(err -> err * err).average().orElse(Double.NaN)),
-    RMSE((errs, ys) -> Math.sqrt(errs.stream().mapToDouble(err -> err * err).average().orElse(Double.NaN))),
-    NMSE((errs, ys) -> errs.stream().mapToDouble(err -> err * err).average().orElse(Double.NaN) / ys.stream()
-        .mapToDouble(y -> y * y)
+    MAE((errs, ys) -> errs.stream()
+        .mapToDouble(Math::abs)
         .average()
-        .orElse(1d));
+        .orElse(Double.NaN)), MSE((errs, ys) -> errs.stream()
+        .mapToDouble(err -> err * err)
+        .average()
+        .orElse(Double.NaN)), RMSE((errs, ys) -> Math.sqrt(errs.stream()
+        .mapToDouble(err -> err * err)
+        .average()
+        .orElse(Double.NaN))), NMSE((errs, ys) -> errs.stream()
+        .mapToDouble(err -> err * err)
+        .average()
+        .orElse(Double.NaN) / ys.stream().mapToDouble(y -> y * y).average().orElse(1d));
 
     private final BiFunction<List<Double>, List<Double>, Double> function;
 

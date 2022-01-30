@@ -37,9 +37,7 @@ public class CaseBasedFitness<S, C, CF, AF> implements Function<S, AF> {
 
   @Override
   public AF apply(S s) {
-    List<CF> caseFitnesses = cases.stream()
-        .map(o -> caseFunction.apply(s, o))
-        .toList();
+    List<CF> caseFitnesses = cases.stream().map(o -> caseFunction.apply(s, o)).toList();
     return aggregateFunction.apply(caseFitnesses);
   }
 

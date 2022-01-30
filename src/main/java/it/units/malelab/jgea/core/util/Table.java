@@ -28,12 +28,7 @@ public interface Table<T> {
 
   private static void checkIndex(String name, int i, int maxExcluded) {
     if (i < 0 || i >= maxExcluded) {
-      throw new IndexOutOfBoundsException(String.format(
-          "Invalid %s index: %d not in [0,%d]",
-          name,
-          i,
-          maxExcluded
-      ));
+      throw new IndexOutOfBoundsException(String.format("Invalid %s index: %d not in [0,%d]", name, i, maxExcluded));
     }
   }
 
@@ -52,15 +47,11 @@ public interface Table<T> {
 
   default List<T> column(int x) {
     checkIndex("x", x, nColumns());
-    return IntStream.range(0, nRows())
-        .mapToObj(y -> get(x, y))
-        .toList();
+    return IntStream.range(0, nRows()).mapToObj(y -> get(x, y)).toList();
   }
 
   default List<Pair<String, List<T>>> columns() {
-    return IntStream.range(0, nColumns())
-        .mapToObj(x -> Pair.of(names().get(x), column(x)))
-        .toList();
+    return IntStream.range(0, nColumns()).mapToObj(x -> Pair.of(names().get(x), column(x))).toList();
   }
 
   default <K> Table<K> map(Function<T, K> function) {
@@ -72,31 +63,20 @@ public interface Table<T> {
   }
 
   default String prettyPrint(String format) {
-    int[] widths = IntStream.range(0, nColumns())
-        .map(x -> Math.max(
-            names().get(x).length(),
-            IntStream.range(0, nRows())
-                .map(y -> String.format(format, get(x, y)).length())
-                .max()
-                .orElse(1)
-        ))
-        .toArray();
+    int[] widths = IntStream.range(0, nColumns()).map(x -> Math.max(names().get(x).length(), IntStream.range(0, nRows())
+        .map(y -> String.format(format, get(x, y)).length())
+        .max()
+        .orElse(1))).toArray();
     StringBuilder sb = new StringBuilder();
     //print header
     sb.append(IntStream.range(0, nColumns())
-        .mapToObj(x -> String.format(
-            "%" + widths[x] + "." + widths[x] + "s",
-            names().get(x)
-        ))
+        .mapToObj(x -> String.format("%" + widths[x] + "." + widths[x] + "s", names().get(x)))
         .collect(Collectors.joining(" ")));
     sb.append("\n");
     for (int y = 0; y < nRows(); y++) {
       int finalY = y;
       sb.append(IntStream.range(0, nColumns())
-          .mapToObj(x -> String.format(
-              "%" + widths[x] + "." + widths[x] + "s",
-              String.format(format, get(x, finalY))
-          ))
+          .mapToObj(x -> String.format("%" + widths[x] + "." + widths[x] + "s", String.format(format, get(x, finalY))))
           .collect(Collectors.joining(" ")));
       if (y < nRows() - 1) {
         sb.append("\n");
@@ -107,18 +87,14 @@ public interface Table<T> {
 
   default List<T> row(int y) {
     checkIndex("y", y, nRows());
-    return IntStream.range(0, nColumns())
-        .mapToObj(x -> get(x, y))
-        .toList();
+    return IntStream.range(0, nColumns()).mapToObj(x -> get(x, y)).toList();
   }
 
   default List<List<Pair<String, T>>> rows() {
     int nColumns = nColumns();
-    return IntStream.range(0, nRows())
-        .mapToObj(y -> IntStream.range(0, nColumns)
-            .mapToObj(x -> Pair.of(names().get(x), get(x, y)))
-            .toList()
-        ).toList();
+    return IntStream.range(0, nRows()).mapToObj(y -> IntStream.range(0, nColumns)
+        .mapToObj(x -> Pair.of(names().get(x), get(x, y)))
+        .toList()).toList();
   }
 
 }

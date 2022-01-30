@@ -28,7 +28,8 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class TreeSize implements GrammarBasedProblem<Boolean, Tree<Boolean>>, ComparableQualityBasedProblem<Tree<Boolean>, Double> {
+public class TreeSize implements GrammarBasedProblem<Boolean, Tree<Boolean>>,
+    ComparableQualityBasedProblem<Tree<Boolean>, Double> {
 
   private final static Function<Tree<Boolean>, Double> FITNESS_FUNCTION = t -> 1d / (double) t.size();
   private final Grammar<Boolean> grammar;

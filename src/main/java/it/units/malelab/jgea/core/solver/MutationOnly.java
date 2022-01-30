@@ -47,8 +47,7 @@ public class MutationOnly<T extends POSetPopulationState<G, S, Q>, P extends Qua
       BiFunction<P, RandomGenerator, T> stateInitializer,
       Mutation<G> mutation
   ) {
-    super(
-        solutionMapper,
+    super(solutionMapper,
         genotypeFactory,
         populationSize,
         stopCondition,
@@ -67,10 +66,10 @@ public class MutationOnly<T extends POSetPopulationState<G, S, Q>, P extends Qua
   protected Collection<Individual<G, S, Q>> buildOffspring(
       T state, P problem, RandomGenerator random, ExecutorService executor
   ) throws SolverException {
-    Collection<G> offspringGenotypes = state.getPopulation().all()
-        .stream()
-        .map(i -> mutation.mutate(i.genotype(), random))
-        .toList();
+    Collection<G> offspringGenotypes = state.getPopulation().all().stream().map(i -> mutation.mutate(
+        i.genotype(),
+        random
+    )).toList();
     return map(offspringGenotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state);
   }
 }

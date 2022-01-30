@@ -61,8 +61,7 @@ public interface Graph<N, A> extends Sized {
       if (o == null || getClass() != o.getClass())
         return false;
       Arc<?> arc = (Arc<?>) o;
-      return source.equals(arc.source) &&
-          target.equals(arc.target);
+      return source.equals(arc.source) && target.equals(arc.target);
     }
 
     @Override
@@ -128,10 +127,7 @@ public interface Graph<N, A> extends Sized {
   }
 
   default Set<N> predecessors(N node) {
-    return arcs().stream()
-        .filter(a -> a.getTarget().equals(node))
-        .map(Arc::getSource)
-        .collect(Collectors.toSet());
+    return arcs().stream().filter(a -> a.getTarget().equals(node)).map(Arc::getSource).collect(Collectors.toSet());
   }
 
   default boolean removeArc(N source, N target) {
@@ -148,10 +144,7 @@ public interface Graph<N, A> extends Sized {
   }
 
   default Set<N> successors(N node) {
-    return arcs().stream()
-        .filter(a -> a.getSource().equals(node))
-        .map(Arc::getTarget)
-        .collect(Collectors.toSet());
+    return arcs().stream().filter(a -> a.getSource().equals(node)).map(Arc::getTarget).collect(Collectors.toSet());
   }
 
 }

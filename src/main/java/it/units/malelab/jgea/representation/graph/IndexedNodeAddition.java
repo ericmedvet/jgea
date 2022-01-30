@@ -91,10 +91,7 @@ public class IndexedNodeAddition<M extends N, N, A> implements Mutation<Graph<In
       if (o == null || getClass() != o.getClass())
         return false;
       IndexKey indexKey = (IndexKey) o;
-      return srcIndex == indexKey.srcIndex &&
-          dstIndex == indexKey.dstIndex &&
-          type == indexKey.type &&
-          nOfSiblings == indexKey.nOfSiblings;
+      return srcIndex == indexKey.srcIndex && dstIndex == indexKey.dstIndex && type == indexKey.type && nOfSiblings == indexKey.nOfSiblings;
     }
   }
 
@@ -117,19 +114,11 @@ public class IndexedNodeAddition<M extends N, N, A> implements Mutation<Graph<In
       //get new node type
       int newNodeType = nodeTyper.applyAsInt(newNode);
       //count "siblings"
-      int nSiblings = (int) child.nodes().stream()
-          .filter(n -> child.predecessors(n).contains(arc.getSource())
-              && child.successors(n).contains(arc.getTarget())
-              && (newNode.getClass().isAssignableFrom(n.getClass()))
-              && nodeTyper.applyAsInt(n.content()) == newNodeType)
-          .count();
+      int nSiblings = (int) child.nodes().stream().filter(n -> child.predecessors(n)
+          .contains(arc.getSource()) && child.successors(n).contains(arc.getTarget()) && (newNode.getClass()
+          .isAssignableFrom(n.getClass())) && nodeTyper.applyAsInt(n.content()) == newNodeType).count();
       //compute index
-      IndexKey key = new IndexKey(
-          arc.getSource().index(),
-          arc.getTarget().index(),
-          newNodeType,
-          nSiblings
-      );
+      IndexKey key = new IndexKey(arc.getSource().index(), arc.getTarget().index(), newNodeType, nSiblings);
       Integer index = counterMap.get(key);
       if (index == null) {
         index = counter;

@@ -35,8 +35,7 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class FitnessFunction implements
-    Function<Pair<Tree<Element>, Tree<Element>>, List<Double>> {
+public class FitnessFunction implements Function<Pair<Tree<Element>, Tree<Element>>, List<Double>> {
 
   private final static int EXPRESSIVENESS_DEPTH = 2;
   private final List<EnhancedProblem> problems;
@@ -46,12 +45,7 @@ public class FitnessFunction implements
   private final double[] genotypeDistances;
 
   public FitnessFunction(
-      List<EnhancedProblem> problems,
-      int genotypeSize,
-      int n,
-      int maxMappingDepth,
-      List<Property> properties,
-      long seed
+      List<EnhancedProblem> problems, int genotypeSize, int n, int maxMappingDepth, List<Property> properties, long seed
   ) {
     this.problems = problems;
     this.maxMappingDepth = maxMappingDepth;
@@ -92,25 +86,24 @@ public class FitnessFunction implements
         valuesLists.get(i).add(localValues.get(i));
       }
     }
-    return valuesLists.stream()
-        .map(valuesList -> valuesList.stream().mapToDouble(Double::doubleValue).average().orElse(Double.NaN))
-        .toList();
+    return valuesLists.stream().map(valuesList -> valuesList.stream()
+        .mapToDouble(Double::doubleValue)
+        .average()
+        .orElse(Double.NaN)).toList();
   }
 
   protected <N, S> List<Double> apply(Pair<Tree<Element>, Tree<Element>> pair, EnhancedProblem<N, S> problem) {
     //build mapper
-    RecursiveMapper<N> recursiveMapper = new RecursiveMapper<>(
-        pair.first(),
+    RecursiveMapper<N> recursiveMapper = new RecursiveMapper<>(pair.first(),
         pair.second(),
         maxMappingDepth,
         EXPRESSIVENESS_DEPTH,
         problem.getProblem().getGrammar()
     );
     //map
-    List<S> solutions = genotypes.stream()
-        .map(recursiveMapper::apply)
-        .map(t -> problem.getProblem().getSolutionMapper().apply(t))
-        .toList();
+    List<S> solutions = genotypes.stream().map(recursiveMapper::apply).map(t -> problem.getProblem()
+        .getSolutionMapper()
+        .apply(t)).toList();
     Multiset<S> multiset = LinkedHashMultiset.create();
     multiset.addAll(solutions);
     //compute properties
@@ -123,8 +116,7 @@ public class FitnessFunction implements
         values.add(Math.sqrt(StatUtils.variance(sizes)) / StatUtils.mean(sizes));
       } else if (property.equals(Property.NON_LOCALITY)) {
         double[] solutionDistances = computeDistances(solutions, problem.getDistance());
-        double locality = 1d - (1d + (new PearsonsCorrelation().correlation(
-            genotypeDistances,
+        double locality = 1d - (1d + (new PearsonsCorrelation().correlation(genotypeDistances,
             solutionDistances
         ))) / 2d;
         values.add(Double.isNaN(locality) ? 1d : locality);

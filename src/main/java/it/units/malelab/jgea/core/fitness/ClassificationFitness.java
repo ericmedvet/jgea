@@ -34,7 +34,8 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class ClassificationFitness<O, L extends Enum<L>> extends CaseBasedFitness<Classifier<O, L>, O, L, List<Double>> {
+public class ClassificationFitness<O, L extends Enum<L>> extends CaseBasedFitness<Classifier<O, L>, O, L,
+    List<Double>> {
 
   private final List<Pair<O, L>> data;
   private final List<String> names;
@@ -93,16 +94,13 @@ public class ClassificationFitness<O, L extends Enum<L>> extends CaseBasedFitnes
   }
 
   private static <E extends Enum<E>> Function<List<E>, List<Double>> getAggregator(
-      List<E> actualLabels,
-      Metric metric
+      List<E> actualLabels, Metric metric
   ) {
     final ClassErrorRate<E> classErrorRate = new ClassErrorRate<>(actualLabels);
     if (metric.equals(Metric.CLASS_ERROR_RATE)) {
       return (List<E> predictedLabels) -> {
         List<Pair<Integer, Integer>> pairs = classErrorRate.apply(predictedLabels);
-        return pairs.stream()
-            .map(p -> ((double) p.first() / (double) p.second()))
-            .toList();
+        return pairs.stream().map(p -> ((double) p.first() / (double) p.second())).toList();
       };
     }
     if (metric.equals(Metric.ERROR_RATE)) {
@@ -119,7 +117,8 @@ public class ClassificationFitness<O, L extends Enum<L>> extends CaseBasedFitnes
         return Arrays.asList(pairs.stream()
             .map(p -> ((double) p.first() / (double) p.second()))
             .mapToDouble(Double::doubleValue)
-            .average().orElse(Double.NaN));
+            .average()
+            .orElse(Double.NaN));
       };
     }
     return null;

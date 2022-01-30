@@ -42,13 +42,14 @@ public class Text implements GrammarBasedProblem<String, String>, ComparableQual
 
   public Text(String targetString) throws IOException {
     grammar = Grammar.fromFile(new File("grammars/text.bnf"));
-    solutionMapper = (Tree<String> tree) -> tree.leaves().stream()
+    solutionMapper = (Tree<String> tree) -> tree.leaves()
+        .stream()
         .map(Tree::content)
-        .collect(Collectors.joining()).replace("_", " ");
+        .collect(Collectors.joining())
+        .replace("_", " ");
     target = targetString.chars().mapToObj(c -> (char) c).toList();
     this.distance = new Edit<>();
-    fitnessFunction = string -> distance.apply(
-        target,
+    fitnessFunction = string -> distance.apply(target,
         string.chars().mapToObj(c -> (char) c).toList()
     ) / (double) target.size();
   }

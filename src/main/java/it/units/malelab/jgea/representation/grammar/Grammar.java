@@ -86,14 +86,11 @@ public class Grammar<T> implements Serializable {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     for (Map.Entry<T, List<List<T>>> rule : rules.entrySet()) {
-      sb.append(rule.getKey())
-          .append(" ")
-          .append(rule.getKey().equals(startingSymbol) ? "*" : "")
-          .append(RULE_ASSIGNMENT_STRING + " ");
+      sb.append(rule.getKey()).append(" ").append(rule.getKey().equals(startingSymbol) ? "*" : "").append(
+          RULE_ASSIGNMENT_STRING + " ");
       for (List<T> option : rule.getValue()) {
         for (T symbol : option) {
-          sb.append(symbol)
-              .append(" ");
+          sb.append(symbol).append(" ");
         }
         sb.append(RULE_OPTION_SEPARATOR_STRING + " ");
       }

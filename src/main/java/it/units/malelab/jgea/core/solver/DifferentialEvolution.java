@@ -49,9 +49,7 @@ public class DifferentialEvolution<S, Q> extends AbstractPopulationIterativeBase
   }
 
   protected static <S, Q> List<Double> pickParents(
-      PartiallyOrderedCollection<Individual<List<Double>, S, Q>> population,
-      RandomGenerator random,
-      List<Double> prev
+      PartiallyOrderedCollection<Individual<List<Double>, S, Q>> population, RandomGenerator random, List<Double> prev
   ) {
     List<Double> current = prev;
     while (current == prev) {
@@ -61,8 +59,7 @@ public class DifferentialEvolution<S, Q> extends AbstractPopulationIterativeBase
   }
 
   protected Collection<List<Double>> computeTrials(
-      PartiallyOrderedCollection<Individual<List<Double>, S, Q>> population,
-      RandomGenerator random
+      PartiallyOrderedCollection<Individual<List<Double>, S, Q>> population, RandomGenerator random
   ) {
     Collection<List<Double>> trialGenotypes = new ArrayList<>(populationSize);
     for (Individual<List<Double>, S, Q> parent : population.all()) {
@@ -102,8 +99,7 @@ public class DifferentialEvolution<S, Q> extends AbstractPopulationIterativeBase
     L.fine(String.format("Trials computed: %d individuals", trialGenotypes.size()));
     if (remap) {
       // we remap all parents, regardless of their fate
-      offspring.addAll(map(
-          trialGenotypes,
+      offspring.addAll(map(trialGenotypes,
           state.getPopulation().all(),
           solutionMapper,
           problem.qualityFunction(),

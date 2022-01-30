@@ -36,7 +36,8 @@ import java.util.random.RandomGenerator;
 /**
  * @author Eric Medvet <eric.medvet@gmail.com>
  */
-public class StandardWithEnforcedDiversityEvolver<T extends POSetPopulationState<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q> extends StandardEvolver<T, P, G, S, Q> {
+public class StandardWithEnforcedDiversityEvolver<T extends POSetPopulationState<G, S, Q>,
+    P extends QualityBasedProblem<S, Q>, G, S, Q> extends StandardEvolver<T, P, G, S, Q> {
 
   private final int maxAttempts;
 

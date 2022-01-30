@@ -42,17 +42,19 @@ public class FileTextFlaggingProblem extends GrammarBasedTextFlaggingProblem {
       ClassificationFitness.Metric validationErrorMetric,
       RegexGrammar.Option... options
   ) throws IOException {
-    super(null,
+    super(
+        null,
         new LinkedHashSet<>(Arrays.asList(options)),
         buildData(positiveFileName, negativeFileName),
-        folds, i,
-        learningErrorMetric, validationErrorMetric
+        folds,
+        i,
+        learningErrorMetric,
+        validationErrorMetric
     );
   }
 
   private static List<Pair<String, Label>> buildData(
-      String positiveFileName,
-      String negativeFileName
+      String positiveFileName, String negativeFileName
   ) throws IOException {
     List<Pair<String, Label>> data = new ArrayList<>();
     data.addAll(Files.lines(Paths.get(positiveFileName)).map(s -> Pair.of(s, Label.FOUND)).toList());

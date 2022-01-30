@@ -35,11 +35,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
   private final int maxMappingDepth;
 
   public RecursiveMapper(
-      Tree<Element> optionChooser,
-      Tree<Element> genoAssigner,
-      int maxMappingDepth,
-      int maxDepth,
-      Grammar<T> grammar
+      Tree<Element> optionChooser, Tree<Element> genoAssigner, int maxMappingDepth, int maxDepth, Grammar<T> grammar
   ) {
     super(maxDepth, grammar);
     this.maxMappingDepth = maxMappingDepth;
@@ -71,8 +67,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
           .get(symbol)
           .get(shortestOptionIndexTies.get(finalizationGlobalCounter.getAndIncrement() % shortestOptionIndexTies.size()));
       for (T optionSymbol : shortestOption) {
-        tree.addChild(mapRecursively(
-            optionSymbol,
+        tree.addChild(mapRecursively(optionSymbol,
             genotype,
             mappingGlobalCounter,
             finalizationGlobalCounter,
@@ -92,7 +87,12 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
       expressivenesses.add(expressiveness);
     }
     int optionIndex = ((Double) MapperUtils.compute(
-        optionChooser, genotype, expressivenesses, depth, mappingGlobalCounter)).intValue();
+        optionChooser,
+        genotype,
+        expressivenesses,
+        depth,
+        mappingGlobalCounter
+    )).intValue();
     optionIndex = Math.min(optionIndex, options.size() - 1);
     optionIndex = Math.max(0, optionIndex);
     //split genotype
@@ -100,8 +100,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
     for (T optionSymbol : options.get(optionIndex)) {
       expressivenesses.add((double) weightsMap.getOrDefault(optionSymbol, 1));
     }
-    List<BitString> pieces = ((List<BitString>) MapperUtils.compute(
-        genoAssigner,
+    List<BitString> pieces = ((List<BitString>) MapperUtils.compute(genoAssigner,
         genotype,
         expressivenesses,
         depth,
@@ -115,7 +114,12 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
         piece = new BitString(0);
       }
       tree.addChild(mapRecursively(
-          options.get(optionIndex).get(i), piece, mappingGlobalCounter, finalizationGlobalCounter, depth + 1));
+          options.get(optionIndex).get(i),
+          piece,
+          mappingGlobalCounter,
+          finalizationGlobalCounter,
+          depth + 1
+      ));
     }
     return tree;
   }
