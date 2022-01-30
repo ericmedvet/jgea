@@ -18,13 +18,10 @@ package it.units.malelab.jgea.representation.grammar.cfggp;
 
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.util.Misc;
-import it.units.malelab.jgea.problem.symbolicregression.Element;
-import it.units.malelab.jgea.problem.symbolicregression.SymbolicRegressionGrammar;
 import it.units.malelab.jgea.representation.grammar.Grammar;
 import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.util.List;
-import java.util.Random;
 import java.util.random.RandomGenerator;
 
 /**
@@ -38,21 +35,6 @@ public class GrammarBasedSubtreeMutation<T> implements Mutation<Tree<T>> {
   public GrammarBasedSubtreeMutation(int maxDepth, Grammar<T> grammar) {
     this.maxDepth = maxDepth;
     factory = new GrowGrammarTreeFactory<>(0, grammar);
-  }
-
-  public static void main(String[] args) {
-    SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
-        List.of(Element.Operator.ADDITION, Element.Operator.MULTIPLICATION, Element.Operator.COS),
-        List.of("x", "y"),
-        List.of(0.1, 1d)
-    );
-    System.out.println(g);
-    GrowGrammarTreeFactory<String> factory = new GrowGrammarTreeFactory<>(4, g);
-    RandomGenerator r = new Random(2);
-    Tree<String> t = factory.build(1, r).get(0);
-    //t.prettyPrint(System.out);
-    System.out.println(t);
-    t.topSubtrees().forEach(System.out::println);
   }
 
   @Override
