@@ -29,10 +29,16 @@ public class SubtreeMutation<N> implements Mutation<Tree<N>> {
 
   private final int maxHeight;
   private final TreeBuilder<N> builder;
+  private final boolean replaceAll;
 
-  public SubtreeMutation(int maxHeight, TreeBuilder<N> builder) {
+  public SubtreeMutation(int maxHeight, TreeBuilder<N> builder, boolean replaceAll) {
     this.maxHeight = maxHeight;
     this.builder = builder;
+    this.replaceAll = replaceAll;
+  }
+
+  public SubtreeMutation(int maxHeight, TreeBuilder<N> builder) {
+    this(maxHeight, builder, true);
   }
 
   @Override
@@ -42,11 +48,13 @@ public class SubtreeMutation<N> implements Mutation<Tree<N>> {
     }
     List<Tree<N>> subtrees = parent.topSubtrees();
     Tree<N> toReplaceSubtree = Misc.pickRandomly(subtrees, random);
-    int maxDepth = subtrees.stream().filter(s -> s.equals(toReplaceSubtree)).mapToInt(Tree::depth).max().orElse(0);
-    // TODO should select a depth randomly such that the resulting child is <= maxDepth
-    Tree<N> newSubtree = builder.build(random, maxHeight - maxDepth);
-    // TODO there should be a parameter for choosing between replaceAll and replaceFirst
-    return TreeUtils.replaceAll(Tree.copyOf(parent), toReplaceSubtree, newSubtree);
+    int maxDepth = replaceAll ?
+        subtrees.stream().filter(s -> s.equals(toReplaceSubtree)).mapToInt(Tree::depth).max().orElse(0) :
+        subtrees.stream().filter(s -> s.equals(toReplaceSubtree)).mapToInt(Tree::depth).findFirst().orElse(0);
+    Tree<N> newSubtree = builder.build(random, random.nextInt(maxHeight - maxDepth) + 1);
+    return replaceAll ?
+        TreeUtils.replaceAll(Tree.copyOf(parent), toReplaceSubtree, newSubtree) :
+        TreeUtils.replaceFirst(Tree.copyOf(parent), toReplaceSubtree, newSubtree);
   }
 
 }
