@@ -41,7 +41,7 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
   }
 
   public static class State<S, Q> extends POSetPopulationState<List<Double>, S, Q> {
-    private double[] means;
+    protected double[] means;
 
     public State() {
       means = new double[0];
@@ -60,14 +60,6 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
       this.means = means;
     }
 
-    public double[] getMeans() {
-      return means;
-    }
-
-    public void setMeans(double[] means) {
-      this.means = means;
-    }
-
     @Override
     public State<S, Q> immutableCopy() {
       return new State<>(
@@ -83,10 +75,10 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
   }
 
   @Override
-  protected SimpleEvolutionaryStrategy.State<S, Q> initState(
+  protected State<S, Q> initState(
       TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor
   ) {
-    return new SimpleEvolutionaryStrategy.State<>();
+    return new State<>();
   }
 
   @Override
@@ -94,7 +86,7 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
       TotalOrderQualityBasedProblem<S, Q> problem,
       RandomGenerator random,
       ExecutorService executor,
-      SimpleEvolutionaryStrategy.State<S, Q> state
+      State<S, Q> state
   ) throws SolverException {
     //sort population
     List<Individual<List<Double>, S, Q>> population = state.getPopulation()
@@ -116,12 +108,11 @@ public class SimpleEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativ
     int l = parents.get(0).genotype().size();
     final double[] sums = new double[l];
     parents.forEach(i -> IntStream.range(0, l).forEach(j -> sums[j] = sums[j] + i.genotype().get(j)));
-    double[] means = Arrays.stream(sums).map(v -> v / (double) parents.size()).toArray();
-    state.setMeans(means);
+    state.means = Arrays.stream(sums).map(v -> v / (double) parents.size()).toArray();
     //generate offspring
     List<List<Double>> offspringGenotypes = new ArrayList<>();
     while (offspringGenotypes.size() < populationSize - elites.size()) {
-      offspringGenotypes.add(Arrays.stream(means).map(m -> m + random.nextGaussian() * sigma).boxed().toList());
+      offspringGenotypes.add(Arrays.stream(state.means).map(m -> m + random.nextGaussian() * sigma).boxed().toList());
     }
     List<Individual<List<Double>, S, Q>> offspring = new ArrayList<>();
     if (remap) {
