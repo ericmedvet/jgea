@@ -18,6 +18,7 @@ import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
 // source -> https://arxiv.org/pdf/1604.00772.pdf
+
 public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativeBasedSolver<CMAEvolutionaryStrategy.State<S, Q>, TotalOrderQualityBasedProblem<S, Q>, List<Double>, S, Q> {
 
   private static final Logger L = Logger.getLogger(CMAEvolutionaryStrategy.class.getName());
@@ -219,7 +220,8 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativeBa
     // best mu ranked points
     Function<DecoratedIndividual<S, Q>, Individual<List<Double>, S, Q>> individualExtractor = i -> i.individual;
     Comparator<DecoratedIndividual<S, Q>> decoratedIndividualComparator = comparator(problem).comparing(individualExtractor).comparator();
-    List<DecoratedIndividual<S, Q>> bestMuIndividuals = state.decoratedIndividuals.stream().sorted(decoratedIndividualComparator).limit(mu).toList();
+    List<DecoratedIndividual<S, Q>> bestMuIndividuals = state.decoratedIndividuals.stream()
+        .sorted(decoratedIndividualComparator).limit(mu).toList();
 
     double[][] xMu = new double[mu][n];
     double[][] yMu = new double[mu][n];
