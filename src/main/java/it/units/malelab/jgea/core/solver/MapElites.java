@@ -57,7 +57,7 @@ public class MapElites<G, P extends QualityBasedProblem<S, Q>, S, Q> extends Abs
                  Function<Individual<G, S, Q>, List<Double>> featuresExtractor,
                  PartialComparator<? super Individual<G, S, Q>> individualsComparator
     ) {
-      mapOfElites = new MapOfElites<>(features, true, featuresExtractor, individualsComparator);
+      mapOfElites = new MapOfElites<>(features, featuresExtractor, individualsComparator);
     }
 
     protected State(
@@ -109,5 +109,8 @@ public class MapElites<G, P extends QualityBasedProblem<S, Q>, S, Q> extends Abs
 
     state.mapOfElites.addAll(offspringIndividuals);
     state.setPopulation(new DAGPartiallyOrderedCollection<>(state.mapOfElites.all(), comparator(problem)));
+
+    state.incNOfIterations();
+    state.updateElapsedMillis();
   }
 }

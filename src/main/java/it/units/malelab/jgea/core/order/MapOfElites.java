@@ -27,13 +27,11 @@ public class MapOfElites<T> implements PartiallyOrderedCollection<T> {
   private final List<Feature> features;
   private final PartialComparator<? super T> comparator;
   private List<T> lastAddedPerformance;
-  private final boolean maximize;
   private int notStoredSolutionsCounter = 0;
   private int updatedSolutionsCounter = 0;
 
-  public MapOfElites(List<Feature> features, Boolean maximize, Function<T, List<Double>> featuresExtractor, PartialComparator<? super T> comparator) {
+  public MapOfElites(List<Feature> features, Function<T, List<Double>> featuresExtractor, PartialComparator<? super T> comparator) {
     elites = new HashMap<>();
-    this.maximize = maximize;
     this.featuresExtractor = featuresExtractor;
     this.comparator = comparator;
     this.features = features;
@@ -42,10 +40,9 @@ public class MapOfElites<T> implements PartiallyOrderedCollection<T> {
   public MapOfElites(List<Integer> featuresSizes,
                      List<Double> featuresMinValues,
                      List<Double> featuresMaxValues,
-                     Boolean maximize,
                      Function<T, List<Double>> featuresExtractor,
                      PartialComparator<? super T> comparator) {
-    this(buildFeatures(featuresSizes, featuresMinValues, featuresMaxValues), maximize, featuresExtractor, comparator);
+    this(buildFeatures(featuresSizes, featuresMinValues, featuresMaxValues), featuresExtractor, comparator);
   }
 
   public static List<Feature> buildFeatures(List<Integer> featuresSizes, List<Double> featuresMinValues, List<Double> featuresMaxValues) {
@@ -57,7 +54,7 @@ public class MapOfElites<T> implements PartiallyOrderedCollection<T> {
   }
 
   public MapOfElites<T> copy() {
-    MapOfElites<T> newMapOfElites = new MapOfElites<>(features, maximize, featuresExtractor, comparator);
+    MapOfElites<T> newMapOfElites = new MapOfElites<>(features, featuresExtractor, comparator);
     newMapOfElites.addAll(all());
     return newMapOfElites;
   }
@@ -100,18 +97,12 @@ public class MapOfElites<T> implements PartiallyOrderedCollection<T> {
       elites.put(elite, t);
       lastAddedPerformance.add(t);
     } else {
-      if (maximize) {
-        if (comparator.compare(t, previousT).equals(PartialComparator.PartialComparatorOutcome.AFTER)) {
-          elites.put(elite, t);
-          lastAddedPerformance.add(t);
-          updatedSolutionsCounter++;
-        } else {
-          notStoredSolutionsCounter++;
-        }
-      } else {
+      if (comparator.compare(t, previousT).equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
         elites.put(elite, t);
         lastAddedPerformance.add(t);
         updatedSolutionsCounter++;
+      } else {
+        notStoredSolutionsCounter++;
       }
     }
   }
