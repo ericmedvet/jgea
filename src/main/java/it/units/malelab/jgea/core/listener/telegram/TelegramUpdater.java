@@ -21,7 +21,8 @@ public class TelegramUpdater<E, K> extends TelegramClient implements Factory<E, 
   ) {
     super(botToken, chatId);
     this.factories = factories;
-    sendText(String.format("%s started on %s: will send updates with %d accumulators",
+    sendText(String.format(
+        "%s started on %s: will send updates with %d accumulators",
         TelegramUpdater.class.getSimpleName(),
         getMachineName(),
         factories.size()
@@ -47,7 +48,8 @@ public class TelegramUpdater<E, K> extends TelegramClient implements Factory<E, 
           try {
             outcomes.add(accumulator.get());
           } catch (Throwable e) {
-            L.warning(String.format("Cannot get outcome of accumulator %s: %s",
+            L.warning(String.format(
+                "Cannot get outcome of accumulator %s: %s",
                 accumulator.getClass().getSimpleName(),
                 e
             ));
@@ -70,7 +72,8 @@ public class TelegramUpdater<E, K> extends TelegramClient implements Factory<E, 
               }
             }
           } else {
-            L.info(String.format("Skip outcome of accumulator: do not know how to handle %s",
+            L.info(String.format(
+                "Skip outcome of accumulator: do not know how to handle %s",
                 outcome.getClass().getSimpleName()
             ));
           }

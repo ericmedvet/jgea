@@ -30,7 +30,8 @@ import java.util.Arrays;
  */
 public enum BaseOperator implements RealFunction {
 
-  ADDITION("+", x -> Arrays.stream(x).sum(), 1, Integer.MAX_VALUE), SUBTRACTION("-",
+  ADDITION("+", x -> Arrays.stream(x).sum(), 1, Integer.MAX_VALUE), SUBTRACTION(
+      "-",
       x -> x[0] - (x.length == 1 ? 0d : x[1]),
       1,
       2

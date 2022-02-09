@@ -61,14 +61,16 @@ public class MapperGeneration implements GrammarBasedProblem<String, Pair<Tree<E
       long seed
   ) throws IOException {
     this.grammar = Grammar.fromFile(new File("grammars/mapper.bnf"));
-    learningFitnessFunction = new FitnessFunction(learningProblems,
+    learningFitnessFunction = new FitnessFunction(
+        learningProblems,
         learningGenotypeSize,
         learningN,
         learningMaxMappingDepth,
         learningProperties,
         seed
     );
-    validationFitnessFunction = new FitnessFunction(validationProblems,
+    validationFitnessFunction = new FitnessFunction(
+        validationProblems,
         validationGenotypeSize,
         validationN,
         validationMaxMappingDepth,

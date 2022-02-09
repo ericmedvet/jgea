@@ -37,7 +37,8 @@ public class TreeBasedRealFunction implements RealFunction, Sized {
 
   private static double compute(Tree<Element> tree, double[] x, String[] varNames) {
     if (varNames.length != x.length) {
-      throw new IllegalArgumentException(String.format("Wrong number of arguments: %d expected, %d received",
+      throw new IllegalArgumentException(String.format(
+          "Wrong number of arguments: %d expected, %d received",
           varNames.length,
           x.length
       ));

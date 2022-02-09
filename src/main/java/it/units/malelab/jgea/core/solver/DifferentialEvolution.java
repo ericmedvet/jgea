@@ -99,7 +99,8 @@ public class DifferentialEvolution<S, Q> extends AbstractPopulationIterativeBase
     L.fine(String.format("Trials computed: %d individuals", trialGenotypes.size()));
     if (remap) {
       // we remap all parents, regardless of their fate
-      offspring.addAll(map(trialGenotypes,
+      offspring.addAll(map(
+          trialGenotypes,
           state.getPopulation().all(),
           solutionMapper,
           problem.qualityFunction(),

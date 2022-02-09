@@ -27,7 +27,8 @@ public interface Element {
 
   enum Operator implements Element, RealFunction {
 
-    ADDITION("+", x -> x[0] + x[1], 2), SUBTRACTION("-", x -> x[0] - x[1], 2), DIVISION("/",
+    ADDITION("+", x -> x[0] + x[1], 2), SUBTRACTION("-", x -> x[0] - x[1], 2), DIVISION(
+        "/",
         x -> x[0] / x[1],
         2
     ), PROT_DIVISION("p/", x -> (x[1] != 0d) ? (x[0] / x[1]) : 1, 2), MULTIPLICATION("*", x -> x[0] * x[1], 2), LOG(

@@ -11,7 +11,8 @@ public class TextPlotter {
   private static final String HORIZONTAL_PART_FILLER = "▏▎▍▌▋▊▉█";
   private static final char FILLER = '█';
   private static final char EMPTY = '░';
-  private final static Map<String, Character> GRID_MAP = Map.ofEntries(Map.entry("0000", ' '),
+  private final static Map<String, Character> GRID_MAP = Map.ofEntries(
+      Map.entry("0000", ' '),
       Map.entry("0010", '▖'),
       Map.entry("0001", '▗'),
       Map.entry("1000", '▘'),
@@ -35,7 +36,8 @@ public class TextPlotter {
   private static String barplot(double[] values, double min, double max) {
     StringBuilder sb = new StringBuilder();
     for (double value : values) {
-      sb.append(VERTICAL_PART_FILLER.charAt((int) Math.round(Math.max(Math.min((value - min) / (max - min), 1d),
+      sb.append(VERTICAL_PART_FILLER.charAt((int) Math.round(Math.max(
+          Math.min((value - min) / (max - min), 1d),
           0d
       ) * ((double) VERTICAL_PART_FILLER.length() - 1d))));
     }
@@ -113,7 +115,8 @@ public class TextPlotter {
       if (value < localMin) {
         sb.append(EMPTY);
       } else if (value < localMax) {
-        sb.append(HORIZONTAL_PART_FILLER.charAt((int) Math.round(Math.max(Math.min((value - localMin) / r, 1d),
+        sb.append(HORIZONTAL_PART_FILLER.charAt((int) Math.round(Math.max(
+            Math.min((value - localMin) / r, 1d),
             0d
         ) * ((double) VERTICAL_PART_FILLER.length() - 1d))));
       } else {
@@ -126,7 +129,8 @@ public class TextPlotter {
   private static double[] resize(double[] values, int l) {
     double[] resized = new double[l];
     for (int i = 0; i < l; i++) {
-      resized[i] = values[Math.min((int) Math.round((double) i / (double) l * (double) values.length),
+      resized[i] = values[Math.min(
+          (int) Math.round((double) i / (double) l * (double) values.length),
           values.length - 1
       )];
     }

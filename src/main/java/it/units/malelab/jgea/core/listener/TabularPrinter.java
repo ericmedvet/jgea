@@ -52,10 +52,12 @@ public class TabularPrinter<E, K> implements Factory<E, K> {
       boolean showVariation,
       boolean useColors
   ) {
-    ePairs = eFunctions.stream().map(f -> Pair.of(f,
+    ePairs = eFunctions.stream().map(f -> Pair.of(
+        f,
         Math.max(collapse(f.getName()).length(), formatSize(f.getFormat()))
     )).collect(Collectors.toList());
-    kPairs = kFunctions.stream().map(f -> Pair.of(f,
+    kPairs = kFunctions.stream().map(f -> Pair.of(
+        f,
         Math.max(collapse(f.getName()).length(), formatSize(f.getFormat()))
     )).collect(Collectors.toList());
     this.ps = ps;
@@ -64,14 +66,16 @@ public class TabularPrinter<E, K> implements Factory<E, K> {
     this.showVariation = showVariation;
     this.useColors = useColors;
     List<String> kHeaders = kPairs.stream().map(p -> justify(collapse(p.first().getName()), p.second())).toList();
-    List<String> eHeaders = ePairs.stream().map(p -> justify(collapse(p.first().getName()),
+    List<String> eHeaders = ePairs.stream().map(p -> justify(
+        collapse(p.first().getName()),
         p.second()
     ) + (showVariation ? " " : "")).toList();
     header = String.join(SEP, Misc.concat(List.of(kHeaders, eHeaders)));
     int w = ePairs.stream().mapToInt(p -> collapse(p.first().getName()).length()).max().orElse(1);
     legend = "Legend:\n" + Misc.concat(List.of(kPairs, ePairs))
         .stream()
-        .map(p -> String.format("%" + w + "." + w + "s → %s [%s]",
+        .map(p -> String.format(
+            "%" + w + "." + w + "s → %s [%s]",
             collapse(p.first().getName()),
             p.first().getName(),
             p.first().getFormat()
@@ -148,7 +152,8 @@ public class TabularPrinter<E, K> implements Factory<E, K> {
       @Override
       public void listen(E e) {
         List<?> values = ePairs.stream().map(p -> p.first().apply(e)).toList();
-        String s = IntStream.range(0, ePairs.size()).mapToObj(i -> format(values.get(i),
+        String s = IntStream.range(0, ePairs.size()).mapToObj(i -> format(
+            values.get(i),
             lastValues[i],
             secondLastValues[i],
             ePairs.get(i).first().getFormat(),

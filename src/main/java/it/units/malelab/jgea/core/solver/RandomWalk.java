@@ -60,7 +60,8 @@ public class RandomWalk<P extends QualityBasedProblem<S, Q>, G, S, Q> extends Ab
   ) throws SolverException {
     Individual<G, S, Q> currentIndividual = state.getPopulation().firsts().iterator().next();
     G genotype = mutation.mutate(currentIndividual.genotype(), random);
-    Collection<Individual<G, S, Q>> offspring = map(List.of(genotype),
+    Collection<Individual<G, S, Q>> offspring = map(
+        List.of(genotype),
         List.of(),
         solutionMapper,
         problem.qualityFunction(),

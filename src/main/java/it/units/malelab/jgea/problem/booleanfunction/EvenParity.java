@@ -48,7 +48,8 @@ public class EvenParity implements GrammarBasedProblem<String, List<Tree<Element
     grammar.getRules().put("<v>", vars);
     solutionMapper = new FormulaMapper();
     TargetFunction targetFunction = new TargetFunction(size);
-    fitnessFunction = new BooleanFunctionFitness(targetFunction,
+    fitnessFunction = new BooleanFunctionFitness(
+        targetFunction,
         BooleanUtils.buildCompleteObservations(targetFunction.varNames)
     );
   }

@@ -69,7 +69,8 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized, Ser
 
   public static <K> void check(Graph<State, Set<K>> graph) {
     if (graph.nodes().stream().filter(s -> s.getIndex() == 0).count() != 1) {
-      throw new IllegalArgumentException(String.format("Invalid graph: wrong number of starting nodes: %d instead of 1",
+      throw new IllegalArgumentException(String.format(
+          "Invalid graph: wrong number of starting nodes: %d instead of 1",
           graph.nodes().stream().filter(s -> s.getIndex() == 0).count()
       ));
     }
@@ -82,7 +83,8 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized, Ser
       if (outgoingArcValues.size() > 1) {
         Set<K> intersection = outgoingArcValues.stream().reduce(Sets::intersection).orElse(new HashSet<>());
         if (!intersection.isEmpty()) {
-          throw new IllegalArgumentException(String.format("Invalid graph: state %s has one or more outgoing symbols "
+          throw new IllegalArgumentException(String.format(
+              "Invalid graph: state %s has one or more outgoing symbols "
                   + "(%s)",
               state,
               intersection
@@ -165,7 +167,8 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized, Ser
 
   @Override
   public String toString() {
-    return graph.arcs().stream().map(a -> String.format("%s-[%s]->%s",
+    return graph.arcs().stream().map(a -> String.format(
+        "%s-[%s]->%s",
         a.getTarget(),
         graph.getArcValue(a).stream().sorted().map(Objects::toString).collect(Collectors.joining()),
         a.getTarget()

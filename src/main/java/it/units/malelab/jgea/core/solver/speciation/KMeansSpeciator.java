@@ -83,7 +83,8 @@ public class KMeansSpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Indi
     List<CentroidCluster<ClusterableIndividual>> clusters = new ArrayList<>();
     List<CentroidCluster<ClusterableIndividual>> result = new ArrayList<>();
     for (int nClusters = 1; nClusters < Math.min(13, points.size()); ++nClusters) {
-      result.addAll((new KMeansPlusPlusClusterer<ClusterableIndividual>(nClusters,
+      result.addAll((new KMeansPlusPlusClusterer<ClusterableIndividual>(
+          nClusters,
           maxIterations,
           (DistanceMeasure) distance::apply
       )).cluster(points));
