@@ -50,7 +50,8 @@ public class POSetPopulationState<G, S, F> extends State {
 
   @Override
   public POSetPopulationState<G, S, F> immutableCopy() {
-    return new POSetPopulationState<>(startingDateTime,
+    return new POSetPopulationState<>(
+        startingDateTime,
         elapsedMillis,
         nOfIterations,
         nOfBirths,

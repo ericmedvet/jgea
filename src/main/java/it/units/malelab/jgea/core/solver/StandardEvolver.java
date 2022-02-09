@@ -102,7 +102,8 @@ public class StandardEvolver<T extends POSetPopulationState<G, S, Q>, P extends 
   protected Collection<Individual<G, S, Q>> trimPopulation(
       Collection<Individual<G, S, Q>> population, P problem, RandomGenerator random
   ) {
-    PartiallyOrderedCollection<Individual<G, S, Q>> orderedPopulation = new DAGPartiallyOrderedCollection<>(population,
+    PartiallyOrderedCollection<Individual<G, S, Q>> orderedPopulation = new DAGPartiallyOrderedCollection<>(
+        population,
         comparator(problem)
     );
     while (orderedPopulation.size() > populationSize) {
@@ -118,7 +119,8 @@ public class StandardEvolver<T extends POSetPopulationState<G, S, Q>, P extends 
     L.fine(String.format("Offspring built: %d individuals", offspring.size()));
     if (overlapping) {
       if (remap) {
-        offspring.addAll(map(List.of(),
+        offspring.addAll(map(
+            List.of(),
             state.getPopulation().all(),
             solutionMapper,
             problem.qualityFunction(),

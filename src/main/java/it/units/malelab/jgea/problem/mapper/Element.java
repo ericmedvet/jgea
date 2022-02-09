@@ -26,9 +26,9 @@ public interface Element {
     SIZE("size"), WEIGHT("weight"), WEIGHT_R("weight_r"), INT("int"), ADD("+"), SUBTRACT("-"), MULT("*"), DIVIDE("/")
     , REMAINDER(
         "%"), LENGTH("length"), MAX_INDEX("max_index"), MIN_INDEX("min_index"), GET("get"), SEQ("seq"), REPEAT(
-            "repeat"), ROTATE_DX(
+        "repeat"), ROTATE_DX(
         "rotate_dx"), ROTATE_SX("rotate_sx"), SUBSTRING("substring"), SPLIT("split"), SPLIT_W("split_w"), APPLY(
-            "apply");
+        "apply");
 
     private final String grammarName;
 

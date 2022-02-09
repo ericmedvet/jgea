@@ -99,7 +99,8 @@ public class MapperUtils {
           result = (double) ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).toInt();
           break;
         case ADD:
-          result = ((Double) compute(tree.child(0), g, values, depth, globalCounter) + (Double) compute(tree.child(1),
+          result = ((Double) compute(tree.child(0), g, values, depth, globalCounter) + (Double) compute(
+              tree.child(1),
               g,
               values,
               depth,
@@ -107,7 +108,8 @@ public class MapperUtils {
           ));
           break;
         case SUBTRACT:
-          result = ((Double) compute(tree.child(0), g, values, depth, globalCounter) - (Double) compute(tree.child(1),
+          result = ((Double) compute(tree.child(0), g, values, depth, globalCounter) - (Double) compute(
+              tree.child(1),
               g,
               values,
               depth,
@@ -115,7 +117,8 @@ public class MapperUtils {
           ));
           break;
         case MULT:
-          result = ((Double) compute(tree.child(0), g, values, depth, globalCounter) * (Double) compute(tree.child(1),
+          result = ((Double) compute(tree.child(0), g, values, depth, globalCounter) * (Double) compute(
+              tree.child(1),
               g,
               values,
               depth,
@@ -123,12 +126,14 @@ public class MapperUtils {
           ));
           break;
         case DIVIDE:
-          result = protectedDivision((Double) compute(tree.child(0), g, values, depth, globalCounter),
+          result = protectedDivision(
+              (Double) compute(tree.child(0), g, values, depth, globalCounter),
               (Double) compute(tree.child(1), g, values, depth, globalCounter)
           );
           break;
         case REMAINDER:
-          result = protectedRemainder((Double) compute(tree.child(0), g, values, depth, globalCounter),
+          result = protectedRemainder(
+              (Double) compute(tree.child(0), g, values, depth, globalCounter),
               (Double) compute(tree.child(1), g, values, depth, globalCounter)
           );
           break;
@@ -151,7 +156,8 @@ public class MapperUtils {
           result = seq(((Double) compute(tree.child(0), g, values, depth, globalCounter)).intValue(), values.size());
           break;
         case REPEAT:
-          result = repeat(compute(tree.child(0), g, values, depth, globalCounter), ((Double) compute(tree.child(1),
+          result = repeat(compute(tree.child(0), g, values, depth, globalCounter), ((Double) compute(
+              tree.child(1),
               g,
               values,
               depth,
@@ -184,13 +190,15 @@ public class MapperUtils {
           );
           break;
         case SPLIT_W:
-          result = splitWeighted((BitString) compute(tree.child(0), g, values, depth, globalCounter),
+          result = splitWeighted(
+              (BitString) compute(tree.child(0), g, values, depth, globalCounter),
               (List<Double>) compute(tree.child(1), g, values, depth, globalCounter),
               values.size()
           );
           break;
         case APPLY:
-          result = apply((Element.MapperFunction) tree.child(0).content(),
+          result = apply(
+              (Element.MapperFunction) tree.child(0).content(),
               ((List) compute(tree.child(1), g, values, depth, globalCounter)),
               (tree.nChildren() >= 3) ? compute(tree.child(2), g, values, depth, globalCounter) : null
           );
@@ -235,15 +243,18 @@ public class MapperUtils {
   }
 
   public static Tree<String> getGERawTree(int codonLength) {
-    return node("<mapper>", node("<n>",
+    return node("<mapper>", node(
+        "<n>",
         node("<fun_n_g>", node("int")),
         node("("),
-        node("<g>", node("<fun_g_g,n>", node("substring")), node("("), node("<g>",
+        node("<g>", node("<fun_g_g,n>", node("substring")), node("("), node(
+            "<g>",
             node("<fun_g_g,n>", node("rotate_sx")),
             node("("),
             node("<g>", node("<var_g>", node("g"))),
             node(","),
-            node("<n>",
+            node(
+                "<n>",
                 node("<fun_n_n,n>", node("*")),
                 node("("),
                 node("<n>", node("<var_n>", node("g_count_rw"))),
@@ -254,12 +265,14 @@ public class MapperUtils {
             node(")")
         ), node(","), node("<n>", node("<const_n>", node(Integer.toString(codonLength)))), node(")")),
         node(")")
-    ), node("<lg>",
+    ), node(
+        "<lg>",
         node("<fun_lg_g,n>", node("repeat")),
         node("("),
         node("<g>", node("<var_g>", node("g"))),
         node(","),
-        node("<n>",
+        node(
+            "<n>",
             node("<fun_n_ln>", node("length")),
             node("("),
             node("<ln>", node("<var_ln>", node("ln"))),
@@ -270,15 +283,18 @@ public class MapperUtils {
   }
 
   public static Tree<String> getHGERawTree() {
-    return node("<mapper>", node("<n>",
+    return node("<mapper>", node(
+        "<n>",
         node("<fun_n_ln>", node("max_index")),
         node("("),
-        node("<ln>", node("apply"), node("("), node("<fun_n_g>", node("weight_r")), node(","), node("<lg>",
+        node("<ln>", node("apply"), node("("), node("<fun_n_g>", node("weight_r")), node(","), node(
+            "<lg>",
             node("<fun_lg_g,n>", node("split")),
             node("("),
             node("<g>", node("<var_g>", node("g"))),
             node(","),
-            node("<n>",
+            node(
+                "<n>",
                 node("<fun_n_ln>", node("length")),
                 node("("),
                 node("<ln>", node("<var_ln>", node("ln"))),
@@ -287,12 +303,14 @@ public class MapperUtils {
             node(")")
         ), node(")")),
         node(")")
-    ), node("<lg>",
+    ), node(
+        "<lg>",
         node("<fun_lg_g,n>", node("split")),
         node("("),
         node("<g>", node("<var_g>", node("g"))),
         node(","),
-        node("<n>",
+        node(
+            "<n>",
             node("<fun_n_ln>", node("length")),
             node("("),
             node("<ln>", node("<var_ln>", node("ln"))),
@@ -303,15 +321,18 @@ public class MapperUtils {
   }
 
   public static Tree<String> getWHGERawTree() {
-    return node("<mapper>", node("<n>",
+    return node("<mapper>", node(
+        "<n>",
         node("<fun_n_ln>", node("max_index")),
         node("("),
-        node("<ln>", node("apply"), node("("), node("<fun_n_g>", node("weight_r")), node(","), node("<lg>",
+        node("<ln>", node("apply"), node("("), node("<fun_n_g>", node("weight_r")), node(","), node(
+            "<lg>",
             node("<fun_lg_g,n>", node("split")),
             node("("),
             node("<g>", node("<var_g>", node("g"))),
             node(","),
-            node("<n>",
+            node(
+                "<n>",
                 node("<fun_n_ln>", node("length")),
                 node("("),
                 node("<ln>", node("<var_ln>", node("ln"))),
@@ -320,7 +341,8 @@ public class MapperUtils {
             node(")")
         ), node(")")),
         node(")")
-    ), node("<lg>",
+    ), node(
+        "<lg>",
         node("<fun_lg_g,ln>", node("split_w")),
         node("("),
         node("<g>", node("<var_g>", node("g"))),

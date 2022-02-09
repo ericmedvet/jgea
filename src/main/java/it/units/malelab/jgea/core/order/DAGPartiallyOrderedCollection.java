@@ -77,7 +77,8 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
   @Override
   public void add(T t) {
     for (Node<Collection<T>> node : nodes) {
-      PartialComparator.PartialComparatorOutcome outcome = partialComparator.compare(t,
+      PartialComparator.PartialComparatorOutcome outcome = partialComparator.compare(
+          t,
           node.getContent().iterator().next()
       );
       if (outcome.equals(PartialComparator.PartialComparatorOutcome.SAME)) {
@@ -87,7 +88,8 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
     }
     Node<Collection<T>> newNode = newNode(t);
     for (Node<Collection<T>> node : nodes) {
-      PartialComparator.PartialComparatorOutcome outcome = partialComparator.compare(t,
+      PartialComparator.PartialComparatorOutcome outcome = partialComparator.compare(
+          t,
           node.getContent().iterator().next()
       );
       if (outcome.equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {

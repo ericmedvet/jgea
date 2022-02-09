@@ -33,7 +33,8 @@ public interface Crossover<G> extends GeneticOperator<G> {
   G recombine(G g1, G g2, RandomGenerator random);
 
   static <G1, G2> Crossover<Pair<G1, G2>> pair(Crossover<G1> crossover1, Crossover<G2> crossover2) {
-    return (p1, p2, random) -> Pair.of(crossover1.recombine(p1.first(), p2.first(), random),
+    return (p1, p2, random) -> Pair.of(
+        crossover1.recombine(p1.first(), p2.first(), random),
         crossover2.recombine(p1.second(), p2.second(), random)
     );
   }

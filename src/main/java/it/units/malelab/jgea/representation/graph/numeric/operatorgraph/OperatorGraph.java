@@ -78,13 +78,15 @@ public class OperatorGraph implements Function<double[], double[]>, Sized, Seria
     }
     for (Node n : graph.nodes()) {
       if (!((n instanceof Input) || (n instanceof Output) || (n instanceof OperatorNode) || (n instanceof Constant))) {
-        throw new IllegalArgumentException(String.format("Invalid graph: node %s is of wrong type %s",
+        throw new IllegalArgumentException(String.format(
+            "Invalid graph: node %s is of wrong type %s",
             n,
             n.getClass()
         ));
       }
       if ((n instanceof Output) && (graph.predecessors(n).size() > 1)) {
-        throw new IllegalArgumentException(String.format("Invalid graph: output node %s has more than 1 predecessors "
+        throw new IllegalArgumentException(String.format(
+            "Invalid graph: output node %s has more than 1 predecessors "
                 + "(%d)",
             n,
             graph.predecessors(n).size()
@@ -108,7 +110,8 @@ public class OperatorGraph implements Function<double[], double[]>, Sized, Seria
         ));
       }
       if ((n instanceof Output) && graph.successors(n).size() > 0) {
-        throw new IllegalArgumentException(String.format("Invalid graph: output node %s has more than 0 successors " + "(%d)",
+        throw new IllegalArgumentException(String.format(
+            "Invalid graph: output node %s has more than 0 successors " + "(%d)",
             n,
             graph.predecessors(n).size()
         ));

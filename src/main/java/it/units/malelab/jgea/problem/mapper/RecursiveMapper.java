@@ -67,7 +67,8 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
           .get(symbol)
           .get(shortestOptionIndexTies.get(finalizationGlobalCounter.getAndIncrement() % shortestOptionIndexTies.size()));
       for (T optionSymbol : shortestOption) {
-        tree.addChild(mapRecursively(optionSymbol,
+        tree.addChild(mapRecursively(
+            optionSymbol,
             genotype,
             mappingGlobalCounter,
             finalizationGlobalCounter,
@@ -86,7 +87,8 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
       }
       expressivenesses.add(expressiveness);
     }
-    int optionIndex = ((Double) MapperUtils.compute(optionChooser,
+    int optionIndex = ((Double) MapperUtils.compute(
+        optionChooser,
         genotype,
         expressivenesses,
         depth,
@@ -99,7 +101,8 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
     for (T optionSymbol : options.get(optionIndex)) {
       expressivenesses.add((double) weightsMap.getOrDefault(optionSymbol, 1));
     }
-    List<BitString> pieces = ((List<BitString>) MapperUtils.compute(genoAssigner,
+    List<BitString> pieces = ((List<BitString>) MapperUtils.compute(
+        genoAssigner,
         genotype,
         expressivenesses,
         depth,
@@ -112,7 +115,8 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
       } else {
         piece = new BitString(0);
       }
-      tree.addChild(mapRecursively(options.get(optionIndex).get(i),
+      tree.addChild(mapRecursively(
+          options.get(optionIndex).get(i),
           piece,
           mappingGlobalCounter,
           finalizationGlobalCounter,

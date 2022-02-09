@@ -116,7 +116,8 @@ public interface Factory<E, K> {
                   try {
                     innerListener.listen(e);
                   } catch (RuntimeException ex) {
-                    L.warning(String.format("Listener %s cannot listen() event: %s",
+                    L.warning(String.format(
+                        "Listener %s cannot listen() event: %s",
                         innerListener.getClass().getSimpleName(),
                         ex
                     ));
@@ -136,7 +137,8 @@ public interface Factory<E, K> {
                   try {
                     innerListener.done();
                   } catch (RuntimeException ex) {
-                    L.warning(String.format("Listener %s cannot done() event: %s",
+                    L.warning(String.format(
+                        "Listener %s cannot done() event: %s",
                         innerListener.getClass().getSimpleName(),
                         ex
                     ));

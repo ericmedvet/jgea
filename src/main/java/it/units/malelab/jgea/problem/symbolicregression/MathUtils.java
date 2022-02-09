@@ -181,7 +181,8 @@ public class MathUtils {
   }
 
   public static UnaryOperator<RealFunction> linearScaler(SymbolicRegressionFitness symbolicRegressionFitness) {
-    return f -> (f instanceof Sized) ? new SizedScaledRealFunction(f,
+    return f -> (f instanceof Sized) ? new SizedScaledRealFunction(
+        f,
         symbolicRegressionFitness
     ) : new ScaledRealFunction(f, symbolicRegressionFitness);
   }
@@ -190,7 +191,8 @@ public class MathUtils {
     int l = xs[0].length;
     for (int i = 1; i < xs.length; i++) {
       if (xs[i].length != l) {
-        throw new IllegalArgumentException(String.format("Invalid input arrays: %d-th lenght (%d) is different than " + "1st length (%d)",
+        throw new IllegalArgumentException(String.format(
+            "Invalid input arrays: %d-th lenght (%d) is different than " + "1st length (%d)",
             i + 1,
             xs[i].length,
             l

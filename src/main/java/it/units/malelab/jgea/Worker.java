@@ -47,7 +47,8 @@ public abstract class Worker implements Runnable {
 
   public Worker(String[] args) {
     this.args = args;
-    executorService = Executors.newFixedThreadPool(i(Args.a(args,
+    executorService = Executors.newFixedThreadPool(i(Args.a(
+        args,
         "threads",
         Integer.toString(Runtime.getRuntime().availableProcessors())
     )));

@@ -49,7 +49,8 @@ public class Text implements GrammarBasedProblem<String, String>, ComparableQual
         .replace("_", " ");
     target = targetString.chars().mapToObj(c -> (char) c).toList();
     this.distance = new Edit<>();
-    fitnessFunction = string -> distance.apply(target,
+    fitnessFunction = string -> distance.apply(
+        target,
         string.chars().mapToObj(c -> (char) c).toList()
     ) / (double) target.size();
   }

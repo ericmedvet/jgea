@@ -94,7 +94,8 @@ public class FitnessFunction implements Function<Pair<Tree<Element>, Tree<Elemen
 
   protected <N, S> List<Double> apply(Pair<Tree<Element>, Tree<Element>> pair, EnhancedProblem<N, S> problem) {
     //build mapper
-    RecursiveMapper<N> recursiveMapper = new RecursiveMapper<>(pair.first(),
+    RecursiveMapper<N> recursiveMapper = new RecursiveMapper<>(
+        pair.first(),
         pair.second(),
         maxMappingDepth,
         EXPRESSIVENESS_DEPTH,
@@ -116,7 +117,8 @@ public class FitnessFunction implements Function<Pair<Tree<Element>, Tree<Elemen
         values.add(Math.sqrt(StatUtils.variance(sizes)) / StatUtils.mean(sizes));
       } else if (property.equals(Property.NON_LOCALITY)) {
         double[] solutionDistances = computeDistances(solutions, problem.getDistance());
-        double locality = 1d - (1d + (new PearsonsCorrelation().correlation(genotypeDistances,
+        double locality = 1d - (1d + (new PearsonsCorrelation().correlation(
+            genotypeDistances,
             solutionDistances
         ))) / 2d;
         values.add(Double.isNaN(locality) ? 1d : locality);
