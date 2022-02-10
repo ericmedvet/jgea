@@ -1,4 +1,7 @@
-package it.units.malelab.jgea.core.order;
+package it.units.malelab.jgea.core.solver.mapelites;
+
+import it.units.malelab.jgea.core.order.PartialComparator;
+import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 
 import java.util.*;
 import java.util.function.Function;

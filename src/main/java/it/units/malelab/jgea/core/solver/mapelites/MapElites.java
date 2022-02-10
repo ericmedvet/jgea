@@ -1,10 +1,12 @@
-package it.units.malelab.jgea.core.solver;
+package it.units.malelab.jgea.core.solver.mapelites;
 
 import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.QualityBasedProblem;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
-import it.units.malelab.jgea.core.order.MapOfElites;
+import it.units.malelab.jgea.core.solver.AbstractPopulationIterativeBasedSolver;
+import it.units.malelab.jgea.core.solver.Individual;
+import it.units.malelab.jgea.core.solver.SolverException;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
