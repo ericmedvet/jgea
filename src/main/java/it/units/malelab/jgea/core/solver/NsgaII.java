@@ -170,9 +170,10 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
       offspring.addAll(state.getPopulation().all());
     }
     state.rankedWithDistanceIndividuals = trimPopulation(offspring, problem);
+    Collection<Individual<G, S, List<Double>>> population = state.rankedWithDistanceIndividuals.stream().map(i -> i.individual).toList();
 
     //update state
-    state.setPopulation(new DAGPartiallyOrderedCollection<>(offspring, comparator(problem)));
+    state.setPopulation(new DAGPartiallyOrderedCollection<>(population, comparator(problem)));
     state.incNOfIterations();
     state.updateElapsedMillis();
   }
