@@ -16,21 +16,15 @@
 
 package it.units.malelab.jgea.problem.application;
 
-import it.units.malelab.jgea.core.QualityBasedProblem;
-import it.units.malelab.jgea.core.order.ParetoDominance;
-import it.units.malelab.jgea.core.order.PartialComparator;
+import it.units.malelab.jgea.core.MultiHomogeneousObjectiveProblem;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 /**
  * @author eric
  */
-public class RobotPowerSupplyGeometry implements QualityBasedProblem<List<Double>, List<Double>> {
-
-  private final static PartialComparator<List<Double>> COMPARATOR = new ParetoDominance<>(Double.class);
+public class RobotPowerSupplyGeometry implements MultiHomogeneousObjectiveProblem<List<Double>, Double> {
 
   private final double w;
   private final double v;
@@ -211,13 +205,13 @@ public class RobotPowerSupplyGeometry implements QualityBasedProblem<List<Double
   }
 
   @Override
-  public PartialComparator<List<Double>> qualityComparator() {
-    return COMPARATOR;
+  public Function<List<Double>, List<Double>> qualityFunction() {
+    return fitnessFunction;
   }
 
   @Override
-  public Function<List<Double>, List<Double>> qualityFunction() {
-    return fitnessFunction;
+  public List<Comparator<Double>> comparators() {
+    return Collections.nCopies(objectives.size(), Double::compareTo);
   }
 
   private double[] scale(double[] a) {

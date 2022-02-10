@@ -41,11 +41,10 @@ import java.util.function.Function;
 public class MapperGeneration implements GrammarBasedProblem<String, Pair<Tree<Element>, Tree<Element>>>,
     ProblemWithValidation<Pair<Tree<Element>, Tree<Element>>, List<Double>> {
 
-  private final static PartialComparator<List<Double>> COMPARATOR = new ParetoDominance<>(Double.class);
-
   private final Grammar<String> grammar;
   private final FitnessFunction learningFitnessFunction;
   private final FitnessFunction validationFitnessFunction;
+  private final int dimensionality;
 
   public MapperGeneration(
       List<EnhancedProblem> learningProblems,
@@ -77,6 +76,7 @@ public class MapperGeneration implements GrammarBasedProblem<String, Pair<Tree<E
         validationProperties,
         seed
     );
+    dimensionality = learningProperties.size();
   }
 
   @Override
@@ -95,7 +95,7 @@ public class MapperGeneration implements GrammarBasedProblem<String, Pair<Tree<E
 
   @Override
   public PartialComparator<List<Double>> qualityComparator() {
-    return COMPARATOR;
+    return ParetoDominance.build(Double.class, dimensionality);
   }
 
   @Override

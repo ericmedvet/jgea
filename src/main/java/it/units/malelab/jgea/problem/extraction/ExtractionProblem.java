@@ -18,21 +18,15 @@ package it.units.malelab.jgea.problem.extraction;
 
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
-import it.units.malelab.jgea.core.QualityBasedProblem;
-import it.units.malelab.jgea.core.order.ParetoDominance;
-import it.units.malelab.jgea.core.order.PartialComparator;
+import it.units.malelab.jgea.core.MultiHomogeneousObjectiveProblem;
 import it.units.malelab.jgea.core.util.Pair;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author eric
  */
-public class ExtractionProblem<S> implements QualityBasedProblem<Extractor<S>, List<Double>> {
-
-  private final static PartialComparator<List<Double>> COMPARATOR = new ParetoDominance<>(Double.class);
+public class ExtractionProblem<S> implements MultiHomogeneousObjectiveProblem<Extractor<S>, Double> {
 
   private final ExtractionFitness<S> fitnessFunction;
   private final ExtractionFitness<S> validationFunction;
@@ -73,8 +67,8 @@ public class ExtractionProblem<S> implements QualityBasedProblem<Extractor<S>, L
   }
 
   @Override
-  public PartialComparator<List<Double>> qualityComparator() {
-    return COMPARATOR;
+  public List<Comparator<Double>> comparators() {
+    return Collections.nCopies(fitnessFunction.getMetrics().size(), Double::compareTo);
   }
 
   @Override

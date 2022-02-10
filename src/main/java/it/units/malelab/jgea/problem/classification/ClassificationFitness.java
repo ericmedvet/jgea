@@ -19,12 +19,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.units.malelab.jgea.core.fitness;
+package it.units.malelab.jgea.problem.classification;
 
 import com.google.common.collect.EnumMultiset;
 import com.google.common.collect.Multiset;
+import it.units.malelab.jgea.core.fitness.CaseBasedFitness;
 import it.units.malelab.jgea.core.util.Pair;
-import it.units.malelab.jgea.problem.classification.Classifier;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -17,7 +17,6 @@
 package it.units.malelab.jgea.problem.classification;
 
 import it.units.malelab.jgea.core.QualityBasedProblem;
-import it.units.malelab.jgea.core.fitness.ClassificationFitness;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.problem.extraction.string.RegexGrammar;
 import it.units.malelab.jgea.representation.grammar.Grammar;
