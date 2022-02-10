@@ -27,6 +27,7 @@
 package it.units.malelab.jgea;
 
 import com.google.common.collect.Range;
+import it.units.malelab.jgea.core.MultiHomogeneousObjectiveProblem;
 import it.units.malelab.jgea.core.QualityBasedProblem;
 import it.units.malelab.jgea.core.TotalOrderQualityBasedProblem;
 import it.units.malelab.jgea.core.listener.Factory;
@@ -40,6 +41,7 @@ import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.problem.booleanfunction.Element;
 import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
 import it.units.malelab.jgea.problem.symbolicregression.*;
+import it.units.malelab.jgea.problem.synthetic.Cones;
 import it.units.malelab.jgea.problem.synthetic.LinearPoints;
 import it.units.malelab.jgea.problem.synthetic.OneMax;
 import it.units.malelab.jgea.representation.grammar.Grammar;
@@ -61,6 +63,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
+import java.util.random.RandomGenerator;
 
 import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
 
@@ -102,8 +105,9 @@ public class Example extends Worker {
 
   @Override
   public void run() {
+    runCones();
     //runLinearPoints();
-    runOneMax();
+    //runOneMax();
     //runSymbolicRegression();
     //runSymbolicRegressionMO();
     //runGrammarBasedParity();
@@ -149,6 +153,37 @@ public class Example extends Worker {
     } catch (SolverException e) {
       e.printStackTrace();
     }
+  }
+
+  public void runCones() {
+    Factory<POSetPopulationState<?, ?, List<Double>>, Map<String, Object>> listenerFactory =
+        new TabularPrinter<POSetPopulationState<?, ?, List<Double>>, Map<String, Object>>(
+            Misc.concat(List.of(BASIC_FUNCTIONS)),
+            List.of()
+        );
+    MultiHomogeneousObjectiveProblem<List<Double>, Double> p = new Cones();
+    NsgaII<MultiHomogeneousObjectiveProblem<List<Double>, Double>, List<Double>, List<Double>> solver = new NsgaII<>(
+        Function.identity(),
+        new FixedLengthListFactory<>(3, new UniformDoubleFactory(5, 10)),
+        25,
+        StopConditions.nOfIterations(100),
+        Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
+        false
+    );
+
+    System.out.println(solver.getClass().getSimpleName());
+    try {
+      Collection<List<Double>> solutions = solver.solve(
+          p,
+          RandomGenerator.getDefault(),
+          executorService,
+          listenerFactory.build(Map.of()).deferred(executorService)
+      );
+      System.out.printf("Found %d solutions with " + "%s.%n", solutions.size(), solver.getClass().getSimpleName());
+    } catch (SolverException e) {
+      e.printStackTrace();
+    }
+
   }
 
   public void runLinearPoints() {
