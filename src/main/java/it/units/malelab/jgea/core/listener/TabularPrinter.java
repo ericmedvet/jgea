@@ -13,7 +13,7 @@ import java.util.stream.IntStream;
 /**
  * @author eric on 2021/01/03 for jgea
  */
-public class TabularPrinter<E, K> implements Factory<E, K> {
+public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
 
   private final static String COLOR_RESET = "\u001B[0m";
   private final static String COLOR_DOWN = "\u001B[31m";

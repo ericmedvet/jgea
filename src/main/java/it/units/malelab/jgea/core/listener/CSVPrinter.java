@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 /**
  * @author eric on 2021/01/03 for jgea
  */
-public class CSVPrinter<E, K> implements Factory<E, K> {
+public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
 
   private static final Logger L = Logger.getLogger(CSVPrinter.class.getName());
   private static final int FLUSH_N = 10;

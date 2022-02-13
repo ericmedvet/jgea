@@ -1,8 +1,9 @@
 package it.units.malelab.jgea.core.listener.telegram;
 
 import it.units.malelab.jgea.core.listener.Accumulator;
-import it.units.malelab.jgea.core.listener.Factory;
+import it.units.malelab.jgea.core.listener.AccumulatorFactory;
 import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.core.listener.ListenerFactory;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -12,12 +13,12 @@ import java.util.List;
 /**
  * @author eric on 2021/01/03 for jgea
  */
-public class TelegramUpdater<E, K> extends TelegramClient implements Factory<E, K> {
+public class TelegramUpdater<E, K> extends TelegramClient implements ListenerFactory<E, K> {
 
-  private final List<Accumulator.Factory<E, ?, K>> factories;
+  private final List<AccumulatorFactory<E, ?, K>> factories;
 
   public TelegramUpdater(
-      List<Accumulator.Factory<E, ?, K>> factories, String botToken, long chatId
+      List<AccumulatorFactory<E, ?, K>> factories, String botToken, long chatId
   ) {
     super(botToken, chatId);
     this.factories = factories;

@@ -19,7 +19,7 @@ package it.units.malelab.jgea.lab;
 import com.google.common.base.Stopwatch;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.listener.CSVPrinter;
-import it.units.malelab.jgea.core.listener.Factory;
+import it.units.malelab.jgea.core.listener.ListenerFactory;
 import it.units.malelab.jgea.core.listener.NamedFunction;
 import it.units.malelab.jgea.core.listener.TabularPrinter;
 import it.units.malelab.jgea.core.selector.Last;
@@ -97,10 +97,10 @@ public class ImageExample extends Worker {
         attribute("image").reformat("%20.20s"),
         attribute("evolver").reformat("%20.20s")
     );
-    Factory<? super POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
+    ListenerFactory<? super POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
         new TabularPrinter<>(functions, kFunctions);
     if (a("file", null) != null) {
-      listenerFactory = Factory.all(List.of(
+      listenerFactory = ListenerFactory.all(List.of(
           listenerFactory,
           new CSVPrinter<>(functions, kFunctions, new File(a("file", null)))
       ));

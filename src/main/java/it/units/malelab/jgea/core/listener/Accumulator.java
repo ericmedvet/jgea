@@ -4,53 +4,42 @@ package it.units.malelab.jgea.core.listener;
 import java.util.function.Function;
 
 public interface Accumulator<E, O> extends Listener<E> {
-  interface Factory<E, O, K> extends it.units.malelab.jgea.core.listener.Factory<E, K> {
-    Accumulator<E, O> build(K k);
-
-    static <E, K> Factory<E, E, K> last() {
-      return k -> new Accumulator<>() {
-        private E lastE;
-
-        @Override
-        public E get() {
-          return lastE;
-        }
-
-        @Override
-        public void listen(E e) {
-          lastE = e;
-        }
-      };
-    }
-
-    default <P> Factory<E, P, K> then(Function<? super O, P> function) {
-      final Factory<E, O, K> thisFactory = this;
-      return new Factory<>() {
-        @Override
-        public Accumulator<E, P> build(K k) {
-          Accumulator<E, O> accumulator = thisFactory.build(k);
-          return new Accumulator<>() {
-            @Override
-            public P get() {
-              return function.apply(accumulator.get());
-            }
-
-            @Override
-            public void listen(E e) {
-              accumulator.listen(e);
-            }
-          };
-        }
-
-        @Override
-        public void shutdown() {
-          thisFactory.shutdown();
-        }
-      };
-    }
-
-  }
 
   O get();
 
+  static <E> Accumulator<E, E> last() {
+    return new Accumulator<>() {
+      E last;
+
+      @Override
+      public E get() {
+        return last;
+      }
+
+      @Override
+      public void listen(E e) {
+        last = e;
+      }
+    };
+  }
+
+  default <Q> Accumulator<E, Q> then(Function<O, Q> function) {
+    Accumulator<E, O> inner = this;
+    return new Accumulator<>() {
+      @Override
+      public Q get() {
+        return function.apply(inner.get());
+      }
+
+      @Override
+      public void listen(E e) {
+        inner.listen(e);
+      }
+
+      @Override
+      public void done() {
+        inner.done();
+      }
+    };
+  }
 }
