@@ -31,7 +31,7 @@ public interface Listener<E> {
     };
   }
 
-  static <E, F> Listener<F> forEach(Function<F, Collection<E>> splitter, Listener<E> listener) {
+  static <E, F> Listener<F> forEach(Function<F, Collection<? extends E>> splitter, Listener<E> listener) {
     return new Listener<>() {
       @Override
       public void listen(F f) {
@@ -41,6 +41,23 @@ public interface Listener<E> {
       @Override
       public void done() {
         listener.done();
+      }
+    };
+  }
+
+  default Listener<E> and(Listener<? super E> other) {
+    Listener<E> inner = this;
+    return new Listener<>() {
+      @Override
+      public void listen(E e) {
+        inner.listen(e);
+        other.listen(e);
+      }
+
+      @Override
+      public void done() {
+        inner.done();
+        other.done();
       }
     };
   }

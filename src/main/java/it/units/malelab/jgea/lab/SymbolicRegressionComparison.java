@@ -139,16 +139,16 @@ public class SymbolicRegressionComparison extends Worker {
     );
     List<NamedFunction<? super Map<String, Object>, ?>> kFunctions = List.of(
         attribute("seed").reformat("%2d"),
-        attribute("problem").reformat(NamedFunction.formatOfLongest(
-            problems.stream().map(p -> p.getClass().getSimpleName())
-                .toList())),
+        attribute("problem").reformat(NamedFunction.formatOfLongest(problems.stream()
+            .map(p -> p.getClass().getSimpleName())
+            .toList())),
         attribute("evolver").reformat("%20.20s")
     );
     ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
         new TabularPrinter<>(
-        functions,
-        kFunctions
-    );
+            functions,
+            kFunctions
+        );
     if (a("file", null) != null) {
       listenerFactory = ListenerFactory.all(List.of(
           listenerFactory,

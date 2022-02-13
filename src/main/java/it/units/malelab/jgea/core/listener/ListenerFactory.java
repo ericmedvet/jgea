@@ -32,7 +32,10 @@ public interface ListenerFactory<E, K> {
     return k -> Listener.deaf();
   }
 
-  static <F, E, K> ListenerFactory<F, K> forEach(Function<F, Collection<E>> splitter, ListenerFactory<E, K> factory) {
+  static <F, E, K> ListenerFactory<F, K> forEach(
+      Function<F, Collection<? extends E>> splitter,
+      ListenerFactory<E, K> factory
+  ) {
     return new ListenerFactory<>() {
       @Override
       public Listener<F> build(K k) {
@@ -42,6 +45,22 @@ public interface ListenerFactory<E, K> {
       @Override
       public void shutdown() {
         factory.shutdown();
+      }
+    };
+  }
+
+  default ListenerFactory<E, K> and(ListenerFactory<? super E, ? super K> other) {
+    ListenerFactory<E, K> inner = this;
+    return new ListenerFactory<>() {
+      @Override
+      public Listener<E> build(K k) {
+        return inner.build(k).and(other.build(k));
+      }
+
+      @Override
+      public void shutdown() {
+        inner.shutdown();
+        other.shutdown();
       }
     };
   }

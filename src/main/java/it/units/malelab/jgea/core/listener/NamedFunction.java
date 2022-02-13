@@ -161,4 +161,8 @@ public interface NamedFunction<F, T> extends Function<F, T> {
     };
   }
 
+  default <V> List<? extends NamedFunction<F, ? extends V>> then(List<NamedFunction<? super T, ? extends V>> afters) {
+    NamedFunction<F, T> thisNamedFunction = this;
+    return afters.stream().map(thisNamedFunction::then).toList();
+  }
 }
