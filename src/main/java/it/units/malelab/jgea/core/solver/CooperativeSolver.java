@@ -37,8 +37,8 @@ public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 ex
   }
 
   public static class CooperativeState<T1 extends POSetPopulationState<G1, S1, Q>, T2 extends POSetPopulationState<G2, S2, Q>, G1, G2, S1, S2, Q> extends State {
-    private T1 firstState;
-    private T2 secondState;
+    private final T1 firstState;
+    private final T2 secondState;
 
     public CooperativeState(LocalDateTime startingDateTime, long elapsedMillis, long nOfIterations, T1 firstState, T2 secondState) {
       super(startingDateTime, elapsedMillis, nOfIterations);
@@ -75,14 +75,13 @@ public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 ex
   ) throws SolverException {
     QualityBasedProblem<S1, Q> dummyProblem1 = QualityBasedProblem.create(s1 -> null, (q1, q2) -> PartialComparator.PartialComparatorOutcome.SAME);
     QualityBasedProblem<S2, Q> dummyProblem2 = QualityBasedProblem.create(s2 -> null, (q1, q2) -> PartialComparator.PartialComparatorOutcome.SAME);
-    CooperativeState<T1, T2, G1, G2, S1, S2, Q> state = new CooperativeState<>(
-        firstSolver.init(dummyProblem1, random, executor),
-        secondSolver.init(dummyProblem2, random, executor));
+    CooperativeState<T1, T2, G1, G2, S1, S2, Q> state = init(problem, random, executor);
     listener.listen(state);
     while (!stopCondition.test(state)) {
       update(problem, random, executor, state);
       listener.listen((CooperativeState<T1, T2, G1, G2, S1, S2, Q>) state.immutableCopy());
     }
+    listener.done();
     return Pair.of(
         firstSolver.extractSolutions(dummyProblem1, random, executor, state.firstState),
         secondSolver.extractSolutions(dummyProblem2, random, executor, state.secondState)
@@ -107,16 +106,31 @@ public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 ex
         s2 -> problem.qualityFunction().apply(solutionAggregator.apply(representative1, s2)),
         problem.qualityComparator()
     );
-    if (state.getNOfIterations() == 0) {
-      // TODO move right after the initialization?
-      state.firstState = firstSolver.init(problem1, random, executor);
-      state.secondState = secondSolver.init(problem2, random, executor);
-    } else {
-      firstSolver.update(problem1, random, executor, state.firstState);
-      secondSolver.update(problem2, random, executor, state.secondState);
-    }
+    // TODO get all evaluated individuals and add them to the state
+    firstSolver.update(problem1, random, executor, state.firstState);
+    secondSolver.update(problem2, random, executor, state.secondState);
     state.incNOfIterations();
     state.updateElapsedMillis();
+  }
+
+  public CooperativeState<T1, T2, G1, G2, S1, S2, Q> init(P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
+    QualityBasedProblem<S1, Q> dummyProblem1 = QualityBasedProblem.create(s1 -> null, (q1, q2) -> PartialComparator.PartialComparatorOutcome.SAME);
+    QualityBasedProblem<S2, Q> dummyProblem2 = QualityBasedProblem.create(s2 -> null, (q1, q2) -> PartialComparator.PartialComparatorOutcome.SAME);
+    T1 state1 = firstSolver.init(dummyProblem1, random, executor);
+    T2 state2 = secondSolver.init(dummyProblem2, random, executor);
+    S1 representative1 = firstRepresentativeExtractor.apply(state1);
+    S2 representative2 = secondRepresentativeExtractor.apply(state2);
+    QualityBasedProblem<S1, Q> problem1 = QualityBasedProblem.create(
+        s1 -> problem.qualityFunction().apply(solutionAggregator.apply(s1, representative2)),
+        problem.qualityComparator()
+    );
+    QualityBasedProblem<S2, Q> problem2 = QualityBasedProblem.create(
+        s2 -> problem.qualityFunction().apply(solutionAggregator.apply(representative1, s2)),
+        problem.qualityComparator()
+    );
+    return new CooperativeState<>(
+        firstSolver.init(problem1, random, executor),
+        secondSolver.init(problem2, random, executor));
   }
 
 }
