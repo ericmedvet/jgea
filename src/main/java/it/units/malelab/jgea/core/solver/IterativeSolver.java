@@ -39,6 +39,7 @@ public interface IterativeSolver<T extends Copyable, P extends Problem<S>, S> ex
       update(problem, random, executor, state);
       listener.listen((T) state.immutableCopy());
     }
+    listener.done();
     return extractSolutions(problem, random, executor, state);
   }
 }
