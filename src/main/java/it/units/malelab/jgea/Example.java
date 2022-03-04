@@ -30,6 +30,7 @@ import com.google.common.collect.Range;
 import it.units.malelab.jgea.core.MultiHomogeneousObjectiveProblem;
 import it.units.malelab.jgea.core.QualityBasedProblem;
 import it.units.malelab.jgea.core.TotalOrderQualityBasedProblem;
+import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.ListenerFactory;
 import it.units.malelab.jgea.core.listener.NamedFunction;
 import it.units.malelab.jgea.core.listener.TabularPrinter;
@@ -62,6 +63,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
 
@@ -105,7 +107,7 @@ public class Example extends Worker {
 
   @Override
   public void run() {
-    runCones();
+    //runCones();
     //runLinearPoints();
     //runOneMax();
     //runSymbolicRegression();
@@ -113,6 +115,50 @@ public class Example extends Worker {
     //runGrammarBasedParity();
     //runSphere();
     //runRastrigin();
+    runCooperativeOneMax();
+  }
+
+  public void runCooperativeOneMax() {
+    int size = 1000;
+    AbstractPopulationIterativeBasedSolver<POSetPopulationState<BitString, BitString, Double>, QualityBasedProblem<BitString, Double>, BitString, BitString, Double> solver = new StandardEvolver<POSetPopulationState<BitString, BitString, Double>, QualityBasedProblem<BitString
+        , Double>, BitString, BitString, Double>(
+        Function.identity(),
+        new BitStringFactory(size / 2),
+        50,
+        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
+        Map.of(new UniformCrossover<>(new BitStringFactory(5)), 0.8d, new BitFlipMutation(0.01d), 0.2d),
+        new Tournament(5),
+        new Last(),
+        100,
+        true,
+        true,
+        (problem, random) -> new POSetPopulationState<>()
+    );
+    Random r = new Random(1);
+    BiFunction<BitString, BitString, BitString> aggregator = BitString::append;
+    Function<POSetPopulationState<BitString, BitString, Double>, BitString> representativeExtractor = s ->
+        Misc.first(s.getPopulation().firsts()).solution();
+    CooperativeSolver<
+        POSetPopulationState<BitString, BitString, Double>, POSetPopulationState<BitString, BitString, Double>,
+        BitString, BitString, BitString, BitString, QualityBasedProblem<BitString, Double>, BitString, Double> cooperativeSolver = new CooperativeSolver<>(
+        solver,
+        solver,
+        aggregator,
+        representativeExtractor,
+        representativeExtractor,
+        StopConditions.nOfIterations(100)
+    );
+    QualityBasedProblem<BitString, Double> problem = new OneMax();
+
+    Listener<CooperativeSolver.CooperativeState<POSetPopulationState<BitString, BitString, Double>, POSetPopulationState<BitString, BitString, Double>,
+        BitString, BitString, BitString, BitString, Double>> stateListener = state ->
+        System.out.printf("%d\t%d\t%1.3f\t%1.3f\n", state.getNOfIterations(), state.getNOfFitnessEvaluations(), state.firstBest().fitness(), state.secondBest().fitness());
+
+    try {
+      cooperativeSolver.solve(problem, r, executorService, stateListener);
+    } catch (SolverException e) {
+      e.printStackTrace();
+    }
   }
 
   public void runGrammarBasedParity() {
@@ -155,7 +201,7 @@ public class Example extends Worker {
     }
   }
 
-  public void runCones() {
+  /*public void runCones() {
     Factory<POSetPopulationState<?, ?, List<Double>>, Map<String, Object>> listenerFactory =
         new TabularPrinter<POSetPopulationState<?, ?, List<Double>>, Map<String, Object>>(
             Misc.concat(List.of(BASIC_FUNCTIONS)),
@@ -184,7 +230,7 @@ public class Example extends Worker {
       e.printStackTrace();
     }
 
-  }
+  }*/
 
   public void runLinearPoints() {
     ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
