@@ -31,16 +31,19 @@ public interface Listener<E> {
     };
   }
 
-  static <E, F> Listener<F> forEach(Function<F, Collection<E>> splitter, Listener<E> listener) {
+  default Listener<E> and(Listener<? super E> other) {
+    Listener<E> inner = this;
     return new Listener<>() {
       @Override
-      public void listen(F f) {
-        splitter.apply(f).forEach(listener::listen);
+      public void listen(E e) {
+        inner.listen(e);
+        other.listen(e);
       }
 
       @Override
       public void done() {
-        listener.done();
+        inner.done();
+        other.done();
       }
     };
   }
@@ -82,6 +85,21 @@ public interface Listener<E> {
   }
 
   default void done() {
+  }
+
+  default <F> Listener<F> forEach(Function<F, Collection<E>> splitter) {
+    Listener<E> thisListener = this;
+    return new Listener<>() {
+      @Override
+      public void listen(F f) {
+        splitter.apply(f).forEach(thisListener::listen);
+      }
+
+      @Override
+      public void done() {
+        thisListener.done();
+      }
+    };
   }
 
   default <F> Listener<F> on(Function<F, E> function) {

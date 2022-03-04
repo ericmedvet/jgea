@@ -20,7 +20,7 @@ import com.google.common.base.Stopwatch;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.listener.CSVPrinter;
-import it.units.malelab.jgea.core.listener.Factory;
+import it.units.malelab.jgea.core.listener.ListenerFactory;
 import it.units.malelab.jgea.core.listener.NamedFunction;
 import it.units.malelab.jgea.core.listener.TabularPrinter;
 import it.units.malelab.jgea.core.operator.Crossover;
@@ -139,17 +139,18 @@ public class SymbolicRegressionComparison extends Worker {
     );
     List<NamedFunction<? super Map<String, Object>, ?>> kFunctions = List.of(
         attribute("seed").reformat("%2d"),
-        attribute("problem").reformat(NamedFunction.formatOfLongest(
-            problems.stream().map(p -> p.getClass().getSimpleName())
-                .toList())),
+        attribute("problem").reformat(NamedFunction.formatOfLongest(problems.stream()
+            .map(p -> p.getClass().getSimpleName())
+            .toList())),
         attribute("evolver").reformat("%20.20s")
     );
-    Factory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory = new TabularPrinter<>(
-        functions,
-        kFunctions
-    );
+    ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
+        new TabularPrinter<>(
+            functions,
+            kFunctions
+        );
     if (a("file", null) != null) {
-      listenerFactory = Factory.all(List.of(
+      listenerFactory = ListenerFactory.all(List.of(
           listenerFactory,
           new CSVPrinter<>(functions, kFunctions, new File(a("file", null)))
       ));

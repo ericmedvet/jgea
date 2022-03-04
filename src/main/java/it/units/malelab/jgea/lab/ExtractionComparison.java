@@ -21,7 +21,7 @@ import com.google.common.collect.Sets;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.QualityBasedProblem;
 import it.units.malelab.jgea.core.listener.CSVPrinter;
-import it.units.malelab.jgea.core.listener.Factory;
+import it.units.malelab.jgea.core.listener.ListenerFactory;
 import it.units.malelab.jgea.core.listener.NamedFunction;
 import it.units.malelab.jgea.core.listener.TabularPrinter;
 import it.units.malelab.jgea.core.operator.Crossover;
@@ -131,12 +131,13 @@ public class ExtractionComparison extends Worker {
         attribute("problem").reformat("%20.20s"),
         attribute("evolver").reformat("%20.20s")
     );
-    Factory<POSetPopulationState<?, ? extends Extractor<Character>, ? extends List<Double>>, Map<String, Object>> listenerFactory = new TabularPrinter<>(
+    ListenerFactory<POSetPopulationState<?, ? extends Extractor<Character>, ? extends List<Double>>, Map<String,
+        Object>> listenerFactory = new TabularPrinter<>(
         functions,
         kFunctions
     );
     if (a("file", null) != null) {
-      listenerFactory = Factory.all(List.of(
+      listenerFactory = ListenerFactory.all(List.of(
           listenerFactory,
           new CSVPrinter<>(functions, kFunctions, new File(a("file", null)))
       ));

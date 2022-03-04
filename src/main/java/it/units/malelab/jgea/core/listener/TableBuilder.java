@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @author eric on 2021/01/04 for jgea
  */
-public class TableBuilder<E, O, K> implements Accumulator.Factory<E, Table<O>, K> {
+public class TableBuilder<E, O, K> implements AccumulatorFactory<E, Table<O>, K> {
 
   private final List<NamedFunction<? super E, ? extends O>> eFunctions;
   private final List<NamedFunction<? super K, ? extends O>> kFunctions;

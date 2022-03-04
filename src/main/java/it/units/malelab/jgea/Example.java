@@ -30,7 +30,7 @@ import com.google.common.collect.Range;
 import it.units.malelab.jgea.core.MultiHomogeneousObjectiveProblem;
 import it.units.malelab.jgea.core.QualityBasedProblem;
 import it.units.malelab.jgea.core.TotalOrderQualityBasedProblem;
-import it.units.malelab.jgea.core.listener.Factory;
+import it.units.malelab.jgea.core.listener.ListenerFactory;
 import it.units.malelab.jgea.core.listener.NamedFunction;
 import it.units.malelab.jgea.core.listener.TabularPrinter;
 import it.units.malelab.jgea.core.selector.Last;
@@ -116,7 +116,7 @@ public class Example extends Worker {
   }
 
   public void runGrammarBasedParity() {
-    Factory<POSetPopulationState<?, ?, ? extends Double>, Void> listenerFactory =
+    ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Void> listenerFactory =
         new TabularPrinter<>(Misc.concat(List.of(
             BASIC_FUNCTIONS,
             DOUBLE_FUNCTIONS
@@ -187,7 +187,7 @@ public class Example extends Worker {
   }
 
   public void runLinearPoints() {
-    Factory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
+    ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
         new TabularPrinter<>(
             Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)),
             List.of()
@@ -253,8 +253,8 @@ public class Example extends Worker {
     Random r = new Random(1);
     QualityBasedProblem<BitString, Double> p = new OneMax();
     List<NamedFunction<? super POSetPopulationState<?, ?, ?>, ?>> keysFunctions = List.of();
-    Factory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
-        Factory.all(List.of(new TabularPrinter<>(
+    ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
+        ListenerFactory.all(List.of(new TabularPrinter<>(
             Misc.concat(List.of(keysFunctions, BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)),
             List.of(attribute("solver"))
         )));
@@ -318,7 +318,7 @@ public class Example extends Worker {
   }
 
   public void runSymbolicRegression() {
-    Factory<? super POSetPopulationState<?, ?, ? extends Double>, Void> listenerFactory =
+    ListenerFactory<? super POSetPopulationState<?, ?, ? extends Double>, Void> listenerFactory =
         new TabularPrinter<>(Misc.concat(
             List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)), List.of());
     Random r = new Random(1);
