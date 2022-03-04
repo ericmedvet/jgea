@@ -27,7 +27,6 @@
 package it.units.malelab.jgea;
 
 import com.google.common.collect.Range;
-import it.units.malelab.jgea.core.MultiHomogeneousObjectiveProblem;
 import it.units.malelab.jgea.core.QualityBasedProblem;
 import it.units.malelab.jgea.core.TotalOrderQualityBasedProblem;
 import it.units.malelab.jgea.core.listener.Listener;
@@ -42,7 +41,6 @@ import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.problem.booleanfunction.Element;
 import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
 import it.units.malelab.jgea.problem.symbolicregression.*;
-import it.units.malelab.jgea.problem.synthetic.Cones;
 import it.units.malelab.jgea.problem.synthetic.LinearPoints;
 import it.units.malelab.jgea.problem.synthetic.OneMax;
 import it.units.malelab.jgea.representation.grammar.Grammar;
@@ -65,7 +63,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.random.RandomGenerator;
 
 import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
 
@@ -136,8 +133,8 @@ public class Example extends Worker {
     );
     Random r = new Random(1);
     BiFunction<BitString, BitString, BitString> aggregator = BitString::append;
-    Function<POSetPopulationState<BitString, BitString, Double>, BitString> representativeExtractor = s ->
-        Misc.first(s.getPopulation().firsts()).solution();
+    Function<POSetPopulationState<BitString, BitString, Double>, Individual<BitString, BitString, Double>> representativeExtractor = s ->
+        Misc.first(s.getPopulation().firsts());
     CooperativeSolver<
         POSetPopulationState<BitString, BitString, Double>, POSetPopulationState<BitString, BitString, Double>,
         BitString, BitString, BitString, BitString, QualityBasedProblem<BitString, Double>, BitString, Double> cooperativeSolver = new CooperativeSolver<>(

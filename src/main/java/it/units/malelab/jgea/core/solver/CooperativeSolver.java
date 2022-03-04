@@ -22,12 +22,11 @@ public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 ex
   private final AbstractPopulationIterativeBasedSolver<T1, QualityBasedProblem<S1, Q>, G1, S1, Q> firstSolver;
   private final AbstractPopulationIterativeBasedSolver<T2, QualityBasedProblem<S2, Q>, G2, S2, Q> secondSolver;
   private final BiFunction<S1, S2, S> solutionAggregator;
-  // TODO might extract an individual
-  private final Function<T1, S1> firstRepresentativeExtractor;
-  private final Function<T2, S2> secondRepresentativeExtractor;
+  private final Function<T1, Individual<G1, S1, Q>> firstRepresentativeExtractor;
+  private final Function<T2, Individual<G2, S2, Q>> secondRepresentativeExtractor;
   private final Predicate<? super CooperativeState<T1, T2, G1, G2, S1, S2, Q>> stopCondition;
 
-  public CooperativeSolver(AbstractPopulationIterativeBasedSolver<T1, QualityBasedProblem<S1, Q>, G1, S1, Q> firstSolver, AbstractPopulationIterativeBasedSolver<T2, QualityBasedProblem<S2, Q>, G2, S2, Q> secondSolver, BiFunction<S1, S2, S> solutionAggregator, Function<T1, S1> firstRepresentativeExtractor, Function<T2, S2> secondRepresentativeExtractor, Predicate<? super CooperativeState<T1, T2, G1, G2, S1, S2, Q>> stopCondition) {
+  public CooperativeSolver(AbstractPopulationIterativeBasedSolver<T1, QualityBasedProblem<S1, Q>, G1, S1, Q> firstSolver, AbstractPopulationIterativeBasedSolver<T2, QualityBasedProblem<S2, Q>, G2, S2, Q> secondSolver, BiFunction<S1, S2, S> solutionAggregator, Function<T1, Individual<G1, S1, Q>> firstRepresentativeExtractor, Function<T2, Individual<G2, S2, Q>> secondRepresentativeExtractor, Predicate<? super CooperativeState<T1, T2, G1, G2, S1, S2, Q>> stopCondition) {
     this.firstSolver = firstSolver;
     this.secondSolver = secondSolver;
     this.solutionAggregator = solutionAggregator;
@@ -36,7 +35,8 @@ public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 ex
     this.stopCondition = stopCondition;
   }
 
-  public static class CooperativeState<T1 extends POSetPopulationState<G1, S1, Q>, T2 extends POSetPopulationState<G2, S2, Q>, G1, G2, S1, S2, Q> extends State {
+  public static class CooperativeState<T1 extends POSetPopulationState<G1, S1, Q>,
+      T2 extends POSetPopulationState<G2, S2, Q>, G1, G2, S1, S2, Q> extends State {
     private final T1 firstState;
     private final T2 secondState;
 
@@ -94,16 +94,16 @@ public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 ex
     return solve(problem, random, executor, Listener.deaf());
   }
 
-  private void update(P problem, RandomGenerator random, ExecutorService executor, CooperativeState<T1, T2, G1, G2, S1, S2, Q> state) throws SolverException {
+  public void update(P problem, RandomGenerator random, ExecutorService executor, CooperativeState<T1, T2, G1, G2, S1, S2, Q> state) throws SolverException {
     // TODO change to list of representatives and average or median of fitness
-    S1 representative1 = firstRepresentativeExtractor.apply(state.firstState);
-    S2 representative2 = secondRepresentativeExtractor.apply(state.secondState);
+    Individual<G1, S1, Q> representative1 = firstRepresentativeExtractor.apply(state.firstState);
+    Individual<G2, S2, Q> representative2 = secondRepresentativeExtractor.apply(state.secondState);
     QualityBasedProblem<S1, Q> problem1 = QualityBasedProblem.create(
-        s1 -> problem.qualityFunction().apply(solutionAggregator.apply(s1, representative2)),
+        s1 -> problem.qualityFunction().apply(solutionAggregator.apply(s1, representative2.solution())),
         problem.qualityComparator()
     );
     QualityBasedProblem<S2, Q> problem2 = QualityBasedProblem.create(
-        s2 -> problem.qualityFunction().apply(solutionAggregator.apply(representative1, s2)),
+        s2 -> problem.qualityFunction().apply(solutionAggregator.apply(representative1.solution(), s2)),
         problem.qualityComparator()
     );
     // TODO get all evaluated individuals and add them to the state
@@ -118,14 +118,14 @@ public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 ex
     QualityBasedProblem<S2, Q> dummyProblem2 = QualityBasedProblem.create(s2 -> null, (q1, q2) -> PartialComparator.PartialComparatorOutcome.SAME);
     T1 state1 = firstSolver.init(dummyProblem1, random, executor);
     T2 state2 = secondSolver.init(dummyProblem2, random, executor);
-    S1 representative1 = firstRepresentativeExtractor.apply(state1);
-    S2 representative2 = secondRepresentativeExtractor.apply(state2);
+    Individual<G1,S1,Q> representative1 = firstRepresentativeExtractor.apply(state1);
+    Individual<G2,S2,Q> representative2 = secondRepresentativeExtractor.apply(state2);
     QualityBasedProblem<S1, Q> problem1 = QualityBasedProblem.create(
-        s1 -> problem.qualityFunction().apply(solutionAggregator.apply(s1, representative2)),
+        s1 -> problem.qualityFunction().apply(solutionAggregator.apply(s1, representative2.solution())),
         problem.qualityComparator()
     );
     QualityBasedProblem<S2, Q> problem2 = QualityBasedProblem.create(
-        s2 -> problem.qualityFunction().apply(solutionAggregator.apply(representative1, s2)),
+        s2 -> problem.qualityFunction().apply(solutionAggregator.apply(representative1.solution(), s2)),
         problem.qualityComparator()
     );
     return new CooperativeState<>(
