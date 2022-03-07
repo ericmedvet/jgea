@@ -147,8 +147,8 @@ public class Example extends Worker {
     );
     QualityBasedProblem<BitString, Double> problem = new OneMax();
 
-    Listener<CooperativeSolver.CooperativeState<POSetPopulationState<BitString, BitString, Double>, POSetPopulationState<BitString, BitString, Double>,
-        BitString, BitString, BitString, BitString, Double>> stateListener = state ->
+    Listener<CooperativeSolver.State<POSetPopulationState<BitString, BitString, Double>, POSetPopulationState<BitString, BitString, Double>,
+        BitString, BitString, BitString, BitString, BitString, Double>> stateListener = state ->
         System.out.printf("%d\t%d\t%1.3f\t%1.3f\n", state.getNOfIterations(), state.getNOfFitnessEvaluations(), state.firstBest().fitness(), state.secondBest().fitness());
 
     try {
