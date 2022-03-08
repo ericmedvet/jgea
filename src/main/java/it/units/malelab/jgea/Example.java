@@ -133,8 +133,9 @@ public class Example extends Worker {
     );
     Random r = new Random(1);
     BiFunction<BitString, BitString, BitString> aggregator = BitString::append;
-    Function<POSetPopulationState<BitString, BitString, Double>, Individual<BitString, BitString, Double>> representativeExtractor = s ->
-        Misc.first(s.getPopulation().firsts());
+    Function<POSetPopulationState<BitString, BitString, Double>, Collection<Individual<BitString, BitString, Double>>> representativeExtractor = s ->
+        s.getPopulation().firsts();
+    Function<Collection<Double>, Double> qualitiesAggregator = l -> l.stream().findFirst().get();
     CooperativeSolver<
         POSetPopulationState<BitString, BitString, Double>, POSetPopulationState<BitString, BitString, Double>,
         BitString, BitString, BitString, BitString, QualityBasedProblem<BitString, Double>, BitString, Double> cooperativeSolver = new CooperativeSolver<>(
@@ -143,6 +144,7 @@ public class Example extends Worker {
         aggregator,
         representativeExtractor,
         representativeExtractor,
+        qualitiesAggregator,
         StopConditions.nOfIterations(100)
     );
     QualityBasedProblem<BitString, Double> problem = new OneMax();

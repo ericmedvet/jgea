@@ -11,11 +11,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
+import java.util.stream.IntStream;
 
 public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 extends POSetPopulationState<G2, S2, Q>,
     G1, G2, S1, S2, P extends QualityBasedProblem<S, Q>, S, Q> extends
@@ -25,21 +27,25 @@ public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 ex
   private final AbstractPopulationIterativeBasedSolver<T2, QualityBasedProblem<S2, Q>, G2, S2, Q> secondSolver;
   private final BiFunction<S1, S2, S> solutionAggregator;
   // TODO check if I can re-use selectors
-  private final Function<T1, Individual<G1, S1, Q>> firstRepresentativeExtractor;
-  private final Function<T2, Individual<G2, S2, Q>> secondRepresentativeExtractor;
+  private final Function<T1, Collection<Individual<G1, S1, Q>>> firstRepresentativeExtractor;
+  private final Function<T2, Collection<Individual<G2, S2, Q>>> secondRepresentativeExtractor;
+  private final Function<Collection<Q>, Q> qualitiesAggregator;
 
-  public CooperativeSolver(AbstractPopulationIterativeBasedSolver<T1, QualityBasedProblem<S1, Q>, G1, S1, Q> firstSolver, AbstractPopulationIterativeBasedSolver<T2, QualityBasedProblem<S2, Q>, G2, S2, Q> secondSolver, BiFunction<S1, S2, S> solutionAggregator, Function<T1, Individual<G1, S1, Q>> firstRepresentativeExtractor, Function<T2, Individual<G2, S2, Q>> secondRepresentativeExtractor, Predicate<? super State<T1, T2, G1, G2, S1, S2, S, Q>> stopCondition) {
-    super(
-        null,
-        null,
-        0,
-        stopCondition
-    );
+  public CooperativeSolver(AbstractPopulationIterativeBasedSolver<T1, QualityBasedProblem<S1, Q>, G1, S1, Q> firstSolver,
+                           AbstractPopulationIterativeBasedSolver<T2, QualityBasedProblem<S2, Q>, G2, S2, Q> secondSolver,
+                           BiFunction<S1, S2, S> solutionAggregator,
+                           Function<T1, Collection<Individual<G1, S1, Q>>> firstRepresentativeExtractor,
+                           Function<T2, Collection<Individual<G2, S2, Q>>> secondRepresentativeExtractor,
+                           Function<Collection<Q>, Q> qualitiesAggregator,
+                           Predicate<? super State<T1, T2, G1, G2, S1, S2, S, Q>> stopCondition
+  ) {
+    super(null, null, 0, stopCondition);
     this.firstSolver = firstSolver;
     this.secondSolver = secondSolver;
     this.solutionAggregator = solutionAggregator;
     this.firstRepresentativeExtractor = firstRepresentativeExtractor;
     this.secondRepresentativeExtractor = secondRepresentativeExtractor;
+    this.qualitiesAggregator = qualitiesAggregator;
   }
 
   public static class State<T1 extends POSetPopulationState<G1, S1, Q>, T2 extends POSetPopulationState<G2, S2, Q>,
@@ -91,7 +97,6 @@ public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 ex
 
   @Override
   protected State<T1, T2, G1, G2, S1, S2, S, Q> initState(P problem, RandomGenerator random, ExecutorService executor) {
-    // TODO check!
     return null;
   }
 
@@ -99,26 +104,28 @@ public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 ex
   public State<T1, T2, G1, G2, S1, S2, S, Q> init(P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
     QualityBasedProblem<S1, Q> dummyProblem1 = QualityBasedProblem.create(s1 -> null, (q1, q2) -> PartialComparator.PartialComparatorOutcome.SAME);
     QualityBasedProblem<S2, Q> dummyProblem2 = QualityBasedProblem.create(s2 -> null, (q1, q2) -> PartialComparator.PartialComparatorOutcome.SAME);
-    Individual<G1, S1, Q> representative1 = firstRepresentativeExtractor.apply(firstSolver.init(dummyProblem1, random, executor));
-    Individual<G2, S2, Q> representative2 = secondRepresentativeExtractor.apply(secondSolver.init(dummyProblem2, random, executor));
+    Collection<Individual<G1, S1, Q>> representatives1 = firstRepresentativeExtractor.apply(firstSolver.init(dummyProblem1, random, executor));
+    Collection<Individual<G2, S2, Q>> representatives2 = secondRepresentativeExtractor.apply(secondSolver.init(dummyProblem2, random, executor));
     Collection<Individual<Void, S, Q>> evaluatedIndividuals = Collections.synchronizedCollection(new ArrayList<>());
     QualityBasedProblem<S1, Q> problem1 = QualityBasedProblem.create(
         s1 -> {
-          S solution = solutionAggregator.apply(s1, representative2.solution());
-          Q quality = problem.qualityFunction().apply(solution);
-          Individual<Void, S, Q> individual = new Individual<>(null, solution, quality, 0, 0);
-          evaluatedIndividuals.add(individual);
-          return quality;
+          List<S> solutions = representatives2.stream().map(s2 -> solutionAggregator.apply(s1, s2.solution())).toList();
+          List<Q> qualities = solutions.stream().map(s -> problem.qualityFunction().apply(s)).toList();
+          IntStream.range(0, solutions.size()).forEach(i ->
+              evaluatedIndividuals.add(new Individual<>(null, solutions.get(i), qualities.get(i), 0, 0))
+          );
+          return qualitiesAggregator.apply(qualities);
         },
         problem.qualityComparator()
     );
     QualityBasedProblem<S2, Q> problem2 = QualityBasedProblem.create(
         s2 -> {
-          S solution = solutionAggregator.apply(representative1.solution(), s2);
-          Q quality = problem.qualityFunction().apply(solution);
-          Individual<Void, S, Q> individual = new Individual<>(null, solution, quality, 0, 0);
-          evaluatedIndividuals.add(individual);
-          return quality;
+          List<S> solutions = representatives1.stream().map(s1 -> solutionAggregator.apply(s1.solution(), s2)).toList();
+          List<Q> qualities = solutions.stream().map(s -> problem.qualityFunction().apply(s)).toList();
+          IntStream.range(0, solutions.size()).forEach(i ->
+              evaluatedIndividuals.add(new Individual<>(null, solutions.get(i), qualities.get(i), 0, 0))
+          );
+          return qualitiesAggregator.apply(qualities);
         },
         problem.qualityComparator()
     );
@@ -131,27 +138,28 @@ public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 ex
 
   @Override
   public void update(P problem, RandomGenerator random, ExecutorService executor, State<T1, T2, G1, G2, S1, S2, S, Q> state) throws SolverException {
-    // TODO change to list of representatives and average or median of fitness
-    Individual<G1, S1, Q> representative1 = firstRepresentativeExtractor.apply(state.firstState);
-    Individual<G2, S2, Q> representative2 = secondRepresentativeExtractor.apply(state.secondState);
+    Collection<Individual<G1, S1, Q>> representatives1 = firstRepresentativeExtractor.apply(state.firstState);
+    Collection<Individual<G2, S2, Q>> representatives2 = secondRepresentativeExtractor.apply(state.secondState);
     Collection<Individual<Void, S, Q>> evaluatedIndividuals = Collections.synchronizedCollection(new ArrayList<>());
     QualityBasedProblem<S1, Q> problem1 = QualityBasedProblem.create(
         s1 -> {
-          S solution = solutionAggregator.apply(s1, representative2.solution());
-          Q quality = problem.qualityFunction().apply(solution);
-          Individual<Void, S, Q> individual = new Individual<>(null, solution, quality, state.getNOfIterations(), state.getNOfIterations());
-          evaluatedIndividuals.add(individual);
-          return quality;
+          List<S> solutions = representatives2.stream().map(s2 -> solutionAggregator.apply(s1, s2.solution())).toList();
+          List<Q> qualities = solutions.stream().map(s -> problem.qualityFunction().apply(s)).toList();
+          IntStream.range(0, solutions.size()).forEach(i ->
+              evaluatedIndividuals.add(new Individual<>(null, solutions.get(i), qualities.get(i), 0, 0))
+          );
+          return qualitiesAggregator.apply(qualities);
         },
         problem.qualityComparator()
     );
     QualityBasedProblem<S2, Q> problem2 = QualityBasedProblem.create(
         s2 -> {
-          S solution = solutionAggregator.apply(representative1.solution(), s2);
-          Q quality = problem.qualityFunction().apply(solution);
-          Individual<Void, S, Q> individual = new Individual<>(null, solution, quality, state.getNOfIterations(), state.getNOfIterations());
-          evaluatedIndividuals.add(individual);
-          return quality;
+          List<S> solutions = representatives1.stream().map(s1 -> solutionAggregator.apply(s1.solution(), s2)).toList();
+          List<Q> qualities = solutions.stream().map(s -> problem.qualityFunction().apply(s)).toList();
+          IntStream.range(0, solutions.size()).forEach(i ->
+              evaluatedIndividuals.add(new Individual<>(null, solutions.get(i), qualities.get(i), 0, 0))
+          );
+          return qualitiesAggregator.apply(qualities);
         },
         problem.qualityComparator()
     );
