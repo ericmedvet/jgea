@@ -133,8 +133,7 @@ public class Example extends Worker {
     );
     Random r = new Random(1);
     BiFunction<BitString, BitString, BitString> aggregator = BitString::append;
-    Function<POSetPopulationState<BitString, BitString, Double>, Collection<Individual<BitString, BitString, Double>>> representativeExtractor = s ->
-        s.getPopulation().firsts();
+    CooperativeSolver.Selector<Individual<BitString, BitString, Double>> selector = (p, rnd) -> p.firsts();
     Function<Collection<Double>, Double> qualitiesAggregator = l -> l.stream().findFirst().get();
     CooperativeSolver<
         POSetPopulationState<BitString, BitString, Double>, POSetPopulationState<BitString, BitString, Double>,
@@ -142,8 +141,8 @@ public class Example extends Worker {
         solver,
         solver,
         aggregator,
-        representativeExtractor,
-        representativeExtractor,
+        selector,
+        selector,
         qualitiesAggregator,
         StopConditions.nOfIterations(100)
     );
