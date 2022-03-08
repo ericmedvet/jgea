@@ -150,7 +150,7 @@ public class Example extends Worker {
 
     Listener<CooperativeSolver.State<POSetPopulationState<BitString, BitString, Double>, POSetPopulationState<BitString, BitString, Double>,
         BitString, BitString, BitString, BitString, BitString, Double>> stateListener = state ->
-        System.out.printf("%d\t%d\t%1.3f\t%1.3f\n", state.getNOfIterations(), state.getNOfFitnessEvaluations(), state.firstBest().fitness(), state.secondBest().fitness());
+        System.out.printf("%d\t%d\t%1.3f\t%1.3f\n", state.getNOfIterations(), state.getNOfFitnessEvaluations(), state.best1().fitness(), state.best2().fitness());
 
     try {
       cooperativeSolver.solve(problem, r, executorService, stateListener);
