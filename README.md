@@ -108,7 +108,7 @@ In the example below, it is shown how to use listener to print on the standard o
 
 JGEA contains a few significative EAs, i.e., classes implementing `IterativeSolver`.
 
-One, that is at the same time pretty standard and a template that can be realized in many ways depending on the parameters, is `StanderdEvolver`, that corresponds to a *mu + lamda* (or *mu, lambda*, depending on the parameter `overlapping`) *generational model* (see [[1]](#references)).
+One, that is at the same time pretty standard and a template that can be realized in many ways depending on the parameters, is `StanderdEvolver`, that corresponds to a *&mu; + &lambda;* (or *&mu;, &lambda;*, depending on the parameter `overlapping`) *generational model* (see [[1]](#references)).
 `StandardEvolver` parameters are set using the only class constructor: names of the parameters indicate the corresponding meaning.
 
 ```java
