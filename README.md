@@ -10,7 +10,7 @@ Several research papers have been published in which the experimental evaluation
 
 ## Main components
 
-Typical usage of JGEA consists in try to solve a **problem** using an **EA**.
+Typical usage of JGEA consists in trying to solve a **problem** using an **EA**.
 
 ### Problem
 
@@ -32,7 +32,7 @@ public interface QualityBasedProblem<S, Q> extends Problem<S> {
 
 Here, `Q` represents the *quality space* (or *fitness space*).
 
-JGEA includes many realization of this abstract definition, i.e., other interfaces that extends `QualityBasedProblem` and implementations (possibly `abstract`) of these interfaces.
+JGEA includes many realization of this abstract definition, i.e., other interfaces that extend `QualityBasedProblem` and implementations (possibly `abstract`) of these interfaces.
 
 For example, there is a class representing the OneMax problem:
 
@@ -44,7 +44,7 @@ public class OneMax implements ComparableQualityBasedProblem<BitString, Double> 
 
 where the solution space is the one of `BitString`s and the quality space is the one of `Double`s.
 
-There are other interfaces extending `QualityBasedProblem` that model more specific classes of problems. For example, there is class representing, in general, a classification problem:
+There are other interfaces extending `QualityBasedProblem` that model more specific classes of problems. For example, there is a class representing, in general, a classification problem:
 
 ```java
 public class ClassificationProblem<O, L extends Enum<L>> implements ProblemWithValidation<Classifier<O, L>,
@@ -67,7 +67,7 @@ public interface Solver<P extends Problem<S>, S> {
 }
 ```
 
-The unique ability of a `Solver` is to solve a problem `P`. The return value of `solve()` is a collection of solutions: depending on the solver and on the problem, this collection might be composed of a single solution, i.e., the best solution, or a more than one solutions.
+The unique ability of a `Solver` is to solve a problem `P`. The return value of `solve()` is a collection of solutions: depending on the solver and on the problem, this collection might be composed of a single solution, i.e., the best solution, or of multiple solutions.
 
 In general, an implementation of a solver might be able to solve only a subset of the possible problems, i.e., only problems of a given type, here representated by `P`, e.g., `QualityBasedProblem<S, Double>`.
 
@@ -90,11 +90,11 @@ public interface IterativeSolver<T extends Copyable, P extends Problem<S>, S> ex
 }
 ```
 
-Intuitively, an `IterativeSolver` evolves a state `T` across iterations starting from an initial value. In the practical case of **evolutionary algorithms** (EAs) the state usually contains also the *population of individuals*. The trajectory of the state during the solution problems can be monitored by a `Listener`, that has to be passed to `solve()`.
+Intuitively, an `IterativeSolver` evolves a state `T` across iterations starting from an initial value. In the practical case of **evolutionary algorithms** (EAs) the state usually contains also the *population of individuals*. The trajectory of the state during the solution of problems can be monitored by a `Listener`, that has to be passed to `solve()`.
 
 #### Listeners
 
-Listeners are a key component of JGEA. They main use is to monitor the evolution by extracting some information and printing it somewhere. Typical information of interest is, at each iteration of the EA:
+Listeners are a key component of JGEA. Their main use is to monitor the evolution by extracting some information and printing it somewhere. Typical information of interest is, at each iteration of the EA:
 
 - the size of the population
 - the diversity in the population
@@ -106,7 +106,7 @@ In the example below, it is shown how to use listener to print on the standard o
 
 #### Implemented EAs
 
-JGEA contains a few significatives EAs, i.e., classes implementing `IterativeSolver`.
+JGEA contains a few significative EAs, i.e., classes implementing `IterativeSolver`.
 
 One, that is at the same time pretty standard and a template that can be realized in many ways depending on the parameters, is `StanderdEvolver`, that corresponds to a *mu + lamda* (or *mu, lambda*, depending on the parameter `overlapping`) *generational model* (see [[1]](#references)).
 `StandardEvolver` parameters are set using the only class constructor: names of the parameters indicate the corresponding meaning.
@@ -206,7 +206,7 @@ public class Example {
 }
 ```
 
-Methods inside the constructor of `TabularPrinter` are static methods of the class `NamedFunctions` that returns functions that take an evolution `Event` and returns an object that will be printed as a table cell.
+Methods inside the constructor of `TabularPrinter` are static methods of the class `NamedFunctions` that return functions that take an evolution `Event` and return an object that will be printed as a table cell.
 
 ## Research papers based on JGEA
 
