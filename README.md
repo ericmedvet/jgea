@@ -6,82 +6,99 @@ JGEA aims at providing a general interface to potentially *all* evolutionary alg
 
 Moreover, a few EA are actually implemented in JGEA, most of them being related to Genetic Programming (GP) and its Grammar-guided variants (G3P).
 
-Several research papers have been published in which the experimental evaluation is based on JGEA or its previous version [evolved-ge](https://github.com/ericmedvet/evolved-ge). See a partial [list](#research-papers-based-on-jgea) below
+Several research papers have been published in which the experimental evaluation is based on JGEA or its previous version [evolved-ge](https://github.com/ericmedvet/evolved-ge). See a partial [list](#research-papers-based-on-jgea) below.
 
 ## Main components
 
-Typical usage of JGEA consists in try to solve a **problem** using an **EA**.
+Typical usage of JGEA consists in trying to solve a **problem** using an **EA**.
 
 ### Problem
 
-The problem is described by a class implementing the `Problem` interface.
-`Problem` is parametrized with two types that conceptually represent the solution space and the fitness space, i.e., the space of the quality of the solutions:
+The problem is described by a class implementing the `Problem` interface. A problem simply defines the *solution space*, by using a generics `S`, and a way to compare two solutions, by extending the `PartialComparator<S>` interface.
 
 ```java
-public interface Problem<S, F> {
-  Function<S, F> getFitnessFunction();
+public interface Problem<S> extends PartialComparator<S> {}
+```
+
+Most problems actually define also a space for the quality of the solutions and a way to compute the quality given a solution, on the assumption that solutions are compared by comparing the fitness. This kind of problems is described by classes implementing the `QualityBasedProblem` interface.
+
+```java
+public interface QualityBasedProblem<S, Q> extends Problem<S> {
+  PartialComparator<Q> qualityComparator();
+
+  Function<S, Q> qualityFunction();
 }
 ```
 
-A `Problem` is hence defined by the solution space `S`, the fitness space `F` and a fitness function from `S` to `F`.
+Here, `Q` represents the *quality space* (or *fitness space*).
 
-JGEA includes many realization of this abstract definition, i.e., other interfaces that extends `Problem` and implementations (possibly `abstract`) of these interfaces.
+JGEA includes many realization of this abstract definition, i.e., other interfaces that extend `QualityBasedProblem` and implementations (possibly `abstract`) of these interfaces.
 
 For example, there is a class representing the OneMax problem:
 
 ```java
-public class OneMax implements Problem<BitString, Double> { /* ... */}
-```
-
-where the solution space is the one of `BitString`s and the fitness space is the one of `Double`s.
-
-There are other interfaces extending `Problem` that model more specific classes of problems. For example, there is an `abstract` class representing, in general, a classification problem:
-
-```java
-public abstract class AbstractClassificationProblem<C, O, E extends Enum<E>> implements ProblemWithValidation<C, List<Double>>, BiFunction<C, O, E> { /* ... */}
-```
-
-where `C` is the space of classifiers, `O` is the space of observations (or instances, or data points, in supervised learning jargon), `E` is the space of labels (or responses, or outputs).
-
-### Evolutionary Algorithm (EA)
-
-The EA is described by a class implementing the `Evolver` interface.
-`Evolver` is parametrized with three types that potentially represent the genotype (`G`), solution (`S`), and fitness (`F`) spaces:
-
-```java
-
-public interface Evolver<G, S, F> {
-  Collection<S> solve(
-      Function<S, F> fitnessFunction,
-      Predicate<? super Event<G, S, F>> stopCondition,
-      Random random,
-      ExecutorService executor,
-      Listener<? super Event<G, S, F>> listener
-  ) throws InterruptedException, ExecutionException;
+public class OneMax implements ComparableQualityBasedProblem<BitString, Double> {
+  /* ... */
 }
 ```
 
-In general, any `Evolver` can be used to solve any `Problem` with suitable `S`, `F` by invoking `solve()` on the problem fitness function. The genotype space `G` is the one in which the search is actually performed by applying the genetic operators: items in `G` are mapped to items in `S`, i.e., to solutions, with a mapper, that, when required, is one of the parameters of the EA, that are fields of the class implementing `Evolver` in JGEA. Note that some EAs might support only the case in which `G` = `S`; other my constraint `G` or `S` or both to be a given type (e.g., `List<Double>`).
+where the solution space is the one of `BitString`s and the quality space is the one of `Double`s.
 
-An `Evolver` solves a problem when the `solve()` method is invoked; that is, invoking `solve()` corresponds to performing an **evolutionary run** (also called evolutionary search or simply evolution).
+There are other interfaces extending `QualityBasedProblem` that model more specific classes of problems. For example, there is a class representing, in general, a classification problem:
 
-Besides the `Problem` parameter, whose role is obvious, this methods takes as input also a `Predicate`, a `Random`, an `ExecutorService`, and a `Listener`.
+```java
+public class ClassificationProblem<O, L extends Enum<L>> implements ProblemWithValidation<Classifier<O, L>,
+    List<Double>> {
+  /* ... */
+}
+```
 
-- The `Predicate` instance represents a termination criterion (possibly the conjuction or disjunction of other predicates). Many EAs are iterative and support, in general, various termination conditions. However, some EAs might not use, or need, a termination criterion.
-- The `Random` instance is used for all the random choices, hence allowing for repeatability of the experimentation.
+where `O` is the space of observations (or instances, or data points, in supervised learning jargon), `L` is the space of labels (or responses, or outputs), and `Classifier<O, L>` is the space of solutions. Here, the quality space is given by `List<Double>` because we model the quality of a classifier with potentially more than one indexes (i.e., not necessarily only the accuracy).
+
+### Solver
+
+A problem can be solved by a `Solver`:
+
+```java
+public interface Solver<P extends Problem<S>, S> {
+  Collection<S> solve(
+      P problem, RandomGenerator random, ExecutorService executor
+  ) throws SolverException;
+}
+```
+
+The unique ability of a `Solver` is to solve a problem `P`. The return value of `solve()` is a collection of solutions: depending on the solver and on the problem, this collection might be composed of a single solution, i.e., the best solution, or of multiple solutions.
+
+In general, an implementation of a solver might be able to solve only a subset of the possible problems, i.e., only problems of a given type, here representated by `P`, e.g., `QualityBasedProblem<S, Double>`.
+
+The `solve()` method takes, besides the problem, a `RandomGenerator` and an `ExecutorService`, because a solver can be, in general, non-deterministic and capable of exploiting concurrency.
+
+- The `RandomGenerator` instance is used for all the random choices, hence allowing for repeatability of the experimentation.
   **Note**: reproducibility, i.e., obtaining the same results in the same conditions, is not a direct consequence of repeatability if some conditions are not satisfied. JGEA attempts to meet all of these conditions: however, executing an evolutionary run with some parallelism leads in general to not meeting one condition.
 - The `ExecutorService` instance is used for distributing computation (usually, of the fitness of candidate solutions) across different workers of the executor.
-- The `Listener` instance is used for notifying about important events during the evolution.
 
-The return value of `solve()` is a collection of solutions: depending on the EA and on the problem, this collection might be composed of a single solution, i.e., the best solution found by the EA, or a more than one solutions.
+Most of the solvers are iterative, i.e., the build solutions based on an iterative process.
+
+```java
+public interface IterativeSolver<T extends Copyable, P extends Problem<S>, S> extends Solver<P, S> {
+  /* ... */
+  default Collection<S> solve(
+      P problem, RandomGenerator random, ExecutorService executor, Listener<? super T> listener
+  ) throws SolverException {
+    /* ... */
+  }
+}
+```
+
+Intuitively, an `IterativeSolver` evolves a state `T` across iterations starting from an initial value. In the practical case of **evolutionary algorithms** (EAs) the state usually contains also the *population of individuals*. The trajectory of the state during the solution of problems can be monitored by a `Listener`, that has to be passed to `solve()`.
 
 #### Listeners
 
-Listeners are a key component of JGEA. They main use is to monitor the evolution by extracting some information and printing it somewhere. Typical information of interest is, at each iteration of the EA:
+Listeners are a key component of JGEA. Their main use is to monitor the evolution by extracting some information and printing it somewhere. Typical information of interest is, at each iteration of the EA:
 
 - the size of the population
 - the diversity in the population
-- the fitness (a `F`) of the best individual
+- the quality (a `Q`) of the best individual
 - the best individual (a `S`)
 - some function of the best individual
 
@@ -89,39 +106,55 @@ In the example below, it is shown how to use listener to print on the standard o
 
 #### Implemented EAs
 
-JGEA contains a few significatives EAs, i.e., classes implementing `Evolver`.
+JGEA contains a few significative EAs, i.e., classes implementing `IterativeSolver`.
 
-One, that is at the same time pretty standard and a template that can be realized in many ways depending on the parameters, is `StanderdEvolver`, that corresponds to a *mu + lamda* (or *mu, lambda*, depending on the parameter `overlapping`) *generational model* (see [[1]](#references)).
+One, that is at the same time pretty standard and a template that can be realized in many ways depending on the parameters, is `StanderdEvolver`, that corresponds to a *&mu; + &lambda;* (or *&mu;, &lambda;*, depending on the parameter `overlapping`) *generational model* (see [[1]](#references)).
 `StandardEvolver` parameters are set using the only class constructor: names of the parameters indicate the corresponding meaning.
 
 ```java
-public class StandardEvolver<G, S, F> extends AbstractIterativeEvolver<G, S, F> {
+public class StandardEvolver<T extends POSetPopulationState<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q> extends AbstractPopulationIterativeBasedSolver<T, P, G, S, Q> {
+
   public StandardEvolver(
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
-      PartialComparator<? super Individual<G, S, F>> individualComparator,
       int populationSize,
+      Predicate<? super T> stopCondition,
       Map<GeneticOperator<G>, Double> operators,
-      Selector<? super Individual<? super G, ? super S, ? super F>> parentSelector,
-      Selector<? super Individual<? super G, ? super S, ? super F>> unsurvivalSelector,
+      Selector<? super Individual<? super G, ? super S, ? super Q>> parentSelector,
+      Selector<? super Individual<? super G, ? super S, ? super Q>> unsurvivalSelector,
       int offspringSize,
       boolean overlapping,
-      boolean remap
-  ) { /* ... */}
+      boolean remap,
+      BiFunction<P, RandomGenerator, T> stateInitializer
+  ) {
+    /* ... */
+  }
 }
 ```
 
 `StandardEvolver` automatically exploits parallelism using the `ExecutorService` parameter of `solve()`.
 
-`Selector` represents a selection criterion: it is a functional interface with a method `select()` that takes a partially ordered set ([poset](https://en.wikipedia.org/wiki/Partially_ordered_set)) and returns, possibly stochastically, an element.
+`POSetPopulationState` is a state that includes the population, in the form of a partially ordered set ([poset](https://en.wikipedia.org/wiki/Partially_ordered_set)).
 
 ```java
-public interface Selector<T> {
-  <K extends T> K select(PartiallyOrderedCollection<K> ks, Random random);
+public class POSetPopulationState<G, S, F> extends State {
+  protected long nOfBirths;
+  protected long nOfFitnessEvaluations;
+  protected PartiallyOrderedCollection<Individual<G, S, F>> population;
+  /* ... */
 }
 ```
 
-JGEA uses `PartialComparator` and `PartiallyOrderedCollection` instead of the standard JDK interfaces `Comparator` and `Collection` because the latter represent a total ordering, whereas there are many cases where the EA does not assume a total ordering among candidate solutions. Note that the `PartialComparator` is a parameter of an EA, rather than part of the definition of a `Problem` because different ranking criteria can be used on individuals rather than just quality. For example, one may want to solve a *symbolic regression* problem by ranking solutions according to Pareto dominance based on mean absolute error *and* complexity of the expression, both to be minimized.
+`Selector` represents a selection criterion: it is a functional interface with a method `select()` that takes a poset and returns, possibly stochastically, an element.
+
+```java
+public interface Selector<T> {
+  <K extends T> K select(PartiallyOrderedCollection<K> ks, RandomGenerator random);
+}
+
+```
+
+JGEA uses `PartialComparator` and `PartiallyOrderedCollection` instead of the standard JDK interfaces `Comparator` and `Collection` because the latter represent a total ordering, whereas there are many cases where the EA does not assume a total ordering among candidate solutions.
 
 ## Example
 
@@ -131,52 +164,56 @@ In this example, JGEA is used for solving the *parity problem* with the standard
 public class Example {
   public static void main(String[] args) {
     ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-    Random r = new Random(1);
-    GrammarBasedProblem<String, List<Tree<Element>>, Double> p = new EvenParity(8);
-    Evolver<Tree<String>, List<Tree<Element>>, Double> evolver = new StandardEvolver<>(
+    RandomGenerator r = new Random(1);
+    EvenParity p = new EvenParity(8);
+    IterativeSolver<POSetPopulationState<Tree<String>, List<Tree<Element>>, Double>, EvenParity, List<Tree<Element>>> solver = new StandardEvolver<>(
         new FormulaMapper(),
-        new RampedHalfAndHalf<>(3, 12, p.getGrammar()),
-        PartialComparator.from(Double.class).on(Individual::getFitness),
+        new GrammarRampedHalfAndHalf<>(3, 12, p.getGrammar()),
         100,
-        Map.of(
-            new StandardTreeCrossover<>(12), 0.8d,
-            new StandardTreeMutation<>(12, p.getGrammar()), 0.2d
-        ),
+        StopConditions.nOfIterations(100),
+        Map.of(new SameRootSubtreeCrossover<>(12), 0.8d, new GrammarBasedSubtreeMutation<>(12, p.getGrammar()), 0.2d),
         new Tournament(3),
-        new Worst(),
+        new Last(),
         100,
         true,
-        false
+        false,
+        (ep, tr) -> new POSetPopulationState<>()
     );
-    Listener.Factory<Event<?, ?, ? extends Double>> listenerFactory = new TabularPrinter<>(List.of(
-        iterations(),
-        births(),
-        elapsedSeconds(),
-        uniqueness().of(each(genotype())).of(all()),
-        size().of(solution()).of(best()),
-        birthIteration().of(best()),
-        fitness().reformat("%5.3f").of(best()),
-        hist(8).of(each(fitness())).of(all())
-    ));
-    Collection<List<Tree<Element>>> solutions = evolver.solve(
-        Misc.cached(p.getFitnessFunction(), 10000),
-        new Iterations(100),
+    ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Void> listenerFactory =
+        new TabularPrinter<>(List.of(
+            iterations(),
+            births(),
+            elapsedSeconds(),
+            size().of(all()),
+            size().of(firsts()),
+            size().of(lasts()),
+            uniqueness().of(each(genotype())).of(all()),
+            uniqueness().of(each(solution())).of(all()),
+            uniqueness().of(each(fitness())).of(all()),
+            size().of(genotype()).of(best()),
+            size().of(solution()).of(best()),
+            fitnessMappingIteration().of(best())
+        ), List.of());
+    Collection<List<Tree<Element>>> solutions = solver.solve(
+        p,
         r,
         executorService,
-        listenerFactory.build().deferred(executorService)
+        listenerFactory.build(null).deferred(executorService)
     );
-    System.out.printf("Found %d solutions with %s.%n", solutions.size(), evolver.getClass().getSimpleName());
+    System.out.printf("Found %d solutions with %s" + ".%n", solutions.size(), solver.getClass().getSimpleName());
     listenerFactory.shutdown();
   }
 }
 ```
 
-Methods inside the constructor of `TabularPrinter` are static methods of the class `NamedFunctions` that returns functions that take an evolution `Event` and returns an object that will be printed as a table cell.
+Methods inside the constructor of `TabularPrinter` are static methods of the class `NamedFunctions` that return functions that take an evolution `Event` and return an object that will be printed as a table cell.
 
 ## Research papers based on JGEA
 
 The list includes paper published from 2018 on.
 
+- Nadizar, Medvet, Miras; [On the Schedule for Morphological Development of Evolved Modular Soft Robots](https://medvet.inginf.units.it/publications/2022-c-nmm-schedule/); 25th European Conference on Genetic Programming (EuroGP); 2022
+- Indri, Bartoli, Medvet, Nenzi; [One-Shot Learning of Ensembles of Temporal Logic Formulas for Anomaly Detection in Cyber-Physical Systems](https://medvet.inginf.units.it/publications/2022-c-ibmn-one/); 25th European Conference on Genetic Programming (EuroGP); 2022
 - Ferigo, Iacca, Medvet, Pigozzi; [Evolving Hebbian Learning Rules in Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2021-p-fimp-evolving/); IEEE TechRxiv; 2021
 - Ferigo, Medvet, Iacca; [Optimizing the Sensory Apparatus of Voxel-based Soft Robots through Evolution and Babbling](https://medvet.inginf.units.it/publications/2021-j-fmi-optimizing/); Springer Nature Computer Science; 2021
 - Nadizar, Medvet, Nichele, Huse Ramstad, Pellegrino, Zullich; [Merging Pruning and Neuroevolution: towards Robust and Efficient Controllers for Modular Soft Robots](https://medvet.inginf.units.it/publications/2021-j-nmnhpz-merging/); Knowledge Engineering Review (KER); 2021
