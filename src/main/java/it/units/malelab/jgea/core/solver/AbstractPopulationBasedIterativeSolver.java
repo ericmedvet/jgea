@@ -17,7 +17,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
-public abstract class AbstractPopulationIterativeBasedSolver<T extends POSetPopulationState<G, S, Q>,
+public abstract class AbstractPopulationBasedIterativeSolver<T extends POSetPopulationState<G, S, Q>,
     P extends QualityBasedProblem<S, Q>, G, S, Q> implements IterativeSolver<T, P, S> {
 
   protected final Function<? super G, ? extends S> solutionMapper;
@@ -25,7 +25,7 @@ public abstract class AbstractPopulationIterativeBasedSolver<T extends POSetPopu
   protected final int populationSize;
   private final Predicate<? super T> stopCondition;
 
-  public AbstractPopulationIterativeBasedSolver(
+  public AbstractPopulationBasedIterativeSolver(
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       int populationSize,

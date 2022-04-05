@@ -19,7 +19,7 @@ import java.util.stream.IntStream;
 
 // source -> https://arxiv.org/pdf/1604.00772.pdf
 
-public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativeBasedSolver<CMAEvolutionaryStrategy.State<S, Q>, TotalOrderQualityBasedProblem<S, Q>, List<Double>, S, Q> {
+public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterativeSolver<CMAEvolutionaryStrategy.State<S, Q>, TotalOrderQualityBasedProblem<S, Q>, List<Double>, S, Q> {
 
   private static final Logger L = Logger.getLogger(CMAEvolutionaryStrategy.class.getName());
   private final int mu;

@@ -4,7 +4,7 @@ import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.QualityBasedProblem;
 import it.units.malelab.jgea.core.operator.Mutation;
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
-import it.units.malelab.jgea.core.solver.AbstractPopulationIterativeBasedSolver;
+import it.units.malelab.jgea.core.solver.AbstractPopulationBasedIterativeSolver;
 import it.units.malelab.jgea.core.solver.Individual;
 import it.units.malelab.jgea.core.solver.SolverException;
 import it.units.malelab.jgea.core.order.PartialComparator;
@@ -24,7 +24,7 @@ import java.util.stream.IntStream;
 /**
  * @author Giorgia
  */
-public class MapElites<G, P extends QualityBasedProblem<S, Q>, S, Q> extends AbstractPopulationIterativeBasedSolver<MapElites.State<G, S, Q>, P, G, S, Q> {
+public class MapElites<G, P extends QualityBasedProblem<S, Q>, S, Q> extends AbstractPopulationBasedIterativeSolver<MapElites.State<G, S, Q>, P, G, S, Q> {
 
   private final int batchSize;
   private final Mutation<G> mutation;

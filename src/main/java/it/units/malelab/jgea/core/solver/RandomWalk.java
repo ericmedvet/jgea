@@ -33,7 +33,7 @@ import java.util.random.RandomGenerator;
 /**
  * @author eric
  */
-public class RandomWalk<P extends QualityBasedProblem<S, Q>, G, S, Q> extends AbstractPopulationIterativeBasedSolver<POSetPopulationState<G, S, Q>, P, G, S, Q> {
+public class RandomWalk<P extends QualityBasedProblem<S, Q>, G, S, Q> extends AbstractPopulationBasedIterativeSolver<POSetPopulationState<G, S, Q>, P, G, S, Q> {
 
   private final Mutation<G> mutation;
 

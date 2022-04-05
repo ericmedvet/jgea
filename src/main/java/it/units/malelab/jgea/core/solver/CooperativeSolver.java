@@ -21,17 +21,17 @@ import java.util.stream.IntStream;
 
 public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 extends POSetPopulationState<G2, S2, Q>,
     G1, G2, S1, S2, P extends QualityBasedProblem<S, Q>, S, Q> extends
-    AbstractPopulationIterativeBasedSolver<CooperativeSolver.State<T1, T2, G1, G2, S1, S2, S, Q>, P, Void, S, Q> {
+    AbstractPopulationBasedIterativeSolver<CooperativeSolver.State<T1, T2, G1, G2, S1, S2, S, Q>, P, Void, S, Q> {
 
-  private final AbstractPopulationIterativeBasedSolver<T1, QualityBasedProblem<S1, Q>, G1, S1, Q> solver1;
-  private final AbstractPopulationIterativeBasedSolver<T2, QualityBasedProblem<S2, Q>, G2, S2, Q> solver2;
+  private final AbstractPopulationBasedIterativeSolver<T1, QualityBasedProblem<S1, Q>, G1, S1, Q> solver1;
+  private final AbstractPopulationBasedIterativeSolver<T2, QualityBasedProblem<S2, Q>, G2, S2, Q> solver2;
   private final BiFunction<S1, S2, S> solutionAggregator;
   private final Selector<Individual<G1, S1, Q>> extractor1;
   private final Selector<Individual<G2, S2, Q>> extractor2;
   private final Function<Collection<Q>, Q> qualityAggregator;
 
-  public CooperativeSolver(AbstractPopulationIterativeBasedSolver<T1, QualityBasedProblem<S1, Q>, G1, S1, Q> solver1,
-                           AbstractPopulationIterativeBasedSolver<T2, QualityBasedProblem<S2, Q>, G2, S2, Q> solver2,
+  public CooperativeSolver(AbstractPopulationBasedIterativeSolver<T1, QualityBasedProblem<S1, Q>, G1, S1, Q> solver1,
+                           AbstractPopulationBasedIterativeSolver<T2, QualityBasedProblem<S2, Q>, G2, S2, Q> solver2,
                            BiFunction<S1, S2, S> solutionAggregator,
                            Selector<Individual<G1, S1, Q>> extractor1,
                            Selector<Individual<G2, S2, Q>> extractor2,

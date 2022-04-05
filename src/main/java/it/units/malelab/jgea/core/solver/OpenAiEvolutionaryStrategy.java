@@ -19,7 +19,7 @@ import java.util.stream.IntStream;
 // https://github.com/snolfi/evorobotpy2/blob/master/bin/openaies.py
 // https://arxiv.org/abs/1703.03864
 
-public class OpenAiEvolutionaryStrategy<S, Q> extends AbstractPopulationIterativeBasedSolver<OpenAiEvolutionaryStrategy.State<S, Q>, TotalOrderQualityBasedProblem<S, Q>, List<Double>, S, Q> {
+public class OpenAiEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterativeSolver<OpenAiEvolutionaryStrategy.State<S, Q>, TotalOrderQualityBasedProblem<S, Q>, List<Double>, S, Q> {
 
   private final int batchSize;
   private final double sigma;

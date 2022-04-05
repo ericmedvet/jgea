@@ -47,7 +47,7 @@ import java.util.stream.IntStream;
 // source -> https://doi.org/10.1109/4235.996017
 
 public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
-    extends AbstractPopulationIterativeBasedSolver<NsgaII.State<G, S>, P, G, S, List<Double>> {
+    extends AbstractPopulationBasedIterativeSolver<NsgaII.State<G, S>, P, G, S, List<Double>> {
 
   protected final Map<GeneticOperator<G>, Double> operators;
   private final boolean remap;

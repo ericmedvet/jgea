@@ -112,12 +112,61 @@ public class Example extends Worker {
     //runGrammarBasedParity();
     //runSphere();
     //runRastrigin();
-    runCooperativeOneMax();
+    //runCooperativeOneMax();
+    simpleOneMax();
+  }
+
+  public void simpleOneMax() {
+    int size = 1000;
+    Random r = new Random(1);
+    QualityBasedProblem<BitString, Double> p = new OneMax();
+    List<NamedFunction<? super POSetPopulationState<?, ?, ?>, ?>> keysFunctions = List.of();
+    ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
+        new TabularPrinter<>(
+            List.of(
+                iterations(),
+                births(),
+                elapsedSeconds(),
+                fitness().of(best())
+            ),
+            List.of(attribute("solver"))
+        );
+    List<IterativeSolver<? extends POSetPopulationState<?, BitString, Double>, QualityBasedProblem<BitString, Double>
+        , BitString>> solvers = new ArrayList<>();
+    solvers.add(new StandardEvolver<POSetPopulationState<BitString, BitString, Double>, QualityBasedProblem<BitString
+        , Double>, BitString, BitString, Double>(
+        Function.identity(),
+        new BitStringFactory(size),
+        100,
+        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
+        Map.of(new UniformCrossover<>(new BitStringFactory(size)), 0.8d, new BitFlipMutation(0.01d), 0.2d),
+        new Tournament(5),
+        new Last(),
+        100,
+        true,
+        false,
+        (problem, random) -> new POSetPopulationState<>()
+    ));
+    for (IterativeSolver<? extends POSetPopulationState<?, BitString, Double>, QualityBasedProblem<BitString, Double>
+        , BitString> evolver : solvers) {
+      try {
+        Collection<BitString> solutions = evolver.solve(
+            p,
+            r,
+            executorService,
+            listenerFactory.build(Map.of("solver", evolver.getClass().getSimpleName())).deferred(executorService)
+        );
+        System.out.printf("Found %d solutions with " + "%s.%n", solutions.size(), evolver.getClass().getSimpleName());
+      } catch (SolverException e) {
+        e.printStackTrace();
+      }
+    }
+    listenerFactory.shutdown();
   }
 
   public void runCooperativeOneMax() {
     int size = 1000;
-    AbstractPopulationIterativeBasedSolver<POSetPopulationState<BitString, BitString, Double>, QualityBasedProblem<BitString, Double>, BitString, BitString, Double> solver = new StandardEvolver<POSetPopulationState<BitString, BitString, Double>, QualityBasedProblem<BitString
+    AbstractPopulationBasedIterativeSolver<POSetPopulationState<BitString, BitString, Double>, QualityBasedProblem<BitString, Double>, BitString, BitString, Double> solver = new StandardEvolver<POSetPopulationState<BitString, BitString, Double>, QualityBasedProblem<BitString
         , Double>, BitString, BitString, Double>(
         Function.identity(),
         new BitStringFactory(size / 2),
