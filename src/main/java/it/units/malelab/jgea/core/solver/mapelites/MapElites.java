@@ -115,4 +115,11 @@ public class MapElites<G, P extends QualityBasedProblem<S, Q>, S, Q> extends Abs
     state.incNOfIterations();
     state.updateElapsedMillis();
   }
+
+  @Override
+  public Collection<S> extractSolutions(
+      P problem, RandomGenerator random, ExecutorService executor, State<G, S, Q> state
+  ) {
+    return state.mapOfElites.all().stream().map(Individual::solution).toList();
+  }
 }
