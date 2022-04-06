@@ -26,7 +26,6 @@ import java.util.stream.IntStream;
  */
 public class MapElites<G, P extends QualityBasedProblem<S, Q>, S, Q> extends AbstractPopulationBasedIterativeSolver<MapElites.State<G, S, Q>, P, G, S, Q> {
 
-  private final int batchSize;
   private final Mutation<G> mutation;
 
   private final Function<Individual<G, S, Q>, List<Double>> featuresExtractor;
@@ -36,7 +35,6 @@ public class MapElites<G, P extends QualityBasedProblem<S, Q>, S, Q> extends Abs
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       int populationSize,
-      int batchSize,
       Predicate<? super MapElites.State<G, S, Q>> stopCondition,
       Mutation<G> mutation,
       Function<Individual<G, S, Q>, List<Double>> featuresExtractor,
@@ -45,7 +43,6 @@ public class MapElites<G, P extends QualityBasedProblem<S, Q>, S, Q> extends Abs
       List<Double> featuresMaxValues
   ) {
     super(solutionMapper, genotypeFactory, populationSize, stopCondition);
-    this.batchSize = batchSize;
     this.mutation = mutation;
     this.featuresExtractor = featuresExtractor;
     features = MapOfElites.buildFeatures(featuresSizes, featuresMinValues, featuresMaxValues);
@@ -105,7 +102,7 @@ public class MapElites<G, P extends QualityBasedProblem<S, Q>, S, Q> extends Abs
   @Override
   public void update(P problem, RandomGenerator random, ExecutorService executor, State<G, S, Q> state) throws SolverException {
     List<G> allGenotypes = state.getPopulation().all().stream().filter(Objects::nonNull).map(Individual::genotype).toList();
-    Collection<G> offspringGenotypes = IntStream.range(0, batchSize)
+    Collection<G> offspringGenotypes = IntStream.range(0, populationSize)
         .mapToObj(i -> mutation.mutate(allGenotypes.get(random.nextInt(allGenotypes.size())), random)).toList();
     Collection<Individual<G, S, Q>> offspringIndividuals = map(offspringGenotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state);
 
