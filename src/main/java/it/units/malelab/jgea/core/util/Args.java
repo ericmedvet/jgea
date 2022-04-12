@@ -35,7 +35,7 @@ public class Args {
 
   public static String a(String[] args, String name, String defaultValue) {
     for (String arg : args) {
-      String[] pieces = arg.split(KEYVAL_SEP);
+      String[] pieces = arg.split(KEYVAL_SEP, 2);
       if (pieces[0].equals(name)) {
         return pieces[1];
       }
