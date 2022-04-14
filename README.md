@@ -212,6 +212,9 @@ Methods inside the constructor of `TabularPrinter` are static methods of the cla
 
 The list includes paper published from 2018 on.
 
+- Nadizar, Medvet, Nichele, Pontes-Filho; [Collective control of modular soft robots via embodied Spiking Neural Cellular Automata](https://medvet.inginf.units.it/publications/2022-c-nmnp-collective/); Workshop on From Cells to Societies: Collective Learning across Scales (Cells2Societies@ICLR); 2022
+- Pigozzi, Tang, Medvet, Ha; [Evolving Modular Soft Robots without Explicit Inter-Module Communication using Local Self-Attention](https://medvet.inginf.units.it/publications/2022-c-ptmh-evolving/); ACM Genetic and Evolutionary Computation Conference (GECCO); 2022
+- Pigozzi, Medvet; [Evolving Modularity in Soft Robots through an Embodied and Self-Organizing Neural Controller](https://medvet.inginf.units.it/publications/2022-j-pm-evolving/); Artificial Life, Q3; 2022
 - Nadizar, Medvet, Miras; [On the Schedule for Morphological Development of Evolved Modular Soft Robots](https://medvet.inginf.units.it/publications/2022-c-nmm-schedule/); 25th European Conference on Genetic Programming (EuroGP); 2022
 - Indri, Bartoli, Medvet, Nenzi; [One-Shot Learning of Ensembles of Temporal Logic Formulas for Anomaly Detection in Cyber-Physical Systems](https://medvet.inginf.units.it/publications/2022-c-ibmn-one/); 25th European Conference on Genetic Programming (EuroGP); 2022
 - Ferigo, Iacca, Medvet, Pigozzi; [Evolving Hebbian Learning Rules in Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2021-p-fimp-evolving/); IEEE TechRxiv; 2021
