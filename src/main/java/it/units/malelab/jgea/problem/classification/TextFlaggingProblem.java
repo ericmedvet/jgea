@@ -16,7 +16,6 @@
 
 package it.units.malelab.jgea.problem.classification;
 
-import it.units.malelab.jgea.core.fitness.ClassificationFitness;
 import it.units.malelab.jgea.core.util.Pair;
 
 import java.util.List;

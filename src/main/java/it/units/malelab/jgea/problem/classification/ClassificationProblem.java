@@ -17,7 +17,6 @@
 package it.units.malelab.jgea.problem.classification;
 
 import it.units.malelab.jgea.core.ProblemWithValidation;
-import it.units.malelab.jgea.core.fitness.ClassificationFitness;
 import it.units.malelab.jgea.core.order.ParetoDominance;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.util.Pair;
@@ -31,7 +30,8 @@ import java.util.List;
 public class ClassificationProblem<O, L extends Enum<L>> implements ProblemWithValidation<Classifier<O, L>,
     List<Double>> {
 
-  private final static PartialComparator<List<Double>> COMPARATOR = new ParetoDominance<>(Double.class);
+  // TODO fix this
+  private final static PartialComparator<List<Double>> COMPARATOR = ParetoDominance.build(Double.class, 1);
 
   private final ClassificationFitness<O, L> fitnessFunction;
   private final ClassificationFitness<O, L> validationFunction;

@@ -26,7 +26,7 @@ import java.util.random.RandomGenerator;
  * @author federico
  * DE/rand/1
  */
-public class DifferentialEvolution<S, Q> extends AbstractPopulationIterativeBasedSolver<POSetPopulationState<List<Double>, S, Q>, TotalOrderQualityBasedProblem<S, Q>, List<Double>, S, Q> {
+public class DifferentialEvolution<S, Q> extends AbstractPopulationBasedIterativeSolver<POSetPopulationState<List<Double>, S, Q>, TotalOrderQualityBasedProblem<S, Q>, List<Double>, S, Q> {
 
   private static final Logger L = Logger.getLogger(DifferentialEvolution.class.getName());
   protected final double differentialWeight;

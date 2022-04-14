@@ -44,7 +44,7 @@ import java.util.random.RandomGenerator;
 /**
  * @author eric
  */
-public class StandardEvolver<T extends POSetPopulationState<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q> extends AbstractPopulationIterativeBasedSolver<T, P, G, S, Q> {
+public class StandardEvolver<T extends POSetPopulationState<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q> extends AbstractPopulationBasedIterativeSolver<T, P, G, S, Q> {
 
   private static final Logger L = Logger.getLogger(StandardEvolver.class.getName());
   protected final Map<GeneticOperator<G>, Double> operators;
