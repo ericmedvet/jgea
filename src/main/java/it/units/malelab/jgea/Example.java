@@ -28,6 +28,7 @@ import it.units.malelab.jgea.representation.sequence.numeric.UniformDoubleFactor
 import it.units.malelab.jgea.representation.tree.SameRootSubtreeCrossover;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
@@ -61,6 +62,10 @@ public class Example extends Worker {
 
   public Example(String[] args) {
     super(args);
+  }
+
+  public static void main(String[] args) throws FileNotFoundException {
+    new Example(args);
   }
 
   @Override
