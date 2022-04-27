@@ -1,1 +1,11 @@
-theme: jekyll-theme-cayman
+remote_theme: just-the-docs/just-the-docs
+
+title: JGEA
+
+# Aux links for the upper right navigation
+aux_links:
+  "JGEA on GitHub":
+    - "//github.com/ericmedvet/jgea"
+
+# Makes Aux links open in a new tab. Default is false
+aux_links_new_tab: true
