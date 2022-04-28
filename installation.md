@@ -1,12 +1,14 @@
 ---
 layout: default
-title: Maven
-parent: Installation
-nav_order: 3
+title: Installation
+nav_order: 5
+has_children: true
+permalink: installation
 ---
 
-# Maven installation
+# Installation
 {: .no_toc }
+JGEA can be installed using Maven.
 
 ## Table of contents
 {: .no_toc .text-delta }
