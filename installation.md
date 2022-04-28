@@ -43,7 +43,7 @@ To include JGEA in your project edit its ``pom.xml`` adding the following depend
 
 ## Using the pre-packaged version
 
-Download the [zip file](https://link-url-here.org) and place it in the ``libs`` folder of your project.
+Download the [zip file](https://github.com/ericmedvet/jgea/releases/tag/v2.0.2) and place it in the ``libs`` folder of your project.
 
 Edit the ``pom.xml`` of your project adding the following dependency:
 ```xml
