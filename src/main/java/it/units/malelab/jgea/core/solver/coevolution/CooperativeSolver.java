@@ -1,9 +1,12 @@
-package it.units.malelab.jgea.core.solver;
+package it.units.malelab.jgea.core.solver.coevolution;
 
 import it.units.malelab.jgea.core.QualityBasedProblem;
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
+import it.units.malelab.jgea.core.solver.AbstractPopulationBasedIterativeSolver;
+import it.units.malelab.jgea.core.solver.Individual;
+import it.units.malelab.jgea.core.solver.SolverException;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.core.util.Misc;
 
@@ -26,15 +29,15 @@ public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 ex
   private final AbstractPopulationBasedIterativeSolver<T1, QualityBasedProblem<S1, Q>, G1, S1, Q> solver1;
   private final AbstractPopulationBasedIterativeSolver<T2, QualityBasedProblem<S2, Q>, G2, S2, Q> solver2;
   private final BiFunction<S1, S2, S> solutionAggregator;
-  private final Selector<Individual<G1, S1, Q>> extractor1;
-  private final Selector<Individual<G2, S2, Q>> extractor2;
+  private final CollaboratorSelector<Individual<G1, S1, Q>> extractor1;
+  private final CollaboratorSelector<Individual<G2, S2, Q>> extractor2;
   private final Function<Collection<Q>, Q> qualityAggregator;
 
   public CooperativeSolver(AbstractPopulationBasedIterativeSolver<T1, QualityBasedProblem<S1, Q>, G1, S1, Q> solver1,
                            AbstractPopulationBasedIterativeSolver<T2, QualityBasedProblem<S2, Q>, G2, S2, Q> solver2,
                            BiFunction<S1, S2, S> solutionAggregator,
-                           Selector<Individual<G1, S1, Q>> extractor1,
-                           Selector<Individual<G2, S2, Q>> extractor2,
+                           CollaboratorSelector<Individual<G1, S1, Q>> extractor1,
+                           CollaboratorSelector<Individual<G2, S2, Q>> extractor2,
                            Function<Collection<Q>, Q> qualityAggregator,
                            Predicate<? super State<T1, T2, G1, G2, S1, S2, S, Q>> stopCondition
   ) {
@@ -45,11 +48,6 @@ public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 ex
     this.extractor1 = extractor1;
     this.extractor2 = extractor2;
     this.qualityAggregator = qualityAggregator;
-  }
-
-  @FunctionalInterface
-  public interface Selector<K> {
-    Collection<K> select(PartiallyOrderedCollection<K> ks, RandomGenerator random);
   }
 
   public static class State<T1 extends POSetPopulationState<G1, S1, Q>, T2 extends POSetPopulationState<G2, S2, Q>,

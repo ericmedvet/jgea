@@ -37,6 +37,8 @@ import it.units.malelab.jgea.core.listener.TabularPrinter;
 import it.units.malelab.jgea.core.selector.Last;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.solver.*;
+import it.units.malelab.jgea.core.solver.coevolution.CollaboratorSelector;
+import it.units.malelab.jgea.core.solver.coevolution.CooperativeSolver;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.problem.booleanfunction.Element;
@@ -134,7 +136,7 @@ public class DirtyExamples extends Worker {
     );
     Random r = new Random(1);
     BiFunction<BitString, BitString, BitString> aggregator = BitString::append;
-    CooperativeSolver.Selector<Individual<BitString, BitString, Double>> selector = (p, rnd) -> p.firsts();
+    CollaboratorSelector<Individual<BitString, BitString, Double>> collaboratorSelector = (p, rnd) -> p.firsts();
     Function<Collection<Double>, Double> qualitiesAggregator = l -> l.stream().findFirst().get();
     CooperativeSolver<
         POSetPopulationState<BitString, BitString, Double>, POSetPopulationState<BitString, BitString, Double>,
@@ -142,8 +144,8 @@ public class DirtyExamples extends Worker {
         solver,
         solver,
         aggregator,
-        selector,
-        selector,
+        collaboratorSelector,
+        collaboratorSelector,
         qualitiesAggregator,
         StopConditions.nOfIterations(100)
     );
