@@ -61,7 +61,9 @@ public class RobustnessComparison extends Worker {
     int nIterations = i(a("nIterations", "100"));
     int nTournament = 5;
     int[] seeds = ri(a("seed", "0:1"));
-    String file = a("file", null);
+    boolean output = a("output", "true").startsWith("t");
+    String bestFile = a("bestFile", null);
+    String validationFile = a("validationFile", null);
     SymbolicRegressionFitness.Metric metric = SymbolicRegressionFitness.Metric.MSE;
     Element.Operator[] operators = Arrays.stream(Element.Operator.values())
         .filter(o -> o.arity() == 2).toArray(Element.Operator[]::new);
@@ -97,18 +99,21 @@ public class RobustnessComparison extends Worker {
             .toList())),
         attribute("evolver").reformat("%20.20s")
     );
-    ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
-        new TabularPrinter<>(
-            functions,
-            kFunctions
-        );
-    if (file != null) {
-      listenerFactory = ListenerFactory.all(List.of(
-          listenerFactory,
-          new CSVPrinter<>(functions, kFunctions, new File(a("file", null)))
-      ));
-    }
 
+    List<ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>>> listenerFactories =
+        new ArrayList<>();
+    if (bestFile == null || output) {
+      listenerFactories.add(new TabularPrinter<>(functions, kFunctions));
+    }
+    if (bestFile != null) {
+      listenerFactories.add(
+          new CSVPrinter<>(functions, kFunctions, new File(a("bestFile", null))));
+    }
+    if (validationFile != null) {
+      // TODO implement validation to test robustness
+    }
+    ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
+        ListenerFactory.all(listenerFactories);
 
     //evolvers
     Map<String, Function<SymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?, RealFunction,
