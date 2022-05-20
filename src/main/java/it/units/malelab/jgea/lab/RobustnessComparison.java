@@ -11,7 +11,6 @@ import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.solver.*;
 import it.units.malelab.jgea.core.solver.coevolution.CollaboratorSelector;
 import it.units.malelab.jgea.core.solver.coevolution.CooperativeSolver;
-import it.units.malelab.jgea.core.solver.coevolution.SingleCollaboratorSelectors;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.problem.symbolicregression.*;
 import it.units.malelab.jgea.representation.sequence.FixedLengthListFactory;
@@ -25,10 +24,11 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 
 import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
-import static it.units.malelab.jgea.core.util.Args.i;
-import static it.units.malelab.jgea.core.util.Args.ri;
+import static it.units.malelab.jgea.core.util.Args.*;
 
 public class RobustnessComparison extends Worker {
 
@@ -54,20 +54,28 @@ public class RobustnessComparison extends Worker {
     return vars;
   }
 
+  private static final Element.Operator[] OPERATORS = Arrays.stream(Element.Operator.values())
+      .filter(o -> o.arity() == 2).toArray(Element.Operator[]::new);
+  private static final double[] CONSTANTS = new double[]{0.1, 1d, 10d};
+
+  private static final String TOKEN_SEPARATOR = ";";
+  private static final String PARAM_VALUE_SEPARATOR = "=";
+  private static final String NAME_KEY = "NAME";
+
   @Override
   public void run() {
     int nPop = i(a("nPop", "100"));
     int height = i(a("height", "10"));
     int nIterations = i(a("nIterations", "100"));
     int nTournament = 5;
+    List<String> coopCoevoParams = l(a("params", "nPop=100;h=10;nIt=100;nTour=5;sel1=b;sel2=b;aggr=min"));
+
     int[] seeds = ri(a("seed", "0:1"));
     boolean output = a("output", "true").startsWith("t");
     String bestFile = a("bestFile", "best.txt");
     String validationFile = a("validationFile", "validation.txt");
     SymbolicRegressionFitness.Metric metric = SymbolicRegressionFitness.Metric.MSE;
-    Element.Operator[] operators = Arrays.stream(Element.Operator.values())
-        .filter(o -> o.arity() == 2).toArray(Element.Operator[]::new);
-    double[] constants = new double[]{0.1, 1d, 10d};
+
     List<SymbolicRegressionProblem> problems = List.of(
         new Keijzer6(metric)/*,
         new Pagie1(metric),
@@ -138,7 +146,7 @@ public class RobustnessComparison extends Worker {
               .sequential()
               .map(Element.Variable::new)
               .toArray(Element.Variable[]::new)),
-          IndependentFactory.picker(Arrays.stream(constants)
+          IndependentFactory.picker(Arrays.stream(CONSTANTS)
               .mapToObj(Element.Constant::new)
               .toArray(Element.Constant[]::new))
       );
@@ -151,7 +159,7 @@ public class RobustnessComparison extends Worker {
               height,
               height,
               Element.Operator.arityFunction(),
-              IndependentFactory.picker(operators),
+              IndependentFactory.picker(OPERATORS),
               termFact
           ),
           nPop,
@@ -163,7 +171,7 @@ public class RobustnessComparison extends Worker {
                   height,
                   new GrowTreeBuilder<>(
                       Element.Operator.arityFunction(),
-                      IndependentFactory.picker(operators),
+                      IndependentFactory.picker(OPERATORS),
                       termFact
                   )
               ),
@@ -177,88 +185,9 @@ public class RobustnessComparison extends Worker {
           (srp, r) -> new POSetPopulationState<>()
       );
     });
-    solvers.put("coop-coevo", p -> {
-      IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
-          IndependentFactory.picker(Arrays.stream(
-                  vars(p.qualityFunction().arity()))
-              .sequential()
-              .map(Element.Variable::new)
-              .toArray(Element.Variable[]::new)),
-          r -> new Element.Placeholder()
-      );
-      double xOverProb = 0.8d;
-      AbstractPopulationBasedIterativeSolver<POSetPopulationState<Tree<Element>, Tree<Element>, Double>, QualityBasedProblem<Tree<Element>, Double>, Tree<Element>, Tree<Element>, Double> solver1 =
-          new StandardEvolver<>(
-              Function.identity(),
-              new RampedHalfAndHalf<>(
-                  height,
-                  height,
-                  Element.Operator.arityFunction(),
-                  IndependentFactory.picker(operators),
-                  terminalFactory
-              ),
-              nPop,
-              StopConditions.nOfIterations(nIterations),
-              Map.of(
-                  new SubtreeCrossover<>(height),
-                  xOverProb,
-                  new SubtreeMutation<>(
-                      height,
-                      new GrowTreeBuilder<>(
-                          Element.Operator.arityFunction(),
-                          IndependentFactory.picker(operators),
-                          terminalFactory
-                      )
-                  ),
-                  1d - xOverProb
-              ),
-              new Tournament(nTournament),
-              new Last(),
-              nPop,
-              true,
-              false,
-              (srp, r) -> new POSetPopulationState<>()
-          );
-      AbstractPopulationBasedIterativeSolver<POSetPopulationState<List<Double>, List<Double>, Double>, QualityBasedProblem<List<Double>, Double>, List<Double>, List<Double>, Double> solver2 =
-          new StandardEvolver<>(
-              Function.identity(),
-              new FixedLengthListFactory<>((int) Math.pow(2d, height + 1) - 1, new UniformDoubleFactory(-1d, 1d)),
-              nPop,
-              StopConditions.nOfIterations(nIterations),
-              Map.of(
-                  new GaussianMutation(.35d), 1d - xOverProb,
-                  new GeometricCrossover(Range.closed(-.5d, 1.5d)).andThen(new GaussianMutation(.1d)), xOverProb
-              ),
-              new Tournament(nTournament),
-              new Last(),
-              nPop,
-              true,
-              false,
-              (srp, r) -> new POSetPopulationState<>()
-          );
-      BiFunction<Tree<Element>, List<Double>, RealFunction> solutionAggregator = ((BiFunction<Tree<Element>, List<Double>, RealFunction>) (t, l) -> new TreeBasedRealFunction(
-          Tree.mapFromIndex(
-              t,
-              (el, i) -> el.equals(new Element.Placeholder()) ? new Element.Constant(l.get(i)) : el
-          ),
-          vars(p.qualityFunction().arity())
-      )).andThen(MathUtils.linearScaler(p.qualityFunction()));
-
-      // TODO tricky parts
-      CollaboratorSelector<Individual<Tree<Element>, Tree<Element>, Double>> extractor1 = SingleCollaboratorSelectors.best();
-      CollaboratorSelector<Individual<List<Double>, List<Double>, Double>> extractor2 = SingleCollaboratorSelectors.best();
-      Function<Collection<Double>, Double> qualityAggregator = c -> c.stream().findFirst().orElse(0d);
-
-      return new CooperativeSolver<>(
-          solver1,
-          solver2,
-          solutionAggregator,
-          extractor1,
-          extractor2,
-          qualityAggregator,
-          StopConditions.nOfIterations(nIterations)
-      );
-    });
+    for (String params : coopCoevoParams) {
+      solvers.put("coop-coevo<" + params, buildCooperativeSolver(params));
+    }
 
     Map<String, Function<SymbolicRegressionProblem, Function<RealFunction, Double>>> validators = new TreeMap<>();
     validators.put("default", SymbolicRegressionProblem::validationQualityFunction);
@@ -325,6 +254,122 @@ public class RobustnessComparison extends Worker {
     }
     listenerFactory.shutdown();
 
+  }
+
+  private Function<SymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?, RealFunction,
+      Double>, SymbolicRegressionProblem, RealFunction>> buildCooperativeSolver(String stringParams) {
+    Map<String, String> params = Arrays.stream(stringParams.split(TOKEN_SEPARATOR))
+        .map(s -> s.split(PARAM_VALUE_SEPARATOR))
+        .collect(Collectors.toMap(
+            ss -> ss.length == 2 ? ss[0] : NAME_KEY,
+            ss -> ss.length == 2 ? ss[1] : ss[0]
+        ));
+    return buildCooperativeSolver(params);
+  }
+
+  private Function<SymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?, RealFunction,
+      Double>, SymbolicRegressionProblem, RealFunction>> buildCooperativeSolver(Map<String, String> params) {
+    int nPop = Integer.parseInt(params.get("nPop"));
+    int height = Integer.parseInt(params.get("h"));
+    int nIterations = Integer.parseInt(params.get("nIt"));
+    int nTournament = Integer.parseInt(params.get("nTour"));
+    String collaboratorSelector1 = params.get("sel1");
+    String collaboratorSelector2 = params.get("sel2");
+    String qualityAggregator = params.get("aggr");
+
+    return p -> {
+      IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
+          IndependentFactory.picker(Arrays.stream(
+                  vars(p.qualityFunction().arity()))
+              .sequential()
+              .map(Element.Variable::new)
+              .toArray(Element.Variable[]::new)),
+          r -> new Element.Placeholder()
+      );
+      double xOverProb = 0.8d;
+      AbstractPopulationBasedIterativeSolver<POSetPopulationState<Tree<Element>, Tree<Element>, Double>, QualityBasedProblem<Tree<Element>, Double>, Tree<Element>, Tree<Element>, Double> solver1 =
+          new StandardEvolver<>(
+              Function.identity(),
+              new RampedHalfAndHalf<>(
+                  height,
+                  height,
+                  Element.Operator.arityFunction(),
+                  IndependentFactory.picker(OPERATORS),
+                  terminalFactory
+              ),
+              nPop,
+              StopConditions.nOfIterations(nIterations),
+              Map.of(
+                  new SubtreeCrossover<>(height),
+                  xOverProb,
+                  new SubtreeMutation<>(
+                      height,
+                      new GrowTreeBuilder<>(
+                          Element.Operator.arityFunction(),
+                          IndependentFactory.picker(OPERATORS),
+                          terminalFactory
+                      )
+                  ),
+                  1d - xOverProb
+              ),
+              new Tournament(nTournament),
+              new Last(),
+              nPop,
+              true,
+              false,
+              (srp, r) -> new POSetPopulationState<>()
+          );
+      AbstractPopulationBasedIterativeSolver<POSetPopulationState<List<Double>, List<Double>, Double>, QualityBasedProblem<List<Double>, Double>, List<Double>, List<Double>, Double> solver2 =
+          new StandardEvolver<>(
+              Function.identity(),
+              new FixedLengthListFactory<>((int) Math.pow(2d, height + 1) - 1, new UniformDoubleFactory(-1d, 1d)),
+              nPop,
+              StopConditions.nOfIterations(nIterations),
+              Map.of(
+                  new GaussianMutation(.35d), 1d - xOverProb,
+                  new GeometricCrossover(Range.closed(-.5d, 1.5d)).andThen(new GaussianMutation(.1d)), xOverProb
+              ),
+              new Tournament(nTournament),
+              new Last(),
+              nPop,
+              true,
+              false,
+              (srp, r) -> new POSetPopulationState<>()
+          );
+      BiFunction<Tree<Element>, List<Double>, RealFunction> solutionAggregator = ((BiFunction<Tree<Element>, List<Double>, RealFunction>) (t, l) -> new TreeBasedRealFunction(
+          Tree.mapFromIndex(
+              t,
+              (el, i) -> el.equals(new Element.Placeholder()) ? new Element.Constant(l.get(i)) : el
+          ),
+          vars(p.qualityFunction().arity())
+      )).andThen(MathUtils.linearScaler(p.qualityFunction()));
+
+      return new CooperativeSolver<>(
+          solver1,
+          solver2,
+          solutionAggregator,
+          CollaboratorSelector.build(collaboratorSelector1),
+          CollaboratorSelector.build(collaboratorSelector2),
+          qualityAggregator(qualityAggregator),
+          StopConditions.nOfIterations(nIterations)
+      );
+
+    };
+  }
+
+  private static Function<Collection<Double>, Double> qualityAggregator(String aggregator) {
+    return switch (aggregator) {
+      case "min" -> c -> c.stream().mapToDouble(d -> d).min().orElse(0d);
+      case "max" -> c -> c.stream().mapToDouble(d -> d).max().orElse(0d);
+      case "avg" -> c -> c.stream().mapToDouble(d -> d).average().orElse(0d);
+      case "median" -> c -> {
+        DoubleStream doubleStream = c.stream().mapToDouble(d -> d).sorted();
+        return c.size() % 2 == 0 ?
+            doubleStream.skip(c.size() / 2 - 1).limit(2).average().orElse(0d) :
+            doubleStream.skip(c.size() / 2).findFirst().orElse(0d);
+      };
+      default -> throw new IllegalArgumentException("Illegal aggregator specified");
+    };
   }
 
 }
