@@ -7,6 +7,7 @@ import it.units.malelab.jgea.core.selector.Random;
 import it.units.malelab.jgea.core.selector.Tournament;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.random.RandomGenerator;
 
@@ -34,6 +35,16 @@ public interface CollaboratorSelector<K> {
         }
     }
     throw new IllegalArgumentException("Illegal collaborator selection specified");
+  }
+
+  default CollaboratorSelector<K> and(CollaboratorSelector<K> other) {
+    CollaboratorSelector<K> inner = this;
+    return (ks, random) -> {
+      Set<K> selected = new HashSet<>();
+      selected.addAll(inner.select(ks, random));
+      selected.addAll(other.select(ks, random));
+      return selected;
+    };
   }
 
   static <K> CollaboratorSelector<K> best() {
