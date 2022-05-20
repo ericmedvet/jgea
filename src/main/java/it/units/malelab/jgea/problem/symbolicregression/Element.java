@@ -80,5 +80,8 @@ public interface Element {
   record Variable(String name) implements Element {
   }
 
+  record Placeholder() implements Element {
+  }
+
   String toString();
 }
