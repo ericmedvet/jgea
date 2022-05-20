@@ -40,7 +40,11 @@ public class SubtreeCrossover<N> implements Crossover<Tree<N>> {
     for (Tree<N> subtree1 : subtrees1) {
       for (Tree<N> subtree2 : subtrees2) {
         if (subtree1.depth() + subtree2.height() <= maxHeight) {
-          return TreeUtils.replaceFirst(parent1, subtree1, subtree2);
+          Tree<N> childTree = TreeUtils.replaceFirst(parent1, subtree1, subtree2);
+          // needed to avoid risks for repetitions
+          if (childTree.height() <= maxHeight) {
+            return childTree;
+          }
         }
       }
     }
