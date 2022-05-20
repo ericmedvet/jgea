@@ -5,10 +5,7 @@ import com.google.common.collect.Range;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.QualityBasedProblem;
-import it.units.malelab.jgea.core.listener.CSVPrinter;
-import it.units.malelab.jgea.core.listener.ListenerFactory;
-import it.units.malelab.jgea.core.listener.NamedFunction;
-import it.units.malelab.jgea.core.listener.TabularPrinter;
+import it.units.malelab.jgea.core.listener.*;
 import it.units.malelab.jgea.core.selector.Last;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.solver.*;
@@ -34,6 +31,9 @@ import static it.units.malelab.jgea.core.util.Args.i;
 import static it.units.malelab.jgea.core.util.Args.ri;
 
 public class RobustnessComparison extends Worker {
+
+  private record ValidationEvent(RealFunction realFunction, double fitness, double validationFitness) {
+  }
 
   public static void main(String[] args) {
     new RobustnessComparison(args);
@@ -62,8 +62,8 @@ public class RobustnessComparison extends Worker {
     int nTournament = 5;
     int[] seeds = ri(a("seed", "0:1"));
     boolean output = a("output", "true").startsWith("t");
-    String bestFile = a("bestFile", null);
-    String validationFile = a("validationFile", null);
+    String bestFile = a("bestFile", "best.txt");
+    String validationFile = a("validationFile", "validation.txt");
     SymbolicRegressionFitness.Metric metric = SymbolicRegressionFitness.Metric.MSE;
     Element.Operator[] operators = Arrays.stream(Element.Operator.values())
         .filter(o -> o.arity() == 2).toArray(Element.Operator[]::new);
@@ -99,6 +99,19 @@ public class RobustnessComparison extends Worker {
             .toList())),
         attribute("evolver").reformat("%20.20s")
     );
+    List<NamedFunction<? super Map<String, Object>, ?>> validationKFunctions = List.of(
+        attribute("seed").reformat("%2d"),
+        attribute("problem").reformat(NamedFunction.formatOfLongest(problems.stream()
+            .map(p -> p.getClass().getSimpleName())
+            .toList())),
+        attribute("evolver").reformat("%20.20s"),
+        attribute("validator").reformat("%20.20s")
+    );
+    List<NamedFunction<? super ValidationEvent, ?>> validationFunctions = List.of(
+        NamedFunction.build("event.fitness", "%5.3f", ValidationEvent::fitness),
+        NamedFunction.build("validation.fitness", "%5.3f", ValidationEvent::validationFitness),
+        NamedFunction.build("solution", "%30.30s", ValidationEvent::realFunction)
+    );
 
     List<ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>>> listenerFactories =
         new ArrayList<>();
@@ -107,13 +120,13 @@ public class RobustnessComparison extends Worker {
     }
     if (bestFile != null) {
       listenerFactories.add(
-          new CSVPrinter<>(functions, kFunctions, new File(a("bestFile", null))));
-    }
-    if (validationFile != null) {
-      // TODO implement validation to test robustness
+          new CSVPrinter<>(functions, kFunctions, new File(bestFile)));
     }
     ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
         ListenerFactory.all(listenerFactories);
+    ListenerFactory<ValidationEvent, Map<String, Object>>
+        validationListenerFactory = validationFile == null ? ListenerFactory.deaf() :
+        new CSVPrinter<>(validationFunctions, validationKFunctions, new File(validationFile));
 
     //evolvers
     Map<String, Function<SymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?, RealFunction,
@@ -165,10 +178,9 @@ public class RobustnessComparison extends Worker {
       );
     });
     solvers.put("coop-coevo", p -> {
-      int problemArity = p.qualityFunction().arity();
       IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
           IndependentFactory.picker(Arrays.stream(
-                  vars(problemArity))
+                  vars(p.qualityFunction().arity()))
               .sequential()
               .map(Element.Variable::new)
               .toArray(Element.Variable[]::new)),
@@ -207,11 +219,10 @@ public class RobustnessComparison extends Worker {
               false,
               (srp, r) -> new POSetPopulationState<>()
           );
-      int length = (int) Math.pow(2d, height + 1) - 1;
       AbstractPopulationBasedIterativeSolver<POSetPopulationState<List<Double>, List<Double>, Double>, QualityBasedProblem<List<Double>, Double>, List<Double>, List<Double>, Double> solver2 =
           new StandardEvolver<>(
               Function.identity(),
-              new FixedLengthListFactory<>(length, new UniformDoubleFactory(-1d, 1d)),
+              new FixedLengthListFactory<>((int) Math.pow(2d, height + 1) - 1, new UniformDoubleFactory(-1d, 1d)),
               nPop,
               StopConditions.nOfIterations(nIterations),
               Map.of(
@@ -233,9 +244,11 @@ public class RobustnessComparison extends Worker {
           vars(p.qualityFunction().arity())
       )).andThen(MathUtils.linearScaler(p.qualityFunction()));
 
+      // TODO tricky parts
       CollaboratorSelector<Individual<Tree<Element>, Tree<Element>, Double>> extractor1 = SingleCollaboratorSelectors.best();
       CollaboratorSelector<Individual<List<Double>, List<Double>, Double>> extractor2 = SingleCollaboratorSelectors.best();
       Function<Collection<Double>, Double> qualityAggregator = c -> c.stream().findFirst().orElse(0d);
+
       return new CooperativeSolver<>(
           solver1,
           solver2,
@@ -246,6 +259,9 @@ public class RobustnessComparison extends Worker {
           StopConditions.nOfIterations(nIterations)
       );
     });
+
+    Map<String, Function<SymbolicRegressionProblem, Function<RealFunction, Double>>> validators = new TreeMap<>();
+    validators.put("default", SymbolicRegressionProblem::validationQualityFunction);
 
     L.info(String.format("Going to test with %d evolvers: %s%n", solvers.size(), solvers.keySet()));
     //run
@@ -276,6 +292,30 @@ public class RobustnessComparison extends Worker {
                 solutions.size(),
                 (double) stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000d
             ));
+            for (Map.Entry<String, Function<SymbolicRegressionProblem, Function<RealFunction, Double>>> validator
+                : validators.entrySet()) {
+              Map<String, Object> validationKeys = Map.ofEntries(
+                  Map.entry("seed", seed),
+                  Map.entry("problem", problem.getClass().getSimpleName().toLowerCase()),
+                  Map.entry("evolver", solverEntry.getKey()),
+                  Map.entry("validator", validator.getKey())
+              );
+
+              Listener<ValidationEvent> validationListener =
+                  validationListenerFactory.build(validationKeys);
+              Function<RealFunction, Double> fitnessFunction = problem.qualityFunction();
+              Function<RealFunction, Double> validationFunction = validator.getValue().apply(problem);
+              solutions.stream().map(
+                  s -> new ValidationEvent(
+                      s, fitnessFunction.apply(s), validationFunction.apply(s))
+              ).forEach(validationListener::listen);
+              L.info(String.format(
+                  "Validation done %s",
+                  validationKeys
+              ));
+
+            }
+
           } catch (SolverException e) {
             L.severe(String.format("Cannot complete %s due to %s", keys, e));
             e.printStackTrace();
