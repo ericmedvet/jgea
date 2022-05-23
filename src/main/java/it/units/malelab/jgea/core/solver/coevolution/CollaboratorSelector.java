@@ -6,6 +6,7 @@ import it.units.malelab.jgea.core.selector.Last;
 import it.units.malelab.jgea.core.selector.Random;
 import it.units.malelab.jgea.core.selector.Tournament;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -13,9 +14,24 @@ import java.util.random.RandomGenerator;
 
 @FunctionalInterface
 public interface CollaboratorSelector<K> {
+
   Collection<K> select(PartiallyOrderedCollection<K> ks, RandomGenerator random);
 
+  @SuppressWarnings("unchecked")
+  static <K> CollaboratorSelector<K> build(String[] collaboratorSelector) {
+    return Arrays.stream(collaboratorSelector)
+        .map(s -> (CollaboratorSelector<K>) build(s))
+        .reduce(
+            (ks, random) -> new HashSet<>(),
+            CollaboratorSelector::and
+        );
+  }
+
+  // TODO improve
   static <K> CollaboratorSelector<K> build(String collaboratorSelector) {
+    if (collaboratorSelector.contains("+")) {
+      return build(collaboratorSelector.split("\\+"));
+    }
     switch (collaboratorSelector) {
       case "b":
         return CollaboratorSelector.best();
