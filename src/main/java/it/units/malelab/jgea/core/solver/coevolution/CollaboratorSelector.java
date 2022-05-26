@@ -51,7 +51,7 @@ public interface CollaboratorSelector<K> {
         if (collaboratorSelector.matches("t\\d")) {
           return CollaboratorSelector.tournament(Integer.parseInt(collaboratorSelector.substring(1)));
         }
-        if (collaboratorSelector.matches("^b[+-]?([0-9]+\\.?[0-9]*|\\.[0-9]+)$")) {
+        if (collaboratorSelector.matches("^f[+-]?([0-9]+\\.?[0-9]*|\\.[0-9]+)$")) {
           return CollaboratorSelector.topFraction(Double.parseDouble(collaboratorSelector.substring(1)));
         }
         if (collaboratorSelector.matches("^l[+-]?([0-9]+\\.?[0-9]*|\\.[0-9]+)$")) {
