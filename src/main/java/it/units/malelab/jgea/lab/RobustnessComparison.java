@@ -6,6 +6,7 @@ import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.QualityBasedProblem;
 import it.units.malelab.jgea.core.listener.*;
+import it.units.malelab.jgea.core.listener.telegram.TelegramProgressMonitor;
 import it.units.malelab.jgea.core.selector.Last;
 import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.solver.*;
@@ -64,15 +65,16 @@ public class RobustnessComparison extends Worker {
 
   @Override
   public void run() {
-    // TODO change stop conditions into fitness evaluations?
+    String telegramBotId = a("telegramBotId", null);
+    long telegramChatId = Long.parseLong(a("telegramChatId", "0"));
+
+    int treeHeight = i(a("height", "10"));
+
     int nPop = i(a("nPop", "100"));
-    int height = i(a("height", "10"));
     int nIterations = i(a("nIterations", "100"));
     int nTournament = 5;
     List<String> coopCoevoParams = l(a("params",
-        "nPop=100;h=10;nIt=100;nTour=5;sel1=f0.1;sel2=f0.1;aggr=f," +
-            "nPop=100;h=10;nIt=100;nTour=5;sel1=f0.1;sel2=f0.1;aggr=m," +
-            "nPop=100;h=10;nIt=100;nTour=5;sel1=f0.1;sel2=f0.1;aggr=l"));
+        "nPop=100;h=10;nIt=100;nTour=5;sel1=f0.5;sel2=f0.5;aggr=f,nPop=100;h=10;nIt=100;nTour=5;sel1=f0.5;sel2=f0.5;aggr=m,nPop=100;h=10;nIt=100;nTour=5;sel1=f0.5;sel2=f0.5;aggr=l"));
 
     int[] seeds = ri(a("seed", "0:10"));
     boolean output = a("output", "true").startsWith("t");
@@ -140,6 +142,11 @@ public class RobustnessComparison extends Worker {
         validationListenerFactory = validationFile == null ? ListenerFactory.deaf() :
         new CSVPrinter<>(validationFunctions, validationKFunctions, new File(validationFile));
 
+    ProgressMonitor progressMonitor = new ScreenProgressMonitor(System.out);
+    if (telegramBotId != null && telegramChatId != 0) {
+      progressMonitor = progressMonitor.and(new TelegramProgressMonitor(telegramBotId, telegramChatId));
+    }
+
     //evolvers
     Map<String, Function<SymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?, RealFunction,
         Double>, SymbolicRegressionProblem, RealFunction>>> solvers = new TreeMap<>();
@@ -160,8 +167,8 @@ public class RobustnessComparison extends Worker {
               vars(p.qualityFunction().arity())
           )).andThen(MathUtils.linearScaler(p.qualityFunction())),
           new RampedHalfAndHalf<>(
-              height,
-              height,
+              treeHeight,
+              treeHeight,
               Element.Operator.arityFunction(),
               IndependentFactory.picker(OPERATORS),
               termFact
@@ -169,10 +176,10 @@ public class RobustnessComparison extends Worker {
           nPop,
           StopConditions.nOfIterations(nIterations),
           Map.of(
-              new SubtreeCrossover<>(height),
+              new SubtreeCrossover<>(treeHeight),
               0.8d,
               new SubtreeMutation<>(
-                  height,
+                  treeHeight,
                   new GrowTreeBuilder<>(
                       Element.Operator.arityFunction(),
                       IndependentFactory.picker(OPERATORS),
@@ -197,6 +204,8 @@ public class RobustnessComparison extends Worker {
     validators.put("default", SymbolicRegressionProblem::validationQualityFunction);
 
     L.info(String.format("Going to test with %d evolvers: %s%n", solvers.size(), solvers.keySet()));
+    int nOfRuns = seeds.length * problems.size() * solvers.size();
+    int counter = 0;
     //run
     for (int seed : seeds) {
       for (SymbolicRegressionProblem problem : problems) {
@@ -208,23 +217,30 @@ public class RobustnessComparison extends Worker {
               Map.entry("evolver", solverEntry.getKey())
           );
           try {
+            counter = counter + 1;
             Stopwatch stopwatch = Stopwatch.createStarted();
+            progressMonitor.notify(
+                ((float) counter - 1) / nOfRuns,
+                String.format("(%d/%d); Starting %s", counter, nOfRuns, keys)
+            );
             IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SymbolicRegressionProblem,
                 RealFunction> solver = solverEntry.getValue()
                 .apply(problem);
-            L.info(String.format("Starting %s", keys));
             Collection<RealFunction> solutions = solver.solve(
                 problem,
                 new Random(seed),
                 executorService,
                 listenerFactory.build(keys).deferred(executorService)
             );
-            L.info(String.format(
-                "Done %s: %d solutions in %4.1fs",
+            progressMonitor.notify((float) counter / nOfRuns, String.format(
+                "(%d/%d); Done %s: %d solutions in %4ds",
+                counter,
+                nOfRuns,
                 keys,
                 solutions.size(),
-                (double) stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000d
+                stopwatch.elapsed(TimeUnit.SECONDS)
             ));
+
             for (Map.Entry<String, Function<SymbolicRegressionProblem, Function<RealFunction, Double>>> validator
                 : validators.entrySet()) {
               Map<String, Object> validationKeys = Map.ofEntries(
@@ -275,11 +291,12 @@ public class RobustnessComparison extends Worker {
       Double>, SymbolicRegressionProblem, RealFunction>> buildCooperativeSolver(Map<String, String> params) {
     int nPop = Integer.parseInt(params.get("nPop"));
     int height = Integer.parseInt(params.get("h"));
-    int nIterations = Integer.parseInt(params.get("nIt"));
     int nTournament = Integer.parseInt(params.get("nTour"));
     String collaboratorSelector1 = params.get("sel1");
     String collaboratorSelector2 = params.get("sel2");
     String qualityAggregator = params.get("aggr");
+    int nEvals = Integer.parseInt(params.getOrDefault("nEvals", "-1"));
+    int nIterations = Integer.parseInt(params.getOrDefault("nIt", "-1"));
 
     return p -> {
       IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
@@ -302,7 +319,7 @@ public class RobustnessComparison extends Worker {
                   terminalFactory
               ),
               nPop,
-              StopConditions.nOfIterations(nIterations),
+              StopConditions.nOfFitnessEvaluations(10000),
               Map.of(
                   new SubtreeCrossover<>(height),
                   xOverProb,
@@ -328,7 +345,7 @@ public class RobustnessComparison extends Worker {
               Function.identity(),
               new FixedLengthListFactory<>((int) Math.pow(2d, height + 1) - 1, new UniformDoubleFactory(-1d, 1d)),
               nPop,
-              StopConditions.nOfIterations(nIterations),
+              StopConditions.nOfFitnessEvaluations(10000),
               Map.of(
                   new GaussianMutation(.35d), 1d - xOverProb,
                   new GeometricCrossover(Range.closed(-.5d, 1.5d)).andThen(new GaussianMutation(.1d)), xOverProb
@@ -356,7 +373,7 @@ public class RobustnessComparison extends Worker {
           CollaboratorSelector.build(collaboratorSelector1),
           CollaboratorSelector.build(collaboratorSelector2),
           QualityAggregator.build(qualityAggregator),
-          StopConditions.nOfIterations(nIterations)
+          nEvals > 0 ? StopConditions.nOfFitnessEvaluations(nEvals) : StopConditions.nOfIterations(nIterations)
       );
 
     };
