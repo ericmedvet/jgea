@@ -49,7 +49,13 @@ public interface CollaboratorSelector<K> {
         return CollaboratorSelector.lasts();
       default:
         if (collaboratorSelector.matches("t\\d")) {
-          return CollaboratorSelector.tournament(Integer.parseInt(String.valueOf(collaboratorSelector.charAt(1))));
+          return CollaboratorSelector.tournament(Integer.parseInt(collaboratorSelector.substring(1)));
+        }
+        if (collaboratorSelector.matches("^b[+-]?([0-9]+\\.?[0-9]*|\\.[0-9]+)$")) {
+          return CollaboratorSelector.topFraction(Double.parseDouble(collaboratorSelector.substring(1)));
+        }
+        if (collaboratorSelector.matches("^l[+-]?([0-9]+\\.?[0-9]*|\\.[0-9]+)$")) {
+          return CollaboratorSelector.bottomFraction(Double.parseDouble(collaboratorSelector.substring(1)));
         }
     }
     throw new IllegalArgumentException("Illegal collaborator selection specified");
