@@ -11,6 +11,7 @@ import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.solver.*;
 import it.units.malelab.jgea.core.solver.coevolution.CollaboratorSelector;
 import it.units.malelab.jgea.core.solver.coevolution.CooperativeSolver;
+import it.units.malelab.jgea.core.solver.coevolution.QualityAggregator;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.problem.symbolicregression.*;
 import it.units.malelab.jgea.representation.sequence.FixedLengthListFactory;
@@ -25,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
 
 import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
 import static it.units.malelab.jgea.core.util.Args.*;
@@ -64,22 +64,26 @@ public class RobustnessComparison extends Worker {
 
   @Override
   public void run() {
+    // TODO change stop conditions into fitness evaluations?
     int nPop = i(a("nPop", "100"));
     int height = i(a("height", "10"));
     int nIterations = i(a("nIterations", "100"));
     int nTournament = 5;
-    List<String> coopCoevoParams = l(a("params", "nPop=100;h=10;nIt=100;nTour=5;sel1=b;sel2=b;aggr=min"));
+    List<String> coopCoevoParams = l(a("params",
+        "nPop=100;h=10;nIt=100;nTour=5;sel1=f0.1;sel2=f0.1;aggr=f," +
+            "nPop=100;h=10;nIt=100;nTour=5;sel1=f0.1;sel2=f0.1;aggr=m," +
+            "nPop=100;h=10;nIt=100;nTour=5;sel1=f0.1;sel2=f0.1;aggr=l"));
 
-    int[] seeds = ri(a("seed", "0:1"));
+    int[] seeds = ri(a("seed", "0:10"));
     boolean output = a("output", "true").startsWith("t");
-    String bestFile = a("bestFile", "best.txt");
-    String validationFile = a("validationFile", "validation.txt");
+    String bestFile = a("bestFile", "D:\\Research\\Cooperative_coevolution\\best_1.txt");
+    String validationFile = a("validationFile", "D:\\Research\\Cooperative_coevolution\\validation_1.txt");
     SymbolicRegressionFitness.Metric metric = SymbolicRegressionFitness.Metric.MSE;
 
     List<SymbolicRegressionProblem> problems = List.of(
-        new Keijzer6(metric)/*,
+        new Keijzer6(metric),
         new Pagie1(metric),
-        new Nguyen7(metric, 1)*/
+        new Nguyen7(metric, 1)
     );
 
     //consumers
@@ -344,31 +348,17 @@ public class RobustnessComparison extends Worker {
           vars(p.qualityFunction().arity())
       )).andThen(MathUtils.linearScaler(p.qualityFunction()));
 
+
       return new CooperativeSolver<>(
           solver1,
           solver2,
           solutionAggregator,
           CollaboratorSelector.build(collaboratorSelector1),
           CollaboratorSelector.build(collaboratorSelector2),
-          qualityAggregator(qualityAggregator),
+          QualityAggregator.build(qualityAggregator),
           StopConditions.nOfIterations(nIterations)
       );
 
-    };
-  }
-
-  private static Function<Collection<Double>, Double> qualityAggregator(String aggregator) {
-    return switch (aggregator) {
-      case "min" -> c -> c.stream().mapToDouble(d -> d).min().orElse(0d);
-      case "max" -> c -> c.stream().mapToDouble(d -> d).max().orElse(0d);
-      case "avg" -> c -> c.stream().mapToDouble(d -> d).average().orElse(0d);
-      case "median" -> c -> {
-        DoubleStream doubleStream = c.stream().mapToDouble(d -> d).sorted();
-        return c.size() % 2 == 0 ?
-            doubleStream.skip(c.size() / 2 - 1).limit(2).average().orElse(0d) :
-            doubleStream.skip(c.size() / 2).findFirst().orElse(0d);
-      };
-      default -> throw new IllegalArgumentException("Illegal aggregator specified");
     };
   }
 

@@ -113,13 +113,13 @@ public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 ex
     Collection<Individual<G1, S1, Q>> representatives1 = extractor1
         .select(TotallyOrderedCollection.from(
                 solver1.init(dummyProblem1, random, executor).getPopulation(),
-                (i1, i2) -> problem.totalOrderComparator().compare(i1.fitness(), i2.fitness())
+                (i1, i2) -> 0
             ),
             random);
     Collection<Individual<G2, S2, Q>> representatives2 = extractor2
         .select(TotallyOrderedCollection.from(
                 solver2.init(dummyProblem2, random, executor).getPopulation(),
-                (i1, i2) -> problem.totalOrderComparator().compare(i1.fitness(), i2.fitness())
+                (i1, i2) -> 0
             ),
             random);
     Collection<Individual<Void, S, Q>> evaluatedIndividuals = Collections.synchronizedCollection(new ArrayList<>());

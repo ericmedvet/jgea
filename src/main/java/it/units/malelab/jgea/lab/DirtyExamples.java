@@ -140,7 +140,7 @@ public class DirtyExamples extends Worker {
     Function<Collection<Double>, Double> qualitiesAggregator = l -> l.stream().findFirst().get();
     CooperativeSolver<
         POSetPopulationState<BitString, BitString, Double>, POSetPopulationState<BitString, BitString, Double>,
-        BitString, BitString, BitString, BitString, QualityBasedProblem<BitString, Double>, BitString, Double> cooperativeSolver = new CooperativeSolver<>(
+        BitString, BitString, BitString, BitString, TotalOrderQualityBasedProblem<BitString, Double>, BitString, Double> cooperativeSolver = new CooperativeSolver<>(
         solver,
         solver,
         aggregator,
@@ -149,7 +149,7 @@ public class DirtyExamples extends Worker {
         qualitiesAggregator,
         StopConditions.nOfIterations(100)
     );
-    QualityBasedProblem<BitString, Double> problem = new OneMax();
+    TotalOrderQualityBasedProblem<BitString, Double> problem = new OneMax();
 
     Listener<CooperativeSolver.State<POSetPopulationState<BitString, BitString, Double>, POSetPopulationState<BitString, BitString, Double>,
         BitString, BitString, BitString, BitString, BitString, Double>> stateListener = state ->
