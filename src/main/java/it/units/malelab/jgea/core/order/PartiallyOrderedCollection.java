@@ -20,6 +20,7 @@ import it.units.malelab.jgea.core.util.Copyable;
 import it.units.malelab.jgea.core.util.Sized;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -39,7 +40,7 @@ public interface PartiallyOrderedCollection<T> extends Sized, Copyable {
   @Override
   default PartiallyOrderedCollection<T> immutableCopy() {
     final PartiallyOrderedCollection<T> inner = this;
-    return new PartiallyOrderedCollection<T>() {
+    return new PartiallyOrderedCollection<>() {
       final Collection<T> all = List.copyOf(inner.all());
       final Collection<T> firsts = List.copyOf(inner.firsts());
       final Collection<T> lasts = List.copyOf(inner.lasts());
@@ -74,5 +75,10 @@ public interface PartiallyOrderedCollection<T> extends Sized, Copyable {
   @Override
   default int size() {
     return all().size();
+  }
+
+  default List<T> sorted(Comparator<T> comparator) {
+    // TODO check if it's better to use a copy
+    return all().stream().sorted(comparator).toList();
   }
 }
