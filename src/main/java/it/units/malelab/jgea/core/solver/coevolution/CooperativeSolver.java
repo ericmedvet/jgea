@@ -1,9 +1,11 @@
 package it.units.malelab.jgea.core.solver.coevolution;
 
 import it.units.malelab.jgea.core.QualityBasedProblem;
+import it.units.malelab.jgea.core.TotalOrderQualityBasedProblem;
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
 import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
+import it.units.malelab.jgea.core.order.TotallyOrderedCollection;
 import it.units.malelab.jgea.core.solver.AbstractPopulationBasedIterativeSolver;
 import it.units.malelab.jgea.core.solver.Individual;
 import it.units.malelab.jgea.core.solver.SolverException;
@@ -23,7 +25,7 @@ import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
 public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 extends POSetPopulationState<G2, S2, Q>,
-    G1, G2, S1, S2, P extends QualityBasedProblem<S, Q>, S, Q> extends
+    G1, G2, S1, S2, P extends TotalOrderQualityBasedProblem<S, Q>, S, Q> extends
     AbstractPopulationBasedIterativeSolver<CooperativeSolver.State<T1, T2, G1, G2, S1, S2, S, Q>, P, Void, S, Q> {
 
   private final AbstractPopulationBasedIterativeSolver<T1, QualityBasedProblem<S1, Q>, G1, S1, Q> solver1;
@@ -109,9 +111,17 @@ public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 ex
         (q1, q2) -> PartialComparator.PartialComparatorOutcome.SAME
     );
     Collection<Individual<G1, S1, Q>> representatives1 = extractor1
-        .select(solver1.init(dummyProblem1, random, executor).getPopulation(), random);
+        .select(TotallyOrderedCollection.from(
+                solver1.init(dummyProblem1, random, executor).getPopulation(),
+                (i1, i2) -> problem.totalOrderComparator().compare(i1.fitness(), i2.fitness())
+            ),
+            random);
     Collection<Individual<G2, S2, Q>> representatives2 = extractor2
-        .select(solver2.init(dummyProblem2, random, executor).getPopulation(), random);
+        .select(TotallyOrderedCollection.from(
+                solver2.init(dummyProblem2, random, executor).getPopulation(),
+                (i1, i2) -> problem.totalOrderComparator().compare(i1.fitness(), i2.fitness())
+            ),
+            random);
     Collection<Individual<Void, S, Q>> evaluatedIndividuals = Collections.synchronizedCollection(new ArrayList<>());
     QualityBasedProblem<S1, Q> problem1 = QualityBasedProblem.create(
         s1 -> {
@@ -148,8 +158,19 @@ public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 ex
   // TODO fix fitness mapping iteration and genotype birth iteration
   @Override
   public void update(P problem, RandomGenerator random, ExecutorService executor, State<T1, T2, G1, G2, S1, S2, S, Q> state) throws SolverException {
-    Collection<Individual<G1, S1, Q>> representatives1 = extractor1.select(state.state1.getPopulation(), random);
-    Collection<Individual<G2, S2, Q>> representatives2 = extractor2.select(state.state2.getPopulation(), random);
+    Collection<Individual<G1, S1, Q>> representatives1 = extractor1
+        .select(TotallyOrderedCollection.from(
+                state.state1.getPopulation(),
+                (i1, i2) -> problem.totalOrderComparator().compare(i1.fitness(), i2.fitness())
+            ),
+            random);
+    Collection<Individual<G2, S2, Q>> representatives2 = extractor2
+        .select(TotallyOrderedCollection.from(
+                state.state2.getPopulation(),
+                (i1, i2) -> problem.totalOrderComparator().compare(i1.fitness(), i2.fitness())
+            ),
+            random);
+
     Collection<Individual<Void, S, Q>> evaluatedIndividuals = Collections.synchronizedCollection(new ArrayList<>());
     QualityBasedProblem<S1, Q> problem1 = QualityBasedProblem.create(
         s1 -> {
