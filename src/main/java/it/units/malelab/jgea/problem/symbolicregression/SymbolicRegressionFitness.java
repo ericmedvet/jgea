@@ -20,6 +20,7 @@ import it.units.malelab.jgea.core.fitness.CaseBasedFitness;
 
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.stream.IntStream;
 
 /**
  * @author eric
@@ -27,18 +28,19 @@ import java.util.function.BiFunction;
 public class SymbolicRegressionFitness extends CaseBasedFitness<RealFunction, double[], Double, Double> {
 
   private final RealFunction targetFunction;
-  private final List<double[]> points;
   private final int arity;
   private final Metric metric;
 
   public SymbolicRegressionFitness(RealFunction targetFunction, List<double[]> points, Metric metric) {
     super(
         points,
-        (f, x) -> f.apply(x) - targetFunction.apply(x),
-        errs -> metric.apply(errs, points.stream().map(targetFunction::apply).toList())
+        RealFunction::apply,
+        outcomes -> metric.apply(
+            regressionError(points.stream().map(targetFunction::apply).toList(), outcomes),
+            points.stream().map(targetFunction::apply).toList()
+        )
     );
     this.targetFunction = targetFunction;
-    this.points = points;
     this.arity = points.get(0).length;
     this.metric = metric;
   }
@@ -70,6 +72,7 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<RealFunction, do
     public Double apply(List<Double> errs, List<Double> ys) {
       return function.apply(errs, ys);
     }
+
   }
 
   public int arity() {
@@ -81,10 +84,17 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<RealFunction, do
   }
 
   public List<double[]> getPoints() {
-    return points;
+    return getCases();
   }
 
   public RealFunction getTargetFunction() {
     return targetFunction;
   }
+
+  private static List<Double> regressionError(List<Double> groundTruth, List<Double> predictions) {
+    return IntStream.range(0, groundTruth.size()).mapToObj(i ->
+        groundTruth.get(i) - predictions.get(i)
+    ).toList();
+  }
+
 }
