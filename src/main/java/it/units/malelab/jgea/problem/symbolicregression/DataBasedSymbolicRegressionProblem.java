@@ -16,31 +16,24 @@
 
 package it.units.malelab.jgea.problem.symbolicregression;
 
-import it.units.malelab.jgea.core.ComparableQualityBasedProblem;
-import it.units.malelab.jgea.core.ProblemWithValidation;
+import it.units.malelab.jgea.core.util.Pair;
+
+import java.util.List;
 
 /**
  * @author eric
  */
-public class SymbolicRegressionProblem<F extends SymbolicRegressionFitness>
-    implements ComparableQualityBasedProblem<RealFunction, Double>, ProblemWithValidation<RealFunction, Double> {
+public class DataBasedSymbolicRegressionProblem extends SymbolicRegressionProblem<SymbolicRegressionFitness> {
 
-  private final F fitness;
-  private final F validationFitness;
-
-  public SymbolicRegressionProblem(F fitness, F validationFitness) {
-    this.fitness = fitness;
-    this.validationFitness = validationFitness;
-  }
-
-  @Override
-  public F qualityFunction() {
-    return fitness;
-  }
-
-  @Override
-  public F validationQualityFunction() {
-    return validationFitness;
+  public DataBasedSymbolicRegressionProblem(
+      List<Pair<double[], Double>> trainingData,
+      List<Pair<double[], Double>> validationData,
+      SymbolicRegressionFitness.Metric metric
+  ) {
+    super(
+        new SymbolicRegressionFitness(trainingData, metric),
+        new SymbolicRegressionFitness(validationData, metric)
+    );
   }
 
 }
