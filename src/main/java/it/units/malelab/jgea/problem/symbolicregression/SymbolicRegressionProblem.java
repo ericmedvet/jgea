@@ -27,19 +27,19 @@ import java.util.List;
 public class SymbolicRegressionProblem implements ComparableQualityBasedProblem<RealFunction, Double>,
     ProblemWithValidation<RealFunction, Double> {
 
-  private final SymbolicRegressionFitness fitness;
-  private final SymbolicRegressionFitness validationFitness;
+  private final SyntheticSymbolicRegressionFitness fitness;
+  private final SyntheticSymbolicRegressionFitness validationFitness;
   private final RealFunction targetFunction;
 
   public SymbolicRegressionProblem(
       RealFunction targetFunction,
       List<double[]> trainingPoints,
       List<double[]> validationPoints,
-      SymbolicRegressionFitness.Metric metric
+      SyntheticSymbolicRegressionFitness.Metric metric
   ) {
     this.targetFunction = targetFunction;
-    this.fitness = new SymbolicRegressionFitness(targetFunction, trainingPoints, metric);
-    validationFitness = new SymbolicRegressionFitness(targetFunction, validationPoints, metric);
+    this.fitness = new SyntheticSymbolicRegressionFitness(targetFunction, trainingPoints, metric);
+    validationFitness = new SyntheticSymbolicRegressionFitness(targetFunction, validationPoints, metric);
   }
 
   public RealFunction getTargetFunction() {
@@ -47,12 +47,12 @@ public class SymbolicRegressionProblem implements ComparableQualityBasedProblem<
   }
 
   @Override
-  public SymbolicRegressionFitness qualityFunction() {
+  public SyntheticSymbolicRegressionFitness qualityFunction() {
     return fitness;
   }
 
   @Override
-  public SymbolicRegressionFitness validationQualityFunction() {
+  public SyntheticSymbolicRegressionFitness validationQualityFunction() {
     return validationFitness;
   }
 

@@ -23,7 +23,7 @@ import java.util.Random;
  */
 public class Nguyen7 extends SymbolicRegressionProblem {
 
-  public Nguyen7(SymbolicRegressionFitness.Metric metric, long seed) {
+  public Nguyen7(SyntheticSymbolicRegressionFitness.Metric metric, long seed) {
     super(
         v -> Math.log(v[0] + 1d) + Math.log(v[0] * v[0] + 1d),
         MathUtils.pairwise(MathUtils.uniformSample(0, 2, 20, new Random(seed))),

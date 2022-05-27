@@ -16,22 +16,25 @@
 
 package it.units.malelab.jgea.problem.symbolicregression;
 
+import it.units.malelab.jgea.core.util.Pair;
+
+import java.util.List;
+
 /**
  * @author eric
  */
-public class UnivariateComposed extends SymbolicRegressionProblem {
+public class SyntheticSymbolicRegressionFitness extends SymbolicRegressionFitness {
 
-  public UnivariateComposed(SyntheticSymbolicRegressionFitness.Metric metric) {
-    super(
-        v -> {
-          double x = v[0];
-          double fx = 1d / (x * x + 1d);
-          return 2d * fx - Math.sin(10d * fx) + 0.1d / fx;
-        },
-        MathUtils.pairwise(MathUtils.equispacedValues(-3, 3, .1)),
-        MathUtils.pairwise(MathUtils.equispacedValues(-5, 5, .05)),
-        metric
-    );
+  private final RealFunction targetFunction;
+
+  public SyntheticSymbolicRegressionFitness(RealFunction targetFunction, List<double[]> points, Metric metric) {
+    super(points.stream().map(x -> Pair.of(x, targetFunction.apply(x))).toList(), metric);
+    this.targetFunction = targetFunction;
+
+  }
+
+  public RealFunction getTargetFunction() {
+    return targetFunction;
   }
 
 }

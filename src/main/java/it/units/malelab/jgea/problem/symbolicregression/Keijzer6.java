@@ -21,7 +21,7 @@ package it.units.malelab.jgea.problem.symbolicregression;
  */
 public class Keijzer6 extends SymbolicRegressionProblem {
 
-  public Keijzer6(SymbolicRegressionFitness.Metric metric) {
+  public Keijzer6(SyntheticSymbolicRegressionFitness.Metric metric) {
     super(
         v -> {
           double s = 0d;

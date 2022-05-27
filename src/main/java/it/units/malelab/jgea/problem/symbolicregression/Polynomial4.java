@@ -21,7 +21,7 @@ package it.units.malelab.jgea.problem.symbolicregression;
  */
 public class Polynomial4 extends SymbolicRegressionProblem {
 
-  public Polynomial4(SymbolicRegressionFitness.Metric metric) {
+  public Polynomial4(SyntheticSymbolicRegressionFitness.Metric metric) {
     super(
         v -> {
           double x = v[0];

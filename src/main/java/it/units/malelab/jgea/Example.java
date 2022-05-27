@@ -157,7 +157,7 @@ public class Example extends Worker {
         new TabularPrinter<>(Misc.concat(
             List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)), List.of());
     Random r = new Random(1);
-    SymbolicRegressionProblem p = new Nguyen7(SymbolicRegressionFitness.Metric.MSE, 1);
+    SymbolicRegressionProblem p = new Nguyen7(SyntheticSymbolicRegressionFitness.Metric.MSE, 1);
     Grammar<String> srGrammar;
     try {
       srGrammar = Grammar.fromFile(new File("grammars/symbolic" + "-regression-nguyen7" + ".bnf"));
