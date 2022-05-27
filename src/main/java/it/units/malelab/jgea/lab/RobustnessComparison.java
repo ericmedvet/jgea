@@ -82,7 +82,7 @@ public class RobustnessComparison extends Worker {
     String validationFile = a("validationFile", "D:\\Research\\Cooperative_coevolution\\validation_1.txt");
     SymbolicRegressionFitness.Metric metric = SymbolicRegressionFitness.Metric.MSE;
 
-    List<SymbolicRegressionProblem> problems = List.of(
+    List<SyntheticSymbolicRegressionProblem> problems = List.of(
         new Keijzer6(metric),
         new Pagie1(metric),
         new Nguyen7(metric, 1)
@@ -148,8 +148,8 @@ public class RobustnessComparison extends Worker {
     }
 
     //evolvers
-    Map<String, Function<SymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?, RealFunction,
-        Double>, SymbolicRegressionProblem, RealFunction>>> solvers = new TreeMap<>();
+    Map<String, Function<SyntheticSymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?, RealFunction,
+        Double>, SyntheticSymbolicRegressionProblem, RealFunction>>> solvers = new TreeMap<>();
     solvers.put("tree-ga", p -> {
       IndependentFactory<Element> termFact = IndependentFactory.oneOf(
           IndependentFactory.picker(Arrays.stream(
@@ -200,7 +200,7 @@ public class RobustnessComparison extends Worker {
       solvers.put("coop-coevo<" + params, buildCooperativeSolver(params));
     }
 
-    Map<String, Function<SymbolicRegressionProblem, Function<RealFunction, Double>>> validators = new TreeMap<>();
+    Map<String, Function<SyntheticSymbolicRegressionProblem, Function<RealFunction, Double>>> validators = new TreeMap<>();
     validators.put("default", SymbolicRegressionProblem::validationQualityFunction);
 
     L.info(String.format("Going to test with %d evolvers: %s%n", solvers.size(), solvers.keySet()));
@@ -208,9 +208,9 @@ public class RobustnessComparison extends Worker {
     int counter = 0;
     //run
     for (int seed : seeds) {
-      for (SymbolicRegressionProblem problem : problems) {
-        for (Map.Entry<String, Function<SymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?,
-            RealFunction, Double>, SymbolicRegressionProblem, RealFunction>>> solverEntry : solvers.entrySet()) {
+      for (SyntheticSymbolicRegressionProblem problem : problems) {
+        for (Map.Entry<String, Function<SyntheticSymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?,
+            RealFunction, Double>, SyntheticSymbolicRegressionProblem, RealFunction>>> solverEntry : solvers.entrySet()) {
           Map<String, Object> keys = Map.ofEntries(
               Map.entry("seed", seed),
               Map.entry("problem", problem.getClass().getSimpleName().toLowerCase()),
@@ -223,7 +223,7 @@ public class RobustnessComparison extends Worker {
                 ((float) counter - 1) / nOfRuns,
                 String.format("(%d/%d); Starting %s", counter, nOfRuns, keys)
             );
-            IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SymbolicRegressionProblem,
+            IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SyntheticSymbolicRegressionProblem,
                 RealFunction> solver = solverEntry.getValue()
                 .apply(problem);
             Collection<RealFunction> solutions = solver.solve(
@@ -241,7 +241,7 @@ public class RobustnessComparison extends Worker {
                 stopwatch.elapsed(TimeUnit.SECONDS)
             ));
 
-            for (Map.Entry<String, Function<SymbolicRegressionProblem, Function<RealFunction, Double>>> validator
+            for (Map.Entry<String, Function<SyntheticSymbolicRegressionProblem, Function<RealFunction, Double>>> validator
                 : validators.entrySet()) {
               Map<String, Object> validationKeys = Map.ofEntries(
                   Map.entry("seed", seed),
@@ -276,8 +276,8 @@ public class RobustnessComparison extends Worker {
 
   }
 
-  private Function<SymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?, RealFunction,
-      Double>, SymbolicRegressionProblem, RealFunction>> buildCooperativeSolver(String stringParams) {
+  private Function<SyntheticSymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?, RealFunction,
+      Double>, SyntheticSymbolicRegressionProblem, RealFunction>> buildCooperativeSolver(String stringParams) {
     Map<String, String> params = Arrays.stream(stringParams.split(TOKEN_SEPARATOR))
         .map(s -> s.split(PARAM_VALUE_SEPARATOR))
         .collect(Collectors.toMap(
@@ -287,8 +287,8 @@ public class RobustnessComparison extends Worker {
     return buildCooperativeSolver(params);
   }
 
-  private Function<SymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?, RealFunction,
-      Double>, SymbolicRegressionProblem, RealFunction>> buildCooperativeSolver(Map<String, String> params) {
+  private Function<SyntheticSymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?, RealFunction,
+      Double>, SyntheticSymbolicRegressionProblem, RealFunction>> buildCooperativeSolver(Map<String, String> params) {
     int nPop = Integer.parseInt(params.get("nPop"));
     int height = Integer.parseInt(params.get("h"));
     int nTournament = Integer.parseInt(params.get("nTour"));
