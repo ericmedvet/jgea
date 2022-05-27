@@ -19,9 +19,9 @@ package it.units.malelab.jgea.problem.symbolicregression;
 /**
  * @author eric
  */
-public class Keijzer6 extends SymbolicRegressionProblem {
+public class Keijzer6 extends SyntheticSymbolicRegressionProblem {
 
-  public Keijzer6(SyntheticSymbolicRegressionFitness.Metric metric) {
+  public Keijzer6(SymbolicRegressionFitness.Metric metric) {
     super(
         v -> {
           double s = 0d;

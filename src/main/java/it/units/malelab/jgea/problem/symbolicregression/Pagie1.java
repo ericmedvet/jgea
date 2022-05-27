@@ -19,9 +19,9 @@ package it.units.malelab.jgea.problem.symbolicregression;
 /**
  * @author eric
  */
-public class Pagie1 extends SymbolicRegressionProblem {
+public class Pagie1 extends SyntheticSymbolicRegressionProblem {
 
-  public Pagie1(SyntheticSymbolicRegressionFitness.Metric metric) {
+  public Pagie1(SymbolicRegressionFitness.Metric metric) {
     super(
         v -> 1d / (1d + Math.pow(v[0], -4d)) + 1d / (1d + Math.pow(v[1], -4d)),
         MathUtils.cartesian(MathUtils.equispacedValues(-5, 5, 0.4), MathUtils.equispacedValues(-5, 5, 0.4)),

@@ -367,7 +367,7 @@ public class DirtyExamples extends Worker {
         new TabularPrinter<>(Misc.concat(
             List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)), List.of());
     Random r = new Random(1);
-    SymbolicRegressionProblem p = new Nguyen7(SyntheticSymbolicRegressionFitness.Metric.MSE, 1);
+    SyntheticSymbolicRegressionProblem p = new Nguyen7(SymbolicRegressionFitness.Metric.MSE, 1);
     Grammar<String> srGrammar;
     try {
       srGrammar = Grammar.fromFile(new File("grammars/symbolic" + "-regression-nguyen7" + ".bnf"));
@@ -375,7 +375,7 @@ public class DirtyExamples extends Worker {
       e.printStackTrace();
       return;
     }
-    List<IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SymbolicRegressionProblem,
+    List<IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SyntheticSymbolicRegressionProblem,
         RealFunction>> solvers = new ArrayList<>();
     solvers.add(new StandardEvolver<>(
         new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(n, "x"))
@@ -408,7 +408,7 @@ public class DirtyExamples extends Worker {
         (srp, rnd) -> new POSetPopulationState<>(),
         100
     ));
-    for (IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SymbolicRegressionProblem,
+    for (IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SyntheticSymbolicRegressionProblem,
         RealFunction> solver : solvers) {
       System.out.println(solver.getClass().getSimpleName());
       try {

@@ -19,9 +19,9 @@ package it.units.malelab.jgea.problem.symbolicregression;
 /**
  * @author eric
  */
-public class UnivariateComposed extends SymbolicRegressionProblem {
+public class UnivariateComposed extends SyntheticSymbolicRegressionProblem {
 
-  public UnivariateComposed(SyntheticSymbolicRegressionFitness.Metric metric) {
+  public UnivariateComposed(SymbolicRegressionFitness.Metric metric) {
     super(
         v -> {
           double x = v[0];

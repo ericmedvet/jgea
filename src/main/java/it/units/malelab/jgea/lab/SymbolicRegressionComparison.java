@@ -104,7 +104,7 @@ public class SymbolicRegressionComparison extends Worker {
     double graphArcRemovalRate = 0d;
     double graphNodeAdditionRate = 1d;
     double graphCrossoverRate = 1d;
-    SyntheticSymbolicRegressionFitness.Metric metric = SyntheticSymbolicRegressionFitness.Metric.MSE;
+    SymbolicRegressionFitness.Metric metric = SymbolicRegressionFitness.Metric.MSE;
     Element.Operator[] operators = new Element.Operator[]{Element.Operator.ADDITION, Element.Operator.SUBTRACTION,
         Element.Operator.MULTIPLICATION, Element.Operator.PROT_DIVISION, Element.Operator.PROT_LOG};
     BaseOperator[] baseOperators = new BaseOperator[]{BaseOperator.ADDITION, BaseOperator.SUBTRACTION,
@@ -112,7 +112,7 @@ public class SymbolicRegressionComparison extends Worker {
     BaseFunction[] baseFunctions = new BaseFunction[]{BaseFunction.RE_LU, BaseFunction.GAUSSIAN,
         BaseFunction.PROT_INVERSE, BaseFunction.SQ};
     double[] constants = new double[]{0.1, 1d, 10d};
-    List<SymbolicRegressionProblem> problems = List.of(
+    List<SyntheticSymbolicRegressionProblem> problems = List.of(
         new Nguyen7(metric, 1),
         new Keijzer6(metric),
         new Polynomial4(metric)
@@ -156,8 +156,8 @@ public class SymbolicRegressionComparison extends Worker {
       ));
     }
     //evolvers
-    Map<String, Function<SymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?, RealFunction,
-        Double>, SymbolicRegressionProblem, RealFunction>>> solvers = new TreeMap<>();
+    Map<String, Function<SyntheticSymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?, RealFunction,
+        Double>, SyntheticSymbolicRegressionProblem, RealFunction>>> solvers = new TreeMap<>();
     solvers.put("tree-ga", p -> {
       IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
           IndependentFactory.picker(Arrays.stream(
@@ -1053,9 +1053,9 @@ public class SymbolicRegressionComparison extends Worker {
     L.info(String.format("Going to test with %d evolvers: %s%n", solvers.size(), solvers.keySet()));
     //run
     for (int seed : seeds) {
-      for (SymbolicRegressionProblem problem : problems) {
-        for (Map.Entry<String, Function<SymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?,
-            RealFunction, Double>, SymbolicRegressionProblem, RealFunction>>> solverEntry : solvers.entrySet()) {
+      for (SyntheticSymbolicRegressionProblem problem : problems) {
+        for (Map.Entry<String, Function<SyntheticSymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?,
+            RealFunction, Double>, SyntheticSymbolicRegressionProblem, RealFunction>>> solverEntry : solvers.entrySet()) {
           Map<String, Object> keys = Map.ofEntries(
               Map.entry("seed", seed),
               Map.entry("problem", problem.getClass().getSimpleName().toLowerCase()),
@@ -1063,7 +1063,7 @@ public class SymbolicRegressionComparison extends Worker {
           );
           try {
             Stopwatch stopwatch = Stopwatch.createStarted();
-            IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SymbolicRegressionProblem,
+            IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SyntheticSymbolicRegressionProblem,
                 RealFunction> solver = solverEntry.getValue()
                 .apply(problem);
             L.info(String.format("Starting %s", keys));

@@ -16,31 +16,30 @@
 
 package it.units.malelab.jgea.problem.symbolicregression;
 
-import it.units.malelab.jgea.core.ComparableQualityBasedProblem;
-import it.units.malelab.jgea.core.ProblemWithValidation;
+import java.util.List;
 
 /**
  * @author eric
  */
-public class SymbolicRegressionProblem<F extends SymbolicRegressionFitness>
-    implements ComparableQualityBasedProblem<RealFunction, Double>, ProblemWithValidation<RealFunction, Double> {
+public class SyntheticSymbolicRegressionProblem extends SymbolicRegressionProblem<SyntheticSymbolicRegressionFitness> {
 
-  private final F fitness;
-  private final F validationFitness;
+  private final RealFunction targetFunction;
 
-  public SymbolicRegressionProblem(F fitness, F validationFitness) {
-    this.fitness = fitness;
-    this.validationFitness = validationFitness;
+  public SyntheticSymbolicRegressionProblem(
+      RealFunction targetFunction,
+      List<double[]> trainingPoints,
+      List<double[]> validationPoints,
+      SymbolicRegressionFitness.Metric metric
+  ) {
+    super(
+        new SyntheticSymbolicRegressionFitness(targetFunction, trainingPoints, metric),
+        new SyntheticSymbolicRegressionFitness(targetFunction, validationPoints, metric)
+    );
+    this.targetFunction = targetFunction;
   }
 
-  @Override
-  public F qualityFunction() {
-    return fitness;
-  }
-
-  @Override
-  public F validationQualityFunction() {
-    return validationFitness;
+  public RealFunction getTargetFunction() {
+    return targetFunction;
   }
 
 }
