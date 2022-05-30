@@ -23,13 +23,13 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class CaseBasedFitness<S, C, CF, AF> implements Function<S, AF> {
+public class CaseBasedFitness<S, C, CO, AF> implements Function<S, AF> {
 
   private final List<C> cases;
-  private final BiFunction<S, C, CF> caseFunction;
-  private final Function<List<CF>, AF> aggregateFunction;
+  private final BiFunction<S, C, CO> caseFunction;
+  private final Function<List<CO>, AF> aggregateFunction;
 
-  public CaseBasedFitness(List<C> cases, BiFunction<S, C, CF> caseFunction, Function<List<CF>, AF> aggregateFunction) {
+  public CaseBasedFitness(List<C> cases, BiFunction<S, C, CO> caseFunction, Function<List<CO>, AF> aggregateFunction) {
     this.cases = cases;
     this.caseFunction = caseFunction;
     this.aggregateFunction = aggregateFunction;
@@ -37,15 +37,15 @@ public class CaseBasedFitness<S, C, CF, AF> implements Function<S, AF> {
 
   @Override
   public AF apply(S s) {
-    List<CF> caseFitnesses = cases.stream().map(o -> caseFunction.apply(s, o)).toList();
+    List<CO> caseFitnesses = cases.stream().map(o -> caseFunction.apply(s, o)).toList();
     return aggregateFunction.apply(caseFitnesses);
   }
 
-  public Function<List<CF>, AF> getAggregateFunction() {
+  public Function<List<CO>, AF> getAggregateFunction() {
     return aggregateFunction;
   }
 
-  public BiFunction<S, C, CF> getCaseFunction() {
+  public BiFunction<S, C, CO> getCaseFunction() {
     return caseFunction;
   }
 

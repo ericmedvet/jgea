@@ -19,7 +19,7 @@ package it.units.malelab.jgea.problem.symbolicregression;
 /**
  * @author eric
  */
-public class Polynomial4 extends SymbolicRegressionProblem {
+public class Polynomial4 extends SyntheticSymbolicRegressionProblem {
 
   public Polynomial4(SymbolicRegressionFitness.Metric metric) {
     super(

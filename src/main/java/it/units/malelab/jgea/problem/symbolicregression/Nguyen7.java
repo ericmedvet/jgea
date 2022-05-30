@@ -21,7 +21,7 @@ import java.util.Random;
 /**
  * @author eric
  */
-public class Nguyen7 extends SymbolicRegressionProblem {
+public class Nguyen7 extends SyntheticSymbolicRegressionProblem {
 
   public Nguyen7(SymbolicRegressionFitness.Metric metric, long seed) {
     super(

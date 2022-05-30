@@ -66,14 +66,14 @@ public class MathUtils {
     private final double a;
     private final double b;
 
-    public ScaledRealFunction(RealFunction innerF, SymbolicRegressionFitness symbolicRegressionFitness) {
+    public ScaledRealFunction(RealFunction innerF, SyntheticSymbolicRegressionFitness syntheticSymbolicRegressionFitness) {
       this.innerF = innerF;
-      double[] targetYs = symbolicRegressionFitness.getPoints()
+      double[] targetYs = syntheticSymbolicRegressionFitness.getPoints()
           .stream()
-          .mapToDouble(p -> symbolicRegressionFitness.getTargetFunction().apply(p))
+          .mapToDouble(p -> syntheticSymbolicRegressionFitness.getTargetFunction().apply(p))
           .toArray();
       double targetMean = StatUtils.mean(targetYs);
-      double[] ys = symbolicRegressionFitness.getPoints().stream().mapToDouble(innerF::apply).toArray();
+      double[] ys = syntheticSymbolicRegressionFitness.getPoints().stream().mapToDouble(innerF::apply).toArray();
       double mean = StatUtils.mean(ys);
       double nCovariance = 0d;
       double nVariance = 0d;
@@ -136,8 +136,8 @@ public class MathUtils {
   private static class SizedScaledRealFunction extends ScaledRealFunction implements Sized {
     private final int size;
 
-    public SizedScaledRealFunction(RealFunction innerF, SymbolicRegressionFitness symbolicRegressionFitness) {
-      super(innerF, symbolicRegressionFitness);
+    public SizedScaledRealFunction(RealFunction innerF, SyntheticSymbolicRegressionFitness syntheticSymbolicRegressionFitness) {
+      super(innerF, syntheticSymbolicRegressionFitness);
       if (innerF instanceof Sized) {
         size = ((Sized) innerF).size();
       } else {
@@ -180,11 +180,11 @@ public class MathUtils {
     return f -> (f instanceof Sized) ? new SizedMultivariateBasedRealFunction(f) : new MultivariateBasedRealFunction(f);
   }
 
-  public static UnaryOperator<RealFunction> linearScaler(SymbolicRegressionFitness symbolicRegressionFitness) {
+  public static UnaryOperator<RealFunction> linearScaler(SyntheticSymbolicRegressionFitness syntheticSymbolicRegressionFitness) {
     return f -> (f instanceof Sized) ? new SizedScaledRealFunction(
         f,
-        symbolicRegressionFitness
-    ) : new ScaledRealFunction(f, symbolicRegressionFitness);
+        syntheticSymbolicRegressionFitness
+    ) : new ScaledRealFunction(f, syntheticSymbolicRegressionFitness);
   }
 
   public static List<double[]> pairwise(double[]... xs) {

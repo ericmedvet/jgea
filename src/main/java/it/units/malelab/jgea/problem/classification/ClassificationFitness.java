@@ -27,7 +27,6 @@ import it.units.malelab.jgea.core.fitness.CaseBasedFitness;
 import it.units.malelab.jgea.core.util.Pair;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
@@ -43,7 +42,7 @@ public class ClassificationFitness<O, L extends Enum<L>> extends CaseBasedFitnes
   public ClassificationFitness(List<Pair<O, L>> data, Metric errorMetric) {
     super(
         data.stream().map(Pair::first).toList(),
-        (c, o) -> c.classify(o),
+        Classifier::classify,
         getAggregator(data.stream().map(Pair::second).toList(), errorMetric)
     );
     this.data = data;
@@ -108,13 +107,13 @@ public class ClassificationFitness<O, L extends Enum<L>> extends CaseBasedFitnes
         List<Pair<Integer, Integer>> pairs = classErrorRate.apply(predictedLabels);
         int errors = pairs.stream().map(Pair::first).mapToInt(Integer::intValue).sum();
         int count = pairs.stream().map(Pair::second).mapToInt(Integer::intValue).sum();
-        return Arrays.asList((double) errors / (double) count);
+        return List.of((double) errors / (double) count);
       };
     }
     if (metric.equals(Metric.BALANCED_ERROR_RATE)) {
       return (List<E> predictedLabels) -> {
         List<Pair<Integer, Integer>> pairs = classErrorRate.apply(predictedLabels);
-        return Arrays.asList(pairs.stream()
+        return List.of(pairs.stream()
             .map(p -> ((double) p.first() / (double) p.second()))
             .mapToDouble(Double::doubleValue)
             .average()
