@@ -38,4 +38,11 @@ public class DataUtils {
     return subset;
   }
 
+  public static <O, L> Pair<List<Pair<O, L>>, List<Pair<O, L>>> splitData(List<Pair<O, L>> data, int i, int n) {
+    List<Pair<O, L>> testSet = fold(data, i, n);
+    List<Pair<O, L>> trainSet = new ArrayList<>(data);
+    trainSet.removeAll(testSet);
+    return Pair.of(trainSet, testSet);
+  }
+
 }
