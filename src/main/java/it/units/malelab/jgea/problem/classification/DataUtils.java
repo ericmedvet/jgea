@@ -20,6 +20,7 @@ import it.units.malelab.jgea.core.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * @author eric
@@ -39,7 +40,7 @@ public class DataUtils {
   }
 
   public static <O, L> Pair<List<Pair<O, L>>, List<Pair<O, L>>> splitData(List<Pair<O, L>> data, int i, int n) {
-    List<Pair<O, L>> testSet = fold(data, i, n);
+    List<Pair<O, L>> testSet = IntStream.range(0, data.size()).filter(j -> j % n == i).mapToObj(data::get).toList();
     List<Pair<O, L>> trainSet = new ArrayList<>(data);
     trainSet.removeAll(testSet);
     return Pair.of(trainSet, testSet);

@@ -55,7 +55,7 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<RealFunction, do
     MSE((errs, ys) -> errs.stream()
         .mapToDouble(err -> err * err)
         .average()
-        .orElse(Double.NaN)), 
+        .orElse(Double.NaN)),
     RMSE((errs, ys) -> Math.sqrt(errs.stream()
         .mapToDouble(err -> err * err)
         .average()
@@ -63,7 +63,15 @@ public class SymbolicRegressionFitness extends CaseBasedFitness<RealFunction, do
     NMSE((errs, ys) -> errs.stream()
         .mapToDouble(err -> err * err)
         .average()
-        .orElse(Double.NaN) / ys.stream().mapToDouble(y -> y * y).average().orElse(1d));
+        .orElse(Double.NaN) / ys.stream().mapToDouble(y -> y * y).average().orElse(1d)),
+    DET((errs, ys) -> 1 - errs.stream()
+        .mapToDouble(err -> err * err)
+        .sum() /
+        ys.stream()
+            .mapToDouble(y -> y - ys.stream().mapToDouble(i -> i).average().orElse(Double.NaN))
+            .map(y -> y * y)
+            .sum()
+    );
 
     private final BiFunction<List<Double>, List<Double>, Double> function;
 

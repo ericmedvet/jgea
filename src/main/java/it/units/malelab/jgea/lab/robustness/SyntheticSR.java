@@ -1,4 +1,4 @@
-package it.units.malelab.jgea.lab;
+package it.units.malelab.jgea.lab.robustness;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Range;
@@ -31,16 +31,16 @@ import java.util.stream.Collectors;
 import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
 import static it.units.malelab.jgea.core.util.Args.*;
 
-public class RobustnessComparison extends Worker {
+public class SyntheticSR extends Worker {
 
   private record ValidationEvent(RealFunction realFunction, double fitness, double validationFitness) {
   }
 
   public static void main(String[] args) {
-    new RobustnessComparison(args);
+    new SyntheticSR(args);
   }
 
-  public RobustnessComparison(String[] args) {
+  public SyntheticSR(String[] args) {
     super(args);
   }
 

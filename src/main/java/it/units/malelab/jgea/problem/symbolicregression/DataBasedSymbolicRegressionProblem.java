@@ -32,6 +32,8 @@ import java.util.List;
  */
 public class DataBasedSymbolicRegressionProblem extends SymbolicRegressionProblem<SymbolicRegressionFitness> {
 
+  private static final char DELIMITER = '\t';
+
   public DataBasedSymbolicRegressionProblem(
       List<Pair<double[], Double>> trainingData,
       List<Pair<double[], Double>> validationData,
@@ -61,7 +63,7 @@ public class DataBasedSymbolicRegressionProblem extends SymbolicRegressionProble
   private static List<Pair<double[], Double>> buildData(String filename, String yColumnName) throws IOException {
     Reader reader = new FileReader(filename);
     CSVFormat csvFormat = CSVFormat.Builder.create(CSVFormat.DEFAULT)
-        .setDelimiter(';')
+        .setDelimiter(DELIMITER)
         .setHeader().setSkipHeaderRecord(true)
         .build();
     CSVParser csvParser = csvFormat.parse(reader);
