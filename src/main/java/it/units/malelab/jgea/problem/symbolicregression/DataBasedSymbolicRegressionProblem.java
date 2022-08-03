@@ -21,18 +21,21 @@ import it.units.malelab.jgea.problem.classification.DataUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.StringUtils;
 
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author eric
  */
 public class DataBasedSymbolicRegressionProblem extends SymbolicRegressionProblem<SymbolicRegressionFitness> {
 
-  private static final char DELIMITER = '\t';
+  private static final Collection<Character> DELIMITERS = Set.of(',', ';', '\t');
 
   public DataBasedSymbolicRegressionProblem(
       List<Pair<double[], Double>> trainingData,
@@ -61,9 +64,10 @@ public class DataBasedSymbolicRegressionProblem extends SymbolicRegressionProble
   }
 
   private static List<Pair<double[], Double>> buildData(String filename, String yColumnName) throws IOException {
+    char delimiter = inferColumnDelimiter(filename);
     Reader reader = new FileReader(filename);
     CSVFormat csvFormat = CSVFormat.Builder.create(CSVFormat.DEFAULT)
-        .setDelimiter(DELIMITER)
+        .setDelimiter(delimiter)
         .setHeader().setSkipHeaderRecord(true)
         .build();
     CSVParser csvParser = csvFormat.parse(reader);
@@ -74,6 +78,17 @@ public class DataBasedSymbolicRegressionProblem extends SymbolicRegressionProble
         headers.stream().mapToDouble(header -> Double.parseDouble(record.get(header))).toArray(),
         Double.parseDouble(record.get(yColumnName))
     )).toList();
+  }
+
+  private static char inferColumnDelimiter(String filename) throws IOException {
+    Reader reader = new FileReader(filename);
+    BufferedReader bufferedReader = new BufferedReader(reader);
+    String headerLine = bufferedReader.readLine();
+    bufferedReader.close();
+    reader.close();
+    Map<Character, Integer> delimiterCountMap = DELIMITERS.stream()
+        .collect(Collectors.toMap(c -> c, c -> StringUtils.countMatches(headerLine, c)));
+    return Collections.max(delimiterCountMap.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
   }
 
 }
