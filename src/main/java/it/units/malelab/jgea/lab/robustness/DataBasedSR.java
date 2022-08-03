@@ -56,8 +56,7 @@ public class DataBasedSR extends Worker {
     return vars;
   }
 
-  private static final Element.Operator[] OPERATORS = Arrays.stream(Element.Operator.values())
-      .filter(o -> o.arity() == 2).toArray(Element.Operator[]::new);
+  private static final Element.Operator[] OPERATORS = Element.Operator.values();
   private static final double[] CONSTANTS = new double[]{0.1, 1d, 10d};
 
   private static final String TOKEN_SEPARATOR = ";";
@@ -356,10 +355,12 @@ public class DataBasedSR extends Worker {
               false,
               (srp, r) -> new POSetPopulationState<>()
           );
+      int maxArity = Arrays.stream(OPERATORS).mapToInt(Element.Operator::arity).max().orElseThrow();
       BiFunction<Tree<Element>, List<Double>, RealFunction> solutionAggregator = (t, l) -> new TreeBasedRealFunction(
           Tree.mapFromIndex(
               t,
-              (el, i) -> el.equals(new Element.Placeholder()) ? new Element.Constant(l.get(i)) : el
+              (el, i) -> el.equals(new Element.Placeholder()) ? new Element.Constant(l.get(i)) : el,
+              maxArity
           ),
           vars(p.qualityFunction().arity())
       );
