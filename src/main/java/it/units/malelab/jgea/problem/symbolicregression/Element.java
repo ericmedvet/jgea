@@ -40,7 +40,10 @@ public interface Element {
     INVERSE("1/", x -> 1d / x[0], 1),
     OPPOSITE("_", x -> 0d - x[0], 1),
     SQRT("√", x -> Math.sqrt(x[0]), 1),
-    SQ("²", x -> Math.pow(x[0], 2d), 1);
+    SQ("²", x -> Math.pow(x[0], 2d), 1),
+    CB("³", x -> Math.pow(x[0], 3d), 1),
+    MAX("max", x -> Math.max(x[0], x[1]), 2),
+    MIN("min", x -> Math.min(x[0], x[1]), 2);
 
     private final String string;
     private final RealFunction function;
