@@ -197,19 +197,27 @@ public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>> {
     return leaves().stream().map(Tree::content).toList();
   }
 
-  public int getNodeIndex() {
+  public int maxArity() {
+    int maxArity = 0;
+    for (Tree<?> t : this) {
+      if (t.nChildren() > maxArity) {
+        maxArity = t.nChildren();
+      }
+    }
+    return maxArity;
+  }
+
+  public int getNodeIndex(int maxArity) {
     if (parent == null) {
       return 0;
     }
-    // TODO arity is to be checked (must be uniform throughout tree)
-    int arity = parent.nChildren();
-    return arity * parent.getNodeIndex() + 1 + parent.children.indexOf(this);
+    return maxArity * parent.getNodeIndex(maxArity) + 1 + parent.children.indexOf(this);
   }
 
-  public static <K, H> Tree<H> mapFromIndex(Tree<K> other, BiFunction<K, Integer, H> mapper) {
-    Tree<H> t = Tree.of(mapper.apply(other.content, other.getNodeIndex()));
+  public static <K, H> Tree<H> mapFromIndex(Tree<K> other, BiFunction<K, Integer, H> mapper, int maxArity) {
+    Tree<H> t = Tree.of(mapper.apply(other.content, other.getNodeIndex(maxArity)));
     for (Tree<K> child : other.children) {
-      t.addChild(Tree.mapFromIndex(child, mapper));
+      t.addChild(Tree.mapFromIndex(child, mapper, maxArity));
     }
     return t;
   }
