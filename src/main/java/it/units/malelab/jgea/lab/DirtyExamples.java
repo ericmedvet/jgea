@@ -120,20 +120,22 @@ public class DirtyExamples extends Worker {
 
   public void runCooperativeOneMax() {
     int size = 1000;
-    AbstractPopulationBasedIterativeSolver<POSetPopulationState<BitString, BitString, Double>, QualityBasedProblem<BitString, Double>, BitString, BitString, Double> solver = new StandardEvolver<POSetPopulationState<BitString, BitString, Double>, QualityBasedProblem<BitString
-        , Double>, BitString, BitString, Double>(
-        Function.identity(),
-        new BitStringFactory(size / 2),
-        50,
-        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
-        Map.of(new UniformCrossover<>(new BitStringFactory(5)), 0.8d, new BitFlipMutation(0.01d), 0.2d),
-        new Tournament(5),
-        new Last(),
-        100,
-        true,
-        true,
-        (problem, random) -> new POSetPopulationState<>()
-    );
+    AbstractPopulationBasedIterativeSolver<POSetPopulationState<BitString, BitString, Double>,
+        TotalOrderQualityBasedProblem<BitString, Double>, BitString, BitString, Double> solver =
+        new StandardEvolver<POSetPopulationState<BitString, BitString, Double>, TotalOrderQualityBasedProblem<BitString
+            , Double>, BitString, BitString, Double>(
+            Function.identity(),
+            new BitStringFactory(size / 2),
+            50,
+            StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
+            Map.of(new UniformCrossover<>(new BitStringFactory(5)), 0.8d, new BitFlipMutation(0.01d), 0.2d),
+            new Tournament(5),
+            new Last(),
+            100,
+            true,
+            true,
+            (problem, random) -> new POSetPopulationState<>()
+        );
     Random r = new Random(1);
     BiFunction<BitString, BitString, BitString> aggregator = BitString::append;
     CollaboratorSelector<Individual<BitString, BitString, Double>> collaboratorSelector = (p, rnd) -> p.firsts();

@@ -4,7 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Range;
 import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.IndependentFactory;
-import it.units.malelab.jgea.core.QualityBasedProblem;
+import it.units.malelab.jgea.core.TotalOrderQualityBasedProblem;
 import it.units.malelab.jgea.core.listener.*;
 import it.units.malelab.jgea.core.listener.telegram.TelegramProgressMonitor;
 import it.units.malelab.jgea.core.selector.Last;
@@ -307,7 +307,7 @@ public class SyntheticSR extends Worker {
           r -> new Element.Placeholder()
       );
       double xOverProb = 0.8d;
-      AbstractPopulationBasedIterativeSolver<POSetPopulationState<Tree<Element>, Tree<Element>, Double>, QualityBasedProblem<Tree<Element>, Double>, Tree<Element>, Tree<Element>, Double> solver1 =
+      AbstractPopulationBasedIterativeSolver<POSetPopulationState<Tree<Element>, Tree<Element>, Double>, TotalOrderQualityBasedProblem<Tree<Element>, Double>, Tree<Element>, Tree<Element>, Double> solver1 =
           new StandardEvolver<>(
               Function.identity(),
               new RampedHalfAndHalf<>(
@@ -339,7 +339,7 @@ public class SyntheticSR extends Worker {
               false,
               (srp, r) -> new POSetPopulationState<>()
           );
-      AbstractPopulationBasedIterativeSolver<POSetPopulationState<List<Double>, List<Double>, Double>, QualityBasedProblem<List<Double>, Double>, List<Double>, List<Double>, Double> solver2 =
+      AbstractPopulationBasedIterativeSolver<POSetPopulationState<List<Double>, List<Double>, Double>, TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>, List<Double>, Double> solver2 =
           new StandardEvolver<>(
               Function.identity(),
               new FixedLengthListFactory<>((int) Math.pow(2d, height + 1) - 1, new UniformDoubleFactory(-1d, 1d)),
