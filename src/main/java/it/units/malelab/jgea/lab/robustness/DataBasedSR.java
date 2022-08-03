@@ -71,7 +71,7 @@ public class DataBasedSR extends Worker {
 
     int treeHeight = i(a("height", "10"));
     int nFolds = i(a("folds", "5"));
-    List<String> datasets = l(a("files", "D:\\Research\\Cooperative_coevolution\\datasets\\616_fri_c4_500_50.tsv"));
+    List<String> datasets = l(a("files", "D:\\Research\\Cooperative_coevolution\\datasets\\boston.csv"));
 
     int nPop = i(a("nPop", "100"));
     int nIterations = i(a("nIterations", "100"));
@@ -86,7 +86,7 @@ public class DataBasedSR extends Worker {
     SymbolicRegressionFitness.Metric metric = SymbolicRegressionFitness.Metric.MSE;
 
     Map<String, SymbolicRegressionProblem<?>> problemMap = datasets.stream()
-        .map(d -> buildProblems(d, "target", nFolds, metric))
+        .map(d -> buildProblems(d, "medv", nFolds, metric))
         .flatMap(map -> map.entrySet().stream())
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
@@ -244,7 +244,7 @@ public class DataBasedSR extends Worker {
                 : validators.entrySet()) {
               Map<String, Object> validationKeys = Map.ofEntries(
                   Map.entry("seed", seed),
-                  Map.entry("problem", problem.getClass().getSimpleName().toLowerCase()),
+                  Map.entry("problem", problemEntry.getKey()),
                   Map.entry("evolver", solverEntry.getKey()),
                   Map.entry("validator", validator.getKey())
               );
