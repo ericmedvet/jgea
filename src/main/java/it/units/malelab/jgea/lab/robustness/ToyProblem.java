@@ -50,13 +50,13 @@ public class ToyProblem extends Worker {
     long telegramChatId = Long.parseLong(a("telegramChatId", "0"));
 
     int problemSize = i(a("size", "10"));
-    int nPop = i(a("nPop", "100"));
-    int nEvals = i(a("nEvals", "1000000"));
+    int nPop = i(a("nPop", "25"));
+    int nEvals = i(a("nEvals", "100000"));
     int nTournament = 5;
 
     List<String> eas = l(a("eas", "es,ga"));
-    List<String> selectors = l(a("sel", "f0.1"));
-    List<String> aggregators = l(a("aggr", "f"));
+    List<String> selectors = l(a("sel", "f0.1,f0.25,f0.5,f0.75,l0.1,l0.25,l0.5,l0.75,c"));
+    List<String> aggregators = l(a("aggr", "f,l,m"));
 
     List<String> coopCoEvoParams = buildCoEvoParams(
         String.format("size=%d;nEvals=%d;nPop=%d;nTour=%d", problemSize, nEvals, nPop, nTournament),
@@ -66,7 +66,7 @@ public class ToyProblem extends Worker {
     int[] seeds = ri(a("seed", "0:10"));
     boolean output = a("output", "true").startsWith("t");
     String bestFile = a("bestFile", "D:\\Research\\Cooperative_coevolution\\best_toy.txt");
-
+    String lastFile = a("lastFile", "");
 
     TotalOrderQualityBasedProblem<List<Double>, Double> toyProblem = new PointAiming();
 
@@ -101,9 +101,12 @@ public class ToyProblem extends Worker {
       listenerFactories.add(new TabularPrinter<>(functions, kFunctions));
     }
     if (bestFile != null) {
-      listenerFactories.add(
-          new CSVPrinter<>(functions, kFunctions, new File(bestFile)));
+      listenerFactories.add(new CSVPrinter<>(functions, kFunctions, new File(bestFile)));
     }
+    if (lastFile != null) {
+      listenerFactories.add(new CSVPrinter<>(functions, kFunctions, new File(lastFile)).onLast());
+    }
+
     ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
         ListenerFactory.all(listenerFactories);
 
