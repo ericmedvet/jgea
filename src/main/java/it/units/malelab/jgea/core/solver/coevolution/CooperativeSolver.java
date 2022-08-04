@@ -153,9 +153,9 @@ public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 ex
     return state;
   }
 
-  // TODO fix fitness mapping iteration and genotype birth iteration
   @Override
   public void update(P problem, RandomGenerator random, ExecutorService executor, State<T1, T2, G1, G2, S1, S2, S, Q> state) throws SolverException {
+    long currentIteration = state.getNOfIterations();
     Collection<Individual<G1, S1, Q>> representatives1 = extractor1
         .select(TotallyOrderedCollection.from(
                 state.state1.getPopulation(),
@@ -178,7 +178,7 @@ public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 ex
               .map(s -> problem.qualityFunction().apply(s)).toList();
           IntStream.range(0, solutions.size()).forEach(i ->
               evaluatedIndividuals.add(
-                  new Individual<>(null, solutions.get(i), qualities.get(i), 0, 0))
+                  new Individual<>(null, solutions.get(i), qualities.get(i), currentIteration, currentIteration))
           );
           return qualityAggregator.apply(qualities);
         },
@@ -192,7 +192,7 @@ public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 ex
               .map(s -> problem.qualityFunction().apply(s)).toList();
           IntStream.range(0, solutions.size()).forEach(i ->
               evaluatedIndividuals.add(
-                  new Individual<>(null, solutions.get(i), qualities.get(i), 0, 0))
+                  new Individual<>(null, solutions.get(i), qualities.get(i), currentIteration, currentIteration))
           );
           return qualityAggregator.apply(qualities);
         },
