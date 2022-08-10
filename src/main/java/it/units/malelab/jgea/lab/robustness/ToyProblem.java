@@ -13,6 +13,7 @@ import it.units.malelab.jgea.core.solver.coevolution.CollaboratorSelector;
 import it.units.malelab.jgea.core.solver.coevolution.CooperativeSolver;
 import it.units.malelab.jgea.core.solver.coevolution.QualityAggregator;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
+import it.units.malelab.jgea.problem.synthetic.BimodalPointAiming;
 import it.units.malelab.jgea.problem.synthetic.PointAiming;
 import it.units.malelab.jgea.representation.sequence.FixedLengthListFactory;
 import it.units.malelab.jgea.representation.sequence.numeric.GaussianMutation;
@@ -65,14 +66,18 @@ public class ToyProblem extends Worker {
 
     int[] seeds = ri(a("seed", "0:10"));
     boolean output = a("output", "true").startsWith("t");
-    String bestFile = a("bestFile", "D:\\Research\\Cooperative_coevolution\\best_toy.txt");
-    String lastFile = a("lastFile", "");
+    String bestFile = a("bestFile", "best.txt");
+    String lastFile = a("lastFile", "last.txt");
 
-    TotalOrderQualityBasedProblem<List<Double>, Double> toyProblem = new PointAiming();
+    List<TotalOrderQualityBasedProblem<List<Double>, Double>> toyProblems = List.of(
+        new PointAiming(),
+        new BimodalPointAiming()
+    );
 
     //consumers
     List<NamedFunction<? super POSetPopulationState<?, ?, ? extends Double>, ?>> functions = List.of(
         iterations(),
+        fitnessEvaluations(),
         births(),
         elapsedSeconds(),
         size().of(all()),
@@ -133,45 +138,46 @@ public class ToyProblem extends Worker {
     int counter = 0;
     //run
     for (int seed : seeds) {
-      for (Map.Entry<String, IterativeSolver<? extends POSetPopulationState<?, List<Double>, Double>,
-          TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>>> solverEntry : solvers.entrySet()) {
-        Map<String, Object> keys = Map.ofEntries(
-            Map.entry("seed", seed),
-            Map.entry("problem", toyProblem.getClass().getSimpleName().toLowerCase()),
-            Map.entry("evolver", solverEntry.getKey())
-        );
-        try {
-          counter = counter + 1;
-          Stopwatch stopwatch = Stopwatch.createStarted();
-          progressMonitor.notify(
-              ((float) counter - 1) / nOfRuns,
-              String.format("(%d/%d); Starting %s", counter, nOfRuns, keys)
+      for (TotalOrderQualityBasedProblem<List<Double>, Double> problem : toyProblems) {
+        for (Map.Entry<String, IterativeSolver<? extends POSetPopulationState<?, List<Double>, Double>,
+            TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>>> solverEntry : solvers.entrySet()) {
+          Map<String, Object> keys = Map.ofEntries(
+              Map.entry("seed", seed),
+              Map.entry("problem", problem.getClass().getSimpleName().toLowerCase()),
+              Map.entry("evolver", solverEntry.getKey())
           );
-          IterativeSolver<? extends POSetPopulationState<?, List<Double>, Double>,
-              TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>> solver = solverEntry.getValue();
-          Collection<List<Double>> solutions = solver.solve(
-              toyProblem,
-              new Random(seed),
-              executorService,
-              listenerFactory.build(keys).deferred(executorService)
-          );
-          progressMonitor.notify((float) counter / nOfRuns, String.format(
-              "(%d/%d); Done %s: %d solutions in %4ds",
-              counter,
-              nOfRuns,
-              keys,
-              solutions.size(),
-              stopwatch.elapsed(TimeUnit.SECONDS)
-          ));
+          try {
+            counter = counter + 1;
+            Stopwatch stopwatch = Stopwatch.createStarted();
+            progressMonitor.notify(
+                ((float) counter - 1) / nOfRuns,
+                String.format("(%d/%d); Starting %s", counter, nOfRuns, keys)
+            );
+            IterativeSolver<? extends POSetPopulationState<?, List<Double>, Double>,
+                TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>> solver = solverEntry.getValue();
+            Collection<List<Double>> solutions = solver.solve(
+                problem,
+                new Random(seed),
+                executorService,
+                listenerFactory.build(keys).deferred(executorService)
+            );
+            progressMonitor.notify((float) counter / nOfRuns, String.format(
+                "(%d/%d); Done %s: %d solutions in %4ds",
+                counter,
+                nOfRuns,
+                keys,
+                solutions.size(),
+                stopwatch.elapsed(TimeUnit.SECONDS)
+            ));
 
-        } catch (SolverException e) {
-          L.severe(String.format("Cannot complete %s due to %s", keys, e));
-          e.printStackTrace();
+          } catch (SolverException e) {
+            L.severe(String.format("Cannot complete %s due to %s", keys, e));
+            e.printStackTrace();
+          }
         }
       }
+      listenerFactory.shutdown();
     }
-    listenerFactory.shutdown();
-
   }
 
   private IterativeSolver<? extends POSetPopulationState<?, List<Double>, Double>,
@@ -231,7 +237,7 @@ public class ToyProblem extends Worker {
         new FixedLengthListFactory<>(problemSize, new UniformDoubleFactory(0, 1)),
         nPop,
         StopConditions.nOfFitnessEvaluations(nEvals),
-        Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
+        Map.of(new GeometricCrossover(Range.open(0d, 1d)).andThen(new GaussianMutation(0.1)), 1d),
         new Tournament(nTournament),
         new Last(),
         nPop,
