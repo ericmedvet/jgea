@@ -6,6 +6,7 @@ import it.units.malelab.jgea.core.util.Copyable;
 
 import java.util.Collection;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Function;
 import java.util.random.RandomGenerator;
 
 public interface IterativeSolver<T extends Copyable, P extends Problem<S>, S> extends Solver<P, S> {
@@ -41,5 +42,34 @@ public interface IterativeSolver<T extends Copyable, P extends Problem<S>, S> ex
     }
     listener.done();
     return extractSolutions(problem, random, executor, state);
+  }
+
+  default <P2 extends Problem<S>> IterativeSolver<T, P2, S> with(Function<P2, P> problemTransformer) {
+    IterativeSolver<T, P, S> thisIterativeSolver = this;
+    return new IterativeSolver<>() {
+      @Override
+      public Collection<S> extractSolutions(
+          P2 problem, RandomGenerator random, ExecutorService executor, T state
+      ) throws SolverException {
+        return thisIterativeSolver.extractSolutions(problemTransformer.apply(problem), random, executor, state);
+      }
+
+      @Override
+      public T init(P2 problem, RandomGenerator random, ExecutorService executor) throws SolverException {
+        return thisIterativeSolver.init(problemTransformer.apply(problem), random, executor);
+      }
+
+      @Override
+      public boolean terminate(
+          P2 problem, RandomGenerator random, ExecutorService executor, T state
+      ) throws SolverException {
+        return thisIterativeSolver.terminate(problemTransformer.apply(problem), random, executor, state);
+      }
+
+      @Override
+      public void update(P2 problem, RandomGenerator random, ExecutorService executor, T state) throws SolverException {
+        thisIterativeSolver.update(problemTransformer.apply(problem), random, executor, state);
+      }
+    };
   }
 }
