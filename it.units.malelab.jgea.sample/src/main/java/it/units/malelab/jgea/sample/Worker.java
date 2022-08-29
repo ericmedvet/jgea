@@ -16,15 +16,13 @@
 
 package it.units.malelab.jgea.sample;
 
-import it.units.malelab.jgea.core.util.Args;
-
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import static it.units.malelab.jgea.core.util.Args.i;
+import static it.units.malelab.jgea.sample.Args.i;
 
 /**
  * @author eric

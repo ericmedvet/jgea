@@ -58,8 +58,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
-import static it.units.malelab.jgea.core.util.Args.i;
-import static it.units.malelab.jgea.core.util.Args.ri;
+import static it.units.malelab.jgea.sample.Args.i;
+import static it.units.malelab.jgea.sample.Args.ri;
 
 /**
  * @author eric

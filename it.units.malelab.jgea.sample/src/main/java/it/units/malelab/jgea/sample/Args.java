@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package it.units.malelab.jgea.core.util;
+package it.units.malelab.jgea.sample;
 
 import java.util.Arrays;
 import java.util.List;

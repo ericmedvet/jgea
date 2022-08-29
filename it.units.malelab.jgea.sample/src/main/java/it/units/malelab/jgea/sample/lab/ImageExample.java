@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.random.RandomGenerator;
 
 import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
-import static it.units.malelab.jgea.core.util.Args.*;
+import static it.units.malelab.jgea.sample.Args.*;
 
 /**
  * @author eric
