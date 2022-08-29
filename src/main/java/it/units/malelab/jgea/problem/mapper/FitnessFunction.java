@@ -18,14 +18,14 @@ package it.units.malelab.jgea.problem.mapper;
 
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
+import it.units.malelab.jgea.core.distance.Distance;
+import it.units.malelab.jgea.core.distance.Hamming;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
+import it.units.malelab.jgea.core.representation.sequence.bit.BitFlipMutation;
+import it.units.malelab.jgea.core.representation.sequence.bit.BitString;
+import it.units.malelab.jgea.core.representation.sequence.bit.BitStringFactory;
+import it.units.malelab.jgea.core.representation.tree.Tree;
 import it.units.malelab.jgea.core.util.Pair;
-import it.units.malelab.jgea.distance.Distance;
-import it.units.malelab.jgea.distance.Hamming;
-import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
-import it.units.malelab.jgea.representation.sequence.bit.BitString;
-import it.units.malelab.jgea.representation.sequence.bit.BitStringFactory;
-import it.units.malelab.jgea.representation.tree.Tree;
 import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 

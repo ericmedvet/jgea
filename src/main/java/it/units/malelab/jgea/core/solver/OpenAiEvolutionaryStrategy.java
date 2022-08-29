@@ -4,8 +4,8 @@ import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.TotalOrderQualityBasedProblem;
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
+import it.units.malelab.jgea.core.representation.sequence.FixedLengthListFactory;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
-import it.units.malelab.jgea.representation.sequence.FixedLengthListFactory;
 
 import java.time.LocalDateTime;
 import java.util.*;

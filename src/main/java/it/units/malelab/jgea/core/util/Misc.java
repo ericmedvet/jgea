@@ -17,7 +17,7 @@
 package it.units.malelab.jgea.core.util;
 
 import com.google.common.collect.Range;
-import it.units.malelab.jgea.distance.Distance;
+import it.units.malelab.jgea.core.distance.Distance;
 
 import java.util.*;
 import java.util.function.BiFunction;

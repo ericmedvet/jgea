@@ -16,9 +16,9 @@
 
 package it.units.malelab.jgea.core.solver.speciation;
 
+import it.units.malelab.jgea.core.distance.Distance;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.solver.Individual;
-import it.units.malelab.jgea.distance.Distance;
 import org.apache.commons.math3.ml.clustering.CentroidCluster;
 import org.apache.commons.math3.ml.clustering.Clusterable;
 import org.apache.commons.math3.ml.clustering.KMeansPlusPlusClusterer;

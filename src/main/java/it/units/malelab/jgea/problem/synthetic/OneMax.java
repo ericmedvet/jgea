@@ -17,7 +17,7 @@
 package it.units.malelab.jgea.problem.synthetic;
 
 import it.units.malelab.jgea.core.ComparableQualityBasedProblem;
-import it.units.malelab.jgea.representation.sequence.bit.BitString;
+import it.units.malelab.jgea.core.representation.sequence.bit.BitString;
 
 import java.util.function.Function;
 

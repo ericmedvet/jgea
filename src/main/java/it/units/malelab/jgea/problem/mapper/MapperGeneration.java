@@ -24,10 +24,10 @@ package it.units.malelab.jgea.problem.mapper;
 import it.units.malelab.jgea.core.ProblemWithValidation;
 import it.units.malelab.jgea.core.order.ParetoDominance;
 import it.units.malelab.jgea.core.order.PartialComparator;
+import it.units.malelab.jgea.core.representation.grammar.Grammar;
+import it.units.malelab.jgea.core.representation.grammar.GrammarBasedProblem;
+import it.units.malelab.jgea.core.representation.tree.Tree;
 import it.units.malelab.jgea.core.util.Pair;
-import it.units.malelab.jgea.representation.grammar.Grammar;
-import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
-import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.io.File;
 import java.io.IOException;

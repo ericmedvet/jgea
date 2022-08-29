@@ -17,8 +17,8 @@
 package it.units.malelab.jgea.problem.extraction.string;
 
 import com.google.common.collect.Sets;
+import it.units.malelab.jgea.core.representation.grammar.Grammar;
 import it.units.malelab.jgea.problem.extraction.ExtractionFitness;
-import it.units.malelab.jgea.representation.grammar.Grammar;
 
 import java.util.*;
 import java.util.stream.Collectors;

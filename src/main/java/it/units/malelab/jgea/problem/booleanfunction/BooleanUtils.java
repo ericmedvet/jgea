@@ -16,7 +16,7 @@
 
 package it.units.malelab.jgea.problem.booleanfunction;
 
-import it.units.malelab.jgea.representation.tree.Tree;
+import it.units.malelab.jgea.core.representation.tree.Tree;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

@@ -17,11 +17,11 @@
 package it.units.malelab.jgea.problem.classification;
 
 import it.units.malelab.jgea.core.QualityBasedProblem;
+import it.units.malelab.jgea.core.representation.grammar.Grammar;
+import it.units.malelab.jgea.core.representation.grammar.GrammarBasedProblem;
+import it.units.malelab.jgea.core.representation.tree.Tree;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.problem.extraction.string.RegexGrammar;
-import it.units.malelab.jgea.representation.grammar.Grammar;
-import it.units.malelab.jgea.representation.grammar.GrammarBasedProblem;
-import it.units.malelab.jgea.representation.tree.Tree;
 
 import java.util.List;
 import java.util.Set;
