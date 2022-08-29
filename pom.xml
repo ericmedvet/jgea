@@ -5,7 +5,12 @@
     <groupId>it.units.malelab</groupId>
     <artifactId>jgea</artifactId>
     <version>${revision}</version>
-    <packaging>jar</packaging>
+    <modules>
+        <module>it.units.malelab.jgea.core</module>
+        <module>it.units.malelab.jgea.problem</module>
+        <module>it.units.malelab.jgea.sample</module>
+    </modules>
+    <packaging>pom</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>18</jdk.version>

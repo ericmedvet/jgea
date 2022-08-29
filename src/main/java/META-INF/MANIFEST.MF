@@ -1,3 +1,0 @@
-Manifest-Version: 1.0
-Main-Class: it.units.malelab.jgea.lab.SymbolicRegressionComparison
-
