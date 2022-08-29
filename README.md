@@ -8,7 +8,7 @@ Moreover, a few EA are actually implemented in JGEA, most of them being related 
 
 Several research papers have been published in which the experimental evaluation is based on JGEA or its previous version [evolved-ge](https://github.com/ericmedvet/evolved-ge). See a partial [list](#research-papers-based-on-jgea) below.
 
-If you use JGEA please _cite_ our paper:
+If you use JGEA please _cite_ [our paper](https://medvet.inginf.units.it/publications/2022-c-mnm-jgea/):
 
 ```
 @inproceedings{medvet2022jgea,
