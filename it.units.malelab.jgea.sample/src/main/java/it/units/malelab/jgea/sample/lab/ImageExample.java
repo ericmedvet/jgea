@@ -17,25 +17,26 @@
 package it.units.malelab.jgea.sample.lab;
 
 import com.google.common.base.Stopwatch;
-import it.units.malelab.core.listener.CSVPrinter;
-import it.units.malelab.core.listener.ListenerFactory;
-import it.units.malelab.core.listener.NamedFunction;
-import it.units.malelab.core.listener.TabularPrinter;
-import it.units.malelab.core.representation.graph.numeric.Output;
-import it.units.malelab.core.representation.graph.numeric.functiongraph.BaseFunction;
-import it.units.malelab.core.representation.graph.numeric.functiongraph.FunctionGraph;
-import it.units.malelab.core.representation.graph.numeric.functiongraph.FunctionNode;
-import it.units.malelab.core.representation.graph.numeric.functiongraph.ShallowSparseFactory;
-import it.units.malelab.core.selector.Last;
-import it.units.malelab.core.selector.Tournament;
-import it.units.malelab.core.solver.IterativeSolver;
-import it.units.malelab.core.solver.SolverException;
-import it.units.malelab.core.solver.StandardEvolver;
-import it.units.malelab.core.solver.StopConditions;
-import it.units.malelab.core.solver.state.POSetPopulationState;
+import it.units.malelab.jgea.core.listener.CSVPrinter;
+import it.units.malelab.jgea.core.listener.ListenerFactory;
+import it.units.malelab.jgea.core.listener.NamedFunction;
+import it.units.malelab.jgea.core.listener.TabularPrinter;
+import it.units.malelab.jgea.core.representation.graph.*;
+import it.units.malelab.jgea.core.representation.graph.numeric.Output;
+import it.units.malelab.jgea.core.representation.graph.numeric.RealFunction;
+import it.units.malelab.jgea.core.representation.graph.numeric.functiongraph.BaseFunction;
+import it.units.malelab.jgea.core.representation.graph.numeric.functiongraph.FunctionGraph;
+import it.units.malelab.jgea.core.representation.graph.numeric.functiongraph.FunctionNode;
+import it.units.malelab.jgea.core.representation.graph.numeric.functiongraph.ShallowSparseFactory;
+import it.units.malelab.jgea.core.selector.Last;
+import it.units.malelab.jgea.core.selector.Tournament;
+import it.units.malelab.jgea.core.solver.IterativeSolver;
+import it.units.malelab.jgea.core.solver.SolverException;
+import it.units.malelab.jgea.core.solver.StandardEvolver;
+import it.units.malelab.jgea.core.solver.StopConditions;
+import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.problem.image.ImageReconstruction;
 import it.units.malelab.jgea.problem.symbolicregression.MathUtils;
-import it.units.malelab.jgea.problem.symbolicregression.RealFunction;
 import it.units.malelab.jgea.sample.Worker;
 
 import javax.imageio.ImageIO;
@@ -46,8 +47,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.random.RandomGenerator;
 
-import static it.units.malelab.core.listener.NamedFunctions.*;
-import static it.units.malelab.core.util.Args.*;
+import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
+import static it.units.malelab.jgea.core.util.Args.*;
 
 /**
  * @author eric

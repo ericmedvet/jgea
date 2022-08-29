@@ -17,7 +17,7 @@
 package it.units.malelab.jgea.problem.extraction;
 
 import com.google.common.collect.Range;
-import it.units.malelab.core.distance.Distance;
+import it.units.malelab.jgea.core.distance.Distance;
 
 import java.util.Set;
 

@@ -16,7 +16,7 @@
 
 package it.units.malelab.jgea.problem.image;
 
-import it.units.malelab.jgea.problem.symbolicregression.RealFunction;
+import it.units.malelab.jgea.core.representation.graph.numeric.RealFunction;
 
 import java.awt.image.BufferedImage;
 

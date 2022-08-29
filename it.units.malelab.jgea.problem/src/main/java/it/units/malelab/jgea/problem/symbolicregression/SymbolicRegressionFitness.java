@@ -16,8 +16,9 @@
 
 package it.units.malelab.jgea.problem.symbolicregression;
 
-import it.units.malelab.core.fitness.CaseBasedFitness;
-import it.units.malelab.core.util.Pair;
+import it.units.malelab.jgea.core.fitness.CaseBasedFitness;
+import it.units.malelab.jgea.core.representation.graph.numeric.RealFunction;
+import it.units.malelab.jgea.core.util.Pair;
 
 import java.util.List;
 import java.util.function.BiFunction;

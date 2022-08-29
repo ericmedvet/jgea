@@ -17,6 +17,7 @@
 package it.units.malelab.jgea.problem.extraction;
 
 import com.google.common.collect.Range;
+import it.units.malelab.jgea.core.representation.graph.finiteautomata.Extractor;
 
 import java.util.*;
 import java.util.function.Function;

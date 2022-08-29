@@ -4,4 +4,7 @@
 module it.units.malelab.jgea.sample {
   requires it.units.malelab.jgea.core;
   requires it.units.malelab.jgea.problem;
+  requires com.google.common;
+  requires java.logging;
+  requires java.desktop;
 }

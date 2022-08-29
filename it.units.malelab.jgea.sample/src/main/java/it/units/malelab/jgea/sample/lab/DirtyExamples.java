@@ -27,31 +27,33 @@
 package it.units.malelab.jgea.sample.lab;
 
 import com.google.common.collect.Range;
-import it.units.malelab.core.listener.Listener;
-import it.units.malelab.core.listener.ListenerFactory;
-import it.units.malelab.core.listener.NamedFunction;
-import it.units.malelab.core.listener.TabularPrinter;
-import it.units.malelab.core.representation.grammar.Grammar;
-import it.units.malelab.core.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
-import it.units.malelab.core.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
-import it.units.malelab.core.representation.sequence.FixedLengthListFactory;
-import it.units.malelab.core.representation.sequence.UniformCrossover;
-import it.units.malelab.core.representation.sequence.bit.BitFlipMutation;
-import it.units.malelab.core.representation.sequence.bit.BitString;
-import it.units.malelab.core.representation.sequence.bit.BitStringFactory;
-import it.units.malelab.core.representation.sequence.numeric.GaussianMutation;
-import it.units.malelab.core.representation.sequence.numeric.GeometricCrossover;
-import it.units.malelab.core.representation.sequence.numeric.UniformDoubleFactory;
-import it.units.malelab.core.representation.tree.SameRootSubtreeCrossover;
-import it.units.malelab.core.representation.tree.Tree;
-import it.units.malelab.core.selector.Last;
-import it.units.malelab.core.selector.Tournament;
-import it.units.malelab.core.solver.state.POSetPopulationState;
-import it.units.malelab.core.util.Misc;
 import it.units.malelab.jgea.core.QualityBasedProblem;
 import it.units.malelab.jgea.core.TotalOrderQualityBasedProblem;
-import it.units.malelab.jgea.problem.booleanfunction.Element;
+import it.units.malelab.jgea.core.listener.Listener;
+import it.units.malelab.jgea.core.listener.ListenerFactory;
+import it.units.malelab.jgea.core.listener.NamedFunction;
+import it.units.malelab.jgea.core.listener.TabularPrinter;
+import it.units.malelab.jgea.core.representation.grammar.Grammar;
+import it.units.malelab.jgea.core.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
+import it.units.malelab.jgea.core.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
+import it.units.malelab.jgea.core.representation.graph.numeric.RealFunction;
+import it.units.malelab.jgea.core.representation.sequence.FixedLengthListFactory;
+import it.units.malelab.jgea.core.representation.sequence.UniformCrossover;
+import it.units.malelab.jgea.core.representation.sequence.bit.BitFlipMutation;
+import it.units.malelab.jgea.core.representation.sequence.bit.BitString;
+import it.units.malelab.jgea.core.representation.sequence.bit.BitStringFactory;
+import it.units.malelab.jgea.core.representation.sequence.numeric.GaussianMutation;
+import it.units.malelab.jgea.core.representation.sequence.numeric.GeometricCrossover;
+import it.units.malelab.jgea.core.representation.sequence.numeric.UniformDoubleFactory;
+import it.units.malelab.jgea.core.representation.tree.SameRootSubtreeCrossover;
+import it.units.malelab.jgea.core.representation.tree.Tree;
+import it.units.malelab.jgea.core.selector.Last;
+import it.units.malelab.jgea.core.selector.Tournament;
+import it.units.malelab.jgea.core.solver.*;
+import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
+import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.problem.booleanfunction.EvenParity;
+import it.units.malelab.jgea.problem.symbolicregression.*;
 import it.units.malelab.jgea.problem.synthetic.LinearPoints;
 import it.units.malelab.jgea.problem.synthetic.OneMax;
 import it.units.malelab.jgea.sample.Worker;
@@ -63,7 +65,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import static it.units.malelab.core.listener.NamedFunctions.*;
+import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
 
 /**
  * @author eric
@@ -116,17 +118,19 @@ public class DirtyExamples extends Worker {
 
   public void runCooperativeOneMax() {
     int size = 1000;
-    AbstractPopulationBasedIterativeSolver<POSetPopulationState<BitString, BitString, Double>, QualityBasedProblem<BitString, Double>, BitString, BitString, Double> solver = new StandardEvolver<POSetPopulationState<BitString, BitString, Double>, QualityBasedProblem<BitString
-        , Double>, BitString, BitString, Double>(
-        Function.identity(),
-        new BitStringFactory(size / 2),
-        50,
-        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
-        Map.of(new UniformCrossover<>(new BitStringFactory(5)), 0.8d, new BitFlipMutation(0.01d), 0.2d),
-        new Tournament(5),
-        new Last(),
-        100,
-        true,
+    AbstractPopulationBasedIterativeSolver<POSetPopulationState<BitString, BitString, Double>,
+        QualityBasedProblem<BitString, Double>, BitString, BitString, Double> solver =
+        new StandardEvolver<POSetPopulationState<BitString, BitString, Double>, QualityBasedProblem<BitString
+            , Double>, BitString, BitString, Double>(
+            Function.identity(),
+            new BitStringFactory(size / 2),
+            50,
+            StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
+            Map.of(new UniformCrossover<>(new BitStringFactory(5)), 0.8d, new BitFlipMutation(0.01d), 0.2d),
+            new Tournament(5),
+            new Last(),
+            100,
+            true,
         true,
         (problem, random) -> new POSetPopulationState<>()
     );
@@ -147,9 +151,16 @@ public class DirtyExamples extends Worker {
     );
     QualityBasedProblem<BitString, Double> problem = new OneMax();
 
-    Listener<CooperativeSolver.State<POSetPopulationState<BitString, BitString, Double>, POSetPopulationState<BitString, BitString, Double>,
+    Listener<CooperativeSolver.State<POSetPopulationState<BitString, BitString, Double>,
+        POSetPopulationState<BitString, BitString, Double>,
         BitString, BitString, BitString, BitString, BitString, Double>> stateListener = state ->
-        System.out.printf("%d\t%d\t%1.3f\t%1.3f\n", state.getNOfIterations(), state.getNOfFitnessEvaluations(), state.best1().fitness(), state.best2().fitness());
+        System.out.printf(
+            "%d\t%d\t%1.3f\t%1.3f\n",
+            state.getNOfIterations(),
+            state.getNOfFitnessEvaluations(),
+            state.best1().fitness(),
+            state.best2().fitness()
+        );
 
     try {
       cooperativeSolver.solve(problem, r, executorService, stateListener);
@@ -172,7 +183,9 @@ public class DirtyExamples extends Worker {
       System.err.printf("Cannot load problem due to" + " %s%n", e);
       return;
     }
-    IterativeSolver<POSetPopulationState<Tree<String>, List<Tree<Element>>, Double>, EvenParity, List<Tree<Element>>> solver = new StandardEvolver<>(
+    IterativeSolver<POSetPopulationState<Tree<String>,
+        List<Tree<it.units.malelab.jgea.problem.booleanfunction.Element>>, Double>, EvenParity,
+        List<Tree<it.units.malelab.jgea.problem.booleanfunction.Element>>> solver = new StandardEvolver<>(
         new it.units.malelab.jgea.problem.booleanfunction.FormulaMapper(),
         new GrammarRampedHalfAndHalf<>(3, 12, p.getGrammar()),
         100,
@@ -186,7 +199,7 @@ public class DirtyExamples extends Worker {
         (ep, tr) -> new POSetPopulationState<>()
     );
     try {
-      Collection<List<Tree<Element>>> solutions = solver.solve(
+      Collection<List<Tree<it.units.malelab.jgea.problem.booleanfunction.Element>>> solutions = solver.solve(
           p,
           r,
           executorService,
@@ -376,7 +389,10 @@ public class DirtyExamples extends Worker {
     List<IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SyntheticSymbolicRegressionProblem,
         RealFunction>> solvers = new ArrayList<>();
     solvers.add(new StandardEvolver<>(
-        new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(n, "x"))
+        new it.units.malelab.jgea.problem.symbolicregression.FormulaMapper().andThen(n -> TreeBasedRealFunction.from(
+                n,
+                "x"
+            ))
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
         100,
@@ -390,10 +406,11 @@ public class DirtyExamples extends Worker {
         (srp, rnd) -> new POSetPopulationState<>()
     ));
     solvers.add(new StandardWithEnforcedDiversityEvolver<>(
-        new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(
-            n,
-            "x"
-        )).andThen(MathUtils.linearScaler(p.qualityFunction())),
+        new it.units.malelab.jgea.problem.symbolicregression.FormulaMapper().andThen(n -> TreeBasedRealFunction.from(
+                n,
+                "x"
+            ))
+            .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
         100,
         StopConditions.nOfIterations(100),

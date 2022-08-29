@@ -17,8 +17,8 @@
 package it.units.malelab.jgea.problem.extraction.string;
 
 import com.google.common.collect.Range;
-import it.units.malelab.core.util.Sized;
-import it.units.malelab.jgea.problem.extraction.Extractor;
+import it.units.malelab.jgea.core.representation.graph.finiteautomata.Extractor;
+import it.units.malelab.jgea.core.util.Sized;
 
 import java.util.LinkedHashSet;
 import java.util.List;

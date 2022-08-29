@@ -1,27 +1,30 @@
 package it.units.malelab.jgea.sample;
 
 import com.google.common.collect.Range;
-import it.units.malelab.core.listener.ListenerFactory;
-import it.units.malelab.core.listener.NamedFunction;
-import it.units.malelab.core.listener.TabularPrinter;
-import it.units.malelab.core.representation.grammar.Grammar;
-import it.units.malelab.core.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
-import it.units.malelab.core.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
-import it.units.malelab.core.representation.sequence.FixedLengthListFactory;
-import it.units.malelab.core.representation.sequence.UniformCrossover;
-import it.units.malelab.core.representation.sequence.bit.BitFlipMutation;
-import it.units.malelab.core.representation.sequence.bit.BitString;
-import it.units.malelab.core.representation.sequence.bit.BitStringFactory;
-import it.units.malelab.core.representation.sequence.numeric.GaussianMutation;
-import it.units.malelab.core.representation.sequence.numeric.GeometricCrossover;
-import it.units.malelab.core.representation.sequence.numeric.UniformDoubleFactory;
-import it.units.malelab.core.representation.tree.SameRootSubtreeCrossover;
-import it.units.malelab.core.selector.Last;
-import it.units.malelab.core.selector.Tournament;
-import it.units.malelab.core.solver.state.POSetPopulationState;
-import it.units.malelab.core.util.Misc;
 import it.units.malelab.jgea.core.QualityBasedProblem;
 import it.units.malelab.jgea.core.TotalOrderQualityBasedProblem;
+import it.units.malelab.jgea.core.listener.ListenerFactory;
+import it.units.malelab.jgea.core.listener.NamedFunction;
+import it.units.malelab.jgea.core.listener.TabularPrinter;
+import it.units.malelab.jgea.core.representation.grammar.Grammar;
+import it.units.malelab.jgea.core.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
+import it.units.malelab.jgea.core.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
+import it.units.malelab.jgea.core.representation.graph.numeric.RealFunction;
+import it.units.malelab.jgea.core.representation.sequence.FixedLengthListFactory;
+import it.units.malelab.jgea.core.representation.sequence.UniformCrossover;
+import it.units.malelab.jgea.core.representation.sequence.bit.BitFlipMutation;
+import it.units.malelab.jgea.core.representation.sequence.bit.BitString;
+import it.units.malelab.jgea.core.representation.sequence.bit.BitStringFactory;
+import it.units.malelab.jgea.core.representation.sequence.numeric.GaussianMutation;
+import it.units.malelab.jgea.core.representation.sequence.numeric.GeometricCrossover;
+import it.units.malelab.jgea.core.representation.sequence.numeric.UniformDoubleFactory;
+import it.units.malelab.jgea.core.representation.tree.SameRootSubtreeCrossover;
+import it.units.malelab.jgea.core.selector.Last;
+import it.units.malelab.jgea.core.selector.Tournament;
+import it.units.malelab.jgea.core.solver.*;
+import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
+import it.units.malelab.jgea.core.util.Misc;
+import it.units.malelab.jgea.problem.symbolicregression.*;
 import it.units.malelab.jgea.problem.synthetic.Ackley;
 import it.units.malelab.jgea.problem.synthetic.OneMax;
 
@@ -31,7 +34,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 
-import static it.units.malelab.core.listener.NamedFunctions.*;
+import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
 
 public class Example extends Worker {
 

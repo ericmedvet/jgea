@@ -16,8 +16,9 @@
 
 package it.units.malelab.jgea.problem.symbolicregression;
 
-import it.units.malelab.core.representation.tree.Tree;
-import it.units.malelab.core.util.Sized;
+import it.units.malelab.jgea.core.representation.graph.numeric.RealFunction;
+import it.units.malelab.jgea.core.representation.tree.Tree;
+import it.units.malelab.jgea.core.util.Sized;
 
 import java.util.Arrays;
 import java.util.Objects;

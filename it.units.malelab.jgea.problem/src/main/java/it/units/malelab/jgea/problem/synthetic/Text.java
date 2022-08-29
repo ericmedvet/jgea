@@ -16,12 +16,12 @@
 
 package it.units.malelab.jgea.problem.synthetic;
 
-import it.units.malelab.core.distance.Distance;
-import it.units.malelab.core.distance.Edit;
-import it.units.malelab.core.representation.grammar.Grammar;
-import it.units.malelab.core.representation.grammar.GrammarBasedProblem;
-import it.units.malelab.core.representation.tree.Tree;
 import it.units.malelab.jgea.core.ComparableQualityBasedProblem;
+import it.units.malelab.jgea.core.distance.Distance;
+import it.units.malelab.jgea.core.distance.Edit;
+import it.units.malelab.jgea.core.representation.grammar.Grammar;
+import it.units.malelab.jgea.core.representation.grammar.GrammarBasedProblem;
+import it.units.malelab.jgea.core.representation.tree.Tree;
 
 import java.io.File;
 import java.io.IOException;

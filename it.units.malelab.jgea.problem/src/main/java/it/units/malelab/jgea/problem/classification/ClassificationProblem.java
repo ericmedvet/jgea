@@ -16,10 +16,10 @@
 
 package it.units.malelab.jgea.problem.classification;
 
-import it.units.malelab.core.order.ParetoDominance;
-import it.units.malelab.core.order.PartialComparator;
-import it.units.malelab.core.util.Pair;
 import it.units.malelab.jgea.core.ProblemWithValidation;
+import it.units.malelab.jgea.core.order.ParetoDominance;
+import it.units.malelab.jgea.core.order.PartialComparator;
+import it.units.malelab.jgea.core.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;

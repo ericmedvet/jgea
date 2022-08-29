@@ -23,8 +23,8 @@ package it.units.malelab.jgea.problem.classification;
 
 import com.google.common.collect.EnumMultiset;
 import com.google.common.collect.Multiset;
-import it.units.malelab.core.fitness.CaseBasedFitness;
-import it.units.malelab.core.util.Pair;
+import it.units.malelab.jgea.core.fitness.CaseBasedFitness;
+import it.units.malelab.jgea.core.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +39,7 @@ public class ClassificationFitness<O, L extends Enum<L>> extends CaseBasedFitnes
   private final List<Pair<O, L>> data;
   private final List<String> names;
 
+  @SuppressWarnings("unchecked")
   public ClassificationFitness(List<Pair<O, L>> data, Metric errorMetric) {
     super(
         data.stream().map(Pair::first).toList(),
@@ -71,6 +72,7 @@ public class ClassificationFitness<O, L extends Enum<L>> extends CaseBasedFitnes
       this.actualLabels = actualLabels;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<Pair<Integer, Integer>> apply(List<E> predictedLabels) {
       E protoLabel = actualLabels.get(0);

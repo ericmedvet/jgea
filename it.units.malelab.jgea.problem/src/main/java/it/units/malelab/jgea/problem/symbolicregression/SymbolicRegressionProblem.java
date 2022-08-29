@@ -18,6 +18,7 @@ package it.units.malelab.jgea.problem.symbolicregression;
 
 import it.units.malelab.jgea.core.ComparableQualityBasedProblem;
 import it.units.malelab.jgea.core.ProblemWithValidation;
+import it.units.malelab.jgea.core.representation.graph.numeric.RealFunction;
 
 /**
  * @author eric

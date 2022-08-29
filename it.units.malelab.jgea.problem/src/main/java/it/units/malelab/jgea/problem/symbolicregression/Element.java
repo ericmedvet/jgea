@@ -21,6 +21,8 @@
  */
 package it.units.malelab.jgea.problem.symbolicregression;
 
+import it.units.malelab.jgea.core.representation.graph.numeric.RealFunction;
+
 import java.util.function.ToIntFunction;
 
 public interface Element {

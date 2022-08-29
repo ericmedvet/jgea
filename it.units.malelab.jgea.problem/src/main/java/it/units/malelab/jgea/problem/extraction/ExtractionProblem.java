@@ -18,8 +18,9 @@ package it.units.malelab.jgea.problem.extraction;
 
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
-import it.units.malelab.core.util.Pair;
 import it.units.malelab.jgea.core.MultiHomogeneousObjectiveProblem;
+import it.units.malelab.jgea.core.representation.graph.finiteautomata.Extractor;
+import it.units.malelab.jgea.core.util.Pair;
 
 import java.util.*;
 
