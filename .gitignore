@@ -34,3 +34,4 @@ build/
 
 # Maven
 target/
+.flattened-pom.xml
