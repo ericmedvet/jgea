@@ -8,6 +8,17 @@ Moreover, a few EA are actually implemented in JGEA, most of them being related 
 
 Several research papers have been published in which the experimental evaluation is based on JGEA or its previous version [evolved-ge](https://github.com/ericmedvet/evolved-ge). See a partial [list](#research-papers-based-on-jgea) below.
 
+If you use JGEA please _cite_ our paper:
+
+```
+@inproceedings{medvet2022jgea,
+  title={JGEA: a Modular Java Framework for Experimenting with Evolutionary Computation},
+  author={Medvet, Eric and Nadizar, Giorgia and Manzoni, Luca},
+  booktitle={Proceedings of the genetic and evolutionary computation conference companion},
+  year={2022}
+}
+```
+
 ## Main components
 
 Typical usage of JGEA consists in trying to solve a **problem** using an **EA**.
@@ -212,6 +223,10 @@ Methods inside the constructor of `TabularPrinter` are static methods of the cla
 
 The list includes paper published from 2018 on.
 
+- Medvet, Rusin; [Impact of Morphology Variations on Evolved Neural Controllers for Modular Robots](https://medvet.inginf.units.it/publications/2022-c-mr-impact/); XVI International Workshop on Artificial Life and Evolutionary Computation (WIVACE); 2022
+- Medvet, Nadizar, Manzoni; [JGEA: a Modular Java Framework for Experimenting with Evolutionary Computation](https://medvet.inginf.units.it/publications/2022-c-mnm-jgea/); Workshop Evolutionary Computation Software Systems (EvoSoft@GECCO); 2022
+- Medvet, Nadizar, Pigozzi; [On the Impact of Body Material Properties on Neuroevolution for Embodied Agents: the Case of Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2022-c-mnp-impact/); Workshop on Neuroevolution at Work (NEWK@GECCO); 2022
+- Ferigo, Soros, Medvet, Iacca; [On the Entanglement between Evolvability and Fitness: an Experimental Study on Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2022-c-fsmi-entanglement/); Annual Conference on Artificial Life (Alife); 2022
 - Nadizar, Medvet, Nichele, Pontes-Filho; [Collective control of modular soft robots via embodied Spiking Neural Cellular Automata](https://medvet.inginf.units.it/publications/2022-c-nmnp-collective/); Workshop on From Cells to Societies: Collective Learning across Scales (Cells2Societies@ICLR); 2022
 - Pigozzi, Tang, Medvet, Ha; [Evolving Modular Soft Robots without Explicit Inter-Module Communication using Local Self-Attention](https://medvet.inginf.units.it/publications/2022-c-ptmh-evolving/); ACM Genetic and Evolutionary Computation Conference (GECCO); 2022
 - Pigozzi, Medvet; [Evolving Modularity in Soft Robots through an Embodied and Self-Organizing Neural Controller](https://medvet.inginf.units.it/publications/2022-j-pm-evolving/); Artificial Life, Q3; 2022
