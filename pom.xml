@@ -26,6 +26,7 @@
         <module>it.units.malelab.jgea.problem</module>
         <module>it.units.malelab.jgea.telegram</module>
         <module>it.units.malelab.jgea.sample</module>
+        <module>it.units.malelab.jgea.assembly</module>
     </modules>
     <packaging>pom</packaging>
     <properties>
@@ -93,6 +94,11 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.4.2</version>
             </plugin>
         </plugins>
     </build>
