@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Giorgia Nadizar <giorgia.nadizar@gmail.com> (as giorgia)
+ * Copyright 2022 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.core.util.Misc;
-import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -73,7 +72,7 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
     }
 
     @Override
-    public int compareTo(@NotNull RankedIndividual<G, S> o) {
+    public int compareTo(RankedIndividual<G, S> o) {
       Comparator<RankedIndividual<G, S>> rankComparator = Comparator.comparing(i -> i.rank);
       return rankComparator.compare(this, o);
     }
@@ -97,7 +96,7 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
     }
 
     @Override
-    public int compareTo(@NotNull RankedIndividual<G, S> o) {
+    public int compareTo(RankedIndividual<G, S> o) {
       RankedWithDistanceIndividual<G, S> that = (RankedWithDistanceIndividual<G, S>) o;
       Comparator<RankedWithDistanceIndividual<G, S>> rankComparator = Comparator.comparing(i -> i.rank);
       Comparator<RankedWithDistanceIndividual<G, S>> distanceComparator = Comparator.comparing(i -> i.crowdingDistance);

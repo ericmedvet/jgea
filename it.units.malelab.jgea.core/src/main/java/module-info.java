@@ -6,7 +6,6 @@ module it.units.malelab.jgea.core {
   exports it.units.malelab.jgea.core.distance;
   exports it.units.malelab.jgea.core.fitness;
   exports it.units.malelab.jgea.core.listener;
-  exports it.units.malelab.jgea.core.listener.telegram;
   exports it.units.malelab.jgea.core.operator;
   exports it.units.malelab.jgea.core.order;
   exports it.units.malelab.jgea.core.representation.grammar;
@@ -32,7 +31,5 @@ module it.units.malelab.jgea.core {
   requires java.desktop;
   requires commons.csv;
   requires java.logging;
-  requires java.telegram.bot.api;
-  requires annotations;
   requires commons.math3;
 }
