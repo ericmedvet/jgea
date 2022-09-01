@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 eric
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package it.units.malelab.jgea.sample;
 
 import com.google.common.collect.Range;
@@ -72,7 +88,6 @@ public class Example extends Worker {
   @Override
   public void run() {
     String problem = a("problem", "oneMax");
-
     if (problem.equals("oneMax")) {
       runOneMax();
     }
@@ -90,10 +105,11 @@ public class Example extends Worker {
     QualityBasedProblem<BitString, Double> p = new OneMax();
     List<NamedFunction<? super POSetPopulationState<?, ?, ?>, ?>> keysFunctions = List.of();
     ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
-        ListenerFactory.all(List.of(new TabularPrinter<>(
-            Misc.concat(List.of(keysFunctions, BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)),
-            List.of(attribute("solver"))
-        )));
+        ListenerFactory.all(
+            List.of(new TabularPrinter<>(
+                Misc.concat(List.of(keysFunctions, BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)),
+                List.of(attribute("solver"))
+            )));
     List<IterativeSolver<? extends POSetPopulationState<?, BitString, Double>, QualityBasedProblem<BitString, Double>
         , BitString>> solvers = new ArrayList<>();
     solvers.add(new RandomSearch<>(
@@ -154,9 +170,10 @@ public class Example extends Worker {
   }
 
   public void runSymbolicRegression() {
-    ListenerFactory<? super POSetPopulationState<?, ?, ? extends Double>, Void> listenerFactory =
-        new TabularPrinter<>(Misc.concat(
-            List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)), List.of());
+    ListenerFactory<? super POSetPopulationState<?, ?, ? extends Double>, Void> listenerFactory = new TabularPrinter<>(
+        Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)),
+        List.of()
+    );
     Random r = new Random(1);
     SyntheticSymbolicRegressionProblem p = new Nguyen7(SymbolicRegressionFitness.Metric.MSE, 1);
     Grammar<String> srGrammar;
