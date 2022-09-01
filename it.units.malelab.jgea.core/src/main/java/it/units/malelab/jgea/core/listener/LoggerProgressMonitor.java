@@ -8,7 +8,6 @@ public class LoggerProgressMonitor implements ProgressMonitor {
 
   private final static Logger L = Logger.getLogger(LoggerProgressMonitor.class.getName());
 
-
   @Override
   public void notify(double progress, String message) {
     L.info(String.format("Progress: %s %s%n", TextPlotter.horizontalBar(progress, 0, 1, 8), message));
