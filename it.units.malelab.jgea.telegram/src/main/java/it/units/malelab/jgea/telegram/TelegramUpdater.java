@@ -20,6 +20,7 @@ import it.units.malelab.jgea.core.listener.Accumulator;
 import it.units.malelab.jgea.core.listener.AccumulatorFactory;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.ListenerFactory;
+import it.units.malelab.jgea.core.util.StringUtils;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -41,7 +42,7 @@ public class TelegramUpdater<E, K> extends TelegramClient implements ListenerFac
     sendText(String.format(
         "%s started on %s: will send updates with %d accumulators",
         TelegramUpdater.class.getSimpleName(),
-        getMachineName(),
+        StringUtils.getMachineName(),
         factories.size()
     ));
   }
@@ -59,7 +60,7 @@ public class TelegramUpdater<E, K> extends TelegramClient implements ListenerFac
       @Override
       public void done() {
         List<Object> outcomes = new ArrayList<>();
-        sendText(String.format("done() on %s", getMachineName()));
+        sendText(String.format("done() on %s", StringUtils.getMachineName()));
         //consume accumulators
         for (Accumulator<E, ?> accumulator : accumulators) {
           try {
@@ -101,7 +102,11 @@ public class TelegramUpdater<E, K> extends TelegramClient implements ListenerFac
 
   @Override
   public void shutdown() {
-    sendText(String.format("%s shutting down on %s", TelegramUpdater.class.getSimpleName(), getMachineName()));
+    sendText(String.format(
+        "%s shutting down on %s",
+        TelegramUpdater.class.getSimpleName(),
+        StringUtils.getMachineName()
+    ));
   }
 
 }

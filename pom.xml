@@ -27,6 +27,7 @@
         <module>it.units.malelab.jgea.telegram</module>
         <module>it.units.malelab.jgea.sample</module>
         <module>it.units.malelab.jgea.assembly</module>
+        <module>it.units.malelab.jgea.tui</module>
     </modules>
     <packaging>pom</packaging>
     <properties>

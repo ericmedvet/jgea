@@ -17,6 +17,7 @@
 package it.units.malelab.jgea.telegram;
 
 import it.units.malelab.jgea.core.listener.ProgressMonitor;
+import it.units.malelab.jgea.core.util.StringUtils;
 import it.units.malelab.jgea.core.util.TextPlotter;
 
 public class TelegramProgressMonitor extends TelegramClient implements ProgressMonitor {
@@ -29,7 +30,7 @@ public class TelegramProgressMonitor extends TelegramClient implements ProgressM
   public void notify(double progress, String message) {
     sendText(String.format(
         "%s - progress %s %s",
-        getMachineName(),
+        StringUtils.getMachineName(),
         TextPlotter.horizontalBar(progress, 0, 1, 8),
         message
     ));
@@ -37,6 +38,10 @@ public class TelegramProgressMonitor extends TelegramClient implements ProgressM
 
   @Override
   public void notify(double progress) {
-    sendText(String.format("%s - progress %s", getMachineName(), TextPlotter.horizontalBar(progress, 0, 1, 8)));
+    sendText(String.format(
+        "%s - progress %s",
+        StringUtils.getMachineName(),
+        TextPlotter.horizontalBar(progress, 0, 1, 8)
+    ));
   }
 }

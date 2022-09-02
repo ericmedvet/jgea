@@ -39,6 +39,11 @@
             <artifactId>jgea.problem</artifactId>
             <version>${revision}</version>
         </dependency>
+        <dependency>
+            <groupId>it.units.malelab</groupId>
+            <artifactId>jgea.tui</artifactId>
+            <version>${revision}</version>
+        </dependency>
     </dependencies>
 
 </project>

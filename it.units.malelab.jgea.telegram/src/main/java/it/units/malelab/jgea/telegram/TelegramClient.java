@@ -27,8 +27,6 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -46,17 +44,6 @@ public class TelegramClient {
     } catch (RuntimeException e) {
       L.severe(String.format("Cannot create bot: %s", e));
     }
-  }
-
-  protected static String getMachineName() {
-    String user = System.getProperty("user.name");
-    String hostName = "unknown";
-    try {
-      hostName = InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException e) {
-      //ignore
-    }
-    return user + "@" + hostName;
   }
 
   public void sendDocument(File file) {
