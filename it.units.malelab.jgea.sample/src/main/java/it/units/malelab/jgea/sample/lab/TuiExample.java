@@ -1,8 +1,6 @@
 package it.units.malelab.jgea.sample.lab;
 
-import it.units.malelab.jgea.core.listener.ListenerFactory;
 import it.units.malelab.jgea.core.listener.NamedFunction;
-import it.units.malelab.jgea.core.listener.TabularPrinter;
 import it.units.malelab.jgea.core.representation.grammar.Grammar;
 import it.units.malelab.jgea.core.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
 import it.units.malelab.jgea.core.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
@@ -14,6 +12,7 @@ import it.units.malelab.jgea.core.solver.*;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.problem.symbolicregression.*;
+import it.units.malelab.jgea.tui.TerminalMonitor;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,7 +65,8 @@ public class TuiExample implements Runnable {
 
   @Override
   public void run() {
-    ListenerFactory<? super POSetPopulationState<?, ?, ? extends Double>, Void> listenerFactory = new TabularPrinter<>(
+    TerminalMonitor<? super POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> tm =
+        new TerminalMonitor<>(
         Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)),
         List.of()
     );
@@ -86,7 +86,7 @@ public class TuiExample implements Runnable {
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
         100,
-        StopConditions.nOfIterations(100),
+        StopConditions.nOfIterations(500),
         Map.of(new SameRootSubtreeCrossover<>(12), 0.8d, new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d),
         new Tournament(5),
         new Last(),
@@ -112,24 +112,32 @@ public class TuiExample implements Runnable {
         (srp, rnd) -> new POSetPopulationState<>(),
         100
     ));
+    int counter = 0;
     for (int seed : seeds) {
       Random r = new Random(1);
       for (IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SyntheticSymbolicRegressionProblem,
           RealFunction> solver : solvers) {
-        System.out.println(solver.getClass().getSimpleName());
+        Map<String, Object> keys = Map.ofEntries(
+            Map.entry("seed", seed),
+            Map.entry("solver", solver.getClass().getSimpleName())
+        );
+        tm.notify((double) counter / (double) (seeds.size() * solvers.size()), "Starting " + keys);
         try {
           Collection<RealFunction> solutions = solver.solve(
               p,
               r,
               executorService,
-              listenerFactory.build(null).deferred(executorService)
+              tm.build(keys).deferred(executorService)
           );
-          System.out.printf("Found %d solutions with %s.%n", solutions.size(), solver.getClass().getSimpleName());
+          counter = counter + 1;
+          tm.notify((double) counter / (double) (seeds.size() * solvers.size()), "Starting " + keys);
+          L.info(String.format("Found %d solutions with %s", solutions.size(), keys));
         } catch (SolverException e) {
-          e.printStackTrace();
+          L.severe(String.format("Exception while doing %s: %s", e, keys));
         }
       }
     }
+    tm.shutdown();
   }
 
 }

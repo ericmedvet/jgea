@@ -107,13 +107,17 @@ public class TextPlotter {
   }
 
   public static String horizontalBar(double value, double min, double max, int l) {
+    return horizontalBar(value, min, max, l, true);
+  }
+
+  public static String horizontalBar(double value, double min, double max, int l, boolean withBg) {
     StringBuilder sb = new StringBuilder();
     double r = (max - min) / (double) l;
     for (double i = 0; i < l; i++) {
       double localMin = min + r * i;
       double localMax = min + r * (i + 1d);
       if (value < localMin) {
-        sb.append(EMPTY);
+        sb.append(withBg ? EMPTY : ' ');
       } else if (value < localMax) {
         sb.append(HORIZONTAL_PART_FILLER.charAt((int) Math.round(Math.max(
             Math.min((value - localMin) / r, 1d),

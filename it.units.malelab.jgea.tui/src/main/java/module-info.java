@@ -6,4 +6,5 @@ module it.units.malelab.jgea.tui {
   requires java.logging;
   requires com.googlecode.lanterna;
   exports it.units.malelab.jgea.tui;
+  exports it.units.malelab.jgea.tui.geom;
 }
