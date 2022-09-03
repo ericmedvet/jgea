@@ -67,9 +67,9 @@ public class TuiExample implements Runnable {
   public void run() {
     TerminalMonitor<? super POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> tm =
         new TerminalMonitor<>(
-        Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)),
-        List.of()
-    );
+            Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)),
+            List.of()
+        );
     List<Integer> seeds = List.of(1, 2, 3, 4, 5);
     SyntheticSymbolicRegressionProblem p = new Nguyen7(SymbolicRegressionFitness.Metric.MSE, 1);
     Grammar<String> srGrammar;

@@ -21,6 +21,14 @@ public class DrawUtils {
   }
 
   public static void clipPut(TextGraphics tg, Rectangle r, Point p, String s, SGR... sgrs) {
+    //multiline
+    if (s.lines().count() > 1) {
+      List<String> lines = s.lines().toList();
+      for (int i = 0; i < lines.size(); i++) {
+        clipPut(tg, r, p.delta(0, i), lines.get(i), sgrs);
+      }
+      return;
+    }
     if (p.y() >= r.h() || p.y() < 0) {
       return;
     }
@@ -36,13 +44,6 @@ public class DrawUtils {
       tg.putString(p.delta(headD + r.min().x(), r.min().y()).tp(), s, sgrs[0]);
     } else {
       tg.putString(p.delta(headD + r.min().x(), r.min().y()).tp(), s, sgrs[0], sgrs);
-    }
-    //multiline
-    if (s.lines().count() > 1) {
-      List<String> lines = s.lines().toList();
-      for (int i = 1; i < lines.size(); i++) {
-        clipPut(tg, r, p.delta(0, i), lines.get(i), sgrs);
-      }
     }
   }
 

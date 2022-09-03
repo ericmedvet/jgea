@@ -46,7 +46,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   private final static TextColor PLOT1_COLOR = TextColor.Factory.fromString("#FF1010");
   private final static TextColor PLOT2_COLOR = TextColor.Factory.fromString("#10FF10");
 
-  private final static String LEVEL_FORMAT = "%5.5s";
+  private final static String LEVEL_FORMAT = "%4.4s";
   private final static String DATETIME_FORMAT = "%1$tm-%1$td %1$tH:%1$tM:%1$tS";
   private final static String TIME_FORMAT = "%1$tH:%1$tM:%1$tS";
 
