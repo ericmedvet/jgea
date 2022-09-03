@@ -23,7 +23,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.*;
@@ -136,17 +135,6 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       float rightHorizontalSplit,
       int refreshIntervalMillis
   ) {}
-
-  public static void main(String[] args) {
-    Instant start = Instant.now();
-    TerminalMonitor<Object, Object> monitor = new TerminalMonitor<>(List.of(), List.of());
-    ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-    service.scheduleAtFixedRate(() -> L.info("It's " + new Date()), 0, 2, TimeUnit.SECONDS);
-    service.scheduleAtFixedRate(() -> {
-      double p = Math.min(1d, ChronoUnit.MILLIS.between(start, Instant.now()) / 10000d);
-      monitor.notify(p, "P\n" + new Date());
-    }, 0, 1, TimeUnit.SECONDS);
-  }
 
   @Override
   public Listener<E> build(K k) {
