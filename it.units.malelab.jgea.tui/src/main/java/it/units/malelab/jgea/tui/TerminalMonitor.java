@@ -38,11 +38,11 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
 
   private final static Configuration DEFAULT_CONFIGURATION = new Configuration(0.7f, 0.8f, 0.5f, 250);
 
-  private final static TextColor FRAME_COLOR = TextColor.ANSI.YELLOW;
-  private final static TextColor FRAME_LABEL_COLOR = TextColor.ANSI.YELLOW_BRIGHT;
-  private final static TextColor DATA_LABEL_COLOR = TextColor.ANSI.MAGENTA_BRIGHT;
-  private final static TextColor MAIN_DATA_COLOR = TextColor.ANSI.WHITE_BRIGHT;
-  private final static TextColor DATA_COLOR = TextColor.ANSI.WHITE;
+  private final static TextColor FRAME_COLOR = TextColor.Factory.fromString("#105010");
+  private final static TextColor FRAME_LABEL_COLOR = TextColor.Factory.fromString("#10A010");
+  private final static TextColor DATA_LABEL_COLOR = TextColor.Factory.fromString("#A01010");
+  private final static TextColor MAIN_DATA_COLOR = TextColor.Factory.fromString("#F0F0F0");
+  private final static TextColor DATA_COLOR = TextColor.Factory.fromString("#A0A0A0");
   private final static TextColor PLOT_BG_COLOR = TextColor.Factory.fromString("#101010");
   private final static TextColor PLOT1_COLOR = TextColor.Factory.fromString("#FF1010");
   private final static TextColor PLOT2_COLOR = TextColor.Factory.fromString("#10FF10");
@@ -55,10 +55,10 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   private final static int RUN_HISTORY_SIZE = 200;
 
   private final static Map<Level, TextColor> LEVEL_COLORS = Map.ofEntries(
-      Map.entry(Level.SEVERE, TextColor.ANSI.RED_BRIGHT),
-      Map.entry(Level.WARNING, TextColor.ANSI.RED),
-      Map.entry(Level.INFO, TextColor.ANSI.GREEN),
-      Map.entry(Level.CONFIG, TextColor.ANSI.MAGENTA)
+      Map.entry(Level.SEVERE, TextColor.Factory.fromString("#EE3E38")),
+      Map.entry(Level.WARNING, TextColor.Factory.fromString("#FBA465")),
+      Map.entry(Level.INFO, TextColor.Factory.fromString("#D8E46B")),
+      Map.entry(Level.CONFIG, TextColor.Factory.fromString("#6D8700"))
   );
   private final static Logger L = Logger.getLogger(TerminalMonitor.class.getName());
   private final List<Pair<? extends NamedFunction<? super E, ?>, Integer>> ePairs;
