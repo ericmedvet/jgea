@@ -263,6 +263,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       }
     }
     if (lastProgressMessage != null) {
+      tg.setForegroundColor(DATA_COLOR);
       clipPut(tg, r, 0, 5, lastProgressMessage);
     }
     //draw data: legend
@@ -294,7 +295,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     tg.setForegroundColor(DATA_COLOR);
     for (int i = 0; i < Math.min(runRows.size(), r.h()); i = i + 1) {
       List<String> row = runRows.get(runRows.size() - 1 - i);
-      clipPut(tg, r, 0, i+1, String.join(" ", row));
+      clipPut(tg, r, 0, i + 1, String.join(" ", row));
     }
     //refresh
     try {
