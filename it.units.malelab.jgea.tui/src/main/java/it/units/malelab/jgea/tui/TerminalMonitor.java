@@ -1,6 +1,9 @@
 package it.units.malelab.jgea.tui;
 
-import com.googlecode.lanterna.*;
+import com.googlecode.lanterna.SGR;
+import com.googlecode.lanterna.Symbols;
+import com.googlecode.lanterna.TerminalSize;
+import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
@@ -10,27 +13,30 @@ import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.ListenerFactory;
 import it.units.malelab.jgea.core.listener.NamedFunction;
 import it.units.malelab.jgea.core.listener.ProgressMonitor;
+import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.core.util.StringUtils;
+import it.units.malelab.jgea.core.util.TextPlotter;
+import it.units.malelab.jgea.tui.geom.Point;
+import it.units.malelab.jgea.tui.geom.Rectangle;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
+import java.util.logging.*;
 import java.util.stream.Collectors;
 
 /**
  * @author "Eric Medvet" on 2022/09/02 for jgea
  */
 public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E, K>, ProgressMonitor {
+
+  private final static Configuration DEFAULT_CONFIGURATION = new Configuration(0.7f, 0.8f, 0.5f, 250);
 
   private final static TextColor FRAME_COLOR = TextColor.ANSI.YELLOW;
   private final static TextColor FRAME_LABEL_COLOR = TextColor.ANSI.YELLOW_BRIGHT;
@@ -39,7 +45,8 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   private final static TextColor DATA_COLOR = TextColor.ANSI.WHITE;
 
   private final static String LEVEL_FORMAT = "%5.5s";
-  private final static String LOG_DATE_FORMAT = "%1$tm-%1$td %1$tH:%1$tM:%1$tS";
+  private final static String DATETIME_FORMAT = "%1$tm-%1$td %1$tH:%1$tM:%1$tS";
+  private final static String TIME_FORMAT = "%1$tH:%1$tM:%1$tS";
 
   private final static int MAX_LOG_RECORDS = 100;
 
@@ -53,12 +60,27 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   private final List<Pair<? extends NamedFunction<? super E, ?>, Integer>> ePairs;
   private final List<Pair<? extends NamedFunction<? super K, ?>, Integer>> kPairs;
   private final Configuration configuration;
+  private final ScheduledFuture<?> painterTask;
   private final List<LogRecord> logRecords;
+  private final Instant startingInstant;
+
   private Screen screen;
+  private double lastProgress;
+  private String lastProgressMessage;
+  private Instant lastProgressInstant;
+
 
   public TerminalMonitor(
       List<NamedFunction<? super E, ?>> eFunctions,
       List<NamedFunction<? super K, ?>> kFunctions
+  ) {
+    this(eFunctions, kFunctions, DEFAULT_CONFIGURATION);
+  }
+
+  public TerminalMonitor(
+      List<NamedFunction<? super E, ?>> eFunctions,
+      List<NamedFunction<? super K, ?>> kFunctions,
+      Configuration configuration
   ) {
     //set functions
     ePairs = eFunctions.stream().map(f -> Pair.of(
@@ -70,7 +92,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
         Math.max(StringUtils.collapse(f.getName()).length(), StringUtils.formatSize(f.getFormat()))
     )).collect(Collectors.toList());
     //read configuration
-    configuration = new Configuration(0.7f, 0.8f, 0.5f);
+    this.configuration = configuration;
     //prepare data object stores
     logRecords = new LinkedList<>();
     //prepare screen
@@ -85,79 +107,89 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       screen.setCursorPosition(null);
       repaint();
     }
+    //start painting scheduler
+    painterTask = Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(
+        this::repaint,
+        0,
+        configuration.refreshIntervalMillis,
+        TimeUnit.MILLISECONDS
+    );
+    //capture logs
+    Logger mainLogger = Logger.getLogger("");
+    mainLogger.setLevel(Level.CONFIG);
+    mainLogger.addHandler(this);
+    Arrays.stream(mainLogger.getHandlers()).filter(h -> h instanceof ConsoleHandler).forEach(mainLogger::removeHandler);
+    //set default locale
+    Locale.setDefault(Locale.ENGLISH);
+    startingInstant = Instant.now();
   }
 
-  private record Configuration(
+  public record Configuration(
       float verticalSplit,
       float leftHorizontalSplit,
-      float rightHorizontalSplit
+      float rightHorizontalSplit,
+      int refreshIntervalMillis
   ) {}
 
-  private record Point(int x, int y) {
-    public Point delta(int dx, int dy) {
-      return new Point(x + dx, y + dy);
-    }
-
-    public TerminalPosition tp() {
-      return new TerminalPosition(x, y);
-    }
+  private static void clipPut(TextGraphics tg, Rectangle r, int x, int y, String s, SGR... sgrs) {
+    clipPut(tg, r, new Point(x, y), s, sgrs);
   }
 
-  private record Rectangle(Point min, Point max) {
-    public int h() {
-      return max().y() - min().y();
-    }
-
-    public Point ne() {
-      return min();
-    }
-
-    public Point nw() {
-      return new Point(max().x() - 1, min().y());
-    }
-
-    public Point se() {
-      return new Point(min().x(), max().y() - 1);
-    }
-
-    public Point sw() {
-      return max().delta(-1, -1);
-    }
-
-    public int w() {
-      return max().x() - min().x();
-    }
-  }
-
-  private static void clipPut(Point p, Rectangle clip, String s, TextGraphics tg) {
-    if (p.y() >= clip.max().y() || p.y() < clip.min().y()) {
+  private static void clipPut(TextGraphics tg, Rectangle r, Point p, String s, SGR... sgrs) {
+    if (p.y() >= r.h() || p.y() < 0) {
       return;
     }
-    int headD = Math.max(0, clip.min().x() - p.x());
-    int tailD = Math.max(0, p.x() + s.length() - clip.max().x());
+    int headD = Math.max(0, -p.x());
+    int tailD = Math.max(0, p.x() + s.length() - r.w());
     if (s.length() - headD - tailD <= 0) {
       return;
     }
     s = s.substring(headD, s.length() - tailD);
-    tg.putString(p.delta(headD, 0).tp(), s);
+    if (sgrs.length == 0) {
+      tg.putString(p.delta(headD + r.min().x(), r.min().y()).tp(), s);
+    } else if (sgrs.length == 1) {
+      tg.putString(p.delta(headD + r.min().x(), r.min().y()).tp(), s, sgrs[0]);
+    } else {
+      tg.putString(p.delta(headD + r.min().x(), r.min().y()).tp(), s, sgrs[0], sgrs);
+    }
+    //multiline
+    if (s.lines().count() > 1) {
+      List<String> lines = s.lines().toList();
+      for (int i = 1; i < lines.size(); i++) {
+        clipPut(tg, r, p.delta(0, i), lines.get(i), sgrs);
+      }
+    }
+  }
+
+  private static void drawFrame(TextGraphics tg, Rectangle r, String label) {
+    tg.setForegroundColor(FRAME_COLOR);
+    tg.drawLine(r.ne().delta(1, 0).tp(), r.nw().delta(-1, 0).tp(), Symbols.SINGLE_LINE_HORIZONTAL);
+    tg.drawLine(r.se().delta(1, 0).tp(), r.sw().delta(-1, 0).tp(), Symbols.SINGLE_LINE_HORIZONTAL);
+    tg.drawLine(r.ne().delta(0, 1).tp(), r.se().delta(0, -1).tp(), Symbols.SINGLE_LINE_VERTICAL);
+    tg.drawLine(r.nw().delta(0, 1).tp(), r.sw().delta(0, -1).tp(), Symbols.SINGLE_LINE_VERTICAL);
+    tg.setCharacter(r.ne().tp(), Symbols.SINGLE_LINE_TOP_LEFT_CORNER);
+    tg.setCharacter(r.se().tp(), Symbols.SINGLE_LINE_BOTTOM_LEFT_CORNER);
+    tg.setCharacter(r.nw().tp(), Symbols.SINGLE_LINE_TOP_RIGHT_CORNER);
+    tg.setCharacter(r.sw().tp(), Symbols.SINGLE_LINE_BOTTOM_RIGHT_CORNER);
+    tg.setForegroundColor(FRAME_LABEL_COLOR);
+    clipPut(tg, r, 2, 0, "[" + label + "]");
   }
 
   public static void main(String[] args) {
-    System.out.println("starting");
-    TerminalMonitor<Object, Object> tm = new TerminalMonitor<>(List.of(), List.of());
-    Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(
-        () -> {
-          tm.publish(new LogRecord(Level.INFO, "It's " + new Date()));
-        },
-        0,
-        2,
-        TimeUnit.SECONDS
-    );
+    Instant start = Instant.now();
+    TerminalMonitor<Object, Object> monitor = new TerminalMonitor<>(List.of(), List.of());
+    ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+    service.scheduleAtFixedRate(() -> L.info("It's " + new Date()), 0, 2, TimeUnit.SECONDS);
+    service.scheduleAtFixedRate(() -> {
+      double p = Math.min(1d, ChronoUnit.MILLIS.between(start, Instant.now()) / 10000d);
+      monitor.notify(p, "P\n" + new Date());
+    }, 0, 1, TimeUnit.SECONDS);
   }
 
   @Override
   public Listener<E> build(K k) {
-    return null;
+    return e -> {
+    };
   }
 
   @Override
@@ -171,18 +203,109 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     }
   }
 
-  private void kill() {
-    try {
-      screen.stopScreen();
-    } catch (IOException e) {
-      L.warning(String.format("Cannot stop screen: %s", e));
-    }
-    System.exit(0);
+  @Override
+  public synchronized void notify(double progress, String message) {
+    lastProgress = progress;
+    lastProgressMessage = message;
+    lastProgressInstant = Instant.now();
   }
 
-  @Override
-  public void notify(double progress, String message) {
-
+  private void repaint() {
+    if (screen == null) {
+      return;
+    }
+    //check keystrokes
+    try {
+      KeyStroke k = screen.pollInput();
+      if (k != null && ((k.getCharacter().equals('c') && k.isCtrlDown()) || k.getKeyType().equals(KeyType.EOF))) {
+        stop();
+      }
+    } catch (IOException e) {
+      L.warning(String.format("Cannot check key strokes: %s", e));
+    }
+    //update size
+    TerminalSize size = screen.doResizeIfNecessary();
+    TextGraphics tg = screen.newTextGraphics();
+    Rectangle r;
+    if (size == null) {
+      size = screen.getTerminalSize();
+    } else {
+      screen.clear();
+    }
+    //adjust rectangles
+    Rectangle all = new Rectangle(new Point(0, 0), new Point(size.getColumns(), size.getRows()));
+    Rectangle e = all.splitHorizontally(configuration.verticalSplit).get(0);
+    Rectangle w = all.splitHorizontally(configuration.verticalSplit).get(1);
+    Rectangle runR = e.splitVertically(configuration.leftHorizontalSplit).get(0);
+    Rectangle logR = e.splitVertically(configuration.leftHorizontalSplit).get(1);
+    Rectangle legendR = w.splitVertically(configuration.rightHorizontalSplit).get(0);
+    Rectangle statusR = w.splitVertically(configuration.rightHorizontalSplit).get(1);
+    //draw structure
+    drawFrame(tg, runR, "Ongoing run");
+    drawFrame(tg, legendR, "Legend");
+    drawFrame(tg, logR, "Log");
+    drawFrame(tg, statusR, "Status");
+    //draw data: logs
+    int levelW = String.format(LEVEL_FORMAT, Level.WARNING).length();
+    int dateW = String.format(DATETIME_FORMAT, Instant.now().getEpochSecond()).length();
+    r = logR.inner(1);
+    for (int i = 0; i < Math.min(r.h(), logRecords.size()); i = i + 1) {
+      LogRecord record = logRecords.get(logRecords.size() - 1 - i);
+      tg.setForegroundColor(LEVEL_COLORS.getOrDefault(record.getLevel(), DATA_COLOR));
+      clipPut(tg, r, 0, i, String.format(LEVEL_FORMAT, record.getLevel()));
+      tg.setForegroundColor(MAIN_DATA_COLOR);
+      clipPut(tg, r, levelW + 1, i, String.format(DATETIME_FORMAT, record.getMillis()));
+      tg.setForegroundColor(DATA_COLOR);
+      clipPut(tg, r, levelW + 1 + dateW + 1, i, record.getMessage());
+    }
+    //draw data: status
+    r = statusR.inner(1);
+    tg.setForegroundColor(DATA_LABEL_COLOR);
+    clipPut(tg, r, 0, 0, "Machine:");
+    clipPut(tg, r, 0, 1, "Loc time:");
+    clipPut(tg, r, 0, 2, "Memory:");
+    clipPut(tg, r, 0, 3, "Progress:");
+    clipPut(tg, r, 0, 4, "Last progress message:");
+    tg.setForegroundColor(MAIN_DATA_COLOR);
+    clipPut(tg, r, 10, 0, StringUtils.getMachineName());
+    clipPut(tg, r, 10, 1, String.format(DATETIME_FORMAT, Date.from(Instant.now())));
+    float maxGigaMemory = Runtime.getRuntime().maxMemory() / 1024f / 1024f / 1024f;
+    float usedGigaMemory = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime()
+        .freeMemory()) / 1024f / 1024f / 1024f;
+    clipPut(tg, r, 10, 2, TextPlotter.horizontalBar(usedGigaMemory, 0, maxGigaMemory, 10));
+    clipPut(tg, r, 21, 2, String.format("%.1fGB", maxGigaMemory));
+    clipPut(tg, r, 10, 3, TextPlotter.horizontalBar(lastProgress, 0, 1, 10));
+    if (lastProgressInstant != null) {
+      Instant eta = startingInstant.plus(
+          Math.round(ChronoUnit.MILLIS.between(startingInstant, lastProgressInstant) / lastProgress),
+          ChronoUnit.MILLIS
+      );
+      clipPut(tg, r, 21, 3, String.format(Symbols.ARROW_RIGHT + DATETIME_FORMAT, Date.from(eta)));
+    }
+    if (lastProgressMessage != null) {
+      clipPut(tg, r, 0, 5, lastProgressMessage);
+    }
+    //draw data: legend
+    r = legendR;
+    List<Pair<String, String>> items = Misc.concat(List.of(kPairs, ePairs))
+        .stream()
+        .map(p -> new Pair<>(
+            StringUtils.collapse(p.first().getName()),
+            p.first().getName()
+        ))
+        .toList();
+    for (int i = 0; i < items.size(); i++) {
+      tg.setForegroundColor(DATA_LABEL_COLOR);
+      clipPut(tg, r, 0, i, items.get(i).first());
+      tg.setForegroundColor(DATA_COLOR);
+      clipPut(tg, r, 0, i, items.get(i).second());
+    }
+    //refresh
+    try {
+      screen.refresh();
+    } catch (IOException ex) {
+      L.warning(String.format("Cannot refresh screen: %s", ex));
+    }
   }
 
   @Override
@@ -191,7 +314,6 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     while (logRecords.size() > MAX_LOG_RECORDS) {
       logRecords.remove(0);
     }
-    repaint();
   }
 
   @Override
@@ -204,94 +326,16 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
 
   }
 
-  private void repaint() {
-    //check keystrokes
+  private void stop() {
     try {
-      KeyStroke k = screen.pollInput();
-      if (k != null && (k.getKeyType().equals(KeyType.Escape) || k.getKeyType().equals(KeyType.EOF))) {
-        kill();
-      }
+      screen.stopScreen();
     } catch (IOException e) {
-      L.warning(String.format("Cannot check key strokes: %s", e));
+      L.warning(String.format("Cannot stop screen: %s", e));
     }
-    //update size
-    TerminalSize size = screen.doResizeIfNecessary();
-    if (size == null) {
-      size = screen.getTerminalSize();
-    } else {
-      screen.clear();
-    }
-    Rectangle all = new Rectangle(new Point(0, 0), new Point(size.getColumns(), size.getRows()));
-    Rectangle ne = new Rectangle(
-        all.min().delta(1, 1),
-        new Point(
-            (int) (all.max().x() * configuration.verticalSplit()),
-            (int) (all.max().y() * configuration.leftHorizontalSplit())
-        )
-    );
-    Rectangle se = new Rectangle(
-        new Point(ne.min().x(), ne.max().y() + 1),
-        new Point(ne.max.x(), all.max().y() - 1)
-    );
-    Rectangle nw = new Rectangle(
-        new Point(ne.max().x() + 1, all.min().y() + 1),
-        new Point(
-            all.max().x() - 1,
-            (int) (all.max().y() * configuration.rightHorizontalSplit())
-        )
-    );
-    Rectangle sw = new Rectangle(
-        new Point(nw.min().x(), nw.max().y() + 1),
-        new Point(all.max.x() - 1, all.max().y() - 1)
-    );
-    //draw structure
-    TextGraphics tg = screen.newTextGraphics();
-    tg.setForegroundColor(FRAME_COLOR);
-    tg.drawLine(all.ne().tp(), all.nw().tp(), Symbols.SINGLE_LINE_HORIZONTAL);
-    tg.drawLine(all.se().tp(), all.sw().tp(), Symbols.SINGLE_LINE_HORIZONTAL);
-    tg.drawLine(all.ne().tp(), all.se().tp(), Symbols.SINGLE_LINE_VERTICAL);
-    tg.drawLine(all.nw().tp(), all.sw().tp(), Symbols.SINGLE_LINE_VERTICAL);
-    tg.setCharacter(all.ne().tp(), Symbols.SINGLE_LINE_TOP_LEFT_CORNER);
-    tg.setCharacter(all.nw().tp(), Symbols.SINGLE_LINE_TOP_RIGHT_CORNER);
-    tg.setCharacter(all.se().tp(), Symbols.SINGLE_LINE_BOTTOM_LEFT_CORNER);
-    tg.setCharacter(all.sw().tp(), Symbols.SINGLE_LINE_BOTTOM_RIGHT_CORNER);
-    tg.drawLine(ne.nw().delta(1, 0).tp(), se.sw().delta(1, 0).tp(), Symbols.SINGLE_LINE_VERTICAL);
-    tg.setCharacter(ne.nw().delta(1, -1).tp(), Symbols.SINGLE_LINE_T_DOWN);
-    tg.setCharacter(se.sw().delta(1, 1).tp(), Symbols.SINGLE_LINE_T_UP);
-    tg.drawLine(ne.se().delta(0, 1).tp(), ne.sw().delta(0, 1).tp(), Symbols.SINGLE_LINE_HORIZONTAL);
-    tg.setCharacter(ne.se().delta(-1, 1).tp(), Symbols.SINGLE_LINE_T_RIGHT);
-    tg.setCharacter(ne.sw().delta(1, 1).tp(), Symbols.SINGLE_LINE_T_LEFT);
-    tg.drawLine(nw.se().delta(0, 1).tp(), nw.sw().delta(0, 1).tp(), Symbols.SINGLE_LINE_HORIZONTAL);
-    tg.setCharacter(nw.se().delta(-1, 1).tp(), Symbols.SINGLE_LINE_T_RIGHT);
-    tg.setCharacter(nw.sw().delta(1, 1).tp(), Symbols.SINGLE_LINE_T_LEFT);
-    //draw labels
-    tg.setForegroundColor(FRAME_LABEL_COLOR);
-    tg.putString(ne.ne().delta(1, -1).tp(), "[Ongoing run]", SGR.BOLD);
-    tg.putString(nw.ne().delta(1, -1).tp(), "[Legend]", SGR.BOLD);
-    tg.putString(se.ne().delta(1, -1).tp(), "[Log]", SGR.BOLD);
-    tg.putString(sw.ne().delta(1, -1).tp(), "[Progress msgs]", SGR.BOLD);
-    //draw data: logs
-    int levelW = String.format(LEVEL_FORMAT, Level.WARNING).length();
-    int dateW = String.format(LOG_DATE_FORMAT, Instant.now().getEpochSecond()).length();
-    for (int i = 0; i < Math.min(se.h(), logRecords.size()); i = i + 1) {
-      LogRecord record = logRecords.get(logRecords.size() - 1 - i);
-      tg.setForegroundColor(LEVEL_COLORS.getOrDefault(record.getLevel(), DATA_COLOR));
-      clipPut(se.ne().delta(0, i), se, String.format(LEVEL_FORMAT, record.getLevel()), tg);
-      tg.setForegroundColor(MAIN_DATA_COLOR);
-      clipPut(
-          se.ne().delta(levelW + 1, i),
-          se,
-          String.format(LOG_DATE_FORMAT, record.getMillis()),
-          tg
-      );
-      tg.setForegroundColor(DATA_COLOR);
-      clipPut(se.ne().delta(levelW + 1 + dateW + 1, i), se, record.getMessage(), tg);
-    }
-    //refresh
-    try {
-      screen.refresh();
-    } catch (IOException e) {
-      L.warning(String.format("Cannot refresh screen: %s", e));
-    }
+    painterTask.cancel(false);
+    L.info("Closed");
+    Logger.getLogger("").removeHandler(this);
+    System.exit(1);
   }
+
 }
