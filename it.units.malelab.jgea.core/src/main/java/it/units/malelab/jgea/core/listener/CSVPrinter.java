@@ -80,7 +80,7 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
           try {
             printer = new org.apache.commons.csv.CSVPrinter(
                 new PrintStream(actualFile),
-                CSVFormat.DEFAULT.withDelimiter(';')
+                CSVFormat.Builder.create().setDelimiter(";").build()
             );
           } catch (IOException ex) {
             L.severe(String.format("Cannot create CSVPrinter: %s", ex));
