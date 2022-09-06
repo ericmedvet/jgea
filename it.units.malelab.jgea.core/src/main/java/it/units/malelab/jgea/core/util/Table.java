@@ -13,6 +13,8 @@ public interface Table<T> {
   void addColumn(String name, List<T> values);
 
   void addRow(List<T> values);
+  boolean removeRow(List<T> values);
+  void removeRow(int y);
 
   void clear();
 

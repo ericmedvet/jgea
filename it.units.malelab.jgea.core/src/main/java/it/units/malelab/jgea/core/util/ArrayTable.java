@@ -3,6 +3,7 @@ package it.units.malelab.jgea.core.util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * @author eric on 2021/01/04 for jgea
@@ -93,4 +94,24 @@ public class ArrayTable<T> implements Table<T> {
     return y * nColumns() + x;
   }
 
+  @Override
+  public boolean removeRow(List<T> values) {
+    int[] ys = IntStream.range(0, nRows()).filter(y -> row(y).equals(values)).toArray();
+    if (ys.length == 0) {
+      return false;
+    }
+    for (int y = ys.length - 1; y >= 0; y = y - 1) {
+      removeRow(y);
+    }
+    return true;
+  }
+
+  @Override
+  public void removeRow(int y) {
+    checkIndexes(0, y);
+    int nColumns = nColumns();
+    for (int i = (y + 1) * nColumns - 1; y >= y * nColumns; i = i - 1) {
+      values.remove(i);
+    }
+  }
 }

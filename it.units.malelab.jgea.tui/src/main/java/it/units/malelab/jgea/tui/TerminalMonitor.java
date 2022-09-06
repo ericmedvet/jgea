@@ -12,9 +12,7 @@ import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.listener.ListenerFactory;
 import it.units.malelab.jgea.core.listener.NamedFunction;
 import it.units.malelab.jgea.core.listener.ProgressMonitor;
-import it.units.malelab.jgea.core.util.Misc;
-import it.units.malelab.jgea.core.util.Pair;
-import it.units.malelab.jgea.core.util.StringUtils;
+import it.units.malelab.jgea.core.util.*;
 import it.units.malelab.jgea.tui.geom.Point;
 import it.units.malelab.jgea.tui.geom.Rectangle;
 
@@ -26,7 +24,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.*;
-import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static it.units.malelab.jgea.tui.geom.DrawUtils.*;
 
@@ -60,12 +58,13 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       Map.entry(Level.CONFIG, TextColor.Factory.fromString("#6D8700"))
   );
   private final static Logger L = Logger.getLogger(TerminalMonitor.class.getName());
-  private final List<Pair<? extends NamedFunction<? super E, ?>, Integer>> ePairs;
-  private final List<Pair<? extends NamedFunction<? super K, ?>, Integer>> kPairs;
+  private final List<? extends NamedFunction<? super E, ?>> eFunctions;
+  private final List<? extends NamedFunction<? super K, ?>> kFunctions;
+  private final List<String> formats;
   private final Configuration configuration;
   private final ScheduledFuture<?> painterTask;
   private final List<LogRecord> logRecords;
-  private final List<List<String>> runRows;
+  private final Table<Object> runTable;
   private final Instant startingInstant;
 
   private Screen screen;
@@ -87,19 +86,20 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       Configuration configuration
   ) {
     //set functions
-    ePairs = eFunctions.stream().map(f -> Pair.of(
-        f,
-        Math.max(StringUtils.collapse(f.getName()).length(), StringUtils.formatSize(f.getFormat()))
-    )).collect(Collectors.toList());
-    kPairs = kFunctions.stream().map(f -> Pair.of(
-        f,
-        Math.max(StringUtils.collapse(f.getName()).length(), StringUtils.formatSize(f.getFormat()))
-    )).collect(Collectors.toList());
+    this.eFunctions = eFunctions;
+    this.kFunctions = kFunctions;
+    formats = Misc.concat(List.of(
+        eFunctions.stream().map(NamedFunction::getFormat).toList(),
+        kFunctions.stream().map(NamedFunction::getFormat).toList()
+    ));
     //read configuration
     this.configuration = configuration;
     //prepare data object stores
     logRecords = new LinkedList<>();
-    runRows = new LinkedList<>();
+    runTable = new ArrayTable<>(Misc.concat(List.of(
+        eFunctions.stream().map(NamedFunction::getName).toList(),
+        kFunctions.stream().map(NamedFunction::getName).toList()
+    )));
     //prepare screen
     DefaultTerminalFactory defaultTerminalFactory = new DefaultTerminalFactory();
     try {
@@ -138,18 +138,21 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
 
   @Override
   public Listener<E> build(K k) {
-    List<String> kItems = kPairs.stream()
-        .map(p -> String.format(p.first().getFormat(), p.first().apply(k)))
+    List<?> kItems = kFunctions.stream()
+        .map(f -> f.apply(k))
         .toList();
+    runTable.clear();
     return e -> {
-      List<String> eItems = ePairs.stream()
-          .map(p -> String.format(p.first().getFormat(), p.first().apply(e)))
+      List<?> eItems = eFunctions.stream()
+          .map(f -> f.apply(e))
           .toList();
-      List<String> row = new ArrayList<>(eItems);
-      row.addAll(kItems);
-      runRows.add(row);
-      while (runRows.size() > RUN_HISTORY_SIZE) {
-        runRows.remove(0);
+      List<Object> row = Misc.concat(List.of(
+          eItems,
+          kItems
+      ));
+      runTable.addRow(row);
+      while (runTable.nRows() > RUN_HISTORY_SIZE) {
+        runTable.removeRow(0);
       }
     };
   }
@@ -254,36 +257,50 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       tg.setForegroundColor(DATA_COLOR);
       clipPut(tg, r, 0, 5, lastProgressMessage);
     }
-    //draw data: legend
-    r = legendR.inner(1);
-    clear(tg, r);
-    List<Pair<String, String>> items = Misc.concat(List.of(kPairs, ePairs))
-        .stream()
-        .map(p -> new Pair<>(
-            StringUtils.collapse(p.first().getName()),
-            p.first().getName()
-        ))
-        .toList();
-    int shortLabelW = items.stream().mapToInt(p -> p.first().length()).max().orElse(0);
-    for (int i = 0; i < items.size(); i = i + 1) {
+    try {
+      //draw data: legend
+      r = legendR.inner(1);
+      clear(tg, r);
+      List<Pair<String, String>> legendItems = runTable.names()
+          .stream()
+          .map(s -> new Pair<>(StringUtils.collapse(s), s))
+          .toList();
+      int shortLabelW = legendItems.stream().mapToInt(p -> p.first().length()).max().orElse(0);
+      for (int i = 0; i < legendItems.size(); i = i + 1) {
+        tg.setForegroundColor(DATA_LABEL_COLOR);
+        clipPut(tg, r, 0, i, legendItems.get(i).first());
+        tg.setForegroundColor(DATA_COLOR);
+        clipPut(tg, r, shortLabelW + 1, i, legendItems.get(i).second());
+      }
+      //draw data: run
+      r = runR.inner(1);
+      clear(tg, r);
+      int[] colWidths = IntStream.range(0, runTable.nColumns())
+          .map(x -> Math.max(
+              legendItems.get(x).first().length(),
+              runTable.column(x).stream()
+                  .mapToInt(o -> String.format(formats.get(x), o).length())
+                  .max()
+                  .orElse(0)
+          ))
+          .toArray();
       tg.setForegroundColor(DATA_LABEL_COLOR);
-      clipPut(tg, r, 0, i, items.get(i).first());
+      int x = 0;
+      for (int i = 0; i < colWidths.length; i = i + 1) {
+        clipPut(tg, r, x, 0, legendItems.get(i).first());
+        x = x + colWidths[i] + 1;
+      }
       tg.setForegroundColor(DATA_COLOR);
-      clipPut(tg, r, shortLabelW + 1, i, items.get(i).second());
-    }
-    //draw data: run
-    r = runR.inner(1);
-    clear(tg, r);
-    List<String> headers = Misc.concat(List.of(kPairs, ePairs))
-        .stream()
-        .map(p -> StringUtils.justify(StringUtils.collapse(p.first().getName()), p.second()))
-        .toList();
-    tg.setForegroundColor(DATA_LABEL_COLOR);
-    clipPut(tg, r, 0, 0, String.join(" ", headers));
-    tg.setForegroundColor(DATA_COLOR);
-    for (int i = 0; i < Math.min(runRows.size(), r.h()); i = i + 1) {
-      List<String> row = runRows.get(runRows.size() - 1 - i);
-      clipPut(tg, r, 0, i + 1, String.join(" ", row));
+      for (int j = 0; j < Math.min(runTable.nRows(), r.h()); j = j + 1) {
+        x = 0;
+        for (int i = 0; i < colWidths.length; i = i + 1) {
+          clipPut(tg, r, x, j + 1, String.format(formats.get(i), runTable.get(i, j)));
+          x = x + colWidths[i] + 1;
+        }
+      }
+    } catch (RuntimeException ex) {
+      ex.printStackTrace();
+      System.exit(0);
     }
     //refresh
     try {
