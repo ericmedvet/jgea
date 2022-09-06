@@ -110,8 +110,6 @@ public class ArrayTable<T> implements Table<T> {
   public void removeRow(int y) {
     checkIndexes(0, y);
     int nColumns = nColumns();
-    for (int i = (y + 1) * nColumns - 1; y >= y * nColumns; i = i - 1) {
-      values.remove(i);
-    }
+    values.subList(y * nColumns, (y + 1) * nColumns).clear();
   }
 }

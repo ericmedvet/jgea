@@ -17,6 +17,8 @@ import it.units.malelab.jgea.tui.geom.Point;
 import it.units.malelab.jgea.tui.geom.Rectangle;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -49,7 +51,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   private final static String TIME_FORMAT = "%1$tH:%1$tM:%1$tS";
 
   private final static int LOG_HISTORY_SIZE = 100;
-  private final static int RUN_HISTORY_SIZE = 200;
+  private final static int RUN_HISTORY_SIZE = 1000;
 
   private final static Map<Level, TextColor> LEVEL_COLORS = Map.ofEntries(
       Map.entry(Level.SEVERE, TextColor.Factory.fromString("#EE3E38")),
@@ -150,9 +152,11 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
           eItems,
           kItems
       ));
-      runTable.addRow(row);
-      while (runTable.nRows() > RUN_HISTORY_SIZE) {
-        runTable.removeRow(0);
+      synchronized (this) {
+        runTable.addRow(row);
+        while (runTable.nRows() > RUN_HISTORY_SIZE) {
+          runTable.removeRow(0);
+        }
       }
     };
   }
@@ -177,7 +181,23 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     }
   }
 
-  private void repaint() {
+  @Override
+  public void flush() {
+  }
+
+  @Override
+  public void close() throws SecurityException {
+  }
+
+  private double getCPULoad() {
+    return ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class).getSystemLoadAverage();
+  }
+
+  private int getNumberOfProcessors() {
+    return ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class).getAvailableProcessors();
+  }
+
+  private synchronized void repaint() {
     if (screen == null) {
       return;
     }
@@ -232,75 +252,88 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     tg.setForegroundColor(DATA_LABEL_COLOR);
     clipPut(tg, r, 0, 0, "Machine:");
     clipPut(tg, r, 0, 1, "Loc time:");
-    clipPut(tg, r, 0, 2, "Memory:");
-    clipPut(tg, r, 0, 3, "Progress:");
-    clipPut(tg, r, 0, 4, "Last progress message:");
+    clipPut(tg, r, 0, 2, "CPU load:");
+    clipPut(tg, r, 0, 3, "Memory:");
+    clipPut(tg, r, 0, 4, "Progress:");
+    clipPut(tg, r, 0, 5, "Last progress message:");
     tg.setForegroundColor(MAIN_DATA_COLOR);
     clipPut(tg, r, 10, 0, StringUtils.getMachineName());
     clipPut(tg, r, 10, 1, String.format(DATETIME_FORMAT, Date.from(Instant.now())));
     float maxGigaMemory = Runtime.getRuntime().maxMemory() / 1024f / 1024f / 1024f;
     float usedGigaMemory = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime()
         .freeMemory()) / 1024f / 1024f / 1024f;
-    drawBar(tg, r, 10, 2, usedGigaMemory, 0, maxGigaMemory, 10, PLOT1_COLOR, PLOT_BG_COLOR);
-    clipPut(tg, r, 21, 2, String.format("%.1fGB", maxGigaMemory));
-    drawBar(tg, r, 10, 3, lastProgress, 0, 1, 10, PLOT1_COLOR, PLOT_BG_COLOR);
+    double cpuLoad = getCPULoad();
+    int nOfProcessors = getNumberOfProcessors();
+    drawBar(tg, r, 10, 2, cpuLoad, 0, nOfProcessors, 10, PLOT1_COLOR, PLOT_BG_COLOR);
+    clipPut(tg, r, 21, 2, String.format("%.2f on %d cores", cpuLoad, 2*nOfProcessors));
+    drawBar(tg, r, 10, 3, usedGigaMemory, 0, maxGigaMemory, 10, PLOT1_COLOR, PLOT_BG_COLOR);
+    clipPut(tg, r, 21, 3, String.format("%.1fGB", maxGigaMemory));
+    drawBar(tg, r, 10, 4, lastProgress, 0, 1, 10, PLOT1_COLOR, PLOT_BG_COLOR);
     if (lastProgressInstant != null) {
       if (lastProgress > 0) {
         Instant eta = startingInstant.plus(
             Math.round(ChronoUnit.MILLIS.between(startingInstant, lastProgressInstant) / lastProgress),
             ChronoUnit.MILLIS
         );
-        clipPut(tg, r, 21, 3, String.format(Symbols.ARROW_RIGHT + DATETIME_FORMAT, Date.from(eta)));
+        clipPut(tg, r, 21, 4, String.format(Symbols.ARROW_RIGHT + DATETIME_FORMAT, Date.from(eta)));
       }
     }
     if (lastProgressMessage != null) {
       tg.setForegroundColor(DATA_COLOR);
-      clipPut(tg, r, 0, 5, lastProgressMessage);
+      clipPut(tg, r, 0, 6, lastProgressMessage);
     }
-    try {
-      //draw data: legend
-      r = legendR.inner(1);
-      clear(tg, r);
-      List<Pair<String, String>> legendItems = runTable.names()
-          .stream()
-          .map(s -> new Pair<>(StringUtils.collapse(s), s))
-          .toList();
-      int shortLabelW = legendItems.stream().mapToInt(p -> p.first().length()).max().orElse(0);
-      for (int i = 0; i < legendItems.size(); i = i + 1) {
-        tg.setForegroundColor(DATA_LABEL_COLOR);
-        clipPut(tg, r, 0, i, legendItems.get(i).first());
-        tg.setForegroundColor(DATA_COLOR);
-        clipPut(tg, r, shortLabelW + 1, i, legendItems.get(i).second());
-      }
-      //draw data: run
-      r = runR.inner(1);
-      clear(tg, r);
-      int[] colWidths = IntStream.range(0, runTable.nColumns())
-          .map(x -> Math.max(
-              legendItems.get(x).first().length(),
-              runTable.column(x).stream()
-                  .mapToInt(o -> String.format(formats.get(x), o).length())
-                  .max()
-                  .orElse(0)
-          ))
-          .toArray();
+    //draw data: legend
+    r = legendR.inner(1);
+    clear(tg, r);
+    List<Pair<String, String>> legendItems = runTable.names()
+        .stream()
+        .map(s -> new Pair<>(StringUtils.collapse(s), s))
+        .toList();
+    int shortLabelW = legendItems.stream().mapToInt(p -> p.first().length()).max().orElse(0);
+    for (int i = 0; i < legendItems.size(); i = i + 1) {
       tg.setForegroundColor(DATA_LABEL_COLOR);
-      int x = 0;
+      clipPut(tg, r, 0, i, legendItems.get(i).first());
+      tg.setForegroundColor(DATA_COLOR);
+      clipPut(tg, r, shortLabelW + 1, i, legendItems.get(i).second());
+    }
+    //draw data: run
+    r = runR.inner(1);
+    clear(tg, r);
+    int[] colWidths = IntStream.range(0, runTable.nColumns())
+        .map(x -> Math.max(
+            legendItems.get(x).first().length(),
+            runTable.column(x).stream()
+                .mapToInt(o -> String.format(formats.get(x), o).length())
+                .max()
+                .orElse(0)
+        ))
+        .toArray();
+    tg.setForegroundColor(DATA_LABEL_COLOR);
+    int x = 0;
+    for (int i = 0; i < colWidths.length; i = i + 1) {
+      clipPut(tg, r, x, 0, legendItems.get(i).first());
+      x = x + colWidths[i] + 1;
+    }
+    tg.setForegroundColor(DATA_COLOR);
+    for (int j = 0; j < Math.min(runTable.nRows(), r.h()); j = j + 1) {
+      x = 0;
+      int rowIndex = runTable.nRows()-j-1;
       for (int i = 0; i < colWidths.length; i = i + 1) {
-        clipPut(tg, r, x, 0, legendItems.get(i).first());
+        Object value = runTable.get(i, rowIndex);
+        try {
+          clipPut(tg, r, x, j + 1, String.format(formats.get(i), value));
+        } catch (IllegalFormatConversionException ex) {
+          L.warning(String.format(
+              "Cannot format %s %s as a \"%s\" with %s: %s",
+              value.getClass().getSimpleName(),
+              value,
+              formats.get(rowIndex),
+              legendItems.get(i).second(),
+              ex
+          ));
+        }
         x = x + colWidths[i] + 1;
       }
-      tg.setForegroundColor(DATA_COLOR);
-      for (int j = 0; j < Math.min(runTable.nRows(), r.h()); j = j + 1) {
-        x = 0;
-        for (int i = 0; i < colWidths.length; i = i + 1) {
-          clipPut(tg, r, x, j + 1, String.format(formats.get(i), runTable.get(i, j)));
-          x = x + colWidths[i] + 1;
-        }
-      }
-    } catch (RuntimeException ex) {
-      ex.printStackTrace();
-      System.exit(0);
     }
     //refresh
     try {
@@ -308,16 +341,6 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     } catch (IOException ex) {
       L.warning(String.format("Cannot refresh screen: %s", ex));
     }
-  }
-
-  @Override
-  public void flush() {
-
-  }
-
-  @Override
-  public void close() throws SecurityException {
-
   }
 
   private void stop() {
