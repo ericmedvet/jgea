@@ -101,6 +101,27 @@ public interface NamedFunction<F, T> extends Function<F, T> {
     return befores.stream().map(this::of).collect(Collectors.toList());
   }
 
+  default <K> NamedFunction<F, K> as(Class<K> kClass) {
+    NamedFunction<F, T> thisNamedFunction = this;
+    return new NamedFunction<>() {
+      @SuppressWarnings("unchecked")
+      @Override
+      public K apply(F f) {
+        return (K) thisNamedFunction.apply(f);
+      }
+
+      @Override
+      public String getFormat() {
+        return thisNamedFunction.getFormat();
+      }
+
+      @Override
+      public String getName() {
+        return thisNamedFunction.getName();
+      }
+    };
+  }
+
   default NamedFunction<F, T> reformat(String format) {
     NamedFunction<F, T> thisNamedFunction = this;
     return new NamedFunction<>() {
