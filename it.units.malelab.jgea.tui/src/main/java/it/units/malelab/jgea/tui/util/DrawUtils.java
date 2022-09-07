@@ -9,6 +9,7 @@ import it.units.malelab.jgea.core.util.Table;
 import it.units.malelab.jgea.core.util.TextPlotter;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -75,7 +76,7 @@ public class DrawUtils {
     clipPut(tg, r, new Point(x, y), s, sgrs);
   }
 
-  public static void drawBar(
+  public static void drawHorizontalBar(
       TextGraphics tg,
       Rectangle r,
       Point p,
@@ -95,7 +96,7 @@ public class DrawUtils {
     tg.setBackgroundColor(previousBgColor);
   }
 
-  public static void drawBar(
+  public static void drawHorizontalBar(
       TextGraphics tg,
       Rectangle r,
       int x,
@@ -107,7 +108,7 @@ public class DrawUtils {
       TextColor fgColor,
       TextColor bgColor
   ) {
-    drawBar(tg, r, new Point(x, y), value, min, max, l, fgColor, bgColor);
+    drawHorizontalBar(tg, r, new Point(x, y), value, min, max, l, fgColor, bgColor);
   }
 
   public static void drawFrame(TextGraphics tg, Rectangle r, String label, TextColor frameColor, TextColor labelColor) {
@@ -130,7 +131,9 @@ public class DrawUtils {
       Table<? extends Number> data,
       TextColor fgColor,
       TextColor labelsColor,
-      TextColor bgColor
+      TextColor bgColor,
+      String xFormat,
+      String yFormat
   ) {
     if (data.nColumns() < 2) {
       throw new IllegalArgumentException(String.format(
@@ -158,17 +161,32 @@ public class DrawUtils {
     for (int rx = 0; rx < r.w(); rx = rx + 1) {
       double y = f.apply(xMin + (xMax - xMin) * (double) rx / (double) r.w());
       double ry = (y - yMin) / (yMax - yMin) * (r.h() - 1d);
-      for (int rh = 0; rh < ry; rh = rh + 1) {
+      for (int rh = 0; rh < Math.floor(ry); rh = rh + 1) {
         tg.setCharacter(r.se().delta(rx, -rh).tp(), FILLER);
       }
       double remainder = ry - Math.floor(ry);
       tg.setCharacter(
-          r.se().delta(rx, -(int) Math.ceil(ry)).tp(),
+          r.se().delta(rx, -(int) Math.floor(ry)).tp(),
           VERTICAL_PART_FILLER.charAt((int) Math.floor(remainder * VERTICAL_PART_FILLER.length()))
       );
     }
     //plot labels of ranges
-    //TODO
+    tg.setForegroundColor(labelsColor);
+    Number numXMin = data.column(0).stream().min(Comparator.comparingDouble(Number::doubleValue)).orElseThrow();
+    Number numXMax = data.column(0).stream().max(Comparator.comparingDouble(Number::doubleValue)).orElseThrow();
+    Number numYMin = data.column(1).stream().min(Comparator.comparingDouble(Number::doubleValue)).orElseThrow();
+    Number numYMax = data.column(1).stream().max(Comparator.comparingDouble(Number::doubleValue)).orElseThrow();
+    if (f.apply(xMin) > f.apply(xMax)) {
+      String eLabel = "(" + String.format(xFormat, numXMin).trim() + ";" + String.format(yFormat, numYMin).trim() + ")";
+      String wLabel = "(" + String.format(xFormat, numXMax).trim() + ";" + String.format(yFormat, numYMax).trim() + ")";
+      clipPut(tg, r, 0, r.h() - 1, eLabel);
+      clipPut(tg, r, r.w() - wLabel.length(), 0, wLabel);
+    } else {
+      String eLabel = "(" + String.format(xFormat, numXMin).trim() + ";" + String.format(yFormat, numYMax).trim() + ")";
+      String wLabel = "(" + String.format(xFormat, numXMax).trim() + ";" + String.format(yFormat, numYMin).trim() + ")";
+      clipPut(tg, r, 0, 0, eLabel);
+      clipPut(tg, r, r.w() - wLabel.length(), r.h() - 1, wLabel);
+    }
   }
 
 }

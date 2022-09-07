@@ -70,10 +70,16 @@ public class TuiExample implements Runnable {
         new TerminalMonitor<>(
             Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)),
             List.of(),
-            List.of(new Pair<>(
-                iterations(),
-                fitness().reformat("%5.3f").of(best()).as(Number.class)
-            ))
+            List.of(
+                new Pair<>(
+                    iterations(),
+                    fitness().reformat("%5.3f").of(best()).as(Number.class)
+                ),
+                new Pair<>(
+                    iterations(),
+                    uniqueness().of(each(genotype())).of(all())
+                )
+            )
         );
     List<Integer> seeds = List.of(1, 2, 3, 4, 5);
     SyntheticSymbolicRegressionProblem p = new Nguyen7(SymbolicRegressionFitness.Metric.MSE, 1);
@@ -81,7 +87,7 @@ public class TuiExample implements Runnable {
     try {
       srGrammar = Grammar.fromFile(new File("grammars/symbolic" + "-regression-nguyen7" + ".bnf"));
     } catch (IOException e) {
-      e.printStackTrace();
+      L.severe(String.format("Cannot load grammar: %s", e));
       return;
     }
     List<IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SyntheticSymbolicRegressionProblem,

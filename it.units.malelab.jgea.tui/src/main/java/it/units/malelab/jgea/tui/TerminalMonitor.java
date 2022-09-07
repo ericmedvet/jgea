@@ -157,8 +157,10 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     List<?> kItems = kFunctions.stream()
         .map(f -> f.apply(k))
         .toList();
-    runTable.clear();
-    plotTables.forEach(Table::clear);
+    synchronized (runTable) {
+      runTable.clear();
+      plotTables.forEach(Table::clear);
+    }
     return e -> {
       List<?> eItems = eFunctions.stream()
           .map(f -> f.apply(e))
@@ -259,8 +261,12 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       Rectangle plotsR = runR.splitVertically(configuration.plotHorizontalSplit).get(1);
       runR = runR.splitVertically(configuration.plotHorizontalSplit).get(0);
       if (plotFunctionPairs.size() > 1) {
-        // TODO split plotsR
-        plotRs = List.of();
+        float[] splits = new float[plotFunctionPairs.size() - 1];
+        splits[0] = 1f / (float) plotFunctionPairs.size();
+        for (int i = 1; i < splits.length; i++) {
+          splits[i] = splits[i - 1] + 1f / (float) plotFunctionPairs.size();
+        }
+        plotRs = plotsR.splitHorizontally(splits);
       } else {
         plotRs = List.of(plotsR);
       }
@@ -271,9 +277,8 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     drawFrame(tg, logR, "Log", FRAME_COLOR, FRAME_LABEL_COLOR);
     drawFrame(tg, statusR, "Status", FRAME_COLOR, FRAME_LABEL_COLOR);
     for (int i = 0; i < plotFunctionPairs.size(); i++) {
-      String plotName = plotFunctionPairs.get(i).first().getName() + " vs. " + plotFunctionPairs.get(i)
-          .second()
-          .getName();
+      String plotName = plotFunctionPairs.get(i).second().getName() + " vs. "
+          + plotFunctionPairs.get(i).first().getName();
       drawFrame(tg, plotRs.get(i), plotName, FRAME_COLOR, FRAME_LABEL_COLOR);
     }
     //draw data: logs
@@ -310,12 +315,12 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
         .freeMemory()) / 1024f / 1024f / 1024f;
     double cpuLoad = getCPULoad();
     int nOfProcessors = getNumberOfProcessors();
-    drawBar(tg, r, 10, 2, cpuLoad, 0, nOfProcessors, 10, PLOT1_COLOR, PLOT_BG_COLOR);
+    drawHorizontalBar(tg, r, 10, 2, cpuLoad, 0, nOfProcessors, 10, PLOT1_COLOR, PLOT_BG_COLOR);
     clipPut(tg, r, 21, 2, String.format("%.2f on %d cores", cpuLoad, 2 * nOfProcessors));
-    drawBar(tg, r, 10, 3, usedGigaMemory, 0, maxGigaMemory, 10, PLOT1_COLOR, PLOT_BG_COLOR);
+    drawHorizontalBar(tg, r, 10, 3, usedGigaMemory, 0, maxGigaMemory, 10, PLOT1_COLOR, PLOT_BG_COLOR);
     clipPut(tg, r, 21, 3, String.format("%.1fGB", maxGigaMemory));
     synchronized (this) {
-      drawBar(tg, r, 10, 4, lastProgress, 0, 1, 10, PLOT1_COLOR, PLOT_BG_COLOR);
+      drawHorizontalBar(tg, r, 10, 4, lastProgress, 0, 1, 10, PLOT1_COLOR, PLOT_BG_COLOR);
       if (lastProgressInstant != null) {
         if (lastProgress > 0) {
           Instant eta = startingInstant.plus(
@@ -387,14 +392,25 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       //draw plots
       if (!plotFunctionPairs.isEmpty()) {
         for (int i = 0; i < plotFunctionPairs.size(); i = i + 1) {
-          drawPlot(
-              tg,
-              plotRs.get(i).inner(1),
-              plotTables.get(i),
-              PLOT2_COLOR,
-              MAIN_DATA_COLOR,
-              PLOT_BG_COLOR
-          );
+          try {
+            drawPlot(
+                tg,
+                plotRs.get(i).inner(1),
+                plotTables.get(i),
+                PLOT2_COLOR,
+                MAIN_DATA_COLOR,
+                PLOT_BG_COLOR,
+                plotFunctionPairs.get(i).first().getFormat(),
+                plotFunctionPairs.get(i).second().getFormat()
+            );
+          } catch (RuntimeException ex) {
+            L.warning(String.format(
+                "Cannot do plot %s vs. %s: %s",
+                plotFunctionPairs.get(i).first().getName(),
+                plotFunctionPairs.get(i).second().getName(),
+                ex
+            ));
+          }
         }
       }
     }
