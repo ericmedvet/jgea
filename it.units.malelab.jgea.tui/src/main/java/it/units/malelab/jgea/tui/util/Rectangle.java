@@ -1,4 +1,4 @@
-package it.units.malelab.jgea.tui.geom;
+package it.units.malelab.jgea.tui.util;
 
 import java.util.ArrayList;
 import java.util.List;

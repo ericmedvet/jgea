@@ -1,18 +1,42 @@
-package it.units.malelab.jgea.tui.geom;
+package it.units.malelab.jgea.tui.util;
 
 import com.googlecode.lanterna.SGR;
 import com.googlecode.lanterna.Symbols;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.graphics.TextGraphics;
+import it.units.malelab.jgea.core.util.Table;
 import it.units.malelab.jgea.core.util.TextPlotter;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * @author "Eric Medvet" on 2022/09/03 for jgea
  */
 public class DrawUtils {
+
+  private final static Logger L = Logger.getLogger(DrawUtils.class.getName());
+  private static final String VERTICAL_PART_FILLER = " ▁▂▃▄▅▆▇";
+  private static final char FILLER = '█';
+
+  private interface RealFunction {
+    double apply(double x);
+
+    static RealFunction from(double[] xs, double[] ys) {
+      return x -> {
+        int ix = 0;
+        for (int i = 1; i < xs.length; i = i + 1) {
+          if (Math.abs(xs[i] - x) < Math.abs(xs[ix] - x)) {
+            ix = i;
+          }
+        }
+        return ys[ix];
+      };
+    }
+  }
+
   private DrawUtils() {
   }
 
@@ -99,4 +123,52 @@ public class DrawUtils {
     tg.setForegroundColor(labelColor);
     clipPut(tg, r, 2, 0, "[" + label + "]");
   }
+
+  public static void drawPlot(
+      TextGraphics tg,
+      Rectangle r,
+      Table<? extends Number> data,
+      TextColor fgColor,
+      TextColor labelsColor,
+      TextColor bgColor
+  ) {
+    if (data.nColumns() < 2) {
+      throw new IllegalArgumentException(String.format(
+          "Cannot draw table with less than 2 columns: %d found",
+          data.nColumns()
+      ));
+    }
+    if (data.nRows() < 2) {
+      return;
+    }
+    //get data
+    double[] xs = data.column(0).stream().mapToDouble(Number::doubleValue).toArray();
+    double[] ys = data.column(1).stream().mapToDouble(Number::doubleValue).toArray();
+    RealFunction f = RealFunction.from(xs, ys);
+    //compute ranges
+    double xMin = Arrays.stream(xs).min().orElse(0);
+    double xMax = Arrays.stream(xs).max().orElse(0);
+    double yMin = Arrays.stream(ys).min().orElse(0);
+    double yMax = Arrays.stream(ys).max().orElse(0);
+    //set colors and plot bg
+    tg.setForegroundColor(bgColor);
+    tg.setForegroundColor(fgColor);
+    clear(tg, r);
+    //plot bars
+    for (int rx = 0; rx < r.w(); rx = rx + 1) {
+      double y = f.apply(xMin + (xMax - xMin) * (double) rx / (double) r.w());
+      double ry = (y - yMin) / (yMax - yMin) * (r.h() - 1d);
+      for (int rh = 0; rh < ry; rh = rh + 1) {
+        tg.setCharacter(r.se().delta(rx, -rh).tp(), FILLER);
+      }
+      double remainder = ry - Math.floor(ry);
+      tg.setCharacter(
+          r.se().delta(rx, -(int) Math.ceil(ry)).tp(),
+          VERTICAL_PART_FILLER.charAt((int) Math.floor(remainder * VERTICAL_PART_FILLER.length()))
+      );
+    }
+    //plot labels of ranges
+    //TODO
+  }
+
 }

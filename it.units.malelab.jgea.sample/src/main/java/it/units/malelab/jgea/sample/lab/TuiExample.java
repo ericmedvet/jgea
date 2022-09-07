@@ -11,6 +11,7 @@ import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.solver.*;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.core.util.Misc;
+import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.problem.symbolicregression.*;
 import it.units.malelab.jgea.tui.TerminalMonitor;
 
@@ -68,7 +69,11 @@ public class TuiExample implements Runnable {
     TerminalMonitor<? super POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> tm =
         new TerminalMonitor<>(
             Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)),
-            List.of()
+            List.of(),
+            List.of(new Pair<>(
+                iterations(),
+                fitness().reformat("%5.3f").of(best()).as(Number.class)
+            ))
         );
     List<Integer> seeds = List.of(1, 2, 3, 4, 5);
     SyntheticSymbolicRegressionProblem p = new Nguyen7(SymbolicRegressionFitness.Metric.MSE, 1);

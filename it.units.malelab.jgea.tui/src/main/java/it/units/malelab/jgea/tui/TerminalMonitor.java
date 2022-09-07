@@ -13,8 +13,8 @@ import it.units.malelab.jgea.core.listener.ListenerFactory;
 import it.units.malelab.jgea.core.listener.NamedFunction;
 import it.units.malelab.jgea.core.listener.ProgressMonitor;
 import it.units.malelab.jgea.core.util.*;
-import it.units.malelab.jgea.tui.geom.Point;
-import it.units.malelab.jgea.tui.geom.Rectangle;
+import it.units.malelab.jgea.tui.util.Point;
+import it.units.malelab.jgea.tui.util.Rectangle;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -28,14 +28,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.*;
 import java.util.stream.IntStream;
 
-import static it.units.malelab.jgea.tui.geom.DrawUtils.*;
+import static it.units.malelab.jgea.tui.util.DrawUtils.*;
 
 /**
  * @author "Eric Medvet" on 2022/09/02 for jgea
  */
 public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E, K>, ProgressMonitor {
 
-  private final static Configuration DEFAULT_CONFIGURATION = new Configuration(0.7f, 0.8f, 0.5f, 250);
+  private final static Configuration DEFAULT_CONFIGURATION = new Configuration(0.7f, 0.8f, 0.5f, 0.65f, 250);
 
   private final static TextColor FRAME_COLOR = TextColor.Factory.fromString("#105010");
   private final static TextColor FRAME_LABEL_COLOR = TextColor.Factory.fromString("#10A010");
@@ -44,11 +44,10 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   private final static TextColor DATA_COLOR = TextColor.Factory.fromString("#A0A0A0");
   private final static TextColor PLOT_BG_COLOR = TextColor.Factory.fromString("#101010");
   private final static TextColor PLOT1_COLOR = TextColor.Factory.fromString("#FF1010");
-  private final static TextColor PLOT2_COLOR = TextColor.Factory.fromString("#10FF10");
+  private final static TextColor PLOT2_COLOR = TextColor.Factory.fromString("#105010");
 
   private final static String LEVEL_FORMAT = "%4.4s";
   private final static String DATETIME_FORMAT = "%1$tm-%1$td %1$tH:%1$tM:%1$tS";
-  private final static String TIME_FORMAT = "%1$tH:%1$tM:%1$tS";
 
   private final static int LOG_HISTORY_SIZE = 100;
   private final static int RUN_HISTORY_SIZE = 1000;
@@ -62,7 +61,10 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   private final static Logger L = Logger.getLogger(TerminalMonitor.class.getName());
   private final List<? extends NamedFunction<? super E, ?>> eFunctions;
   private final List<? extends NamedFunction<? super K, ?>> kFunctions;
+  private final List<Pair<? extends NamedFunction<? super E, ? extends Number>, ? extends NamedFunction<? super E, ?
+      extends Number>>> plotFunctionPairs;
   private final List<String> formats;
+  private final List<Table<Number>> plotTables;
   private final Configuration configuration;
   private final ScheduledFuture<?> painterTask;
   private final List<LogRecord> logRecords;
@@ -77,23 +79,34 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
 
   public TerminalMonitor(
       List<NamedFunction<? super E, ?>> eFunctions,
-      List<NamedFunction<? super K, ?>> kFunctions
+      List<NamedFunction<? super K, ?>> kFunctions,
+      List<Pair<? extends NamedFunction<? super E, ? extends Number>, ? extends NamedFunction<? super E, ?
+          extends Number>>> plotFunctionPairs
   ) {
-    this(eFunctions, kFunctions, DEFAULT_CONFIGURATION);
+    this(eFunctions, kFunctions, plotFunctionPairs, DEFAULT_CONFIGURATION);
   }
 
   public TerminalMonitor(
       List<NamedFunction<? super E, ?>> eFunctions,
       List<NamedFunction<? super K, ?>> kFunctions,
+      List<Pair<? extends NamedFunction<? super E, ? extends Number>, ? extends NamedFunction<? super E, ?
+          extends Number>>> plotFunctionPairs,
       Configuration configuration
   ) {
     //set functions
     this.eFunctions = eFunctions;
     this.kFunctions = kFunctions;
+    this.plotFunctionPairs = plotFunctionPairs;
     formats = Misc.concat(List.of(
         eFunctions.stream().map(NamedFunction::getFormat).toList(),
         kFunctions.stream().map(NamedFunction::getFormat).toList()
     ));
+    plotTables = plotFunctionPairs.stream()
+        .map(p -> (Table<Number>) new ArrayTable<Number>(List.of(
+            p.first().getName(),
+            p.second().getName()
+        )))
+        .toList();
     //read configuration
     this.configuration = configuration;
     //prepare data object stores
@@ -135,6 +148,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       float verticalSplit,
       float leftHorizontalSplit,
       float rightHorizontalSplit,
+      float plotHorizontalSplit,
       int refreshIntervalMillis
   ) {}
 
@@ -144,6 +158,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
         .map(f -> f.apply(k))
         .toList();
     runTable.clear();
+    plotTables.forEach(Table::clear);
     return e -> {
       List<?> eItems = eFunctions.stream()
           .map(f -> f.apply(e))
@@ -152,10 +167,16 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
           eItems,
           kItems
       ));
-      synchronized (this) {
+      synchronized (runTable) {
         runTable.addRow(row);
         while (runTable.nRows() > RUN_HISTORY_SIZE) {
           runTable.removeRow(0);
+        }
+        for (int i = 0; i < plotFunctionPairs.size(); i = i + 1) {
+          plotTables.get(i).addRow(List.of(
+              plotFunctionPairs.get(i).first().apply(e),
+              plotFunctionPairs.get(i).second().apply(e)
+          ));
         }
       }
     };
@@ -167,17 +188,21 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   }
 
   @Override
-  public synchronized void notify(double progress, String message) {
-    lastProgress = progress;
-    lastProgressMessage = message;
-    lastProgressInstant = Instant.now();
+  public void notify(double progress, String message) {
+    synchronized (this) {
+      lastProgress = progress;
+      lastProgressMessage = message;
+      lastProgressInstant = Instant.now();
+    }
   }
 
   @Override
   public synchronized void publish(LogRecord record) {
-    logRecords.add(record);
-    while (logRecords.size() > LOG_HISTORY_SIZE) {
-      logRecords.remove(0);
+    synchronized (logRecords) {
+      logRecords.add(record);
+      while (logRecords.size() > LOG_HISTORY_SIZE) {
+        logRecords.remove(0);
+      }
     }
   }
 
@@ -197,7 +222,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     return ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class).getAvailableProcessors();
   }
 
-  private synchronized void repaint() {
+  private void repaint() {
     if (screen == null) {
       return;
     }
@@ -227,24 +252,45 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     Rectangle logR = e.splitVertically(configuration.leftHorizontalSplit).get(1);
     Rectangle legendR = w.splitVertically(configuration.rightHorizontalSplit).get(0);
     Rectangle statusR = w.splitVertically(configuration.rightHorizontalSplit).get(1);
+    List<Rectangle> plotRs;
+    if (plotFunctionPairs.isEmpty()) {
+      plotRs = List.of();
+    } else {
+      Rectangle plotsR = runR.splitVertically(configuration.plotHorizontalSplit).get(1);
+      runR = runR.splitVertically(configuration.plotHorizontalSplit).get(0);
+      if (plotFunctionPairs.size() > 1) {
+        // TODO split plotsR
+        plotRs = List.of();
+      } else {
+        plotRs = List.of(plotsR);
+      }
+    }
     //draw structure
     drawFrame(tg, runR, "Ongoing run", FRAME_COLOR, FRAME_LABEL_COLOR);
     drawFrame(tg, legendR, "Legend", FRAME_COLOR, FRAME_LABEL_COLOR);
     drawFrame(tg, logR, "Log", FRAME_COLOR, FRAME_LABEL_COLOR);
     drawFrame(tg, statusR, "Status", FRAME_COLOR, FRAME_LABEL_COLOR);
+    for (int i = 0; i < plotFunctionPairs.size(); i++) {
+      String plotName = plotFunctionPairs.get(i).first().getName() + " vs. " + plotFunctionPairs.get(i)
+          .second()
+          .getName();
+      drawFrame(tg, plotRs.get(i), plotName, FRAME_COLOR, FRAME_LABEL_COLOR);
+    }
     //draw data: logs
     int levelW = String.format(LEVEL_FORMAT, Level.WARNING).length();
     int dateW = String.format(DATETIME_FORMAT, Instant.now().getEpochSecond()).length();
     r = logR.inner(1);
     clear(tg, r);
-    for (int i = 0; i < Math.min(r.h(), logRecords.size()); i = i + 1) {
-      LogRecord record = logRecords.get(logRecords.size() - 1 - i);
-      tg.setForegroundColor(LEVEL_COLORS.getOrDefault(record.getLevel(), DATA_COLOR));
-      clipPut(tg, r, 0, i, String.format(LEVEL_FORMAT, record.getLevel()));
-      tg.setForegroundColor(MAIN_DATA_COLOR);
-      clipPut(tg, r, levelW + 1, i, String.format(DATETIME_FORMAT, record.getMillis()));
-      tg.setForegroundColor(DATA_COLOR);
-      clipPut(tg, r, levelW + 1 + dateW + 1, i, record.getMessage());
+    synchronized (logRecords) {
+      for (int i = 0; i < Math.min(r.h(), logRecords.size()); i = i + 1) {
+        LogRecord record = logRecords.get(logRecords.size() - 1 - i);
+        tg.setForegroundColor(LEVEL_COLORS.getOrDefault(record.getLevel(), DATA_COLOR));
+        clipPut(tg, r, 0, i, String.format(LEVEL_FORMAT, record.getLevel()));
+        tg.setForegroundColor(MAIN_DATA_COLOR);
+        clipPut(tg, r, levelW + 1, i, String.format(DATETIME_FORMAT, record.getMillis()));
+        tg.setForegroundColor(DATA_COLOR);
+        clipPut(tg, r, levelW + 1 + dateW + 1, i, record.getMessage());
+      }
     }
     //draw data: status
     r = statusR.inner(1);
@@ -265,74 +311,91 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     double cpuLoad = getCPULoad();
     int nOfProcessors = getNumberOfProcessors();
     drawBar(tg, r, 10, 2, cpuLoad, 0, nOfProcessors, 10, PLOT1_COLOR, PLOT_BG_COLOR);
-    clipPut(tg, r, 21, 2, String.format("%.2f on %d cores", cpuLoad, 2*nOfProcessors));
+    clipPut(tg, r, 21, 2, String.format("%.2f on %d cores", cpuLoad, 2 * nOfProcessors));
     drawBar(tg, r, 10, 3, usedGigaMemory, 0, maxGigaMemory, 10, PLOT1_COLOR, PLOT_BG_COLOR);
     clipPut(tg, r, 21, 3, String.format("%.1fGB", maxGigaMemory));
-    drawBar(tg, r, 10, 4, lastProgress, 0, 1, 10, PLOT1_COLOR, PLOT_BG_COLOR);
-    if (lastProgressInstant != null) {
-      if (lastProgress > 0) {
-        Instant eta = startingInstant.plus(
-            Math.round(ChronoUnit.MILLIS.between(startingInstant, lastProgressInstant) / lastProgress),
-            ChronoUnit.MILLIS
-        );
-        clipPut(tg, r, 21, 4, String.format(Symbols.ARROW_RIGHT + DATETIME_FORMAT, Date.from(eta)));
+    synchronized (this) {
+      drawBar(tg, r, 10, 4, lastProgress, 0, 1, 10, PLOT1_COLOR, PLOT_BG_COLOR);
+      if (lastProgressInstant != null) {
+        if (lastProgress > 0) {
+          Instant eta = startingInstant.plus(
+              Math.round(ChronoUnit.MILLIS.between(startingInstant, lastProgressInstant) / lastProgress),
+              ChronoUnit.MILLIS
+          );
+          clipPut(tg, r, 21, 4, String.format(Symbols.ARROW_RIGHT + DATETIME_FORMAT, Date.from(eta)));
+        }
+      }
+      if (lastProgressMessage != null) {
+        tg.setForegroundColor(DATA_COLOR);
+        clipPut(tg, r, 0, 6, lastProgressMessage);
       }
     }
-    if (lastProgressMessage != null) {
-      tg.setForegroundColor(DATA_COLOR);
-      clipPut(tg, r, 0, 6, lastProgressMessage);
-    }
     //draw data: legend
-    r = legendR.inner(1);
-    clear(tg, r);
-    List<Pair<String, String>> legendItems = runTable.names()
-        .stream()
-        .map(s -> new Pair<>(StringUtils.collapse(s), s))
-        .toList();
-    int shortLabelW = legendItems.stream().mapToInt(p -> p.first().length()).max().orElse(0);
-    for (int i = 0; i < legendItems.size(); i = i + 1) {
+    synchronized (runTable) {
+      r = legendR.inner(1);
+      clear(tg, r);
+      List<Pair<String, String>> legendItems = runTable.names()
+          .stream()
+          .map(s -> new Pair<>(StringUtils.collapse(s), s))
+          .toList();
+      int shortLabelW = legendItems.stream().mapToInt(p -> p.first().length()).max().orElse(0);
+      for (int i = 0; i < legendItems.size(); i = i + 1) {
+        tg.setForegroundColor(DATA_LABEL_COLOR);
+        clipPut(tg, r, 0, i, legendItems.get(i).first());
+        tg.setForegroundColor(DATA_COLOR);
+        clipPut(tg, r, shortLabelW + 1, i, legendItems.get(i).second());
+      }
+      //draw data: run
+      r = runR.inner(1);
+      clear(tg, r);
+      int[] colWidths = IntStream.range(0, runTable.nColumns())
+          .map(x -> Math.max(
+              legendItems.get(x).first().length(),
+              runTable.column(x).stream()
+                  .mapToInt(o -> String.format(formats.get(x), o).length())
+                  .max()
+                  .orElse(0)
+          ))
+          .toArray();
       tg.setForegroundColor(DATA_LABEL_COLOR);
-      clipPut(tg, r, 0, i, legendItems.get(i).first());
-      tg.setForegroundColor(DATA_COLOR);
-      clipPut(tg, r, shortLabelW + 1, i, legendItems.get(i).second());
-    }
-    //draw data: run
-    r = runR.inner(1);
-    clear(tg, r);
-    int[] colWidths = IntStream.range(0, runTable.nColumns())
-        .map(x -> Math.max(
-            legendItems.get(x).first().length(),
-            runTable.column(x).stream()
-                .mapToInt(o -> String.format(formats.get(x), o).length())
-                .max()
-                .orElse(0)
-        ))
-        .toArray();
-    tg.setForegroundColor(DATA_LABEL_COLOR);
-    int x = 0;
-    for (int i = 0; i < colWidths.length; i = i + 1) {
-      clipPut(tg, r, x, 0, legendItems.get(i).first());
-      x = x + colWidths[i] + 1;
-    }
-    tg.setForegroundColor(DATA_COLOR);
-    for (int j = 0; j < Math.min(runTable.nRows(), r.h()); j = j + 1) {
-      x = 0;
-      int rowIndex = runTable.nRows()-j-1;
+      int x = 0;
       for (int i = 0; i < colWidths.length; i = i + 1) {
-        Object value = runTable.get(i, rowIndex);
-        try {
-          clipPut(tg, r, x, j + 1, String.format(formats.get(i), value));
-        } catch (IllegalFormatConversionException ex) {
-          L.warning(String.format(
-              "Cannot format %s %s as a \"%s\" with %s: %s",
-              value.getClass().getSimpleName(),
-              value,
-              formats.get(rowIndex),
-              legendItems.get(i).second(),
-              ex
-          ));
-        }
+        clipPut(tg, r, x, 0, legendItems.get(i).first());
         x = x + colWidths[i] + 1;
+      }
+      tg.setForegroundColor(DATA_COLOR);
+      for (int j = 0; j < Math.min(runTable.nRows(), r.h()); j = j + 1) {
+        x = 0;
+        int rowIndex = runTable.nRows() - j - 1;
+        for (int i = 0; i < colWidths.length; i = i + 1) {
+          Object value = runTable.get(i, rowIndex);
+          try {
+            clipPut(tg, r, x, j + 1, String.format(formats.get(i), value));
+          } catch (IllegalFormatConversionException ex) {
+            L.warning(String.format(
+                "Cannot format %s %s as a \"%s\" with %s: %s",
+                value.getClass().getSimpleName(),
+                value,
+                formats.get(rowIndex),
+                legendItems.get(i).second(),
+                ex
+            ));
+          }
+          x = x + colWidths[i] + 1;
+        }
+      }
+      //draw plots
+      if (!plotFunctionPairs.isEmpty()) {
+        for (int i = 0; i < plotFunctionPairs.size(); i = i + 1) {
+          drawPlot(
+              tg,
+              plotRs.get(i).inner(1),
+              plotTables.get(i),
+              PLOT2_COLOR,
+              MAIN_DATA_COLOR,
+              PLOT_BG_COLOR
+          );
+        }
       }
     }
     //refresh

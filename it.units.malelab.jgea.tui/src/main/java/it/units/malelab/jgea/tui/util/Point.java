@@ -1,4 +1,4 @@
-package it.units.malelab.jgea.tui.geom;
+package it.units.malelab.jgea.tui.util;
 
 import com.googlecode.lanterna.TerminalPosition;
 
