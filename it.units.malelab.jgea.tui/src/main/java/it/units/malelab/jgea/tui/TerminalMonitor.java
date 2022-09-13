@@ -35,7 +35,7 @@ import static it.units.malelab.jgea.tui.util.DrawUtils.*;
  */
 public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E, K>, ProgressMonitor {
 
-  private final static Configuration DEFAULT_CONFIGURATION = new Configuration(0.7f, 0.8f, 0.5f, 0.65f, 250);
+  private final static Configuration DEFAULT_CONFIGURATION = new Configuration(0.7f, 0.8f, 0.5f, 0.65f, 250, true);
 
   private final static TextColor FRAME_COLOR = TextColor.Factory.fromString("#105010");
   private final static TextColor FRAME_LABEL_COLOR = TextColor.Factory.fromString("#10A010");
@@ -70,6 +70,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   private final List<LogRecord> logRecords;
   private final Table<Object> runTable;
   private final Instant startingInstant;
+  private final List<Handler> originalHandlers;
 
   private Screen screen;
   private double lastProgress;
@@ -138,7 +139,8 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     Logger mainLogger = Logger.getLogger("");
     mainLogger.setLevel(Level.CONFIG);
     mainLogger.addHandler(this);
-    Arrays.stream(mainLogger.getHandlers()).filter(h -> h instanceof ConsoleHandler).forEach(mainLogger::removeHandler);
+    originalHandlers = Arrays.stream(mainLogger.getHandlers()).filter(h -> h instanceof ConsoleHandler).toList();
+    originalHandlers.forEach(mainLogger::removeHandler);
     //set default locale
     Locale.setDefault(Locale.ENGLISH);
     startingInstant = Instant.now();
@@ -149,7 +151,8 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       float leftHorizontalSplit,
       float rightHorizontalSplit,
       float plotHorizontalSplit,
-      int refreshIntervalMillis
+      int refreshIntervalMillis,
+      boolean dumpLogAfterStop
   ) {}
 
   @Override
@@ -431,6 +434,10 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     painterTask.cancel(false);
     L.info("Closed");
     Logger.getLogger("").removeHandler(this);
+    originalHandlers.forEach(h -> Logger.getLogger("").addHandler(h));
+    if (configuration.dumpLogAfterStop()) {
+      logRecords.forEach(L::log);
+    }
     System.exit(1);
   }
 
