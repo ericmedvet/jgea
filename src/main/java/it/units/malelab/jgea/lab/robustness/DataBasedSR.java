@@ -70,18 +70,45 @@ public class DataBasedSR extends Worker {
 
     int treeHeight = i(a("height", "10"));
     int nFolds = i(a("folds", "5"));
-    List<String> datasets = l(a("files", "D:\\Research\\Cooperative_coevolution\\datasets\\boston.csv"));
+    List<String> datasets = l(a("files", "boston.csv"));
 
     int nPop = i(a("nPop", "100"));
-    int nIterations = i(a("nIterations", "100"));
-    int nTournament = 5;
+    int nEvals = i(a("nEvals", "500000"));
+    int nTournament = 10;
     List<String> coopCoevoParams = l(a("params",
-        "nPop=100;h=10;nIt=100;nTour=5;sel1=f0.1;sel2=f0.1;aggr=f"));
+        "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.1;sel2=f0.1;aggr=m," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.25;sel2=f0.25;aggr=m," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.5;sel2=f0.5;aggr=m," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.75;sel2=f0.75;aggr=m," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.1;sel2=l0.1;aggr=m," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.25;sel2=l0.25;aggr=m," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.5;sel2=l0.5;aggr=m," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.75;sel2=l0.75;aggr=m," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=c;sel2=c;aggr=m," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.1;sel2=f0.1;aggr=l," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.25;sel2=f0.25;aggr=l," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.5;sel2=f0.5;aggr=l," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.75;sel2=f0.75;aggr=l," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.1;sel2=l0.1;aggr=l," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.25;sel2=l0.25;aggr=l," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.5;sel2=l0.5;aggr=l," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.75;sel2=l0.75;aggr=l," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=c;sel2=c;aggr=l," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.1;sel2=f0.1;aggr=f," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.25;sel2=f0.25;aggr=f," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.5;sel2=f0.5;aggr=f," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.75;sel2=f0.75;aggr=f," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.1;sel2=l0.1;aggr=f," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.25;sel2=l0.25;aggr=f," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.5;sel2=l0.5;aggr=f," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.75;sel2=l0.75;aggr=f," +
+            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=c;sel2=c;aggr=f"));
 
     int[] seeds = ri(a("seed", "0:10"));
     boolean output = a("output", "true").startsWith("t");
-    String bestFile = a("bestFile", "D:\\Research\\Cooperative_coevolution\\best_f.txt");
-    String validationFile = a("validationFile", "D:\\Research\\Cooperative_coevolution\\validation_f.txt");
+    String bestFile = a("bestFile", "best_boston.txt");
+    String lastFile = a("lastFile", "last_boston.txt");
+    String validationFile = a("validationFile", "validation_boston.txt");
     SymbolicRegressionFitness.Metric metric = SymbolicRegressionFitness.Metric.MSE;
 
     Map<String, SymbolicRegressionProblem<?>> problemMap = datasets.stream()
@@ -130,8 +157,10 @@ public class DataBasedSR extends Worker {
       listenerFactories.add(new TabularPrinter<>(functions, kFunctions));
     }
     if (bestFile != null) {
-      listenerFactories.add(
-          new CSVPrinter<>(functions, kFunctions, new File(bestFile)));
+      listenerFactories.add(new CSVPrinter<>(functions, kFunctions, new File(bestFile)));
+    }
+    if (lastFile != null) {
+      listenerFactories.add(new CSVPrinter<>(functions, kFunctions, new File(lastFile)).onLast());
     }
     ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
         ListenerFactory.all(listenerFactories);
@@ -171,7 +200,7 @@ public class DataBasedSR extends Worker {
               termFact
           ),
           nPop,
-          StopConditions.nOfIterations(nIterations),
+          StopConditions.nOfFitnessEvaluations(nEvals),
           Map.of(
               new SubtreeCrossover<>(treeHeight),
               0.8d,
