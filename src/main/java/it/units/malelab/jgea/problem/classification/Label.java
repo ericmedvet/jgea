@@ -32,12 +32,12 @@ public class Label<T> {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Label<?> label = (Label<?>) o;
-    return Objects.equals(value, label.value) && Objects.equals(parentFactory, label.parentFactory);
+    return Objects.equals(value, label.value);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(value, parentFactory);
+    return Objects.hash(value);
   }
 
   static class LabelFactory<T> {
