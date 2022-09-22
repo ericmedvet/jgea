@@ -53,7 +53,7 @@ public class BinaryTextFlaggingProblem extends GrammarBasedTextFlaggingProblem {
     );
   }
 
-  private static List<Pair<String, Label<String>>> buildData(int length, int size, Random random) {
+  private static List<Pair<String, Label<TextLabel>>> buildData(int length, int size, Random random) {
     List<String> positives = new ArrayList<>();
     List<String> negatives = new ArrayList<>();
     List<Pattern> patterns = Stream.of(BinaryTextFlaggingProblem.REGEXES).map(Pattern::compile).toList();
@@ -73,9 +73,9 @@ public class BinaryTextFlaggingProblem extends GrammarBasedTextFlaggingProblem {
       }
     }
     //return
-    List<Pair<String, Label<String>>> data = new ArrayList<>();
-    data.addAll(positives.stream().map(s -> Pair.of(s, TextFlaggingProblem.LABEL_FACTORY.getLabel("FOUND"))).toList());
-    data.addAll(negatives.stream().map(s -> Pair.of(s, TextFlaggingProblem.LABEL_FACTORY.getLabel("NOT_FOUND"))).toList());
+    List<Pair<String, Label<TextLabel>>> data = new ArrayList<>();
+    data.addAll(positives.stream().map(s -> Pair.of(s, TextFlaggingProblem.LABEL_FACTORY.getLabel(TextLabel.FOUND))).toList());
+    data.addAll(negatives.stream().map(s -> Pair.of(s, TextFlaggingProblem.LABEL_FACTORY.getLabel(TextLabel.NOT_FOUND))).toList());
     return data;
   }
 

@@ -18,18 +18,20 @@ package it.units.malelab.jgea.problem.classification;
 
 import it.units.malelab.jgea.core.util.Pair;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author eric
  */
-public class TextFlaggingProblem extends ClassificationProblem<String, String> {
+public class TextFlaggingProblem extends ClassificationProblem<String, TextFlaggingProblem.TextLabel> {
 
-  protected final static Label.LabelFactory<String> LABEL_FACTORY = new Label.LabelFactory<>(Set.of("FOUND", "NOT_FOUND"));
+  enum TextLabel {FOUND, NOT_FOUND}
+
+  protected final static Label.LabelFactory<TextLabel> LABEL_FACTORY = new Label.LabelFactory<>(Arrays.stream(TextLabel.values()).toList());
 
   public TextFlaggingProblem(
-      List<Pair<String, Label<String>>> data,
+      List<Pair<String, Label<TextLabel>>> data,
       int folds,
       int i,
       ClassificationFitness.Metric learningErrorMetric,
