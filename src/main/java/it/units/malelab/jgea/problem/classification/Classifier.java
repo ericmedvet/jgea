@@ -19,6 +19,6 @@ package it.units.malelab.jgea.problem.classification;
 /**
  * @author eric
  */
-public interface Classifier<O, L extends Enum<L>> {
-  L classify(O o);
+public interface Classifier<O, L> {
+  Label<L> classify(O o);
 }

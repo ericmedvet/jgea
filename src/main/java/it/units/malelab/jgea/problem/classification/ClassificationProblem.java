@@ -27,19 +27,18 @@ import java.util.List;
 /**
  * @author eric
  */
-public class ClassificationProblem<O, L extends Enum<L>> implements ProblemWithValidation<Classifier<O, L>,
-    List<Double>> {
+public class ClassificationProblem<O, L> implements ProblemWithValidation<Classifier<O, L>, List<Double>> {
 
   // TODO fix this
   private final static PartialComparator<List<Double>> COMPARATOR = ParetoDominance.build(Double.class, 1);
 
   private final ClassificationFitness<O, L> fitnessFunction;
   private final ClassificationFitness<O, L> validationFunction;
-  private final List<Pair<O, L>> learningData;
-  private final List<Pair<O, L>> validationData;
+  private final List<Pair<O, Label<L>>> learningData;
+  private final List<Pair<O, Label<L>>> validationData;
 
   public ClassificationProblem(
-      List<Pair<O, L>> data,
+      List<Pair<O, Label<L>>> data,
       int folds,
       int i,
       ClassificationFitness.Metric learningMetric,
@@ -52,11 +51,11 @@ public class ClassificationProblem<O, L extends Enum<L>> implements ProblemWithV
     validationFunction = new ClassificationFitness<>(validationData, validationMetric);
   }
 
-  public List<Pair<O, L>> getLearningData() {
+  public List<Pair<O, Label<L>>> getLearningData() {
     return learningData;
   }
 
-  public List<Pair<O, L>> getValidationData() {
+  public List<Pair<O, Label<L>>> getValidationData() {
     return validationData;
   }
 

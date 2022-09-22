@@ -45,7 +45,7 @@ public class BinaryTextFlaggingProblem extends GrammarBasedTextFlaggingProblem {
     super(
         new TreeSet<>(ALPHABET.chars().mapToObj(c -> (char) c).collect(Collectors.toSet())),
         new LinkedHashSet<>(Arrays.asList(options)),
-        buildData(REGEXES, ALPHABET, length, size, new Random(seed)),
+        buildData(length, size, new Random(seed)),
         folds,
         i,
         learningErrorMetric,
@@ -53,16 +53,14 @@ public class BinaryTextFlaggingProblem extends GrammarBasedTextFlaggingProblem {
     );
   }
 
-  private static List<Pair<String, Label>> buildData(
-      String[] regexes, String alphabet, int length, int size, Random random
-  ) {
+  private static List<Pair<String, Label<String>>> buildData(int length, int size, Random random) {
     List<String> positives = new ArrayList<>();
     List<String> negatives = new ArrayList<>();
-    List<Pattern> patterns = Stream.of(regexes).map(Pattern::compile).toList();
+    List<Pattern> patterns = Stream.of(BinaryTextFlaggingProblem.REGEXES).map(Pattern::compile).toList();
     while ((positives.size() < size) || (negatives.size() < size)) {
       StringBuilder sb = new StringBuilder();
       while (sb.length() < length) {
-        sb.append(alphabet.charAt(random.nextInt(alphabet.length())));
+        sb.append(BinaryTextFlaggingProblem.ALPHABET.charAt(random.nextInt(BinaryTextFlaggingProblem.ALPHABET.length())));
       }
       if (patterns.stream().anyMatch((Pattern p) -> (p.matcher(sb).find()))) {
         if (positives.size() < size) {
@@ -75,9 +73,9 @@ public class BinaryTextFlaggingProblem extends GrammarBasedTextFlaggingProblem {
       }
     }
     //return
-    List<Pair<String, Label>> data = new ArrayList<>();
-    data.addAll(positives.stream().map(s -> Pair.of(s, Label.FOUND)).toList());
-    data.addAll(negatives.stream().map(s -> Pair.of(s, Label.NOT_FOUND)).toList());
+    List<Pair<String, Label<String>>> data = new ArrayList<>();
+    data.addAll(positives.stream().map(s -> Pair.of(s, TextFlaggingProblem.LABEL_FACTORY.getLabel("FOUND"))).toList());
+    data.addAll(negatives.stream().map(s -> Pair.of(s, TextFlaggingProblem.LABEL_FACTORY.getLabel("NOT_FOUND"))).toList());
     return data;
   }
 

@@ -34,16 +34,15 @@ import java.util.stream.Collectors;
  * @author eric
  */
 public class GrammarBasedTextFlaggingProblem extends TextFlaggingProblem implements GrammarBasedProblem<String,
-    Classifier<String, TextFlaggingProblem.Label>>, QualityBasedProblem<Classifier<String, TextFlaggingProblem.Label>
-    , List<Double>> {
+    Classifier<String, String>>, QualityBasedProblem<Classifier<String, String>, List<Double>> {
 
   private final Grammar<String> grammar;
-  private final Function<Tree<String>, Classifier<String, TextFlaggingProblem.Label>> solutionMapper;
+  private final Function<Tree<String>, Classifier<String, String>> solutionMapper;
 
   public GrammarBasedTextFlaggingProblem(
       Set<Character> alphabet,
       Set<RegexGrammar.Option> options,
-      List<Pair<String, Label>> data,
+      List<Pair<String, Label<String>>> data,
       int folds,
       int i,
       ClassificationFitness.Metric learningErrorMetric,
@@ -52,9 +51,9 @@ public class GrammarBasedTextFlaggingProblem extends TextFlaggingProblem impleme
     super(data, folds, i, learningErrorMetric, validationErrorMetric);
     solutionMapper = (Tree<String> tree) -> {
       String regex = tree.leaves().stream().map(Tree::content).collect(Collectors.joining());
-      return (Classifier<String, Label>) s -> {
+      return (Classifier<String, String>) s -> {
         Matcher matcher = Pattern.compile(regex).matcher(s);
-        return matcher.find() ? Label.FOUND : Label.NOT_FOUND;
+        return matcher.find() ? LABEL_FACTORY.getLabel("FOUND") : LABEL_FACTORY.getLabel("NOT_FOUND");
       };
     };
     if (alphabet == null) {
@@ -70,7 +69,7 @@ public class GrammarBasedTextFlaggingProblem extends TextFlaggingProblem impleme
   }
 
   @Override
-  public Function<Tree<String>, Classifier<String, Label>> getSolutionMapper() {
+  public Function<Tree<String>, Classifier<String, String>> getSolutionMapper() {
     return solutionMapper;
   }
 }

@@ -19,24 +19,23 @@ package it.units.malelab.jgea.problem.classification;
 import it.units.malelab.jgea.core.util.Pair;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author eric
  */
-public class TextFlaggingProblem extends ClassificationProblem<String, TextFlaggingProblem.Label> {
+public class TextFlaggingProblem extends ClassificationProblem<String, String> {
+
+  protected final static Label.LabelFactory<String> LABEL_FACTORY = new Label.LabelFactory<>(Set.of("FOUND", "NOT_FOUND"));
 
   public TextFlaggingProblem(
-      List<Pair<String, Label>> data,
+      List<Pair<String, Label<String>>> data,
       int folds,
       int i,
       ClassificationFitness.Metric learningErrorMetric,
       ClassificationFitness.Metric validationErrorMetric
   ) {
     super(data, folds, i, learningErrorMetric, validationErrorMetric);
-  }
-
-  public enum Label {
-    FOUND, NOT_FOUND
   }
 
 }

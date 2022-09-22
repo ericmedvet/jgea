@@ -21,25 +21,23 @@
  */
 package it.units.malelab.jgea.problem.classification;
 
-import com.google.common.collect.EnumMultiset;
-import com.google.common.collect.Multiset;
 import it.units.malelab.jgea.core.fitness.CaseBasedFitness;
 import it.units.malelab.jgea.core.util.Pair;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author eric
  */
-public class ClassificationFitness<O, L extends Enum<L>> extends CaseBasedFitness<Classifier<O, L>, O, L,
-    List<Double>> {
+public class ClassificationFitness<O, L> extends CaseBasedFitness<Classifier<O, L>, O, Label<L>, List<Double>> {
 
-  private final List<Pair<O, L>> data;
+  private final List<Pair<O, Label<L>>> data;
   private final List<String> names;
 
-  public ClassificationFitness(List<Pair<O, L>> data, Metric errorMetric) {
+  public ClassificationFitness(List<Pair<O, Label<L>>> data, Metric errorMetric) {
     super(
         data.stream().map(Pair::first).toList(),
         Classifier::classify,
@@ -48,8 +46,8 @@ public class ClassificationFitness<O, L extends Enum<L>> extends CaseBasedFitnes
     this.data = data;
     names = new ArrayList<>();
     if (errorMetric.equals(Metric.CLASS_ERROR_RATE)) {
-      L protoLabel = data.get(0).second();
-      for (L label : (L[]) protoLabel.getClass().getEnumConstants()) {
+      Collection<Label<L>> classes = data.get(0).second().values();
+      for (Label<L> label : classes) {
         names.add(label.toString().toLowerCase() + ".error.rate");
       }
     } else if (errorMetric.equals(Metric.ERROR_RATE)) {
@@ -63,56 +61,55 @@ public class ClassificationFitness<O, L extends Enum<L>> extends CaseBasedFitnes
     CLASS_ERROR_RATE, ERROR_RATE, BALANCED_ERROR_RATE
   }
 
-  private static class ClassErrorRate<E extends Enum<E>> implements Function<List<E>, List<Pair<Integer, Integer>>> {
+  private static class ClassErrorRate<E> implements Function<List<Label<E>>, Map<Label<E>, Pair<Integer, Integer>>> {
 
-    private final List<E> actualLabels;
+    private final List<Label<E>> actualLabels;
 
-    public ClassErrorRate(List<E> actualLabels) {
+    public ClassErrorRate(List<Label<E>> actualLabels) {
       this.actualLabels = actualLabels;
     }
 
     @Override
-    public List<Pair<Integer, Integer>> apply(List<E> predictedLabels) {
-      E protoLabel = actualLabels.get(0);
-      E[] allLabels = (E[]) protoLabel.getClass().getEnumConstants();
-      Multiset<E> counts = EnumMultiset.create((Class<E>) protoLabel.getClass());
-      Multiset<E> errors = EnumMultiset.create((Class<E>) protoLabel.getClass());
-      for (int i = 0; i < actualLabels.size(); i++) {
-        counts.add(actualLabels.get(i));
-        if (!actualLabels.get(i).equals(predictedLabels.get(i))) {
-          errors.add(actualLabels.get(i));
-        }
-      }
-      List<Pair<Integer, Integer>> pairs = new ArrayList<>(allLabels.length);
-      for (E currentLabel : allLabels) {
-        pairs.add(Pair.of(errors.count(currentLabel), counts.count(currentLabel)));
-      }
-      return pairs;
+    public Map<Label<E>, Pair<Integer, Integer>> apply(List<Label<E>> predictedLabels) {
+      Map<Label<E>, Integer> counts = new HashMap<>();
+      Map<Label<E>, Integer> errors = new HashMap<>();
+
+      IntStream.range(0, actualLabels.size()).forEach(i -> {
+            Label<E> actualLabel = actualLabels.get(i);
+            counts.put(actualLabel, counts.getOrDefault(actualLabel, 0) + 1);
+            if (!actualLabel.equals(predictedLabels.get(i))) {
+              errors.put(actualLabel, errors.getOrDefault(actualLabel, 0) + 1);
+            }
+          }
+      );
+
+      return actualLabels.get(0).values().stream().collect(Collectors.toMap(
+          Function.identity(),
+          v -> Pair.of(counts.getOrDefault(v, 0), errors.getOrDefault(v, 0))
+      ));
     }
 
   }
 
-  private static <E extends Enum<E>> Function<List<E>, List<Double>> getAggregator(
-      List<E> actualLabels, Metric metric
-  ) {
+  private static <E> Function<List<Label<E>>, List<Double>> getAggregator(List<Label<E>> actualLabels, Metric metric) {
     final ClassErrorRate<E> classErrorRate = new ClassErrorRate<>(actualLabels);
     if (metric.equals(Metric.CLASS_ERROR_RATE)) {
-      return (List<E> predictedLabels) -> {
-        List<Pair<Integer, Integer>> pairs = classErrorRate.apply(predictedLabels);
+      return (List<Label<E>> predictedLabels) -> {
+        Collection<Pair<Integer, Integer>> pairs = classErrorRate.apply(predictedLabels).values();
         return pairs.stream().map(p -> ((double) p.first() / (double) p.second())).toList();
       };
     }
     if (metric.equals(Metric.ERROR_RATE)) {
-      return (List<E> predictedLabels) -> {
-        List<Pair<Integer, Integer>> pairs = classErrorRate.apply(predictedLabels);
+      return (List<Label<E>> predictedLabels) -> {
+        Collection<Pair<Integer, Integer>> pairs = classErrorRate.apply(predictedLabels).values();
         int errors = pairs.stream().map(Pair::first).mapToInt(Integer::intValue).sum();
         int count = pairs.stream().map(Pair::second).mapToInt(Integer::intValue).sum();
         return List.of((double) errors / (double) count);
       };
     }
     if (metric.equals(Metric.BALANCED_ERROR_RATE)) {
-      return (List<E> predictedLabels) -> {
-        List<Pair<Integer, Integer>> pairs = classErrorRate.apply(predictedLabels);
+      return (List<Label<E>> predictedLabels) -> {
+        Collection<Pair<Integer, Integer>> pairs = classErrorRate.apply(predictedLabels).values();
         return List.of(pairs.stream()
             .map(p -> ((double) p.first() / (double) p.second()))
             .mapToDouble(Double::doubleValue)
