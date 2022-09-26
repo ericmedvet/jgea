@@ -85,7 +85,7 @@ public class ClassificationFitness<O, L> extends CaseBasedFitness<Classifier<O, 
 
       return actualLabels.get(0).values().stream().collect(Collectors.toMap(
           Function.identity(),
-          v -> Pair.of(counts.getOrDefault(v, 0), errors.getOrDefault(v, 0))
+          v -> Pair.of(errors.getOrDefault(v, 0), counts.getOrDefault(v, 0))
       ));
     }
 
