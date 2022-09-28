@@ -5,7 +5,12 @@ import it.units.malelab.jgea.Worker;
 import it.units.malelab.jgea.core.TotalOrderQualityBasedProblem;
 import it.units.malelab.jgea.core.listener.*;
 import it.units.malelab.jgea.core.listener.telegram.TelegramProgressMonitor;
+import it.units.malelab.jgea.core.selector.Last;
+import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.solver.*;
+import it.units.malelab.jgea.core.solver.coevolution.CollaboratorSelector;
+import it.units.malelab.jgea.core.solver.coevolution.CooperativeSolver;
+import it.units.malelab.jgea.core.solver.coevolution.QualityAggregator;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.problem.classification.ClassificationFitness;
@@ -13,18 +18,23 @@ import it.units.malelab.jgea.problem.classification.Classifier;
 import it.units.malelab.jgea.problem.classification.DatasetClassificationProblem;
 import it.units.malelab.jgea.problem.classification.NeuralNetworkClassifier;
 import it.units.malelab.jgea.representation.sequence.FixedLengthListFactory;
+import it.units.malelab.jgea.representation.sequence.UniformCrossover;
+import it.units.malelab.jgea.representation.sequence.bit.BitFlipMutation;
+import it.units.malelab.jgea.representation.sequence.bit.BitString;
+import it.units.malelab.jgea.representation.sequence.bit.BitStringFactory;
 import it.units.malelab.jgea.representation.sequence.numeric.UniformDoubleFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
-import static it.units.malelab.jgea.core.util.Args.i;
-import static it.units.malelab.jgea.core.util.Args.ri;
+import static it.units.malelab.jgea.core.util.Args.*;
 
 public class NeuralDataClassification extends Worker {
 
@@ -64,17 +74,21 @@ public class NeuralDataClassification extends Worker {
     String classificationColumn = a("column", "Risk");
     int numberOfClasses = i(a("nClasses", "2"));
     int nFolds = i(a("folds", "5"));
-    int nHiddenLayers = i(a("nLayers", "3"));
-    int nPop = i(a("nPop", "10"));
-    int nEvals = i(a("nEvals", "100"));
-    int[] seeds = ri(a("seed", "0:10"));
+    int nHiddenLayers = i(a("nLayers", "5"));
+    int nPop = i(a("nPop", "100"));
+    int nEvals = i(a("nEvals", "100000"));
+    int[] seeds = ri(a("seed", "0:1"));
+
+    List<String> solversParams = l(a("solver", "coevo-f0.1;f"));
 
     boolean output = a("output", "true").startsWith("t");
     String bestFile = a("bestFile", "best_nn.txt");
     String lastFile = a("lastFile", "last_nn.txt");
     String validationFile = a("validationFile", "validation_nn.txt");
 
-    ClassificationFitness.Metric metric = ClassificationFitness.Metric.ERROR_RATE;
+    String classificationMetric = a("metric", "error");
+    ClassificationFitness.Metric metric = classificationMetric.equals("error") ? ClassificationFitness.Metric.ERROR_RATE :
+        ClassificationFitness.Metric.BALANCED_ERROR_RATE;
 
     Map<String, TotallyOrderedClassificationProblem> problemMap = buildProblems(dataset, numberOfClasses, classificationColumn, nFolds, metric);
 
@@ -82,10 +96,10 @@ public class NeuralDataClassification extends Worker {
         iterations(), births(), fitnessEvaluations(), elapsedSeconds()
     );
     List<NamedFunction<? super Individual<?, ?, List<Double>>, ?>> basicIndividualFunctions = List.of(
-        size().of(genotype()),
-        size().of(solution()),
         fitnessMappingIteration(),
-        f("fitness", "%.3f", (Function<List<Double>, Double>) l -> l.get(0)).of(fitness())
+        f("fitness", "%.4f", (Function<List<Double>, Double>) l -> l.get(0)).of(fitness()),
+        f("weights", i -> ((NeuralNetworkClassifier) i.solution()).nOfWeights()),
+        f("non.zero.weights", i -> ((NeuralNetworkClassifier) i.solution()).nOfNonZeroWeights())
     );
     NamedFunction<POSetPopulationState<?, ?, List<Double>>, Individual<?, ?, List<Double>>> bestFunction =
         ((NamedFunction<POSetPopulationState<?, ?, List<Double>>, Individual<?, ?, List<Double>>>) state -> Misc.first(
@@ -107,17 +121,19 @@ public class NeuralDataClassification extends Worker {
     List<NamedFunction<? super Map<String, Object>, ?>> kFunctions = List.of(
         attribute("seed").reformat("%2d"),
         attribute("problem").reformat(NamedFunction.formatOfLongest(problemMap.keySet().stream().toList())),
-        attribute("evolver").reformat("%20.20s")
+        attribute("evolver").reformat("%20.20s"),
+        attribute("metric")
     );
     List<NamedFunction<? super Map<String, Object>, ?>> validationKFunctions = List.of(
         attribute("seed").reformat("%2d"),
         attribute("problem").reformat(NamedFunction.formatOfLongest(problemMap.keySet().stream().toList())),
         attribute("evolver").reformat("%20.20s"),
-        attribute("validator").reformat("%20.20s")
+        attribute("validator").reformat("%20.20s"),
+        attribute("metric")
     );
     List<NamedFunction<? super ValidationEvent, ?>> validationFunctions = List.of(
-        NamedFunction.build("event.fitness", "%5.3f", ValidationEvent::fitness),
-        NamedFunction.build("validation.fitness", "%5.3f", ValidationEvent::validationFitness)
+        NamedFunction.build("event.fitness", "%.4f", ValidationEvent::fitness),
+        NamedFunction.build("validation.fitness", "%.4f", ValidationEvent::validationFitness)
     );
 
     List<ListenerFactory<POSetPopulationState<?, ?, List<Double>>, Map<String, Object>>> listenerFactories =
@@ -143,29 +159,12 @@ public class NeuralDataClassification extends Worker {
     }
 
     // evolvers
-    Map<String, Function<DatasetClassificationProblem, IterativeSolver<? extends POSetPopulationState<?, Classifier<double[], Integer>, List<Double>>,
-        TotalOrderQualityBasedProblem<Classifier<double[], Integer>, List<Double>>, Classifier<double[], Integer>>>> solvers = new TreeMap<>();
-
-    solvers.put("es", p -> {
-      int[] layers = new int[nHiddenLayers + 2];
-      layers[0] = p.getNumberOfFeatures();
-      layers[layers.length - 1] = p.getNumberOfClasses();
-      IntStream.range(1, layers.length - 1).forEach(i -> layers[i] = layers[0]);
-      Function<List<Double>, NeuralNetworkClassifier> classifierBuilder = list ->
-          new NeuralNetworkClassifier(list.stream().mapToDouble(d -> d).toArray(), layers);
-      int weightsSize = NeuralNetworkClassifier.countWeights(layers);
-
-      return new SimpleEvolutionaryStrategy<>(
-          classifierBuilder,
-          new FixedLengthListFactory<>(weightsSize, new UniformDoubleFactory(-1, 1)),
-          nPop,
-          StopConditions.nOfFitnessEvaluations(nEvals),
-          nPop / 4,
-          1,
-          0.35,
-          false
-      );
-    });
+    Map<String, Function<TotallyOrderedClassificationProblem, IterativeSolver<? extends POSetPopulationState<?, Classifier<double[], Integer>, List<Double>>,
+        TotalOrderQualityBasedProblem<Classifier<double[], Integer>, List<Double>>, Classifier<double[], Integer>>>> solvers =
+        solversParams.stream().collect(Collectors.toMap(
+            Function.identity(),
+            s -> buildSolver(s, nHiddenLayers, nPop, nEvals)
+        ));
 
     // validation
     Map<String, Function<TotallyOrderedClassificationProblem, Function<Classifier<double[], Integer>, Double>>> validators = new TreeMap<>();
@@ -177,13 +176,14 @@ public class NeuralDataClassification extends Worker {
     // run
     for (int seed : seeds) {
       for (Map.Entry<String, TotallyOrderedClassificationProblem> problemEntry : problemMap.entrySet()) {
-        for (Map.Entry<String, Function<DatasetClassificationProblem,
+        for (Map.Entry<String, Function<TotallyOrderedClassificationProblem,
             IterativeSolver<? extends POSetPopulationState<?, Classifier<double[], Integer>, List<Double>>,
                 TotalOrderQualityBasedProblem<Classifier<double[], Integer>, List<Double>>, Classifier<double[], Integer>>>> solverEntry : solvers.entrySet()) {
           Map<String, Object> keys = Map.ofEntries(
               Map.entry("seed", seed),
               Map.entry("problem", problemEntry.getKey()),
-              Map.entry("evolver", solverEntry.getKey())
+              Map.entry("evolver", solverEntry.getKey()),
+              Map.entry("metric", classificationMetric)
           );
           try {
             TotallyOrderedClassificationProblem problem = problemEntry.getValue();
@@ -213,12 +213,10 @@ public class NeuralDataClassification extends Worker {
 
             for (Map.Entry<String, Function<TotallyOrderedClassificationProblem,
                 Function<Classifier<double[], Integer>, Double>>> validator : validators.entrySet()) {
-              Map<String, Object> validationKeys = Map.ofEntries(
-                  Map.entry("seed", seed),
-                  Map.entry("problem", problemEntry.getKey()),
-                  Map.entry("evolver", solverEntry.getKey()),
-                  Map.entry("validator", validator.getKey())
-              );
+
+              Map<String, Object> validationKeys = new HashMap<>(keys);
+              validationKeys.put("validator", validator.getKey());
+
               Listener<ValidationEvent> validationListener = validationListenerFactory.build(validationKeys);
               Function<Classifier<double[], Integer>, Double> fitnessFunction = problem.qualityFunction().andThen(l -> l.get(0));
               Function<Classifier<double[], Integer>, Double> validationFunction = validator.getValue().apply(problem);
@@ -265,5 +263,143 @@ public class NeuralDataClassification extends Worker {
     return filename.substring(filename.lastIndexOf("\\") + 1).replaceFirst("[.][^.]+$", "");
   }
 
+  private static Function<TotallyOrderedClassificationProblem, IterativeSolver<? extends POSetPopulationState<?, Classifier<double[], Integer>, List<Double>>,
+      TotalOrderQualityBasedProblem<Classifier<double[], Integer>, List<Double>>, Classifier<double[], Integer>>> buildSolver(
+      String name, int nHiddenLayers, int nPop, int nEvals
+  ) {
+    if (name.startsWith("es")) {
+      if (name.contains("-")) {
+        double rate = Double.parseDouble(name.substring(3));
+        return buildPruningEs(rate, nHiddenLayers, nPop, nEvals);
+      } else {
+        return buildEs(nHiddenLayers, nPop, nEvals);
+      }
+    }
+    if (name.startsWith("coevo")) {
+      String[] coEvoParams = name.split("-")[1].split(";");
+      return buildCooperativeSolver(nHiddenLayers, nPop, nEvals, coEvoParams[0], coEvoParams[0], coEvoParams[1]);
+    }
+    throw new IllegalArgumentException(String.format("Unknown evolver: %s", name));
+  }
+
+  private static Function<TotallyOrderedClassificationProblem, IterativeSolver<? extends POSetPopulationState<?, Classifier<double[], Integer>, List<Double>>,
+      TotalOrderQualityBasedProblem<Classifier<double[], Integer>, List<Double>>, Classifier<double[], Integer>>> buildEs(
+      int nHiddenLayers, int nPop, int nEvals
+  ) {
+    return p -> {
+      int[] layers = new int[nHiddenLayers + 2];
+      layers[0] = p.getNumberOfFeatures();
+      layers[layers.length - 1] = p.getNumberOfClasses();
+      IntStream.range(1, layers.length - 1).forEach(i -> layers[i] = layers[0]);
+      Function<List<Double>, NeuralNetworkClassifier> classifierBuilder = list ->
+          new NeuralNetworkClassifier(list.stream().mapToDouble(d -> d).toArray(), layers);
+      int weightsSize = NeuralNetworkClassifier.countWeights(layers);
+
+      return new SimpleEvolutionaryStrategy<>(
+          classifierBuilder,
+          new FixedLengthListFactory<>(weightsSize, new UniformDoubleFactory(-1, 1)),
+          nPop,
+          StopConditions.nOfFitnessEvaluations(nEvals),
+          nPop / 4,
+          1,
+          0.35,
+          false
+      );
+    };
+  }
+
+  private static Function<TotallyOrderedClassificationProblem, IterativeSolver<? extends POSetPopulationState<?, Classifier<double[], Integer>, List<Double>>,
+      TotalOrderQualityBasedProblem<Classifier<double[], Integer>, List<Double>>, Classifier<double[], Integer>>> buildPruningEs(
+      double rate, int nHiddenLayers, int nPop, int nEvals
+  ) {
+    return p -> {
+      int[] layers = new int[nHiddenLayers + 2];
+      layers[0] = p.getNumberOfFeatures();
+      layers[layers.length - 1] = p.getNumberOfClasses();
+      IntStream.range(1, layers.length - 1).forEach(i -> layers[i] = layers[0]);
+      Function<List<Double>, NeuralNetworkClassifier> classifierBuilder = list -> {
+        NeuralNetworkClassifier neuralNetworkClassifier = new NeuralNetworkClassifier(list.stream().mapToDouble(d -> d).toArray(), layers);
+        neuralNetworkClassifier.prune(rate);
+        return neuralNetworkClassifier;
+      };
+      int weightsSize = NeuralNetworkClassifier.countWeights(layers);
+
+      return new SimpleEvolutionaryStrategy<>(
+          classifierBuilder,
+          new FixedLengthListFactory<>(weightsSize, new UniformDoubleFactory(-1, 1)),
+          nPop,
+          StopConditions.nOfFitnessEvaluations(nEvals),
+          nPop / 4,
+          1,
+          0.35,
+          false
+      );
+    };
+  }
+
+  private static Function<TotallyOrderedClassificationProblem, IterativeSolver<? extends POSetPopulationState<?, Classifier<double[], Integer>, List<Double>>,
+      TotalOrderQualityBasedProblem<Classifier<double[], Integer>, List<Double>>, Classifier<double[], Integer>>> buildCooperativeSolver(
+      int nHiddenLayers, int nPop, int nEvals, String collaboratorSelector1, String collaboratorSelector2, String qualityAggregator
+  ) {
+    double mutationProbability = 0.5;
+    double crossoverProbability = 1 - mutationProbability;
+    int nTournament = 10;
+    return p -> {
+      int[] layers = new int[nHiddenLayers + 2];
+      layers[0] = p.getNumberOfFeatures();
+      layers[layers.length - 1] = p.getNumberOfClasses();
+      IntStream.range(1, layers.length - 1).forEach(i -> layers[i] = layers[0]);
+      int weightsSize = NeuralNetworkClassifier.countWeights(layers);
+
+      BiFunction<BitString, List<Double>, Classifier<double[], Integer>> solutionsAggregator = (bitstring, list) -> {
+        NeuralNetworkClassifier neuralNetworkClassifier = new NeuralNetworkClassifier(list.stream().mapToDouble(d -> d).toArray(), layers);
+        neuralNetworkClassifier.prune(bitstring);
+        return neuralNetworkClassifier;
+      };
+
+      AbstractPopulationBasedIterativeSolver<? extends POSetPopulationState<BitString, BitString, List<Double>>,
+          TotalOrderQualityBasedProblem<BitString, List<Double>>,
+          BitString, BitString, List<Double>> ga =
+          new StandardEvolver<>(
+              Function.identity(),
+              new BitStringFactory(weightsSize),
+              nPop,
+              StopConditions.nOfFitnessEvaluations(nEvals),
+              Map.of(
+                  new BitFlipMutation(0.1), mutationProbability,
+                  new UniformCrossover<>(new BitStringFactory(weightsSize)), crossoverProbability
+              ),
+              new Tournament(nTournament),
+              new Last(),
+              nPop,
+              true,
+              false,
+              (srp, r) -> new POSetPopulationState<>()
+          );
+      AbstractPopulationBasedIterativeSolver<? extends POSetPopulationState<List<Double>, List<Double>, List<Double>>,
+          TotalOrderQualityBasedProblem<List<Double>, List<Double>>,
+          List<Double>, List<Double>, List<Double>> es =
+          new SimpleEvolutionaryStrategy<>(
+              Function.identity(),
+              new FixedLengthListFactory<>(weightsSize, new UniformDoubleFactory(-1, 1)),
+              nPop,
+              StopConditions.nOfFitnessEvaluations(nEvals),
+              nPop / 4,
+              1,
+              0.35,
+              false
+          );
+
+      return new CooperativeSolver<>(
+          ga,
+          es,
+          solutionsAggregator,
+          CollaboratorSelector.build(collaboratorSelector1),
+          CollaboratorSelector.build(collaboratorSelector2),
+          QualityAggregator.build(qualityAggregator, Comparator.comparingDouble(l -> l.get(0))),
+          StopConditions.nOfFitnessEvaluations(nEvals)
+      );
+    };
+  }
 
 }
