@@ -140,13 +140,21 @@ public class NeuralNetworkClassifier implements Classifier<double[], Integer> {
   public void prune(double rate) {
     double[] flatWeights = flat(weights, neurons);
     double[] absWeights = Arrays.stream(flatWeights).map(Math::abs).toArray();
-    int weightsToKeep = Math.max((int) (1 - rate) * absWeights.length, absWeights.length);
+    int nPruned = (int) Math.min(rate * absWeights.length, absWeights.length);
     IntStream.range(0, absWeights.length)
         .mapToObj(i -> Pair.of(i, absWeights[i]))
         .sorted(Comparator.comparingDouble(Pair::second))
-        .limit(weightsToKeep)
+        .limit(nPruned)
         .forEach(p -> flatWeights[p.first()] = 0);
     updateWeights(flatWeights);
+  }
+
+  public int nOfWeights() {
+    return countWeights(neurons);
+  }
+
+  public int nOfNonZeroWeights() {
+    return (int) Arrays.stream(flat(weights, neurons)).filter(d -> d != 0).count();
   }
 
 }
