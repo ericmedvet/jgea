@@ -14,6 +14,7 @@ import it.units.malelab.jgea.core.solver.coevolution.CollaboratorSelector;
 import it.units.malelab.jgea.core.solver.coevolution.CooperativeSolver;
 import it.units.malelab.jgea.core.solver.coevolution.QualityAggregator;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
+import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.problem.symbolicregression.*;
 import it.units.malelab.jgea.representation.sequence.FixedLengthListFactory;
 import it.units.malelab.jgea.representation.sequence.numeric.GaussianMutation;
@@ -132,8 +133,15 @@ public class DataBasedSR extends Worker {
         fitnessMappingIteration().of(best()),
         fitness().reformat("%5.3f").of(best()),
         hist(8).of(each(fitness())).of(all()),
-        solution().reformat("%30.30s").of(best())
+        solution().reformat("%30.30s").of(best()),
+        NamedFunction.build("constants", "%d", state -> {
+          TreeBasedRealFunction function = (TreeBasedRealFunction) Misc.first(state.getPopulation().firsts()).solution();
+          Tree<Element> tree = function.getNode();
+          List<Element> leavesContents = tree.visitLeaves();
+          return leavesContents.stream().filter(e -> e instanceof Element.Constant).count();
+        })
     );
+
     List<NamedFunction<? super Map<String, Object>, ?>> kFunctions = List.of(
         attribute("seed").reformat("%2d"),
         attribute("problem").reformat(NamedFunction.formatOfLongest(problemMap.keySet().stream().toList())),
