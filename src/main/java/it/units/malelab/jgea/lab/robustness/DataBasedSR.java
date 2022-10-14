@@ -74,42 +74,42 @@ public class DataBasedSR extends Worker {
     List<String> datasets = l(a("files", "boston.csv"));
 
     int nPop = i(a("nPop", "100"));
-    int nEvals = i(a("nEvals", "500000"));
+    int nIterations = i(a("nIterations", "500"));
     int nTournament = 10;
     List<String> coopCoevoParams = l(a("params",
-        "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.1;sel2=f0.1;aggr=m," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.25;sel2=f0.25;aggr=m," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.5;sel2=f0.5;aggr=m," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.75;sel2=f0.75;aggr=m," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.1;sel2=l0.1;aggr=m," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.25;sel2=l0.25;aggr=m," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.5;sel2=l0.5;aggr=m," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.75;sel2=l0.75;aggr=m," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=c;sel2=c;aggr=m," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.1;sel2=f0.1;aggr=l," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.25;sel2=f0.25;aggr=l," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.5;sel2=f0.5;aggr=l," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.75;sel2=f0.75;aggr=l," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.1;sel2=l0.1;aggr=l," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.25;sel2=l0.25;aggr=l," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.5;sel2=l0.5;aggr=l," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.75;sel2=l0.75;aggr=l," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=c;sel2=c;aggr=l," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.1;sel2=f0.1;aggr=f," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.25;sel2=f0.25;aggr=f," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.5;sel2=f0.5;aggr=f," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=f0.75;sel2=f0.75;aggr=f," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.1;sel2=l0.1;aggr=f," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.25;sel2=l0.25;aggr=f," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.5;sel2=l0.5;aggr=f," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=l0.75;sel2=l0.75;aggr=f," +
-            "nPop=100;h=10;nEvals=500000;nTour=10;sel1=c;sel2=c;aggr=f"));
+        "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.1;sel2=f0.1;aggr=m," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.25;sel2=f0.25;aggr=m," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.5;sel2=f0.5;aggr=m," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.75;sel2=f0.75;aggr=m," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.1;sel2=l0.1;aggr=m," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.25;sel2=l0.25;aggr=m," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.5;sel2=l0.5;aggr=m," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.75;sel2=l0.75;aggr=m," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=c;sel2=c;aggr=m," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.1;sel2=f0.1;aggr=l," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.25;sel2=f0.25;aggr=l," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.5;sel2=f0.5;aggr=l," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.75;sel2=f0.75;aggr=l," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.1;sel2=l0.1;aggr=l," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.25;sel2=l0.25;aggr=l," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.5;sel2=l0.5;aggr=l," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.75;sel2=l0.75;aggr=l," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=c;sel2=c;aggr=l," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.1;sel2=f0.1;aggr=f," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.25;sel2=f0.25;aggr=f," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.5;sel2=f0.5;aggr=f," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.75;sel2=f0.75;aggr=f," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.1;sel2=l0.1;aggr=f," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.25;sel2=l0.25;aggr=f," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.5;sel2=l0.5;aggr=f," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.75;sel2=l0.75;aggr=f," +
+            "nPop=100;h=10;nIterations=500;nTour=10;sel1=c;sel2=c;aggr=f"));
 
-    int[] seeds = ri(a("seed", "0:10"));
+    int[] seeds = ri(a("seed", "0:5"));
     boolean output = a("output", "true").startsWith("t");
-    String bestFile = a("bestFile", "best_boston.txt");
-    String lastFile = a("lastFile", "last_boston.txt");
-    String validationFile = a("validationFile", "validation_boston.txt");
+    String bestFile = a("bestFile", "best_boston_it.txt");
+    String lastFile = a("lastFile", "last_boston_it.txt");
+    String validationFile = a("validationFile", "validation_boston_it.txt");
     SymbolicRegressionFitness.Metric metric = SymbolicRegressionFitness.Metric.MSE;
 
     Map<String, SymbolicRegressionProblem<?>> problemMap = datasets.stream()
@@ -122,6 +122,7 @@ public class DataBasedSR extends Worker {
         iterations(),
         births(),
         elapsedSeconds(),
+        fitnessEvaluations(),
         size().of(all()),
         size().of(firsts()),
         size().of(lasts()),
@@ -133,13 +134,19 @@ public class DataBasedSR extends Worker {
         fitnessMappingIteration().of(best()),
         fitness().reformat("%5.3f").of(best()),
         hist(8).of(each(fitness())).of(all()),
-        solution().reformat("%30.30s").of(best()),
+        NamedFunction.build("leaves", "%d", state -> {
+          TreeBasedRealFunction function = (TreeBasedRealFunction) Misc.first(state.getPopulation().firsts()).solution();
+          Tree<Element> tree = function.getNode();
+          List<Element> leavesContents = tree.visitLeaves();
+          return leavesContents.size();
+        }),
         NamedFunction.build("constants", "%d", state -> {
           TreeBasedRealFunction function = (TreeBasedRealFunction) Misc.first(state.getPopulation().firsts()).solution();
           Tree<Element> tree = function.getNode();
           List<Element> leavesContents = tree.visitLeaves();
           return leavesContents.stream().filter(e -> e instanceof Element.Constant).count();
-        })
+        }),
+        solution().reformat("%30.30s").of(best())
     );
 
     List<NamedFunction<? super Map<String, Object>, ?>> kFunctions = List.of(
@@ -208,7 +215,7 @@ public class DataBasedSR extends Worker {
               termFact
           ),
           nPop,
-          StopConditions.nOfFitnessEvaluations(nEvals),
+          StopConditions.nOfIterations(nIterations),
           Map.of(
               new SubtreeCrossover<>(treeHeight),
               0.8d,
@@ -330,8 +337,7 @@ public class DataBasedSR extends Worker {
     String collaboratorSelector1 = params.get("sel1");
     String collaboratorSelector2 = params.get("sel2");
     String qualityAggregator = params.get("aggr");
-    int nEvals = Integer.parseInt(params.getOrDefault("nEvals", "-1"));
-    int nIterations = Integer.parseInt(params.getOrDefault("nIt", "-1"));
+    int nIterations = Integer.parseInt(params.getOrDefault("nIterations", "-1"));
 
     return p -> {
       IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
@@ -410,7 +416,7 @@ public class DataBasedSR extends Worker {
           CollaboratorSelector.build(collaboratorSelector1),
           CollaboratorSelector.build(collaboratorSelector2),
           QualityAggregator.build(qualityAggregator),
-          nEvals > 0 ? StopConditions.nOfFitnessEvaluations(nEvals) : StopConditions.nOfIterations(nIterations)
+          StopConditions.nOfIterations(nIterations)
       );
 
     };
