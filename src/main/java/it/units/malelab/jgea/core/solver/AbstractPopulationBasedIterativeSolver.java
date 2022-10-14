@@ -39,7 +39,7 @@ public abstract class AbstractPopulationBasedIterativeSolver<T extends POSetPopu
 
   protected abstract T initState(P problem, RandomGenerator random, ExecutorService executor);
 
-  private static <T> List<T> getAll(List<Future<T>> futures) throws SolverException {
+  protected static <T> List<T> getAll(List<Future<T>> futures) throws SolverException {
     List<T> results = new ArrayList<>();
     for (Future<T> future : futures) {
       try {

@@ -11,15 +11,14 @@ import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.core.util.Misc;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 extends POSetPopulationState<G2, S2, Q>,
@@ -204,6 +203,33 @@ public class CooperativeSolver<T1 extends POSetPopulationState<G1, S1, Q>, T2 ex
     state.incNOfFitnessEvaluations(evaluatedIndividuals.size());
     state.incNOfIterations();
     state.updateElapsedMillis();
+  }
+
+  @Override
+  public Collection<S> extractSolutions(
+      P problem, RandomGenerator random, ExecutorService executor, State<T1, T2, G1, G2, S1, S2, S, Q> state
+  ) {
+    PartiallyOrderedCollection<Individual<G1, S1, Q>> firstPopulation = state.state1.getPopulation();
+    PartiallyOrderedCollection<Individual<G2, S2, Q>> secondPopulation = state.state2.getPopulation();
+
+    Collection<S1> firstSolutions = firstPopulation.all().stream().map(Individual::solution).collect(Collectors.toSet());
+    Collection<S2> secondSolutions = secondPopulation.all().stream().map(Individual::solution).collect(Collectors.toSet());
+    Set<S> candidateSolutions = firstSolutions.stream().flatMap(s1 ->
+        secondSolutions.stream().map(s2 -> solutionAggregator.apply(s1, s2))
+    ).collect(Collectors.toSet());
+
+    List<Callable<Individual<Void, S, Q>>> callables = candidateSolutions.stream().map(s -> (Callable<Individual<Void, S, Q>>) () ->
+        new Individual<>(null, s, problem.qualityFunction().apply(s), state.getNOfIterations(), state.getNOfIterations())
+    ).toList();
+    Collection<Individual<Void, S, Q>> individuals;
+    try {
+      individuals = getAll(executor.invokeAll(callables));
+    } catch (InterruptedException | SolverException e) {
+      individuals = Set.of();
+    }
+
+    return new DAGPartiallyOrderedCollection<>(individuals, comparator(problem)).firsts().stream()
+        .map(Individual::solution).collect(Collectors.toSet());
   }
 
 }
