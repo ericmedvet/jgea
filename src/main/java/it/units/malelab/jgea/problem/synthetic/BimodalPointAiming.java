@@ -27,7 +27,7 @@ import java.util.function.Function;
 public class BimodalPointAiming implements ComparableQualityBasedProblem<List<Double>, Double> {
 
   private final static double TARGET_1 = 2d;
-  private final static double TARGET_2 = -1d;
+  private final static double TARGET_2 = -2d;
   private final static Function<List<Double>, Double> FITNESS_FUNCTION = v -> {
     double d1 = Math.sqrt(v.stream().mapToDouble(x -> Math.pow(x - TARGET_1, 2d)).sum());
     double d2 = Math.sqrt(v.stream().mapToDouble(x -> Math.pow(x - TARGET_2, 2d)).sum());
