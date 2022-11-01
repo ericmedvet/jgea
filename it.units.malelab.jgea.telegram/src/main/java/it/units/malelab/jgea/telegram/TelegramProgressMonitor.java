@@ -44,4 +44,5 @@ public class TelegramProgressMonitor extends TelegramClient implements ProgressM
         TextPlotter.horizontalBar(progress, 0, 1, 8)
     ));
   }
+
 }
