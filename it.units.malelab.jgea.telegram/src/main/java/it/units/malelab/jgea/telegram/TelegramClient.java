@@ -92,12 +92,6 @@ public class TelegramClient {
     }
   }
 
-  public static void main(String[] args) {
-    TelegramClient client = new TelegramClient("1462661025:AAFM8n2qRYI_ZylUHvwGUalrX0Bgh1nDEmY", 207490209);
-    client.sendText("ciao!");
-    System.out.println(client.getChatInfo());
-  }
-
   public String getChatInfo() {
     GetChatResponse chatResponse = bot.execute(new GetChat(chatId));
     GetChatMemberCountResponse chatMemberCountResponse = bot.execute(new GetChatMemberCount(chatId));
