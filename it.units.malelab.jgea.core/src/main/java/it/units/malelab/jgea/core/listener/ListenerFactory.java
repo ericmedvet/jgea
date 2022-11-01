@@ -52,6 +52,7 @@ public interface ListenerFactory<E, K> {
 
   default ListenerFactory<E, K> deferred(ExecutorService executorService) {
     final ListenerFactory<E, K> thisFactory = this;
+    final Logger L = Logger.getLogger(ListenerFactory.class.getName());
     return new ListenerFactory<>() {
       @Override
       public Listener<E> build(K k) {
@@ -60,6 +61,8 @@ public interface ListenerFactory<E, K> {
 
       @Override
       public void shutdown() {
+        L.info("Deferred listener factory is doing shutdown.");
+        executorService.shutdown();
         while (true) {
           try {
             boolean done = executorService.awaitTermination(1, TimeUnit.SECONDS);

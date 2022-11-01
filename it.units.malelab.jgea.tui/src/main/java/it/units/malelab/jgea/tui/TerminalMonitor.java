@@ -23,6 +23,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.*;
@@ -76,6 +77,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   private double lastProgress;
   private String lastProgressMessage;
   private Instant lastProgressInstant;
+  private ScheduledExecutorService uiExecutorService;
 
 
   public TerminalMonitor(
@@ -129,7 +131,8 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       repaint();
     }
     //start painting scheduler
-    painterTask = Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(
+    uiExecutorService = Executors.newSingleThreadScheduledExecutor();
+    painterTask = uiExecutorService.scheduleAtFixedRate(
         this::repaint,
         0,
         configuration.refreshIntervalMillis,
@@ -438,6 +441,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     if (configuration.dumpLogAfterStop()) {
       logRecords.forEach(L::log);
     }
+    uiExecutorService.shutdownNow();
     System.exit(1);
   }
 
