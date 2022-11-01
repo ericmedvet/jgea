@@ -36,7 +36,7 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
     lineCounter = 0;
   }
 
-  private static File check(File file) {
+  public static File checkExistenceAndChangeName(File file) {
     String originalFileName = file.getPath();
     while (file.exists()) {
       String newName = null;
@@ -76,7 +76,7 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
       List<?> eValues = eFunctions.stream().map(f -> f.apply(e)).toList();
       synchronized (file) {
         if (printer == null) {
-          File actualFile = check(file);
+          File actualFile = checkExistenceAndChangeName(file);
           try {
             printer = new org.apache.commons.csv.CSVPrinter(
                 new PrintStream(actualFile),
