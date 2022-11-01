@@ -48,17 +48,17 @@ public interface ListenerFactory<E, K> {
     };
   }
 
-  default <F> ListenerFactory<F, K> forEach(Function<F, Collection<E>> splitter) {
-    ListenerFactory<E, K> thisListenerFactory = this;
-    return new ListenerFactory<F, K>() {
+  default ListenerFactory<E, K> deferred(ExecutorService executorService) {
+    final ListenerFactory<E, K> thisFactory = this;
+    return new ListenerFactory<>() {
       @Override
-      public Listener<F> build(K k) {
-        return thisListenerFactory.build(k).forEach(splitter);
+      public Listener<E> build(K k) {
+        return thisFactory.build(k).deferred(executorService);
       }
 
       @Override
       public void shutdown() {
-        thisListenerFactory.shutdown();
+        thisFactory.shutdown();
       }
     };
   }
@@ -93,11 +93,26 @@ public interface ListenerFactory<E, K> {
     };
   }
 
+  default <F> ListenerFactory<F, K> forEach(Function<F, Collection<E>> splitter) {
+    ListenerFactory<E, K> thisListenerFactory = this;
+    return new ListenerFactory<>() {
+      @Override
+      public Listener<F> build(K k) {
+        return thisListenerFactory.build(k).forEach(splitter);
+      }
+
+      @Override
+      public void shutdown() {
+        thisListenerFactory.shutdown();
+      }
+    };
+  }
+
   default ListenerFactory<E, K> robust() {
     final ListenerFactory<E, K> thisFactory = this;
     final Logger L = Logger.getLogger(Listener.class.getName());
     final AtomicInteger counter = new AtomicInteger(0);
-    return new ListenerFactory<E, K>() {
+    return new ListenerFactory<>() {
       @Override
       public Listener<E> build(K k) {
         final Listener<E> innerListener = thisFactory.build(k);
