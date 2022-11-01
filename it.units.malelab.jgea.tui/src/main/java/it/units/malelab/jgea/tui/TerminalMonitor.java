@@ -77,7 +77,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   private double lastProgress;
   private String lastProgressMessage;
   private Instant lastProgressInstant;
-  private ScheduledExecutorService uiExecutorService;
+  private final ScheduledExecutorService uiExecutorService;
 
 
   public TerminalMonitor(
@@ -442,7 +442,6 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       logRecords.forEach(L::log);
     }
     uiExecutorService.shutdownNow();
-    System.exit(1);
   }
 
 }

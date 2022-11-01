@@ -3,7 +3,6 @@ package it.units.malelab.jgea.core.listener;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -61,18 +60,6 @@ public interface ListenerFactory<E, K> {
 
       @Override
       public void shutdown() {
-        L.info("Deferred listener factory is doing shutdown.");
-        executorService.shutdown();
-        while (true) {
-          try {
-            boolean done = executorService.awaitTermination(1, TimeUnit.SECONDS);
-            if (done) {
-              break;
-            }
-          } catch (InterruptedException e) {
-            //ignore
-          }
-        }
         thisFactory.shutdown();
       }
     };
