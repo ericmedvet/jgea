@@ -168,7 +168,7 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized, Ser
   public String toString() {
     return graph.arcs().stream().map(a -> String.format(
         "%s-[%s]->%s",
-        a.getTarget(),
+        a.getSource(),
         graph.getArcValue(a).stream().sorted().map(Objects::toString).collect(Collectors.joining()),
         a.getTarget()
     )).collect(Collectors.joining(","));
