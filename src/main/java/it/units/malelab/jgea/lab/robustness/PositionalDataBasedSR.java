@@ -29,21 +29,20 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
 import static it.units.malelab.jgea.core.util.Args.*;
 
-public class DataBasedSR extends Worker {
+public class PositionalDataBasedSR extends Worker {
 
   private record ValidationEvent(RealFunction realFunction, double fitness, double validationFitness) {
   }
 
   public static void main(String[] args) {
-    new DataBasedSR(args);
+    new PositionalDataBasedSR(args);
   }
 
-  public DataBasedSR(String[] args) {
+  public PositionalDataBasedSR(String[] args) {
     super(args);
   }
 
@@ -60,7 +59,6 @@ public class DataBasedSR extends Worker {
 
   private static final Element.Operator[] OPERATORS = Element.Operator.values();
   private static final double[] CONSTANTS = new double[]{0.1, 1d, 10d};
-  private static final int N_CONSTANTS = 10;
 
   private static final String TOKEN_SEPARATOR = ";";
   private static final String PARAM_VALUE_SEPARATOR = "=";
@@ -69,48 +67,22 @@ public class DataBasedSR extends Worker {
   @Override
   public void run() {
     String telegramBotId = a("telegramBotId", null);
-    long telegramChatId = Long.parseLong(a("telegramChatId", ""));
+    long telegramChatId = Long.parseLong(a("telegramChatId", "0"));
 
     int treeHeight = i(a("height", "10"));
     int nFolds = i(a("folds", "5"));
-    List<String> datasets = l(a("files", "boston.csv"));
+    List<String> datasets = l(a("files", "D:\\Research\\Cooperative_coevolution\\datasets\\boston.csv"));
 
     int nPop = i(a("nPop", "100"));
     int nIterations = i(a("nIterations", "500"));
     int nTournament = 10;
     List<String> coopCoevoParams = l(a("params",
-        "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.1;sel2=f0.1;aggr=m," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.25;sel2=f0.25;aggr=m," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.5;sel2=f0.5;aggr=m," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.75;sel2=f0.75;aggr=m," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.1;sel2=l0.1;aggr=m," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.25;sel2=l0.25;aggr=m," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.5;sel2=l0.5;aggr=m," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.75;sel2=l0.75;aggr=m," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=c;sel2=c;aggr=m," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.1;sel2=f0.1;aggr=l," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.25;sel2=f0.25;aggr=l," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.5;sel2=f0.5;aggr=l," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.75;sel2=f0.75;aggr=l," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.1;sel2=l0.1;aggr=l," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.25;sel2=l0.25;aggr=l," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.5;sel2=l0.5;aggr=l," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.75;sel2=l0.75;aggr=l," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=c;sel2=c;aggr=l," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.1;sel2=f0.1;aggr=f," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.25;sel2=f0.25;aggr=f," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.5;sel2=f0.5;aggr=f," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=f0.75;sel2=f0.75;aggr=f," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.1;sel2=l0.1;aggr=f," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.25;sel2=l0.25;aggr=f," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.5;sel2=l0.5;aggr=f," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=l0.75;sel2=l0.75;aggr=f," +
-            "nPop=100;h=10;nIterations=500;nTour=10;sel1=c;sel2=c;aggr=f"));
+        "nPop=100;h=10;nIterations=5;nTour=10;sel1=f0.1;sel2=f0.1;aggr=m"));
 
     int[] seeds = ri(a("seed", "0:5"));
     boolean output = a("output", "true").startsWith("t");
-    String bestFile = a("bestFile", "best_boston_v.txt");
-    String validationFile = a("validationFile", "validation_boston_v.txt");
+    String bestFile = a("bestFile", "best_boston.txt");
+    String validationFile = a("validationFile", "validation_boston.txt");
     SymbolicRegressionFitness.Metric metric = SymbolicRegressionFitness.Metric.MSE;
 
     Map<String, SymbolicRegressionProblem<?>> problemMap = datasets.stream()
@@ -358,9 +330,7 @@ public class DataBasedSR extends Worker {
               .sequential()
               .map(Element.Variable::new)
               .toArray(Element.Variable[]::new)),
-          IndependentFactory.picker(
-              IntStream.range(0, N_CONSTANTS).mapToObj(Element.ConstantPlaceholder::new).toArray(Element.ConstantPlaceholder[]::new)
-          )
+          r -> new Element.Placeholder()
       );
       double xOverProb = 0.8d;
       AbstractPopulationBasedIterativeSolver<POSetPopulationState<Tree<Element>, Tree<Element>, Double>, TotalOrderQualityBasedProblem<Tree<Element>, Double>, Tree<Element>, Tree<Element>, Double> solver1 =
@@ -398,7 +368,7 @@ public class DataBasedSR extends Worker {
       AbstractPopulationBasedIterativeSolver<POSetPopulationState<List<Double>, List<Double>, Double>, TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>, List<Double>, Double> solver2 =
           new StandardEvolver<>(
               Function.identity(),
-              new FixedLengthListFactory<>(N_CONSTANTS, new UniformDoubleFactory(-1d, 1d)),
+              new FixedLengthListFactory<>((int) Math.pow(2d, height + 1) - 1, new UniformDoubleFactory(-1d, 1d)),
               nPop,
               StopConditions.nOfFitnessEvaluations(10000),
               Map.of(
@@ -412,16 +382,12 @@ public class DataBasedSR extends Worker {
               false,
               (srp, r) -> new POSetPopulationState<>()
           );
+      int maxArity = Arrays.stream(OPERATORS).mapToInt(Element.Operator::arity).max().orElseThrow();
       BiFunction<Tree<Element>, List<Double>, RealFunction> solutionAggregator = (t, l) -> new TreeBasedRealFunction(
-          Tree.map(
+          Tree.mapFromIndex(
               t,
-              el -> {
-                if (el instanceof Element.ConstantPlaceholder constantPlaceholder) {
-                  return new Element.Constant(l.get(constantPlaceholder.id()));
-                } else {
-                  return el;
-                }
-              }
+              (el, i) -> el.equals(new Element.Placeholder()) ? new Element.Constant(l.get(i)) : el,
+              maxArity
           ),
           vars(p.qualityFunction().arity())
       );
