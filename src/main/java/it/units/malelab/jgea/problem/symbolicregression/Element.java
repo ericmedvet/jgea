@@ -86,5 +86,8 @@ public interface Element {
   record Placeholder() implements Element {
   }
 
+  record ConstantPlaceholder(int id) implements Element {
+  }
+
   String toString();
 }
