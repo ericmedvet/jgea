@@ -17,6 +17,6 @@ public record Experiment(
     @Param("listeners") List<BiFunction<
         Experiment,
         ExecutorService,
-        ListenerFactory<? extends POSetPopulationState<?, ?, ?>, Run<?, ?, ?, ?>>
+        ListenerFactory<? super POSetPopulationState<?, ?, ?>, Run<?, ?, ?, ?>>
         >> listeners
 ) {}
