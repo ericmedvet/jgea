@@ -28,6 +28,7 @@
         <module>it.units.malelab.jgea.sample</module>
         <module>it.units.malelab.jgea.assembly</module>
         <module>it.units.malelab.jgea.tui</module>
+        <module>it.units.malelab.jgea.experimenter</module>
     </modules>
     <packaging>pom</packaging>
     <properties>
