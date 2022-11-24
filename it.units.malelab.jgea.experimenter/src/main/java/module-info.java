@@ -3,8 +3,10 @@
  */
 module it.units.malelab.jgea.experimenter {
   exports it.units.malelab.jgea.experimenter;
+  requires it.units.malelab.jnb.core;
   requires it.units.malelab.jgea.core;
   requires it.units.malelab.jgea.tui;
   requires java.logging;
   requires java.desktop;
+  requires it.units.malelab.jgea.telegram;
 }
