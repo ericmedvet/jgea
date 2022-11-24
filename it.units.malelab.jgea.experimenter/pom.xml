@@ -28,6 +28,11 @@
             <artifactId>jgea.telegram</artifactId>
             <version>${revision}</version>
         </dependency>
+        <dependency>
+            <groupId>it.units.malelab</groupId>
+            <artifactId>jnb.core</artifactId>
+            <version>1.0.0</version>
+        </dependency>
     </dependencies>
 
 </project>
