@@ -34,6 +34,11 @@
             <artifactId>jgea.sample</artifactId>
             <version>${revision}</version>
         </dependency>
+        <dependency>
+            <groupId>it.units.malelab</groupId>
+            <artifactId>jgea.experimenter</artifactId>
+            <version>${revision}</version>
+        </dependency>
     </dependencies>
 
     <build>
