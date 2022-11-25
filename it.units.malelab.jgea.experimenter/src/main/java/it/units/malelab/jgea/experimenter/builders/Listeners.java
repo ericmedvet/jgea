@@ -1,9 +1,26 @@
+/*
+ * Copyright 2022 eric
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package it.units.malelab.jgea.experimenter.builders;
 
 import it.units.malelab.jgea.core.listener.*;
 import it.units.malelab.jgea.core.solver.Individual;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.core.util.ImagePlotters;
+import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.experimenter.Experiment;
 import it.units.malelab.jgea.experimenter.Run;
 import it.units.malelab.jgea.telegram.TelegramUpdater;
@@ -28,6 +45,44 @@ import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
 
 public class Listeners {
 
+  private static class ListenerFactoryAndMonitor<E, K> implements ListenerFactory<E, K>, ProgressMonitor {
+    private final ListenerFactory<E, K> innerListenerFactory;
+    private final ListenerFactory<E, K> outerListenerFactory;
+
+    public ListenerFactoryAndMonitor(
+        ListenerFactory<E, K> innerListenerFactory,
+        ExecutorService executorService,
+        boolean onLast
+    ) {
+      this.innerListenerFactory = innerListenerFactory;
+      if (onLast) {
+        if (executorService != null) {
+          outerListenerFactory = innerListenerFactory.onLast().deferred(executorService);
+        } else {
+          outerListenerFactory = innerListenerFactory.onLast();
+        }
+      } else {
+        if (executorService != null) {
+          outerListenerFactory = innerListenerFactory.deferred(executorService);
+        } else {
+          outerListenerFactory = innerListenerFactory;
+        }
+      }
+    }
+
+    @Override
+    public Listener<E> build(K k) {
+      return outerListenerFactory.build(k);
+    }
+
+    @Override
+    public void notify(double progress, String message) {
+      if (innerListenerFactory instanceof ProgressMonitor progressMonitor) {
+        progressMonitor.notify(progress, message);
+      }
+    }
+  }
+
   public final static List<NamedFunction<? super POSetPopulationState<?, ?, ?>, ?>> BASIC_FUNCTIONS = List.of(
       iterations(),
       births(),
@@ -51,13 +106,7 @@ public class Listeners {
     @SuppressWarnings({"rawtypes", "unchecked"}) List<NamedFunction<POSetPopulationState<G, S, Q>, ?>> popFunctions =
         new ArrayList<>(
             (List) BASIC_FUNCTIONS);
-    List<NamedFunction<Run<?, G, S, Q>, Object>> runFunctions = runKeys.stream()
-        .map(k -> NamedFunction.build(
-            k,
-            "%s",
-            (Run<?, G, S, Q> run) -> getKeyFromParamMap(run.map(), Arrays.stream(k.split("\\.")).toList())
-        ))
-        .toList();
+    List<NamedFunction<Run<?, G, S, Q>, Object>> runFunctions = buildRunNamedFunctions(runKeys);
     record PopIndividualPair<G, S, Q>(POSetPopulationState<G, S, Q> pop, Individual<G, S, Q> individual) {}
     List<NamedFunction<? super PopIndividualPair<G, S, Q>, ?>> pairFunctions = new ArrayList<>();
     popFunctions.stream()
@@ -111,6 +160,41 @@ public class Listeners {
       }
       return listenerFactory;
     };
+  }
+
+  private static <G, S, Q> List<NamedFunction<Run<?, G, S, Q>, Object>> buildRunNamedFunctions(List<String> runKeys) {
+    return runKeys.stream()
+        .map(k -> NamedFunction.build(
+            k,
+            "%s",
+            (Run<?, G, S, Q> run) -> getKeyFromParamMap(run.map(), Arrays.stream(k.split("\\.")).toList())
+        ))
+        .toList();
+  }
+
+  @SuppressWarnings("unused")
+  public static <G, S, Q> BiFunction<Experiment, ExecutorService, ListenerFactory<POSetPopulationState<G, S, Q>, Run<
+      ?, G, S, Q>>> console(
+      @Param(value = "defaultStateFunctions", dNPMs = {
+          "ea.nf.iterations()",
+          "ea.nf.evals()",
+          "ea.nf.births()",
+          "ea.nf.elapsed()",
+          "ea.nf.size(f=ea.nf.all())",
+          "ea.nf.size(f=ea.nf.firsts())",
+          "ea.nf.size(f=ea.nf.lasts())"
+      }) List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> defaultStateFunctions,
+      @Param(value = "stateFunctions") List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> stateFunctions,
+      @Param("runKeys") List<String> runKeys,
+      @Param(value = "deferred", dB = false) boolean deferred,
+      @Param(value = "onlyLast", dB = false) boolean onlyLast
+  ) {
+    List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> sFunctions = Misc.concat(List.of(
+        defaultStateFunctions,
+        stateFunctions
+    ));
+    @SuppressWarnings({"unchecked", "rawtypes"}) List<NamedFunction<? super Run<?,G,S,Q>,?>> rFunctions = (List)buildRunNamedFunctions(runKeys);
+    return (experiment, executorService) -> new TabularPrinter<>(sFunctions, rFunctions);
   }
 
   @SuppressWarnings("unused")

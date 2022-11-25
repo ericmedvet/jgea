@@ -62,7 +62,7 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static NamedFunction<POSetPopulationState<?, ?, ?>, Double> elapsed() {
-    return NamedFunction.build("elapsed.seconds", "%5.1", s -> s.getElapsedMillis() / 1000d);
+    return NamedFunction.build("elapsed.seconds", "%5.1f", s -> s.getElapsedMillis() / 1000d);
   }
 
   @SuppressWarnings("unused")
@@ -88,7 +88,7 @@ public class NamedFunctions {
   @SuppressWarnings("unused")
   public static <T, R> NamedFunction<T, R> formatted(
       @Param("s") String s,
-      @Param("f") NamedFunction<T,R> f
+      @Param("f") NamedFunction<T, R> f
   ) {
     return f.reformat(s);
   }
@@ -122,4 +122,16 @@ public class NamedFunctions {
         x -> individualF.apply(x).solution()
     );
   }
+
+  @SuppressWarnings("unused")
+  public static <X> NamedFunction<X, Integer> size(
+      @Param("f") NamedFunction<X, ?> f
+  ) {
+    return NamedFunction.build(
+        c("size", f.getName()),
+        x -> it.units.malelab.jgea.core.listener.NamedFunctions.size(f.apply(x))
+    );
+  }
+
+  // TODO: add hist, percentile, uniqueness
 }

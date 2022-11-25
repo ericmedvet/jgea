@@ -61,14 +61,20 @@ public class Starter {
           runs = [
             ea.run(
               solver = ea.s.numGA(
-                mapper = fixed(n = 10);
-                nEval = 100
+                mapper = fixed(n = 100);
+                nEval = 10000
               );
               randomGenerator = ea.rg.defaultRG(seed = 1);
               problem = ea.p.totalOrder(
                 qFunction = sphere();
                 cExtractor = ea.f.identity()
               )
+            )
+          ];
+          listeners = [
+            ea.l.console(
+              stateFunctions = [ea.nf.formatted(s = "%6.2f"; f = ea.nf.fitness(individual = ea.nf.best()))];
+              runKeys = ["randomGenerator.seed"; "solver.mapper.n"]
             )
           ]
         )
