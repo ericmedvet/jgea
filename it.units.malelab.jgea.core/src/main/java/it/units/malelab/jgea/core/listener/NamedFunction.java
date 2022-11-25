@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 eric
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package it.units.malelab.jgea.core.listener;
 
 import java.util.List;
@@ -12,6 +28,10 @@ import java.util.stream.Collectors;
 public interface NamedFunction<F, T> extends Function<F, T> {
 
   BiFunction<String, String, String> NAME_COMPOSER = (after, before) -> before + "→" + after;
+
+  static <F, T> NamedFunction<F, T> build(String name, Function<F, T> function) {
+    return build(name, "%s", function);
+  }
 
   static <F, T> NamedFunction<F, T> build(String name, String format, Function<F, T> function) {
     return new NamedFunction<>() {
@@ -59,12 +79,14 @@ public interface NamedFunction<F, T> extends Function<F, T> {
     return function.getClass().getSimpleName();
   }
 
+  @SuppressWarnings("unused")
   static <F, T, V> List<NamedFunction<F, ? extends V>> then(
       NamedFunction<F, T> before, List<NamedFunction<T, ? extends V>> afters
   ) {
     return afters.stream().map(before::then).collect(Collectors.toList());
   }
 
+  @SuppressWarnings("unused")
   default String applyAndFormat(F f) {
     return String.format(getFormat(), apply(f));
   }
@@ -101,7 +123,7 @@ public interface NamedFunction<F, T> extends Function<F, T> {
     return befores.stream().map(this::of).collect(Collectors.toList());
   }
 
-  default <K> NamedFunction<F, K> as(Class<K> kClass) {
+  default <K> NamedFunction<F, K> as(@SuppressWarnings("unused") Class<K> kClass) {
     NamedFunction<F, T> thisNamedFunction = this;
     return new NamedFunction<>() {
       @SuppressWarnings("unchecked")
@@ -142,9 +164,10 @@ public interface NamedFunction<F, T> extends Function<F, T> {
     };
   }
 
+  @SuppressWarnings("unused")
   default NamedFunction<F, T> rename(String name) {
     NamedFunction<F, T> thisNamedFunction = this;
-    return new NamedFunction<F, T>() {
+    return new NamedFunction<>() {
       @Override
       public T apply(F f) {
         return thisNamedFunction.apply(f);
