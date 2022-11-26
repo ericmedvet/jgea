@@ -73,7 +73,11 @@ public class Starter {
           ];
           listeners = [
             ea.l.console(
-              stateFunctions = [ea.nf.formatted(s = "%6.2f"; f = ea.nf.fitness(individual = ea.nf.best()))];
+              stateFunctions = [
+                ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
+                ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
+                ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.2f")
+              ];
               runKeys = ["randomGenerator.seed"; "solver.mapper.n"]
             )
           ]
