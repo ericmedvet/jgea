@@ -1,9 +1,12 @@
 package it.units.malelab.jgea.experimenter;
 
 import it.units.malelab.jgea.core.listener.ListenerFactory;
+import it.units.malelab.jgea.core.listener.ProgressMonitor;
+import it.units.malelab.jgea.core.listener.ScreenProgressMonitor;
 import it.units.malelab.jgea.core.solver.SolverException;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jnb.core.NamedBuilder;
+import it.units.malelab.jnb.core.StringNamedParamMap;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,7 +14,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -61,7 +63,8 @@ public class Experimenter {
     try (BufferedReader br = new BufferedReader(new FileReader(experimentFile))) {
       experimentDescription = br.lines().collect(Collectors.joining());
     } catch (IOException e) {
-      throw new IllegalArgumentException(String.format("Cannot read provided experiment description at %s: %s",
+      throw new IllegalArgumentException(String.format(
+          "Cannot read provided experiment description at %s: %s",
           experimentFile,
           e
       ));
@@ -75,28 +78,40 @@ public class Experimenter {
 
   public void run(Experiment experiment) {
     //preapare factories
-    List<ListenerFactory<? super POSetPopulationState<?, ?, ?>, Run<?, ?, ?, ?>>> factories = new ArrayList<>();
-    ListenerFactory<? super POSetPopulationState<?, ?, ?>, Run<?, ?, ?, ?>> factory =
-        ListenerFactory.all(experiment.listeners()
-        .stream()
-        .map(l -> l.apply(experiment, listenerExecutorService))
-        .toList());
+    List<? extends ListenerFactory<? super POSetPopulationState<?, ?, ?>, Run<?, ?, ?, ?>>> factories =
+        experiment.listeners()
+            .stream()
+            .map(l -> l.apply(experiment, listenerExecutorService))
+            .toList();
+    ListenerFactory<? super POSetPopulationState<?, ?, ?>, Run<?, ?, ?, ?>> factory = ListenerFactory.all(factories);
+    List<ProgressMonitor> progressMonitors = factories.stream()
+        .filter(f -> f instanceof ProgressMonitor)
+        .map(f -> (ProgressMonitor) f)
+        .toList();
+    ProgressMonitor progressMonitor = progressMonitors.isEmpty() ? new ScreenProgressMonitor(System.out) :
+        ProgressMonitor.all(progressMonitors);
     //iterate over runs
     for (int i = 0; i < experiment.runs().size(); i++) {
       Run<?, ?, ?, ?> run = experiment.runs().get(i);
       //do optimization
       try {
+        progressMonitor.notify(
+            i,
+            experiment.runs().size(),
+            "Starting:%n%s".formatted(StringNamedParamMap.prettyToString(run.map(), 40))
+        );
         Instant startingT = Instant.now();
         Collection<?> solutions = run.run(runExecutorService, factory.build(run));
         double elapsedT = Duration.between(startingT, Instant.now()).toMillis() / 1000d;
-        String msg = String.format("%d/%d run done in %.2fs, found %d solutions",
+        String msg = String.format(
+            "Run %d of %d done in %.2fs, found %d solutions",
             i + 1,
             experiment.runs().size(),
             elapsedT,
             solutions.size()
         );
         L.info(msg);
-        // TODO add progress monitor notification here
+        progressMonitor.notify(i + 1, experiment.runs().size(), msg);
       } catch (SolverException | RuntimeException e) {
         L.warning(String.format("Cannot solve %s: %s", run.map(), e));
         break;

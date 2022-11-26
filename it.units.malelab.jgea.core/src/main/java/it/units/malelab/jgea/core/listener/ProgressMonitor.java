@@ -25,6 +25,10 @@ public interface ProgressMonitor {
     return all(List.of(this, other));
   }
 
+  default void notify(int i, int n, String message) {
+    notify((double) i / (double) n, message);
+  }
+
   default void notify(double progress) {
     notify(progress, "");
   }
