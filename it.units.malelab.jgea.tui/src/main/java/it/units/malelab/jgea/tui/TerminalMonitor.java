@@ -8,10 +8,7 @@ import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
-import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.ListenerFactory;
-import it.units.malelab.jgea.core.listener.NamedFunction;
-import it.units.malelab.jgea.core.listener.ProgressMonitor;
+import it.units.malelab.jgea.core.listener.*;
 import it.units.malelab.jgea.core.util.*;
 import it.units.malelab.jgea.tui.util.Point;
 import it.units.malelab.jgea.tui.util.Rectangle;
@@ -62,10 +59,8 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   private final static Logger L = Logger.getLogger(TerminalMonitor.class.getName());
   private final List<? extends NamedFunction<? super E, ?>> eFunctions;
   private final List<? extends NamedFunction<? super K, ?>> kFunctions;
-  private final List<Pair<? extends NamedFunction<? super E, ? extends Number>, ? extends NamedFunction<? super E, ?
-      extends Number>>> plotFunctionPairs;
+  private final List<PlotTableBuilder<? super E>> plotTableBuilders;
   private final List<String> formats;
-  private final List<Table<Number>> plotTables;
   private final Configuration configuration;
   private final ScheduledFuture<?> painterTask;
   private final List<LogRecord> logRecords;
@@ -73,43 +68,37 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   private final Instant startingInstant;
   private final List<Handler> originalHandlers;
 
+  private final List<Accumulator<? super E, Table<Number>>> plotAccumulators;
+  private final ScheduledExecutorService uiExecutorService;
   private Screen screen;
   private double lastProgress;
   private String lastProgressMessage;
   private Instant lastProgressInstant;
-  private final ScheduledExecutorService uiExecutorService;
 
 
   public TerminalMonitor(
       List<NamedFunction<? super E, ?>> eFunctions,
       List<NamedFunction<? super K, ?>> kFunctions,
-      List<Pair<? extends NamedFunction<? super E, ? extends Number>, ? extends NamedFunction<? super E, ?
-          extends Number>>> plotFunctionPairs
+      List<PlotTableBuilder<? super E>> plotTableBuilders
   ) {
-    this(eFunctions, kFunctions, plotFunctionPairs, DEFAULT_CONFIGURATION);
+    this(eFunctions, kFunctions, plotTableBuilders, DEFAULT_CONFIGURATION);
   }
 
   public TerminalMonitor(
       List<NamedFunction<? super E, ?>> eFunctions,
       List<NamedFunction<? super K, ?>> kFunctions,
-      List<Pair<? extends NamedFunction<? super E, ? extends Number>, ? extends NamedFunction<? super E, ?
-          extends Number>>> plotFunctionPairs,
+      List<PlotTableBuilder<? super E>> plotTableBuilders,
       Configuration configuration
   ) {
     //set functions
     this.eFunctions = eFunctions;
     this.kFunctions = kFunctions;
-    this.plotFunctionPairs = plotFunctionPairs;
+    this.plotTableBuilders = plotTableBuilders;
     formats = Misc.concat(List.of(
         eFunctions.stream().map(NamedFunction::getFormat).toList(),
         kFunctions.stream().map(NamedFunction::getFormat).toList()
     ));
-    plotTables = plotFunctionPairs.stream()
-        .map(p -> (Table<Number>) new ArrayTable<Number>(List.of(
-            p.first().getName(),
-            p.second().getName()
-        )))
-        .toList();
+    plotAccumulators = new ArrayList<>();
     //read configuration
     this.configuration = configuration;
     //prepare data object stores
@@ -165,7 +154,8 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
         .toList();
     synchronized (runTable) {
       runTable.clear();
-      plotTables.forEach(Table::clear);
+      plotAccumulators.clear();
+      plotTableBuilders.forEach(b -> plotAccumulators.add(b.build(null)));
     }
     return e -> {
       List<?> eItems = eFunctions.stream()
@@ -180,12 +170,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
         while (runTable.nRows() > RUN_HISTORY_SIZE) {
           runTable.removeRow(0);
         }
-        for (int i = 0; i < plotFunctionPairs.size(); i = i + 1) {
-          plotTables.get(i).addRow(List.of(
-              plotFunctionPairs.get(i).first().apply(e),
-              plotFunctionPairs.get(i).second().apply(e)
-          ));
-        }
+        plotAccumulators.forEach(a -> a.listen(e));
       }
     };
   }
@@ -193,6 +178,14 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   @Override
   public void shutdown() {
     stop();
+  }
+
+  private double getCPULoad() {
+    return ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class).getSystemLoadAverage();
+  }
+
+  private int getNumberOfProcessors() {
+    return ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class).getAvailableProcessors();
   }
 
   @Override
@@ -220,14 +213,6 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
 
   @Override
   public void close() throws SecurityException {
-  }
-
-  private double getCPULoad() {
-    return ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class).getSystemLoadAverage();
-  }
-
-  private int getNumberOfProcessors() {
-    return ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class).getAvailableProcessors();
   }
 
   private void repaint() {
@@ -261,16 +246,16 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     Rectangle legendR = w.splitVertically(configuration.rightHorizontalSplit).get(0);
     Rectangle statusR = w.splitVertically(configuration.rightHorizontalSplit).get(1);
     List<Rectangle> plotRs;
-    if (plotFunctionPairs.isEmpty()) {
+    if (plotAccumulators.isEmpty()) {
       plotRs = List.of();
     } else {
       Rectangle plotsR = runR.splitVertically(configuration.plotHorizontalSplit).get(1);
       runR = runR.splitVertically(configuration.plotHorizontalSplit).get(0);
-      if (plotFunctionPairs.size() > 1) {
-        float[] splits = new float[plotFunctionPairs.size() - 1];
-        splits[0] = 1f / (float) plotFunctionPairs.size();
+      if (plotAccumulators.size() > 1) {
+        float[] splits = new float[plotAccumulators.size() - 1];
+        splits[0] = 1f / (float) plotAccumulators.size();
         for (int i = 1; i < splits.length; i++) {
-          splits[i] = splits[i - 1] + 1f / (float) plotFunctionPairs.size();
+          splits[i] = splits[i - 1] + 1f / (float) plotAccumulators.size();
         }
         plotRs = plotsR.splitHorizontally(splits);
       } else {
@@ -282,9 +267,8 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     drawFrame(tg, legendR, "Legend", FRAME_COLOR, FRAME_LABEL_COLOR);
     drawFrame(tg, logR, "Log", FRAME_COLOR, FRAME_LABEL_COLOR);
     drawFrame(tg, statusR, "Status", FRAME_COLOR, FRAME_LABEL_COLOR);
-    for (int i = 0; i < plotFunctionPairs.size(); i++) {
-      String plotName = plotFunctionPairs.get(i).second().getName() + " vs. "
-          + plotFunctionPairs.get(i).first().getName();
+    for (int i = 0; i < plotTableBuilders.size(); i++) {
+      String plotName = plotTableBuilders.get(i).xName() + " vs. " + plotTableBuilders.get(i).yNames().get(0);
       drawFrame(tg, plotRs.get(i), plotName, FRAME_COLOR, FRAME_LABEL_COLOR);
     }
     //draw data: logs
@@ -396,24 +380,24 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
         }
       }
       //draw plots
-      if (!plotFunctionPairs.isEmpty()) {
-        for (int i = 0; i < plotFunctionPairs.size(); i = i + 1) {
+      if (!plotAccumulators.isEmpty()) {
+        for (int i = 0; i < plotAccumulators.size(); i = i + 1) {
           try {
             drawPlot(
                 tg,
                 plotRs.get(i).inner(1),
-                plotTables.get(i),
+                plotAccumulators.get(i).get(),
                 PLOT2_COLOR,
                 MAIN_DATA_COLOR,
                 PLOT_BG_COLOR,
-                plotFunctionPairs.get(i).first().getFormat(),
-                plotFunctionPairs.get(i).second().getFormat()
+                plotTableBuilders.get(i).xFormat(),
+                plotTableBuilders.get(i).yFormats().get(0)
             );
           } catch (RuntimeException ex) {
             L.warning(String.format(
                 "Cannot do plot %s vs. %s: %s",
-                plotFunctionPairs.get(i).first().getName(),
-                plotFunctionPairs.get(i).second().getName(),
+                plotTableBuilders.get(i).xName(),
+                plotTableBuilders.get(i).yNames().get(0),
                 ex
             ));
           }
