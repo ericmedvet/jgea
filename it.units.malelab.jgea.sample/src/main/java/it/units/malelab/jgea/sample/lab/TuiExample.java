@@ -1,6 +1,7 @@
 package it.units.malelab.jgea.sample.lab;
 
 import it.units.malelab.jgea.core.listener.NamedFunction;
+import it.units.malelab.jgea.core.listener.XYPlotTableBuilder;
 import it.units.malelab.jgea.core.representation.grammar.Grammar;
 import it.units.malelab.jgea.core.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
 import it.units.malelab.jgea.core.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
@@ -11,7 +12,6 @@ import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.solver.*;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.core.util.Misc;
-import it.units.malelab.jgea.core.util.Pair;
 import it.units.malelab.jgea.problem.symbolicregression.*;
 import it.units.malelab.jgea.tui.TerminalMonitor;
 
@@ -71,14 +71,11 @@ public class TuiExample implements Runnable {
             Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)),
             List.of(),
             List.of(
-                new Pair<>(
+                new XYPlotTableBuilder<>(
                     iterations(),
-                    fitness().reformat("%5.3f").of(best()).as(Number.class)
+                    List.of(fitness().reformat("%5.3f").of(best()).as(Number.class))
                 ),
-                new Pair<>(
-                    iterations(),
-                    uniqueness().of(each(genotype())).of(all())
-                )
+                new XYPlotTableBuilder<>(iterations(), List.of(uniqueness().of(each(genotype())).of(all())))
             )
         );
     List<Integer> seeds = List.of(1, 2, 3, 4, 5);

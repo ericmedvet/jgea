@@ -118,6 +118,7 @@ public class Experimenter {
       }
     }
     if (closeListeners) {
+      L.info("Closing");
       runExecutorService.shutdown();
       listenerExecutorService.shutdown();
       while (true) {

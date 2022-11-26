@@ -246,16 +246,16 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     Rectangle legendR = w.splitVertically(configuration.rightHorizontalSplit).get(0);
     Rectangle statusR = w.splitVertically(configuration.rightHorizontalSplit).get(1);
     List<Rectangle> plotRs;
-    if (plotAccumulators.isEmpty()) {
+    if (plotTableBuilders.isEmpty()) {
       plotRs = List.of();
     } else {
       Rectangle plotsR = runR.splitVertically(configuration.plotHorizontalSplit).get(1);
       runR = runR.splitVertically(configuration.plotHorizontalSplit).get(0);
-      if (plotAccumulators.size() > 1) {
-        float[] splits = new float[plotAccumulators.size() - 1];
-        splits[0] = 1f / (float) plotAccumulators.size();
+      if (plotTableBuilders.size() > 1) {
+        float[] splits = new float[plotTableBuilders.size() - 1];
+        splits[0] = 1f / (float) plotTableBuilders.size();
         for (int i = 1; i < splits.length; i++) {
-          splits[i] = splits[i - 1] + 1f / (float) plotAccumulators.size();
+          splits[i] = splits[i - 1] + 1f / (float) plotTableBuilders.size();
         }
         plotRs = plotsR.splitHorizontally(splits);
       } else {

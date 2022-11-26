@@ -34,6 +34,7 @@ public class PreparedNamedBuilder {
           .and(List.of("listener", "l"), NamedBuilder.fromUtilityClass(Listeners.class))
           .and(List.of("function", "f"), NamedBuilder.fromUtilityClass(Functions.class))
           .and(List.of("namedFunction", "nf"), NamedBuilder.fromUtilityClass(NamedFunctions.class))
+          .and(List.of("plot"), NamedBuilder.fromUtilityClass(Plots.class))
           .and(NamedBuilder.fromClass(Experiment.class))
           .and(NamedBuilder.fromClass(Run.class))
       );

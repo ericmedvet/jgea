@@ -61,8 +61,8 @@ public class Starter {
           runs = [
             ea.run(
               solver = ea.s.numGA(
-                mapper = fixed(n = 100);
-                nEval = 10000
+                mapper = fixed(n = 1000);
+                nEval = 10000000
               );
               randomGenerator = ea.rg.defaultRG(seed = 1);
               problem = ea.p.totalOrder(
@@ -72,8 +72,8 @@ public class Starter {
             )
           ];
           listeners = [
-            ea.l.console(
-              stateFunctions = [
+            ea.l.tui(
+              functions = [
                 ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
                 ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
                 ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.2f")
