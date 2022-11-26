@@ -15,17 +15,32 @@ public class Plots {
   }
 
   @SuppressWarnings("unused")
-  public static <E> XYPlotTableBuilder<E> xyPlot(
-      @Param("x") NamedFunction<? super E, ? extends Number> xFunction,
-      @Param("y") NamedFunction<? super E, ? extends Number> yFunction,
+  public static <G, S, Q> XYPlotTableBuilder<POSetPopulationState<G, S, Q>> dyPlot(
+      @Param(value = "x", dNPM = "ea.nf.iterations()") NamedFunction<? super POSetPopulationState<G, S, Q>, ?
+          extends Number> xFunction,
+      @Param("y") NamedFunction<? super POSetPopulationState<G, S, Q>, ? extends Number> yFunction,
       @Param(value = "w", dI = 600) int width,
-      @Param(value = "w", dI = 400) int height,
+      @Param(value = "h", dI = 400) int height,
       @Param(value = "minX", dD = Double.NEGATIVE_INFINITY) double minX,
       @Param(value = "maxX", dD = Double.NEGATIVE_INFINITY) double maxX,
       @Param(value = "minY", dD = Double.NEGATIVE_INFINITY) double minY,
       @Param(value = "maxY", dD = Double.NEGATIVE_INFINITY) double maxY
   ) {
-    return new XYPlotTableBuilder<>(xFunction, List.of(yFunction), width, height, minX, maxX, minY, maxY);
+    return new XYPlotTableBuilder<>(xFunction, List.of(yFunction), width, height, minX, maxX, minY, maxY, true, true);
+  }
+
+  @SuppressWarnings("unused")
+  public static <E> XYPlotTableBuilder<E> xyPlot(
+      @Param("x") NamedFunction<? super E, ? extends Number> xFunction,
+      @Param("y") NamedFunction<? super E, ? extends Number> yFunction,
+      @Param(value = "w", dI = 600) int width,
+      @Param(value = "h", dI = 400) int height,
+      @Param(value = "minX", dD = Double.NEGATIVE_INFINITY) double minX,
+      @Param(value = "maxX", dD = Double.NEGATIVE_INFINITY) double maxX,
+      @Param(value = "minY", dD = Double.NEGATIVE_INFINITY) double minY,
+      @Param(value = "maxY", dD = Double.NEGATIVE_INFINITY) double maxY
+  ) {
+    return new XYPlotTableBuilder<>(xFunction, List.of(yFunction), width, height, minX, maxX, minY, maxY, true, false);
   }
 
   @SuppressWarnings("unused")
@@ -33,13 +48,13 @@ public class Plots {
       @Param("x") NamedFunction<? super E, ? extends Number> xFunction,
       @Param("ys") List<NamedFunction<? super E, ? extends Number>> yFunctions,
       @Param(value = "w", dI = 600) int width,
-      @Param(value = "w", dI = 400) int height,
+      @Param(value = "h", dI = 400) int height,
       @Param(value = "minX", dD = Double.NEGATIVE_INFINITY) double minX,
       @Param(value = "maxX", dD = Double.NEGATIVE_INFINITY) double maxX,
       @Param(value = "minY", dD = Double.NEGATIVE_INFINITY) double minY,
       @Param(value = "maxY", dD = Double.NEGATIVE_INFINITY) double maxY
   ) {
-    return new XYPlotTableBuilder<>(xFunction, yFunctions, width, height, minX, maxX, minY, maxY);
+    return new XYPlotTableBuilder<>(xFunction, yFunctions, width, height, minX, maxX, minY, maxY, true, false);
   }
 
   @SuppressWarnings("unused")
@@ -48,13 +63,13 @@ public class Plots {
           extends Number> xFunction,
       @Param("y") NamedFunction<? super POSetPopulationState<G, S, Q>, ? extends Number> yFunction,
       @Param(value = "w", dI = 600) int width,
-      @Param(value = "w", dI = 400) int height,
+      @Param(value = "h", dI = 400) int height,
       @Param(value = "minX", dD = Double.NEGATIVE_INFINITY) double minX,
       @Param(value = "maxX", dD = Double.NEGATIVE_INFINITY) double maxX,
       @Param(value = "minY", dD = Double.NEGATIVE_INFINITY) double minY,
       @Param(value = "maxY", dD = Double.NEGATIVE_INFINITY) double maxY
   ) {
-    return new XYPlotTableBuilder<>(xFunction, List.of(yFunction), width, height, minX, maxX, minY, maxY);
+    return new XYPlotTableBuilder<>(xFunction, List.of(yFunction), width, height, minX, maxX, minY, maxY, true, false);
   }
 
 }

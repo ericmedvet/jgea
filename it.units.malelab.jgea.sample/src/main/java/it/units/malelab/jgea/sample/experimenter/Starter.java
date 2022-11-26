@@ -80,8 +80,7 @@ public class Starter {
               ];
               runKeys = ["randomGenerator.seed"; "solver.mapper.n"];
               plots = [
-                ea.plot.xyPlot(
-                  x = ea.nf.iterations();
+                ea.plot.yPlot(
                   y = ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
                   minY = 0
                 )

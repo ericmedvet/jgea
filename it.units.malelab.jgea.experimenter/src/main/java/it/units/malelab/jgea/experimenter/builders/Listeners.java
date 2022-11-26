@@ -340,9 +340,8 @@ public class Listeners {
       @Param(value = "functions") List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> stateFunctions,
       @Param("runKeys") List<String> runKeys,
       @Param(value = "defaultPlots", dNPMs = {
-          "ea.plot.yPlot(" +
-              //"y=ea.nf.expr(f1=ea.nf.elapsed();f2=ea.nf.iterations();op=div);" +
-              "y=ea.nf.iterations();" +
+          "ea.plot.dyPlot(" +
+              "y=ea.nf.elapsed();" +
               "minY=0)",
           "ea.plot.yPlot(" +
               "y=ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.genotype();collection=ea.nf.all()));" +
