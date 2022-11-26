@@ -340,9 +340,13 @@ public class Listeners {
       @Param(value = "functions") List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> stateFunctions,
       @Param("runKeys") List<String> runKeys,
       @Param(value = "defaultPlots", dNPMs = {
-          "ea.plot.xyPlot(x=ea.nf.iterations();y=ea.nf.elapsed();minY=0)",
-          "ea.plot.xyPlot(x=ea.nf.iterations();y=ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.genotype();" +
-              "collection=ea.nf.all())))"
+          "ea.plot.yPlot(" +
+              //"y=ea.nf.expr(f1=ea.nf.elapsed();f2=ea.nf.iterations();op=div);" +
+              "y=ea.nf.iterations();" +
+              "minY=0)",
+          "ea.plot.yPlot(" +
+              "y=ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.genotype();collection=ea.nf.all()));" +
+              "minY=0)"
       }) List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> defaultPlotTableBuilders,
       @Param("plots") List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> plotTableBuilders,
       @Param(value = "deferred", dB = false) boolean deferred,

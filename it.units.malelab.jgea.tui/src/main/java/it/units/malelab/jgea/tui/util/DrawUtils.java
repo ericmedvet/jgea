@@ -9,7 +9,7 @@ import it.units.malelab.jgea.core.util.Table;
 import it.units.malelab.jgea.core.util.TextPlotter;
 
 import java.util.Arrays;
-import java.util.Comparator;
+import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -21,6 +21,9 @@ public class DrawUtils {
   private final static Logger L = Logger.getLogger(DrawUtils.class.getName());
   private static final String VERTICAL_PART_FILLER = " ▁▂▃▄▅▆▇";
   private static final char FILLER = '█';
+
+  private DrawUtils() {
+  }
 
   private interface RealFunction {
     double apply(double x);
@@ -36,9 +39,6 @@ public class DrawUtils {
         return ys[ix];
       };
     }
-  }
-
-  private DrawUtils() {
   }
 
   public static void clear(TextGraphics tg, Rectangle r) {
@@ -76,6 +76,35 @@ public class DrawUtils {
     clipPut(tg, r, new Point(x, y), s, sgrs);
   }
 
+  public static void drawFrame(TextGraphics tg, Rectangle r, String label, TextColor frameColor, TextColor labelColor) {
+    tg.setForegroundColor(frameColor);
+    tg.drawLine(r.ne().delta(1, 0).tp(), r.nw().delta(-1, 0).tp(), Symbols.SINGLE_LINE_HORIZONTAL);
+    tg.drawLine(r.se().delta(1, 0).tp(), r.sw().delta(-1, 0).tp(), Symbols.SINGLE_LINE_HORIZONTAL);
+    tg.drawLine(r.ne().delta(0, 1).tp(), r.se().delta(0, -1).tp(), Symbols.SINGLE_LINE_VERTICAL);
+    tg.drawLine(r.nw().delta(0, 1).tp(), r.sw().delta(0, -1).tp(), Symbols.SINGLE_LINE_VERTICAL);
+    tg.setCharacter(r.ne().tp(), Symbols.SINGLE_LINE_TOP_LEFT_CORNER);
+    tg.setCharacter(r.se().tp(), Symbols.SINGLE_LINE_BOTTOM_LEFT_CORNER);
+    tg.setCharacter(r.nw().tp(), Symbols.SINGLE_LINE_TOP_RIGHT_CORNER);
+    tg.setCharacter(r.sw().tp(), Symbols.SINGLE_LINE_BOTTOM_RIGHT_CORNER);
+    tg.setForegroundColor(labelColor);
+    clipPut(tg, r, 2, 0, "[" + label + "]");
+  }
+
+  public static void drawHorizontalBar(
+      TextGraphics tg,
+      Rectangle r,
+      int x,
+      int y,
+      double value,
+      double min,
+      double max,
+      int l,
+      TextColor fgColor,
+      TextColor bgColor
+  ) {
+    drawHorizontalBar(tg, r, new Point(x, y), value, min, max, l, fgColor, bgColor);
+  }
+
   public static void drawHorizontalBar(
       TextGraphics tg,
       Rectangle r,
@@ -96,35 +125,6 @@ public class DrawUtils {
     tg.setBackgroundColor(previousBgColor);
   }
 
-  public static void drawHorizontalBar(
-      TextGraphics tg,
-      Rectangle r,
-      int x,
-      int y,
-      double value,
-      double min,
-      double max,
-      int l,
-      TextColor fgColor,
-      TextColor bgColor
-  ) {
-    drawHorizontalBar(tg, r, new Point(x, y), value, min, max, l, fgColor, bgColor);
-  }
-
-  public static void drawFrame(TextGraphics tg, Rectangle r, String label, TextColor frameColor, TextColor labelColor) {
-    tg.setForegroundColor(frameColor);
-    tg.drawLine(r.ne().delta(1, 0).tp(), r.nw().delta(-1, 0).tp(), Symbols.SINGLE_LINE_HORIZONTAL);
-    tg.drawLine(r.se().delta(1, 0).tp(), r.sw().delta(-1, 0).tp(), Symbols.SINGLE_LINE_HORIZONTAL);
-    tg.drawLine(r.ne().delta(0, 1).tp(), r.se().delta(0, -1).tp(), Symbols.SINGLE_LINE_VERTICAL);
-    tg.drawLine(r.nw().delta(0, 1).tp(), r.sw().delta(0, -1).tp(), Symbols.SINGLE_LINE_VERTICAL);
-    tg.setCharacter(r.ne().tp(), Symbols.SINGLE_LINE_TOP_LEFT_CORNER);
-    tg.setCharacter(r.se().tp(), Symbols.SINGLE_LINE_BOTTOM_LEFT_CORNER);
-    tg.setCharacter(r.nw().tp(), Symbols.SINGLE_LINE_TOP_RIGHT_CORNER);
-    tg.setCharacter(r.sw().tp(), Symbols.SINGLE_LINE_BOTTOM_RIGHT_CORNER);
-    tg.setForegroundColor(labelColor);
-    clipPut(tg, r, 2, 0, "[" + label + "]");
-  }
-
   public static void drawPlot(
       TextGraphics tg,
       Rectangle r,
@@ -133,7 +133,11 @@ public class DrawUtils {
       TextColor labelsColor,
       TextColor bgColor,
       String xFormat,
-      String yFormat
+      String yFormat,
+      double xMin,
+      double xMax,
+      double yMin,
+      double yMax
   ) {
     if (data.nColumns() < 2) {
       throw new IllegalArgumentException(String.format(
@@ -149,10 +153,10 @@ public class DrawUtils {
     double[] ys = data.column(1).stream().mapToDouble(Number::doubleValue).toArray();
     RealFunction f = RealFunction.from(xs, ys);
     //compute ranges
-    double xMin = Arrays.stream(xs).min().orElse(0);
-    double xMax = Arrays.stream(xs).max().orElse(0);
-    double yMin = Arrays.stream(ys).min().orElse(0);
-    double yMax = Arrays.stream(ys).max().orElse(0);
+    xMin = Double.isNaN(xMin) ? Arrays.stream(xs).min().orElse(0) : xMin;
+    xMax = Double.isNaN(xMax) ? Arrays.stream(xs).max().orElse(0) : xMax;
+    yMin = Double.isNaN(yMin) ? Arrays.stream(ys).min().orElse(0) : yMin;
+    yMax = Double.isNaN(yMax) ? Arrays.stream(ys).max().orElse(0) : yMax;
     //set colors and plot bg
     tg.setForegroundColor(bgColor);
     tg.setForegroundColor(fgColor);
@@ -172,20 +176,24 @@ public class DrawUtils {
     }
     //plot labels of ranges
     tg.setForegroundColor(labelsColor);
-    Number numXMin = data.column(0).stream().min(Comparator.comparingDouble(Number::doubleValue)).orElseThrow();
-    Number numXMax = data.column(0).stream().max(Comparator.comparingDouble(Number::doubleValue)).orElseThrow();
-    Number numYMin = data.column(1).stream().min(Comparator.comparingDouble(Number::doubleValue)).orElseThrow();
-    Number numYMax = data.column(1).stream().max(Comparator.comparingDouble(Number::doubleValue)).orElseThrow();
     if (f.apply(xMin) > f.apply(xMax)) {
-      String eLabel = "(" + String.format(xFormat, numXMin).trim() + ";" + String.format(yFormat, numYMin).trim() + ")";
-      String wLabel = "(" + String.format(xFormat, numXMax).trim() + ";" + String.format(yFormat, numYMax).trim() + ")";
+      String eLabel = "(" + format(xMin, xFormat) + ";" + format(yMin, yFormat) + ")";
+      String wLabel = "(" + format(xMax, xFormat) + ";" + format(yMax, yFormat) + ")";
       clipPut(tg, r, 0, r.h() - 1, eLabel);
       clipPut(tg, r, r.w() - wLabel.length(), 0, wLabel);
     } else {
-      String eLabel = "(" + String.format(xFormat, numXMin).trim() + ";" + String.format(yFormat, numYMax).trim() + ")";
-      String wLabel = "(" + String.format(xFormat, numXMax).trim() + ";" + String.format(yFormat, numYMin).trim() + ")";
+      String eLabel = "(" + format(xMin, xFormat) + ";" + format(yMax, yFormat) + ")";
+      String wLabel = "(" + format(xMax, xFormat) + ";" + format(yMin, yFormat) + ")";
       clipPut(tg, r, 0, 0, eLabel);
       clipPut(tg, r, r.w() - wLabel.length(), r.h() - 1, wLabel);
+    }
+  }
+
+  private static String format(Number n, String format) {
+    try {
+      return String.format(format, n).trim();
+    } catch (IllegalFormatException e) {
+      return String.format(format, n.intValue()).trim();
     }
   }
 

@@ -61,7 +61,7 @@ public class Starter {
           runs = [
             ea.run(
               solver = ea.s.numGA(
-                mapper = fixed(n = 1000);
+                mapper = fixed(n = 10);
                 nEval = 10000000
               );
               randomGenerator = ea.rg.defaultRG(seed = 1);
@@ -78,7 +78,14 @@ public class Starter {
                 ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
                 ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.2f")
               ];
-              runKeys = ["randomGenerator.seed"; "solver.mapper.n"]
+              runKeys = ["randomGenerator.seed"; "solver.mapper.n"];
+              plots = [
+                ea.plot.xyPlot(
+                  x = ea.nf.iterations();
+                  y = ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
+                  minY = 0
+                )
+              ]
             )
           ]
         )

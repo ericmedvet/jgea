@@ -51,7 +51,10 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   private final static int RUN_HISTORY_SIZE = 1000;
 
   private final static Map<Level, TextColor> LEVEL_COLORS = Map.ofEntries(
-      Map.entry(Level.SEVERE, TextColor.Factory.fromString("#EE3E38")),
+      Map.entry(
+          Level.SEVERE,
+          TextColor.Factory.fromString("#EE3E38")
+      ),
       Map.entry(Level.WARNING, TextColor.Factory.fromString("#FBA465")),
       Map.entry(Level.INFO, TextColor.Factory.fromString("#D8E46B")),
       Map.entry(Level.CONFIG, TextColor.Factory.fromString("#6D8700"))
@@ -139,32 +142,21 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   }
 
   public record Configuration(
-      float verticalSplit,
-      float leftHorizontalSplit,
-      float rightHorizontalSplit,
-      float plotHorizontalSplit,
-      int refreshIntervalMillis,
-      boolean dumpLogAfterStop
+      float verticalSplit, float leftHorizontalSplit, float rightHorizontalSplit, float plotHorizontalSplit,
+      int refreshIntervalMillis, boolean dumpLogAfterStop
   ) {}
 
   @Override
   public Listener<E> build(K k) {
-    List<?> kItems = kFunctions.stream()
-        .map(f -> f.apply(k))
-        .toList();
+    List<?> kItems = kFunctions.stream().map(f -> f.apply(k)).toList();
     synchronized (runTable) {
       runTable.clear();
       plotAccumulators.clear();
       plotTableBuilders.forEach(b -> plotAccumulators.add(b.build(null)));
     }
     return e -> {
-      List<?> eItems = eFunctions.stream()
-          .map(f -> f.apply(e))
-          .toList();
-      List<Object> row = Misc.concat(List.of(
-          eItems,
-          kItems
-      ));
+      List<?> eItems = eFunctions.stream().map(f -> f.apply(e)).toList();
+      List<Object> row = Misc.concat(List.of(eItems, kItems));
       synchronized (runTable) {
         runTable.addRow(row);
         while (runTable.nRows() > RUN_HISTORY_SIZE) {
@@ -314,7 +306,10 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       if (lastProgressInstant != null) {
         if (lastProgress > 0) {
           Instant eta = startingInstant.plus(
-              Math.round(ChronoUnit.MILLIS.between(startingInstant, lastProgressInstant) / lastProgress),
+              Math.round(ChronoUnit.MILLIS.between(
+                  startingInstant,
+                  lastProgressInstant
+              ) / lastProgress),
               ChronoUnit.MILLIS
           );
           clipPut(tg, r, 21, 4, String.format(Symbols.ARROW_RIGHT + DATETIME_FORMAT, Date.from(eta)));
@@ -329,10 +324,10 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     synchronized (runTable) {
       r = legendR.inner(1);
       clear(tg, r);
-      List<Pair<String, String>> legendItems = runTable.names()
-          .stream()
-          .map(s -> new Pair<>(StringUtils.collapse(s), s))
-          .toList();
+      List<Pair<String, String>> legendItems = runTable.names().stream().map(s -> new Pair<>(
+          StringUtils.collapse(s),
+          s
+      )).toList();
       int shortLabelW = legendItems.stream().mapToInt(p -> p.first().length()).max().orElse(0);
       for (int i = 0; i < legendItems.size(); i = i + 1) {
         tg.setForegroundColor(DATA_LABEL_COLOR);
@@ -343,15 +338,13 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       //draw data: run
       r = runR.inner(1);
       clear(tg, r);
-      int[] colWidths = IntStream.range(0, runTable.nColumns())
-          .map(x -> Math.max(
-              legendItems.get(x).first().length(),
-              runTable.column(x).stream()
-                  .mapToInt(o -> String.format(formats.get(x), o).length())
-                  .max()
-                  .orElse(0)
-          ))
-          .toArray();
+      int[] colWidths = IntStream.range(0, runTable.nColumns()).map(x -> Math.max(
+          legendItems.get(x).first().length(),
+          runTable.column(x).stream().mapToInt(o -> String.format(
+              formats.get(x),
+              o
+          ).length()).max().orElse(0)
+      )).toArray();
       tg.setForegroundColor(DATA_LABEL_COLOR);
       int x = 0;
       for (int i = 0; i < colWidths.length; i = i + 1) {
@@ -382,6 +375,16 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       //draw plots
       if (!plotAccumulators.isEmpty()) {
         for (int i = 0; i < plotAccumulators.size(); i = i + 1) {
+          double minX = Double.NaN;
+          double maxX = Double.NaN;
+          double minY = Double.NaN;
+          double maxY = Double.NaN;
+          if (plotTableBuilders.get(i) instanceof XYPlotTableBuilder<?> xyPlotTableBuilder) {
+            minX = Double.isFinite(xyPlotTableBuilder.getMinX()) ? xyPlotTableBuilder.getMinX() : Double.NaN;
+            maxX = Double.isFinite(xyPlotTableBuilder.getMaxX()) ? xyPlotTableBuilder.getMaxX() : Double.NaN;
+            minY = Double.isFinite(xyPlotTableBuilder.getMinY()) ? xyPlotTableBuilder.getMinY() : Double.NaN;
+            maxY = Double.isFinite(xyPlotTableBuilder.getMaxX()) ? xyPlotTableBuilder.getMaxY() : Double.NaN;
+          }
           try {
             drawPlot(
                 tg,
@@ -391,7 +394,11 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
                 MAIN_DATA_COLOR,
                 PLOT_BG_COLOR,
                 plotTableBuilders.get(i).xFormat(),
-                plotTableBuilders.get(i).yFormats().get(0)
+                plotTableBuilders.get(i).yFormats().get(0),
+                minX,
+                maxX,
+                minY,
+                maxY
             );
           } catch (RuntimeException ex) {
             L.warning(String.format(

@@ -2,6 +2,7 @@ package it.units.malelab.jgea.experimenter.builders;
 
 import it.units.malelab.jgea.core.listener.NamedFunction;
 import it.units.malelab.jgea.core.listener.XYPlotTableBuilder;
+import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jnb.core.Param;
 
 import java.util.List;
@@ -39,6 +40,21 @@ public class Plots {
       @Param(value = "maxY", dD = Double.NEGATIVE_INFINITY) double maxY
   ) {
     return new XYPlotTableBuilder<>(xFunction, yFunctions, width, height, minX, maxX, minY, maxY);
+  }
+
+  @SuppressWarnings("unused")
+  public static <G, S, Q> XYPlotTableBuilder<POSetPopulationState<G, S, Q>> yPlot(
+      @Param(value = "x", dNPM = "ea.nf.iterations()") NamedFunction<? super POSetPopulationState<G, S, Q>, ?
+          extends Number> xFunction,
+      @Param("y") NamedFunction<? super POSetPopulationState<G, S, Q>, ? extends Number> yFunction,
+      @Param(value = "w", dI = 600) int width,
+      @Param(value = "w", dI = 400) int height,
+      @Param(value = "minX", dD = Double.NEGATIVE_INFINITY) double minX,
+      @Param(value = "maxX", dD = Double.NEGATIVE_INFINITY) double maxX,
+      @Param(value = "minY", dD = Double.NEGATIVE_INFINITY) double minY,
+      @Param(value = "maxY", dD = Double.NEGATIVE_INFINITY) double maxY
+  ) {
+    return new XYPlotTableBuilder<>(xFunction, List.of(yFunction), width, height, minX, maxX, minY, maxY);
   }
 
 }
