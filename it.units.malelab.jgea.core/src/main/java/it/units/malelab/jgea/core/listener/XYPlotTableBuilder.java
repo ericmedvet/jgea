@@ -79,7 +79,7 @@ public class XYPlotTableBuilder<E> extends TableBuilder<E, Number, Object> imple
               if (cI == 0) {
                 return currentRow.get(cI);
               } else {
-                return (Number) (currentRow.get(cI).doubleValue() - lastRow.get(cI).doubleValue());
+                return currentRow.get(cI).doubleValue() - lastRow.get(cI).doubleValue();
               }
             }).toList();
             dTable.addRow(diffRow);
