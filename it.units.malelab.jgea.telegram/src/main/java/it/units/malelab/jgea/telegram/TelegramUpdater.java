@@ -16,11 +16,9 @@
 
 package it.units.malelab.jgea.telegram;
 
-import it.units.malelab.jgea.core.listener.Accumulator;
-import it.units.malelab.jgea.core.listener.AccumulatorFactory;
-import it.units.malelab.jgea.core.listener.Listener;
-import it.units.malelab.jgea.core.listener.ListenerFactory;
+import it.units.malelab.jgea.core.listener.*;
 import it.units.malelab.jgea.core.util.StringUtils;
+import it.units.malelab.jgea.core.util.TextPlotter;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -30,7 +28,7 @@ import java.util.List;
 /**
  * @author eric on 2021/01/03 for jgea
  */
-public class TelegramUpdater<E, K> extends TelegramClient implements ListenerFactory<E, K> {
+public class TelegramUpdater<E, K> extends TelegramClient implements ListenerFactory<E, K>, ProgressMonitor {
 
   private final List<AccumulatorFactory<E, ?, K>> factories;
 
@@ -106,6 +104,25 @@ public class TelegramUpdater<E, K> extends TelegramClient implements ListenerFac
         "%s shutting down on %s",
         TelegramUpdater.class.getSimpleName(),
         StringUtils.getMachineName()
+    ));
+  }
+
+  @Override
+  public void notify(double progress, String message) {
+    sendText(String.format(
+        "%s - progress %s %s",
+        StringUtils.getMachineName(),
+        TextPlotter.horizontalBar(progress, 0, 1, 8),
+        message
+    ));
+  }
+
+  @Override
+  public void notify(double progress) {
+    sendText(String.format(
+        "%s - progress %s",
+        StringUtils.getMachineName(),
+        TextPlotter.horizontalBar(progress, 0, 1, 8)
     ));
   }
 
