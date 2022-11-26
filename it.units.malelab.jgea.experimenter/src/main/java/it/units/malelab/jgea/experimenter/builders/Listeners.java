@@ -19,7 +19,6 @@ package it.units.malelab.jgea.experimenter.builders;
 import it.units.malelab.jgea.core.listener.*;
 import it.units.malelab.jgea.core.solver.Individual;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
-import it.units.malelab.jgea.core.util.ImagePlotters;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.experimenter.Experiment;
 import it.units.malelab.jgea.experimenter.Run;
@@ -28,7 +27,6 @@ import it.units.malelab.jgea.tui.TerminalMonitor;
 import it.units.malelab.jnb.core.NamedParamMap;
 import it.units.malelab.jnb.core.Param;
 import it.units.malelab.jnb.core.ParamMap;
-import it.units.malelab.jnb.core.StringNamedParamMap;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -259,11 +257,18 @@ public class Listeners {
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> BiFunction<Experiment, ExecutorService, ListenerFactory<? super POSetPopulationState<G, S,
-      Q>, Run<?, G, S, Q>>> telegram(
+  public static <G, S, Q> BiFunction<Experiment, ExecutorService, ListenerFactory<POSetPopulationState<G, S, Q>, Run<
+      ?, G, S, Q>>> telegram(
       @Param("chatId") String chatId,
       @Param("botIdFilePath") String botIdFilePath,
-      @Param(value = "deferred", dB = true) boolean deferred
+      @Param(value = "defaultPlots", dNPMs = {
+          "ea.plot.elapsed()",
+          "ea.plot.uniqueness()"
+      }) List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> defaultPlotTableBuilders,
+      @Param("plots") List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> plotTableBuilders,
+      @Param("accumulators") List<AccumulatorFactory<? super POSetPopulationState<G, S, Q>, ?, Run<?, G, S, Q>>> accumulators,
+      @Param(value = "deferred", dB = true) boolean deferred,
+      @Param(value = "onlyLast", dB = false) boolean onlyLast
   ) {
     //read credential files
     String botId;
@@ -284,42 +289,23 @@ public class Listeners {
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException("Invalid chatId %s: not a number".formatted(chatId));
     }
-    return (experiment, executorService) -> {
-      List<AccumulatorFactory<POSetPopulationState<G, S, Q>, ?, Run<?, G, S, Q>>> accumulators = new ArrayList<>();
-      //prepare text accumulator
-      accumulators.add(run -> new Accumulator<>() {
-        @Override
-        public String get() {
-          return StringNamedParamMap.prettyToString(run.map(), 40);
-        }
-
-        @Override
-        public void listen(POSetPopulationState<G, S, Q> state) {
-        }
-      });
-      //prepare plotter accumulator
-      accumulators.add(new TableBuilder<POSetPopulationState<G, S, Q>, Number, Run<?, G, S, Q>>(
-          List.of(iterations(), iterations()/*,
-              best().then(fitness()).then(qFunction),
-              min(Double::compare).of(each(qFunction.of(fitness()))).of(all()),
-              median(Double::compare).of(each(qFunction.of(fitness()))).of(all())*/ // TODO make plots a parameter
-          ),
-          List.of()
-      ).then(t -> ImagePlotters.xyLines(100, 100).apply(t))); // TODO update
-      //prepare listener
-      TelegramUpdater<? super POSetPopulationState<G, S, Q>, Run<?, G, S, Q>> telegramUpdater =
-          new TelegramUpdater<>(
-              accumulators,
-              botId,
-              longChatId
-          );
-      L.info("Will send updates to Telegram chat `%s`".formatted(telegramUpdater.getChatInfo()));
-      ListenerFactory<? super POSetPopulationState<G, S, Q>, Run<?, G, S, Q>> listenerFactory = telegramUpdater;
-      if (deferred) {
-        listenerFactory = listenerFactory.deferred(executorService);
-      }
-      return listenerFactory;
-    };
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    List<AccumulatorFactory<POSetPopulationState<G, S, Q>, ?, Run<?, G, S, Q>>> accumulatorFactories =
+        (List) Misc.concat(
+            List.of(
+                defaultPlotTableBuilders,
+                plotTableBuilders,
+                accumulators
+            ));
+    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
+        new TelegramUpdater<>(
+            accumulatorFactories,
+            botId,
+            longChatId
+        ),
+        deferred ? executorService : null,
+        onlyLast
+    );
   }
 
   @SuppressWarnings("unused")
@@ -340,12 +326,8 @@ public class Listeners {
       @Param(value = "functions") List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> stateFunctions,
       @Param("runKeys") List<String> runKeys,
       @Param(value = "defaultPlots", dNPMs = {
-          "ea.plot.dyPlot(" +
-              "y=ea.nf.elapsed();" +
-              "minY=0)",
-          "ea.plot.yPlot(" +
-              "y=ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.genotype();collection=ea.nf.all()));" +
-              "minY=0)"
+          "ea.plot.elapsed()",
+          "ea.plot.uniqueness()"
       }) List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> defaultPlotTableBuilders,
       @Param("plots") List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> plotTableBuilders,
       @Param(value = "deferred", dB = false) boolean deferred,

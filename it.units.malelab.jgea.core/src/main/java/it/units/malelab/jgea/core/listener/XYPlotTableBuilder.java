@@ -45,7 +45,10 @@ public class XYPlotTableBuilder<E> extends TableBuilder<E, Number, Object> imple
   ) {
     super(Misc.concat(List.of(List.of(xFunction), yFunctions)), List.of());
     this.xFunction = xFunction;
-    this.yFunctions = yFunctions;
+    //noinspection unchecked,rawtypes
+    this.yFunctions = (List) yFunctions.stream()
+        .map(f -> firstDifference ? f.rename("delta[%s]".formatted(f.getName())) : f)
+        .toList();
     this.width = width;
     this.height = height;
     this.minX = minX;
@@ -71,7 +74,10 @@ public class XYPlotTableBuilder<E> extends TableBuilder<E, Number, Object> imple
               .forEach(r -> sTable.addRow(r.stream().map(Pair::second).toList()));
         }
         if (firstDifference) {
-          Table<Number> dTable = new ArrayTable<>(table.names());
+          Table<Number> dTable = new ArrayTable<>(Misc.concat(List.of(
+              List.of(xName()),
+              yNames()
+          )));
           for (int rI = 1; rI < table.nRows(); rI++) {
             List<Number> currentRow = table.row(rI);
             List<Number> lastRow = table.row(rI - 1);

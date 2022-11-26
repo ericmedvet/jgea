@@ -62,7 +62,7 @@ public class Starter {
             ea.run(
               solver = ea.s.numGA(
                 mapper = fixed(n = 10);
-                nEval = 10000000
+                nEval = 100000
               );
               randomGenerator = ea.rg.defaultRG(seed = 1);
               problem = ea.p.totalOrder(
@@ -80,10 +80,14 @@ public class Starter {
               ];
               runKeys = ["randomGenerator.seed"; "solver.mapper.n"];
               plots = [
-                ea.plot.yPlot(
-                  y = ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
-                  minY = 0
-                )
+                ea.plot.fitness()
+              ]
+            );
+            ea.l.telegram(
+              chatId = "207490209";
+              botIdFilePath = "/home/eric/experiments/2dmrsim/tlg.txt";
+              plots = [
+                ea.plot.fitness()
               ]
             )
           ]

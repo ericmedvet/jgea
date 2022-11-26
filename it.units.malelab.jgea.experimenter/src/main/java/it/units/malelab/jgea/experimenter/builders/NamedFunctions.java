@@ -155,6 +155,36 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
+  public static <X, T extends Comparable<T>> NamedFunction<X, T> max(
+      @Param("collection") NamedFunction<X, Collection<T>> collectionF,
+      @Param(value = "s", dS = "%s") String s
+  ) {
+    return NamedFunction.build(c("max", collectionF.getName()), s, x -> {
+      List<T> collection = collectionF.apply(x).stream().sorted().toList();
+      return collectionF.apply(x).stream().max(Comparable::compareTo).orElse(null);
+    });
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, T extends Comparable<T>> NamedFunction<X, T> median(
+      @Param("collection") NamedFunction<X, Collection<T>> collectionF,
+      @Param(value = "s", dS = "%s") String s
+  ) {
+    return percentile(collectionF, 0.5, s);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, T extends Comparable<T>> NamedFunction<X, T> min(
+      @Param("collection") NamedFunction<X, Collection<T>> collectionF,
+      @Param(value = "s", dS = "%s") String s
+  ) {
+    return NamedFunction.build(c("min", collectionF.getName()), s, x -> {
+      List<T> collection = collectionF.apply(x).stream().sorted().toList();
+      return collectionF.apply(x).stream().min(Comparable::compareTo).orElse(null);
+    });
+  }
+
+  @SuppressWarnings("unused")
   public static <X, T extends Comparable<T>> NamedFunction<X, T> percentile(
       @Param("collection") NamedFunction<X, Collection<T>> collectionF,
       @Param("p") double p,
