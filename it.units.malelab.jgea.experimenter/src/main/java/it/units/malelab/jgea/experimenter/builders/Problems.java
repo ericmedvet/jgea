@@ -16,7 +16,8 @@ public class Problems {
 
   @SuppressWarnings("unused")
   public static <S, Q, C extends Comparable<C>> TotalOrderQualityBasedProblem<S, Q> totalOrder(
-      @Param("qFunction") Function<S, Q> qualityFunction, @Param("cExtractor") Function<Q, C> comparableExtrator
+      @Param("qFunction") Function<S, Q> qualityFunction,
+      @Param(value = "cFunction", dNPM = "ea.f.identity()") Function<Q, C> comparableFunction
   ) {
     return new TotalOrderQualityBasedProblem<>() {
       @Override
@@ -26,7 +27,7 @@ public class Problems {
 
       @Override
       public Comparator<Q> totalOrderComparator() {
-        return Comparator.comparing(comparableExtrator);
+        return Comparator.comparing(comparableFunction);
       }
     };
   }
