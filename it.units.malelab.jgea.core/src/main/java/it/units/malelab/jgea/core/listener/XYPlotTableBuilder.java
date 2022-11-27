@@ -72,12 +72,10 @@ public class XYPlotTableBuilder<E> extends TableBuilder<E, Number, Object> imple
           rows.stream()
               .sorted(Comparator.comparing(r -> r.get(0).second().doubleValue()))
               .forEach(r -> sTable.addRow(r.stream().map(Pair::second).toList()));
+          table = sTable;
         }
         if (firstDifference) {
-          Table<Number> dTable = new ArrayTable<>(Misc.concat(List.of(
-              List.of(xName()),
-              yNames()
-          )));
+          Table<Number> dTable = new ArrayTable<>(Misc.concat(List.of(List.of(xName()), yNames())));
           for (int rI = 1; rI < table.nRows(); rI++) {
             List<Number> currentRow = table.row(rI);
             List<Number> lastRow = table.row(rI - 1);
