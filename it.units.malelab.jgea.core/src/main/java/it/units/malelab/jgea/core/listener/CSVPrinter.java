@@ -95,7 +95,7 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
           L.info(String.format(
               "File %s created and header for %d columns written",
               actualFile.getPath(),
-              eFunctions.size()
+              eFunctions.size() + kFunctions.size()
           ));
         }
         try {
