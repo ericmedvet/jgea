@@ -40,17 +40,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;
 import java.util.logging.Logger;
 
-import static it.units.malelab.jgea.core.listener.NamedFunctions.*;
-
 public class Listeners {
 
-  public final static List<NamedFunction<? super POSetPopulationState<?, ?, ?>, ?>> BASIC_FUNCTIONS =
-      List.of(
-          iterations(),
-          births(),
-          fitnessEvaluations(),
-          elapsedSeconds()
-      );
   private final static Logger L = Logger.getLogger(Listeners.class.getName());
 
   private Listeners() {
@@ -101,14 +92,21 @@ public class Listeners {
   public static <G, S, Q> BiFunction<Experiment, ExecutorService, ListenerFactory<? super POSetPopulationState<G, S,
       Q>, Run<?, G, S, Q>>> allCsv(
       @Param("filePath") String filePath,
-      @Param("individualFunctions") List<NamedFunction<? super Individual<? extends G, ? extends S, ? extends Q>, ?>> individualFunctions,
+      @Param(
+          value = "defaultFunctions",
+          dNPMs = {"ea.nf.iterations()"}
+      ) List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> defaultStateFunctions,
+      @Param(value = "functions") List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> stateFunctions,
+      @Param("individualFunctions") List<NamedFunction<? super Individual<G, S, Q>, ?>> individualFunctions,
       @Param("runKeys") List<String> runKeys,
-      @Param(value = "onlyLast", dB = false) boolean onlyLast
+      @Param(value = "deferred") boolean deferred,
+      @Param(value = "onlyLast") boolean onlyLast
   ) {
-    @SuppressWarnings({"rawtypes", "unchecked"}) List<NamedFunction<POSetPopulationState<G, S, Q>, ?>> popFunctions =
-        new ArrayList<>(
-            (List) BASIC_FUNCTIONS);
     record PopIndividualPair<G, S, Q>(POSetPopulationState<G, S, Q> pop, Individual<G, S, Q> individual) {}
+    List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> popFunctions = Misc.concat(List.of(
+        defaultStateFunctions,
+        stateFunctions
+    ));
     List<NamedFunction<? super PopIndividualPair<G, S, Q>, ?>> pairFunctions = new ArrayList<>();
     popFunctions.stream()
         .map(f -> NamedFunction.build(
@@ -122,42 +120,41 @@ public class Listeners {
         f.getFormat(),
         (PopIndividualPair<G, S, Q> pair) -> f.apply(pair.individual())
     )).forEach(pairFunctions::add);
-    @SuppressWarnings({"unchecked", "rawtypes"}) CSVPrinter<PopIndividualPair<G, S, Q>, Run<?, G, S, Q>> innerListenerFactory = new CSVPrinter<>(
-        (List) Collections.unmodifiableList(pairFunctions),
-        (List) buildRunNamedFunctions(runKeys),
+    CSVPrinter<PopIndividualPair<G, S, Q>, Run<?, G, S, Q>> innerListenerFactory = new CSVPrinter<>(
+        pairFunctions,
+        buildRunNamedFunctions(runKeys),
         new File(filePath)
     );
-    return (experiment, executorService) -> {
-      ListenerFactory<? super POSetPopulationState<G, S, Q>, Run<?, G, S, Q>> listenerFactory =
-          new ListenerFactory<>() {
-            @Override
-            public Listener<POSetPopulationState<G, S, Q>> build(Run<?, G, S, Q> run) {
-              Listener<PopIndividualPair<G, S, Q>> innerListener = innerListenerFactory.build(run);
-              return new Listener<>() {
-                @Override
-                public void listen(POSetPopulationState<G, S, Q> state) {
-                  for (Individual<G, S, Q> individual : state.getPopulation().all()) {
-                    innerListener.listen(new PopIndividualPair<>(state, individual));
-                  }
+    ListenerFactory<? super POSetPopulationState<G, S, Q>, Run<?, G, S, Q>> allListenerFactory =
+        new ListenerFactory<>() {
+          @Override
+          public Listener<POSetPopulationState<G, S, Q>> build(Run<?, G, S, Q> run) {
+            Listener<PopIndividualPair<G, S, Q>> innerListener = innerListenerFactory.build(run);
+            return new Listener<>() {
+              @Override
+              public void listen(POSetPopulationState<G, S, Q> state) {
+                for (Individual<G, S, Q> individual : state.getPopulation().all()) {
+                  innerListener.listen(new PopIndividualPair<>(state, individual));
                 }
+              }
 
-                @Override
-                public void done() {
-                  innerListener.done();
-                }
-              };
-            }
+              @Override
+              public void done() {
+                innerListener.done();
+              }
+            };
+          }
 
-            @Override
-            public void shutdown() {
-              innerListenerFactory.shutdown();
-            }
-          };
-      if (onlyLast) {
-        listenerFactory = listenerFactory.onLast();
-      }
-      return listenerFactory;
-    };
+          @Override
+          public void shutdown() {
+            innerListenerFactory.shutdown();
+          }
+        };
+    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
+        allListenerFactory,
+        deferred ? executorService : null,
+        onlyLast
+    );
   }
 
   @SuppressWarnings("unused")

@@ -64,10 +64,7 @@ public class Starter {
                 nEval = 100000
               );
               randomGenerator = ea.rg.defaultRG(seed = 1);
-              problem = ea.p.totalOrder(
-                qFunction = sphere();
-                cExtractor = ea.f.identity()
-              )
+              problem = ea.p.totalOrder(qFunction = sphere())
             )
           ];
           listeners = [
@@ -86,10 +83,16 @@ public class Starter {
               plots = [ea.plot.fitness()]
             );
             ea.l.bestCsv(
-              filePath = "/home/eric/experiments/2dmrsim/new-res.txt";
+              filePath = "/home/eric/experiments/2dmrsim/trial-best.txt";
               functions = [
                 ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f")
-              ]
+              ];
+              runKeys = ["randomGenerator.seed"; "solver.mapper.n"]
+            );
+            ea.l.allCsv(
+              filePath = "/home/eric/experiments/2dmrsim/trial-all.txt";
+              individualFunctions = [ea.nf.fitness(); ea.nf.size(f = ea.nf.genotype())];
+              runKeys = ["randomGenerator.seed"; "solver.mapper.n"]
             )
           ]
         )
