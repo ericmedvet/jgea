@@ -57,9 +57,10 @@ public class Starter {
   public static void main(String[] args) {
     String expDesc = """
         ea.experiment(
-          runs = (randomGenerator = (seed = [1:1:10]) * [ea.rg.defaultRG()]) *
+          runs = (randomGenerator = (seed = [1:1:5]) * [ea.rg.defaultRG()]) *
             (solver = [
-              ea.s.numGA(mapper = fixed(n = 10); nEval = 10000)
+              ea.s.numGA(mapper = fixed(n = 20); nEval = 100000);
+              ea.s.simpleES(mapper = fixed(n = 20); nEval = 100000)
             ]) * [
             ea.run(
               problem = ea.p.totalOrder(qFunction = sphere())
@@ -72,7 +73,7 @@ public class Starter {
                 ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
                 ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.2f")
               ];
-              runKeys = ["randomGenerator.seed"; "solver.mapper.n"];
+              runKeys = ["randomGenerator.seed"; "solver"];
               plots = [ea.plot.fitness()]
             );
             ea.l.telegram(
@@ -85,12 +86,12 @@ public class Starter {
               functions = [
                 ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f")
               ];
-              runKeys = ["randomGenerator.seed"; "solver.mapper.n"]
+              runKeys = ["randomGenerator.seed"; "solver"]
             );
             ea.l.allCsv(
               filePath = "/home/eric/experiments/2dmrsim/trial-all.txt";
               individualFunctions = [ea.nf.fitness(); ea.nf.base64(f = ea.nf.genotype())];
-              runKeys = ["randomGenerator.seed"; "solver.mapper.n"];
+              runKeys = ["randomGenerator.seed"; "solver"];
               onlyLast = true
             )
           ]
