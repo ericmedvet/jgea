@@ -40,7 +40,7 @@ public class Experimenter {
       ExecutorService listenerExecutorService,
       boolean closeListeners
   ) {
-    this.namedBuilder = namedBuilder;
+    this.namedBuilder = PreparedNamedBuilder.get().and(namedBuilder);
     this.runExecutorService = runExecutorService;
     this.listenerExecutorService = listenerExecutorService;
     this.closeListeners = closeListeners;

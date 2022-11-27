@@ -18,7 +18,6 @@ package it.units.malelab.jgea.sample.experimenter;
 
 import it.units.malelab.jgea.experimenter.Experimenter;
 import it.units.malelab.jgea.experimenter.InvertibleMapper;
-import it.units.malelab.jgea.experimenter.PreparedNamedBuilder;
 import it.units.malelab.jgea.problem.synthetic.Sphere;
 import it.units.malelab.jnb.core.NamedBuilder;
 import it.units.malelab.jnb.core.Param;
@@ -79,22 +78,23 @@ public class Starter {
                 ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.2f")
               ];
               runKeys = ["randomGenerator.seed"; "solver.mapper.n"];
-              plots = [
-                ea.plot.fitness()
-              ]
+              plots = [ea.plot.fitness()]
             );
             ea.l.telegram(
               chatId = "207490209";
               botIdFilePath = "/home/eric/experiments/2dmrsim/tlg.txt";
-              plots = [
-                ea.plot.fitness()
+              plots = [ea.plot.fitness()]
+            );
+            ea.l.bestCsv(
+              filePath = "/home/eric/experiments/2dmrsim/new-res.txt";
+              functions = [
+                ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f")
               ]
             )
           ]
         )
         """;
     NamedBuilder<?> nb = NamedBuilder.empty()
-        .and(PreparedNamedBuilder.get())
         .and(NamedBuilder.fromUtilityClass(Builders.class));
     Experimenter experimenter = new Experimenter(nb, 2);
     experimenter.run(expDesc);
