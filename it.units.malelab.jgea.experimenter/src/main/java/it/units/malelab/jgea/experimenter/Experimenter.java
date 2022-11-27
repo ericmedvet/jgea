@@ -46,6 +46,7 @@ public class Experimenter {
     this.closeListeners = closeListeners;
   }
 
+  @SuppressWarnings("unused")
   public Experimenter(
       NamedBuilder<?> namedBuilder, ExecutorService runExecutorService, ExecutorService listenerExecutorService
   ) {
@@ -130,8 +131,8 @@ public class Experimenter {
           //ignore
         }
       }
-      factory.shutdown();
     }
+    factory.shutdown();
   }
 
 
