@@ -24,12 +24,15 @@ import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.core.util.TextPlotter;
 import it.units.malelab.jnb.core.Param;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.*;
+import java.util.logging.Logger;
 
 public class NamedFunctions {
+
+  private final static Logger L = Logger.getLogger(Listeners.class.getName());
 
   private NamedFunctions() {
   }
@@ -46,6 +49,23 @@ public class NamedFunctions {
   @SuppressWarnings("unused")
   public static <G, S, Q> NamedFunction<POSetPopulationState<G, S, Q>, Collection<Individual<G, S, Q>>> all() {
     return NamedFunction.build("all", s -> s.getPopulation().all());
+  }
+
+  @SuppressWarnings("unused")
+  public static <X> NamedFunction<X, String> base64(
+      @Param("f") NamedFunction<X, Serializable> f
+  ) {
+    return NamedFunction.build(c("base64", f.getName()), x -> {
+      try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); ObjectOutputStream oos = new ObjectOutputStream(
+          baos)) {
+        oos.writeObject(x);
+        oos.flush();
+        return Base64.getEncoder().encodeToString(baos.toByteArray());
+      } catch (Throwable t) {
+        L.warning("Cannot serialize %s due to %s".formatted(f.getName(), t));
+        return "not-serializable";
+      }
+    });
   }
 
   @SuppressWarnings("unused")
@@ -156,8 +176,7 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <X, T extends Comparable<T>> NamedFunction<X, T> max(
-      @Param("collection") NamedFunction<X, Collection<T>> collectionF,
-      @Param(value = "s", dS = "%s") String s
+      @Param("collection") NamedFunction<X, Collection<T>> collectionF, @Param(value = "s", dS = "%s") String s
   ) {
     return NamedFunction.build(c("max", collectionF.getName()), s, x -> {
       List<T> collection = collectionF.apply(x).stream().sorted().toList();
@@ -167,16 +186,14 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <X, T extends Comparable<T>> NamedFunction<X, T> median(
-      @Param("collection") NamedFunction<X, Collection<T>> collectionF,
-      @Param(value = "s", dS = "%s") String s
+      @Param("collection") NamedFunction<X, Collection<T>> collectionF, @Param(value = "s", dS = "%s") String s
   ) {
     return percentile(collectionF, 0.5, s);
   }
 
   @SuppressWarnings("unused")
   public static <X, T extends Comparable<T>> NamedFunction<X, T> min(
-      @Param("collection") NamedFunction<X, Collection<T>> collectionF,
-      @Param(value = "s", dS = "%s") String s
+      @Param("collection") NamedFunction<X, Collection<T>> collectionF, @Param(value = "s", dS = "%s") String s
   ) {
     return NamedFunction.build(c("min", collectionF.getName()), s, x -> {
       List<T> collection = collectionF.apply(x).stream().sorted().toList();

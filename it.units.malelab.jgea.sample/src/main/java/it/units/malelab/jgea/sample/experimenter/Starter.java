@@ -57,13 +57,11 @@ public class Starter {
   public static void main(String[] args) {
     String expDesc = """
         ea.experiment(
-          runs = [
+          runs = (randomGenerator = (seed = [1:1:10]) * [ea.rg.defaultRG()]) *
+            (solver = [
+              ea.s.numGA(mapper = fixed(n = 10); nEval = 10000)
+            ]) * [
             ea.run(
-              solver = ea.s.numGA(
-                mapper = fixed(n = 10);
-                nEval = 100000
-              );
-              randomGenerator = ea.rg.defaultRG(seed = 1);
               problem = ea.p.totalOrder(qFunction = sphere())
             )
           ];
@@ -91,8 +89,9 @@ public class Starter {
             );
             ea.l.allCsv(
               filePath = "/home/eric/experiments/2dmrsim/trial-all.txt";
-              individualFunctions = [ea.nf.fitness(); ea.nf.size(f = ea.nf.genotype())];
-              runKeys = ["randomGenerator.seed"; "solver.mapper.n"]
+              individualFunctions = [ea.nf.fitness(); ea.nf.base64(f = ea.nf.genotype())];
+              runKeys = ["randomGenerator.seed"; "solver.mapper.n"];
+              onlyLast = true
             )
           ]
         )
