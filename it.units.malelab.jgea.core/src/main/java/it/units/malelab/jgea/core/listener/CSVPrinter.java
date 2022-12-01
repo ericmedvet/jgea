@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 eric
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package it.units.malelab.jgea.core.listener;
 
 import it.units.malelab.jgea.core.util.Misc;
@@ -20,18 +36,18 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
   private static final Logger L = Logger.getLogger(CSVPrinter.class.getName());
   private static final int FLUSH_N = 10;
 
-  private final List<NamedFunction<? super E, ?>> eFunctions;
-  private final List<NamedFunction<? super K, ?>> kFunctions;
+  private final List<? extends NamedFunction<? super E, ?>> eFunctions;
+  private final List<? extends NamedFunction<? super K, ?>> kFunctions;
   private final File file;
 
   private org.apache.commons.csv.CSVPrinter printer;
   private int lineCounter;
 
   public CSVPrinter(
-      List<NamedFunction<? super E, ?>> eFunctions, List<NamedFunction<? super K, ?>> kFunctions, File file
+      List<NamedFunction<? super E, ?>> eFunctions, List<NamedFunction<? super K, ?>> kFunctions, File file, boolean robust
   ) {
-    this.eFunctions = eFunctions;
-    this.kFunctions = kFunctions;
+    this.eFunctions = robust?eFunctions.stream().map(NamedFunction::robust).toList():eFunctions;
+    this.kFunctions = robust?kFunctions.stream().map(NamedFunction::robust).toList():kFunctions;
     this.file = file;
     lineCounter = 0;
   }

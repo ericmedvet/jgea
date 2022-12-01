@@ -123,7 +123,8 @@ public class Listeners {
     CSVPrinter<PopIndividualPair<G, S, Q>, Run<?, G, S, Q>> innerListenerFactory = new CSVPrinter<>(
         pairFunctions,
         buildRunNamedFunctions(runKeys),
-        new File(filePath)
+        new File(filePath),
+        true
     );
     ListenerFactory<? super POSetPopulationState<G, S, Q>, Run<?, G, S, Q>> allListenerFactory =
         new ListenerFactory<>() {
@@ -185,7 +186,8 @@ public class Listeners {
                 stateFunctions
             )),
             buildRunNamedFunctions(runKeys),
-            new File(filePath)
+            new File(filePath),
+            true
         ),
         deferred ? executorService : null,
         onlyLast

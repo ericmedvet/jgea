@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2022 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,7 +103,7 @@ public class ImageExample extends Worker {
     if (a("file", null) != null) {
       listenerFactory = ListenerFactory.all(List.of(
           listenerFactory,
-          new CSVPrinter<>(functions, kFunctions, new File(a("file", null)))
+          new CSVPrinter<>(functions, kFunctions, new File(a("file", null)), true)
       ));
     }
     Map<String, IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, ImageReconstruction,

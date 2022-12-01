@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 eric
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package it.units.malelab.jgea.tui;
 
 import com.googlecode.lanterna.Symbols;
@@ -33,7 +49,7 @@ import static it.units.malelab.jgea.tui.util.DrawUtils.*;
  */
 public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E, K>, ProgressMonitor {
 
-  private final static Configuration DEFAULT_CONFIGURATION = new Configuration(0.7f, 0.8f, 0.5f, 0.65f, 250, true);
+  private final static Configuration DEFAULT_CONFIGURATION = new Configuration(0.7f, 0.8f, 0.5f, 0.65f, 250, true, true);
 
   private final static TextColor FRAME_COLOR = TextColor.Factory.fromString("#105010");
   private final static TextColor FRAME_LABEL_COLOR = TextColor.Factory.fromString("#10A010");
@@ -94,8 +110,8 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       Configuration configuration
   ) {
     //set functions
-    this.eFunctions = eFunctions;
-    this.kFunctions = kFunctions;
+    this.eFunctions = configuration.robust()?eFunctions.stream().map(NamedFunction::robust).toList():eFunctions;
+    this.kFunctions = configuration.robust()?kFunctions.stream().map(NamedFunction::robust).toList():kFunctions;
     this.plotTableBuilders = plotTableBuilders;
     formats = Misc.concat(List.of(
         eFunctions.stream().map(NamedFunction::getFormat).toList(),
@@ -143,7 +159,8 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
 
   public record Configuration(
       float verticalSplit, float leftHorizontalSplit, float rightHorizontalSplit, float plotHorizontalSplit,
-      int refreshIntervalMillis, boolean dumpLogAfterStop
+      int refreshIntervalMillis, boolean dumpLogAfterStop,
+      boolean robust
   ) {}
 
   @Override
