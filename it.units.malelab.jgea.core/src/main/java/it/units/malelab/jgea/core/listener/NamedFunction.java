@@ -19,6 +19,7 @@ package it.units.malelab.jgea.core.listener;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -26,6 +27,8 @@ import java.util.stream.Collectors;
  */
 @FunctionalInterface
 public interface NamedFunction<F, T> extends Function<F, T> {
+
+  Logger L = Logger.getLogger(NamedFunction.class.getName());
 
   BiFunction<String, String, String> NAME_COMPOSER = (after, before) -> before + "→" + after;
 
@@ -208,5 +211,24 @@ public interface NamedFunction<F, T> extends Function<F, T> {
   default <V> List<? extends NamedFunction<F, ? extends V>> then(List<NamedFunction<? super T, ? extends V>> afters) {
     NamedFunction<F, T> thisNamedFunction = this;
     return afters.stream().map(thisNamedFunction::then).toList();
+  }
+
+  default NamedFunction<F, T> robust(T exceptionT) {
+    return NamedFunction.build(
+        getName(),
+        getFormat(),
+        f -> {
+          try {
+            return apply(f);
+          } catch (Throwable throwable) {
+            L.warning("Cannot compute %s: %s".formatted(getName(), throwable));
+            return exceptionT;
+          }
+        }
+    );
+  }
+
+  default NamedFunction<F, T> robust() {
+    return robust(null);
   }
 }
