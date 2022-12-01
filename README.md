@@ -223,6 +223,7 @@ Methods inside the constructor of `TabularPrinter` are static methods of the cla
 
 The list includes paper published from 2018 on.
 
+- Ferigo, Iacca, Medvet, Pigozzi; [Evolving Hebbian Learning Rules in Voxel-based Soft Robot](https://medvet.inginf.units.it/publications/2022-j-fimp-evolving/); IEEE Transactions on Cognitive and Developmental Systems (TCDS); 2022
 - Medvet, Rusin; [Impact of Morphology Variations on Evolved Neural Controllers for Modular Robots](https://medvet.inginf.units.it/publications/2022-c-mr-impact/); XVI International Workshop on Artificial Life and Evolutionary Computation (WIVACE); 2022
 - Medvet, Nadizar, Manzoni; [JGEA: a Modular Java Framework for Experimenting with Evolutionary Computation](https://medvet.inginf.units.it/publications/2022-c-mnm-jgea/); Workshop Evolutionary Computation Software Systems (EvoSoft@GECCO); 2022
 - Medvet, Nadizar, Pigozzi; [On the Impact of Body Material Properties on Neuroevolution for Embodied Agents: the Case of Voxel-based Soft Robots](https://medvet.inginf.units.it/publications/2022-c-mnp-impact/); Workshop on Neuroevolution at Work (NEWK@GECCO); 2022
