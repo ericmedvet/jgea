@@ -27,7 +27,7 @@ import java.util.function.Function;
  */
 public class Problems {
 
-  public enum OptimizationType {MINIMIZE, MAXIMIZE}
+  public enum OptimizationType {@SuppressWarnings("unused") MINIMIZE, MAXIMIZE}
 
   private Problems() {
   }
