@@ -253,7 +253,7 @@ public class NamedFunctions {
       @Param(value = "", injection = Param.Injection.MAP) ParamMap map
   ) {
     if ((name == null) || name.isEmpty()) {
-      name = map.npm("name").getName();
+      name = map.npm("outerF").getName();
     }
     return NamedFunction.build(
         c(name, innerFunction.getName()),
