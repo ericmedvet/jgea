@@ -23,11 +23,13 @@ import it.units.malelab.jgea.core.solver.state.State;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.core.util.TextPlotter;
 import it.units.malelab.jnb.core.Param;
+import it.units.malelab.jnb.core.ParamMap;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.*;
+import java.util.function.Function;
 import java.util.logging.Logger;
 
 public class NamedFunctions {
@@ -240,6 +242,24 @@ public class NamedFunctions {
       Collection<T> collection = collectionF.apply(x);
       return ((double) (new HashSet<>(collection).size())) / ((double) collection.size());
     });
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, T, R> NamedFunction<X, R> f(
+      @Param("outerF") Function<T, R> outerFunction,
+      @Param(value = "innerF", dNPM = "ea.nf.identity()") NamedFunction<X, T> innerFunction,
+      @Param("name") String name,
+      @Param(value = "s", dS = "%s") String s,
+      @Param(value = "", injection = Param.Injection.MAP) ParamMap map
+  ) {
+    if ((name == null) || name.isEmpty()) {
+      name = map.npm("name").getName();
+    }
+    return NamedFunction.build(
+        c(name, innerFunction.getName()),
+        s,
+        x -> outerFunction.apply(innerFunction.apply(x))
+    );
   }
 
 }
