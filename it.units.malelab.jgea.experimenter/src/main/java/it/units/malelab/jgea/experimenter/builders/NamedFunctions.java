@@ -169,7 +169,7 @@ public class NamedFunctions {
       @Param(value = "nBins", dI = 8) int nBins
   ) {
     return NamedFunction.build(
-        c("hist", "fitness", "all"),
+        c("hist", "each[%s]".formatted(c(function.getName(), "fitness")), "all"),
         "%" + nBins + "." + nBins + "s",
         state -> {
           List<Number> numbers = state.getPopulation().all().stream()
