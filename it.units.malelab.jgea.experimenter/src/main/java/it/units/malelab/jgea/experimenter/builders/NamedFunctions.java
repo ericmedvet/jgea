@@ -200,7 +200,7 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <T> NamedFunction<T, T> identity() {
-    return NamedFunction.build("id", t -> t);
+    return NamedFunction.build("", t -> t);
   }
 
   @SuppressWarnings("unused")

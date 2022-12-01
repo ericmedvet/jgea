@@ -30,7 +30,15 @@ public interface NamedFunction<F, T> extends Function<F, T> {
 
   Logger L = Logger.getLogger(NamedFunction.class.getName());
 
-  BiFunction<String, String, String> NAME_COMPOSER = (after, before) -> before + "→" + after;
+  BiFunction<String, String, String> NAME_COMPOSER = (after, before) -> {
+    if (after.isEmpty()) {
+      return before;
+    }
+    if (before.isEmpty()) {
+      return after;
+    }
+    return before + "→" + after;
+  };
 
   static <F, T> NamedFunction<F, T> build(String name, Function<F, T> function) {
     return build(name, "%s", function);
