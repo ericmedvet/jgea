@@ -80,8 +80,16 @@ public class NamedFunctions {
     return NamedFunction.build("births", "%6d", POSetPopulationState::getNOfBirths);
   }
 
-  private static String c(String nAfter, String nBefore) {
-    return NamedFunction.NAME_COMPOSER.apply(nAfter, nBefore);
+  @SuppressWarnings("unused")
+  public static <Q, T> NamedFunction<POSetPopulationState<?, ?, Q>, T> bestFitness(
+      @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<Q, T> function,
+      @Param(value = "s", dS = "%s") String s
+  ) {
+    return NamedFunction.build(
+        c(function.getName(), "fitness", "best"),
+        s.equals("%s") ? function.getFormat() : s,
+        state -> function.apply(Objects.requireNonNull(Misc.first(state.getPopulation().firsts())).fitness())
+    );
   }
 
   @SuppressWarnings("unused")
@@ -136,6 +144,10 @@ public class NamedFunctions {
     return NamedFunction.build(c("fitness", individualF.getName()), s, x -> individualF.apply(x).fitness());
   }
 
+  private static String c(String... names) {
+    return Arrays.stream(names).reduce(NamedFunction.NAME_COMPOSER::apply).orElseThrow();
+  }
+
   @SuppressWarnings("unused")
   public static <T, R> NamedFunction<T, R> formatted(
       @Param("s") String s, @Param("f") NamedFunction<T, R> f
@@ -152,13 +164,38 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <X> NamedFunction<X, String> hist(
-      @Param("collection") NamedFunction<X, Collection<Number>> collectionF, @Param(value = "nBins", dI = 8) int nBins
+  public static <Q> NamedFunction<POSetPopulationState<?, ?, Q>, String> fitnessHist(
+      @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<Q, Number> function,
+      @Param(value = "nBins", dI = 8) int nBins
   ) {
-    return NamedFunction.build(c("hist", collectionF.getName()), "%8.8s", x -> {
-      Collection<Number> collection = collectionF.apply(x);
-      return TextPlotter.histogram(collection instanceof List<Number> list ? list : new ArrayList<>(collection), nBins);
-    });
+    return NamedFunction.build(
+        c("hist", "fitness", "all"),
+        "%" + nBins + "." + nBins + "s",
+        state -> {
+          List<Number> numbers = state.getPopulation().all().stream()
+              .map(i -> function.apply(i.fitness()))
+              .toList();
+          return TextPlotter.histogram(numbers, nBins);
+        }
+    );
+  }
+
+  @SuppressWarnings("unused")
+  public static <X> NamedFunction<X, String> hist(
+      @Param("collection") NamedFunction<X, Collection<Number>> collectionF,
+      @Param(value = "nBins", dI = 8) int nBins
+  ) {
+    return NamedFunction.build(
+        c("hist", collectionF.getName()),
+        "%" + nBins + "." + nBins + "s",
+        x -> {
+          Collection<Number> collection = collectionF.apply(x);
+          return TextPlotter.histogram(
+              collection instanceof List<Number> list ? list : new ArrayList<>(collection),
+              nBins
+          );
+        }
+    );
   }
 
   @SuppressWarnings("unused")
