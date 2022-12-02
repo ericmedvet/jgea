@@ -16,6 +16,7 @@ import java.util.random.RandomGenerator;
  * @author "Eric Medvet" on 2022/09/01 for 2d-robot-evolution
  */
 public record Run<P extends QualityBasedProblem<S, Q>, G, S, Q>(
+    @Param("name") String name,
     @Param("solver") AbstractPopulationBasedIterativeSolver<? extends POSetPopulationState<G, S, Q>, P, G, S, Q> solver,
     @Param("problem") P problem,
     @Param("randomGenerator") RandomGenerator randomGenerator,
