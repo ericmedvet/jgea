@@ -24,21 +24,37 @@ public interface Accumulator<E, O> extends Listener<E> {
   }
 
   default <Q> Accumulator<E, Q> then(Function<O, Q> function) {
-    Accumulator<E, O> inner = this;
+    Accumulator<E, O> thisAccumulator = this;
     return new Accumulator<>() {
       @Override
       public Q get() {
-        return function.apply(inner.get());
+        return function.apply(thisAccumulator.get());
       }
 
       @Override
       public void listen(E e) {
-        inner.listen(e);
+        thisAccumulator.listen(e);
       }
 
       @Override
       public void done() {
-        inner.done();
+        thisAccumulator.done();
+      }
+    };
+  }
+
+  default Listener<E> withAutoGet() {
+    Accumulator<E, O> thisAccumulator = this;
+    return new Listener<>() {
+      @Override
+      public void listen(E e) {
+        thisAccumulator.listen(e);
+      }
+
+      @Override
+      public void done() {
+        thisAccumulator.get();
+        thisAccumulator.done();
       }
     };
   }

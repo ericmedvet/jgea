@@ -25,4 +25,19 @@ public interface AccumulatorFactory<E, O, K> extends ListenerFactory<E, K> {
     };
   }
 
+  default ListenerFactory<E, K> withAutoGet() {
+    AccumulatorFactory<E, O, K> thisFactory = this;
+    return new ListenerFactory<>() {
+      @Override
+      public Listener<E> build(K k) {
+        return thisFactory.build(k).withAutoGet();
+      }
+
+      @Override
+      public void shutdown() {
+        thisFactory.shutdown();
+      }
+    };
+  }
+
 }
