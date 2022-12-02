@@ -34,7 +34,7 @@ import java.util.logging.Logger;
 
 public class NamedFunctions {
 
-  private final static Logger L = Logger.getLogger(Listeners.class.getName());
+  private final static Logger L = Logger.getLogger(NamedFunctions.class.getName());
 
   private NamedFunctions() {
   }
