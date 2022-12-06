@@ -21,11 +21,13 @@ public record Progress(
     Number end,
     Number current
 ) {
-  public static Progress NA = new Progress(0,0,0);
+  public static Progress NA = new Progress(0, 0, 0);
+
   public double rate() {
     return Math.min(
         1d,
         Math.max(0d, current.doubleValue() - start.doubleValue()) / (end.doubleValue() - start.doubleValue())
     );
   }
+
 }

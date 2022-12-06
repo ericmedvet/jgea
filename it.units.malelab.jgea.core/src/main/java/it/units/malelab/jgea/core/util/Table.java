@@ -2,6 +2,7 @@ package it.units.malelab.jgea.core.util;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -13,7 +14,9 @@ public interface Table<T> {
   void addColumn(String name, List<T> values);
 
   void addRow(List<T> values);
+
   boolean removeRow(List<T> values);
+
   void removeRow(int y);
 
   void clear();
@@ -61,6 +64,15 @@ public interface Table<T> {
     for (int y = 0; y < nRows(); y++) {
       table.addRow(row(y).stream().map(function).toList());
     }
+    return table;
+  }
+
+  default Table<T> filter(Predicate<List<T>> rowPredicate) {
+    Table<T> table = new ArrayTable<>(names());
+    rows().stream()
+        .map(r -> r.stream().map(Pair::second).toList())
+        .filter(rowPredicate)
+        .forEach(table::addRow);
     return table;
   }
 

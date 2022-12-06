@@ -25,6 +25,7 @@ import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import it.units.malelab.jgea.core.listener.*;
+import it.units.malelab.jgea.core.solver.state.State;
 import it.units.malelab.jgea.core.util.*;
 import it.units.malelab.jgea.tui.util.Point;
 import it.units.malelab.jgea.tui.util.Rectangle;
@@ -49,7 +50,15 @@ import static it.units.malelab.jgea.tui.util.DrawUtils.*;
  */
 public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E, K>, ProgressMonitor {
 
-  private final static Configuration DEFAULT_CONFIGURATION = new Configuration(0.7f, 0.8f, 0.5f, 0.65f, 250, true, true);
+  private final static Configuration DEFAULT_CONFIGURATION = new Configuration(
+      0.7f,
+      0.8f,
+      0.5f,
+      0.65f,
+      250,
+      true,
+      true
+  );
 
   private final static TextColor FRAME_COLOR = TextColor.Factory.fromString("#105010");
   private final static TextColor FRAME_LABEL_COLOR = TextColor.Factory.fromString("#10A010");
@@ -90,7 +99,8 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   private final List<Accumulator<? super E, Table<Number>>> plotAccumulators;
   private final ScheduledExecutorService uiExecutorService;
   private Screen screen;
-  private double lastProgress;
+  private Progress overallProgress;
+  private Progress partialProgress;
   private String lastProgressMessage;
   private Instant lastProgressInstant;
 
@@ -110,8 +120,8 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       Configuration configuration
   ) {
     //set functions
-    this.eFunctions = configuration.robust()?eFunctions.stream().map(NamedFunction::robust).toList():eFunctions;
-    this.kFunctions = configuration.robust()?kFunctions.stream().map(NamedFunction::robust).toList():kFunctions;
+    this.eFunctions = configuration.robust() ? eFunctions.stream().map(NamedFunction::robust).toList() : eFunctions;
+    this.kFunctions = configuration.robust() ? kFunctions.stream().map(NamedFunction::robust).toList() : kFunctions;
     this.plotTableBuilders = plotTableBuilders;
     formats = Misc.concat(List.of(
         eFunctions.stream().map(NamedFunction::getFormat).toList(),
@@ -181,6 +191,9 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
         }
         plotAccumulators.forEach(a -> a.listen(e));
       }
+      if (e instanceof State state) {
+        partialProgress = state.getProgress();
+      }
     };
   }
 
@@ -199,11 +212,9 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
 
   @Override
   public void notify(Progress progress, String message) {
-    synchronized (this) {
-      lastProgress = progress.rate();
-      lastProgressMessage = message;
-      lastProgressInstant = Instant.now();
-    }
+    overallProgress = progress;
+    lastProgressMessage = message;
+    lastProgressInstant = Instant.now();
   }
 
   @Override
@@ -277,7 +288,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     drawFrame(tg, logR, "Log", FRAME_COLOR, FRAME_LABEL_COLOR);
     drawFrame(tg, statusR, "Status", FRAME_COLOR, FRAME_LABEL_COLOR);
     for (int i = 0; i < plotTableBuilders.size(); i++) {
-      String plotName = plotTableBuilders.get(i).xName() + " vs. " + plotTableBuilders.get(i).yNames().get(0);
+      String plotName = plotTableBuilders.get(i).yNames().get(0) + " vs. " + plotTableBuilders.get(i).xName();
       drawFrame(tg, plotRs.get(i), plotName, FRAME_COLOR, FRAME_LABEL_COLOR);
     }
     //draw data: logs
@@ -318,15 +329,23 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     clipPut(tg, r, 21, 2, String.format("%.2f on %d cores", cpuLoad, 2 * nOfProcessors));
     drawHorizontalBar(tg, r, 10, 3, usedGigaMemory, 0, maxGigaMemory, 10, PLOT1_COLOR, PLOT_BG_COLOR);
     clipPut(tg, r, 21, 3, String.format("%.1fGB", maxGigaMemory));
-    synchronized (this) {
-      drawHorizontalBar(tg, r, 10, 4, lastProgress, 0, 1, 10, PLOT1_COLOR, PLOT_BG_COLOR);
+    if (overallProgress != null) {
+      Progress progress = new Progress(overallProgress.start(), overallProgress.end(), overallProgress.current());
+      if (partialProgress != null && !Double.isNaN(partialProgress.rate())) {
+        progress = new Progress(
+            progress.start(),
+            progress.end(),
+            Math.floor(progress.current().doubleValue()) + partialProgress.rate()
+        );
+      }
+      drawHorizontalBar(tg, r, 10, 4, progress.rate(), 0, 1, 10, PLOT1_COLOR, PLOT_BG_COLOR);
       if (lastProgressInstant != null) {
-        if (lastProgress > 0) {
+        if (progress.rate() > 0) {
           Instant eta = startingInstant.plus(
               Math.round(ChronoUnit.MILLIS.between(
                   startingInstant,
                   lastProgressInstant
-              ) / lastProgress),
+              ) / progress.rate()),
               ChronoUnit.MILLIS
           );
           clipPut(tg, r, 21, 4, String.format(Symbols.ARROW_RIGHT + DATETIME_FORMAT, Date.from(eta)));
@@ -389,42 +408,44 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
           x = x + colWidths[i] + 1;
         }
       }
-      //draw plots
-      if (!plotAccumulators.isEmpty()) {
-        for (int i = 0; i < plotAccumulators.size(); i = i + 1) {
-          double minX = Double.NaN;
-          double maxX = Double.NaN;
-          double minY = Double.NaN;
-          double maxY = Double.NaN;
-          if (plotTableBuilders.get(i) instanceof XYPlotTableBuilder<?> xyPlotTableBuilder) {
-            minX = Double.isFinite(xyPlotTableBuilder.getMinX()) ? xyPlotTableBuilder.getMinX() : Double.NaN;
-            maxX = Double.isFinite(xyPlotTableBuilder.getMaxX()) ? xyPlotTableBuilder.getMaxX() : Double.NaN;
-            minY = Double.isFinite(xyPlotTableBuilder.getMinY()) ? xyPlotTableBuilder.getMinY() : Double.NaN;
-            maxY = Double.isFinite(xyPlotTableBuilder.getMaxX()) ? xyPlotTableBuilder.getMaxY() : Double.NaN;
-          }
-          try {
-            drawPlot(
-                tg,
-                plotRs.get(i).inner(1),
-                plotAccumulators.get(i).get(),
-                PLOT2_COLOR,
-                MAIN_DATA_COLOR,
-                PLOT_BG_COLOR,
-                plotTableBuilders.get(i).xFormat(),
-                plotTableBuilders.get(i).yFormats().get(0),
-                minX,
-                maxX,
-                minY,
-                maxY
-            );
-          } catch (RuntimeException ex) {
-            L.warning(String.format(
-                "Cannot do plot %s vs. %s: %s",
-                plotTableBuilders.get(i).xName(),
-                plotTableBuilders.get(i).yNames().get(0),
-                ex
-            ));
-          }
+    }
+    //draw plots
+    if (!plotAccumulators.isEmpty()) {
+      for (int i = 0; i < plotAccumulators.size(); i = i + 1) {
+        double minX = Double.NaN;
+        double maxX = Double.NaN;
+        double minY = Double.NaN;
+        double maxY = Double.NaN;
+        if (plotTableBuilders.get(i) instanceof XYPlotTableBuilder<?> xyPlotTableBuilder) {
+          minX = Double.isFinite(xyPlotTableBuilder.getMinX()) ? xyPlotTableBuilder.getMinX() : Double.NaN;
+          maxX = Double.isFinite(xyPlotTableBuilder.getMaxX()) ? xyPlotTableBuilder.getMaxX() : Double.NaN;
+          minY = Double.isFinite(xyPlotTableBuilder.getMinY()) ? xyPlotTableBuilder.getMinY() : Double.NaN;
+          maxY = Double.isFinite(xyPlotTableBuilder.getMaxX()) ? xyPlotTableBuilder.getMaxY() : Double.NaN;
+        }
+        try {
+          Table<Number> table = plotAccumulators.get(i).get()
+              .filter(row -> row.stream().noneMatch(n -> Double.isNaN(n.doubleValue())));
+          drawPlot(
+              tg,
+              plotRs.get(i).inner(1),
+              table,
+              PLOT2_COLOR,
+              MAIN_DATA_COLOR,
+              PLOT_BG_COLOR,
+              plotTableBuilders.get(i).xFormat(),
+              plotTableBuilders.get(i).yFormats().get(0),
+              minX,
+              maxX,
+              minY,
+              maxY
+          );
+        } catch (RuntimeException ex) {
+          L.warning(String.format(
+              "Cannot do plot %s vs. %s: %s",
+              plotTableBuilders.get(i).yNames().get(0),
+              plotTableBuilders.get(i).xName(),
+              ex
+          ));
         }
       }
     }

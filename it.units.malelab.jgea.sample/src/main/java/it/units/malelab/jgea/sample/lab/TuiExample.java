@@ -73,7 +73,7 @@ public class TuiExample implements Runnable {
   private final ExecutorService executorService;
 
   public TuiExample() {
-    executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
+    executorService = Executors.newFixedThreadPool(1);
   }
 
   public static void main(String[] args) {
@@ -88,10 +88,29 @@ public class TuiExample implements Runnable {
             List.of(),
             List.of(
                 new XYPlotTableBuilder<>(
-                    iterations(),
-                    List.of(fitness().reformat("%5.3f").of(best()).as(Number.class))
+                    progress(),
+                    List.of(fitness().reformat("%5.3f").of(best()).as(Number.class)),
+                    1,
+                    1,
+                    0,
+                    1,
+                    Double.NaN,
+                    Double.NaN,
+                    true,
+                    false
                 ),
-                new XYPlotTableBuilder<>(iterations(), List.of(uniqueness().of(each(genotype())).of(all())))
+                new XYPlotTableBuilder<>(
+                    progress(),
+                    List.of(uniqueness().of(each(genotype())).of(all())),
+                    1,
+                    1,
+                    0,
+                    1,
+                    Double.NaN,
+                    Double.NaN,
+                    true,
+                    false
+                )
             )
         );
     List<Integer> seeds = List.of(1, 2, 3, 4, 5);
@@ -139,8 +158,8 @@ public class TuiExample implements Runnable {
     int counter = 0;
     for (int seed : seeds) {
       Random r = new Random(1);
-      for (IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SyntheticSymbolicRegressionProblem,
-          RealFunction> solver : solvers) {
+      for (IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>,
+          SyntheticSymbolicRegressionProblem, RealFunction> solver : solvers) {
         Map<String, Object> keys = Map.ofEntries(
             Map.entry("seed", seed),
             Map.entry("solver", solver.getClass().getSimpleName())

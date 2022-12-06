@@ -153,6 +153,8 @@ public class DrawUtils {
     double[] ys = data.column(1).stream().mapToDouble(Number::doubleValue).toArray();
     RealFunction f = RealFunction.from(xs, ys);
     //compute ranges
+    double fXMin = Arrays.stream(xs).min().orElse(0);
+    double fXMax = Arrays.stream(xs).max().orElse(0);
     xMin = Double.isNaN(xMin) ? Arrays.stream(xs).min().orElse(0) : xMin;
     xMax = Double.isNaN(xMax) ? Arrays.stream(xs).max().orElse(0) : xMax;
     yMin = Double.isNaN(yMin) ? Arrays.stream(ys).min().orElse(0) : yMin;
@@ -163,16 +165,19 @@ public class DrawUtils {
     clear(tg, r);
     //plot bars
     for (int rx = 0; rx < r.w(); rx = rx + 1) {
-      double y = f.apply(xMin + (xMax - xMin) * (double) rx / (double) r.w());
-      double ry = (y - yMin) / (yMax - yMin) * (r.h() - 1d);
-      for (int rh = 0; rh < Math.floor(ry); rh = rh + 1) {
-        tg.setCharacter(r.se().delta(rx, -rh).tp(), FILLER);
+      double x = xMin + (xMax - xMin) * (double) rx / (double) r.w();
+      if (x >= fXMin && x <= fXMax) {
+        double y = f.apply(x);
+        double ry = (y - yMin) / (yMax - yMin) * (r.h() - 1d);
+        for (int rh = 0; rh < Math.floor(ry); rh = rh + 1) {
+          tg.setCharacter(r.se().delta(rx, -rh).tp(), FILLER);
+        }
+        double remainder = ry - Math.floor(ry);
+        tg.setCharacter(
+            r.se().delta(rx, -(int) Math.floor(ry)).tp(),
+            VERTICAL_PART_FILLER.charAt((int) Math.floor(remainder * VERTICAL_PART_FILLER.length()))
+        );
       }
-      double remainder = ry - Math.floor(ry);
-      tg.setCharacter(
-          r.se().delta(rx, -(int) Math.floor(ry)).tp(),
-          VERTICAL_PART_FILLER.charAt((int) Math.floor(remainder * VERTICAL_PART_FILLER.length()))
-      );
     }
     //plot labels of ranges
     tg.setForegroundColor(labelsColor);
