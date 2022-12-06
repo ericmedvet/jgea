@@ -127,6 +127,7 @@ public class SymbolicRegressionComparison extends Worker {
         iterations(),
         births(),
         elapsedSeconds(),
+        bar(8).of(progress()),
         size().of(all()),
         size().of(firsts()),
         size().of(lasts()),
