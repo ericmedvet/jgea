@@ -1,7 +1,24 @@
+/*
+ * Copyright 2022 eric
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package it.units.malelab.jgea.core.solver;
 
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.core.solver.state.State;
+import it.units.malelab.jgea.core.util.Progress;
 
 import java.util.function.Predicate;
 
@@ -10,22 +27,27 @@ public class StopConditions {
   private StopConditions() {
   }
 
-  public static Predicate<State> elapsedMillis(final long n) {
-    return s -> s.getElapsedMillis() >= n;
+  @SuppressWarnings("unused")
+  public static ProgressBasedStopCondition<State> elapsedMillis(final long n) {
+    return s -> new Progress(0, n, s.getElapsedMillis());
   }
 
-  public static Predicate<POSetPopulationState<?, ?, ?>> nOfBirths(final long n) {
-    return s -> s.getNOfBirths() >= n;
+  @SuppressWarnings("unused")
+  public static ProgressBasedStopCondition<POSetPopulationState<?, ?, ?>> nOfBirths(final long n) {
+    return s -> new Progress(0, n, s.getNOfBirths());
   }
 
-  public static Predicate<POSetPopulationState<?, ?, ?>> nOfFitnessEvaluations(final long n) {
-    return s -> s.getNOfFitnessEvaluations() >= n;
+  @SuppressWarnings("unused")
+  public static ProgressBasedStopCondition<POSetPopulationState<?, ?, ?>> nOfFitnessEvaluations(final long n) {
+    return s -> new Progress(0, n, s.getNOfFitnessEvaluations());
   }
 
-  public static Predicate<State> nOfIterations(final long n) {
-    return s -> s.getNOfIterations() >= n;
+  @SuppressWarnings("unused")
+  public static ProgressBasedStopCondition<State> nOfIterations(final long n) {
+    return s -> new Progress(0, n, s.getNOfIterations());
   }
 
+  @SuppressWarnings("unused")
   public static <F extends Comparable<F>> Predicate<POSetPopulationState<?, ?, ? extends F>> targetFitness(final F targetF) {
     return s -> s.getPopulation().firsts().stream().map(Individual::fitness).anyMatch(f -> f.compareTo(targetF) <= 0);
   }

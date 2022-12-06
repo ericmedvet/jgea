@@ -1,9 +1,26 @@
+/*
+ * Copyright 2022 eric
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package it.units.malelab.jgea.core.solver;
 
 import it.units.malelab.jgea.core.Factory;
 import it.units.malelab.jgea.core.TotalOrderQualityBasedProblem;
 import it.units.malelab.jgea.core.order.DAGPartiallyOrderedCollection;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
+import it.units.malelab.jgea.core.util.Progress;
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -78,10 +95,12 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
     cMu = Math.min(1 - c1, 2 * (muEff - 2 + 1 / muEff) / (Math.pow((n + 2), 2) + 2 * muEff / 2d));
   }
 
-  private record DecoratedIndividual<S, Q>(Individual<List<Double>, S, Q> individual,
-                                           double[] z,
-                                           double[] y,
-                                           double[] x) {
+  public record DecoratedIndividual<S, Q>(
+      Individual<List<Double>, S, Q> individual,
+      double[] z,
+      double[] y,
+      double[] x
+  ) {
   }
 
   public static class State<S, Q> extends SimpleEvolutionaryStrategy.State<S, Q> {
@@ -110,6 +129,7 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
         LocalDateTime startingDateTime,
         long elapsedMillis,
         long nOfIterations,
+        Progress progress,
         long nOfBirths,
         long nOfFitnessEvaluations,
         PartiallyOrderedCollection<Individual<List<Double>, S, Q>> population,
@@ -123,7 +143,16 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
         List<DecoratedIndividual<S, Q>> decoratedIndividuals,
         int lastEigenUpdateGeneration
     ) {
-      super(startingDateTime, elapsedMillis, nOfIterations, nOfBirths, nOfFitnessEvaluations, population, means);
+      super(
+          startingDateTime,
+          elapsedMillis,
+          nOfIterations,
+          progress,
+          nOfBirths,
+          nOfFitnessEvaluations,
+          population,
+          means
+      );
       this.sigma = sigma;
       this.sEvolutionPath = sEvolutionPath;
       this.cEvolutionPath = cEvolutionPath;
@@ -140,6 +169,7 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
           startingDateTime,
           elapsedMillis,
           nOfIterations,
+          progress,
           nOfBirths,
           nOfFitnessEvaluations,
           population.immutableCopy(),
@@ -165,7 +195,11 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
   }
 
   @Override
-  public State<S, Q> init(TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor) throws SolverException {
+  public State<S, Q> init(
+      TotalOrderQualityBasedProblem<S, Q> problem,
+      RandomGenerator random,
+      ExecutorService executor
+  ) throws SolverException {
     State<S, Q> state = initState(problem, random, executor);
     state.means = genotypeFactory.build(1, random).get(0).stream().mapToDouble(d -> d).toArray();
     sampleNewPopulation(problem, random, executor, state);
@@ -209,7 +243,14 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
       xK[k] = IntStream.range(0, n).mapToDouble(i -> state.means[i] + state.sigma * yK[k][i]).toArray();
       return Arrays.stream(xK[k]).boxed().toList();
     }).toList();
-    List<Individual<List<Double>, S, Q>> individuals = map(genotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state);
+    List<Individual<List<Double>, S, Q>> individuals = map(
+        genotypes,
+        List.of(),
+        solutionMapper,
+        problem.qualityFunction(),
+        executor,
+        state
+    );
     state.decoratedIndividuals = IntStream.range(0, populationSize)
         .mapToObj(i -> new DecoratedIndividual<>(individuals.get(i), zK[i], yK[i], xK[i]))
         .toList();
@@ -219,7 +260,8 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
   private void updateDistribution(TotalOrderQualityBasedProblem<S, Q> problem, State<S, Q> state) {
     // best mu ranked points
     Function<DecoratedIndividual<S, Q>, Individual<List<Double>, S, Q>> individualExtractor = i -> i.individual;
-    Comparator<DecoratedIndividual<S, Q>> decoratedIndividualComparator = comparator(problem).comparing(individualExtractor).comparator();
+    Comparator<DecoratedIndividual<S, Q>> decoratedIndividualComparator = comparator(problem).comparing(
+        individualExtractor).comparator();
     List<DecoratedIndividual<S, Q>> bestMuIndividuals = state.decoratedIndividuals.stream()
         .sorted(decoratedIndividualComparator).limit(mu).toList();
 
@@ -250,8 +292,13 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
     state.sigma *= Math.exp((cSigma / dSigma) * ((psNorm / chiN) - 1));
 
     // covariance matrix adaptation
-    int hSigma = psNorm / Math.sqrt(1 - Math.pow((1d - cSigma), 2 * state.getNOfIterations())) / chiN < (1.4 + 2d / (n + 1)) ? 1 : 0;
-    state.cEvolutionPath = IntStream.range(0, n).mapToDouble(i -> (1 - cc) * state.cEvolutionPath[i] + hSigma * Math.sqrt(cc * (2 - cc) * muEff) * yW[i]).toArray();
+    int hSigma = psNorm / Math.sqrt(1 - Math.pow(
+        (1d - cSigma),
+        2 * state.getNOfIterations()
+    )) / chiN < (1.4 + 2d / (n + 1)) ? 1 : 0;
+    state.cEvolutionPath = IntStream.range(0, n)
+        .mapToDouble(i -> (1 - cc) * state.cEvolutionPath[i] + hSigma * Math.sqrt(cc * (2 - cc) * muEff) * yW[i])
+        .toArray();
     double deltaH = (1 - hSigma) * cc * (2 - cc);
     IntStream.range(0, n).forEach(i -> IntStream.range(0, i + 1).forEach(j -> {
       double cij = (1 + c1 * deltaH - c1 - cMu) * state.C.getEntry(i, j) +

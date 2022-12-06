@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2022 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import it.units.malelab.jgea.core.solver.SolverException;
 import it.units.malelab.jgea.core.solver.StandardEvolver;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.core.util.Misc;
+import it.units.malelab.jgea.core.util.Progress;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -94,12 +95,13 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q> exte
         LocalDateTime startingDateTime,
         long elapsedMillis,
         long nOfIterations,
+        Progress progress,
         long nOfBirths,
         long nOfFitnessEvaluations,
         PartiallyOrderedCollection<Individual<G, S, Q>> population,
         Collection<Species<Individual<G, S, Q>>> parentSpecies
     ) {
-      super(startingDateTime, elapsedMillis, nOfIterations, nOfBirths, nOfFitnessEvaluations, population);
+      super(startingDateTime, elapsedMillis, nOfIterations, progress, nOfBirths, nOfFitnessEvaluations, population);
       this.parentSpecies = parentSpecies;
     }
 
@@ -117,6 +119,7 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q> exte
           startingDateTime,
           elapsedMillis,
           nOfIterations,
+          progress,
           nOfBirths,
           nOfFitnessEvaluations,
           population.immutableCopy(),

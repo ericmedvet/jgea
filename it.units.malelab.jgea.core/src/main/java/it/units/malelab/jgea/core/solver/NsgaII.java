@@ -29,6 +29,7 @@ import it.units.malelab.jgea.core.order.PartialComparator;
 import it.units.malelab.jgea.core.order.PartiallyOrderedCollection;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.core.util.Misc;
+import it.units.malelab.jgea.core.util.Progress;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -61,7 +62,7 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
     this.remap = remap;
   }
 
-  private static class RankedIndividual<G, S> implements Comparable<RankedIndividual<G, S>> {
+  public static class RankedIndividual<G, S> implements Comparable<RankedIndividual<G, S>> {
 
     protected final Individual<G, S, List<Double>> individual;
     protected final int rank;
@@ -79,7 +80,7 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
 
   }
 
-  private static class RankedWithDistanceIndividual<G, S> extends RankedIndividual<G, S> implements Comparable<RankedIndividual<G, S>> {
+  public static class RankedWithDistanceIndividual<G, S> extends RankedIndividual<G, S> implements Comparable<RankedIndividual<G, S>> {
     private double crowdingDistance;
 
     public RankedWithDistanceIndividual(Individual<G, S, List<Double>> individual, int rank, double crowdingDistance) {
@@ -116,12 +117,13 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
         LocalDateTime startingDateTime,
         long elapsedMillis,
         long nOfIterations,
+        Progress progress,
         long nOfBirths,
         long nOfFitnessEvaluations,
         PartiallyOrderedCollection<Individual<G, S, List<Double>>> population,
         List<RankedWithDistanceIndividual<G, S>> rankedWithDistanceIndividuals
     ) {
-      super(startingDateTime, elapsedMillis, nOfIterations, nOfBirths, nOfFitnessEvaluations, population);
+      super(startingDateTime, elapsedMillis, nOfIterations, progress, nOfBirths, nOfFitnessEvaluations, population);
       this.rankedWithDistanceIndividuals = rankedWithDistanceIndividuals;
     }
 
@@ -131,6 +133,7 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
           startingDateTime,
           elapsedMillis,
           nOfIterations,
+          progress,
           nOfBirths,
           nOfFitnessEvaluations,
           population.immutableCopy(),
