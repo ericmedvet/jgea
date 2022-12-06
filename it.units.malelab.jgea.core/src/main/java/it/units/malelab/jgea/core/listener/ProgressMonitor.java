@@ -1,24 +1,32 @@
+/*
+ * Copyright 2022 eric
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package it.units.malelab.jgea.core.listener;
+
+import it.units.malelab.jgea.core.util.Progress;
 
 import java.util.List;
 
 @FunctionalInterface
 public interface ProgressMonitor {
 
-  void notify(double progress, String message);
+  void notify(Progress progress, String message);
 
   static ProgressMonitor all(List<ProgressMonitor> progressMonitors) {
-    return new ProgressMonitor() {
-      @Override
-      public void notify(double progress, String message) {
-        progressMonitors.forEach(m -> m.notify(progress, message));
-      }
-
-      @Override
-      public void notify(double progress) {
-        progressMonitors.forEach(m -> m.notify(progress));
-      }
-    };
+    return (progress, message) -> progressMonitors.forEach(m -> m.notify(progress, message));
   }
 
   default ProgressMonitor and(ProgressMonitor other) {
@@ -26,10 +34,14 @@ public interface ProgressMonitor {
   }
 
   default void notify(int i, int n, String message) {
-    notify((double) i / (double) n, message);
+    notify(new Progress(0, n, i), message);
   }
 
-  default void notify(double progress) {
+  default void notify(int i, int n) {
+    notify(new Progress(0, n, i));
+  }
+
+  default void notify(Progress progress) {
     notify(progress, "");
   }
 }

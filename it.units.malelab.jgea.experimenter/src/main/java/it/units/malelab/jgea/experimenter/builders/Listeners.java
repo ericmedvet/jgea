@@ -20,6 +20,7 @@ import it.units.malelab.jgea.core.listener.*;
 import it.units.malelab.jgea.core.solver.Individual;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.core.util.Misc;
+import it.units.malelab.jgea.core.util.Progress;
 import it.units.malelab.jgea.experimenter.Experiment;
 import it.units.malelab.jgea.experimenter.Run;
 import it.units.malelab.jgea.telegram.TelegramUpdater;
@@ -81,7 +82,7 @@ public class Listeners {
     }
 
     @Override
-    public void notify(double progress, String message) {
+    public void notify(Progress progress, String message) {
       if (innerListenerFactory instanceof ProgressMonitor progressMonitor) {
         progressMonitor.notify(progress, message);
       }

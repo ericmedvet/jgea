@@ -198,9 +198,9 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   }
 
   @Override
-  public void notify(double progress, String message) {
+  public void notify(Progress progress, String message) {
     synchronized (this) {
-      lastProgress = progress;
+      lastProgress = progress.rate();
       lastProgressMessage = message;
       lastProgressInstant = Instant.now();
     }

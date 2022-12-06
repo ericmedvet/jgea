@@ -17,10 +17,7 @@
 package it.units.malelab.jgea.telegram;
 
 import it.units.malelab.jgea.core.listener.*;
-import it.units.malelab.jgea.core.util.ImagePlotters;
-import it.units.malelab.jgea.core.util.StringUtils;
-import it.units.malelab.jgea.core.util.Table;
-import it.units.malelab.jgea.core.util.TextPlotter;
+import it.units.malelab.jgea.core.util.*;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -117,21 +114,12 @@ public class TelegramUpdater<E, K> extends TelegramClient implements ListenerFac
   }
 
   @Override
-  public void notify(double progress, String message) {
+  public void notify(Progress progress, String message) {
     sendText(String.format(
         "%s - progress %s %s",
         StringUtils.getMachineName(),
-        TextPlotter.horizontalBar(progress, 0, 1, 8),
+        TextPlotter.horizontalBar(progress.rate(), 0, 1, 8),
         message
-    ));
-  }
-
-  @Override
-  public void notify(double progress) {
-    sendText(String.format(
-        "%s - progress %s",
-        StringUtils.getMachineName(),
-        TextPlotter.horizontalBar(progress, 0, 1, 8)
     ));
   }
 
