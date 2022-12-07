@@ -257,8 +257,7 @@ public class Listeners {
       @Param("chatId") String chatId,
       @Param("botIdFilePath") String botIdFilePath,
       @Param(value = "defaultPlots", dNPMs = {
-          "ea.plot.elapsed()",
-          "ea.plot.uniqueness()"
+          "ea.plot.elapsed()"
       }) List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> defaultPlotTableBuilders,
       @Param("plots") List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> plotTableBuilders,
       @Param("accumulators") List<AccumulatorFactory<? super POSetPopulationState<G, S, Q>, ?, Run<?, G, S, Q>>> accumulators,
@@ -321,8 +320,7 @@ public class Listeners {
       @Param(value = "functions") List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> stateFunctions,
       @Param("runKeys") List<String> runKeys,
       @Param(value = "defaultPlots", dNPMs = {
-          "ea.plot.elapsed()",
-          "ea.plot.uniqueness()"
+          "ea.plot.elapsed()"
       }) List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> defaultPlotTableBuilders,
       @Param("plots") List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> plotTableBuilders,
       @Param(value = "deferred") boolean deferred,
