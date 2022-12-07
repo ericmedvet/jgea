@@ -60,7 +60,7 @@ public class NamedFunctions {
     return NamedFunction.build(c("base64", f.getName()), x -> {
       try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); ObjectOutputStream oos = new ObjectOutputStream(
           baos)) {
-        oos.writeObject(x);
+        oos.writeObject(f.apply(x));
         oos.flush();
         return Base64.getEncoder().encodeToString(baos.toByteArray());
       } catch (Throwable t) {
@@ -76,11 +76,6 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static NamedFunction<POSetPopulationState<?, ?, ?>, Long> births() {
-    return NamedFunction.build("births", "%6d", POSetPopulationState::getNOfBirths);
-  }
-
-  @SuppressWarnings("unused")
   public static <Q, T> NamedFunction<POSetPopulationState<?, ?, Q>, T> bestFitness(
       @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<Q, T> function,
       @Param(value = "s", dS = "%s") String s
@@ -90,6 +85,15 @@ public class NamedFunctions {
         s.equals("%s") ? function.getFormat() : s,
         state -> function.apply(Objects.requireNonNull(Misc.first(state.getPopulation().firsts())).fitness())
     );
+  }
+
+  @SuppressWarnings("unused")
+  public static NamedFunction<POSetPopulationState<?, ?, ?>, Long> births() {
+    return NamedFunction.build("births", "%6d", POSetPopulationState::getNOfBirths);
+  }
+
+  private static String c(String... names) {
+    return Arrays.stream(names).reduce(NamedFunction.NAME_COMPOSER::apply).orElseThrow();
   }
 
   @SuppressWarnings("unused")
@@ -132,6 +136,24 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
+  public static <X, T, R> NamedFunction<X, R> f(
+      @Param("outerF") Function<T, R> outerFunction,
+      @Param(value = "innerF", dNPM = "ea.nf.identity()") NamedFunction<X, T> innerFunction,
+      @Param("name") String name,
+      @Param(value = "s", dS = "%s") String s,
+      @Param(value = "", injection = Param.Injection.MAP) ParamMap map
+  ) {
+    if ((name == null) || name.isEmpty()) {
+      name = map.npm("outerF").getName();
+    }
+    return NamedFunction.build(
+        c(name, innerFunction.getName()),
+        s,
+        x -> outerFunction.apply(innerFunction.apply(x))
+    );
+  }
+
+  @SuppressWarnings("unused")
   public static <G, S, Q> NamedFunction<POSetPopulationState<G, S, Q>, Collection<Individual<G, S, Q>>> firsts() {
     return NamedFunction.build("firsts", s -> s.getPopulation().firsts());
   }
@@ -142,25 +164,6 @@ public class NamedFunctions {
       @Param(value = "s", dS = "%s") String s
   ) {
     return NamedFunction.build(c("fitness", individualF.getName()), s, x -> individualF.apply(x).fitness());
-  }
-
-  private static String c(String... names) {
-    return Arrays.stream(names).reduce(NamedFunction.NAME_COMPOSER::apply).orElseThrow();
-  }
-
-  @SuppressWarnings("unused")
-  public static <T, R> NamedFunction<T, R> formatted(
-      @Param("s") String s, @Param("f") NamedFunction<T, R> f
-  ) {
-    return f.reformat(s);
-  }
-
-  @SuppressWarnings("unused")
-  public static <X, G> NamedFunction<X, G> genotype(
-      @Param(value = "individual", dNPM = "ea.nf.identity()") NamedFunction<X, Individual<G, ?, ?>> individualF,
-      @Param(value = "s", dS = "%s") String s
-  ) {
-    return NamedFunction.build(c("genotype", individualF.getName()), s, x -> individualF.apply(x).genotype());
   }
 
   @SuppressWarnings("unused")
@@ -178,6 +181,21 @@ public class NamedFunctions {
           return TextPlotter.histogram(numbers, nBins);
         }
     );
+  }
+
+  @SuppressWarnings("unused")
+  public static <T, R> NamedFunction<T, R> formatted(
+      @Param("s") String s, @Param("f") NamedFunction<T, R> f
+  ) {
+    return f.reformat(s);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, G> NamedFunction<X, G> genotype(
+      @Param(value = "individual", dNPM = "ea.nf.identity()") NamedFunction<X, Individual<G, ?, ?>> individualF,
+      @Param(value = "s", dS = "%s") String s
+  ) {
+    return NamedFunction.build(c("genotype", individualF.getName()), s, x -> individualF.apply(x).genotype());
   }
 
   @SuppressWarnings("unused")
@@ -279,24 +297,6 @@ public class NamedFunctions {
       Collection<T> collection = collectionF.apply(x);
       return ((double) (new HashSet<>(collection).size())) / ((double) collection.size());
     });
-  }
-
-  @SuppressWarnings("unused")
-  public static <X, T, R> NamedFunction<X, R> f(
-      @Param("outerF") Function<T, R> outerFunction,
-      @Param(value = "innerF", dNPM = "ea.nf.identity()") NamedFunction<X, T> innerFunction,
-      @Param("name") String name,
-      @Param(value = "s", dS = "%s") String s,
-      @Param(value = "", injection = Param.Injection.MAP) ParamMap map
-  ) {
-    if ((name == null) || name.isEmpty()) {
-      name = map.npm("outerF").getName();
-    }
-    return NamedFunction.build(
-        c(name, innerFunction.getName()),
-        s,
-        x -> outerFunction.apply(innerFunction.apply(x))
-    );
   }
 
 }
