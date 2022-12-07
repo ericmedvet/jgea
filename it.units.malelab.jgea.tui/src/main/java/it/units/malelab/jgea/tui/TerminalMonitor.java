@@ -55,6 +55,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       0.8f,
       0.5f,
       0.65f,
+      16,
       250,
       true,
       true
@@ -169,6 +170,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
 
   public record Configuration(
       float verticalSplit, float leftHorizontalSplit, float rightHorizontalSplit, float plotHorizontalSplit,
+      int barLength,
       int refreshIntervalMillis, boolean dumpLogAfterStop,
       boolean robust
   ) {}
@@ -176,10 +178,14 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   @Override
   public Listener<E> build(K k) {
     List<?> kItems = kFunctions.stream().map(f -> f.apply(k)).toList();
+    List<? extends Accumulator<? super E, Table<Number>>> localPlotAccumulators = plotTableBuilders.stream()
+        .map(b -> b.build(
+            null))
+        .toList();
     synchronized (runTable) {
       runTable.clear();
       plotAccumulators.clear();
-      plotTableBuilders.forEach(b -> plotAccumulators.add(b.build(null)));
+      plotAccumulators.addAll(localPlotAccumulators);
     }
     return e -> {
       List<?> eItems = eFunctions.stream().map(f -> f.apply(e)).toList();
@@ -189,7 +195,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
         while (runTable.nRows() > RUN_HISTORY_SIZE) {
           runTable.removeRow(0);
         }
-        plotAccumulators.forEach(a -> a.listen(e));
+        localPlotAccumulators.forEach(a -> a.listen(e));
       }
       if (e instanceof State state) {
         partialProgress = state.getProgress();
@@ -315,20 +321,41 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     clipPut(tg, r, 0, 1, "Loc time:");
     clipPut(tg, r, 0, 2, "CPU load:");
     clipPut(tg, r, 0, 3, "Memory:");
-    clipPut(tg, r, 0, 4, "Progress:");
-    clipPut(tg, r, 0, 5, "Last progress message:");
+    clipPut(tg, r, 0, 4, "Over. progr.:");
+    clipPut(tg, r, 0, 5, "Curr. progr.:");
+    final int labelLength = "Over. progr.:".length();
+    clipPut(tg, r, 0, 6, "Last progress message:");
     tg.setForegroundColor(MAIN_DATA_COLOR);
-    clipPut(tg, r, 10, 0, StringUtils.getMachineName());
-    clipPut(tg, r, 10, 1, String.format(DATETIME_FORMAT, Date.from(Instant.now())));
+    clipPut(tg, r, 14, 0, StringUtils.getMachineName());
+    clipPut(tg, r, 14, 1, String.format(DATETIME_FORMAT, Date.from(Instant.now())));
     float maxGigaMemory = Runtime.getRuntime().maxMemory() / 1024f / 1024f / 1024f;
     float usedGigaMemory = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime()
         .freeMemory()) / 1024f / 1024f / 1024f;
     double cpuLoad = getCPULoad();
     int nOfProcessors = getNumberOfProcessors();
-    drawHorizontalBar(tg, r, 10, 2, cpuLoad, 0, nOfProcessors, 10, PLOT1_COLOR, PLOT_BG_COLOR);
-    clipPut(tg, r, 21, 2, String.format("%.2f on %d cores", cpuLoad, 2 * nOfProcessors));
-    drawHorizontalBar(tg, r, 10, 3, usedGigaMemory, 0, maxGigaMemory, 10, PLOT1_COLOR, PLOT_BG_COLOR);
-    clipPut(tg, r, 21, 3, String.format("%.1fGB", maxGigaMemory));
+    drawHorizontalBar(
+        tg,
+        r,
+        labelLength + 1,
+        2,
+        cpuLoad,
+        0,
+        nOfProcessors,
+        configuration.barLength,
+        PLOT1_COLOR,
+        PLOT_BG_COLOR
+    );
+    clipPut(
+        tg,
+        r,
+        labelLength + configuration.barLength + 2,
+        2,
+        String.format("%.2f on %d cores", cpuLoad, 2 * nOfProcessors)
+    );
+    drawHorizontalBar(tg, r, labelLength + 1, 3, usedGigaMemory, 0, maxGigaMemory,
+        configuration.barLength, PLOT1_COLOR, PLOT_BG_COLOR
+    );
+    clipPut(tg, r, labelLength + configuration.barLength + 2, 3, String.format("%.1fGB", maxGigaMemory));
     if (overallProgress != null) {
       Progress progress = new Progress(overallProgress.start(), overallProgress.end(), overallProgress.current());
       if (partialProgress != null && !Double.isNaN(partialProgress.rate())) {
@@ -338,7 +365,9 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
             Math.floor(progress.current().doubleValue()) + partialProgress.rate()
         );
       }
-      drawHorizontalBar(tg, r, 10, 4, progress.rate(), 0, 1, 10, PLOT1_COLOR, PLOT_BG_COLOR);
+      drawHorizontalBar(tg, r, labelLength + 1, 4, progress.rate(), 0, 1,
+          configuration.barLength, PLOT1_COLOR, PLOT_BG_COLOR
+      );
       if (lastProgressInstant != null) {
         if (progress.rate() > 0) {
           Instant eta = startingInstant.plus(
@@ -348,13 +377,24 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
               ) / progress.rate()),
               ChronoUnit.MILLIS
           );
-          clipPut(tg, r, 21, 4, String.format(Symbols.ARROW_RIGHT + DATETIME_FORMAT, Date.from(eta)));
+          clipPut(
+              tg,
+              r,
+              labelLength + configuration.barLength + 2,
+              4,
+              String.format(Symbols.ARROW_RIGHT + DATETIME_FORMAT, Date.from(eta))
+          );
         }
       }
       if (lastProgressMessage != null) {
         tg.setForegroundColor(DATA_COLOR);
-        clipPut(tg, r, 0, 6, lastProgressMessage);
+        clipPut(tg, r, 0, 7, lastProgressMessage);
       }
+    }
+    if (partialProgress != null) {
+      drawHorizontalBar(tg, r, labelLength + 1, 5, partialProgress.rate(), 0, 1,
+          configuration.barLength, PLOT1_COLOR, PLOT_BG_COLOR
+      );
     }
     //draw data: legend
     synchronized (runTable) {
