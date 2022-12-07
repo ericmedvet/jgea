@@ -16,7 +16,6 @@
 
 package it.units.malelab.jgea.tui;
 
-import com.googlecode.lanterna.Symbols;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.graphics.TextGraphics;
@@ -170,17 +169,14 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
 
   public record Configuration(
       float verticalSplit, float leftHorizontalSplit, float rightHorizontalSplit, float plotHorizontalSplit,
-      int barLength,
-      int refreshIntervalMillis, boolean dumpLogAfterStop,
-      boolean robust
+      int barLength, int refreshIntervalMillis, boolean dumpLogAfterStop, boolean robust
   ) {}
 
   @Override
   public Listener<E> build(K k) {
     List<?> kItems = kFunctions.stream().map(f -> f.apply(k)).toList();
     List<? extends Accumulator<? super E, Table<Number>>> localPlotAccumulators = plotTableBuilders.stream()
-        .map(b -> b.build(
-            null))
+        .map(b -> b.build(null))
         .toList();
     synchronized (runTable) {
       runTable.clear();
@@ -323,8 +319,9 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     clipPut(tg, r, 0, 3, "Memory:");
     clipPut(tg, r, 0, 4, "Over. progr.:");
     clipPut(tg, r, 0, 5, "Curr. progr.:");
+    clipPut(tg, r, 0, 6, "ETA:");
     final int labelLength = "Over. progr.:".length();
-    clipPut(tg, r, 0, 6, "Last progress message:");
+    clipPut(tg, r, 0, 7, "Last progress message:");
     tg.setForegroundColor(MAIN_DATA_COLOR);
     clipPut(tg, r, 14, 0, StringUtils.getMachineName());
     clipPut(tg, r, 14, 1, String.format(DATETIME_FORMAT, Date.from(Instant.now())));
@@ -352,8 +349,17 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
         2,
         String.format("%.2f on %d cores", cpuLoad, 2 * nOfProcessors)
     );
-    drawHorizontalBar(tg, r, labelLength + 1, 3, usedGigaMemory, 0, maxGigaMemory,
-        configuration.barLength, PLOT1_COLOR, PLOT_BG_COLOR
+    drawHorizontalBar(
+        tg,
+        r,
+        labelLength + 1,
+        3,
+        usedGigaMemory,
+        0,
+        maxGigaMemory,
+        configuration.barLength,
+        PLOT1_COLOR,
+        PLOT_BG_COLOR
     );
     clipPut(tg, r, labelLength + configuration.barLength + 2, 3, String.format("%.1fGB", maxGigaMemory));
     if (overallProgress != null) {
@@ -365,36 +371,47 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
             Math.floor(progress.current().doubleValue()) + partialProgress.rate()
         );
       }
-      drawHorizontalBar(tg, r, labelLength + 1, 4, progress.rate(), 0, 1,
-          configuration.barLength, PLOT1_COLOR, PLOT_BG_COLOR
+      drawHorizontalBar(
+          tg,
+          r,
+          labelLength + 1,
+          4,
+          progress.rate(),
+          0,
+          1,
+          configuration.barLength,
+          PLOT1_COLOR,
+          PLOT_BG_COLOR
       );
+      clipPut(tg, r, labelLength + configuration.barLength + 2, 4, "%3.0f%%".formatted(progress.rate() * 100));
       if (lastProgressInstant != null) {
         if (progress.rate() > 0) {
-          Instant eta = startingInstant.plus(
-              Math.round(ChronoUnit.MILLIS.between(
-                  startingInstant,
-                  lastProgressInstant
-              ) / progress.rate()),
-              ChronoUnit.MILLIS
-          );
-          clipPut(
-              tg,
-              r,
-              labelLength + configuration.barLength + 2,
-              4,
-              String.format(Symbols.ARROW_RIGHT + DATETIME_FORMAT, Date.from(eta))
-          );
+          Instant eta = startingInstant.plus(Math.round(ChronoUnit.MILLIS.between(
+              startingInstant,
+              lastProgressInstant
+          ) / progress.rate()), ChronoUnit.MILLIS);
+          clipPut(tg, r, labelLength + 1, 6, DATETIME_FORMAT.formatted(Date.from(eta)));
         }
-      }
-      if (lastProgressMessage != null) {
-        tg.setForegroundColor(DATA_COLOR);
-        clipPut(tg, r, 0, 7, lastProgressMessage);
       }
     }
     if (partialProgress != null) {
-      drawHorizontalBar(tg, r, labelLength + 1, 5, partialProgress.rate(), 0, 1,
-          configuration.barLength, PLOT1_COLOR, PLOT_BG_COLOR
+      drawHorizontalBar(
+          tg,
+          r,
+          labelLength + 1,
+          5,
+          partialProgress.rate(),
+          0,
+          1,
+          configuration.barLength,
+          PLOT1_COLOR,
+          PLOT_BG_COLOR
       );
+      clipPut(tg, r, labelLength + configuration.barLength + 2, 5, "%3.0f%%".formatted(partialProgress.rate() * 100));
+    }
+    if (lastProgressMessage != null) {
+      tg.setForegroundColor(DATA_COLOR);
+      clipPut(tg, r, 0, 8, lastProgressMessage);
     }
     //draw data: legend
     synchronized (runTable) {
@@ -416,10 +433,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       clear(tg, r);
       int[] colWidths = IntStream.range(0, runTable.nColumns()).map(x -> Math.max(
           legendItems.get(x).first().length(),
-          runTable.column(x).stream().mapToInt(o -> String.format(
-              formats.get(x),
-              o
-          ).length()).max().orElse(0)
+          runTable.column(x).stream().mapToInt(o -> String.format(formats.get(x), o).length()).max().orElse(0)
       )).toArray();
       tg.setForegroundColor(DATA_LABEL_COLOR);
       int x = 0;
@@ -463,8 +477,8 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
           maxY = Double.isFinite(xyPlotTableBuilder.getMaxX()) ? xyPlotTableBuilder.getMaxY() : Double.NaN;
         }
         try {
-          Table<Number> table = plotAccumulators.get(i).get()
-              .filter(row -> row.stream().noneMatch(n -> Double.isNaN(n.doubleValue())));
+          Table<Number> table = plotAccumulators.get(i).get().filter(row -> row.stream()
+              .noneMatch(n -> Double.isNaN(n.doubleValue())));
           drawPlot(
               tg,
               plotRs.get(i).inner(1),
