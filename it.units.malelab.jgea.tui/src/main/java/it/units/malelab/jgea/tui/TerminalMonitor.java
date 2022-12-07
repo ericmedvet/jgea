@@ -474,7 +474,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
           minX = Double.isFinite(xyPlotTableBuilder.getMinX()) ? xyPlotTableBuilder.getMinX() : Double.NaN;
           maxX = Double.isFinite(xyPlotTableBuilder.getMaxX()) ? xyPlotTableBuilder.getMaxX() : Double.NaN;
           minY = Double.isFinite(xyPlotTableBuilder.getMinY()) ? xyPlotTableBuilder.getMinY() : Double.NaN;
-          maxY = Double.isFinite(xyPlotTableBuilder.getMaxX()) ? xyPlotTableBuilder.getMaxY() : Double.NaN;
+          maxY = Double.isFinite(xyPlotTableBuilder.getMaxY()) ? xyPlotTableBuilder.getMaxY() : Double.NaN;
         }
         try {
           Table<Number> table = plotAccumulators.get(i).get().filter(row -> row.stream()

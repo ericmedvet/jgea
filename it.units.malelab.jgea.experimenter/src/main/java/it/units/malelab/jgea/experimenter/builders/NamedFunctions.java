@@ -146,11 +146,7 @@ public class NamedFunctions {
     if ((name == null) || name.isEmpty()) {
       name = map.npm("outerF").getName();
     }
-    return NamedFunction.build(
-        c(name, innerFunction.getName()),
-        s,
-        x -> outerFunction.apply(innerFunction.apply(x))
-    );
+    return NamedFunction.build(c(name, innerFunction.getName()), s, x -> outerFunction.apply(innerFunction.apply(x)));
   }
 
   @SuppressWarnings("unused")
@@ -175,9 +171,7 @@ public class NamedFunctions {
         c("hist", "each[%s]".formatted(c(function.getName(), "fitness")), "all"),
         "%" + nBins + "." + nBins + "s",
         state -> {
-          List<Number> numbers = state.getPopulation().all().stream()
-              .map(i -> function.apply(i.fitness()))
-              .toList();
+          List<Number> numbers = state.getPopulation().all().stream().map(i -> function.apply(i.fitness())).toList();
           return TextPlotter.histogram(numbers, nBins);
         }
     );
@@ -200,20 +194,12 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <X> NamedFunction<X, String> hist(
-      @Param("collection") NamedFunction<X, Collection<Number>> collectionF,
-      @Param(value = "nBins", dI = 8) int nBins
+      @Param("collection") NamedFunction<X, Collection<Number>> collectionF, @Param(value = "nBins", dI = 8) int nBins
   ) {
-    return NamedFunction.build(
-        c("hist", collectionF.getName()),
-        "%" + nBins + "." + nBins + "s",
-        x -> {
-          Collection<Number> collection = collectionF.apply(x);
-          return TextPlotter.histogram(
-              collection instanceof List<Number> list ? list : new ArrayList<>(collection),
-              nBins
-          );
-        }
-    );
+    return NamedFunction.build(c("hist", collectionF.getName()), "%" + nBins + "." + nBins + "s", x -> {
+      Collection<Number> collection = collectionF.apply(x);
+      return TextPlotter.histogram(collection instanceof List<Number> list ? list : new ArrayList<>(collection), nBins);
+    });
   }
 
   @SuppressWarnings("unused")
@@ -272,11 +258,17 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
+  public static NamedFunction<POSetPopulationState<?, ?, ?>, Double> progress() {
+    return NamedFunction.build("progress", "%4.2f", s -> s.getProgress().rate());
+  }
+
+  @SuppressWarnings("unused")
   public static <X> NamedFunction<X, Integer> size(
-      @Param("f") NamedFunction<X, ?> f
+      @Param("f") NamedFunction<X, ?> f, @Param(value = "s", dS = "%s") String s
   ) {
     return NamedFunction.build(
         c("size", f.getName()),
+        s,
         x -> it.units.malelab.jgea.core.listener.NamedFunctions.size(f.apply(x))
     );
   }
