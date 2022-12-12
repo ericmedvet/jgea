@@ -35,6 +35,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>18</jdk.version>
         <revision>2.3.1-dev</revision>
+        <jnb.version>1.0.2</jnb.version>
     </properties>
     <dependencies>
     </dependencies>
