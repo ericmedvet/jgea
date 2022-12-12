@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 eric
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package it.units.malelab.jgea.experimenter.builders;
 
 import it.units.malelab.jgea.core.IndependentFactory;
@@ -9,10 +25,7 @@ import it.units.malelab.jgea.core.representation.sequence.numeric.GaussianMutati
 import it.units.malelab.jgea.core.representation.sequence.numeric.UniformDoubleFactory;
 import it.units.malelab.jgea.core.selector.Last;
 import it.units.malelab.jgea.core.selector.Tournament;
-import it.units.malelab.jgea.core.solver.SimpleEvolutionaryStrategy;
-import it.units.malelab.jgea.core.solver.StandardEvolver;
-import it.units.malelab.jgea.core.solver.StandardWithEnforcedDiversityEvolver;
-import it.units.malelab.jgea.core.solver.StopConditions;
+import it.units.malelab.jgea.core.solver.*;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.experimenter.InvertibleMapper;
 import it.units.malelab.jnb.core.Param;
@@ -107,6 +120,23 @@ public class Solvers {
         sigma,
         remap
     );
+  }
 
+  @SuppressWarnings("unused")
+  public static <S,Q> OpenAIEvolutionaryStrategy<S,Q> openAIES(
+      @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
+      @Param(value = "initialMinV", dD = -1d) double initialMinV,
+      @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
+      @Param(value = "sigma", dD = 0.35d) double sigma,
+      @Param(value = "batchSize", dI = 15) int batchSize,
+      @Param(value = "nEval") int nEval
+  ) {
+    return new OpenAIEvolutionaryStrategy<>(
+        mapper,
+        new FixedLengthListFactory<>(mapper.exampleInput().size(), new UniformDoubleFactory(initialMinV, initialMaxV)),
+        batchSize,
+        StopConditions.nOfFitnessEvaluations(nEval),
+        sigma
+    );
   }
 }
