@@ -19,6 +19,19 @@ If you use JGEA please _cite_ [our paper](https://medvet.inginf.units.it/publica
 }
 ```
 
+## Usage
+
+Add (at least) this to your `pom.xml`:
+
+```xml
+
+<dependency>
+    <groupId>io.github.ericmedvet</groupId>
+    <artifactId>jgea.core</artifactId>
+    <version>2.3.2-SNAPSHOT</version>
+</dependency>
+```
+
 ## Main components
 
 Typical usage of JGEA consists in trying to solve a **problem** using an **EA**.
