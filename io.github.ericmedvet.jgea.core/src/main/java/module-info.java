@@ -1,7 +1,7 @@
 /**
  * @author "Eric Medvet" on 2022/08/29 for jgea
  */
-module it.units.malelab.jgea.core {
+module io.github.ericmedvet.jgea.core {
   exports io.github.ericmedvet.jgea.core;
   exports io.github.ericmedvet.jgea.core.distance;
   exports io.github.ericmedvet.jgea.core.fitness;

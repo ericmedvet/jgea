@@ -1,5 +1,5 @@
-module it.units.malelab.jgea.telegram {
-  requires it.units.malelab.jgea.core;
+module io.github.ericmedvet.jgea.telegram {
+  requires io.github.ericmedvet.jgea.core;
   requires java.desktop;
   requires java.telegram.bot.api;
   requires java.logging;
