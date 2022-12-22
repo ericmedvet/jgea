@@ -28,7 +28,7 @@ Add (at least) this to your `pom.xml`:
 <dependency>
     <groupId>io.github.ericmedvet</groupId>
     <artifactId>jgea.core</artifactId>
-    <version>2.3.3-SNAPSHOT</version>
+    <version>2.3.3</version>
 </dependency>
 ```
 
