@@ -33,7 +33,7 @@
     <packaging>pom</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jdk.version>18</jdk.version>
+        <jdk.version>17</jdk.version>
         <revision>2.3.2-dev</revision>
         <jnb.version>1.0.3</jnb.version>
     </properties>
