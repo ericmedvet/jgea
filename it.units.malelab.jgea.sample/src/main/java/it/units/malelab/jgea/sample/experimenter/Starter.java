@@ -16,11 +16,11 @@
 
 package it.units.malelab.jgea.sample.experimenter;
 
+import io.github.ericmedvet.jnb.core.NamedBuilder;
+import io.github.ericmedvet.jnb.core.Param;
 import it.units.malelab.jgea.experimenter.Experimenter;
 import it.units.malelab.jgea.experimenter.InvertibleMapper;
 import it.units.malelab.jgea.problem.synthetic.Sphere;
-import it.units.malelab.jnb.core.NamedBuilder;
-import it.units.malelab.jnb.core.Param;
 
 import java.util.Arrays;
 import java.util.List;
