@@ -20,34 +20,34 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>jgea</artifactId>
-        <groupId>it.units.malelab</groupId>
+        <groupId>io.github.ericmedvet</groupId>
         <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>jgea.experimenter</artifactId>
+    <artifactId>jgea.sample</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
-            <groupId>it.units.malelab</groupId>
+            <groupId>io.github.ericmedvet</groupId>
             <artifactId>jgea.core</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>
-            <groupId>it.units.malelab</groupId>
-            <artifactId>jgea.tui</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>it.units.malelab</groupId>
-            <artifactId>jgea.telegram</artifactId>
+            <groupId>io.github.ericmedvet</groupId>
+            <artifactId>jgea.experimenter</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>io.github.ericmedvet</groupId>
-            <artifactId>jnb.core</artifactId>
-            <version>${jnb.version}</version>
+            <artifactId>jgea.problem</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ericmedvet</groupId>
+            <artifactId>jgea.tui</artifactId>
+            <version>${revision}</version>
         </dependency>
     </dependencies>
 

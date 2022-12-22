@@ -20,34 +20,24 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>jgea</artifactId>
-        <groupId>it.units.malelab</groupId>
+        <groupId>io.github.ericmedvet</groupId>
         <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>jgea.sample</artifactId>
+    <artifactId>jgea.telegram</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
-            <groupId>it.units.malelab</groupId>
+            <groupId>io.github.ericmedvet</groupId>
             <artifactId>jgea.core</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>
-            <groupId>it.units.malelab</groupId>
-            <artifactId>jgea.experimenter</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>it.units.malelab</groupId>
-            <artifactId>jgea.problem</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>it.units.malelab</groupId>
-            <artifactId>jgea.tui</artifactId>
-            <version>${revision}</version>
+            <groupId>com.github.pengrad</groupId>
+            <artifactId>java-telegram-bot-api</artifactId>
+            <version>6.2.0</version>
         </dependency>
     </dependencies>
 

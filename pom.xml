@@ -18,17 +18,17 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>it.units.malelab</groupId>
+    <groupId>io.github.ericmedvet</groupId>
     <artifactId>jgea</artifactId>
     <version>${revision}</version>
     <modules>
-        <module>it.units.malelab.jgea.core</module>
-        <module>it.units.malelab.jgea.problem</module>
-        <module>it.units.malelab.jgea.telegram</module>
-        <module>it.units.malelab.jgea.sample</module>
-        <module>it.units.malelab.jgea.assembly</module>
-        <module>it.units.malelab.jgea.tui</module>
-        <module>it.units.malelab.jgea.experimenter</module>
+        <module>io.github.ericmedvet.jgea.core</module>
+        <module>io.github.ericmedvet.jgea.problem</module>
+        <module>io.github.ericmedvet.jgea.telegram</module>
+        <module>io.github.ericmedvet.jgea.sample</module>
+        <module>io.github.ericmedvet.jgea.assembly</module>
+        <module>io.github.ericmedvet.jgea.tui</module>
+        <module>io.github.ericmedvet.jgea.experimenter</module>
     </modules>
     <packaging>pom</packaging>
     <properties>
