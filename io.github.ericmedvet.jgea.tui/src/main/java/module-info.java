@@ -6,5 +6,5 @@ module it.units.malelab.jgea.tui {
   requires java.logging;
   requires com.googlecode.lanterna;
   requires jdk.management;
-  exports it.units.malelab.jgea.tui;
+  exports io.github.ericmedvet.jgea.tui;
 }

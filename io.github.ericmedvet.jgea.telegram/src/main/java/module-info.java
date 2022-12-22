@@ -3,5 +3,5 @@ module it.units.malelab.jgea.telegram {
   requires java.desktop;
   requires java.telegram.bot.api;
   requires java.logging;
-  exports it.units.malelab.jgea.telegram;
+  exports io.github.ericmedvet.jgea.telegram;
 }
