@@ -45,7 +45,7 @@
             <version>${revision}</version>
         </dependency>
         <dependency>
-            <groupId>it.units.malelab</groupId>
+            <groupId>io.github.ericmedvet</groupId>
             <artifactId>jnb.core</artifactId>
             <version>${jnb.version}</version>
         </dependency>

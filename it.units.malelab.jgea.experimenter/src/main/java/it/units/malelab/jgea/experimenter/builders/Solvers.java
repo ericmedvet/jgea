@@ -16,6 +16,7 @@
 
 package it.units.malelab.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jnb.core.Param;
 import it.units.malelab.jgea.core.IndependentFactory;
 import it.units.malelab.jgea.core.QualityBasedProblem;
 import it.units.malelab.jgea.core.operator.GeneticOperator;
@@ -28,7 +29,6 @@ import it.units.malelab.jgea.core.selector.Tournament;
 import it.units.malelab.jgea.core.solver.*;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.experimenter.InvertibleMapper;
-import it.units.malelab.jnb.core.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -99,6 +99,24 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
+  public static <S, Q> OpenAIEvolutionaryStrategy<S, Q> openAIES(
+      @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
+      @Param(value = "initialMinV", dD = -1d) double initialMinV,
+      @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
+      @Param(value = "sigma", dD = 0.35d) double sigma,
+      @Param(value = "batchSize", dI = 15) int batchSize,
+      @Param(value = "nEval") int nEval
+  ) {
+    return new OpenAIEvolutionaryStrategy<>(
+        mapper,
+        new FixedLengthListFactory<>(mapper.exampleInput().size(), new UniformDoubleFactory(initialMinV, initialMaxV)),
+        batchSize,
+        StopConditions.nOfFitnessEvaluations(nEval),
+        sigma
+    );
+  }
+
+  @SuppressWarnings("unused")
   public static <S, Q> SimpleEvolutionaryStrategy<S, Q> simpleES(
       @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
       @Param(value = "initialMinV", dD = -1d) double initialMinV,
@@ -119,24 +137,6 @@ public class Solvers {
         (int) Math.round(nPop * parentsRate),
         sigma,
         remap
-    );
-  }
-
-  @SuppressWarnings("unused")
-  public static <S,Q> OpenAIEvolutionaryStrategy<S,Q> openAIES(
-      @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
-      @Param(value = "initialMinV", dD = -1d) double initialMinV,
-      @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
-      @Param(value = "sigma", dD = 0.35d) double sigma,
-      @Param(value = "batchSize", dI = 15) int batchSize,
-      @Param(value = "nEval") int nEval
-  ) {
-    return new OpenAIEvolutionaryStrategy<>(
-        mapper,
-        new FixedLengthListFactory<>(mapper.exampleInput().size(), new UniformDoubleFactory(initialMinV, initialMaxV)),
-        batchSize,
-        StopConditions.nOfFitnessEvaluations(nEval),
-        sigma
     );
   }
 }

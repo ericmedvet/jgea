@@ -1,12 +1,12 @@
 package it.units.malelab.jgea.experimenter;
 
+import io.github.ericmedvet.jnb.core.Param;
+import io.github.ericmedvet.jnb.core.ParamMap;
 import it.units.malelab.jgea.core.QualityBasedProblem;
 import it.units.malelab.jgea.core.listener.Listener;
 import it.units.malelab.jgea.core.solver.AbstractPopulationBasedIterativeSolver;
 import it.units.malelab.jgea.core.solver.SolverException;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
-import it.units.malelab.jnb.core.Param;
-import it.units.malelab.jnb.core.ParamMap;
 
 import java.util.Collection;
 import java.util.concurrent.ExecutorService;

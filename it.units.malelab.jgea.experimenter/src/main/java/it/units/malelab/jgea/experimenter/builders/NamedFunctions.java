@@ -16,14 +16,14 @@
 
 package it.units.malelab.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jnb.core.Param;
+import io.github.ericmedvet.jnb.core.ParamMap;
 import it.units.malelab.jgea.core.listener.NamedFunction;
 import it.units.malelab.jgea.core.solver.Individual;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
 import it.units.malelab.jgea.core.solver.state.State;
 import it.units.malelab.jgea.core.util.Misc;
 import it.units.malelab.jgea.core.util.TextPlotter;
-import it.units.malelab.jnb.core.Param;
-import it.units.malelab.jnb.core.ParamMap;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;

@@ -1,12 +1,12 @@
 package it.units.malelab.jgea.experimenter;
 
+import io.github.ericmedvet.jnb.core.MapNamedParamMap;
+import io.github.ericmedvet.jnb.core.NamedBuilder;
 import it.units.malelab.jgea.core.listener.ListenerFactory;
 import it.units.malelab.jgea.core.listener.ProgressMonitor;
 import it.units.malelab.jgea.core.listener.ScreenProgressMonitor;
 import it.units.malelab.jgea.core.solver.SolverException;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
-import it.units.malelab.jnb.core.NamedBuilder;
-import it.units.malelab.jnb.core.StringNamedParamMap;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -54,10 +54,12 @@ public class Experimenter {
   }
 
 
+  @SuppressWarnings("unused")
   public Experimenter(NamedBuilder<?> namedBuilder, int nOfThreads) {
     this(namedBuilder, Executors.newFixedThreadPool(nOfThreads), Executors.newSingleThreadExecutor(), true);
   }
 
+  @SuppressWarnings("unused")
   public void run(File experimentFile) {
     String experimentDescription;
     L.config(String.format("Using provided experiment description: %s", experimentFile));
@@ -99,7 +101,7 @@ public class Experimenter {
         progressMonitor.notify(
             i,
             experiment.runs().size(),
-            "Starting:%n%s".formatted(StringNamedParamMap.prettyToString(run.map(), 40))
+            "Starting:%n%s".formatted(MapNamedParamMap.prettyToString(run.map(), 40))
         );
         Instant startingT = Instant.now();
         Collection<?> solutions = run.run(runExecutorService, factory.build(run));

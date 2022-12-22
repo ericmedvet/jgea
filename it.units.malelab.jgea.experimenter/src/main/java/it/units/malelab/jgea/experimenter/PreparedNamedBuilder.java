@@ -16,8 +16,8 @@
 
 package it.units.malelab.jgea.experimenter;
 
+import io.github.ericmedvet.jnb.core.NamedBuilder;
 import it.units.malelab.jgea.experimenter.builders.*;
-import it.units.malelab.jnb.core.NamedBuilder;
 
 import java.util.List;
 

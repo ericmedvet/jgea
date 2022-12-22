@@ -16,9 +16,9 @@
 
 package it.units.malelab.jgea.experimenter;
 
+import io.github.ericmedvet.jnb.core.Param;
 import it.units.malelab.jgea.core.listener.ListenerFactory;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
-import it.units.malelab.jnb.core.Param;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;

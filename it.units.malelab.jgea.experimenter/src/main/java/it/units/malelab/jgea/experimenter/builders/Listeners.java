@@ -16,6 +16,9 @@
 
 package it.units.malelab.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jnb.core.NamedParamMap;
+import io.github.ericmedvet.jnb.core.Param;
+import io.github.ericmedvet.jnb.core.ParamMap;
 import it.units.malelab.jgea.core.listener.*;
 import it.units.malelab.jgea.core.solver.Individual;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
@@ -25,9 +28,6 @@ import it.units.malelab.jgea.experimenter.Experiment;
 import it.units.malelab.jgea.experimenter.Run;
 import it.units.malelab.jgea.telegram.TelegramUpdater;
 import it.units.malelab.jgea.tui.TerminalMonitor;
-import it.units.malelab.jnb.core.NamedParamMap;
-import it.units.malelab.jnb.core.Param;
-import it.units.malelab.jnb.core.ParamMap;
 
 import java.io.BufferedReader;
 import java.io.File;

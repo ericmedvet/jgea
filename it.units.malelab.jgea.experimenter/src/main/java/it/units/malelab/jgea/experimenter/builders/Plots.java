@@ -1,10 +1,10 @@
 package it.units.malelab.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jnb.core.Param;
 import it.units.malelab.jgea.core.listener.NamedFunction;
 import it.units.malelab.jgea.core.listener.XYPlotTableBuilder;
 import it.units.malelab.jgea.core.solver.Individual;
 import it.units.malelab.jgea.core.solver.state.POSetPopulationState;
-import it.units.malelab.jnb.core.Param;
 
 import java.util.Collection;
 import java.util.List;

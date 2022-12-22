@@ -16,8 +16,8 @@
 
 package it.units.malelab.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jnb.core.Param;
 import it.units.malelab.jgea.core.TotalOrderQualityBasedProblem;
-import it.units.malelab.jnb.core.Param;
 
 import java.util.Comparator;
 import java.util.function.Function;
@@ -27,10 +27,10 @@ import java.util.function.Function;
  */
 public class Problems {
 
-  public enum OptimizationType {@SuppressWarnings("unused") MINIMIZE, MAXIMIZE}
-
   private Problems() {
   }
+
+  public enum OptimizationType {@SuppressWarnings("unused") MINIMIZE, MAXIMIZE}
 
   @SuppressWarnings("unused")
   public static <S, Q, C extends Comparable<C>> TotalOrderQualityBasedProblem<S, Q> totalOrder(

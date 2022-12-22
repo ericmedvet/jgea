@@ -16,7 +16,7 @@
 
 package it.units.malelab.jgea.experimenter.builders;
 
-import it.units.malelab.jnb.core.Param;
+import io.github.ericmedvet.jnb.core.Param;
 
 import java.util.Random;
 import java.util.random.RandomGenerator;
