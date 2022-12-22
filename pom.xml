@@ -23,7 +23,8 @@
     <version>${revision}</version>
 
     <name>jgea</name>
-    <description>Java General Evolutionary Algorithm (jgea) is a modular Java framework for experimenting with
+    <description>
+        Java General Evolutionary Algorithm (jgea) is a modular Java framework for experimenting with
         Evolutionary Computation.
     </description>
     <url>https://github.com/ericmedvet/jgea</url>

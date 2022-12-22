@@ -9,6 +9,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <name>jgea-problem</name>
+    <description>Problem (benchmarks and templates) for jgea.</description>
     <artifactId>jgea.problem</artifactId>
     <packaging>jar</packaging>
 

@@ -25,6 +25,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <name>jgea-experimenter</name>
+    <description>Experimenter tool based on jgea and textual config files (with jnb).</description>
     <artifactId>jgea.experimenter</artifactId>
     <packaging>jar</packaging>
 

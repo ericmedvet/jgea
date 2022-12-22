@@ -25,6 +25,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <name>jgea-core</name>
+    <description>Core components of jgea.</description>
     <artifactId>jgea.core</artifactId>
     <packaging>jar</packaging>
 

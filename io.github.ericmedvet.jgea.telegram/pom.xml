@@ -25,6 +25,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <name>jgea-telegram</name>
+    <description>Telegram listener for jgea.</description>
     <artifactId>jgea.telegram</artifactId>
     <packaging>jar</packaging>
 

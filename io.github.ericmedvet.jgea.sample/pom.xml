@@ -25,6 +25,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <name>jgea-sample</name>
+    <description>Examples of jgea usage.</description>
     <artifactId>jgea.sample</artifactId>
     <packaging>jar</packaging>
 
