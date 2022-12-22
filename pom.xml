@@ -21,6 +21,35 @@
     <groupId>io.github.ericmedvet</groupId>
     <artifactId>jgea</artifactId>
     <version>${revision}</version>
+
+    <name>jgea</name>
+    <description>Java General Evolutionary Algorithm (jgea) is a modular Java framework for experimenting with
+        Evolutionary Computation.
+    </description>
+    <url>https://github.com/ericmedvet/jgea</url>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Eric Medvet</name>
+            <email>eric.medvet@gmail.com</email>
+            <organization>Eric Medvet</organization>
+            <organizationUrl>https://github.com/ericmedvet</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/ericmedvet/jgea.git</connection>
+        <developerConnection>scm:git:ssh://github.com:ericmedvet/jgea.git</developerConnection>
+        <url>http://github.com/ericmedvet/jgea/tree/main</url>
+    </scm>
+
     <modules>
         <module>io.github.ericmedvet.jgea.core</module>
         <module>io.github.ericmedvet.jgea.problem</module>
