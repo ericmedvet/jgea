@@ -101,8 +101,6 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   private Progress overallProgress;
   private Progress partialProgress;
   private String lastProgressMessage;
-  private Instant lastProgressInstant;
-
 
   public TerminalMonitor(
       List<NamedFunction<? super E, ?>> eFunctions,
@@ -215,7 +213,6 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   public void notify(Progress progress, String message) {
     overallProgress = progress;
     lastProgressMessage = message;
-    lastProgressInstant = Instant.now();
   }
 
   @Override
@@ -362,7 +359,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     );
     DrawUtils.clipPut(tg, r, labelLength + configuration.barLength + 2, 3, String.format("%.1fGB", maxGigaMemory));
     if (overallProgress != null) {
-      Progress progress = new Progress(overallProgress.start(), overallProgress.end(), overallProgress.current());
+      Progress progress = overallProgress;
       if (partialProgress != null && !Double.isNaN(partialProgress.rate())) {
         progress = new Progress(
             progress.start(),
@@ -389,14 +386,12 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
           4,
           "%3.0f%%".formatted(progress.rate() * 100)
       );
-      if (lastProgressInstant != null) {
-        if (progress.rate() > 0) {
-          Instant eta = startingInstant.plus(Math.round(ChronoUnit.MILLIS.between(
-              startingInstant,
-              lastProgressInstant
-          ) / progress.rate()), ChronoUnit.MILLIS);
-          DrawUtils.clipPut(tg, r, labelLength + 1, 6, DATETIME_FORMAT.formatted(Date.from(eta)));
-        }
+      if (progress.rate() > 0) {
+        Instant eta = startingInstant.plus(Math.round(ChronoUnit.MILLIS.between(
+            startingInstant,
+            Instant.now()
+        ) / progress.rate()), ChronoUnit.MILLIS);
+        DrawUtils.clipPut(tg, r, labelLength + 1, 6, DATETIME_FORMAT.formatted(Date.from(eta)));
       }
     }
     if (partialProgress != null) {
