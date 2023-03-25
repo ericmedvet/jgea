@@ -99,7 +99,7 @@ public class Starter {
         """;
     NamedBuilder<?> nb = NamedBuilder.empty()
         .and(NamedBuilder.fromUtilityClass(Builders.class));
-    Experimenter experimenter = new Experimenter(nb, 2);
+    Experimenter experimenter = new Experimenter(nb, 1, 2);
     experimenter.run(expDesc);
   }
 }

@@ -3,7 +3,6 @@ package io.github.ericmedvet.jgea.experimenter;
 import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
 import io.github.ericmedvet.jgea.core.listener.ProgressMonitor;
 import io.github.ericmedvet.jgea.core.listener.ScreenProgressMonitor;
-import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jnb.core.MapNamedParamMap;
 import io.github.ericmedvet.jnb.core.NamedBuilder;
@@ -16,9 +15,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -30,17 +27,20 @@ public class Experimenter {
   private final static Logger L = Logger.getLogger(Experimenter.class.getName());
 
   private final NamedBuilder<?> namedBuilder;
+  private final ExecutorService experimentExecutorService;
   private final ExecutorService runExecutorService;
   private final ExecutorService listenerExecutorService;
   private final boolean closeListeners;
 
   private Experimenter(
       NamedBuilder<?> namedBuilder,
+      ExecutorService experimentExecutorService,
       ExecutorService runExecutorService,
       ExecutorService listenerExecutorService,
       boolean closeListeners
   ) {
     this.namedBuilder = PreparedNamedBuilder.get().and(namedBuilder);
+    this.experimentExecutorService = experimentExecutorService;
     this.runExecutorService = runExecutorService;
     this.listenerExecutorService = listenerExecutorService;
     this.closeListeners = closeListeners;
@@ -48,15 +48,24 @@ public class Experimenter {
 
   @SuppressWarnings("unused")
   public Experimenter(
-      NamedBuilder<?> namedBuilder, ExecutorService runExecutorService, ExecutorService listenerExecutorService
+      NamedBuilder<?> namedBuilder,
+      ExecutorService experimentExecutorService,
+      ExecutorService runExecutorService,
+      ExecutorService listenerExecutorService
   ) {
-    this(namedBuilder, runExecutorService, listenerExecutorService, false);
+    this(namedBuilder, experimentExecutorService, runExecutorService, listenerExecutorService, false);
   }
 
 
   @SuppressWarnings("unused")
-  public Experimenter(NamedBuilder<?> namedBuilder, int nOfThreads) {
-    this(namedBuilder, Executors.newFixedThreadPool(nOfThreads), Executors.newSingleThreadExecutor(), true);
+  public Experimenter(NamedBuilder<?> namedBuilder, int nOfConcurrentRuns, int nOfThreads) {
+    this(
+        namedBuilder,
+        Executors.newFixedThreadPool(nOfConcurrentRuns),
+        Executors.newFixedThreadPool(nOfThreads),
+        Executors.newSingleThreadExecutor(),
+        true
+    );
   }
 
   @SuppressWarnings("unused")
@@ -93,35 +102,44 @@ public class Experimenter {
         .toList();
     ProgressMonitor progressMonitor = progressMonitors.isEmpty() ? new ScreenProgressMonitor(System.out) :
         ProgressMonitor.all(progressMonitors);
-    //iterate over runs
-    for (int i = 0; i < experiment.runs().size(); i++) {
-      Run<?, ?, ?, ?> run = experiment.runs().get(i);
-      //do optimization
+    //start experiments
+    record RunOutcome(Run<?, ?, ?, ?> run, Future<Collection<?>> future) {}
+    List<RunOutcome> runOutcomes = experiment.runs().stream()
+        .map(run -> new RunOutcome(
+            run,
+            experimentExecutorService.submit(() -> {
+              progressMonitor.notify(
+                  run.index(),
+                  experiment.runs().size(),
+                  "Starting:%n%s".formatted(MapNamedParamMap.prettyToString(run.map(), 40))
+              );
+              Instant startingT = Instant.now();
+              Collection<?> solutions = run.run(runExecutorService, factory.build(run));
+              double elapsedT = Duration.between(startingT, Instant.now()).toMillis() / 1000d;
+              String msg = String.format(
+                  "Run %d of %d done in %.2fs, found %d solutions",
+                  run.index() + 1,
+                  experiment.runs().size(),
+                  elapsedT,
+                  solutions.size()
+              );
+              L.info(msg);
+              progressMonitor.notify(run.index() + 1, experiment.runs().size(), msg);
+              return solutions;
+            })
+        ))
+        .toList();
+    //wait for results
+    runOutcomes.forEach(runOutcome -> {
       try {
-        progressMonitor.notify(
-            i,
-            experiment.runs().size(),
-            "Starting:%n%s".formatted(MapNamedParamMap.prettyToString(run.map(), 40))
-        );
-        Instant startingT = Instant.now();
-        Collection<?> solutions = run.run(runExecutorService, factory.build(run));
-        double elapsedT = Duration.between(startingT, Instant.now()).toMillis() / 1000d;
-        String msg = String.format(
-            "Run %d of %d done in %.2fs, found %d solutions",
-            i + 1,
-            experiment.runs().size(),
-            elapsedT,
-            solutions.size()
-        );
-        L.info(msg);
-        progressMonitor.notify(i + 1, experiment.runs().size(), msg);
-      } catch (SolverException | RuntimeException e) {
-        L.warning(String.format("Cannot solve %s: %s", run.map(), e));
-        break;
+        runOutcome.future().get();
+      } catch (InterruptedException | ExecutionException e) {
+        L.warning(String.format("Cannot solve %s: %s", runOutcome.run().map(), e));
       }
-    }
+    });
     if (closeListeners) {
       L.info("Closing");
+      experimentExecutorService.shutdown();
       runExecutorService.shutdown();
       listenerExecutorService.shutdown();
       while (true) {
