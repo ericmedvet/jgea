@@ -271,7 +271,7 @@ public class Listeners {
       @Param(value = "onlyLast") boolean onlyLast,
       @Param(value = "serverAddress", dS = "127.0.0.1") String serverAddress,
       @Param(value = "serverPort", dI = 10979) int serverPort,
-      @Param(value = "pollInterval", dD = 5) double pollInterval
+      @Param(value = "pollInterval", dD = 2) double pollInterval
   ) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         new NetListenerClient<>(
