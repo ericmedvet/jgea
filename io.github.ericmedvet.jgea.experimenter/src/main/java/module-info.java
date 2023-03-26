@@ -9,5 +9,6 @@ module io.github.ericmedvet.jgea.experimenter {
   requires io.github.ericmedvet.jgea.tui;
   requires java.logging;
   requires java.desktop;
+  requires jdk.management;
   requires io.github.ericmedvet.jgea.telegram;
 }

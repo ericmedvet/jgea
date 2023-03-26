@@ -76,6 +76,7 @@ public class Starter {
               runKeys = ["randomGenerator.seed"; "solver"];
               plots = [ea.plot.fitness()]
             );
+            ea.l.net();
             ea.l.telegram(
               chatId = "207490209";
               botIdFilePath = "/home/eric/experiments/2dmrsim/tlg.txt";

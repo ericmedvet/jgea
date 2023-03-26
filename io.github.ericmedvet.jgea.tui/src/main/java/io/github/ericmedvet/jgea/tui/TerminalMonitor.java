@@ -319,7 +319,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     final int labelLength = "Over. progr.:".length();
     DrawUtils.clipPut(tg, r, 0, 7, "Last progress message:");
     tg.setForegroundColor(MAIN_DATA_COLOR);
-    DrawUtils.clipPut(tg, r, 14, 0, StringUtils.getMachineName());
+    DrawUtils.clipPut(tg, r, 14, 0, StringUtils.getUserMachineName());
     DrawUtils.clipPut(tg, r, 14, 1, String.format(DATETIME_FORMAT, Date.from(Instant.now())));
     float maxGigaMemory = Runtime.getRuntime().maxMemory() / 1024f / 1024f / 1024f;
     float usedGigaMemory = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime()

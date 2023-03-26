@@ -40,7 +40,7 @@ public class StringUtils {
     return String.format(format, (Object[]) null).length();
   }
 
-  public static String getMachineName() {
+  public static String getUserMachineName() {
     String user = System.getProperty("user.name");
     String hostName = "unknown";
     try {

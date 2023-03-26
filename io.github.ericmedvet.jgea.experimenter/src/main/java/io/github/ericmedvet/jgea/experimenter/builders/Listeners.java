@@ -23,6 +23,7 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
+import io.github.ericmedvet.jgea.experimenter.net.NetListenerClient;
 import io.github.ericmedvet.jgea.telegram.TelegramUpdater;
 import io.github.ericmedvet.jgea.tui.TerminalMonitor;
 import io.github.ericmedvet.jnb.core.NamedParamMap;
@@ -249,6 +250,42 @@ public class Listeners {
       return null;
     }
     return getKeyFromParamMap(namedParamMap, keyPieces.subList(1, keyPieces.size()));
+  }
+
+  public static <G, S, Q> BiFunction<Experiment, ExecutorService, ListenerFactory<POSetPopulationState<G, S, Q>, Run<
+      ?, G, S, Q>>> net(
+      @Param(value = "defaultFunctions", dNPMs = {
+          "ea.nf.iterations()",
+          "ea.nf.evals()",
+          "ea.nf.births()",
+          "ea.nf.elapsed()",
+          "ea.nf.size(f=ea.nf.all())",
+          "ea.nf.size(f=ea.nf.firsts())",
+          "ea.nf.size(f=ea.nf.lasts())",
+          "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.genotype();collection=ea.nf.all()))",
+          "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.solution();collection=ea.nf.all()))",
+          "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.fitness();collection=ea.nf.all()))"
+      }) List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> defaultStateFunctions,
+      @Param(value = "functions") List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> stateFunctions,
+      @Param(value = "deferred") boolean deferred,
+      @Param(value = "onlyLast") boolean onlyLast,
+      @Param(value = "serverAddress", dS = "127.0.0.1") String serverAddress,
+      @Param(value = "serverPort", dI = 10979) int serverPort,
+      @Param(value = "pollInterval", dD = 5) double pollInterval
+  ) {
+    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
+        new NetListenerClient<>(
+            serverAddress,
+            serverPort,
+            pollInterval,
+            Misc.concat(List.of(
+                defaultStateFunctions,
+                stateFunctions
+            ))
+        ),
+        deferred ? executorService : null,
+        onlyLast
+    );
   }
 
   @SuppressWarnings("unused")

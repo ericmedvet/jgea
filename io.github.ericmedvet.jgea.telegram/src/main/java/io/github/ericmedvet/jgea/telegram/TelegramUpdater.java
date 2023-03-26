@@ -38,7 +38,7 @@ public class TelegramUpdater<E, K> extends TelegramClient implements ListenerFac
     sendText(String.format(
         "%s started on %s: will send updates with %d accumulators",
         TelegramUpdater.class.getSimpleName(),
-        StringUtils.getMachineName(),
+        StringUtils.getUserMachineName(),
         factories.size()
     ));
   }
@@ -55,7 +55,7 @@ public class TelegramUpdater<E, K> extends TelegramClient implements ListenerFac
 
       @Override
       public void done() {
-        sendText(String.format("done() on %s", StringUtils.getMachineName()));
+        sendText(String.format("done() on %s", StringUtils.getUserMachineName()));
         //consume accumulators
         for (int i = 0; i < factories.size(); i++) {
           try {
@@ -109,7 +109,7 @@ public class TelegramUpdater<E, K> extends TelegramClient implements ListenerFac
     sendText(String.format(
         "%s shutting down on %s",
         TelegramUpdater.class.getSimpleName(),
-        StringUtils.getMachineName()
+        StringUtils.getUserMachineName()
     ));
   }
 
@@ -117,7 +117,7 @@ public class TelegramUpdater<E, K> extends TelegramClient implements ListenerFac
   public void notify(Progress progress, String message) {
     sendText(String.format(
         "%s - progress %s %s",
-        StringUtils.getMachineName(),
+        StringUtils.getUserMachineName(),
         TextPlotter.horizontalBar(progress.rate(), 0, 1, 8),
         message
     ));
