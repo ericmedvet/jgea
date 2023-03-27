@@ -8,7 +8,6 @@ import io.github.ericmedvet.jgea.experimenter.Run;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,29 +44,13 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
     service.scheduleAtFixedRate(this::sendUpdates, 0, (int) (1000 * pollInterval), TimeUnit.MILLISECONDS);
   }
 
-  public record Item(String name, String format, Object value) implements Serializable {}
-
-  public record MachineInfo(String machineName, int numberOfProcessors, double cpuLoad) implements Serializable {}
-
-  public record Message(
-      MachineInfo machineInfo,
-      ProcessInfo processInfo,
-      double pollInterval,
-      List<Update> updates
-  ) implements Serializable {}
-
-  public record ProcessInfo(
-      String processName, String username, long usedMemory, long maxMemory
-  ) implements Serializable {}
-
-  public record Update(long localTime, String runMap, List<Item> items) implements Serializable {}
-
   @Override
   public Listener<POSetPopulationState<G, S, Q>> build(Run<?, G, S, Q> run) {
     return state -> {
       Update update = new Update(
           System.currentTimeMillis(),
           run.map().toString(),
+          run.index(),
           stateFunctions.stream()
               .map(f -> new Item(f.getName(), f.getFormat(), f.apply(state)))
               .toList()
@@ -92,6 +75,7 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
     }
     //prepare message
     Message message = new Message(
+        System.currentTimeMillis(),
         NetUtils.getMachineInfo(),
         NetUtils.getProcessInfo(),
         pollInterval,

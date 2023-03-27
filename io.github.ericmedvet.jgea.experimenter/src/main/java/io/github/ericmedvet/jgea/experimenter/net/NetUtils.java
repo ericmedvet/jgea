@@ -16,8 +16,8 @@ public class NetUtils {
     return ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class).getSystemLoadAverage();
   }
 
-  public static NetListenerClient.MachineInfo getMachineInfo() {
-    return new NetListenerClient.MachineInfo(getMachineName(), getNumberOfProcessors(), getCPULoad());
+  public static MachineInfo getMachineInfo() {
+    return new MachineInfo(getMachineName(), getNumberOfProcessors(), getCPULoad());
   }
 
   public static String getMachineName() {
@@ -32,8 +32,8 @@ public class NetUtils {
     return ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class).getAvailableProcessors();
   }
 
-  public static NetListenerClient.ProcessInfo getProcessInfo() {
-    return new NetListenerClient.ProcessInfo(
+  public static ProcessInfo getProcessInfo() {
+    return new ProcessInfo(
         getProcessName(),
         getUserName(),
         getProcessUsedMemory(),
