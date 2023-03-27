@@ -7,11 +7,16 @@ import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.graphics.TextGraphics;
 import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
+import io.github.ericmedvet.jgea.tui.table.Cell;
+import io.github.ericmedvet.jgea.tui.table.ColoredStringCell;
+import io.github.ericmedvet.jgea.tui.table.StringCell;
+import io.github.ericmedvet.jgea.tui.table.TrendingCell;
 
 import java.util.Arrays;
 import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
 
 /**
  * @author "Eric Medvet" on 2022/09/03 for jgea
@@ -191,6 +196,45 @@ public class DrawUtils {
       String wLabel = "(" + format(xMax, xFormat) + ";" + format(yMin, yFormat) + ")";
       clipPut(tg, r, 0, 0, eLabel);
       clipPut(tg, r, r.w() - wLabel.length(), r.h() - 1, wLabel);
+    }
+  }
+
+  public static void drawTable(TextGraphics tg, Rectangle r, Table<Cell> t, TextColor labelColor, TextColor cellColor) {
+    clear(tg, r);
+    //compute columns width
+    int[] colWidths = IntStream.range(0, t.nColumns())
+        .map(c -> Math.max(
+            t.names().get(c).length(),
+            t.column(c).stream().mapToInt(Cell::length).max().orElse(0)
+        ))
+        .toArray();
+    //draw header
+    tg.setForegroundColor(labelColor);
+    int x = 0;
+    for (int i = 0; i < colWidths.length; i = i + 1) {
+      DrawUtils.clipPut(tg, r, x, 0, t.names().get(i));
+      x = x + colWidths[i] + 1;
+    }
+    //draw data
+    int y = 1;
+    x = 0;
+    for (int cI = 0; cI < t.nColumns(); cI = cI + 1) {
+      for (int rI = 0; rI < t.nRows(); rI = rI + 1) {
+        Cell c = t.get(cI, rI);
+        if (c instanceof StringCell stringCell) {
+          tg.setForegroundColor(cellColor);
+          DrawUtils.clipPut(tg, r, x, y + rI, stringCell.content());
+        } else if (c instanceof ColoredStringCell coloredStringCell) {
+          tg.setForegroundColor(coloredStringCell.color());
+          DrawUtils.clipPut(tg, r, x, y + rI, coloredStringCell.content());
+        } else if (c instanceof TrendingCell trendingCell) {
+          tg.setForegroundColor(trendingCell.trend().getColor());
+          DrawUtils.clipPut(tg, r, x, y + rI, "" + trendingCell.trend().getString());
+          tg.setForegroundColor(cellColor);
+          DrawUtils.clipPut(tg, r, x + 1, y + rI, trendingCell.content());
+        }
+      }
+      x = x + colWidths[cI] + 1;
     }
   }
 

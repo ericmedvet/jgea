@@ -7,4 +7,6 @@ module io.github.ericmedvet.jgea.tui {
   requires com.googlecode.lanterna;
   requires jdk.management;
   exports io.github.ericmedvet.jgea.tui;
+  exports io.github.ericmedvet.jgea.tui.util;
+  exports io.github.ericmedvet.jgea.tui.table;
 }
