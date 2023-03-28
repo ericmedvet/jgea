@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 eric
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,11 +77,6 @@ public class Starter {
               plots = [ea.plot.fitness()]
             );
             ea.l.net();
-            ea.l.telegram(
-              chatId = "207490209";
-              botIdFilePath = "/home/eric/experiments/2dmrsim/tlg.txt";
-              plots = [ea.plot.fitness()]
-            );
             ea.l.bestCsv(
               filePath = "/home/eric/experiments/2dmrsim/trial-best.txt";
               functions = [

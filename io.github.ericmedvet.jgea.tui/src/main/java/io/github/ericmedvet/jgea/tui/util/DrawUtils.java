@@ -1,3 +1,19 @@
+/*
+ * Copyright 2023 eric
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.github.ericmedvet.jgea.tui.util;
 
 import com.googlecode.lanterna.SGR;
@@ -9,8 +25,8 @@ import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
 import io.github.ericmedvet.jgea.tui.table.Cell;
 import io.github.ericmedvet.jgea.tui.table.ColoredStringCell;
+import io.github.ericmedvet.jgea.tui.table.CompositeCell;
 import io.github.ericmedvet.jgea.tui.table.StringCell;
-import io.github.ericmedvet.jgea.tui.table.TrendingCell;
 
 import java.util.Arrays;
 import java.util.IllegalFormatException;
@@ -199,6 +215,22 @@ public class DrawUtils {
     }
   }
 
+  private static void drawCell(TextGraphics tg, Rectangle r, int x, int y, Cell c, TextColor cellColor) {
+    if (c instanceof StringCell stringCell) {
+      tg.setForegroundColor(cellColor);
+      DrawUtils.clipPut(tg, r, x, y, stringCell.content());
+    } else if (c instanceof ColoredStringCell coloredStringCell) {
+      tg.setForegroundColor(coloredStringCell.color());
+      DrawUtils.clipPut(tg, r, x, y, coloredStringCell.content());
+    } else if (c instanceof CompositeCell compositeCell) {
+      int localX = x;
+      for (Cell innerCell : compositeCell.cells()) {
+        drawCell(tg, r, localX, y, innerCell, cellColor);
+        localX = x + innerCell.length();
+      }
+    }
+  }
+
   public static void drawTable(TextGraphics tg, Rectangle r, Table<Cell> t, TextColor labelColor, TextColor cellColor) {
     clear(tg, r);
     //compute columns width
@@ -220,19 +252,7 @@ public class DrawUtils {
     x = 0;
     for (int cI = 0; cI < t.nColumns(); cI = cI + 1) {
       for (int rI = 0; rI < t.nRows(); rI = rI + 1) {
-        Cell c = t.get(cI, rI);
-        if (c instanceof StringCell stringCell) {
-          tg.setForegroundColor(cellColor);
-          DrawUtils.clipPut(tg, r, x, y + rI, stringCell.content());
-        } else if (c instanceof ColoredStringCell coloredStringCell) {
-          tg.setForegroundColor(coloredStringCell.color());
-          DrawUtils.clipPut(tg, r, x, y + rI, coloredStringCell.content());
-        } else if (c instanceof TrendingCell trendingCell) {
-          tg.setForegroundColor(trendingCell.trend().getColor());
-          DrawUtils.clipPut(tg, r, x, y + rI, "" + trendingCell.trend().getString());
-          tg.setForegroundColor(cellColor);
-          DrawUtils.clipPut(tg, r, x + 1, y + rI, trendingCell.content());
-        }
+        drawCell(tg, r, x, y + rI, t.get(cI, rI), cellColor);
       }
       x = x + colWidths[cI] + 1;
     }

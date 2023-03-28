@@ -1,3 +1,19 @@
+/*
+ * Copyright 2023 eric
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.github.ericmedvet.jgea.experimenter.net;
 
 import com.googlecode.lanterna.TerminalSize;
@@ -10,10 +26,11 @@ import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import io.github.ericmedvet.jgea.core.util.ArrayTable;
 import io.github.ericmedvet.jgea.core.util.StringUtils;
 import io.github.ericmedvet.jgea.core.util.Table;
+import io.github.ericmedvet.jgea.core.util.TextPlotter;
 import io.github.ericmedvet.jgea.tui.table.Cell;
 import io.github.ericmedvet.jgea.tui.table.ColoredStringCell;
+import io.github.ericmedvet.jgea.tui.table.CompositeCell;
 import io.github.ericmedvet.jgea.tui.table.StringCell;
-import io.github.ericmedvet.jgea.tui.table.TrendingCell;
 import io.github.ericmedvet.jgea.tui.util.DrawUtils;
 import io.github.ericmedvet.jgea.tui.util.Point;
 import io.github.ericmedvet.jgea.tui.util.Rectangle;
@@ -43,7 +60,8 @@ public class NetListenerServer implements Runnable {
       0.5f,
       0.5f,
       0.5f,
-      20,
+      8,
+      8,
       250,
       10979,
       100,
@@ -115,11 +133,42 @@ public class NetListenerServer implements Runnable {
     }
   }
 
-  public record Configuration(
-      float runsSplit, float legendSplit, float machinesProcessesSplit,
-      int barLength, int refreshIntervalMillis,
-      int port, int nOfClients, double laterThreshold, double missingThreshold, double purgeThreshold
-  ) {}
+  public enum Trend {
+    NONE(' ', TextColor.Factory.fromString("#000000")),
+    INCREASING('↑', TextColor.Factory.fromString("#22EE22")),
+    SAME('=', TextColor.Factory.fromString("#888888")),
+    DECREASING('↓', TextColor.Factory.fromString("#EE2222"));
+
+    private final char string;
+    private final TextColor color;
+
+    Trend(char string, TextColor color) {
+      this.string = string;
+      this.color = color;
+    }
+
+    public static Trend from(double v1, double v2) {
+      if (v1 < v2) {
+        return Trend.DECREASING;
+      }
+      if (v1 > v2) {
+        return Trend.INCREASING;
+      }
+      return Trend.SAME;
+    }
+
+    public ColoredStringCell cell() {
+      return new ColoredStringCell("" + string, color);
+    }
+
+    public TextColor getColor() {
+      return color;
+    }
+
+    public char getString() {
+      return string;
+    }
+  }
 
   private record ItemKey(String name, String format) {}
 
@@ -131,20 +180,38 @@ public class NetListenerServer implements Runnable {
 
   private record Status(Instant lastContact, double pollInterval, TimeStatus status) {}
 
+  public record Configuration(
+      float runsSplit, float legendSplit, float machinesProcessesSplit,
+      int barLength, int plotLenght, int refreshIntervalMillis,
+      int port, int nOfClients, double laterThreshold, double missingThreshold, double purgeThreshold
+  ) {}
+
   public static void main(String[] args) {
     NetListenerServer server = new NetListenerServer(DEFAULT_CONFIGURATION);
     server.run();
   }
 
-  private static <T> TrendingCell trendingCell(SortedMap<Long, T> data, Function<T, Number> function, String format) {
-    Number d = function.apply(data.get(data.lastKey()));
+  private static <T> String last(SortedMap<Long, T> data, Function<T, ?> function, String format) {
+    Object v = function.apply(data.get(data.lastKey()));
+    try {
+      return format.formatted(v);
+    } catch (RuntimeException e) {
+      return "F_ERR";
+    }
+  }
+
+  private static <T> String plot(SortedMap<Long, T> data, Function<T, Number> function, int l) {
+    return TextPlotter.barplot(data.values().stream().map(v -> function.apply(v).doubleValue()).toList(), l);
+  }
+
+  private static <T> Trend trend(SortedMap<Long, T> data, Function<T, Number> function) {
     if (data.size() == 1) {
-      return new TrendingCell(d, format, TrendingCell.Trend.NONE);
+      return Trend.NONE;
     }
     double[] ds = data.values().stream().mapToDouble(v -> function.apply(v).doubleValue()).toArray();
     double d1 = ds[ds.length - 1];
     double d2 = ds[ds.length - 2];
-    return new TrendingCell(d, format, TrendingCell.Trend.from(d1, d2));
+    return Trend.from(d1, d2);
   }
 
 
@@ -320,8 +387,12 @@ public class NetListenerServer implements Runnable {
       machinesData.forEach((key, value) -> machinesTable.addRow(List.of(
           new ColoredStringCell(STATUS_STRING, machinesStatus.get(key).status().getColor()),
           new StringCell(key.machineName()),
-          trendingCell(value, MachineInfo::numberOfProcessors, "%2d"),
-          trendingCell(value, MachineInfo::cpuLoad, "%5.2f")
+          new StringCell(last(value, MachineInfo::numberOfProcessors, "%2d")),
+          new CompositeCell(List.of(
+              trend(value, MachineInfo::cpuLoad).cell(),
+              new StringCell(last(value, MachineInfo::cpuLoad, "%5.2f")),
+              new StringCell(plot(value, MachineInfo::cpuLoad, configuration.barLength))
+          ))
       )));
     }
     DrawUtils.drawTable(tg, machinesR.inner(1), machinesTable, DATA_LABEL_COLOR, DATA_COLOR);
