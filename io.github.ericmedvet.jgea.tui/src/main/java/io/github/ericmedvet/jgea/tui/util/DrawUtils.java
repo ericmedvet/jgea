@@ -97,6 +97,22 @@ public class DrawUtils {
     clipPut(tg, r, new Point(x, y), s, sgrs);
   }
 
+  private static void drawCell(TextGraphics tg, Rectangle r, int x, int y, Cell c, TextColor cellColor) {
+    if (c instanceof StringCell stringCell) {
+      tg.setForegroundColor(cellColor);
+      DrawUtils.clipPut(tg, r, x, y, stringCell.content());
+    } else if (c instanceof ColoredStringCell coloredStringCell) {
+      tg.setForegroundColor(coloredStringCell.color());
+      DrawUtils.clipPut(tg, r, x, y, coloredStringCell.content());
+    } else if (c instanceof CompositeCell compositeCell) {
+      int localX = x;
+      for (Cell innerCell : compositeCell.cells()) {
+        drawCell(tg, r, localX, y, innerCell, cellColor);
+        localX = localX + innerCell.length();
+      }
+    }
+  }
+
   public static void drawFrame(TextGraphics tg, Rectangle r, String label, TextColor frameColor, TextColor labelColor) {
     tg.setForegroundColor(frameColor);
     tg.drawLine(r.ne().delta(1, 0).tp(), r.nw().delta(-1, 0).tp(), Symbols.SINGLE_LINE_HORIZONTAL);
@@ -212,22 +228,6 @@ public class DrawUtils {
       String wLabel = "(" + format(xMax, xFormat) + ";" + format(yMin, yFormat) + ")";
       clipPut(tg, r, 0, 0, eLabel);
       clipPut(tg, r, r.w() - wLabel.length(), r.h() - 1, wLabel);
-    }
-  }
-
-  private static void drawCell(TextGraphics tg, Rectangle r, int x, int y, Cell c, TextColor cellColor) {
-    if (c instanceof StringCell stringCell) {
-      tg.setForegroundColor(cellColor);
-      DrawUtils.clipPut(tg, r, x, y, stringCell.content());
-    } else if (c instanceof ColoredStringCell coloredStringCell) {
-      tg.setForegroundColor(coloredStringCell.color());
-      DrawUtils.clipPut(tg, r, x, y, coloredStringCell.content());
-    } else if (c instanceof CompositeCell compositeCell) {
-      int localX = x;
-      for (Cell innerCell : compositeCell.cells()) {
-        drawCell(tg, r, localX, y, innerCell, cellColor);
-        localX = x + innerCell.length();
-      }
     }
   }
 

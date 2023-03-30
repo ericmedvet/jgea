@@ -51,6 +51,7 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
           System.currentTimeMillis(),
           run.map().toString(),
           run.index(),
+          state.getProgress(),
           stateFunctions.stream()
               .map(f -> new Item(f.getName(), f.getFormat(), f.apply(state)))
               .toList()

@@ -16,11 +16,13 @@
 
 package io.github.ericmedvet.jgea.core.util;
 
+import java.io.Serializable;
+
 public record Progress(
     Number start,
     Number end,
     Number current
-) {
+) implements Serializable {
   public static Progress NA = new Progress(0, 0, 0);
 
   public double rate() {

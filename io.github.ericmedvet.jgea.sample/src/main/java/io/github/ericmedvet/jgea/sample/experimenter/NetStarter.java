@@ -29,7 +29,7 @@ import java.util.function.Function;
 /**
  * @author "Eric Medvet" on 2022/11/24 for jgea
  */
-public class Starter {
+public class NetStarter {
 
   public static class Builders {
     public static InvertibleMapper<List<Double>, List<Double>> fixed(@Param("n") int n) {
@@ -57,44 +57,27 @@ public class Starter {
   public static void main(String[] args) {
     String expDesc = """
         ea.experiment(
-          runs = (randomGenerator = (seed = [1:1:5]) * [ea.rg.defaultRG()]) *
+          runs = (randomGenerator = (seed = [1:1:20]) * [ea.rg.defaultRG()]) *
             (solver = [
-              ea.s.numGA(mapper = fixed(n = 100); nEval = 200000);
-              ea.s.simpleES(mapper = fixed(n = 500); nEval = 100000)
+              ea.s.numGA(mapper = fixed(n = 100); nEval = 200000; nPop = 1000);
+              ea.s.simpleES(mapper = fixed(n = 500); nEval = 100000; nPop = 1000)
             ]) * [
             ea.run(
               problem = ea.p.totalOrder(qFunction = sphere())
             )
           ];
           listeners = [
-            ea.l.tui(
-              functions = [
-                ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
-                ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
-                ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.2f")
-              ];
-              runKeys = ["randomGenerator.seed"; "solver"];
-              plots = [ea.plot.fitness()]
-            );
-            ea.l.bestCsv(
-              filePath = "/home/eric/experiments/2dmrsim/trial-best.txt";
-              functions = [
-                ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f")
-              ];
-              runKeys = ["randomGenerator.seed"; "solver"]
-            );
-            ea.l.allCsv(
-              filePath = "/home/eric/experiments/2dmrsim/trial-all.txt";
-              individualFunctions = [ea.nf.fitness(); ea.nf.base64(f = ea.nf.genotype())];
-              runKeys = ["randomGenerator.seed"; "solver"];
-              onlyLast = true
-            )
+            ea.l.net(functions = [
+              ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
+              ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
+              ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.2f")
+            ])
           ]
         )
         """;
     NamedBuilder<?> nb = NamedBuilder.empty()
         .and(NamedBuilder.fromUtilityClass(Builders.class));
-    Experimenter experimenter = new Experimenter(nb, 1, 2);
+    Experimenter experimenter = new Experimenter(nb, 5, 2);
     experimenter.run(expDesc);
   }
 }
