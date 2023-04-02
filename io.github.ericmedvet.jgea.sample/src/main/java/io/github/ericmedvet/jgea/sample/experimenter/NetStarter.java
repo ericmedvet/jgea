@@ -59,7 +59,7 @@ public class NetStarter {
         ea.experiment(
           runs = (randomGenerator = (seed = [1:1:20]) * [ea.rg.defaultRG()]) *
             (solver = [
-              ea.s.numGA(mapper = fixed(n = 100); nEval = 200000; nPop = 1000);
+              ea.s.numGA(mapper = fixed(n = 100); nEval = 200000; nPop = 100);
               ea.s.simpleES(mapper = fixed(n = 500); nEval = 100000; nPop = 1000)
             ]) * [
             ea.run(
@@ -77,7 +77,7 @@ public class NetStarter {
         """;
     NamedBuilder<?> nb = NamedBuilder.empty()
         .and(NamedBuilder.fromUtilityClass(Builders.class));
-    Experimenter experimenter = new Experimenter(nb, 5, 2);
+    Experimenter experimenter = new Experimenter(nb, 3, 2);
     experimenter.run(expDesc);
   }
 }

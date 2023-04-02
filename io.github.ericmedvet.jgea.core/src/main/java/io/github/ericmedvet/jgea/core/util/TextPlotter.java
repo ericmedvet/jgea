@@ -3,6 +3,7 @@ package io.github.ericmedvet.jgea.core.util;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.stream.DoubleStream;
 
 public class TextPlotter {
@@ -33,20 +34,46 @@ public class TextPlotter {
   public TextPlotter() {
   }
 
+  public static String areaPlot(SortedMap<? extends Number, ? extends Number> data, double minX, double maxX, int l) {
+    List<? extends Number> keys = data.keySet().stream().toList();
+    double[] values = new double[l];
+    int j = 0;
+    for (double i = 0; i < l; i++) {
+      double x = minX + (maxX - minX) * i / (double) l;
+      double y;
+      if (x < keys.get(0).doubleValue()) {
+        y = Double.NaN;
+      } else if (x > keys.get(keys.size() - 1).doubleValue()) {
+        y = Double.NaN;
+      } else {
+        while (keys.get(j).doubleValue() < x) {
+          j = j + 1;
+        }
+        y = data.get(keys.get(j)).doubleValue();
+      }
+      values[(int) i] = y;
+    }
+    return barplot(values);
+  }
+
   private static String barplot(double[] values, double min, double max) {
     StringBuilder sb = new StringBuilder();
     for (double value : values) {
-      sb.append(VERTICAL_PART_FILLER.charAt((int) Math.round(Math.max(
-          Math.min((value - min) / (max - min), 1d),
-          0d
-      ) * ((double) VERTICAL_PART_FILLER.length() - 1d))));
+      if (Double.isFinite(value)) {
+        sb.append(VERTICAL_PART_FILLER.charAt((int) Math.round(Math.max(
+            Math.min((value - min) / (max - min), 1d),
+            0d
+        ) * ((double) VERTICAL_PART_FILLER.length() - 1d))));
+      } else {
+        sb.append(" ");
+      }
     }
     return sb.toString();
   }
 
   public static String barplot(double[] values) {
-    double min = DoubleStream.of(values).min().orElse(0);
-    double max = DoubleStream.of(values).max().orElse(0);
+    double min = DoubleStream.of(values).filter(Double::isFinite).min().orElse(0);
+    double max = DoubleStream.of(values).filter(Double::isFinite).max().orElse(0);
     return barplot(values, min, max);
   }
 

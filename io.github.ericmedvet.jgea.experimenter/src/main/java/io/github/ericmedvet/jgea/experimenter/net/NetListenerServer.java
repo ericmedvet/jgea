@@ -201,6 +201,18 @@ public class NetListenerServer implements Runnable {
 
   private record Status(Instant lastContact, double pollInterval, TimeStatus status) {}
 
+  private static <T> String areaPlot(SortedMap<Long, T> data, Function<T, Number> function, double min, int l) {
+    return TextPlotter.areaPlot(
+        new TreeMap<>(data.entrySet().stream().collect(Collectors.toMap(
+            Map.Entry::getKey,
+            e -> function.apply(e.getValue())
+        ))),
+        min,
+        data.lastKey(),
+        l
+    );
+  }
+
   private static <K, V> void forEach(Map<K, V> m, TriConsumer<Integer, K, V> f, boolean reversed) {
     List<Map.Entry<K, V>> entries = m.entrySet().stream().toList();
     for (int i = 0; i < entries.size(); i++) {
@@ -218,17 +230,15 @@ public class NetListenerServer implements Runnable {
     }
   }
 
-  private static <T> String linePlot(SortedMap<Long, T> data, Function<T, Number> function, int l) {
-    // TODO should be replaced with a plot taking into account x-axis values
-    return TextPlotter.barplot(data.values().stream().map(v -> function.apply(v).doubleValue()).toList(), l);
-  }
-
   public static void main(String[] args) {
     NetListenerServer server = new NetListenerServer(DEFAULT_CONFIGURATION);
     server.run();
   }
 
   private static String progressPlot(Progress p, int l) {
+    if (p == null) {
+      return "";
+    }
     return TextPlotter.horizontalBar(p.rate(), 0, 1, l, false);
   }
 
@@ -267,13 +277,15 @@ public class NetListenerServer implements Runnable {
     });
     //trim history
     machinesData.values()
-        .forEach(h -> h.headMap(h.lastKey() - 1000L * configuration.machineHistorySeconds).keySet()
-            .forEach(h::remove)
-        );
+        .forEach(h -> {
+          Set<Long> toRemoveKeys = h.headMap(h.lastKey() - 1000L * configuration.machineHistorySeconds).keySet();
+          toRemoveKeys.forEach(h::remove);
+        });
     processesData.values()
-        .forEach(h -> h.headMap(h.lastKey() - 1000L * configuration.machineHistorySeconds).keySet()
-            .forEach(h::remove)
-        );
+        .forEach(h -> {
+          Set<Long> toRemoveKeys = h.headMap(h.lastKey() - 1000L * configuration.machineHistorySeconds).keySet();
+          toRemoveKeys.forEach(h::remove);
+        });
     runsData.values().forEach(m -> m.values().forEach(h -> {
       while (h.size() > configuration.runHistorySize) {
         h.remove(h.firstKey());
@@ -466,7 +478,12 @@ public class NetListenerServer implements Runnable {
         new CompositeCell(List.of(
             new StringCell(last(v, MachineInfo::cpuLoad, "%5.2f")),
             trend(v, MachineInfo::cpuLoad).cell(),
-            new StringCell(linePlot(v, MachineInfo::cpuLoad, configuration.plotLength))
+            new StringCell(areaPlot(
+                v,
+                MachineInfo::cpuLoad,
+                v.firstKey() - configuration.machineHistorySeconds * 1000d,
+                configuration.plotLength
+            ))
         ))
     )), false);
     DrawUtils.drawTable(tg, machinesR.inner(1), machinesTable, DATA_LABEL_COLOR, DATA_COLOR);
@@ -493,7 +510,12 @@ public class NetListenerServer implements Runnable {
         new CompositeCell(List.of(
             new StringCell(last(v, pi -> pi.usedMemory() / 1024 / 1024, "%5d")),
             trend(v, ProcessInfo::usedMemory).cell(),
-            new StringCell(linePlot(v, ProcessInfo::usedMemory, configuration.plotLength))
+            new StringCell(areaPlot(
+                v,
+                ProcessInfo::usedMemory,
+                v.lastKey() - configuration.machineHistorySeconds * 1000d,
+                configuration.plotLength
+            ))
         )),
         new CompositeCell(List.of(
             new StringCell(last(v, pi -> pi.maxMemory() / 1024 / 1024, "%5d")),
