@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 eric
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -267,6 +267,10 @@ public class Listeners {
           "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.fitness();collection=ea.nf.all()))"
       }) List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> defaultStateFunctions,
       @Param(value = "functions") List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> stateFunctions,
+      @Param(value = "defaultPlots", dNPMs = {
+          "ea.plot.elapsed()"
+      }) List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> defaultPlotTableBuilders,
+      @Param("plots") List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> plotTableBuilders,
       @Param(value = "deferred") boolean deferred,
       @Param(value = "onlyLast") boolean onlyLast,
       @Param(value = "serverAddress", dS = "127.0.0.1") String serverAddress,
@@ -281,6 +285,10 @@ public class Listeners {
             Misc.concat(List.of(
                 defaultStateFunctions,
                 stateFunctions
+            )),
+            Misc.concat(List.of(
+                defaultPlotTableBuilders,
+                plotTableBuilders
             ))
         ),
         deferred ? executorService : null,
