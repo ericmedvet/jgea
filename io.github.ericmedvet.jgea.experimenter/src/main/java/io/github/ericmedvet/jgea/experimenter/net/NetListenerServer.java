@@ -584,7 +584,21 @@ public class NetListenerServer implements Runnable {
         }
       });
       plotItemKeys.forEach(pik -> {
-        row.add(new StringCell("PLOT"));
+        String s = "";
+        if (runsPlots.containsKey(rk)) {
+          List<Update.PlotPoint> ps = runsPlots.get(rk).get(pik);
+          if (ps!=null) {
+            SortedMap<Double, Double> data = new TreeMap<>();
+            ps.forEach(p -> data.put(p.x(), p.y()));
+            s = TextPlotter.areaPlot(
+                data,
+                pik.minX(),
+                pik.maxX(),
+                configuration.areaPlotLength()
+            );
+          }
+        }
+        row.add(new StringCell(s));
       });
       runsTable.addRow(row);
     }, true);

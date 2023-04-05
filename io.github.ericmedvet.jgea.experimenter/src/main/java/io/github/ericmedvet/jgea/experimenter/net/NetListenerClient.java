@@ -16,10 +16,7 @@
 
 package io.github.ericmedvet.jgea.experimenter.net;
 
-import io.github.ericmedvet.jgea.core.listener.Listener;
-import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
-import io.github.ericmedvet.jgea.core.listener.NamedFunction;
-import io.github.ericmedvet.jgea.core.listener.PlotTableBuilder;
+import io.github.ericmedvet.jgea.core.listener.*;
 import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.experimenter.Run;
@@ -90,12 +87,17 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
         });
         Map<Update.PlotItemKey, List<Update.PlotPoint>> plotItems = update.plotItems();
         plotTableBuilders.forEach(p -> {
-          // TODO fix min and max
+          double minX = Double.NaN;
+          double maxX = Double.NaN;
+          if (p instanceof XYPlotTableBuilder<? super POSetPopulationState<G,S,Q>> xyPlotTableBuilder) {
+            minX = xyPlotTableBuilder.getMinX();
+            maxX = xyPlotTableBuilder.getMaxX();
+          }
           Update.PlotItemKey pik = new Update.PlotItemKey(
               p.xName(),
               p.yNames().get(0),
-              0,
-              0
+              minX,
+              maxX
           );
           plotItems.putIfAbsent(pik, new ArrayList<>());
           plotItems.get(pik).add(new Update.PlotPoint(

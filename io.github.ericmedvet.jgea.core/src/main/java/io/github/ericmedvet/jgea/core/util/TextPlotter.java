@@ -52,6 +52,12 @@ public class TextPlotter {
 
   public static String areaPlot(SortedMap<? extends Number, ? extends Number> data, double minX, double maxX, int l) {
     List<? extends Number> keys = data.keySet().stream().toList();
+    if (!Double.isFinite(minX)) {
+      minX = data.firstKey().doubleValue();
+    }
+    if (!Double.isFinite(maxX)) {
+      maxX = data.lastKey().doubleValue();
+    }
     double[] values = new double[l];
     int j = 0;
     for (double i = 0; i < l; i++) {

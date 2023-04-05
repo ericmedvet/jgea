@@ -67,11 +67,14 @@ public class NetStarter {
             )
           ];
           listeners = [
-            ea.l.net(functions = [
-              ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
-              ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
-              ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.2f")
-            ])
+            ea.l.net(
+              functions = [
+                ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
+                ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
+                ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.2f")
+              ];
+              plots = [ea.plot.fitness()]
+            )
           ]
         )
         """;
