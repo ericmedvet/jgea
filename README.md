@@ -14,7 +14,7 @@ If you use JGEA please _cite_ [our paper](https://medvet.inginf.units.it/publica
 @inproceedings{medvet2022jgea,
   title={JGEA: a Modular Java Framework for Experimenting with Evolutionary Computation},
   author={Medvet, Eric and Nadizar, Giorgia and Manzoni, Luca},
-  booktitle={Proceedings of the genetic and evolutionary computation conference companion},
+  booktitle={Proceedings of the Genetic and Evolutionary Computation Conference companion},
   year={2022}
 }
 ```
