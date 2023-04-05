@@ -74,6 +74,7 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
 
   @Override
   public Listener<POSetPopulationState<G, S, Q>> build(Run<?, G, S, Q> run) {
+    // TODO implement done to mark the run as done and inform the client
     return state -> {
       synchronized (updates) {
         Update update = updates.getOrDefault(run.index(), new Update(
@@ -89,7 +90,7 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
         plotTableBuilders.forEach(p -> {
           double minX = Double.NaN;
           double maxX = Double.NaN;
-          if (p instanceof XYPlotTableBuilder<? super POSetPopulationState<G,S,Q>> xyPlotTableBuilder) {
+          if (p instanceof XYPlotTableBuilder<? super POSetPopulationState<G, S, Q>> xyPlotTableBuilder) {
             minX = xyPlotTableBuilder.getMinX();
             maxX = xyPlotTableBuilder.getMaxX();
           }
@@ -100,10 +101,11 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
               maxX
           );
           plotItems.putIfAbsent(pik, new ArrayList<>());
-          plotItems.get(pik).add(new Update.PlotPoint(
-              p.xFunction().apply(state).doubleValue(),
-              p.yFunctions().get(0).apply(state).doubleValue()
-          ));
+          double x = p.xFunction().apply(state).doubleValue();
+          double y = p.yFunctions().get(0).apply(state).doubleValue();
+          if (Double.isFinite(x) && Double.isFinite(y)) {
+            plotItems.get(pik).add(new Update.PlotPoint(x, y));
+          }
         });
         updates.put(run.index(), new Update(
             System.currentTimeMillis(),

@@ -73,14 +73,19 @@ public class NetStarter {
                 ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
                 ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.2f")
               ];
-              plots = [ea.plot.fitness()]
+              plots = [ea.plot.xyPlot(
+                x = ea.nf.progress();
+                y = ea.nf.fitness(individual = ea.nf.best());
+                minX = 0;
+                maxX = 1
+              )]
             )
           ]
         )
         """;
     NamedBuilder<?> nb = NamedBuilder.empty()
         .and(NamedBuilder.fromUtilityClass(Builders.class));
-    Experimenter experimenter = new Experimenter(nb, 3, 2);
+    Experimenter experimenter = new Experimenter(nb, 5, 2);
     experimenter.run(expDesc);
   }
 }

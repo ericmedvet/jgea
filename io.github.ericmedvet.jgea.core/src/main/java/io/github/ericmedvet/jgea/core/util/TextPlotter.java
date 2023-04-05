@@ -16,10 +16,8 @@
 
 package io.github.ericmedvet.jgea.core.util;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
 public class TextPlotter {
@@ -51,7 +49,10 @@ public class TextPlotter {
   }
 
   public static String areaPlot(SortedMap<? extends Number, ? extends Number> data, double minX, double maxX, int l) {
-    List<? extends Number> keys = data.keySet().stream().toList();
+    SortedMap<Double, Double> d = new TreeMap<>(data.entrySet().stream().collect(Collectors.toMap(
+        e -> e.getKey().doubleValue(),
+        e -> e.getValue().doubleValue()
+    )));
     if (!Double.isFinite(minX)) {
       minX = data.firstKey().doubleValue();
     }
@@ -59,29 +60,17 @@ public class TextPlotter {
       maxX = data.lastKey().doubleValue();
     }
     double[] values = new double[l];
-    int j = 0;
     for (double i = 0; i < l; i++) {
       double x = minX + (maxX - minX) * i / (double) l;
       double nextX = minX + (maxX - minX) * (i + 1) / (double) l;
-      double y;
-      if (x < keys.get(0).doubleValue()) {
-        y = Double.NaN;
-      } else if (x > keys.get(keys.size() - 1).doubleValue()) {
-        y = Double.NaN;
-      } else {
-        while (keys.get(j).doubleValue() < x) {
-          j = j + 1;
-        }
-        double c = 0;
-        double s = 0;
-        while (keys.get(j).doubleValue() < nextX) {
-          j = j + 1;
-          c = c + 1;
-          s = s + data.get(keys.get(j)).doubleValue();
-        }
-        y = s / c;
+      double defY = Double.NaN;
+      if (i > 0 && x <= d.lastKey()) {
+        defY = values[(int) i - 1];
       }
-      values[(int) i] = y;
+      values[(int) i] = d.subMap(x, nextX).values().stream()
+          .mapToDouble(v -> v)
+          .average()
+          .orElse(defY);
     }
     return barplot(values);
   }
@@ -145,7 +134,7 @@ public class TextPlotter {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < l; i++) {
       String k =
-          "" + (m[i * 2][1] ? '1' : '0') + (m[i * 2 + 1][1] ? '1' : '0') + (m[i * 2][0] ? '1' : '0') + (m[i * 2 + 1][0] ? '1' : '0');
+          String.valueOf(m[i * 2][1] ? '1' : '0') + (m[i * 2 + 1][1] ? '1' : '0') + (m[i * 2][0] ? '1' : '0') + (m[i * 2 + 1][0] ? '1' : '0');
       sb.append(GRID_MAP.get(k));
     }
     return sb.toString();

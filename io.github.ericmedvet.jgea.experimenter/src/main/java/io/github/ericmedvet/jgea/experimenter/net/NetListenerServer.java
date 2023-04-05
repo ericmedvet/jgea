@@ -60,9 +60,10 @@ public class NetListenerServer implements Runnable {
       0.5f,
       8,
       12,
-      250,
-      60,
       1000,
+      60,
+      10,
+      10000,
       10979,
       100,
       2,
@@ -179,7 +180,7 @@ public class NetListenerServer implements Runnable {
   public record Configuration(
       float runsSplit, float legendSplit, float machinesProcessesSplit,
       int barLength, int areaPlotLength,
-      int uiRefreshIntervalMillis, int machineHistorySeconds, int runHistorySize,
+      int uiRefreshIntervalMillis, int machineHistorySeconds, int runDataHistorySize, int runPlotHistorySize,
       int port, int nOfClients, double laterThreshold, double missingThreshold, double purgeThreshold
   ) {}
 
@@ -251,10 +252,13 @@ public class NetListenerServer implements Runnable {
   }
 
   private static <T> List<T> concatAndTrim(List<T> ts1, List<T> ts2, int n) {
-    return Stream.of(ts1, ts2)
+    List<T> ts = Stream.of(ts1, ts2)
         .flatMap(List::stream)
-        //.limit(n)
         .toList();
+    if (ts.size() <= n) {
+      return ts;
+    }
+    return ts.subList(ts.size() - n, ts.size());
   }
 
   @Override
@@ -267,7 +271,6 @@ public class NetListenerServer implements Runnable {
             updateUI();
           } catch (RuntimeException e) {
             L.warning("Unexpected exception: %s".formatted(e));
-            e.printStackTrace(); //TODO remove
           }
         },
         0,
@@ -388,16 +391,16 @@ public class NetListenerServer implements Runnable {
       );
       runsProgress.put(runKey, update.runProgress());
       runsData.putIfAbsent(runKey, new LinkedHashMap<>());
-      update.dataItems().forEach((ik, vs) -> runsData.get(runKey).merge(
-          ik,
+      update.dataItems().forEach((dik, vs) -> runsData.get(runKey).merge(
+          dik,
           vs,
-          (k, ovs) -> concatAndTrim(vs, ovs, configuration.runHistorySize)
+          (ovs, nvs) -> concatAndTrim(ovs, nvs, configuration.runDataHistorySize)
       ));
       runsPlots.putIfAbsent(runKey, new LinkedHashMap<>());
-      update.plotItems().forEach((ik, ps) -> runsPlots.get(runKey).merge(
-          ik,
+      update.plotItems().forEach((pik, ps) -> runsPlots.get(runKey).merge(
+          pik,
           ps,
-          (k, ops) -> concatAndTrim(ps, ops, configuration.runHistorySize)
+          (ovs, nvs) -> concatAndTrim(ovs, nvs, configuration.runPlotHistorySize)
       ));
     }
   }
@@ -587,7 +590,7 @@ public class NetListenerServer implements Runnable {
         String s = "";
         if (runsPlots.containsKey(rk)) {
           List<Update.PlotPoint> ps = runsPlots.get(rk).get(pik);
-          if (ps!=null) {
+          if (ps != null) {
             SortedMap<Double, Double> data = new TreeMap<>();
             ps.forEach(p -> data.put(p.x(), p.y()));
             s = TextPlotter.areaPlot(

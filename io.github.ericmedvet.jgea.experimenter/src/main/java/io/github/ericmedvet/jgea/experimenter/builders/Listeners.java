@@ -252,6 +252,7 @@ public class Listeners {
     return getKeyFromParamMap(namedParamMap, keyPieces.subList(1, keyPieces.size()));
   }
 
+  @SuppressWarnings("unused")
   public static <G, S, Q> BiFunction<Experiment, ExecutorService, ListenerFactory<POSetPopulationState<G, S, Q>, Run<
       ?, G, S, Q>>> net(
       @Param(value = "defaultFunctions", dNPMs = {
@@ -267,9 +268,7 @@ public class Listeners {
           "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.fitness();collection=ea.nf.all()))"
       }) List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> defaultStateFunctions,
       @Param(value = "functions") List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> stateFunctions,
-      @Param(value = "defaultPlots", dNPMs = {
-          "ea.plot.elapsed()"
-      }) List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> defaultPlotTableBuilders,
+      @Param(value = "defaultPlots") List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> defaultPlotTableBuilders,
       @Param("plots") List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> plotTableBuilders,
       @Param(value = "deferred") boolean deferred,
       @Param(value = "onlyLast") boolean onlyLast,
