@@ -11,5 +11,7 @@ module io.github.ericmedvet.jgea.experimenter {
   requires java.desktop;
   requires jdk.management;
   requires com.googlecode.lanterna;
+  requires jcommander;
   requires io.github.ericmedvet.jgea.telegram;
+  opens io.github.ericmedvet.jgea.experimenter.net to jcommander;
 }

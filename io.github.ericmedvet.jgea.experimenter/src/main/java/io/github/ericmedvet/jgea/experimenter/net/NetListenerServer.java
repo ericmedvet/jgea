@@ -16,6 +16,9 @@
 
 package io.github.ericmedvet.jgea.experimenter.net;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.graphics.TextGraphics;
@@ -65,7 +68,7 @@ public class NetListenerServer implements Runnable {
       0.5f,
       8,
       12,
-      1000,
+      500,
       60,
       10,
       10000,
@@ -189,7 +192,27 @@ public class NetListenerServer implements Runnable {
     void accept(I1 i1, I2 i2, I3 i3);
   }
 
-  public record Configuration(
+  private static class CommandLineConfiguration {
+    @Parameter(
+        names = {"--port", "-p"},
+        description = "Server port."
+    )
+    public int port = DEFAULT_CONFIGURATION.port;
+    @Parameter(
+        names = {"--key", "-k"},
+        description = "Handshake key."
+    )
+    public String key = DEFAULT_CONFIGURATION.key;
+
+    @Parameter(
+        names = {"--help", "-h"},
+        description = "Show this help.",
+        help = true
+    )
+    public boolean help;
+  }
+
+  private record Configuration(
       float runsSplit, float legendSplit, float machinesProcessesSplit,
       int barLength, int areaPlotLength,
       int uiRefreshIntervalMillis, int machineHistorySeconds, int runDataHistorySize, int runPlotHistorySize,
@@ -268,7 +291,43 @@ public class NetListenerServer implements Runnable {
   }
 
   public static void main(String[] args) {
-    NetListenerServer server = new NetListenerServer(DEFAULT_CONFIGURATION);
+    CommandLineConfiguration cmdConfiguration = new CommandLineConfiguration();
+    JCommander jc = JCommander.newBuilder()
+        .addObject(cmdConfiguration)
+        .build();
+    jc.setProgramName(NetListenerServer.class.getName());
+    try {
+      jc.parse(args);
+    } catch (ParameterException e) {
+      e.usage();
+      L.severe(String.format("Cannot read command line options: %s", e));
+      System.exit(-1);
+    } catch (RuntimeException e) {
+      L.severe(e.getClass().getSimpleName() + ": " + e.getMessage());
+      System.exit(-1);
+    }
+    //check help
+    if (cmdConfiguration.help) {
+      jc.usage();
+      System.exit(0);
+    }
+    NetListenerServer server = new NetListenerServer(new Configuration(
+        DEFAULT_CONFIGURATION.runsSplit,
+        DEFAULT_CONFIGURATION.legendSplit,
+        DEFAULT_CONFIGURATION.machinesProcessesSplit,
+        DEFAULT_CONFIGURATION.barLength,
+        DEFAULT_CONFIGURATION.barLength,
+        DEFAULT_CONFIGURATION.uiRefreshIntervalMillis,
+        DEFAULT_CONFIGURATION.machineHistorySeconds,
+        DEFAULT_CONFIGURATION.runDataHistorySize,
+        DEFAULT_CONFIGURATION.runPlotHistorySize,
+        cmdConfiguration.port,
+        cmdConfiguration.key,
+        DEFAULT_CONFIGURATION.nOfClients,
+        DEFAULT_CONFIGURATION.laterThreshold,
+        DEFAULT_CONFIGURATION.missingThreshold,
+        DEFAULT_CONFIGURATION.purgeThreshold
+    ));
     server.run();
   }
 
