@@ -38,6 +38,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -72,6 +75,12 @@ public class NetListenerServer implements Runnable {
   );
   private final static String STATUS_STRING = "⬤";
 
+  private final static DateTimeFormatter SAME_DAY_DATETIME_FORMAT = DateTimeFormatter
+      .ofPattern("HH:mm:ss")
+      .withZone(ZoneId.systemDefault());
+  private final static DateTimeFormatter COMPLETE_DATETIME_FORMAT = DateTimeFormatter
+      .ofPattern("MM-dd HH:mm")
+      .withZone(ZoneId.systemDefault());
   private final static TextColor FRAME_COLOR = TextColor.Factory.fromString("#105010");
   private final static TextColor FRAME_LABEL_COLOR = TextColor.Factory.fromString("#10A010");
   private final static TextColor DATA_LABEL_COLOR = TextColor.Factory.fromString("#A01010");
@@ -83,9 +92,9 @@ public class NetListenerServer implements Runnable {
   private final Map<ProcessKey, SortedMap<Long, ProcessInfo>> processesData;
   private final Map<RunKey, Map<Update.DataItemKey, List<Object>>> runsData;
   private final Map<RunKey, Map<Update.PlotItemKey, List<Update.PlotPoint>>> runsPlots;
-  private final Map<MachineKey, Progress> machinesProgress;
-  private final Map<ProcessKey, Progress> processesProgress;
-  private final Map<RunKey, Progress> runsProgress;
+  private final Map<MachineKey, TimedProgress> machinesProgress;
+  private final Map<ProcessKey, TimedProgress> processesProgress;
+  private final Map<RunKey, TimedProgress> runsProgress;
   private final Map<MachineKey, Status> machinesStatus;
   private final Map<ProcessKey, Status> processesStatus;
   private final ExecutorService clientsExecutorService;
@@ -200,6 +209,27 @@ public class NetListenerServer implements Runnable {
 
   private record Status(Instant lastContact, double pollInterval, TimeStatus status) {}
 
+  private record TimedProgress(
+      Instant initialContact,
+      Instant lastContact,
+      Progress initialProgress,
+      Progress lastProgress,
+      boolean isRunning
+  ) {
+    public Instant eta() {
+      if (!isRunning) {
+        return lastContact;
+      }
+      if (lastProgress.equals(Progress.NA)) {
+        return Instant.MAX;
+      }
+      return initialContact.plus(Math.round(ChronoUnit.MILLIS.between(
+          initialContact,
+          Instant.now()
+      ) / (lastProgress.rate() - initialProgress.rate())), ChronoUnit.MILLIS);
+    }
+  }
+
   private static <T> String areaPlot(SortedMap<Long, T> data, Function<T, Number> function, double min, int l) {
     return TextPlotter.areaPlot(
         new TreeMap<>(data.entrySet().stream().collect(Collectors.toMap(
@@ -261,46 +291,14 @@ public class NetListenerServer implements Runnable {
     return ts.subList(ts.size() - n, ts.size());
   }
 
-  @Override
-  public void run() {
-    //start painter task
-    uiExecutorService.scheduleAtFixedRate(
-        () -> {
-          try {
-            refreshData();
-            updateUI();
-          } catch (RuntimeException e) {
-            L.warning("Unexpected exception: %s".formatted(e));
-          }
-        },
-        0,
-        configuration.uiRefreshIntervalMillis,
-        TimeUnit.MILLISECONDS
-    );
-    //start server
-    try (ServerSocket serverSocket = new ServerSocket(configuration.port())) {
-      L.info("Server started on port %d".formatted(configuration.port()));
-      while (true) {
-        try {
-          Socket socket = serverSocket.accept();
-          clientsExecutorService.submit(() -> {
-            try (socket; ObjectInputStream ois = new ObjectInputStream(socket.getInputStream())) {
-              Message message = (Message) ois.readObject();
-              L.fine("Msg received with %d updates".formatted(message.updates().size()));
-              storeMessage(message);
-            } catch (IOException e) {
-              L.warning("Cannot open input stream due to: %s".formatted(e));
-            } catch (ClassNotFoundException e) {
-              L.warning("Cannot read message due to: %s".formatted(e));
-            }
-          });
-        } catch (IOException e) {
-          L.warning("Cannot accept connection due to; %s".formatted(e));
-        }
-      }
-    } catch (IOException e) {
-      L.severe("Cannot start server due to: %s".formatted(e));
+  private static String eta(Instant eta) {
+    if (eta.equals(Instant.MAX)) {
+      return "-";
     }
+    if (!eta.truncatedTo(ChronoUnit.DAYS).equals(Instant.now().truncatedTo(ChronoUnit.DAYS))) {
+      return COMPLETE_DATETIME_FORMAT.format(eta);
+    }
+    return SAME_DAY_DATETIME_FORMAT.format(eta);
   }
 
   private void stop() {
@@ -341,6 +339,7 @@ public class NetListenerServer implements Runnable {
     downRunKeys.forEach(k -> {
       runsData.remove(k);
       runsProgress.remove(k);
+      runsPlots.remove(k);
     });
     //trim history
     machinesData.values()
@@ -359,49 +358,106 @@ public class NetListenerServer implements Runnable {
     runsProgress.entrySet().stream()
         .collect(Collectors.groupingBy(
             e -> e.getKey().processKey(),
-            Collectors.summarizingDouble(e -> e.getValue().rate())
-        )).forEach((pk, v) -> processesProgress.put(
+            Collectors.toList()
+        ))
+        .forEach((pk, m) -> processesProgress.put(
             pk,
-            new Progress(0, 1, v.getAverage())
+            new TimedProgress(
+                m.stream()
+                    .map(Map.Entry::getValue)
+                    .map(TimedProgress::initialContact)
+                    .min(Instant::compareTo)
+                    .orElse(Instant.now()),
+                Instant.now(),
+                new Progress(
+                    m.stream()
+                        .map(Map.Entry::getValue)
+                        .mapToDouble(tp -> tp.initialProgress().rate())
+                        .average() // TODO replace with sum and divide by num of runs
+                        .orElse(0)
+                ),
+                new Progress(
+                    m.stream()
+                        .map(Map.Entry::getValue)
+                        .mapToDouble(tp -> tp.lastProgress().rate())
+                        .average() // TODO replace with sum and divide by num of runs
+                        .orElse(0)
+                ),
+                true
+            )
         ));
     processesProgress.entrySet().stream()
         .collect(Collectors.groupingBy(
             e -> e.getKey().machineKey(),
-            Collectors.summarizingDouble(e -> e.getValue().rate())
-        )).forEach((mk, v) -> machinesProgress.put(
+            Collectors.toList()
+        )).forEach((mk, m) -> machinesProgress.put(
             mk,
-            new Progress(0, 1, v.getAverage())
+            new TimedProgress(
+                m.stream()
+                    .map(Map.Entry::getValue)
+                    .map(TimedProgress::initialContact)
+                    .min(Instant::compareTo)
+                    .orElse(Instant.now()),
+                Instant.now(),
+                new Progress(
+                    m.stream()
+                        .map(Map.Entry::getValue)
+                        .mapToDouble(tp -> tp.initialProgress().rate())
+                        .average()
+                        .orElse(0)
+                ),
+                new Progress(
+                    m.stream()
+                        .map(Map.Entry::getValue)
+                        .mapToDouble(tp -> tp.lastProgress().rate())
+                        .average()
+                        .orElse(0)
+                ),
+                true
+            )
         ));
   }
 
-  private synchronized void storeMessage(Message message) {
-    MachineKey machineKey = new MachineKey(message.machineInfo().machineName());
-    machinesData.putIfAbsent(machineKey, new TreeMap<>());
-    machinesData.get(machineKey).put(message.localTime(), message.machineInfo());
-    machinesStatus.put(machineKey, new Status(Instant.now(), message.pollInterval(), TimeStatus.OK));
-    ProcessKey processKey = new ProcessKey(message.machineInfo().machineName(), message.processInfo().processName());
-    processesData.putIfAbsent(processKey, new TreeMap<>());
-    processesData.get(processKey).put(message.localTime(), message.processInfo());
-    processesStatus.put(processKey, new Status(Instant.now(), message.pollInterval(), TimeStatus.OK));
-    for (Update update : message.updates()) {
-      RunKey runKey = new RunKey(
-          message.machineInfo().machineName(),
-          message.processInfo().processName(),
-          update.runIndex()
-      );
-      runsProgress.put(runKey, update.runProgress());
-      runsData.putIfAbsent(runKey, new LinkedHashMap<>());
-      update.dataItems().forEach((dik, vs) -> runsData.get(runKey).merge(
-          dik,
-          vs,
-          (ovs, nvs) -> concatAndTrim(ovs, nvs, configuration.runDataHistorySize)
-      ));
-      runsPlots.putIfAbsent(runKey, new LinkedHashMap<>());
-      update.plotItems().forEach((pik, ps) -> runsPlots.get(runKey).merge(
-          pik,
-          ps,
-          (ovs, nvs) -> concatAndTrim(ovs, nvs, configuration.runPlotHistorySize)
-      ));
+  @Override
+  public void run() {
+    //start painter task
+    uiExecutorService.scheduleAtFixedRate(
+        () -> {
+          try {
+            refreshData();
+            updateUI();
+          } catch (RuntimeException e) {
+            L.warning("Unexpected exception: %s".formatted(e));
+            e.printStackTrace(); // TODO remove
+          }
+        },
+        0,
+        configuration.uiRefreshIntervalMillis,
+        TimeUnit.MILLISECONDS
+    );
+    //start server
+    try (ServerSocket serverSocket = new ServerSocket(configuration.port())) {
+      L.info("Server started on port %d".formatted(configuration.port()));
+      while (true) {
+        try {
+          Socket socket = serverSocket.accept();
+          clientsExecutorService.submit(() -> {
+            try (socket; ObjectInputStream ois = new ObjectInputStream(socket.getInputStream())) {
+              Message message = (Message) ois.readObject();
+              L.fine("Msg received with %d updates".formatted(message.updates().size()));
+              storeMessage(message);
+            } catch (IOException e) {
+              L.warning("Cannot open input stream due to: %s".formatted(e));
+            } catch (ClassNotFoundException e) {
+              L.warning("Cannot read message due to: %s".formatted(e));
+            }
+          });
+        } catch (IOException e) {
+          L.warning("Cannot accept connection due to; %s".formatted(e));
+        }
+      }
+    } catch (IOException e) {
+      L.severe("Cannot start server due to: %s".formatted(e));
     }
   }
 
@@ -419,6 +475,53 @@ public class NetListenerServer implements Runnable {
       timeStatus = TimeStatus.LATE;
     }
     return new Status(status.lastContact(), status.pollInterval(), timeStatus);
+  }
+
+  private synchronized void storeMessage(Message message) {
+    MachineKey machineKey = new MachineKey(message.machineInfo().machineName());
+    machinesData.putIfAbsent(machineKey, new TreeMap<>());
+    machinesData.get(machineKey).put(message.localTime(), message.machineInfo());
+    machinesStatus.put(machineKey, new Status(Instant.now(), message.pollInterval(), TimeStatus.OK));
+    ProcessKey processKey = new ProcessKey(message.machineInfo().machineName(), message.processInfo().processName());
+    processesData.putIfAbsent(processKey, new TreeMap<>());
+    processesData.get(processKey).put(message.localTime(), message.processInfo());
+    processesStatus.put(processKey, new Status(Instant.now(), message.pollInterval(), TimeStatus.OK));
+    for (Update update : message.updates()) {
+      RunKey runKey = new RunKey(
+          message.machineInfo().machineName(),
+          message.processInfo().processName(),
+          update.runIndex()
+      );
+      runsProgress.merge(
+          runKey,
+          new TimedProgress(
+              Instant.now(),
+              Instant.now(),
+              update.runProgress(),
+              update.runProgress(),
+              update.isRunning()
+          ),
+          (otp, ntp) -> new TimedProgress(
+              otp.initialContact(),
+              Instant.now(),
+              otp.initialProgress,
+              update.runProgress(),
+              update.isRunning()
+          )
+      );
+      runsData.putIfAbsent(runKey, new LinkedHashMap<>());
+      update.dataItems().forEach((dik, vs) -> runsData.get(runKey).merge(
+          dik,
+          vs,
+          (ovs, nvs) -> concatAndTrim(ovs, nvs, configuration.runDataHistorySize)
+      ));
+      runsPlots.putIfAbsent(runKey, new LinkedHashMap<>());
+      update.plotItems().forEach((pik, ps) -> runsPlots.get(runKey).merge(
+          pik,
+          ps,
+          (ovs, nvs) -> concatAndTrim(ovs, nvs, configuration.runPlotHistorySize)
+      ));
+    }
   }
 
   private synchronized void updateUI() {
@@ -452,7 +555,13 @@ public class NetListenerServer implements Runnable {
     //draw structure
     DrawUtils.drawFrame(tg, runsR, "Runs (%d)".formatted(runsData.size()), FRAME_COLOR, FRAME_LABEL_COLOR);
     DrawUtils.drawFrame(tg, legendR, "Legend", FRAME_COLOR, FRAME_LABEL_COLOR);
-    DrawUtils.drawFrame(tg, machinesR, "Machines (%d)".formatted(machinesData.size()), FRAME_COLOR, FRAME_LABEL_COLOR);
+    DrawUtils.drawFrame(
+        tg,
+        machinesR,
+        "Machines (%d) - %s".formatted(machinesData.size(), COMPLETE_DATETIME_FORMAT.format(Instant.now())),
+        FRAME_COLOR,
+        FRAME_LABEL_COLOR
+    );
     DrawUtils.drawFrame(
         tg,
         processesR,
@@ -492,6 +601,7 @@ public class NetListenerServer implements Runnable {
     Table<Cell> machinesTable = new ArrayTable<>(List.of(
         "",
         "",
+        "ETA",
         "Progress",
         "Machine",
         "Cores",
@@ -500,7 +610,8 @@ public class NetListenerServer implements Runnable {
     forEach(machinesData, (i, mk, v) -> machinesTable.addRow(List.of(
         new ColoredStringCell(STATUS_STRING, machinesStatus.get(mk).status().getColor()),
         new StringCell("M%02d".formatted(i)),
-        new StringCell(progressPlot(machinesProgress.get(mk), configuration.barLength)),
+        new StringCell(eta(machinesProgress.get(mk).eta())), // TODO gives NPE
+        new StringCell(progressPlot(machinesProgress.get(mk).lastProgress(), configuration.barLength)),
         new StringCell(mk.machineName()),
         new StringCell(last(v, MachineInfo::numberOfProcessors, "%2d")),
         new CompositeCell(List.of(
@@ -519,6 +630,7 @@ public class NetListenerServer implements Runnable {
     Table<Cell> processesTable = new ArrayTable<>(List.of(
         "",
         "",
+        "ETA",
         "Progress",
         "Process",
         "Mac.",
@@ -529,7 +641,8 @@ public class NetListenerServer implements Runnable {
     forEach(processesData, (i, pk, v) -> processesTable.addRow(List.of(
         new ColoredStringCell(STATUS_STRING, processesStatus.get(pk).status().getColor()),
         new StringCell("P%02d".formatted(i)),
-        new StringCell(progressPlot(processesProgress.get(pk), configuration.barLength)),
+        new StringCell(eta(processesProgress.get(pk).eta())),
+        new StringCell(progressPlot(processesProgress.get(pk).lastProgress(), configuration.barLength)),
         new StringCell(pk.processName()),
         new StringCell("M%02d".formatted(
             machinesData.keySet().stream().toList().indexOf(pk.machineKey())
@@ -554,9 +667,11 @@ public class NetListenerServer implements Runnable {
     //compute and show runs
     Table<Cell> runsTable;
     List<String> columns = new ArrayList<>(List.of(
+        "",
+        "",
+        "ETA",
         "Progress",
-        "Proc.",
-        "Id"
+        "Proc."
     ));
     List<Update.DataItemKey> dataItemKeys = runsData.values().stream()
         .map(Map::keySet)
@@ -573,11 +688,16 @@ public class NetListenerServer implements Runnable {
     runsTable = new ArrayTable<>(columns);
     forEach(runsData, (i, rk, v) -> {
       List<Cell> row = new ArrayList<>();
-      row.add(new StringCell(progressPlot(runsProgress.get(rk), configuration.barLength)));
+      row.add(new ColoredStringCell(
+          STATUS_STRING,
+          runsProgress.get(rk).isRunning() ? TimeStatus.OK.getColor() : TimeStatus.MISSING.getColor()
+      ));
+      row.add(new StringCell("R%03d".formatted(rk.runIndex())));
+      row.add(new StringCell(eta(runsProgress.get(rk).eta())));
+      row.add(new StringCell(progressPlot(runsProgress.get(rk).lastProgress(), configuration.barLength)));
       row.add(new StringCell("P%02d".formatted(
           processesData.keySet().stream().toList().indexOf(rk.processKey())
       )));
-      row.add(new StringCell("%3d".formatted(rk.runIndex())));
       dataItemKeys.forEach(dik -> {
         List<?> values = v.get(dik);
         if (values != null && !values.isEmpty()) {

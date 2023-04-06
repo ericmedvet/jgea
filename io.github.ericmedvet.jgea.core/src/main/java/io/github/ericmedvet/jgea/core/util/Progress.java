@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 eric
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,4 +32,7 @@ public record Progress(
     );
   }
 
+  public Progress(double normalizedRate) {
+    this(0, 1, normalizedRate);
+  }
 }

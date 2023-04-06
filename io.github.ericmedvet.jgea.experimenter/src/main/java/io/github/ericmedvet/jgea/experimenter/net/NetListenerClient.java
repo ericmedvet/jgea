@@ -19,6 +19,7 @@ package io.github.ericmedvet.jgea.experimenter.net;
 import io.github.ericmedvet.jgea.core.listener.*;
 import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jgea.core.util.Progress;
+import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
 
 import java.io.IOException;
@@ -41,6 +42,7 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
   private final double pollInterval;
   private final List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> stateFunctions;
   private final List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> plotTableBuilders;
+  private final Experiment experiment;
   private final Map<Integer, Update> updates;
   private final ScheduledExecutorService service;
 
@@ -49,13 +51,15 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
       int serverPort,
       double pollInterval,
       List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> stateFunctions,
-      List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> plotTableBuilders
+      List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> plotTableBuilders,
+      Experiment experiment
   ) {
     this.serverAddress = serverAddress;
     this.serverPort = serverPort;
     this.pollInterval = pollInterval;
     this.stateFunctions = stateFunctions;
     this.plotTableBuilders = plotTableBuilders;
+    this.experiment = experiment;
     //check plot builders
     List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> wrongPlotTableBuilders = plotTableBuilders.stream()
         .filter(ptb -> ptb.yFunctions().size() != 1)
@@ -74,47 +78,77 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
 
   @Override
   public Listener<POSetPopulationState<G, S, Q>> build(Run<?, G, S, Q> run) {
-    // TODO implement done to mark the run as done and inform the client
-    return state -> {
-      synchronized (updates) {
-        Update update = updates.getOrDefault(run.index(), new Update(
-            0, "", -1, Progress.NA, new LinkedHashMap<>(), new LinkedHashMap<>()
-        ));
-        Map<Update.DataItemKey, List<Object>> dataItems = update.dataItems();
-        stateFunctions.forEach(f -> {
-          Update.DataItemKey dik = new Update.DataItemKey(f.getName(), f.getFormat());
-          dataItems.putIfAbsent(dik, new ArrayList<>());
-          dataItems.get(dik).add(f.apply(state));
-        });
-        Map<Update.PlotItemKey, List<Update.PlotPoint>> plotItems = update.plotItems();
-        plotTableBuilders.forEach(p -> {
-          double minX = Double.NaN;
-          double maxX = Double.NaN;
-          if (p instanceof XYPlotTableBuilder<? super POSetPopulationState<G, S, Q>> xyPlotTableBuilder) {
-            minX = xyPlotTableBuilder.getMinX();
-            maxX = xyPlotTableBuilder.getMaxX();
-          }
-          Update.PlotItemKey pik = new Update.PlotItemKey(
-              p.xName(),
-              p.yNames().get(0),
-              minX,
-              maxX
+    return new Listener<>() {
+      @Override
+      public void listen(POSetPopulationState<G, S, Q> state) {
+        synchronized (updates) {
+          Update update = updates.getOrDefault(run.index(), new Update(
+              0, "", -1, Progress.NA, true, new LinkedHashMap<>(), new LinkedHashMap<>()
+          ));
+          Map<Update.DataItemKey, List<Object>> dataItems = update.dataItems();
+          stateFunctions.forEach(f -> {
+            Update.DataItemKey dik = new Update.DataItemKey(f.getName(), f.getFormat());
+            dataItems.putIfAbsent(dik, new ArrayList<>());
+            dataItems.get(dik).add(f.apply(state));
+          });
+          Map<Update.PlotItemKey, List<Update.PlotPoint>> plotItems = update.plotItems();
+          plotTableBuilders.forEach(p -> {
+            double minX = Double.NaN;
+            double maxX = Double.NaN;
+            if (p instanceof XYPlotTableBuilder<? super POSetPopulationState<G, S, Q>> xyPlotTableBuilder) {
+              minX = xyPlotTableBuilder.getMinX();
+              maxX = xyPlotTableBuilder.getMaxX();
+            }
+            Update.PlotItemKey pik = new Update.PlotItemKey(
+                p.xName(),
+                p.yNames().get(0),
+                minX,
+                maxX
+            );
+            plotItems.putIfAbsent(pik, new ArrayList<>());
+            double x = p.xFunction().apply(state).doubleValue();
+            double y = p.yFunctions().get(0).apply(state).doubleValue();
+            if (Double.isFinite(x) && Double.isFinite(y)) {
+              plotItems.get(pik).add(new Update.PlotPoint(x, y));
+            }
+          });
+          updates.put(run.index(), new Update(
+              System.currentTimeMillis(),
+              run.map().toString(),
+              run.index(),
+              state.getProgress(),
+              true,
+              update.dataItems(),
+              update.plotItems()
+          ));
+        }
+      }
+
+      @Override
+      public void done() {
+        synchronized (updates) {
+          updates.merge(
+              run.index(),
+              new Update(
+                  System.currentTimeMillis(),
+                  run.map().toString(),
+                  run.index(),
+                  Progress.NA,
+                  false,
+                  new LinkedHashMap<>(),
+                  new LinkedHashMap<>()
+              ),
+              (ou, nu) -> new Update(
+                  System.currentTimeMillis(),
+                  run.map().toString(),
+                  run.index(),
+                  ou.runProgress(),
+                  false,
+                  ou.dataItems(),
+                  ou.plotItems()
+              )
           );
-          plotItems.putIfAbsent(pik, new ArrayList<>());
-          double x = p.xFunction().apply(state).doubleValue();
-          double y = p.yFunctions().get(0).apply(state).doubleValue();
-          if (Double.isFinite(x) && Double.isFinite(y)) {
-            plotItems.get(pik).add(new Update.PlotPoint(x, y));
-          }
-        });
-        updates.put(run.index(), new Update(
-            System.currentTimeMillis(),
-            run.map().toString(),
-            run.index(),
-            state.getProgress(),
-            update.dataItems(),
-            update.plotItems()
-        ));
+        }
       }
     };
   }

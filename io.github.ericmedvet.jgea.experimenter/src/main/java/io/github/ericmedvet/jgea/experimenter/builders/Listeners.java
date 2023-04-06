@@ -288,7 +288,8 @@ public class Listeners {
             Misc.concat(List.of(
                 defaultPlotTableBuilders,
                 plotTableBuilders
-            ))
+            )),
+            experiment
         ),
         deferred ? executorService : null,
         onlyLast

@@ -30,6 +30,7 @@ public record Update(
     String runMap,
     int runIndex,
     Progress runProgress,
+    boolean isRunning,
     Map<DataItemKey, List<Object>> dataItems,
     Map<PlotItemKey, List<PlotPoint>> plotItems
 ) implements Serializable {

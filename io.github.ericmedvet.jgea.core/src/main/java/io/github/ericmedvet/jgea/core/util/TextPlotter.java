@@ -49,6 +49,9 @@ public class TextPlotter {
   }
 
   public static String areaPlot(SortedMap<? extends Number, ? extends Number> data, double minX, double maxX, int l) {
+    if (data.isEmpty()) {
+      return barplot(Arrays.copyOf(new double[]{Double.NaN}, l));
+    }
     SortedMap<Double, Double> d = new TreeMap<>(data.entrySet().stream().collect(Collectors.toMap(
         e -> e.getKey().doubleValue(),
         e -> e.getValue().doubleValue()
