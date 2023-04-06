@@ -14,7 +14,7 @@ If you use JGEA please _cite_ [our paper](https://medvet.inginf.units.it/publica
 @inproceedings{medvet2022jgea,
   title={JGEA: a Modular Java Framework for Experimenting with Evolutionary Computation},
   author={Medvet, Eric and Nadizar, Giorgia and Manzoni, Luca},
-  booktitle={Proceedings of the genetic and evolutionary computation conference companion},
+  booktitle={Proceedings of the Genetic and Evolutionary Computation Conference companion},
   year={2022}
 }
 ```
@@ -236,6 +236,10 @@ Methods inside the constructor of `TabularPrinter` are static methods of the cla
 
 The list includes paper published from 2018 on.
 
+- Medvet, Pozzi, Manzoni; [A General Purpose Representation and Adaptive EA for Evolving Graphs](https://medvet.inginf.units.it/publications/2023-c-mpm-general/); ACM Genetic and Evolutionary Computation Conference (GECCO); 2023
+- Nadizar, Medvet, Walker, Risi; [A Fully-distributed Shape-aware Neural Controller for Modular Robots](https://medvet.inginf.units.it/publications/2023-c-nmwr-fully/); ACM Genetic and Evolutionary Computation Conference (GECCO); 2023
+- Nadizar, Medvet; [On the Effects of Collaborators Selection and Aggregation in Cooperative Coevolution: an Experimental Analysis](https://medvet.inginf.units.it/publications/2023-c-nm-effects/); 26th European Conference on Genetic Programming (EuroGP); 2023
+- Pigozzi, Medvet, Bartoli, Rochelli; [Factors Impacting Diversity and Effectiveness of Evolved Modular Robots](https://medvet.inginf.units.it/publications/2023-j-pmbr-factors/); ACM Transactions on Evolutionary Learning and Optimization (TELO); 2023
 - Ferigo, Iacca, Medvet, Pigozzi; [Evolving Hebbian Learning Rules in Voxel-based Soft Robot](https://medvet.inginf.units.it/publications/2022-j-fimp-evolving/); IEEE Transactions on Cognitive and Developmental Systems (TCDS); 2022
 - Medvet, Rusin; [Impact of Morphology Variations on Evolved Neural Controllers for Modular Robots](https://medvet.inginf.units.it/publications/2022-c-mr-impact/); XVI International Workshop on Artificial Life and Evolutionary Computation (WIVACE); 2022
 - Medvet, Nadizar, Manzoni; [JGEA: a Modular Java Framework for Experimenting with Evolutionary Computation](https://medvet.inginf.units.it/publications/2022-c-mnm-jgea/); Workshop Evolutionary Computation Software Systems (EvoSoft@GECCO); 2022
