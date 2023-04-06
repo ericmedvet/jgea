@@ -171,6 +171,7 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
         NetUtils.getMachineInfo(),
         NetUtils.getProcessInfo(),
         pollInterval,
+        experiment.runs().size(),
         toSendUpdates
     );
     //attempt send

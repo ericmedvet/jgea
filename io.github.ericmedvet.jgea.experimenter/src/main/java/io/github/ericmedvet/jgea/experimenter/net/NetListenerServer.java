@@ -89,7 +89,7 @@ public class NetListenerServer implements Runnable {
 
   private final Configuration configuration;
   private final Map<MachineKey, SortedMap<Long, MachineInfo>> machinesData;
-  private final Map<ProcessKey, SortedMap<Long, ProcessInfo>> processesData;
+  private final Map<ProcessKey, SortedMap<Long, EnhancedProcessInfo>> processesData;
   private final Map<RunKey, Map<Update.DataItemKey, List<Object>>> runsData;
   private final Map<RunKey, Map<Update.PlotItemKey, List<Update.PlotPoint>>> runsPlots;
   private final Map<MachineKey, TimedProgress> machinesProgress;
@@ -207,6 +207,11 @@ public class NetListenerServer implements Runnable {
     }
   }
 
+  private record EnhancedProcessInfo(
+      ProcessInfo processInfo,
+      int nOfRuns
+  ) {}
+
   private record Status(Instant lastContact, double pollInterval, TimeStatus status) {}
 
   private record TimedProgress(
@@ -221,6 +226,9 @@ public class NetListenerServer implements Runnable {
         return lastContact;
       }
       if (lastProgress.equals(Progress.NA)) {
+        return Instant.MAX;
+      }
+      if (lastProgress.rate() == 0) {
         return Instant.MAX;
       }
       return initialContact.plus(Math.round(ChronoUnit.MILLIS.between(
@@ -370,18 +378,20 @@ public class NetListenerServer implements Runnable {
                     .orElse(Instant.now()),
                 Instant.now(),
                 new Progress(
+                    0,
+                    processesData.get(pk).get(processesData.get(pk).lastKey()).nOfRuns(),
                     m.stream()
                         .map(Map.Entry::getValue)
                         .mapToDouble(tp -> tp.initialProgress().rate())
-                        .average() // TODO replace with sum and divide by num of runs
-                        .orElse(0)
+                        .sum()
                 ),
                 new Progress(
+                    0,
+                    processesData.get(pk).get(processesData.get(pk).lastKey()).nOfRuns(),
                     m.stream()
                         .map(Map.Entry::getValue)
                         .mapToDouble(tp -> tp.lastProgress().rate())
-                        .average() // TODO replace with sum and divide by num of runs
-                        .orElse(0)
+                        .sum()
                 ),
                 true
             )
@@ -484,7 +494,10 @@ public class NetListenerServer implements Runnable {
     machinesStatus.put(machineKey, new Status(Instant.now(), message.pollInterval(), TimeStatus.OK));
     ProcessKey processKey = new ProcessKey(message.machineInfo().machineName(), message.processInfo().processName());
     processesData.putIfAbsent(processKey, new TreeMap<>());
-    processesData.get(processKey).put(message.localTime(), message.processInfo());
+    processesData.get(processKey).put(
+        message.localTime(),
+        new EnhancedProcessInfo(message.processInfo(), message.nOfRuns())
+    );
     processesStatus.put(processKey, new Status(Instant.now(), message.pollInterval(), TimeStatus.OK));
     for (Update update : message.updates()) {
       RunKey runKey = new RunKey(
@@ -553,19 +566,25 @@ public class NetListenerServer implements Runnable {
     Rectangle machinesR = nwR.splitVertically(configuration.machinesProcessesSplit).get(0);
     Rectangle processesR = nwR.splitVertically(configuration.machinesProcessesSplit).get(1);
     //draw structure
-    DrawUtils.drawFrame(tg, runsR, "Runs (%d)".formatted(runsData.size()), FRAME_COLOR, FRAME_LABEL_COLOR);
+    DrawUtils.drawFrame(
+        tg,
+        runsR,
+        "Runs (%d) - Local time: %s".formatted(runsData.size(), COMPLETE_DATETIME_FORMAT.format(Instant.now())),
+        FRAME_COLOR,
+        FRAME_LABEL_COLOR
+    );
     DrawUtils.drawFrame(tg, legendR, "Legend", FRAME_COLOR, FRAME_LABEL_COLOR);
     DrawUtils.drawFrame(
         tg,
         machinesR,
-        "Machines (%d) - %s".formatted(machinesData.size(), COMPLETE_DATETIME_FORMAT.format(Instant.now())),
+        "Machines (%d)".formatted(machinesData.size()),
         FRAME_COLOR,
         FRAME_LABEL_COLOR
     );
     DrawUtils.drawFrame(
         tg,
         processesR,
-        "Processes (%d)".formatted(processesData.size()),
+        "Experiments (%d)".formatted(processesData.size()),
         FRAME_COLOR,
         FRAME_LABEL_COLOR
     );
@@ -601,7 +620,6 @@ public class NetListenerServer implements Runnable {
     Table<Cell> machinesTable = new ArrayTable<>(List.of(
         "",
         "",
-        "ETA",
         "Progress",
         "Machine",
         "Cores",
@@ -610,7 +628,6 @@ public class NetListenerServer implements Runnable {
     forEach(machinesData, (i, mk, v) -> machinesTable.addRow(List.of(
         new ColoredStringCell(STATUS_STRING, machinesStatus.get(mk).status().getColor()),
         new StringCell("M%02d".formatted(i)),
-        new StringCell(eta(machinesProgress.get(mk).eta())), // TODO gives NPE
         new StringCell(progressPlot(machinesProgress.get(mk).lastProgress(), configuration.barLength)),
         new StringCell(mk.machineName()),
         new StringCell(last(v, MachineInfo::numberOfProcessors, "%2d")),
@@ -647,20 +664,20 @@ public class NetListenerServer implements Runnable {
         new StringCell("M%02d".formatted(
             machinesData.keySet().stream().toList().indexOf(pk.machineKey())
         )),
-        new StringCell(last(v, ProcessInfo::username, "%s")),
+        new StringCell(last(v, pi -> pi.processInfo().username(), "%s")),
         new CompositeCell(List.of(
-            new StringCell(last(v, pi -> pi.usedMemory() / 1024 / 1024, "%5d")),
-            trend(v, ProcessInfo::usedMemory).cell(),
+            new StringCell(last(v, pi -> pi.processInfo().usedMemory() / 1024 / 1024, "%5d")),
+            trend(v, pi -> pi.processInfo().usedMemory()).cell(),
             new StringCell(areaPlot(
                 v,
-                ProcessInfo::usedMemory,
+                pi -> pi.processInfo().usedMemory(),
                 v.lastKey() - configuration.machineHistorySeconds * 1000d,
                 configuration.areaPlotLength
             ))
         )),
         new CompositeCell(List.of(
-            new StringCell(last(v, pi -> pi.maxMemory() / 1024 / 1024, "%5d")),
-            trend(v, ProcessInfo::maxMemory).cell()
+            new StringCell(last(v, pi -> pi.processInfo().maxMemory() / 1024 / 1024, "%5d")),
+            trend(v, pi -> pi.processInfo().maxMemory()).cell()
         ))
     )), false);
     DrawUtils.drawTable(tg, processesR.inner(1), processesTable, DATA_LABEL_COLOR, DATA_COLOR);

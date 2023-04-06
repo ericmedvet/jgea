@@ -11,5 +11,6 @@ public record Message(
     MachineInfo machineInfo,
     ProcessInfo processInfo,
     double pollInterval,
+    int nOfRuns,
     List<Update> updates
 ) implements Serializable {}
