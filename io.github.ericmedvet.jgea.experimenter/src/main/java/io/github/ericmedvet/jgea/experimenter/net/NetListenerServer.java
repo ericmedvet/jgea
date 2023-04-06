@@ -34,6 +34,7 @@ import io.github.ericmedvet.jgea.tui.util.Rectangle;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.Duration;
@@ -48,6 +49,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.logging.Logger;
+import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -68,6 +70,7 @@ public class NetListenerServer implements Runnable {
       10,
       10000,
       10979,
+      "key",
       100,
       2,
       5,
@@ -190,7 +193,7 @@ public class NetListenerServer implements Runnable {
       float runsSplit, float legendSplit, float machinesProcessesSplit,
       int barLength, int areaPlotLength,
       int uiRefreshIntervalMillis, int machineHistorySeconds, int runDataHistorySize, int runPlotHistorySize,
-      int port, int nOfClients, double laterThreshold, double missingThreshold, double purgeThreshold
+      int port, String key, int nOfClients, double laterThreshold, double missingThreshold, double purgeThreshold
   ) {}
 
   private record MachineKey(String machineName) {}
@@ -225,10 +228,7 @@ public class NetListenerServer implements Runnable {
       if (!isRunning) {
         return lastContact;
       }
-      if (lastProgress.equals(Progress.NA)) {
-        return Instant.MAX;
-      }
-      if (lastProgress.rate() == 0) {
+      if (lastProgress.equals(Progress.NA) || (lastProgress.rate() == 0) || (lastProgress.rate() == initialProgress.rate())) {
         return Instant.MAX;
       }
       return initialContact.plus(Math.round(ChronoUnit.MILLIS.between(
@@ -428,8 +428,21 @@ public class NetListenerServer implements Runnable {
         ));
   }
 
-  private void checkConnection(Socket socket) {
-
+  private void doHandshake(
+      ObjectInputStream ois,
+      ObjectOutputStream oos
+  ) throws IOException {
+    RandomGenerator rg = new Random();
+    int n = rg.nextInt();
+    try {
+      oos.writeObject(NetUtils.encrypt(Integer.toString(n), configuration.key));
+      int m = Integer.parseInt(NetUtils.decrypt((String) ois.readObject(), configuration.key));
+      if (m != n + 1) {
+        throw new IOException("Wrong answer to challenge from client: %d vs. %d".formatted(m, n + 1));
+      }
+    } catch (Exception e) {
+      throw new IOException(e);
+    }
   }
 
   @Override
@@ -456,8 +469,12 @@ public class NetListenerServer implements Runnable {
         try {
           Socket socket = serverSocket.accept();
           clientsExecutorService.submit(() -> {
-            try (socket; ObjectInputStream ois = new ObjectInputStream(socket.getInputStream())) {
-              checkConnection(socket);
+            try (
+                socket;
+                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+                ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+            ) {
+              doHandshake(ois, oos);
               while (true) {
                 Message message = (Message) ois.readObject();
                 L.fine("Msg received with %d updates".formatted(message.updates().size()));

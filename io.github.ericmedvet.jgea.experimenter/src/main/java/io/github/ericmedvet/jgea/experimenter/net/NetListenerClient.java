@@ -23,6 +23,7 @@ import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.*;
@@ -39,6 +40,7 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
   private final static Logger L = Logger.getLogger(NetListenerClient.class.getName());
   private final String serverAddress;
   private final int serverPort;
+  private final String serverKey;
   private final double pollInterval;
   private final List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> stateFunctions;
   private final List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> plotTableBuilders;
@@ -46,11 +48,12 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
   private final Map<Integer, Update> updates;
   private final ScheduledExecutorService service;
 
-  private Socket socket = null;
+  private ObjectOutputStream oos = null;
 
   public NetListenerClient(
       String serverAddress,
       int serverPort,
+      String serverKey,
       double pollInterval,
       List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> stateFunctions,
       List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> plotTableBuilders,
@@ -58,6 +61,7 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
   ) {
     this.serverAddress = serverAddress;
     this.serverPort = serverPort;
+    this.serverKey = serverKey;
     this.pollInterval = pollInterval;
     this.stateFunctions = stateFunctions;
     this.plotTableBuilders = plotTableBuilders;
@@ -161,14 +165,39 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
     service.shutdownNow();
   }
 
-  private void openSocket() {
-    if (socket != null) {
+  private void doHandshake(
+      ObjectInputStream ois,
+      ObjectOutputStream oos
+  ) throws IOException {
+    try {
+      int n = Integer.parseInt(NetUtils.decrypt((String) ois.readObject(), serverKey));
+      oos.writeObject(NetUtils.encrypt(Integer.toString(n + 1), serverKey));
+    } catch (Exception e) {
+      throw new IOException(e);
+    }
+  }
+
+  private void openConnection() {
+    if (oos != null) {
       return;
     }
+    Socket socket = null;
     try {
       socket = new Socket(serverAddress, serverPort);
+      oos = new ObjectOutputStream(socket.getOutputStream());
+      doHandshake(
+          new ObjectInputStream(socket.getInputStream()),
+          oos
+      );
     } catch (IOException e) {
       L.warning("Cannot open connection due to: %s".formatted(e));
+      if (socket != null) {
+        try {
+          socket.close();
+        } catch (IOException ex) {
+          //ignore
+        }
+      }
     }
   }
 
@@ -188,10 +217,9 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
         toSendUpdates
     );
     //attempt send
-    openSocket();
-    if (socket != null) {
+    openConnection();
+    if (oos != null) {
       try {
-        ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
         oos.writeObject(message);
         L.fine("Message sent with %d updates".formatted(message.updates().size()));
       } catch (IOException e) {
@@ -200,11 +228,11 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
           message.updates().forEach(u -> updates.put(u.runIndex(), u));
         }
         try {
-          socket.close();
+          oos.close();
         } catch (IOException e2) {
           L.warning("Cannot open connection due to: %s".formatted(e2));
         }
-        socket = null;
+        oos = null;
       }
     }
   }

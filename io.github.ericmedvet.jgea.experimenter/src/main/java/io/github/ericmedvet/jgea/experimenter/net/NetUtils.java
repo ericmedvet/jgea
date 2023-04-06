@@ -73,7 +73,7 @@ public class NetUtils {
     return System.getProperty("user.name");
   }
 
-  private static String decrypt(
+  public static String decrypt(
       String ciphredString,
       String secret
   ) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidAlgorithmParameterException,
@@ -105,7 +105,7 @@ public class NetUtils {
     return Base64.getEncoder().encodeToString(cipherText);
   }
 
-  private static String encrypt(
+  public static String encrypt(
       String clearString,
       String secret
   ) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidAlgorithmParameterException,
@@ -113,7 +113,7 @@ public class NetUtils {
     return encrypt(CIPHER_ALG, clearString, getKeyFromPassword(secret, SALT), generateIv());
   }
 
-  public static IvParameterSpec generateIv() {
+  private static IvParameterSpec generateIv() {
     byte[] iv = new byte[16];
     System.arraycopy(IV_BYTES, 0, iv, 0, iv.length);
     return new IvParameterSpec(iv);
