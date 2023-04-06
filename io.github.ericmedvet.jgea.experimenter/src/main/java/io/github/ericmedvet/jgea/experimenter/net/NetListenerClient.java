@@ -46,6 +46,8 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
   private final Map<Integer, Update> updates;
   private final ScheduledExecutorService service;
 
+  private Socket socket = null;
+
   public NetListenerClient(
       String serverAddress,
       int serverPort,
@@ -159,6 +161,17 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
     service.shutdownNow();
   }
 
+  private void openSocket() {
+    if (socket != null) {
+      return;
+    }
+    try {
+      socket = new Socket(serverAddress, serverPort);
+    } catch (IOException e) {
+      L.warning("Cannot open connection due to: %s".formatted(e));
+    }
+  }
+
   private void sendUpdates() {
     List<Update> toSendUpdates;
     synchronized (updates) {
@@ -175,16 +188,23 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
         toSendUpdates
     );
     //attempt send
-    try (
-        Socket socket = new Socket(serverAddress, serverPort);
-        ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream())
-    ) {
-      oos.writeObject(message);
-      L.fine("Message sent with %d updates".formatted(message.updates().size()));
-    } catch (IOException e) {
-      L.warning("Cannot send message with %d updates due to: %s".formatted(message.updates().size(), e));
-      synchronized (updates) {
-        message.updates().forEach(u -> updates.put(u.runIndex(), u));
+    openSocket();
+    if (socket != null) {
+      try {
+        ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+        oos.writeObject(message);
+        L.fine("Message sent with %d updates".formatted(message.updates().size()));
+      } catch (IOException e) {
+        L.warning("Cannot send message with %d updates due to: %s".formatted(message.updates().size(), e));
+        synchronized (updates) {
+          message.updates().forEach(u -> updates.put(u.runIndex(), u));
+        }
+        try {
+          socket.close();
+        } catch (IOException e2) {
+          L.warning("Cannot open connection due to: %s".formatted(e2));
+        }
+        socket = null;
       }
     }
   }

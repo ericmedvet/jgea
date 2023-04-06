@@ -428,6 +428,10 @@ public class NetListenerServer implements Runnable {
         ));
   }
 
+  private void checkConnection(Socket socket) {
+
+  }
+
   @Override
   public void run() {
     //start painter task
@@ -453,9 +457,12 @@ public class NetListenerServer implements Runnable {
           Socket socket = serverSocket.accept();
           clientsExecutorService.submit(() -> {
             try (socket; ObjectInputStream ois = new ObjectInputStream(socket.getInputStream())) {
-              Message message = (Message) ois.readObject();
-              L.fine("Msg received with %d updates".formatted(message.updates().size()));
-              storeMessage(message);
+              checkConnection(socket);
+              while (true) {
+                Message message = (Message) ois.readObject();
+                L.fine("Msg received with %d updates".formatted(message.updates().size()));
+                storeMessage(message);
+              }
             } catch (IOException e) {
               L.warning("Cannot open input stream due to: %s".formatted(e));
             } catch (ClassNotFoundException e) {
