@@ -711,7 +711,10 @@ public class NetListenerServer implements Runnable {
     forEach(machinesData, (i, mk, v) -> machinesTable.addRow(List.of(
         new ColoredStringCell(STATUS_STRING, machinesStatus.get(mk).status().getColor()),
         new StringCell("M%02d".formatted(i)),
-        new StringCell(progressPlot(machinesProgress.get(mk).lastProgress(), configuration.barLength)),
+        new StringCell(machinesProgress.containsKey(mk) ? progressPlot(
+            machinesProgress.get(mk).lastProgress(),
+            configuration.barLength
+        ) : ""),
         new StringCell(mk.machineName()),
         new StringCell(last(v, MachineInfo::numberOfProcessors, "%2d")),
         new CompositeCell(List.of(

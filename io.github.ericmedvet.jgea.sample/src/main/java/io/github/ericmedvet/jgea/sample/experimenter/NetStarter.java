@@ -68,6 +68,7 @@ public class NetStarter {
           ];
           listeners = [
             ea.l.net(
+              serverKeyFilePath = "/home/eric/Documenti/experiments/vsrs/server-key.txt";
               functions = [
                 ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
                 ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));

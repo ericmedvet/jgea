@@ -252,6 +252,25 @@ public class Listeners {
     return getKeyFromParamMap(namedParamMap, keyPieces.subList(1, keyPieces.size()));
   }
 
+  private static String getCredentialFromFile(String credentialFilePath) {
+    if (credentialFilePath == null) {
+      throw new IllegalArgumentException("Credential file path not provided");
+    }
+    String credential;
+    try (BufferedReader br = new BufferedReader(new FileReader(credentialFilePath))) {
+      List<String> lines = br.lines().toList();
+      if (lines.size() < 1) {
+        throw new IllegalArgumentException("Invalid credential file with 0 lines");
+      }
+      String[] pieces = lines.get(0).split("\\s");
+      credential = pieces[0];
+      L.config(String.format("Using provided credential: %s", credentialFilePath));
+    } catch (IOException e) {
+      throw new IllegalArgumentException(String.format("Cannot read credentials at %s: %s", credentialFilePath, e));
+    }
+    return credential;
+  }
+
   @SuppressWarnings("unused")
   public static <G, S, Q> BiFunction<Experiment, ExecutorService, ListenerFactory<POSetPopulationState<G, S, Q>, Run<
       ?, G, S, Q>>> net(
@@ -274,14 +293,14 @@ public class Listeners {
       @Param(value = "onlyLast") boolean onlyLast,
       @Param(value = "serverAddress", dS = "127.0.0.1") String serverAddress,
       @Param(value = "serverPort", dI = 10979) int serverPort,
-      @Param(value = "serverKey", dS = "key") String serverKey,
+      @Param(value = "serverKeyFilePath") String serverKeyFilePath,
       @Param(value = "pollInterval", dD = 2) double pollInterval
   ) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         new NetListenerClient<>(
             serverAddress,
             serverPort,
-            serverKey,
+            getCredentialFromFile(serverKeyFilePath),
             pollInterval,
             Misc.concat(List.of(
                 defaultStateFunctions,
@@ -312,19 +331,8 @@ public class Listeners {
       @Param(value = "onlyLast") boolean onlyLast
   ) {
     //read credential files
-    String botId;
     long longChatId;
-    try (BufferedReader br = new BufferedReader(new FileReader(botIdFilePath))) {
-      List<String> lines = br.lines().toList();
-      if (lines.size() < 1) {
-        throw new IllegalArgumentException("Invalid telegram credential file with 0 lines");
-      }
-      String[] pieces = lines.get(0).split("\\s");
-      botId = pieces[0];
-      L.config(String.format("Using provided telegram credentials: %s", botIdFilePath));
-    } catch (IOException e) {
-      throw new IllegalArgumentException(String.format("Cannot read telegram credentials at %s: %s", botIdFilePath, e));
-    }
+    String botId = getCredentialFromFile(botIdFilePath);
     try {
       longChatId = Long.parseLong(chatId);
     } catch (NumberFormatException e) {
