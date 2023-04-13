@@ -25,16 +25,16 @@ import java.util.List;
 /**
  * @author Eric Medvet <eric.medvet@gmail.com>
  */
-public class GeometricCrossover extends ElementWiseCrossover<Double, List<Double>> {
+public class HypercubeGeometricCrossover extends ElementWiseCrossover<Double, List<Double>> {
 
-  public GeometricCrossover(Range<Double> range) {
+  public HypercubeGeometricCrossover(Range<Double> range) {
     super(
         random -> new ArrayList<>(),
         (v1, v2, random) -> v1 + (v2 - v1) * (random.nextDouble() * (range.upperEndpoint() - range.lowerEndpoint()) + range.lowerEndpoint())
     );
   }
 
-  public GeometricCrossover() {
+  public HypercubeGeometricCrossover() {
     this(Range.openClosed(0d, 1d));
   }
 }

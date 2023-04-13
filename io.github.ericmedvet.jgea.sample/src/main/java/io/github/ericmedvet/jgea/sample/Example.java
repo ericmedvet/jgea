@@ -32,7 +32,7 @@ import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitFlipMutatio
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.GaussianMutation;
-import io.github.ericmedvet.jgea.core.representation.sequence.numeric.GeometricCrossover;
+import io.github.ericmedvet.jgea.core.representation.sequence.numeric.HypercubeGeometricCrossover;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.UniformDoubleFactory;
 import io.github.ericmedvet.jgea.core.representation.tree.SameRootSubtreeCrossover;
 import io.github.ericmedvet.jgea.core.selector.Last;
@@ -126,7 +126,7 @@ public class Example extends Worker {
         new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
         100,
         StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
-        Map.of(new GeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
+        Map.of(new HypercubeGeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
         new Tournament(5),
         new Last(),
         100,
