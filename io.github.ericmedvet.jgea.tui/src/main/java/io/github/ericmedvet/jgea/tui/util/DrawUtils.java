@@ -28,9 +28,13 @@ import io.github.ericmedvet.jgea.tui.table.ColoredStringCell;
 import io.github.ericmedvet.jgea.tui.table.CompositeCell;
 import io.github.ericmedvet.jgea.tui.table.StringCell;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.IllegalFormatException;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
@@ -160,6 +164,30 @@ public class DrawUtils {
     clipPut(tg, r, p, TextPlotter.horizontalBar(value, min, max, l, false));
     tg.setForegroundColor(previousFgColor);
     tg.setBackgroundColor(previousBgColor);
+  }
+
+  public static void drawLogs(
+      TextGraphics tg,
+      Rectangle r,
+      List<LogRecord> logRecords,
+      Map<Level, TextColor> levelColors,
+      TextColor mainDataColor,
+      TextColor dataColor,
+      String levelFormat,
+      String datetimeFormat
+  ) {
+    int levelW = String.format(levelFormat, Level.WARNING).length();
+    int dateW = String.format(datetimeFormat, Instant.now().getEpochSecond()).length();
+    DrawUtils.clear(tg, r);
+    for (int i = 0; i < Math.min(r.h(), logRecords.size()); i = i + 1) {
+      LogRecord record = logRecords.get(logRecords.size() - 1 - i);
+      tg.setForegroundColor(levelColors.getOrDefault(record.getLevel(), dataColor));
+      DrawUtils.clipPut(tg, r, 0, i, String.format(levelFormat, record.getLevel()));
+      tg.setForegroundColor(mainDataColor);
+      DrawUtils.clipPut(tg, r, levelW + 1, i, String.format(datetimeFormat, record.getMillis()));
+      tg.setForegroundColor(dataColor);
+      DrawUtils.clipPut(tg, r, levelW + 1 + dateW + 1, i, record.getMessage());
+    }
   }
 
   public static void drawPlot(

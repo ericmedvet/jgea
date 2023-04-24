@@ -77,14 +77,14 @@ public class Starter {
               plots = [ea.plot.fitness()]
             );
             ea.l.bestCsv(
-              filePath = "/home/eric/experiments/2dmrsim/trial-best.txt";
+              filePath = "/home/eric/Documenti/experiments/2dmrsim/trial-best.txt";
               functions = [
                 ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f")
               ];
               runKeys = ["randomGenerator.seed"; "solver"]
             );
             ea.l.allCsv(
-              filePath = "/home/eric/experiments/2dmrsim/trial-all.txt";
+              filePath = "/home/eric/Documenti/experiments/2dmrsim/trial-all.txt";
               individualFunctions = [ea.nf.fitness(); ea.nf.base64(f = ea.nf.genotype())];
               runKeys = ["randomGenerator.seed"; "solver"];
               onlyLast = true

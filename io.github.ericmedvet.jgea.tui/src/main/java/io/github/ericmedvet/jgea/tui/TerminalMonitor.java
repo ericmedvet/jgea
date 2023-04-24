@@ -40,14 +40,24 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
 /**
  * @author "Eric Medvet" on 2022/09/02 for jgea
  */
-public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E, K>, ProgressMonitor {
+public class TerminalMonitor<E, K> extends ListLogHandler implements ListenerFactory<E, K>, ProgressMonitor {
 
+  public final static Map<Level, TextColor> LEVEL_COLORS = Map.ofEntries(
+      Map.entry(
+          Level.SEVERE,
+          TextColor.Factory.fromString("#EE3E38")
+      ),
+      Map.entry(Level.WARNING, TextColor.Factory.fromString("#FBA465")),
+      Map.entry(Level.INFO, TextColor.Factory.fromString("#D8E46B")),
+      Map.entry(Level.CONFIG, TextColor.Factory.fromString("#6D8700"))
+  );
   private final static Configuration DEFAULT_CONFIGURATION = new Configuration(
       0.7f,
       0.8f,
@@ -58,7 +68,6 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       true,
       true
   );
-
   private final static TextColor FRAME_COLOR = TextColor.Factory.fromString("#105010");
   private final static TextColor FRAME_LABEL_COLOR = TextColor.Factory.fromString("#10A010");
   private final static TextColor DATA_LABEL_COLOR = TextColor.Factory.fromString("#A01010");
@@ -67,22 +76,9 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   private final static TextColor PLOT_BG_COLOR = TextColor.Factory.fromString("#101010");
   private final static TextColor PLOT1_COLOR = TextColor.Factory.fromString("#FF1010");
   private final static TextColor PLOT2_COLOR = TextColor.Factory.fromString("#105010");
-
   private final static String LEVEL_FORMAT = "%4.4s";
   private final static String DATETIME_FORMAT = "%1$tm-%1$td %1$tH:%1$tM:%1$tS";
-
-  private final static int LOG_HISTORY_SIZE = 100;
   private final static int RUN_HISTORY_SIZE = 1000;
-
-  private final static Map<Level, TextColor> LEVEL_COLORS = Map.ofEntries(
-      Map.entry(
-          Level.SEVERE,
-          TextColor.Factory.fromString("#EE3E38")
-      ),
-      Map.entry(Level.WARNING, TextColor.Factory.fromString("#FBA465")),
-      Map.entry(Level.INFO, TextColor.Factory.fromString("#D8E46B")),
-      Map.entry(Level.CONFIG, TextColor.Factory.fromString("#6D8700"))
-  );
   private final static Logger L = Logger.getLogger(TerminalMonitor.class.getName());
   private final List<? extends NamedFunction<? super E, ?>> eFunctions;
   private final List<? extends NamedFunction<? super K, ?>> kFunctions;
@@ -90,10 +86,8 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   private final List<String> formats;
   private final Configuration configuration;
   private final ScheduledFuture<?> painterTask;
-  private final List<LogRecord> logRecords;
   private final Table<Object> runTable;
   private final Instant startingInstant;
-  private final List<Handler> originalHandlers;
 
   private final List<Accumulator<? super E, Table<Number>>> plotAccumulators;
   private final ScheduledExecutorService uiExecutorService;
@@ -116,6 +110,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       List<PlotTableBuilder<? super E>> plotTableBuilders,
       Configuration configuration
   ) {
+    super(configuration.dumpLogAfterStop());
     //set functions
     this.eFunctions = configuration.robust() ? eFunctions.stream().map(NamedFunction::robust).toList() : eFunctions;
     this.kFunctions = configuration.robust() ? kFunctions.stream().map(NamedFunction::robust).toList() : kFunctions;
@@ -128,7 +123,6 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     //read configuration
     this.configuration = configuration;
     //prepare data object stores
-    logRecords = new LinkedList<>();
     runTable = new ArrayTable<>(Misc.concat(List.of(
         eFunctions.stream().map(NamedFunction::getName).toList(),
         kFunctions.stream().map(NamedFunction::getName).toList()
@@ -153,12 +147,6 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
         configuration.refreshIntervalMillis,
         TimeUnit.MILLISECONDS
     );
-    //capture logs
-    Logger mainLogger = Logger.getLogger("");
-    mainLogger.setLevel(Level.CONFIG);
-    mainLogger.addHandler(this);
-    originalHandlers = Arrays.stream(mainLogger.getHandlers()).filter(h -> h instanceof ConsoleHandler).toList();
-    originalHandlers.forEach(mainLogger::removeHandler);
     //set default locale
     Locale.setDefault(Locale.ENGLISH);
     startingInstant = Instant.now();
@@ -213,24 +201,6 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
   public void notify(Progress progress, String message) {
     overallProgress = progress;
     lastProgressMessage = message;
-  }
-
-  @Override
-  public synchronized void publish(LogRecord record) {
-    synchronized (logRecords) {
-      logRecords.add(record);
-      while (logRecords.size() > LOG_HISTORY_SIZE) {
-        logRecords.remove(0);
-      }
-    }
-  }
-
-  @Override
-  public void flush() {
-  }
-
-  @Override
-  public void close() throws SecurityException {
   }
 
   private void repaint() {
@@ -290,20 +260,15 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
       DrawUtils.drawFrame(tg, plotRs.get(i), plotName, FRAME_COLOR, FRAME_LABEL_COLOR);
     }
     //draw data: logs
-    int levelW = String.format(LEVEL_FORMAT, Level.WARNING).length();
-    int dateW = String.format(DATETIME_FORMAT, Instant.now().getEpochSecond()).length();
-    r = logR.inner(1);
-    DrawUtils.clear(tg, r);
-    synchronized (logRecords) {
-      for (int i = 0; i < Math.min(r.h(), logRecords.size()); i = i + 1) {
-        LogRecord record = logRecords.get(logRecords.size() - 1 - i);
-        tg.setForegroundColor(LEVEL_COLORS.getOrDefault(record.getLevel(), DATA_COLOR));
-        DrawUtils.clipPut(tg, r, 0, i, String.format(LEVEL_FORMAT, record.getLevel()));
-        tg.setForegroundColor(MAIN_DATA_COLOR);
-        DrawUtils.clipPut(tg, r, levelW + 1, i, String.format(DATETIME_FORMAT, record.getMillis()));
-        tg.setForegroundColor(DATA_COLOR);
-        DrawUtils.clipPut(tg, r, levelW + 1 + dateW + 1, i, record.getMessage());
-      }
+    synchronized (getLogRecords()) {
+      DrawUtils.drawLogs(tg,
+          logR.inner(1),
+          getLogRecords(),
+          LEVEL_COLORS,
+          DATA_COLOR,
+          MAIN_DATA_COLOR,
+          LEVEL_FORMAT,
+          DATETIME_FORMAT);
     }
     //draw data: status
     r = statusR.inner(1);
@@ -525,11 +490,7 @@ public class TerminalMonitor<E, K> extends Handler implements ListenerFactory<E,
     }
     painterTask.cancel(false);
     L.info("Closed");
-    Logger.getLogger("").removeHandler(this);
-    originalHandlers.forEach(h -> Logger.getLogger("").addHandler(h));
-    if (configuration.dumpLogAfterStop()) {
-      logRecords.forEach(L::log);
-    }
+    close();
     uiExecutorService.shutdownNow();
   }
 
