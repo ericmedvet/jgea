@@ -63,7 +63,7 @@ public class Experimenter {
         namedBuilder,
         Executors.newFixedThreadPool(nOfConcurrentRuns),
         Executors.newFixedThreadPool(nOfThreads),
-        Executors.newSingleThreadExecutor(),
+        Executors.newFixedThreadPool(nOfConcurrentRuns),
         true
     );
   }
