@@ -535,7 +535,7 @@ public class NetListenerServer extends ListLogHandler implements Runnable {
             try (
                 socket;
                 ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-                ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+                ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream())
             ) {
               doHandshake(ois, oos);
               while (isRunning) {
