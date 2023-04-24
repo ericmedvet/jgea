@@ -23,11 +23,12 @@ package io.github.ericmedvet.jgea.problem.symbolicregression;
 
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.RealFunction;
 
+import java.io.Serializable;
 import java.util.function.ToIntFunction;
 
 public interface Element {
 
-  enum Operator implements Element, RealFunction {
+  enum Operator implements Element, RealFunction, Serializable {
 
     ADDITION("+", x -> x[0] + x[1], 2), SUBTRACTION("-", x -> x[0] - x[1], 2), DIVISION(
         "/",
@@ -80,11 +81,11 @@ public interface Element {
     }
   }
 
-  record Constant(double value) implements Element {}
+  record Constant(double value) implements Element, Serializable {}
 
-  record Decoration(String string) implements Element {}
+  record Decoration(String string) implements Element, Serializable {}
 
-  record Variable(String name) implements Element {}
+  record Variable(String name) implements Element, Serializable {}
 
   String toString();
 }

@@ -16,12 +16,14 @@
 
 package io.github.ericmedvet.jgea.problem.booleanfunction;
 
+import java.io.Serializable;
+
 /**
  * @author eric
  */
 public interface Element {
 
-  enum Operator implements Element {
+  enum Operator implements Element, Serializable {
 
     AND(".and"), AND1NOT(".and1not"), OR(".or"), XOR(".xor"), NOT(".not"), IF(".if");
 
@@ -38,7 +40,7 @@ public interface Element {
 
   }
 
-  record Constant(boolean value) implements Element {
+  record Constant(boolean value) implements Element, Serializable {
 
     @Override
     public String toString() {
@@ -46,9 +48,9 @@ public interface Element {
     }
   }
 
-  record Decoration(String string) implements Element {}
+  record Decoration(String string) implements Element, Serializable {}
 
-  record Variable(String name) implements Element {}
+  record Variable(String name) implements Element, Serializable {}
 
   String toString();
 }
