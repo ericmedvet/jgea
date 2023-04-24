@@ -61,6 +61,7 @@ import java.util.stream.Stream;
  */
 public class NetListenerServer implements Runnable {
 
+  public static final String EMPTY_CELL_CONTENT = "-";
   private final static Logger L = Logger.getLogger(NetListenerServer.class.getName());
   private final static Configuration DEFAULT_CONFIGURATION = new Configuration(
       0.5f,
@@ -80,7 +81,6 @@ public class NetListenerServer implements Runnable {
       20
   );
   private final static String STATUS_STRING = "⬤";
-
   private final static DateTimeFormatter SAME_DAY_DATETIME_FORMAT = DateTimeFormatter
       .ofPattern("HH:mm:ss")
       .withZone(ZoneId.systemDefault());
@@ -92,7 +92,6 @@ public class NetListenerServer implements Runnable {
   private final static TextColor DATA_LABEL_COLOR = TextColor.Factory.fromString("#A01010");
   private final static TextColor MISSING_DATA_COLOR = TextColor.Factory.fromString("#404040");
   private final static TextColor DATA_COLOR = TextColor.Factory.fromString("#A0A0A0");
-
   private final Configuration configuration;
   private final Map<MachineKey, SortedMap<Long, MachineInfo>> machinesData;
   private final Map<ProcessKey, SortedMap<Long, EnhancedProcessInfo>> processesData;
@@ -219,6 +218,11 @@ public class NetListenerServer implements Runnable {
       int port, String key, int nOfClients, double laterThreshold, double missingThreshold, double purgeThreshold
   ) {}
 
+  private record EnhancedProcessInfo(
+      ProcessInfo processInfo,
+      int nOfRuns
+  ) {}
+
   private record MachineKey(String machineName) {}
 
   private record ProcessKey(String machineName, String processName) {
@@ -232,11 +236,6 @@ public class NetListenerServer implements Runnable {
       return new ProcessKey(machineName, processName);
     }
   }
-
-  private record EnhancedProcessInfo(
-      ProcessInfo processInfo,
-      int nOfRuns
-  ) {}
 
   private record Status(Instant lastContact, double pollInterval, TimeStatus status) {}
 
@@ -271,6 +270,26 @@ public class NetListenerServer implements Runnable {
         data.lastKey(),
         l
     );
+  }
+
+  private static <T> List<T> concatAndTrim(List<T> ts1, List<T> ts2, int n) {
+    List<T> ts = Stream.of(ts1, ts2)
+        .flatMap(List::stream)
+        .toList();
+    if (ts.size() <= n) {
+      return ts;
+    }
+    return ts.subList(ts.size() - n, ts.size());
+  }
+
+  private static String eta(Instant eta) {
+    if (eta.equals(Instant.MAX)) {
+      return EMPTY_CELL_CONTENT;
+    }
+    if (!eta.truncatedTo(ChronoUnit.DAYS).equals(Instant.now().truncatedTo(ChronoUnit.DAYS))) {
+      return COMPLETE_DATETIME_FORMAT.format(eta);
+    }
+    return SAME_DAY_DATETIME_FORMAT.format(eta);
   }
 
   private static <K, V> void forEach(Map<K, V> m, TriConsumer<Integer, K, V> f, boolean reversed) {
@@ -348,34 +367,21 @@ public class NetListenerServer implements Runnable {
     return Trend.from(d1, d2);
   }
 
-  private static <T> List<T> concatAndTrim(List<T> ts1, List<T> ts2, int n) {
-    List<T> ts = Stream.of(ts1, ts2)
-        .flatMap(List::stream)
-        .toList();
-    if (ts.size() <= n) {
-      return ts;
-    }
-    return ts.subList(ts.size() - n, ts.size());
-  }
-
-  private static String eta(Instant eta) {
-    if (eta.equals(Instant.MAX)) {
-      return "-";
-    }
-    if (!eta.truncatedTo(ChronoUnit.DAYS).equals(Instant.now().truncatedTo(ChronoUnit.DAYS))) {
-      return COMPLETE_DATETIME_FORMAT.format(eta);
-    }
-    return SAME_DAY_DATETIME_FORMAT.format(eta);
-  }
-
-  private void stop() {
+  private void doHandshake(
+      ObjectInputStream ois,
+      ObjectOutputStream oos
+  ) throws IOException {
+    RandomGenerator rg = new Random();
+    int n = rg.nextInt();
     try {
-      screen.stopScreen();
-    } catch (IOException e) {
-      L.warning(String.format("Cannot stop screen: %s", e));
+      oos.writeObject(NetUtils.encrypt(Integer.toString(n), configuration.key));
+      int m = Integer.parseInt(NetUtils.decrypt((String) ois.readObject(), configuration.key));
+      if (m != n + 1) {
+        throw new IOException("Wrong answer to challenge from client: %d vs. %d".formatted(m, n + 1));
+      }
+    } catch (Exception e) {
+      throw new IOException(e);
     }
-    uiExecutorService.shutdownNow();
-    clientsExecutorService.shutdownNow();
   }
 
   private synchronized void refreshData() {
@@ -487,23 +493,6 @@ public class NetListenerServer implements Runnable {
         ));
   }
 
-  private void doHandshake(
-      ObjectInputStream ois,
-      ObjectOutputStream oos
-  ) throws IOException {
-    RandomGenerator rg = new Random();
-    int n = rg.nextInt();
-    try {
-      oos.writeObject(NetUtils.encrypt(Integer.toString(n), configuration.key));
-      int m = Integer.parseInt(NetUtils.decrypt((String) ois.readObject(), configuration.key));
-      if (m != n + 1) {
-        throw new IOException("Wrong answer to challenge from client: %d vs. %d".formatted(m, n + 1));
-      }
-    } catch (Exception e) {
-      throw new IOException(e);
-    }
-  }
-
   @Override
   public void run() {
     //start painter task
@@ -554,20 +543,14 @@ public class NetListenerServer implements Runnable {
     }
   }
 
-  private Status update(Status status, Instant now) {
-    long elapsed = Duration.between(status.lastContact(), now).toMillis();
-    long expected = Math.round(status.pollInterval() * 1000);
-    TimeStatus timeStatus = TimeStatus.OK;
-    if (elapsed > configuration.purgeThreshold() * expected) {
-      timeStatus = TimeStatus.PURGE;
-    } else if (elapsed > configuration.missingThreshold() * expected) {
-      timeStatus = TimeStatus.MISSING;
-    } else if (elapsed > configuration.laterThreshold() * expected) {
-      timeStatus = TimeStatus.LATER;
-    } else if (elapsed > expected) {
-      timeStatus = TimeStatus.LATE;
+  private void stop() {
+    try {
+      screen.stopScreen();
+    } catch (IOException e) {
+      L.warning(String.format("Cannot stop screen: %s", e));
     }
-    return new Status(status.lastContact(), status.pollInterval(), timeStatus);
+    uiExecutorService.shutdownNow();
+    clientsExecutorService.shutdownNow();
   }
 
   private synchronized void storeMessage(Message message) {
@@ -618,6 +601,22 @@ public class NetListenerServer implements Runnable {
           (ovs, nvs) -> concatAndTrim(ovs, nvs, configuration.runPlotHistorySize)
       ));
     }
+  }
+
+  private Status update(Status status, Instant now) {
+    long elapsed = Duration.between(status.lastContact(), now).toMillis();
+    long expected = Math.round(status.pollInterval() * 1000);
+    TimeStatus timeStatus = TimeStatus.OK;
+    if (elapsed > configuration.purgeThreshold() * expected) {
+      timeStatus = TimeStatus.PURGE;
+    } else if (elapsed > configuration.missingThreshold() * expected) {
+      timeStatus = TimeStatus.MISSING;
+    } else if (elapsed > configuration.laterThreshold() * expected) {
+      timeStatus = TimeStatus.LATER;
+    } else if (elapsed > expected) {
+      timeStatus = TimeStatus.LATE;
+    }
+    return new Status(status.lastContact(), status.pollInterval(), timeStatus);
   }
 
   private synchronized void updateUI() {
@@ -714,7 +713,7 @@ public class NetListenerServer implements Runnable {
         new StringCell(machinesProgress.containsKey(mk) ? progressPlot(
             machinesProgress.get(mk).lastProgress(),
             configuration.barLength
-        ) : ""),
+        ) : EMPTY_CELL_CONTENT),
         new StringCell(mk.machineName()),
         new StringCell(last(v, MachineInfo::numberOfProcessors, "%2d")),
         new CompositeCell(List.of(
@@ -744,8 +743,8 @@ public class NetListenerServer implements Runnable {
     forEach(processesData, (i, pk, v) -> processesTable.addRow(List.of(
         new ColoredStringCell(STATUS_STRING, processesStatus.get(pk).status().getColor()),
         new StringCell("P%02d".formatted(i)),
-        new StringCell(eta(processesProgress.get(pk).eta())),
-        new StringCell(progressPlot(processesProgress.get(pk).lastProgress(), configuration.barLength)),
+        new StringCell(processesProgress.containsKey(pk)?eta(processesProgress.get(pk).eta()): EMPTY_CELL_CONTENT),
+        new StringCell(processesProgress.containsKey(pk)?progressPlot(processesProgress.get(pk).lastProgress(), configuration.barLength): EMPTY_CELL_CONTENT),
         new StringCell(pk.processName()),
         new StringCell("M%02d".formatted(
             machinesData.keySet().stream().toList().indexOf(pk.machineKey())
@@ -793,11 +792,11 @@ public class NetListenerServer implements Runnable {
       List<Cell> row = new ArrayList<>();
       row.add(new ColoredStringCell(
           STATUS_STRING,
-          runsProgress.get(rk).isRunning() ? TimeStatus.OK.getColor() : TimeStatus.MISSING.getColor()
+          (runsProgress.containsKey(rk) && runsProgress.get(rk).isRunning()) ? TimeStatus.OK.getColor() : TimeStatus.MISSING.getColor()
       ));
       row.add(new StringCell("R%03d".formatted(rk.runIndex())));
-      row.add(new StringCell(eta(runsProgress.get(rk).eta())));
-      row.add(new StringCell(progressPlot(runsProgress.get(rk).lastProgress(), configuration.barLength)));
+      row.add(new StringCell(runsProgress.containsKey(rk)?eta(runsProgress.get(rk).eta()):EMPTY_CELL_CONTENT));
+      row.add(new StringCell(runsProgress.containsKey(rk)?progressPlot(runsProgress.get(rk).lastProgress(), configuration.barLength):EMPTY_CELL_CONTENT));
       row.add(new StringCell("P%02d".formatted(
           processesData.keySet().stream().toList().indexOf(rk.processKey())
       )));
@@ -806,7 +805,7 @@ public class NetListenerServer implements Runnable {
         if (values != null && !values.isEmpty()) {
           row.add(new StringCell(dik.format().formatted(values.get(values.size() - 1))));
         } else {
-          row.add(new ColoredStringCell("-", MISSING_DATA_COLOR));
+          row.add(new ColoredStringCell(EMPTY_CELL_CONTENT, MISSING_DATA_COLOR));
         }
       });
       plotItemKeys.forEach(pik -> {
