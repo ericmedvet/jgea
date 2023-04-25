@@ -20,8 +20,10 @@ import io.github.ericmedvet.jgea.core.representation.graph.numeric.RealFunction;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.util.Sized;
 
-import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author eric
@@ -29,38 +31,40 @@ import java.util.Objects;
 public class TreeBasedRealFunction implements RealFunction, Sized {
 
   private final Tree<Element> tree;
-  private final String[] varNames;
+  private final Map<String, Integer> varNamesMap;
 
   public TreeBasedRealFunction(Tree<Element> tree, String... varNames) {
     this.tree = tree;
-    this.varNames = varNames;
+    varNamesMap = IntStream.range(0, varNames.length)
+        .boxed()
+        .collect(Collectors.toMap(i -> varNames[i], i -> i));
   }
 
-  private static double compute(Tree<Element> tree, double[] x, String[] varNames) {
-    if (varNames.length != x.length) {
+  private static double compute(Tree<Element> tree, double[] x, Map<String, Integer> varNamesMap) {
+    if (varNamesMap.size() != x.length) {
       throw new IllegalArgumentException(String.format(
           "Wrong number of arguments: %d expected, %d received",
-          varNames.length,
+          varNamesMap.size(),
           x.length
       ));
     }
     if (tree.content() instanceof Element.Decoration) {
       throw new RuntimeException(String.format("Cannot compute: decoration node %s found", tree.content()));
     }
-    if (tree.content() instanceof Element.Variable) {
-      int index = Arrays.binarySearch(varNames, ((Element.Variable) tree.content()).name());
-      if (index < 0) {
-        throw new RuntimeException(String.format("Undefined variable: %s", ((Element.Variable) tree.content()).name()));
+    if (tree.content() instanceof Element.Variable variable) {
+      Integer index = varNamesMap.get(variable.name());
+      if (index == null) {
+        throw new RuntimeException(String.format("Undefined variable: %s", variable.name()));
       }
       return x[index];
     }
-    if (tree.content() instanceof Element.Constant) {
-      return ((Element.Constant) tree.content()).value();
+    if (tree.content() instanceof Element.Constant constant) {
+      return constant.value();
     }
     double[] childrenValues = new double[tree.nChildren()];
     int i = 0;
     for (Tree<Element> child : tree) {
-      double childValue = compute(child, x, varNames);
+      double childValue = compute(child, x, varNamesMap);
       childrenValues[i] = childValue;
       i = i + 1;
     }
@@ -73,7 +77,7 @@ public class TreeBasedRealFunction implements RealFunction, Sized {
 
   @Override
   public double apply(double... input) {
-    return compute(tree, input, varNames);
+    return compute(tree, input, varNamesMap);
   }
 
   public Tree<Element> getNode() {
@@ -81,14 +85,14 @@ public class TreeBasedRealFunction implements RealFunction, Sized {
   }
 
   public String[] getVarNames() {
+    String[] varNames = new String[varNamesMap.size()];
+    varNamesMap.forEach((n, i) -> varNames[i] = n);
     return varNames;
   }
 
   @Override
   public int hashCode() {
-    int result = Objects.hash(tree);
-    result = 31 * result + Arrays.hashCode(varNames);
-    return result;
+    return Objects.hash(tree, varNamesMap);
   }
 
   @Override
@@ -98,7 +102,7 @@ public class TreeBasedRealFunction implements RealFunction, Sized {
     if (o == null || getClass() != o.getClass())
       return false;
     TreeBasedRealFunction that = (TreeBasedRealFunction) o;
-    return tree.equals(that.tree) && Arrays.equals(varNames, that.varNames);
+    return Objects.equals(tree, that.tree) && Objects.equals(varNamesMap, that.varNamesMap);
   }
 
   @Override

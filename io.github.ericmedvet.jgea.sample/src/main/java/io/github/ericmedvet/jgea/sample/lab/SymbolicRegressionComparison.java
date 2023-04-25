@@ -100,7 +100,7 @@ public class SymbolicRegressionComparison extends Worker {
     int nTournament = 5;
     int diversityMaxAttempts = 100;
     int nIterations = i(a("nIterations", "100"));
-    String evolverNamePattern = a("evolver", "ograph-hash\\+-speciated");
+    String evolverNamePattern = a("evolver", "tree-ga");
     int[] seeds = ri(a("seed", "0:1"));
     double graphArcAdditionRate = 3d;
     double graphArcMutationRate = 1d;
@@ -161,8 +161,7 @@ public class SymbolicRegressionComparison extends Worker {
     }
     //evolvers
     Map<String, Function<SyntheticSymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?,
-        RealFunction,
-        Double>, SyntheticSymbolicRegressionProblem, RealFunction>>> solvers = new TreeMap<>();
+        RealFunction, Double>, SyntheticSymbolicRegressionProblem, RealFunction>>> solvers = new TreeMap<>();
     solvers.put("tree-ga", p -> {
       IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
           IndependentFactory.picker(Arrays.stream(
@@ -733,13 +732,10 @@ public class SymbolicRegressionComparison extends Worker {
           graphMapper.andThen(FunctionGraph.builder())
               .andThen(MathUtils.fromMultivariateBuilder())
               .andThen(MathUtils.linearScaler(p.qualityFunction())),
-          new ShallowSparseFactory(
-              0d,
-              0d,
-              1d,
-              p.qualityFunction().arity(),
-              1
-          ).then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
+          new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1).then(GraphUtils.mapper(
+              IndexedNode.incrementerMapper(Node.class),
+              Misc::first
+          )),
           nPop,
           StopConditions.nOfIterations(nIterations),
           Map.of(
@@ -789,13 +785,10 @@ public class SymbolicRegressionComparison extends Worker {
           graphMapper.andThen(FunctionGraph.builder())
               .andThen(MathUtils.fromMultivariateBuilder())
               .andThen(MathUtils.linearScaler(p.qualityFunction())),
-          new ShallowSparseFactory(
-              0d,
-              0d,
-              1d,
-              p.qualityFunction().arity(),
-              1
-          ).then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
+          new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1).then(GraphUtils.mapper(
+              IndexedNode.incrementerMapper(Node.class),
+              Misc::first
+          )),
           nPop,
           StopConditions.nOfIterations(nIterations),
           Map.of(
@@ -847,13 +840,10 @@ public class SymbolicRegressionComparison extends Worker {
               .andThen(FunctionGraph.builder())
               .andThen(MathUtils.fromMultivariateBuilder())
               .andThen(MathUtils.linearScaler(p.qualityFunction())),
-          new ShallowSparseFactory(
-              0d,
-              0d,
-              1d,
-              p.qualityFunction().arity(),
-              1
-          ).then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
+          new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1).then(GraphUtils.mapper(
+              IndexedNode.incrementerMapper(Node.class),
+              Misc::first
+          )),
           nPop,
           StopConditions.nOfIterations(nIterations),
           Map.of(
@@ -901,10 +891,11 @@ public class SymbolicRegressionComparison extends Worker {
           graphMapper.andThen(OperatorGraph.builder())
               .andThen(MathUtils.fromMultivariateBuilder())
               .andThen(MathUtils.linearScaler(p.qualityFunction())),
-          new ShallowFactory(p.qualityFunction().arity(), 1, constants).then(GraphUtils.mapper(
-              IndexedNode.incrementerMapper(Node.class),
-              Misc::first
-          )),
+          new ShallowFactory(
+              p.qualityFunction().arity(),
+              1,
+              constants
+          ).then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
           nPop,
           StopConditions.nOfIterations(nIterations),
           Map.of(
@@ -949,10 +940,13 @@ public class SymbolicRegressionComparison extends Worker {
           graphMapper.andThen(FunctionGraph.builder())
               .andThen(MathUtils.fromMultivariateBuilder())
               .andThen(MathUtils.linearScaler(p.qualityFunction())),
-          new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1).then(GraphUtils.mapper(
-              IndexedNode.incrementerMapper(Node.class),
-              Misc::first
-          )),
+          new ShallowSparseFactory(
+              0d,
+              0d,
+              1d,
+              p.qualityFunction().arity(),
+              1
+          ).then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
           nPop,
           StopConditions.nOfIterations(nIterations),
           Map.of(
@@ -1060,9 +1054,7 @@ public class SymbolicRegressionComparison extends Worker {
     for (int seed : seeds) {
       for (SyntheticSymbolicRegressionProblem problem : problems) {
         for (Map.Entry<String, Function<SyntheticSymbolicRegressionProblem, IterativeSolver<?
-            extends POSetPopulationState<?,
-            RealFunction, Double>, SyntheticSymbolicRegressionProblem, RealFunction>>> solverEntry :
-            solvers.entrySet()) {
+            extends POSetPopulationState<?, RealFunction, Double>, SyntheticSymbolicRegressionProblem, RealFunction>>> solverEntry : solvers.entrySet()) {
           Map<String, Object> keys = Map.ofEntries(
               Map.entry("seed", seed),
               Map.entry("problem", problem.getClass().getSimpleName().toLowerCase()),
@@ -1070,8 +1062,8 @@ public class SymbolicRegressionComparison extends Worker {
           );
           try {
             Stopwatch stopwatch = Stopwatch.createStarted();
-            IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SyntheticSymbolicRegressionProblem,
-                RealFunction> solver = solverEntry.getValue()
+            IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>,
+                SyntheticSymbolicRegressionProblem, RealFunction> solver = solverEntry.getValue()
                 .apply(problem);
             L.info(String.format("Starting %s", keys));
             Collection<RealFunction> solutions = solver.solve(
