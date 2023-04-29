@@ -28,12 +28,12 @@ import java.util.stream.IntStream;
 /**
  * @author eric
  */
-public class TreeBasedRealFunction implements UnivariateRealFunction, Sized {
+public class TreeBasedUnivariateRealFunction implements UnivariateRealFunction, Sized {
 
   private final Tree<Element> tree;
   private final Map<String, Integer> varNamesMap;
 
-  public TreeBasedRealFunction(Tree<Element> tree, String... varNames) {
+  public TreeBasedUnivariateRealFunction(Tree<Element> tree, String... varNames) {
     this.tree = tree;
     varNamesMap = IntStream.range(0, varNames.length)
         .boxed()
@@ -71,8 +71,8 @@ public class TreeBasedRealFunction implements UnivariateRealFunction, Sized {
     return ((Element.Operator) tree.content()).applyAsDouble(childrenValues);
   }
 
-  public static TreeBasedRealFunction from(Tree<Element> tree, String... varNames) {
-    return new TreeBasedRealFunction(tree, varNames);
+  public static TreeBasedUnivariateRealFunction from(Tree<Element> tree, String... varNames) {
+    return new TreeBasedUnivariateRealFunction(tree, varNames);
   }
 
   @Override
@@ -101,7 +101,7 @@ public class TreeBasedRealFunction implements UnivariateRealFunction, Sized {
       return true;
     if (o == null || getClass() != o.getClass())
       return false;
-    TreeBasedRealFunction that = (TreeBasedRealFunction) o;
+    TreeBasedUnivariateRealFunction that = (TreeBasedUnivariateRealFunction) o;
     return Objects.equals(tree, that.tree) && Objects.equals(varNamesMap, that.varNamesMap);
   }
 

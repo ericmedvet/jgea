@@ -55,7 +55,7 @@ import io.github.ericmedvet.jgea.problem.booleanfunction.Element;
 import io.github.ericmedvet.jgea.problem.booleanfunction.EvenParity;
 import io.github.ericmedvet.jgea.problem.regression.FormulaMapper;
 import io.github.ericmedvet.jgea.problem.regression.MathUtils;
-import io.github.ericmedvet.jgea.problem.regression.symbolic.TreeBasedRealFunction;
+import io.github.ericmedvet.jgea.problem.regression.symbolic.TreeBasedUnivariateRealFunction;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Nguyen7;
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.SyntheticUnivariateRegressionProblem;
@@ -395,7 +395,7 @@ public class DirtyExamples extends Worker {
     List<IterativeSolver<? extends POSetPopulationState<?, UnivariateRealFunction, Double>, SyntheticUnivariateRegressionProblem,
         UnivariateRealFunction>> solvers = new ArrayList<>();
     solvers.add(new StandardEvolver<>(
-        new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(
+        new FormulaMapper().andThen(n -> TreeBasedUnivariateRealFunction.from(
                 n,
                 "x"
             ))
@@ -412,7 +412,7 @@ public class DirtyExamples extends Worker {
         (srp, rnd) -> new POSetPopulationState<>()
     ));
     solvers.add(new StandardWithEnforcedDiversityEvolver<>(
-        new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(
+        new FormulaMapper().andThen(n -> TreeBasedUnivariateRealFunction.from(
                 n,
                 "x"
             ))

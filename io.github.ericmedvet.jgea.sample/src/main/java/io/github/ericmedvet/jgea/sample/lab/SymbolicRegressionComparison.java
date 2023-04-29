@@ -52,7 +52,7 @@ import io.github.ericmedvet.jgea.problem.regression.FormulaMapper;
 import io.github.ericmedvet.jgea.problem.regression.MathUtils;
 import io.github.ericmedvet.jgea.problem.regression.symbolic.Element;
 import io.github.ericmedvet.jgea.problem.regression.symbolic.SymbolicRegressionGrammar;
-import io.github.ericmedvet.jgea.problem.regression.symbolic.TreeBasedRealFunction;
+import io.github.ericmedvet.jgea.problem.regression.symbolic.TreeBasedUnivariateRealFunction;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Keijzer6;
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Nguyen7;
@@ -184,7 +184,7 @@ public class SymbolicRegressionComparison extends Worker {
               .toArray(Element.Constant[]::new))
       );
       return new StandardEvolver<>(
-          ((Function<Tree<Element>, UnivariateRealFunction>) t -> new TreeBasedRealFunction(
+          ((Function<Tree<Element>, UnivariateRealFunction>) t -> new TreeBasedUnivariateRealFunction(
               t,
               vars(p.qualityFunction().arity())
           )).andThen(MathUtils.linearScaler(p.qualityFunction())),
@@ -230,7 +230,7 @@ public class SymbolicRegressionComparison extends Worker {
               .toArray(Element.Constant[]::new))
       );
       return new StandardEvolver<>(
-          ((Function<Tree<Element>, UnivariateRealFunction>) t -> new TreeBasedRealFunction(
+          ((Function<Tree<Element>, UnivariateRealFunction>) t -> new TreeBasedUnivariateRealFunction(
               t,
               vars(p.qualityFunction().arity())
           )).andThen(MathUtils.linearScaler(p.qualityFunction())),
@@ -271,7 +271,7 @@ public class SymbolicRegressionComparison extends Worker {
               .toArray(Element.Constant[]::new))
       );
       return new StandardWithEnforcedDiversityEvolver<>(
-          ((Function<Tree<Element>, UnivariateRealFunction>) t -> new TreeBasedRealFunction(
+          ((Function<Tree<Element>, UnivariateRealFunction>) t -> new TreeBasedUnivariateRealFunction(
               t,
               vars(p.qualityFunction().arity())
           )).andThen(MathUtils.linearScaler(p.qualityFunction())),
@@ -313,7 +313,7 @@ public class SymbolicRegressionComparison extends Worker {
           Arrays.stream(constants).boxed().toList()
       );
       return new StandardEvolver<>(
-          new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(
+          new FormulaMapper().andThen(n -> TreeBasedUnivariateRealFunction.from(
               n,
               vars(p.qualityFunction().arity())
           )).andThen(MathUtils.linearScaler(p.qualityFunction())),
@@ -341,7 +341,7 @@ public class SymbolicRegressionComparison extends Worker {
           Arrays.stream(constants).boxed().toList()
       );
       return new StandardEvolver<>(
-          new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(
+          new FormulaMapper().andThen(n -> TreeBasedUnivariateRealFunction.from(
               n,
               vars(p.qualityFunction().arity())
           )).andThen(MathUtils.linearScaler(p.qualityFunction())),
@@ -364,7 +364,7 @@ public class SymbolicRegressionComparison extends Worker {
           Arrays.stream(constants).boxed().toList()
       );
       return new StandardWithEnforcedDiversityEvolver<>(
-          new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(
+          new FormulaMapper().andThen(n -> TreeBasedUnivariateRealFunction.from(
               n,
               vars(p.qualityFunction().arity())
           )).andThen(MathUtils.linearScaler(p.qualityFunction())),
