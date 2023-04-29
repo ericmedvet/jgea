@@ -14,19 +14,16 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.problem.regression;
-
-import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
-import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionProblem;
+package io.github.ericmedvet.jgea.problem.regression.univariate;
 
 import java.util.List;
 
 /**
  * @author eric
  */
-public class DataBasedSymbolicRegressionProblem extends UnivariateRegressionProblem<UnivariateRegressionFitness> {
+public class DataBasedUnivariateRegressionProblem extends UnivariateRegressionProblem<UnivariateRegressionFitness> {
 
-  public DataBasedSymbolicRegressionProblem(
+  public DataBasedUnivariateRegressionProblem(
       List<UnivariateRegressionFitness.Example> trainingData,
       List<UnivariateRegressionFitness.Example> validationData,
       UnivariateRegressionFitness.Metric metric

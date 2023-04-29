@@ -17,8 +17,8 @@
 package io.github.ericmedvet.jgea.problem.regression;
 
 import io.github.ericmedvet.jgea.core.util.Sized;
-import io.github.ericmedvet.jgea.problem.regression.univariate.SyntheticUnivariateRegressionFitness;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
+import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.SyntheticUnivariateRegressionFitness;
 import io.github.ericmedvet.jsdynsym.core.composed.AbstractComposed;
 import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 import org.apache.commons.math3.stat.StatUtils;

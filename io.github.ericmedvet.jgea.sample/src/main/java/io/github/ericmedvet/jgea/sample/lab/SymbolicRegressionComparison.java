@@ -53,11 +53,11 @@ import io.github.ericmedvet.jgea.problem.regression.MathUtils;
 import io.github.ericmedvet.jgea.problem.regression.symbolic.Element;
 import io.github.ericmedvet.jgea.problem.regression.symbolic.SymbolicRegressionGrammar;
 import io.github.ericmedvet.jgea.problem.regression.symbolic.TreeBasedRealFunction;
-import io.github.ericmedvet.jgea.problem.regression.univariate.SyntheticUnivariateRegressionProblem;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Keijzer6;
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Nguyen7;
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Polynomial4;
+import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.SyntheticUnivariateRegressionProblem;
 import io.github.ericmedvet.jgea.sample.Worker;
 import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 
