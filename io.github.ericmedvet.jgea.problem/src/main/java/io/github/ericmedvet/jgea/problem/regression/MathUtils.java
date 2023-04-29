@@ -16,13 +16,14 @@
 
 package io.github.ericmedvet.jgea.problem.regression;
 
-import io.github.ericmedvet.jgea.core.representation.graph.numeric.RealFunction;
 import io.github.ericmedvet.jgea.core.util.Sized;
 import io.github.ericmedvet.jgea.problem.regression.univariate.SyntheticUnivariateRegressionFitness;
+import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
+import io.github.ericmedvet.jsdynsym.core.composed.AbstractComposed;
+import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 import org.apache.commons.math3.stat.StatUtils;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
@@ -30,55 +31,21 @@ import java.util.function.UnaryOperator;
  */
 public class MathUtils {
 
-  private static class MultivariateBasedRealFunction implements RealFunction {
-    private final Function<double[], double[]> innerF;
-
-    public MultivariateBasedRealFunction(Function<double[], double[]> innerF) {
-      this.innerF = innerF;
-    }
-
-    @Override
-    public double apply(double... input) {
-      return innerF.apply(input)[0];
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(innerF);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o)
-        return true;
-      if (o == null || getClass() != o.getClass())
-        return false;
-      MultivariateBasedRealFunction that = (MultivariateBasedRealFunction) o;
-      return innerF.equals(that.innerF);
-    }
-
-    @Override
-    public String toString() {
-      return innerF.toString();
-    }
-  }
-
-  private static class ScaledRealFunction implements RealFunction {
-    private final RealFunction innerF;
+  private static class ScaledUnivariateRealFunction extends AbstractComposed<UnivariateRealFunction> implements UnivariateRealFunction {
     private final double a;
     private final double b;
 
-    public ScaledRealFunction(
-        RealFunction innerF,
-        SyntheticUnivariateRegressionFitness syntheticSymbolicRegressionFitness
+    public ScaledUnivariateRealFunction(
+        UnivariateRealFunction inner,
+        UnivariateRegressionFitness univariateRegressionFitness
     ) {
-      this.innerF = innerF;
-      double[] targetYs = syntheticSymbolicRegressionFitness.getPoints()
+      super(inner);
+      double[] targetYs = univariateRegressionFitness.getData()
           .stream()
-          .mapToDouble(p -> syntheticSymbolicRegressionFitness.getTargetFunction().apply(p))
+          .mapToDouble(UnivariateRegressionFitness.Example::y)
           .toArray();
       double targetMean = StatUtils.mean(targetYs);
-      double[] ys = syntheticSymbolicRegressionFitness.getPoints().stream().mapToDouble(innerF::apply).toArray();
+      double[] ys = univariateRegressionFitness.getPoints().stream().mapToDouble(inner()).toArray();
       double mean = StatUtils.mean(ys);
       double nCovariance = 0d;
       double nVariance = 0d;
@@ -91,17 +58,13 @@ public class MathUtils {
     }
 
     @Override
-    public double apply(double... input) {
-      return a + b * innerF.apply(input);
-    }
-
-    public RealFunction getInnerF() {
-      return innerF;
+    public double applyAsDouble(double[] value) {
+      return a+b*inner().applyAsDouble(value);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(innerF, a, b);
+      return Objects.hash(a, b);
     }
 
     @Override
@@ -110,39 +73,26 @@ public class MathUtils {
         return true;
       if (o == null || getClass() != o.getClass())
         return false;
-      ScaledRealFunction that = (ScaledRealFunction) o;
-      return Double.compare(that.a, a) == 0 && Double.compare(that.b, b) == 0 && innerF.equals(that.innerF);
+      ScaledUnivariateRealFunction that = (ScaledUnivariateRealFunction) o;
+      return Double.compare(that.a, a) == 0 && Double.compare(that.b, b) == 0;
     }
 
     @Override
     public String toString() {
-      return String.format("%.3f + %.3f * [%s]", a, b, innerF);
-    }
-  }
-
-  private static class SizedMultivariateBasedRealFunction extends MultivariateBasedRealFunction implements Sized {
-    private final int size;
-
-    public SizedMultivariateBasedRealFunction(Function<double[], double[]> innerF) {
-      super(innerF);
-      if (innerF instanceof Sized) {
-        size = ((Sized) innerF).size();
-      } else {
-        size = 0;
-      }
+      return String.format("%.3f + %.3f * [%s]", a, b, inner());
     }
 
     @Override
-    public int size() {
-      return size;
+    public int nOfInputs() {
+      return inner().nOfInputs();
     }
   }
 
-  private static class SizedScaledRealFunction extends ScaledRealFunction implements Sized {
+  private static class SizedUnivariateScaledRealFunction extends ScaledUnivariateRealFunction implements Sized {
     private final int size;
 
-    public SizedScaledRealFunction(
-        RealFunction innerF,
+    public SizedUnivariateScaledRealFunction(
+        UnivariateRealFunction innerF,
         SyntheticUnivariateRegressionFitness syntheticSymbolicRegressionFitness
     ) {
       super(innerF, syntheticSymbolicRegressionFitness);
@@ -184,15 +134,11 @@ public class MathUtils {
     return values.stream().mapToDouble(Double::doubleValue).toArray();
   }
 
-  public static Function<Function<double[], double[]>, RealFunction> fromMultivariateBuilder() {
-    return f -> (f instanceof Sized) ? new SizedMultivariateBasedRealFunction(f) : new MultivariateBasedRealFunction(f);
-  }
-
-  public static UnaryOperator<RealFunction> linearScaler(SyntheticUnivariateRegressionFitness syntheticSymbolicRegressionFitness) {
-    return f -> (f instanceof Sized) ? new SizedScaledRealFunction(
+  public static UnaryOperator<UnivariateRealFunction> linearScaler(SyntheticUnivariateRegressionFitness syntheticSymbolicRegressionFitness) {
+    return f -> (f instanceof Sized) ? new SizedUnivariateScaledRealFunction(
         f,
         syntheticSymbolicRegressionFitness
-    ) : new ScaledRealFunction(f, syntheticSymbolicRegressionFitness);
+    ) : new ScaledUnivariateRealFunction(f, syntheticSymbolicRegressionFitness);
   }
 
   public static List<double[]> pairwise(double[]... xs) {

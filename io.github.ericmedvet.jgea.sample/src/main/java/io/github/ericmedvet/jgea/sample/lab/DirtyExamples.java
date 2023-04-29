@@ -36,7 +36,6 @@ import io.github.ericmedvet.jgea.core.listener.TabularPrinter;
 import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
 import io.github.ericmedvet.jgea.core.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
 import io.github.ericmedvet.jgea.core.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
-import io.github.ericmedvet.jgea.core.representation.graph.numeric.RealFunction;
 import io.github.ericmedvet.jgea.core.representation.sequence.FixedLengthListFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.UniformCrossover;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitFlipMutation;
@@ -63,6 +62,7 @@ import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Nguyen7
 import io.github.ericmedvet.jgea.problem.synthetic.LinearPoints;
 import io.github.ericmedvet.jgea.problem.synthetic.OneMax;
 import io.github.ericmedvet.jgea.sample.Worker;
+import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -392,8 +392,8 @@ public class DirtyExamples extends Worker {
       e.printStackTrace();
       return;
     }
-    List<IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SyntheticUnivariateRegressionProblem,
-        RealFunction>> solvers = new ArrayList<>();
+    List<IterativeSolver<? extends POSetPopulationState<?, UnivariateRealFunction, Double>, SyntheticUnivariateRegressionProblem,
+        UnivariateRealFunction>> solvers = new ArrayList<>();
     solvers.add(new StandardEvolver<>(
         new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(
                 n,
@@ -429,11 +429,11 @@ public class DirtyExamples extends Worker {
         (srp, rnd) -> new POSetPopulationState<>(),
         100
     ));
-    for (IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SyntheticUnivariateRegressionProblem,
-        RealFunction> solver : solvers) {
+    for (IterativeSolver<? extends POSetPopulationState<?, UnivariateRealFunction, Double>, SyntheticUnivariateRegressionProblem,
+        UnivariateRealFunction> solver : solvers) {
       System.out.println(solver.getClass().getSimpleName());
       try {
-        Collection<RealFunction> solutions = solver.solve(
+        Collection<UnivariateRealFunction> solutions = solver.solve(
             p,
             r,
             executorService,

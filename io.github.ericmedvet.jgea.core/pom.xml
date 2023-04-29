@@ -51,6 +51,11 @@
             <artifactId>xchart</artifactId>
             <version>3.8.2</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.ericmedvet</groupId>
+            <artifactId>jsdynsym.core</artifactId>
+            <version>${jsdynsym.version}</version>
+        </dependency>
     </dependencies>
 
 </project>

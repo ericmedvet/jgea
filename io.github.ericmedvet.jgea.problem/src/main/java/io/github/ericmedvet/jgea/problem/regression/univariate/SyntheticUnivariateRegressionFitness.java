@@ -16,8 +16,7 @@
 
 package io.github.ericmedvet.jgea.problem.regression.univariate;
 
-import io.github.ericmedvet.jgea.core.representation.graph.numeric.RealFunction;
-import io.github.ericmedvet.jgea.core.util.Pair;
+import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 
 import java.util.List;
 
@@ -26,15 +25,15 @@ import java.util.List;
  */
 public class SyntheticUnivariateRegressionFitness extends UnivariateRegressionFitness {
 
-  private final RealFunction targetFunction;
+  private final UnivariateRealFunction targetFunction;
 
-  public SyntheticUnivariateRegressionFitness(RealFunction targetFunction, List<double[]> points, Metric metric) {
-    super(points.stream().map(x -> Pair.of(x, targetFunction.apply(x))).toList(), metric);
+  public SyntheticUnivariateRegressionFitness(UnivariateRealFunction targetFunction, List<double[]> points, Metric metric) {
+    super(points.stream().map(xs -> new Example(xs, targetFunction.applyAsDouble(xs))).toList(), metric);
     this.targetFunction = targetFunction;
 
   }
 
-  public RealFunction getTargetFunction() {
+  public UnivariateRealFunction getTargetFunction() {
     return targetFunction;
   }
 

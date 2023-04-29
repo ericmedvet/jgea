@@ -21,14 +21,13 @@
  */
 package io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph;
 
-import io.github.ericmedvet.jgea.core.representation.graph.numeric.RealFunction;
-
 import java.util.Arrays;
+import java.util.function.ToDoubleFunction;
 
 /**
  * @author eric
  */
-public enum BaseOperator implements RealFunction {
+public enum BaseOperator implements ToDoubleFunction<double[]> {
 
   ADDITION("+", x -> Arrays.stream(x).sum(), 1, Integer.MAX_VALUE), SUBTRACTION(
       "-",
@@ -58,11 +57,11 @@ public enum BaseOperator implements RealFunction {
   ), OPPOSITE("_", x -> 0d - x[0], 1, 1), SQRT("√", x -> Math.sqrt(x[0]), 1, 1), SQ("²", x -> Math.pow(x[0], 2d), 1, 1);
 
   private final String string;
-  private final RealFunction function;
+  private final ToDoubleFunction<double[]> function;
   private final int minArity;
   private final int maxArity;
 
-  BaseOperator(String string, RealFunction function, int minArity, int maxArity) {
+  BaseOperator(String string, ToDoubleFunction<double[]> function, int minArity, int maxArity) {
     this.string = string;
     this.function = function;
     this.minArity = minArity;
@@ -70,8 +69,8 @@ public enum BaseOperator implements RealFunction {
   }
 
   @Override
-  public double apply(double... input) {
-    return function.apply(input);
+  public double applyAsDouble(double... input) {
+    return function.applyAsDouble(input);
   }
 
   public int maxArity() {

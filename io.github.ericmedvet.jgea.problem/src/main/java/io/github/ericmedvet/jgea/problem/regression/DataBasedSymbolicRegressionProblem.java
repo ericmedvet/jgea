@@ -16,7 +16,6 @@
 
 package io.github.ericmedvet.jgea.problem.regression;
 
-import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionProblem;
 
@@ -28,8 +27,8 @@ import java.util.List;
 public class DataBasedSymbolicRegressionProblem extends UnivariateRegressionProblem<UnivariateRegressionFitness> {
 
   public DataBasedSymbolicRegressionProblem(
-      List<Pair<double[], Double>> trainingData,
-      List<Pair<double[], Double>> validationData,
+      List<UnivariateRegressionFitness.Example> trainingData,
+      List<UnivariateRegressionFitness.Example> validationData,
       UnivariateRegressionFitness.Metric metric
   ) {
     super(

@@ -18,15 +18,15 @@ package io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgrap
 
 import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jgea.core.representation.graph.Node;
-import io.github.ericmedvet.jgea.core.representation.graph.numeric.RealFunction;
 
 import java.util.Objects;
+import java.util.function.ToDoubleFunction;
 import java.util.random.RandomGenerator;
 
 /**
  * @author eric
  */
-public class OperatorNode extends Node implements RealFunction {
+public class OperatorNode extends Node implements ToDoubleFunction<double[]> {
 
   private final BaseOperator operator;
 
@@ -52,8 +52,8 @@ public class OperatorNode extends Node implements RealFunction {
   }
 
   @Override
-  public double apply(double... input) {
-    return operator.apply(input);
+  public double applyAsDouble(double... input) {
+    return operator.applyAsDouble(input);
   }
 
   public BaseOperator getOperator() {

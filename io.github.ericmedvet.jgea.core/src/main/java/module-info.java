@@ -26,6 +26,7 @@ module io.github.ericmedvet.jgea.core {
   exports io.github.ericmedvet.jgea.core.solver.speciation;
   exports io.github.ericmedvet.jgea.core.solver.state;
   exports io.github.ericmedvet.jgea.core.util;
+  requires io.github.ericmedvet.jsdynsym.core;
   requires com.google.common;
   requires org.knowm.xchart;
   requires java.desktop;

@@ -16,9 +16,9 @@
 
 package io.github.ericmedvet.jgea.problem.regression.symbolic;
 
-import io.github.ericmedvet.jgea.core.representation.graph.numeric.RealFunction;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.util.Sized;
+import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 
 import java.util.Map;
 import java.util.Objects;
@@ -28,7 +28,7 @@ import java.util.stream.IntStream;
 /**
  * @author eric
  */
-public class TreeBasedRealFunction implements RealFunction, Sized {
+public class TreeBasedRealFunction implements UnivariateRealFunction, Sized {
 
   private final Tree<Element> tree;
   private final Map<String, Integer> varNamesMap;
@@ -68,7 +68,7 @@ public class TreeBasedRealFunction implements RealFunction, Sized {
       childrenValues[i] = childValue;
       i = i + 1;
     }
-    return ((Element.Operator) tree.content()).apply(childrenValues);
+    return ((Element.Operator) tree.content()).applyAsDouble(childrenValues);
   }
 
   public static TreeBasedRealFunction from(Tree<Element> tree, String... varNames) {
@@ -76,7 +76,7 @@ public class TreeBasedRealFunction implements RealFunction, Sized {
   }
 
   @Override
-  public double apply(double... input) {
+  public double applyAsDouble(double[] input) {
     return compute(tree, input, varNamesMap);
   }
 
@@ -108,6 +108,11 @@ public class TreeBasedRealFunction implements RealFunction, Sized {
   @Override
   public String toString() {
     return tree.toString();
+  }
+
+  @Override
+  public int nOfInputs() {
+    return varNamesMap.size();
   }
 
   @Override

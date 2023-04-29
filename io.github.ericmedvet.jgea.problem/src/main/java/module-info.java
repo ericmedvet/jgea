@@ -15,6 +15,7 @@ module io.github.ericmedvet.jgea.problem {
   exports io.github.ericmedvet.jgea.problem.regression.univariate;
   exports io.github.ericmedvet.jgea.problem.regression.univariate.synthetic;
   requires io.github.ericmedvet.jgea.core;
+  requires io.github.ericmedvet.jsdynsym.core;
   requires commons.math3;
   requires java.desktop;
   requires com.google.common;

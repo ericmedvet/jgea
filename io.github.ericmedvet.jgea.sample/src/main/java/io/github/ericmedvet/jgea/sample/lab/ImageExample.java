@@ -23,7 +23,6 @@ import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.listener.TabularPrinter;
 import io.github.ericmedvet.jgea.core.representation.graph.*;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.Output;
-import io.github.ericmedvet.jgea.core.representation.graph.numeric.RealFunction;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.functiongraph.BaseFunction;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.functiongraph.FunctionGraph;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.functiongraph.FunctionNode;
@@ -36,8 +35,8 @@ import io.github.ericmedvet.jgea.core.solver.StandardEvolver;
 import io.github.ericmedvet.jgea.core.solver.StopConditions;
 import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jgea.problem.image.ImageReconstruction;
-import io.github.ericmedvet.jgea.problem.regression.MathUtils;
 import io.github.ericmedvet.jgea.sample.Worker;
+import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -103,12 +102,12 @@ public class ImageExample extends Worker {
           new CSVPrinter<>(functions, kFunctions, new File(a("file", null)), true)
       ));
     }
-    Map<String, IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, ImageReconstruction,
-        RealFunction>> solvers = new TreeMap<>();
+    Map<String, IterativeSolver<? extends POSetPopulationState<?, UnivariateRealFunction, Double>, ImageReconstruction,
+        UnivariateRealFunction>> solvers = new TreeMap<>();
     solvers.put(
         "graph-seq-ga",
         new StandardEvolver<>(
-            FunctionGraph.builder().andThen(MathUtils.fromMultivariateBuilder()),
+            FunctionGraph.builder().andThen(UnivariateRealFunction::from),
             new ShallowSparseFactory(0d, 0d, 1d, 2, 1),
             nPop,
             StopConditions.nOfIterations(nIterations),
@@ -143,8 +142,8 @@ public class ImageExample extends Worker {
     //run
     for (int seed : seeds) {
       for (String image : images) {
-        for (Map.Entry<String, IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>,
-            ImageReconstruction, RealFunction>> solverEntry : solvers.entrySet()) {
+        for (Map.Entry<String, IterativeSolver<? extends POSetPopulationState<?, UnivariateRealFunction, Double>,
+            ImageReconstruction, UnivariateRealFunction>> solverEntry : solvers.entrySet()) {
           Map<String, Object> keys = Map.ofEntries(
               Map.entry(
                   "seed",
@@ -162,10 +161,10 @@ public class ImageExample extends Worker {
           try {
             ImageReconstruction problem = new ImageReconstruction(ImageIO.read(new File(image)), true);
             Stopwatch stopwatch = Stopwatch.createStarted();
-            IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, ImageReconstruction,
-                RealFunction> solver = solverEntry.getValue();
+            IterativeSolver<? extends POSetPopulationState<?, UnivariateRealFunction, Double>, ImageReconstruction,
+                UnivariateRealFunction> solver = solverEntry.getValue();
             L.info(String.format("Starting %s", keys));
-            Collection<RealFunction> solutions = solver.solve(
+            Collection<UnivariateRealFunction> solutions = solver.solve(
                 problem,
                 new Random(seed),
                 executorService,

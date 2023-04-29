@@ -16,7 +16,7 @@
 
 package io.github.ericmedvet.jgea.problem.regression.univariate;
 
-import io.github.ericmedvet.jgea.core.representation.graph.numeric.RealFunction;
+import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 
 import java.util.List;
 
@@ -25,10 +25,10 @@ import java.util.List;
  */
 public class SyntheticUnivariateRegressionProblem extends UnivariateRegressionProblem<SyntheticUnivariateRegressionFitness> {
 
-  private final RealFunction targetFunction;
+  private final UnivariateRealFunction targetFunction;
 
   public SyntheticUnivariateRegressionProblem(
-      RealFunction targetFunction,
+      UnivariateRealFunction targetFunction,
       List<double[]> trainingPoints,
       List<double[]> validationPoints,
       UnivariateRegressionFitness.Metric metric
@@ -40,7 +40,7 @@ public class SyntheticUnivariateRegressionProblem extends UnivariateRegressionPr
     this.targetFunction = targetFunction;
   }
 
-  public RealFunction getTargetFunction() {
+  public UnivariateRealFunction getTargetFunction() {
     return targetFunction;
   }
 

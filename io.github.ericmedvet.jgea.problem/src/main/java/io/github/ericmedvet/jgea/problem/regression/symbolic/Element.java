@@ -21,14 +21,13 @@
  */
 package io.github.ericmedvet.jgea.problem.regression.symbolic;
 
-import io.github.ericmedvet.jgea.core.representation.graph.numeric.RealFunction;
-
 import java.io.Serializable;
+import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 
 public interface Element {
 
-  enum Operator implements Element, RealFunction, Serializable {
+  enum Operator implements Element, ToDoubleFunction<double[]>, Serializable {
 
     ADDITION("+", x -> x[0] + x[1], 2), SUBTRACTION("-", x -> x[0] - x[1], 2), DIVISION(
         "/",
@@ -53,10 +52,10 @@ public interface Element {
     ), SQRT("√", x -> Math.sqrt(x[0]), 1), SQ("²", x -> Math.pow(x[0], 2d), 1);
 
     private final String string;
-    private final RealFunction function;
+    private final ToDoubleFunction<double[]> function;
     private final int arity;
 
-    Operator(String string, RealFunction function, int arity) {
+    Operator(String string, ToDoubleFunction<double[]> function, int arity) {
       this.string = string;
       this.function = function;
       this.arity = arity;
@@ -67,8 +66,8 @@ public interface Element {
     }
 
     @Override
-    public double apply(double... input) {
-      return function.apply(input);
+    public double applyAsDouble(double... input) {
+      return function.applyAsDouble(input);
     }
 
     public int arity() {

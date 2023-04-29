@@ -17,7 +17,7 @@
 package io.github.ericmedvet.jgea.problem.image;
 
 import io.github.ericmedvet.jgea.core.ComparableQualityBasedProblem;
-import io.github.ericmedvet.jgea.core.representation.graph.numeric.RealFunction;
+import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 
 import java.awt.image.BufferedImage;
 import java.util.function.Function;
@@ -25,16 +25,19 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class ImageReconstruction implements ComparableQualityBasedProblem<RealFunction, Double> {
+public class ImageReconstruction implements ComparableQualityBasedProblem<UnivariateRealFunction, Double> {
 
-  private final Function<RealFunction, Double> fitnessFunction;
+  private final Function<UnivariateRealFunction, Double> fitnessFunction;
 
   public ImageReconstruction(BufferedImage image, boolean normalize) {
     fitnessFunction = f -> {
       double err = 0d;
       for (int x = 0; x < image.getWidth(); x++) {
         for (int y = 0; y < image.getHeight(); y++) {
-          double fOut = f.apply((double) x / (double) image.getWidth(), (double) y / (double) image.getHeight());
+          double fOut = f.applyAsDouble(new double[]{
+              (double) x / (double) image.getWidth(),
+              (double) y / (double) image.getHeight()
+          });
           if (normalize) {
             fOut = Math.tanh(fOut) / 2d + 0.5d;
           }
@@ -51,7 +54,7 @@ public class ImageReconstruction implements ComparableQualityBasedProblem<RealFu
   }
 
   @Override
-  public Function<RealFunction, Double> qualityFunction() {
+  public Function<UnivariateRealFunction, Double> qualityFunction() {
     return fitnessFunction;
   }
 }

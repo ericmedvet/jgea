@@ -22,6 +22,7 @@ import io.github.ericmedvet.jgea.core.representation.graph.numeric.Constant;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.Input;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.Output;
 import io.github.ericmedvet.jgea.core.util.Sized;
+import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 /**
  * @author eric
  */
-public class FunctionGraph implements Function<double[], double[]>, Sized, Serializable {
+public class FunctionGraph implements MultivariateRealFunction, Sized, Serializable {
 
   private final Graph<Node, Double> graph;
 
@@ -87,7 +88,7 @@ public class FunctionGraph implements Function<double[], double[]>, Sized, Seria
   }
 
   @Override
-  public double[] apply(double[] input) {
+  public double[] compute(double... input) {
     Set<Output> outputs = graph.nodes().stream().filter(n -> n instanceof Output).map(n -> (Output) n).collect(
         Collectors.toSet());
     int outputSize = outputs.stream().mapToInt(Node::getIndex).max().orElse(0);
@@ -123,12 +124,14 @@ public class FunctionGraph implements Function<double[], double[]>, Sized, Seria
     )).collect(Collectors.joining(","));
   }
 
-  public int nInputs() {
-    return (int) graph.nodes().stream().filter(n -> n instanceof Input).count();
+  @Override
+  public int nOfInputs() {
+    return (int)graph.nodes().stream().filter(n -> n instanceof Input).count();
   }
 
-  public int nOutputs() {
-    return (int) graph.nodes().stream().filter(n -> n instanceof Output).count();
+  @Override
+  public int nOfOutputs() {
+    return (int)graph.nodes().stream().filter(n -> n instanceof Output).count();
   }
 
   private double outValue(Node node, double[] input) {

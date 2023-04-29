@@ -23,6 +23,7 @@ import io.github.ericmedvet.jgea.core.representation.graph.numeric.Input;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.Output;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Sized;
+import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 
 import java.io.Serializable;
 import java.util.Comparator;
@@ -36,7 +37,7 @@ import java.util.stream.Collectors;
 /**
  * @author eric
  */
-public class OperatorGraph implements Function<double[], double[]>, Sized, Serializable {
+public class OperatorGraph implements MultivariateRealFunction, Sized, Serializable {
 
   public final static NonValuedArc NON_VALUED_ARC = new NonValuedArc();
   private final Graph<Node, NonValuedArc> graph;
@@ -131,7 +132,7 @@ public class OperatorGraph implements Function<double[], double[]>, Sized, Seria
   }
 
   @Override
-  public double[] apply(double[] input) {
+  public double[] compute(double... input) {
     Set<Output> outputs = graph.nodes().stream().filter(n -> n instanceof Output).map(n -> (Output) n).collect(
         Collectors.toSet());
     int outputSize = outputs.stream().mapToInt(Node::getIndex).max().orElse(0);
@@ -163,11 +164,13 @@ public class OperatorGraph implements Function<double[], double[]>, Sized, Seria
         .isEmpty()) ? "0" : nodeToString(Misc.first(graph.predecessors(n))))).collect(Collectors.joining(";"));
   }
 
-  public int nInputs() {
+  @Override
+  public int nOfInputs() {
     return (int) graph.nodes().stream().filter(n -> n instanceof Input).count();
   }
 
-  public int nOutputs() {
+  @Override
+  public int nOfOutputs() {
     return (int) graph.nodes().stream().filter(n -> n instanceof Output).count();
   }
 
@@ -200,7 +203,7 @@ public class OperatorGraph implements Function<double[], double[]>, Sized, Seria
       return inValues.length > 0 ? inValues[0] : 0d;
     }
     if (node instanceof OperatorNode) {
-      return ((OperatorNode) node).apply(inValues);
+      return ((OperatorNode) node).applyAsDouble(inValues);
     }
     throw new RuntimeException(String.format("Unknown type of node: %s", node.getClass().getSimpleName()));
   }

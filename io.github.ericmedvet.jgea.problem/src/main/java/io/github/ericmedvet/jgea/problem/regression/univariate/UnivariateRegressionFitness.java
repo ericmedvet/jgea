@@ -17,8 +17,7 @@
 package io.github.ericmedvet.jgea.problem.regression.univariate;
 
 import io.github.ericmedvet.jgea.core.fitness.CaseBasedFitness;
-import io.github.ericmedvet.jgea.core.representation.graph.numeric.RealFunction;
-import io.github.ericmedvet.jgea.core.util.Pair;
+import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 
 import java.util.List;
 import java.util.function.BiFunction;
@@ -27,24 +26,23 @@ import java.util.stream.IntStream;
 /**
  * @author eric
  */
-public class UnivariateRegressionFitness extends CaseBasedFitness<RealFunction, double[], Double, Double> {
+public class UnivariateRegressionFitness extends CaseBasedFitness<UnivariateRealFunction, double[], Double, Double> {
 
-  private final List<Pair<double[], Double>> data;
+  private final List<Example> data;
   private final Metric metric;
   private final int arity;
-
-  public UnivariateRegressionFitness(List<Pair<double[], Double>> data, Metric metric) {
+  public UnivariateRegressionFitness(List<Example> data, Metric metric) {
     super(
-        data.stream().map(Pair::first).toList(),
-        RealFunction::apply,
+        data.stream().map(Example::xs).toList(),
+        UnivariateRealFunction::applyAsDouble,
         outcomes -> metric.apply(
-            regressionError(data.stream().map(Pair::second).toList(), outcomes),
-            data.stream().map(Pair::second).toList()
+            regressionError(data.stream().map(Example::y).toList(), outcomes),
+            data.stream().map(Example::y).toList()
         )
     );
     this.data = data;
     this.metric = metric;
-    this.arity = data.get(0).first().length;
+    this.arity = data.get(0).xs().length;
   }
 
   public enum Metric implements BiFunction<List<Double>, List<Double>, Double> {
@@ -80,6 +78,8 @@ public class UnivariateRegressionFitness extends CaseBasedFitness<RealFunction, 
 
   }
 
+  public record Example(double[] xs, double y) {}
+
   private static List<Double> regressionError(List<Double> groundTruth, List<Double> predictions) {
     return IntStream.range(0, groundTruth.size()).mapToObj(i ->
         groundTruth.get(i) - predictions.get(i)
@@ -90,7 +90,7 @@ public class UnivariateRegressionFitness extends CaseBasedFitness<RealFunction, 
     return arity;
   }
 
-  public List<Pair<double[], Double>> getData() {
+  public List<Example> getData() {
     return data;
   }
 
