@@ -19,7 +19,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package io.github.ericmedvet.jgea.problem.symbolicregression;
+package io.github.ericmedvet.jgea.problem.regression.symbolic;
 
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.RealFunction;
 

@@ -14,34 +14,28 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.problem.symbolicregression;
+package io.github.ericmedvet.jgea.problem.regression.univariate;
 
-import io.github.ericmedvet.jgea.core.ComparableQualityBasedProblem;
-import io.github.ericmedvet.jgea.core.ProblemWithValidation;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.RealFunction;
+import io.github.ericmedvet.jgea.core.util.Pair;
+
+import java.util.List;
 
 /**
  * @author eric
  */
-public class SymbolicRegressionProblem<F extends SymbolicRegressionFitness>
-    implements ComparableQualityBasedProblem<RealFunction, Double>, ProblemWithValidation<RealFunction, Double> {
+public class SyntheticUnivariateRegressionFitness extends UnivariateRegressionFitness {
 
-  private final F fitness;
-  private final F validationFitness;
+  private final RealFunction targetFunction;
 
-  public SymbolicRegressionProblem(F fitness, F validationFitness) {
-    this.fitness = fitness;
-    this.validationFitness = validationFitness;
+  public SyntheticUnivariateRegressionFitness(RealFunction targetFunction, List<double[]> points, Metric metric) {
+    super(points.stream().map(x -> Pair.of(x, targetFunction.apply(x))).toList(), metric);
+    this.targetFunction = targetFunction;
+
   }
 
-  @Override
-  public F qualityFunction() {
-    return fitness;
-  }
-
-  @Override
-  public F validationQualityFunction() {
-    return validationFitness;
+  public RealFunction getTargetFunction() {
+    return targetFunction;
   }
 
 }

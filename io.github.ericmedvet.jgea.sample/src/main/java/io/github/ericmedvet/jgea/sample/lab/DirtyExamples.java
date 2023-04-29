@@ -54,7 +54,12 @@ import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.problem.booleanfunction.Element;
 import io.github.ericmedvet.jgea.problem.booleanfunction.EvenParity;
-import io.github.ericmedvet.jgea.problem.symbolicregression.*;
+import io.github.ericmedvet.jgea.problem.regression.FormulaMapper;
+import io.github.ericmedvet.jgea.problem.regression.MathUtils;
+import io.github.ericmedvet.jgea.problem.regression.symbolic.TreeBasedRealFunction;
+import io.github.ericmedvet.jgea.problem.regression.univariate.SyntheticUnivariateRegressionProblem;
+import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
+import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Nguyen7;
 import io.github.ericmedvet.jgea.problem.synthetic.LinearPoints;
 import io.github.ericmedvet.jgea.problem.synthetic.OneMax;
 import io.github.ericmedvet.jgea.sample.Worker;
@@ -379,7 +384,7 @@ public class DirtyExamples extends Worker {
         new TabularPrinter<>(Misc.concat(
             List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)), List.of());
     Random r = new Random(1);
-    SyntheticSymbolicRegressionProblem p = new Nguyen7(SymbolicRegressionFitness.Metric.MSE, 1);
+    SyntheticUnivariateRegressionProblem p = new Nguyen7(UnivariateRegressionFitness.Metric.MSE, 1);
     Grammar<String> srGrammar;
     try {
       srGrammar = Grammar.fromFile(new File("grammars/symbolic" + "-regression-nguyen7" + ".bnf"));
@@ -387,7 +392,7 @@ public class DirtyExamples extends Worker {
       e.printStackTrace();
       return;
     }
-    List<IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SyntheticSymbolicRegressionProblem,
+    List<IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SyntheticUnivariateRegressionProblem,
         RealFunction>> solvers = new ArrayList<>();
     solvers.add(new StandardEvolver<>(
         new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(
@@ -424,7 +429,7 @@ public class DirtyExamples extends Worker {
         (srp, rnd) -> new POSetPopulationState<>(),
         100
     ));
-    for (IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SyntheticSymbolicRegressionProblem,
+    for (IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SyntheticUnivariateRegressionProblem,
         RealFunction> solver : solvers) {
       System.out.println(solver.getClass().getSimpleName());
       try {

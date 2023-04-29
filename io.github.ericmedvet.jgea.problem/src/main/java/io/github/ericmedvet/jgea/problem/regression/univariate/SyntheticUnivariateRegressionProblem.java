@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.problem.symbolicregression;
+package io.github.ericmedvet.jgea.problem.regression.univariate;
 
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.RealFunction;
 
@@ -23,19 +23,19 @@ import java.util.List;
 /**
  * @author eric
  */
-public class SyntheticSymbolicRegressionProblem extends SymbolicRegressionProblem<SyntheticSymbolicRegressionFitness> {
+public class SyntheticUnivariateRegressionProblem extends UnivariateRegressionProblem<SyntheticUnivariateRegressionFitness> {
 
   private final RealFunction targetFunction;
 
-  public SyntheticSymbolicRegressionProblem(
+  public SyntheticUnivariateRegressionProblem(
       RealFunction targetFunction,
       List<double[]> trainingPoints,
       List<double[]> validationPoints,
-      SymbolicRegressionFitness.Metric metric
+      UnivariateRegressionFitness.Metric metric
   ) {
     super(
-        new SyntheticSymbolicRegressionFitness(targetFunction, trainingPoints, metric),
-        new SyntheticSymbolicRegressionFitness(targetFunction, validationPoints, metric)
+        new SyntheticUnivariateRegressionFitness(targetFunction, trainingPoints, metric),
+        new SyntheticUnivariateRegressionFitness(targetFunction, validationPoints, metric)
     );
     this.targetFunction = targetFunction;
   }

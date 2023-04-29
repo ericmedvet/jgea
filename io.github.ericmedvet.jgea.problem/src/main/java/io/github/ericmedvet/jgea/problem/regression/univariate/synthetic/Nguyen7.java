@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.problem.symbolicregression;
+package io.github.ericmedvet.jgea.problem.regression.univariate.synthetic;
+
+import io.github.ericmedvet.jgea.problem.regression.MathUtils;
+import io.github.ericmedvet.jgea.problem.regression.univariate.SyntheticUnivariateRegressionProblem;
+import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 
 import java.util.Random;
 
 /**
  * @author eric
  */
-public class Nguyen7 extends SyntheticSymbolicRegressionProblem {
+public class Nguyen7 extends SyntheticUnivariateRegressionProblem {
 
-  public Nguyen7(SymbolicRegressionFitness.Metric metric, long seed) {
+  public Nguyen7(UnivariateRegressionFitness.Metric metric, long seed) {
     super(
         v -> Math.log(v[0] + 1d) + Math.log(v[0] * v[0] + 1d),
         MathUtils.pairwise(MathUtils.uniformSample(0, 2, 20, new Random(seed))),

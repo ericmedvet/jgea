@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.problem.symbolicregression;
+package io.github.ericmedvet.jgea.problem.regression.univariate.synthetic;
+
+import io.github.ericmedvet.jgea.problem.regression.MathUtils;
+import io.github.ericmedvet.jgea.problem.regression.univariate.SyntheticUnivariateRegressionProblem;
+import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 
 /**
  * @author eric
  */
-public class Pagie1 extends SyntheticSymbolicRegressionProblem {
+public class Pagie1 extends SyntheticUnivariateRegressionProblem {
 
-  public Pagie1(SymbolicRegressionFitness.Metric metric) {
+  public Pagie1(UnivariateRegressionFitness.Metric metric) {
     super(
         v -> 1d / (1d + Math.pow(v[0], -4d)) + 1d / (1d + Math.pow(v[1], -4d)),
         MathUtils.cartesian(MathUtils.equispacedValues(-5, 5, 0.4), MathUtils.equispacedValues(-5, 5, 0.4)),

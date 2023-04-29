@@ -36,7 +36,7 @@ import io.github.ericmedvet.jgea.core.solver.StandardEvolver;
 import io.github.ericmedvet.jgea.core.solver.StopConditions;
 import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jgea.problem.image.ImageReconstruction;
-import io.github.ericmedvet.jgea.problem.symbolicregression.MathUtils;
+import io.github.ericmedvet.jgea.problem.regression.MathUtils;
 import io.github.ericmedvet.jgea.sample.Worker;
 
 import javax.imageio.ImageIO;

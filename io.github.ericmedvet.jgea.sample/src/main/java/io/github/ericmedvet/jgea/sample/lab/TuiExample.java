@@ -28,7 +28,12 @@ import io.github.ericmedvet.jgea.core.selector.Tournament;
 import io.github.ericmedvet.jgea.core.solver.*;
 import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jgea.core.util.Misc;
-import io.github.ericmedvet.jgea.problem.symbolicregression.*;
+import io.github.ericmedvet.jgea.problem.regression.FormulaMapper;
+import io.github.ericmedvet.jgea.problem.regression.MathUtils;
+import io.github.ericmedvet.jgea.problem.regression.symbolic.TreeBasedRealFunction;
+import io.github.ericmedvet.jgea.problem.regression.univariate.SyntheticUnivariateRegressionProblem;
+import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
+import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Nguyen7;
 import io.github.ericmedvet.jgea.tui.TerminalMonitor;
 
 import java.io.File;
@@ -114,7 +119,7 @@ public class TuiExample implements Runnable {
             )
         );
     List<Integer> seeds = List.of(1, 2, 3, 4, 5);
-    SyntheticSymbolicRegressionProblem p = new Nguyen7(SymbolicRegressionFitness.Metric.MSE, 1);
+    SyntheticUnivariateRegressionProblem p = new Nguyen7(UnivariateRegressionFitness.Metric.MSE, 1);
     Grammar<String> srGrammar;
     try {
       srGrammar = Grammar.fromFile(new File("grammars/symbolic" + "-regression-nguyen7" + ".bnf"));
@@ -122,7 +127,7 @@ public class TuiExample implements Runnable {
       L.severe(String.format("Cannot load grammar: %s", e));
       return;
     }
-    List<IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SyntheticSymbolicRegressionProblem,
+    List<IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>, SyntheticUnivariateRegressionProblem,
         RealFunction>> solvers = new ArrayList<>();
     solvers.add(new StandardEvolver<>(
         new FormulaMapper().andThen(n -> TreeBasedRealFunction.from(n, "x"))
@@ -159,7 +164,7 @@ public class TuiExample implements Runnable {
     for (int seed : seeds) {
       Random r = new Random(1);
       for (IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>,
-          SyntheticSymbolicRegressionProblem, RealFunction> solver : solvers) {
+          SyntheticUnivariateRegressionProblem, RealFunction> solver : solvers) {
         Map<String, Object> keys = Map.ofEntries(
             Map.entry("seed", seed),
             Map.entry("solver", solver.getClass().getSimpleName())

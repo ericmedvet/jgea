@@ -14,25 +14,27 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.problem.symbolicregression;
+package io.github.ericmedvet.jgea.problem.regression;
 
 import io.github.ericmedvet.jgea.core.util.Pair;
+import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
+import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionProblem;
 
 import java.util.List;
 
 /**
  * @author eric
  */
-public class DataBasedSymbolicRegressionProblem extends SymbolicRegressionProblem<SymbolicRegressionFitness> {
+public class DataBasedSymbolicRegressionProblem extends UnivariateRegressionProblem<UnivariateRegressionFitness> {
 
   public DataBasedSymbolicRegressionProblem(
       List<Pair<double[], Double>> trainingData,
       List<Pair<double[], Double>> validationData,
-      SymbolicRegressionFitness.Metric metric
+      UnivariateRegressionFitness.Metric metric
   ) {
     super(
-        new SymbolicRegressionFitness(trainingData, metric),
-        new SymbolicRegressionFitness(validationData, metric)
+        new UnivariateRegressionFitness(trainingData, metric),
+        new UnivariateRegressionFitness(validationData, metric)
     );
   }
 

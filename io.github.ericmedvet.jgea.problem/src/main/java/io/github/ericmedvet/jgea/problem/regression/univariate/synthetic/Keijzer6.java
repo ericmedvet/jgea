@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.problem.symbolicregression;
+package io.github.ericmedvet.jgea.problem.regression.univariate.synthetic;
+
+import io.github.ericmedvet.jgea.problem.regression.MathUtils;
+import io.github.ericmedvet.jgea.problem.regression.univariate.SyntheticUnivariateRegressionProblem;
+import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 
 /**
  * @author eric
  */
-public class Keijzer6 extends SyntheticSymbolicRegressionProblem {
+public class Keijzer6 extends SyntheticUnivariateRegressionProblem {
 
-  public Keijzer6(SymbolicRegressionFitness.Metric metric) {
+  public Keijzer6(UnivariateRegressionFitness.Metric metric) {
     super(
         v -> {
           double s = 0d;

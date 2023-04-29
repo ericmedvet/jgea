@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.problem.symbolicregression;
+package io.github.ericmedvet.jgea.problem.regression.symbolic;
 
 import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
 

@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.problem.symbolicregression;
+package io.github.ericmedvet.jgea.problem.regression;
 
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.RealFunction;
 import io.github.ericmedvet.jgea.core.util.Sized;
+import io.github.ericmedvet.jgea.problem.regression.univariate.SyntheticUnivariateRegressionFitness;
 import org.apache.commons.math3.stat.StatUtils;
 
 import java.util.*;
@@ -69,7 +70,7 @@ public class MathUtils {
 
     public ScaledRealFunction(
         RealFunction innerF,
-        SyntheticSymbolicRegressionFitness syntheticSymbolicRegressionFitness
+        SyntheticUnivariateRegressionFitness syntheticSymbolicRegressionFitness
     ) {
       this.innerF = innerF;
       double[] targetYs = syntheticSymbolicRegressionFitness.getPoints()
@@ -142,7 +143,7 @@ public class MathUtils {
 
     public SizedScaledRealFunction(
         RealFunction innerF,
-        SyntheticSymbolicRegressionFitness syntheticSymbolicRegressionFitness
+        SyntheticUnivariateRegressionFitness syntheticSymbolicRegressionFitness
     ) {
       super(innerF, syntheticSymbolicRegressionFitness);
       if (innerF instanceof Sized) {
@@ -187,7 +188,7 @@ public class MathUtils {
     return f -> (f instanceof Sized) ? new SizedMultivariateBasedRealFunction(f) : new MultivariateBasedRealFunction(f);
   }
 
-  public static UnaryOperator<RealFunction> linearScaler(SyntheticSymbolicRegressionFitness syntheticSymbolicRegressionFitness) {
+  public static UnaryOperator<RealFunction> linearScaler(SyntheticUnivariateRegressionFitness syntheticSymbolicRegressionFitness) {
     return f -> (f instanceof Sized) ? new SizedScaledRealFunction(
         f,
         syntheticSymbolicRegressionFitness

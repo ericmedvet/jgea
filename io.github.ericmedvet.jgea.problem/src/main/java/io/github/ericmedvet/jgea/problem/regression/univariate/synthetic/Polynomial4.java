@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.problem.symbolicregression;
+package io.github.ericmedvet.jgea.problem.regression.univariate.synthetic;
+
+import io.github.ericmedvet.jgea.problem.regression.MathUtils;
+import io.github.ericmedvet.jgea.problem.regression.univariate.SyntheticUnivariateRegressionProblem;
+import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 
 /**
  * @author eric
  */
-public class Polynomial4 extends SyntheticSymbolicRegressionProblem {
+public class Polynomial4 extends SyntheticUnivariateRegressionProblem {
 
-  public Polynomial4(SymbolicRegressionFitness.Metric metric) {
+  public Polynomial4(UnivariateRegressionFitness.Metric metric) {
     super(
         v -> {
           double x = v[0];

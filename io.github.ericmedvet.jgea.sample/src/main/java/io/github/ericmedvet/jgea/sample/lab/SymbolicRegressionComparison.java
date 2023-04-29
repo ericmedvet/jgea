@@ -49,7 +49,16 @@ import io.github.ericmedvet.jgea.core.solver.speciation.LazySpeciator;
 import io.github.ericmedvet.jgea.core.solver.speciation.SpeciatedEvolver;
 import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jgea.core.util.Misc;
-import io.github.ericmedvet.jgea.problem.symbolicregression.*;
+import io.github.ericmedvet.jgea.problem.regression.FormulaMapper;
+import io.github.ericmedvet.jgea.problem.regression.MathUtils;
+import io.github.ericmedvet.jgea.problem.regression.symbolic.Element;
+import io.github.ericmedvet.jgea.problem.regression.symbolic.SymbolicRegressionGrammar;
+import io.github.ericmedvet.jgea.problem.regression.symbolic.TreeBasedRealFunction;
+import io.github.ericmedvet.jgea.problem.regression.univariate.SyntheticUnivariateRegressionProblem;
+import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
+import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Keijzer6;
+import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Nguyen7;
+import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Polynomial4;
 import io.github.ericmedvet.jgea.sample.Worker;
 
 import java.io.File;
@@ -107,7 +116,7 @@ public class SymbolicRegressionComparison extends Worker {
     double graphArcRemovalRate = 0d;
     double graphNodeAdditionRate = 1d;
     double graphCrossoverRate = 1d;
-    SymbolicRegressionFitness.Metric metric = SymbolicRegressionFitness.Metric.MSE;
+    UnivariateRegressionFitness.Metric metric = UnivariateRegressionFitness.Metric.MSE;
     Element.Operator[] operators = new Element.Operator[]{Element.Operator.ADDITION, Element.Operator.SUBTRACTION,
         Element.Operator.MULTIPLICATION, Element.Operator.PROT_DIVISION, Element.Operator.PROT_LOG};
     BaseOperator[] baseOperators = new BaseOperator[]{BaseOperator.ADDITION, BaseOperator.SUBTRACTION,
@@ -115,7 +124,7 @@ public class SymbolicRegressionComparison extends Worker {
     BaseFunction[] baseFunctions = new BaseFunction[]{BaseFunction.RE_LU, BaseFunction.GAUSSIAN,
         BaseFunction.PROT_INVERSE, BaseFunction.SQ};
     double[] constants = new double[]{0.1, 1d, 10d};
-    List<SyntheticSymbolicRegressionProblem> problems = List.of(
+    List<SyntheticUnivariateRegressionProblem> problems = List.of(
         new Nguyen7(metric, 1),
         new Keijzer6(metric),
         new Polynomial4(metric)
@@ -160,8 +169,8 @@ public class SymbolicRegressionComparison extends Worker {
       ));
     }
     //evolvers
-    Map<String, Function<SyntheticSymbolicRegressionProblem, IterativeSolver<? extends POSetPopulationState<?,
-        RealFunction, Double>, SyntheticSymbolicRegressionProblem, RealFunction>>> solvers = new TreeMap<>();
+    Map<String, Function<SyntheticUnivariateRegressionProblem, IterativeSolver<? extends POSetPopulationState<?,
+        RealFunction, Double>, SyntheticUnivariateRegressionProblem, RealFunction>>> solvers = new TreeMap<>();
     solvers.put("tree-ga", p -> {
       IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
           IndependentFactory.picker(Arrays.stream(
@@ -1052,9 +1061,9 @@ public class SymbolicRegressionComparison extends Worker {
     L.info(String.format("Going to test with %d evolvers: %s%n", solvers.size(), solvers.keySet()));
     //run
     for (int seed : seeds) {
-      for (SyntheticSymbolicRegressionProblem problem : problems) {
-        for (Map.Entry<String, Function<SyntheticSymbolicRegressionProblem, IterativeSolver<?
-            extends POSetPopulationState<?, RealFunction, Double>, SyntheticSymbolicRegressionProblem, RealFunction>>> solverEntry : solvers.entrySet()) {
+      for (SyntheticUnivariateRegressionProblem problem : problems) {
+        for (Map.Entry<String, Function<SyntheticUnivariateRegressionProblem, IterativeSolver<?
+            extends POSetPopulationState<?, RealFunction, Double>, SyntheticUnivariateRegressionProblem, RealFunction>>> solverEntry : solvers.entrySet()) {
           Map<String, Object> keys = Map.ofEntries(
               Map.entry("seed", seed),
               Map.entry("problem", problem.getClass().getSimpleName().toLowerCase()),
@@ -1063,7 +1072,7 @@ public class SymbolicRegressionComparison extends Worker {
           try {
             Stopwatch stopwatch = Stopwatch.createStarted();
             IterativeSolver<? extends POSetPopulationState<?, RealFunction, Double>,
-                SyntheticSymbolicRegressionProblem, RealFunction> solver = solverEntry.getValue()
+                SyntheticUnivariateRegressionProblem, RealFunction> solver = solverEntry.getValue()
                 .apply(problem);
             L.info(String.format("Starting %s", keys));
             Collection<RealFunction> solutions = solver.solve(

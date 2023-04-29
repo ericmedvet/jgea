@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.problem.symbolicregression;
+package io.github.ericmedvet.jgea.problem.regression.univariate;
 
 import io.github.ericmedvet.jgea.core.fitness.CaseBasedFitness;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.RealFunction;
@@ -27,13 +27,13 @@ import java.util.stream.IntStream;
 /**
  * @author eric
  */
-public class SymbolicRegressionFitness extends CaseBasedFitness<RealFunction, double[], Double, Double> {
+public class UnivariateRegressionFitness extends CaseBasedFitness<RealFunction, double[], Double, Double> {
 
   private final List<Pair<double[], Double>> data;
   private final Metric metric;
   private final int arity;
 
-  public SymbolicRegressionFitness(List<Pair<double[], Double>> data, Metric metric) {
+  public UnivariateRegressionFitness(List<Pair<double[], Double>> data, Metric metric) {
     super(
         data.stream().map(Pair::first).toList(),
         RealFunction::apply,
