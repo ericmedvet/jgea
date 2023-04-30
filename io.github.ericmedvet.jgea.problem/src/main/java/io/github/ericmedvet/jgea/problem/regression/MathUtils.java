@@ -59,7 +59,7 @@ public class MathUtils {
 
     @Override
     public double applyAsDouble(double[] value) {
-      return a+b*inner().applyAsDouble(value);
+      return a + b * inner().applyAsDouble(value);
     }
 
     @Override
@@ -146,7 +146,7 @@ public class MathUtils {
     for (int i = 1; i < xs.length; i++) {
       if (xs[i].length != l) {
         throw new IllegalArgumentException(String.format(
-            "Invalid input arrays: %d-th lenght (%d) is different than " + "1st length (%d)",
+            "Invalid input arrays: %d-th length (%d) is different than " + "1st length (%d)",
             i + 1,
             xs[i].length,
             l
