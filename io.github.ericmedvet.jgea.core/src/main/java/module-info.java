@@ -30,7 +30,7 @@ module io.github.ericmedvet.jgea.core {
   requires com.google.common;
   requires org.knowm.xchart;
   requires java.desktop;
-  requires commons.csv;
   requires java.logging;
   requires commons.math3;
+  requires org.apache.commons.csv;
 }

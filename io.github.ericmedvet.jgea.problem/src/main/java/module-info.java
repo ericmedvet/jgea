@@ -19,4 +19,5 @@ module io.github.ericmedvet.jgea.problem {
   requires commons.math3;
   requires java.desktop;
   requires com.google.common;
+  requires org.apache.commons.csv;
 }
