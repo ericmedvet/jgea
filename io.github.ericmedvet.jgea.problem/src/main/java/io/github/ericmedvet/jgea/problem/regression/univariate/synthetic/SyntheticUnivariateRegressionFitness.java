@@ -16,6 +16,7 @@
 
 package io.github.ericmedvet.jgea.problem.regression.univariate.synthetic;
 
+import io.github.ericmedvet.jgea.problem.regression.Dataset;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 
@@ -28,8 +29,15 @@ public class SyntheticUnivariateRegressionFitness extends UnivariateRegressionFi
 
   private final UnivariateRealFunction targetFunction;
 
-  public SyntheticUnivariateRegressionFitness(UnivariateRealFunction targetFunction, List<double[]> points, Metric metric) {
-    super(points.stream().map(xs -> new Example(xs, targetFunction.applyAsDouble(xs))).toList(), metric);
+  public SyntheticUnivariateRegressionFitness(
+      UnivariateRealFunction targetFunction,
+      List<double[]> points,
+      Metric metric
+  ) {
+    super(
+        new Dataset(points.stream().map(xs -> new Dataset.Example(xs, targetFunction.applyAsDouble(xs))).toList()),
+        metric
+    );
     this.targetFunction = targetFunction;
 
   }

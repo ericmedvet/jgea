@@ -40,12 +40,14 @@ public class MathUtils {
         UnivariateRegressionFitness univariateRegressionFitness
     ) {
       super(inner);
-      double[] targetYs = univariateRegressionFitness.getData()
+      double[] targetYs = univariateRegressionFitness.getDataset().examples()
           .stream()
-          .mapToDouble(UnivariateRegressionFitness.Example::y)
+          .mapToDouble(e -> e.ys()[0])
           .toArray();
       double targetMean = StatUtils.mean(targetYs);
-      double[] ys = univariateRegressionFitness.getPoints().stream().mapToDouble(inner()).toArray();
+      double[] ys = univariateRegressionFitness.getDataset().examples().stream()
+          .mapToDouble(e -> inner().applyAsDouble(e.xs()))
+          .toArray();
       double mean = StatUtils.mean(ys);
       double nCovariance = 0d;
       double nVariance = 0d;

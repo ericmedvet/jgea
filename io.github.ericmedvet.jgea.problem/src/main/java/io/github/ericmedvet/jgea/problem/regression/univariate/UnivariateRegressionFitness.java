@@ -17,10 +17,12 @@
 package io.github.ericmedvet.jgea.problem.regression.univariate;
 
 import io.github.ericmedvet.jgea.core.fitness.CaseBasedFitness;
+import io.github.ericmedvet.jgea.problem.regression.Dataset;
 import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 
 /**
@@ -28,21 +30,16 @@ import java.util.stream.IntStream;
  */
 public class UnivariateRegressionFitness extends CaseBasedFitness<UnivariateRealFunction, double[], Double, Double> {
 
-  private final List<Example> data;
+  private final Dataset dataset;
   private final Metric metric;
-  private final int arity;
-  public UnivariateRegressionFitness(List<Example> data, Metric metric) {
+  public UnivariateRegressionFitness(Dataset dataset, Metric metric) {
     super(
-        data.stream().map(Example::xs).toList(),
+        dataset.examples().stream().map(Dataset.Example::xs).toList(),
         UnivariateRealFunction::applyAsDouble,
-        outcomes -> metric.apply(
-            regressionError(data.stream().map(Example::y).toList(), outcomes),
-            data.stream().map(Example::y).toList()
-        )
+        aggregateFunction(dataset.examples().stream().map(e -> e.ys()[0]).toList(), metric)
     );
-    this.data = data;
+    this.dataset = dataset;
     this.metric = metric;
-    this.arity = data.get(0).xs().length;
   }
 
   public enum Metric implements BiFunction<List<Double>, List<Double>, Double> {
@@ -78,7 +75,9 @@ public class UnivariateRegressionFitness extends CaseBasedFitness<UnivariateReal
 
   }
 
-  public record Example(double[] xs, double y) {}
+  private static Function<List<Double>, Double> aggregateFunction(List<Double> ys, Metric metric) {
+    return outcomes -> metric.apply(regressionError(ys,outcomes), ys);
+  }
 
   private static List<Double> regressionError(List<Double> groundTruth, List<Double> predictions) {
     return IntStream.range(0, groundTruth.size()).mapToObj(i ->
@@ -86,19 +85,11 @@ public class UnivariateRegressionFitness extends CaseBasedFitness<UnivariateReal
     ).toList();
   }
 
-  public int arity() {
-    return arity;
-  }
-
-  public List<Example> getData() {
-    return data;
+  public Dataset getDataset() {
+    return dataset;
   }
 
   public Metric getMetric() {
     return metric;
-  }
-
-  public List<double[]> getPoints() {
-    return getCases();
   }
 }

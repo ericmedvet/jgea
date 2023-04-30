@@ -175,7 +175,7 @@ public class SymbolicRegressionComparison extends Worker {
     solvers.put("tree-ga", p -> {
       IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
           IndependentFactory.picker(Arrays.stream(
-                  vars(p.qualityFunction().arity()))
+                  vars(p.qualityFunction().getDataset().xVarNames().size()))
               .sequential()
               .map(Element.Variable::new)
               .toArray(Element.Variable[]::new)),
@@ -186,7 +186,7 @@ public class SymbolicRegressionComparison extends Worker {
       return new StandardEvolver<>(
           ((Function<Tree<Element>, UnivariateRealFunction>) t -> new TreeBasedUnivariateRealFunction(
               t,
-              vars(p.qualityFunction().arity())
+              vars(p.qualityFunction().getDataset().xVarNames().size())
           )).andThen(MathUtils.linearScaler(p.qualityFunction())),
           new RampedHalfAndHalf<>(
               4,
@@ -221,7 +221,7 @@ public class SymbolicRegressionComparison extends Worker {
     solvers.put("tree-ga-noxover", p -> {
       IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
           IndependentFactory.picker(Arrays.stream(
-                  vars(p.qualityFunction().arity()))
+                  vars(p.qualityFunction().getDataset().xVarNames().size()))
               .sequential()
               .map(Element.Variable::new)
               .toArray(Element.Variable[]::new)),
@@ -232,7 +232,7 @@ public class SymbolicRegressionComparison extends Worker {
       return new StandardEvolver<>(
           ((Function<Tree<Element>, UnivariateRealFunction>) t -> new TreeBasedUnivariateRealFunction(
               t,
-              vars(p.qualityFunction().arity())
+              vars(p.qualityFunction().getDataset().xVarNames().size())
           )).andThen(MathUtils.linearScaler(p.qualityFunction())),
           new RampedHalfAndHalf<>(
               4,
@@ -262,7 +262,7 @@ public class SymbolicRegressionComparison extends Worker {
     solvers.put("tree-gadiv", p -> {
       IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
           IndependentFactory.picker(Arrays.stream(
-                  vars(p.qualityFunction().arity()))
+                  vars(p.qualityFunction().getDataset().xVarNames().size()))
               .sequential()
               .map(Element.Variable::new)
               .toArray(Element.Variable[]::new)),
@@ -273,7 +273,7 @@ public class SymbolicRegressionComparison extends Worker {
       return new StandardWithEnforcedDiversityEvolver<>(
           ((Function<Tree<Element>, UnivariateRealFunction>) t -> new TreeBasedUnivariateRealFunction(
               t,
-              vars(p.qualityFunction().arity())
+              vars(p.qualityFunction().getDataset().xVarNames().size())
           )).andThen(MathUtils.linearScaler(p.qualityFunction())),
           new RampedHalfAndHalf<>(
               4,
@@ -309,13 +309,13 @@ public class SymbolicRegressionComparison extends Worker {
     solvers.put("cfgtree-ga", p -> {
       SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
           List.of(operators),
-          List.of(vars(p.qualityFunction().arity())),
+          List.of(vars(p.qualityFunction().getDataset().xVarNames().size())),
           Arrays.stream(constants).boxed().toList()
       );
       return new StandardEvolver<>(
           new FormulaMapper().andThen(n -> TreeBasedUnivariateRealFunction.from(
               n,
-              vars(p.qualityFunction().arity())
+              vars(p.qualityFunction().getDataset().xVarNames().size())
           )).andThen(MathUtils.linearScaler(p.qualityFunction())),
           new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
           nPop,
@@ -337,13 +337,13 @@ public class SymbolicRegressionComparison extends Worker {
     solvers.put("cfgtree-ga-noxover", p -> {
       SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
           List.of(operators),
-          List.of(vars(p.qualityFunction().arity())),
+          List.of(vars(p.qualityFunction().getDataset().xVarNames().size())),
           Arrays.stream(constants).boxed().toList()
       );
       return new StandardEvolver<>(
           new FormulaMapper().andThen(n -> TreeBasedUnivariateRealFunction.from(
               n,
-              vars(p.qualityFunction().arity())
+              vars(p.qualityFunction().getDataset().xVarNames().size())
           )).andThen(MathUtils.linearScaler(p.qualityFunction())),
           new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
           nPop,
@@ -360,13 +360,13 @@ public class SymbolicRegressionComparison extends Worker {
     solvers.put("cfgtree-gadiv", p -> {
       SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
           List.of(operators),
-          List.of(vars(p.qualityFunction().arity())),
+          List.of(vars(p.qualityFunction().getDataset().xVarNames().size())),
           Arrays.stream(constants).boxed().toList()
       );
       return new StandardWithEnforcedDiversityEvolver<>(
           new FormulaMapper().andThen(n -> TreeBasedUnivariateRealFunction.from(
               n,
-              vars(p.qualityFunction().arity())
+              vars(p.qualityFunction().getDataset().xVarNames().size())
           )).andThen(MathUtils.linearScaler(p.qualityFunction())),
           new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
           nPop,
@@ -390,7 +390,7 @@ public class SymbolicRegressionComparison extends Worker {
         FunctionGraph.builder()
             .andThen(UnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
-        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1),
+        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().getDataset().xVarNames().size(), 1),
         nPop,
         StopConditions.nOfIterations(nIterations),
         Map.of(
@@ -425,7 +425,7 @@ public class SymbolicRegressionComparison extends Worker {
         FunctionGraph.builder()
             .andThen(UnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
-        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1),
+        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().getDataset().xVarNames().size(), 1),
         nPop,
         StopConditions.nOfIterations(nIterations),
         Map.of(
@@ -454,7 +454,7 @@ public class SymbolicRegressionComparison extends Worker {
         FunctionGraph.builder()
             .andThen(UnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
-        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1),
+        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().getDataset().xVarNames().size(), 1),
         nPop,
         StopConditions.nOfIterations(nIterations),
         Map.of(
@@ -486,7 +486,7 @@ public class SymbolicRegressionComparison extends Worker {
         FunctionGraph.builder()
             .andThen(UnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
-        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1),
+        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().getDataset().xVarNames().size(), 1),
         nPop,
         StopConditions.nOfIterations(nIterations),
         Map.of(
@@ -513,7 +513,7 @@ public class SymbolicRegressionComparison extends Worker {
         FunctionGraph.builder()
             .andThen(UnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
-        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1),
+        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().getDataset().xVarNames().size(), 1),
         nPop,
         StopConditions.nOfIterations(nIterations),
         Map.of(
@@ -540,7 +540,7 @@ public class SymbolicRegressionComparison extends Worker {
         FunctionGraph.builder()
             .andThen(UnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
-        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1),
+        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().getDataset().xVarNames().size(), 1),
         nPop,
         StopConditions.nOfIterations(nIterations),
         Map.of(
@@ -575,7 +575,7 @@ public class SymbolicRegressionComparison extends Worker {
         FunctionGraph.builder()
             .andThen(UnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
-        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1),
+        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().getDataset().xVarNames().size(), 1),
         nPop,
         StopConditions.nOfIterations(nIterations),
         Map.of(
@@ -607,7 +607,7 @@ public class SymbolicRegressionComparison extends Worker {
         FunctionGraph.builder()
             .andThen(UnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
-        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1),
+        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().getDataset().xVarNames().size(), 1),
         nPop,
         StopConditions.nOfIterations(nIterations),
         Map.of(
@@ -640,7 +640,7 @@ public class SymbolicRegressionComparison extends Worker {
         FunctionGraph.builder()
             .andThen(UnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
-        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1),
+        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().getDataset().xVarNames().size(), 1),
         nPop,
         StopConditions.nOfIterations(nIterations),
         Map.of(
@@ -675,7 +675,7 @@ public class SymbolicRegressionComparison extends Worker {
         OperatorGraph.builder()
             .andThen(UnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
-        new ShallowFactory(p.qualityFunction().arity(), 1, constants),
+        new ShallowFactory(p.qualityFunction().getDataset().xVarNames().size(), 1, constants),
         nPop,
         StopConditions.nOfIterations(nIterations),
         Map.of(
@@ -709,7 +709,7 @@ public class SymbolicRegressionComparison extends Worker {
         OperatorGraph.builder()
             .andThen(UnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
-        new ShallowFactory(p.qualityFunction().arity(), 1, constants),
+        new ShallowFactory(p.qualityFunction().getDataset().xVarNames().size(), 1, constants),
         nPop,
         StopConditions.nOfIterations(nIterations),
         Map.of(
@@ -742,7 +742,7 @@ public class SymbolicRegressionComparison extends Worker {
           graphMapper.andThen(FunctionGraph.builder())
               .andThen(UnivariateRealFunction::from)
               .andThen(MathUtils.linearScaler(p.qualityFunction())),
-          new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1).then(GraphUtils.mapper(
+          new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().getDataset().xVarNames().size(), 1).then(GraphUtils.mapper(
               IndexedNode.incrementerMapper(Node.class),
               Misc::first
           )),
@@ -795,7 +795,7 @@ public class SymbolicRegressionComparison extends Worker {
           graphMapper.andThen(FunctionGraph.builder())
               .andThen(UnivariateRealFunction::from)
               .andThen(MathUtils.linearScaler(p.qualityFunction())),
-          new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1).then(GraphUtils.mapper(
+          new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().getDataset().xVarNames().size(), 1).then(GraphUtils.mapper(
               IndexedNode.incrementerMapper(Node.class),
               Misc::first
           )),
@@ -850,7 +850,7 @@ public class SymbolicRegressionComparison extends Worker {
               .andThen(FunctionGraph.builder())
               .andThen(UnivariateRealFunction::from)
               .andThen(MathUtils.linearScaler(p.qualityFunction())),
-          new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1).then(GraphUtils.mapper(
+          new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().getDataset().xVarNames().size(), 1).then(GraphUtils.mapper(
               IndexedNode.incrementerMapper(Node.class),
               Misc::first
           )),
@@ -860,7 +860,7 @@ public class SymbolicRegressionComparison extends Worker {
               new IndexedNodeAddition<FunctionNode, Node, Double>(
                   FunctionNode.sequentialIndexFactory(baseFunctions),
                   n -> (n instanceof FunctionNode) ? ((FunctionNode) n).getFunction().hashCode() : 0,
-                  p.qualityFunction().arity() + 1 + 1,
+                  p.qualityFunction().getDataset().xVarNames().size() + 1 + 1,
                   (w, r) -> w,
                   (w, r) -> r.nextGaussian()
               ).withChecker(g -> checker.test(graphMapper.apply(g))),
@@ -902,7 +902,7 @@ public class SymbolicRegressionComparison extends Worker {
               .andThen(UnivariateRealFunction::from)
               .andThen(MathUtils.linearScaler(p.qualityFunction())),
           new ShallowFactory(
-              p.qualityFunction().arity(),
+              p.qualityFunction().getDataset().xVarNames().size(),
               1,
               constants
           ).then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
@@ -913,7 +913,7 @@ public class SymbolicRegressionComparison extends Worker {
                   OperatorNode.sequentialIndexFactory(
                       baseOperators),
                   n -> (n instanceof OperatorNode) ? ((OperatorNode) n).getOperator().hashCode() : 0,
-                  p.qualityFunction().arity() + 1 + constants.length,
+                  p.qualityFunction().getDataset().xVarNames().size() + 1 + constants.length,
                   Mutation.copy(),
                   Mutation.copy()
               ).withChecker(g -> checker.test(graphMapper.apply(g))),
@@ -954,7 +954,7 @@ public class SymbolicRegressionComparison extends Worker {
               0d,
               0d,
               1d,
-              p.qualityFunction().arity(),
+              p.qualityFunction().getDataset().xVarNames().size(),
               1
           ).then(GraphUtils.mapper(IndexedNode.incrementerMapper(Node.class), Misc::first)),
           nPop,
@@ -963,7 +963,7 @@ public class SymbolicRegressionComparison extends Worker {
               new IndexedNodeAddition<FunctionNode, Node, Double>(
                   FunctionNode.sequentialIndexFactory(baseFunctions),
                   n -> (n instanceof FunctionNode) ? ((FunctionNode) n).getFunction().hashCode() : 0,
-                  p.qualityFunction().arity() + 1 + 1,
+                  p.qualityFunction().getDataset().xVarNames().size() + 1 + 1,
                   (w, r) -> w,
                   (w, r) -> r.nextGaussian()
               ).withChecker(g -> checker.test(graphMapper.apply(g))),
@@ -992,7 +992,7 @@ public class SymbolicRegressionComparison extends Worker {
         FunctionGraph.builder()
             .andThen(UnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
-        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1),
+        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().getDataset().xVarNames().size(), 1),
         nPop,
         StopConditions.nOfIterations(nIterations),
         Map.of(
@@ -1021,7 +1021,7 @@ public class SymbolicRegressionComparison extends Worker {
         FunctionGraph.builder()
             .andThen(UnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
-        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().arity(), 1),
+        new ShallowSparseFactory(0d, 0d, 1d, p.qualityFunction().getDataset().xVarNames().size(), 1),
         nPop,
         StopConditions.nOfIterations(nIterations),
         Map.of(
