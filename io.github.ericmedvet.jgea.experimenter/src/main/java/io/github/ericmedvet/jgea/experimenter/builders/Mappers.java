@@ -22,7 +22,7 @@ public class Mappers {
   @SuppressWarnings("unused")
   public static InvertibleMapper<Tree<Element>, NamedUnivariateRealFunction> treeURFFromNames(
       @Param("xVarNames") List<String> xVarNames,
-      @Param("yVarName") String yVarName,
+      @Param(value = "yVarName", dS = "y") String yVarName,
       @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
     return new InvertibleMapper<>() {

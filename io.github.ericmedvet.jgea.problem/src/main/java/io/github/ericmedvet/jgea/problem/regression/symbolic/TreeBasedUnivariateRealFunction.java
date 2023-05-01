@@ -118,7 +118,7 @@ public class TreeBasedUnivariateRealFunction implements NamedUnivariateRealFunct
 
   @Override
   public String toString() {
-    return tree.toString();
+    return yVarName + "=" + tree.toString();
   }
 
   @Override
