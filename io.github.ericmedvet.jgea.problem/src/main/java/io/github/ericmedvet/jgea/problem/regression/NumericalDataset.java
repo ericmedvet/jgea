@@ -18,8 +18,8 @@ import java.util.stream.IntStream;
 /**
  * @author "Eric Medvet" on 2023/04/30 for jgea
  */
-public record Dataset(List<Example> examples, List<String> xVarNames, List<String> yVarNames) {
-  public Dataset {
+public record NumericalDataset(List<Example> examples, List<String> xVarNames, List<String> yVarNames) {
+  public NumericalDataset {
     List<Integer> xsSizes = examples.stream().map(e -> e.xs.length).distinct().toList();
     List<Integer> ysSizes = examples.stream().map(e -> e.ys.length).distinct().toList();
     if (xsSizes.size() > 1) {
@@ -44,7 +44,7 @@ public record Dataset(List<Example> examples, List<String> xVarNames, List<Strin
     }
   }
 
-  public Dataset(List<Example> examples) {
+  public NumericalDataset(List<Example> examples) {
     this(
         examples,
         varNames("x", examples.get(0).xs().length),
@@ -58,8 +58,8 @@ public record Dataset(List<Example> examples, List<String> xVarNames, List<Strin
     }
   }
 
-  private static Dataset buildDataset(List<Map<String, String>> data, List<String> xVarNames, List<String> yVarNames) {
-    return new Dataset(
+  private static NumericalDataset buildDataset(List<Map<String, String>> data, List<String> xVarNames, List<String> yVarNames) {
+    return new NumericalDataset(
         data.stream()
             .map(dp -> new Example(
                 xVarNames.stream().mapToDouble(n -> Double.parseDouble(dp.get(n))).toArray(),
@@ -71,7 +71,7 @@ public record Dataset(List<Example> examples, List<String> xVarNames, List<Strin
     );
   }
 
-  public static Dataset loadFromCSV(InputStream inputStream, List<String> yVarNames) throws IOException {
+  public static NumericalDataset loadFromCSV(InputStream inputStream, List<String> yVarNames) throws IOException {
     List<Map<String, String>> data = loadFromCSV(inputStream);
     if (!data.get(0).keySet().containsAll(yVarNames)) {
       Set<String> notFoundVars = new LinkedHashSet<>(yVarNames);
@@ -84,7 +84,7 @@ public record Dataset(List<Example> examples, List<String> xVarNames, List<Strin
     return buildDataset(data, xVarNames, yVarNames);
   }
 
-  public static Dataset loadFromCSV(
+  public static NumericalDataset loadFromCSV(
       InputStream inputStream,
       List<String> xVarNames,
       List<String> yVarNames
@@ -103,7 +103,7 @@ public record Dataset(List<Example> examples, List<String> xVarNames, List<Strin
     return buildDataset(data, xVarNames, yVarNames);
   }
 
-  public static Dataset loadFromCSV(
+  public static NumericalDataset loadFromCSV(
       InputStream inputStream,
       String xVarNamePattern,
       String yVarNamePattern
@@ -117,7 +117,7 @@ public record Dataset(List<Example> examples, List<String> xVarNames, List<Strin
     );
   }
 
-  public static Dataset loadFromCSV(InputStream inputStream, String yVarName) throws IOException {
+  public static NumericalDataset loadFromCSV(InputStream inputStream, String yVarName) throws IOException {
     return loadFromCSV(inputStream, List.of(yVarName));
   }
 
@@ -138,43 +138,43 @@ public record Dataset(List<Example> examples, List<String> xVarNames, List<Strin
     }
   }
 
-  public static Dataset loadFromCSVResource(
+  public static NumericalDataset loadFromCSVResource(
       String name,
       List<String> xVarNames,
       List<String> yVarNames
   ) throws IOException {
-    return loadFromCSV(Dataset.class.getResourceAsStream(name), xVarNames, yVarNames);
+    return loadFromCSV(NumericalDataset.class.getResourceAsStream(name), xVarNames, yVarNames);
   }
 
-  public static Dataset loadFromCSVResource(
+  public static NumericalDataset loadFromCSVResource(
       String name,
       List<String> yVarNames
   ) throws IOException {
-    return loadFromCSV(Dataset.class.getResourceAsStream(name), yVarNames);
+    return loadFromCSV(NumericalDataset.class.getResourceAsStream(name), yVarNames);
   }
 
-  public static Dataset loadFromCSVResource(
+  public static NumericalDataset loadFromCSVResource(
       String name,
       String yVarName
   ) throws IOException {
-    return loadFromCSV(Dataset.class.getResourceAsStream(name), yVarName);
+    return loadFromCSV(NumericalDataset.class.getResourceAsStream(name), yVarName);
   }
 
-  public static Dataset loadFromCSVResource(
+  public static NumericalDataset loadFromCSVResource(
       String name,
       String xVarNamePattern,
       String yVarNamePattern
   ) throws IOException {
-    return loadFromCSV(Dataset.class.getResourceAsStream(name), xVarNamePattern, yVarNamePattern);
+    return loadFromCSV(NumericalDataset.class.getResourceAsStream(name), xVarNamePattern, yVarNamePattern);
   }
 
   public static void main(String[] args) throws IOException {
-    System.out.println(Dataset.loadFromCSV(
-        Dataset.class.getResourceAsStream("/datasets/regression/concrete.csv"),
+    System.out.println(NumericalDataset.loadFromCSV(
+        NumericalDataset.class.getResourceAsStream("/datasets/regression/concrete.csv"),
         List.of("strength")
     ));
-    System.out.println(Dataset.loadFromCSV(
-        Dataset.class.getResourceAsStream("/datasets/regression/xor.csv"),
+    System.out.println(NumericalDataset.loadFromCSV(
+        NumericalDataset.class.getResourceAsStream("/datasets/regression/xor.csv"),
         "x\\d+",
         "y"
     ));
@@ -185,8 +185,8 @@ public record Dataset(List<Example> examples, List<String> xVarNames, List<Strin
     return IntStream.range(1, number + 1).mapToObj((name + "%0" + digits + "d")::formatted).toList();
   }
 
-  public Dataset folds(List<Integer> folds, int n) {
-    return new Dataset(DataUtils.folds(examples(), folds, n), xVarNames(), yVarNames());
+  public NumericalDataset folds(List<Integer> folds, int n) {
+    return new NumericalDataset(DataUtils.folds(examples(), folds, n), xVarNames(), yVarNames());
   }
 
   @Override

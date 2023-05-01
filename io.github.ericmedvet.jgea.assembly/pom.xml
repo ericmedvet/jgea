@@ -56,8 +56,11 @@
                         <phase>package</phase>
                         <configuration>
                             <descriptors>
-                                <descriptor>zip-assembly.xml</descriptor>
+                                <descriptor>dir-assembly.xml</descriptor>
                             </descriptors>
+                            <finalName>${project.artifactId}-bin</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <attach>false</attach>
                         </configuration>
                     </execution>
                 </executions>

@@ -17,7 +17,7 @@
 package io.github.ericmedvet.jgea.problem.regression.univariate;
 
 import io.github.ericmedvet.jgea.core.fitness.CaseBasedFitness;
-import io.github.ericmedvet.jgea.problem.regression.Dataset;
+import io.github.ericmedvet.jgea.problem.regression.NumericalDataset;
 import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 
 import java.util.List;
@@ -30,11 +30,11 @@ import java.util.stream.IntStream;
  */
 public class UnivariateRegressionFitness extends CaseBasedFitness<UnivariateRealFunction, double[], Double, Double> {
 
-  private final Dataset dataset;
+  private final NumericalDataset dataset;
   private final Metric metric;
-  public UnivariateRegressionFitness(Dataset dataset, Metric metric) {
+  public UnivariateRegressionFitness(NumericalDataset dataset, Metric metric) {
     super(
-        dataset.examples().stream().map(Dataset.Example::xs).toList(),
+        dataset.examples().stream().map(NumericalDataset.Example::xs).toList(),
         UnivariateRealFunction::applyAsDouble,
         aggregateFunction(dataset.examples().stream().map(e -> e.ys()[0]).toList(), metric)
     );
@@ -85,7 +85,7 @@ public class UnivariateRegressionFitness extends CaseBasedFitness<UnivariateReal
     ).toList();
   }
 
-  public Dataset getDataset() {
+  public NumericalDataset getDataset() {
     return dataset;
   }
 

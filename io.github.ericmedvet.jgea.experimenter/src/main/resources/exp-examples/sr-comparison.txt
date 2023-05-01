@@ -2,24 +2,24 @@ ea.experiment(
   runs = (randomGenerator = (seed = [1:1:3]) * [ea.rg.defaultRG()]) * [
     ea.run(
       solver = ea.s.srTreeGP(
-        mapper = ea.m.treeToRealFunction(problem = ea.p.r.synthetic(name = "nguyen7"));
+        mapper = ea.m.treeToRealFunction(problem = ea.p.ur.synthetic(name = "nguyen7"));
         nEval = 10000
       );
-      problem = ea.p.r.synthetic(name = "nguyen7")
+      problem = ea.p.ur.synthetic(name = "nguyen7")
     );
     ea.run(
       solver = ea.s.srTreeGP(
-        mapper = ea.m.treeToRealFunction(problem = ea.p.r.synthetic(name = "keijzer6"));
+        mapper = ea.m.treeToRealFunction(problem = ea.p.ur.synthetic(name = "keijzer6"));
         nEval = 10000
       );
-      problem = ea.p.r.synthetic(name = "keijzer6")
+      problem = ea.p.ur.synthetic(name = "keijzer6")
     );
     ea.run(
       solver = ea.s.srTreeGP(
-        mapper = ea.m.treeToRealFunction(problem = ea.p.r.bundled(name = "concrete"));
+        mapper = ea.m.treeToRealFunction(problem = ea.p.ur.bundled(name = "concrete"));
         nEval = 10000
       );
-      problem = ea.p.r.bundled(name = "concrete")
+      problem = ea.p.ur.bundled(name = "concrete")
     )
   ];
   listeners = [

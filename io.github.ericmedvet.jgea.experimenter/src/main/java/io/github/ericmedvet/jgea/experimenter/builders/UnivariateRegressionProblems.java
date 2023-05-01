@@ -1,6 +1,6 @@
 package io.github.ericmedvet.jgea.experimenter.builders;
 
-import io.github.ericmedvet.jgea.problem.regression.Dataset;
+import io.github.ericmedvet.jgea.problem.regression.NumericalDataset;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionProblem;
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.*;
@@ -8,12 +8,13 @@ import io.github.ericmedvet.jnb.core.Param;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * @author "Eric Medvet" on 2023/04/30 for jgea
  */
-public class RegressionProblems {
-  private RegressionProblems() {
+public class UnivariateRegressionProblems {
+  private UnivariateRegressionProblems() {
   }
 
   @SuppressWarnings("unused")
@@ -21,11 +22,11 @@ public class RegressionProblems {
       @Param("name") String name,
       @Param(value = "metric", dS = "mse") UnivariateRegressionFitness.Metric metric
   ) {
-    Dataset dataset;
+    NumericalDataset dataset;
     try {
       dataset = switch (name) {
-        case "concrete" -> Dataset.loadFromCSVResource("/datasets/regression/concrete.csv", "strength");
-        case "xor" -> Dataset.loadFromCSVResource("/datasets/regression/xor.csv", "y");
+        case "concrete" -> NumericalDataset.loadFromCSVResource("/datasets/regression/concrete.csv", "strength");
+        case "xor" -> NumericalDataset.loadFromCSVResource("/datasets/regression/xor.csv", "y");
         default -> throw new IllegalArgumentException("Unknown bundled dataset: %s".formatted(name));
       };
     } catch (IOException e) {
@@ -42,6 +43,18 @@ public class RegressionProblems {
       );
       default -> throw new IllegalArgumentException("Unknown bundled dataset: %s".formatted(name));
     };
+  }
+
+  @SuppressWarnings("unused")
+  public static UnivariateRegressionProblem<UnivariateRegressionFitness> fromData(
+      @Param("trainingDataset") Supplier<NumericalDataset> trainingDataset,
+      @Param("testDataset") Supplier<NumericalDataset> testDataset,
+      @Param(value = "metric", dS = "mse") UnivariateRegressionFitness.Metric metric
+  ) {
+    return new UnivariateRegressionProblem<>(
+        new UnivariateRegressionFitness(trainingDataset.get(), metric),
+        new UnivariateRegressionFitness(testDataset.get(), metric)
+    );
   }
 
   @SuppressWarnings("unused")
