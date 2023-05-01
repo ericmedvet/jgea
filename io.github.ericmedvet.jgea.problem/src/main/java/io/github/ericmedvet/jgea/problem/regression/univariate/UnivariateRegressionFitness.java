@@ -22,7 +22,6 @@ import io.github.ericmedvet.jgea.problem.regression.NumericalDataset;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
@@ -40,56 +39,56 @@ public class UnivariateRegressionFitness extends CaseBasedFitness<NamedUnivariat
     super(
         dataset.namedExamples().stream().map(NumericalDataset.NamedExample::x).toList(),
         NamedUnivariateRealFunction::computeAsDouble,
-        aggregateFunction(
-            dataset.namedExamples().stream().map(ne -> ne.y().get(dataset.yVarNames().get(0))).toList(),
-            metric
-        )
+        aggregateFunction(dataset, metric)
     );
     this.dataset = dataset;
     this.metric = metric;
   }
 
-  public enum Metric implements BiFunction<List<Double>, List<Double>, Double> {
+  public enum Metric implements Function<List<Y>, Double> {
 
-    MAE((errs, ys) -> errs.stream()
-        .mapToDouble(Math::abs)
+    MAE(ys -> ys.stream()
+        .mapToDouble(y -> Math.abs(y.predicted - y.actual))
         .average()
         .orElse(Double.NaN)),
-    MSE((errs, ys) -> errs.stream()
-        .mapToDouble(err -> err * err)
+    MSE(ys -> ys.stream()
+        .mapToDouble(y -> (y.predicted - y.actual) * (y.predicted - y.actual))
         .average()
         .orElse(Double.NaN)),
-    RMSE((errs, ys) -> Math.sqrt(errs.stream()
-        .mapToDouble(err -> err * err)
+    RMSE(ys -> Math.sqrt(ys.stream()
+        .mapToDouble(y -> (y.predicted - y.actual) * (y.predicted - y.actual))
         .average()
         .orElse(Double.NaN))),
-    NMSE((errs, ys) -> errs.stream()
-        .mapToDouble(err -> err * err)
+    NMSE(ys -> ys.stream()
+        .mapToDouble(y -> (y.predicted - y.actual) * (y.predicted - y.actual))
         .average()
-        .orElse(Double.NaN) / ys.stream().mapToDouble(y -> y * y).average().orElse(1d));
+        .orElse(Double.NaN) / ys.stream().mapToDouble(y -> y.actual).average().orElse(1d));
+    private final Function<List<Y>, Double> function;
 
-    private final BiFunction<List<Double>, List<Double>, Double> function;
-
-    Metric(BiFunction<List<Double>, List<Double>, Double> function) {
+    Metric(Function<List<Y>, Double> function) {
       this.function = function;
     }
 
 
     @Override
-    public Double apply(List<Double> errs, List<Double> ys) {
-      return function.apply(errs, ys);
+    public Double apply(List<Y> ys) {
+      return function.apply(ys);
     }
 
   }
 
-  private static Function<List<Double>, Double> aggregateFunction(List<Double> ys, Metric metric) {
-    return outcomes -> metric.apply(regressionError(ys, outcomes), ys);
+  private record Y(double predicted, double actual) {}
+
+  private static Function<List<Double>, Double> aggregateFunction(NumericalDataset dataset, Metric metric) {
+    List<Double> actualYs = dataset.namedExamples().stream().map(ne -> ne.y().get(dataset.yVarNames().get(0))).toList();
+    return predictedYs -> metric.apply(pairs(predictedYs, actualYs));
   }
 
-  private static List<Double> regressionError(List<Double> groundTruth, List<Double> predictions) {
-    return IntStream.range(0, groundTruth.size()).mapToObj(i ->
-        groundTruth.get(i) - predictions.get(i)
-    ).toList();
+  public static List<Y> pairs(List<Double> predictedYs, List<Double> actualYs) {
+    return IntStream.range(0, actualYs.size()).mapToObj(i -> new Y(
+        predictedYs.get(i),
+        actualYs.get(i)
+    )).toList();
   }
 
   public NumericalDataset getDataset() {
