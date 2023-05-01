@@ -23,6 +23,7 @@ import io.github.ericmedvet.jnb.core.BuilderException;
 import io.github.ericmedvet.jnb.core.NamedBuilder;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -80,6 +81,12 @@ public class Starter {
     )
     public boolean help;
 
+    @Parameter(
+        names = {"--builder", "-b"},
+        description = "Builder for the experiment."
+    )
+    public String builderName = PreparedNamedBuilder.class.getName();
+
   }
 
   public static void main(String[] args) {
@@ -105,7 +112,15 @@ public class Starter {
       System.exit(0);
     }
     //prepare local named builder
-    NamedBuilder<Object> nb = PreparedNamedBuilder.get();
+    NamedBuilder<Object> nb = null;
+    try {
+      Class<?> builderClass = Class.forName(configuration.builderName);
+      //noinspection unchecked
+      nb = (NamedBuilder<Object>) builderClass.getMethod("get" ).invoke(null);
+    } catch (ClassNotFoundException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
+      L.severe("Cannot build the builder %s due to: %s".formatted(configuration.builderName, e));
+      System.exit(-1);
+    }
     //check if it's just a help invocation
     if (configuration.showExpFileHelp) {
       System.out.println(NamedBuilder.prettyToString(nb, true));
