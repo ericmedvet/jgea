@@ -24,6 +24,7 @@ import io.github.ericmedvet.jsdynsym.core.Parametrized;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.DoubleUnaryOperator;
 
 /**
  * @author eric
@@ -33,13 +34,25 @@ public class TreeBasedUnivariateRealFunction implements NamedUnivariateRealFunct
 
   private final List<String> xVarNames;
   private final String yVarName;
+  private final DoubleUnaryOperator postOperator;
   private Tree<Element> tree;
 
-  public TreeBasedUnivariateRealFunction(Tree<Element> tree, List<String> xVarNames, String yVarName) {
+  public TreeBasedUnivariateRealFunction(
+      Tree<Element> tree,
+      List<String> xVarNames,
+      String yVarName,
+      DoubleUnaryOperator postOperator
+  ) {
     this.tree = tree;
     this.xVarNames = xVarNames;
     this.yVarName = yVarName;
+    this.postOperator = postOperator;
   }
+
+  public TreeBasedUnivariateRealFunction(Tree<Element> tree, List<String> xVarNames, String yVarName) {
+    this(tree, xVarNames, yVarName, x -> x);
+  }
+
 
   private static double compute(Tree<Element> tree, Map<String, Double> input) {
     if (tree.content() instanceof Element.Decoration) {
@@ -67,7 +80,7 @@ public class TreeBasedUnivariateRealFunction implements NamedUnivariateRealFunct
 
   @Override
   public double computeAsDouble(Map<String, Double> input) {
-    return compute(tree, input);
+    return postOperator.applyAsDouble(compute(tree, input));
   }
 
   @Override

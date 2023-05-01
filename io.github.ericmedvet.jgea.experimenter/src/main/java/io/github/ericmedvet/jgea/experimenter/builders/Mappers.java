@@ -8,6 +8,7 @@ import io.github.ericmedvet.jgea.problem.regression.symbolic.TreeBasedUnivariate
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionProblem;
 import io.github.ericmedvet.jnb.core.Param;
+import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 
 import java.util.List;
 
@@ -19,9 +20,10 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
-  public static InvertibleMapper<Tree<Element>, NamedUnivariateRealFunction> treeUnivariateRealFunctionFromNames(
+  public static InvertibleMapper<Tree<Element>, NamedUnivariateRealFunction> treeURFFromNames(
       @Param("xVarNames") List<String> xVarNames,
-      @Param("yVarName") String yVarName
+      @Param("yVarName") String yVarName,
+      @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
     return new InvertibleMapper<>() {
       @Override
@@ -44,8 +46,9 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
-  public static InvertibleMapper<Tree<Element>, NamedUnivariateRealFunction> treeUnivariateRealFunctionFromProblem(
-      @Param("problem") UnivariateRegressionProblem<UnivariateRegressionFitness> problem
+  public static InvertibleMapper<Tree<Element>, NamedUnivariateRealFunction> treeURFFromProblem(
+      @Param("problem") UnivariateRegressionProblem<UnivariateRegressionFitness> problem,
+      @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
     if (problem.qualityFunction().getDataset().yVarNames().size() != 1) {
       throw new IllegalArgumentException(
@@ -56,9 +59,10 @@ public class Mappers {
                   .size())
       );
     }
-    return treeUnivariateRealFunctionFromNames(
+    return treeURFFromNames(
         problem.qualityFunction().getDataset().xVarNames(),
-        problem.qualityFunction().getDataset().yVarNames().get(0)
+        problem.qualityFunction().getDataset().yVarNames().get(0),
+        postOperator
     );
   }
 }
