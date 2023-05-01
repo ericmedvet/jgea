@@ -20,6 +20,7 @@ import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.util.Sized;
 import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -33,11 +34,11 @@ public class TreeBasedUnivariateRealFunction implements UnivariateRealFunction, 
   private final Tree<Element> tree;
   private final Map<String, Integer> varNamesMap;
 
-  public TreeBasedUnivariateRealFunction(Tree<Element> tree, String... varNames) {
+  public TreeBasedUnivariateRealFunction(Tree<Element> tree, List<String> varNames) {
     this.tree = tree;
-    varNamesMap = IntStream.range(0, varNames.length)
+    varNamesMap = IntStream.range(0, varNames.size())
         .boxed()
-        .collect(Collectors.toMap(i -> varNames[i], i -> i));
+        .collect(Collectors.toMap(varNames::get, i -> i));
   }
 
   private static double compute(Tree<Element> tree, double[] x, Map<String, Integer> varNamesMap) {
@@ -69,10 +70,6 @@ public class TreeBasedUnivariateRealFunction implements UnivariateRealFunction, 
       i = i + 1;
     }
     return ((Element.Operator) tree.content()).applyAsDouble(childrenValues);
-  }
-
-  public static TreeBasedUnivariateRealFunction from(Tree<Element> tree, String... varNames) {
-    return new TreeBasedUnivariateRealFunction(tree, varNames);
   }
 
   @Override

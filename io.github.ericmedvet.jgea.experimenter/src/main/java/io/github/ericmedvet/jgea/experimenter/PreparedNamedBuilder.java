@@ -34,6 +34,7 @@ public class PreparedNamedBuilder {
               .and(List.of("regression", "r"), NamedBuilder.fromUtilityClass(RegressionProblems.class))
           )
           .and(List.of("solver", "s"), NamedBuilder.fromUtilityClass(Solvers.class))
+          .and(List.of("mapper", "m"), NamedBuilder.fromUtilityClass(Mappers.class))
           .and(List.of("listener", "l"), NamedBuilder.fromUtilityClass(Listeners.class))
           .and(List.of("function", "f"), NamedBuilder.fromUtilityClass(Functions.class))
           .and(List.of("namedFunction", "nf"), NamedBuilder.fromUtilityClass(NamedFunctions.class))

@@ -392,13 +392,11 @@ public class DirtyExamples extends Worker {
       e.printStackTrace();
       return;
     }
-    List<IterativeSolver<? extends POSetPopulationState<?, UnivariateRealFunction, Double>, SyntheticUnivariateRegressionProblem,
+    List<IterativeSolver<? extends POSetPopulationState<?, UnivariateRealFunction, Double>,
+        SyntheticUnivariateRegressionProblem,
         UnivariateRealFunction>> solvers = new ArrayList<>();
     solvers.add(new StandardEvolver<>(
-        new FormulaMapper().andThen(n -> TreeBasedUnivariateRealFunction.from(
-                n,
-                "x"
-            ))
+        new FormulaMapper().andThen(n -> new TreeBasedUnivariateRealFunction(n, List.of("x")))
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
         100,
@@ -412,10 +410,7 @@ public class DirtyExamples extends Worker {
         (srp, rnd) -> new POSetPopulationState<>()
     ));
     solvers.add(new StandardWithEnforcedDiversityEvolver<>(
-        new FormulaMapper().andThen(n -> TreeBasedUnivariateRealFunction.from(
-                n,
-                "x"
-            ))
+        new FormulaMapper().andThen(n -> new TreeBasedUnivariateRealFunction(n, List.of("x")))
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
         100,
@@ -429,7 +424,8 @@ public class DirtyExamples extends Worker {
         (srp, rnd) -> new POSetPopulationState<>(),
         100
     ));
-    for (IterativeSolver<? extends POSetPopulationState<?, UnivariateRealFunction, Double>, SyntheticUnivariateRegressionProblem,
+    for (IterativeSolver<? extends POSetPopulationState<?, UnivariateRealFunction, Double>,
+        SyntheticUnivariateRegressionProblem,
         UnivariateRealFunction> solver : solvers) {
       System.out.println(solver.getClass().getSimpleName());
       try {

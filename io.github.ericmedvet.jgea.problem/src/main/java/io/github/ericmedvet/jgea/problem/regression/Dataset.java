@@ -1,5 +1,6 @@
 package io.github.ericmedvet.jgea.problem.regression;
 
+import io.github.ericmedvet.jgea.problem.DataUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -137,14 +138,55 @@ public record Dataset(List<Example> examples, List<String> xVarNames, List<Strin
     }
   }
 
+  public static Dataset loadFromCSVResource(
+      String name,
+      List<String> xVarNames,
+      List<String> yVarNames
+  ) throws IOException {
+    return loadFromCSV(Dataset.class.getResourceAsStream(name), xVarNames, yVarNames);
+  }
+
+  public static Dataset loadFromCSVResource(
+      String name,
+      List<String> yVarNames
+  ) throws IOException {
+    return loadFromCSV(Dataset.class.getResourceAsStream(name), yVarNames);
+  }
+
+  public static Dataset loadFromCSVResource(
+      String name,
+      String yVarName
+  ) throws IOException {
+    return loadFromCSV(Dataset.class.getResourceAsStream(name), yVarName);
+  }
+
+  public static Dataset loadFromCSVResource(
+      String name,
+      String xVarNamePattern,
+      String yVarNamePattern
+  ) throws IOException {
+    return loadFromCSV(Dataset.class.getResourceAsStream(name), xVarNamePattern, yVarNamePattern);
+  }
+
   public static void main(String[] args) throws IOException {
-    System.out.println(Dataset.loadFromCSV(Dataset.class.getResourceAsStream("/datasets/regression/concrete.csv"), List.of("strength")));
-    System.out.println(Dataset.loadFromCSV(Dataset.class.getResourceAsStream("/datasets/regression/xor.csv"), "x\\d+", "y"));
+    System.out.println(Dataset.loadFromCSV(
+        Dataset.class.getResourceAsStream("/datasets/regression/concrete.csv"),
+        List.of("strength")
+    ));
+    System.out.println(Dataset.loadFromCSV(
+        Dataset.class.getResourceAsStream("/datasets/regression/xor.csv"),
+        "x\\d+",
+        "y"
+    ));
   }
 
   public static List<String> varNames(String name, int number) {
     int digits = (int) Math.ceil(Math.log10(number + 1));
     return IntStream.range(1, number + 1).mapToObj((name + "%0" + digits + "d")::formatted).toList();
+  }
+
+  public Dataset folds(List<Integer> folds, int n) {
+    return new Dataset(DataUtils.folds(examples(), folds, n), xVarNames(), yVarNames());
   }
 
   @Override

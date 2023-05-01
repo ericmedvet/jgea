@@ -38,6 +38,10 @@ public interface IndependentFactory<T> extends Factory<T> {
     return random -> ks[random.nextInt(ks.length)];
   }
 
+  static <K> IndependentFactory<K> picker(List<? extends K> ks) {
+    return random -> ks.get(random.nextInt(ks.size()));
+  }
+
   @Override
   default List<T> build(int n, RandomGenerator random) {
     List<T> ts = new ArrayList<>();

@@ -20,6 +20,7 @@ import io.github.ericmedvet.jgea.core.ProblemWithValidation;
 import io.github.ericmedvet.jgea.core.order.ParetoDominance;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.util.Pair;
+import io.github.ericmedvet.jgea.problem.DataUtils;
 
 import java.util.ArrayList;
 import java.util.List;

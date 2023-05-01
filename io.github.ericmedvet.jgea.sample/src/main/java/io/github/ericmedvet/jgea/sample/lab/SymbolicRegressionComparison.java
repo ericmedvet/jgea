@@ -90,17 +90,6 @@ public class SymbolicRegressionComparison extends Worker {
     new SymbolicRegressionComparison(args);
   }
 
-  private static String[] vars(int n) {
-    if (n == 1) {
-      return new String[]{"x"};
-    }
-    String[] vars = new String[n];
-    for (int i = 0; i < n; i++) {
-      vars[i] = "x" + i;
-    }
-    return vars;
-  }
-
   @Override
   public void run() {
     int nPop = i(a("nPop", "100"));
@@ -174,11 +163,7 @@ public class SymbolicRegressionComparison extends Worker {
         new TreeMap<>();
     solvers.put("tree-ga", p -> {
       IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
-          IndependentFactory.picker(Arrays.stream(
-                  vars(p.qualityFunction().getDataset().xVarNames().size()))
-              .sequential()
-              .map(Element.Variable::new)
-              .toArray(Element.Variable[]::new)),
+          IndependentFactory.picker(p.qualityFunction().getDataset().xVarNames().stream().map(Element.Variable::new).toList()),
           IndependentFactory.picker(Arrays.stream(constants)
               .mapToObj(Element.Constant::new)
               .toArray(Element.Constant[]::new))
@@ -186,7 +171,7 @@ public class SymbolicRegressionComparison extends Worker {
       return new StandardEvolver<>(
           ((Function<Tree<Element>, UnivariateRealFunction>) t -> new TreeBasedUnivariateRealFunction(
               t,
-              vars(p.qualityFunction().getDataset().xVarNames().size())
+              p.qualityFunction().getDataset().xVarNames()
           )).andThen(MathUtils.linearScaler(p.qualityFunction())),
           new RampedHalfAndHalf<>(
               4,
@@ -220,11 +205,7 @@ public class SymbolicRegressionComparison extends Worker {
     });
     solvers.put("tree-ga-noxover", p -> {
       IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
-          IndependentFactory.picker(Arrays.stream(
-                  vars(p.qualityFunction().getDataset().xVarNames().size()))
-              .sequential()
-              .map(Element.Variable::new)
-              .toArray(Element.Variable[]::new)),
+          IndependentFactory.picker(p.qualityFunction().getDataset().xVarNames().stream().map(Element.Variable::new).toList()),
           IndependentFactory.picker(Arrays.stream(constants)
               .mapToObj(Element.Constant::new)
               .toArray(Element.Constant[]::new))
@@ -232,7 +213,7 @@ public class SymbolicRegressionComparison extends Worker {
       return new StandardEvolver<>(
           ((Function<Tree<Element>, UnivariateRealFunction>) t -> new TreeBasedUnivariateRealFunction(
               t,
-              vars(p.qualityFunction().getDataset().xVarNames().size())
+              p.qualityFunction().getDataset().xVarNames()
           )).andThen(MathUtils.linearScaler(p.qualityFunction())),
           new RampedHalfAndHalf<>(
               4,
@@ -261,11 +242,7 @@ public class SymbolicRegressionComparison extends Worker {
     });
     solvers.put("tree-gadiv", p -> {
       IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
-          IndependentFactory.picker(Arrays.stream(
-                  vars(p.qualityFunction().getDataset().xVarNames().size()))
-              .sequential()
-              .map(Element.Variable::new)
-              .toArray(Element.Variable[]::new)),
+          IndependentFactory.picker(p.qualityFunction().getDataset().xVarNames().stream().map(Element.Variable::new).toList()),
           IndependentFactory.picker(Arrays.stream(constants)
               .mapToObj(Element.Constant::new)
               .toArray(Element.Constant[]::new))
@@ -273,7 +250,7 @@ public class SymbolicRegressionComparison extends Worker {
       return new StandardWithEnforcedDiversityEvolver<>(
           ((Function<Tree<Element>, UnivariateRealFunction>) t -> new TreeBasedUnivariateRealFunction(
               t,
-              vars(p.qualityFunction().getDataset().xVarNames().size())
+              p.qualityFunction().getDataset().xVarNames()
           )).andThen(MathUtils.linearScaler(p.qualityFunction())),
           new RampedHalfAndHalf<>(
               4,
@@ -309,13 +286,13 @@ public class SymbolicRegressionComparison extends Worker {
     solvers.put("cfgtree-ga", p -> {
       SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
           List.of(operators),
-          List.of(vars(p.qualityFunction().getDataset().xVarNames().size())),
+          p.qualityFunction().getDataset().xVarNames(),
           Arrays.stream(constants).boxed().toList()
       );
       return new StandardEvolver<>(
-          new FormulaMapper().andThen(n -> TreeBasedUnivariateRealFunction.from(
+          new FormulaMapper().andThen(n -> new TreeBasedUnivariateRealFunction(
               n,
-              vars(p.qualityFunction().getDataset().xVarNames().size())
+              p.qualityFunction().getDataset().xVarNames()
           )).andThen(MathUtils.linearScaler(p.qualityFunction())),
           new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
           nPop,
@@ -337,13 +314,13 @@ public class SymbolicRegressionComparison extends Worker {
     solvers.put("cfgtree-ga-noxover", p -> {
       SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
           List.of(operators),
-          List.of(vars(p.qualityFunction().getDataset().xVarNames().size())),
+          p.qualityFunction().getDataset().xVarNames(),
           Arrays.stream(constants).boxed().toList()
       );
       return new StandardEvolver<>(
-          new FormulaMapper().andThen(n -> TreeBasedUnivariateRealFunction.from(
+          new FormulaMapper().andThen(n -> new TreeBasedUnivariateRealFunction(
               n,
-              vars(p.qualityFunction().getDataset().xVarNames().size())
+              p.qualityFunction().getDataset().xVarNames()
           )).andThen(MathUtils.linearScaler(p.qualityFunction())),
           new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
           nPop,
@@ -360,13 +337,13 @@ public class SymbolicRegressionComparison extends Worker {
     solvers.put("cfgtree-gadiv", p -> {
       SymbolicRegressionGrammar g = new SymbolicRegressionGrammar(
           List.of(operators),
-          List.of(vars(p.qualityFunction().getDataset().xVarNames().size())),
+          p.qualityFunction().getDataset().xVarNames(),
           Arrays.stream(constants).boxed().toList()
       );
       return new StandardWithEnforcedDiversityEvolver<>(
-          new FormulaMapper().andThen(n -> TreeBasedUnivariateRealFunction.from(
+          new FormulaMapper().andThen(n -> new TreeBasedUnivariateRealFunction(
               n,
-              vars(p.qualityFunction().getDataset().xVarNames().size())
+              p.qualityFunction().getDataset().xVarNames()
           )).andThen(MathUtils.linearScaler(p.qualityFunction())),
           new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
           nPop,

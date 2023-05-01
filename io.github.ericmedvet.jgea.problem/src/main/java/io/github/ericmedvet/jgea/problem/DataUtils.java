@@ -14,28 +14,25 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.problem.classification;
+package io.github.ericmedvet.jgea.problem;
 
-import io.github.ericmedvet.jgea.core.util.Pair;
-
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * @author eric
  */
 public class DataUtils {
 
-  public static <O, L> List<Pair<O, L>> fold(List<Pair<O, L>> data, int i, int n) {
-    List<Pair<O, L>> subset = new ArrayList<>();
-    data.stream().map(Pair::second).distinct().forEach((L l) -> {
-      List<Pair<O, L>> currentSubset = data.stream().filter((Pair<O, L> pair) -> (pair.second().equals(l))).toList();
-      subset.addAll(currentSubset.stream()
-          .skip((long) currentSubset.size() / n * i)
-          .limit(currentSubset.size() / n)
-          .toList());
-    });
-    return subset;
+  public static <E> List<E> fold(List<E> items, int fold, int n) {
+    return folds(items, List.of(fold), n);
+  }
+
+  public static <E> List<E> folds(List<E> items, List<Integer> folds, int n) {
+    return IntStream.range(0, items.size())
+        .filter(i -> folds.contains(i % n))
+        .mapToObj(items::get)
+        .toList();
   }
 
 }

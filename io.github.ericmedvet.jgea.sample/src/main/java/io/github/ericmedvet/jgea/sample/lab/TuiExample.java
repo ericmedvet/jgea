@@ -131,7 +131,7 @@ public class TuiExample implements Runnable {
         SyntheticUnivariateRegressionProblem,
         UnivariateRealFunction>> solvers = new ArrayList<>();
     solvers.add(new StandardEvolver<>(
-        new FormulaMapper().andThen(n -> TreeBasedUnivariateRealFunction.from(n, "x"))
+        new FormulaMapper().andThen(n -> new TreeBasedUnivariateRealFunction(n, List.of("x")))
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
         100,
@@ -145,10 +145,8 @@ public class TuiExample implements Runnable {
         (srp, rnd) -> new POSetPopulationState<>()
     ));
     solvers.add(new StandardWithEnforcedDiversityEvolver<>(
-        new FormulaMapper().andThen(n -> TreeBasedUnivariateRealFunction.from(
-            n,
-            "x"
-        )).andThen(MathUtils.linearScaler(p.qualityFunction())),
+        new FormulaMapper().andThen(n -> new TreeBasedUnivariateRealFunction(n, List.of("x")))
+            .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
         100,
         StopConditions.nOfIterations(100),
