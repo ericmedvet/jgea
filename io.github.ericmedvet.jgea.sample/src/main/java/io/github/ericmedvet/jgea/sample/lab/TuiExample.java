@@ -18,6 +18,7 @@ package io.github.ericmedvet.jgea.sample.lab;
 
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.listener.XYPlotTableBuilder;
+import io.github.ericmedvet.jgea.core.representation.NamedUnivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
 import io.github.ericmedvet.jgea.core.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
 import io.github.ericmedvet.jgea.core.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
@@ -34,7 +35,6 @@ import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegress
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Nguyen7;
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.SyntheticUnivariateRegressionProblem;
 import io.github.ericmedvet.jgea.tui.TerminalMonitor;
-import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 
 import java.io.File;
 import java.io.IOException;
@@ -127,11 +127,15 @@ public class TuiExample implements Runnable {
       L.severe(String.format("Cannot load grammar: %s", e));
       return;
     }
-    List<IterativeSolver<? extends POSetPopulationState<?, UnivariateRealFunction, Double>,
+    List<IterativeSolver<? extends POSetPopulationState<?, NamedUnivariateRealFunction, Double>,
         SyntheticUnivariateRegressionProblem,
-        UnivariateRealFunction>> solvers = new ArrayList<>();
+        NamedUnivariateRealFunction>> solvers = new ArrayList<>();
     solvers.add(new StandardEvolver<>(
-        new FormulaMapper().andThen(n -> new TreeBasedUnivariateRealFunction(n, List.of("x")))
+        new FormulaMapper()
+            .andThen(n -> new TreeBasedUnivariateRealFunction(n,
+                p.qualityFunction().getDataset().xVarNames(),
+                p.qualityFunction().getDataset().yVarNames().get(0)
+            ))
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
         100,
@@ -145,7 +149,11 @@ public class TuiExample implements Runnable {
         (srp, rnd) -> new POSetPopulationState<>()
     ));
     solvers.add(new StandardWithEnforcedDiversityEvolver<>(
-        new FormulaMapper().andThen(n -> new TreeBasedUnivariateRealFunction(n, List.of("x")))
+        new FormulaMapper()
+            .andThen(n -> new TreeBasedUnivariateRealFunction(n,
+                p.qualityFunction().getDataset().xVarNames(),
+                p.qualityFunction().getDataset().yVarNames().get(0)
+            ))
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
         100,
@@ -162,15 +170,15 @@ public class TuiExample implements Runnable {
     int counter = 0;
     for (int seed : seeds) {
       Random r = new Random(1);
-      for (IterativeSolver<? extends POSetPopulationState<?, UnivariateRealFunction, Double>,
-          SyntheticUnivariateRegressionProblem, UnivariateRealFunction> solver : solvers) {
+      for (IterativeSolver<? extends POSetPopulationState<?, NamedUnivariateRealFunction, Double>,
+          SyntheticUnivariateRegressionProblem, NamedUnivariateRealFunction> solver : solvers) {
         Map<String, Object> keys = Map.ofEntries(
             Map.entry("seed", seed),
             Map.entry("solver", solver.getClass().getSimpleName())
         );
         tm.notify(counter, seeds.size() * solvers.size(), "Starting " + keys);
         try {
-          Collection<UnivariateRealFunction> solutions = solver.solve(
+          Collection<NamedUnivariateRealFunction> solutions = solver.solve(
               p,
               r,
               executorService,

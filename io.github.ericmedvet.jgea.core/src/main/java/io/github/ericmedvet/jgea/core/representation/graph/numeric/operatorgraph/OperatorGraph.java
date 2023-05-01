@@ -16,6 +16,7 @@
 
 package io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph;
 
+import io.github.ericmedvet.jgea.core.representation.NamedMultivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.graph.Graph;
 import io.github.ericmedvet.jgea.core.representation.graph.Node;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.Constant;
@@ -23,13 +24,12 @@ import io.github.ericmedvet.jgea.core.representation.graph.numeric.Input;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.Output;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Sized;
-import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 /**
  * @author eric
  */
-public class OperatorGraph implements MultivariateRealFunction, Sized, Serializable {
+public class OperatorGraph implements NamedMultivariateRealFunction, Sized, Serializable {
 
   public final static NonValuedArc NON_VALUED_ARC = new NonValuedArc();
   private final Graph<Node, NonValuedArc> graph;
@@ -132,15 +132,28 @@ public class OperatorGraph implements MultivariateRealFunction, Sized, Serializa
   }
 
   @Override
-  public double[] compute(double... input) {
-    Set<Output> outputs = graph.nodes().stream().filter(n -> n instanceof Output).map(n -> (Output) n).collect(
-        Collectors.toSet());
-    int outputSize = outputs.stream().mapToInt(Node::getIndex).max().orElse(0);
-    double[] output = new double[outputSize + 1];
-    for (Output outputNode : outputs) {
-      output[outputNode.getIndex()] = outValue(outputNode, input);
-    }
-    return output;
+  public Map<String, Double> compute(Map<String, Double> input) {
+    return graph.nodes().stream()
+        .filter(n -> n instanceof Output)
+        .map(n -> (Output) n)
+        .map(n -> Map.entry(n.getName(), outValue(n, input)))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
+  @Override
+  public List<String> xVarNames() {
+    return graph.nodes().stream()
+        .filter(n -> n instanceof Input)
+        .map(n -> ((Input)n).getName())
+        .toList();
+  }
+
+  @Override
+  public List<String> yVarNames() {
+    return graph.nodes().stream()
+        .filter(n -> n instanceof Output)
+        .map(n -> ((Output)n).getName())
+        .toList();
   }
 
   @Override
@@ -164,16 +177,6 @@ public class OperatorGraph implements MultivariateRealFunction, Sized, Serializa
         .isEmpty()) ? "0" : nodeToString(Misc.first(graph.predecessors(n))))).collect(Collectors.joining(";"));
   }
 
-  @Override
-  public int nOfInputs() {
-    return (int) graph.nodes().stream().filter(n -> n instanceof Input).count();
-  }
-
-  @Override
-  public int nOfOutputs() {
-    return (int) graph.nodes().stream().filter(n -> n instanceof Output).count();
-  }
-
   private String nodeToString(Node n) {
     String s;
     if (n instanceof Constant) {
@@ -190,20 +193,22 @@ public class OperatorGraph implements MultivariateRealFunction, Sized, Serializa
     return s;
   }
 
-  private double outValue(Node node, double[] input) {
-    if (node instanceof Input) {
-      return input[node.getIndex()];
+  private double outValue(Node node, Map<String, Double> input) {
+    if (node instanceof Input iNode) {
+      return input.get(iNode.getName());
     }
-    if (node instanceof Constant) {
-      return ((Constant) node).getValue();
+    if (node instanceof Constant constant) {
+      return constant.getValue();
     }
-    double[] inValues = graph.predecessors(node).stream().sorted(Comparator.comparing((Node n) -> n.getClass()
-        .getName()).thenComparingInt(Node::getIndex)).mapToDouble(n -> outValue(n, input)).toArray();
+    double[] inValues = graph.predecessors(node).stream()
+        .sorted(Comparator.comparing((Node n) -> n.getClass().getName()).thenComparingInt(Node::getIndex))
+        .mapToDouble(n -> outValue(n, input))
+        .toArray();
     if (node instanceof Output) {
       return inValues.length > 0 ? inValues[0] : 0d;
     }
-    if (node instanceof OperatorNode) {
-      return ((OperatorNode) node).applyAsDouble(inValues);
+    if (node instanceof OperatorNode operatorNode) {
+      return operatorNode.applyAsDouble(inValues);
     }
     throw new RuntimeException(String.format("Unknown type of node: %s", node.getClass().getSimpleName()));
   }

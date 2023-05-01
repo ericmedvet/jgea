@@ -24,52 +24,45 @@ import io.github.ericmedvet.jgea.core.representation.graph.numeric.Constant;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.Input;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.Output;
 
+import java.util.List;
 import java.util.random.RandomGenerator;
+import java.util.stream.IntStream;
 
 /**
  * @author eric
  */
 public class ShallowFactory implements IndependentFactory<Graph<Node, OperatorGraph.NonValuedArc>> {
-  private final int nInputs;
-  private final int nOutputs;
-  private final Constant[] constants;
+  private final List<String> xVarNames;
+  private final List<String> yVarNames;
+  private final List<Double> constants;
 
-  public ShallowFactory(int nInputs, int nOutputs, double... constants) {
-    this.nInputs = nInputs;
-    this.nOutputs = nOutputs;
-    this.constants = new Constant[constants.length];
-    for (int i = 0; i < constants.length; i++) {
-      this.constants[i] = new Constant(i, constants[i]);
-    }
+  public ShallowFactory(List<String> xVarNames, List<String> yVarNames, List<Double> constants) {
+    this.xVarNames = xVarNames;
+    this.yVarNames = yVarNames;
+    this.constants = constants;
   }
 
   @Override
   public Graph<Node, OperatorGraph.NonValuedArc> build(RandomGenerator random) {
     Graph<Node, OperatorGraph.NonValuedArc> g = new LinkedHashGraph<>();
-    Input[] inputs = new Input[nInputs];
-    Output[] outputs = new Output[nOutputs];
-    for (int i = 0; i < nInputs; i++) {
-      inputs[i] = new Input(i);
-      g.addNode(inputs[i]);
-    }
-    for (int o = 0; o < nOutputs; o++) {
-      outputs[o] = new Output(o);
-      g.addNode(outputs[o]);
-    }
-    for (int i = 0; i < nInputs; i++) {
-      inputs[i] = new Input(i);
-      g.addNode(inputs[i]);
-    }
-    for (Constant constant : constants) {
-      g.addNode(constant);
-    }
-    for (int o = 0; o < nOutputs; o++) {
-      if (random.nextBoolean()) {
-        g.setArcValue(inputs[random.nextInt(inputs.length)], outputs[o], OperatorGraph.NON_VALUED_ARC);
-      } else {
-        g.setArcValue(constants[random.nextInt(constants.length)], outputs[o], OperatorGraph.NON_VALUED_ARC);
-      }
-    }
+    List<Input> inputs = IntStream.range(0, xVarNames.size())
+        .mapToObj(i -> new Input(i, xVarNames.get(i)))
+        .toList();
+    List<Output> outputs = IntStream.range(0, yVarNames.size())
+        .mapToObj(i -> new Output(i, yVarNames.get(i)))
+        .toList();
+    List<Constant> constantNodes = IntStream.range(0, constants.size())
+        .mapToObj(i -> new Constant(i, constants.get(i)))
+        .toList();
+    inputs.forEach(g::addNode);
+    outputs.forEach(g::addNode);
+    constantNodes.forEach(g::addNode);
+    outputs.forEach(o -> g.setArcValue(
+        random.nextBoolean() ?
+            inputs.get(random.nextInt(inputs.size())) : constantNodes.get(random.nextInt(constantNodes.size())),
+        o,
+        OperatorGraph.NON_VALUED_ARC
+    ));
     return g;
   }
 }

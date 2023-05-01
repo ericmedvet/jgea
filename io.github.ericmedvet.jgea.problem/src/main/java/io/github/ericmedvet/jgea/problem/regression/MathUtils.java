@@ -16,11 +16,11 @@
 
 package io.github.ericmedvet.jgea.problem.regression;
 
+import io.github.ericmedvet.jgea.core.representation.NamedUnivariateRealFunction;
 import io.github.ericmedvet.jgea.core.util.Sized;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.SyntheticUnivariateRegressionFitness;
 import io.github.ericmedvet.jsdynsym.core.composed.AbstractComposed;
-import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 import org.apache.commons.math3.stat.StatUtils;
 
 import java.util.*;
@@ -31,12 +31,12 @@ import java.util.function.UnaryOperator;
  */
 public class MathUtils {
 
-  private static class ScaledUnivariateRealFunction extends AbstractComposed<UnivariateRealFunction> implements UnivariateRealFunction {
+  private static class ScaledUnivariateRealFunction extends AbstractComposed<NamedUnivariateRealFunction> implements NamedUnivariateRealFunction {
     private final double a;
     private final double b;
 
     public ScaledUnivariateRealFunction(
-        UnivariateRealFunction inner,
+        NamedUnivariateRealFunction inner,
         UnivariateRegressionFitness univariateRegressionFitness
     ) {
       super(inner);
@@ -60,8 +60,13 @@ public class MathUtils {
     }
 
     @Override
-    public double applyAsDouble(double[] value) {
-      return a + b * inner().applyAsDouble(value);
+    public double computeAsDouble(Map<String, Double> input) {
+      return a+b*inner().computeAsDouble(input);
+    }
+
+    @Override
+    public String yVarName() {
+      return inner().yVarName();
     }
 
     @Override
@@ -85,8 +90,8 @@ public class MathUtils {
     }
 
     @Override
-    public int nOfInputs() {
-      return inner().nOfInputs();
+    public List<String> xVarNames() {
+      return inner().xVarNames();
     }
   }
 
@@ -94,7 +99,7 @@ public class MathUtils {
     private final int size;
 
     public SizedUnivariateScaledRealFunction(
-        UnivariateRealFunction innerF,
+        NamedUnivariateRealFunction innerF,
         SyntheticUnivariateRegressionFitness syntheticSymbolicRegressionFitness
     ) {
       super(innerF, syntheticSymbolicRegressionFitness);
@@ -136,7 +141,7 @@ public class MathUtils {
     return values.stream().mapToDouble(Double::doubleValue).toArray();
   }
 
-  public static UnaryOperator<UnivariateRealFunction> linearScaler(SyntheticUnivariateRegressionFitness syntheticSymbolicRegressionFitness) {
+  public static UnaryOperator<NamedUnivariateRealFunction> linearScaler(SyntheticUnivariateRegressionFitness syntheticSymbolicRegressionFitness) {
     return f -> (f instanceof Sized) ? new SizedUnivariateScaledRealFunction(
         f,
         syntheticSymbolicRegressionFitness

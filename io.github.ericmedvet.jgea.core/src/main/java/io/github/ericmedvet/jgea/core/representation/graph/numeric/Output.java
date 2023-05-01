@@ -22,12 +22,19 @@ import io.github.ericmedvet.jgea.core.representation.graph.Node;
  * @author eric
  */
 public class Output extends Node {
-  public Output(int index) {
+  private final String name;
+
+  public Output(int index, String name) {
     super(index);
+    this.name = name;
+  }
+
+  public String getName() {
+    return name;
   }
 
   @Override
   public String toString() {
-    return "o" + getIndex();
+    return name;
   }
 }

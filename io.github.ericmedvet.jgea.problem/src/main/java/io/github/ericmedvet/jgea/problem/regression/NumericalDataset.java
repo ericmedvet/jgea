@@ -58,7 +58,24 @@ public record NumericalDataset(List<Example> examples, List<String> xVarNames, L
     }
   }
 
-  private static NumericalDataset buildDataset(List<Map<String, String>> data, List<String> xVarNames, List<String> yVarNames) {
+  public record NamedExample(Map<String, Double> x, Map<String, Double> y) {
+    public NamedExample(Example example, List<String> xVarNames, List<String> yVarNames) {
+      this(
+          IntStream.range(0, xVarNames.size())
+              .mapToObj(i -> Map.entry(xVarNames.get(i), example.xs[i]))
+              .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)),
+          IntStream.range(0, yVarNames.size())
+              .mapToObj(i -> Map.entry(yVarNames.get(i), example.ys[i]))
+              .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+      );
+    }
+  }
+
+  private static NumericalDataset buildDataset(
+      List<Map<String, String>> data,
+      List<String> xVarNames,
+      List<String> yVarNames
+  ) {
     return new NumericalDataset(
         data.stream()
             .map(dp -> new Example(
@@ -187,6 +204,10 @@ public record NumericalDataset(List<Example> examples, List<String> xVarNames, L
 
   public NumericalDataset folds(List<Integer> folds, int n) {
     return new NumericalDataset(DataUtils.folds(examples(), folds, n), xVarNames(), yVarNames());
+  }
+
+  public List<NamedExample> namedExamples() {
+    return examples().stream().map(e -> new NamedExample(e, xVarNames(), yVarNames())).toList();
   }
 
   @Override

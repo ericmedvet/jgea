@@ -16,48 +16,41 @@
 
 package io.github.ericmedvet.jgea.problem.regression.symbolic;
 
+import io.github.ericmedvet.jgea.core.representation.NamedUnivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.util.Sized;
-import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
+import io.github.ericmedvet.jsdynsym.core.Parametrized;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * @author eric
  */
-public class TreeBasedUnivariateRealFunction implements UnivariateRealFunction, Sized {
+public class TreeBasedUnivariateRealFunction implements NamedUnivariateRealFunction, Sized,
+    Parametrized<Tree<Element>> {
 
-  private final Tree<Element> tree;
-  private final Map<String, Integer> varNamesMap;
+  private final List<String> xVarNames;
+  private final String yVarName;
+  private Tree<Element> tree;
 
-  public TreeBasedUnivariateRealFunction(Tree<Element> tree, List<String> varNames) {
+  public TreeBasedUnivariateRealFunction(Tree<Element> tree, List<String> xVarNames, String yVarName) {
     this.tree = tree;
-    varNamesMap = IntStream.range(0, varNames.size())
-        .boxed()
-        .collect(Collectors.toMap(varNames::get, i -> i));
+    this.xVarNames = xVarNames;
+    this.yVarName = yVarName;
   }
 
-  private static double compute(Tree<Element> tree, double[] x, Map<String, Integer> varNamesMap) {
-    if (varNamesMap.size() != x.length) {
-      throw new IllegalArgumentException(String.format(
-          "Wrong number of arguments: %d expected, %d received",
-          varNamesMap.size(),
-          x.length
-      ));
-    }
+  private static double compute(Tree<Element> tree, Map<String, Double> input) {
     if (tree.content() instanceof Element.Decoration) {
       throw new RuntimeException(String.format("Cannot compute: decoration node %s found", tree.content()));
     }
     if (tree.content() instanceof Element.Variable variable) {
-      Integer index = varNamesMap.get(variable.name());
-      if (index == null) {
+      Double varValue = input.get(variable.name());
+      if (varValue == null) {
         throw new RuntimeException(String.format("Undefined variable: %s", variable.name()));
       }
-      return x[index];
+      return varValue;
     }
     if (tree.content() instanceof Element.Constant constant) {
       return constant.value();
@@ -65,7 +58,7 @@ public class TreeBasedUnivariateRealFunction implements UnivariateRealFunction, 
     double[] childrenValues = new double[tree.nChildren()];
     int i = 0;
     for (Tree<Element> child : tree) {
-      double childValue = compute(child, x, varNamesMap);
+      double childValue = compute(child, input);
       childrenValues[i] = childValue;
       i = i + 1;
     }
@@ -73,23 +66,28 @@ public class TreeBasedUnivariateRealFunction implements UnivariateRealFunction, 
   }
 
   @Override
-  public double applyAsDouble(double[] input) {
-    return compute(tree, input, varNamesMap);
+  public double computeAsDouble(Map<String, Double> input) {
+    return compute(tree, input);
   }
 
-  public Tree<Element> getNode() {
+  @Override
+  public String yVarName() {
+    return yVarName;
+  }
+
+  @Override
+  public Tree<Element> getParams() {
     return tree;
   }
 
-  public String[] getVarNames() {
-    String[] varNames = new String[varNamesMap.size()];
-    varNamesMap.forEach((n, i) -> varNames[i] = n);
-    return varNames;
+  @Override
+  public void setParams(Tree<Element> tree) {
+    this.tree = tree;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(tree, varNamesMap);
+    return Objects.hash(xVarNames, yVarName, tree);
   }
 
   @Override
@@ -99,7 +97,10 @@ public class TreeBasedUnivariateRealFunction implements UnivariateRealFunction, 
     if (o == null || getClass() != o.getClass())
       return false;
     TreeBasedUnivariateRealFunction that = (TreeBasedUnivariateRealFunction) o;
-    return Objects.equals(tree, that.tree) && Objects.equals(varNamesMap, that.varNamesMap);
+    return Objects.equals(xVarNames, that.xVarNames) && Objects.equals(
+        yVarName,
+        that.yVarName
+    ) && Objects.equals(tree, that.tree);
   }
 
   @Override
@@ -108,13 +109,13 @@ public class TreeBasedUnivariateRealFunction implements UnivariateRealFunction, 
   }
 
   @Override
-  public int nOfInputs() {
-    return varNamesMap.size();
+  public int size() {
+    return tree.size();
   }
 
   @Override
-  public int size() {
-    return tree.size();
+  public List<String> xVarNames() {
+    return xVarNames;
   }
 }
 

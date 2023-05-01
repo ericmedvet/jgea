@@ -108,7 +108,7 @@ public class ImageExample extends Worker {
         "graph-seq-ga",
         new StandardEvolver<>(
             FunctionGraph.builder().andThen(UnivariateRealFunction::from),
-            new ShallowSparseFactory(0d, 0d, 1d, 2, 1),
+            new ShallowSparseFactory(0d, 0d, 1d, List.of("x", "y"), List.of("out")),
             nPop,
             StopConditions.nOfIterations(nIterations),
             Map.of(

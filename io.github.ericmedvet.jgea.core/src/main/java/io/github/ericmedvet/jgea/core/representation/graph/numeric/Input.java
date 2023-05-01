@@ -22,12 +22,20 @@ import io.github.ericmedvet.jgea.core.representation.graph.Node;
  * @author eric
  */
 public class Input extends Node {
-  public Input(int index) {
+
+  private final String name;
+
+  public Input(int index, String name) {
     super(index);
+    this.name = name;
+  }
+
+  public String getName() {
+    return name;
   }
 
   @Override
   public String toString() {
-    return "i" + getIndex();
+    return name;
   }
 }

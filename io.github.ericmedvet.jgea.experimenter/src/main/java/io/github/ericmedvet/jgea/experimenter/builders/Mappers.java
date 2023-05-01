@@ -1,5 +1,6 @@
 package io.github.ericmedvet.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jgea.core.representation.NamedUnivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.experimenter.InvertibleMapper;
 import io.github.ericmedvet.jgea.problem.regression.symbolic.Element;
@@ -7,7 +8,6 @@ import io.github.ericmedvet.jgea.problem.regression.symbolic.TreeBasedUnivariate
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionProblem;
 import io.github.ericmedvet.jnb.core.Param;
-import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 
 import java.util.List;
 
@@ -19,14 +19,14 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
-  public static InvertibleMapper<Tree<Element>, UnivariateRealFunction> treeToRealFunction(
-      @Param("problem") UnivariateRegressionProblem<UnivariateRegressionFitness> problem
+  public static InvertibleMapper<Tree<Element>, NamedUnivariateRealFunction> treeUnivariateRealFunctionFromNames(
+      @Param("xVarNames") List<String> xVarNames,
+      @Param("yVarName") String yVarName
   ) {
-    List<String> xVarNames = problem.qualityFunction().getDataset().xVarNames();
     return new InvertibleMapper<>() {
       @Override
-      public UnivariateRealFunction apply(Tree<Element> t) {
-        return new TreeBasedUnivariateRealFunction(t, xVarNames);
+      public NamedUnivariateRealFunction apply(Tree<Element> t) {
+        return new TreeBasedUnivariateRealFunction(t, xVarNames, yVarName);
       }
 
       @Override
@@ -41,5 +41,24 @@ public class Mappers {
         );
       }
     };
+  }
+
+  @SuppressWarnings("unused")
+  public static InvertibleMapper<Tree<Element>, NamedUnivariateRealFunction> treeUnivariateRealFunctionFromProblem(
+      @Param("problem") UnivariateRegressionProblem<UnivariateRegressionFitness> problem
+  ) {
+    if (problem.qualityFunction().getDataset().yVarNames().size() != 1) {
+      throw new IllegalArgumentException(
+          "Problem has %d y variables, instead of just one: not suitable for univariate regression".formatted(
+              problem.qualityFunction()
+                  .getDataset()
+                  .yVarNames()
+                  .size())
+      );
+    }
+    return treeUnivariateRealFunctionFromNames(
+        problem.qualityFunction().getDataset().xVarNames(),
+        problem.qualityFunction().getDataset().yVarNames().get(0)
+    );
   }
 }

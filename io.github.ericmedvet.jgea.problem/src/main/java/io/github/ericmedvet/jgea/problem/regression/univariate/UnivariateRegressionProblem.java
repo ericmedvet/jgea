@@ -18,13 +18,13 @@ package io.github.ericmedvet.jgea.problem.regression.univariate;
 
 import io.github.ericmedvet.jgea.core.ComparableQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.ProblemWithValidation;
-import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
+import io.github.ericmedvet.jgea.core.representation.NamedUnivariateRealFunction;
 
 /**
  * @author eric
  */
 public class UnivariateRegressionProblem<F extends UnivariateRegressionFitness>
-    implements ComparableQualityBasedProblem<UnivariateRealFunction, Double>, ProblemWithValidation<UnivariateRealFunction, Double> {
+    implements ComparableQualityBasedProblem<NamedUnivariateRealFunction, Double>, ProblemWithValidation<NamedUnivariateRealFunction, Double> {
 
   private final F fitness;
   private final F validationFitness;

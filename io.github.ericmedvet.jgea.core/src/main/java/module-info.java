@@ -20,6 +20,7 @@ module io.github.ericmedvet.jgea.core {
   exports io.github.ericmedvet.jgea.core.representation.sequence.bit;
   exports io.github.ericmedvet.jgea.core.representation.sequence.numeric;
   exports io.github.ericmedvet.jgea.core.representation.tree;
+  exports io.github.ericmedvet.jgea.core.representation;
   exports io.github.ericmedvet.jgea.core.selector;
   exports io.github.ericmedvet.jgea.core.solver;
   exports io.github.ericmedvet.jgea.core.solver.mapelites;

@@ -17,10 +17,11 @@
 package io.github.ericmedvet.jgea.problem.regression.univariate;
 
 import io.github.ericmedvet.jgea.core.fitness.CaseBasedFitness;
+import io.github.ericmedvet.jgea.core.representation.NamedUnivariateRealFunction;
 import io.github.ericmedvet.jgea.problem.regression.NumericalDataset;
-import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.IntStream;
@@ -28,15 +29,21 @@ import java.util.stream.IntStream;
 /**
  * @author eric
  */
-public class UnivariateRegressionFitness extends CaseBasedFitness<UnivariateRealFunction, double[], Double, Double> {
+public class UnivariateRegressionFitness extends CaseBasedFitness<NamedUnivariateRealFunction, Map<String, Double>,
+    Double,
+    Double> {
 
   private final NumericalDataset dataset;
   private final Metric metric;
+
   public UnivariateRegressionFitness(NumericalDataset dataset, Metric metric) {
     super(
-        dataset.examples().stream().map(NumericalDataset.Example::xs).toList(),
-        UnivariateRealFunction::applyAsDouble,
-        aggregateFunction(dataset.examples().stream().map(e -> e.ys()[0]).toList(), metric)
+        dataset.namedExamples().stream().map(NumericalDataset.NamedExample::x).toList(),
+        NamedUnivariateRealFunction::computeAsDouble,
+        aggregateFunction(
+            dataset.namedExamples().stream().map(ne -> ne.y().get(dataset.yVarNames().get(0))).toList(),
+            metric
+        )
     );
     this.dataset = dataset;
     this.metric = metric;
@@ -76,7 +83,7 @@ public class UnivariateRegressionFitness extends CaseBasedFitness<UnivariateReal
   }
 
   private static Function<List<Double>, Double> aggregateFunction(List<Double> ys, Metric metric) {
-    return outcomes -> metric.apply(regressionError(ys,outcomes), ys);
+    return outcomes -> metric.apply(regressionError(ys, outcomes), ys);
   }
 
   private static List<Double> regressionError(List<Double> groundTruth, List<Double> predictions) {

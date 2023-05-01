@@ -24,7 +24,9 @@ import io.github.ericmedvet.jgea.core.representation.graph.numeric.Constant;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.Input;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.Output;
 
+import java.util.List;
 import java.util.random.RandomGenerator;
+import java.util.stream.IntStream;
 
 /**
  * @author eric
@@ -33,44 +35,46 @@ public class ShallowSparseFactory implements IndependentFactory<Graph<Node, Doub
   private final double sparsity;
   private final double mu;
   private final double sigma;
-  private final int nInputs;
-  private final int nOutputs;
+  private final List<String> xVarNames;
+  private final List<String> yVarNames;
 
-  public ShallowSparseFactory(double sparsity, double mu, double sigma, int nInputs, int nOutputs) {
+  public ShallowSparseFactory(
+      double sparsity,
+      double mu,
+      double sigma,
+      List<String> xVarNames,
+      List<String> yVarNames
+  ) {
     this.sparsity = sparsity;
     this.mu = mu;
     this.sigma = sigma;
-    this.nInputs = nInputs;
-    this.nOutputs = nOutputs;
+    this.xVarNames = xVarNames;
+    this.yVarNames = yVarNames;
   }
 
   @Override
   public Graph<Node, Double> build(RandomGenerator random) {
     Graph<Node, Double> g = new LinkedHashGraph<>();
-    Input[] inputs = new Input[nInputs];
-    Output[] outputs = new Output[nOutputs];
+    List<Input> inputs = IntStream.range(0, xVarNames.size())
+        .mapToObj(i -> new Input(i, xVarNames.get(i)))
+        .toList();
+    List<Output> outputs = IntStream.range(0, yVarNames.size())
+        .mapToObj(i -> new Output(i, yVarNames.get(i)))
+        .toList();
     Constant constant = new Constant(0, 1d);
+    inputs.forEach(g::addNode);
+    outputs.forEach(g::addNode);
     g.addNode(constant);
-    for (int i = 0; i < nInputs; i++) {
-      inputs[i] = new Input(i);
-      g.addNode(inputs[i]);
-    }
-    for (int o = 0; o < nOutputs; o++) {
-      outputs[o] = new Output(o);
-      g.addNode(outputs[o]);
-    }
-    for (int i = 0; i < nInputs; i++) {
-      for (int o = 0; o < nOutputs; o++) {
-        if (random.nextDouble() < (1d - sparsity)) {
-          g.setArcValue(inputs[i], outputs[o], random.nextGaussian() * sigma + mu);
-        }
-      }
-    }
-    for (int o = 0; o < nOutputs; o++) {
+    inputs.forEach(i -> outputs.forEach(o -> {
       if (random.nextDouble() < (1d - sparsity)) {
-        g.setArcValue(constant, outputs[o], random.nextGaussian() * sigma + mu);
+        g.setArcValue(i, o, random.nextGaussian() * sigma + mu);
       }
-    }
+    }));
+    outputs.forEach(o -> {
+      if (random.nextDouble() < (1d - sparsity)) {
+        g.setArcValue(constant, o, random.nextGaussian() * sigma + mu);
+      }
+    });
     return g;
   }
 }

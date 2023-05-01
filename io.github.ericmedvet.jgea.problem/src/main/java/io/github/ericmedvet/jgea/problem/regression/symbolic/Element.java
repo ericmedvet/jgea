@@ -80,11 +80,25 @@ public interface Element {
     }
   }
 
-  record Constant(double value) implements Element, Serializable {}
+  record Constant(double value) implements Element, Serializable {
+    @Override
+    public String toString() {
+      return Double.toString(value);
+    }
+  }
 
-  record Decoration(String string) implements Element, Serializable {}
+  record Decoration(String string) implements Element, Serializable {
+    @Override
+    public String toString() {
+      return string;
+    }
+  }
 
-  record Variable(String name) implements Element, Serializable {}
+  record Variable(String name) implements Element, Serializable {
+    @Override
+    public String toString() {
+      return name;
+    }
+  }
 
-  String toString();
 }
