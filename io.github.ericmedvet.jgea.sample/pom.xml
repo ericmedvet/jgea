@@ -38,11 +38,6 @@
         </dependency>
         <dependency>
             <groupId>io.github.ericmedvet</groupId>
-            <artifactId>jgea.experimenter</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.github.ericmedvet</groupId>
             <artifactId>jgea.problem</artifactId>
             <version>${revision}</version>
         </dependency>

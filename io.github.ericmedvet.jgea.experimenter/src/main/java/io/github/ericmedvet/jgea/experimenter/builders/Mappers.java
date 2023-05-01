@@ -18,6 +18,7 @@ public class Mappers {
   private Mappers() {
   }
 
+  @SuppressWarnings("unused")
   public static InvertibleMapper<Tree<Element>, UnivariateRealFunction> treeToRealFunction(
       @Param("problem") UnivariateRegressionProblem<UnivariateRegressionFitness> problem
   ) {

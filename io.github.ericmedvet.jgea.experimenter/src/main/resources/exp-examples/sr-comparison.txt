@@ -1,0 +1,25 @@
+ea.experiment(
+  runs = (randomGenerator = (seed = [1:1:3]) * [ea.rg.defaultRG()]) * [
+    ea.run(
+      solver = ea.s.srTreeGP(
+        mapper = ea.m.treeToRealFunction(problem = ea.p.r.synthetic(name = "nguyen7"));
+        nEval = 10000
+      );
+      problem = ea.p.r.synthetic(name = "nguyen7")
+    );
+    ea.run(
+      solver = ea.s.srTreeGP(
+        mapper = ea.m.treeToRealFunction(problem = ea.p.r.synthetic(name = "keijzer6"));
+        nEval = 10000
+      );
+      problem = ea.p.r.synthetic(name = "keijzer6")
+    )
+  ];
+  listeners = [
+    ea.l.console(functions = [
+      ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
+      ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
+      ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.2f")
+    ])
+  ]
+)
