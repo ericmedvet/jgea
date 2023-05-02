@@ -12,6 +12,7 @@ module io.github.ericmedvet.jgea.problem {
   exports io.github.ericmedvet.jgea.problem.regression;
   exports io.github.ericmedvet.jgea.problem.synthetic;
   exports io.github.ericmedvet.jgea.problem.regression.univariate;
+  exports io.github.ericmedvet.jgea.problem.regression.multivariate;
   exports io.github.ericmedvet.jgea.problem.regression.univariate.synthetic;
   exports io.github.ericmedvet.jgea.problem;
   requires io.github.ericmedvet.jgea.core;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 eric
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ public class PreparedNamedBuilder {
           .and(List.of("problem", "p"), NamedBuilder.empty()
               .and(NamedBuilder.fromUtilityClass(Problems.class))
               .and(List.of("univariateRegression", "ur"), NamedBuilder.fromUtilityClass(UnivariateRegressionProblems.class))
+              .and(List.of("multivariateRegression", "mr"), NamedBuilder.fromUtilityClass(MultivariateRegressionProblems.class))
           )
           .and(List.of("dataset", "d"), NamedBuilder.empty()
               .and(List.of("numerical", "num"), NamedBuilder.fromUtilityClass(NumericaDatasets.class))
