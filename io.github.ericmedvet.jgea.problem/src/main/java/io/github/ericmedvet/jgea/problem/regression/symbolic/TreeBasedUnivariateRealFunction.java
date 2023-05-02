@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public class TreeBasedUnivariateRealFunction implements NamedUnivariateRealFunct
   }
 
 
-  private static double compute(Tree<Element> tree, Map<String, Double> input) {
+  protected static double compute(Tree<Element> tree, Map<String, Double> input) {
     if (tree.content() instanceof Element.Decoration) {
       throw new RuntimeException(String.format("Cannot compute: decoration node %s found", tree.content()));
     }
