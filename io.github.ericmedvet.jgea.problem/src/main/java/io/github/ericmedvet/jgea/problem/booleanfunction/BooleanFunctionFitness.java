@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package io.github.ericmedvet.jgea.problem.booleanfunction;
 
 import io.github.ericmedvet.jgea.core.fitness.CaseBasedFitness;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
+import io.github.ericmedvet.jgea.core.representation.tree.booleanfunction.Element;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
