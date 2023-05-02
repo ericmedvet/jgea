@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.problem.regression.symbolic;
+package io.github.ericmedvet.jgea.core.representation.tree.numeric;
 
 import io.github.ericmedvet.jgea.core.representation.NamedMultivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;

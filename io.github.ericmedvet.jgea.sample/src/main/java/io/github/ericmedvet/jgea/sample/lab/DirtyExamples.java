@@ -1,26 +1,16 @@
 /*
- * Copyright 2020 Eric Medvet <eric
- * .medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
- * Licensed under the Apache License,
- *  Version 2.0 (the "License");
- * you may not use this file except
- * in compliance with the License.
- * You may obtain a copy of the
- * License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *     http://www.apache
- * .org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law
- * or agreed to in writing, software
- * distributed under the License is
- * distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS
- * OF ANY KIND, either express or
- * implied.
- * See the License for the specific
- * language governing permissions and
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
@@ -47,6 +37,7 @@ import io.github.ericmedvet.jgea.core.representation.sequence.numeric.HypercubeG
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.UniformDoubleFactory;
 import io.github.ericmedvet.jgea.core.representation.tree.SameRootSubtreeCrossover;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
+import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedUnivariateRealFunction;
 import io.github.ericmedvet.jgea.core.selector.Last;
 import io.github.ericmedvet.jgea.core.selector.Tournament;
 import io.github.ericmedvet.jgea.core.solver.*;
@@ -56,7 +47,6 @@ import io.github.ericmedvet.jgea.problem.booleanfunction.Element;
 import io.github.ericmedvet.jgea.problem.booleanfunction.EvenParity;
 import io.github.ericmedvet.jgea.problem.regression.FormulaMapper;
 import io.github.ericmedvet.jgea.problem.regression.MathUtils;
-import io.github.ericmedvet.jgea.problem.regression.symbolic.TreeBasedUnivariateRealFunction;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Nguyen7;
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.SyntheticUnivariateRegressionProblem;

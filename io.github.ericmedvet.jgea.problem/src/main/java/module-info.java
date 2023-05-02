@@ -11,7 +11,6 @@ module io.github.ericmedvet.jgea.problem {
   exports io.github.ericmedvet.jgea.problem.mapper;
   exports io.github.ericmedvet.jgea.problem.regression;
   exports io.github.ericmedvet.jgea.problem.synthetic;
-  exports io.github.ericmedvet.jgea.problem.regression.symbolic;
   exports io.github.ericmedvet.jgea.problem.regression.univariate;
   exports io.github.ericmedvet.jgea.problem.regression.univariate.synthetic;
   exports io.github.ericmedvet.jgea.problem;

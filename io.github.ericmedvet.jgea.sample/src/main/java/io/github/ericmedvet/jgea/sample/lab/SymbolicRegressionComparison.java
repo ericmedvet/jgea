@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 eric
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import io.github.ericmedvet.jgea.core.listener.TabularPrinter;
 import io.github.ericmedvet.jgea.core.operator.Crossover;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.representation.NamedUnivariateRealFunction;
+import io.github.ericmedvet.jgea.core.representation.grammar.SymbolicRegressionGrammar;
 import io.github.ericmedvet.jgea.core.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
 import io.github.ericmedvet.jgea.core.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
 import io.github.ericmedvet.jgea.core.representation.graph.*;
@@ -41,6 +42,8 @@ import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph.OperatorNode;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph.ShallowFactory;
 import io.github.ericmedvet.jgea.core.representation.tree.*;
+import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
+import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedUnivariateRealFunction;
 import io.github.ericmedvet.jgea.core.selector.Last;
 import io.github.ericmedvet.jgea.core.selector.Tournament;
 import io.github.ericmedvet.jgea.core.solver.*;
@@ -51,9 +54,6 @@ import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.problem.regression.FormulaMapper;
 import io.github.ericmedvet.jgea.problem.regression.MathUtils;
-import io.github.ericmedvet.jgea.problem.regression.symbolic.Element;
-import io.github.ericmedvet.jgea.problem.regression.symbolic.SymbolicRegressionGrammar;
-import io.github.ericmedvet.jgea.problem.regression.symbolic.TreeBasedUnivariateRealFunction;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Keijzer6;
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Nguyen7;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 eric
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,12 @@ import io.github.ericmedvet.jgea.core.representation.sequence.UniformCrossover;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.GaussianMutation;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.UniformDoubleFactory;
 import io.github.ericmedvet.jgea.core.representation.tree.*;
+import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import io.github.ericmedvet.jgea.core.selector.Last;
 import io.github.ericmedvet.jgea.core.selector.Tournament;
 import io.github.ericmedvet.jgea.core.solver.*;
 import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jgea.experimenter.InvertibleMapper;
-import io.github.ericmedvet.jgea.problem.regression.symbolic.Element;
 import io.github.ericmedvet.jnb.core.Param;
 
 import java.util.List;

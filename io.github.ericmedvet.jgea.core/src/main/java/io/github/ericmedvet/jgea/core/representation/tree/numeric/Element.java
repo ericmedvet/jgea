@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package io.github.ericmedvet.jgea.problem.regression.symbolic;
+package io.github.ericmedvet.jgea.core.representation.tree.numeric;
 
 import java.io.Serializable;
 import java.util.function.ToDoubleFunction;
