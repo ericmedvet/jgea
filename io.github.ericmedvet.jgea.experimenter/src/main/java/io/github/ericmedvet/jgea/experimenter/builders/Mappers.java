@@ -38,55 +38,43 @@ public class Mappers {
   private Mappers() {
   }
 
+  public static InvertibleMapper<List<Tree<Element>>, NamedMultivariateRealFunction> treeMRFFromNames(
+      @Param("xVarNames") List<String> xVarNames,
+      @Param("yVarNames") List<String> yVarNames,
+      @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
+  ) {
+    List<Tree<Element.Variable>> children = xVarNames.stream()
+        .map(s -> Tree.of(new Element.Variable(s)))
+        .toList();
+    //noinspection unchecked,rawtypes
+    List<Tree<Element>> trees = Collections.nCopies(yVarNames.size(), Tree.of(
+        Element.Operator.ADDITION,
+        (List) children
+    ));
+    return InvertibleMapper.from(
+        ts -> new TreeBasedMultivariateRealFunction(ts, xVarNames, yVarNames),
+        trees
+    );
+  }
+
   @SuppressWarnings("unused")
   public static InvertibleMapper<Tree<Element>, NamedUnivariateRealFunction> treeURFFromNames(
       @Param("xVarNames") List<String> xVarNames,
       @Param(value = "yVarName", dS = "y") String yVarName,
       @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
-    return new InvertibleMapper<>() {
-      @Override
-      public NamedUnivariateRealFunction apply(Tree<Element> t) {
-        return new TreeBasedUnivariateRealFunction(t, xVarNames, yVarName);
-      }
-
-      @Override
-      public Tree<Element> exampleInput() {
-        List<Tree<Element.Variable>> children = xVarNames.stream()
-            .map(s -> Tree.of(new Element.Variable(s)))
-            .toList();
-        //noinspection unchecked,rawtypes
-        return Tree.of(
-            Element.Operator.ADDITION,
-            (List) children
-        );
-      }
-    };
-  }
-
-  public static InvertibleMapper<List<Tree<Element>>, NamedMultivariateRealFunction> treeMRFFromNames(
-      @Param("xVarNames") List<String> xVarNames,
-      @Param("yVarNames") List<String> yVarNames,
-      @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
-  ) {
-    return new InvertibleMapper<>() {
-      @Override
-      public NamedMultivariateRealFunction apply(List<Tree<Element>> ts) {
-        return new TreeBasedMultivariateRealFunction(ts, xVarNames, yVarNames);
-      }
-
-      @Override
-      public List<Tree<Element>> exampleInput() {
-        List<Tree<Element.Variable>> children = xVarNames.stream()
-            .map(s -> Tree.of(new Element.Variable(s)))
-            .toList();
-        //noinspection unchecked,rawtypes
-        return Collections.nCopies(yVarNames.size(), Tree.of(
-            Element.Operator.ADDITION,
-            (List) children
-        ));
-      }
-    };
+    List<Tree<Element.Variable>> children = xVarNames.stream()
+        .map(s -> Tree.of(new Element.Variable(s)))
+        .toList();
+    //noinspection unchecked,rawtypes
+    Tree<Element> tree = Tree.of(
+        Element.Operator.ADDITION,
+        (List) children
+    );
+    return InvertibleMapper.from(
+        t -> new TreeBasedUnivariateRealFunction(t, xVarNames, yVarName),
+        tree
+    );
   }
 
   @SuppressWarnings("unused")
