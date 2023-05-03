@@ -1,6 +1,8 @@
 package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jgea.problem.regression.NumericalDataset;
+import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
+import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionProblem;
 import io.github.ericmedvet.jnb.core.Param;
 
 import java.io.FileInputStream;
@@ -11,14 +13,14 @@ import java.util.function.Supplier;
 /**
  * @author "Eric Medvet" on 2023/05/01 for jgea
  */
-public class NumericaDatasets {
-  private NumericaDatasets() {
+public class NumericalDatasets {
+  private NumericalDatasets() {
   }
 
   @SuppressWarnings("unused")
   public static Supplier<NumericalDataset> empty(
-      @Param("xVarNames") List<String> xVarNames,
-      @Param("yVarNames") List<String> yVarNames
+      @Param("xVars") List<String> xVarNames,
+      @Param("yVars") List<String> yVarNames
   ) {
     return () -> new NumericalDataset(List.of(), xVarNames, yVarNames);
   }
@@ -40,5 +42,11 @@ public class NumericaDatasets {
         throw new RuntimeException(e);
       }
     };
+  }
+
+  public static Supplier<NumericalDataset> fromProblem(
+      @Param("problem") UnivariateRegressionProblem<UnivariateRegressionFitness> problem
+  ) {
+    return () -> problem.qualityFunction().getDataset();
   }
 }

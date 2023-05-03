@@ -35,7 +35,7 @@ public class PreparedNamedBuilder {
               .and(List.of("multivariateRegression", "mr"), NamedBuilder.fromUtilityClass(MultivariateRegressionProblems.class))
           )
           .and(List.of("dataset", "d"), NamedBuilder.empty()
-              .and(List.of("numerical", "num"), NamedBuilder.fromUtilityClass(NumericaDatasets.class))
+              .and(List.of("numerical", "num"), NamedBuilder.fromUtilityClass(NumericalDatasets.class))
           )
           .and(List.of("solver", "s"), NamedBuilder.fromUtilityClass(Solvers.class))
           .and(List.of("mapper", "m"), NamedBuilder.fromUtilityClass(Mappers.class))

@@ -75,6 +75,12 @@ public class Starter {
     public boolean check = false;
 
     @Parameter(
+        names = {"--verbose", "-v"},
+        description = "Be verbose on errors (i.e., print stack traces)"
+    )
+    public boolean verbose = false;
+
+    @Parameter(
         names = {"--help", "-h"},
         description = "Show this help.",
         help = true
@@ -116,7 +122,7 @@ public class Starter {
     try {
       Class<?> builderClass = Class.forName(configuration.builderName);
       //noinspection unchecked
-      nb = (NamedBuilder<Object>) builderClass.getMethod("get" ).invoke(null);
+      nb = (NamedBuilder<Object>) builderClass.getMethod("get").invoke(null);
     } catch (ClassNotFoundException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
       L.severe("Cannot build the builder %s due to: %s".formatted(configuration.builderName, e));
       System.exit(-1);
@@ -164,6 +170,9 @@ public class Starter {
         System.exit(0);
       } catch (BuilderException e) {
         L.severe("Cannot build experiment: %s%n".formatted(e));
+        if (configuration.verbose) {
+          e.printStackTrace();
+        }
         System.exit(-1);
       }
     }
@@ -173,6 +182,9 @@ public class Starter {
       experimenter.run(expDescription);
     } catch (BuilderException e) {
       L.severe("Cannot run experiment: %s%n".formatted(e));
+      if (configuration.verbose) {
+        e.printStackTrace();
+      }
       System.exit(-1);
     }
   }

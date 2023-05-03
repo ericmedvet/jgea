@@ -36,6 +36,7 @@ import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 /**
@@ -47,32 +48,32 @@ public class Mappers {
 
   @SuppressWarnings("unused")
   public static InvertibleMapper<Graph<Node, Double>, NamedMultivariateRealFunction> fGraphMRF(
-      @Param("dataset") NumericalDataset dataset,
+      @Param("dataset") Supplier<NumericalDataset> dataset,
       @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
     Graph<Node, Double> graph = new LinkedHashGraph<>();
-    IntStream.range(0, dataset.xVarNames().size())
-        .forEach(i -> graph.addNode(new Input(i, dataset.xVarNames().get(i))));
-    IntStream.range(0, dataset.yVarNames().size())
-        .forEach(i -> graph.addNode(new Output(i, dataset.yVarNames().get(i))));
+    IntStream.range(0, dataset.get().xVarNames().size())
+        .forEach(i -> graph.addNode(new Input(i, dataset.get().xVarNames().get(i))));
+    IntStream.range(0, dataset.get().yVarNames().size())
+        .forEach(i -> graph.addNode(new Output(i, dataset.get().yVarNames().get(i))));
     return InvertibleMapper.from(
-        g -> new FunctionGraph(g, dataset.xVarNames(), dataset.yVarNames()),
+        g -> new FunctionGraph(g, dataset.get().xVarNames(), dataset.get().yVarNames()),
         graph
     );
   }
 
   @SuppressWarnings("unused")
   public static InvertibleMapper<Graph<Node, OperatorGraph.NonValuedArc>, NamedMultivariateRealFunction> oGraphMRF(
-      @Param("dataset") NumericalDataset dataset,
+      @Param("dataset") Supplier<NumericalDataset> dataset,
       @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
     Graph<Node, OperatorGraph.NonValuedArc> graph = new LinkedHashGraph<>();
-    IntStream.range(0, dataset.xVarNames().size())
-        .forEach(i -> graph.addNode(new Input(i, dataset.xVarNames().get(i))));
-    IntStream.range(0, dataset.yVarNames().size())
-        .forEach(i -> graph.addNode(new Output(i, dataset.yVarNames().get(i))));
+    IntStream.range(0, dataset.get().xVarNames().size())
+        .forEach(i -> graph.addNode(new Input(i, dataset.get().xVarNames().get(i))));
+    IntStream.range(0, dataset.get().yVarNames().size())
+        .forEach(i -> graph.addNode(new Output(i, dataset.get().yVarNames().get(i))));
     return InvertibleMapper.from(
-        g -> new OperatorGraph(g, dataset.xVarNames(), dataset.yVarNames()),
+        g -> new OperatorGraph(g, dataset.get().xVarNames(), dataset.get().yVarNames()),
         graph
     );
   }
@@ -89,37 +90,35 @@ public class Mappers {
 
   @SuppressWarnings("unused")
   public static InvertibleMapper<List<Tree<Element>>, NamedMultivariateRealFunction> treeMRF(
-      @Param("dataset") NumericalDataset dataset,
+      @Param("dataset") Supplier<NumericalDataset> dataset,
       @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
-    List<Tree<Element.Variable>> children = dataset.xVarNames().stream()
+    List<Tree<Element.Variable>> children = dataset.get().xVarNames().stream()
         .map(s -> Tree.of(new Element.Variable(s)))
         .toList();
     //noinspection unchecked,rawtypes
-    List<Tree<Element>> trees = Collections.nCopies(dataset.yVarNames().size(), Tree.of(
+    List<Tree<Element>> trees = Collections.nCopies(dataset.get().yVarNames().size(), Tree.of(
         Element.Operator.ADDITION,
         (List) children
     ));
     return InvertibleMapper.from(
-        ts -> new TreeBasedMultivariateRealFunction(ts, dataset.xVarNames(), dataset.yVarNames()),
+        ts -> new TreeBasedMultivariateRealFunction(ts, dataset.get().xVarNames(), dataset.get().yVarNames()),
         trees
     );
   }
 
   @SuppressWarnings("unused")
   public static InvertibleMapper<Tree<Element>, NamedUnivariateRealFunction> treeURF(
-      @Param("dataset") NumericalDataset dataset,
+      @Param("dataset") Supplier<NumericalDataset> dataset,
       @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
-    if (dataset.yVarNames().size() != 1) {
+    if (dataset.get().yVarNames().size() != 1) {
       throw new IllegalArgumentException(
           "Dataset has %d y variables, instead of just one: not suitable for univariate regression".formatted(
-              dataset
-                  .yVarNames()
-                  .size())
+              dataset.get().yVarNames().size())
       );
     }
-    List<Tree<Element.Variable>> children = dataset.xVarNames().stream()
+    List<Tree<Element.Variable>> children = dataset.get().xVarNames().stream()
         .map(s -> Tree.of(new Element.Variable(s)))
         .toList();
     //noinspection unchecked,rawtypes
@@ -128,7 +127,7 @@ public class Mappers {
         (List) children
     );
     return InvertibleMapper.from(
-        t -> new TreeBasedUnivariateRealFunction(t, dataset.xVarNames(), dataset.yVarNames().get(0)),
+        t -> new TreeBasedUnivariateRealFunction(t, dataset.get().xVarNames(), dataset.get().yVarNames().get(0)),
         tree
     );
   }
