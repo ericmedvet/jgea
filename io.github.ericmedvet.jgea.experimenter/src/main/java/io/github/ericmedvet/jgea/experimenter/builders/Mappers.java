@@ -23,6 +23,7 @@ import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedMultivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedUnivariateRealFunction;
 import io.github.ericmedvet.jgea.experimenter.InvertibleMapper;
+import io.github.ericmedvet.jgea.problem.regression.NumericalDataset;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionProblem;
 import io.github.ericmedvet.jnb.core.Param;
@@ -38,6 +39,15 @@ public class Mappers {
   private Mappers() {
   }
 
+  @SuppressWarnings("unused")
+  public static InvertibleMapper<List<Tree<Element>>, NamedMultivariateRealFunction> treeMRFDataset(
+      @Param("dataset") NumericalDataset dataset,
+      @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
+  ) {
+    return treeMRFFromNames(dataset.xVarNames(), dataset.yVarNames(), postOperator);
+  }
+
+  @SuppressWarnings("unused")
   public static InvertibleMapper<List<Tree<Element>>, NamedMultivariateRealFunction> treeMRFFromNames(
       @Param("xVarNames") List<String> xVarNames,
       @Param("yVarNames") List<String> yVarNames,
@@ -54,6 +64,26 @@ public class Mappers {
     return InvertibleMapper.from(
         ts -> new TreeBasedMultivariateRealFunction(ts, xVarNames, yVarNames),
         trees
+    );
+  }
+
+  @SuppressWarnings("unused")
+  public static InvertibleMapper<Tree<Element>, NamedUnivariateRealFunction> treeURFFromDataset(
+      @Param("dataset") NumericalDataset dataset,
+      @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
+  ) {
+    if (dataset.yVarNames().size() != 1) {
+      throw new IllegalArgumentException(
+          "Dataset has %d y variables, instead of just one: not suitable for univariate regression".formatted(
+              dataset
+                  .yVarNames()
+                  .size())
+      );
+    }
+    return treeURFFromNames(
+        dataset.xVarNames(),
+        dataset.yVarNames().get(0),
+        postOperator
     );
   }
 
@@ -82,18 +112,8 @@ public class Mappers {
       @Param("problem") UnivariateRegressionProblem<UnivariateRegressionFitness> problem,
       @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
-    if (problem.qualityFunction().getDataset().yVarNames().size() != 1) {
-      throw new IllegalArgumentException(
-          "Problem has %d y variables, instead of just one: not suitable for univariate regression".formatted(
-              problem.qualityFunction()
-                  .getDataset()
-                  .yVarNames()
-                  .size())
-      );
-    }
-    return treeURFFromNames(
-        problem.qualityFunction().getDataset().xVarNames(),
-        problem.qualityFunction().getDataset().yVarNames().get(0),
+    return treeURFFromDataset(
+        problem.qualityFunction().getDataset(),
         postOperator
     );
   }
