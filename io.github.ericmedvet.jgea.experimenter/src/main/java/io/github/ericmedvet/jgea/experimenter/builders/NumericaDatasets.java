@@ -16,6 +16,14 @@ public class NumericaDatasets {
   }
 
   @SuppressWarnings("unused")
+  public static Supplier<NumericalDataset> empty(
+      @Param("xVarNames") List<String> xVarNames,
+      @Param("yVarNames") List<String> yVarNames
+  ) {
+    return () -> new NumericalDataset(List.of(), xVarNames, yVarNames);
+  }
+
+  @SuppressWarnings("unused")
   public static Supplier<NumericalDataset> fromFile(
       @Param("filePath") String filePath,
       @Param(value = "folds", dIs = {0}) List<Integer> folds,
