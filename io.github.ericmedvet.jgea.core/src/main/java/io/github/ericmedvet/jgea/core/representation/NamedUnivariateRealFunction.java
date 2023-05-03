@@ -15,21 +15,36 @@ public interface NamedUnivariateRealFunction extends NamedMultivariateRealFuncti
 
   String yVarName();
 
-  static NamedUnivariateRealFunction from(NamedMultivariateRealFunction multivariateRealFunction) {
+  static NamedUnivariateRealFunction from(NamedMultivariateRealFunction mrf) {
     return new NamedUnivariateRealFunction() {
       @Override
       public double computeAsDouble(Map<String, Double> input) {
-        return multivariateRealFunction.compute(input).get(yVarName());
+        return mrf.compute(input).get(yVarName());
       }
 
       @Override
       public String yVarName() {
-        return multivariateRealFunction.yVarNames().get(0);
+        return mrf.yVarNames().get(0);
+      }
+
+      @Override
+      public int hashCode() {
+        return mrf.hashCode();
+      }
+
+      @Override
+      public boolean equals(Object obj) {
+        return mrf.equals(obj);
+      }
+
+      @Override
+      public String toString() {
+        return mrf.toString();
       }
 
       @Override
       public List<String> xVarNames() {
-        return multivariateRealFunction.xVarNames();
+        return mrf.xVarNames();
       }
     };
   }

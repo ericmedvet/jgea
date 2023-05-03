@@ -15,6 +15,13 @@ ea.experiment(
       problem = ea.p.ur.synthetic(name = "keijzer6")
     );
     ea.run(
+      solver = ea.s.oGraphea(
+        mapper = ea.m.toURF(inner = ea.m.oGraphMRF(dataset = ea.d.num.empty(xVars = [x1]; yVars = [y])));
+        nEval = 2000
+      );
+      problem = ea.p.ur.synthetic(name = "keijzer6")
+    );
+    ea.run(
       solver = ea.s.srTreeGP(
         mapper = ea.m.treeURF(dataset = ea.d.num.fromProblem(problem = ea.p.ur.bundled(name = concrete)));
         nEval = 2000

@@ -19,9 +19,18 @@ package io.github.ericmedvet.jgea.experimenter.builders;
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jgea.core.QualityBasedProblem;
+import io.github.ericmedvet.jgea.core.distance.Jaccard;
 import io.github.ericmedvet.jgea.core.operator.Crossover;
 import io.github.ericmedvet.jgea.core.operator.GeneticOperator;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
+import io.github.ericmedvet.jgea.core.representation.graph.*;
+import io.github.ericmedvet.jgea.core.representation.graph.numeric.Constant;
+import io.github.ericmedvet.jgea.core.representation.graph.numeric.Input;
+import io.github.ericmedvet.jgea.core.representation.graph.numeric.Output;
+import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph.BaseOperator;
+import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph.OperatorGraph;
+import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph.OperatorNode;
+import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph.ShallowFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.FixedLengthListFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.UniformCrossover;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.GaussianMutation;
@@ -31,6 +40,8 @@ import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import io.github.ericmedvet.jgea.core.selector.Last;
 import io.github.ericmedvet.jgea.core.selector.Tournament;
 import io.github.ericmedvet.jgea.core.solver.*;
+import io.github.ericmedvet.jgea.core.solver.speciation.LazySpeciator;
+import io.github.ericmedvet.jgea.core.solver.speciation.SpeciatedEvolver;
 import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jgea.experimenter.InvertibleMapper;
 import io.github.ericmedvet.jnb.core.Param;
@@ -205,6 +216,75 @@ public class Solvers {
     }
   }
 
+  public static <S, Q> SpeciatedEvolver<QualityBasedProblem<S, Q>, Graph<Node, OperatorGraph.NonValuedArc>, S, Q> oGraphea(
+      @Param(value = "mapper") InvertibleMapper<Graph<Node, OperatorGraph.NonValuedArc>, S> mapper,
+      @Param(value = "minConst", dD = 0d) double minConst,
+      @Param(value = "maxConst", dD = 5d) double maxConst,
+      @Param(value = "nConst", dI = 10) int nConst,
+      @Param(value = "operators", dSs = {
+          "addition",
+          "subtraction",
+          "multiplication",
+          "prot_division",
+          "prot_log"
+      }) List<BaseOperator> operators,
+      @Param(value = "nPop", dI = 100) int nPop,
+      @Param(value = "nEval") int nEval,
+      @Param(value = "arcAdditionRate", dD = 3d) double arcAdditionRate,
+      @Param(value = "arcRemovalRate", dD = 0.1d) double arcRemovalRate,
+      @Param(value = "nodeAdditionRate", dD = 1d) double nodeAdditionRate,
+      @Param(value = "nPop", dI = 5) int minSpeciesSizeForElitism,
+      @Param(value = "rankBase", dD = 0.75d) double rankBase,
+      @Param(value = "remap") boolean remap
+  ) {
+    Map<GeneticOperator<Graph<Node, OperatorGraph.NonValuedArc>>, Double> geneticOperators = Map.ofEntries(
+        Map.entry(
+            new NodeAddition<Node, OperatorGraph.NonValuedArc>(
+                OperatorNode.sequentialIndexFactory(operators.toArray(BaseOperator[]::new)),
+                Mutation.copy(),
+                Mutation.copy()
+            ).withChecker(OperatorGraph.checker()),
+            nodeAdditionRate
+        ),
+        Map.entry(
+            new ArcAddition<Node, OperatorGraph.NonValuedArc>(r -> OperatorGraph.NON_VALUED_ARC, false).withChecker(
+                OperatorGraph.checker()),
+            arcAdditionRate
+        ),
+        Map.entry(
+            new ArcRemoval<Node, OperatorGraph.NonValuedArc>(node -> (node instanceof Input) || (node instanceof Constant) || (node instanceof Output)).withChecker(
+                OperatorGraph.checker()),
+            arcRemovalRate
+        )
+    );
+    Graph<Node, OperatorGraph.NonValuedArc> graph = mapper.exampleInput();
+    double constStep = (maxConst - minConst) / nConst;
+    List<Double> constants = DoubleStream.iterate(minConst, d -> d + constStep)
+        .limit(nConst)
+        .boxed()
+        .toList();
+    return new SpeciatedEvolver<>(
+        mapper,
+        new ShallowFactory(
+            graph.nodes().stream().filter(n -> n instanceof Input).map(n -> ((Input) n).getName()).distinct().toList(),
+            graph.nodes()
+                .stream()
+                .filter(n -> n instanceof Output)
+                .map(n -> ((Output) n).getName())
+                .distinct()
+                .toList(),
+            constants
+        ),
+        nPop,
+        StopConditions.nOfFitnessEvaluations(nEval),
+        geneticOperators,
+        remap,
+        minSpeciesSizeForElitism,
+        new LazySpeciator<>((new Jaccard()).on(i -> i.genotype().nodes()), 0.25),
+        rankBase
+    );
+  }
+
   @SuppressWarnings("unused")
   public static <S, Q> OpenAIEvolutionaryStrategy<S, Q> openAIES(
       @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
@@ -257,7 +337,8 @@ public class Solvers {
           "addition",
           "subtraction",
           "multiplication",
-          "prot_division"
+          "prot_division",
+          "prot_log"
       }) List<Element.Operator> operators,
       @Param(value = "minTreeH", dI = 3) int minTreeH,
       @Param(value = "maxTreeH", dI = 8) int maxTreeH,
