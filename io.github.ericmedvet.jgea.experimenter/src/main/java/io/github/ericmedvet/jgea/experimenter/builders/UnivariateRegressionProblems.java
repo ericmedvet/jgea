@@ -48,12 +48,12 @@ public class UnivariateRegressionProblems {
   @SuppressWarnings("unused")
   public static UnivariateRegressionProblem<UnivariateRegressionFitness> fromData(
       @Param("trainingDataset") Supplier<NumericalDataset> trainingDataset,
-      @Param("testDataset") Supplier<NumericalDataset> testDataset,
+      @Param(value = "testDataset", dNPM = "ea.d.num.empty()") Supplier<NumericalDataset> testDataset,
       @Param(value = "metric", dS = "mse") UnivariateRegressionFitness.Metric metric
   ) {
     return new UnivariateRegressionProblem<>(
         new UnivariateRegressionFitness(trainingDataset.get(), metric),
-        new UnivariateRegressionFitness(testDataset.get(), metric)
+        testDataset != null ? new UnivariateRegressionFitness(testDataset.get(), metric) : null
     );
   }
 

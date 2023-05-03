@@ -99,4 +99,11 @@ public class TreeBasedMultivariateRealFunction implements NamedMultivariateRealF
   public int size() {
     return trees.stream().mapToInt(Tree::size).sum();
   }
+
+  @Override
+  public String toString() {
+    return IntStream.range(0, trees.size())
+        .mapToObj(i -> "%s=%s".formatted(yVarNames.get(i), trees.get(i)))
+        .collect(Collectors.joining(";"));
+  }
 }
