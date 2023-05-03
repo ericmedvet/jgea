@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
+import java.util.function.Function;
 
 /**
  * @author eric
@@ -53,7 +54,6 @@ public class TreeBasedUnivariateRealFunction implements NamedUnivariateRealFunct
     this(tree, xVarNames, yVarName, x -> x);
   }
 
-
   protected static double compute(Tree<Element> tree, Map<String, Double> input) {
     if (tree.content() instanceof Element.Decoration) {
       throw new RuntimeException(String.format("Cannot compute: decoration node %s found", tree.content()));
@@ -76,6 +76,10 @@ public class TreeBasedUnivariateRealFunction implements NamedUnivariateRealFunct
       i = i + 1;
     }
     return ((Element.Operator) tree.content()).applyAsDouble(childrenValues);
+  }
+
+  public static Function<Tree<Element>, NamedUnivariateRealFunction> mapper(List<String> xVarNames, String yVarName) {
+    return t -> new TreeBasedUnivariateRealFunction(t, xVarNames, yVarName);
   }
 
   @Override

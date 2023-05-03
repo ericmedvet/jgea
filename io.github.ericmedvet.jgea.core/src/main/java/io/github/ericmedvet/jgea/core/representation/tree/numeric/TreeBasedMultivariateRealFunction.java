@@ -24,6 +24,7 @@ import io.github.ericmedvet.jsdynsym.core.Parametrized;
 import java.util.List;
 import java.util.Map;
 import java.util.function.DoubleUnaryOperator;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -51,10 +52,20 @@ public class TreeBasedMultivariateRealFunction implements NamedMultivariateRealF
     this(trees, xVarNames, yVarNames, x -> x);
   }
 
+  public static Function<List<Tree<Element>>, NamedMultivariateRealFunction> mapper(
+      List<String> xVarNames,
+      List<String> yVarNames
+  ) {
+    return ts -> new TreeBasedMultivariateRealFunction(ts, xVarNames, yVarNames);
+  }
+
   @Override
   public Map<String, Double> compute(Map<String, Double> input) {
     return IntStream.range(0, yVarNames().size())
-        .mapToObj(i -> Map.entry(yVarNames.get(i), TreeBasedUnivariateRealFunction.compute(trees.get(i), input)))
+        .mapToObj(i -> Map.entry(
+            yVarNames.get(i),
+            postOperator.applyAsDouble(TreeBasedUnivariateRealFunction.compute(trees.get(i), input))
+        ))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 

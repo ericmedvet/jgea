@@ -24,12 +24,14 @@ import io.github.ericmedvet.jgea.core.representation.graph.numeric.Input;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.Output;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Sized;
+import io.github.ericmedvet.jsdynsym.core.Parametrized;
 
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -37,15 +39,29 @@ import java.util.stream.Collectors;
 /**
  * @author eric
  */
-public class OperatorGraph implements NamedMultivariateRealFunction, Sized, Serializable {
+public class OperatorGraph implements NamedMultivariateRealFunction, Sized, Serializable, Parametrized<Graph<Node,
+    OperatorGraph.NonValuedArc>> {
 
   public final static NonValuedArc NON_VALUED_ARC = new NonValuedArc();
-  private final Graph<Node, NonValuedArc> graph;
+  private final List<String> xVarNames;
+  private final List<String> yVarNames;
+  private final DoubleUnaryOperator postOperator;
+  private Graph<Node, NonValuedArc> graph;
 
-  public OperatorGraph(Graph<Node, NonValuedArc> graph) {
-    //check if the graph is valid
-    check(graph);
-    this.graph = graph;
+  public OperatorGraph(
+      Graph<Node, NonValuedArc> graph,
+      List<String> xVarNames,
+      List<String> yVarNames,
+      DoubleUnaryOperator postOperator
+  ) {
+    this.xVarNames = xVarNames;
+    this.yVarNames = yVarNames;
+    this.postOperator = postOperator;
+    setParams(graph);
+  }
+
+  public OperatorGraph(Graph<Node, NonValuedArc> graph, List<String> xVarNames, List<String> yVarNames) {
+    this(graph, xVarNames, yVarNames, x -> x);
   }
 
   public static class NonValuedArc {
@@ -67,10 +83,6 @@ public class OperatorGraph implements NamedMultivariateRealFunction, Sized, Seri
     public String toString() {
       return "-";
     }
-  }
-
-  public static Function<Graph<Node, NonValuedArc>, OperatorGraph> builder() {
-    return OperatorGraph::new;
   }
 
   public static void check(Graph<Node, NonValuedArc> graph) {
@@ -131,29 +143,41 @@ public class OperatorGraph implements NamedMultivariateRealFunction, Sized, Seri
     };
   }
 
+  public static Function<Graph<Node, NonValuedArc>, NamedMultivariateRealFunction> mapper(
+      List<String> xVarNames,
+      List<String> yVarNames
+  ) {
+    return g -> new OperatorGraph(g, xVarNames, yVarNames);
+  }
+
   @Override
   public Map<String, Double> compute(Map<String, Double> input) {
     return graph.nodes().stream()
         .filter(n -> n instanceof Output)
         .map(n -> (Output) n)
-        .map(n -> Map.entry(n.getName(), outValue(n, input)))
+        .map(n -> Map.entry(n.getName(), postOperator.applyAsDouble(outValue(n, input))))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   @Override
   public List<String> xVarNames() {
-    return graph.nodes().stream()
-        .filter(n -> n instanceof Input)
-        .map(n -> ((Input)n).getName())
-        .toList();
+    return xVarNames;
   }
 
   @Override
   public List<String> yVarNames() {
-    return graph.nodes().stream()
-        .filter(n -> n instanceof Output)
-        .map(n -> ((Output)n).getName())
-        .toList();
+    return yVarNames;
+  }
+
+  @Override
+  public Graph<Node, NonValuedArc> getParams() {
+    return graph;
+  }
+
+  @Override
+  public void setParams(Graph<Node, NonValuedArc> graph) {
+    check(graph);
+    this.graph = graph;
   }
 
   @Override

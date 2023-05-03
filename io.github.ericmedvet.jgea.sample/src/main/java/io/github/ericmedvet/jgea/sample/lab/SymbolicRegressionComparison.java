@@ -172,11 +172,10 @@ public class SymbolicRegressionComparison extends Worker {
           IndependentFactory.picker(constants.stream().map(Element.Constant::new).toList())
       );
       return new StandardEvolver<>(
-          ((Function<Tree<Element>, NamedUnivariateRealFunction>) t -> new TreeBasedUnivariateRealFunction(
-              t,
+          TreeBasedUnivariateRealFunction.mapper(
               p.qualityFunction().getDataset().xVarNames(),
               p.qualityFunction().getDataset().yVarNames().get(0)
-          )).andThen(MathUtils.linearScaler(p.qualityFunction())),
+          ).andThen(MathUtils.linearScaler(p.qualityFunction())),
           new RampedHalfAndHalf<>(
               4,
               maxHeight,
@@ -218,11 +217,10 @@ public class SymbolicRegressionComparison extends Worker {
           IndependentFactory.picker(constants.stream().map(Element.Constant::new).toList())
       );
       return new StandardEvolver<>(
-          ((Function<Tree<Element>, NamedUnivariateRealFunction>) t -> new TreeBasedUnivariateRealFunction(
-              t,
+          TreeBasedUnivariateRealFunction.mapper(
               p.qualityFunction().getDataset().xVarNames(),
               p.qualityFunction().getDataset().yVarNames().get(0)
-          )).andThen(MathUtils.linearScaler(p.qualityFunction())),
+          ).andThen(MathUtils.linearScaler(p.qualityFunction())),
           new RampedHalfAndHalf<>(
               4,
               maxHeight,
@@ -259,11 +257,10 @@ public class SymbolicRegressionComparison extends Worker {
           IndependentFactory.picker(constants.stream().map(Element.Constant::new).toList())
       );
       return new StandardWithEnforcedDiversityEvolver<>(
-          ((Function<Tree<Element>, NamedUnivariateRealFunction>) t -> new TreeBasedUnivariateRealFunction(
-              t,
+          TreeBasedUnivariateRealFunction.mapper(
               p.qualityFunction().getDataset().xVarNames(),
               p.qualityFunction().getDataset().yVarNames().get(0)
-          )).andThen(MathUtils.linearScaler(p.qualityFunction())),
+          ).andThen(MathUtils.linearScaler(p.qualityFunction())),
           new RampedHalfAndHalf<>(
               4,
               maxHeight,
@@ -302,11 +299,12 @@ public class SymbolicRegressionComparison extends Worker {
           constants
       );
       return new StandardEvolver<>(
-          new FormulaMapper().andThen(n -> new TreeBasedUnivariateRealFunction(
-              n,
-              p.qualityFunction().getDataset().xVarNames(),
-              p.qualityFunction().getDataset().yVarNames().get(0)
-          )).andThen(MathUtils.linearScaler(p.qualityFunction())),
+          new FormulaMapper()
+              .andThen(TreeBasedUnivariateRealFunction.mapper(
+                  p.qualityFunction().getDataset().xVarNames(),
+                  p.qualityFunction().getDataset().yVarNames().get(0)
+              ))
+              .andThen(MathUtils.linearScaler(p.qualityFunction())),
           new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
           nPop,
           StopConditions.nOfIterations(nIterations),
@@ -331,11 +329,12 @@ public class SymbolicRegressionComparison extends Worker {
           constants
       );
       return new StandardEvolver<>(
-          new FormulaMapper().andThen(n -> new TreeBasedUnivariateRealFunction(
-              n,
-              p.qualityFunction().getDataset().xVarNames(),
-              p.qualityFunction().getDataset().yVarNames().get(0)
-          )).andThen(MathUtils.linearScaler(p.qualityFunction())),
+          new FormulaMapper()
+              .andThen(TreeBasedUnivariateRealFunction.mapper(
+                  p.qualityFunction().getDataset().xVarNames(),
+                  p.qualityFunction().getDataset().yVarNames().get(0)
+              ))
+              .andThen(MathUtils.linearScaler(p.qualityFunction())),
           new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
           nPop,
           StopConditions.nOfIterations(nIterations),
@@ -355,11 +354,12 @@ public class SymbolicRegressionComparison extends Worker {
           constants
       );
       return new StandardWithEnforcedDiversityEvolver<>(
-          new FormulaMapper().andThen(n -> new TreeBasedUnivariateRealFunction(
-              n,
-              p.qualityFunction().getDataset().xVarNames(),
-              p.qualityFunction().getDataset().yVarNames().get(0)
-          )).andThen(MathUtils.linearScaler(p.qualityFunction())),
+          new FormulaMapper()
+              .andThen(TreeBasedUnivariateRealFunction.mapper(
+                  p.qualityFunction().getDataset().xVarNames(),
+                  p.qualityFunction().getDataset().yVarNames().get(0)
+              ))
+              .andThen(MathUtils.linearScaler(p.qualityFunction())),
           new GrammarRampedHalfAndHalf<>(6, maxHeight + 4, g),
           nPop,
           StopConditions.nOfIterations(nIterations),
@@ -378,54 +378,58 @@ public class SymbolicRegressionComparison extends Worker {
           diversityMaxAttempts
       );
     });
-    solvers.put("fgraph-lim-ga", p -> {
-      return new StandardEvolver<>(
-          FunctionGraph.builder()
-              .andThen(NamedUnivariateRealFunction::from)
-              .andThen(MathUtils.linearScaler(p.qualityFunction())),
-          new ShallowSparseFactory(
-              0d,
-              0d,
-              1d,
-              p.qualityFunction().getDataset().xVarNames(),
-              p.qualityFunction().getDataset().yVarNames()
-          ),
-          nPop,
-          StopConditions.nOfIterations(nIterations),
-          Map.of(
-              new NodeAddition<Node, Double>(
-                  FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
-                  (w, r) -> w,
-                  (w, r) -> r.nextGaussian()
-              ).withChecker(FunctionGraph.checker()),
-              graphNodeAdditionRate,
-              new ArcModification<Node, Double>(
-                  (w, r) -> w + r.nextGaussian(),
-                  1d
-              ).withChecker(FunctionGraph.checker()),
-              graphArcMutationRate,
-              new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(FunctionGraph.checker()),
-              graphArcAdditionRate,
-              new ArcRemoval<Node, Double>(node -> (node instanceof Input) || (node instanceof Constant) || (node instanceof Output)).withChecker(
-                  FunctionGraph.checker()),
-              graphArcRemovalRate,
-              new AlignedCrossover<Node, Double>(
-                  (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
-                  node -> (node instanceof Input) || (node instanceof Constant) || (node instanceof Output),
-                  false
-              ).withChecker(FunctionGraph.checker()),
-              graphCrossoverRate
-          ),
-          new Tournament(nTournament),
-          new Last(),
-          nPop,
-          true,
-          false,
-          (srp, r) -> new POSetPopulationState<>()
-      );
-    });
+    solvers.put("fgraph-lim-ga", p -> new StandardEvolver<>(
+        FunctionGraph.mapper(
+                p.qualityFunction().getDataset().xVarNames(),
+                p.qualityFunction().getDataset().yVarNames()
+            )
+            .andThen(NamedUnivariateRealFunction::from)
+            .andThen(MathUtils.linearScaler(p.qualityFunction())),
+        new ShallowSparseFactory(
+            0d,
+            0d,
+            1d,
+            p.qualityFunction().getDataset().xVarNames(),
+            p.qualityFunction().getDataset().yVarNames()
+        ),
+        nPop,
+        StopConditions.nOfIterations(nIterations),
+        Map.of(
+            new NodeAddition<Node, Double>(
+                FunctionNode.limitedIndexFactory(maxNodes, baseFunctions),
+                (w, r) -> w,
+                (w, r) -> r.nextGaussian()
+            ).withChecker(FunctionGraph.checker()),
+            graphNodeAdditionRate,
+            new ArcModification<Node, Double>(
+                (w, r) -> w + r.nextGaussian(),
+                1d
+            ).withChecker(FunctionGraph.checker()),
+            graphArcMutationRate,
+            new ArcAddition<Node, Double>(RandomGenerator::nextGaussian, false).withChecker(FunctionGraph.checker()),
+            graphArcAdditionRate,
+            new ArcRemoval<Node, Double>(node -> (node instanceof Input) || (node instanceof Constant) || (node instanceof Output)).withChecker(
+                FunctionGraph.checker()),
+            graphArcRemovalRate,
+            new AlignedCrossover<Node, Double>(
+                (w1, w2, r) -> w1 + (w2 - w1) * (r.nextDouble() * 3d - 1d),
+                node -> (node instanceof Input) || (node instanceof Constant) || (node instanceof Output),
+                false
+            ).withChecker(FunctionGraph.checker()),
+            graphCrossoverRate
+        ),
+        new Tournament(nTournament),
+        new Last(),
+        nPop,
+        true,
+        false,
+        (srp, r) -> new POSetPopulationState<>()
+    ));
     solvers.put("fgraph-lim-ga-noxover", p -> new StandardEvolver<>(
-        FunctionGraph.builder()
+        FunctionGraph.mapper(
+                p.qualityFunction().getDataset().xVarNames(),
+                p.qualityFunction().getDataset().yVarNames()
+            )
             .andThen(NamedUnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new ShallowSparseFactory(
@@ -460,7 +464,10 @@ public class SymbolicRegressionComparison extends Worker {
         (srp, r) -> new POSetPopulationState<>()
     ));
     solvers.put("fgraph-lim-speciated-noxover-kmeans", p -> new SpeciatedEvolver<>(
-        FunctionGraph.builder()
+        FunctionGraph.mapper(
+                p.qualityFunction().getDataset().xVarNames(),
+                p.qualityFunction().getDataset().yVarNames()
+            )
             .andThen(NamedUnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new ShallowSparseFactory(
@@ -498,7 +505,10 @@ public class SymbolicRegressionComparison extends Worker {
         0.75
     ));
     solvers.put("fgraph-lim-speciated-noxover", p -> new SpeciatedEvolver<>(
-        FunctionGraph.builder()
+        FunctionGraph.mapper(
+                p.qualityFunction().getDataset().xVarNames(),
+                p.qualityFunction().getDataset().yVarNames()
+            )
             .andThen(NamedUnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new ShallowSparseFactory(
@@ -531,7 +541,10 @@ public class SymbolicRegressionComparison extends Worker {
         0.75
     ));
     solvers.put("fgraph-seq-speciated-noxover", p -> new SpeciatedEvolver<>(
-        FunctionGraph.builder()
+        FunctionGraph.mapper(
+                p.qualityFunction().getDataset().xVarNames(),
+                p.qualityFunction().getDataset().yVarNames()
+            )
             .andThen(NamedUnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new ShallowSparseFactory(
@@ -564,7 +577,10 @@ public class SymbolicRegressionComparison extends Worker {
         0.75
     ));
     solvers.put("fgraph-lim-gadiv", p -> new StandardWithEnforcedDiversityEvolver<>(
-        FunctionGraph.builder()
+        FunctionGraph.mapper(
+                p.qualityFunction().getDataset().xVarNames(),
+                p.qualityFunction().getDataset().yVarNames()
+            )
             .andThen(NamedUnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new ShallowSparseFactory(
@@ -605,7 +621,10 @@ public class SymbolicRegressionComparison extends Worker {
         diversityMaxAttempts
     ));
     solvers.put("fgraph-lim-speciated", p -> new SpeciatedEvolver<>(
-        FunctionGraph.builder()
+        FunctionGraph.mapper(
+                p.qualityFunction().getDataset().xVarNames(),
+                p.qualityFunction().getDataset().yVarNames()
+            )
             .andThen(NamedUnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new ShallowSparseFactory(
@@ -643,7 +662,10 @@ public class SymbolicRegressionComparison extends Worker {
         0.75
     ));
     solvers.put("fgraph-seq-speciated", p -> new SpeciatedEvolver<>(
-        FunctionGraph.builder()
+        FunctionGraph.mapper(
+                p.qualityFunction().getDataset().xVarNames(),
+                p.qualityFunction().getDataset().yVarNames()
+            )
             .andThen(NamedUnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new ShallowSparseFactory(
@@ -682,7 +704,10 @@ public class SymbolicRegressionComparison extends Worker {
         0.75
     ));
     solvers.put("fgraph-seq-ga", p -> new StandardEvolver<>(
-        FunctionGraph.builder()
+        FunctionGraph.mapper(
+                p.qualityFunction().getDataset().xVarNames(),
+                p.qualityFunction().getDataset().yVarNames()
+            )
             .andThen(NamedUnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new ShallowSparseFactory(
@@ -723,7 +748,7 @@ public class SymbolicRegressionComparison extends Worker {
         (srp, r) -> new POSetPopulationState<>()
     ));
     solvers.put("ograph-seq-ga", p -> new StandardEvolver<>(
-        OperatorGraph.builder()
+        OperatorGraph.mapper(p.qualityFunction().getDataset().xVarNames(), p.qualityFunction().getDataset().yVarNames())
             .andThen(NamedUnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new ShallowFactory(
@@ -761,7 +786,7 @@ public class SymbolicRegressionComparison extends Worker {
         (srp, r) -> new POSetPopulationState<>()
     ));
     solvers.put("ograph-seq-speciated-noxover", p -> new SpeciatedEvolver<>(
-        OperatorGraph.builder()
+        OperatorGraph.mapper(p.qualityFunction().getDataset().xVarNames(), p.qualityFunction().getDataset().yVarNames())
             .andThen(NamedUnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new ShallowFactory(
@@ -798,7 +823,11 @@ public class SymbolicRegressionComparison extends Worker {
           );
       Predicate<Graph<Node, Double>> checker = FunctionGraph.checker();
       return new StandardEvolver<>(
-          graphMapper.andThen(FunctionGraph.builder())
+          graphMapper
+              .andThen(FunctionGraph.mapper(
+                  p.qualityFunction().getDataset().xVarNames(),
+                  p.qualityFunction().getDataset().yVarNames()
+              ))
               .andThen(NamedUnivariateRealFunction::from)
               .andThen(MathUtils.linearScaler(p.qualityFunction())),
           new ShallowSparseFactory(
@@ -858,7 +887,11 @@ public class SymbolicRegressionComparison extends Worker {
           );
       Predicate<Graph<Node, Double>> checker = FunctionGraph.checker();
       return new SpeciatedEvolver<>(
-          graphMapper.andThen(FunctionGraph.builder())
+          graphMapper
+              .andThen(FunctionGraph.mapper(
+                  p.qualityFunction().getDataset().xVarNames(),
+                  p.qualityFunction().getDataset().yVarNames()
+              ))
               .andThen(NamedUnivariateRealFunction::from)
               .andThen(MathUtils.linearScaler(p.qualityFunction())),
           new ShallowSparseFactory(
@@ -919,7 +952,10 @@ public class SymbolicRegressionComparison extends Worker {
                   (Function<IndexedNode<Node>, Node>) IndexedNode::content,
                   (Function<Collection<Double>, Double>) Misc::first
               )
-              .andThen(FunctionGraph.builder())
+              .andThen(FunctionGraph.mapper(
+                  p.qualityFunction().getDataset().xVarNames(),
+                  p.qualityFunction().getDataset().yVarNames()
+              ))
               .andThen(NamedUnivariateRealFunction::from)
               .andThen(MathUtils.linearScaler(p.qualityFunction())),
           new ShallowSparseFactory(
@@ -976,7 +1012,10 @@ public class SymbolicRegressionComparison extends Worker {
       );
       Predicate<Graph<Node, OperatorGraph.NonValuedArc>> checker = OperatorGraph.checker();
       return new SpeciatedEvolver<>(
-          graphMapper.andThen(OperatorGraph.builder())
+          graphMapper.andThen(OperatorGraph.mapper(
+                  p.qualityFunction().getDataset().xVarNames(),
+                  p.qualityFunction().getDataset().yVarNames()
+              ))
               .andThen(NamedUnivariateRealFunction::from)
               .andThen(MathUtils.linearScaler(p.qualityFunction())),
           new ShallowFactory(
@@ -1025,7 +1064,11 @@ public class SymbolicRegressionComparison extends Worker {
           );
       Predicate<Graph<Node, Double>> checker = FunctionGraph.checker();
       return new SpeciatedEvolver<>(
-          graphMapper.andThen(FunctionGraph.builder())
+          graphMapper
+              .andThen(FunctionGraph.mapper(
+                  p.qualityFunction().getDataset().xVarNames(),
+                  p.qualityFunction().getDataset().yVarNames()
+              ))
               .andThen(NamedUnivariateRealFunction::from)
               .andThen(MathUtils.linearScaler(p.qualityFunction())),
           new ShallowSparseFactory(
@@ -1067,7 +1110,10 @@ public class SymbolicRegressionComparison extends Worker {
       );
     });
     solvers.put("fgraph-seq-ga-noxover", p -> new StandardEvolver<>(
-        FunctionGraph.builder()
+        FunctionGraph.mapper(
+                p.qualityFunction().getDataset().xVarNames(),
+                p.qualityFunction().getDataset().yVarNames()
+            )
             .andThen(NamedUnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new ShallowSparseFactory(
@@ -1102,7 +1148,10 @@ public class SymbolicRegressionComparison extends Worker {
         (srp, r) -> new POSetPopulationState<>()
     ));
     solvers.put("fgraph-seq-gadiv", p -> new StandardWithEnforcedDiversityEvolver<>(
-        FunctionGraph.builder()
+        FunctionGraph.mapper(
+                p.qualityFunction().getDataset().xVarNames(),
+                p.qualityFunction().getDataset().yVarNames()
+            )
             .andThen(NamedUnivariateRealFunction::from)
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new ShallowSparseFactory(

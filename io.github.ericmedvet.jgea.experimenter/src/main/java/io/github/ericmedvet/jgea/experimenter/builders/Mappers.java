@@ -18,6 +18,12 @@ package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jgea.core.representation.NamedMultivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.NamedUnivariateRealFunction;
+import io.github.ericmedvet.jgea.core.representation.graph.Graph;
+import io.github.ericmedvet.jgea.core.representation.graph.LinkedHashGraph;
+import io.github.ericmedvet.jgea.core.representation.graph.Node;
+import io.github.ericmedvet.jgea.core.representation.graph.numeric.Input;
+import io.github.ericmedvet.jgea.core.representation.graph.numeric.Output;
+import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph.OperatorGraph;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedMultivariateRealFunction;
@@ -31,6 +37,7 @@ import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * @author "Eric Medvet" on 2023/05/01 for jgea
@@ -39,8 +46,24 @@ public class Mappers {
   private Mappers() {
   }
 
+  public static InvertibleMapper<Graph<Node, OperatorGraph.NonValuedArc>, NamedMultivariateRealFunction> oGraphURFFromNames(
+      @Param("xVarNames") List<String> xVarNames,
+      @Param("yVarNames") List<String> yVarNames,
+      @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
+  ) {
+    Graph<Node, OperatorGraph.NonValuedArc> graph = new LinkedHashGraph<>();
+    IntStream.range(0, xVarNames.size())
+        .forEach(i -> graph.addNode(new Input(i, xVarNames.get(i))));
+    IntStream.range(0, yVarNames.size())
+        .forEach(i -> graph.addNode(new Output(i, yVarNames.get(i))));
+    return InvertibleMapper.from(
+        g -> new OperatorGraph(g, xVarNames, yVarNames),
+        graph
+    );
+  }
+
   @SuppressWarnings("unused")
-  public static InvertibleMapper<List<Tree<Element>>, NamedMultivariateRealFunction> treeMRFDataset(
+  public static InvertibleMapper<List<Tree<Element>>, NamedMultivariateRealFunction> treeMRFFromDataset(
       @Param("dataset") NumericalDataset dataset,
       @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {

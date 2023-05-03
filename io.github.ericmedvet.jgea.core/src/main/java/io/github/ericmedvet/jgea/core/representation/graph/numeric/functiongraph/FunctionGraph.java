@@ -23,12 +23,14 @@ import io.github.ericmedvet.jgea.core.representation.graph.numeric.Constant;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.Input;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.Output;
 import io.github.ericmedvet.jgea.core.util.Sized;
+import io.github.ericmedvet.jsdynsym.core.Parametrized;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -36,17 +38,28 @@ import java.util.stream.Collectors;
 /**
  * @author eric
  */
-public class FunctionGraph implements NamedMultivariateRealFunction, Sized, Serializable {
+public class FunctionGraph implements NamedMultivariateRealFunction, Sized, Serializable, Parametrized<Graph<Node,
+    Double>> {
 
-  private final Graph<Node, Double> graph;
+  private final List<String> xVarNames;
+  private final List<String> yVarNames;
+  private final DoubleUnaryOperator postOperator;
+  private Graph<Node, Double> graph;
 
-  public FunctionGraph(Graph<Node, Double> graph) {
-    check(graph);
-    this.graph = graph;
+  public FunctionGraph(
+      Graph<Node, Double> graph,
+      List<String> xVarNames,
+      List<String> yVarNames,
+      DoubleUnaryOperator postOperator
+  ) {
+    this.xVarNames = xVarNames;
+    this.yVarNames = yVarNames;
+    this.postOperator = postOperator;
+    setParams(graph);
   }
 
-  public static Function<Graph<Node, Double>, FunctionGraph> builder() {
-    return FunctionGraph::new;
+  public FunctionGraph(Graph<Node, Double> graph, List<String> xVarNames, List<String> yVarNames) {
+    this(graph, xVarNames, yVarNames, x -> x);
   }
 
   public static void check(Graph<Node, Double> graph) {
@@ -89,29 +102,41 @@ public class FunctionGraph implements NamedMultivariateRealFunction, Sized, Seri
     };
   }
 
+  public static Function<Graph<Node, Double>, NamedMultivariateRealFunction> mapper(
+      List<String> xVarNames,
+      List<String> yVarNames
+  ) {
+    return g -> new FunctionGraph(g, xVarNames, yVarNames);
+  }
+
   @Override
   public Map<String, Double> compute(Map<String, Double> input) {
     return graph.nodes().stream()
         .filter(n -> n instanceof Output)
         .map(n -> (Output) n)
-        .map(n -> Map.entry(n.getName(), outValue(n, input)))
+        .map(n -> Map.entry(n.getName(), postOperator.applyAsDouble(outValue(n, input))))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   @Override
   public List<String> xVarNames() {
-    return graph.nodes().stream()
-        .filter(n -> n instanceof Input)
-        .map(n -> ((Input)n).getName())
-        .toList();
+    return xVarNames;
   }
 
   @Override
   public List<String> yVarNames() {
-    return graph.nodes().stream()
-        .filter(n -> n instanceof Output)
-        .map(n -> ((Output)n).getName())
-        .toList();
+    return yVarNames;
+  }
+
+  @Override
+  public Graph<Node, Double> getParams() {
+    return graph;
+  }
+
+  @Override
+  public void setParams(Graph<Node, Double> graph) {
+    check(graph);
+    this.graph = graph;
   }
 
   @Override
