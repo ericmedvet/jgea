@@ -31,7 +31,7 @@ public class NumericalDatasets {
       @Param(value = "folds", dIs = {0}) List<Integer> folds,
       @Param(value = "nFolds", dI = 1) int nFolds,
       @Param(value = "xVarNamePattern", dS = "x.*") String xVarNamePattern,
-      @Param(value = "xVarNamePattern", dS = "y.*") String yVarNamePattern
+      @Param(value = "yVarNamePattern", dS = "y.*") String yVarNamePattern
   ) {
     return () -> {
       try {
@@ -44,6 +44,7 @@ public class NumericalDatasets {
     };
   }
 
+  @SuppressWarnings("unused")
   public static Supplier<NumericalDataset> fromProblem(
       @Param("problem") UnivariateRegressionProblem<UnivariateRegressionFitness> problem
   ) {
