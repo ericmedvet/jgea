@@ -69,6 +69,47 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  public static InvertibleMapper<List<Double>, NamedMultivariateRealFunction> mlpMRF(
+      @Param("dataset") Supplier<NumericalDataset> dataset,
+      @Param(value = "innerLayerRatio", dD = 0.65) double innerLayerRatio,
+      @Param(value = "nOfInnerLayers", dI = 1) int nOfInnerLayers,
+      @Param(value = "activationFunction", dS = "tanh") MultiLayerPerceptron.ActivationFunction activationFunction
+  ) {
+    NumericalDataset d = dataset.get();
+    int[] innerNeurons = new int[nOfInnerLayers];
+    int centerSize = (int) Math.max(2, Math.round(d.xVarNames().size() * innerLayerRatio));
+    if (nOfInnerLayers > 1) {
+      for (int i = 0; i < nOfInnerLayers / 2; i++) {
+        innerNeurons[i] = d.xVarNames().size() + (centerSize - d.xVarNames()
+            .size()) / (nOfInnerLayers / 2 + 1) * (i + 1);
+      }
+      for (int i = nOfInnerLayers / 2; i < nOfInnerLayers; i++) {
+        innerNeurons[i] =
+            centerSize + (d.yVarNames().size() - centerSize) / (nOfInnerLayers / 2 + 1) * (i - nOfInnerLayers / 2);
+      }
+    } else if (nOfInnerLayers > 0) {
+      innerNeurons[0] = centerSize;
+    }
+    MultiLayerPerceptron mlp = new MultiLayerPerceptron(
+        activationFunction,
+        d.xVarNames().size(),
+        innerNeurons,
+        d.yVarNames().size()
+    );
+    List<Double> values = Arrays.stream(mlp.getParams()).boxed().toList();
+    return InvertibleMapper.from(
+        params -> NamedMultivariateRealFunction.from(new MultiLayerPerceptron(
+            activationFunction,
+            d.xVarNames().size(),
+            innerNeurons,
+            d.yVarNames().size(),
+            params.stream().mapToDouble(v -> v).toArray()
+        ), d.xVarNames(), d.yVarNames()),
+        values
+    );
+  }
+
+  @SuppressWarnings("unused")
   public static InvertibleMapper<List<Double>, NamedMultivariateRealFunction> numericalParametrizedMRF(
       @Param("dataset") Supplier<NumericalDataset> dataset,
       @Param("function") NumericalDynamicalSystems.Builder<MultivariateRealFunction, StatelessSystem.State> function
