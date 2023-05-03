@@ -17,6 +17,62 @@ public interface NamedMultivariateRealFunction extends MultivariateRealFunction 
 
   List<String> yVarNames();
 
+  static NamedMultivariateRealFunction from(
+      MultivariateRealFunction mrf,
+      List<String> xVarNames,
+      List<String> yVarNames
+  ) {
+    if (xVarNames.size() != mrf.nOfInputs()) {
+      throw new IllegalArgumentException("Wrong input size: %d expected by inner, %d vars".formatted(
+          mrf.nOfInputs(),
+          xVarNames.size()
+      ));
+    }
+    if (yVarNames.size() != mrf.nOfOutputs()) {
+      throw new IllegalArgumentException("Wrong output size: %d produced by inner, %d vars".formatted(
+          mrf.nOfOutputs(),
+          yVarNames.size()
+      ));
+    }
+    return new NamedMultivariateRealFunction() {
+      @Override
+      public Map<String, Double> compute(Map<String, Double> input) {
+        double[] in = xVarNames.stream().mapToDouble(input::get).toArray();
+        if (in.length != mrf.nOfInputs()) {
+          throw new IllegalArgumentException("Wrong input size: %d expected, %d found".formatted(
+              mrf.nOfInputs(),
+              in.length
+          ));
+        }
+        double[] out = mrf.compute(in);
+        if (out.length != yVarNames.size()) {
+          throw new IllegalArgumentException("Wrong output size: %d expected, %d found".formatted(
+              yVarNames.size(),
+              in.length
+          ));
+        }
+        return IntStream.range(0, yVarNames().size())
+            .mapToObj(i -> Map.entry(yVarNames.get(i), out[i]))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+      }
+
+      @Override
+      public List<String> xVarNames() {
+        return xVarNames;
+      }
+
+      @Override
+      public List<String> yVarNames() {
+        return yVarNames;
+      }
+
+      @Override
+      public String toString() {
+        return mrf.toString();
+      }
+    };
+  }
+
   @Override
   default double[] compute(double... xs) {
     if (xs.length != xVarNames().size()) {

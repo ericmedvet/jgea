@@ -32,8 +32,13 @@ import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedUniva
 import io.github.ericmedvet.jgea.experimenter.InvertibleMapper;
 import io.github.ericmedvet.jgea.problem.regression.NumericalDataset;
 import io.github.ericmedvet.jnb.core.Param;
+import io.github.ericmedvet.jsdynsym.buildable.builders.NumericalDynamicalSystems;
+import io.github.ericmedvet.jsdynsym.core.NumericalParametrized;
+import io.github.ericmedvet.jsdynsym.core.StatelessSystem;
+import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
@@ -52,14 +57,35 @@ public class Mappers {
       @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
     Graph<Node, Double> graph = new LinkedHashGraph<>();
-    IntStream.range(0, dataset.get().xVarNames().size())
-        .forEach(i -> graph.addNode(new Input(i, dataset.get().xVarNames().get(i))));
-    IntStream.range(0, dataset.get().yVarNames().size())
-        .forEach(i -> graph.addNode(new Output(i, dataset.get().yVarNames().get(i))));
+    NumericalDataset d = dataset.get();
+    IntStream.range(0, d.xVarNames().size())
+        .forEach(i -> graph.addNode(new Input(i, d.xVarNames().get(i))));
+    IntStream.range(0, d.yVarNames().size())
+        .forEach(i -> graph.addNode(new Output(i, d.yVarNames().get(i))));
     return InvertibleMapper.from(
-        g -> new FunctionGraph(g, dataset.get().xVarNames(), dataset.get().yVarNames()),
+        g -> new FunctionGraph(g, d.xVarNames(), d.yVarNames()),
         graph
     );
+  }
+
+  @SuppressWarnings("unused")
+  public static InvertibleMapper<List<Double>, NamedMultivariateRealFunction> numericalParametrizedMRF(
+      @Param("dataset") Supplier<NumericalDataset> dataset,
+      @Param("function") NumericalDynamicalSystems.Builder<MultivariateRealFunction, StatelessSystem.State> function
+  ) {
+    NumericalDataset d = dataset.get();
+    MultivariateRealFunction mrf = function.apply(d.xVarNames(), d.yVarNames());
+    if (mrf instanceof NumericalParametrized) {
+      return InvertibleMapper.from(
+          params -> {
+            MultivariateRealFunction np = function.apply(d.xVarNames(), d.yVarNames());
+            ((NumericalParametrized) np).setParams(params.stream().mapToDouble(v -> v).toArray());
+            return NamedMultivariateRealFunction.from(np, d.xVarNames(), d.yVarNames());
+          },
+          Arrays.stream(((NumericalParametrized) mrf).getParams()).boxed().toList()
+      );
+    }
+    throw new IllegalArgumentException("The provided function is not numerical parametrized.");
   }
 
   @SuppressWarnings("unused")
@@ -68,12 +94,13 @@ public class Mappers {
       @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
     Graph<Node, OperatorGraph.NonValuedArc> graph = new LinkedHashGraph<>();
-    IntStream.range(0, dataset.get().xVarNames().size())
-        .forEach(i -> graph.addNode(new Input(i, dataset.get().xVarNames().get(i))));
-    IntStream.range(0, dataset.get().yVarNames().size())
-        .forEach(i -> graph.addNode(new Output(i, dataset.get().yVarNames().get(i))));
+    NumericalDataset d = dataset.get();
+    IntStream.range(0, d.xVarNames().size())
+        .forEach(i -> graph.addNode(new Input(i, d.xVarNames().get(i))));
+    IntStream.range(0, d.yVarNames().size())
+        .forEach(i -> graph.addNode(new Output(i, d.yVarNames().get(i))));
     return InvertibleMapper.from(
-        g -> new OperatorGraph(g, dataset.get().xVarNames(), dataset.get().yVarNames()),
+        g -> new OperatorGraph(g, d.xVarNames(), d.yVarNames()),
         graph
     );
   }
@@ -93,16 +120,17 @@ public class Mappers {
       @Param("dataset") Supplier<NumericalDataset> dataset,
       @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
-    List<Tree<Element.Variable>> children = dataset.get().xVarNames().stream()
+    NumericalDataset d = dataset.get();
+    List<Tree<Element.Variable>> children = d.xVarNames().stream()
         .map(s -> Tree.of(new Element.Variable(s)))
         .toList();
     //noinspection unchecked,rawtypes
-    List<Tree<Element>> trees = Collections.nCopies(dataset.get().yVarNames().size(), Tree.of(
+    List<Tree<Element>> trees = Collections.nCopies(d.yVarNames().size(), Tree.of(
         Element.Operator.ADDITION,
         (List) children
     ));
     return InvertibleMapper.from(
-        ts -> new TreeBasedMultivariateRealFunction(ts, dataset.get().xVarNames(), dataset.get().yVarNames()),
+        ts -> new TreeBasedMultivariateRealFunction(ts, d.xVarNames(), d.yVarNames()),
         trees
     );
   }
@@ -112,13 +140,14 @@ public class Mappers {
       @Param("dataset") Supplier<NumericalDataset> dataset,
       @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
-    if (dataset.get().yVarNames().size() != 1) {
+    NumericalDataset d = dataset.get();
+    if (d.yVarNames().size() != 1) {
       throw new IllegalArgumentException(
           "Dataset has %d y variables, instead of just one: not suitable for univariate regression".formatted(
-              dataset.get().yVarNames().size())
+              d.yVarNames().size())
       );
     }
-    List<Tree<Element.Variable>> children = dataset.get().xVarNames().stream()
+    List<Tree<Element.Variable>> children = d.xVarNames().stream()
         .map(s -> Tree.of(new Element.Variable(s)))
         .toList();
     //noinspection unchecked,rawtypes
@@ -127,7 +156,7 @@ public class Mappers {
         (List) children
     );
     return InvertibleMapper.from(
-        t -> new TreeBasedUnivariateRealFunction(t, dataset.get().xVarNames(), dataset.get().yVarNames().get(0)),
+        t -> new TreeBasedUnivariateRealFunction(t, d.xVarNames(), d.yVarNames().get(0)),
         tree
     );
   }

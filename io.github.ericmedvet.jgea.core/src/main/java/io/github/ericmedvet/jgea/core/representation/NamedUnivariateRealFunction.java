@@ -15,36 +15,67 @@ public interface NamedUnivariateRealFunction extends NamedMultivariateRealFuncti
 
   String yVarName();
 
-  static NamedUnivariateRealFunction from(NamedMultivariateRealFunction mrf) {
+  static NamedUnivariateRealFunction from(NamedMultivariateRealFunction nmrf) {
     return new NamedUnivariateRealFunction() {
       @Override
       public double computeAsDouble(Map<String, Double> input) {
-        return mrf.compute(input).get(yVarName());
+        return nmrf.compute(input).get(yVarName());
       }
 
       @Override
       public String yVarName() {
-        return mrf.yVarNames().get(0);
-      }
-
-      @Override
-      public int hashCode() {
-        return mrf.hashCode();
-      }
-
-      @Override
-      public boolean equals(Object obj) {
-        return mrf.equals(obj);
+        return nmrf.yVarNames().get(0);
       }
 
       @Override
       public String toString() {
-        return mrf.toString();
+        return nmrf.toString();
       }
 
       @Override
       public List<String> xVarNames() {
-        return mrf.xVarNames();
+        return nmrf.xVarNames();
+      }
+    };
+  }
+
+  static NamedUnivariateRealFunction from(
+      UnivariateRealFunction urf,
+      List<String> xVarNames,
+      String yVarName
+  ) {
+    if (xVarNames.size() != urf.nOfInputs()) {
+      throw new IllegalArgumentException("Wrong input size: %d expected by inner, %d vars".formatted(
+          urf.nOfInputs(),
+          xVarNames.size()
+      ));
+    }
+    return new NamedUnivariateRealFunction() {
+      @Override
+      public double computeAsDouble(Map<String, Double> input) {
+        double[] in = xVarNames.stream().mapToDouble(input::get).toArray();
+        if (in.length != urf.nOfInputs()) {
+          throw new IllegalArgumentException("Wrong input size: %d expected, %d found".formatted(
+              urf.nOfInputs(),
+              in.length
+          ));
+        }
+        return urf.applyAsDouble(in);
+      }
+
+      @Override
+      public String yVarName() {
+        return yVarName;
+      }
+
+      @Override
+      public String toString() {
+        return urf.toString();
+      }
+
+      @Override
+      public List<String> xVarNames() {
+        return xVarNames;
       }
     };
   }
