@@ -16,7 +16,6 @@
 
 package io.github.ericmedvet.jgea.core.representation;
 
-import io.github.ericmedvet.jgea.core.ComposedNamedMultivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 
 import java.util.List;

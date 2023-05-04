@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core;
+package io.github.ericmedvet.jgea.core.representation;
 
-import io.github.ericmedvet.jgea.core.representation.NamedMultivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.composed.AbstractComposed;
 import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 
