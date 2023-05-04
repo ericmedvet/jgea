@@ -58,7 +58,7 @@ public class ComposedNamedUnivariateRealFunction extends AbstractComposed<Univar
 
   @Override
   public int hashCode() {
-    return Objects.hash(xVarNames, yVarName);
+    return Objects.hash(xVarNames, yVarName, inner());
   }
 
   @Override
@@ -68,7 +68,7 @@ public class ComposedNamedUnivariateRealFunction extends AbstractComposed<Univar
     if (o == null || getClass() != o.getClass())
       return false;
     ComposedNamedUnivariateRealFunction that = (ComposedNamedUnivariateRealFunction) o;
-    return Objects.equals(xVarNames, that.xVarNames) && Objects.equals(yVarName, that.yVarName);
+    return Objects.equals(xVarNames, that.xVarNames) && Objects.equals(yVarName, that.yVarName) && Objects.equals(inner(), that.inner()) ;
   }
 
   @Override

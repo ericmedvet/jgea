@@ -84,7 +84,7 @@ public class ComposedNamedMultivariateRealFunction extends AbstractComposed<Mult
 
   @Override
   public int hashCode() {
-    return Objects.hash(xVarNames, yVarNames);
+    return Objects.hash(xVarNames, yVarNames, inner());
   }
 
   @Override
@@ -94,7 +94,10 @@ public class ComposedNamedMultivariateRealFunction extends AbstractComposed<Mult
     if (o == null || getClass() != o.getClass())
       return false;
     ComposedNamedMultivariateRealFunction that = (ComposedNamedMultivariateRealFunction) o;
-    return Objects.equals(xVarNames, that.xVarNames) && Objects.equals(yVarNames, that.yVarNames);
+    return Objects.equals(xVarNames, that.xVarNames) && Objects.equals(yVarNames, that.yVarNames) && Objects.equals(
+        inner(),
+        that.inner()
+    );
   }
 
   @Override
