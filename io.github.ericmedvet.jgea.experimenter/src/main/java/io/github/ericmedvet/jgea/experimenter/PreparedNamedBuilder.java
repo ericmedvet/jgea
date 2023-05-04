@@ -45,6 +45,7 @@ public class PreparedNamedBuilder {
           .and(List.of("plot"), NamedBuilder.fromUtilityClass(Plots.class))
           .and(NamedBuilder.fromClass(Experiment.class))
           .and(NamedBuilder.fromClass(Run.class))
+          .and(NamedBuilder.fromClass(RunOutcome.class))
       );
 
   private PreparedNamedBuilder() {

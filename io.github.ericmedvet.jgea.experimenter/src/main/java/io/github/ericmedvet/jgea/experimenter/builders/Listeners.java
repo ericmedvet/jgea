@@ -26,18 +26,13 @@ import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.net.NetListenerClient;
 import io.github.ericmedvet.jgea.telegram.TelegramUpdater;
 import io.github.ericmedvet.jgea.tui.TerminalMonitor;
+import io.github.ericmedvet.jnb.core.MapNamedParamMap;
 import io.github.ericmedvet.jnb.core.NamedParamMap;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.core.ParamMap;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;
 import java.util.logging.Logger;
@@ -314,6 +309,45 @@ public class Listeners {
         ),
         deferred ? executorService : null,
         onlyLast
+    );
+  }
+
+  @SuppressWarnings("unused")
+  public static <G, S, Q> BiFunction<Experiment, ExecutorService, ListenerFactory<POSetPopulationState<G, S, Q>, Run<
+      ?, G, S, Q>>> outcomeSaver(
+      @Param(value = "fileNameTemplate", dS = "run-outcome-%03d.txt") String fileNameTemplate,
+      @Param(value = "deferred", dB = true) boolean deferred
+  ) {
+    NamedFunction<Object, String> serializer = NamedFunctions.base64(x -> (Serializable) x);
+    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
+        (ListenerFactory<POSetPopulationState<G, S, Q>, Run<?, G, S, Q>>) run -> (Listener<POSetPopulationState<G, S,
+            Q>>) state -> {
+          //obtain and serialize solutions
+          List<String> serializedGenotypes = state.getPopulation().firsts().stream()
+              .map(i -> serializer.apply(i.genotype()))
+              .toList();
+          //prepare map
+          NamedParamMap map = new MapNamedParamMap(
+              "runOutcome",
+              Map.of("index", (double) run.index()),
+              Map.of(),
+              Map.of("run", (NamedParamMap) run.map()),
+              Map.of(),
+              Map.of("serializedGenotypes", serializedGenotypes),
+              Map.of()
+          );
+          //write on file
+          File file = Misc.checkExistenceAndChangeName(new File(fileNameTemplate.formatted(run.index())));
+          try (BufferedWriter w = new BufferedWriter(new FileWriter(file))) {
+            String prettyMap = MapNamedParamMap.prettyToString(map);
+            w.append(prettyMap);
+            w.flush();
+          } catch (IOException e) {
+            L.warning("Cannot save outcome file %s due to: %s".formatted(file.getPath(), e));
+          }
+        },
+        deferred ? executorService : null,
+        true
     );
   }
 

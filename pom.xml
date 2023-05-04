@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright 2022 eric
+  ~ Copyright 2023 eric
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>17</jdk.version>
         <revision>2.3.9-SNAPSHOT</revision>
-        <jnb.version>1.1.1</jnb.version>
+        <jnb.version>1.1.2-SNAPSHOT</jnb.version>
         <jsdynsym.version>0.10.1-SNAPSHOT</jsdynsym.version>
     </properties>
     <dependencies>

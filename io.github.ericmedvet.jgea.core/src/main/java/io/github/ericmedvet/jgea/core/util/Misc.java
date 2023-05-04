@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,15 @@ package io.github.ericmedvet.jgea.core.util;
 import com.google.common.collect.Range;
 import io.github.ericmedvet.jgea.core.distance.Distance;
 
+import java.io.File;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.random.RandomGenerator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -30,6 +35,8 @@ import java.util.stream.IntStream;
  * @author eric
  */
 public class Misc {
+
+  private static final Logger L = Logger.getLogger(Misc.class.getName());
 
   private Misc() {
     /* prevent instantiation */
@@ -169,6 +176,38 @@ public class Misc {
       offset = offset + j;
     }
     return ranges;
+  }
+
+  public static File checkExistenceAndChangeName(File file) {
+    String originalFileName = file.getPath();
+    while (file.exists()) {
+      String newName = null;
+      Matcher mNum = Pattern.compile("\\((?<n>[0-9]+)\\)\\.\\w+$").matcher(file.getPath());
+      if (mNum.find()) {
+        int n = Integer.parseInt(mNum.group("n"));
+        newName = new StringBuilder(file.getPath()).replace(mNum.start("n"), mNum.end("n"), Integer.toString(n + 1))
+            .toString();
+      }
+      Matcher mExtension = Pattern.compile("\\.\\w+$").matcher(file.getPath());
+      if (newName == null && mExtension.find()) {
+        newName = new StringBuilder(file.getPath()).replace(
+            mExtension.start(),
+            mExtension.end(),
+            ".(1)" + mExtension.group()
+        ).toString();
+      }
+      if (newName == null) {
+        newName = file.getPath() + ".newer";
+      }
+      file = new File(newName);
+    }
+    if (!file.getPath().equals(originalFileName)) {
+      L.log(
+          Level.WARNING,
+          String.format("Given file name (%s) exists; will write on %s", originalFileName, file.getPath())
+      );
+    }
+    return file;
   }
 
 }

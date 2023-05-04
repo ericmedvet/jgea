@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ public class OperatorGraph implements NamedMultivariateRealFunction, Sized, Seri
     this(graph, xVarNames, yVarNames, x -> x);
   }
 
-  public static class NonValuedArc {
+  public static class NonValuedArc implements Serializable {
 
     private NonValuedArc() {
     }
