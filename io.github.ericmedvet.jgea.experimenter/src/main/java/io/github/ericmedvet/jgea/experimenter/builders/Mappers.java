@@ -19,10 +19,7 @@ package io.github.ericmedvet.jgea.experimenter.builders;
 import io.github.ericmedvet.jgea.core.representation.NamedMultivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.NamedUnivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.graph.Graph;
-import io.github.ericmedvet.jgea.core.representation.graph.LinkedHashGraph;
 import io.github.ericmedvet.jgea.core.representation.graph.Node;
-import io.github.ericmedvet.jgea.core.representation.graph.numeric.Input;
-import io.github.ericmedvet.jgea.core.representation.graph.numeric.Output;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.functiongraph.FunctionGraph;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph.OperatorGraph;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
@@ -39,10 +36,8 @@ import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.IntStream;
 
 /**
  * @author "Eric Medvet" on 2023/05/01 for jgea
@@ -56,15 +51,10 @@ public class Mappers {
       @Param("dataset") Supplier<NumericalDataset> dataset,
       @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
-    Graph<Node, Double> graph = new LinkedHashGraph<>();
     NumericalDataset d = dataset.get();
-    IntStream.range(0, d.xVarNames().size())
-        .forEach(i -> graph.addNode(new Input(i, d.xVarNames().get(i))));
-    IntStream.range(0, d.yVarNames().size())
-        .forEach(i -> graph.addNode(new Output(i, d.yVarNames().get(i))));
     return InvertibleMapper.from(
         g -> new FunctionGraph(g, d.xVarNames(), d.yVarNames()),
-        graph
+        FunctionGraph.sampleFor(d.xVarNames(), d.yVarNames())
     );
   }
 
@@ -134,15 +124,10 @@ public class Mappers {
       @Param("dataset") Supplier<NumericalDataset> dataset,
       @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
-    Graph<Node, OperatorGraph.NonValuedArc> graph = new LinkedHashGraph<>();
     NumericalDataset d = dataset.get();
-    IntStream.range(0, d.xVarNames().size())
-        .forEach(i -> graph.addNode(new Input(i, d.xVarNames().get(i))));
-    IntStream.range(0, d.yVarNames().size())
-        .forEach(i -> graph.addNode(new Output(i, d.yVarNames().get(i))));
     return InvertibleMapper.from(
         g -> new OperatorGraph(g, d.xVarNames(), d.yVarNames()),
-        graph
+        OperatorGraph.sampleFor(d.xVarNames(), d.yVarNames())
     );
   }
 
@@ -162,17 +147,9 @@ public class Mappers {
       @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
     NumericalDataset d = dataset.get();
-    List<Tree<Element.Variable>> children = d.xVarNames().stream()
-        .map(s -> Tree.of(new Element.Variable(s)))
-        .toList();
-    //noinspection unchecked,rawtypes
-    List<Tree<Element>> trees = Collections.nCopies(d.yVarNames().size(), Tree.of(
-        Element.Operator.ADDITION,
-        (List) children
-    ));
     return InvertibleMapper.from(
         ts -> new TreeBasedMultivariateRealFunction(ts, d.xVarNames(), d.yVarNames()),
-        trees
+        TreeBasedMultivariateRealFunction.sampleFor(d.xVarNames(), d.yVarNames())
     );
   }
 
@@ -188,17 +165,9 @@ public class Mappers {
               d.yVarNames().size())
       );
     }
-    List<Tree<Element.Variable>> children = d.xVarNames().stream()
-        .map(s -> Tree.of(new Element.Variable(s)))
-        .toList();
-    //noinspection unchecked,rawtypes
-    Tree<Element> tree = Tree.of(
-        Element.Operator.ADDITION,
-        (List) children
-    );
     return InvertibleMapper.from(
         t -> new TreeBasedUnivariateRealFunction(t, d.xVarNames(), d.yVarNames().get(0)),
-        tree
+        TreeBasedUnivariateRealFunction.sampleFor(d.xVarNames(), d.yVarNames().get(0))
     );
   }
 

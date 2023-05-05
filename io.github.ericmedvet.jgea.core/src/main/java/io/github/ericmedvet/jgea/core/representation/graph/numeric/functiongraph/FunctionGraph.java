@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package io.github.ericmedvet.jgea.core.representation.graph.numeric.functiongrap
 
 import io.github.ericmedvet.jgea.core.representation.NamedMultivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.graph.Graph;
+import io.github.ericmedvet.jgea.core.representation.graph.LinkedHashGraph;
 import io.github.ericmedvet.jgea.core.representation.graph.Node;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.Constant;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.Input;
@@ -34,6 +35,7 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author eric
@@ -56,6 +58,13 @@ public class FunctionGraph implements NamedMultivariateRealFunction, Sized, Seri
     this.yVarNames = yVarNames;
     this.postOperator = postOperator;
     setParams(graph);
+  }
+
+  public static Graph<Node, Double> sampleFor(List<String> xVarNames, List<String> yVarNames) {
+    Graph<Node, Double> g = new LinkedHashGraph<>();
+    IntStream.range(0, xVarNames.size()).forEach(i -> g.addNode(new Input(i, xVarNames.get(i))));
+    IntStream.range(0, yVarNames.size()).forEach(i -> g.addNode(new Output(i, yVarNames.get(i))));
+    return g;
   }
 
   public FunctionGraph(Graph<Node, Double> graph, List<String> xVarNames, List<String> yVarNames) {

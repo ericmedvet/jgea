@@ -18,6 +18,7 @@ package io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgrap
 
 import io.github.ericmedvet.jgea.core.representation.NamedMultivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.graph.Graph;
+import io.github.ericmedvet.jgea.core.representation.graph.LinkedHashGraph;
 import io.github.ericmedvet.jgea.core.representation.graph.Node;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.Constant;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.Input;
@@ -35,6 +36,7 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author eric
@@ -58,6 +60,13 @@ public class OperatorGraph implements NamedMultivariateRealFunction, Sized, Seri
     this.yVarNames = yVarNames;
     this.postOperator = postOperator;
     setParams(graph);
+  }
+
+  public static Graph<Node, OperatorGraph.NonValuedArc> sampleFor(List<String> xVarNames, List<String> yVarNames) {
+    Graph<Node, OperatorGraph.NonValuedArc> g = new LinkedHashGraph<>();
+    IntStream.range(0, xVarNames.size()).forEach(i -> g.addNode(new Input(i, xVarNames.get(i))));
+    IntStream.range(0, yVarNames.size()).forEach(i -> g.addNode(new Output(i, yVarNames.get(i))));
+    return g;
   }
 
   public OperatorGraph(Graph<Node, NonValuedArc> graph, List<String> xVarNames, List<String> yVarNames) {

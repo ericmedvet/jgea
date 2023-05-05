@@ -66,12 +66,7 @@ public class Solvers {
       @Param(value = "minConst", dD = 0d) double minConst,
       @Param(value = "maxConst", dD = 5d) double maxConst,
       @Param(value = "nConst", dI = 10) int nConst,
-      @Param(value = "operators", dSs = {
-          "addition",
-          "subtraction",
-          "multiplication",
-          "prot_division"
-      }) List<Element.Operator> operators,
+      @Param(value = "operators", dSs = {"addition", "subtraction", "multiplication", "prot_division"}) List<Element.Operator> operators,
       @Param(value = "minTreeH", dI = 3) int minTreeH,
       @Param(value = "maxTreeH", dI = 8) int maxTreeH,
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
@@ -83,16 +78,11 @@ public class Solvers {
       @Param(value = "nAttemptsDiversity", dI = 100) int nAttemptsDiversity,
       @Param(value = "remap") boolean remap
   ) {
-    List<Element.Variable> variables = mapper.exampleInput().stream()
-        .map(t -> t.visitDepth().stream()
-            .filter(e -> e instanceof Element.Variable)
-            .map(e -> ((Element.Variable) e).name())
-            .toList()
-        )
-        .flatMap(List::stream)
-        .distinct()
-        .map(Element.Variable::new)
-        .toList();
+    List<Element.Variable> variables = mapper.exampleInput().stream().map(t -> t.visitDepth()
+        .stream()
+        .filter(e -> e instanceof Element.Variable)
+        .map(e -> ((Element.Variable) e).name())
+        .toList()).flatMap(List::stream).distinct().map(Element.Variable::new).toList();
     double constStep = (maxConst - minConst) / nConst;
     List<Element.Constant> constants = DoubleStream.iterate(minConst, d -> d + constStep)
         .limit(nConst)
@@ -111,23 +101,28 @@ public class Solvers {
     TreeBuilder<Element> treeBuilder = new GrowTreeBuilder<>(x -> 2, nonTerminalFactory, terminalFactory);
     // subtree between same position trees
     SubtreeCrossover<Element> subtreeCrossover = new SubtreeCrossover<>(maxTreeH);
-    Crossover<List<Tree<Element>>> pairWiseSubtreeCrossover = (list1, list2, rnd) ->
-        IntStream.range(0, list1.size())
-            .mapToObj(i -> subtreeCrossover.recombine(list1.get(i), list2.get(i), rnd))
-            .toList();
+    Crossover<List<Tree<Element>>> pairWiseSubtreeCrossover = (list1, list2, rnd) -> IntStream.range(0, list1.size())
+        .mapToObj(i -> subtreeCrossover.recombine(list1.get(i), list2.get(i), rnd))
+        .toList();
     // swap trees
     Crossover<List<Tree<Element>>> uniformCrossover = (list1, list2, rnd) -> IntStream.range(0, list1.size())
-        .mapToObj(i -> rnd.nextDouble() < 0.5 ? list1.get(i) : list2.get(i)).toList();
+        .mapToObj(i -> rnd.nextDouble() < 0.5 ? list1.get(i) : list2.get(i))
+        .toList();
     // subtree mutation
     SubtreeMutation<Element> subtreeMutation = new SubtreeMutation<>(maxTreeH, treeBuilder);
-    Mutation<List<Tree<Element>>> allSubtreeMutations = (list, rnd) -> list.stream()
-        .map(t -> subtreeMutation.mutate(t, rnd))
-        .toList();
-    Map<GeneticOperator<List<Tree<Element>>>, Double> geneticOperators = Map.ofEntries(
-        Map.entry(pairWiseSubtreeCrossover, crossoverP / 2d),
-        Map.entry(uniformCrossover, crossoverP / 2d),
-        Map.entry(allSubtreeMutations, 1d - crossoverP)
-    );
+    Mutation<List<Tree<Element>>> allSubtreeMutations = (list, rnd) -> list.stream().map(t -> subtreeMutation.mutate(
+        t,
+        rnd
+    )).toList();
+    Map<GeneticOperator<List<Tree<Element>>>, Double> geneticOperators =
+        Map.ofEntries(
+            Map.entry(
+                pairWiseSubtreeCrossover,
+                crossoverP / 2d
+            ),
+            Map.entry(uniformCrossover, crossoverP / 2d),
+            Map.entry(allSubtreeMutations, 1d - crossoverP)
+        );
     if (!diversity) {
       return new StandardEvolver<>(
           mapper,
@@ -216,18 +211,13 @@ public class Solvers {
     }
   }
 
+  @SuppressWarnings("unused")
   public static <S, Q> SpeciatedEvolver<QualityBasedProblem<S, Q>, Graph<Node, OperatorGraph.NonValuedArc>, S, Q> oGraphea(
       @Param(value = "mapper") InvertibleMapper<Graph<Node, OperatorGraph.NonValuedArc>, S> mapper,
       @Param(value = "minConst", dD = 0d) double minConst,
       @Param(value = "maxConst", dD = 5d) double maxConst,
       @Param(value = "nConst", dI = 10) int nConst,
-      @Param(value = "operators", dSs = {
-          "addition",
-          "subtraction",
-          "multiplication",
-          "prot_division",
-          "prot_log"
-      }) List<BaseOperator> operators,
+      @Param(value = "operators", dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"}) List<BaseOperator> operators,
       @Param(value = "nPop", dI = 100) int nPop,
       @Param(value = "nEval") int nEval,
       @Param(value = "arcAdditionRate", dD = 3d) double arcAdditionRate,
@@ -237,32 +227,23 @@ public class Solvers {
       @Param(value = "rankBase", dD = 0.75d) double rankBase,
       @Param(value = "remap") boolean remap
   ) {
-    Map<GeneticOperator<Graph<Node, OperatorGraph.NonValuedArc>>, Double> geneticOperators = Map.ofEntries(
-        Map.entry(
-            new NodeAddition<Node, OperatorGraph.NonValuedArc>(
+    Map<GeneticOperator<Graph<Node, OperatorGraph.NonValuedArc>>, Double> geneticOperators =
+        Map.ofEntries(
+            Map.entry(new NodeAddition<Node, OperatorGraph.NonValuedArc>(
                 OperatorNode.sequentialIndexFactory(operators.toArray(BaseOperator[]::new)),
                 Mutation.copy(),
                 Mutation.copy()
-            ).withChecker(OperatorGraph.checker()),
-            nodeAdditionRate
-        ),
-        Map.entry(
-            new ArcAddition<Node, OperatorGraph.NonValuedArc>(r -> OperatorGraph.NON_VALUED_ARC, false).withChecker(
-                OperatorGraph.checker()),
-            arcAdditionRate
-        ),
-        Map.entry(
-            new ArcRemoval<Node, OperatorGraph.NonValuedArc>(node -> (node instanceof Input) || (node instanceof Constant) || (node instanceof Output)).withChecker(
-                OperatorGraph.checker()),
-            arcRemovalRate
-        )
-    );
+            ).withChecker(OperatorGraph.checker()), nodeAdditionRate),
+            Map.entry(new ArcAddition<Node, OperatorGraph.NonValuedArc>(
+                r -> OperatorGraph.NON_VALUED_ARC,
+                false
+            ).withChecker(OperatorGraph.checker()), arcAdditionRate),
+            Map.entry(new ArcRemoval<Node, OperatorGraph.NonValuedArc>(node -> (node instanceof Input) || (node instanceof Constant) || (node instanceof Output)).withChecker(
+                OperatorGraph.checker()), arcRemovalRate)
+        );
     Graph<Node, OperatorGraph.NonValuedArc> graph = mapper.exampleInput();
     double constStep = (maxConst - minConst) / nConst;
-    List<Double> constants = DoubleStream.iterate(minConst, d -> d + constStep)
-        .limit(nConst)
-        .boxed()
-        .toList();
+    List<Double> constants = DoubleStream.iterate(minConst, d -> d + constStep).limit(nConst).boxed().toList();
     return new SpeciatedEvolver<>(
         mapper,
         new ShallowFactory(
@@ -333,13 +314,7 @@ public class Solvers {
       @Param(value = "minConst", dD = 0d) double minConst,
       @Param(value = "maxConst", dD = 5d) double maxConst,
       @Param(value = "nConst", dI = 10) int nConst,
-      @Param(value = "operators", dSs = {
-          "addition",
-          "subtraction",
-          "multiplication",
-          "prot_division",
-          "prot_log"
-      }) List<Element.Operator> operators,
+      @Param(value = "operators", dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"}) List<Element.Operator> operators,
       @Param(value = "minTreeH", dI = 3) int minTreeH,
       @Param(value = "maxTreeH", dI = 8) int maxTreeH,
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
@@ -351,7 +326,9 @@ public class Solvers {
       @Param(value = "nAttemptsDiversity", dI = 100) int nAttemptsDiversity,
       @Param(value = "remap") boolean remap
   ) {
-    List<Element.Variable> variables = mapper.exampleInput().visitDepth().stream()
+    List<Element.Variable> variables = mapper.exampleInput()
+        .visitDepth()
+        .stream()
         .filter(e -> e instanceof Element.Variable)
         .map(e -> ((Element.Variable) e).name())
         .distinct()
@@ -378,7 +355,8 @@ public class Solvers {
     );
     // operators
     Map<GeneticOperator<Tree<Element>>, Double> geneticOperators = Map.ofEntries(
-        Map.entry(new SubtreeCrossover<>(maxTreeH), crossoverP),
+        Map.entry(new SubtreeCrossover<>(
+            maxTreeH), crossoverP),
         Map.entry(new SubtreeMutation<>(maxTreeH, treeBuilder), 1d - crossoverP)
     );
     if (!diversity) {

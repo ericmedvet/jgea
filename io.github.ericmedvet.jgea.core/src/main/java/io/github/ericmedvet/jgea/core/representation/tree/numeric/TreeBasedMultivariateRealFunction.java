@@ -21,6 +21,7 @@ import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.util.Sized;
 import io.github.ericmedvet.jsdynsym.core.Parametrized;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.DoubleUnaryOperator;
@@ -50,6 +51,15 @@ public class TreeBasedMultivariateRealFunction implements NamedMultivariateRealF
 
   public TreeBasedMultivariateRealFunction(List<Tree<Element>> trees, List<String> xVarNames, List<String> yVarNames) {
     this(trees, xVarNames, yVarNames, x -> x);
+  }
+
+  public static List<Tree<Element>> sampleFor(List<String> xVarNames, List<String> yVarNames) {
+    return Collections.nCopies(yVarNames.size(), Tree.of(
+        Element.Operator.ADDITION,
+        xVarNames.stream()
+            .map(s -> Tree.of((Element)(new Element.Variable(s))))
+            .toList()
+    ));
   }
 
   public static Function<List<Tree<Element>>, NamedMultivariateRealFunction> mapper(

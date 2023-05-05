@@ -54,6 +54,15 @@ public class TreeBasedUnivariateRealFunction implements NamedUnivariateRealFunct
     this(tree, xVarNames, yVarName, x -> x);
   }
 
+  public static Tree<Element> sampleFor(List<String> xVarNames, String yVarName) {
+    return Tree.of(
+        Element.Operator.ADDITION,
+        xVarNames.stream()
+            .map(s -> Tree.of((Element) new Element.Variable(s)))
+            .toList()
+    );
+  }
+
   protected static double compute(Tree<Element> tree, Map<String, Double> input) {
     if (tree.content() instanceof Element.Decoration) {
       throw new RuntimeException(String.format("Cannot compute: decoration node %s found", tree.content()));
