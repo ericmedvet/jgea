@@ -304,7 +304,7 @@ public class Listeners {
   @SuppressWarnings("unused")
   public static <G, S, Q> BiFunction<Experiment, ExecutorService, ListenerFactory<POSetPopulationState<G, S, Q>, Run<
       ?, G, S, Q>>> outcomeSaver(
-      @Param(value = "fileNameTemplate", dS = "run-outcome-{index:%04d}.txt") String fileNameTemplate,
+      @Param(value = "filePathTemplate", dS = "run-outcome-{index:%04d}.txt") String filePathTemplate,
       @Param(value = "deferred", dB = true) boolean deferred
   ) {
     NamedFunction<Object, String> serializer = NamedFunctions.base64(x -> (Serializable) x);
@@ -326,7 +326,7 @@ public class Listeners {
               Map.of()
           );
           //write on file
-          File file = Misc.checkExistenceAndChangeName(new File(Utils.interpolate(fileNameTemplate, run)));
+          File file = Misc.checkExistenceAndChangeName(new File(Utils.interpolate(filePathTemplate, run)));
           try (BufferedWriter w = new BufferedWriter(new FileWriter(file))) {
             String prettyMap = MapNamedParamMap.prettyToString(map);
             w.append(prettyMap);
