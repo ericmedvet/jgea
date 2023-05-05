@@ -206,7 +206,7 @@ public class OperatorGraph implements NamedMultivariateRealFunction, Sized, Seri
 
   @Override
   public String toString() {
-    return graph.nodes().stream().filter(n -> n instanceof Output).map(n -> n.toString() + "=" + ((graph.predecessors(n)
+    return graph.nodes().stream().filter(n -> n instanceof Output).map(n -> n + "=" + ((graph.predecessors(n)
         .isEmpty()) ? "0" : nodeToString(Misc.first(graph.predecessors(n))))).collect(Collectors.joining(";"));
   }
 

@@ -54,7 +54,7 @@ public class TreeBasedUnivariateRealFunction implements NamedUnivariateRealFunct
     this(tree, xVarNames, yVarName, x -> x);
   }
 
-  public static Tree<Element> sampleFor(List<String> xVarNames, String yVarName) {
+  public static Tree<Element> sampleFor(List<String> xVarNames, @SuppressWarnings("unused") String yVarName) {
     return Tree.of(
         Element.Operator.ADDITION,
         xVarNames.stream()

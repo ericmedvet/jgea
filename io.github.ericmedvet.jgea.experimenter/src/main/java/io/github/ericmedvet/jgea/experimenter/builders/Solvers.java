@@ -308,6 +308,7 @@ public class Solvers {
     );
   }
 
+  @SuppressWarnings("unused")
   public static <S, Q> StandardEvolver<POSetPopulationState<Tree<Element>, S, Q>, QualityBasedProblem<S, Q>,
       Tree<Element>, S, Q> srTreeGP(
       @Param(value = "mapper") InvertibleMapper<Tree<Element>, S> mapper,
