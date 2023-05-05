@@ -23,13 +23,13 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
+import io.github.ericmedvet.jgea.experimenter.Utils;
 import io.github.ericmedvet.jgea.experimenter.net.NetListenerClient;
 import io.github.ericmedvet.jgea.telegram.TelegramUpdater;
 import io.github.ericmedvet.jgea.tui.TerminalMonitor;
 import io.github.ericmedvet.jnb.core.MapNamedParamMap;
 import io.github.ericmedvet.jnb.core.NamedParamMap;
 import io.github.ericmedvet.jnb.core.Param;
-import io.github.ericmedvet.jnb.core.ParamMap;
 
 import java.io.*;
 import java.util.*;
@@ -197,7 +197,7 @@ public class Listeners {
         .map(k -> NamedFunction.build(
             k,
             "%s",
-            (Run<?, G, S, Q> run) -> getKeyFromParamMap(run.map(), Arrays.stream(k.split("\\.")).toList())
+            (Run<?, G, S, Q> run) -> Utils.getKeyFromParamMap(run.map(), Arrays.stream(k.split("\\.")).toList())
         ))
         .forEach(functions::add);
     return Collections.unmodifiableList(functions);
@@ -234,17 +234,6 @@ public class Listeners {
         deferred ? executorService : null,
         onlyLast
     );
-  }
-
-  private static Object getKeyFromParamMap(ParamMap paramMap, List<String> keyPieces) {
-    if (keyPieces.size() == 1) {
-      return paramMap.value(keyPieces.get(0));
-    }
-    NamedParamMap namedParamMap = paramMap.npm(keyPieces.get(0));
-    if (namedParamMap == null) {
-      return null;
-    }
-    return getKeyFromParamMap(namedParamMap, keyPieces.subList(1, keyPieces.size()));
   }
 
   private static String getCredentialFromFile(String credentialFilePath) {
@@ -315,7 +304,7 @@ public class Listeners {
   @SuppressWarnings("unused")
   public static <G, S, Q> BiFunction<Experiment, ExecutorService, ListenerFactory<POSetPopulationState<G, S, Q>, Run<
       ?, G, S, Q>>> outcomeSaver(
-      @Param(value = "fileNameTemplate", dS = "run-outcome-%03d.txt") String fileNameTemplate,
+      @Param(value = "fileNameTemplate", dS = "run-outcome-{index:%04d}.txt") String fileNameTemplate,
       @Param(value = "deferred", dB = true) boolean deferred
   ) {
     NamedFunction<Object, String> serializer = NamedFunctions.base64(x -> (Serializable) x);
@@ -337,7 +326,7 @@ public class Listeners {
               Map.of()
           );
           //write on file
-          File file = Misc.checkExistenceAndChangeName(new File(fileNameTemplate.formatted(run.index())));
+          File file = Misc.checkExistenceAndChangeName(new File(Utils.interpolate(fileNameTemplate, run)));
           try (BufferedWriter w = new BufferedWriter(new FileWriter(file))) {
             String prettyMap = MapNamedParamMap.prettyToString(map);
             w.append(prettyMap);
