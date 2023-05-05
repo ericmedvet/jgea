@@ -1,7 +1,9 @@
 package io.github.ericmedvet.jgea.experimenter;
 
+import io.github.ericmedvet.jnb.core.MapNamedParamMap;
 import io.github.ericmedvet.jnb.core.NamedParamMap;
 import io.github.ericmedvet.jnb.core.ParamMap;
+import io.github.ericmedvet.jnb.core.StringParser;
 
 import java.util.Arrays;
 import java.util.List;
@@ -51,6 +53,22 @@ public class Utils {
     }
     sb.append(format, c, format.length());
     return sb.toString();
+  }
+
+  public static ParamMap augumentWith(ParamMap map, String key, Object value) {
+    //build a new MapNamedParamMap with all the things
+    if (value instanceof Number) {
+      return map; // TODO
+    }
+    throw new IllegalArgumentException("Unsupported object type %s".formatted(value.getClass().getSimpleName()))
+  }
+
+  public static void main(String[] args) {
+    ParamMap m = StringParser.parse("person(name=Eric)");
+    System.out.println(m);
+    if (m instanceof MapNamedParamMap mm) {
+
+    }
   }
 
 }
