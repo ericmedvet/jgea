@@ -4,7 +4,7 @@ Java General Evolutionary Algorithm (jgea) is a modular Java framework for exper
 
 JGEA aims at providing a general interface to potentially *all* evolutionary algorithms (EA). To do so, it provides an interface to problems that can be solved with an EA and components of an EA (e.g., genetic operators, selection criteria, ...).
 
-Moreover, a few EA are actually implemented in JGEA, most of them being related to Genetic Programming (GP) and its Grammar-guided variants (G3P).
+Moreover, a few EAs are actually implemented in JGEA, most of them being related to Genetic Programming (GP) and its Grammar-guided variants (G3P).
 
 Several research papers have been published in which the experimental evaluation is based on JGEA or its previous version [evolved-ge](https://github.com/ericmedvet/evolved-ge). See a partial [list](#research-papers-based-on-jgea) below.
 
