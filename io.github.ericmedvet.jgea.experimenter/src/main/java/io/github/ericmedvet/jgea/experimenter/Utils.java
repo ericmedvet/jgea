@@ -3,10 +3,11 @@ package io.github.ericmedvet.jgea.experimenter;
 import io.github.ericmedvet.jnb.core.MapNamedParamMap;
 import io.github.ericmedvet.jnb.core.NamedParamMap;
 import io.github.ericmedvet.jnb.core.ParamMap;
-import io.github.ericmedvet.jnb.core.StringParser;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,11 +15,14 @@ import java.util.regex.Pattern;
 public class Utils {
   private final static Logger L = Logger.getLogger(Utils.class.getName());
 
-  private final static String FORMAT_REGEX = "%\\d*\\.*\\d*[sdf]";
+  private final static String FORMAT_REGEX = "%#?\\d*(\\.\\d+)?[sdf]";
   private final static String MAP_KEYS_REGEX = "[A-Za-z][A-Za-z0-9_]*";
   private final static Pattern INTERPOLATOR =
-      Pattern.compile("\\{(?<mapKeys>" + MAP_KEYS_REGEX + "(\\." + MAP_KEYS_REGEX + ")*)(:(?<format>" + FORMAT_REGEX + "))?\\}");
-  ;
+      Pattern.compile(
+          "\\{(?<mapKeys>" + MAP_KEYS_REGEX + "(\\." + MAP_KEYS_REGEX + ")*)" +
+              "(:(?<format>" + FORMAT_REGEX + "))?\\}"
+      );
+
 
   private Utils() {
   }
@@ -55,20 +59,22 @@ public class Utils {
     return sb.toString();
   }
 
-  public static ParamMap augumentWith(ParamMap map, String key, Object value) {
-    //build a new MapNamedParamMap with all the things
-    if (value instanceof Number) {
-      return map; // TODO
+  public static String interpolate(String format, Run<?, ?, ?, ?> run) {
+    ParamMap map = run.map();
+    if (run.map() instanceof MapNamedParamMap mnpm) {
+      Map<String, Double> dMap = new HashMap<>(mnpm.dMap());
+      dMap.put("index", (double) run.index());
+      map = new MapNamedParamMap(
+          mnpm.getName(),
+          dMap,
+          mnpm.sMap(),
+          mnpm.npmMap(),
+          mnpm.dsMap(),
+          mnpm.ssMap(),
+          mnpm.npmsMap()
+      );
     }
-    throw new IllegalArgumentException("Unsupported object type %s".formatted(value.getClass().getSimpleName()))
-  }
-
-  public static void main(String[] args) {
-    ParamMap m = StringParser.parse("person(name=Eric)");
-    System.out.println(m);
-    if (m instanceof MapNamedParamMap mm) {
-
-    }
+    return interpolate(format, map);
   }
 
 }
