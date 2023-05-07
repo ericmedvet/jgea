@@ -317,7 +317,7 @@ public class Listeners {
               .toList();
           //prepare map
           NamedParamMap map = new MapNamedParamMap(
-              "runOutcome",
+              "ea.runOutcome",
               Map.of("index", (double) run.index()),
               Map.of(),
               Map.of("run", (NamedParamMap) run.map()),
