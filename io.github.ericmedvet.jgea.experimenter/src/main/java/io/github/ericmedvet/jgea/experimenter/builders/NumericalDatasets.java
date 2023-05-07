@@ -1,11 +1,12 @@
 package io.github.ericmedvet.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jgea.problem.regression.LazyNumericalDataset;
+import io.github.ericmedvet.jgea.problem.regression.ListNumericalDataset;
 import io.github.ericmedvet.jgea.problem.regression.NumericalDataset;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionProblem;
 import io.github.ericmedvet.jnb.core.Param;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Supplier;
@@ -22,7 +23,7 @@ public class NumericalDatasets {
       @Param("xVars") List<String> xVarNames,
       @Param("yVars") List<String> yVarNames
   ) {
-    return () -> new NumericalDataset(List.of(), xVarNames, yVarNames);
+    return () -> new ListNumericalDataset(List.of(), xVarNames, yVarNames);
   }
 
   @SuppressWarnings("unused")
@@ -35,8 +36,7 @@ public class NumericalDatasets {
   ) {
     return () -> {
       try {
-        return NumericalDataset
-            .loadFromCSV(new FileInputStream(filePath), xVarNamePattern, yVarNamePattern)
+        return new LazyNumericalDataset(filePath, xVarNamePattern, yVarNamePattern)
             .folds(folds, nFolds);
       } catch (IOException e) {
         throw new RuntimeException(e);

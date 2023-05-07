@@ -1,5 +1,6 @@
 package io.github.ericmedvet.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jgea.problem.regression.ListNumericalDataset;
 import io.github.ericmedvet.jgea.problem.regression.NumericalDataset;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionProblem;
@@ -25,8 +26,8 @@ public class UnivariateRegressionProblems {
     NumericalDataset dataset;
     try {
       dataset = switch (name) {
-        case "concrete" -> NumericalDataset.loadFromCSVResource("/datasets/regression/concrete.csv", "strength");
-        case "xor" -> NumericalDataset.loadFromCSVResource("/datasets/regression/xor.csv", "y");
+        case "concrete" -> ListNumericalDataset.loadFromCSVResource("/datasets/regression/concrete.csv", "strength");
+        case "xor" -> ListNumericalDataset.loadFromCSVResource("/datasets/regression/xor.csv", "y");
         default -> throw new IllegalArgumentException("Unknown bundled dataset: %s".formatted(name));
       };
     } catch (IOException e) {

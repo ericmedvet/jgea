@@ -25,6 +25,7 @@ import org.apache.commons.math3.stat.StatUtils;
 
 import java.util.*;
 import java.util.function.UnaryOperator;
+import java.util.stream.IntStream;
 
 /**
  * @author eric
@@ -40,13 +41,15 @@ public class MathUtils {
         UnivariateRegressionFitness univariateRegressionFitness
     ) {
       super(inner);
-      double[] targetYs = univariateRegressionFitness.getDataset().examples()
-          .stream()
-          .mapToDouble(e -> e.ys()[0])
+      double[] targetYs = IntStream.range(0, univariateRegressionFitness.getDataset().size())
+          .mapToDouble(i -> univariateRegressionFitness.getDataset().exampleProvider().apply(i).ys()[0])
           .toArray();
       double targetMean = StatUtils.mean(targetYs);
-      double[] ys = univariateRegressionFitness.getDataset().examples().stream()
-          .mapToDouble(e -> inner().applyAsDouble(e.xs()))
+      double[] ys = IntStream.range(0, univariateRegressionFitness.getDataset().size())
+          .mapToDouble(i -> inner().applyAsDouble(univariateRegressionFitness.getDataset()
+              .exampleProvider()
+              .apply(i)
+              .xs()))
           .toArray();
       double mean = StatUtils.mean(ys);
       double nCovariance = 0d;

@@ -37,6 +37,6 @@ ea.experiment(
       ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.2f");
       ea.nf.solution(individual = ea.nf.best(); s = "%60.60s")
     ]);
-    ea.l.outcomeSaver(fileNameTemplate = "../ro-{randomGenerator.seed:%02d}-{solver:%#s}-{problem.name}.txt")
+    ea.l.outcomeSaver(filePathTemplate = "../ro-{randomGenerator.seed:%02d}-{solver:%#s}-{problem.name}.txt")
   ]
 )

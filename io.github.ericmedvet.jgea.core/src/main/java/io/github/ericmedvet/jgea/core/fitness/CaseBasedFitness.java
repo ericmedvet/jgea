@@ -19,37 +19,28 @@ package io.github.ericmedvet.jgea.core.fitness;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.stream.IntStream;
 
 /**
  * @author eric
  */
-public class CaseBasedFitness<S, C, CO, AF> implements Function<S, AF> {
+public interface CaseBasedFitness<S, C, CO, AF> extends Function<S, AF> {
 
-  private final List<C> cases;
-  private final BiFunction<S, C, CO> caseFunction;
-  private final Function<List<CO>, AF> aggregateFunction;
+  Function<List<CO>, AF> aggregateFunction();
 
-  public CaseBasedFitness(List<C> cases, BiFunction<S, C, CO> caseFunction, Function<List<CO>, AF> aggregateFunction) {
-    this.cases = cases;
-    this.caseFunction = caseFunction;
-    this.aggregateFunction = aggregateFunction;
-  }
+  BiFunction<S, C, CO> caseFunction();
+
+  IntFunction<C> caseProvider();
+
+  int nOfCases();
 
   @Override
-  public AF apply(S s) {
-    List<CO> caseFitnesses = cases.stream().map(o -> caseFunction.apply(s, o)).toList();
-    return aggregateFunction.apply(caseFitnesses);
+  default AF apply(S s) {
+    List<CO> outcomes = IntStream.range(0, nOfCases())
+        .mapToObj(i -> caseFunction().apply(s, caseProvider().apply(i)))
+        .toList();
+    return aggregateFunction().apply(outcomes);
   }
 
-  public Function<List<CO>, AF> getAggregateFunction() {
-    return aggregateFunction;
-  }
-
-  public BiFunction<S, C, CO> getCaseFunction() {
-    return caseFunction;
-  }
-
-  public List<C> getCases() {
-    return cases;
-  }
 }

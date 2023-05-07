@@ -16,7 +16,7 @@
 
 package io.github.ericmedvet.jgea.problem.booleanfunction;
 
-import io.github.ericmedvet.jgea.core.fitness.CaseBasedFitness;
+import io.github.ericmedvet.jgea.core.fitness.ListCaseBasedFitness;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.representation.tree.booleanfunction.Element;
 
@@ -30,7 +30,7 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class BooleanFunctionFitness extends CaseBasedFitness<List<Tree<Element>>, boolean[], Boolean, Double> {
+public class BooleanFunctionFitness extends ListCaseBasedFitness<List<Tree<Element>>, boolean[], Boolean, Double> {
 
   public BooleanFunctionFitness(TargetFunction targetFunction, List<boolean[]> observations) {
     super(observations, new Error(targetFunction), new ErrorRate());

@@ -22,27 +22,29 @@ import io.github.ericmedvet.jgea.problem.regression.NumericalDataset;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.stream.IntStream;
 
 /**
  * @author eric
  */
-public class UnivariateRegressionFitness extends CaseBasedFitness<NamedUnivariateRealFunction, Map<String, Double>,
+public class UnivariateRegressionFitness implements CaseBasedFitness<
+    NamedUnivariateRealFunction,
+    Map<String, Double>,
     Double,
     Double> {
 
   private final NumericalDataset dataset;
   private final Metric metric;
 
+  private List<Double> actualYs;
+
   public UnivariateRegressionFitness(NumericalDataset dataset, Metric metric) {
-    super(
-        dataset.namedExamples().stream().map(NumericalDataset.NamedExample::x).toList(),
-        NamedUnivariateRealFunction::computeAsDouble,
-        aggregateFunction(dataset, metric)
-    );
     this.dataset = dataset;
     this.metric = metric;
+    actualYs = null;
   }
 
   public enum Metric implements Function<List<Y>, Double> {
@@ -79,10 +81,6 @@ public class UnivariateRegressionFitness extends CaseBasedFitness<NamedUnivariat
 
   private record Y(double predicted, double actual) {}
 
-  private static Function<List<Double>, Double> aggregateFunction(NumericalDataset dataset, Metric metric) {
-    List<Double> actualYs = dataset.namedExamples().stream().map(ne -> ne.y().get(dataset.yVarNames().get(0))).toList();
-    return predictedYs -> metric.apply(pairs(predictedYs, actualYs));
-  }
 
   public static List<Y> pairs(List<Double> predictedYs, List<Double> actualYs) {
     return IntStream.range(0, actualYs.size()).mapToObj(i -> new Y(
@@ -97,5 +95,32 @@ public class UnivariateRegressionFitness extends CaseBasedFitness<NamedUnivariat
 
   public Metric getMetric() {
     return metric;
+  }
+
+  @Override
+  public Function<List<Double>, Double> aggregateFunction() {
+    return predictedYs -> {
+      if (actualYs == null) {
+        actualYs = IntStream.range(0, dataset.size())
+            .mapToObj(i -> dataset.exampleProvider().apply(i).ys()[0])
+            .toList();
+      }
+      return metric.apply(pairs(predictedYs, actualYs));
+    };
+  }
+
+  @Override
+  public BiFunction<NamedUnivariateRealFunction, Map<String, Double>, Double> caseFunction() {
+    return NamedUnivariateRealFunction::computeAsDouble;
+  }
+
+  @Override
+  public IntFunction<Map<String, Double>> caseProvider() {
+    return i -> dataset.namedExampleProvider().apply(i).x();
+  }
+
+  @Override
+  public int nOfCases() {
+    return dataset.size();
   }
 }

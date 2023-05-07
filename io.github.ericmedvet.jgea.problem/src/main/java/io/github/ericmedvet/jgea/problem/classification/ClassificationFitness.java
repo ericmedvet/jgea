@@ -23,7 +23,7 @@ package io.github.ericmedvet.jgea.problem.classification;
 
 import com.google.common.collect.EnumMultiset;
 import com.google.common.collect.Multiset;
-import io.github.ericmedvet.jgea.core.fitness.CaseBasedFitness;
+import io.github.ericmedvet.jgea.core.fitness.ListCaseBasedFitness;
 import io.github.ericmedvet.jgea.core.util.Pair;
 
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class ClassificationFitness<O, L extends Enum<L>> extends CaseBasedFitness<Classifier<O, L>, O, L,
+public class ClassificationFitness<O, L extends Enum<L>> extends ListCaseBasedFitness<Classifier<O, L>, O, L,
     List<Double>> {
 
   private final List<Pair<O, L>> data;
