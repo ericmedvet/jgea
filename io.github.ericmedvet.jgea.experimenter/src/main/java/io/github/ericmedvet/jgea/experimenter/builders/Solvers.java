@@ -66,7 +66,13 @@ public class Solvers {
       @Param(value = "minConst", dD = 0d) double minConst,
       @Param(value = "maxConst", dD = 5d) double maxConst,
       @Param(value = "nConst", dI = 10) int nConst,
-      @Param(value = "operators", dSs = {"addition", "subtraction", "multiplication", "prot_division"}) List<Element.Operator> operators,
+      @Param(value = "operators", dSs = {
+          "addition",
+          "subtraction",
+          "multiplication",
+          "prot_division",
+          "prot_log"
+      }) List<Element.Operator> operators,
       @Param(value = "minTreeH", dI = 3) int minTreeH,
       @Param(value = "maxTreeH", dI = 8) int maxTreeH,
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
@@ -315,7 +321,13 @@ public class Solvers {
       @Param(value = "minConst", dD = 0d) double minConst,
       @Param(value = "maxConst", dD = 5d) double maxConst,
       @Param(value = "nConst", dI = 10) int nConst,
-      @Param(value = "operators", dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"}) List<Element.Operator> operators,
+      @Param(value = "operators", dSs = {
+          "addition",
+          "subtraction",
+          "multiplication",
+          "prot_division",
+          "prot_log"
+      }) List<Element.Operator> operators,
       @Param(value = "minTreeH", dI = 3) int minTreeH,
       @Param(value = "maxTreeH", dI = 8) int maxTreeH,
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
