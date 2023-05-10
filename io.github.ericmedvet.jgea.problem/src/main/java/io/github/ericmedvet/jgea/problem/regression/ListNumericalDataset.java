@@ -154,6 +154,9 @@ public record ListNumericalDataset(
       List<Map<String, String>> maps = new ArrayList<>();
       int lc = 0;
       for (CSVRecord record : records) {
+        if (lc >= limit) {
+          break;
+        }
         if (lc != 0) {
           if (record.size() != varNames.size()) {
             L.warning("Line %d/%d has %d items instead of expected %d: skipping it".formatted(
