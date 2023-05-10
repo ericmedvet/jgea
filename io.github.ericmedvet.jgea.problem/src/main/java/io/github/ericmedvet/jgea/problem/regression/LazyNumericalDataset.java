@@ -106,7 +106,6 @@ public class LazyNumericalDataset implements NumericalDataset {
     NumericalDataset dataset = DATASETS.get(path);
     if (dataset == null) {
       try {
-        System.out.println(path);
         dataset = ListNumericalDataset.loadFromCSV(new FileInputStream(path), ".*", ".*");
         DATASETS.put(path, dataset);
       } catch (IOException e) {
