@@ -21,4 +21,5 @@ module io.github.ericmedvet.jgea.problem {
   requires java.desktop;
   requires com.google.common;
   requires org.apache.commons.csv;
+  requires java.logging;
 }
