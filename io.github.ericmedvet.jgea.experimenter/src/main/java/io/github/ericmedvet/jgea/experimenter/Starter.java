@@ -24,6 +24,7 @@ import io.github.ericmedvet.jnb.core.NamedBuilder;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Locale;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -36,6 +37,7 @@ public class Starter {
   private final static Logger L = Logger.getLogger(Starter.class.getName());
 
   static {
+    Locale.setDefault(Locale.ROOT);
     try {
       LogManager.getLogManager().readConfiguration(Starter.class.getClassLoader()
           .getResourceAsStream("logging.properties"));
