@@ -19,6 +19,7 @@ package io.github.ericmedvet.jgea.core.representation.sequence.integer;
 import io.github.ericmedvet.jgea.core.representation.sequence.ThinList;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,6 +34,11 @@ public class IntString implements ThinList<Integer> {
     this.lowerBound = lowerBound;
     this.upperBound = upperBound;
     list = new ArrayList<>();
+  }
+
+  public IntString(int lowerBound, int upperBound, int size) {
+    this(lowerBound, upperBound);
+    list.addAll(Collections.nCopies(size, lowerBound));
   }
 
   public int getLowerBound() {

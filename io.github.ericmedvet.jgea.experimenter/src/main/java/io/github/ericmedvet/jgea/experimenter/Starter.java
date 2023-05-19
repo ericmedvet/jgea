@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 eric
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,7 +136,7 @@ public class Starter {
     String expDescription = null;
     if (configuration.experimentDescriptionFilePath.isEmpty()) {
       L.config("Using default experiment description");
-      InputStream inputStream = Starter.class.getResourceAsStream("/exp-examples/sr-comparison.txt");
+      InputStream inputStream = Starter.class.getResourceAsStream("/exp-examples/intonemax.txt");
       if (inputStream == null) {
         L.severe("Cannot find default experiment description");
       } else {

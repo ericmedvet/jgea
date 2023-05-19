@@ -33,6 +33,9 @@ import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph.ShallowFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.FixedLengthListFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.UniformCrossover;
+import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntFlipMutation;
+import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
+import io.github.ericmedvet.jgea.core.representation.sequence.integer.UniformIntStringFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.GaussianMutation;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.UniformDoubleFactory;
 import io.github.ericmedvet.jgea.core.representation.tree.*;
@@ -57,6 +60,61 @@ import java.util.stream.IntStream;
 public class Solvers {
 
   private Solvers() {
+  }
+
+  @SuppressWarnings("unused")
+  public static <S, Q> StandardEvolver<POSetPopulationState<IntString, S, Q>, QualityBasedProblem<S, Q>,
+      IntString, S, Q> intGA(
+      @Param(value = "mapper") InvertibleMapper<IntString, S> mapper,
+      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
+      @Param(value = "pMut", dD = 0.01d) double pMut,
+      @Param(value = "tournamentRate", dD = 0.05d) double tournamentRate,
+      @Param(value = "minNTournament", dI = 3) int minNTournament,
+      @Param(value = "nPop", dI = 100) int nPop,
+      @Param(value = "nEval") int nEval,
+      @Param(value = "diversity") boolean diversity,
+      @Param(value = "remap") boolean remap
+  ) {
+    IntString exampleGenotype = mapper.exampleInput();
+    IndependentFactory<IntString> factory = new UniformIntStringFactory(
+        exampleGenotype.getLowerBound(),
+        exampleGenotype.getUpperBound(),
+        exampleGenotype.size()
+    );
+    Map<GeneticOperator<IntString>, Double> geneticOperators = Map.ofEntries(
+        Map.entry(new IntFlipMutation(pMut), 1d - crossoverP),
+        Map.entry(new UniformCrossover<>(factory).andThen(new IntFlipMutation(pMut)), crossoverP)
+    );
+    if (!diversity) {
+      return new StandardEvolver<>(
+          mapper,
+          factory,
+          nPop,
+          StopConditions.nOfFitnessEvaluations(nEval),
+          geneticOperators,
+          new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
+          new Last(),
+          nPop,
+          true,
+          remap,
+          (p, r) -> new POSetPopulationState<>()
+      );
+    } else {
+      return new StandardWithEnforcedDiversityEvolver<>(
+          mapper,
+          factory,
+          nPop,
+          StopConditions.nOfFitnessEvaluations(nEval),
+          geneticOperators,
+          new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
+          new Last(),
+          nPop,
+          true,
+          remap,
+          (p, r) -> new POSetPopulationState<>(),
+          100
+      );
+    }
   }
 
   @SuppressWarnings("unused")
@@ -120,15 +178,14 @@ public class Solvers {
         t,
         rnd
     )).toList();
-    Map<GeneticOperator<List<Tree<Element>>>, Double> geneticOperators =
-        Map.ofEntries(
-            Map.entry(
-                pairWiseSubtreeCrossover,
-                crossoverP / 2d
-            ),
-            Map.entry(uniformCrossover, crossoverP / 2d),
-            Map.entry(allSubtreeMutations, 1d - crossoverP)
-        );
+    Map<GeneticOperator<List<Tree<Element>>>, Double> geneticOperators = Map.ofEntries(
+        Map.entry(
+            pairWiseSubtreeCrossover,
+            crossoverP / 2d
+        ),
+        Map.entry(uniformCrossover, crossoverP / 2d),
+        Map.entry(allSubtreeMutations, 1d - crossoverP)
+    );
     if (!diversity) {
       return new StandardEvolver<>(
           mapper,
@@ -179,11 +236,9 @@ public class Solvers {
         mapper.exampleInput().size(),
         new UniformDoubleFactory(initialMinV, initialMaxV)
     );
-    Map<GeneticOperator<List<Double>>, Double> geneticOperators = Map.of(
-        new GaussianMutation(sigmaMut),
-        1d - crossoverP,
-        new UniformCrossover<>(doublesFactory).andThen(new GaussianMutation(sigmaMut)),
-        crossoverP
+    Map<GeneticOperator<List<Double>>, Double> geneticOperators = Map.ofEntries(
+        Map.entry(new GaussianMutation(sigmaMut), 1d - crossoverP),
+        Map.entry(new UniformCrossover<>(doublesFactory).andThen(new GaussianMutation(sigmaMut)), crossoverP)
     );
     if (!diversity) {
       return new StandardEvolver<>(
@@ -368,8 +423,7 @@ public class Solvers {
     );
     // operators
     Map<GeneticOperator<Tree<Element>>, Double> geneticOperators = Map.ofEntries(
-        Map.entry(new SubtreeCrossover<>(
-            maxTreeH), crossoverP),
+        Map.entry(new SubtreeCrossover<>(maxTreeH), crossoverP),
         Map.entry(new SubtreeMutation<>(maxTreeH, treeBuilder), 1d - crossoverP)
     );
     if (!diversity) {

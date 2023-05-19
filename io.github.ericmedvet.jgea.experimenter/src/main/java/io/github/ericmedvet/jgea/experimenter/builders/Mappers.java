@@ -22,6 +22,8 @@ import io.github.ericmedvet.jgea.core.representation.graph.Graph;
 import io.github.ericmedvet.jgea.core.representation.graph.Node;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.functiongraph.FunctionGraph;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph.OperatorGraph;
+import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
+import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedMultivariateRealFunction;
@@ -37,6 +39,7 @@ import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -55,6 +58,28 @@ public class Mappers {
     return InvertibleMapper.from(
         g -> new FunctionGraph(g, d.xVarNames(), d.yVarNames()),
         FunctionGraph.sampleFor(d.xVarNames(), d.yVarNames())
+    );
+  }
+
+  @SuppressWarnings("unused")
+  public static InvertibleMapper<BitString, BitString> identityBitString(
+      @Param(value = "l", dI = 100) int l
+  ) {
+    return InvertibleMapper.from(
+        Function.identity(),
+        new BitString(l)
+    );
+  }
+
+  @SuppressWarnings("unused")
+  public static InvertibleMapper<IntString, IntString> identityIntString(
+      @Param(value = "l", dI = 100) int l,
+      @Param(value = "lowerBound", dI = 0) int lowerBound,
+      @Param(value = "upperBound", dI = 10) int upperBound
+  ) {
+    return InvertibleMapper.from(
+        Function.identity(),
+        new IntString(lowerBound, upperBound, l)
     );
   }
 

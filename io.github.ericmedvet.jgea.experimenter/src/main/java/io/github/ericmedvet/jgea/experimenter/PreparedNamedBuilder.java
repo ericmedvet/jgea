@@ -33,6 +33,7 @@ public class PreparedNamedBuilder {
               .and(NamedBuilder.fromUtilityClass(Problems.class))
               .and(List.of("univariateRegression", "ur"), NamedBuilder.fromUtilityClass(UnivariateRegressionProblems.class))
               .and(List.of("multivariateRegression", "mr"), NamedBuilder.fromUtilityClass(MultivariateRegressionProblems.class))
+              .and(List.of("synthetic", "s"), NamedBuilder.fromUtilityClass(SyntheticProblems.class))
           )
           .and(List.of("dataset", "d"), NamedBuilder.empty()
               .and(List.of("numerical", "num"), NamedBuilder.fromUtilityClass(NumericalDatasets.class))
