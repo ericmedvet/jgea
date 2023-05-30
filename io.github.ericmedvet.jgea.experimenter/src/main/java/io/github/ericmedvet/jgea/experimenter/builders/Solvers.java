@@ -72,7 +72,7 @@ public class Solvers {
       @Param(value = "minNTournament", dI = 3) int minNTournament,
       @Param(value = "nPop", dI = 100) int nPop,
       @Param(value = "nEval") int nEval,
-      @Param(value = "diversity") boolean diversity,
+      @Param(value = "diversity", dB = true) boolean diversity,
       @Param(value = "remap") boolean remap
   ) {
     IntString exampleGenotype = mapper.exampleInput();
