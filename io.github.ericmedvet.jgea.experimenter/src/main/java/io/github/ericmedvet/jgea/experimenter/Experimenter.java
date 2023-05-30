@@ -69,7 +69,7 @@ public class Experimenter {
   }
 
   @SuppressWarnings("unused")
-  public void run(File experimentFile) {
+  public void run(File experimentFile, boolean verbose) {
     String experimentDescription;
     L.config(String.format("Using provided experiment description: %s", experimentFile));
     try (BufferedReader br = new BufferedReader(new FileReader(experimentFile))) {
@@ -81,14 +81,14 @@ public class Experimenter {
           e
       ));
     }
-    run(experimentDescription);
+    run(experimentDescription, verbose);
   }
 
-  public void run(String experimentDescription) {
-    run((Experiment) namedBuilder.build(experimentDescription));
+  public void run(String experimentDescription, boolean verbose) {
+    run((Experiment) namedBuilder.build(experimentDescription), verbose);
   }
 
-  public void run(Experiment experiment) {
+  public void run(Experiment experiment, boolean verbose) {
     //preapare factories
     List<? extends ListenerFactory<? super POSetPopulationState<?, ?, ?>, Run<?, ?, ?, ?>>> factories =
         experiment.listeners()
@@ -135,6 +135,9 @@ public class Experimenter {
         runOutcome.future().get();
       } catch (InterruptedException | ExecutionException e) {
         L.warning(String.format("Cannot solve %s: %s", runOutcome.run().map(), e));
+        if (verbose) {
+          e.printStackTrace();
+        }
       }
     });
     if (closeListeners) {

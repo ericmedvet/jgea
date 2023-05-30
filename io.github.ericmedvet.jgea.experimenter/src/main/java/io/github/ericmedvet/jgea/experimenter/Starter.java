@@ -181,7 +181,7 @@ public class Starter {
     //prepare and run experimenter
     try {
       Experimenter experimenter = new Experimenter(nb, configuration.nOfConcurrentRuns, configuration.nOfThreads);
-      experimenter.run(expDescription);
+      experimenter.run(expDescription, configuration.verbose);
     } catch (BuilderException e) {
       L.severe("Cannot run experiment: %s%n".formatted(e));
       if (configuration.verbose) {
