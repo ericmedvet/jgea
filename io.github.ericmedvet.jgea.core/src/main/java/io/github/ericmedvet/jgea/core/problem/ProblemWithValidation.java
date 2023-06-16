@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 eric
+ * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,16 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core;
+package io.github.ericmedvet.jgea.core.problem;
 
-import io.github.ericmedvet.jgea.core.order.PartialComparator;
 
-public interface Problem<S> extends PartialComparator<S> {}
+import java.util.function.Function;
+
+/**
+ * @author eric
+ */
+public interface ProblemWithValidation<S, Q> extends QualityBasedProblem<S, Q> {
+
+  Function<S, Q> validationQualityFunction();
+
+}

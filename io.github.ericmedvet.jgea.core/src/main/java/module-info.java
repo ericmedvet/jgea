@@ -30,6 +30,7 @@ module io.github.ericmedvet.jgea.core {
   exports io.github.ericmedvet.jgea.core.solver.state;
   exports io.github.ericmedvet.jgea.core.util;
   exports io.github.ericmedvet.jgea.core.representation.sequence.integer;
+  exports io.github.ericmedvet.jgea.core.problem;
   requires io.github.ericmedvet.jsdynsym.core;
   requires com.google.common;
   requires org.knowm.xchart;

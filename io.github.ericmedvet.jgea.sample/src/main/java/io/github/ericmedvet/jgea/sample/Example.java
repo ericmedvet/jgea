@@ -17,11 +17,11 @@
 package io.github.ericmedvet.jgea.sample;
 
 import com.google.common.collect.Range;
-import io.github.ericmedvet.jgea.core.QualityBasedProblem;
-import io.github.ericmedvet.jgea.core.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.listener.TabularPrinter;
+import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
+import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.NamedUnivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
 import io.github.ericmedvet.jgea.core.representation.grammar.cfggp.GrammarBasedSubtreeMutation;

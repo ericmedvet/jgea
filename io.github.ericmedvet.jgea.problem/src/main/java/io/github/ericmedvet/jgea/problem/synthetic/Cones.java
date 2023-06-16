@@ -1,6 +1,6 @@
 package io.github.ericmedvet.jgea.problem.synthetic;
 
-import io.github.ericmedvet.jgea.core.MultiHomogeneousObjectiveProblem;
+import io.github.ericmedvet.jgea.core.problem.MultiHomogeneousObjectiveProblem;
 
 import java.util.Comparator;
 import java.util.List;

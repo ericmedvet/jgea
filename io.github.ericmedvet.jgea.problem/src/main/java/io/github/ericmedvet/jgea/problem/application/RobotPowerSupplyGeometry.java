@@ -16,7 +16,7 @@
 
 package io.github.ericmedvet.jgea.problem.application;
 
-import io.github.ericmedvet.jgea.core.MultiHomogeneousObjectiveProblem;
+import io.github.ericmedvet.jgea.core.problem.MultiHomogeneousObjectiveProblem;
 
 import java.util.*;
 import java.util.function.Function;

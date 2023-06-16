@@ -16,7 +16,7 @@
 
 package io.github.ericmedvet.jgea.problem.classification;
 
-import io.github.ericmedvet.jgea.core.QualityBasedProblem;
+import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
 import io.github.ericmedvet.jgea.core.representation.grammar.GrammarBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;

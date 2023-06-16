@@ -16,8 +16,8 @@
 
 package io.github.ericmedvet.jgea.problem.regression.multivariate;
 
-import io.github.ericmedvet.jgea.core.ComparableQualityBasedProblem;
-import io.github.ericmedvet.jgea.core.ProblemWithValidation;
+import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
+import io.github.ericmedvet.jgea.core.problem.ProblemWithValidation;
 import io.github.ericmedvet.jgea.core.representation.NamedMultivariateRealFunction;
 
 /**

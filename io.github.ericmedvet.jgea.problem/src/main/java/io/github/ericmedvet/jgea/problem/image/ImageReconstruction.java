@@ -16,7 +16,7 @@
 
 package io.github.ericmedvet.jgea.problem.image;
 
-import io.github.ericmedvet.jgea.core.ComparableQualityBasedProblem;
+import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
 import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 
 import java.awt.image.BufferedImage;

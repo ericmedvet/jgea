@@ -17,10 +17,10 @@
 package io.github.ericmedvet.jgea.core.solver.speciation;
 
 import io.github.ericmedvet.jgea.core.Factory;
-import io.github.ericmedvet.jgea.core.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.operator.GeneticOperator;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
+import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.selector.Last;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.SolverException;

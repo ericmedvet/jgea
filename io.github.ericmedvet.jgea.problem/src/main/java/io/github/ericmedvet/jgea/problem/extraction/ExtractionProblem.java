@@ -18,7 +18,7 @@ package io.github.ericmedvet.jgea.problem.extraction;
 
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
-import io.github.ericmedvet.jgea.core.MultiHomogeneousObjectiveProblem;
+import io.github.ericmedvet.jgea.core.problem.MultiHomogeneousObjectiveProblem;
 import io.github.ericmedvet.jgea.core.representation.graph.finiteautomata.Extractor;
 import io.github.ericmedvet.jgea.core.util.Pair;
 

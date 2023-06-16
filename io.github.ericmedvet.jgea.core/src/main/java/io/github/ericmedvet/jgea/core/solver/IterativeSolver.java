@@ -1,7 +1,7 @@
 package io.github.ericmedvet.jgea.core.solver;
 
-import io.github.ericmedvet.jgea.core.Problem;
 import io.github.ericmedvet.jgea.core.listener.Listener;
+import io.github.ericmedvet.jgea.core.problem.Problem;
 import io.github.ericmedvet.jgea.core.util.Copyable;
 
 import java.util.Collection;

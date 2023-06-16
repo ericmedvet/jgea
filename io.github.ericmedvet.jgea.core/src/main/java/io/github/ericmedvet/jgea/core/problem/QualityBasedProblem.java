@@ -1,4 +1,4 @@
-package io.github.ericmedvet.jgea.core;
+package io.github.ericmedvet.jgea.core.problem;
 
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 
@@ -13,13 +13,13 @@ public interface QualityBasedProblem<S, Q> extends Problem<S> {
   static <S,Q> QualityBasedProblem<S, Q> create(Function<S, Q> qualityFunction, PartialComparator<Q> qualityComparator){
     return new QualityBasedProblem<>() {
       @Override
-      public Function<S, Q> qualityFunction() {
-        return qualityFunction;
+      public PartialComparator<Q> qualityComparator() {
+        return qualityComparator;
       }
 
       @Override
-      public PartialComparator<Q> qualityComparator() {
-        return qualityComparator;
+      public Function<S, Q> qualityFunction() {
+        return qualityFunction;
       }
     };
   }

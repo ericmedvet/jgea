@@ -1,4 +1,4 @@
-package io.github.ericmedvet.jgea.core;
+package io.github.ericmedvet.jgea.core.problem;
 
 import java.util.Comparator;
 

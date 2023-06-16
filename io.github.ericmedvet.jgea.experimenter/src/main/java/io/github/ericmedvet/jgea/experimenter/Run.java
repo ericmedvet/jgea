@@ -1,7 +1,7 @@
 package io.github.ericmedvet.jgea.experimenter;
 
-import io.github.ericmedvet.jgea.core.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.listener.Listener;
+import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSolver;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;

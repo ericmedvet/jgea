@@ -17,9 +17,9 @@
 package io.github.ericmedvet.jgea.core.solver;
 
 import io.github.ericmedvet.jgea.core.Factory;
-import io.github.ericmedvet.jgea.core.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.order.DAGPartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
+import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
@@ -105,10 +105,10 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
 
   public static class State<S, Q> extends SimpleEvolutionaryStrategy.State<S, Q> {
 
+    private final RealMatrix C;
     private double sigma = 0.5;
     private double[] sEvolutionPath;
     private double[] cEvolutionPath;
-    private final RealMatrix C;
     private RealMatrix B;
     private RealMatrix D;
 
@@ -187,6 +187,23 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
 
   }
 
+  private void eigenDecomposition(State<S, Q> state) {
+    L.fine(String.format("Eigen decomposition of covariance matrix (i=%d)", state.getNOfIterations()));
+    EigenDecomposition eig = new EigenDecomposition(state.C);
+    RealMatrix B = eig.getV();
+    RealMatrix D = eig.getD();
+    for (int i = 0; i < n; i++) {
+      if (D.getEntry(i, i) < 0) {
+        L.warning("An eigenvalue has become negative");
+        D.setEntry(i, i, 0d);
+      }
+      D.setEntry(i, i, Math.sqrt(D.getEntry(i, i)));
+    }
+    state.B = B;
+    state.D = D;
+    state.lastEigenUpdateGeneration = (int) state.getNOfIterations();
+  }
+
   @Override
   protected State<S, Q> initState(
       TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor
@@ -204,28 +221,6 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
     state.means = genotypeFactory.build(1, random).get(0).stream().mapToDouble(d -> d).toArray();
     sampleNewPopulation(problem, random, executor, state);
     return state;
-  }
-
-  @Override
-  public void update(
-      TotalOrderQualityBasedProblem<S, Q> problem,
-      RandomGenerator random,
-      ExecutorService executor,
-      State<S, Q> state
-  ) throws SolverException {
-    updateDistribution(problem, state);
-    // update B and D from C
-    if ((state.getNOfIterations() - state.lastEigenUpdateGeneration) > (1d / (c1 + cMu) / n / 10d)) {
-      eigenDecomposition(state);
-    }
-    // flat fitness case
-    if (state.getPopulation().firsts().size() >= Math.ceil(0.7 * populationSize)) {
-      state.sigma *= Math.exp(0.2 + cSigma / dSigma);
-      L.warning("Flat fitness, consider reformulating the objective");
-    }
-    sampleNewPopulation(problem, random, executor, state);
-    state.incNOfIterations();
-    state.updateElapsedMillis();
   }
 
   private void sampleNewPopulation(
@@ -255,6 +250,28 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
         .mapToObj(i -> new DecoratedIndividual<>(individuals.get(i), zK[i], yK[i], xK[i]))
         .toList();
     state.setPopulation(new DAGPartiallyOrderedCollection<>(individuals, comparator(problem)));
+  }
+
+  @Override
+  public void update(
+      TotalOrderQualityBasedProblem<S, Q> problem,
+      RandomGenerator random,
+      ExecutorService executor,
+      State<S, Q> state
+  ) throws SolverException {
+    updateDistribution(problem, state);
+    // update B and D from C
+    if ((state.getNOfIterations() - state.lastEigenUpdateGeneration) > (1d / (c1 + cMu) / n / 10d)) {
+      eigenDecomposition(state);
+    }
+    // flat fitness case
+    if (state.getPopulation().firsts().size() >= Math.ceil(0.7 * populationSize)) {
+      state.sigma *= Math.exp(0.2 + cSigma / dSigma);
+      L.warning("Flat fitness, consider reformulating the objective");
+    }
+    sampleNewPopulation(problem, random, executor, state);
+    state.incNOfIterations();
+    state.updateElapsedMillis();
   }
 
   private void updateDistribution(TotalOrderQualityBasedProblem<S, Q> problem, State<S, Q> state) {
@@ -308,23 +325,6 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
       state.C.setEntry(j, i, cij);
     }));
 
-  }
-
-  private void eigenDecomposition(State<S, Q> state) {
-    L.fine(String.format("Eigen decomposition of covariance matrix (i=%d)", state.getNOfIterations()));
-    EigenDecomposition eig = new EigenDecomposition(state.C);
-    RealMatrix B = eig.getV();
-    RealMatrix D = eig.getD();
-    for (int i = 0; i < n; i++) {
-      if (D.getEntry(i, i) < 0) {
-        L.warning("An eigenvalue has become negative");
-        D.setEntry(i, i, 0d);
-      }
-      D.setEntry(i, i, Math.sqrt(D.getEntry(i, i)));
-    }
-    state.B = B;
-    state.D = D;
-    state.lastEigenUpdateGeneration = (int) state.getNOfIterations();
   }
 
 }

@@ -16,7 +16,7 @@
 
 package io.github.ericmedvet.jgea.core.representation.grammar;
 
-import io.github.ericmedvet.jgea.core.Problem;
+import io.github.ericmedvet.jgea.core.problem.Problem;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 
 import java.util.function.Function;

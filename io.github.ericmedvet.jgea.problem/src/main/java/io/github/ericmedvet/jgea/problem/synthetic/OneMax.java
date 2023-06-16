@@ -16,7 +16,7 @@
 
 package io.github.ericmedvet.jgea.problem.synthetic;
 
-import io.github.ericmedvet.jgea.core.ComparableQualityBasedProblem;
+import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 
 import java.util.function.Function;

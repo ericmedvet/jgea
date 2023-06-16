@@ -18,7 +18,6 @@ package io.github.ericmedvet.jgea.sample.lab;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
-import io.github.ericmedvet.jgea.core.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.distance.Jaccard;
 import io.github.ericmedvet.jgea.core.listener.CSVPrinter;
 import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
@@ -27,6 +26,7 @@ import io.github.ericmedvet.jgea.core.listener.TabularPrinter;
 import io.github.ericmedvet.jgea.core.operator.Crossover;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.order.LexicoGraphical;
+import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
 import io.github.ericmedvet.jgea.core.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
 import io.github.ericmedvet.jgea.core.representation.graph.*;
