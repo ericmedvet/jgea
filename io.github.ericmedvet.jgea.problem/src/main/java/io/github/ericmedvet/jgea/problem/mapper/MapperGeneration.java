@@ -29,7 +29,6 @@ import io.github.ericmedvet.jgea.core.representation.grammar.GrammarBasedProblem
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.util.Pair;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
@@ -59,7 +58,7 @@ public class MapperGeneration implements GrammarBasedProblem<String, Pair<Tree<E
       List<FitnessFunction.Property> validationProperties,
       long seed
   ) throws IOException {
-    this.grammar = Grammar.fromFile(new File("grammars/mapper.bnf"));
+    this.grammar = Grammar.load(Grammar.class.getResourceAsStream("/grammars/1d/mapper.bnf"));
     learningFitnessFunction = new FitnessFunction(
         learningProblems,
         learningGenotypeSize,

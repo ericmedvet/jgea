@@ -37,13 +37,13 @@ public class Grammar<T> implements Serializable {
     rules = new LinkedHashMap<>();
   }
 
-  public static Grammar<String> fromFile(File file) throws FileNotFoundException, IOException {
-    return fromFile(file, "UTF-8");
+  public static Grammar<String> load(InputStream inputStream) throws FileNotFoundException, IOException {
+    return load(inputStream, "UTF-8");
   }
 
-  public static Grammar<String> fromFile(File file, String charset) throws FileNotFoundException, IOException {
+  public static Grammar<String> load(InputStream inputStream, String charset) throws FileNotFoundException, IOException {
     Grammar<String> grammar = new Grammar<>();
-    BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), charset));
+    BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, charset));
     String line;
     while ((line = br.readLine()) != null) {
       String[] components = line.split(Pattern.quote(RULE_ASSIGNMENT_STRING));

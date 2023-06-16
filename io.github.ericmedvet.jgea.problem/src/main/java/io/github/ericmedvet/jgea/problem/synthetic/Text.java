@@ -23,7 +23,6 @@ import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
 import io.github.ericmedvet.jgea.core.representation.grammar.GrammarBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
@@ -41,7 +40,7 @@ public class Text implements GrammarBasedProblem<String, String>, ComparableQual
   private final Distance<List<Character>> distance;
 
   public Text(String targetString) throws IOException {
-    grammar = Grammar.fromFile(new File("grammars/text.bnf"));
+    grammar = Grammar.load(Grammar.class.getResourceAsStream("/grammars/1d/text.bnf"));
     solutionMapper = (Tree<String> tree) -> tree.leaves()
         .stream()
         .map(Tree::content)

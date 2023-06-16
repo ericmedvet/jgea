@@ -22,7 +22,6 @@ import io.github.ericmedvet.jgea.core.representation.grammar.GrammarBasedProblem
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.representation.tree.booleanfunction.Element;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,7 +39,7 @@ public class EvenParity implements GrammarBasedProblem<String, List<Tree<Element
   private final Function<List<Tree<Element>>, Double> fitnessFunction;
 
   public EvenParity(final int size) throws IOException {
-    grammar = Grammar.fromFile(new File("grammars/boolean-parity-var.bnf"));
+    grammar = Grammar.load(Grammar.class.getResourceAsStream("/grammars/1d/boolean-parity-var.bnf"));
     List<List<String>> vars = new ArrayList<>();
     for (int i = 0; i < size; i++) {
       vars.add(Collections.singletonList("b" + i));

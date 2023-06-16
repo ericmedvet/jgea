@@ -36,7 +36,6 @@ import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Nguyen7
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.SyntheticUnivariateRegressionProblem;
 import io.github.ericmedvet.jgea.tui.TerminalMonitor;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -122,7 +121,7 @@ public class TuiExample implements Runnable {
     SyntheticUnivariateRegressionProblem p = new Nguyen7(UnivariateRegressionFitness.Metric.MSE, 1);
     Grammar<String> srGrammar;
     try {
-      srGrammar = Grammar.fromFile(new File("grammars/symbolic" + "-regression-nguyen7" + ".bnf"));
+      srGrammar = Grammar.load(Grammar.class.getResourceAsStream("/grammars/1d/symbolic-regression-nguyen7.bnf"));
     } catch (IOException e) {
       L.severe(String.format("Cannot load grammar: %s", e));
       return;

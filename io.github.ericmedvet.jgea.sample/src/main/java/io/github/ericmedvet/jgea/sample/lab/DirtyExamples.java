@@ -54,7 +54,6 @@ import io.github.ericmedvet.jgea.problem.synthetic.LinearPoints;
 import io.github.ericmedvet.jgea.problem.synthetic.OneMax;
 import io.github.ericmedvet.jgea.sample.Worker;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
@@ -377,7 +376,7 @@ public class DirtyExamples extends Worker {
     SyntheticUnivariateRegressionProblem p = new Nguyen7(UnivariateRegressionFitness.Metric.MSE, 1);
     Grammar<String> srGrammar;
     try {
-      srGrammar = Grammar.fromFile(new File("grammars/symbolic" + "-regression-nguyen7" + ".bnf"));
+      srGrammar = Grammar.load(Grammar.class.getResourceAsStream("/grammars/1d/symbolic-regression-nguyen7.bnf"));
     } catch (IOException e) {
       e.printStackTrace();
       return;
@@ -387,7 +386,8 @@ public class DirtyExamples extends Worker {
         NamedUnivariateRealFunction>> solvers = new ArrayList<>();
     solvers.add(new StandardEvolver<>(
         new FormulaMapper()
-            .andThen(n -> new TreeBasedUnivariateRealFunction(n,
+            .andThen(n -> new TreeBasedUnivariateRealFunction(
+                n,
                 p.qualityFunction().getDataset().xVarNames(),
                 p.qualityFunction().getDataset().yVarNames().get(0)
             ))
@@ -405,7 +405,8 @@ public class DirtyExamples extends Worker {
     ));
     solvers.add(new StandardWithEnforcedDiversityEvolver<>(
         new FormulaMapper()
-            .andThen(n -> new TreeBasedUnivariateRealFunction(n,
+            .andThen(n -> new TreeBasedUnivariateRealFunction(
+                n,
                 p.qualityFunction().getDataset().xVarNames(),
                 p.qualityFunction().getDataset().yVarNames().get(0)
             ))

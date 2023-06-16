@@ -49,7 +49,6 @@ import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Synthet
 import io.github.ericmedvet.jgea.problem.synthetic.Ackley;
 import io.github.ericmedvet.jgea.problem.synthetic.OneMax;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
@@ -245,7 +244,7 @@ public class Example extends Worker {
     SyntheticUnivariateRegressionProblem p = new Nguyen7(UnivariateRegressionFitness.Metric.MSE, 1);
     Grammar<String> srGrammar;
     try {
-      srGrammar = Grammar.fromFile(new File("grammars/symbolic" + "-regression-nguyen7" + ".bnf"));
+      srGrammar = Grammar.load(Grammar.class.getResourceAsStream("/grammars/1d/symbolic-regression-nguyen7.bnf"));
     } catch (IOException e) {
       e.printStackTrace();
       return;
