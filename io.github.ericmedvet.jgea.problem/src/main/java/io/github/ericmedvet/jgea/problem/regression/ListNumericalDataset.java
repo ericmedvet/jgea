@@ -16,6 +16,7 @@
 
 package io.github.ericmedvet.jgea.problem.regression;
 
+import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -71,8 +72,8 @@ public record ListNumericalDataset(
   public ListNumericalDataset(List<Example> examples) {
     this(
         examples,
-        NumericalDataset.varNames("x", examples.get(0).xs().length),
-        NumericalDataset.varNames("y", examples.get(0).ys().length)
+        MultivariateRealFunction.varNames("x", examples.get(0).xs().length),
+        MultivariateRealFunction.varNames("y", examples.get(0).ys().length)
     );
   }
 
