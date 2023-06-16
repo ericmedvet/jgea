@@ -236,6 +236,8 @@ Methods inside the constructor of `TabularPrinter` are static methods of the cla
 
 The list includes paper published from 2018 on.
 
+- Nadizar, Medvet, Walker, Risi; [Neural Cellular Automata Enable Self-Discovery of Physical Configuration in Modular Robots Driven by Collective Intelligence](https://medvet.inginf.units.it/publications/2023-c-nmwr-neural/); The Distributed Ghost Workshop (DistributedGhost@Alife); 2023
+- Medvet, Nadizar; [GP for Continuous Control: Teacher or Learner? The Case of Simulated Modular Soft Robots](https://medvet.inginf.units.it/publications/2023-c-mn-gp/); XX Genetic Programming Theory & Practice (GPTP); 2023
 - Medvet, Pozzi, Manzoni; [A General Purpose Representation and Adaptive EA for Evolving Graphs](https://medvet.inginf.units.it/publications/2023-c-mpm-general/); ACM Genetic and Evolutionary Computation Conference (GECCO); 2023
 - Nadizar, Medvet, Walker, Risi; [A Fully-distributed Shape-aware Neural Controller for Modular Robots](https://medvet.inginf.units.it/publications/2023-c-nmwr-fully/); ACM Genetic and Evolutionary Computation Conference (GECCO); 2023
 - Pigozzi, Medvet, Bartoli, Rochelli; [Factors Impacting Diversity and Effectiveness of Evolved Modular Robots](https://medvet.inginf.units.it/publications/2023-j-pmbr-factors/); ACM Transactions on Evolutionary Learning and Optimization (TELO); 2023
