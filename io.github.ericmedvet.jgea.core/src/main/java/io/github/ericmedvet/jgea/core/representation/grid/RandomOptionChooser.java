@@ -24,6 +24,7 @@ public class RandomOptionChooser<T> implements GridDeveloper.Chooser<T> {
     if (i >= size) {
       return Optional.empty();
     }
+    i = i + 1;
     List<GridGrammar.ReferencedGrid<T>> options = gridGrammar.getRules().get(t);
     return Optional.of(options.get(randomGenerator.nextInt(options.size())));
   }

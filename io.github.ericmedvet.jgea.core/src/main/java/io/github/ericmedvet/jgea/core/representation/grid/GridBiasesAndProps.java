@@ -1,0 +1,99 @@
+package io.github.ericmedvet.jgea.core.representation.grid;
+
+import io.github.ericmedvet.jgea.core.representation.sequence.integer.UniformIntStringFactory;
+import io.github.ericmedvet.jsdynsym.grid.Grid;
+import io.github.ericmedvet.jsdynsym.grid.GridUtils;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
+import java.util.random.RandomGenerator;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+/**
+ * @author "Eric Medvet" on 2023/06/16 for jgea
+ */
+public class GridBiasesAndProps {
+  public static void main(String[] args) throws IOException {
+    Locale.setDefault(Locale.ROOT);
+    //one-for-all params
+    RandomGenerator rg = new Random(0);
+    int n = 100;
+    int minL = 10;
+    int maxL = 100;
+    int stepL = 10;
+    //to-iterate params
+    Map<String, GridGrammar<String>> grammars = Map.ofEntries(
+        Map.entry("worm", GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/worm.bnf"))),
+        Map.entry("simple", GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/simple.bnf"))),
+        Map.entry(
+            "non-compact",
+            GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/non-compact.bnf"))
+        ),
+        Map.entry("dog-shape", GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/dog-shape.bnf")))
+    );
+    Map<String, Function<GridGrammar<String>, GridDeveloper<String>>> developers = Map.ofEntries(
+        Map.entry(
+            "now-least_recent",
+            gg -> new StandardGridDeveloper<>(gg, true, List.of(StandardGridDeveloper.SortingCriterion.LEAST_RECENT))
+        ),
+        Map.entry(
+            "ow-least_recent",
+            gg -> new StandardGridDeveloper<>(gg, false, List.of(StandardGridDeveloper.SortingCriterion.LEAST_RECENT))
+        )
+    );
+    Map<String, BiFunction<Integer, GridGrammar<String>, GridDeveloper.Chooser<String>>> choosers = Map.ofEntries(
+        Map.entry("random", (l, gg) -> new RandomOptionChooser<>(rg, l, gg)),
+        Map.entry(
+            "int-8",
+            (l, gg) -> new IntStringOptionChooser<>((new UniformIntStringFactory(0, 8, l)).build(rg), gg)
+        ),
+        Map.entry(
+            "int-16",
+            (l, gg) -> new IntStringOptionChooser<>((new UniformIntStringFactory(0, 16, l)).build(rg), gg)
+        )
+    );
+    List<Map.Entry<String, ToDoubleFunction<Grid<String>>>> metrics = List.of(
+        Map.entry("w", g -> GridUtils.w(g, Objects::nonNull)),
+        Map.entry("h", g -> GridUtils.h(g, Objects::nonNull)),
+        Map.entry("count", g -> GridUtils.count(g, Objects::nonNull)),
+        Map.entry("compactness", g -> GridUtils.compactness(g, Objects::nonNull)),
+        Map.entry("elongation", g -> GridUtils.elongation(g, Objects::nonNull))
+    );
+    //iterate
+    System.out.println(
+        "grammar\tdeveloper\tchooser\tl\tinvalidity\tuniqueness\t" +
+            metrics.stream().map(Map.Entry::getKey).collect(Collectors.joining("\t"))
+    );
+    for (Map.Entry<String, GridGrammar<String>> grammarEntry : grammars.entrySet()) {
+      for (Map.Entry<String, Function<GridGrammar<String>, GridDeveloper<String>>> developeEntry :
+          developers.entrySet()) {
+        for (Map.Entry<String, BiFunction<Integer, GridGrammar<String>, GridDeveloper.Chooser<String>>> chooserEntry
+            : choosers.entrySet()) {
+          for (int l = minL; l <= maxL; l = l + stepL) {
+            final int localL = l;
+            GridDeveloper<String> developer = developeEntry.getValue().apply(grammarEntry.getValue());
+            List<Optional<Grid<String>>> oGrids = IntStream.range(0, n)
+                .mapToObj(i -> developer.develop(chooserEntry.getValue().apply(localL, grammarEntry.getValue())))
+                .toList();
+            List<Grid<String>> grids = oGrids.stream().filter(Optional::isPresent).map(Optional::get).toList();
+            double invalidity = 1d - (double) grids.size() / oGrids.size();
+            double uniqueness = (double) grids.stream().distinct().count() / grids.size();
+            System.out.printf("%s\t%s\t%s\t%4d\t%.5f\t%.5f\t",
+                grammarEntry.getKey(), developeEntry.getKey(), chooserEntry.getKey(), l,
+                invalidity, uniqueness
+            );
+            System.out.println(metrics.stream()
+                .map(Map.Entry::getValue)
+                .map(f -> grids.stream().mapToDouble(f).average().orElse(Double.NaN))
+                .map("%3.3f"::formatted)
+                .collect(Collectors.joining("\t")));
+          }
+        }
+      }
+    }
+  }
+}
