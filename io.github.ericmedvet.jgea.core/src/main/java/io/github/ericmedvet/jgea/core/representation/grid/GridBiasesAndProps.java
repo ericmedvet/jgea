@@ -1,6 +1,24 @@
+/*
+ * Copyright 2023 eric
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.github.ericmedvet.jgea.core.representation.grid;
 
+import io.github.ericmedvet.jgea.core.representation.sequence.FixedLengthListFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.UniformIntStringFactory;
+import io.github.ericmedvet.jgea.core.representation.sequence.numeric.UniformDoubleFactory;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 import io.github.ericmedvet.jsdynsym.grid.GridUtils;
 
@@ -43,6 +61,28 @@ public class GridBiasesAndProps {
         Map.entry(
             "ow-least_recent",
             gg -> new StandardGridDeveloper<>(gg, false, List.of(StandardGridDeveloper.SortingCriterion.LEAST_RECENT))
+        ),
+        Map.entry(
+            "now-most_free_sides",
+            gg -> new StandardGridDeveloper<>(
+                gg,
+                true,
+                List.of(
+                    StandardGridDeveloper.SortingCriterion.MOST_FREE_SIDE,
+                    StandardGridDeveloper.SortingCriterion.LEAST_RECENT
+                )
+            )
+        ),
+        Map.entry(
+            "ow-least_free_sides",
+            gg -> new StandardGridDeveloper<>(
+                gg,
+                false,
+                List.of(
+                    StandardGridDeveloper.SortingCriterion.LEAST_FREE_SIDES,
+                    StandardGridDeveloper.SortingCriterion.LEAST_RECENT
+                )
+            )
         )
     );
     Map<String, BiFunction<Integer, GridGrammar<String>, GridDeveloper.Chooser<String>>> choosers = Map.ofEntries(
@@ -54,6 +94,17 @@ public class GridBiasesAndProps {
         Map.entry(
             "int-16",
             (l, gg) -> new IntStringOptionChooser<>((new UniformIntStringFactory(0, 16, l)).build(rg), gg)
+        ),
+        Map.entry(
+            "int-32",
+            (l, gg) -> new IntStringOptionChooser<>((new UniformIntStringFactory(0, 32, l)).build(rg), gg)
+        ),
+        Map.entry(
+            "double",
+            (l, gg) -> new DoublesOptionChooser<>(new FixedLengthListFactory<>(
+                l,
+                new UniformDoubleFactory(0d, 1d)
+            ).build(rg), gg)
         )
     );
     List<Map.Entry<String, ToDoubleFunction<Grid<String>>>> metrics = List.of(
