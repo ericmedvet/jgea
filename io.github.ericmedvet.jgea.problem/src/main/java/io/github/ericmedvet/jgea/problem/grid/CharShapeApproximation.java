@@ -20,6 +20,11 @@ import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 import io.github.ericmedvet.jsdynsym.grid.GridUtils;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 public class CharShapeApproximation implements ComparableQualityBasedProblem<Grid<Character>, Double> {
@@ -32,6 +37,25 @@ public class CharShapeApproximation implements ComparableQualityBasedProblem<Gri
     this.translation = translation;
   }
 
+  public CharShapeApproximation(String syntheticTargetName, boolean translation) throws IOException {
+    try (BufferedReader br =
+             new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(
+                 "/grids/" + syntheticTargetName + ".txt"))))) {
+      List<List<Character>> rows = br.lines().map(l -> l.chars().mapToObj(c -> (char) c).toList()).toList();
+      List<Integer> ws = rows.stream().map(List::size).toList();
+      if (ws.stream().distinct().count() != 1) {
+        throw new IllegalArgumentException("The file has an invalid shape: %s".formatted(ws));
+      }
+      int w = ws.get(0);
+      int h = ws.size();
+      Grid<Character> grid = Grid.create(w, h, (x, y) -> {
+        Character c = rows.get(y).get(x);
+        return c.equals('·') ? null : c;
+      });
+      target = grid;
+      this.translation = translation;
+    }
+  }
 
   private static Grid.Key center(Grid<?> grid) {
     return new Grid.Key(
