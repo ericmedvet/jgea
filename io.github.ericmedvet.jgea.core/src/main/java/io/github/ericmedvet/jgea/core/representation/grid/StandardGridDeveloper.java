@@ -1,3 +1,19 @@
+/*
+ * Copyright 2023 eric
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.github.ericmedvet.jgea.core.representation.grid;
 
 import io.github.ericmedvet.jsdynsym.grid.Grid;
@@ -59,7 +75,7 @@ public class StandardGridDeveloper<T> implements GridDeveloper<T> {
     return replacement.grid().entries().stream()
         .filter(e -> e.value() != null && !e.key().equals(replacement.referenceKey()))
         .noneMatch(e -> {
-          Grid.Key tK = e.key().at(k.x(), k.y()).at(
+          Grid.Key tK = e.key().translated(k.x(), k.y()).translated(
               -replacement.referenceKey().x(),
               -replacement.referenceKey().y()
           );
@@ -78,7 +94,7 @@ public class StandardGridDeveloper<T> implements GridDeveloper<T> {
   ) {
     List<Grid.Entry<T>> repEntries = replacement.grid().entries().stream()
         .map(e -> new Grid.Entry<>(
-            e.key().at(k.x(), k.y()).at(-replacement.referenceKey().x(), -replacement.referenceKey().y()),
+            e.key().translated(k.x(), k.y()).translated(-replacement.referenceKey().x(), -replacement.referenceKey().y()),
             e.value()
         ))
         .toList();
@@ -95,11 +111,11 @@ public class StandardGridDeveloper<T> implements GridDeveloper<T> {
     // build a new grid and fill it
     Grid<Aged<T>> enlarged = Grid.create(maxX - minX + 1, maxY - minY + 1);
     original.entries().forEach(e -> enlarged.set(
-        e.key().at(-minX, -minY),
+        e.key().translated(-minX, -minY),
         e.value()
     ));
     repEntries.stream().filter(e -> e.value() != null).forEach(e -> enlarged.set(
-        e.key().at(-minX, -minY),
+        e.key().translated(-minX, -minY),
         new Aged<>(iteration, e.value())
     ));
     return enlarged;
