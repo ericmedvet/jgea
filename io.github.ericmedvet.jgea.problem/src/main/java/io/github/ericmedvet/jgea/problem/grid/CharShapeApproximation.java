@@ -18,6 +18,7 @@ package io.github.ericmedvet.jgea.problem.grid;
 
 import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
+import io.github.ericmedvet.jsdynsym.grid.GridUtils;
 
 import java.util.function.Function;
 
@@ -30,6 +31,7 @@ public class CharShapeApproximation implements ComparableQualityBasedProblem<Gri
     this.target = target;
     this.translation = translation;
   }
+
 
   private static Grid.Key center(Grid<?> grid) {
     return new Grid.Key(
@@ -56,17 +58,31 @@ public class CharShapeApproximation implements ComparableQualityBasedProblem<Gri
       Grid<Character> targetGrid = target;
       if (translation) {
         //possibly translate
+        Grid.Key thisCenter = center(thisGrid);
+        Grid.Key newCenter = new Grid.Key(
+            Math.max(thisCenter.x(), targetCenter.x()),
+            Math.max(thisCenter.y(), targetCenter.y())
+        );
+        thisGrid = GridUtils.translate(
+            thisGrid,
+            new Grid.Key(newCenter.x() - thisCenter.x(), newCenter.y() - thisCenter.y())
+        );
+        targetGrid = GridUtils.translate(
+            targetGrid,
+            new Grid.Key(newCenter.x() - targetCenter.x(), newCenter.y() - targetCenter.y())
+        );
       }
+      final Grid<Character> finalThisGrid = thisGrid;
       return targetGrid.entries().stream()
-          .filter(e -> thisGrid.isValid(e.key()))
+          .filter(e -> finalThisGrid.isValid(e.key()))
           .mapToDouble(e -> {
-            if (e.value() == null && thisGrid.get(e.key()) == null) {
+            if (e.value() == null && finalThisGrid.get(e.key()) == null) {
               return 1d;
             }
             if (e.value() == null) {
               return 0d;
             }
-            if (e.value().equals(thisGrid.get(e.key()))) {
+            if (e.value().equals(finalThisGrid.get(e.key()))) {
               return 1d;
             }
             return 0d;
