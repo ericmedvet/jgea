@@ -144,7 +144,7 @@ public class DirtyExamples extends Worker {
         qualitiesAggregator,
         StopConditions.nOfIterations(100)
     );
-    QualityBasedProblem<BitString, Double> problem = new OneMax();
+    QualityBasedProblem<BitString, Double> problem = new OneMax(size);
 
     Listener<CooperativeSolver.State<POSetPopulationState<BitString, BitString, Double>,
         POSetPopulationState<BitString, BitString, Double>,
@@ -244,7 +244,7 @@ public class DirtyExamples extends Worker {
             List.of()
         );
     Random r = new Random(1);
-    TotalOrderQualityBasedProblem<List<Double>, Double> p = new LinearPoints();
+    TotalOrderQualityBasedProblem<List<Double>, Double> p = new LinearPoints(10);
     List<IterativeSolver<? extends POSetPopulationState<List<Double>, List<Double>, Double>,
         TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>>> solvers = new ArrayList<>();
     solvers.add(new RandomSearch<>(
@@ -302,7 +302,7 @@ public class DirtyExamples extends Worker {
   public void runOneMax() {
     int size = 1000;
     Random r = new Random(1);
-    QualityBasedProblem<BitString, Double> p = new OneMax();
+    QualityBasedProblem<BitString, Double> p = new OneMax(size);
     List<NamedFunction<? super POSetPopulationState<?, ?, ?>, ?>> keysFunctions = List.of();
     ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
         ListenerFactory.all(List.of(new TabularPrinter<>(

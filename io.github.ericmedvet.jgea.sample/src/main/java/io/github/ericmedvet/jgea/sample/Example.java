@@ -110,7 +110,7 @@ public class Example extends Worker {
             List.of()
         );
     Random r = new Random(1);
-    TotalOrderQualityBasedProblem<List<Double>, Double> p = new Ackley();
+    TotalOrderQualityBasedProblem<List<Double>, Double> p = new Ackley(10);
     List<IterativeSolver<? extends POSetPopulationState<List<Double>, List<Double>, Double>,
         TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>>> solvers = new ArrayList<>();
     solvers.add(new RandomSearch<>(
@@ -168,7 +168,7 @@ public class Example extends Worker {
   public void runOneMax() {
     int size = 1000;
     Random r = new Random(1);
-    QualityBasedProblem<BitString, Double> p = new OneMax();
+    QualityBasedProblem<BitString, Double> p = new OneMax(size);
     List<NamedFunction<? super POSetPopulationState<?, ?, ?>, ?>> keysFunctions = List.of();
     ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
         ListenerFactory.all(

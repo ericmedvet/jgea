@@ -16,8 +16,8 @@
 
 package io.github.ericmedvet.jgea.experimenter.builders;
 
-import io.github.ericmedvet.jgea.problem.synthetic.IntOneMax;
-import io.github.ericmedvet.jgea.problem.synthetic.OneMax;
+import io.github.ericmedvet.jgea.problem.synthetic.*;
+import io.github.ericmedvet.jnb.core.Param;
 
 public class SyntheticProblems {
 
@@ -25,12 +25,44 @@ public class SyntheticProblems {
   }
 
   @SuppressWarnings("unused")
-  public static IntOneMax intOneMax() {
-    return new IntOneMax();
+  public static Ackley ackley(
+      @Param(value = "p", dI = 100) int p
+  ) {
+    return new Ackley(p);
   }
 
   @SuppressWarnings("unused")
-  public static OneMax oneMax() {
-    return new OneMax();
+  public static IntOneMax intOneMax(
+      @Param(value = "p", dI = 100) int p
+  ) {
+    return new IntOneMax(p);
+  }
+
+  @SuppressWarnings("unused")
+  public static LinearPoints linearPoints(
+      @Param(value = "p", dI = 100) int p
+  ) {
+    return new LinearPoints(p);
+  }
+
+  @SuppressWarnings("unused")
+  public static OneMax oneMax(
+      @Param(value = "p", dI = 100) int p
+  ) {
+    return new OneMax(p);
+  }
+
+  @SuppressWarnings("unused")
+  public static Rastrigin rastrigin(
+      @Param(value = "p", dI = 100) int p
+  ) {
+    return new Rastrigin(p);
+  }
+
+  @SuppressWarnings("unused")
+  public static Sphere sphere(
+      @Param(value = "p", dI = 100) int p
+  ) {
+    return new Sphere(p);
   }
 }

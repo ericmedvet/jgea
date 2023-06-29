@@ -2,7 +2,6 @@
  * @author "Eric Medvet" on 2022/08/29 for jgea
  */
 module io.github.ericmedvet.jgea.problem {
-  exports io.github.ericmedvet.jgea.problem.application;
   exports io.github.ericmedvet.jgea.problem.booleanfunction;
   exports io.github.ericmedvet.jgea.problem.classification;
   exports io.github.ericmedvet.jgea.problem.extraction;
