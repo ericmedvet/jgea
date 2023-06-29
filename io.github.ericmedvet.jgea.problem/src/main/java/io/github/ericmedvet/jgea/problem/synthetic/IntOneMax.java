@@ -17,19 +17,37 @@
 package io.github.ericmedvet.jgea.problem.synthetic;
 
 import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
+import io.github.ericmedvet.jgea.core.problem.ProblemWithExampleSolution;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
 
 import java.util.function.Function;
 
-public class IntOneMax implements ComparableQualityBasedProblem<IntString, Double> {
+public class IntOneMax implements ComparableQualityBasedProblem<IntString, Double>,
+    ProblemWithExampleSolution<IntString> {
 
-  private final static Function<IntString, Double> FITNESS_FUNCTION = s -> (s.stream()
-      .mapToInt(n -> n)
-      .average()
-      .orElse(0d) - s.getLowerBound()) / (double) s.size();
+  private final int p;
+  private final Function<IntString, Double> fitnessFunction;
+
+  public IntOneMax(int p) {
+    this.p = p;
+    fitnessFunction = s -> {
+      if (s.size() != p) {
+        throw new IllegalArgumentException("Wrong input size: %d expected, %d found".formatted(p, s.size()));
+      }
+      return s.stream()
+          .mapToInt(n -> n)
+          .average()
+          .orElse(0d) / (double) s.size();
+    };
+  }
+
+  @Override
+  public IntString example() {
+    return new IntString(0, 1, p);
+  }
 
   @Override
   public Function<IntString, Double> qualityFunction() {
-    return FITNESS_FUNCTION;
+    return fitnessFunction;
   }
 }

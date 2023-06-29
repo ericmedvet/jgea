@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package io.github.ericmedvet.jgea.problem.synthetic;
 
 import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
+import io.github.ericmedvet.jgea.core.problem.ProblemWithExampleSolution;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 
 import java.util.function.Function;
@@ -24,13 +25,28 @@ import java.util.function.Function;
 /**
  * @author eric
  */
-public class OneMax implements ComparableQualityBasedProblem<BitString, Double> {
+public class OneMax implements ComparableQualityBasedProblem<BitString, Double>, ProblemWithExampleSolution<BitString> {
 
-  private final static Function<BitString, Double> FITNESS_FUNCTION = b -> 1d - (double) b.count() / (double) b.size();
+  private final int p;
+  private final Function<BitString, Double> fitnessFunction;
+
+  public OneMax(int p) {
+    this.p = p;
+    fitnessFunction = b -> {
+      if (b.size() != p) {
+        throw new IllegalArgumentException("Wrong input size: %d expected, %d found".formatted(p, b.size()));
+      }
+      return 1d - (double) b.count() / (double) b.size();
+    };
+  }
+
+  @Override
+  public BitString example() {
+    return new BitString(p);
+  }
 
   @Override
   public Function<BitString, Double> qualityFunction() {
-    return FITNESS_FUNCTION;
+    return fitnessFunction;
   }
-
 }
