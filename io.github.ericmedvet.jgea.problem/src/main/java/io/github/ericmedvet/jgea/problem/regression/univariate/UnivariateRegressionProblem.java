@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,18 @@
 package io.github.ericmedvet.jgea.problem.regression.univariate;
 
 import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
+import io.github.ericmedvet.jgea.core.problem.ProblemWithExampleSolution;
 import io.github.ericmedvet.jgea.core.problem.ProblemWithValidation;
 import io.github.ericmedvet.jgea.core.representation.NamedUnivariateRealFunction;
+import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 
 /**
  * @author eric
  */
 public class UnivariateRegressionProblem<F extends UnivariateRegressionFitness>
-    implements ComparableQualityBasedProblem<NamedUnivariateRealFunction, Double>, ProblemWithValidation<NamedUnivariateRealFunction, Double> {
+    implements ComparableQualityBasedProblem<NamedUnivariateRealFunction, Double>,
+    ProblemWithValidation<NamedUnivariateRealFunction, Double>,
+    ProblemWithExampleSolution<NamedUnivariateRealFunction> {
 
   private final F fitness;
   private final F validationFitness;
@@ -32,6 +36,15 @@ public class UnivariateRegressionProblem<F extends UnivariateRegressionFitness>
   public UnivariateRegressionProblem(F fitness, F validationFitness) {
     this.fitness = fitness;
     this.validationFitness = validationFitness;
+  }
+
+  @Override
+  public NamedUnivariateRealFunction example() {
+    return NamedUnivariateRealFunction.from(
+        UnivariateRealFunction.from(xs -> 0d, fitness.getDataset().xVarNames().size()),
+        fitness.getDataset().xVarNames(),
+        fitness.getDataset().yVarNames().get(0)
+    );
   }
 
   @Override
@@ -43,5 +56,4 @@ public class UnivariateRegressionProblem<F extends UnivariateRegressionFitness>
   public F validationQualityFunction() {
     return validationFitness;
   }
-
 }

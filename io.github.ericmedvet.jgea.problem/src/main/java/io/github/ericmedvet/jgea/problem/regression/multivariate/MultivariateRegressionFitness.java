@@ -88,4 +88,11 @@ public class MultivariateRegressionFitness implements CaseBasedFitness<
     return dataset.size();
   }
 
+  public NumericalDataset getDataset() {
+    return dataset;
+  }
+
+  public UnivariateRegressionFitness.Metric getMetric() {
+    return metric;
+  }
 }
