@@ -16,25 +16,29 @@
 
 package io.github.ericmedvet.jgea.experimenter;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
  * @author "Eric Medvet" on 2022/11/21 for 2d-robot-evolution
  */
-public interface InvertibleMapper<T, R> extends Function<T, R> {
-  T exampleInput();
+public interface InvertibleMapper<T, R> {
+  T exampleFor(R r);
 
-  static <T, R> InvertibleMapper<T, R> from(Function<T, R> f, T t) {
+  Function<T, R> mapperFor(R r);
+
+  static <T, R> InvertibleMapper<T, R> from(BiFunction<R, T, R> mapperF, Function<R, T> exampleF) {
     return new InvertibleMapper<>() {
       @Override
-      public R apply(T t) {
-        return f.apply(t);
+      public T exampleFor(R r) {
+        return exampleF.apply(r);
       }
 
       @Override
-      public T exampleInput() {
-        return t;
+      public Function<T, R> mapperFor(R r) {
+        return t -> mapperF.apply(r, t);
       }
     };
   }
+
 }

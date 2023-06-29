@@ -1,8 +1,26 @@
+/*
+ * Copyright 2023 eric
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.github.ericmedvet.jgea.experimenter;
 
 import io.github.ericmedvet.jgea.core.listener.Listener;
+import io.github.ericmedvet.jgea.core.problem.ProblemWithExampleSolution;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSolver;
+import io.github.ericmedvet.jgea.core.solver.IterativeSolver;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jnb.core.Param;
@@ -10,6 +28,7 @@ import io.github.ericmedvet.jnb.core.ParamMap;
 
 import java.util.Collection;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Function;
 import java.util.random.RandomGenerator;
 
 /**
@@ -18,7 +37,7 @@ import java.util.random.RandomGenerator;
 public record Run<P extends QualityBasedProblem<S, Q>, G, S, Q>(
     @Param(value = "", injection = Param.Injection.INDEX) int index,
     @Param("name") String name,
-    @Param("solver") AbstractPopulationBasedIterativeSolver<? extends POSetPopulationState<G, S, Q>, P, G, S, Q> solver,
+    @Param("solver") Function<S, ? extends AbstractPopulationBasedIterativeSolver<? extends POSetPopulationState<G, S, Q>, P, G, S, Q>> solver,
     @Param("problem") P problem,
     @Param("randomGenerator") RandomGenerator randomGenerator,
     @Param(value = "", injection = Param.Injection.MAP_WITH_DEFAULTS) ParamMap map
@@ -28,7 +47,14 @@ public record Run<P extends QualityBasedProblem<S, Q>, G, S, Q>(
       ExecutorService executorService,
       Listener<? super POSetPopulationState<G, S, Q>> listener
   ) throws SolverException {
-    return solver.solve(
+    IterativeSolver<? extends POSetPopulationState<G, S, Q>, P, S> iterativeSolver;
+    if (problem instanceof ProblemWithExampleSolution<?> pwes) {
+      //noinspection unchecked
+      iterativeSolver = solver.apply((S)pwes.example());
+    } else {
+      iterativeSolver = solver.apply(null);
+    }
+    return iterativeSolver.solve(
         problem,
         randomGenerator,
         executorService,

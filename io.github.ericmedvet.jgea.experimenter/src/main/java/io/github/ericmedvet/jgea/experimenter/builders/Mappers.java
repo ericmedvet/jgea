@@ -38,6 +38,7 @@ import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -51,76 +52,71 @@ public class Mappers {
 
   @SuppressWarnings("unused")
   public static InvertibleMapper<Graph<Node, Double>, NamedMultivariateRealFunction> fGraphMRF(
-      @Param("dataset") Supplier<NumericalDataset> dataset,
       @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
-    NumericalDataset d = dataset.get();
     return InvertibleMapper.from(
-        g -> new FunctionGraph(g, d.xVarNames(), d.yVarNames()),
-        FunctionGraph.sampleFor(d.xVarNames(), d.yVarNames())
+        (nmrf, g) -> new FunctionGraph(g, nmrf.xVarNames(), nmrf.yVarNames()),
+        nmrf -> FunctionGraph.sampleFor(nmrf.xVarNames(), nmrf.yVarNames())
     );
   }
 
   @SuppressWarnings("unused")
-  public static InvertibleMapper<BitString, BitString> identityBitString(
-      @Param(value = "l", dI = 100) int l
-  ) {
+  public static InvertibleMapper<BitString, BitString> identityBitString() {
     return InvertibleMapper.from(
-        Function.identity(),
-        new BitString(l)
+        (bs, g) -> g,
+        bs -> bs
     );
   }
 
   @SuppressWarnings("unused")
-  public static InvertibleMapper<IntString, IntString> identityIntString(
-      @Param(value = "l", dI = 100) int l,
-      @Param(value = "lowerBound", dI = 0) int lowerBound,
-      @Param(value = "upperBound", dI = 10) int upperBound
-  ) {
+  public static InvertibleMapper<IntString, IntString> identityIntString() {
     return InvertibleMapper.from(
-        Function.identity(),
-        new IntString(lowerBound, upperBound, l)
+        (is, g) -> g,
+        is -> is
     );
   }
 
   @SuppressWarnings("unused")
   public static InvertibleMapper<List<Double>, NamedMultivariateRealFunction> mlpMRF(
-      @Param("dataset") Supplier<NumericalDataset> dataset,
       @Param(value = "innerLayerRatio", dD = 0.65) double innerLayerRatio,
       @Param(value = "nOfInnerLayers", dI = 1) int nOfInnerLayers,
       @Param(value = "activationFunction", dS = "tanh") MultiLayerPerceptron.ActivationFunction activationFunction
   ) {
-    NumericalDataset d = dataset.get();
-    int[] innerNeurons = new int[nOfInnerLayers];
-    int centerSize = (int) Math.max(2, Math.round(d.xVarNames().size() * innerLayerRatio));
-    if (nOfInnerLayers > 1) {
-      for (int i = 0; i < nOfInnerLayers / 2; i++) {
-        innerNeurons[i] = d.xVarNames().size() + (centerSize - d.xVarNames()
-            .size()) / (nOfInnerLayers / 2 + 1) * (i + 1);
+    Function<NamedMultivariateRealFunction, int[]> innerNeuronsFunction = nmrf -> {
+      int[] innerNeurons = new int[nOfInnerLayers];
+      int centerSize = (int) Math.max(2, Math.round(nmrf.xVarNames().size() * innerLayerRatio));
+      if (nOfInnerLayers > 1) {
+        for (int i = 0; i < nOfInnerLayers / 2; i++) {
+          innerNeurons[i] = nmrf.xVarNames().size() + (centerSize - nmrf.xVarNames()
+              .size()) / (nOfInnerLayers / 2 + 1) * (i + 1);
+        }
+        for (int i = nOfInnerLayers / 2; i < nOfInnerLayers; i++) {
+          innerNeurons[i] =
+              centerSize + (nmrf.yVarNames().size() - centerSize) / (nOfInnerLayers / 2 + 1) * (i - nOfInnerLayers / 2);
+        }
+      } else if (nOfInnerLayers > 0) {
+        innerNeurons[0] = centerSize;
       }
-      for (int i = nOfInnerLayers / 2; i < nOfInnerLayers; i++) {
-        innerNeurons[i] =
-            centerSize + (d.yVarNames().size() - centerSize) / (nOfInnerLayers / 2 + 1) * (i - nOfInnerLayers / 2);
-      }
-    } else if (nOfInnerLayers > 0) {
-      innerNeurons[0] = centerSize;
-    }
-    MultiLayerPerceptron mlp = new MultiLayerPerceptron(
-        activationFunction,
-        d.xVarNames().size(),
-        innerNeurons,
-        d.yVarNames().size()
-    );
-    List<Double> values = Arrays.stream(mlp.getParams()).boxed().toList();
+      return innerNeurons;
+    };
     return InvertibleMapper.from(
-        params -> NamedMultivariateRealFunction.from(new MultiLayerPerceptron(
-            activationFunction,
-            d.xVarNames().size(),
-            innerNeurons,
-            d.yVarNames().size(),
-            params.stream().mapToDouble(v -> v).toArray()
-        ), d.xVarNames(), d.yVarNames()),
-        values
+        (nmrf, params) ->
+            NamedMultivariateRealFunction.from(new MultiLayerPerceptron(
+                activationFunction,
+                nmrf.xVarNames().size(),
+                innerNeuronsFunction.apply(nmrf),
+                nmrf.yVarNames().size(),
+                params.stream().mapToDouble(v -> v).toArray()
+            ), nmrf.xVarNames(), nmrf.yVarNames()),
+        nmrf -> Collections.nCopies(
+            new MultiLayerPerceptron(
+                activationFunction,
+                nmrf.xVarNames().size(),
+                innerNeuronsFunction.apply(nmrf),
+                nmrf.yVarNames().size()
+            ).getParams().length,
+            0d
+        )
     );
   }
 
@@ -162,7 +158,7 @@ public class Mappers {
   ) {
     return InvertibleMapper.from(
         t -> NamedUnivariateRealFunction.from(inner.apply(t)),
-        inner.exampleInput()
+        inner.exampleFor()
     );
   }
 

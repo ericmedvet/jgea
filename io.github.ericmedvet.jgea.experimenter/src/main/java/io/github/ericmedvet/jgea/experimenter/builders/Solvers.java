@@ -51,6 +51,7 @@ import io.github.ericmedvet.jnb.core.Param;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
@@ -63,8 +64,8 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
-  public static <S, Q> StandardEvolver<POSetPopulationState<IntString, S, Q>, QualityBasedProblem<S, Q>,
-      IntString, S, Q> intGA(
+  public static <S, Q> Function<S, StandardEvolver<POSetPopulationState<IntString, S, Q>, QualityBasedProblem<S, Q>,
+      IntString, S, Q>> intGA(
       @Param(value = "mapper") InvertibleMapper<IntString, S> mapper,
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
       @Param(value = "pMut", dD = 0.01d) double pMut,
@@ -75,51 +76,54 @@ public class Solvers {
       @Param(value = "diversity", dB = true) boolean diversity,
       @Param(value = "remap") boolean remap
   ) {
-    IntString exampleGenotype = mapper.exampleInput();
-    IndependentFactory<IntString> factory = new UniformIntStringFactory(
-        exampleGenotype.getLowerBound(),
-        exampleGenotype.getUpperBound(),
-        exampleGenotype.size()
-    );
-    Map<GeneticOperator<IntString>, Double> geneticOperators = Map.ofEntries(
-        Map.entry(new IntFlipMutation(pMut), 1d - crossoverP),
-        Map.entry(new UniformCrossover<>(factory).andThen(new IntFlipMutation(pMut)), crossoverP)
-    );
-    if (!diversity) {
-      return new StandardEvolver<>(
-          mapper,
-          factory,
-          nPop,
-          StopConditions.nOfFitnessEvaluations(nEval),
-          geneticOperators,
-          new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
-          new Last(),
-          nPop,
-          true,
-          remap,
-          (p, r) -> new POSetPopulationState<>()
+    return exampleS -> {
+      IntString exampleGenotype = mapper.exampleFor(exampleS);
+      IndependentFactory<IntString> factory = new UniformIntStringFactory(
+          exampleGenotype.getLowerBound(),
+          exampleGenotype.getUpperBound(),
+          exampleGenotype.size()
       );
-    } else {
-      return new StandardWithEnforcedDiversityEvolver<>(
-          mapper,
-          factory,
-          nPop,
-          StopConditions.nOfFitnessEvaluations(nEval),
-          geneticOperators,
-          new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
-          new Last(),
-          nPop,
-          true,
-          remap,
-          (p, r) -> new POSetPopulationState<>(),
-          100
+      Map<GeneticOperator<IntString>, Double> geneticOperators = Map.ofEntries(
+          Map.entry(new IntFlipMutation(pMut), 1d - crossoverP),
+          Map.entry(new UniformCrossover<>(factory).andThen(new IntFlipMutation(pMut)), crossoverP)
       );
-    }
+      if (!diversity) {
+        return new StandardEvolver<>(
+            mapper.mapperFor(exampleS),
+            factory,
+            nPop,
+            StopConditions.nOfFitnessEvaluations(nEval),
+            geneticOperators,
+            new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
+            new Last(),
+            nPop,
+            true,
+            remap,
+            (p, r) -> new POSetPopulationState<>()
+        );
+      } else {
+        return new StandardWithEnforcedDiversityEvolver<>(
+            mapper.mapperFor(exampleS),
+            factory,
+            nPop,
+            StopConditions.nOfFitnessEvaluations(nEval),
+            geneticOperators,
+            new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
+            new Last(),
+            nPop,
+            true,
+            remap,
+            (p, r) -> new POSetPopulationState<>(),
+            100
+        );
+      }
+    };
   }
 
   @SuppressWarnings("unused")
-  public static <S, Q> StandardEvolver<POSetPopulationState<List<Tree<Element>>, S, Q>, QualityBasedProblem<S, Q>,
-      List<Tree<Element>>, S, Q> multiSRTreeGP(
+  public static <S, Q> Function<S, StandardEvolver<POSetPopulationState<List<Tree<Element>>, S, Q>,
+      QualityBasedProblem<S, Q>,
+      List<Tree<Element>>, S, Q>> multiSRTreeGP(
       @Param(value = "mapper") InvertibleMapper<List<Tree<Element>>, S> mapper,
       @Param(value = "minConst", dD = 0d) double minConst,
       @Param(value = "maxConst", dD = 5d) double maxConst,
@@ -142,53 +146,68 @@ public class Solvers {
       @Param(value = "nAttemptsDiversity", dI = 100) int nAttemptsDiversity,
       @Param(value = "remap") boolean remap
   ) {
-    List<Element.Variable> variables = mapper.exampleInput().stream().map(t -> t.visitDepth()
-        .stream()
-        .filter(e -> e instanceof Element.Variable)
-        .map(e -> ((Element.Variable) e).name())
-        .toList()).flatMap(List::stream).distinct().map(Element.Variable::new).toList();
-    double constStep = (maxConst - minConst) / nConst;
-    List<Element.Constant> constants = DoubleStream.iterate(minConst, d -> d + constStep)
-        .limit(nConst)
-        .mapToObj(Element.Constant::new)
-        .toList();
-    IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
-        IndependentFactory.picker(variables),
-        IndependentFactory.picker(constants)
-    );
-    IndependentFactory<Element> nonTerminalFactory = IndependentFactory.picker(operators);
-    IndependentFactory<List<Tree<Element>>> treeListFactory = new FixedLengthListFactory<>(
-        mapper.exampleInput().size(),
-        new RampedHalfAndHalf<>(minTreeH, maxTreeH, x -> 2, nonTerminalFactory, terminalFactory).independent()
-    );
-    // single tree factory
-    TreeBuilder<Element> treeBuilder = new GrowTreeBuilder<>(x -> 2, nonTerminalFactory, terminalFactory);
-    // subtree between same position trees
-    SubtreeCrossover<Element> subtreeCrossover = new SubtreeCrossover<>(maxTreeH);
-    Crossover<List<Tree<Element>>> pairWiseSubtreeCrossover = (list1, list2, rnd) -> IntStream.range(0, list1.size())
-        .mapToObj(i -> subtreeCrossover.recombine(list1.get(i), list2.get(i), rnd))
-        .toList();
-    // swap trees
-    Crossover<List<Tree<Element>>> uniformCrossover = (list1, list2, rnd) -> IntStream.range(0, list1.size())
-        .mapToObj(i -> rnd.nextDouble() < 0.5 ? list1.get(i) : list2.get(i))
-        .toList();
-    // subtree mutation
-    SubtreeMutation<Element> subtreeMutation = new SubtreeMutation<>(maxTreeH, treeBuilder);
-    Mutation<List<Tree<Element>>> allSubtreeMutations = (list, rnd) -> list.stream().map(t -> subtreeMutation.mutate(
-        t,
-        rnd
-    )).toList();
-    Map<GeneticOperator<List<Tree<Element>>>, Double> geneticOperators = Map.ofEntries(
-        Map.entry(
-            pairWiseSubtreeCrossover,
-            crossoverP / 2d
-        ),
-        Map.entry(uniformCrossover, crossoverP / 2d),
-        Map.entry(allSubtreeMutations, 1d - crossoverP)
-    );
-    if (!diversity) {
-      return new StandardEvolver<>(
-          mapper,
+    return exampleS -> {
+      List<Element.Variable> variables = mapper.exampleFor(exampleS).stream().map(t -> t.visitDepth()
+          .stream()
+          .filter(e -> e instanceof Element.Variable)
+          .map(e -> ((Element.Variable) e).name())
+          .toList()).flatMap(List::stream).distinct().map(Element.Variable::new).toList();
+      double constStep = (maxConst - minConst) / nConst;
+      List<Element.Constant> constants = DoubleStream.iterate(minConst, d -> d + constStep)
+          .limit(nConst)
+          .mapToObj(Element.Constant::new)
+          .toList();
+      IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
+          IndependentFactory.picker(variables),
+          IndependentFactory.picker(constants)
+      );
+      IndependentFactory<Element> nonTerminalFactory = IndependentFactory.picker(operators);
+      IndependentFactory<List<Tree<Element>>> treeListFactory = new FixedLengthListFactory<>(
+          mapper.exampleFor(exampleS).size(),
+          new RampedHalfAndHalf<>(minTreeH, maxTreeH, x -> 2, nonTerminalFactory, terminalFactory).independent()
+      );
+      // single tree factory
+      TreeBuilder<Element> treeBuilder = new GrowTreeBuilder<>(x -> 2, nonTerminalFactory, terminalFactory);
+      // subtree between same position trees
+      SubtreeCrossover<Element> subtreeCrossover = new SubtreeCrossover<>(maxTreeH);
+      Crossover<List<Tree<Element>>> pairWiseSubtreeCrossover = (list1, list2, rnd) -> IntStream.range(0, list1.size())
+          .mapToObj(i -> subtreeCrossover.recombine(list1.get(i), list2.get(i), rnd))
+          .toList();
+      // swap trees
+      Crossover<List<Tree<Element>>> uniformCrossover = (list1, list2, rnd) -> IntStream.range(0, list1.size())
+          .mapToObj(i -> rnd.nextDouble() < 0.5 ? list1.get(i) : list2.get(i))
+          .toList();
+      // subtree mutation
+      SubtreeMutation<Element> subtreeMutation = new SubtreeMutation<>(maxTreeH, treeBuilder);
+      Mutation<List<Tree<Element>>> allSubtreeMutations = (list, rnd) -> list.stream().map(t -> subtreeMutation.mutate(
+          t,
+          rnd
+      )).toList();
+      Map<GeneticOperator<List<Tree<Element>>>, Double> geneticOperators = Map.ofEntries(
+          Map.entry(
+              pairWiseSubtreeCrossover,
+              crossoverP / 2d
+          ),
+          Map.entry(uniformCrossover, crossoverP / 2d),
+          Map.entry(allSubtreeMutations, 1d - crossoverP)
+      );
+      if (!diversity) {
+        return new StandardEvolver<>(
+            mapper.mapperFor(exampleS),
+            treeListFactory,
+            nPop,
+            StopConditions.nOfFitnessEvaluations(nEval),
+            geneticOperators,
+            new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
+            new Last(),
+            nPop,
+            true,
+            remap,
+            (p, r) -> new POSetPopulationState<>()
+        );
+      }
+      return new StandardWithEnforcedDiversityEvolver<>(
+          mapper.mapperFor(exampleS),
           treeListFactory,
           nPop,
           StopConditions.nOfFitnessEvaluations(nEval),
@@ -198,28 +217,15 @@ public class Solvers {
           nPop,
           true,
           remap,
-          (p, r) -> new POSetPopulationState<>()
+          (p, r) -> new POSetPopulationState<>(),
+          nAttemptsDiversity
       );
-    }
-    return new StandardWithEnforcedDiversityEvolver<>(
-        mapper,
-        treeListFactory,
-        nPop,
-        StopConditions.nOfFitnessEvaluations(nEval),
-        geneticOperators,
-        new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
-        new Last(),
-        nPop,
-        true,
-        remap,
-        (p, r) -> new POSetPopulationState<>(),
-        nAttemptsDiversity
-    );
+    };
   }
 
   @SuppressWarnings("unused")
-  public static <S, Q> StandardEvolver<POSetPopulationState<List<Double>, S, Q>, QualityBasedProblem<S, Q>,
-      List<Double>, S, Q> numGA(
+  public static <S, Q> Function<S, StandardEvolver<POSetPopulationState<List<Double>, S, Q>, QualityBasedProblem<S, Q>,
+      List<Double>, S, Q>> numGA(
       @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
       @Param(value = "initialMinV", dD = -1d) double initialMinV,
       @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
@@ -232,48 +238,51 @@ public class Solvers {
       @Param(value = "diversity") boolean diversity,
       @Param(value = "remap") boolean remap
   ) {
-    IndependentFactory<List<Double>> doublesFactory = new FixedLengthListFactory<>(
-        mapper.exampleInput().size(),
-        new UniformDoubleFactory(initialMinV, initialMaxV)
-    );
-    Map<GeneticOperator<List<Double>>, Double> geneticOperators = Map.ofEntries(
-        Map.entry(new GaussianMutation(sigmaMut), 1d - crossoverP),
-        Map.entry(new UniformCrossover<>(doublesFactory).andThen(new GaussianMutation(sigmaMut)), crossoverP)
-    );
-    if (!diversity) {
-      return new StandardEvolver<>(
-          mapper,
-          doublesFactory,
-          nPop,
-          StopConditions.nOfFitnessEvaluations(nEval),
-          geneticOperators,
-          new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
-          new Last(),
-          nPop,
-          true,
-          remap,
-          (p, r) -> new POSetPopulationState<>()
+    return exampleS -> {
+      IndependentFactory<List<Double>> doublesFactory = new FixedLengthListFactory<>(
+          mapper.exampleFor(exampleS).size(),
+          new UniformDoubleFactory(initialMinV, initialMaxV)
       );
-    } else {
-      return new StandardWithEnforcedDiversityEvolver<>(
-          mapper,
-          doublesFactory,
-          nPop,
-          StopConditions.nOfFitnessEvaluations(nEval),
-          geneticOperators,
-          new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
-          new Last(),
-          nPop,
-          true,
-          remap,
-          (p, r) -> new POSetPopulationState<>(),
-          100
+      Map<GeneticOperator<List<Double>>, Double> geneticOperators = Map.ofEntries(
+          Map.entry(new GaussianMutation(sigmaMut), 1d - crossoverP),
+          Map.entry(new UniformCrossover<>(doublesFactory).andThen(new GaussianMutation(sigmaMut)), crossoverP)
       );
-    }
+      if (!diversity) {
+        return new StandardEvolver<>(
+            mapper.mapperFor(exampleS),
+            doublesFactory,
+            nPop,
+            StopConditions.nOfFitnessEvaluations(nEval),
+            geneticOperators,
+            new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
+            new Last(),
+            nPop,
+            true,
+            remap,
+            (p, r) -> new POSetPopulationState<>()
+        );
+      } else {
+        return new StandardWithEnforcedDiversityEvolver<>(
+            mapper.mapperFor(exampleS),
+            doublesFactory,
+            nPop,
+            StopConditions.nOfFitnessEvaluations(nEval),
+            geneticOperators,
+            new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
+            new Last(),
+            nPop,
+            true,
+            remap,
+            (p, r) -> new POSetPopulationState<>(),
+            100
+        );
+      }
+    };
   }
 
   @SuppressWarnings("unused")
-  public static <S, Q> SpeciatedEvolver<QualityBasedProblem<S, Q>, Graph<Node, OperatorGraph.NonValuedArc>, S, Q> oGraphea(
+  public static <S, Q> Function<S, SpeciatedEvolver<QualityBasedProblem<S, Q>, Graph<Node,
+      OperatorGraph.NonValuedArc>, S, Q>> oGraphea(
       @Param(value = "mapper") InvertibleMapper<Graph<Node, OperatorGraph.NonValuedArc>, S> mapper,
       @Param(value = "minConst", dD = 0d) double minConst,
       @Param(value = "maxConst", dD = 5d) double maxConst,
@@ -288,47 +297,54 @@ public class Solvers {
       @Param(value = "rankBase", dD = 0.75d) double rankBase,
       @Param(value = "remap") boolean remap
   ) {
-    Map<GeneticOperator<Graph<Node, OperatorGraph.NonValuedArc>>, Double> geneticOperators =
-        Map.ofEntries(
-            Map.entry(new NodeAddition<Node, OperatorGraph.NonValuedArc>(
-                OperatorNode.sequentialIndexFactory(operators.toArray(BaseOperator[]::new)),
-                Mutation.copy(),
-                Mutation.copy()
-            ).withChecker(OperatorGraph.checker()), nodeAdditionRate),
-            Map.entry(new ArcAddition<Node, OperatorGraph.NonValuedArc>(
-                r -> OperatorGraph.NON_VALUED_ARC,
-                false
-            ).withChecker(OperatorGraph.checker()), arcAdditionRate),
-            Map.entry(new ArcRemoval<Node, OperatorGraph.NonValuedArc>(node -> (node instanceof Input) || (node instanceof Constant) || (node instanceof Output)).withChecker(
-                OperatorGraph.checker()), arcRemovalRate)
-        );
-    Graph<Node, OperatorGraph.NonValuedArc> graph = mapper.exampleInput();
-    double constStep = (maxConst - minConst) / nConst;
-    List<Double> constants = DoubleStream.iterate(minConst, d -> d + constStep).limit(nConst).boxed().toList();
-    return new SpeciatedEvolver<>(
-        mapper,
-        new ShallowFactory(
-            graph.nodes().stream().filter(n -> n instanceof Input).map(n -> ((Input) n).getName()).distinct().toList(),
-            graph.nodes()
-                .stream()
-                .filter(n -> n instanceof Output)
-                .map(n -> ((Output) n).getName())
-                .distinct()
-                .toList(),
-            constants
-        ),
-        nPop,
-        StopConditions.nOfFitnessEvaluations(nEval),
-        geneticOperators,
-        remap,
-        minSpeciesSizeForElitism,
-        new LazySpeciator<>((new Jaccard()).on(i -> i.genotype().nodes()), 0.25),
-        rankBase
-    );
+    return exampleS -> {
+      Map<GeneticOperator<Graph<Node, OperatorGraph.NonValuedArc>>, Double> geneticOperators =
+          Map.ofEntries(
+              Map.entry(new NodeAddition<Node, OperatorGraph.NonValuedArc>(
+                  OperatorNode.sequentialIndexFactory(operators.toArray(BaseOperator[]::new)),
+                  Mutation.copy(),
+                  Mutation.copy()
+              ).withChecker(OperatorGraph.checker()), nodeAdditionRate),
+              Map.entry(new ArcAddition<Node, OperatorGraph.NonValuedArc>(
+                  r -> OperatorGraph.NON_VALUED_ARC,
+                  false
+              ).withChecker(OperatorGraph.checker()), arcAdditionRate),
+              Map.entry(new ArcRemoval<Node, OperatorGraph.NonValuedArc>(node -> (node instanceof Input) || (node instanceof Constant) || (node instanceof Output)).withChecker(
+                  OperatorGraph.checker()), arcRemovalRate)
+          );
+      Graph<Node, OperatorGraph.NonValuedArc> graph = mapper.exampleFor(exampleS);
+      double constStep = (maxConst - minConst) / nConst;
+      List<Double> constants = DoubleStream.iterate(minConst, d -> d + constStep).limit(nConst).boxed().toList();
+      return new SpeciatedEvolver<>(
+          mapper.mapperFor(exampleS),
+          new ShallowFactory(
+              graph.nodes()
+                  .stream()
+                  .filter(n -> n instanceof Input)
+                  .map(n -> ((Input) n).getName())
+                  .distinct()
+                  .toList(),
+              graph.nodes()
+                  .stream()
+                  .filter(n -> n instanceof Output)
+                  .map(n -> ((Output) n).getName())
+                  .distinct()
+                  .toList(),
+              constants
+          ),
+          nPop,
+          StopConditions.nOfFitnessEvaluations(nEval),
+          geneticOperators,
+          remap,
+          minSpeciesSizeForElitism,
+          new LazySpeciator<>((new Jaccard()).on(i -> i.genotype().nodes()), 0.25),
+          rankBase
+      );
+    };
   }
 
   @SuppressWarnings("unused")
-  public static <S, Q> OpenAIEvolutionaryStrategy<S, Q> openAIES(
+  public static <S, Q> Function<S, OpenAIEvolutionaryStrategy<S, Q>> openAIES(
       @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
       @Param(value = "initialMinV", dD = -1d) double initialMinV,
       @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
@@ -336,9 +352,12 @@ public class Solvers {
       @Param(value = "batchSize", dI = 15) int batchSize,
       @Param(value = "nEval") int nEval
   ) {
-    return new OpenAIEvolutionaryStrategy<>(
-        mapper,
-        new FixedLengthListFactory<>(mapper.exampleInput().size(), new UniformDoubleFactory(initialMinV, initialMaxV)),
+    return exampleS -> new OpenAIEvolutionaryStrategy<>(
+        mapper.mapperFor(exampleS),
+        new FixedLengthListFactory<>(
+            mapper.exampleFor(exampleS).size(),
+            new UniformDoubleFactory(initialMinV, initialMaxV)
+        ),
         batchSize,
         StopConditions.nOfFitnessEvaluations(nEval),
         sigma
@@ -346,7 +365,7 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
-  public static <S, Q> SimpleEvolutionaryStrategy<S, Q> simpleES(
+  public static <S, Q> Function<S, SimpleEvolutionaryStrategy<S, Q>> simpleES(
       @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
       @Param(value = "initialMinV", dD = -1d) double initialMinV,
       @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
@@ -357,9 +376,12 @@ public class Solvers {
       @Param(value = "nEval") int nEval,
       @Param(value = "remap") boolean remap
   ) {
-    return new SimpleEvolutionaryStrategy<>(
-        mapper,
-        new FixedLengthListFactory<>(mapper.exampleInput().size(), new UniformDoubleFactory(initialMinV, initialMaxV)),
+    return exampleS -> new SimpleEvolutionaryStrategy<>(
+        mapper.mapperFor(exampleS),
+        new FixedLengthListFactory<>(
+            mapper.exampleFor(exampleS).size(),
+            new UniformDoubleFactory(initialMinV, initialMaxV)
+        ),
         nPop,
         StopConditions.nOfFitnessEvaluations(nEval),
         nOfElites,
@@ -370,8 +392,8 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
-  public static <S, Q> StandardEvolver<POSetPopulationState<Tree<Element>, S, Q>, QualityBasedProblem<S, Q>,
-      Tree<Element>, S, Q> srTreeGP(
+  public static <S, Q> Function<S, StandardEvolver<POSetPopulationState<Tree<Element>, S, Q>, QualityBasedProblem<S, Q>,
+      Tree<Element>, S, Q>> srTreeGP(
       @Param(value = "mapper") InvertibleMapper<Tree<Element>, S> mapper,
       @Param(value = "minConst", dD = 0d) double minConst,
       @Param(value = "maxConst", dD = 5d) double maxConst,
@@ -394,41 +416,56 @@ public class Solvers {
       @Param(value = "nAttemptsDiversity", dI = 100) int nAttemptsDiversity,
       @Param(value = "remap") boolean remap
   ) {
-    List<Element.Variable> variables = mapper.exampleInput()
-        .visitDepth()
-        .stream()
-        .filter(e -> e instanceof Element.Variable)
-        .map(e -> ((Element.Variable) e).name())
-        .distinct()
-        .map(Element.Variable::new)
-        .toList();
-    double constStep = (maxConst - minConst) / nConst;
-    List<Element.Constant> constants = DoubleStream.iterate(minConst, d -> d + constStep)
-        .limit(nConst)
-        .mapToObj(Element.Constant::new)
-        .toList();
-    IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
-        IndependentFactory.picker(variables),
-        IndependentFactory.picker(constants)
-    );
-    IndependentFactory<Element> nonTerminalFactory = IndependentFactory.picker(operators);
-    // single tree factory
-    TreeBuilder<Element> treeBuilder = new GrowTreeBuilder<>(x -> 2, nonTerminalFactory, terminalFactory);
-    Factory<Tree<Element>> treeFactory = new RampedHalfAndHalf<>(
-        minTreeH,
-        maxTreeH,
-        x -> 2,
-        nonTerminalFactory,
-        terminalFactory
-    );
-    // operators
-    Map<GeneticOperator<Tree<Element>>, Double> geneticOperators = Map.ofEntries(
-        Map.entry(new SubtreeCrossover<>(maxTreeH), crossoverP),
-        Map.entry(new SubtreeMutation<>(maxTreeH, treeBuilder), 1d - crossoverP)
-    );
-    if (!diversity) {
-      return new StandardEvolver<>(
-          mapper,
+    return exampleS -> {
+      List<Element.Variable> variables = mapper.exampleFor(exampleS)
+          .visitDepth()
+          .stream()
+          .filter(e -> e instanceof Element.Variable)
+          .map(e -> ((Element.Variable) e).name())
+          .distinct()
+          .map(Element.Variable::new)
+          .toList();
+      double constStep = (maxConst - minConst) / nConst;
+      List<Element.Constant> constants = DoubleStream.iterate(minConst, d -> d + constStep)
+          .limit(nConst)
+          .mapToObj(Element.Constant::new)
+          .toList();
+      IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
+          IndependentFactory.picker(variables),
+          IndependentFactory.picker(constants)
+      );
+      IndependentFactory<Element> nonTerminalFactory = IndependentFactory.picker(operators);
+      // single tree factory
+      TreeBuilder<Element> treeBuilder = new GrowTreeBuilder<>(x -> 2, nonTerminalFactory, terminalFactory);
+      Factory<Tree<Element>> treeFactory = new RampedHalfAndHalf<>(
+          minTreeH,
+          maxTreeH,
+          x -> 2,
+          nonTerminalFactory,
+          terminalFactory
+      );
+      // operators
+      Map<GeneticOperator<Tree<Element>>, Double> geneticOperators = Map.ofEntries(
+          Map.entry(new SubtreeCrossover<>(maxTreeH), crossoverP),
+          Map.entry(new SubtreeMutation<>(maxTreeH, treeBuilder), 1d - crossoverP)
+      );
+      if (!diversity) {
+        return new StandardEvolver<>(
+            mapper.mapperFor(exampleS),
+            treeFactory,
+            nPop,
+            StopConditions.nOfFitnessEvaluations(nEval),
+            geneticOperators,
+            new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
+            new Last(),
+            nPop,
+            true,
+            remap,
+            (p, r) -> new POSetPopulationState<>()
+        );
+      }
+      return new StandardWithEnforcedDiversityEvolver<>(
+          mapper.mapperFor(exampleS),
           treeFactory,
           nPop,
           StopConditions.nOfFitnessEvaluations(nEval),
@@ -438,23 +475,10 @@ public class Solvers {
           nPop,
           true,
           remap,
-          (p, r) -> new POSetPopulationState<>()
+          (p, r) -> new POSetPopulationState<>(),
+          nAttemptsDiversity
       );
-    }
-    return new StandardWithEnforcedDiversityEvolver<>(
-        mapper,
-        treeFactory,
-        nPop,
-        StopConditions.nOfFitnessEvaluations(nEval),
-        geneticOperators,
-        new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
-        new Last(),
-        nPop,
-        true,
-        remap,
-        (p, r) -> new POSetPopulationState<>(),
-        nAttemptsDiversity
-    );
+    };
   }
 
 }
