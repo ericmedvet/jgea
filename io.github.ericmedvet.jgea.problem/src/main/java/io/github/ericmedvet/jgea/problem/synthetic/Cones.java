@@ -17,12 +17,14 @@
 package io.github.ericmedvet.jgea.problem.synthetic;
 
 import io.github.ericmedvet.jgea.core.problem.MultiHomogeneousObjectiveProblem;
+import io.github.ericmedvet.jgea.core.problem.ProblemWithExampleSolution;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 
-public class Cones implements MultiHomogeneousObjectiveProblem<List<Double>, Double> {
+public class Cones implements MultiHomogeneousObjectiveProblem<List<Double>, Double>,
+    ProblemWithExampleSolution<List<Double>> {
 
   @Override
   public List<Comparator<Double>> comparators() {
@@ -31,10 +33,15 @@ public class Cones implements MultiHomogeneousObjectiveProblem<List<Double>, Dou
   }
 
   @Override
+  public List<Double> example() {
+    return List.of(0d, 0d);
+  }
+
+  @Override
   public Function<List<Double>, List<Double>> qualityFunction() {
     return list -> {
       double r = list.get(0);
-      double h = list.get(0); // TODO should this be 1?
+      double h = list.get(1);
       double s = Math.sqrt(r * r + h * h);
       double lateralSurface = Math.PI * r * s;
       double totalSurface = Math.PI * r * (r + s);
