@@ -26,10 +26,12 @@ public class IntOneMax implements ComparableQualityBasedProblem<IntString, Doubl
     ProblemWithExampleSolution<IntString> {
 
   private final int p;
+  private final int upperBound;
   private final Function<IntString, Double> fitnessFunction;
 
-  public IntOneMax(int p) {
+  public IntOneMax(int p, int upperBound) {
     this.p = p;
+    this.upperBound = upperBound;
     fitnessFunction = s -> {
       if (s.size() != p) {
         throw new IllegalArgumentException("Wrong input size: %d expected, %d found".formatted(p, s.size()));
@@ -43,7 +45,7 @@ public class IntOneMax implements ComparableQualityBasedProblem<IntString, Doubl
 
   @Override
   public IntString example() {
-    return new IntString(0, 1, p);
+    return new IntString(0, upperBound, p);
   }
 
   @Override

@@ -29,7 +29,6 @@ import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedMultivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedUnivariateRealFunction;
 import io.github.ericmedvet.jgea.experimenter.InvertibleMapper;
-import io.github.ericmedvet.jgea.problem.regression.NumericalDataset;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jsdynsym.buildable.builders.NumericalDynamicalSystems;
 import io.github.ericmedvet.jsdynsym.core.NumericalParametrized;
@@ -41,13 +40,20 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * @author "Eric Medvet" on 2023/05/01 for jgea
  */
 public class Mappers {
   private Mappers() {
+  }
+
+  @SuppressWarnings("unused")
+  public static <A,B,C> InvertibleMapper<A, C> compose(
+      @Param(value = "first") InvertibleMapper<A, B> first,
+      @Param(value = "second") InvertibleMapper<B, C> second
+  ) {
+    return first.andThen(second);
   }
 
   @SuppressWarnings("unused")
@@ -122,74 +128,61 @@ public class Mappers {
 
   @SuppressWarnings("unused")
   public static InvertibleMapper<List<Double>, NamedMultivariateRealFunction> numericalParametrizedMRF(
-      @Param("dataset") Supplier<NumericalDataset> dataset,
       @Param("function") NumericalDynamicalSystems.Builder<MultivariateRealFunction, StatelessSystem.State> function
   ) {
-    NumericalDataset d = dataset.get();
-    MultivariateRealFunction mrf = function.apply(d.xVarNames(), d.yVarNames());
-    if (mrf instanceof NumericalParametrized) {
-      return InvertibleMapper.from(
-          params -> {
-            MultivariateRealFunction np = function.apply(d.xVarNames(), d.yVarNames());
-            ((NumericalParametrized) np).setParams(params.stream().mapToDouble(v -> v).toArray());
-            return NamedMultivariateRealFunction.from(np, d.xVarNames(), d.yVarNames());
-          },
-          Arrays.stream(((NumericalParametrized) mrf).getParams()).boxed().toList()
-      );
-    }
-    throw new IllegalArgumentException("The provided function is not numerical parametrized.");
-  }
-
-  @SuppressWarnings("unused")
-  public static InvertibleMapper<Graph<Node, OperatorGraph.NonValuedArc>, NamedMultivariateRealFunction> oGraphMRF(
-      @Param("dataset") Supplier<NumericalDataset> dataset,
-      @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
-  ) {
-    NumericalDataset d = dataset.get();
     return InvertibleMapper.from(
-        g -> new OperatorGraph(g, d.xVarNames(), d.yVarNames()),
-        OperatorGraph.sampleFor(d.xVarNames(), d.yVarNames())
+        (nmrf, params) -> {
+          if (nmrf instanceof NumericalParametrized parametrized) {
+            MultivariateRealFunction np = function.apply(nmrf.xVarNames(), nmrf.yVarNames());
+            ((NumericalParametrized) np).setParams(params.stream().mapToDouble(v -> v).toArray());
+            return NamedMultivariateRealFunction.from(np, nmrf.xVarNames(), nmrf.yVarNames());
+          }
+          throw new IllegalArgumentException("The provided function is not numerical parametrized.");
+        },
+        nmrf -> {
+          if (nmrf instanceof NumericalParametrized parametrized) {
+            return Arrays.stream(parametrized.getParams()).boxed().toList();
+          }
+          throw new IllegalArgumentException("The provided function is not numerical parametrized.");
+        }
     );
   }
 
   @SuppressWarnings("unused")
-  public static <T> InvertibleMapper<T, NamedUnivariateRealFunction> toURF(
-      @Param("inner") InvertibleMapper<T, NamedMultivariateRealFunction> inner
+  public static InvertibleMapper<Graph<Node, OperatorGraph.NonValuedArc>, NamedMultivariateRealFunction> oGraphMRF(
+      @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
     return InvertibleMapper.from(
-        t -> NamedUnivariateRealFunction.from(inner.apply(t)),
-        inner.exampleFor()
+        (nmrf, g) -> new OperatorGraph(g, nmrf.xVarNames(), nmrf.yVarNames()),
+        nmrf -> OperatorGraph.sampleFor(nmrf.xVarNames(), nmrf.yVarNames())
+    );
+  }
+
+  @SuppressWarnings("unused")
+  public static <T> InvertibleMapper<NamedMultivariateRealFunction, NamedUnivariateRealFunction> toURF() {
+    return InvertibleMapper.from(
+        (nurf, nmrf) -> NamedUnivariateRealFunction.from(nmrf),
+        nurf -> nurf
     );
   }
 
   @SuppressWarnings("unused")
   public static InvertibleMapper<List<Tree<Element>>, NamedMultivariateRealFunction> treeMRF(
-      @Param("dataset") Supplier<NumericalDataset> dataset,
       @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
-    NumericalDataset d = dataset.get();
     return InvertibleMapper.from(
-        ts -> new TreeBasedMultivariateRealFunction(ts, d.xVarNames(), d.yVarNames()),
-        TreeBasedMultivariateRealFunction.sampleFor(d.xVarNames(), d.yVarNames())
+        (nmrf, ts) -> new TreeBasedMultivariateRealFunction(ts, nmrf.xVarNames(), nmrf.yVarNames()),
+        nmrf -> TreeBasedMultivariateRealFunction.sampleFor(nmrf.xVarNames(), nmrf.yVarNames())
     );
   }
 
   @SuppressWarnings("unused")
   public static InvertibleMapper<Tree<Element>, NamedUnivariateRealFunction> treeURF(
-      @Param("dataset") Supplier<NumericalDataset> dataset,
       @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
-    NumericalDataset d = dataset.get();
-    if (d.yVarNames().size() != 1) {
-      throw new IllegalArgumentException(
-          "Dataset has %d y variables, instead of just one: not suitable for univariate regression".formatted(
-              d.yVarNames().size())
-      );
-    }
     return InvertibleMapper.from(
-        t -> new TreeBasedUnivariateRealFunction(t, d.xVarNames(), d.yVarNames().get(0)),
-        TreeBasedUnivariateRealFunction.sampleFor(d.xVarNames(), d.yVarNames().get(0))
+        (nurf, t) -> new TreeBasedUnivariateRealFunction(t, nurf.xVarNames(), nurf.yVarName()),
+        nurf -> TreeBasedUnivariateRealFunction.sampleFor(nurf.xVarNames(), nurf.yVarName())
     );
   }
-
 }

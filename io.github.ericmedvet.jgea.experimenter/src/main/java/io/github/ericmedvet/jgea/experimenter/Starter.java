@@ -52,6 +52,13 @@ public class Starter {
         description = "Path of the file with the experiment description."
     )
     public String experimentDescriptionFilePath = "";
+
+    @Parameter(
+        names = {"--exampleExp", "-e"},
+        description = "Name of the example experiment description."
+    )
+    public String exampleExperimentDescriptionResourceName = "";
+
     @Parameter(
         names = {"--nOfThreads", "-nt"},
         description = "Number of threads to be used for fitness computation."
@@ -136,30 +143,31 @@ public class Starter {
     }
     //read experiment description
     String expDescription = null;
-    if (configuration.experimentDescriptionFilePath.isEmpty()) {
-      L.config("Using default experiment description");
-      InputStream inputStream = Starter.class.getResourceAsStream("/exp-examples/intonemax.txt");
+    if (configuration.experimentDescriptionFilePath.isEmpty() && !configuration.exampleExperimentDescriptionResourceName.isEmpty()) {
+      L.config("Using example experiment description: %s".formatted(configuration.exampleExperimentDescriptionResourceName));
+      InputStream inputStream = Starter.class.getResourceAsStream("/exp-examples/%s.txt".formatted(configuration.exampleExperimentDescriptionResourceName));
       if (inputStream == null) {
         L.severe("Cannot find default experiment description");
       } else {
         try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
           expDescription = br.lines().collect(Collectors.joining());
         } catch (IOException e) {
-          L.severe("Cannot read default experiment description: %s%n".formatted(e));
+          L.severe("Cannot read default experiment description: %s".formatted(e));
         }
       }
-    } else {
+    } else if (!configuration.experimentDescriptionFilePath.isEmpty()) {
       L.config(String.format("Using provided experiment description: %s", configuration.experimentDescriptionFilePath));
       try (BufferedReader br = new BufferedReader(new FileReader(configuration.experimentDescriptionFilePath))) {
         expDescription = br.lines().collect(Collectors.joining());
       } catch (IOException e) {
-        L.severe("Cannot read provided experiment description at %s: %s%n".formatted(
+        L.severe("Cannot read provided experiment description at %s: %s".formatted(
             configuration.experimentDescriptionFilePath,
             e
         ));
       }
     }
     if (expDescription == null) {
+      L.info("No experiment provided");
       System.exit(-1);
     }
     //check if just check

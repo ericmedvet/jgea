@@ -41,4 +41,12 @@ public interface InvertibleMapper<T, R> {
     };
   }
 
+  default <Q> InvertibleMapper<T, Q> andThen(InvertibleMapper<R, Q> otherMapper) {
+    InvertibleMapper<T, R> thisMapper = this;
+    return from(
+        (q, t) -> otherMapper.mapperFor(q).apply(thisMapper.mapperFor(otherMapper.exampleFor(q)).apply(t)),
+        q -> thisMapper.exampleFor(otherMapper.exampleFor(q))
+    );
+  }
+
 }

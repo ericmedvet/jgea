@@ -2,7 +2,7 @@ ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) * [
     ea.run(
       solver = ea.s.intGA(
-        mapper = ea.m.identityIntString(l = 100; lowerBound = 5; upperBound = 100);
+        mapper = ea.m.identityIntString();
         nEval = 10000
       );
       problem = ea.p.s.intOneMax()

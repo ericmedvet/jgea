@@ -1,33 +1,28 @@
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) * [
-    ea.run(
-      solver = ea.s.srTreeGP(
-        mapper = ea.m.treeURF(dataset = ea.d.num.empty(xVars = [x1]; yVars = [y]));
-        nEval = 2000
+  runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
+    (problem = [
+      ea.p.ur.synthetic(name = "keijzer6");
+      ea.p.ur.synthetic(name = "nguyen7");
+      ea.p.ur.bundled(name = "concrete")
+    ]) *
+    (solver = (nEval = [2000]) * [
+      ea.s.oGraphea(
+        mapper = ea.m.compose(
+          first = ea.m.oGraphMRF();
+          second = ea.m.toURF()
+        )
       );
-      problem = ea.p.ur.synthetic(name = "nguyen7")
-    );
-    ea.run(
-      solver = ea.s.srTreeGP(
-        mapper = ea.m.treeURF(dataset = ea.d.num.empty(xVars = [x1]; yVars = [y]));
-        nEval = 2000
+      ea.s.srTreeGP(
+        mapper = ea.m.treeURF()
       );
-      problem = ea.p.ur.synthetic(name = "keijzer6")
-    );
-    ea.run(
-      solver = ea.s.oGraphea(
-        mapper = ea.m.toURF(inner = ea.m.oGraphMRF(dataset = ea.d.num.empty(xVars = [x1]; yVars = [y])));
-        nEval = 2000
-      );
-      problem = ea.p.ur.synthetic(name = "keijzer6")
-    );
-    ea.run(
-      solver = ea.s.srTreeGP(
-        mapper = ea.m.treeURF(dataset = ea.d.num.fromProblem(problem = ea.p.ur.bundled(name = concrete)));
-        nEval = 2000
-      );
-      problem = ea.p.ur.bundled(name = "concrete")
-    )
+      ea.s.numGA(
+        mapper = ea.m.compose(
+          first = ea.m.mlpMRF(activationFunction = relu);
+          second = ea.m.toURF()
+        )
+      )
+    ]) * [
+    ea.run()
   ];
   listeners = [
     ea.l.console(functions = [
@@ -36,7 +31,6 @@ ea.experiment(
       ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
       ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.2f");
       ea.nf.solution(individual = ea.nf.best(); s = "%60.60s")
-    ]);
-    ea.l.outcomeSaver(filePathTemplate = "../ro-{randomGenerator.seed:%02d}-{solver:%#s}-{problem.name}.txt")
+    ])
   ]
 )
