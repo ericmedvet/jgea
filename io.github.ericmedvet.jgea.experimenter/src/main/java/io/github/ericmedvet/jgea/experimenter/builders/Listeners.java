@@ -100,59 +100,61 @@ public class Listeners {
       @Param(value = "onlyLast") boolean onlyLast
   ) {
     record PopIndividualPair<G, S, Q>(POSetPopulationState<G, S, Q> pop, Individual<G, S, Q> individual) {}
-    List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> popFunctions = Misc.concat(List.of(
-        defaultStateFunctions,
-        stateFunctions
-    ));
-    List<NamedFunction<? super PopIndividualPair<G, S, Q>, ?>> pairFunctions = new ArrayList<>();
-    popFunctions.stream()
-        .map(f -> NamedFunction.build(
-            f.getName(),
-            f.getFormat(),
-            (PopIndividualPair<G, S, Q> pair) -> f.apply(pair.pop())
-        ))
-        .forEach(pairFunctions::add);
-    individualFunctions.stream().map(f -> NamedFunction.build(
-        f.getName(),
-        f.getFormat(),
-        (PopIndividualPair<G, S, Q> pair) -> f.apply(pair.individual())
-    )).forEach(pairFunctions::add);
-    CSVPrinter<PopIndividualPair<G, S, Q>, Run<?, G, S, Q>> innerListenerFactory = new CSVPrinter<>(
-        pairFunctions,
-        buildRunNamedFunctions(runKeys),
-        new File(filePath),
-        true
-    );
-    ListenerFactory<? super POSetPopulationState<G, S, Q>, Run<?, G, S, Q>> allListenerFactory =
-        new ListenerFactory<>() {
-          @Override
-          public Listener<POSetPopulationState<G, S, Q>> build(Run<?, G, S, Q> run) {
-            Listener<PopIndividualPair<G, S, Q>> innerListener = innerListenerFactory.build(run);
-            return new Listener<>() {
-              @Override
-              public void listen(POSetPopulationState<G, S, Q> state) {
-                for (Individual<G, S, Q> individual : state.getPopulation().all()) {
-                  innerListener.listen(new PopIndividualPair<>(state, individual));
+    return (experiment, executorService) -> {
+      List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> popFunctions = Misc.concat(List.of(
+          defaultStateFunctions,
+          stateFunctions
+      ));
+      List<NamedFunction<? super PopIndividualPair<G, S, Q>, ?>> pairFunctions = new ArrayList<>();
+      popFunctions.stream()
+          .map(f -> NamedFunction.build(
+              f.getName(),
+              f.getFormat(),
+              (PopIndividualPair<G, S, Q> pair) -> f.apply(pair.pop())
+          ))
+          .forEach(pairFunctions::add);
+      individualFunctions.stream().map(f -> NamedFunction.build(
+          f.getName(),
+          f.getFormat(),
+          (PopIndividualPair<G, S, Q> pair) -> f.apply(pair.individual())
+      )).forEach(pairFunctions::add);
+      CSVPrinter<PopIndividualPair<G, S, Q>, Run<?, G, S, Q>> innerListenerFactory = new CSVPrinter<>(
+          pairFunctions,
+          buildRunNamedFunctions(runKeys, experiment),
+          new File(filePath),
+          true
+      );
+      ListenerFactory<? super POSetPopulationState<G, S, Q>, Run<?, G, S, Q>> allListenerFactory =
+          new ListenerFactory<>() {
+            @Override
+            public Listener<POSetPopulationState<G, S, Q>> build(Run<?, G, S, Q> run) {
+              Listener<PopIndividualPair<G, S, Q>> innerListener = innerListenerFactory.build(run);
+              return new Listener<>() {
+                @Override
+                public void listen(POSetPopulationState<G, S, Q> state) {
+                  for (Individual<G, S, Q> individual : state.getPopulation().all()) {
+                    innerListener.listen(new PopIndividualPair<>(state, individual));
+                  }
                 }
-              }
 
-              @Override
-              public void done() {
-                innerListener.done();
-              }
-            };
-          }
+                @Override
+                public void done() {
+                  innerListener.done();
+                }
+              };
+            }
 
-          @Override
-          public void shutdown() {
-            innerListenerFactory.shutdown();
-          }
-        };
-    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        allListenerFactory,
-        deferred ? executorService : null,
-        onlyLast
-    );
+            @Override
+            public void shutdown() {
+              innerListenerFactory.shutdown();
+            }
+          };
+      return new ListenerFactoryAndMonitor<>(
+          allListenerFactory,
+          deferred ? executorService : null,
+          onlyLast
+      );
+    };
   }
 
   @SuppressWarnings("unused")
@@ -182,7 +184,7 @@ public class Listeners {
                 defaultStateFunctions,
                 stateFunctions
             )),
-            buildRunNamedFunctions(runKeys),
+            buildRunNamedFunctions(runKeys, experiment),
             new File(filePath),
             true
         ),
@@ -191,12 +193,19 @@ public class Listeners {
     );
   }
 
-  private static <G, S, Q> List<NamedFunction<? super Run<?, G, S, Q>, ?>> buildRunNamedFunctions(List<String> runKeys) {
+  private static <G, S, Q> List<NamedFunction<? super Run<?, G, S, Q>, ?>> buildRunNamedFunctions(
+      List<String> runKeys,
+      Experiment experiment
+  ) {
     List<NamedFunction<? super Run<?, G, S, Q>, ?>> functions = new ArrayList<>();
     runKeys.stream()
         .map(k -> NamedFunction.build(
             k,
-            "%s",
+            "%" + experiment.runs().stream()
+                .mapToInt(r -> Utils.getKeyFromParamMap(r.map(), Arrays.stream(k.split("\\.")).toList())
+                    .toString()
+                    .length())
+                .max().orElse(10) + "s",
             (Run<?, G, S, Q> run) -> Utils.getKeyFromParamMap(run.map(), Arrays.stream(k.split("\\.")).toList())
         ))
         .forEach(functions::add);
@@ -229,7 +238,7 @@ public class Listeners {
                 defaultStateFunctions,
                 stateFunctions
             )),
-            buildRunNamedFunctions(runKeys)
+            buildRunNamedFunctions(runKeys, experiment)
         ),
         deferred ? executorService : null,
         onlyLast
@@ -410,7 +419,7 @@ public class Listeners {
                 defaultStateFunctions,
                 stateFunctions
             )),
-            buildRunNamedFunctions(runKeys),
+            buildRunNamedFunctions(runKeys, experiment),
             Misc.concat(List.of(
                 defaultPlotTableBuilders,
                 plotTableBuilders
