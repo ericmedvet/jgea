@@ -1,0 +1,26 @@
+ea.experiment(
+  runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
+    (problem = [
+      ea.p.s.doublesOneMax(p = 1000)
+      ea.p.s.ackley(p = 10);
+      ea.p.s.rastrigin(p = 10);
+      ea.p.s.sphere(p = 10)
+    ]) *
+    (solver = (nEval = [1000]) * [
+      ea.s.numGA(mapper = ea.m.identity());
+      ea.s.simpleES(mapper = ea.m.identity());
+      ea.s.openAIES(mapper = ea.m.identity())
+    ]) * [
+    ea.run()
+  ];
+  listeners = [
+    ea.l.console(
+      functions = [
+        ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
+        ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
+        ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()))
+      ];
+      runKeys = [problem]
+    )
+  ]
+)

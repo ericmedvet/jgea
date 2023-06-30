@@ -67,6 +67,19 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  public static <T> InvertibleMapper<NamedMultivariateRealFunction, NamedUnivariateRealFunction> fromMRFToURF() {
+    return InvertibleMapper.from(
+        (nurf, nmrf) -> NamedUnivariateRealFunction.from(nmrf),
+        nurf -> nurf
+    );
+  }
+
+  @SuppressWarnings("unused")
+  public static <X> InvertibleMapper<X,X> identity() {
+    return InvertibleMapper.identity();
+  }
+
+  @SuppressWarnings("unused")
   public static InvertibleMapper<BitString, BitString> identityBitString() {
     return InvertibleMapper.from(
         (bs, g) -> g,
@@ -155,14 +168,6 @@ public class Mappers {
     return InvertibleMapper.from(
         (nmrf, g) -> new OperatorGraph(g, nmrf.xVarNames(), nmrf.yVarNames()),
         nmrf -> OperatorGraph.sampleFor(nmrf.xVarNames(), nmrf.yVarNames())
-    );
-  }
-
-  @SuppressWarnings("unused")
-  public static <T> InvertibleMapper<NamedMultivariateRealFunction, NamedUnivariateRealFunction> toURF() {
-    return InvertibleMapper.from(
-        (nurf, nmrf) -> NamedUnivariateRealFunction.from(nmrf),
-        nurf -> nurf
     );
   }
 

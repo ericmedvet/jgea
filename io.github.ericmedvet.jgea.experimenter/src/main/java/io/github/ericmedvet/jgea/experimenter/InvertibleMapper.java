@@ -41,6 +41,13 @@ public interface InvertibleMapper<T, R> {
     };
   }
 
+  static <T> InvertibleMapper<T, T> identity() {
+    return InvertibleMapper.from(
+        (t, t2) -> t2,
+        t -> t
+    );
+  }
+
   default <Q> InvertibleMapper<T, Q> andThen(InvertibleMapper<R, Q> otherMapper) {
     InvertibleMapper<T, R> thisMapper = this;
     return from(
