@@ -22,6 +22,7 @@ import io.github.ericmedvet.jgea.core.representation.graph.Graph;
 import io.github.ericmedvet.jgea.core.representation.graph.Node;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.functiongraph.FunctionGraph;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph.OperatorGraph;
+import io.github.ericmedvet.jgea.core.representation.grid.*;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
@@ -35,6 +36,7 @@ import io.github.ericmedvet.jsdynsym.core.NumericalParametrized;
 import io.github.ericmedvet.jsdynsym.core.StatelessSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
+import io.github.ericmedvet.jsdynsym.grid.Grid;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,7 +51,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
-  public static <A,B,C> InvertibleMapper<A, C> compose(
+  public static <A, B, C> InvertibleMapper<A, C> compose(
       @Param(value = "first") InvertibleMapper<A, B> first,
       @Param(value = "second") InvertibleMapper<B, C> second
   ) {
@@ -75,7 +77,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
-  public static <X> InvertibleMapper<X,X> identity() {
+  public static <X> InvertibleMapper<X, X> identity() {
     return InvertibleMapper.identity();
   }
 
@@ -92,6 +94,24 @@ public class Mappers {
     return InvertibleMapper.from(
         (is, g) -> g,
         is -> is
+    );
+  }
+
+  @SuppressWarnings("unused")
+  public static <T> InvertibleMapper<IntString, Grid<T>> intGrammarGrid(
+      @Param("grammar") GridGrammar<T> grammar,
+      @Param(value = "upperBound", dI = 16) int upperBound,
+      @Param(value = "l", dI = 256) int l,
+      @Param(value = "overwrite", dB = true) boolean overwrite,
+      @Param(value = "criteria", dSs = {"least_recent"}) List<StandardGridDeveloper.SortingCriterion> criteria
+  ) {
+    GridDeveloper<T> gridDeveloper = new StandardGridDeveloper<>(grammar, overwrite, criteria);
+    return InvertibleMapper.from(
+        (eGrid, is) -> {
+          IntStringOptionChooser<T> chooser = new IntStringOptionChooser<>(is, grammar);
+          return gridDeveloper.develop(chooser).orElse(eGrid);
+        },
+        eGrid -> new IntString(0, upperBound, l)
     );
   }
 
@@ -136,6 +156,23 @@ public class Mappers {
             ).getParams().length,
             0d
         )
+    );
+  }
+
+  @SuppressWarnings("unused")
+  public static <T> InvertibleMapper<List<Double>, Grid<T>> numGrammarGrid(
+      @Param("grammar") GridGrammar<T> grammar,
+      @Param(value = "l", dI = 256) int l,
+      @Param(value = "overwrite", dB = true) boolean overwrite,
+      @Param(value = "criteria", dSs = {"least_recent"}) List<StandardGridDeveloper.SortingCriterion> criteria
+  ) {
+    GridDeveloper<T> gridDeveloper = new StandardGridDeveloper<>(grammar, overwrite, criteria);
+    return InvertibleMapper.from(
+        (eGrid, vs) -> {
+          GridDeveloper.Chooser<T> chooser = new DoublesOptionChooser<>(vs, grammar);
+          return gridDeveloper.develop(chooser).orElse(eGrid);
+        },
+        eGrid -> Collections.nCopies(l, 0d)
     );
   }
 

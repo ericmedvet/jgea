@@ -39,6 +39,7 @@ public class PreparedNamedBuilder {
               .and(List.of("numerical", "num"), NamedBuilder.fromUtilityClass(NumericalDatasets.class))
           )
           .and(List.of("solver", "s"), NamedBuilder.fromUtilityClass(Solvers.class))
+          .and(List.of("grammar"), NamedBuilder.fromUtilityClass(Grammars.class))
           .and(List.of("mapper", "m"), NamedBuilder.fromUtilityClass(Mappers.class))
           .and(List.of("listener", "l"), NamedBuilder.fromUtilityClass(Listeners.class))
           .and(List.of("function", "f"), NamedBuilder.fromUtilityClass(Functions.class))

@@ -16,8 +16,11 @@
 
 package io.github.ericmedvet.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jgea.problem.grid.CharShapeApproximation;
 import io.github.ericmedvet.jgea.problem.synthetic.*;
 import io.github.ericmedvet.jnb.core.Param;
+
+import java.io.IOException;
 
 public class SyntheticProblems {
 
@@ -29,6 +32,18 @@ public class SyntheticProblems {
       @Param(value = "p", dI = 100) int p
   ) {
     return new Ackley(p);
+  }
+
+  @SuppressWarnings("unused")
+  public static CharShapeApproximation charShapeApproximation(
+      @Param("target") String syntheticTargetName,
+      @Param(value = "translation", dB = true) boolean translation
+  ) {
+    try {
+      return new CharShapeApproximation(syntheticTargetName, translation);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @SuppressWarnings("unused")

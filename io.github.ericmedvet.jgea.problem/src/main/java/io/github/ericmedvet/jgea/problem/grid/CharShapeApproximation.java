@@ -17,6 +17,7 @@
 package io.github.ericmedvet.jgea.problem.grid;
 
 import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
+import io.github.ericmedvet.jgea.core.problem.ProblemWithExampleSolution;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 import io.github.ericmedvet.jsdynsym.grid.GridUtils;
 
@@ -27,7 +28,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
-public class CharShapeApproximation implements ComparableQualityBasedProblem<Grid<Character>, Double> {
+public class CharShapeApproximation implements ComparableQualityBasedProblem<Grid<Character>, Double>,
+    ProblemWithExampleSolution<Grid<Character>> {
 
   private final Grid<Character> target;
   private final boolean translation;
@@ -54,6 +56,19 @@ public class CharShapeApproximation implements ComparableQualityBasedProblem<Gri
       });
       this.translation = translation;
     }
+  }
+
+  @Override
+  public Grid<Character> example() {
+    return Grid.create(
+        1,
+        1,
+        target.values()
+            .stream()
+            .filter(Objects::nonNull)
+            .findAny()
+            .orElseThrow(() -> new IllegalArgumentException("Empty target grid"))
+    );
   }
 
   @Override

@@ -125,8 +125,7 @@ public class StandardGridDeveloper<T> implements GridDeveloper<T> {
     Set<T> nonTerminalSymbols = grammar.getRules().keySet();
     int i = 0;
     // build a 1x1 grid with the starting symbol
-    Grid<Aged<T>> polyomino = Grid.create(1, 1);
-    polyomino.set(0, 0, new Aged<>(i, grammar.getStartingSymbol()));
+    Grid<Aged<T>> polyomino = Grid.create(1, 1, new Aged<>(i, grammar.getStartingSymbol()));
     while (true) {
       // find the candidates
       final Grid<Aged<T>> finalPolyomino = polyomino;

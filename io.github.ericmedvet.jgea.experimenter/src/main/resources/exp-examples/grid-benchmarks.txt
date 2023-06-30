@@ -1,0 +1,26 @@
+ea.experiment(
+  runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
+    (problem = [
+      ea.p.s.charShapeApproximation(target = circle);
+      ea.p.s.charShapeApproximation(target = net);
+      ea.p.s.charShapeApproximation(target = bar)
+    ]) *
+    (solver = (nEval = [10000]) * [
+      ea.s.intGA(mapper = ea.m.intGrammarGrid(grammar = ea.grammar.gridBundled(name = cross)));
+      ea.s.intGA(mapper = ea.m.intGrammarGrid(grammar = ea.grammar.gridBundled(name = simple)));
+      ea.s.numGA(mapper = ea.m.numGrammarGrid(grammar = ea.grammar.gridBundled(name = cross)));
+      ea.s.numGA(mapper = ea.m.numGrammarGrid(grammar = ea.grammar.gridBundled(name = simple)))
+    ]) * [
+    ea.run()
+  ];
+  listeners = [
+    ea.l.console(
+      functions = [
+        ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
+        ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
+        ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()))
+      ];
+      runKeys = ["problem.target"]
+    )
+  ]
+)

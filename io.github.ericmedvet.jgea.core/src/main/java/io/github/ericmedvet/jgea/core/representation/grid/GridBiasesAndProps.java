@@ -49,7 +49,7 @@ public class GridBiasesAndProps {
         Map.entry("simple", GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/simple.bnf"))),
         Map.entry(
             "non-compact",
-            GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/non-compact.bnf"))
+            GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/cross.bnf"))
         ),
         Map.entry("dog-shape", GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/dog-shape.bnf")))
     );
