@@ -32,6 +32,13 @@ public class SyntheticProblems {
   }
 
   @SuppressWarnings("unused")
+  public static DoublesOneMax doublesOneMax(
+      @Param(value = "p", dI = 100) int p
+  ) {
+    return new DoublesOneMax(p);
+  }
+
+  @SuppressWarnings("unused")
   public static IntOneMax intOneMax(
       @Param(value = "p", dI = 100) int p,
       @Param(value = "upperBound", dI = 100) int upperBound
