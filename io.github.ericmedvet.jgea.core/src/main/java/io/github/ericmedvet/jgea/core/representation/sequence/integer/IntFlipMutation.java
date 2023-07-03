@@ -30,10 +30,17 @@ public class IntFlipMutation implements Mutation<IntString> {
 
   @Override
   public IntString mutate(IntString parent, RandomGenerator random) {
+    if (parent.getLowerBound() == parent.getUpperBound()) {
+      return parent;
+    }
     IntString child = new IntString(parent.getLowerBound(), parent.getUpperBound());
     for (Integer n : parent) {
       if (random.nextDouble() < p) {
-        child.add(random.nextInt(child.getLowerBound(), child.getUpperBound()));
+        int newN = random.nextInt(child.getLowerBound(), child.getUpperBound() - 1);
+        if (newN >= n) {
+          newN = newN + 1;
+        }
+        child.add(newN);
       } else {
         child.add(n);
       }
