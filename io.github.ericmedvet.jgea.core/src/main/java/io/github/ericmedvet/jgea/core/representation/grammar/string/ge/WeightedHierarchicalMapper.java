@@ -18,12 +18,8 @@ package io.github.ericmedvet.jgea.core.representation.grammar.string.ge;
 
 import com.google.common.collect.Range;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
-import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author eric
@@ -123,11 +119,11 @@ public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
   }
 
   @Override
-  protected double optionSliceWeight(BitString slice) {
+  protected double optionSliceWeight(BitSet slice) {
     if (!weightOptions) {
       return super.optionSliceWeight(slice);
     }
-    return slice.count();
+    return slice.cardinality();
   }
 
   @Override

@@ -45,7 +45,7 @@ public class GridBiasesAndProps {
     int minL = 10;
     int maxL = 200;
     int stepL = 10;
-    PrintStream ps = new PrintStream("/home/eric/experiments/2023-EuroGP-GrammarBasedEvolutionOfPolyominoes/props.txt");
+    PrintStream ps = System.out; //new PrintStream("/home/eric/experiments/2023-EuroGP-GrammarBasedEvolutionOfPolyominoes/props.txt");
     //to-iterate params
     Map<String, GridGrammar<String>> grammars = Map.ofEntries(
         Map.entry("worm", GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/worm.bnf"))),

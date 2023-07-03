@@ -53,7 +53,7 @@ public class IntStringChooser<T> implements GridDeveloper.Chooser<T> {
       return Optional.empty();
     }
     List<GridGrammar.ReferencedGrid<T>> options = gridGrammar.rules().get(t);
-    int index = intString.get(i) % options.size();
+    int index = intString.genes().get(i) % options.size();
     i = i + 1;
     return Optional.of(options.get(index));
   }

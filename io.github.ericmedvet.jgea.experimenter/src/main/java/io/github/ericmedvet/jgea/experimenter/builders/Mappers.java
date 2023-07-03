@@ -23,7 +23,6 @@ import io.github.ericmedvet.jgea.core.representation.graph.Graph;
 import io.github.ericmedvet.jgea.core.representation.graph.Node;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.functiongraph.FunctionGraph;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph.OperatorGraph;
-import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
@@ -39,6 +38,7 @@ import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -82,7 +82,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
-  public static InvertibleMapper<BitString, BitString> identityBitString() {
+  public static InvertibleMapper<BitSet, BitSet> identityBitSet() {
     return InvertibleMapper.from(
         (bs, g) -> g,
         bs -> bs
@@ -111,7 +111,7 @@ public class Mappers {
           IntStringChooser<T> chooser = new IntStringChooser<>(is, grammar);
           return gridDeveloper.develop(chooser).orElse(eGrid);
         },
-        eGrid -> new IntString(0, upperBound, l)
+        eGrid -> new IntString(Collections.nCopies(l, 0), 0, upperBound)
     );
   }
 

@@ -33,8 +33,9 @@ import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph.ShallowFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.FixedLengthListFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.UniformCrossover;
-import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntFlipMutation;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
+import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntStringFlipMutation;
+import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntStringUniformCrossover;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.UniformIntStringFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.GaussianMutation;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.UniformDoubleFactory;
@@ -79,13 +80,13 @@ public class Solvers {
     return exampleS -> {
       IntString exampleGenotype = mapper.exampleFor(exampleS);
       IndependentFactory<IntString> factory = new UniformIntStringFactory(
-          exampleGenotype.getLowerBound(),
-          exampleGenotype.getUpperBound(),
+          exampleGenotype.lowerBound(),
+          exampleGenotype.upperBound(),
           exampleGenotype.size()
       );
       Map<GeneticOperator<IntString>, Double> geneticOperators = Map.ofEntries(
-          Map.entry(new IntFlipMutation(pMut), 1d - crossoverP),
-          Map.entry(new UniformCrossover<>(factory).andThen(new IntFlipMutation(pMut)), crossoverP)
+          Map.entry(new IntStringFlipMutation(pMut), 1d - crossoverP),
+          Map.entry(new IntStringUniformCrossover().andThen(new IntStringFlipMutation(pMut)), crossoverP)
       );
       if (!diversity) {
         return new StandardEvolver<>(
@@ -243,9 +244,10 @@ public class Solvers {
           mapper.exampleFor(exampleS).size(),
           new UniformDoubleFactory(initialMinV, initialMaxV)
       );
+      Crossover<List<Double>> crossover = new UniformCrossover<>();
       Map<GeneticOperator<List<Double>>, Double> geneticOperators = Map.ofEntries(
           Map.entry(new GaussianMutation(sigmaMut), 1d - crossoverP),
-          Map.entry(new UniformCrossover<>(doublesFactory).andThen(new GaussianMutation(sigmaMut)), crossoverP)
+          Map.entry(crossover.andThen(new GaussianMutation(sigmaMut)), crossoverP)
       );
       if (!diversity) {
         return new StandardEvolver<>(

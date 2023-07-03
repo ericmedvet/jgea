@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,30 +16,25 @@
 
 package io.github.ericmedvet.jgea.core.representation.sequence.bit;
 
-import io.github.ericmedvet.jgea.core.operator.Mutation;
+import io.github.ericmedvet.jgea.core.operator.Crossover;
 
+import java.util.BitSet;
 import java.util.random.RandomGenerator;
 
-/**
- * @author eric
- */
-public class BitFlipMutation implements Mutation<BitString> {
-
-  private final double p;
-
-  public BitFlipMutation(double p) {
-    this.p = p;
-  }
+public class BitSetUniformCrossover implements Crossover<BitSet> {
 
   @Override
-  public BitString mutate(BitString parent, RandomGenerator random) {
-    BitString newG = BitString.copyOf(parent);
-    for (int i = 0; i < newG.size(); i++) {
-      if (random.nextDouble() <= p) {
-        newG.flip(i);
+  public BitSet recombine(BitSet p1, BitSet p2, RandomGenerator random) {
+    BitSet newBitSet = new BitSet(Math.max(p1.size(), p2.size()));
+    for (int i = 0; i < newBitSet.size(); i = i + 1) {
+      if (i < p1.size() && i < p2.size()) {
+        newBitSet.set(i, random.nextBoolean() ? p1.get(i) : p2.get(i));
+      } else if (i < p1.size()) {
+        newBitSet.set(i, p1.get(i));
+      } else {
+        newBitSet.set(i, p2.get(i));
       }
     }
-    return newG;
+    return newBitSet;
   }
-
 }

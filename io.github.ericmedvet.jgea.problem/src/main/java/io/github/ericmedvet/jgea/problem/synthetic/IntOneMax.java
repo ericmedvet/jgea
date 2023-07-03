@@ -20,6 +20,7 @@ import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.problem.ProblemWithExampleSolution;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
 
+import java.util.Collections;
 import java.util.function.Function;
 
 public class IntOneMax implements ComparableQualityBasedProblem<IntString, Double>,
@@ -36,7 +37,7 @@ public class IntOneMax implements ComparableQualityBasedProblem<IntString, Doubl
       if (s.size() != p) {
         throw new IllegalArgumentException("Wrong input size: %d expected, %d found".formatted(p, s.size()));
       }
-      return s.stream()
+      return s.genes().stream()
           .mapToInt(n -> n)
           .average()
           .orElse(0d) / (double) s.size();
@@ -45,7 +46,7 @@ public class IntOneMax implements ComparableQualityBasedProblem<IntString, Doubl
 
   @Override
   public IntString example() {
-    return new IntString(0, upperBound, p);
+    return new IntString(Collections.nCopies(p, 0), 0, upperBound);
   }
 
   @Override

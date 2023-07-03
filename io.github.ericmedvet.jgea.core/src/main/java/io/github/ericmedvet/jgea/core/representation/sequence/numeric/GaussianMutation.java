@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,14 @@
 
 package io.github.ericmedvet.jgea.core.representation.sequence.numeric;
 
-import io.github.ericmedvet.jgea.core.representation.sequence.ProbabilisticMutation;
-
-import java.util.ArrayList;
-import java.util.List;
+import io.github.ericmedvet.jgea.core.representation.sequence.ListProbabilisticMutation;
 
 /**
  * @author Eric Medvet <eric.medvet@gmail.com>
  */
-public class GaussianMutation extends ProbabilisticMutation<Double, List<Double>> {
+public class GaussianMutation extends ListProbabilisticMutation<Double> {
 
   public GaussianMutation(double sigma) {
-    super(1d, random -> new ArrayList<>(), (v, random) -> v + random.nextGaussian() * sigma);
+    super(1d, (v, random) -> v + random.nextGaussian() * sigma);
   }
 }

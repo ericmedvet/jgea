@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package io.github.ericmedvet.jgea.core.representation.sequence;
 
-import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 
 import java.util.List;
@@ -25,28 +24,18 @@ import java.util.random.RandomGenerator;
 /**
  * @author eric
  */
-public class ProbabilisticMutation<E, L extends List<E>> implements Mutation<L> {
+public class ListProbabilisticMutation<E> implements Mutation<List<E>> {
   private final double p;
-  private final IndependentFactory<L> factory;
   private final Mutation<E> mutation;
 
-  public ProbabilisticMutation(double p, IndependentFactory<L> factory, Mutation<E> mutation) {
+  public ListProbabilisticMutation(double p, Mutation<E> mutation) {
     this.p = p;
-    this.factory = factory;
     this.mutation = mutation;
   }
 
   @Override
-  public L mutate(L parent, RandomGenerator random) {
-    L child = factory.build(random);
-    for (int i = 0; i < parent.size(); i++) {
-      E e = (random.nextDouble() < p) ? mutation.mutate(parent.get(i), random) : parent.get(i);
-      if (child.size() > i) {
-        child.set(i, e);
-      } else {
-        child.add(e);
-      }
-    }
-    return child;
+  public List<E> mutate(List<E> parent, RandomGenerator random) {
+    return parent.stream().map(e -> random.nextDouble()<p?mutation.mutate(e, random):e).toList();
   }
+
 }

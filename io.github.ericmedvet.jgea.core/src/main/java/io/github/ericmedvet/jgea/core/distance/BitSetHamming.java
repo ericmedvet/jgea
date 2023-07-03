@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,30 +14,28 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core.representation.sequence.bit;
+package io.github.ericmedvet.jgea.core.distance;
 
-import io.github.ericmedvet.jgea.core.IndependentFactory;
-
-import java.util.random.RandomGenerator;
+import java.util.BitSet;
 
 /**
  * @author eric
  */
-public class BitStringFactory implements IndependentFactory<BitString> {
-
-  private final int size;
-
-  public BitStringFactory(int size) {
-    this.size = size;
-  }
+public class BitSetHamming implements Distance<BitSet> {
 
   @Override
-  public BitString build(RandomGenerator random) {
-    BitString bitString = new BitString(size);
-    for (int i = 0; i < size; i++) {
-      bitString.set(i, random.nextBoolean());
+  public Double apply(BitSet b1, BitSet b2) {
+    if (b1.size() != b2.size()) {
+      throw new IllegalArgumentException(String.format(
+          "Sequences size should be the same (%d vs. %d)",
+          b1.size(),
+          b2.size()
+      ));
     }
-    return bitString;
+    BitSet xored = (BitSet) b1.clone();
+    xored.xor(b2);
+    return (double) xored.cardinality();
   }
+
 
 }

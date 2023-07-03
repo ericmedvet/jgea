@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,11 @@ package io.github.ericmedvet.jgea.problem.mapper;
 
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
+import io.github.ericmedvet.jgea.core.distance.BitSetHamming;
 import io.github.ericmedvet.jgea.core.distance.Distance;
-import io.github.ericmedvet.jgea.core.distance.Hamming;
 import io.github.ericmedvet.jgea.core.operator.GeneticOperator;
-import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitFlipMutation;
-import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
-import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringFactory;
+import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitSetFactory;
+import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitSetFlipMutation;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.util.Pair;
 import org.apache.commons.math3.stat.StatUtils;
@@ -41,7 +40,7 @@ public class FitnessFunction implements Function<Pair<Tree<Element>, Tree<Elemen
   private final List<EnhancedProblem> problems;
   private final int maxMappingDepth;
   private final List<Property> properties;
-  private final List<BitString> genotypes;
+  private final List<BitSet> genotypes;
   private final double[] genotypeDistances;
 
   public FitnessFunction(
@@ -52,9 +51,9 @@ public class FitnessFunction implements Function<Pair<Tree<Element>, Tree<Elemen
     this.properties = properties;
     Random random = new Random(seed);
     //build genotypes
-    GeneticOperator<BitString> mutation = new BitFlipMutation(0.01d);
-    BitStringFactory factory = new BitStringFactory(genotypeSize);
-    Set<BitString> set = new LinkedHashSet<>();
+    GeneticOperator<BitSet> mutation = new BitSetFlipMutation(0.01d);
+    BitSetFactory factory = new BitSetFactory(genotypeSize);
+    Set<BitSet> set = new LinkedHashSet<>();
     for (int i = 0; i < Math.floor(Math.sqrt(n)); i++) {
       set.addAll(consecutiveMutations(factory.build(random), (int) Math.floor(Math.sqrt(n)), mutation, random));
     }
@@ -63,7 +62,7 @@ public class FitnessFunction implements Function<Pair<Tree<Element>, Tree<Elemen
     }
     genotypes = new ArrayList<>(set);
     //compute distances
-    genotypeDistances = computeDistances(genotypes, new Hamming<>());
+    genotypeDistances = computeDistances(genotypes, new BitSetHamming());
   }
 
   public enum Property {
@@ -141,8 +140,8 @@ public class FitnessFunction implements Function<Pair<Tree<Element>, Tree<Elemen
     return dists;
   }
 
-  private List<BitString> consecutiveMutations(BitString g, int n, GeneticOperator<BitString> mutation, Random random) {
-    Set<BitString> set = new LinkedHashSet<>();
+  private List<BitSet> consecutiveMutations(BitSet g, int n, GeneticOperator<BitSet> mutation, Random random) {
+    Set<BitSet> set = new LinkedHashSet<>();
     while (set.size() < n) {
       set.add(g);
       g = mutation.apply(Collections.singletonList(g), random).get(0);

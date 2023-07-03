@@ -18,17 +18,17 @@ package io.github.ericmedvet.jgea.problem.synthetic;
 
 import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.problem.ProblemWithExampleSolution;
-import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 
+import java.util.BitSet;
 import java.util.function.Function;
 
 /**
  * @author eric
  */
-public class OneMax implements ComparableQualityBasedProblem<BitString, Double>, ProblemWithExampleSolution<BitString> {
+public class OneMax implements ComparableQualityBasedProblem<BitSet, Double>, ProblemWithExampleSolution<BitSet> {
 
   private final int p;
-  private final Function<BitString, Double> fitnessFunction;
+  private final Function<BitSet, Double> fitnessFunction;
 
   public OneMax(int p) {
     this.p = p;
@@ -36,17 +36,17 @@ public class OneMax implements ComparableQualityBasedProblem<BitString, Double>,
       if (b.size() != p) {
         throw new IllegalArgumentException("Wrong input size: %d expected, %d found".formatted(p, b.size()));
       }
-      return 1d - (double) b.count() / (double) b.size();
+      return 1d - (double) b.cardinality() / (double) b.size();
     };
   }
 
   @Override
-  public BitString example() {
-    return new BitString(p);
+  public BitSet example() {
+    return new BitSet(p);
   }
 
   @Override
-  public Function<BitString, Double> qualityFunction() {
+  public Function<BitSet, Double> qualityFunction() {
     return fitnessFunction;
   }
 }

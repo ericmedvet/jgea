@@ -14,30 +14,31 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core.representation.sequence.integer;
+package io.github.ericmedvet.jgea.core.representation.sequence.bit;
 
-import io.github.ericmedvet.jgea.core.IndependentFactory;
+import io.github.ericmedvet.jgea.core.operator.Mutation;
 
+import java.util.BitSet;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
-public class UniformIntStringFactory implements IndependentFactory<IntString> {
-  private final int lowerBound;
-  private final int upperBound;
-  private final int size;
+/**
+ * @author eric
+ */
+public class BitSetFlipMutation implements Mutation<BitSet> {
 
-  public UniformIntStringFactory(int lowerBound, int upperBound, int size) {
-    this.lowerBound = lowerBound;
-    this.upperBound = upperBound;
-    this.size = size;
+  private final double p;
+
+  public BitSetFlipMutation(double p) {
+    this.p = p;
   }
 
   @Override
-  public IntString build(RandomGenerator random) {
-    return new IntString(
-        IntStream.range(0, size).mapToObj(i -> random.nextInt(lowerBound, upperBound)).toList(),
-        lowerBound,
-        upperBound
-    );
+  public BitSet mutate(BitSet parent, RandomGenerator random) {
+    BitSet newBitSet = new BitSet(parent.size());
+    IntStream.range(0, newBitSet.size())
+        .forEach(i -> newBitSet.set(i, (random.nextDouble() < p) ? (!parent.get(i)) : parent.get(i)));
+    return newBitSet;
   }
+
 }

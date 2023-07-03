@@ -16,28 +16,22 @@
 
 package io.github.ericmedvet.jgea.core.representation.sequence.integer;
 
-import io.github.ericmedvet.jgea.core.IndependentFactory;
+import io.github.ericmedvet.jgea.core.operator.Crossover;
+import io.github.ericmedvet.jgea.core.representation.sequence.UniformCrossover;
 
+import java.util.List;
 import java.util.random.RandomGenerator;
-import java.util.stream.IntStream;
 
-public class UniformIntStringFactory implements IndependentFactory<IntString> {
-  private final int lowerBound;
-  private final int upperBound;
-  private final int size;
+public class IntStringUniformCrossover implements Crossover<IntString> {
 
-  public UniformIntStringFactory(int lowerBound, int upperBound, int size) {
-    this.lowerBound = lowerBound;
-    this.upperBound = upperBound;
-    this.size = size;
-  }
+  private final Crossover<List<Integer>> inner = new UniformCrossover<>();
 
   @Override
-  public IntString build(RandomGenerator random) {
+  public IntString recombine(IntString p1, IntString p2, RandomGenerator random) {
     return new IntString(
-        IntStream.range(0, size).mapToObj(i -> random.nextInt(lowerBound, upperBound)).toList(),
-        lowerBound,
-        upperBound
+        inner.recombine(p1.genes(), p2.genes(), random),
+        p1.lowerBound(),
+        p1.upperBound()
     );
   }
 }

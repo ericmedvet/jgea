@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,36 +16,34 @@
 
 package io.github.ericmedvet.jgea.core.representation.sequence;
 
-import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jgea.core.operator.Crossover;
 
 import java.util.List;
 import java.util.random.RandomGenerator;
+import java.util.stream.IntStream;
 
 /**
  * @author eric
  */
-public class ElementWiseCrossover<E, L extends List<E>> implements Crossover<L> {
-  private final IndependentFactory<L> factory;
+public class ElementWiseCrossover<E> implements Crossover<List<E>> {
   private final Crossover<E> crossover;
 
-  public ElementWiseCrossover(IndependentFactory<L> factory, Crossover<E> crossover) {
-    this.factory = factory;
+  public ElementWiseCrossover(Crossover<E> crossover) {
     this.crossover = crossover;
   }
 
-  @Override
-  public L recombine(L parent1, L parent2, RandomGenerator random) {
-    L child = factory.build(random);
-    for (int i = 0; i < Math.min(parent1.size(), parent2.size()); i++) {
-      E e = crossover.recombine(parent1.get(i), parent2.get(i), random);
-      if (child.size() > i) {
-        child.set(i, e);
-      } else {
-        child.add(e);
-      }
-    }
-    return child;
+  public List<E> recombine(List<E> l1, List<E> l2, RandomGenerator random) {
+    return IntStream.range(0, Math.max(l1.size(), l2.size()))
+        .mapToObj(i -> {
+          if (l1.size() > i && l2.size() > i) {
+            return crossover.recombine(l1.get(i), l2.get(i), random);
+          }
+          if (l1.size() > i) {
+            return l1.get(i);
+          }
+          return l2.get(i);
+        })
+        .toList();
   }
 
 }

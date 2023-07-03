@@ -20,17 +20,18 @@ import com.google.common.collect.Range;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedMapper;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarUtils;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
-import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
+import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitSetUtils;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 
 /**
  * @author eric
  */
-public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
+public class HierarchicalMapper<T> extends GrammarBasedMapper<BitSet, T> {
 
   private final static boolean RECURSIVE_DEFAULT = false;
   protected final Map<T, List<Integer>> shortestOptionIndexesMap;
@@ -95,7 +96,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
   }
 
   @Override
-  public Tree<T> apply(BitString genotype) {
+  public Tree<T> apply(BitSet genotype) {
     int[] bitUsages = new int[genotype.size()];
     Tree<T> tree;
     if (recursive) {
@@ -107,12 +108,12 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
     return tree;
   }
 
-  private List<T> chooseOption(BitString genotype, Range<Integer> range, List<List<T>> options) {
+  private List<T> chooseOption(BitSet genotype, Range<Integer> range, List<List<T>> options) {
     if (options.size() == 1) {
       return options.get(0);
     }
     double max = Double.NEGATIVE_INFINITY;
-    List<BitString> slices = genotype.slices(getOptionSlices(range, options));
+    List<BitSet> slices = getOptionSlices(range, options).stream().map(s -> BitSetUtils.slice(genotype, s)).toList();
     List<Integer> bestOptionIndexes = new ArrayList<>();
     for (int i = 0; i < options.size(); i++) {
       double value = optionSliceWeight(slices.get(i));
@@ -127,7 +128,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
     int index = bestOptionIndexes.get(0);
     //for avoiding choosing always the 1st option in case of tie, choose depending on count of 1s in genotype
     if (bestOptionIndexes.size() == 1) {
-      index = bestOptionIndexes.get(genotype.slice(range).count() % bestOptionIndexes.size());
+      index = bestOptionIndexes.get(BitSetUtils.slice(genotype, range).cardinality() % bestOptionIndexes.size());
     }
     return options.get(index);
   }
@@ -149,7 +150,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
     return slices(range, options.size());
   }
 
-  public Tree<T> mapIteratively(BitString genotype, int[] bitUsages) {
+  public Tree<T> mapIteratively(BitSet genotype, int[] bitUsages) {
     Tree<EnhancedSymbol<T>> enhancedTree = Tree.of(new EnhancedSymbol<>(
         grammar.startingSymbol(),
         Range.closedOpen(0, genotype.size())
@@ -172,8 +173,8 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
       //get option
       List<T> symbols;
       if ((symbolRange.upperEndpoint() - symbolRange.lowerEndpoint()) < options.size()) {
-        int count = (symbolRange.upperEndpoint() - symbolRange.lowerEndpoint() > 0) ? genotype.slice(symbolRange)
-            .count() : genotype.count();
+        int count = (symbolRange.upperEndpoint() - symbolRange.lowerEndpoint() > 0) ? BitSetUtils.slice(genotype, symbolRange)
+            .cardinality() : genotype.cardinality();
         int index = shortestOptionIndexesMap.get(symbol).get(count % shortestOptionIndexesMap.get(symbol).size());
         symbols = options.get(index);
       } else {
@@ -197,7 +198,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
     return Tree.map(enhancedTree, EnhancedSymbol::symbol);
   }
 
-  public Tree<T> mapRecursively(T symbol, Range<Integer> range, BitString genotype, int[] bitUsages) {
+  public Tree<T> mapRecursively(T symbol, Range<Integer> range, BitSet genotype, int[] bitUsages) {
     Tree<T> tree = Tree.of(symbol);
     if (grammar.rules().containsKey(symbol)) {
       //a non-terminal node
@@ -209,8 +210,8 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
       //get option
       List<T> symbols;
       if ((range.upperEndpoint() - range.lowerEndpoint()) < options.size()) {
-        int count = (range.upperEndpoint() - range.lowerEndpoint() > 0) ? genotype.slice(range)
-            .count() : genotype.count();
+        int count = (range.upperEndpoint() - range.lowerEndpoint() > 0) ? BitSetUtils.slice(genotype, range)
+            .cardinality() : genotype.cardinality();
         int index = shortestOptionIndexesMap.get(symbol).get(count % shortestOptionIndexesMap.get(symbol).size());
         symbols = options.get(index);
       } else {
@@ -235,8 +236,8 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
     return tree;
   }
 
-  protected double optionSliceWeight(BitString slice) {
-    return (double) slice.count() / (double) slice.size();
+  protected double optionSliceWeight(BitSet slice) {
+    return (double) slice.cardinality() / (double) slice.size();
   }
 
 }
