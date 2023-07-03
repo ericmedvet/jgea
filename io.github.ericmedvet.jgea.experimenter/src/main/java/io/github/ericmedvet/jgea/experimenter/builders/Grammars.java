@@ -16,7 +16,7 @@
 
 package io.github.ericmedvet.jgea.experimenter.builders;
 
-import io.github.ericmedvet.jgea.core.representation.grid.GridGrammar;
+import io.github.ericmedvet.jgea.core.representation.grammar.grid.GridGrammar;
 import io.github.ericmedvet.jnb.core.Param;
 
 import java.io.IOException;

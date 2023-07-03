@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core.representation.grammar;
+package io.github.ericmedvet.jgea.core.representation.grammar.string;
 
 import io.github.ericmedvet.jgea.core.problem.Problem;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
@@ -26,7 +26,7 @@ import java.util.function.Function;
  */
 public interface GrammarBasedProblem<N, S> extends Problem<S> {
 
-  Grammar<N> getGrammar();
+  StringGrammar<N> getGrammar();
 
   Function<Tree<N>, S> getSolutionMapper();
 

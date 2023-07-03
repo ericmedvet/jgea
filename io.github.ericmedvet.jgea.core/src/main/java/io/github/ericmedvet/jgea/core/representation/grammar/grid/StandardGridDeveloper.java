@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core.representation.grid;
+package io.github.ericmedvet.jgea.core.representation.grammar.grid;
 
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 
@@ -122,10 +122,10 @@ public class StandardGridDeveloper<T> implements GridDeveloper<T> {
   }
 
   public Optional<Grid<T>> develop(Chooser<T> optionChooser) {
-    Set<T> nonTerminalSymbols = grammar.getRules().keySet();
+    Set<T> nonTerminalSymbols = grammar.rules().keySet();
     int i = 0;
     // build a 1x1 grid with the starting symbol
-    Grid<Aged<T>> polyomino = Grid.create(1, 1, new Aged<>(i, grammar.getStartingSymbol()));
+    Grid<Aged<T>> polyomino = Grid.create(1, 1, new Aged<>(i, grammar.startingSymbol()));
     while (true) {
       // find the candidates
       final Grid<Aged<T>> finalPolyomino = polyomino;

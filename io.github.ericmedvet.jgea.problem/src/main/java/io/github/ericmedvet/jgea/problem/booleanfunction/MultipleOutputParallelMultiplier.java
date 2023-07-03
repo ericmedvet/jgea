@@ -17,8 +17,8 @@
 package io.github.ericmedvet.jgea.problem.booleanfunction;
 
 import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
-import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
-import io.github.ericmedvet.jgea.core.representation.grammar.GrammarBasedProblem;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedProblem;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.representation.tree.booleanfunction.Element;
 
@@ -34,24 +34,24 @@ import java.util.function.Function;
 public class MultipleOutputParallelMultiplier implements GrammarBasedProblem<String, List<Tree<Element>>>,
     ComparableQualityBasedProblem<List<Tree<Element>>, Double> {
 
-  private final Grammar<String> grammar;
+  private final StringGrammar<String> grammar;
   private final Function<Tree<String>, List<Tree<Element>>> solutionMapper;
   private final Function<List<Tree<Element>>, Double> fitnessFunction;
 
   public MultipleOutputParallelMultiplier(final int size) throws IOException {
-    grammar = Grammar.load(Grammar.class.getResourceAsStream("/grammars/1d/boolean-parity-var.bnf"));
+    grammar = StringGrammar.load(StringGrammar.class.getResourceAsStream("/grammars/1d/boolean-parity-var.bnf"));
     List<List<String>> vars = new ArrayList<>();
     for (int j = 0; j < 2; j++) {
       for (int i = 0; i < size; i++) {
         vars.add(Collections.singletonList("b" + j + "." + i));
       }
     }
-    grammar.getRules().put("<v>", vars);
+    grammar.rules().put("<v>", vars);
     List<String> output = new ArrayList<>();
     for (int i = 0; i < 2 * size; i++) {
       output.add("<e>");
     }
-    grammar.getRules().put(FormulaMapper.MULTIPLE_OUTPUT_NON_TERMINAL, Collections.singletonList(output));
+    grammar.rules().put(FormulaMapper.MULTIPLE_OUTPUT_NON_TERMINAL, Collections.singletonList(output));
     grammar.setStartingSymbol(FormulaMapper.MULTIPLE_OUTPUT_NON_TERMINAL);
     solutionMapper = new FormulaMapper();
     TargetFunction targetFunction = new TargetFunction(size);
@@ -95,7 +95,7 @@ public class MultipleOutputParallelMultiplier implements GrammarBasedProblem<Str
   }
 
   @Override
-  public Grammar<String> getGrammar() {
+  public StringGrammar<String> getGrammar() {
     return grammar;
   }
 

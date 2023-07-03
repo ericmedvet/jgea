@@ -23,9 +23,9 @@ import io.github.ericmedvet.jgea.core.listener.TabularPrinter;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.NamedUnivariateRealFunction;
-import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
-import io.github.ericmedvet.jgea.core.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
-import io.github.ericmedvet.jgea.core.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.cfggp.GrammarBasedSubtreeMutation;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.cfggp.GrammarRampedHalfAndHalf;
 import io.github.ericmedvet.jgea.core.representation.sequence.FixedLengthListFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.UniformCrossover;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitFlipMutation;
@@ -242,9 +242,9 @@ public class Example extends Worker {
     );
     Random r = new Random(1);
     SyntheticUnivariateRegressionProblem p = new Nguyen7(UnivariateRegressionFitness.Metric.MSE, 1);
-    Grammar<String> srGrammar;
+    StringGrammar<String> srGrammar;
     try {
-      srGrammar = Grammar.load(Grammar.class.getResourceAsStream("/grammars/1d/symbolic-regression-nguyen7.bnf"));
+      srGrammar = StringGrammar.load(StringGrammar.class.getResourceAsStream("/grammars/1d/symbolic-regression-nguyen7.bnf"));
     } catch (IOException e) {
       e.printStackTrace();
       return;

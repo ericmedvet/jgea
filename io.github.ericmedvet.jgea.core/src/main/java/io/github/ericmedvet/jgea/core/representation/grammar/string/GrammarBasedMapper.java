@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core.representation.grammar;
+package io.github.ericmedvet.jgea.core.representation.grammar.string;
 
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 
@@ -25,13 +25,13 @@ import java.util.function.Function;
  */
 public abstract class GrammarBasedMapper<G, T> implements Function<G, Tree<T>> {
 
-  protected final Grammar<T> grammar;
+  protected final StringGrammar<T> grammar;
 
-  public GrammarBasedMapper(Grammar<T> grammar) {
+  public GrammarBasedMapper(StringGrammar<T> grammar) {
     this.grammar = grammar;
   }
 
-  public Grammar<T> getGrammar() {
+  public StringGrammar<T> getGrammar() {
     return grammar;
   }
 

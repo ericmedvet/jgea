@@ -19,9 +19,9 @@ package io.github.ericmedvet.jgea.sample.lab;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.listener.XYPlotTableBuilder;
 import io.github.ericmedvet.jgea.core.representation.NamedUnivariateRealFunction;
-import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
-import io.github.ericmedvet.jgea.core.representation.grammar.cfggp.GrammarBasedSubtreeMutation;
-import io.github.ericmedvet.jgea.core.representation.grammar.cfggp.GrammarRampedHalfAndHalf;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.cfggp.GrammarBasedSubtreeMutation;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.cfggp.GrammarRampedHalfAndHalf;
 import io.github.ericmedvet.jgea.core.representation.tree.SameRootSubtreeCrossover;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedUnivariateRealFunction;
 import io.github.ericmedvet.jgea.core.selector.Last;
@@ -119,9 +119,9 @@ public class TuiExample implements Runnable {
         );
     List<Integer> seeds = List.of(1, 2, 3, 4, 5);
     SyntheticUnivariateRegressionProblem p = new Nguyen7(UnivariateRegressionFitness.Metric.MSE, 1);
-    Grammar<String> srGrammar;
+    StringGrammar<String> srGrammar;
     try {
-      srGrammar = Grammar.load(Grammar.class.getResourceAsStream("/grammars/1d/symbolic-regression-nguyen7.bnf"));
+      srGrammar = StringGrammar.load(StringGrammar.class.getResourceAsStream("/grammars/1d/symbolic-regression-nguyen7.bnf"));
     } catch (IOException e) {
       L.severe(String.format("Cannot load grammar: %s", e));
       return;

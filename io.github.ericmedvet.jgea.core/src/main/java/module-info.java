@@ -9,8 +9,8 @@ module io.github.ericmedvet.jgea.core {
   exports io.github.ericmedvet.jgea.core.operator;
   exports io.github.ericmedvet.jgea.core.order;
   exports io.github.ericmedvet.jgea.core.representation.grammar;
-  exports io.github.ericmedvet.jgea.core.representation.grammar.cfggp;
-  exports io.github.ericmedvet.jgea.core.representation.grammar.ge;
+  exports io.github.ericmedvet.jgea.core.representation.grammar.string.cfggp;
+  exports io.github.ericmedvet.jgea.core.representation.grammar.string.ge;
   exports io.github.ericmedvet.jgea.core.representation.graph;
   exports io.github.ericmedvet.jgea.core.representation.graph.finiteautomata;
   exports io.github.ericmedvet.jgea.core.representation.graph.numeric;
@@ -22,7 +22,7 @@ module io.github.ericmedvet.jgea.core {
   exports io.github.ericmedvet.jgea.core.representation.tree;
   exports io.github.ericmedvet.jgea.core.representation.tree.numeric;
   exports io.github.ericmedvet.jgea.core.representation.tree.booleanfunction;
-  exports io.github.ericmedvet.jgea.core.representation.grid;
+  exports io.github.ericmedvet.jgea.core.representation.grammar.grid;
   exports io.github.ericmedvet.jgea.core.representation;
   exports io.github.ericmedvet.jgea.core.selector;
   exports io.github.ericmedvet.jgea.core.solver;
@@ -32,6 +32,7 @@ module io.github.ericmedvet.jgea.core {
   exports io.github.ericmedvet.jgea.core.util;
   exports io.github.ericmedvet.jgea.core.representation.sequence.integer;
   exports io.github.ericmedvet.jgea.core.problem;
+  exports io.github.ericmedvet.jgea.core.representation.grammar.string;
   requires io.github.ericmedvet.jsdynsym.core;
   requires com.google.common;
   requires org.knowm.xchart;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core.representation.grammar.cfggp;
+package io.github.ericmedvet.jgea.core.representation.grammar.string.cfggp;
 
 import io.github.ericmedvet.jgea.core.Factory;
-import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ public class GrammarRampedHalfAndHalf<T> implements Factory<Tree<T>> {
   private final FullGrammarGrammarTreeFactory<T> fullGrammarTreeFactory;
   private final GrowGrammarTreeFactory<T> growGrammarTreeFactory;
 
-  public GrammarRampedHalfAndHalf(int minHeight, int maxHeight, Grammar<T> grammar) {
+  public GrammarRampedHalfAndHalf(int minHeight, int maxHeight, StringGrammar<T> grammar) {
     this.minHeight = minHeight;
     this.maxHeight = maxHeight;
     fullGrammarTreeFactory = new FullGrammarGrammarTreeFactory<>(maxHeight, grammar);

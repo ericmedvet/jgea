@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core.representation.grammar;
+package io.github.ericmedvet.jgea.core.representation.grammar.string;
 
 import io.github.ericmedvet.jgea.core.util.Pair;
 
@@ -27,9 +27,9 @@ public class GrammarUtils {
 
   private record Triplet<F, S, T>(F first, S second, T third) {}
 
-  public static <T> Map<T, List<Integer>> computeShortestOptionIndexesMap(Grammar<T> grammar) {
+  public static <T> Map<T, List<Integer>> computeShortestOptionIndexesMap(StringGrammar<T> grammar) {
     Map<T, List<Integer>> optionJumpsToTerminalMap = new LinkedHashMap<>();
-    for (Map.Entry<T, List<List<T>>> rule : grammar.getRules().entrySet()) {
+    for (Map.Entry<T, List<List<T>>> rule : grammar.rules().entrySet()) {
       List<Integer> optionsJumps = new ArrayList<>();
       for (List<T> option : rule.getValue()) {
         optionsJumps.add(Integer.MAX_VALUE);
@@ -40,8 +40,8 @@ public class GrammarUtils {
       boolean completed = true;
       for (Map.Entry<T, List<Integer>> entry : optionJumpsToTerminalMap.entrySet()) {
         for (int i = 0; i < entry.getValue().size(); i++) {
-          List<T> option = grammar.getRules().get(entry.getKey()).get(i);
-          if (Collections.disjoint(option, grammar.getRules().keySet())) {
+          List<T> option = grammar.rules().get(entry.getKey()).get(i);
+          if (Collections.disjoint(option, grammar.rules().keySet())) {
             entry.getValue().set(i, 1);
           } else {
             int maxJumps = Integer.MIN_VALUE;
@@ -71,7 +71,7 @@ public class GrammarUtils {
     }
     //build shortestOptionIndexMap
     Map<T, List<Integer>> shortestOptionIndexesMap = new LinkedHashMap<>();
-    for (Map.Entry<T, List<List<T>>> rule : grammar.getRules().entrySet()) {
+    for (Map.Entry<T, List<List<T>>> rule : grammar.rules().entrySet()) {
       int minJumps = Integer.MAX_VALUE;
       for (int i = 0; i < optionJumpsToTerminalMap.get(rule.getKey()).size(); i++) {
         int localJumps = optionJumpsToTerminalMap.get(rule.getKey()).get(i);
@@ -90,13 +90,13 @@ public class GrammarUtils {
     return shortestOptionIndexesMap;
   }
 
-  private static <T> Map<T, Triplet<Double, Boolean, Set<T>>> computeSymbolsMaxDepths(Grammar<T> g) {
+  private static <T> Map<T, Triplet<Double, Boolean, Set<T>>> computeSymbolsMaxDepths(StringGrammar<T> g) {
     Map<T, Triplet<Double, Boolean, Set<T>>> map = new HashMap<>();
-    map.put(g.getStartingSymbol(), new Triplet<>(0d, false, new HashSet<T>()));
-    for (List<List<T>> options : g.getRules().values()) {
+    map.put(g.startingSymbol(), new Triplet<>(0d, false, new HashSet<T>()));
+    for (List<List<T>> options : g.rules().values()) {
       for (List<T> option : options) {
         for (T symbol : option) {
-          if (!g.getRules().containsKey(symbol)) {
+          if (!g.rules().containsKey(symbol)) {
             map.put(symbol, new Triplet<>(1d, true, Set.of()));
           } else {
             map.put(symbol, new Triplet<>(0d, false, new HashSet<T>()));
@@ -107,7 +107,7 @@ public class GrammarUtils {
     //compute maxs
     while (true) {
       boolean changed = false;
-      for (T nonTerminal : g.getRules().keySet()) {
+      for (T nonTerminal : g.rules().keySet()) {
         Triplet<Double, Boolean, Set<T>> triplet = map.get(nonTerminal);
         Set<T> dependencies = new HashSet<>(triplet.third());
         if (triplet.second()) {
@@ -116,7 +116,7 @@ public class GrammarUtils {
         }
         boolean allResolved = true;
         double maxDepth = 0;
-        for (List<T> option : g.getRules().get(nonTerminal)) {
+        for (List<T> option : g.rules().get(nonTerminal)) {
           boolean optionAllResolved = true;
           double optionMaxDepth = 0;
           for (T optionSymbol : option) {
@@ -146,13 +146,13 @@ public class GrammarUtils {
     return map;
   }
 
-  private static <T> Map<T, Pair<Integer, Boolean>> computeSymbolsMinDepths(Grammar<T> g) {
+  private static <T> Map<T, Pair<Integer, Boolean>> computeSymbolsMinDepths(StringGrammar<T> g) {
     Map<T, Pair<Integer, Boolean>> map = new HashMap<>();
-    map.put(g.getStartingSymbol(), Pair.of(Integer.MAX_VALUE, false));
-    for (List<List<T>> options : g.getRules().values()) {
+    map.put(g.startingSymbol(), Pair.of(Integer.MAX_VALUE, false));
+    for (List<List<T>> options : g.rules().values()) {
       for (List<T> option : options) {
         for (T symbol : option) {
-          if (!g.getRules().containsKey(symbol)) {
+          if (!g.rules().containsKey(symbol)) {
             map.put(symbol, Pair.of(1, true));
           } else {
             map.put(symbol, Pair.of(Integer.MAX_VALUE, false));
@@ -163,7 +163,7 @@ public class GrammarUtils {
     //compute mins
     while (true) {
       boolean changed = false;
-      for (T nonTerminal : g.getRules().keySet()) {
+      for (T nonTerminal : g.rules().keySet()) {
         Pair<Integer, Boolean> pair = map.get(nonTerminal);
         if (pair.second()) {
           //this non-terminal is definitely resolved
@@ -171,7 +171,7 @@ public class GrammarUtils {
         }
         boolean allResolved = true;
         int minDepth = Integer.MAX_VALUE;
-        for (List<T> option : g.getRules().get(nonTerminal)) {
+        for (List<T> option : g.rules().get(nonTerminal)) {
           boolean optionAllResolved = true;
           int optionMaxDepth = 0;
           for (T optionSymbol : option) {
@@ -195,7 +195,7 @@ public class GrammarUtils {
     return map;
   }
 
-  public static <T> Map<T, Pair<Double, Double>> computeSymbolsMinMaxDepths(Grammar<T> g) {
+  public static <T> Map<T, Pair<Double, Double>> computeSymbolsMinMaxDepths(StringGrammar<T> g) {
     Map<T, Pair<Integer, Boolean>> minDepths = computeSymbolsMinDepths(g);
     Map<T, Triplet<Double, Boolean, Set<T>>> maxDepths = computeSymbolsMaxDepths(g);
     Map<T, Pair<Double, Double>> map = new HashMap<>();

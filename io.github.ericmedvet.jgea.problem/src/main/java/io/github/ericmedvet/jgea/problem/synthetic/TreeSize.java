@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 package io.github.ericmedvet.jgea.problem.synthetic;
 
 import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
-import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
-import io.github.ericmedvet.jgea.core.representation.grammar.GrammarBasedProblem;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedProblem;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 
 import java.util.ArrayList;
@@ -32,12 +32,12 @@ public class TreeSize implements GrammarBasedProblem<Boolean, Tree<Boolean>>,
     ComparableQualityBasedProblem<Tree<Boolean>, Double> {
 
   private final static Function<Tree<Boolean>, Double> FITNESS_FUNCTION = t -> 1d / (double) t.size();
-  private final Grammar<Boolean> grammar;
+  private final StringGrammar<Boolean> grammar;
 
   public TreeSize(int nonTerminals, int terminals) {
-    this.grammar = new Grammar<>();
+    this.grammar = new StringGrammar<>();
     grammar.setStartingSymbol(false);
-    grammar.getRules().put(false, List.of(r(nonTerminals, false), r(terminals, true)));
+    grammar.rules().put(false, List.of(r(nonTerminals, false), r(terminals, true)));
   }
 
   @SafeVarargs
@@ -50,7 +50,7 @@ public class TreeSize implements GrammarBasedProblem<Boolean, Tree<Boolean>>,
   }
 
   @Override
-  public Grammar<Boolean> getGrammar() {
+  public StringGrammar<Boolean> getGrammar() {
     return grammar;
   }
 

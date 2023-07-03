@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 package io.github.ericmedvet.jgea.problem.mapper;
 
-import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
-import io.github.ericmedvet.jgea.core.representation.grammar.ge.WeightedHierarchicalMapper;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.ge.WeightedHierarchicalMapper;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 
@@ -35,7 +35,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
   private final int maxMappingDepth;
 
   public RecursiveMapper(
-      Tree<Element> optionChooser, Tree<Element> genoAssigner, int maxMappingDepth, int maxDepth, Grammar<T> grammar
+      Tree<Element> optionChooser, Tree<Element> genoAssigner, int maxMappingDepth, int maxDepth, StringGrammar<T> grammar
   ) {
     super(maxDepth, grammar);
     this.maxMappingDepth = maxMappingDepth;
@@ -47,7 +47,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
   public Tree<T> apply(BitString genotype) {
     AtomicInteger mappingGlobalCounter = new AtomicInteger();
     AtomicInteger finalizationGlobalCounter = new AtomicInteger();
-    return mapRecursively(grammar.getStartingSymbol(), genotype, mappingGlobalCounter, finalizationGlobalCounter, 0);
+    return mapRecursively(grammar.startingSymbol(), genotype, mappingGlobalCounter, finalizationGlobalCounter, 0);
   }
 
   private Tree<T> mapRecursively(
@@ -58,12 +58,12 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
       int depth
   ) {
     Tree<T> tree = Tree.of(symbol);
-    if (!grammar.getRules().containsKey(symbol)) {
+    if (!grammar.rules().containsKey(symbol)) {
       return tree;
     }
     if (depth >= maxMappingDepth) {
       List<Integer> shortestOptionIndexTies = shortestOptionIndexesMap.get(symbol);
-      List<T> shortestOption = grammar.getRules()
+      List<T> shortestOption = grammar.rules()
           .get(symbol)
           .get(shortestOptionIndexTies.get(finalizationGlobalCounter.getAndIncrement() % shortestOptionIndexTies.size()));
       for (T optionSymbol : shortestOption) {
@@ -78,7 +78,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
       return tree;
     }
     //choose option
-    List<List<T>> options = grammar.getRules().get(symbol);
+    List<List<T>> options = grammar.rules().get(symbol);
     List<Double> expressivenesses = new ArrayList<>(options.size());
     for (List<T> option : options) {
       double expressiveness = 1d;

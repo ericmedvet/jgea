@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core.representation.grammar.ge;
+package io.github.ericmedvet.jgea.core.representation.grammar.string.ge;
 
 import com.google.common.collect.Range;
-import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
-import io.github.ericmedvet.jgea.core.representation.grammar.GrammarBasedMapper;
-import io.github.ericmedvet.jgea.core.representation.grammar.GrammarUtils;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedMapper;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarUtils;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 
@@ -36,11 +36,11 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
   protected final Map<T, List<Integer>> shortestOptionIndexesMap;
   private final boolean recursive;
 
-  public HierarchicalMapper(Grammar<T> grammar) {
+  public HierarchicalMapper(StringGrammar<T> grammar) {
     this(grammar, RECURSIVE_DEFAULT);
   }
 
-  public HierarchicalMapper(Grammar<T> grammar, boolean recursive) {
+  public HierarchicalMapper(StringGrammar<T> grammar, boolean recursive) {
     super(grammar);
     this.recursive = recursive;
     shortestOptionIndexesMap = GrammarUtils.computeShortestOptionIndexesMap(grammar);
@@ -99,7 +99,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
     int[] bitUsages = new int[genotype.size()];
     Tree<T> tree;
     if (recursive) {
-      tree = mapRecursively(grammar.getStartingSymbol(), Range.closedOpen(0, genotype.size()), genotype, bitUsages);
+      tree = mapRecursively(grammar.startingSymbol(), Range.closedOpen(0, genotype.size()), genotype, bitUsages);
     } else {
       tree = mapIteratively(genotype, bitUsages);
     }
@@ -151,13 +151,13 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
 
   public Tree<T> mapIteratively(BitString genotype, int[] bitUsages) {
     Tree<EnhancedSymbol<T>> enhancedTree = Tree.of(new EnhancedSymbol<>(
-        grammar.getStartingSymbol(),
+        grammar.startingSymbol(),
         Range.closedOpen(0, genotype.size())
     ));
     while (true) {
       Tree<EnhancedSymbol<T>> treeToBeReplaced = null;
       for (Tree<EnhancedSymbol<T>> tree : enhancedTree.leaves()) {
-        if (grammar.getRules().containsKey(tree.content().symbol())) {
+        if (grammar.rules().containsKey(tree.content().symbol())) {
           treeToBeReplaced = tree;
           break;
         }
@@ -168,7 +168,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
       //get genotype
       T symbol = treeToBeReplaced.content().symbol();
       Range<Integer> symbolRange = treeToBeReplaced.content().range();
-      List<List<T>> options = grammar.getRules().get(symbol);
+      List<List<T>> options = grammar.rules().get(symbol);
       //get option
       List<T> symbols;
       if ((symbolRange.upperEndpoint() - symbolRange.lowerEndpoint()) < options.size()) {
@@ -199,13 +199,13 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
 
   public Tree<T> mapRecursively(T symbol, Range<Integer> range, BitString genotype, int[] bitUsages) {
     Tree<T> tree = Tree.of(symbol);
-    if (grammar.getRules().containsKey(symbol)) {
+    if (grammar.rules().containsKey(symbol)) {
       //a non-terminal node
       //update usage
       for (int i = range.lowerEndpoint(); i < range.upperEndpoint(); i++) {
         bitUsages[i] = bitUsages[i] + 1;
       }
-      List<List<T>> options = grammar.getRules().get(symbol);
+      List<List<T>> options = grammar.rules().get(symbol);
       //get option
       List<T> symbols;
       if ((range.upperEndpoint() - range.lowerEndpoint()) < options.size()) {

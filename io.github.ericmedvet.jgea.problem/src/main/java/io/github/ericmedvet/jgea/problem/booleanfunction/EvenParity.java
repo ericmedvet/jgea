@@ -17,8 +17,8 @@
 package io.github.ericmedvet.jgea.problem.booleanfunction;
 
 import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
-import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
-import io.github.ericmedvet.jgea.core.representation.grammar.GrammarBasedProblem;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedProblem;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.representation.tree.booleanfunction.Element;
 
@@ -34,17 +34,17 @@ import java.util.function.Function;
 public class EvenParity implements GrammarBasedProblem<String, List<Tree<Element>>>,
     ComparableQualityBasedProblem<List<Tree<Element>>, Double> {
 
-  private final Grammar<String> grammar;
+  private final StringGrammar<String> grammar;
   private final Function<Tree<String>, List<Tree<Element>>> solutionMapper;
   private final Function<List<Tree<Element>>, Double> fitnessFunction;
 
   public EvenParity(final int size) throws IOException {
-    grammar = Grammar.load(Grammar.class.getResourceAsStream("/grammars/1d/boolean-parity-var.bnf"));
+    grammar = StringGrammar.load(StringGrammar.class.getResourceAsStream("/grammars/1d/boolean-parity-var.bnf"));
     List<List<String>> vars = new ArrayList<>();
     for (int i = 0; i < size; i++) {
       vars.add(Collections.singletonList("b" + i));
     }
-    grammar.getRules().put("<v>", vars);
+    grammar.rules().put("<v>", vars);
     solutionMapper = new FormulaMapper();
     TargetFunction targetFunction = new TargetFunction(size);
     fitnessFunction = new BooleanFunctionFitness(
@@ -81,7 +81,7 @@ public class EvenParity implements GrammarBasedProblem<String, List<Tree<Element
   }
 
   @Override
-  public Grammar<String> getGrammar() {
+  public StringGrammar<String> getGrammar() {
     return grammar;
   }
 

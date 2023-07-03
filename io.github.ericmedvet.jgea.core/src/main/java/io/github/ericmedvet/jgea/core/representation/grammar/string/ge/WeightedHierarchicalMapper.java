@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core.representation.grammar.ge;
+package io.github.ericmedvet.jgea.core.representation.grammar.string.ge;
 
 import com.google.common.collect.Range;
-import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 
 import java.util.ArrayList;
@@ -35,19 +35,19 @@ public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
   private final boolean weightOptions;
   private final boolean weightChildren;
 
-  public WeightedHierarchicalMapper(int expressivenessDepth, Grammar<T> grammar) {
+  public WeightedHierarchicalMapper(int expressivenessDepth, StringGrammar<T> grammar) {
     this(expressivenessDepth, false, true, grammar);
   }
 
   public WeightedHierarchicalMapper(
-      int expressivenessDepth, boolean weightOptions, boolean weightChildren, Grammar<T> grammar
+      int expressivenessDepth, boolean weightOptions, boolean weightChildren, StringGrammar<T> grammar
   ) {
     super(grammar);
     this.expressivenessDepth = expressivenessDepth;
     this.weightOptions = weightOptions;
     this.weightChildren = weightChildren;
     weightsMap = new HashMap<>();
-    for (List<List<T>> options : grammar.getRules().values()) {
+    for (List<List<T>> options : grammar.rules().values()) {
       for (List<T> option : options) {
         for (T symbol : option) {
           if (!weightsMap.containsKey(symbol)) {
@@ -64,8 +64,8 @@ public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
     }
   }
 
-  private static <T> int countOptions(T symbol, int level, int maxLevel, Grammar<T> g) {
-    List<List<T>> options = g.getRules().get(symbol);
+  private static <T> int countOptions(T symbol, int level, int maxLevel, StringGrammar<T> g) {
+    List<List<T>> options = g.rules().get(symbol);
     if (options == null) {
       return 1;
     }

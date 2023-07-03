@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core.representation.grid;
+package io.github.ericmedvet.jgea.core.representation.grammar.grid;
 
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
@@ -52,7 +52,7 @@ public final class DoublesOptionChooser<T> implements GridDeveloper.Chooser<T> {
     if (i >= values.size()) {
       return Optional.empty();
     }
-    List<GridGrammar.ReferencedGrid<T>> options = gridGrammar.getRules().get(t);
+    List<GridGrammar.ReferencedGrid<T>> options = gridGrammar.rules().get(t);
     int index = (int) Math.min(Math.round(DoubleRange.UNIT.clip(values.get(i)) * options.size()), options.size() - 1);
     i = i + 1;
     return Optional.of(options.get(index));

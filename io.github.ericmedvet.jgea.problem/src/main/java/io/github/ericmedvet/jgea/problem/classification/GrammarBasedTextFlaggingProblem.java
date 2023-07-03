@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 package io.github.ericmedvet.jgea.problem.classification;
 
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
-import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
-import io.github.ericmedvet.jgea.core.representation.grammar.GrammarBasedProblem;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedProblem;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.problem.extraction.string.RegexGrammar;
@@ -37,7 +37,7 @@ public class GrammarBasedTextFlaggingProblem extends TextFlaggingProblem impleme
     Classifier<String, TextFlaggingProblem.Label>>, QualityBasedProblem<Classifier<String, TextFlaggingProblem.Label>
     , List<Double>> {
 
-  private final Grammar<String> grammar;
+  private final StringGrammar<String> grammar;
   private final Function<Tree<String>, Classifier<String, TextFlaggingProblem.Label>> solutionMapper;
 
   public GrammarBasedTextFlaggingProblem(
@@ -65,7 +65,7 @@ public class GrammarBasedTextFlaggingProblem extends TextFlaggingProblem impleme
   }
 
   @Override
-  public Grammar<String> getGrammar() {
+  public StringGrammar<String> getGrammar() {
     return grammar;
   }
 

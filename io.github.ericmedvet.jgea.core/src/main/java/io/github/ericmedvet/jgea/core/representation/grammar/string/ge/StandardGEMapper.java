@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core.representation.grammar.ge;
+package io.github.ericmedvet.jgea.core.representation.grammar.string.ge;
 
-import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
-import io.github.ericmedvet.jgea.core.representation.grammar.GrammarBasedMapper;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedMapper;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 
@@ -32,7 +32,7 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
   private final int codonLength;
   private final int maxWraps;
 
-  public StandardGEMapper(int codonLength, int maxWraps, Grammar<T> grammar) {
+  public StandardGEMapper(int codonLength, int maxWraps, StringGrammar<T> grammar) {
     super(grammar);
     this.codonLength = codonLength;
     this.maxWraps = maxWraps;
@@ -43,13 +43,13 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
     if (genotype.size() < codonLength) {
       throw new IllegalArgumentException(String.format("Short genotype (%d<%d)", genotype.size(), codonLength));
     }
-    Tree<T> tree = Tree.of(grammar.getStartingSymbol());
+    Tree<T> tree = Tree.of(grammar.startingSymbol());
     int currentCodonIndex = 0;
     int wraps = 0;
     while (true) {
       Tree<T> treeToBeReplaced = null;
       for (Tree<T> node : tree.leaves()) {
-        if (grammar.getRules().containsKey(node.content())) {
+        if (grammar.rules().containsKey(node.content())) {
           treeToBeReplaced = node;
           break;
         }
@@ -65,7 +65,7 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
           throw new IllegalArgumentException(String.format("Too many wraps (%d>%d)", wraps, maxWraps));
         }
       }
-      List<List<T>> options = grammar.getRules().get(treeToBeReplaced.content());
+      List<List<T>> options = grammar.rules().get(treeToBeReplaced.content());
       int optionIndex = 0;
       if (options.size() > 1) {
         optionIndex = genotype.slice(currentCodonIndex * codonLength, (currentCodonIndex + 1) * codonLength)

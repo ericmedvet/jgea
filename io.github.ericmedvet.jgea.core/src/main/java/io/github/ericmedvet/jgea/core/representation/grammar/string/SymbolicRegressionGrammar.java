@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core.representation.grammar;
+package io.github.ericmedvet.jgea.core.representation.grammar.string;
 
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 
@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 /**
  * @author eric
  */
-public class SymbolicRegressionGrammar extends Grammar<String> {
+public class SymbolicRegressionGrammar extends StringGrammar<String> {
   public SymbolicRegressionGrammar(List<Element.Operator> operators, List<String> variables, List<Double> constants) {
     setStartingSymbol("<e>");
     SortedSet<Integer> arities = operators.stream()
@@ -36,12 +36,12 @@ public class SymbolicRegressionGrammar extends Grammar<String> {
         .toList());
     eProductions.add(List.of("<v>"));
     eProductions.add(List.of("<c>"));
-    getRules().put("<e>", eProductions);
-    arities.forEach(a -> getRules().put(
+    rules().put("<e>", eProductions);
+    arities.forEach(a -> rules().put(
         String.format("<o%d>", a),
         operators.stream().filter(o -> o.arity() == a).map(o -> List.of(o.toString())).toList()
     ));
-    getRules().put("<v>", variables.stream().map(List::of).toList());
-    getRules().put("<c>", constants.stream().map(c -> List.of(Double.toString(c))).toList());
+    rules().put("<v>", variables.stream().map(List::of).toList());
+    rules().put("<c>", constants.stream().map(c -> List.of(Double.toString(c))).toList());
   }
 }

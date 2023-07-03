@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core.representation.grammar.cfggp;
+package io.github.ericmedvet.jgea.core.representation.grammar.string.cfggp;
 
-import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.util.Pair;
 
@@ -29,7 +29,7 @@ import java.util.Random;
  */
 public class FullGrammarGrammarTreeFactory<T> extends GrowGrammarTreeFactory<T> {
 
-  public FullGrammarGrammarTreeFactory(int maxDepth, Grammar<T> grammar) {
+  public FullGrammarGrammarTreeFactory(int maxDepth, StringGrammar<T> grammar) {
     super(maxDepth, grammar);
   }
 
@@ -38,9 +38,9 @@ public class FullGrammarGrammarTreeFactory<T> extends GrowGrammarTreeFactory<T> 
       return null;
     }
     Tree<T> tree = Tree.of(symbol);
-    if (grammar.getRules().containsKey(symbol)) {
+    if (grammar.rules().containsKey(symbol)) {
       //a non-terminal
-      List<List<T>> options = grammar.getRules().get(symbol);
+      List<List<T>> options = grammar.rules().get(symbol);
       List<List<T>> availableOptions = new ArrayList<>();
       //general idea: try the following
       //1. choose expansion with min,max including target depth

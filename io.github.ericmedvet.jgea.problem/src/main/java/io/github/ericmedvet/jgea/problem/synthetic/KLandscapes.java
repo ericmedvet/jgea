@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package io.github.ericmedvet.jgea.problem.synthetic;
 
 import com.google.common.collect.Range;
 import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
-import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
-import io.github.ericmedvet.jgea.core.representation.grammar.GrammarBasedProblem;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedProblem;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.util.Pair;
 
@@ -39,7 +39,7 @@ public class KLandscapes implements GrammarBasedProblem<String, Tree<String>>,
   private final static int N_NON_TERMINALS = 2;
 
   private final int k;
-  private final Grammar<String> grammar;
+  private final StringGrammar<String> grammar;
   private final int arity;
   private final Range<Double> vRange;
   private final Range<Double> wRange;
@@ -65,20 +65,20 @@ public class KLandscapes implements GrammarBasedProblem<String, Tree<String>>,
     solutionMapper = buildSolutionMapper();
   }
 
-  private static Grammar<String> buildGrammar(int nTerminals, int nNonTerminals, int arity) {
-    Grammar<String> grammar = new Grammar<>();
+  private static StringGrammar<String> buildGrammar(int nTerminals, int nNonTerminals, int arity) {
+    StringGrammar<String> grammar = new StringGrammar<>();
     grammar.setStartingSymbol("N");
-    grammar.getRules().put("N", l(c(l("n"), r(arity, "N")), l("t")));
+    grammar.rules().put("N", l(c(l("n"), r(arity, "N")), l("t")));
     List<List<String>> nonTerminalConstOptions = new ArrayList<>();
     for (int i = 0; i < nNonTerminals; i++) {
       nonTerminalConstOptions.add(l("n" + i));
     }
-    grammar.getRules().put("n", nonTerminalConstOptions);
+    grammar.rules().put("n", nonTerminalConstOptions);
     List<List<String>> terminalConstOptions = new ArrayList<>();
     for (int i = 0; i < nTerminals; i++) {
       terminalConstOptions.add(l("t" + i));
     }
-    grammar.getRules().put("t", terminalConstOptions);
+    grammar.rules().put("t", terminalConstOptions);
     return grammar;
   }
 
@@ -224,7 +224,7 @@ public class KLandscapes implements GrammarBasedProblem<String, Tree<String>>,
   }
 
   @Override
-  public Grammar<String> getGrammar() {
+  public StringGrammar<String> getGrammar() {
     return grammar;
   }
 

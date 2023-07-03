@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core.representation.grammar;
+package io.github.ericmedvet.jgea.core.representation.grammar.grid;
 
-import java.util.List;
-import java.util.Map;
+import io.github.ericmedvet.jsdynsym.grid.Grid;
 
-public interface Grammar<S,C> {
-  Map<S, List<C>> rules();
+import java.util.Optional;
 
-  S startingSymbol();
+public interface GridDeveloper<T> {
+
+  interface Chooser<T> {
+    Optional<GridGrammar.ReferencedGrid<T>> choose(T t);
+  }
+
+  Optional<Grid<T>> develop(Chooser<T> chooser);
+
 }

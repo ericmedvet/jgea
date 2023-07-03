@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core.representation.grid;
+package io.github.ericmedvet.jgea.core.representation.grammar.grid;
 
+import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 
 import java.io.*;
@@ -23,7 +24,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
-public class GridGrammar<T> implements Serializable {
+public class GridGrammar<T> implements Serializable, Grammar<T, GridGrammar.ReferencedGrid<T>> {
 
   public static final String RULE_ASSIGNMENT_STRING = "::=";
   public static final String RULE_OPTION_SEPARATOR_STRING = "|";
@@ -48,7 +49,7 @@ public class GridGrammar<T> implements Serializable {
         String[] components = line.split(Pattern.quote(RULE_ASSIGNMENT_STRING));
         String toReplaceSymbol = components[0].trim();
         String[] optionStrings = components[1].split(Pattern.quote(RULE_OPTION_SEPARATOR_STRING));
-        if (grammar.getStartingSymbol() == null) {
+        if (grammar.startingSymbol() == null) {
           grammar.setStartingSymbol(toReplaceSymbol);
         }
         List<ReferencedGrid<String>> options = new ArrayList<>();
@@ -81,22 +82,10 @@ public class GridGrammar<T> implements Serializable {
           ReferencedGrid<String> productionRule = new ReferencedGrid<>(referencePoint, polyomino);
           options.add(productionRule);
         }
-        grammar.getRules().put(toReplaceSymbol, options);
+        grammar.rules().put(toReplaceSymbol, options);
       }
     }
     return grammar;
-  }
-
-  public Map<T, List<ReferencedGrid<T>>> getRules() {
-    return rules;
-  }
-
-  public T getStartingSymbol() {
-    return startingSymbol;
-  }
-
-  public void setStartingSymbol(T startingSymbol) {
-    this.startingSymbol = startingSymbol;
   }
 
   public <X> GridGrammar<X> map(Function<T, X> function) {
@@ -111,6 +100,20 @@ public class GridGrammar<T> implements Serializable {
     ));
     mapped.startingSymbol = function.apply(startingSymbol);
     return mapped;
+  }
+
+  @Override
+  public Map<T, List<ReferencedGrid<T>>> rules() {
+    return rules;
+  }
+
+  @Override
+  public T startingSymbol() {
+    return startingSymbol;
+  }
+
+  public void setStartingSymbol(T startingSymbol) {
+    this.startingSymbol = startingSymbol;
   }
 
   @Override

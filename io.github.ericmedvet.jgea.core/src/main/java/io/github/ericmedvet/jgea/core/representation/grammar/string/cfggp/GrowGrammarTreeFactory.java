@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core.representation.grammar.cfggp;
+package io.github.ericmedvet.jgea.core.representation.grammar.string.cfggp;
 
 import io.github.ericmedvet.jgea.core.Factory;
-import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
-import io.github.ericmedvet.jgea.core.representation.grammar.GrammarUtils;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarUtils;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.util.Pair;
 
@@ -35,11 +35,11 @@ public class GrowGrammarTreeFactory<T> implements Factory<Tree<T>> {
   private final static int MAX_ATTEMPTS = 100;
 
   protected final int maxHeight;
-  protected final Grammar<T> grammar;
+  protected final StringGrammar<T> grammar;
 
   private final Map<T, Pair<Double, Double>> nonTerminalDepths;
 
-  public GrowGrammarTreeFactory(int maxHeight, Grammar<T> grammar) {
+  public GrowGrammarTreeFactory(int maxHeight, StringGrammar<T> grammar) {
     this.maxHeight = maxHeight;
     this.grammar = grammar;
     nonTerminalDepths = GrammarUtils.computeSymbolsMinMaxDepths(grammar);
@@ -57,7 +57,7 @@ public class GrowGrammarTreeFactory<T> implements Factory<Tree<T>> {
   public Tree<T> build(RandomGenerator random, int targetDepth) {
     Tree<T> tree = null;
     for (int i = 0; i < MAX_ATTEMPTS; i++) {
-      tree = build(random, grammar.getStartingSymbol(), targetDepth);
+      tree = build(random, grammar.startingSymbol(), targetDepth);
       if (tree != null) {
         break;
       }
@@ -70,9 +70,9 @@ public class GrowGrammarTreeFactory<T> implements Factory<Tree<T>> {
       return null;
     }
     Tree<T> tree = Tree.of(symbol);
-    if (grammar.getRules().containsKey(symbol)) {
+    if (grammar.rules().containsKey(symbol)) {
       //a non-terminal
-      List<List<T>> options = grammar.getRules().get(symbol);
+      List<List<T>> options = grammar.rules().get(symbol);
       List<List<T>> availableOptions = new ArrayList<>();
       //general idea: try the following
       //1. choose expansion with min,max including target depth

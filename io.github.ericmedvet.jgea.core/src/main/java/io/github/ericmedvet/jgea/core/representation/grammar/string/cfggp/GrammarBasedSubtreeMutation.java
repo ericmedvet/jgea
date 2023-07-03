@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core.representation.grammar.cfggp;
+package io.github.ericmedvet.jgea.core.representation.grammar.string.cfggp;
 
 import io.github.ericmedvet.jgea.core.operator.Mutation;
-import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.util.Misc;
 
@@ -32,7 +32,7 @@ public class GrammarBasedSubtreeMutation<T> implements Mutation<Tree<T>> {
   private final int maxDepth;
   private final GrowGrammarTreeFactory<T> factory;
 
-  public GrammarBasedSubtreeMutation(int maxDepth, Grammar<T> grammar) {
+  public GrammarBasedSubtreeMutation(int maxDepth, StringGrammar<T> grammar) {
     this.maxDepth = maxDepth;
     factory = new GrowGrammarTreeFactory<>(0, grammar);
   }
