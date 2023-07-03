@@ -16,6 +16,7 @@
 
 package io.github.ericmedvet.jgea.core.representation.grammar.grid;
 
+import io.github.ericmedvet.jgea.core.representation.grammar.GrammarOptionStringFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.FixedLengthListFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.UniformIntStringFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.UniformDoubleFactory;
@@ -23,6 +24,7 @@ import io.github.ericmedvet.jsdynsym.grid.Grid;
 import io.github.ericmedvet.jsdynsym.grid.GridUtils;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -39,10 +41,11 @@ public class GridBiasesAndProps {
     Locale.setDefault(Locale.ROOT);
     //one-for-all params
     RandomGenerator rg = new Random(0);
-    int n = 100;
+    int n = 1000;
     int minL = 10;
-    int maxL = 100;
+    int maxL = 200;
     int stepL = 10;
+    PrintStream ps = new PrintStream("/home/eric/experiments/2023-EuroGP-GrammarBasedEvolutionOfPolyominoes/props.txt");
     //to-iterate params
     Map<String, GridGrammar<String>> grammars = Map.ofEntries(
         Map.entry("worm", GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/worm.bnf"))),
@@ -105,6 +108,12 @@ public class GridBiasesAndProps {
                 l,
                 new UniformDoubleFactory(0d, 1d)
             ).build(rg), gg)
+        ),
+        Map.entry(
+            "gos-3",
+            (l, gg) -> new GOSChooser<>(new GrammarOptionStringFactory<>(
+                gg, l, 3
+            ).build(rg), gg)
         )
     );
     List<Map.Entry<String, ToDoubleFunction<Grid<String>>>> metrics = List.of(
@@ -115,7 +124,7 @@ public class GridBiasesAndProps {
         Map.entry("elongation", g -> GridUtils.elongation(g, Objects::nonNull))
     );
     //iterate
-    System.out.println(
+    ps.println(
         "grammar\tdeveloper\tchooser\tl\tinvalidity\tuniqueness\t" +
             metrics.stream().map(Map.Entry::getKey).collect(Collectors.joining("\t"))
     );
@@ -133,11 +142,11 @@ public class GridBiasesAndProps {
             List<Grid<String>> grids = oGrids.stream().filter(Optional::isPresent).map(Optional::get).toList();
             double invalidity = 1d - (double) grids.size() / oGrids.size();
             double uniqueness = (double) grids.stream().distinct().count() / grids.size();
-            System.out.printf("%s\t%s\t%s\t%4d\t%.5f\t%.5f\t",
+            ps.printf("%s\t%s\t%s\t%4d\t%.5f\t%.5f\t",
                 grammarEntry.getKey(), developeEntry.getKey(), chooserEntry.getKey(), l,
                 invalidity, uniqueness
             );
-            System.out.println(metrics.stream()
+            ps.println(metrics.stream()
                 .map(Map.Entry::getValue)
                 .map(f -> grids.stream().mapToDouble(f).average().orElse(Double.NaN))
                 .map("%3.3f"::formatted)
@@ -146,5 +155,6 @@ public class GridBiasesAndProps {
         }
       }
     }
+    ps.close();
   }
 }
