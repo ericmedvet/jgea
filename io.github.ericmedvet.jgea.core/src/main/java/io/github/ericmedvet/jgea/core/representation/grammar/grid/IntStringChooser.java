@@ -16,32 +16,46 @@
 
 package io.github.ericmedvet.jgea.core.representation.grammar.grid;
 
+import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
+import io.github.ericmedvet.jsdynsym.grid.Grid;
+
 import java.util.List;
 import java.util.Optional;
-import java.util.random.RandomGenerator;
+import java.util.function.Function;
 
 /**
  * @author "Eric Medvet" on 2023/06/16 for jgea
  */
-public class RandomOptionChooser<T> implements GridDeveloper.Chooser<T> {
-  private final RandomGenerator randomGenerator;
-  private final int size;
+public class IntStringChooser<T> implements GridDeveloper.Chooser<T> {
+  private final IntString intString;
   private final GridGrammar<T> gridGrammar;
   private int i = 0;
 
-  public RandomOptionChooser(RandomGenerator randomGenerator, int size, GridGrammar<T> gridGrammar) {
-    this.randomGenerator = randomGenerator;
-    this.size = size;
+  public IntStringChooser(IntString intString, GridGrammar<T> gridGrammar) {
+    this.intString = intString;
     this.gridGrammar = gridGrammar;
+  }
+
+  public static <T> Function<IntString, Grid<T>> mapper(
+      GridGrammar<T> gridGrammar,
+      GridDeveloper<T> gridDeveloper,
+      Grid<T> defaultGrid
+  ) {
+    return is -> {
+      IntStringChooser<T> chooser = new IntStringChooser<>(is, gridGrammar);
+      return gridDeveloper.develop(chooser).orElse(defaultGrid);
+    };
   }
 
   @Override
   public Optional<GridGrammar.ReferencedGrid<T>> choose(T t) {
-    if (i >= size) {
+    if (i >= intString.size()) {
       return Optional.empty();
     }
-    i = i + 1;
     List<GridGrammar.ReferencedGrid<T>> options = gridGrammar.rules().get(t);
-    return Optional.of(options.get(randomGenerator.nextInt(options.size())));
+    int index = intString.get(i) % options.size();
+    i = i + 1;
+    return Optional.of(options.get(index));
   }
+
 }

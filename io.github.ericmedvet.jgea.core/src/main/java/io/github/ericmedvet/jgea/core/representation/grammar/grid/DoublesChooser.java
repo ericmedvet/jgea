@@ -26,12 +26,12 @@ import java.util.function.Function;
 /**
  * @author "Eric Medvet" on 2023/06/16 for jgea
  */
-public final class DoublesOptionChooser<T> implements GridDeveloper.Chooser<T> {
+public class DoublesChooser<T> implements GridDeveloper.Chooser<T> {
   private final List<Double> values;
   private final GridGrammar<T> gridGrammar;
   private int i = 0;
 
-  public DoublesOptionChooser(List<Double> values, GridGrammar<T> gridGrammar) {
+  public DoublesChooser(List<Double> values, GridGrammar<T> gridGrammar) {
     this.values = values;
     this.gridGrammar = gridGrammar;
   }
@@ -42,7 +42,7 @@ public final class DoublesOptionChooser<T> implements GridDeveloper.Chooser<T> {
       Grid<T> defaultGrid
   ) {
     return values -> {
-      DoublesOptionChooser<T> chooser = new DoublesOptionChooser<>(values, gridGrammar);
+      DoublesChooser<T> chooser = new DoublesChooser<>(values, gridGrammar);
       return gridDeveloper.develop(chooser).orElse(defaultGrid);
     };
   }

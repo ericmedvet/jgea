@@ -96,6 +96,7 @@ public class GrammarOptionStringFactory<S, C> implements IndependentFactory<Gram
         ).toList())
         .toList();
   }
+
   @Override
   public GrammarOptionString<S> build(RandomGenerator random) {
     return new GrammarOptionString<>(

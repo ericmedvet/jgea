@@ -86,22 +86,22 @@ public class GridBiasesAndProps {
         )
     );
     Map<String, BiFunction<Integer, GridGrammar<String>, GridDeveloper.Chooser<String>>> choosers = Map.ofEntries(
-        Map.entry("random", (l, gg) -> new RandomOptionChooser<>(rg, l, gg)),
+        Map.entry("random", (l, gg) -> new RandomChooser<>(rg, l, gg)),
         Map.entry(
             "int-8",
-            (l, gg) -> new IntStringOptionChooser<>((new UniformIntStringFactory(0, 8, l)).build(rg), gg)
+            (l, gg) -> new IntStringChooser<>((new UniformIntStringFactory(0, 8, l)).build(rg), gg)
         ),
         Map.entry(
             "int-16",
-            (l, gg) -> new IntStringOptionChooser<>((new UniformIntStringFactory(0, 16, l)).build(rg), gg)
+            (l, gg) -> new IntStringChooser<>((new UniformIntStringFactory(0, 16, l)).build(rg), gg)
         ),
         Map.entry(
             "int-32",
-            (l, gg) -> new IntStringOptionChooser<>((new UniformIntStringFactory(0, 32, l)).build(rg), gg)
+            (l, gg) -> new IntStringChooser<>((new UniformIntStringFactory(0, 32, l)).build(rg), gg)
         ),
         Map.entry(
             "double",
-            (l, gg) -> new DoublesOptionChooser<>(new FixedLengthListFactory<>(
+            (l, gg) -> new DoublesChooser<>(new FixedLengthListFactory<>(
                 l,
                 new UniformDoubleFactory(0d, 1d)
             ).build(rg), gg)

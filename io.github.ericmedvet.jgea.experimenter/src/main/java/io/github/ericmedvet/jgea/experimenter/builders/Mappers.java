@@ -108,7 +108,7 @@ public class Mappers {
     GridDeveloper<T> gridDeveloper = new StandardGridDeveloper<>(grammar, overwrite, criteria);
     return InvertibleMapper.from(
         (eGrid, is) -> {
-          IntStringOptionChooser<T> chooser = new IntStringOptionChooser<>(is, grammar);
+          IntStringChooser<T> chooser = new IntStringChooser<>(is, grammar);
           return gridDeveloper.develop(chooser).orElse(eGrid);
         },
         eGrid -> new IntString(0, upperBound, l)
@@ -169,7 +169,7 @@ public class Mappers {
     GridDeveloper<T> gridDeveloper = new StandardGridDeveloper<>(grammar, overwrite, criteria);
     return InvertibleMapper.from(
         (eGrid, vs) -> {
-          GridDeveloper.Chooser<T> chooser = new DoublesOptionChooser<>(vs, grammar);
+          GridDeveloper.Chooser<T> chooser = new DoublesChooser<>(vs, grammar);
           return gridDeveloper.develop(chooser).orElse(eGrid);
         },
         eGrid -> Collections.nCopies(l, 0d)
