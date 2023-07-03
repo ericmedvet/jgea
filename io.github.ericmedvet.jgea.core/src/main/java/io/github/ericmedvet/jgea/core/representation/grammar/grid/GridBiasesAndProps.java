@@ -41,9 +41,9 @@ public class GridBiasesAndProps {
     Locale.setDefault(Locale.ROOT);
     //one-for-all params
     RandomGenerator rg = new Random(0);
-    int n = 1000;
+    int n = 100;
     int minL = 10;
-    int maxL = 200;
+    int maxL = 100;
     int stepL = 10;
     PrintStream ps = System.out; //new PrintStream("/home/eric/experiments/2023-EuroGP-GrammarBasedEvolutionOfPolyominoes/props.txt");
     //to-iterate params
