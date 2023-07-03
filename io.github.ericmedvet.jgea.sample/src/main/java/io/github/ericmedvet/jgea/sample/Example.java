@@ -49,7 +49,6 @@ import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Synthet
 import io.github.ericmedvet.jgea.problem.synthetic.Ackley;
 import io.github.ericmedvet.jgea.problem.synthetic.OneMax;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
@@ -85,7 +84,7 @@ public class Example extends Worker {
     super(args);
   }
 
-  public static void main(String[] args) throws FileNotFoundException {
+  public static void main(String[] args) {
     new Example(args);
   }
 

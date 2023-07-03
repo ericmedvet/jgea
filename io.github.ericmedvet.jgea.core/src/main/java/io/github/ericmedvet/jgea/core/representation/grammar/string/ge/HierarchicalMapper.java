@@ -46,7 +46,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
     shortestOptionIndexesMap = GrammarUtils.computeShortestOptionIndexesMap(grammar);
   }
 
-  private static record EnhancedSymbol<T>(T symbol, Range<Integer> range) {}
+  private record EnhancedSymbol<T>(T symbol, Range<Integer> range) {}
 
   public static List<Range<Integer>> slices(Range<Integer> range, int pieces) {
     List<Integer> sizes = new ArrayList<>(pieces);

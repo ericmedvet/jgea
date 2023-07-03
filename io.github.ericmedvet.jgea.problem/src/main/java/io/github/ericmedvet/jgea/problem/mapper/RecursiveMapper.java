@@ -101,7 +101,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
     for (T optionSymbol : options.get(optionIndex)) {
       expressivenesses.add((double) weightsMap.getOrDefault(optionSymbol, 1));
     }
-    List<BitString> pieces = ((List<BitString>) MapperUtils.compute(
+    @SuppressWarnings("unchecked") List<BitString> pieces = ((List<BitString>) MapperUtils.compute(
         genoAssigner,
         genotype,
         expressivenesses,

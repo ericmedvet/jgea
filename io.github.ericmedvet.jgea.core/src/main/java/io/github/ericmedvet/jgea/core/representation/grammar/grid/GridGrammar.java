@@ -112,6 +112,11 @@ public class GridGrammar<T> implements Serializable, Grammar<T, GridGrammar.Refe
     return startingSymbol;
   }
 
+  @Override
+  public Collection<T> usedSymbols(ReferencedGrid<T> referencedGrid) {
+    return referencedGrid.grid().values().stream().filter(Objects::nonNull).toList();
+  }
+
   public void setStartingSymbol(T startingSymbol) {
     this.startingSymbol = startingSymbol;
   }

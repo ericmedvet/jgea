@@ -92,14 +92,14 @@ public class GrammarUtils {
 
   private static <T> Map<T, Triplet<Double, Boolean, Set<T>>> computeSymbolsMaxDepths(StringGrammar<T> g) {
     Map<T, Triplet<Double, Boolean, Set<T>>> map = new HashMap<>();
-    map.put(g.startingSymbol(), new Triplet<>(0d, false, new HashSet<T>()));
+    map.put(g.startingSymbol(), new Triplet<>(0d, false, new HashSet<>()));
     for (List<List<T>> options : g.rules().values()) {
       for (List<T> option : options) {
         for (T symbol : option) {
           if (!g.rules().containsKey(symbol)) {
             map.put(symbol, new Triplet<>(1d, true, Set.of()));
           } else {
-            map.put(symbol, new Triplet<>(0d, false, new HashSet<T>()));
+            map.put(symbol, new Triplet<>(0d, false, new HashSet<>()));
           }
         }
       }

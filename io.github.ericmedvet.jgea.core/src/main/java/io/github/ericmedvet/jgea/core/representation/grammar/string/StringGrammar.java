@@ -19,10 +19,7 @@ package io.github.ericmedvet.jgea.core.representation.grammar.string;
 import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -39,11 +36,11 @@ public class StringGrammar<T> implements Serializable, Grammar<T, List<T>> {
     rules = new LinkedHashMap<>();
   }
 
-  public static StringGrammar<String> load(InputStream inputStream) throws FileNotFoundException, IOException {
+  public static StringGrammar<String> load(InputStream inputStream) throws IOException {
     return load(inputStream, "UTF-8");
   }
 
-  public static StringGrammar<String> load(InputStream inputStream, String charset) throws FileNotFoundException, IOException {
+  public static StringGrammar<String> load(InputStream inputStream, String charset) throws IOException {
     StringGrammar<String> grammar = new StringGrammar<>();
     BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, charset));
     String line;
@@ -80,6 +77,11 @@ public class StringGrammar<T> implements Serializable, Grammar<T, List<T>> {
     return startingSymbol;
   }
 
+  @Override
+  public Collection<T> usedSymbols(List<T> ts) {
+    return ts;
+  }
+
   public void setStartingSymbol(T startingSymbol) {
     this.startingSymbol = startingSymbol;
   }
@@ -101,5 +103,4 @@ public class StringGrammar<T> implements Serializable, Grammar<T, List<T>> {
     }
     return sb.toString();
   }
-
 }

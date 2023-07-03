@@ -60,7 +60,7 @@ public class StandardGridDeveloper<T> implements GridDeveloper<T> {
 
   private record Aged<T>(int iteration, T t) {}
 
-  private record Decorated(int iteration, int nOfFreeSides) {}
+  public record Decorated(int iteration, int nOfFreeSides) {}
 
   private static int freeSides(Grid<?> g, Grid.Key k) {
     int n = 0;

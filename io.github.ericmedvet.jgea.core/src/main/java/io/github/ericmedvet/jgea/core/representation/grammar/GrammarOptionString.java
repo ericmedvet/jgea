@@ -16,14 +16,17 @@
 
 package io.github.ericmedvet.jgea.core.representation.grammar;
 
-import java.util.Collection;
+import io.github.ericmedvet.jgea.core.util.Sized;
+
 import java.util.List;
 import java.util.Map;
 
-public interface Grammar<S,C> {
-  Map<S, List<C>> rules();
-
-  S startingSymbol();
-
-  Collection<S> usedSymbols(C c);
+public record GrammarOptionString<S>(
+    Map<S, List<Integer>> options,
+    Grammar<S, ?> grammar
+) implements Sized {
+  @Override
+  public int size() {
+    return options.values().stream().mapToInt(List::size).sum();
+  }
 }

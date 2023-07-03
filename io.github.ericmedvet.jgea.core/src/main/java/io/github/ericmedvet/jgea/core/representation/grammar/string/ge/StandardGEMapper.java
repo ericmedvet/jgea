@@ -28,7 +28,6 @@ import java.util.List;
  */
 public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
 
-  public static final String BIT_USAGES_INDEX_NAME = "bitUsages";
   private final int codonLength;
   private final int maxWraps;
 
