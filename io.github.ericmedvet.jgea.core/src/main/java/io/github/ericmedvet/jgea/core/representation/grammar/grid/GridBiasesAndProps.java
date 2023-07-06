@@ -16,6 +16,7 @@
 
 package io.github.ericmedvet.jgea.core.representation.grammar.grid;
 
+import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jgea.core.representation.grammar.Chooser;
 import io.github.ericmedvet.jgea.core.representation.grammar.Developer;
 import io.github.ericmedvet.jgea.core.representation.grammar.GrammarOptionStringFactory;
@@ -92,37 +93,37 @@ public class GridBiasesAndProps {
             )
         )
     );
-    Map<String, BiFunction<Integer, GridGrammar<String>, Chooser<String, GridGrammar.ReferencedGrid<String>>>> choosers = Map.ofEntries(
-        Map.entry("random", (l, gg) -> new RandomChooser<>(rg, l, gg)),
-        Map.entry(
-            "int-2",
-            (l, gg) -> new IntStringChooser<>((new UniformIntStringFactory(0, 2, l)).build(rg), gg)
+    record FactoryChooser<X>(
+        IndependentFactory<X> factory,
+        Function<X, Chooser<String, GridGrammar.ReferencedGrid<String>>> chooserBuilder
+    ) {}
+
+    record Mapped<X>(X genotype, Grid<String> phenotype) {}
+    Map<String, BiFunction<Integer, GridGrammar<String>, FactoryChooser<?>>> factoryChoosers = Map.ofEntries(
+        Map.entry("random", (l, gg) -> new FactoryChooser<>(irg -> null, x -> new RandomChooser<>(rg, l, gg))),
+        Map.entry("int-2", (l, gg) -> new FactoryChooser<>(
+                new UniformIntStringFactory(0, 2, l),
+                is -> new IntStringChooser<>(is, gg)
+            )
         ),
-        Map.entry(
-            "int-4",
-            (l, gg) -> new IntStringChooser<>((new UniformIntStringFactory(0, 4, l)).build(rg), gg)
+        Map.entry("int-4", (l, gg) -> new FactoryChooser<>(
+                new UniformIntStringFactory(0, 4, l),
+                is -> new IntStringChooser<>(is, gg)
+            )
         ),
-        Map.entry(
-            "int-8",
-            (l, gg) -> new IntStringChooser<>((new UniformIntStringFactory(0, 8, l)).build(rg), gg)
+        Map.entry("double", (l, gg) -> new FactoryChooser<>(
+                new FixedLengthListFactory<>(l, new UniformDoubleFactory(0, 1)),
+                vs -> new DoublesChooser<>(vs, gg)
+            )
         ),
-        Map.entry(
-            "double",
-            (l, gg) -> new DoublesChooser<>(new FixedLengthListFactory<>(
-                l,
-                new UniformDoubleFactory(0d, 1d)
-            ).build(rg), gg)
-        ),
-        Map.entry(
-            "gos-3",
-            (l, gg) -> new GOSChooser<>(new GrammarOptionStringFactory<>(
-                gg, l, 3
-            ).build(rg), gg)
-        ),
-        Map.entry(
-            "bits",
-            (l, gg) -> new BitStringChooser<>(new BitStringFactory(l).build(rg), gg)
-        )
+        Map.entry("gos-3", (l, gg) -> new FactoryChooser<>(
+            new GrammarOptionStringFactory<>(gg, l, 3),
+            gos -> new GOSChooser<>(gos, gg)
+        )),
+        Map.entry("bits", (l, gg) -> new FactoryChooser<>(
+            new BitStringFactory(l),
+            bs -> new BitStringChooser<>(bs, gg)
+        ))
     );
     List<Map.Entry<String, ToDoubleFunction<Grid<String>>>> metrics = List.of(
         Map.entry("w", g -> GridUtils.w(g, Objects::nonNull)),
@@ -140,9 +141,8 @@ public class GridBiasesAndProps {
       for (Map.Entry<String, Function<GridGrammar<String>, Developer<String, Grid<String>,
           GridGrammar.ReferencedGrid<String>>>> developeEntry :
           developers.entrySet()) {
-        for (Map.Entry<String, BiFunction<Integer, GridGrammar<String>, Chooser<String,
-            GridGrammar.ReferencedGrid<String>>>> chooserEntry
-            : choosers.entrySet()) {
+        for (Map.Entry<String, BiFunction<Integer, GridGrammar<String>, FactoryChooser<?>>> factoryChooserEntry
+            : factoryChoosers.entrySet()) {
           for (int l = minL; l <= maxL; l = l + stepL) {
             final int localL = l;
             Developer<String, Grid<String>, GridGrammar.ReferencedGrid<String>> developer = developeEntry.getValue()
