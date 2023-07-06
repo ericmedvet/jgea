@@ -16,6 +16,9 @@
 
 package io.github.ericmedvet.jgea.core.representation.grammar.grid;
 
+import io.github.ericmedvet.jgea.core.representation.grammar.Chooser;
+import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.random.RandomGenerator;
@@ -23,25 +26,25 @@ import java.util.random.RandomGenerator;
 /**
  * @author "Eric Medvet" on 2023/06/16 for jgea
  */
-public class RandomChooser<T> implements GridDeveloper.Chooser<T> {
+public class RandomChooser<S, O> implements Chooser<S, O> {
   private final RandomGenerator randomGenerator;
   private final int size;
-  private final GridGrammar<T> gridGrammar;
+  private final Grammar<S, O> gridGrammar;
   private int i = 0;
 
-  public RandomChooser(RandomGenerator randomGenerator, int size, GridGrammar<T> gridGrammar) {
+  public RandomChooser(RandomGenerator randomGenerator, int size, Grammar<S, O> gridGrammar) {
     this.randomGenerator = randomGenerator;
     this.size = size;
     this.gridGrammar = gridGrammar;
   }
 
   @Override
-  public Optional<GridGrammar.ReferencedGrid<T>> choose(T t) {
+  public Optional<O> chooseFor(S s) {
     if (i >= size) {
       return Optional.empty();
     }
     i = i + 1;
-    List<GridGrammar.ReferencedGrid<T>> options = gridGrammar.rules().get(t);
+    List<O> options = gridGrammar.rules().get(s);
     return Optional.of(options.get(randomGenerator.nextInt(options.size())));
   }
 }

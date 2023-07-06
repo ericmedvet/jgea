@@ -16,6 +16,8 @@
 
 package io.github.ericmedvet.jgea.core.representation.grammar.grid;
 
+import io.github.ericmedvet.jgea.core.representation.grammar.Chooser;
+import io.github.ericmedvet.jgea.core.representation.grammar.Developer;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 
 import java.util.Comparator;
@@ -23,7 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public class StandardGridDeveloper<T> implements GridDeveloper<T> {
+public class StandardGridDeveloper<T> implements Developer<T, Grid<T>, GridGrammar.ReferencedGrid<T>> {
   private final GridGrammar<T> grammar;
   private final boolean overwriting;
   private final Comparator<Grid.Entry<Decorated>> comparator;
@@ -121,7 +123,7 @@ public class StandardGridDeveloper<T> implements GridDeveloper<T> {
     return enlarged;
   }
 
-  public Optional<Grid<T>> develop(Chooser<T> optionChooser) {
+  public Optional<Grid<T>> develop(Chooser<T, GridGrammar.ReferencedGrid<T>> optionChooser) {
     Set<T> nonTerminalSymbols = grammar.rules().keySet();
     int i = 0;
     // build a 1x1 grid with the starting symbol
@@ -145,7 +147,7 @@ public class StandardGridDeveloper<T> implements GridDeveloper<T> {
       boolean modified = false;
       for (Grid.Entry<Decorated> candidate : candidates) {
         T symbol = polyomino.get(candidate.key()).t();
-        Optional<GridGrammar.ReferencedGrid<T>> production = optionChooser.choose(symbol);
+        Optional<GridGrammar.ReferencedGrid<T>> production = optionChooser.chooseFor(symbol);
         if (production.isEmpty()) {
           return Optional.empty();
         }

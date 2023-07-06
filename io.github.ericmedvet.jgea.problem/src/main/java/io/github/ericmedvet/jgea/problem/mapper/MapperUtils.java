@@ -18,11 +18,10 @@ package io.github.ericmedvet.jgea.problem.mapper;
 
 import com.google.common.collect.Range;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.ge.HierarchicalMapper;
-import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitSetUtils;
+import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,25 +36,25 @@ public class MapperUtils {
     for (Object repeatedArg : inputList) {
       switch (function) {
         case SIZE:
-          outputList.add((double) ((BitSet) repeatedArg).size());
+          outputList.add((double) ((BitString) repeatedArg).size());
           break;
         case WEIGHT:
-          outputList.add((double) ((BitSet) repeatedArg).cardinality());
+          outputList.add((double) ((BitString) repeatedArg).nOfOnes());
           break;
         case WEIGHT_R:
-          outputList.add((double) ((BitSet) repeatedArg).cardinality() / (double) ((BitSet) repeatedArg).size());
+          outputList.add((double) ((BitString) repeatedArg).nOfOnes() / (double) ((BitString) repeatedArg).size());
           break;
         case INT:
-          outputList.add((double) BitSetUtils.toInt((BitSet) repeatedArg));
+          outputList.add((double) ((BitString) repeatedArg).toInt());
           break;
         case ROTATE_SX:
-          outputList.add(rotateSx((BitSet) arg, ((Double) repeatedArg).intValue()));
+          outputList.add(rotateSx((BitString) arg, ((Double) repeatedArg).intValue()));
           break;
         case ROTATE_DX:
-          outputList.add(rotateDx((BitSet) arg, ((Double) repeatedArg).intValue()));
+          outputList.add(rotateDx((BitString) arg, ((Double) repeatedArg).intValue()));
           break;
         case SUBSTRING:
-          outputList.add(substring((BitSet) arg, ((Double) repeatedArg).intValue()));
+          outputList.add(substring((BitString) arg, ((Double) repeatedArg).intValue()));
           break;
       }
     }
@@ -63,7 +62,7 @@ public class MapperUtils {
   }
 
   public static Object compute(
-      Tree<Element> tree, BitSet g, List<Double> values, int depth, AtomicInteger globalCounter
+      Tree<Element> tree, BitString g, List<Double> values, int depth, AtomicInteger globalCounter
   ) {
     Object result = null;
     if (tree.content() instanceof Element.Variable) {
@@ -87,17 +86,17 @@ public class MapperUtils {
     } else if (tree.content() instanceof Element.MapperFunction) {
       switch (((Element.MapperFunction) tree.content())) {
         case SIZE:
-          result = (double) ((BitSet) compute(tree.child(0), g, values, depth, globalCounter)).size();
+          result = (double) ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).size();
           break;
         case WEIGHT:
-          result = (double) ((BitSet) compute(tree.child(0), g, values, depth, globalCounter)).cardinality();
+          result = (double) ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).nOfOnes();
           break;
         case WEIGHT_R:
-          BitSet bitsGenotype = (BitSet) compute(tree.child(0), g, values, depth, globalCounter);
-          result = (double) bitsGenotype.cardinality() / (double) bitsGenotype.size();
+          BitString bitsGenotype = (BitString) compute(tree.child(0), g, values, depth, globalCounter);
+          result = (double) bitsGenotype.nOfOnes() / (double) bitsGenotype.size();
           break;
         case INT:
-          result = (double) BitSetUtils.toInt((BitSet) compute(tree.child(0), g, values, depth, globalCounter));
+          result = (double) ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).toInt();
           break;
         case ADD:
           result = ((Double) compute(tree.child(0), g, values, depth, globalCounter) + (Double) compute(
@@ -167,32 +166,32 @@ public class MapperUtils {
           break;
         case ROTATE_SX:
           result = rotateSx(
-              (BitSet) compute(tree.child(0), g, values, depth, globalCounter),
+              (BitString) compute(tree.child(0), g, values, depth, globalCounter),
               ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue()
           );
           break;
         case ROTATE_DX:
           result = rotateDx(
-              (BitSet) compute(tree.child(0), g, values, depth, globalCounter),
+              (BitString) compute(tree.child(0), g, values, depth, globalCounter),
               ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue()
           );
           break;
         case SUBSTRING:
           result = substring(
-              (BitSet) compute(tree.child(0), g, values, depth, globalCounter),
+              (BitString) compute(tree.child(0), g, values, depth, globalCounter),
               ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue()
           );
           break;
         case SPLIT:
           result = split(
-              (BitSet) compute(tree.child(0), g, values, depth, globalCounter),
+              (BitString) compute(tree.child(0), g, values, depth, globalCounter),
               ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue(),
               values.size()
           );
           break;
         case SPLIT_W:
           result = splitWeighted(
-              (BitSet) compute(tree.child(0), g, values, depth, globalCounter),
+              (BitString) compute(tree.child(0), g, values, depth, globalCounter),
               (List<Double>) compute(tree.child(1), g, values, depth, globalCounter),
               values.size()
           );
@@ -408,7 +407,7 @@ public class MapperUtils {
     return list;
   }
 
-  private static BitSet rotateDx(BitSet g, int n) {
+  private static BitString rotateDx(BitString g, int n) {
     if (g.size() == 0) {
       return g;
     }
@@ -416,17 +415,17 @@ public class MapperUtils {
     if (n <= 0) {
       return g;
     }
-    BitSet copy = new BitSet(g.size());
+    BitString copy = new BitString(g.size());
     for (int i = g.size() - n; i < g.size(); i++) {
-      copy.set(i, g.get(g.size() - n + i));
+      copy.bits()[i] = g.bits()[g.size() - n + i];
     }
     for (int i = 0; i < g.size() - n; i++) {
-      copy.set(i, g.get(i));
+      copy.bits()[i] = g.bits()[i];
     }
     return copy;
   }
 
-  private static BitSet rotateSx(BitSet g, int n) {
+  private static BitString rotateSx(BitString g, int n) {
     if (g.size() == 0) {
       return g;
     }
@@ -434,12 +433,12 @@ public class MapperUtils {
     if (n <= 0) {
       return g;
     }
-    BitSet copy = new BitSet(g.size());
+    BitString copy = new BitString(g.size());
     for (int i = n; i < g.size(); i++) {
-      copy.set(i - n, g.get(n + i));
+      copy.bits()[i - n] = g.bits()[n + i];
     }
     for (int i = 0; i < n; i++) {
-      copy.set(g.size() - n + i, g.get(i));
+      copy.bits()[g.size() - n + i] = g.bits()[i];
     }
     return copy;
   }
@@ -458,7 +457,7 @@ public class MapperUtils {
     return list;
   }
 
-  private static List<BitSet> split(BitSet g, int n, int maxN) {
+  private static List<BitString> split(BitString g, int n, int maxN) {
     if (n <= 0) {
       return List.of(g);
     }
@@ -466,22 +465,22 @@ public class MapperUtils {
       n = maxN;
     }
     if (g.size() == 0) {
-      return Collections.nCopies(n, new BitSet(0));
+      return Collections.nCopies(n, new BitString(0));
     }
     n = Math.max(1, n);
     n = Math.min(n, g.size());
     return HierarchicalMapper.slices(Range.closedOpen(0, g.size()), n)
         .stream()
-        .map(s -> BitSetUtils.slice(g, s))
+        .map(s -> g.slice(s.lowerEndpoint(), s.upperEndpoint()))
         .toList();
   }
 
-  private static List<BitSet> splitWeighted(BitSet g, List<Double> weights, int maxN) {
+  private static List<BitString> splitWeighted(BitString g, List<Double> weights, int maxN) {
     if (weights.isEmpty()) {
       return List.of(g);
     }
     if (g.size() == 0) {
-      return Collections.nCopies(weights.size(), new BitSet(0));
+      return Collections.nCopies(weights.size(), new BitString(0));
     }
     double minWeight = Double.POSITIVE_INFINITY;
     for (double w : weights) {
@@ -498,18 +497,18 @@ public class MapperUtils {
       intWeights.add((int) Math.max(Math.round(w / minWeight), 0d));
     }
     return HierarchicalMapper.slices(Range.closedOpen(0, g.size()), intWeights).stream()
-        .map(s -> BitSetUtils.slice(g, s))
+        .map(s -> g.slice(s.lowerEndpoint(), s.upperEndpoint()))
         .toList();
   }
 
-  private static BitSet substring(BitSet g, int to) {
+  private static BitString substring(BitString g, int to) {
     if (to <= 0) {
-      return new BitSet(0);
+      return new BitString(0);
     }
     if (g.size() == 0) {
       return g;
     }
-    return BitSetUtils.slice(g, 0, Math.min(to, g.size()));
+    return g.slice(0, Math.min(to, g.size()));
   }
 
   public static Tree<Element> transform(Tree<String> stringTree) {

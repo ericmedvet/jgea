@@ -16,43 +16,57 @@
 
 package io.github.ericmedvet.jgea.core.representation.grammar.grid;
 
+import io.github.ericmedvet.jgea.core.representation.grammar.Chooser;
+import io.github.ericmedvet.jgea.core.representation.grammar.Developer;
 import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
 import io.github.ericmedvet.jgea.core.representation.grammar.GrammarOptionString;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class GOSChooser<T> implements GridDeveloper.Chooser<T> {
+public class GOSChooser<S, O> implements Chooser<S, O> {
 
-  private final GrammarOptionString<T> gos;
-  private final Grammar<T, GridGrammar.ReferencedGrid<T>> grammar;
-  private final Map<T, Integer> counters;
+  private final GrammarOptionString<S> gos;
+  private final Grammar<S, O> grammar;
+  private final Map<S, Integer> counters;
 
-  public GOSChooser(GrammarOptionString<T> gos, Grammar<T, GridGrammar.ReferencedGrid<T>> grammar) {
+  public GOSChooser(GrammarOptionString<S> gos, Grammar<S, O> grammar) {
     this.gos = gos;
     this.grammar = grammar;
     counters = gos.options().keySet().stream().collect(Collectors.toMap(
-        t -> t,
-        t -> 0
+        s -> s,
+        s -> 0
     ));
   }
 
+  public static <T, D, O> Function<GrammarOptionString<T>, D> mapper(
+      Grammar<T,O> grammar,
+      Developer<T, D, O> developer,
+      D defaultDeveloped
+  ) {
+    return gos -> {
+      GOSChooser<T, O> chooser = new GOSChooser<>(gos, grammar);
+      return developer.develop(chooser).orElse(defaultDeveloped);
+    };
+  }
+
   @Override
-  public Optional<GridGrammar.ReferencedGrid<T>> choose(T t) {
-    if (grammar.rules().get(t).size() == 1) {
-      return Optional.of(grammar.rules().get(t).get(0));
+  public Optional<O> chooseFor(S s) {
+    if (grammar.rules().get(s).size() == 1) {
+      return Optional.of(grammar.rules().get(s).get(0));
     }
-    if (!gos.options().containsKey(t)) {
-      throw new IllegalArgumentException("Invalid genotype, it does not contain symbol %s".formatted(t));
+    if (!gos.options().containsKey(s)) {
+      throw new IllegalArgumentException("Invalid genotype, it does not contain symbol %s".formatted(s));
     }
-    List<Integer> optionIndexes = gos.options().get(t);
-    if (counters.get(t) >= optionIndexes.size()) {
+    List<Integer> optionIndexes = gos.options().get(s);
+    if (counters.get(s) >= optionIndexes.size()) {
       return Optional.empty();
     }
-    GridGrammar.ReferencedGrid<T> chosen = grammar.rules().get(t).get(optionIndexes.get(counters.get(t)));
-    counters.computeIfPresent(t, (localT, c) -> c + 1);
+    O chosen = grammar.rules().get(s).get(optionIndexes.get(counters.get(s)));
+    counters.computeIfPresent(s, (localS, c) -> c + 1);
     return Optional.of(chosen);
   }
 }

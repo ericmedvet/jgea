@@ -18,7 +18,12 @@ package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jgea.core.representation.NamedMultivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.NamedUnivariateRealFunction;
-import io.github.ericmedvet.jgea.core.representation.grammar.grid.*;
+import io.github.ericmedvet.jgea.core.representation.grammar.Chooser;
+import io.github.ericmedvet.jgea.core.representation.grammar.Developer;
+import io.github.ericmedvet.jgea.core.representation.grammar.grid.DoublesChooser;
+import io.github.ericmedvet.jgea.core.representation.grammar.grid.GridGrammar;
+import io.github.ericmedvet.jgea.core.representation.grammar.grid.IntStringChooser;
+import io.github.ericmedvet.jgea.core.representation.grammar.grid.StandardGridDeveloper;
 import io.github.ericmedvet.jgea.core.representation.graph.Graph;
 import io.github.ericmedvet.jgea.core.representation.graph.Node;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.functiongraph.FunctionGraph;
@@ -105,10 +110,10 @@ public class Mappers {
       @Param(value = "overwrite", dB = true) boolean overwrite,
       @Param(value = "criteria", dSs = {"least_recent"}) List<StandardGridDeveloper.SortingCriterion> criteria
   ) {
-    GridDeveloper<T> gridDeveloper = new StandardGridDeveloper<>(grammar, overwrite, criteria);
+    Developer<T, Grid<T>, GridGrammar.ReferencedGrid<T>> gridDeveloper = new StandardGridDeveloper<>(grammar, overwrite, criteria);
     return InvertibleMapper.from(
         (eGrid, is) -> {
-          IntStringChooser<T> chooser = new IntStringChooser<>(is, grammar);
+          Chooser<T, GridGrammar.ReferencedGrid<T>> chooser = new IntStringChooser<>(is, grammar);
           return gridDeveloper.develop(chooser).orElse(eGrid);
         },
         eGrid -> new IntString(Collections.nCopies(l, 0), 0, upperBound)
@@ -166,10 +171,10 @@ public class Mappers {
       @Param(value = "overwrite", dB = true) boolean overwrite,
       @Param(value = "criteria", dSs = {"least_recent"}) List<StandardGridDeveloper.SortingCriterion> criteria
   ) {
-    GridDeveloper<T> gridDeveloper = new StandardGridDeveloper<>(grammar, overwrite, criteria);
+    Developer<T, Grid<T>, GridGrammar.ReferencedGrid<T>> gridDeveloper = new StandardGridDeveloper<>(grammar, overwrite, criteria);
     return InvertibleMapper.from(
         (eGrid, vs) -> {
-          GridDeveloper.Chooser<T> chooser = new DoublesChooser<>(vs, grammar);
+          Chooser<T, GridGrammar.ReferencedGrid<T>> chooser = new DoublesChooser<>(vs, grammar);
           return gridDeveloper.develop(chooser).orElse(eGrid);
         },
         eGrid -> Collections.nCopies(l, 0d)

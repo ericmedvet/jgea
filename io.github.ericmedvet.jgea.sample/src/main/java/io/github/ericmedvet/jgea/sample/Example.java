@@ -27,9 +27,10 @@ import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGramma
 import io.github.ericmedvet.jgea.core.representation.grammar.string.cfggp.GrammarBasedSubtreeMutation;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.cfggp.GrammarRampedHalfAndHalf;
 import io.github.ericmedvet.jgea.core.representation.sequence.FixedLengthListFactory;
-import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitSetFactory;
-import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitSetFlipMutation;
-import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitSetUniformCrossover;
+import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
+import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringFactory;
+import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringFlipMutation;
+import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringUniformCrossover;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.GaussianMutation;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.HypercubeGeometricCrossover;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.UniformDoubleFactory;
@@ -166,7 +167,7 @@ public class Example extends Worker {
   public void runOneMax() {
     int size = 1000;
     Random r = new Random(1);
-    QualityBasedProblem<BitSet, Double> p = new OneMax(size);
+    QualityBasedProblem<BitString, Double> p = new OneMax(size);
     List<NamedFunction<? super POSetPopulationState<?, ?, ?>, ?>> keysFunctions = List.of();
     ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
         ListenerFactory.all(
@@ -174,26 +175,26 @@ public class Example extends Worker {
                 Misc.concat(List.of(keysFunctions, BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)),
                 List.of(attribute("solver"))
             )));
-    List<IterativeSolver<? extends POSetPopulationState<?, BitSet, Double>, QualityBasedProblem<BitSet, Double>
-        , BitSet>> solvers = new ArrayList<>();
+    List<IterativeSolver<? extends POSetPopulationState<?, BitString, Double>, QualityBasedProblem<BitString, Double>
+        , BitString>> solvers = new ArrayList<>();
     solvers.add(new RandomSearch<>(
         Function.identity(),
-        new BitSetFactory(size),
+        new BitStringFactory(size),
         StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100))
     ));
     solvers.add(new RandomWalk<>(
         Function.identity(),
-        new BitSetFactory(size),
+        new BitStringFactory(size),
         StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
-        new BitSetFlipMutation(0.01d)
+        new BitStringFlipMutation(0.01d)
     ));
-    solvers.add(new StandardEvolver<POSetPopulationState<BitSet, BitSet, Double>, QualityBasedProblem<BitSet
-        , Double>, BitSet, BitSet, Double>(
+    solvers.add(new StandardEvolver<POSetPopulationState<BitString, BitString, Double>, QualityBasedProblem<BitString
+        , Double>, BitString, BitString, Double>(
         Function.identity(),
-        new BitSetFactory(size),
+        new BitStringFactory(size),
         100,
         StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
-        Map.of(new BitSetUniformCrossover(), 0.8d, new BitSetFlipMutation(0.01d), 0.2d),
+        Map.of(new BitStringUniformCrossover(), 0.8d, new BitStringFlipMutation(0.01d), 0.2d),
         new Tournament(5),
         new Last(),
         100,
@@ -201,13 +202,13 @@ public class Example extends Worker {
         false,
         (problem, random) -> new POSetPopulationState<>()
     ));
-    solvers.add(new StandardWithEnforcedDiversityEvolver<POSetPopulationState<BitSet, BitSet, Double>,
-        QualityBasedProblem<BitSet, Double>, BitSet, BitSet, Double>(
+    solvers.add(new StandardWithEnforcedDiversityEvolver<POSetPopulationState<BitString, BitString, Double>,
+        QualityBasedProblem<BitString, Double>, BitString, BitString, Double>(
         Function.identity(),
-        new BitSetFactory(size),
+        new BitStringFactory(size),
         100,
         StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
-        Map.of(new BitSetUniformCrossover(), 0.8d, new BitSetFlipMutation(0.01d), 0.2d),
+        Map.of(new BitStringUniformCrossover(), 0.8d, new BitStringFlipMutation(0.01d), 0.2d),
         new Tournament(5),
         new Last(),
         100,
@@ -216,10 +217,10 @@ public class Example extends Worker {
         (problem, random) -> new POSetPopulationState<>(),
         100
     ));
-    for (IterativeSolver<? extends POSetPopulationState<?, BitSet, Double>, QualityBasedProblem<BitSet, Double>
-        , BitSet> evolver : solvers) {
+    for (IterativeSolver<? extends POSetPopulationState<?, BitString, Double>, QualityBasedProblem<BitString, Double>
+        , BitString> evolver : solvers) {
       try {
-        Collection<BitSet> solutions = evolver.solve(
+        Collection<BitString> solutions = evolver.solve(
             p,
             r,
             executorService,

@@ -14,28 +14,30 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core.distance;
+package io.github.ericmedvet.jgea.core.representation.sequence.bit;
 
-import java.util.BitSet;
+import io.github.ericmedvet.jgea.core.IndependentFactory;
+
+import java.util.random.RandomGenerator;
 
 /**
  * @author eric
  */
-public class BitSetHamming implements Distance<BitSet> {
+public class BitStringFactory implements IndependentFactory<BitString> {
 
-  @Override
-  public Double apply(BitSet b1, BitSet b2) {
-    if (b1.size() != b2.size()) {
-      throw new IllegalArgumentException(String.format(
-          "Sequences size should be the same (%d vs. %d)",
-          b1.size(),
-          b2.size()
-      ));
-    }
-    BitSet xored = (BitSet) b1.clone();
-    xored.xor(b2);
-    return (double) xored.cardinality();
+  private final int size;
+
+  public BitStringFactory(int size) {
+    this.size = size;
   }
 
+  @Override
+  public BitString build(RandomGenerator random) {
+    BitString bitString = new BitString(size);
+    for (int i = 0; i < bitString.size(); i++) {
+      bitString.bits()[i] = random.nextBoolean();
+    }
+    return bitString;
+  }
 
 }

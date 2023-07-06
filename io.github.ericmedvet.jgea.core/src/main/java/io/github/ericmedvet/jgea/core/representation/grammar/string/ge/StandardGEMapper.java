@@ -18,16 +18,15 @@ package io.github.ericmedvet.jgea.core.representation.grammar.string.ge;
 
 import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedMapper;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
-import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitSetUtils;
+import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 
-import java.util.BitSet;
 import java.util.List;
 
 /**
  * @author eric
  */
-public class StandardGEMapper<T> extends GrammarBasedMapper<BitSet, T> {
+public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
 
   private final int codonLength;
   private final int maxWraps;
@@ -39,7 +38,7 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitSet, T> {
   }
 
   @Override
-  public Tree<T> apply(BitSet genotype) {
+  public Tree<T> apply(BitString genotype) {
     if (genotype.size() < codonLength) {
       throw new IllegalArgumentException(String.format("Short genotype (%d<%d)", genotype.size(), codonLength));
     }
@@ -68,12 +67,9 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitSet, T> {
       List<List<T>> options = grammar.rules().get(treeToBeReplaced.content());
       int optionIndex = 0;
       if (options.size() > 1) {
-        optionIndex = BitSetUtils.toInt(BitSetUtils.slice(
-                genotype,
-                currentCodonIndex * codonLength,
-                (currentCodonIndex + 1) * codonLength
-            )
-        ) % options.size();
+        optionIndex = genotype
+            .slice(currentCodonIndex * codonLength, (currentCodonIndex + 1) * codonLength)
+            .toInt() % options.size();
         currentCodonIndex = currentCodonIndex + 1;
       }
       //add children

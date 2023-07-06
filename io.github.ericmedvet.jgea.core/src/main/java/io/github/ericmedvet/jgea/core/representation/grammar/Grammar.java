@@ -20,10 +20,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public interface Grammar<S,C> {
-  Map<S, List<C>> rules();
+public interface Grammar<S, O> {
+  Map<S, List<O>> rules();
 
   S startingSymbol();
 
-  Collection<S> usedSymbols(C c);
+  Collection<S> usedSymbols(O o);
 }

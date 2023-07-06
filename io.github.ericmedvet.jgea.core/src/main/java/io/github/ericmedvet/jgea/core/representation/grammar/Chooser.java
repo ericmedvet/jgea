@@ -14,31 +14,10 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core.representation.sequence.bit;
+package io.github.ericmedvet.jgea.core.representation.grammar;
 
-import io.github.ericmedvet.jgea.core.IndependentFactory;
+import java.util.Optional;
 
-import java.util.BitSet;
-import java.util.random.RandomGenerator;
-
-/**
- * @author eric
- */
-public class BitSetFactory implements IndependentFactory<BitSet> {
-
-  private final int size;
-
-  public BitSetFactory(int size) {
-    this.size = size;
-  }
-
-  @Override
-  public BitSet build(RandomGenerator random) {
-    BitSet bitSet = new BitSet(size);
-    for (int i = 0; i < size; i++) {
-      bitSet.set(i, random.nextBoolean());
-    }
-    return bitSet;
-  }
-
+public interface Chooser<S, O> {
+  Optional<O> chooseFor(S s);
 }

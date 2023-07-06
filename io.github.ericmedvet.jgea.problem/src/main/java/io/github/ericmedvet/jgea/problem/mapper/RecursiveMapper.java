@@ -18,10 +18,10 @@ package io.github.ericmedvet.jgea.problem.mapper;
 
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.ge.WeightedHierarchicalMapper;
+import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -35,7 +35,11 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
   private final int maxMappingDepth;
 
   public RecursiveMapper(
-      Tree<Element> optionChooser, Tree<Element> genoAssigner, int maxMappingDepth, int maxDepth, StringGrammar<T> grammar
+      Tree<Element> optionChooser,
+      Tree<Element> genoAssigner,
+      int maxMappingDepth,
+      int maxDepth,
+      StringGrammar<T> grammar
   ) {
     super(maxDepth, grammar);
     this.maxMappingDepth = maxMappingDepth;
@@ -44,7 +48,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
   }
 
   @Override
-  public Tree<T> apply(BitSet genotype) {
+  public Tree<T> apply(BitString genotype) {
     AtomicInteger mappingGlobalCounter = new AtomicInteger();
     AtomicInteger finalizationGlobalCounter = new AtomicInteger();
     return mapRecursively(grammar.startingSymbol(), genotype, mappingGlobalCounter, finalizationGlobalCounter, 0);
@@ -52,7 +56,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
 
   private Tree<T> mapRecursively(
       T symbol,
-      BitSet genotype,
+      BitString genotype,
       AtomicInteger mappingGlobalCounter,
       AtomicInteger finalizationGlobalCounter,
       int depth
@@ -101,7 +105,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
     for (T optionSymbol : options.get(optionIndex)) {
       expressivenesses.add((double) weightsMap.getOrDefault(optionSymbol, 1));
     }
-    @SuppressWarnings("unchecked") List<BitSet> pieces = ((List<BitSet>) MapperUtils.compute(
+    @SuppressWarnings("unchecked") List<BitString> pieces = ((List<BitString>) MapperUtils.compute(
         genoAssigner,
         genotype,
         expressivenesses,
@@ -109,11 +113,11 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
         mappingGlobalCounter
     ));
     for (int i = 0; i < options.get(optionIndex).size(); i++) {
-      BitSet piece;
+      BitString piece;
       if (pieces.size() > i) {
         piece = pieces.get(i);
       } else {
-        piece = new BitSet(0);
+        piece = new BitString(0);
       }
       tree.addChild(mapRecursively(
           options.get(optionIndex).get(i),

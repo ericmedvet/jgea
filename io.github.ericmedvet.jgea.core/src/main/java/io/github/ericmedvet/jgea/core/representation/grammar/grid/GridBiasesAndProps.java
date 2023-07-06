@@ -16,8 +16,11 @@
 
 package io.github.ericmedvet.jgea.core.representation.grammar.grid;
 
+import io.github.ericmedvet.jgea.core.representation.grammar.Chooser;
+import io.github.ericmedvet.jgea.core.representation.grammar.Developer;
 import io.github.ericmedvet.jgea.core.representation.grammar.GrammarOptionStringFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.FixedLengthListFactory;
+import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.UniformIntStringFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.UniformDoubleFactory;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
@@ -41,11 +44,12 @@ public class GridBiasesAndProps {
     Locale.setDefault(Locale.ROOT);
     //one-for-all params
     RandomGenerator rg = new Random(0);
-    int n = 100;
+    int n = 1000;
     int minL = 10;
     int maxL = 100;
-    int stepL = 10;
-    PrintStream ps = System.out; //new PrintStream("/home/eric/experiments/2023-EuroGP-GrammarBasedEvolutionOfPolyominoes/props.txt");
+    int stepL = 5;
+    PrintStream ps = new PrintStream("/home/eric/experiments/2023-EuroGP-GrammarBasedEvolutionOfPolyominoes/props.txt");
+    //ps = System.out;
     //to-iterate params
     Map<String, GridGrammar<String>> grammars = Map.ofEntries(
         Map.entry("worm", GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/worm.bnf"))),
@@ -56,7 +60,7 @@ public class GridBiasesAndProps {
         ),
         Map.entry("dog-shape", GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/dog-shape.bnf")))
     );
-    Map<String, Function<GridGrammar<String>, GridDeveloper<String>>> developers = Map.ofEntries(
+    Map<String, Function<GridGrammar<String>, Developer<String, Grid<String>, GridGrammar.ReferencedGrid<String>>>> developers = Map.ofEntries(
         Map.entry(
             "now-least_recent",
             gg -> new StandardGridDeveloper<>(gg, true, List.of(StandardGridDeveloper.SortingCriterion.LEAST_RECENT))
@@ -88,19 +92,19 @@ public class GridBiasesAndProps {
             )
         )
     );
-    Map<String, BiFunction<Integer, GridGrammar<String>, GridDeveloper.Chooser<String>>> choosers = Map.ofEntries(
+    Map<String, BiFunction<Integer, GridGrammar<String>, Chooser<String, GridGrammar.ReferencedGrid<String>>>> choosers = Map.ofEntries(
         Map.entry("random", (l, gg) -> new RandomChooser<>(rg, l, gg)),
+        Map.entry(
+            "int-2",
+            (l, gg) -> new IntStringChooser<>((new UniformIntStringFactory(0, 2, l)).build(rg), gg)
+        ),
+        Map.entry(
+            "int-4",
+            (l, gg) -> new IntStringChooser<>((new UniformIntStringFactory(0, 4, l)).build(rg), gg)
+        ),
         Map.entry(
             "int-8",
             (l, gg) -> new IntStringChooser<>((new UniformIntStringFactory(0, 8, l)).build(rg), gg)
-        ),
-        Map.entry(
-            "int-16",
-            (l, gg) -> new IntStringChooser<>((new UniformIntStringFactory(0, 16, l)).build(rg), gg)
-        ),
-        Map.entry(
-            "int-32",
-            (l, gg) -> new IntStringChooser<>((new UniformIntStringFactory(0, 32, l)).build(rg), gg)
         ),
         Map.entry(
             "double",
@@ -114,6 +118,10 @@ public class GridBiasesAndProps {
             (l, gg) -> new GOSChooser<>(new GrammarOptionStringFactory<>(
                 gg, l, 3
             ).build(rg), gg)
+        ),
+        Map.entry(
+            "bits",
+            (l, gg) -> new BitStringChooser<>(new BitStringFactory(l).build(rg), gg)
         )
     );
     List<Map.Entry<String, ToDoubleFunction<Grid<String>>>> metrics = List.of(
@@ -129,13 +137,16 @@ public class GridBiasesAndProps {
             metrics.stream().map(Map.Entry::getKey).collect(Collectors.joining("\t"))
     );
     for (Map.Entry<String, GridGrammar<String>> grammarEntry : grammars.entrySet()) {
-      for (Map.Entry<String, Function<GridGrammar<String>, GridDeveloper<String>>> developeEntry :
+      for (Map.Entry<String, Function<GridGrammar<String>, Developer<String, Grid<String>,
+          GridGrammar.ReferencedGrid<String>>>> developeEntry :
           developers.entrySet()) {
-        for (Map.Entry<String, BiFunction<Integer, GridGrammar<String>, GridDeveloper.Chooser<String>>> chooserEntry
+        for (Map.Entry<String, BiFunction<Integer, GridGrammar<String>, Chooser<String,
+            GridGrammar.ReferencedGrid<String>>>> chooserEntry
             : choosers.entrySet()) {
           for (int l = minL; l <= maxL; l = l + stepL) {
             final int localL = l;
-            GridDeveloper<String> developer = developeEntry.getValue().apply(grammarEntry.getValue());
+            Developer<String, Grid<String>, GridGrammar.ReferencedGrid<String>> developer = developeEntry.getValue()
+                .apply(grammarEntry.getValue());
             List<Optional<Grid<String>>> oGrids = IntStream.range(0, n)
                 .mapToObj(i -> developer.develop(chooserEntry.getValue().apply(localL, grammarEntry.getValue())))
                 .toList();

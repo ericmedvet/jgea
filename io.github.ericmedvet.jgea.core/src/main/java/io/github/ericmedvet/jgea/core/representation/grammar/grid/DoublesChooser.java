@@ -16,8 +16,10 @@
 
 package io.github.ericmedvet.jgea.core.representation.grammar.grid;
 
+import io.github.ericmedvet.jgea.core.representation.grammar.Chooser;
+import io.github.ericmedvet.jgea.core.representation.grammar.Developer;
+import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
-import io.github.ericmedvet.jsdynsym.grid.Grid;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,34 +28,37 @@ import java.util.function.Function;
 /**
  * @author "Eric Medvet" on 2023/06/16 for jgea
  */
-public class DoublesChooser<T> implements GridDeveloper.Chooser<T> {
+public class DoublesChooser<S, O> implements Chooser<S, O> {
   private final List<Double> values;
-  private final GridGrammar<T> gridGrammar;
+  private final Grammar<S, O> grammar;
   private int i = 0;
 
-  public DoublesChooser(List<Double> values, GridGrammar<T> gridGrammar) {
+  public DoublesChooser(List<Double> values, Grammar<S, O> grammar) {
     this.values = values;
-    this.gridGrammar = gridGrammar;
+    this.grammar = grammar;
   }
 
-  public static <T> Function<List<Double>, Grid<T>> mapper(
-      GridGrammar<T> gridGrammar,
-      GridDeveloper<T> gridDeveloper,
-      Grid<T> defaultGrid
+  public static <T, D, O> Function<List<Double>, D> mapper(
+      Grammar<T,O> grammar,
+      Developer<T, D, O> developer,
+      D defaultDeveloped
   ) {
     return values -> {
-      DoublesChooser<T> chooser = new DoublesChooser<>(values, gridGrammar);
-      return gridDeveloper.develop(chooser).orElse(defaultGrid);
+      DoublesChooser<T, O> chooser = new DoublesChooser<>(values, grammar);
+      return developer.develop(chooser).orElse(defaultDeveloped);
     };
   }
 
   @Override
-  public Optional<GridGrammar.ReferencedGrid<T>> choose(T t) {
+  public Optional<O> chooseFor(S s) {
     if (i >= values.size()) {
       return Optional.empty();
     }
-    List<GridGrammar.ReferencedGrid<T>> options = gridGrammar.rules().get(t);
-    int index = (int) Math.min(Math.round(DoubleRange.UNIT.clip(values.get(i)) * options.size()), options.size() - 1);
+    List<O> options = grammar.rules().get(s);
+    double v = DoubleRange.UNIT.clip(values.get(i));
+    v = v * options.size();
+    v = Math.floor(v);
+    int index = (int) Math.min(v, options.size() - 1);
     i = i + 1;
     return Optional.of(options.get(index));
   }
