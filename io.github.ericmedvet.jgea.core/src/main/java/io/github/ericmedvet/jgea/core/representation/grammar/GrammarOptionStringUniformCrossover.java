@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package io.github.ericmedvet.jgea.core.representation;
+package io.github.ericmedvet.jgea.core.representation.grammar;
 
 import io.github.ericmedvet.jgea.core.operator.Crossover;
-import io.github.ericmedvet.jgea.core.representation.grammar.GrammarOptionString;
 
 import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
