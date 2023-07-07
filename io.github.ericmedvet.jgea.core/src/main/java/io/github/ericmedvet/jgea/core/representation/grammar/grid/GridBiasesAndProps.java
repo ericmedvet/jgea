@@ -72,7 +72,7 @@ public class GridBiasesAndProps {
     Locale.setDefault(Locale.ROOT);
     //one-for-all params
     RandomGenerator rg = new Random(0);
-    int n = 2000;
+    int n = 3000;
     int localityN = 500;
     int minL = 10;
     int maxL = 150;
@@ -92,17 +92,17 @@ public class GridBiasesAndProps {
     Map<String, Function<GridGrammar<String>, Developer<String, Grid<String>, GridGrammar.ReferencedGrid<String>>>> developers = Map.ofEntries(
         Map.entry(
             "now-least_recent",
-            gg -> new StandardGridDeveloper<>(gg, true, List.of(StandardGridDeveloper.SortingCriterion.LEAST_RECENT))
+            gg -> new StandardGridDeveloper<>(gg, false, List.of(StandardGridDeveloper.SortingCriterion.LEAST_RECENT))
         ),
         Map.entry(
             "ow-least_recent",
-            gg -> new StandardGridDeveloper<>(gg, false, List.of(StandardGridDeveloper.SortingCriterion.LEAST_RECENT))
+            gg -> new StandardGridDeveloper<>(gg, true, List.of(StandardGridDeveloper.SortingCriterion.LEAST_RECENT))
         ),
         Map.entry(
             "now-most_free_sides",
             gg -> new StandardGridDeveloper<>(
                 gg,
-                true,
+                false,
                 List.of(
                     StandardGridDeveloper.SortingCriterion.MOST_FREE_SIDE,
                     StandardGridDeveloper.SortingCriterion.LEAST_RECENT
@@ -110,12 +110,12 @@ public class GridBiasesAndProps {
             )
         ),
         Map.entry(
-            "ow-least_free_sides",
+            "ow-most_free_sides",
             gg -> new StandardGridDeveloper<>(
                 gg,
-                false,
+                true,
                 List.of(
-                    StandardGridDeveloper.SortingCriterion.LEAST_FREE_SIDES,
+                    StandardGridDeveloper.SortingCriterion.MOST_FREE_SIDE,
                     StandardGridDeveloper.SortingCriterion.LEAST_RECENT
                 )
             )
@@ -127,13 +127,13 @@ public class GridBiasesAndProps {
             x -> new RandomChooser<>(rg, l, gg),
             (x1, x2) -> 0d
         )),
-        Map.entry("int-2", (l, gg) -> new FactoryChooser<>(
-            new UniformIntStringFactory(0, 2, l),
+        Map.entry("int-4", (l, gg) -> new FactoryChooser<>(
+            new UniformIntStringFactory(0, 4, l),
             is -> new IntStringChooser<>(is, gg),
             new IntStringHamming()
         )),
-        Map.entry("int-4", (l, gg) -> new FactoryChooser<>(
-            new UniformIntStringFactory(0, 4, l),
+        Map.entry("int-16", (l, gg) -> new FactoryChooser<>(
+            new UniformIntStringFactory(0, 16, l),
             is -> new IntStringChooser<>(is, gg),
             new IntStringHamming()
         )),
