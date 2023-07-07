@@ -32,6 +32,10 @@ import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.ToDoubleBiFunction;
@@ -68,9 +72,10 @@ public class GridBiasesAndProps {
     Locale.setDefault(Locale.ROOT);
     //one-for-all params
     RandomGenerator rg = new Random(0);
-    int n = 1000;
+    int n = 2000;
+    int localityN = 500;
     int minL = 10;
-    int maxL = 100;
+    int maxL = 150;
     int stepL = 5;
     PrintStream ps = new PrintStream("/home/eric/Documenti/2023-EuroGP-GrammarBasedEvolutionOfPolyominoes-props.txt");
     //ps = System.out;
@@ -195,16 +200,16 @@ public class GridBiasesAndProps {
         Map.entry(
             "locality",
             (ms, d) -> {
-              double[] gDistances = IntStream.range(0, ms.size())
-                  .mapToObj(i -> IntStream.range(i + 1, ms.size())
+              double[] gDistances = IntStream.range(0, Math.min(ms.size(), localityN))
+                  .mapToObj(i -> IntStream.range(i + 1, Math.min(ms.size(), localityN))
                       .mapToObj(j -> (Double) ((Distance) d).apply(ms.get(i).genotype(), ms.get(j).genotype()))
                       .toList()
                   )
                   .flatMap(Collection::stream)
                   .mapToDouble(v -> v)
                   .toArray();
-              double[] pDistances = IntStream.range(0, ms.size())
-                  .mapToObj(i -> IntStream.range(i + 1, ms.size())
+              double[] pDistances = IntStream.range(0, Math.min(ms.size(), localityN))
+                  .mapToObj(i -> IntStream.range(i + 1, Math.min(ms.size(), localityN))
                       .mapToObj(j -> gridDistance.apply(ms.get(i).phenotype(), ms.get(j).phenotype()))
                       .toList()
                   )
@@ -221,6 +226,8 @@ public class GridBiasesAndProps {
             mappingMetrics.stream().map(Map.Entry::getKey).collect(Collectors.joining("\t")) + "\t" +
             gridMetrics.stream().map(Map.Entry::getKey).collect(Collectors.joining("\t"))
     );
+    ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
+    List<Future<?>> futures;
     for (Map.Entry<String, GridGrammar<String>> grammarEntry : grammars.entrySet()) {
       for (Map.Entry<String, Function<GridGrammar<String>, Developer<String, Grid<String>,
           GridGrammar.ReferencedGrid<String>>>> developeEntry :
@@ -228,36 +235,51 @@ public class GridBiasesAndProps {
         for (Map.Entry<String, BiFunction<Integer, GridGrammar<String>, FactoryChooser<?>>> factoryChooserEntry
             : factoryChoosers.entrySet()) {
           for (int l = minL; l <= maxL; l = l + stepL) {
-            Developer<String, Grid<String>, GridGrammar.ReferencedGrid<String>> developer = developeEntry
-                .getValue()
-                .apply(grammarEntry.getValue());
-            FactoryChooser<?> factoryChooser = factoryChooserEntry.getValue().apply(l, grammarEntry.getValue());
-            List<? extends Mapped<?>> mappeds = factoryChooser
-                .build(developer, n, rg);
-            List<Grid<String>> grids = mappeds.stream()
-                .map(Mapped::phenotype)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .toList();
-            ps.printf("%s\t%s\t%s\t%4d\t",
-                grammarEntry.getKey(), developeEntry.getKey(), factoryChooserEntry.getKey(), l
-            );
-            //noinspection unchecked
-            ps.print(mappingMetrics.stream()
-                .map(Map.Entry::getValue)
-                .map(f -> f.applyAsDouble((List<Mapped<?>>) mappeds, factoryChooser.distance))
-                .map("%6.4f"::formatted)
-                .collect(Collectors.joining("\t")));
-            ps.print("\t");
-            ps.println(gridMetrics.stream()
-                .map(Map.Entry::getValue)
-                .map(f -> grids.stream().mapToDouble(f).average().orElse(Double.NaN))
-                .map("%6.4f"::formatted)
-                .collect(Collectors.joining("\t")));
+            int finalL = l;
+            executorService.submit(() -> {
+              Developer<String, Grid<String>, GridGrammar.ReferencedGrid<String>> developer = developeEntry
+                  .getValue()
+                  .apply(grammarEntry.getValue());
+              FactoryChooser<?> factoryChooser = factoryChooserEntry.getValue().apply(finalL, grammarEntry.getValue());
+              List<? extends Mapped<?>> mappeds = factoryChooser
+                  .build(developer, n, rg);
+              List<Grid<String>> grids = mappeds.stream()
+                  .map(Mapped::phenotype)
+                  .filter(Optional::isPresent)
+                  .map(Optional::get)
+                  .toList();
+              StringBuilder line = new StringBuilder();
+              line.append("%s\t%s\t%s\t%4d\t".formatted(
+                  grammarEntry.getKey(), developeEntry.getKey(), factoryChooserEntry.getKey(), finalL
+              ));
+              //noinspection unchecked
+              line.append(mappingMetrics.stream()
+                  .map(Map.Entry::getValue)
+                  .map(f -> f.applyAsDouble((List<Mapped<?>>) mappeds, factoryChooser.distance))
+                  .map("%6.4f"::formatted)
+                  .collect(Collectors.joining("\t")));
+              line.append("\t");
+              line.append(gridMetrics.stream()
+                  .map(Map.Entry::getValue)
+                  .map(f -> grids.stream().mapToDouble(f).average().orElse(Double.NaN))
+                  .map("%6.4f"::formatted)
+                  .collect(Collectors.joining("\t")));
+              ps.println(line);
+            });
           }
         }
       }
     }
+    executorService.shutdown();
+    boolean terminated = false;
+    while (!terminated) {
+      try {
+        terminated = executorService.awaitTermination(1, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+        //ignore
+      }
+    }
+    System.out.println("Done");
     ps.close();
   }
 }
