@@ -34,7 +34,6 @@ import java.io.PrintStream;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -72,7 +71,7 @@ public class GridBiasesAndProps {
     Locale.setDefault(Locale.ROOT);
     //one-for-all params
     RandomGenerator rg = new Random(0);
-    int n = 3000;
+    int n = 10000;
     int localityN = 500;
     int minL = 10;
     int maxL = 150;
@@ -227,7 +226,6 @@ public class GridBiasesAndProps {
             gridMetrics.stream().map(Map.Entry::getKey).collect(Collectors.joining("\t"))
     );
     ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
-    List<Future<?>> futures;
     for (Map.Entry<String, GridGrammar<String>> grammarEntry : grammars.entrySet()) {
       for (Map.Entry<String, Function<GridGrammar<String>, Developer<String, Grid<String>,
           GridGrammar.ReferencedGrid<String>>>> developeEntry :
