@@ -20,14 +20,12 @@ import io.github.ericmedvet.jgea.core.representation.NamedMultivariateRealFuncti
 import io.github.ericmedvet.jgea.core.representation.NamedUnivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.grammar.Chooser;
 import io.github.ericmedvet.jgea.core.representation.grammar.Developer;
-import io.github.ericmedvet.jgea.core.representation.grammar.grid.DoublesChooser;
-import io.github.ericmedvet.jgea.core.representation.grammar.grid.GridGrammar;
-import io.github.ericmedvet.jgea.core.representation.grammar.grid.IntStringChooser;
-import io.github.ericmedvet.jgea.core.representation.grammar.grid.StandardGridDeveloper;
+import io.github.ericmedvet.jgea.core.representation.grammar.grid.*;
 import io.github.ericmedvet.jgea.core.representation.graph.Graph;
 import io.github.ericmedvet.jgea.core.representation.graph.Node;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.functiongraph.FunctionGraph;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph.OperatorGraph;
+import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
@@ -53,6 +51,23 @@ import java.util.function.Function;
  */
 public class Mappers {
   private Mappers() {
+  }
+
+  @SuppressWarnings("unused")
+  public static <T> InvertibleMapper<BitString, Grid<T>> binaryGrammarGrid(
+      @Param("grammar") GridGrammar<T> grammar,
+      @Param(value = "l", dI = 256) int l,
+      @Param(value = "overwrite", dB = false) boolean overwrite,
+      @Param(value = "criteria", dSs = {"least_recent"}) List<StandardGridDeveloper.SortingCriterion> criteria
+  ) {
+    Developer<T, Grid<T>, GridGrammar.ReferencedGrid<T>> gridDeveloper = new StandardGridDeveloper<>(grammar, overwrite, criteria);
+    return InvertibleMapper.from(
+        (eGrid, bs) -> {
+          Chooser<T, GridGrammar.ReferencedGrid<T>> chooser = new BitStringChooser<>(bs, grammar);
+          return gridDeveloper.develop(chooser).orElse(eGrid);
+        },
+        eGrid -> new BitString(l)
+    );
   }
 
   @SuppressWarnings("unused")
@@ -107,7 +122,7 @@ public class Mappers {
       @Param("grammar") GridGrammar<T> grammar,
       @Param(value = "upperBound", dI = 16) int upperBound,
       @Param(value = "l", dI = 256) int l,
-      @Param(value = "overwrite", dB = true) boolean overwrite,
+      @Param(value = "overwrite", dB = false) boolean overwrite,
       @Param(value = "criteria", dSs = {"least_recent"}) List<StandardGridDeveloper.SortingCriterion> criteria
   ) {
     Developer<T, Grid<T>, GridGrammar.ReferencedGrid<T>> gridDeveloper = new StandardGridDeveloper<>(grammar, overwrite, criteria);
@@ -168,7 +183,7 @@ public class Mappers {
   public static <T> InvertibleMapper<List<Double>, Grid<T>> numGrammarGrid(
       @Param("grammar") GridGrammar<T> grammar,
       @Param(value = "l", dI = 256) int l,
-      @Param(value = "overwrite", dB = true) boolean overwrite,
+      @Param(value = "overwrite", dB = false) boolean overwrite,
       @Param(value = "criteria", dSs = {"least_recent"}) List<StandardGridDeveloper.SortingCriterion> criteria
   ) {
     Developer<T, Grid<T>, GridGrammar.ReferencedGrid<T>> gridDeveloper = new StandardGridDeveloper<>(grammar, overwrite, criteria);
