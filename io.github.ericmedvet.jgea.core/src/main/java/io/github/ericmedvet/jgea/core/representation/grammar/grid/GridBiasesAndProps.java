@@ -72,27 +72,39 @@ public class GridBiasesAndProps {
     //one-for-all params
     RandomGenerator rg = new Random(0);
     int n = 10000;
-    int localityN = 500;
+    int localityN = 1000;
     int minL = 10;
-    int maxL = 150;
+    int maxL = 250;
     int stepL = 5;
-    PrintStream ps = new PrintStream("/home/eric/Documenti/2023-EuroGP-GrammarBasedEvolutionOfPolyominoes-props.txt");
+    PrintStream ps = new PrintStream(args[0]);
     //ps = System.out;
     //to-iterate params
     Map<String, GridGrammar<String>> grammars = Map.ofEntries(
         Map.entry("worm", GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/worm.bnf"))),
-        Map.entry("simple", GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/monodirectional.bnf"))),
-        Map.entry(
-            "non-compact",
-            GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/alternated.bnf"))
-        ),
-        Map.entry("dog-shape", GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/dog-shape.bnf")))
+        Map.entry("bi", GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/bidirectional.bnf"))),
+        Map.entry("mono", GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/monodirectional.bnf"))),
+        Map.entry("alt", GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/alternated.bnf"))),
+        Map.entry("dog", GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/dog-shape.bnf")))
     );
     Map<String, Function<GridGrammar<String>, Developer<String, Grid<String>, GridGrammar.ReferencedGrid<String>>>> developers = Map.ofEntries(
+        Map.entry(
+            "now-top_left",
+            gg -> new StandardGridDeveloper<>(gg, false, List.of(
+                StandardGridDeveloper.SortingCriterion.LOWEST_Y,
+                StandardGridDeveloper.SortingCriterion.LOWEST_X
+            ))
+        ),
         Map.entry(
             "now-least_recent",
             gg -> new StandardGridDeveloper<>(gg, false, List.of(
                 StandardGridDeveloper.SortingCriterion.LEAST_RECENT,
+                StandardGridDeveloper.SortingCriterion.LOWEST_Y,
+                StandardGridDeveloper.SortingCriterion.LOWEST_X
+            ))
+        ),
+        Map.entry(
+            "ow-top_left",
+            gg -> new StandardGridDeveloper<>(gg, true, List.of(
                 StandardGridDeveloper.SortingCriterion.LOWEST_Y,
                 StandardGridDeveloper.SortingCriterion.LOWEST_X
             ))
