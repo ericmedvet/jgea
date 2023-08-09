@@ -20,14 +20,10 @@ import io.github.ericmedvet.jgea.core.representation.grammar.Chooser;
 import io.github.ericmedvet.jgea.core.representation.grammar.Developer;
 import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
-import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringFactory;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.function.Function;
-import java.util.random.RandomGenerator;
 
 /**
  * @author "Eric Medvet" on 2023/06/16 for jgea
@@ -40,15 +36,6 @@ public class BitStringChooser<S, O> implements Chooser<S, O> {
   public BitStringChooser(BitString bitString, Grammar<S, O> grammar) {
     this.bitString = bitString;
     this.grammar = grammar;
-  }
-
-  public static void main(String[] args) throws IOException {
-    RandomGenerator rg = new Random(1);
-    BitString g = new BitStringFactory(10).build(rg);
-    System.out.println(g);
-    GridGrammar<String> grammar = GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/worm.bnf"));
-    BitStringChooser<String, GridGrammar.ReferencedGrid<String>> c = new BitStringChooser<>(g, grammar);
-    System.out.println(c.chooseFor(grammar.startingSymbol()));
   }
 
   public static <S, D, O> Function<BitString, D> mapper(
