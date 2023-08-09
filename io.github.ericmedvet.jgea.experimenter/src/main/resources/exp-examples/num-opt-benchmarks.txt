@@ -1,7 +1,7 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
     (problem = [
-      ea.p.s.doublesOneMax(p = 1000)
+      ea.p.s.doublesOneMax(p = 1000);
       ea.p.s.ackley(p = 10);
       ea.p.s.rastrigin(p = 10);
       ea.p.s.sphere(p = 10)

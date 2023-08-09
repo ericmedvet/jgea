@@ -9,7 +9,7 @@ ea.experiment(
       ea.s.oGraphea(
         mapper = ea.m.compose(
           first = ea.m.oGraphMRF();
-          second = ea.m.toURF()
+          second = ea.m.fromMRFToURF()
         )
       );
       ea.s.srTreeGP(
@@ -18,7 +18,7 @@ ea.experiment(
       ea.s.numGA(
         mapper = ea.m.compose(
           first = ea.m.mlpMRF(activationFunction = relu);
-          second = ea.m.toURF()
+          second = ea.m.fromMRFToURF()
         )
       )
     ]) * [
