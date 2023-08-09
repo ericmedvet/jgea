@@ -24,6 +24,8 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.core.ParamMap;
+import io.github.ericmedvet.jsdynsym.grid.Grid;
+import io.github.ericmedvet.jsdynsym.grid.GridUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
@@ -31,6 +33,8 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class NamedFunctions {
 
@@ -121,7 +125,9 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <X> NamedFunction<X, Double> expr(
-      @Param("f1") NamedFunction<X, Number> f1, @Param("f2") NamedFunction<X, Number> f2, @Param("op") Op op
+      @Param("f1") NamedFunction<X, Number> f1,
+      @Param("f2") NamedFunction<X, Number> f2,
+      @Param("op") Op op
   ) {
     return NamedFunction.build(
         "%s%s%s".formatted(f1.getName(), op.rendered, f2.getName()),
@@ -179,7 +185,8 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <T, R> NamedFunction<T, R> formatted(
-      @Param("s") String s, @Param("f") NamedFunction<T, R> f
+      @Param("s") String s,
+      @Param("f") NamedFunction<T, R> f
   ) {
     return f.reformat(s);
   }
@@ -193,8 +200,68 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
+  public static <T> NamedFunction<T, String> grid(
+      @Param("f") NamedFunction<T, Grid<Object>> f,
+      @Param(value = "s", dS = "%20.20s") String s,
+      @Param(value = "cellSeparator", dS = "") String cellSeparator,
+      @Param(value = "rowSeparator", dS = ";") String rowSeparator,
+      @Param(value = "emptyCell", dS = "·") String emptyCell
+  ) {
+    final String finalCellSeparator = cellSeparator == null ? "" : cellSeparator;
+    return NamedFunction.build(
+        c("grid", f.getName()),
+        s,
+        t -> {
+          Grid<Object> g = f.apply(t);
+          return IntStream.range(0, g.h())
+              .mapToObj(y -> IntStream.range(0, g.w())
+                  .mapToObj(x -> g.get(x, y) == null ? emptyCell : g.get(x, y).toString())
+                  .collect(Collectors.joining(finalCellSeparator))
+              ).collect(Collectors.joining(rowSeparator));
+        }
+    );
+  }
+
+  @SuppressWarnings("unused")
+  public static <X> NamedFunction<X, Integer> gridCount(
+      @Param("f") NamedFunction<X, Grid<?>> f,
+      @Param(value = "s", dS = "%2d") String s
+  ) {
+    return NamedFunction.build(
+        c("grid.count", f.getName()),
+        s,
+        x -> GridUtils.count(f.apply(x), Objects::nonNull)
+    );
+  }
+
+  @SuppressWarnings("unused")
+  public static <X> NamedFunction<X, Integer> gridH(
+      @Param("f") NamedFunction<X, Grid<?>> f,
+      @Param(value = "s", dS = "%2d") String s
+  ) {
+    return NamedFunction.build(
+        c("grid.h", f.getName()),
+        s,
+        x -> GridUtils.h(f.apply(x), Objects::nonNull)
+    );
+  }
+
+  @SuppressWarnings("unused")
+  public static <X> NamedFunction<X, Integer> gridW(
+      @Param("f") NamedFunction<X, Grid<?>> f,
+      @Param(value = "s", dS = "%2d") String s
+  ) {
+    return NamedFunction.build(
+        c("grid.w", f.getName()),
+        s,
+        x -> GridUtils.w(f.apply(x), Objects::nonNull)
+    );
+  }
+
+  @SuppressWarnings("unused")
   public static <X> NamedFunction<X, String> hist(
-      @Param("collection") NamedFunction<X, Collection<Number>> collectionF, @Param(value = "nBins", dI = 8) int nBins
+      @Param("collection") NamedFunction<X, Collection<Number>> collectionF,
+      @Param(value = "nBins", dI = 8) int nBins
   ) {
     return NamedFunction.build(c("hist", collectionF.getName()), "%" + nBins + "." + nBins + "s", x -> {
       Collection<Number> collection = collectionF.apply(x);
@@ -219,7 +286,8 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <X, T extends Comparable<T>> NamedFunction<X, T> max(
-      @Param("collection") NamedFunction<X, Collection<T>> collectionF, @Param(value = "s", dS = "%s") String s
+      @Param("collection") NamedFunction<X, Collection<T>> collectionF,
+      @Param(value = "s", dS = "%s") String s
   ) {
     return NamedFunction.build(c("max", collectionF.getName()), s, x -> {
       List<T> collection = collectionF.apply(x).stream().sorted().toList();
@@ -229,14 +297,16 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <X, T extends Comparable<T>> NamedFunction<X, T> median(
-      @Param("collection") NamedFunction<X, Collection<T>> collectionF, @Param(value = "s", dS = "%s") String s
+      @Param("collection") NamedFunction<X, Collection<T>> collectionF,
+      @Param(value = "s", dS = "%s") String s
   ) {
     return percentile(collectionF, 0.5, s);
   }
 
   @SuppressWarnings("unused")
   public static <X, T extends Comparable<T>> NamedFunction<X, T> min(
-      @Param("collection") NamedFunction<X, Collection<T>> collectionF, @Param(value = "s", dS = "%s") String s
+      @Param("collection") NamedFunction<X, Collection<T>> collectionF,
+      @Param(value = "s", dS = "%s") String s
   ) {
     return NamedFunction.build(c("min", collectionF.getName()), s, x -> {
       List<T> collection = collectionF.apply(x).stream().sorted().toList();
@@ -264,7 +334,8 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <X> NamedFunction<X, Integer> size(
-      @Param("f") NamedFunction<X, ?> f, @Param(value = "s", dS = "%s") String s
+      @Param("f") NamedFunction<X, ?> f,
+      @Param(value = "s", dS = "%s") String s
   ) {
     return NamedFunction.build(
         c("size", f.getName()),

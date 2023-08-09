@@ -33,9 +33,10 @@ public class Grammars {
     try {
       return GridGrammar
           .load(GridGrammar.class.getResourceAsStream("/grammars/2d/" + name + ".bnf"))
-          .map(s -> s.charAt(0));
+          .map(s -> s == null ? null : s.charAt(0));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
+
 }

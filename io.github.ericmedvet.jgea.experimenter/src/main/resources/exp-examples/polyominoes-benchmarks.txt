@@ -1,13 +1,18 @@
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
+  runs = (randomGenerator = (seed = [1:1:2]) * [ea.rg.defaultRG()]) *
     (problem = [
       ea.p.s.charShapeApproximation(target = circle);
-      ea.p.s.charShapeApproximation(target = net);
-      ea.p.s.charShapeApproximation(target = bar)
+      ea.p.s.charShapeApproximation(target = "worm-a");
+      ea.p.s.charShapeApproximation(target = "worm-ab");
+      ea.p.s.charShapeApproximation(target = alternated);
+      ea.p.s.charShapeApproximation(target = dog)
     ]) *
-    (solver = (nEval = [1000]) * [
-      ea.s.bitStringGa(mapper = ea.m.bitStringToGrammarGrid(grammar = ea.grammar.gridBundled(name = cross)));
-      ea.s.bitStringGa(mapper = ea.m.bitStringToGrammarGrid(grammar = ea.grammar.gridBundled(name = simple)))
+    (solver = (nEval = [10000]) * [
+      ea.s.bitStringGa(mapper = ea.m.bitStringToGrammarGrid(grammar = ea.grammar.gridBundled(name = monodirectional)));
+      ea.s.bitStringGa(mapper = ea.m.bitStringToGrammarGrid(grammar = ea.grammar.gridBundled(name = bidirectional)));
+      ea.s.bitStringGa(mapper = ea.m.bitStringToGrammarGrid(grammar = ea.grammar.gridBundled(name = worm)));
+      ea.s.bitStringGa(mapper = ea.m.bitStringToGrammarGrid(grammar = ea.grammar.gridBundled(name = alternated)));
+      ea.s.bitStringGa(mapper = ea.m.bitStringToGrammarGrid(grammar = ea.grammar.gridBundled(name = "dog-shape")))
     ]) * [
     ea.run()
   ];
@@ -16,7 +21,11 @@ ea.experiment(
       functions = [
         ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
         ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
-        ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()))
+        ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
+        ea.nf.gridCount(f = ea.nf.solution(individual = ea.nf.best()));
+        ea.nf.gridW(f = ea.nf.solution(individual = ea.nf.best()));
+        ea.nf.gridH(f = ea.nf.solution(individual = ea.nf.best()));
+        ea.nf.grid(f = ea.nf.solution(individual = ea.nf.best()))
       ];
       runKeys = ["problem.target"]
     )

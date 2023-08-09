@@ -37,10 +37,12 @@ public class SyntheticProblems {
   @SuppressWarnings("unused")
   public static CharShapeApproximation charShapeApproximation(
       @Param("target") String syntheticTargetName,
-      @Param(value = "translation", dB = true) boolean translation
+      @Param(value = "translation", dB = true) boolean translation,
+      @Param(value = "smoothed", dB = true) boolean smoothed,
+      @Param(value = "weighted", dB = true) boolean weighted
   ) {
     try {
-      return new CharShapeApproximation(syntheticTargetName, translation);
+      return new CharShapeApproximation(syntheticTargetName, translation, smoothed, weighted);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

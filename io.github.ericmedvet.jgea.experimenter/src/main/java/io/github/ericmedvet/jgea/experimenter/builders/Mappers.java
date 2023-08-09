@@ -57,7 +57,7 @@ public class Mappers {
       @Param("grammar") GridGrammar<T> grammar,
       @Param(value = "l", dI = 256) int l,
       @Param(value = "overwrite") boolean overwrite,
-      @Param(value = "criteria", dSs = {"least_recent"}) List<StandardGridDeveloper.SortingCriterion> criteria
+      @Param(value = "criteria", dSs = {"least_recent", "lowest_y", "lowest_x"}) List<StandardGridDeveloper.SortingCriterion> criteria
   ) {
     Developer<T, Grid<T>, GridGrammar.ReferencedGrid<T>> gridDeveloper = new StandardGridDeveloper<>(grammar, overwrite, criteria);
     return InvertibleMapper.from(
@@ -82,7 +82,7 @@ public class Mappers {
       @Param("grammar") GridGrammar<T> grammar,
       @Param(value = "l", dI = 256) int l,
       @Param(value = "overwrite") boolean overwrite,
-      @Param(value = "criteria", dSs = {"least_recent"}) List<StandardGridDeveloper.SortingCriterion> criteria
+      @Param(value = "criteria", dSs = {"least_recent", "lowest_y", "lowest_x"}) List<StandardGridDeveloper.SortingCriterion> criteria
   ) {
     Developer<T, Grid<T>, GridGrammar.ReferencedGrid<T>> gridDeveloper = new StandardGridDeveloper<>(grammar, overwrite, criteria);
     return InvertibleMapper.from(
@@ -115,7 +115,7 @@ public class Mappers {
       @Param(value = "upperBound", dI = 16) int upperBound,
       @Param(value = "l", dI = 256) int l,
       @Param(value = "overwrite") boolean overwrite,
-      @Param(value = "criteria", dSs = {"least_recent"}) List<StandardGridDeveloper.SortingCriterion> criteria
+      @Param(value = "criteria", dSs = {"least_recent", "lowest_y", "lowest_x"}) List<StandardGridDeveloper.SortingCriterion> criteria
   ) {
     Developer<T, Grid<T>, GridGrammar.ReferencedGrid<T>> gridDeveloper = new StandardGridDeveloper<>(grammar, overwrite, criteria);
     return InvertibleMapper.from(

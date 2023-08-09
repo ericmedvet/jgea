@@ -96,7 +96,9 @@ public class StandardGridDeveloper<T> implements Developer<T, Grid<T>, GridGramm
   ) {
     List<Grid.Entry<T>> repEntries = replacement.grid().entries().stream()
         .map(e -> new Grid.Entry<>(
-            e.key().translated(k.x(), k.y()).translated(-replacement.referenceKey().x(), -replacement.referenceKey().y()),
+            e.key()
+                .translated(k.x(), k.y())
+                .translated(-replacement.referenceKey().x(), -replacement.referenceKey().y()),
             e.value()
         ))
         .toList();
@@ -161,6 +163,7 @@ public class StandardGridDeveloper<T> implements Developer<T, Grid<T>, GridGramm
       if (!modified) {
         return Optional.empty();
       }
+      i = i + 1;
     }
   }
 }

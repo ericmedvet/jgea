@@ -81,21 +81,29 @@ public class GridBiasesAndProps {
     //to-iterate params
     Map<String, GridGrammar<String>> grammars = Map.ofEntries(
         Map.entry("worm", GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/worm.bnf"))),
-        Map.entry("simple", GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/simple.bnf"))),
+        Map.entry("simple", GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/monodirectional.bnf"))),
         Map.entry(
             "non-compact",
-            GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/cross.bnf"))
+            GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/alternated.bnf"))
         ),
         Map.entry("dog-shape", GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/dog-shape.bnf")))
     );
     Map<String, Function<GridGrammar<String>, Developer<String, Grid<String>, GridGrammar.ReferencedGrid<String>>>> developers = Map.ofEntries(
         Map.entry(
             "now-least_recent",
-            gg -> new StandardGridDeveloper<>(gg, false, List.of(StandardGridDeveloper.SortingCriterion.LEAST_RECENT))
+            gg -> new StandardGridDeveloper<>(gg, false, List.of(
+                StandardGridDeveloper.SortingCriterion.LEAST_RECENT,
+                StandardGridDeveloper.SortingCriterion.LOWEST_Y,
+                StandardGridDeveloper.SortingCriterion.LOWEST_X
+            ))
         ),
         Map.entry(
             "ow-least_recent",
-            gg -> new StandardGridDeveloper<>(gg, true, List.of(StandardGridDeveloper.SortingCriterion.LEAST_RECENT))
+            gg -> new StandardGridDeveloper<>(gg, true, List.of(
+                StandardGridDeveloper.SortingCriterion.LEAST_RECENT,
+                StandardGridDeveloper.SortingCriterion.LOWEST_Y,
+                StandardGridDeveloper.SortingCriterion.LOWEST_X
+            ))
         ),
         Map.entry(
             "now-most_free_sides",
@@ -104,7 +112,8 @@ public class GridBiasesAndProps {
                 false,
                 List.of(
                     StandardGridDeveloper.SortingCriterion.MOST_FREE_SIDE,
-                    StandardGridDeveloper.SortingCriterion.LEAST_RECENT
+                    StandardGridDeveloper.SortingCriterion.LOWEST_Y,
+                    StandardGridDeveloper.SortingCriterion.LOWEST_X
                 )
             )
         ),
@@ -115,7 +124,8 @@ public class GridBiasesAndProps {
                 true,
                 List.of(
                     StandardGridDeveloper.SortingCriterion.MOST_FREE_SIDE,
-                    StandardGridDeveloper.SortingCriterion.LEAST_RECENT
+                    StandardGridDeveloper.SortingCriterion.LOWEST_Y,
+                    StandardGridDeveloper.SortingCriterion.LOWEST_X
                 )
             )
         )
