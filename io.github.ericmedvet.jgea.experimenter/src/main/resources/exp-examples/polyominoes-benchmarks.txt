@@ -6,10 +6,8 @@ ea.experiment(
       ea.p.s.charShapeApproximation(target = bar)
     ]) *
     (solver = (nEval = [1000]) * [
-      ea.s.intGA(mapper = ea.m.intGrammarGrid(grammar = ea.grammar.gridBundled(name = cross)));
-      ea.s.intGA(mapper = ea.m.intGrammarGrid(grammar = ea.grammar.gridBundled(name = simple)));
-      ea.s.numGA(mapper = ea.m.numGrammarGrid(grammar = ea.grammar.gridBundled(name = cross)));
-      ea.s.numGA(mapper = ea.m.numGrammarGrid(grammar = ea.grammar.gridBundled(name = simple)))
+      ea.s.bitStringGa(mapper = ea.m.bitStringToGrammarGrid(grammar = ea.grammar.gridBundled(name = cross)));
+      ea.s.bitStringGa(mapper = ea.m.bitStringToGrammarGrid(grammar = ea.grammar.gridBundled(name = simple)))
     ]) * [
     ea.run()
   ];

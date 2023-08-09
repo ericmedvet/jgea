@@ -33,6 +33,10 @@ import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph.ShallowFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.FixedLengthListFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.UniformCrossover;
+import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
+import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringFactory;
+import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringFlipMutation;
+import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringUniformCrossover;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntStringFlipMutation;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntStringUniformCrossover;
@@ -62,6 +66,59 @@ import java.util.stream.IntStream;
 public class Solvers {
 
   private Solvers() {
+  }
+
+  @SuppressWarnings("unused")
+  public static <S, Q> Function<S, StandardEvolver<POSetPopulationState<BitString, S, Q>, QualityBasedProblem<S, Q>,
+      BitString, S, Q>> bitStringGa(
+      @Param(value = "mapper") InvertibleMapper<BitString, S> mapper,
+      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
+      @Param(value = "pMut", dD = 0.01d) double pMut,
+      @Param(value = "tournamentRate", dD = 0.05d) double tournamentRate,
+      @Param(value = "minNTournament", dI = 3) int minNTournament,
+      @Param(value = "nPop", dI = 100) int nPop,
+      @Param(value = "nEval") int nEval,
+      @Param(value = "diversity", dB = true) boolean diversity,
+      @Param(value = "remap") boolean remap
+  ) {
+    return exampleS -> {
+      BitString exampleGenotype = mapper.exampleFor(exampleS);
+      IndependentFactory<BitString> factory = new BitStringFactory(exampleGenotype.size());
+      Map<GeneticOperator<BitString>, Double> geneticOperators = Map.ofEntries(
+          Map.entry(new BitStringFlipMutation(pMut), 1d - crossoverP),
+          Map.entry(new BitStringUniformCrossover().andThen(new BitStringFlipMutation(pMut)), crossoverP)
+      );
+      if (!diversity) {
+        return new StandardEvolver<>(
+            mapper.mapperFor(exampleS),
+            factory,
+            nPop,
+            StopConditions.nOfFitnessEvaluations(nEval),
+            geneticOperators,
+            new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
+            new Last(),
+            nPop,
+            true,
+            remap,
+            (p, r) -> new POSetPopulationState<>()
+        );
+      } else {
+        return new StandardWithEnforcedDiversityEvolver<>(
+            mapper.mapperFor(exampleS),
+            factory,
+            nPop,
+            StopConditions.nOfFitnessEvaluations(nEval),
+            geneticOperators,
+            new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
+            new Last(),
+            nPop,
+            true,
+            remap,
+            (p, r) -> new POSetPopulationState<>(),
+            100
+        );
+      }
+    };
   }
 
   @SuppressWarnings("unused")
