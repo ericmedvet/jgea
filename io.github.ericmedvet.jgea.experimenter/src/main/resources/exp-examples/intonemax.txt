@@ -1,8 +1,8 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) * [
     ea.run(
-      solver = ea.s.intGA(
-        mapper = ea.m.identityIntString();
+      solver = ea.s.intStringGa(
+        mapper = ea.m.identity();
         nEval = 10000
       );
       problem = ea.p.s.intOneMax()

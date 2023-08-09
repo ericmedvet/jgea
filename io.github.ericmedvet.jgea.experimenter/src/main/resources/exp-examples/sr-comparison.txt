@@ -8,17 +8,17 @@ ea.experiment(
     (solver = (nEval = [2000]) * [
       ea.s.oGraphea(
         mapper = ea.m.compose(
-          first = ea.m.oGraphMRF();
-          second = ea.m.fromMRFToURF()
+          first = ea.m.oGraphToMrf();
+          second = ea.m.mrfToUrf()
         )
       );
-      ea.s.srTreeGP(
-        mapper = ea.m.treeURF()
+      ea.s.srTreeGp(
+        mapper = ea.m.srTreeToUrf()
       );
-      ea.s.numGA(
+      ea.s.doubleStringGa(
         mapper = ea.m.compose(
-          first = ea.m.mlpMRF(activationFunction = relu);
-          second = ea.m.fromMRFToURF()
+          first = ea.m.mlpToMrf(activationFunction = relu);
+          second = ea.m.mrfToUrf()
         )
       )
     ]) * [

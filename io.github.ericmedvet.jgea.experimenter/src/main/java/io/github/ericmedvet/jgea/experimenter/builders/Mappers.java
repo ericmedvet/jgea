@@ -41,7 +41,6 @@ import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -54,10 +53,10 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
-  public static <T> InvertibleMapper<BitString, Grid<T>> binaryGrammarGrid(
+  public static <T> InvertibleMapper<BitString, Grid<T>> bitStringToGrammarGrid(
       @Param("grammar") GridGrammar<T> grammar,
       @Param(value = "l", dI = 256) int l,
-      @Param(value = "overwrite", dB = false) boolean overwrite,
+      @Param(value = "overwrite") boolean overwrite,
       @Param(value = "criteria", dSs = {"least_recent"}) List<StandardGridDeveloper.SortingCriterion> criteria
   ) {
     Developer<T, Grid<T>, GridGrammar.ReferencedGrid<T>> gridDeveloper = new StandardGridDeveloper<>(grammar, overwrite, criteria);
@@ -79,7 +78,24 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
-  public static InvertibleMapper<Graph<Node, Double>, NamedMultivariateRealFunction> fGraphMRF(
+  public static <T> InvertibleMapper<List<Double>, Grid<T>> doubleStringToGrammarGrid(
+      @Param("grammar") GridGrammar<T> grammar,
+      @Param(value = "l", dI = 256) int l,
+      @Param(value = "overwrite") boolean overwrite,
+      @Param(value = "criteria", dSs = {"least_recent"}) List<StandardGridDeveloper.SortingCriterion> criteria
+  ) {
+    Developer<T, Grid<T>, GridGrammar.ReferencedGrid<T>> gridDeveloper = new StandardGridDeveloper<>(grammar, overwrite, criteria);
+    return InvertibleMapper.from(
+        (eGrid, vs) -> {
+          Chooser<T, GridGrammar.ReferencedGrid<T>> chooser = new DoublesChooser<>(vs, grammar);
+          return gridDeveloper.develop(chooser).orElse(eGrid);
+        },
+        eGrid -> Collections.nCopies(l, 0d)
+    );
+  }
+
+  @SuppressWarnings("unused")
+  public static InvertibleMapper<Graph<Node, Double>, NamedMultivariateRealFunction> fGraphToMrf(
       @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
     return InvertibleMapper.from(
@@ -89,40 +105,16 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
-  public static <T> InvertibleMapper<NamedMultivariateRealFunction, NamedUnivariateRealFunction> fromMRFToURF() {
-    return InvertibleMapper.from(
-        (nurf, nmrf) -> NamedUnivariateRealFunction.from(nmrf),
-        nurf -> nurf
-    );
-  }
-
-  @SuppressWarnings("unused")
   public static <X> InvertibleMapper<X, X> identity() {
     return InvertibleMapper.identity();
   }
 
   @SuppressWarnings("unused")
-  public static InvertibleMapper<BitSet, BitSet> identityBitSet() {
-    return InvertibleMapper.from(
-        (bs, g) -> g,
-        bs -> bs
-    );
-  }
-
-  @SuppressWarnings("unused")
-  public static InvertibleMapper<IntString, IntString> identityIntString() {
-    return InvertibleMapper.from(
-        (is, g) -> g,
-        is -> is
-    );
-  }
-
-  @SuppressWarnings("unused")
-  public static <T> InvertibleMapper<IntString, Grid<T>> intGrammarGrid(
+  public static <T> InvertibleMapper<IntString, Grid<T>> intStringToGrammarGrid(
       @Param("grammar") GridGrammar<T> grammar,
       @Param(value = "upperBound", dI = 16) int upperBound,
       @Param(value = "l", dI = 256) int l,
-      @Param(value = "overwrite", dB = false) boolean overwrite,
+      @Param(value = "overwrite") boolean overwrite,
       @Param(value = "criteria", dSs = {"least_recent"}) List<StandardGridDeveloper.SortingCriterion> criteria
   ) {
     Developer<T, Grid<T>, GridGrammar.ReferencedGrid<T>> gridDeveloper = new StandardGridDeveloper<>(grammar, overwrite, criteria);
@@ -136,7 +128,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
-  public static InvertibleMapper<List<Double>, NamedMultivariateRealFunction> mlpMRF(
+  public static InvertibleMapper<List<Double>, NamedMultivariateRealFunction> mlpToMrf(
       @Param(value = "innerLayerRatio", dD = 0.65) double innerLayerRatio,
       @Param(value = "nOfInnerLayers", dI = 1) int nOfInnerLayers,
       @Param(value = "activationFunction", dS = "tanh") MultiLayerPerceptron.ActivationFunction activationFunction
@@ -180,29 +172,30 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
-  public static <T> InvertibleMapper<List<Double>, Grid<T>> numGrammarGrid(
-      @Param("grammar") GridGrammar<T> grammar,
-      @Param(value = "l", dI = 256) int l,
-      @Param(value = "overwrite", dB = false) boolean overwrite,
-      @Param(value = "criteria", dSs = {"least_recent"}) List<StandardGridDeveloper.SortingCriterion> criteria
-  ) {
-    Developer<T, Grid<T>, GridGrammar.ReferencedGrid<T>> gridDeveloper = new StandardGridDeveloper<>(grammar, overwrite, criteria);
+  public static <T> InvertibleMapper<NamedMultivariateRealFunction, NamedUnivariateRealFunction> mrfToUrf() {
     return InvertibleMapper.from(
-        (eGrid, vs) -> {
-          Chooser<T, GridGrammar.ReferencedGrid<T>> chooser = new DoublesChooser<>(vs, grammar);
-          return gridDeveloper.develop(chooser).orElse(eGrid);
-        },
-        eGrid -> Collections.nCopies(l, 0d)
+        (nurf, nmrf) -> NamedUnivariateRealFunction.from(nmrf),
+        nurf -> nurf
     );
   }
 
   @SuppressWarnings("unused")
-  public static InvertibleMapper<List<Double>, NamedMultivariateRealFunction> numericalParametrizedMRF(
+  public static InvertibleMapper<List<Tree<Element>>, NamedMultivariateRealFunction> multiSrTreeToMrf(
+      @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
+  ) {
+    return InvertibleMapper.from(
+        (nmrf, ts) -> new TreeBasedMultivariateRealFunction(ts, nmrf.xVarNames(), nmrf.yVarNames()),
+        nmrf -> TreeBasedMultivariateRealFunction.sampleFor(nmrf.xVarNames(), nmrf.yVarNames())
+    );
+  }
+
+  @SuppressWarnings("unused")
+  public static InvertibleMapper<List<Double>, NamedMultivariateRealFunction> numericalParametrizedToMrf(
       @Param("function") NumericalDynamicalSystems.Builder<MultivariateRealFunction, StatelessSystem.State> function
   ) {
     return InvertibleMapper.from(
         (nmrf, params) -> {
-          if (nmrf instanceof NumericalParametrized parametrized) {
+          if (nmrf instanceof NumericalParametrized) {
             MultivariateRealFunction np = function.apply(nmrf.xVarNames(), nmrf.yVarNames());
             ((NumericalParametrized) np).setParams(params.stream().mapToDouble(v -> v).toArray());
             return NamedMultivariateRealFunction.from(np, nmrf.xVarNames(), nmrf.yVarNames());
@@ -219,7 +212,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
-  public static InvertibleMapper<Graph<Node, OperatorGraph.NonValuedArc>, NamedMultivariateRealFunction> oGraphMRF(
+  public static InvertibleMapper<Graph<Node, OperatorGraph.NonValuedArc>, NamedMultivariateRealFunction> oGraphToMrf(
       @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
     return InvertibleMapper.from(
@@ -229,17 +222,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
-  public static InvertibleMapper<List<Tree<Element>>, NamedMultivariateRealFunction> treeMRF(
-      @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
-  ) {
-    return InvertibleMapper.from(
-        (nmrf, ts) -> new TreeBasedMultivariateRealFunction(ts, nmrf.xVarNames(), nmrf.yVarNames()),
-        nmrf -> TreeBasedMultivariateRealFunction.sampleFor(nmrf.xVarNames(), nmrf.yVarNames())
-    );
-  }
-
-  @SuppressWarnings("unused")
-  public static InvertibleMapper<Tree<Element>, NamedUnivariateRealFunction> treeURF(
+  public static InvertibleMapper<Tree<Element>, NamedUnivariateRealFunction> srTreeToUrf(
       @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator
   ) {
     return InvertibleMapper.from(

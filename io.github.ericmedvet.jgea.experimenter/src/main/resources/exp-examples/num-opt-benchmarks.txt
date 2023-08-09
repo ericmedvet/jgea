@@ -7,9 +7,9 @@ ea.experiment(
       ea.p.s.sphere(p = 10)
     ]) *
     (solver = (nEval = [1000]) * [
-      ea.s.numGA(mapper = ea.m.identity());
-      ea.s.simpleES(mapper = ea.m.identity());
-      ea.s.openAIES(mapper = ea.m.identity())
+      ea.s.doubleStringGa(mapper = ea.m.identity());
+      ea.s.simpleEs(mapper = ea.m.identity());
+      ea.s.openAiEs(mapper = ea.m.identity())
     ]) * [
     ea.run()
   ];
