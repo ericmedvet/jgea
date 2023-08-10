@@ -59,6 +59,30 @@ public record BitString(boolean[] bits) implements Sized, Serializable, Cloneabl
     return new BitString(compressed);
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    BitString bitString = (BitString) o;
+    return Arrays.equals(bits, bitString.bits);
+  }
+
+  @Override
+  public int hashCode() {
+    return Arrays.hashCode(bits);
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    for (boolean bit : bits) {
+      sb.append(bit ? '1' : '0');
+    }
+    return sb.toString();
+  }
+
   public int nOfOnes() {
     int n = 0;
     for (boolean bit : bits) {
@@ -86,14 +110,5 @@ public record BitString(boolean[] bits) implements Sized, Serializable, Cloneabl
       s = s + (int) ((bs.bits[i] ? 1 : 0) * Math.pow(2, i));
     }
     return s;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    for (boolean bit : bits) {
-      sb.append(bit ? '1' : '0');
-    }
-    return sb.toString();
   }
 }
