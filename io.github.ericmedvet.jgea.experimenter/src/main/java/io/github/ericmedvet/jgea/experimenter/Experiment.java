@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 eric
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import java.util.function.BiFunction;
  * @author "Eric Medvet" on 2022/09/01 for 2d-robot-evolution
  */
 public record Experiment(
-    @Param("name") String name,
+    @Param(value = "name", dS = "") String name,
     @Param("runs") List<Run<?, ?, ?, ?>> runs,
     @Param(value = "listeners", dNPMs = {"ea.l.console()"}) List<BiFunction<
         Experiment,

@@ -30,6 +30,7 @@ import io.github.ericmedvet.jgea.tui.TerminalMonitor;
 import io.github.ericmedvet.jnb.core.MapNamedParamMap;
 import io.github.ericmedvet.jnb.core.NamedParamMap;
 import io.github.ericmedvet.jnb.core.Param;
+import io.github.ericmedvet.jnb.core.ParamMap;
 
 import java.io.*;
 import java.util.*;
@@ -327,12 +328,11 @@ public class Listeners {
           //prepare map
           NamedParamMap map = new MapNamedParamMap(
               "ea.runOutcome",
-              Map.of("index", (double) run.index()),
-              Map.of(),
-              Map.of("run", (NamedParamMap) run.map()),
-              Map.of(),
-              Map.of("serializedGenotypes", serializedGenotypes),
-              Map.of()
+              Map.ofEntries(
+                  Map.entry(new MapNamedParamMap.TypedKey("index", ParamMap.Type.INT), run.index()),
+                  Map.entry(new MapNamedParamMap.TypedKey("run", ParamMap.Type.NAMED_PARAM_MAP), run.map()),
+                  Map.entry(new MapNamedParamMap.TypedKey("serializedGenotypes", ParamMap.Type.STRINGS), serializedGenotypes)
+              )
           );
           //write on file
           File file = Misc.checkExistenceAndChangeName(new File(Utils.interpolate(filePathTemplate, run)));

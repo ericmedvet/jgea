@@ -36,7 +36,7 @@ import java.util.random.RandomGenerator;
  */
 public record Run<P extends QualityBasedProblem<S, Q>, G, S, Q>(
     @Param(value = "", injection = Param.Injection.INDEX) int index,
-    @Param("name") String name,
+    @Param(value = "name", dS = "") String name,
     @Param("solver") Function<S, ? extends AbstractPopulationBasedIterativeSolver<? extends POSetPopulationState<G, S, Q>, P, G, S, Q>> solver,
     @Param("problem") P problem,
     @Param("randomGenerator") RandomGenerator randomGenerator,

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 eric
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jgea.core.solver.state.State;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
+import io.github.ericmedvet.jnb.core.NamedParamMap;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.core.ParamMap;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
@@ -150,7 +151,7 @@ public class NamedFunctions {
       @Param(value = "", injection = Param.Injection.MAP) ParamMap map
   ) {
     if ((name == null) || name.isEmpty()) {
-      name = map.npm("outerF").getName();
+      name = ((NamedParamMap)map.value("outerF", ParamMap.Type.NAMED_PARAM_MAP)).getName();
     }
     return NamedFunction.build(c(name, innerFunction.getName()), s, x -> outerFunction.apply(innerFunction.apply(x)));
   }
