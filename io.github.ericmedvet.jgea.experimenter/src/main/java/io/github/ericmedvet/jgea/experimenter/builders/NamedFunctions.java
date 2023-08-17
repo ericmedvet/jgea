@@ -146,7 +146,7 @@ public class NamedFunctions {
   public static <X, T, R> NamedFunction<X, R> f(
       @Param("outerF") Function<T, R> outerFunction,
       @Param(value = "innerF", dNPM = "ea.nf.identity()") NamedFunction<X, T> innerFunction,
-      @Param("name") String name,
+      @Param(value = "name", dS = "") String name,
       @Param(value = "s", dS = "%s") String s,
       @Param(value = "", injection = Param.Injection.MAP) ParamMap map
   ) {
