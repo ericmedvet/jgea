@@ -33,7 +33,10 @@ import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.core.ParamMap;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;
 import java.util.logging.Logger;
@@ -202,12 +205,12 @@ public class Listeners {
     runKeys.stream()
         .map(k -> NamedFunction.build(
             k,
-            "%" + experiment.runs().stream()
-                .mapToInt(r -> Utils.getKeyFromParamMap(r.map(), Arrays.stream(k.split("\\.")).toList())
-                    .toString()
-                    .length())
-                .max().orElse(10) + "s",
-            (Run<?, G, S, Q> run) -> Utils.getKeyFromParamMap(run.map(), Arrays.stream(k.split("\\.")).toList())
+            "%".concat("" + experiment.runs().stream()
+                .map(r -> Utils.interpolate("{%s}".formatted(k), r.map()))
+                .mapToInt(String::length)
+                .max()
+                .orElse(10)).concat("s"),
+            (Run<?, G, S, Q> run) -> Utils.interpolate("{%s}".formatted(k), run.map())
         ))
         .forEach(functions::add);
     return Collections.unmodifiableList(functions);
@@ -331,7 +334,10 @@ public class Listeners {
               Map.ofEntries(
                   Map.entry(new MapNamedParamMap.TypedKey("index", ParamMap.Type.INT), run.index()),
                   Map.entry(new MapNamedParamMap.TypedKey("run", ParamMap.Type.NAMED_PARAM_MAP), run.map()),
-                  Map.entry(new MapNamedParamMap.TypedKey("serializedGenotypes", ParamMap.Type.STRINGS), serializedGenotypes)
+                  Map.entry(
+                      new MapNamedParamMap.TypedKey("serializedGenotypes", ParamMap.Type.STRINGS),
+                      serializedGenotypes
+                  )
               )
           );
           //write on file

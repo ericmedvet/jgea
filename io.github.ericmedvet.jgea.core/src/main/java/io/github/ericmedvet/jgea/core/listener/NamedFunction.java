@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 eric
+ * Copyright 2023 eric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,6 +102,27 @@ public interface NamedFunction<F, T> extends Function<F, T> {
     return String.format(getFormat(), apply(f));
   }
 
+  default <K> NamedFunction<F, K> as(@SuppressWarnings("unused") Class<K> kClass) {
+    NamedFunction<F, T> thisNamedFunction = this;
+    return new NamedFunction<>() {
+      @SuppressWarnings("unchecked")
+      @Override
+      public K apply(F f) {
+        return (K) thisNamedFunction.apply(f);
+      }
+
+      @Override
+      public String getFormat() {
+        return thisNamedFunction.getFormat();
+      }
+
+      @Override
+      public String getName() {
+        return thisNamedFunction.getName();
+      }
+    };
+  }
+
   default String getFormat() {
     return "%s";
   }
@@ -132,27 +153,6 @@ public interface NamedFunction<F, T> extends Function<F, T> {
 
   default <V> List<NamedFunction<V, ? extends T>> of(List<NamedFunction<V, ? extends F>> befores) {
     return befores.stream().map(this::of).collect(Collectors.toList());
-  }
-
-  default <K> NamedFunction<F, K> as(@SuppressWarnings("unused") Class<K> kClass) {
-    NamedFunction<F, T> thisNamedFunction = this;
-    return new NamedFunction<>() {
-      @SuppressWarnings("unchecked")
-      @Override
-      public K apply(F f) {
-        return (K) thisNamedFunction.apply(f);
-      }
-
-      @Override
-      public String getFormat() {
-        return thisNamedFunction.getFormat();
-      }
-
-      @Override
-      public String getName() {
-        return thisNamedFunction.getName();
-      }
-    };
   }
 
   default NamedFunction<F, T> reformat(String format) {
@@ -196,6 +196,25 @@ public interface NamedFunction<F, T> extends Function<F, T> {
     };
   }
 
+  default NamedFunction<F, T> robust(T exceptionT) {
+    return NamedFunction.build(
+        getName(),
+        getFormat(),
+        f -> {
+          try {
+            return apply(f);
+          } catch (Throwable throwable) {
+            L.warning("Cannot compute %s: %s".formatted(getName(), throwable));
+            return exceptionT;
+          }
+        }
+    );
+  }
+
+  default NamedFunction<F, T> robust() {
+    return robust(null);
+  }
+
   default <V> NamedFunction<F, V> then(NamedFunction<? super T, ? extends V> after) {
     NamedFunction<F, T> thisNamedFunction = this;
     return new NamedFunction<>() {
@@ -219,24 +238,5 @@ public interface NamedFunction<F, T> extends Function<F, T> {
   default <V> List<? extends NamedFunction<F, ? extends V>> then(List<NamedFunction<? super T, ? extends V>> afters) {
     NamedFunction<F, T> thisNamedFunction = this;
     return afters.stream().map(thisNamedFunction::then).toList();
-  }
-
-  default NamedFunction<F, T> robust(T exceptionT) {
-    return NamedFunction.build(
-        getName(),
-        getFormat(),
-        f -> {
-          try {
-            return apply(f);
-          } catch (Throwable throwable) {
-            L.warning("Cannot compute %s: %s".formatted(getName(), throwable));
-            return exceptionT;
-          }
-        }
-    );
-  }
-
-  default NamedFunction<F, T> robust() {
-    return robust(null);
   }
 }
