@@ -122,6 +122,23 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
+  public static <S, Q> Function<S, RandomWalk<QualityBasedProblem<S, Q>, BitString, S, Q>> bitStringRandomWalk(
+      @Param(value = "mapper") InvertibleMapper<BitString, S> mapper,
+      @Param(value = "pMut", dD = 0.01d) double pMut,
+      @Param(value = "nEval") int nEval
+  ) {
+    return exampleS -> {
+      BitString exampleGenotype = mapper.exampleFor(exampleS);
+      return new RandomWalk<>(
+          mapper.mapperFor(exampleS),
+          new BitStringFactory(exampleGenotype.size()),
+          StopConditions.nOfFitnessEvaluations(nEval),
+          new BitStringFlipMutation(pMut)
+      );
+    };
+  }
+
+  @SuppressWarnings("unused")
   public static <S, Q> Function<S, StandardEvolver<POSetPopulationState<List<Double>, S, Q>, QualityBasedProblem<S, Q>,
       List<Double>, S, Q>> doubleStringGa(
       @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
@@ -540,6 +557,7 @@ public class Solvers {
     };
   }
 
+  @SuppressWarnings("unused")
   public static <S, Q> Function<S, RandomWalk<QualityBasedProblem<S, Q>, Tree<Element>, S, Q>> srTreeRandomWalk(
       @Param(value = "mapper") InvertibleMapper<Tree<Element>, S> mapper,
       @Param(value = "minConst", dD = 0d) double minConst,
