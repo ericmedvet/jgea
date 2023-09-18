@@ -280,7 +280,7 @@ public class Solvers {
       IndependentFactory<Element> nonTerminalFactory = IndependentFactory.picker(operators);
       IndependentFactory<List<Tree<Element>>> treeListFactory = new FixedLengthListFactory<>(
           mapper.exampleFor(exampleS).size(),
-          new RampedHalfAndHalf<>(minTreeH, maxTreeH, x -> 2, nonTerminalFactory, terminalFactory).independent()
+          new TreeIndependentFactory<>(minTreeH, maxTreeH, x -> 2, nonTerminalFactory, terminalFactory, 0.5)
       );
       // single tree factory
       TreeBuilder<Element> treeBuilder = new GrowTreeBuilder<>(x -> 2, nonTerminalFactory, terminalFactory);
@@ -536,6 +536,61 @@ public class Solvers {
           remap,
           (p, r) -> new POSetPopulationState<>(),
           nAttemptsDiversity
+      );
+    };
+  }
+
+  public static <S, Q> Function<S, RandomWalk<QualityBasedProblem<S, Q>, Tree<Element>, S, Q>> srTreeRandomWalk(
+      @Param(value = "mapper") InvertibleMapper<Tree<Element>, S> mapper,
+      @Param(value = "minConst", dD = 0d) double minConst,
+      @Param(value = "maxConst", dD = 5d) double maxConst,
+      @Param(value = "nConst", dI = 10) int nConst,
+      @Param(value = "operators", dSs = {
+          "addition",
+          "subtraction",
+          "multiplication",
+          "prot_division",
+          "prot_log"
+      }) List<Element.Operator> operators,
+      @Param(value = "minTreeH", dI = 3) int minTreeH,
+      @Param(value = "maxTreeH", dI = 8) int maxTreeH,
+      @Param(value = "nEval") int nEval,
+      @Param(value = "remap") boolean remap
+  ) {
+    return exampleS -> {
+      List<Element.Variable> variables = mapper.exampleFor(exampleS)
+          .visitDepth()
+          .stream()
+          .filter(e -> e instanceof Element.Variable)
+          .map(e -> ((Element.Variable) e).name())
+          .distinct()
+          .map(Element.Variable::new)
+          .toList();
+      double constStep = (maxConst - minConst) / nConst;
+      List<Element.Constant> constants = DoubleStream.iterate(minConst, d -> d + constStep)
+          .limit(nConst)
+          .mapToObj(Element.Constant::new)
+          .toList();
+      IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
+          IndependentFactory.picker(variables),
+          IndependentFactory.picker(constants)
+      );
+      IndependentFactory<Element> nonTerminalFactory = IndependentFactory.picker(operators);
+      // single tree factory
+      TreeBuilder<Element> treeBuilder = new GrowTreeBuilder<>(x -> 2, nonTerminalFactory, terminalFactory);
+      Factory<Tree<Element>> treeFactory = new TreeIndependentFactory<>(
+          minTreeH,
+          maxTreeH,
+          x -> 2,
+          nonTerminalFactory,
+          terminalFactory,
+          0.5d
+      );
+      return new RandomWalk<>(
+          mapper.mapperFor(exampleS),
+          treeFactory,
+          StopConditions.nOfFitnessEvaluations(nEval),
+          new SubtreeMutation<>(maxTreeH, treeBuilder)
       );
     };
   }
