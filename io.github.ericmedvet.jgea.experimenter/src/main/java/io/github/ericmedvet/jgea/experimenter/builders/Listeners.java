@@ -256,7 +256,7 @@ public class Listeners {
     String credential;
     try (BufferedReader br = new BufferedReader(new FileReader(credentialFilePath))) {
       List<String> lines = br.lines().toList();
-      if (lines.size() < 1) {
+      if (lines.isEmpty()) {
         throw new IllegalArgumentException("Invalid credential file with 0 lines");
       }
       String[] pieces = lines.get(0).split("\\s");
