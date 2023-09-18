@@ -44,6 +44,7 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
   private final double pollInterval;
   private final List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> stateFunctions;
   private final List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> plotTableBuilders;
+  private final List<NamedFunction<? super Run<?, G, S, Q>, ?>> runFunctions;
   private final Experiment experiment;
   private final Map<Integer, Update> updates;
   private final ScheduledExecutorService service;
@@ -57,6 +58,7 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
       double pollInterval,
       List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> stateFunctions,
       List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> plotTableBuilders,
+      List<NamedFunction<? super Run<?, G, S, Q>, ?>> runFunctions,
       Experiment experiment
   ) {
     this.serverAddress = serverAddress;
@@ -65,6 +67,7 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
     this.pollInterval = pollInterval;
     this.stateFunctions = stateFunctions;
     this.plotTableBuilders = plotTableBuilders;
+    this.runFunctions = runFunctions;
     this.experiment = experiment;
     //check plot builders
     List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> wrongPlotTableBuilders = plotTableBuilders.stream()
@@ -96,6 +99,11 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POSetPopulati
             Update.DataItemKey dik = new Update.DataItemKey(f.getName(), f.getFormat());
             dataItems.putIfAbsent(dik, new ArrayList<>());
             dataItems.get(dik).add(f.apply(state));
+          });
+          runFunctions.forEach(f -> {
+            Update.DataItemKey dik = new Update.DataItemKey(f.getName(), f.getFormat());
+            dataItems.putIfAbsent(dik, new ArrayList<>());
+            dataItems.get(dik).add(f.apply(run));
           });
           Map<Update.PlotItemKey, List<Update.PlotPoint>> plotItems = update.plotItems();
           plotTableBuilders.forEach(p -> {

@@ -27,7 +27,7 @@ ea.experiment(
         ea.nf.gridH(f = ea.nf.solution(individual = ea.nf.best()));
         ea.nf.grid(f = ea.nf.solution(individual = ea.nf.best()))
       ];
-      runKeys = ["problem.target"]
+      runKeys = ["{problem.target}"]
     )
   ]
 )

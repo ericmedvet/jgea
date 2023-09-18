@@ -181,6 +181,7 @@ public class Starter {
       } catch (BuilderException e) {
         L.severe("Cannot build experiment: %s%n".formatted(e));
         if (configuration.verbose) {
+          //noinspection CallToPrintStackTrace
           e.printStackTrace();
         }
         System.exit(-1);

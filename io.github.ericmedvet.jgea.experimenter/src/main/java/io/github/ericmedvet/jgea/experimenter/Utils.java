@@ -20,6 +20,7 @@ import io.github.ericmedvet.jnb.core.MapNamedParamMap;
 import io.github.ericmedvet.jnb.core.NamedParamMap;
 import io.github.ericmedvet.jnb.core.ParamMap;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.SortedMap;
@@ -82,6 +83,17 @@ public class Utils {
       map = new MapNamedParamMap(mnpm.getName(), mnpm.getValues());
     }
     return interpolate(format, map);
+  }
+
+  public static List<String> interpolationKeys(String format) {
+    List<String> keys = new ArrayList<>();
+    Matcher m = INTERPOLATOR.matcher(format);
+    int c = 0;
+    while (m.find(c)) {
+      keys.add(m.group("mapKeys"));
+      c = m.end();
+    }
+    return keys;
   }
 
 }

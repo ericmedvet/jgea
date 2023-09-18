@@ -204,13 +204,13 @@ public class Listeners {
     List<NamedFunction<? super Run<?, G, S, Q>, ?>> functions = new ArrayList<>();
     runKeys.stream()
         .map(k -> NamedFunction.build(
-            k,
+            String.join("+", Utils.interpolationKeys(k)),
             "%".concat("" + experiment.runs().stream()
-                .map(r -> Utils.interpolate("{%s}".formatted(k), r.map()))
+                .map(r -> Utils.interpolate(k, r.map()))
                 .mapToInt(String::length)
                 .max()
                 .orElse(10)).concat("s"),
-            (Run<?, G, S, Q> run) -> Utils.interpolate("{%s}".formatted(k), run.map())
+            (Run<?, G, S, Q> run) -> Utils.interpolate(k, run.map())
         ))
         .forEach(functions::add);
     return Collections.unmodifiableList(functions);
@@ -286,6 +286,7 @@ public class Listeners {
       @Param(value = "functions") List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> stateFunctions,
       @Param(value = "defaultPlots") List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> defaultPlotTableBuilders,
       @Param("plots") List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> plotTableBuilders,
+      @Param("runKeys") List<String> runKeys,
       @Param(value = "deferred") boolean deferred,
       @Param(value = "onlyLast") boolean onlyLast,
       @Param(value = "serverAddress", dS = "127.0.0.1") String serverAddress,
@@ -307,6 +308,7 @@ public class Listeners {
                 defaultPlotTableBuilders,
                 plotTableBuilders
             )),
+            buildRunNamedFunctions(runKeys, experiment),
             experiment
         ),
         deferred ? executorService : null,
@@ -365,6 +367,7 @@ public class Listeners {
       }) List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> defaultPlotTableBuilders,
       @Param("plots") List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> plotTableBuilders,
       @Param("accumulators") List<AccumulatorFactory<? super POSetPopulationState<G, S, Q>, ?, Run<?, G, S, Q>>> accumulators,
+      @Param("runKeys") List<String> runKeys, // TODO: these are currently ignored
       @Param(value = "deferred", dB = true) boolean deferred,
       @Param(value = "onlyLast") boolean onlyLast
   ) {
