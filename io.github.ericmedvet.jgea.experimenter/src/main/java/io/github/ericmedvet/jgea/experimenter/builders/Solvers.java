@@ -471,9 +471,9 @@ public class Solvers {
   public static <S, Q> Function<S, StandardEvolver<POSetPopulationState<Tree<Element>, S, Q>, QualityBasedProblem<S, Q>,
       Tree<Element>, S, Q>> srTreeGp(
       @Param(value = "mapper") InvertibleMapper<Tree<Element>, S> mapper,
-      @Param(value = "minConst", dD = 0d) double minConst,
+      @Param(value = "minConst", dD = 0d) double minConst, //
       @Param(value = "maxConst", dD = 5d) double maxConst,
-      @Param(value = "nConst", dI = 10) int nConst,
+      @Param(value = "nConst", dI = 10) int nConst, //TODO 0.1, 1, 10 is better
       @Param(value = "operators", dSs = {
           "addition",
           "subtraction",
@@ -481,8 +481,8 @@ public class Solvers {
           "prot_division",
           "prot_log"
       }) List<Element.Operator> operators,
-      @Param(value = "minTreeH", dI = 3) int minTreeH,
-      @Param(value = "maxTreeH", dI = 8) int maxTreeH,
+      @Param(value = "minTreeH", dI = 3) int minTreeH, //TODO 4 is better
+      @Param(value = "maxTreeH", dI = 8) int maxTreeH, //TODO 10 is better
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
       @Param(value = "tournamentRate", dD = 0.05d) double tournamentRate,
       @Param(value = "minNTournament", dI = 3) int minNTournament,
@@ -562,7 +562,7 @@ public class Solvers {
       @Param(value = "mapper") InvertibleMapper<Tree<Element>, S> mapper,
       @Param(value = "minConst", dD = 0d) double minConst,
       @Param(value = "maxConst", dD = 5d) double maxConst,
-      @Param(value = "nConst", dI = 10) int nConst,
+      @Param(value = "nConst", dI = 10) int nConst, //TODO 0.1, 1, 10 is better
       @Param(value = "operators", dSs = {
           "addition",
           "subtraction",
@@ -570,8 +570,8 @@ public class Solvers {
           "prot_division",
           "prot_log"
       }) List<Element.Operator> operators,
-      @Param(value = "minTreeH", dI = 3) int minTreeH,
-      @Param(value = "maxTreeH", dI = 8) int maxTreeH,
+      @Param(value = "minTreeH", dI = 3) int minTreeH, //TODO 4 is better
+      @Param(value = "maxTreeH", dI = 8) int maxTreeH, //TODO 10 is better
       @Param(value = "nEval") int nEval,
       @Param(value = "remap") boolean remap
   ) {
