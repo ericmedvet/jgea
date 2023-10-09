@@ -135,7 +135,6 @@ public class OpenAIEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIte
         State<S, Q> state = super.init(problem, random, executor);
 
 
-
         List<List<Double>> genotypes = state.getPopulation().all().stream().map(Individual::genotype).toList();
         state.center = IntStream.range(0, n)
                 .mapToDouble(i -> genotypes.stream().mapToDouble(genotype -> genotype.get(i)).sum() / genotypes.size())
@@ -146,7 +145,7 @@ public class OpenAIEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIte
     private void optimize(State<S, Q> state) {
 
         double[] utilities = new double[populationSize];
-        IntStream.range(0, populationSize)     //qui sotto | c'era scritto .get(i) e l'ho sostituito con .indexOf(i)
+        IntStream.range(0, populationSize)
                 .forEach(i -> utilities[state.indexes.get(i)] = (double) i / (populationSize - 1) - 0.5);
 
         List<Double> weights = IntStream.range(0, batchSize)
@@ -166,11 +165,11 @@ public class OpenAIEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIte
                 state.getNOfIterations()
         )) / (1d - Math.pow(state.beta1, state.getNOfIterations()));
 
-        state.m = IntStream.range(0, n)                     // mancava questa ↓ parentesi #############################################################
+        state.m = IntStream.range(0, n)
                 .mapToDouble(i -> state.beta1 * state.m[i] + (1d - state.beta1) * globalG[i])
                 .toArray();
 
-        state.v = IntStream.range(0, n)                   // mancavano queste ↓   ↓ parentesi #########################################################
+        state.v = IntStream.range(0, n)
                 .mapToDouble(i -> state.beta2 * state.v[i] + (1d - state.beta2) * (globalG[i] * globalG[i]))
                 .toArray();
 

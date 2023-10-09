@@ -13,7 +13,8 @@ public class DoublesVariableTarget implements ComparableQualityBasedProblem<List
     private final double target;
     private final int p;
     private final Function<List<Double>, Double> fitnessFunction;
-    public DoublesVariableTarget(int p, double target){
+
+    public DoublesVariableTarget(int p, double target) {
         this.p = p;
         this.target = target;
         fitnessFunction = vs -> {
