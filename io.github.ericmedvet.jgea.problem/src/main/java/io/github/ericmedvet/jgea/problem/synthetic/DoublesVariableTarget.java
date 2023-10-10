@@ -8,29 +8,28 @@ import java.util.List;
 import java.util.function.Function;
 
 public class DoublesVariableTarget implements ComparableQualityBasedProblem<List<Double>, Double>,
-        ProblemWithExampleSolution<List<Double>> {
+    ProblemWithExampleSolution<List<Double>> {
 
-    private final double target;
-    private final int p;
-    private final Function<List<Double>, Double> fitnessFunction;
-    public DoublesVariableTarget(int p, double target){
-        this.p = p;
-        this.target = target;
-        fitnessFunction = vs -> {
-            if (vs.size() != p) {
-                throw new IllegalArgumentException("Wrong input size: %d expected, %d found".formatted(p, vs.size()));
-            }
-            return vs.stream().mapToDouble(i -> Math.abs(target - i)).sum() / (double) vs.size();
-        };
-    }
+  private final int p;
+  private final Function<List<Double>, Double> fitnessFunction;
 
-    @Override
-    public List<Double> example() {
-        return Collections.nCopies(p, target);
-    }
+  public DoublesVariableTarget(int p, double target) {
+    this.p = p;
+    fitnessFunction = vs -> {
+      if (vs.size() != p) {
+        throw new IllegalArgumentException("Wrong input size: %d expected, %d found".formatted(p, vs.size()));
+      }
+      return vs.stream().mapToDouble(i -> Math.abs(target - i)).sum() / (double) vs.size();
+    };
+  }
 
-    @Override
-    public Function<List<Double>, Double> qualityFunction() {
-        return fitnessFunction;
-    }
+  @Override
+  public List<Double> example() {
+    return Collections.nCopies(p, 0d);
+  }
+
+  @Override
+  public Function<List<Double>, Double> qualityFunction() {
+    return fitnessFunction;
+  }
 }

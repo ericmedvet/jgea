@@ -139,6 +139,23 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
+  public static <S, Q> Function<S, CMAEvolutionaryStrategy<S, Q>> cmaEs(
+      @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
+      @Param(value = "initialMinV", dD = -1d) double initialMinV,
+      @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
+      @Param(value = "nEval") int nEval
+  ) {
+    return exampleS -> new CMAEvolutionaryStrategy<>(
+        mapper.mapperFor(exampleS),
+        new FixedLengthListFactory<>(
+            mapper.exampleFor(exampleS).size(),
+            new UniformDoubleFactory(initialMinV, initialMaxV)
+        ),
+        StopConditions.nOfFitnessEvaluations(nEval)
+    );
+  }
+
+  @SuppressWarnings("unused")
   public static <S, Q> Function<S, StandardEvolver<POSetPopulationState<List<Double>, S, Q>, QualityBasedProblem<S, Q>,
       List<Double>, S, Q>> doubleStringGa(
       @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
@@ -437,23 +454,6 @@ public class Solvers {
         batchSize,
         StopConditions.nOfFitnessEvaluations(nEval),
         sigma
-    );
-  }
-
-  @SuppressWarnings("unused")
-  public static <S, Q> Function<S, CMAEvolutionaryStrategy<S, Q>> cmaEs(
-          @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
-          @Param(value = "initialMinV", dD = -1d) double initialMinV,
-          @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
-          @Param(value = "nEval") int nEval
-  ) {
-    return exampleS -> new CMAEvolutionaryStrategy<>(
-            mapper.mapperFor(exampleS),
-            new FixedLengthListFactory<>(
-                    mapper.exampleFor(exampleS).size(),
-                    new UniformDoubleFactory(initialMinV, initialMaxV)
-            ),
-            StopConditions.nOfFitnessEvaluations(nEval)
     );
   }
 

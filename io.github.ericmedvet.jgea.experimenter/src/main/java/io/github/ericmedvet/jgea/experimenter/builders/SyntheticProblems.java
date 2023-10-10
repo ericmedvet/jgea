@@ -48,18 +48,19 @@ public class SyntheticProblems {
     }
   }
 
-  public static DoublesVariableTarget doublesVariableTarget(
-          @Param(value = "p", dI = 100) int p,
-          @Param(value = "target") double target
-  ) {
-    return new DoublesVariableTarget(p, target);
-  }
-
   @SuppressWarnings("unused")
   public static DoublesOneMax doublesOneMax(
       @Param(value = "p", dI = 100) int p
   ) {
     return new DoublesOneMax(p);
+  }
+
+  @SuppressWarnings("unused")
+  public static DoublesVariableTarget doublesVariableTarget(
+      @Param(value = "p", dI = 100) int p,
+      @Param(value = "target") double target
+  ) {
+    return new DoublesVariableTarget(p, target);
   }
 
   @SuppressWarnings("unused")
