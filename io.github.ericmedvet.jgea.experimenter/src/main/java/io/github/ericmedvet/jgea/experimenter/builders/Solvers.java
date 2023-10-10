@@ -275,9 +275,7 @@ public class Solvers {
       QualityBasedProblem<S, Q>,
       List<Tree<Element>>, S, Q>> multiSRTreeGp(
       @Param(value = "mapper") InvertibleMapper<List<Tree<Element>>, S> mapper,
-      @Param(value = "minConst", dD = 0d) double minConst,
-      @Param(value = "maxConst", dD = 5d) double maxConst,
-      @Param(value = "nConst", dI = 10) int nConst,
+      @Param(value = "constants", dDs = {0.1, 1, 10}) List<Double> constants,
       @Param(value = "operators", dSs = {
           "addition",
           "subtraction",
@@ -285,8 +283,8 @@ public class Solvers {
           "prot_division",
           "prot_log"
       }) List<Element.Operator> operators,
-      @Param(value = "minTreeH", dI = 3) int minTreeH,
-      @Param(value = "maxTreeH", dI = 8) int maxTreeH,
+      @Param(value = "minTreeH", dI = 4) int minTreeH,
+      @Param(value = "maxTreeH", dI = 10) int maxTreeH,
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
       @Param(value = "tournamentRate", dD = 0.05d) double tournamentRate,
       @Param(value = "minNTournament", dI = 3) int minNTournament,
@@ -302,14 +300,12 @@ public class Solvers {
           .filter(e -> e instanceof Element.Variable)
           .map(e -> ((Element.Variable) e).name())
           .toList()).flatMap(List::stream).distinct().map(Element.Variable::new).toList();
-      double constStep = (maxConst - minConst) / nConst;
-      List<Element.Constant> constants = DoubleStream.iterate(minConst, d -> d + constStep)
-          .limit(nConst)
-          .mapToObj(Element.Constant::new)
+      List<Element.Constant> constantElements = constants.stream()
+          .map(Element.Constant::new)
           .toList();
       IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
           IndependentFactory.picker(variables),
-          IndependentFactory.picker(constants)
+          IndependentFactory.picker(constantElements)
       );
       IndependentFactory<Element> nonTerminalFactory = IndependentFactory.picker(operators);
       IndependentFactory<List<Tree<Element>>> treeListFactory = new FixedLengthListFactory<>(
@@ -488,9 +484,7 @@ public class Solvers {
   public static <S, Q> Function<S, StandardEvolver<POSetPopulationState<Tree<Element>, S, Q>, QualityBasedProblem<S, Q>,
       Tree<Element>, S, Q>> srTreeGp(
       @Param(value = "mapper") InvertibleMapper<Tree<Element>, S> mapper,
-      @Param(value = "minConst", dD = 0d) double minConst, //
-      @Param(value = "maxConst", dD = 5d) double maxConst,
-      @Param(value = "nConst", dI = 10) int nConst, //TODO 0.1, 1, 10 is better
+      @Param(value = "constants", dDs = {0.1, 1, 10}) List<Double> constants,
       @Param(value = "operators", dSs = {
           "addition",
           "subtraction",
@@ -498,8 +492,8 @@ public class Solvers {
           "prot_division",
           "prot_log"
       }) List<Element.Operator> operators,
-      @Param(value = "minTreeH", dI = 3) int minTreeH, //TODO 4 is better
-      @Param(value = "maxTreeH", dI = 8) int maxTreeH, //TODO 10 is better
+      @Param(value = "minTreeH", dI = 4) int minTreeH,
+      @Param(value = "maxTreeH", dI = 10) int maxTreeH,
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
       @Param(value = "tournamentRate", dD = 0.05d) double tournamentRate,
       @Param(value = "minNTournament", dI = 3) int minNTournament,
@@ -518,14 +512,12 @@ public class Solvers {
           .distinct()
           .map(Element.Variable::new)
           .toList();
-      double constStep = (maxConst - minConst) / nConst;
-      List<Element.Constant> constants = DoubleStream.iterate(minConst, d -> d + constStep)
-          .limit(nConst)
-          .mapToObj(Element.Constant::new)
+      List<Element.Constant> constantElements = constants.stream()
+          .map(Element.Constant::new)
           .toList();
       IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
           IndependentFactory.picker(variables),
-          IndependentFactory.picker(constants)
+          IndependentFactory.picker(constantElements)
       );
       IndependentFactory<Element> nonTerminalFactory = IndependentFactory.picker(operators);
       // single tree factory
@@ -577,9 +569,7 @@ public class Solvers {
   @SuppressWarnings("unused")
   public static <S, Q> Function<S, RandomWalk<QualityBasedProblem<S, Q>, Tree<Element>, S, Q>> srTreeRandomWalk(
       @Param(value = "mapper") InvertibleMapper<Tree<Element>, S> mapper,
-      @Param(value = "minConst", dD = 0d) double minConst,
-      @Param(value = "maxConst", dD = 5d) double maxConst,
-      @Param(value = "nConst", dI = 10) int nConst, //TODO 0.1, 1, 10 is better
+      @Param(value = "constants", dDs = {0.1, 1, 10}) List<Double> constants,
       @Param(value = "operators", dSs = {
           "addition",
           "subtraction",
@@ -587,8 +577,8 @@ public class Solvers {
           "prot_division",
           "prot_log"
       }) List<Element.Operator> operators,
-      @Param(value = "minTreeH", dI = 3) int minTreeH, //TODO 4 is better
-      @Param(value = "maxTreeH", dI = 8) int maxTreeH, //TODO 10 is better
+      @Param(value = "minTreeH", dI = 4) int minTreeH,
+      @Param(value = "maxTreeH", dI = 10) int maxTreeH,
       @Param(value = "nEval") int nEval,
       @Param(value = "remap") boolean remap
   ) {
@@ -601,14 +591,12 @@ public class Solvers {
           .distinct()
           .map(Element.Variable::new)
           .toList();
-      double constStep = (maxConst - minConst) / nConst;
-      List<Element.Constant> constants = DoubleStream.iterate(minConst, d -> d + constStep)
-          .limit(nConst)
-          .mapToObj(Element.Constant::new)
+      List<Element.Constant> constantElements = constants.stream()
+          .map(Element.Constant::new)
           .toList();
       IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
           IndependentFactory.picker(variables),
-          IndependentFactory.picker(constants)
+          IndependentFactory.picker(constantElements)
       );
       IndependentFactory<Element> nonTerminalFactory = IndependentFactory.picker(operators);
       // single tree factory
