@@ -441,6 +441,23 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
+  public static <S, Q> Function<S, CMAEvolutionaryStrategy<S, Q>> cmaEs(
+          @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
+          @Param(value = "initialMinV", dD = -1d) double initialMinV,
+          @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
+          @Param(value = "nEval") int nEval
+  ) {
+    return exampleS -> new CMAEvolutionaryStrategy<>(
+            mapper.mapperFor(exampleS),
+            new FixedLengthListFactory<>(
+                    mapper.exampleFor(exampleS).size(),
+                    new UniformDoubleFactory(initialMinV, initialMaxV)
+            ),
+            StopConditions.nOfFitnessEvaluations(nEval)
+    );
+  }
+
+  @SuppressWarnings("unused")
   public static <S, Q> Function<S, SimpleEvolutionaryStrategy<S, Q>> simpleEs(
       @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
       @Param(value = "initialMinV", dD = -1d) double initialMinV,
