@@ -32,7 +32,6 @@ import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph.OperatorNode;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph.ShallowFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.FixedLengthListFactory;
-import io.github.ericmedvet.jgea.core.representation.sequence.UniformCrossover;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringFlipMutation;
@@ -42,6 +41,7 @@ import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntStringF
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntStringUniformCrossover;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.UniformIntStringFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.GaussianMutation;
+import io.github.ericmedvet.jgea.core.representation.sequence.numeric.HypercubeGeometricCrossover;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.UniformDoubleFactory;
 import io.github.ericmedvet.jgea.core.representation.tree.*;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
@@ -175,7 +175,7 @@ public class Solvers {
           mapper.exampleFor(exampleS).size(),
           new UniformDoubleFactory(initialMinV, initialMaxV)
       );
-      Crossover<List<Double>> crossover = new UniformCrossover<>();
+      Crossover<List<Double>> crossover = new HypercubeGeometricCrossover();
       Map<GeneticOperator<List<Double>>, Double> geneticOperators = Map.ofEntries(
           Map.entry(new GaussianMutation(sigmaMut), 1d - crossoverP),
           Map.entry(crossover.andThen(new GaussianMutation(sigmaMut)), crossoverP)
