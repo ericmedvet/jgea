@@ -8,10 +8,6 @@ import io.github.ericmedvet.jgea.core.util.Table;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.IntStream;
-
-/**
- * @author "Eric Medvet" on 2022/11/26 for jgea
- */
 public class XYPlotTableBuilder<E> extends TableBuilder<E, Number, Object> implements PlotTableBuilder<E> {
   private final NamedFunction<? super E, ? extends Number> xFunction;
   private final List<NamedFunction<? super E, ? extends Number>> yFunctions;

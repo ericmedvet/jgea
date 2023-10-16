@@ -4,10 +4,6 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.Function;
-
-/**
- * @author eric
- */
 public class SequentialFunction<S, F> implements Function<S, F> {
   private final SortedMap<Long, Function<S, F>> functions;
   private long nOfInvocations;

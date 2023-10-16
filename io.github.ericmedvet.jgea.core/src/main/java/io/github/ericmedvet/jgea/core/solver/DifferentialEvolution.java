@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package io.github.ericmedvet.jgea.core.solver;
 
 import io.github.ericmedvet.jgea.core.Factory;
@@ -21,11 +16,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.random.RandomGenerator;
-
-/**
- * @author federico
- * DE/rand/1
- */
 public class DifferentialEvolution<S, Q> extends AbstractPopulationBasedIterativeSolver<POSetPopulationState<List<Double>, S, Q>, TotalOrderQualityBasedProblem<S, Q>, List<Double>, S, Q> {
 
   private static final Logger L = Logger.getLogger(DifferentialEvolution.class.getName());

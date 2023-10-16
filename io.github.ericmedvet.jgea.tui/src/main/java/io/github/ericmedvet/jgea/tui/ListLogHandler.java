@@ -4,10 +4,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.*;
-
-/**
- * @author "Eric Medvet" on 2023/04/24 for jgea
- */
 public class ListLogHandler extends Handler {
   private final static int LOG_HISTORY_SIZE = 100;
   private final static Logger L = Logger.getLogger(ListLogHandler.class.getName());

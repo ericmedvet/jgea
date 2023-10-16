@@ -2,10 +2,6 @@ package io.github.ericmedvet.jgea.tui.util;
 
 import java.util.ArrayList;
 import java.util.List;
-
-/**
- * @author "Eric Medvet" on 2022/09/03 for jgea
- */
 public record Rectangle(Point min, Point max) {
   public int h() {
     return max().y() - min().y();

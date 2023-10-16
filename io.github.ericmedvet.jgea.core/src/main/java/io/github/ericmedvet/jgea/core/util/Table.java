@@ -5,10 +5,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-/**
- * @author eric on 2021/01/04 for jgea
- */
 public interface Table<T> {
 
   void addColumn(String name, List<T> values);

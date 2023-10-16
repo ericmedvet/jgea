@@ -5,10 +5,6 @@ import java.util.Map;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-/**
- * @author "Eric Medvet" on 2023/04/30 for jgea
- */
 public interface NumericalDataset {
   record Example(double[] xs, double[] ys) {
     public Example(double[] xs, double y) {

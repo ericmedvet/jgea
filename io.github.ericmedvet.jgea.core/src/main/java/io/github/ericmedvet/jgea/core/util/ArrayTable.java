@@ -4,10 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
-
-/**
- * @author eric on 2021/01/04 for jgea
- */
 public class ArrayTable<T> implements Table<T> {
 
   private final List<String> names;

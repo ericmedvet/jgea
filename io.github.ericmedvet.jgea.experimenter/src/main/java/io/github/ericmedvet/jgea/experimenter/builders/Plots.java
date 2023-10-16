@@ -8,10 +8,6 @@ import io.github.ericmedvet.jnb.core.Param;
 
 import java.util.Collection;
 import java.util.List;
-
-/**
- * @author "Eric Medvet" on 2022/11/26 for jgea
- */
 public class Plots {
 
   private Plots() {

@@ -1,10 +1,6 @@
 package io.github.ericmedvet.jgea.core.distance;
 
 import io.github.ericmedvet.jgea.core.representation.grammar.GrammarOptionString;
-
-/**
- * @author "Eric Medvet" on 2023/07/06 for jgea
- */
 public class GrammarOptionStringDistance<S> implements Distance<GrammarOptionString<S>> {
   @Override
   public Double apply(GrammarOptionString<S> gos1, GrammarOptionString<S> gos2) {

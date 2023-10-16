@@ -3,10 +3,6 @@ package io.github.ericmedvet.jgea.core.listener;
 import io.github.ericmedvet.jgea.core.util.Table;
 
 import java.util.List;
-
-/**
- * @author "Eric Medvet" on 2022/11/26 for jgea
- */
 public interface PlotTableBuilder<E> extends AccumulatorFactory<E, Table<Number>, Object> {
 
   NamedFunction<? super E, ? extends Number> xFunction();

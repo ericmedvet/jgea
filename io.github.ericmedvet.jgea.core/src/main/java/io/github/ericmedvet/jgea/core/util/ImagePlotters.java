@@ -10,10 +10,6 @@ import org.knowm.xchart.style.markers.SeriesMarkers;
 
 import java.awt.image.BufferedImage;
 import java.util.function.Function;
-
-/**
- * @author eric on 2021/01/04 for jgea
- */
 public class ImagePlotters {
 
   private ImagePlotters() {

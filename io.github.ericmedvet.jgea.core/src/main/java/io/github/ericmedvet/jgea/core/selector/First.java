@@ -4,10 +4,6 @@ import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.util.Misc;
 
 import java.util.random.RandomGenerator;
-
-/**
- * @author federico
- */
 public class First implements Selector<Object> {
 
   @Override

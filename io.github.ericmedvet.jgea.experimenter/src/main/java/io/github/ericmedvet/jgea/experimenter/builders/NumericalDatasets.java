@@ -10,10 +10,6 @@ import io.github.ericmedvet.jnb.core.Param;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Supplier;
-
-/**
- * @author "Eric Medvet" on 2023/05/01 for jgea
- */
 public class NumericalDatasets {
   private NumericalDatasets() {
   }

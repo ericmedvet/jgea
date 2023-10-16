@@ -1,10 +1,6 @@
 package io.github.ericmedvet.jgea.core.distance;
 
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
-
-/**
- * @author "Eric Medvet" on 2023/07/06 for jgea
- */
 public class IntStringHamming implements Distance<IntString> {
   @Override
   public Double apply(IntString is1, IntString is2) {

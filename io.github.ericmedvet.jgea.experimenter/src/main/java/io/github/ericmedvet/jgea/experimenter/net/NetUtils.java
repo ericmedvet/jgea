@@ -15,10 +15,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.Base64;
-
-/**
- * @author "Eric Medvet" on 2023/03/26 for jgea
- */
 public class NetUtils {
 
   private final static String CIPHER_ALG = "AES/CBC/PKCS5Padding";
