@@ -1,23 +1,21 @@
-/*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
- *
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-problem
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * =========================LICENSE_END==================================
  */
 package io.github.ericmedvet.jgea.problem.classification;
 
@@ -25,16 +23,12 @@ import com.google.common.collect.EnumMultiset;
 import com.google.common.collect.Multiset;
 import io.github.ericmedvet.jgea.core.fitness.ListCaseBasedFitness;
 import io.github.ericmedvet.jgea.core.util.Pair;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-/**
- * @author eric
- */
-public class ClassificationFitness<O, L extends Enum<L>> extends ListCaseBasedFitness<Classifier<O, L>, O, L,
-    List<Double>> {
+public class ClassificationFitness<O, L extends Enum<L>>
+    extends ListCaseBasedFitness<Classifier<O, L>, O, L, List<Double>> {
 
   private final List<Pair<O, L>> data;
   private final List<String> names;
@@ -44,8 +38,7 @@ public class ClassificationFitness<O, L extends Enum<L>> extends ListCaseBasedFi
     super(
         data.stream().map(Pair::first).toList(),
         Classifier::classify,
-        getAggregator(data.stream().map(Pair::second).toList(), errorMetric)
-    );
+        getAggregator(data.stream().map(Pair::second).toList(), errorMetric));
     this.data = data;
     names = new ArrayList<>();
     if (errorMetric.equals(Metric.CLASS_ERROR_RATE)) {
@@ -61,10 +54,13 @@ public class ClassificationFitness<O, L extends Enum<L>> extends ListCaseBasedFi
   }
 
   public enum Metric {
-    CLASS_ERROR_RATE, ERROR_RATE, BALANCED_ERROR_RATE
+    CLASS_ERROR_RATE,
+    ERROR_RATE,
+    BALANCED_ERROR_RATE
   }
 
-  private static class ClassErrorRate<E extends Enum<E>> implements Function<List<E>, List<Pair<Integer, Integer>>> {
+  private static class ClassErrorRate<E extends Enum<E>>
+      implements Function<List<E>, List<Pair<Integer, Integer>>> {
 
     private final List<E> actualLabels;
 
@@ -91,12 +87,10 @@ public class ClassificationFitness<O, L extends Enum<L>> extends ListCaseBasedFi
       }
       return pairs;
     }
-
   }
 
   private static <E extends Enum<E>> Function<List<E>, List<Double>> getAggregator(
-      List<E> actualLabels, Metric metric
-  ) {
+      List<E> actualLabels, Metric metric) {
     final ClassErrorRate<E> classErrorRate = new ClassErrorRate<>(actualLabels);
     if (metric.equals(Metric.CLASS_ERROR_RATE)) {
       return (List<E> predictedLabels) -> {
@@ -115,11 +109,12 @@ public class ClassificationFitness<O, L extends Enum<L>> extends ListCaseBasedFi
     if (metric.equals(Metric.BALANCED_ERROR_RATE)) {
       return (List<E> predictedLabels) -> {
         List<Pair<Integer, Integer>> pairs = classErrorRate.apply(predictedLabels);
-        return List.of(pairs.stream()
-            .map(p -> ((double) p.first() / (double) p.second()))
-            .mapToDouble(Double::doubleValue)
-            .average()
-            .orElse(Double.NaN));
+        return List.of(
+            pairs.stream()
+                .map(p -> ((double) p.first() / (double) p.second()))
+                .mapToDouble(Double::doubleValue)
+                .average()
+                .orElse(Double.NaN));
       };
     }
     return null;
@@ -128,5 +123,4 @@ public class ClassificationFitness<O, L extends Enum<L>> extends ListCaseBasedFi
   public ClassificationFitness<O, L> changeMetric(Metric metric) {
     return new ClassificationFitness<>(data, metric);
   }
-
 }

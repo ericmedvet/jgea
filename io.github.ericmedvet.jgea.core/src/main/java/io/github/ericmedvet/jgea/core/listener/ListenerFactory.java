@@ -1,3 +1,22 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package io.github.ericmedvet.jgea.core.listener;
 
 import java.util.Collection;
@@ -8,14 +27,12 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-/**
- * @author "Eric Medvet" on 2022/01/29 for jgea
- */
 public interface ListenerFactory<E, K> {
 
   Listener<E> build(K k);
 
-  static <E, K> ListenerFactory<E, K> all(List<? extends ListenerFactory<? super E, ? super K>> factories) {
+  static <E, K> ListenerFactory<E, K> all(
+      List<? extends ListenerFactory<? super E, ? super K>> factories) {
     return new ListenerFactory<>() {
       @Override
       public Listener<E> build(K k) {
@@ -146,43 +163,43 @@ public interface ListenerFactory<E, K> {
                   return;
                 }
                 counter.incrementAndGet();
-                executorService.submit(() -> {
-                  try {
-                    innerListener.listen(e);
-                  } catch (RuntimeException ex) {
-                    L.warning(String.format(
-                        "Listener %s cannot listen() event: %s",
-                        innerListener.getClass().getSimpleName(),
-                        ex
-                    ));
-                  } finally {
-                    synchronized (counter) {
-                      counter.decrementAndGet();
-                      counter.notifyAll();
-                    }
-                  }
-                });
+                executorService.submit(
+                    () -> {
+                      try {
+                        innerListener.listen(e);
+                      } catch (RuntimeException ex) {
+                        L.warning(
+                            String.format(
+                                "Listener %s cannot listen() event: %s",
+                                innerListener.getClass().getSimpleName(), ex));
+                      } finally {
+                        synchronized (counter) {
+                          counter.decrementAndGet();
+                          counter.notifyAll();
+                        }
+                      }
+                    });
               }
 
               @Override
               public void done() {
                 counter.incrementAndGet();
-                executorService.submit(() -> {
-                  try {
-                    innerListener.done();
-                  } catch (RuntimeException ex) {
-                    L.warning(String.format(
-                        "Listener %s cannot done() event: %s",
-                        innerListener.getClass().getSimpleName(),
-                        ex
-                    ));
-                  } finally {
-                    synchronized (counter) {
-                      counter.decrementAndGet();
-                      counter.notifyAll();
-                    }
-                  }
-                });
+                executorService.submit(
+                    () -> {
+                      try {
+                        innerListener.done();
+                      } catch (RuntimeException ex) {
+                        L.warning(
+                            String.format(
+                                "Listener %s cannot done() event: %s",
+                                innerListener.getClass().getSimpleName(), ex));
+                      } finally {
+                        synchronized (counter) {
+                          counter.decrementAndGet();
+                          counter.notifyAll();
+                        }
+                      }
+                    });
               }
             };
           }
@@ -213,7 +230,7 @@ public interface ListenerFactory<E, K> {
             try {
               counter.wait();
             } catch (InterruptedException e) {
-              //ignore
+              // ignore
             }
           }
         }
@@ -223,7 +240,5 @@ public interface ListenerFactory<E, K> {
     };
   }
 
-  default void shutdown() {
-  }
-
+  default void shutdown() {}
 }

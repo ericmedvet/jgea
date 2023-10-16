@@ -1,17 +1,21 @@
-/*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
- *
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * =========================LICENSE_END==================================
  */
 
 package io.github.ericmedvet.jgea.core.representation.graph;
@@ -19,12 +23,8 @@ package io.github.ericmedvet.jgea.core.representation.graph;
 import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.util.Misc;
-
 import java.util.random.RandomGenerator;
 
-/**
- * @author eric
- */
 public class NodeAddition<N, A> implements Mutation<Graph<N, A>> {
   private final IndependentFactory<? extends N> nodeFactory;
   private final Mutation<A> toNewNodeArcMutation;
@@ -35,8 +35,7 @@ public class NodeAddition<N, A> implements Mutation<Graph<N, A>> {
       IndependentFactory<? extends N> nodeFactory,
       Mutation<A> toNewNodeArcMutation,
       Mutation<A> fromNewNodeArcMutation,
-      Mutation<A> existingArcMutation
-  ) {
+      Mutation<A> existingArcMutation) {
     this.nodeFactory = nodeFactory;
     this.toNewNodeArcMutation = toNewNodeArcMutation;
     this.fromNewNodeArcMutation = fromNewNodeArcMutation;
@@ -44,8 +43,9 @@ public class NodeAddition<N, A> implements Mutation<Graph<N, A>> {
   }
 
   public NodeAddition(
-      IndependentFactory<? extends N> nodeFactory, Mutation<A> toNewNodeArcMutation, Mutation<A> fromNewNodeArcMutation
-  ) {
+      IndependentFactory<? extends N> nodeFactory,
+      Mutation<A> toNewNodeArcMutation,
+      Mutation<A> fromNewNodeArcMutation) {
     this(nodeFactory, toNewNodeArcMutation, fromNewNodeArcMutation, null);
   }
 
@@ -59,22 +59,21 @@ public class NodeAddition<N, A> implements Mutation<Graph<N, A>> {
     if (!child.arcs().isEmpty()) {
       Graph.Arc<N> arc = Misc.pickRandomly(child.arcs(), random);
       A existingArcValue = child.getArcValue(arc);
-      //mutate existing edge
+      // mutate existing edge
       if (existingArcMutation != null) {
         child.setArcValue(arc, existingArcMutation.mutate(existingArcValue, random));
       } else {
         child.removeArc(arc);
       }
-      //add new edges
+      // add new edges
       A newArcValueTo = toNewNodeArcMutation.mutate(existingArcValue, random);
       A newArcValueFrom = fromNewNodeArcMutation.mutate(existingArcValue, random);
-      //add node
+      // add node
       child.addNode(newNode);
-      //connect edges
+      // connect edges
       child.setArcValue(arc.getSource(), newNode, newArcValueTo);
       child.setArcValue(newNode, arc.getTarget(), newArcValueFrom);
     }
     return child;
   }
-
 }

@@ -1,17 +1,21 @@
-/*
- * Copyright 2023 eric
- *
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-experimenter
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * =========================LICENSE_END==================================
  */
 
 package io.github.ericmedvet.jgea.experimenter;
@@ -21,7 +25,6 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import io.github.ericmedvet.jnb.core.BuilderException;
 import io.github.ericmedvet.jnb.core.NamedBuilder;
-
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Locale;
@@ -29,87 +32,73 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-/**
- * @author "Eric Medvet" on 2022/08/11 for 2d-robot-evolution
- */
 public class Starter {
 
-  private final static Logger L = Logger.getLogger(Starter.class.getName());
+  private static final Logger L = Logger.getLogger(Starter.class.getName());
 
   static {
     Locale.setDefault(Locale.ROOT);
     try {
-      LogManager.getLogManager().readConfiguration(Starter.class.getClassLoader()
-          .getResourceAsStream("logging.properties"));
+      LogManager.getLogManager()
+          .readConfiguration(
+              Starter.class.getClassLoader().getResourceAsStream("logging.properties"));
     } catch (IOException ex) {
-      //ignore
+      // ignore
     }
   }
 
   public static class Configuration {
     @Parameter(
         names = {"--expFile", "-f"},
-        description = "Path of the file with the experiment description."
-    )
+        description = "Path of the file with the experiment description.")
     public String experimentDescriptionFilePath = "";
 
     @Parameter(
         names = {"--exampleExp", "-e"},
-        description = "Name of the example experiment description."
-    )
+        description = "Name of the example experiment description.")
     public String exampleExperimentDescriptionResourceName = "";
 
     @Parameter(
         names = {"--nOfThreads", "-nt"},
-        description = "Number of threads to be used for fitness computation."
-    )
+        description = "Number of threads to be used for fitness computation.")
     public int nOfThreads = 2;
 
     @Parameter(
         names = {"--nOfRuns", "-nr"},
-        description = "Number of concurrent runs."
-    )
+        description = "Number of concurrent runs.")
     public int nOfConcurrentRuns = 1;
 
     @Parameter(
         names = {"--showExpFileHelp", "-d"},
-        description = "Show a description of available constructs for the experiment file."
-    )
+        description = "Show a description of available constructs for the experiment file.")
     public boolean showExpFileHelp = false;
 
     @Parameter(
         names = {"--checkExpFile", "-c"},
-        description = "Just check the correctness of the experiment description."
-    )
+        description = "Just check the correctness of the experiment description.")
     public boolean check = false;
 
     @Parameter(
         names = {"--verbose", "-v"},
-        description = "Be verbose on errors (i.e., print stack traces)"
-    )
+        description = "Be verbose on errors (i.e., print stack traces)")
     public boolean verbose = false;
 
     @Parameter(
         names = {"--help", "-h"},
         description = "Show this help.",
-        help = true
-    )
+        help = true)
     public boolean help;
 
     @Parameter(
         names = {"--builder", "-b"},
-        description = "Builder for the experiment."
-    )
+        description = "Builder for the experiment.")
     public String builderName = PreparedNamedBuilder.class.getName();
-
   }
 
   public static void main(String[] args) {
-    //read configuration
+    // read configuration
     Configuration configuration = new Configuration();
-    JCommander jc = JCommander.newBuilder()
-        .addObject(configuration)
-        .build();
+    JCommander jc = JCommander.newBuilder().addObject(configuration).build();
     jc.setProgramName(Starter.class.getName());
     try {
       jc.parse(args);
@@ -121,31 +110,40 @@ public class Starter {
       L.severe(e.getClass().getSimpleName() + ": " + e.getMessage());
       System.exit(-1);
     }
-    //check help
+    // check help
     if (configuration.help) {
       jc.usage();
       System.exit(0);
     }
-    //prepare local named builder
+    // prepare local named builder
     NamedBuilder<Object> nb = null;
     try {
       Class<?> builderClass = Class.forName(configuration.builderName);
       //noinspection unchecked
       nb = (NamedBuilder<Object>) builderClass.getMethod("get").invoke(null);
-    } catch (ClassNotFoundException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
+    } catch (ClassNotFoundException
+        | InvocationTargetException
+        | IllegalAccessException
+        | NoSuchMethodException e) {
       L.severe("Cannot build the builder %s due to: %s".formatted(configuration.builderName, e));
       System.exit(-1);
     }
-    //check if it's just a help invocation
+    // check if it's just a help invocation
     if (configuration.showExpFileHelp) {
       System.out.println(NamedBuilder.prettyToString(nb, true));
       System.exit(0);
     }
-    //read experiment description
+    // read experiment description
     String expDescription = null;
-    if (configuration.experimentDescriptionFilePath.isEmpty() && !configuration.exampleExperimentDescriptionResourceName.isEmpty()) {
-      L.config("Using example experiment description: %s".formatted(configuration.exampleExperimentDescriptionResourceName));
-      InputStream inputStream = Starter.class.getResourceAsStream("/exp-examples/%s.txt".formatted(configuration.exampleExperimentDescriptionResourceName));
+    if (configuration.experimentDescriptionFilePath.isEmpty()
+        && !configuration.exampleExperimentDescriptionResourceName.isEmpty()) {
+      L.config(
+          "Using example experiment description: %s"
+              .formatted(configuration.exampleExperimentDescriptionResourceName));
+      InputStream inputStream =
+          Starter.class.getResourceAsStream(
+              "/exp-examples/%s.txt"
+                  .formatted(configuration.exampleExperimentDescriptionResourceName));
       if (inputStream == null) {
         L.severe("Cannot find default experiment description");
       } else {
@@ -156,21 +154,24 @@ public class Starter {
         }
       }
     } else if (!configuration.experimentDescriptionFilePath.isEmpty()) {
-      L.config(String.format("Using provided experiment description: %s", configuration.experimentDescriptionFilePath));
-      try (BufferedReader br = new BufferedReader(new FileReader(configuration.experimentDescriptionFilePath))) {
+      L.config(
+          String.format(
+              "Using provided experiment description: %s",
+              configuration.experimentDescriptionFilePath));
+      try (BufferedReader br =
+          new BufferedReader(new FileReader(configuration.experimentDescriptionFilePath))) {
         expDescription = br.lines().collect(Collectors.joining());
       } catch (IOException e) {
-        L.severe("Cannot read provided experiment description at %s: %s".formatted(
-            configuration.experimentDescriptionFilePath,
-            e
-        ));
+        L.severe(
+            "Cannot read provided experiment description at %s: %s"
+                .formatted(configuration.experimentDescriptionFilePath, e));
       }
     }
     if (expDescription == null) {
       L.info("No experiment provided");
       System.exit(-1);
     }
-    //check if just check
+    // check if just check
     if (configuration.check) {
       try {
         Experiment experiment = (Experiment) nb.build(expDescription);
@@ -187,9 +188,10 @@ public class Starter {
         System.exit(-1);
       }
     }
-    //prepare and run experimenter
+    // prepare and run experimenter
     try {
-      Experimenter experimenter = new Experimenter(nb, configuration.nOfConcurrentRuns, configuration.nOfThreads);
+      Experimenter experimenter =
+          new Experimenter(nb, configuration.nOfConcurrentRuns, configuration.nOfThreads);
       experimenter.run(expDescription, configuration.verbose);
     } catch (BuilderException e) {
       L.severe("Cannot run experiment: %s%n".formatted(e));
@@ -199,5 +201,4 @@ public class Starter {
       System.exit(-1);
     }
   }
-
 }

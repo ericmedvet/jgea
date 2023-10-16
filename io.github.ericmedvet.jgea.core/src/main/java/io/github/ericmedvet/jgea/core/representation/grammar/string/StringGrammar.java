@@ -1,30 +1,30 @@
-/*
- * Copyright 2023 eric
- *
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * =========================LICENSE_END==================================
  */
 
 package io.github.ericmedvet.jgea.core.representation.grammar.string;
 
 import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
-
 import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
 
-/**
- * @author eric
- */
 public class StringGrammar<T> implements Serializable, Grammar<T, List<T>> {
 
   public static final String RULE_ASSIGNMENT_STRING = "::=";
@@ -40,7 +40,8 @@ public class StringGrammar<T> implements Serializable, Grammar<T, List<T>> {
     return load(inputStream, "UTF-8");
   }
 
-  public static StringGrammar<String> load(InputStream inputStream, String charset) throws IOException {
+  public static StringGrammar<String> load(InputStream inputStream, String charset)
+      throws IOException {
     StringGrammar<String> grammar = new StringGrammar<>();
     BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, charset));
     String line;
@@ -90,8 +91,10 @@ public class StringGrammar<T> implements Serializable, Grammar<T, List<T>> {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     for (Map.Entry<T, List<List<T>>> rule : rules.entrySet()) {
-      sb.append(rule.getKey()).append(" ").append(rule.getKey().equals(startingSymbol) ? "*" : "").append(
-          RULE_ASSIGNMENT_STRING + " ");
+      sb.append(rule.getKey())
+          .append(" ")
+          .append(rule.getKey().equals(startingSymbol) ? "*" : "")
+          .append(RULE_ASSIGNMENT_STRING + " ");
       for (List<T> option : rule.getValue()) {
         for (T symbol : option) {
           sb.append(symbol).append(" ");

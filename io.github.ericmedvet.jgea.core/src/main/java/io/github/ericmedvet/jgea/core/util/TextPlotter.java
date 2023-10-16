@@ -1,17 +1,21 @@
-/*
- * Copyright 2023 eric
- *
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * =========================LICENSE_END==================================
  */
 
 package io.github.ericmedvet.jgea.core.util;
@@ -26,36 +30,38 @@ public class TextPlotter {
   private static final String HORIZONTAL_PART_FILLER = "▏▎▍▌▋▊▉█";
   private static final char FILLER = '█';
   private static final char EMPTY = '░';
-  private final static Map<String, Character> GRID_MAP = Map.ofEntries(
-      Map.entry("0000", ' '),
-      Map.entry("0010", '▖'),
-      Map.entry("0001", '▗'),
-      Map.entry("1000", '▘'),
-      Map.entry("0100", '▝'),
-      Map.entry("1001", '▚'),
-      Map.entry("0110", '▞'),
-      Map.entry("1010", '▌'),
-      Map.entry("0101", '▐'),
-      Map.entry("0011", '▄'),
-      Map.entry("1100", '▀'),
-      Map.entry("1011", '▙'),
-      Map.entry("0111", '▟'),
-      Map.entry("1110", '▛'),
-      Map.entry("1101", '▜'),
-      Map.entry("1111", '█')
-  );
+  private static final Map<String, Character> GRID_MAP =
+      Map.ofEntries(
+          Map.entry("0000", ' '),
+          Map.entry("0010", '▖'),
+          Map.entry("0001", '▗'),
+          Map.entry("1000", '▘'),
+          Map.entry("0100", '▝'),
+          Map.entry("1001", '▚'),
+          Map.entry("0110", '▞'),
+          Map.entry("1010", '▌'),
+          Map.entry("0101", '▐'),
+          Map.entry("0011", '▄'),
+          Map.entry("1100", '▀'),
+          Map.entry("1011", '▙'),
+          Map.entry("0111", '▟'),
+          Map.entry("1110", '▛'),
+          Map.entry("1101", '▜'),
+          Map.entry("1111", '█'));
 
-  public TextPlotter() {
-  }
+  public TextPlotter() {}
 
-  public static String areaPlot(SortedMap<? extends Number, ? extends Number> data, double minX, double maxX, int l) {
+  public static String areaPlot(
+      SortedMap<? extends Number, ? extends Number> data, double minX, double maxX, int l) {
     if (data.isEmpty()) {
-      return barplot(Arrays.copyOf(new double[]{Double.NaN}, l));
+      return barplot(Arrays.copyOf(new double[] {Double.NaN}, l));
     }
-    SortedMap<Double, Double> d = new TreeMap<>(data.entrySet().stream().collect(Collectors.toMap(
-        e -> e.getKey().doubleValue(),
-        e -> e.getValue().doubleValue()
-    )));
+    SortedMap<Double, Double> d =
+        new TreeMap<>(
+            data.entrySet().stream()
+                .collect(
+                    Collectors.toMap(
+                        e -> e.getKey().doubleValue(), e -> e.getValue().doubleValue())));
     if (!Double.isFinite(minX)) {
       minX = data.firstKey().doubleValue();
     }
@@ -70,10 +76,8 @@ public class TextPlotter {
       if (i > 0 && x <= d.lastKey()) {
         defY = values[(int) i - 1];
       }
-      values[(int) i] = d.subMap(x, nextX).values().stream()
-          .mapToDouble(v -> v)
-          .average()
-          .orElse(defY);
+      values[(int) i] =
+          d.subMap(x, nextX).values().stream().mapToDouble(v -> v).average().orElse(defY);
     }
     return barplot(values);
   }
@@ -82,10 +86,12 @@ public class TextPlotter {
     StringBuilder sb = new StringBuilder();
     for (double value : values) {
       if (Double.isFinite(value)) {
-        sb.append(VERTICAL_PART_FILLER.charAt((int) Math.round(Math.max(
-            Math.min((value - min) / (max - min), 1d),
-            0d
-        ) * ((double) VERTICAL_PART_FILLER.length() - 1d))));
+        sb.append(
+            VERTICAL_PART_FILLER.charAt(
+                (int)
+                    Math.round(
+                        Math.max(Math.min((value - min) / (max - min), 1d), 0d)
+                            * ((double) VERTICAL_PART_FILLER.length() - 1d))));
       } else {
         sb.append("·");
       }
@@ -137,7 +143,10 @@ public class TextPlotter {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < l; i++) {
       String k =
-          String.valueOf(m[i * 2][1] ? '1' : '0') + (m[i * 2 + 1][1] ? '1' : '0') + (m[i * 2][0] ? '1' : '0') + (m[i * 2 + 1][0] ? '1' : '0');
+          String.valueOf(m[i * 2][1] ? '1' : '0')
+              + (m[i * 2 + 1][1] ? '1' : '0')
+              + (m[i * 2][0] ? '1' : '0')
+              + (m[i * 2 + 1][0] ? '1' : '0');
       sb.append(GRID_MAP.get(k));
     }
     return sb.toString();
@@ -168,10 +177,12 @@ public class TextPlotter {
       if (value < localMin) {
         sb.append(withBg ? EMPTY : ' ');
       } else if (value < localMax) {
-        sb.append(HORIZONTAL_PART_FILLER.charAt((int) Math.round(Math.max(
-            Math.min((value - localMin) / r, 1d),
-            0d
-        ) * ((double) VERTICAL_PART_FILLER.length() - 1d))));
+        sb.append(
+            HORIZONTAL_PART_FILLER.charAt(
+                (int)
+                    Math.round(
+                        Math.max(Math.min((value - localMin) / r, 1d), 0d)
+                            * ((double) VERTICAL_PART_FILLER.length() - 1d))));
       } else {
         sb.append(FILLER);
       }
@@ -182,12 +193,12 @@ public class TextPlotter {
   private static double[] resize(double[] values, int l) {
     double[] resized = new double[l];
     for (int i = 0; i < l; i++) {
-      resized[i] = values[Math.min(
-          (int) Math.round((double) i / (double) l * (double) values.length),
-          values.length - 1
-      )];
+      resized[i] =
+          values[
+              Math.min(
+                  (int) Math.round((double) i / (double) l * (double) values.length),
+                  values.length - 1)];
     }
     return resized;
   }
-
 }

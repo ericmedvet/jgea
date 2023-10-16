@@ -1,18 +1,34 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package io.github.ericmedvet.jgea.core.listener;
 
 import io.github.ericmedvet.jgea.core.util.ArrayTable;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.core.util.Table;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.IntStream;
 
-/**
- * @author "Eric Medvet" on 2022/11/26 for jgea
- */
-public class XYPlotTableBuilder<E> extends TableBuilder<E, Number, Object> implements PlotTableBuilder<E> {
+public class XYPlotTableBuilder<E> extends TableBuilder<E, Number, Object>
+    implements PlotTableBuilder<E> {
   private final NamedFunction<? super E, ? extends Number> xFunction;
   private final List<NamedFunction<? super E, ? extends Number>> yFunctions;
   private final int width;
@@ -26,8 +42,8 @@ public class XYPlotTableBuilder<E> extends TableBuilder<E, Number, Object> imple
   private final boolean firstDifference;
 
   public XYPlotTableBuilder(
-      NamedFunction<? super E, ? extends Number> xFunction, List<NamedFunction<? super E, ? extends Number>> yFunctions
-  ) {
+      NamedFunction<? super E, ? extends Number> xFunction,
+      List<NamedFunction<? super E, ? extends Number>> yFunctions) {
     this(xFunction, yFunctions, 1, 1, Double.NaN, Double.NaN, Double.NaN, Double.NaN, true, false);
   }
 
@@ -41,14 +57,15 @@ public class XYPlotTableBuilder<E> extends TableBuilder<E, Number, Object> imple
       double minY,
       double maxY,
       boolean sorted,
-      boolean firstDifference
-  ) {
+      boolean firstDifference) {
     super(Misc.concat(List.of(List.of(xFunction), yFunctions)), List.of());
     this.xFunction = xFunction;
     //noinspection unchecked,rawtypes
-    this.yFunctions = (List) yFunctions.stream()
-        .map(f -> firstDifference ? f.rename("delta[%s]".formatted(f.getName())) : f)
-        .toList();
+    this.yFunctions =
+        (List)
+            yFunctions.stream()
+                .map(f -> firstDifference ? f.rename("delta[%s]".formatted(f.getName())) : f)
+                .toList();
     this.width = width;
     this.height = height;
     this.minX = minX;
@@ -79,13 +96,17 @@ public class XYPlotTableBuilder<E> extends TableBuilder<E, Number, Object> imple
           for (int rI = 1; rI < table.nRows(); rI++) {
             List<Number> currentRow = table.row(rI);
             List<Number> lastRow = table.row(rI - 1);
-            List<Number> diffRow = IntStream.range(0, currentRow.size()).mapToObj(cI -> {
-              if (cI == 0) {
-                return currentRow.get(cI);
-              } else {
-                return currentRow.get(cI).doubleValue() - lastRow.get(cI).doubleValue();
-              }
-            }).toList();
+            List<Number> diffRow =
+                IntStream.range(0, currentRow.size())
+                    .mapToObj(
+                        cI -> {
+                          if (cI == 0) {
+                            return currentRow.get(cI);
+                          } else {
+                            return currentRow.get(cI).doubleValue() - lastRow.get(cI).doubleValue();
+                          }
+                        })
+                    .toList();
             dTable.addRow(diffRow);
           }
           table = dTable;

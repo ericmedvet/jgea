@@ -1,17 +1,21 @@
-/*
- * Copyright 2023 eric
- *
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * =========================LICENSE_END==================================
  */
 
 package io.github.ericmedvet.jgea.core.representation.graph.numeric.functiongraph;
@@ -25,7 +29,6 @@ import io.github.ericmedvet.jgea.core.representation.graph.numeric.Input;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.Output;
 import io.github.ericmedvet.jgea.core.util.Sized;
 import io.github.ericmedvet.jsdynsym.core.Parametrized;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -37,11 +40,11 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-/**
- * @author eric
- */
-public class FunctionGraph implements NamedMultivariateRealFunction, Sized, Serializable, Parametrized<Graph<Node,
-    Double>> {
+public class FunctionGraph
+    implements NamedMultivariateRealFunction,
+        Sized,
+        Serializable,
+        Parametrized<Graph<Node, Double>> {
 
   private final List<String> xVarNames;
   private final List<String> yVarNames;
@@ -52,8 +55,7 @@ public class FunctionGraph implements NamedMultivariateRealFunction, Sized, Seri
       Graph<Node, Double> graph,
       List<String> xVarNames,
       List<String> yVarNames,
-      DoubleUnaryOperator postOperator
-  ) {
+      DoubleUnaryOperator postOperator) {
     this.xVarNames = xVarNames;
     this.yVarNames = yVarNames;
     this.postOperator = postOperator;
@@ -76,26 +78,24 @@ public class FunctionGraph implements NamedMultivariateRealFunction, Sized, Seri
       throw new IllegalArgumentException("Invalid graph: it has cycles");
     }
     for (Node n : graph.nodes()) {
-      if (!((n instanceof Input) || (n instanceof Output) || (n instanceof FunctionNode) || (n instanceof Constant))) {
-        throw new IllegalArgumentException(String.format(
-            "Invalid graph: node %s is of wrong type %s",
-            n,
-            n.getClass()
-        ));
+      if (!((n instanceof Input)
+          || (n instanceof Output)
+          || (n instanceof FunctionNode)
+          || (n instanceof Constant))) {
+        throw new IllegalArgumentException(
+            String.format("Invalid graph: node %s is of wrong type %s", n, n.getClass()));
       }
       if ((n instanceof Constant || n instanceof Input) && graph.predecessors(n).size() > 0) {
-        throw new IllegalArgumentException(String.format(
-            "Invalid graph: constant/input node %s has more than 0 predecessors (%d)",
-            n,
-            graph.predecessors(n).size()
-        ));
+        throw new IllegalArgumentException(
+            String.format(
+                "Invalid graph: constant/input node %s has more than 0 predecessors (%d)",
+                n, graph.predecessors(n).size()));
       }
       if ((n instanceof Output) && graph.successors(n).size() > 0) {
-        throw new IllegalArgumentException(String.format(
-            "Invalid graph: output node %s has more than 0 successors " + "(%d)",
-            n,
-            graph.predecessors(n).size()
-        ));
+        throw new IllegalArgumentException(
+            String.format(
+                "Invalid graph: output node %s has more than 0 successors " + "(%d)",
+                n, graph.predecessors(n).size()));
       }
     }
   }
@@ -112,9 +112,7 @@ public class FunctionGraph implements NamedMultivariateRealFunction, Sized, Seri
   }
 
   public static Function<Graph<Node, Double>, NamedMultivariateRealFunction> mapper(
-      List<String> xVarNames,
-      List<String> yVarNames
-  ) {
+      List<String> xVarNames, List<String> yVarNames) {
     return g -> new FunctionGraph(g, xVarNames, yVarNames);
   }
 
@@ -155,22 +153,18 @@ public class FunctionGraph implements NamedMultivariateRealFunction, Sized, Seri
 
   @Override
   public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
     FunctionGraph that = (FunctionGraph) o;
     return graph.equals(that.graph);
   }
 
   @Override
   public String toString() {
-    return graph.arcs().stream().map(e -> String.format(
-        "%s-[%.3f]->%s",
-        e.getSource(),
-        graph.getArcValue(e),
-        e.getTarget()
-    )).collect(Collectors.joining(","));
+    return graph.arcs().stream()
+        .map(
+            e -> String.format("%s-[%.3f]->%s", e.getSource(), graph.getArcValue(e), e.getTarget()))
+        .collect(Collectors.joining(","));
   }
 
   private double outValue(Node node, Map<String, Double> input) {
@@ -191,12 +185,12 @@ public class FunctionGraph implements NamedMultivariateRealFunction, Sized, Seri
     if (node instanceof FunctionNode fNode) {
       return fNode.apply(sum);
     }
-    throw new RuntimeException(String.format("Unknown type of node: %s", node.getClass().getSimpleName()));
+    throw new RuntimeException(
+        String.format("Unknown type of node: %s", node.getClass().getSimpleName()));
   }
 
   @Override
   public int size() {
     return graph.size();
   }
-
 }

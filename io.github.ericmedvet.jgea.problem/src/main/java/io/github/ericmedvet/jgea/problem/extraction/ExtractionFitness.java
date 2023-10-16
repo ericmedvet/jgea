@@ -1,42 +1,47 @@
-/*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
- *
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-problem
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * =========================LICENSE_END==================================
  */
 
 package io.github.ericmedvet.jgea.problem.extraction;
 
 import com.google.common.collect.Range;
 import io.github.ericmedvet.jgea.core.representation.graph.finiteautomata.Extractor;
-
 import java.util.*;
 import java.util.function.Function;
 
-/**
- * @author eric
- */
 public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>> {
 
   private final Aggregator<S> aggregator;
 
-  public ExtractionFitness(List<S> sequence, Set<Range<Integer>> desiredExtractions, Metric... metrics) {
+  public ExtractionFitness(
+      List<S> sequence, Set<Range<Integer>> desiredExtractions, Metric... metrics) {
     aggregator = new Aggregator<S>(sequence, desiredExtractions, metrics);
   }
 
   public enum Metric {
-
-    ONE_MINUS_PREC, ONE_MINUS_REC, ONE_MINUS_FM, SYMBOL_FNR, SYMBOL_FPR, SYMBOL_ERROR, SYMBOL_WEIGHTED_ERROR;
-
+    ONE_MINUS_PREC,
+    ONE_MINUS_REC,
+    ONE_MINUS_FM,
+    SYMBOL_FNR,
+    SYMBOL_FPR,
+    SYMBOL_ERROR,
+    SYMBOL_WEIGHTED_ERROR;
   }
 
   private static class Aggregator<S> implements Function<Set<Range<Integer>>, List<Double>> {
@@ -58,8 +63,10 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
     @Override
     public List<Double> apply(Set<Range<Integer>> extractions) {
       Map<Metric, Double> values = new EnumMap<>(Metric.class);
-      if (metrics.contains(Metric.ONE_MINUS_FM) || metrics.contains(Metric.ONE_MINUS_PREC) || metrics.contains(Metric.ONE_MINUS_REC)) {
-        //precision and recall
+      if (metrics.contains(Metric.ONE_MINUS_FM)
+          || metrics.contains(Metric.ONE_MINUS_PREC)
+          || metrics.contains(Metric.ONE_MINUS_REC)) {
+        // precision and recall
         Set<Range<Integer>> correctExtractions = new LinkedHashSet<>(extractions);
         correctExtractions.retainAll(desiredExtractions);
         double recall = (double) correctExtractions.size() / (double) desiredExtractions.size();
@@ -69,8 +76,10 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
         values.put(Metric.ONE_MINUS_REC, 1 - recall);
         values.put(Metric.ONE_MINUS_FM, 1 - fMeasure);
       }
-      if (metrics.contains(Metric.SYMBOL_ERROR) || metrics.contains(Metric.SYMBOL_FNR) || metrics.contains(Metric.SYMBOL_FPR) || metrics.contains(
-          Metric.SYMBOL_WEIGHTED_ERROR)) {
+      if (metrics.contains(Metric.SYMBOL_ERROR)
+          || metrics.contains(Metric.SYMBOL_FNR)
+          || metrics.contains(Metric.SYMBOL_FPR)
+          || metrics.contains(Metric.SYMBOL_WEIGHTED_ERROR)) {
         BitSet extractionMask = buildMask(extractions, sequence.size());
         int extractedSymbols = extractionMask.cardinality();
         extractionMask.and(desiredExtractionMask);
@@ -78,14 +87,22 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
         double falseNegativeSymbols = positiveSymbols - truePositiveSymbols;
         double falsePositiveSymbols = extractedSymbols - truePositiveSymbols;
         double trueNegativeChars =
-            desiredExtractionMask.length() - falsePositiveSymbols - truePositiveSymbols - falseNegativeSymbols;
-        values.put(Metric.SYMBOL_FPR, falsePositiveSymbols / (trueNegativeChars + falsePositiveSymbols));
-        values.put(Metric.SYMBOL_FNR, falseNegativeSymbols / (truePositiveSymbols + falseNegativeSymbols));
-        values.put(Metric.SYMBOL_ERROR, (falsePositiveSymbols + falseNegativeSymbols) / (double) sequence.size());
+            desiredExtractionMask.length()
+                - falsePositiveSymbols
+                - truePositiveSymbols
+                - falseNegativeSymbols;
+        values.put(
+            Metric.SYMBOL_FPR, falsePositiveSymbols / (trueNegativeChars + falsePositiveSymbols));
+        values.put(
+            Metric.SYMBOL_FNR, falseNegativeSymbols / (truePositiveSymbols + falseNegativeSymbols));
+        values.put(
+            Metric.SYMBOL_ERROR,
+            (falsePositiveSymbols + falseNegativeSymbols) / (double) sequence.size());
         values.put(
             Metric.SYMBOL_WEIGHTED_ERROR,
-            (falsePositiveSymbols / (trueNegativeChars + falsePositiveSymbols) + falseNegativeSymbols / (truePositiveSymbols + falseNegativeSymbols)) / 2d
-        );
+            (falsePositiveSymbols / (trueNegativeChars + falsePositiveSymbols)
+                    + falseNegativeSymbols / (truePositiveSymbols + falseNegativeSymbols))
+                / 2d);
       }
       List<Double> results = new ArrayList<>(metrics.size());
       for (Metric metric : metrics) {
@@ -115,7 +132,6 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
       }
       return intersections;
     }
-
   }
 
   private static BitSet buildMask(Set<Range<Integer>> extractions, int size) {
@@ -144,5 +160,4 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
   public List<S> getSequence() {
     return aggregator.sequence;
   }
-
 }

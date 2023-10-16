@@ -1,17 +1,21 @@
-/*
- * Copyright 2020 Eric Medvet <eric.medvet@gmail.com> (as eric)
- *
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-problem
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * =========================LICENSE_END==================================
  */
 
 package io.github.ericmedvet.jgea.problem.regression;
@@ -21,36 +25,40 @@ import io.github.ericmedvet.jgea.core.util.Sized;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.SyntheticUnivariateRegressionFitness;
 import io.github.ericmedvet.jsdynsym.core.composed.AbstractComposed;
-import org.apache.commons.math3.stat.StatUtils;
-
 import java.util.*;
 import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
+import org.apache.commons.math3.stat.StatUtils;
 
-/**
- * @author eric
- */
 public class MathUtils {
 
-  private static class ScaledUnivariateRealFunction extends AbstractComposed<NamedUnivariateRealFunction> implements NamedUnivariateRealFunction {
+  private static class ScaledUnivariateRealFunction
+      extends AbstractComposed<NamedUnivariateRealFunction> implements NamedUnivariateRealFunction {
     private final double a;
     private final double b;
 
     public ScaledUnivariateRealFunction(
         NamedUnivariateRealFunction inner,
-        UnivariateRegressionFitness univariateRegressionFitness
-    ) {
+        UnivariateRegressionFitness univariateRegressionFitness) {
       super(inner);
-      double[] targetYs = IntStream.range(0, univariateRegressionFitness.getDataset().size())
-          .mapToDouble(i -> univariateRegressionFitness.getDataset().exampleProvider().apply(i).ys()[0])
-          .toArray();
+      double[] targetYs =
+          IntStream.range(0, univariateRegressionFitness.getDataset().size())
+              .mapToDouble(
+                  i -> univariateRegressionFitness.getDataset().exampleProvider().apply(i).ys()[0])
+              .toArray();
       double targetMean = StatUtils.mean(targetYs);
-      double[] ys = IntStream.range(0, univariateRegressionFitness.getDataset().size())
-          .mapToDouble(i -> inner().applyAsDouble(univariateRegressionFitness.getDataset()
-              .exampleProvider()
-              .apply(i)
-              .xs()))
-          .toArray();
+      double[] ys =
+          IntStream.range(0, univariateRegressionFitness.getDataset().size())
+              .mapToDouble(
+                  i ->
+                      inner()
+                          .applyAsDouble(
+                              univariateRegressionFitness
+                                  .getDataset()
+                                  .exampleProvider()
+                                  .apply(i)
+                                  .xs()))
+              .toArray();
       double mean = StatUtils.mean(ys);
       double nCovariance = 0d;
       double nVariance = 0d;
@@ -64,7 +72,7 @@ public class MathUtils {
 
     @Override
     public double computeAsDouble(Map<String, Double> input) {
-      return a+b*inner().computeAsDouble(input);
+      return a + b * inner().computeAsDouble(input);
     }
 
     @Override
@@ -79,10 +87,8 @@ public class MathUtils {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o)
-        return true;
-      if (o == null || getClass() != o.getClass())
-        return false;
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
       ScaledUnivariateRealFunction that = (ScaledUnivariateRealFunction) o;
       return Double.compare(that.a, a) == 0 && Double.compare(that.b, b) == 0;
     }
@@ -98,13 +104,13 @@ public class MathUtils {
     }
   }
 
-  private static class SizedUnivariateScaledRealFunction extends ScaledUnivariateRealFunction implements Sized {
+  private static class SizedUnivariateScaledRealFunction extends ScaledUnivariateRealFunction
+      implements Sized {
     private final int size;
 
     public SizedUnivariateScaledRealFunction(
         NamedUnivariateRealFunction innerF,
-        SyntheticUnivariateRegressionFitness syntheticSymbolicRegressionFitness
-    ) {
+        SyntheticUnivariateRegressionFitness syntheticSymbolicRegressionFitness) {
       super(innerF, syntheticSymbolicRegressionFitness);
       if (innerF instanceof Sized) {
         size = ((Sized) innerF).size();
@@ -144,23 +150,22 @@ public class MathUtils {
     return values.stream().mapToDouble(Double::doubleValue).toArray();
   }
 
-  public static UnaryOperator<NamedUnivariateRealFunction> linearScaler(SyntheticUnivariateRegressionFitness syntheticSymbolicRegressionFitness) {
-    return f -> (f instanceof Sized) ? new SizedUnivariateScaledRealFunction(
-        f,
-        syntheticSymbolicRegressionFitness
-    ) : new ScaledUnivariateRealFunction(f, syntheticSymbolicRegressionFitness);
+  public static UnaryOperator<NamedUnivariateRealFunction> linearScaler(
+      SyntheticUnivariateRegressionFitness syntheticSymbolicRegressionFitness) {
+    return f ->
+        (f instanceof Sized)
+            ? new SizedUnivariateScaledRealFunction(f, syntheticSymbolicRegressionFitness)
+            : new ScaledUnivariateRealFunction(f, syntheticSymbolicRegressionFitness);
   }
 
   public static List<double[]> pairwise(double[]... xs) {
     int l = xs[0].length;
     for (int i = 1; i < xs.length; i++) {
       if (xs[i].length != l) {
-        throw new IllegalArgumentException(String.format(
-            "Invalid input arrays: %d-th length (%d) is different than " + "1st length (%d)",
-            i + 1,
-            xs[i].length,
-            l
-        ));
+        throw new IllegalArgumentException(
+            String.format(
+                "Invalid input arrays: %d-th length (%d) is different than " + "1st length (%d)",
+                i + 1, xs[i].length, l));
       }
     }
     List<double[]> list = new ArrayList<>(l);
@@ -181,5 +186,4 @@ public class MathUtils {
     }
     return values;
   }
-
 }

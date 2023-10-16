@@ -1,17 +1,21 @@
-/*
- * Copyright 2023 eric
- *
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-problem
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * =========================LICENSE_END==================================
  */
 
 package io.github.ericmedvet.jgea.problem.extraction.string;
@@ -19,29 +23,32 @@ package io.github.ericmedvet.jgea.problem.extraction.string;
 import com.google.common.collect.Sets;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.problem.extraction.ExtractionFitness;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * @author eric
- */
 public class RegexGrammar extends StringGrammar<String> {
 
   public static final String TO_BE_ESCAPED = "{}[]()?+*.\\^";
 
   public RegexGrammar(Collection<String> texts, Set<Option> options) {
-    this(texts.stream()
-        .map(s -> s.chars().mapToObj(c -> (char) c).collect(Collectors.toSet()))
-        .reduce(Sets::union)
-        .orElse(Set.of()), options);
+    this(
+        texts.stream()
+            .map(s -> s.chars().mapToObj(c -> (char) c).collect(Collectors.toSet()))
+            .reduce(Sets::union)
+            .orElse(Set.of()),
+        options);
   }
 
   public RegexGrammar(ExtractionFitness<Character> fitness, Set<Option> options) {
-    this(fitness.getDesiredExtractions().stream().map(r -> fitness.getSequence().subList(
-        r.lowerEndpoint(),
-        r.upperEndpoint()
-    ).stream().collect(Collectors.toSet())).reduce(Sets::union).orElse(Set.of()), options);
+    this(
+        fitness.getDesiredExtractions().stream()
+            .map(
+                r ->
+                    fitness.getSequence().subList(r.lowerEndpoint(), r.upperEndpoint()).stream()
+                        .collect(Collectors.toSet()))
+            .reduce(Sets::union)
+            .orElse(Set.of()),
+        options);
   }
 
   public RegexGrammar(Set<Character> alphabet, Set<Option> options) {
@@ -67,7 +74,9 @@ public class RegexGrammar extends StringGrammar<String> {
     }
     if (options.contains(Option.BOUNDED_QUANTIFIERS)) {
       rules().get("<term>").add(l("<element>", "{", "<digit>", ",", "<digit>", "}"));
-      rules().put("<digit>", l(l("1"), l("2"), l("3"), l("4"), l("5"), l("6"), l("7"), l("8"), l("9")));
+      rules()
+          .put(
+              "<digit>", l(l("1"), l("2"), l("3"), l("4"), l("5"), l("6"), l("7"), l("8"), l("9")));
     }
     rules().put("<element>", l(l("<char>")));
     if (options.contains(Option.CHAR_CLASS)) {
@@ -96,8 +105,15 @@ public class RegexGrammar extends StringGrammar<String> {
   }
 
   public enum Option {
-    OR, QUANTIFIERS, NON_EMPTY_QUANTIFIER, BOUNDED_QUANTIFIERS, CHAR_CLASS, NEGATED_CHAR_CLASS, NON_CAPTURING_GROUP,
-    ANY, ENHANCED_CONCATENATION
+    OR,
+    QUANTIFIERS,
+    NON_EMPTY_QUANTIFIER,
+    BOUNDED_QUANTIFIERS,
+    CHAR_CLASS,
+    NEGATED_CHAR_CLASS,
+    NON_CAPTURING_GROUP,
+    ANY,
+    ENHANCED_CONCATENATION
   }
 
   private String escape(String c) {
@@ -111,5 +127,4 @@ public class RegexGrammar extends StringGrammar<String> {
   private <T> List<T> l(T... ts) {
     return new ArrayList<>(Arrays.asList(ts));
   }
-
 }

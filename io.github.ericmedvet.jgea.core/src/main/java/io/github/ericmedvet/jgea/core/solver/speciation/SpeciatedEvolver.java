@@ -1,17 +1,21 @@
-/*
- * Copyright 2022 eric
- *
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * =========================LICENSE_END==================================
  */
 
 package io.github.ericmedvet.jgea.core.solver.speciation;
@@ -28,7 +32,6 @@ import io.github.ericmedvet.jgea.core.solver.StandardEvolver;
 import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,10 +43,8 @@ import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.random.RandomGenerator;
 
-/**
- * @author eric
- */
-public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q> extends StandardEvolver<SpeciatedEvolver.State<G, S, Q>, P, G, S, Q> {
+public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
+    extends StandardEvolver<SpeciatedEvolver.State<G, S, Q>, P, G, S, Q> {
   private static final Logger L = Logger.getLogger(SpeciatedEvolver.class.getName());
   private final int minSpeciesSizeForElitism;
   private final Speciator<Individual<G, S, Q>> speciator;
@@ -58,8 +59,7 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q> exte
       boolean remap,
       int minSpeciesSizeForElitism,
       Speciator<Individual<G, S, Q>> speciator,
-      double rankBase
-  ) {
+      double rankBase) {
     super(
         solutionMapper,
         genotypeFactory,
@@ -71,8 +71,7 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q> exte
         populationSize,
         false,
         remap,
-        (p, r) -> new State<>()
-    );
+        (p, r) -> new State<>());
     this.minSpeciesSizeForElitism = minSpeciesSizeForElitism;
     this.speciator = speciator;
     this.rankBase = rankBase;
@@ -99,9 +98,15 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q> exte
         long nOfBirths,
         long nOfFitnessEvaluations,
         PartiallyOrderedCollection<Individual<G, S, Q>> population,
-        Collection<Species<Individual<G, S, Q>>> parentSpecies
-    ) {
-      super(startingDateTime, elapsedMillis, nOfIterations, progress, nOfBirths, nOfFitnessEvaluations, population);
+        Collection<Species<Individual<G, S, Q>>> parentSpecies) {
+      super(
+          startingDateTime,
+          elapsedMillis,
+          nOfIterations,
+          progress,
+          nOfBirths,
+          nOfFitnessEvaluations,
+          population);
       this.parentSpecies = parentSpecies;
     }
 
@@ -123,54 +128,71 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q> exte
           nOfBirths,
           nOfFitnessEvaluations,
           population.immutableCopy(),
-          new ArrayList<>(parentSpecies)
-      );
+          new ArrayList<>(parentSpecies));
     }
   }
 
   @Override
   protected Collection<Individual<G, S, Q>> buildOffspring(
-      State<G, S, Q> state, P problem, RandomGenerator random, ExecutorService executor
-  ) throws SolverException {
+      State<G, S, Q> state, P problem, RandomGenerator random, ExecutorService executor)
+      throws SolverException {
     Collection<Individual<G, S, Q>> parents = state.getPopulation().all();
     Collection<Individual<G, S, Q>> offspring = new ArrayList<>();
-    //partition in species
-    List<Species<Individual<G, S, Q>>> allSpecies = new ArrayList<>(speciator.speciate(state.getPopulation()));
+    // partition in species
+    List<Species<Individual<G, S, Q>>> allSpecies =
+        new ArrayList<>(speciator.speciate(state.getPopulation()));
     state.setParentSpecies(allSpecies);
-    L.fine(String.format(
-        "Population speciated in %d species of sizes %s",
-        allSpecies.size(),
-        allSpecies.stream().map(s -> s.elements().size()).toList()
-    ));
-    //put elites
+    L.fine(
+        String.format(
+            "Population speciated in %d species of sizes %s",
+            allSpecies.size(), allSpecies.stream().map(s -> s.elements().size()).toList()));
+    // put elites
     Collection<Individual<G, S, Q>> elite = new ArrayList<>();
-    parents.stream().reduce((i1, i2) -> comparator(problem).compare(i1, i2)
-        .equals(PartialComparator.PartialComparatorOutcome.BEFORE) ? i1 : i2).ifPresent(elite::add);
+    parents.stream()
+        .reduce(
+            (i1, i2) ->
+                comparator(problem)
+                        .compare(i1, i2)
+                        .equals(PartialComparator.PartialComparatorOutcome.BEFORE)
+                    ? i1
+                    : i2)
+        .ifPresent(elite::add);
     for (Species<Individual<G, S, Q>> species : allSpecies) {
       if (species.elements().size() >= minSpeciesSizeForElitism) {
-        species.elements().stream().reduce((i1, i2) -> comparator(problem).compare(i1, i2)
-            .equals(PartialComparator.PartialComparatorOutcome.BEFORE) ? i1 : i2).ifPresent(elite::add);
+        species.elements().stream()
+            .reduce(
+                (i1, i2) ->
+                    comparator(problem)
+                            .compare(i1, i2)
+                            .equals(PartialComparator.PartialComparatorOutcome.BEFORE)
+                        ? i1
+                        : i2)
+            .ifPresent(elite::add);
       }
     }
-    //assign remaining offspring size
+    // assign remaining offspring size
     int remaining = populationSize - elite.size();
-    List<Individual<G, S, Q>> representers = allSpecies.stream().map(Species::representative).toList();
-    L.fine(String.format(
-        "Representers determined for %d species: fitnesses are %s",
-        allSpecies.size(),
-        representers.stream().map(i -> String.format("%s", i.fitness())).toList()
-    ));
+    List<Individual<G, S, Q>> representers =
+        allSpecies.stream().map(Species::representative).toList();
+    L.fine(
+        String.format(
+            "Representers determined for %d species: fitnesses are %s",
+            allSpecies.size(),
+            representers.stream().map(i -> String.format("%s", i.fitness())).toList()));
     List<Individual<G, S, Q>> sortedRepresenters = new ArrayList<>(representers);
     sortedRepresenters.sort(comparator(problem).comparator());
-    List<Double> weights = representers.stream().map(r -> Math.pow(rankBase, sortedRepresenters.indexOf(r))).toList();
+    List<Double> weights =
+        representers.stream().map(r -> Math.pow(rankBase, sortedRepresenters.indexOf(r))).toList();
     double weightSum = weights.stream().mapToDouble(Double::doubleValue).sum();
-    List<Integer> sizes = new ArrayList<>(weights.stream()
-        .map(w -> (int) Math.floor(w / weightSum * (double) remaining))
-        .toList());
+    List<Integer> sizes =
+        new ArrayList<>(
+            weights.stream()
+                .map(w -> (int) Math.floor(w / weightSum * (double) remaining))
+                .toList());
     int sizeSum = sizes.stream().mapToInt(Integer::intValue).sum();
     sizes.set(0, sizes.get(0) + remaining - sizeSum);
     L.fine(String.format("Offspring sizes assigned to %d species: %s", allSpecies.size(), sizes));
-    //reproduce species
+    // reproduce species
     List<G> offspringGenotypes = new ArrayList<>(remaining);
     for (int i = 0; i < allSpecies.size(); i++) {
       int size = sizes.get(i);
@@ -189,14 +211,27 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q> exte
       }
       offspringGenotypes.addAll(speciesOffspringGenotypes);
     }
-    //merge
+    // merge
     if (remap) {
-      offspring.addAll(map(offspringGenotypes, elite, solutionMapper, problem.qualityFunction(), executor, state));
+      offspring.addAll(
+          map(
+              offspringGenotypes,
+              elite,
+              solutionMapper,
+              problem.qualityFunction(),
+              executor,
+              state));
     } else {
       offspring.addAll(elite);
-      offspring.addAll(map(offspringGenotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state));
+      offspring.addAll(
+          map(
+              offspringGenotypes,
+              List.of(),
+              solutionMapper,
+              problem.qualityFunction(),
+              executor,
+              state));
     }
     return offspring;
   }
-
 }

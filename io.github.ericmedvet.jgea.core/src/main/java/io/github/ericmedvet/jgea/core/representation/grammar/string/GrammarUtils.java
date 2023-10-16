@@ -1,33 +1,34 @@
-/*
- * Copyright 2023 eric
- *
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * =========================LICENSE_END==================================
  */
 
 package io.github.ericmedvet.jgea.core.representation.grammar.string;
 
 import io.github.ericmedvet.jgea.core.util.Pair;
-
 import java.util.*;
 
-/**
- * @author eric
- */
 public class GrammarUtils {
 
   private record Triplet<F, S, T>(F first, S second, T third) {}
 
-  public static <T> Map<T, List<Integer>> computeShortestOptionIndexesMap(StringGrammar<T> grammar) {
+  public static <T> Map<T, List<Integer>> computeShortestOptionIndexesMap(
+      StringGrammar<T> grammar) {
     Map<T, List<Integer>> optionJumpsToTerminalMap = new LinkedHashMap<>();
     for (Map.Entry<T, List<List<T>>> rule : grammar.rules().entrySet()) {
       List<Integer> optionsJumps = new ArrayList<>();
@@ -69,7 +70,7 @@ public class GrammarUtils {
         break;
       }
     }
-    //build shortestOptionIndexMap
+    // build shortestOptionIndexMap
     Map<T, List<Integer>> shortestOptionIndexesMap = new LinkedHashMap<>();
     for (Map.Entry<T, List<List<T>>> rule : grammar.rules().entrySet()) {
       int minJumps = Integer.MAX_VALUE;
@@ -90,7 +91,8 @@ public class GrammarUtils {
     return shortestOptionIndexesMap;
   }
 
-  private static <T> Map<T, Triplet<Double, Boolean, Set<T>>> computeSymbolsMaxDepths(StringGrammar<T> g) {
+  private static <T> Map<T, Triplet<Double, Boolean, Set<T>>> computeSymbolsMaxDepths(
+      StringGrammar<T> g) {
     Map<T, Triplet<Double, Boolean, Set<T>>> map = new HashMap<>();
     map.put(g.startingSymbol(), new Triplet<>(0d, false, new HashSet<>()));
     for (List<List<T>> options : g.rules().values()) {
@@ -104,14 +106,14 @@ public class GrammarUtils {
         }
       }
     }
-    //compute maxs
+    // compute maxs
     while (true) {
       boolean changed = false;
       for (T nonTerminal : g.rules().keySet()) {
         Triplet<Double, Boolean, Set<T>> triplet = map.get(nonTerminal);
         Set<T> dependencies = new HashSet<>(triplet.third());
         if (triplet.second()) {
-          //this non-terminal is definitely resolved
+          // this non-terminal is definitely resolved
           continue;
         }
         boolean allResolved = true;
@@ -133,7 +135,8 @@ public class GrammarUtils {
           allResolved = true;
           maxDepth = Double.POSITIVE_INFINITY;
         }
-        Triplet<Double, Boolean, Set<T>> newTriplet = new Triplet<>(maxDepth, allResolved, dependencies);
+        Triplet<Double, Boolean, Set<T>> newTriplet =
+            new Triplet<>(maxDepth, allResolved, dependencies);
         if (!newTriplet.equals(triplet)) {
           map.put(nonTerminal, newTriplet);
           changed = true;
@@ -160,13 +163,13 @@ public class GrammarUtils {
         }
       }
     }
-    //compute mins
+    // compute mins
     while (true) {
       boolean changed = false;
       for (T nonTerminal : g.rules().keySet()) {
         Pair<Integer, Boolean> pair = map.get(nonTerminal);
         if (pair.second()) {
-          //this non-terminal is definitely resolved
+          // this non-terminal is definitely resolved
           continue;
         }
         boolean allResolved = true;
@@ -204,5 +207,4 @@ public class GrammarUtils {
     }
     return map;
   }
-
 }

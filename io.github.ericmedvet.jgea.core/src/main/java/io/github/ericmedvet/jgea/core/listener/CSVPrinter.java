@@ -1,33 +1,33 @@
-/*
- * Copyright 2023 eric
- *
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * =========================LICENSE_END==================================
  */
 
 package io.github.ericmedvet.jgea.core.listener;
 
 import io.github.ericmedvet.jgea.core.util.Misc;
-import org.apache.commons.csv.CSVFormat;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.logging.Logger;
+import org.apache.commons.csv.CSVFormat;
 
-/**
- * @author eric on 2021/01/03 for jgea
- */
 public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
 
   private static final Logger L = Logger.getLogger(CSVPrinter.class.getName());
@@ -44,8 +44,7 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
       List<NamedFunction<? super E, ?>> eFunctions,
       List<NamedFunction<? super K, ?>> kFunctions,
       File file,
-      boolean robust
-  ) {
+      boolean robust) {
     this.eFunctions = robust ? eFunctions.stream().map(NamedFunction::robust).toList() : eFunctions;
     this.kFunctions = robust ? kFunctions.stream().map(NamedFunction::robust).toList() : kFunctions;
     this.file = file;
@@ -55,17 +54,18 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
   @Override
   public Listener<E> build(K k) {
     List<?> kValues = kFunctions.stream().map(f -> f.apply(k)).toList();
-    List<String> headers = Misc.concat(List.of(kFunctions, eFunctions)).stream().map(NamedFunction::getName).toList();
+    List<String> headers =
+        Misc.concat(List.of(kFunctions, eFunctions)).stream().map(NamedFunction::getName).toList();
     return e -> {
       List<?> eValues = eFunctions.stream().map(f -> f.apply(e)).toList();
       synchronized (file) {
         if (printer == null) {
           File actualFile = Misc.checkExistenceAndChangeName(file);
           try {
-            printer = new org.apache.commons.csv.CSVPrinter(
-                new PrintStream(actualFile),
-                CSVFormat.Builder.create().setDelimiter(";").build()
-            );
+            printer =
+                new org.apache.commons.csv.CSVPrinter(
+                    new PrintStream(actualFile),
+                    CSVFormat.Builder.create().setDelimiter(";").build());
           } catch (IOException ex) {
             L.severe(String.format("Cannot create CSVPrinter: %s", ex));
             return;
@@ -76,11 +76,10 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
             L.warning(String.format("Cannot print header: %s", ex));
             return;
           }
-          L.info(String.format(
-              "File %s created and header for %d columns written",
-              actualFile.getPath(),
-              eFunctions.size() + kFunctions.size()
-          ));
+          L.info(
+              String.format(
+                  "File %s created and header for %d columns written",
+                  actualFile.getPath(), eFunctions.size() + kFunctions.size()));
         }
         try {
           printer.printRecord(Misc.concat(List.of(kValues, eValues)));
