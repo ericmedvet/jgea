@@ -1,3 +1,22 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 
 package io.github.ericmedvet.jgea.core.solver.mapelites;
 
@@ -12,7 +31,6 @@ import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jgea.core.util.Progress;
-
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -22,7 +40,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
-public class MapElites<G, P extends QualityBasedProblem<S, Q>, S, Q> extends AbstractPopulationBasedIterativeSolver<MapElites.State<G, S, Q>, P, G, S, Q> {
+
+public class MapElites<G, P extends QualityBasedProblem<S, Q>, S, Q>
+    extends AbstractPopulationBasedIterativeSolver<MapElites.State<G, S, Q>, P, G, S, Q> {
 
   private final Mutation<G> mutation;
 
@@ -38,8 +58,7 @@ public class MapElites<G, P extends QualityBasedProblem<S, Q>, S, Q> extends Abs
       Function<Individual<G, S, Q>, List<Double>> featuresExtractor,
       List<Integer> featuresSizes,
       List<Double> featuresMinValues,
-      List<Double> featuresMaxValues
-  ) {
+      List<Double> featuresMaxValues) {
     super(solutionMapper, genotypeFactory, populationSize, stopCondition);
     this.mutation = mutation;
     this.featuresExtractor = featuresExtractor;
@@ -53,8 +72,7 @@ public class MapElites<G, P extends QualityBasedProblem<S, Q>, S, Q> extends Abs
     public State(
         List<MapOfElites.Feature> features,
         Function<Individual<G, S, Q>, List<Double>> featuresExtractor,
-        PartialComparator<? super Individual<G, S, Q>> individualsComparator
-    ) {
+        PartialComparator<? super Individual<G, S, Q>> individualsComparator) {
       mapOfElites = new MapOfElites<>(features, featuresExtractor, individualsComparator);
     }
 
@@ -66,9 +84,15 @@ public class MapElites<G, P extends QualityBasedProblem<S, Q>, S, Q> extends Abs
         long nOfBirths,
         long nOfFitnessEvaluations,
         PartiallyOrderedCollection<Individual<G, S, Q>> population,
-        MapOfElites<Individual<G, S, Q>> mapOfElites
-    ) {
-      super(startingDateTime, elapsedMillis, nOfIterations, progress, nOfBirths, nOfFitnessEvaluations, population);
+        MapOfElites<Individual<G, S, Q>> mapOfElites) {
+      super(
+          startingDateTime,
+          elapsedMillis,
+          nOfIterations,
+          progress,
+          nOfBirths,
+          nOfFitnessEvaluations,
+          population);
       this.mapOfElites = mapOfElites;
     }
 
@@ -82,10 +106,8 @@ public class MapElites<G, P extends QualityBasedProblem<S, Q>, S, Q> extends Abs
           nOfBirths,
           nOfFitnessEvaluations,
           population.immutableCopy(),
-          mapOfElites.copy()
-      );
+          mapOfElites.copy());
     }
-
   }
 
   @Override
@@ -95,13 +117,13 @@ public class MapElites<G, P extends QualityBasedProblem<S, Q>, S, Q> extends Abs
 
   @Override
   public Collection<S> extractSolutions(
-      P problem, RandomGenerator random, ExecutorService executor, State<G, S, Q> state
-  ) {
+      P problem, RandomGenerator random, ExecutorService executor, State<G, S, Q> state) {
     return state.mapOfElites.all().stream().map(Individual::solution).toList();
   }
 
   @Override
-  public State<G, S, Q> init(P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
+  public State<G, S, Q> init(P problem, RandomGenerator random, ExecutorService executor)
+      throws SolverException {
     State<G, S, Q> state = super.init(problem, random, executor);
     state.mapOfElites.addAll(state.getPopulation().all());
     return state;
@@ -109,30 +131,30 @@ public class MapElites<G, P extends QualityBasedProblem<S, Q>, S, Q> extends Abs
 
   @Override
   public void update(
-      P problem,
-      RandomGenerator random,
-      ExecutorService executor,
-      State<G, S, Q> state
-  ) throws SolverException {
-    List<G> allGenotypes = state.getPopulation()
-        .all()
-        .stream()
-        .filter(Objects::nonNull)
-        .map(Individual::genotype)
-        .toList();
-    Collection<G> offspringGenotypes = IntStream.range(0, populationSize)
-        .mapToObj(i -> mutation.mutate(allGenotypes.get(random.nextInt(allGenotypes.size())), random)).toList();
-    Collection<Individual<G, S, Q>> offspringIndividuals = map(
-        offspringGenotypes,
-        List.of(),
-        solutionMapper,
-        problem.qualityFunction(),
-        executor,
-        state
-    );
+      P problem, RandomGenerator random, ExecutorService executor, State<G, S, Q> state)
+      throws SolverException {
+    List<G> allGenotypes =
+        state.getPopulation().all().stream()
+            .filter(Objects::nonNull)
+            .map(Individual::genotype)
+            .toList();
+    Collection<G> offspringGenotypes =
+        IntStream.range(0, populationSize)
+            .mapToObj(
+                i -> mutation.mutate(allGenotypes.get(random.nextInt(allGenotypes.size())), random))
+            .toList();
+    Collection<Individual<G, S, Q>> offspringIndividuals =
+        map(
+            offspringGenotypes,
+            List.of(),
+            solutionMapper,
+            problem.qualityFunction(),
+            executor,
+            state);
 
     state.mapOfElites.addAll(offspringIndividuals);
-    state.setPopulation(new DAGPartiallyOrderedCollection<>(state.mapOfElites.all(), comparator(problem)));
+    state.setPopulation(
+        new DAGPartiallyOrderedCollection<>(state.mapOfElites.all(), comparator(problem)));
 
     state.incNOfIterations();
     state.updateElapsedMillis();

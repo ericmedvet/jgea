@@ -1,9 +1,29 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package io.github.ericmedvet.jgea.core.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
+
 public class ArrayTable<T> implements Table<T> {
 
   private final List<String> names;
@@ -17,11 +37,10 @@ public class ArrayTable<T> implements Table<T> {
   @Override
   public void addColumn(String name, List<T> values) {
     if (values.size() != nRows()) {
-      throw new IllegalArgumentException(String.format(
-          "Wrong number of entries in new column: %d expected, %d found",
-          nRows(),
-          values.size()
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "Wrong number of entries in new column: %d expected, %d found",
+              nRows(), values.size()));
     }
     List<String> newNames = new ArrayList<>(names);
     newNames.add(name);
@@ -39,11 +58,10 @@ public class ArrayTable<T> implements Table<T> {
   @Override
   public void addRow(List<T> values) {
     if (values.size() != nColumns()) {
-      throw new IllegalArgumentException(String.format(
-          "Wrong number of entries in new row: %d expected, %d found",
-          nColumns(),
-          values.size()
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "Wrong number of entries in new row: %d expected, %d found",
+              nColumns(), values.size()));
     }
     this.values.addAll(values);
   }

@@ -1,15 +1,34 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 
 package io.github.ericmedvet.jgea.core.representation.graph;
 
 import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.util.Misc;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.ToIntFunction;
 import java.util.random.RandomGenerator;
+
 public class IndexedNodeAddition<M extends N, N, A> implements Mutation<Graph<IndexedNode<N>, A>> {
 
   private final IndependentFactory<M> nodeFactory;
@@ -26,8 +45,7 @@ public class IndexedNodeAddition<M extends N, N, A> implements Mutation<Graph<In
       int counterInitialValue,
       Mutation<A> toNewNodeArcMutation,
       Mutation<A> fromNewNodeArcMutation,
-      Mutation<A> existingArcMutation
-  ) {
+      Mutation<A> existingArcMutation) {
     this.nodeFactory = nodeFactory;
     this.nodeTyper = nodeTyper;
     counter = counterInitialValue;
@@ -42,9 +60,14 @@ public class IndexedNodeAddition<M extends N, N, A> implements Mutation<Graph<In
       ToIntFunction<N> nodeTyper,
       int counterInitialValue,
       Mutation<A> toNewNodeArcMutation,
-      Mutation<A> fromNewNodeArcMutation
-  ) {
-    this(nodeFactory, nodeTyper, counterInitialValue, toNewNodeArcMutation, fromNewNodeArcMutation, null);
+      Mutation<A> fromNewNodeArcMutation) {
+    this(
+        nodeFactory,
+        nodeTyper,
+        counterInitialValue,
+        toNewNodeArcMutation,
+        fromNewNodeArcMutation,
+        null);
   }
 
   private static class IndexKey {
@@ -67,12 +90,13 @@ public class IndexedNodeAddition<M extends N, N, A> implements Mutation<Graph<In
 
     @Override
     public boolean equals(Object o) {
-      if (this == o)
-        return true;
-      if (o == null || getClass() != o.getClass())
-        return false;
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
       IndexKey indexKey = (IndexKey) o;
-      return srcIndex == indexKey.srcIndex && dstIndex == indexKey.dstIndex && type == indexKey.type && nOfSiblings == indexKey.nOfSiblings;
+      return srcIndex == indexKey.srcIndex
+          && dstIndex == indexKey.dstIndex
+          && type == indexKey.type
+          && nOfSiblings == indexKey.nOfSiblings;
     }
   }
 
@@ -83,37 +107,44 @@ public class IndexedNodeAddition<M extends N, N, A> implements Mutation<Graph<In
       M newNode = nodeFactory.build(random);
       Graph.Arc<IndexedNode<N>> arc = Misc.pickRandomly(child.arcs(), random);
       A existingArcValue = child.getArcValue(arc);
-      //mutate existing edge
+      // mutate existing edge
       if (existingArcMutation != null) {
         child.setArcValue(arc, existingArcMutation.mutate(existingArcValue, random));
       } else {
         child.removeArc(arc);
       }
-      //add new edges
+      // add new edges
       A newArcValueTo = toNewNodeArcMutation.mutate(existingArcValue, random);
       A newArcValueFrom = fromNewNodeArcMutation.mutate(existingArcValue, random);
-      //get new node type
+      // get new node type
       int newNodeType = nodeTyper.applyAsInt(newNode);
-      //count "siblings"
-      int nSiblings = (int) child.nodes().stream().filter(n -> child.predecessors(n)
-          .contains(arc.getSource()) && child.successors(n).contains(arc.getTarget()) && (newNode.getClass()
-          .isAssignableFrom(n.getClass())) && nodeTyper.applyAsInt(n.content()) == newNodeType).count();
-      //compute index
-      IndexKey key = new IndexKey(arc.getSource().index(), arc.getTarget().index(), newNodeType, nSiblings);
+      // count "siblings"
+      int nSiblings =
+          (int)
+              child.nodes().stream()
+                  .filter(
+                      n ->
+                          child.predecessors(n).contains(arc.getSource())
+                              && child.successors(n).contains(arc.getTarget())
+                              && (newNode.getClass().isAssignableFrom(n.getClass()))
+                              && nodeTyper.applyAsInt(n.content()) == newNodeType)
+                  .count();
+      // compute index
+      IndexKey key =
+          new IndexKey(arc.getSource().index(), arc.getTarget().index(), newNodeType, nSiblings);
       Integer index = counterMap.get(key);
       if (index == null) {
         index = counter;
         counterMap.put(key, index);
         counter = counter + 1;
       }
-      //add node
+      // add node
       IndexedNode<N> indexedNode = new IndexedNode<>(index, newNode);
       child.addNode(indexedNode);
-      //connect edges
+      // connect edges
       child.setArcValue(arc.getSource(), indexedNode, newArcValueTo);
       child.setArcValue(indexedNode, arc.getTarget(), newArcValueFrom);
     }
     return child;
   }
-
 }

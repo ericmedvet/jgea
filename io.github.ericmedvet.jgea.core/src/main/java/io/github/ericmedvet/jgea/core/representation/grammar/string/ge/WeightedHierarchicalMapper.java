@@ -1,14 +1,33 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 
 package io.github.ericmedvet.jgea.core.representation.grammar.string.ge;
 
 import com.google.common.collect.Range;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
 
   protected final Map<T, Integer> weightsMap;
@@ -21,8 +40,10 @@ public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
   }
 
   public WeightedHierarchicalMapper(
-      int expressivenessDepth, boolean weightOptions, boolean weightChildren, StringGrammar<T> grammar
-  ) {
+      int expressivenessDepth,
+      boolean weightOptions,
+      boolean weightChildren,
+      StringGrammar<T> grammar) {
     super(grammar);
     this.expressivenessDepth = expressivenessDepth;
     this.weightOptions = weightOptions;
@@ -37,7 +58,9 @@ public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
         }
       }
     }
-    for (T symbol : weightsMap.keySet()) { //modify to log_2 for non-terminals: the terminals have 1 (should be set
+    for (T symbol :
+        weightsMap
+            .keySet()) { // modify to log_2 for non-terminals: the terminals have 1 (should be set
       // to 0)
       int options = weightsMap.get(symbol);
       int bits = (int) Math.ceil(Math.log10(options) / Math.log10(2d));
@@ -80,7 +103,12 @@ public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
         overallWeight = overallWeight + weightsMap.get(symbol);
       }
       for (T symbol : symbols) {
-        sizes.add((int) Math.floor((double) weightsMap.get(symbol) / (double) overallWeight * (double) (range.upperEndpoint() - range.lowerEndpoint())));
+        sizes.add(
+            (int)
+                Math.floor(
+                    (double) weightsMap.get(symbol)
+                        / (double) overallWeight
+                        * (double) (range.upperEndpoint() - range.lowerEndpoint())));
       }
       ranges = slices(range, sizes);
     }
@@ -113,8 +141,13 @@ public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
 
   @Override
   public String toString() {
-    return "WeightedHierarchicalMapper{" + "maxDepth=" + expressivenessDepth + ", weightOptions=" + weightOptions +
-        ", weightChildren=" + weightChildren + '}';
+    return "WeightedHierarchicalMapper{"
+        + "maxDepth="
+        + expressivenessDepth
+        + ", weightOptions="
+        + weightOptions
+        + ", weightChildren="
+        + weightChildren
+        + '}';
   }
-
 }

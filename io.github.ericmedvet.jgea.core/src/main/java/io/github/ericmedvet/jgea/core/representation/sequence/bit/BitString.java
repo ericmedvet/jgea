@@ -1,10 +1,28 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 
 package io.github.ericmedvet.jgea.core.representation.sequence.bit;
 
 import com.google.common.collect.Range;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Sized;
-
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
@@ -33,10 +51,10 @@ public record BitString(boolean[] bits) implements Sized, Serializable, Cloneabl
   }
 
   public BitString compress(int newLength) {
-    List<BitString> slices = Misc.slices(Range.closedOpen(0, bits.length), newLength)
-        .stream()
-        .map(r -> slice(r.lowerEndpoint(), r.upperEndpoint()))
-        .toList();
+    List<BitString> slices =
+        Misc.slices(Range.closedOpen(0, bits.length), newLength).stream()
+            .map(r -> slice(r.lowerEndpoint(), r.upperEndpoint()))
+            .toList();
     boolean[] compressed = new boolean[slices.size()];
     for (int i = 0; i < slices.size(); i++) {
       compressed[i] = slices.get(i).nOfOnes() > slices.get(i).size() / 2;
@@ -46,10 +64,8 @@ public record BitString(boolean[] bits) implements Sized, Serializable, Cloneabl
 
   @Override
   public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
     BitString bitString = (BitString) o;
     return Arrays.equals(bits, bitString.bits);
   }

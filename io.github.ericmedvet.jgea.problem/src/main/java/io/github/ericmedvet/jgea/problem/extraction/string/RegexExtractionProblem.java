@@ -1,9 +1,27 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-problem
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 
 package io.github.ericmedvet.jgea.problem.extraction.string;
 
 import io.github.ericmedvet.jgea.problem.extraction.ExtractionFitness;
 import io.github.ericmedvet.jgea.problem.extraction.ExtractionProblem;
-
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
@@ -11,28 +29,30 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
 public class RegexExtractionProblem extends ExtractionProblem<Character> {
 
   private final Set<String> regexes;
   private final String text;
 
   public RegexExtractionProblem(
-      Set<String> regexes, String text, int folds, int i, ExtractionFitness.Metric... metrics
-  ) {
+      Set<String> regexes, String text, int folds, int i, ExtractionFitness.Metric... metrics) {
     super(
         regexes.stream().map(RegexBasedExtractor::new).collect(Collectors.toSet()),
         text.chars().mapToObj(c -> (char) c).toList(),
         folds,
         i,
-        metrics
-    );
+        metrics);
     this.regexes = regexes;
     this.text = text;
   }
 
   private static String buildText(
-      int minExtractionsPerRegex, List<String> regexes, String alphabet, int chunkSize, Random random
-  ) {
+      int minExtractionsPerRegex,
+      List<String> regexes,
+      String alphabet,
+      int chunkSize,
+      Random random) {
     StringBuilder sb = new StringBuilder();
     while (true) {
       int initialLength = sb.length();
@@ -59,11 +79,13 @@ public class RegexExtractionProblem extends ExtractionProblem<Character> {
   }
 
   public static RegexExtractionProblem varAlphabet(
-      int symbols, int size, long seed, ExtractionFitness.Metric... metrics
-  ) {
+      int symbols, int size, long seed, ExtractionFitness.Metric... metrics) {
     List<String> regexes = List.of("000000", "111(00)?+(11)++", "(110110)++");
-    String text = buildText(size, regexes, "0123456789".substring(0, Math.min(symbols, 10)), 100, new Random(seed));
-    return new RegexExtractionProblem(new LinkedHashSet<>(regexes), text, 5, (int) seed % (size / 3), metrics);
+    String text =
+        buildText(
+            size, regexes, "0123456789".substring(0, Math.min(symbols, 10)), 100, new Random(seed));
+    return new RegexExtractionProblem(
+        new LinkedHashSet<>(regexes), text, 5, (int) seed % (size / 3), metrics);
   }
 
   public Set<String> getRegexes() {
@@ -73,5 +95,4 @@ public class RegexExtractionProblem extends ExtractionProblem<Character> {
   public String getText() {
     return text;
   }
-
 }

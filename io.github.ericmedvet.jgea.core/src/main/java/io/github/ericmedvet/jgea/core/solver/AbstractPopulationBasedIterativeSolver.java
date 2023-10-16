@@ -1,3 +1,22 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 
 package io.github.ericmedvet.jgea.core.solver;
 
@@ -7,7 +26,6 @@ import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jgea.core.util.Progress;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -19,8 +37,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
-public abstract class AbstractPopulationBasedIterativeSolver<T extends POSetPopulationState<G, S, Q>,
-    P extends QualityBasedProblem<S, Q>, G, S, Q> implements IterativeSolver<T, P, S> {
+public abstract class AbstractPopulationBasedIterativeSolver<
+        T extends POSetPopulationState<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q>
+    implements IterativeSolver<T, P, S> {
 
   protected final Function<? super G, ? extends S> solutionMapper;
   protected final Factory<? extends G> genotypeFactory;
@@ -31,8 +50,7 @@ public abstract class AbstractPopulationBasedIterativeSolver<T extends POSetPopu
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       int populationSize,
-      Predicate<? super T> stopCondition
-  ) {
+      Predicate<? super T> stopCondition) {
     this.solutionMapper = solutionMapper;
     this.genotypeFactory = genotypeFactory;
     this.populationSize = populationSize;
@@ -59,24 +77,41 @@ public abstract class AbstractPopulationBasedIterativeSolver<T extends POSetPopu
       Function<? super G, ? extends S> solutionMapper,
       Function<? super S, ? extends F> fitnessFunction,
       ExecutorService executor,
-      T state
-  ) throws SolverException {
-    List<Callable<Individual<G, S, F>>> callables = new ArrayList<>(genotypes.size() + individuals.size());
-    callables.addAll(genotypes.stream().map(genotype -> (Callable<Individual<G, S, F>>) () -> {
-      S solution = solutionMapper.apply(genotype);
-      F fitness = fitnessFunction.apply(solution);
-      return new Individual<G, S, F>(genotype, solution, fitness, state.getNOfIterations(), state.getNOfIterations());
-    }).toList());
-    callables.addAll(individuals.stream().map(individual -> (Callable<Individual<G, S, F>>) () -> {
-      S solution = solutionMapper.apply(individual.genotype());
-      return new Individual<>(
-          individual.genotype(),
-          solution,
-          fitnessFunction.apply(solution),
-          state.getNOfIterations(),
-          individual.genotypeBirthIteration()
-      );
-    }).toList());
+      T state)
+      throws SolverException {
+    List<Callable<Individual<G, S, F>>> callables =
+        new ArrayList<>(genotypes.size() + individuals.size());
+    callables.addAll(
+        genotypes.stream()
+            .map(
+                genotype ->
+                    (Callable<Individual<G, S, F>>)
+                        () -> {
+                          S solution = solutionMapper.apply(genotype);
+                          F fitness = fitnessFunction.apply(solution);
+                          return new Individual<G, S, F>(
+                              genotype,
+                              solution,
+                              fitness,
+                              state.getNOfIterations(),
+                              state.getNOfIterations());
+                        })
+            .toList());
+    callables.addAll(
+        individuals.stream()
+            .map(
+                individual ->
+                    (Callable<Individual<G, S, F>>)
+                        () -> {
+                          S solution = solutionMapper.apply(individual.genotype());
+                          return new Individual<>(
+                              individual.genotype(),
+                              solution,
+                              fitnessFunction.apply(solution),
+                              state.getNOfIterations(),
+                              individual.genotypeBirthIteration());
+                        })
+            .toList());
     state.incNOfBirths(genotypes.size());
     state.incNOfFitnessEvaluations(genotypes.size() + individuals.size());
     try {
@@ -92,32 +127,33 @@ public abstract class AbstractPopulationBasedIterativeSolver<T extends POSetPopu
 
   @Override
   public Collection<S> extractSolutions(
-      P problem, RandomGenerator random, ExecutorService executor, T state
-  ) {
+      P problem, RandomGenerator random, ExecutorService executor, T state) {
     return state.getPopulation().firsts().stream().map(Individual::solution).toList();
   }
 
   @Override
-  public T init(P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
+  public T init(P problem, RandomGenerator random, ExecutorService executor)
+      throws SolverException {
     T state = initState(problem, random, executor);
-    state.setPopulation(new DAGPartiallyOrderedCollection<>(map(
-        genotypeFactory.build(populationSize, random),
-        List.of(),
-        solutionMapper,
-        problem.qualityFunction(),
-        executor,
-        state
-    ), comparator(problem)));
+    state.setPopulation(
+        new DAGPartiallyOrderedCollection<>(
+            map(
+                genotypeFactory.build(populationSize, random),
+                List.of(),
+                solutionMapper,
+                problem.qualityFunction(),
+                executor,
+                state),
+            comparator(problem)));
     return state;
   }
 
   @Override
-  public boolean terminate(
-      P problem, RandomGenerator random, ExecutorService executor, T state
-  ) {
+  public boolean terminate(P problem, RandomGenerator random, ExecutorService executor, T state) {
     if (stopCondition instanceof ProgressBasedStopCondition<?> progressBasedStopCondition) {
       //noinspection unchecked
-      Progress progress = ((ProgressBasedStopCondition<T>) progressBasedStopCondition).progress(state);
+      Progress progress =
+          ((ProgressBasedStopCondition<T>) progressBasedStopCondition).progress(state);
       state.setProgress(progress);
       return progress.rate() >= 1d;
     }

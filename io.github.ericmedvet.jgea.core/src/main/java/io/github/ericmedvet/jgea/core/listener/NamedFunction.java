@@ -1,3 +1,22 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 
 package io.github.ericmedvet.jgea.core.listener;
 
@@ -6,20 +25,22 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
 @FunctionalInterface
 public interface NamedFunction<F, T> extends Function<F, T> {
 
   Logger L = Logger.getLogger(NamedFunction.class.getName());
 
-  BiFunction<String, String, String> NAME_COMPOSER = (after, before) -> {
-    if (after.isEmpty()) {
-      return before;
-    }
-    if (before.isEmpty()) {
-      return after;
-    }
-    return before + "→" + after;
-  };
+  BiFunction<String, String, String> NAME_COMPOSER =
+      (after, before) -> {
+        if (after.isEmpty()) {
+          return before;
+        }
+        if (before.isEmpty()) {
+          return after;
+        }
+        return before + "→" + after;
+      };
 
   static <F, T> NamedFunction<F, T> build(String name, Function<F, T> function) {
     return build(name, "%s", function);
@@ -32,7 +53,8 @@ public interface NamedFunction<F, T> extends Function<F, T> {
         try {
           return function.apply(f);
         } catch (Throwable t) {
-          throw new RuntimeException(String.format("Cannot compute function %s: %s", getName(), t), t);
+          throw new RuntimeException(
+              String.format("Cannot compute function %s: %s", getName(), t), t);
         }
       }
 
@@ -73,8 +95,7 @@ public interface NamedFunction<F, T> extends Function<F, T> {
 
   @SuppressWarnings("unused")
   static <F, T, V> List<NamedFunction<F, ? extends V>> then(
-      NamedFunction<F, T> before, List<NamedFunction<T, ? extends V>> afters
-  ) {
+      NamedFunction<F, T> before, List<NamedFunction<T, ? extends V>> afters) {
     return afters.stream().map(before::then).collect(Collectors.toList());
   }
 
@@ -188,8 +209,7 @@ public interface NamedFunction<F, T> extends Function<F, T> {
             L.warning("Cannot compute %s: %s".formatted(getName(), throwable));
             return exceptionT;
           }
-        }
-    );
+        });
   }
 
   default NamedFunction<F, T> robust() {
@@ -216,7 +236,8 @@ public interface NamedFunction<F, T> extends Function<F, T> {
     };
   }
 
-  default <V> List<? extends NamedFunction<F, ? extends V>> then(List<NamedFunction<? super T, ? extends V>> afters) {
+  default <V> List<? extends NamedFunction<F, ? extends V>> then(
+      List<NamedFunction<? super T, ? extends V>> afters) {
     NamedFunction<F, T> thisNamedFunction = this;
     return afters.stream().map(thisNamedFunction::then).toList();
   }

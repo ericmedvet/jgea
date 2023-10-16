@@ -1,8 +1,26 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 
 package io.github.ericmedvet.jgea.core.representation.tree;
 
 import io.github.ericmedvet.jgea.core.IndependentFactory;
-
 import java.util.function.ToIntFunction;
 import java.util.random.RandomGenerator;
 
@@ -19,8 +37,7 @@ public class TreeIndependentFactory<N> implements IndependentFactory<Tree<N>> {
       ToIntFunction<N> arityFunction,
       IndependentFactory<N> nonTerminalFactory,
       IndependentFactory<N> terminalFactory,
-      double pFull
-  ) {
+      double pFull) {
     this.minHeight = minHeight;
     this.maxHeight = maxHeight;
     fullTreeFactory = new FullTreeBuilder<>(arityFunction, nonTerminalFactory, terminalFactory);
@@ -30,10 +47,10 @@ public class TreeIndependentFactory<N> implements IndependentFactory<Tree<N>> {
 
   @Override
   public Tree<N> build(RandomGenerator random) {
-    if (random.nextDouble()<pFull) {
-      return fullTreeFactory.build(random, random.nextInt(minHeight, maxHeight+1));
+    if (random.nextDouble() < pFull) {
+      return fullTreeFactory.build(random, random.nextInt(minHeight, maxHeight + 1));
     } else {
-      return growTreeBuilder.build(random, random.nextInt(minHeight, maxHeight+1));
+      return growTreeBuilder.build(random, random.nextInt(minHeight, maxHeight + 1));
     }
   }
 }

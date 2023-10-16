@@ -1,3 +1,22 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-tui
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 
 package io.github.ericmedvet.jgea.tui.util;
 
@@ -12,7 +31,6 @@ import io.github.ericmedvet.jgea.tui.table.Cell;
 import io.github.ericmedvet.jgea.tui.table.ColoredStringCell;
 import io.github.ericmedvet.jgea.tui.table.CompositeCell;
 import io.github.ericmedvet.jgea.tui.table.StringCell;
-
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.IllegalFormatException;
@@ -22,14 +40,14 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
+
 public class DrawUtils {
 
-  private final static Logger L = Logger.getLogger(DrawUtils.class.getName());
+  private static final Logger L = Logger.getLogger(DrawUtils.class.getName());
   private static final String VERTICAL_PART_FILLER = " ▁▂▃▄▅▆▇";
   private static final char FILLER = '█';
 
-  private DrawUtils() {
-  }
+  private DrawUtils() {}
 
   private interface RealFunction {
     double apply(double x);
@@ -52,7 +70,7 @@ public class DrawUtils {
   }
 
   public static void clipPut(TextGraphics tg, Rectangle r, Point p, String s, SGR... sgrs) {
-    //multiline
+    // multiline
     if (s.lines().count() > 1) {
       List<String> lines = s.lines().toList();
       for (int i = 0; i < lines.size(); i++) {
@@ -82,7 +100,8 @@ public class DrawUtils {
     clipPut(tg, r, new Point(x, y), s, sgrs);
   }
 
-  private static void drawCell(TextGraphics tg, Rectangle r, int x, int y, Cell c, TextColor cellColor) {
+  private static void drawCell(
+      TextGraphics tg, Rectangle r, int x, int y, Cell c, TextColor cellColor) {
     if (c instanceof StringCell stringCell) {
       tg.setForegroundColor(cellColor);
       DrawUtils.clipPut(tg, r, x, y, stringCell.content());
@@ -98,7 +117,8 @@ public class DrawUtils {
     }
   }
 
-  public static void drawFrame(TextGraphics tg, Rectangle r, String label, TextColor frameColor, TextColor labelColor) {
+  public static void drawFrame(
+      TextGraphics tg, Rectangle r, String label, TextColor frameColor, TextColor labelColor) {
     tg.setForegroundColor(frameColor);
     tg.drawLine(r.ne().delta(1, 0).tp(), r.nw().delta(-1, 0).tp(), Symbols.SINGLE_LINE_HORIZONTAL);
     tg.drawLine(r.se().delta(1, 0).tp(), r.sw().delta(-1, 0).tp(), Symbols.SINGLE_LINE_HORIZONTAL);
@@ -122,8 +142,7 @@ public class DrawUtils {
       double max,
       int l,
       TextColor fgColor,
-      TextColor bgColor
-  ) {
+      TextColor bgColor) {
     drawHorizontalBar(tg, r, new Point(x, y), value, min, max, l, fgColor, bgColor);
   }
 
@@ -136,8 +155,7 @@ public class DrawUtils {
       double max,
       int l,
       TextColor fgColor,
-      TextColor bgColor
-  ) {
+      TextColor bgColor) {
     TextColor previousFgColor = tg.getForegroundColor();
     TextColor previousBgColor = tg.getBackgroundColor();
     tg.setForegroundColor(fgColor);
@@ -155,8 +173,7 @@ public class DrawUtils {
       TextColor mainDataColor,
       TextColor dataColor,
       String levelFormat,
-      String datetimeFormat
-  ) {
+      String datetimeFormat) {
     int levelW = String.format(levelFormat, Level.WARNING).length();
     int dateW = String.format(datetimeFormat, Instant.now().getEpochSecond()).length();
     DrawUtils.clear(tg, r);
@@ -183,33 +200,30 @@ public class DrawUtils {
       double xMin,
       double xMax,
       double yMin,
-      double yMax
-  ) {
+      double yMax) {
     if (data.nColumns() < 2) {
-      throw new IllegalArgumentException(String.format(
-          "Cannot draw table with less than 2 columns: %d found",
-          data.nColumns()
-      ));
+      throw new IllegalArgumentException(
+          String.format("Cannot draw table with less than 2 columns: %d found", data.nColumns()));
     }
     if (data.nRows() < 2) {
       return;
     }
-    //get data
+    // get data
     double[] xs = data.column(0).stream().mapToDouble(Number::doubleValue).toArray();
     double[] ys = data.column(1).stream().mapToDouble(Number::doubleValue).toArray();
     RealFunction f = RealFunction.from(xs, ys);
-    //compute ranges
+    // compute ranges
     double fXMin = Arrays.stream(xs).min().orElse(0);
     double fXMax = Arrays.stream(xs).max().orElse(0);
     xMin = Double.isNaN(xMin) ? Arrays.stream(xs).min().orElse(0) : xMin;
     xMax = Double.isNaN(xMax) ? Arrays.stream(xs).max().orElse(0) : xMax;
     yMin = Double.isNaN(yMin) ? Arrays.stream(ys).min().orElse(0) : yMin;
     yMax = Double.isNaN(yMax) ? Arrays.stream(ys).max().orElse(0) : yMax;
-    //set colors and plot bg
+    // set colors and plot bg
     tg.setForegroundColor(bgColor);
     tg.setForegroundColor(fgColor);
     clear(tg, r);
-    //plot bars
+    // plot bars
     for (int rx = 0; rx < r.w(); rx = rx + 1) {
       double x = xMin + (xMax - xMin) * (double) rx / (double) r.w();
       if (x >= fXMin && x <= fXMax) {
@@ -221,11 +235,11 @@ public class DrawUtils {
         double remainder = ry - Math.floor(ry);
         tg.setCharacter(
             r.se().delta(rx, -(int) Math.floor(ry)).tp(),
-            VERTICAL_PART_FILLER.charAt((int) Math.floor(remainder * VERTICAL_PART_FILLER.length()))
-        );
+            VERTICAL_PART_FILLER.charAt(
+                (int) Math.floor(remainder * VERTICAL_PART_FILLER.length())));
       }
     }
-    //plot labels of ranges
+    // plot labels of ranges
     tg.setForegroundColor(labelsColor);
     if (f.apply(xMin) > f.apply(xMax)) {
       String eLabel = "(" + format(xMin, xFormat) + ";" + format(yMin, yFormat) + ")";
@@ -240,23 +254,26 @@ public class DrawUtils {
     }
   }
 
-  public static void drawTable(TextGraphics tg, Rectangle r, Table<Cell> t, TextColor labelColor, TextColor cellColor) {
+  public static void drawTable(
+      TextGraphics tg, Rectangle r, Table<Cell> t, TextColor labelColor, TextColor cellColor) {
     clear(tg, r);
-    //compute columns width
-    int[] colWidths = IntStream.range(0, t.nColumns())
-        .map(c -> Math.max(
-            t.names().get(c).length(),
-            t.column(c).stream().mapToInt(Cell::length).max().orElse(0)
-        ))
-        .toArray();
-    //draw header
+    // compute columns width
+    int[] colWidths =
+        IntStream.range(0, t.nColumns())
+            .map(
+                c ->
+                    Math.max(
+                        t.names().get(c).length(),
+                        t.column(c).stream().mapToInt(Cell::length).max().orElse(0)))
+            .toArray();
+    // draw header
     tg.setForegroundColor(labelColor);
     int x = 0;
     for (int i = 0; i < colWidths.length; i = i + 1) {
       DrawUtils.clipPut(tg, r, x, 0, t.names().get(i));
       x = x + colWidths[i] + 1;
     }
-    //draw data
+    // draw data
     int y = 1;
     x = 0;
     for (int cI = 0; cI < t.nColumns(); cI = cI + 1) {
@@ -274,5 +291,4 @@ public class DrawUtils {
       return String.format(format, n.intValue()).trim();
     }
   }
-
 }

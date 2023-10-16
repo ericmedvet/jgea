@@ -1,8 +1,26 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package io.github.ericmedvet.jgea.core.solver.mapelites;
 
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
-
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -22,7 +40,6 @@ public class MapOfElites<T> implements PartiallyOrderedCollection<T> {
     private int assignToBin(double value) {
       return (int) Math.min(nOfBins - 1, Math.max(0, value / step));
     }
-
   }
 
   private final HashMap<List<Integer>, T> elites;
@@ -33,27 +50,41 @@ public class MapOfElites<T> implements PartiallyOrderedCollection<T> {
   private int notStoredSolutionsCounter = 0;
   private int updatedSolutionsCounter = 0;
 
-  public MapOfElites(List<Feature> features, Function<T, List<Double>> featuresExtractor, PartialComparator<? super T> comparator) {
+  public MapOfElites(
+      List<Feature> features,
+      Function<T, List<Double>> featuresExtractor,
+      PartialComparator<? super T> comparator) {
     elites = new HashMap<>();
     this.featuresExtractor = featuresExtractor;
     this.comparator = comparator;
     this.features = features;
   }
 
-  public MapOfElites(List<Integer> featuresSizes,
-                     List<Double> featuresMinValues,
-                     List<Double> featuresMaxValues,
-                     Function<T, List<Double>> featuresExtractor,
-                     PartialComparator<? super T> comparator) {
-    this(buildFeatures(featuresSizes, featuresMinValues, featuresMaxValues), featuresExtractor, comparator);
+  public MapOfElites(
+      List<Integer> featuresSizes,
+      List<Double> featuresMinValues,
+      List<Double> featuresMaxValues,
+      Function<T, List<Double>> featuresExtractor,
+      PartialComparator<? super T> comparator) {
+    this(
+        buildFeatures(featuresSizes, featuresMinValues, featuresMaxValues),
+        featuresExtractor,
+        comparator);
   }
 
-  public static List<Feature> buildFeatures(List<Integer> featuresSizes, List<Double> featuresMinValues, List<Double> featuresMaxValues) {
+  public static List<Feature> buildFeatures(
+      List<Integer> featuresSizes, List<Double> featuresMinValues, List<Double> featuresMaxValues) {
     int nFeatures = featuresSizes.size();
     if (nFeatures != featuresMinValues.size() || nFeatures != featuresMaxValues.size()) {
-      throw new IllegalArgumentException("Conflicting number of features values: all lists must have the same length");
+      throw new IllegalArgumentException(
+          "Conflicting number of features values: all lists must have the same length");
     }
-    return IntStream.range(0, nFeatures).mapToObj(i -> new Feature(featuresMinValues.get(i), featuresMaxValues.get(i), featuresSizes.get(i))).collect(Collectors.toList());
+    return IntStream.range(0, nFeatures)
+        .mapToObj(
+            i ->
+                new Feature(
+                    featuresMinValues.get(i), featuresMaxValues.get(i), featuresSizes.get(i)))
+        .collect(Collectors.toList());
   }
 
   public MapOfElites<T> copy() {
@@ -100,7 +131,9 @@ public class MapOfElites<T> implements PartiallyOrderedCollection<T> {
       elites.put(elite, t);
       lastAddedPerformance.add(t);
     } else {
-      if (comparator.compare(t, previousT).equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
+      if (comparator
+          .compare(t, previousT)
+          .equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
         elites.put(elite, t);
         lastAddedPerformance.add(t);
         updatedSolutionsCounter++;

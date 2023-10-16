@@ -1,3 +1,22 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 
 package io.github.ericmedvet.jgea.core.solver;
 
@@ -6,7 +25,6 @@ import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.selector.Selector;
 import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +33,10 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
-public class MutationOnly<T extends POSetPopulationState<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q> extends StandardEvolver<T, P, G, S, Q> {
+
+public class MutationOnly<
+        T extends POSetPopulationState<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q>
+    extends StandardEvolver<T, P, G, S, Q> {
 
   private final Mutation<G> mutation;
 
@@ -26,8 +47,7 @@ public class MutationOnly<T extends POSetPopulationState<G, S, Q>, P extends Qua
       Predicate<? super T> stopCondition,
       Selector<? super Individual<? super G, ? super S, ? super Q>> unsurvivalSelector,
       BiFunction<P, RandomGenerator, T> stateInitializer,
-      Mutation<G> mutation
-  ) {
+      Mutation<G> mutation) {
     super(
         solutionMapper,
         genotypeFactory,
@@ -39,19 +59,18 @@ public class MutationOnly<T extends POSetPopulationState<G, S, Q>, P extends Qua
         0,
         true,
         false,
-        stateInitializer
-    );
+        stateInitializer);
     this.mutation = mutation;
   }
 
   @Override
   protected Collection<Individual<G, S, Q>> buildOffspring(
-      T state, P problem, RandomGenerator random, ExecutorService executor
-  ) throws SolverException {
-    Collection<G> offspringGenotypes = state.getPopulation().all().stream().map(i -> mutation.mutate(
-        i.genotype(),
-        random
-    )).toList();
-    return map(offspringGenotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state);
+      T state, P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
+    Collection<G> offspringGenotypes =
+        state.getPopulation().all().stream()
+            .map(i -> mutation.mutate(i.genotype(), random))
+            .toList();
+    return map(
+        offspringGenotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state);
   }
 }

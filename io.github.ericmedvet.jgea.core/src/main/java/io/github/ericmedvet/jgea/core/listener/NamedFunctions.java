@@ -1,3 +1,22 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 
 package io.github.ericmedvet.jgea.core.listener;
 
@@ -8,19 +27,21 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.core.util.Sized;
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
-
 import java.util.*;
 import java.util.function.Function;
+
 public class NamedFunctions {
 
-  private final static String DEFAULT_FORMAT = "%s";
-  private final static long CACHE_SIZE = 100;
+  private static final String DEFAULT_FORMAT = "%s";
+  private static final long CACHE_SIZE = 100;
 
-  private NamedFunctions() {
-  }
+  private NamedFunctions() {}
 
-  public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Collection<?
-      extends Individual<? extends G, ? extends S, ? extends F>>> all() {
+  public static <G, S, F>
+      NamedFunction<
+              POSetPopulationState<? extends G, ? extends S, ? extends F>,
+              Collection<? extends Individual<? extends G, ? extends S, ? extends F>>>
+          all() {
     return f("all", e -> e.getPopulation().all());
   }
 
@@ -46,16 +67,19 @@ public class NamedFunctions {
     return f(
         "bar",
         NamedFunction.format(l),
-        value -> TextPlotter.horizontalBar(value.doubleValue(), 0, 1, l)
-    );
+        value -> TextPlotter.horizontalBar(value.doubleValue(), 0, 1, l));
   }
 
-  public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Individual<?
-      extends G, ? extends S, ? extends F>> best() {
+  public static <G, S, F>
+      NamedFunction<
+              POSetPopulationState<? extends G, ? extends S, ? extends F>,
+              Individual<? extends G, ? extends S, ? extends F>>
+          best() {
     return f("best", e -> Misc.first(e.getPopulation().firsts()));
   }
 
-  public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Long> births() {
+  public static <G, S, F>
+      NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Long> births() {
     return f("births", "%5d", POSetPopulationState::getNOfBirths);
   }
 
@@ -63,31 +87,30 @@ public class NamedFunctions {
     return f(name, Misc.cached(function, CACHE_SIZE));
   }
 
-  public static <F, T> NamedFunction<F, T> cachedF(String name, String format, Function<F, T> function) {
+  public static <F, T> NamedFunction<F, T> cachedF(
+      String name, String format, Function<F, T> function) {
     return f(name, format, Misc.cached(function, CACHE_SIZE));
   }
 
-  public static <F, T> NamedFunction<F, T> cachedF(String name, String format, Function<F, T> function, long size) {
+  public static <F, T> NamedFunction<F, T> cachedF(
+      String name, String format, Function<F, T> function, long size) {
     return f(name, format, Misc.cached(function, size));
   }
 
-  public static <T> NamedFunction<State, T> constant(
-      String name, String format, T value
-  ) {
+  public static <T> NamedFunction<State, T> constant(String name, String format, T value) {
     return f(name, format, e -> value);
   }
 
-  public static <T> NamedFunction<State, T> constant(
-      String name, T value
-  ) {
+  public static <T> NamedFunction<State, T> constant(String name, T value) {
     return constant(name, NamedFunction.format(value.toString().length()), value);
   }
 
-  public static <F, T> NamedFunction<Collection<? extends F>, Collection<T>> each(NamedFunction<F, T> mapper) {
+  public static <F, T> NamedFunction<Collection<? extends F>, Collection<T>> each(
+      NamedFunction<F, T> mapper) {
     return f(
         "each[" + mapper.getName() + "]",
-        individuals -> individuals.stream().map(mapper).collect(java.util.stream.Collectors.toList())
-    );
+        individuals ->
+            individuals.stream().map(mapper).collect(java.util.stream.Collectors.toList()));
   }
 
   public static NamedFunction<State, Float> elapsedSeconds() {
@@ -102,8 +125,11 @@ public class NamedFunctions {
     return NamedFunction.build(name, format, function);
   }
 
-  public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Collection<?
-      extends Individual<? extends G, ? extends S, ? extends F>>> firsts() {
+  public static <G, S, F>
+      NamedFunction<
+              POSetPopulationState<? extends G, ? extends S, ? extends F>,
+              Collection<? extends Individual<? extends G, ? extends S, ? extends F>>>
+          firsts() {
     return f("firsts", e -> e.getPopulation().firsts());
   }
 
@@ -111,11 +137,15 @@ public class NamedFunctions {
     return f("fitness", Individual::fitness);
   }
 
-  public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Long> fitnessEvaluations() {
+  public static <G, S, F>
+      NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Long>
+          fitnessEvaluations() {
     return f("fitness.evaluations", "%5d", POSetPopulationState::getNOfFitnessEvaluations);
   }
 
-  public static <G, S, F> NamedFunction<Individual<? extends G, ? extends S, ? extends F>, Long> fitnessMappingIteration() {
+  public static <G, S, F>
+      NamedFunction<Individual<? extends G, ? extends S, ? extends F>, Long>
+          fitnessMappingIteration() {
     return f("birth.iteration", "%4d", Individual::fitnessMappingIteration);
   }
 
@@ -123,7 +153,9 @@ public class NamedFunctions {
     return f("genotype", Individual::genotype);
   }
 
-  public static <G, S, F> NamedFunction<Individual<? extends G, ? extends S, ? extends F>, Long> genotypeBirthIteration() {
+  public static <G, S, F>
+      NamedFunction<Individual<? extends G, ? extends S, ? extends F>, Long>
+          genotypeBirthIteration() {
     return f("genotype.birth.iteration", "%4d", Individual::genotypeBirthIteration);
   }
 
@@ -132,17 +164,21 @@ public class NamedFunctions {
     return f(
         "hist",
         NamedFunction.format(bins),
-        values -> TextPlotter.histogram(values instanceof List ? (List<? extends Number>) values : new ArrayList<>(
-            values), bins)
-    );
+        values ->
+            TextPlotter.histogram(
+                values instanceof List ? (List<? extends Number>) values : new ArrayList<>(values),
+                bins));
   }
 
   public static NamedFunction<State, Long> iterations() {
     return f("iterations", "%4d", State::getNOfIterations);
   }
 
-  public static <G, S, F> NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Collection<?
-      extends Individual<? extends G, ? extends S, ? extends F>>> lasts() {
+  public static <G, S, F>
+      NamedFunction<
+              POSetPopulationState<? extends G, ? extends S, ? extends F>,
+              Collection<? extends Individual<? extends G, ? extends S, ? extends F>>>
+          lasts() {
     return f("lasts", e -> e.getPopulation().lasts());
   }
 
@@ -202,7 +238,7 @@ public class NamedFunctions {
   }
 
   public static NamedFunction<Collection<?>, Double> uniqueness() {
-    return f("uniqueness", "%4.2f", ts -> (double) ts.stream().distinct().count() / (double) ts.size());
+    return f(
+        "uniqueness", "%4.2f", ts -> (double) ts.stream().distinct().count() / (double) ts.size());
   }
-
 }

@@ -1,12 +1,32 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-tui
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package io.github.ericmedvet.jgea.tui;
 
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.*;
+
 public class ListLogHandler extends Handler {
-  private final static int LOG_HISTORY_SIZE = 100;
-  private final static Logger L = Logger.getLogger(ListLogHandler.class.getName());
+  private static final int LOG_HISTORY_SIZE = 100;
+  private static final Logger L = Logger.getLogger(ListLogHandler.class.getName());
 
   private final boolean dumpLogAfterStop;
   private final List<Handler> originalHandlers;
@@ -14,13 +34,14 @@ public class ListLogHandler extends Handler {
 
   public ListLogHandler(boolean dumpLogAfterStop) {
     this.dumpLogAfterStop = dumpLogAfterStop;
-    //prepare data object stores
+    // prepare data object stores
     logRecords = new LinkedList<>();
-    //capture logs
+    // capture logs
     Logger mainLogger = Logger.getLogger("");
     mainLogger.setLevel(Level.CONFIG);
     mainLogger.addHandler(this);
-    originalHandlers = Arrays.stream(mainLogger.getHandlers()).filter(h -> h instanceof ConsoleHandler).toList();
+    originalHandlers =
+        Arrays.stream(mainLogger.getHandlers()).filter(h -> h instanceof ConsoleHandler).toList();
     originalHandlers.forEach(mainLogger::removeHandler);
   }
 
@@ -39,8 +60,7 @@ public class ListLogHandler extends Handler {
   }
 
   @Override
-  public void flush() {
-  }
+  public void flush() {}
 
   @Override
   public void close() throws SecurityException {

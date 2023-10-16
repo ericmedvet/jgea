@@ -1,3 +1,22 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-telegram
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 
 package io.github.ericmedvet.jgea.telegram;
 
@@ -6,13 +25,12 @@ import com.pengrad.telegrambot.request.*;
 import com.pengrad.telegrambot.response.GetChatMemberCountResponse;
 import com.pengrad.telegrambot.response.GetChatResponse;
 import com.pengrad.telegrambot.response.SendResponse;
-
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.Set;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 
 public class TelegramClient {
 
@@ -32,15 +50,13 @@ public class TelegramClient {
 
   public String getChatInfo() {
     GetChatResponse chatResponse = bot.execute(new GetChat(chatId));
-    GetChatMemberCountResponse chatMemberCountResponse = bot.execute(new GetChatMemberCount(chatId));
+    GetChatMemberCountResponse chatMemberCountResponse =
+        bot.execute(new GetChatMemberCount(chatId));
     String title = chatResponse.chat().title();
     if (title == null) {
       title = chatResponse.chat().firstName() + " " + chatResponse.chat().lastName();
     }
-    return "%s (%d members)".formatted(
-        title,
-        chatMemberCountResponse.count()
-    );
+    return "%s (%d members)".formatted(title, chatMemberCountResponse.count());
   }
 
   public void sendDocument(File file) {
@@ -89,5 +105,4 @@ public class TelegramClient {
       L.warning(String.format("Cannot send video: %s", t));
     }
   }
-
 }

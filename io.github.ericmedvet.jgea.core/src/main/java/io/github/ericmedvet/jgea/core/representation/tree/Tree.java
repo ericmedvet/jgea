@@ -1,7 +1,25 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package io.github.ericmedvet.jgea.core.representation.tree;
 
 import io.github.ericmedvet.jgea.core.util.Sized;
-
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.*;
@@ -9,6 +27,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
 public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>> {
 
   private final C content;
@@ -55,8 +74,7 @@ public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>> {
         t.height(),
         t.depth(),
         t.nChildren(),
-        t.content()
-    );
+        t.content());
     ps.println();
     t.forEach(c -> prettyPrint(c, d + 1, ps));
   }
@@ -96,18 +114,18 @@ public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>> {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
     Tree<?> tree = (Tree<?>) o;
     return Objects.equals(content, tree.content) && children.equals(tree.children);
   }
 
   @Override
   public String toString() {
-    return content.toString() + (children.isEmpty() ? "" : ("(" + children.stream().map(Tree::toString).collect(
-        Collectors.joining(",")) + ")"));
+    return content.toString()
+        + (children.isEmpty()
+            ? ""
+            : ("(" + children.stream().map(Tree::toString).collect(Collectors.joining(",")) + ")"));
   }
 
   public int height() {
@@ -170,5 +188,4 @@ public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>> {
   public List<C> visitLeaves() {
     return leaves().stream().map(Tree::content).toList();
   }
-
 }

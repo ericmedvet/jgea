@@ -1,9 +1,27 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 
 package io.github.ericmedvet.jgea.core.representation.grammar.grid;
 
 import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
-
 import java.io.*;
 import java.util.*;
 import java.util.function.Function;
@@ -26,7 +44,8 @@ public class GridGrammar<T> implements Serializable, Grammar<T, GridGrammar.Refe
     return load(inputStream, "UTF-8");
   }
 
-  public static GridGrammar<String> load(InputStream inputStream, String charset) throws IOException {
+  public static GridGrammar<String> load(InputStream inputStream, String charset)
+      throws IOException {
     GridGrammar<String> grammar = new GridGrammar<>();
     try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, charset))) {
       String line;
@@ -43,10 +62,10 @@ public class GridGrammar<T> implements Serializable, Grammar<T, GridGrammar.Refe
           String[] rule = optionString.replaceAll("\\s+", "").split(";");
           String coordReference = rule[0].replaceAll("[()]", "");
 
-          Grid.Key referencePoint = new Grid.Key(
-              Integer.parseInt(coordReference.split(",")[0]),
-              Integer.parseInt(coordReference.split(",")[1])
-          );
+          Grid.Key referencePoint =
+              new Grid.Key(
+                  Integer.parseInt(coordReference.split(",")[0]),
+                  Integer.parseInt(coordReference.split(",")[1]));
           String[] gridRows = Arrays.copyOfRange(rule, 1, rule.length);
 
           int height = gridRows.length;
@@ -75,14 +94,13 @@ public class GridGrammar<T> implements Serializable, Grammar<T, GridGrammar.Refe
 
   public <X> GridGrammar<X> map(Function<T, X> function) {
     GridGrammar<X> mapped = new GridGrammar<>();
-    rules.forEach((nt, list) -> mapped.rules.put(
-        function.apply(nt),
-        list.stream()
-            .map(rg -> new ReferencedGrid<>(
-                rg.referenceKey(),
-                rg.grid().map(function)
-            )).toList()
-    ));
+    rules.forEach(
+        (nt, list) ->
+            mapped.rules.put(
+                function.apply(nt),
+                list.stream()
+                    .map(rg -> new ReferencedGrid<>(rg.referenceKey(), rg.grid().map(function)))
+                    .toList()));
     mapped.startingSymbol = function.apply(startingSymbol);
     return mapped;
   }
@@ -110,8 +128,10 @@ public class GridGrammar<T> implements Serializable, Grammar<T, GridGrammar.Refe
   public String toString() {
     StringBuilder sb = new StringBuilder();
     for (Map.Entry<T, List<ReferencedGrid<T>>> rule : rules.entrySet()) {
-      sb.append(rule.getKey()).append(" ").append(rule.getKey().equals(startingSymbol) ? "*" : "").append(
-          RULE_ASSIGNMENT_STRING + " ");
+      sb.append(rule.getKey())
+          .append(" ")
+          .append(rule.getKey().equals(startingSymbol) ? "*" : "")
+          .append(RULE_ASSIGNMENT_STRING + " ");
       for (ReferencedGrid<T> option : rule.getValue()) {
         sb.append(option);
         sb.append(RULE_OPTION_SEPARATOR_STRING + " ");
@@ -121,5 +141,4 @@ public class GridGrammar<T> implements Serializable, Grammar<T, GridGrammar.Refe
     }
     return sb.toString();
   }
-
 }

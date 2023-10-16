@@ -1,5 +1,23 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package io.github.ericmedvet.jgea.core.listener;
-
 
 import java.util.Collection;
 import java.util.List;
@@ -27,8 +45,7 @@ public interface Listener<E> {
   }
 
   static <E> Listener<E> deaf() {
-    return e -> {
-    };
+    return e -> {};
   }
 
   default Listener<E> and(Listener<? super E> other) {
@@ -54,38 +71,37 @@ public interface Listener<E> {
     return new Listener<>() {
       @Override
       public void listen(E e) {
-        executorService.submit(() -> {
-          try {
-            thisListener.listen(e);
-          } catch (RuntimeException ex) {
-            L.warning(String.format(
-                "Listener %s cannot listen() event: %s",
-                thisListener.getClass().getSimpleName(),
-                ex
-            ));
-          }
-        });
+        executorService.submit(
+            () -> {
+              try {
+                thisListener.listen(e);
+              } catch (RuntimeException ex) {
+                L.warning(
+                    String.format(
+                        "Listener %s cannot listen() event: %s",
+                        thisListener.getClass().getSimpleName(), ex));
+              }
+            });
       }
 
       @Override
       public void done() {
-        executorService.submit(() -> {
-          try {
-            thisListener.done();
-          } catch (RuntimeException ex) {
-            L.warning(String.format(
-                "Listener %s cannot done() event: %s",
-                thisListener.getClass().getSimpleName(),
-                ex
-            ));
-          }
-        });
+        executorService.submit(
+            () -> {
+              try {
+                thisListener.done();
+              } catch (RuntimeException ex) {
+                L.warning(
+                    String.format(
+                        "Listener %s cannot done() event: %s",
+                        thisListener.getClass().getSimpleName(), ex));
+              }
+            });
       }
     };
   }
 
-  default void done() {
-  }
+  default void done() {}
 
   default <F> Listener<F> forEach(Function<F, Collection<E>> splitter) {
     Listener<E> thisListener = this;
@@ -134,5 +150,4 @@ public interface Listener<E> {
       }
     };
   }
-
 }

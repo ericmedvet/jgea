@@ -1,3 +1,22 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-problem
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 
 package io.github.ericmedvet.jgea.problem.synthetic;
 
@@ -7,17 +26,18 @@ import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBased
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.util.Pair;
-
 import java.util.*;
 import java.util.function.Function;
-public class KLandscapes implements GrammarBasedProblem<String, Tree<String>>,
-    ComparableQualityBasedProblem<Tree<String>, Double> {
 
-  private final static int ARITY = 2;
-  private final static Range<Double> V_RANGE = Range.closed(-1d, 1d);
-  private final static Range<Double> W_RANGE = Range.closed(0d, 1d);
-  private final static int N_TERMINALS = 4;
-  private final static int N_NON_TERMINALS = 2;
+public class KLandscapes
+    implements GrammarBasedProblem<String, Tree<String>>,
+        ComparableQualityBasedProblem<Tree<String>, Double> {
+
+  private static final int ARITY = 2;
+  private static final Range<Double> V_RANGE = Range.closed(-1d, 1d);
+  private static final Range<Double> W_RANGE = Range.closed(0d, 1d);
+  private static final int N_TERMINALS = 4;
+  private static final int N_NON_TERMINALS = 2;
 
   private final int k;
   private final StringGrammar<String> grammar;
@@ -34,7 +54,13 @@ public class KLandscapes implements GrammarBasedProblem<String, Tree<String>>,
     this(k, ARITY, V_RANGE, W_RANGE, N_TERMINALS, N_NON_TERMINALS);
   }
 
-  public KLandscapes(int k, int arity, Range<Double> vRange, Range<Double> wRange, int nTerminals, int nNonTerminals) {
+  public KLandscapes(
+      int k,
+      int arity,
+      Range<Double> vRange,
+      Range<Double> wRange,
+      int nTerminals,
+      int nNonTerminals) {
     this.k = k;
     this.arity = arity;
     this.vRange = vRange;
@@ -82,7 +108,7 @@ public class KLandscapes implements GrammarBasedProblem<String, Tree<String>>,
     }
     Tree<String> tree = Tree.of(original.child(0).child(0).content());
     if (original.height() > 1) {
-      //is a non terminal node
+      // is a non terminal node
       for (Tree<String> orginalChild : original) {
         if (orginalChild.content().equals("N")) {
           tree.addChild(convertTree(orginalChild));
@@ -92,11 +118,13 @@ public class KLandscapes implements GrammarBasedProblem<String, Tree<String>>,
     return tree;
   }
 
-  protected static double f(Tree<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
+  protected static double f(
+      Tree<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
     return 1d / (1d + (double) Math.abs(k - tree.height())) * maxFK(tree, k, v, w);
   }
 
-  protected static double fK(Tree<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
+  protected static double fK(
+      Tree<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
     if (k == 0) {
       return v.get(tree.content());
     }
@@ -125,7 +153,8 @@ public class KLandscapes implements GrammarBasedProblem<String, Tree<String>>,
     return tree;
   }
 
-  protected static double maxFK(Tree<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
+  protected static double maxFK(
+      Tree<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
     double max = fK(tree, k, v, w);
     for (Tree<String> child : tree) {
       max = Math.max(max, maxFK(child, k, v, w));
@@ -134,12 +163,17 @@ public class KLandscapes implements GrammarBasedProblem<String, Tree<String>>,
   }
 
   protected static Tree<String> optimum(
-      int k, int nTerminals, int nNonTerminals, int arity, Map<String, Double> v, Map<Pair<String, String>, Double> w
-  ) {
+      int k,
+      int nTerminals,
+      int nNonTerminals,
+      int arity,
+      Map<String, Double> v,
+      Map<Pair<String, String>, Double> w) {
     Tree<String> optimum = null;
     double maxFitness = Double.NEGATIVE_INFINITY;
     for (int d = 1; d <= k + 1; d++) {
-      int[] indexes = new int[d]; //indexes of the (non)Terminals to be used. terminal is the last index.
+      int[] indexes =
+          new int[d]; // indexes of the (non)Terminals to be used. terminal is the last index.
       while (true) {
         Tree<String> tree = levelEqualTree(indexes, arity);
         double fitness = f(tree, k, v, w);
@@ -176,31 +210,37 @@ public class KLandscapes implements GrammarBasedProblem<String, Tree<String>>,
     Random random = new Random(1L);
     final Map<String, Double> v = new LinkedHashMap<>();
     final Map<Pair<String, String>, Double> w = new LinkedHashMap<>();
-    //fill v map
+    // fill v map
     for (int i = 0; i < nTerminals; i++) {
-      v.put("t" + i, random.nextDouble() * (vRange.upperEndpoint() - vRange.lowerEndpoint()) + vRange.lowerEndpoint());
+      v.put(
+          "t" + i,
+          random.nextDouble() * (vRange.upperEndpoint() - vRange.lowerEndpoint())
+              + vRange.lowerEndpoint());
     }
     for (int i = 0; i < nNonTerminals; i++) {
-      v.put("n" + i, random.nextDouble() * (vRange.upperEndpoint() - vRange.lowerEndpoint()) + vRange.lowerEndpoint());
+      v.put(
+          "n" + i,
+          random.nextDouble() * (vRange.upperEndpoint() - vRange.lowerEndpoint())
+              + vRange.lowerEndpoint());
     }
-    //fill w map
+    // fill w map
     for (int j = 0; j < nNonTerminals; j++) {
       for (int i = 0; i < nTerminals; i++) {
         w.put(
             Pair.of("n" + j, "t" + i),
-            random.nextDouble() * (wRange.upperEndpoint() - wRange.lowerEndpoint()) + wRange.lowerEndpoint()
-        );
+            random.nextDouble() * (wRange.upperEndpoint() - wRange.lowerEndpoint())
+                + wRange.lowerEndpoint());
       }
       for (int i = 0; i < nNonTerminals; i++) {
         w.put(
             Pair.of("n" + j, "n" + i),
-            random.nextDouble() * (wRange.upperEndpoint() - wRange.lowerEndpoint()) + wRange.lowerEndpoint()
-        );
+            random.nextDouble() * (wRange.upperEndpoint() - wRange.lowerEndpoint())
+                + wRange.lowerEndpoint());
       }
     }
-    //prepare fitness
+    // prepare fitness
     final double optimumFitness = f(optimum(k, nTerminals, nNonTerminals, arity, v, w), k, v, w);
-    //build function
+    // build function
     return t -> (1d - f(t, k, v, w) / optimumFitness);
   }
 
@@ -218,5 +258,4 @@ public class KLandscapes implements GrammarBasedProblem<String, Tree<String>>,
   public Function<Tree<String>, Double> qualityFunction() {
     return fitnessFunction;
   }
-
 }

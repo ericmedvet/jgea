@@ -1,13 +1,32 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-problem
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 
 package io.github.ericmedvet.jgea.problem.booleanfunction;
 
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.representation.tree.booleanfunction.Element;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 public class BooleanUtils {
 
   public static Map<String, boolean[]> buildCompleteCases(String... names) {
@@ -57,12 +76,14 @@ public class BooleanUtils {
 
   public static Boolean compute(Tree<Element> tree, Map<String, Boolean> values) {
     if (tree.content() instanceof Element.Decoration) {
-      throw new RuntimeException(String.format("Cannot compute: decoration node %s found", tree.content()));
+      throw new RuntimeException(
+          String.format("Cannot compute: decoration node %s found", tree.content()));
     }
     if (tree.content() instanceof Element.Variable) {
       Boolean result = values.get(((Element.Variable) tree.content()).name());
       if (result == null) {
-        throw new RuntimeException(String.format("Undefined variable: %s", ((Element.Variable) tree.content()).name()));
+        throw new RuntimeException(
+            String.format("Undefined variable: %s", ((Element.Variable) tree.content()).name()));
       }
       return result;
     }
@@ -96,5 +117,4 @@ public class BooleanUtils {
     }
     return bits;
   }
-
 }

@@ -1,13 +1,32 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 
 package io.github.ericmedvet.jgea.core.representation.graph;
 
 import io.github.ericmedvet.jgea.core.util.Sized;
-
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 public interface Graph<N, A> extends Sized {
   class Arc<N> implements Serializable {
     private final N source;
@@ -37,10 +56,8 @@ public interface Graph<N, A> extends Sized {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o)
-        return true;
-      if (o == null || getClass() != o.getClass())
-        return false;
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
       Arc<?> arc = (Arc<?>) o;
       return source.equals(arc.source) && target.equals(arc.target);
     }
@@ -70,11 +87,14 @@ public interface Graph<N, A> extends Sized {
       throw new RuntimeException();
     }
     visited.add(node);
-    graph.successors(node).forEach(s -> {
-      Set<M> updated = new HashSet<>(visited);
-      updated.add(node);
-      recursivelyVisit(graph, s, updated);
-    });
+    graph
+        .successors(node)
+        .forEach(
+            s -> {
+              Set<M> updated = new HashSet<>(visited);
+              updated.add(node);
+              recursivelyVisit(graph, s, updated);
+            });
   }
 
   default A getArcValue(N source, N target) {
@@ -108,7 +128,10 @@ public interface Graph<N, A> extends Sized {
   }
 
   default Set<N> predecessors(N node) {
-    return arcs().stream().filter(a -> a.getTarget().equals(node)).map(Arc::getSource).collect(Collectors.toSet());
+    return arcs().stream()
+        .filter(a -> a.getTarget().equals(node))
+        .map(Arc::getSource)
+        .collect(Collectors.toSet());
   }
 
   default boolean removeArc(N source, N target) {
@@ -125,7 +148,9 @@ public interface Graph<N, A> extends Sized {
   }
 
   default Set<N> successors(N node) {
-    return arcs().stream().filter(a -> a.getSource().equals(node)).map(Arc::getTarget).collect(Collectors.toSet());
+    return arcs().stream()
+        .filter(a -> a.getSource().equals(node))
+        .map(Arc::getTarget)
+        .collect(Collectors.toSet());
   }
-
 }

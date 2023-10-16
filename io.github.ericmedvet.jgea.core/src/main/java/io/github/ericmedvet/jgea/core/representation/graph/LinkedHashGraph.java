@@ -1,8 +1,28 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-core
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 
 package io.github.ericmedvet.jgea.core.representation.graph;
 
 import java.io.Serializable;
 import java.util.*;
+
 public class LinkedHashGraph<N, A> implements Graph<N, A>, Serializable {
   private final Set<N> nodes;
   private final Map<Arc<N>, A> arcs;
@@ -54,11 +74,10 @@ public class LinkedHashGraph<N, A> implements Graph<N, A>, Serializable {
   @Override
   public void setArcValue(Arc<N> arc, A value) {
     if (!nodes.contains(arc.getSource()) || !nodes.contains(arc.getTarget())) {
-      throw new IllegalArgumentException(String.format(
-          "Cannot set arc value between %s and %s because at least one endpoint node is not present",
-          arc.getSource(),
-          arc.getTarget()
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "Cannot set arc value between %s and %s because at least one endpoint node is not present",
+              arc.getSource(), arc.getTarget()));
     }
     arcs.put(arc, value);
   }
@@ -70,10 +89,8 @@ public class LinkedHashGraph<N, A> implements Graph<N, A>, Serializable {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
     LinkedHashGraph<?, ?> that = (LinkedHashGraph<?, ?>) o;
     return nodes.equals(that.nodes) && arcs.equals(that.arcs);
   }

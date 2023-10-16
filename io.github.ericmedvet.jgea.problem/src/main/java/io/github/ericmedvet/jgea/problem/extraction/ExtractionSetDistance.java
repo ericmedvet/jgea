@@ -1,10 +1,29 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-problem
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 
 package io.github.ericmedvet.jgea.problem.extraction;
 
 import com.google.common.collect.Range;
 import io.github.ericmedvet.jgea.core.distance.Distance;
-
 import java.util.Set;
+
 public class ExtractionSetDistance implements Distance<Set<Range<Integer>>> {
 
   private final int length;
@@ -20,12 +39,16 @@ public class ExtractionSetDistance implements Distance<Set<Range<Integer>>> {
     boolean[] mask1 = new boolean[bins + 1];
     boolean[] mask2 = new boolean[bins + 1];
     for (Range<Integer> range : ranges1) {
-      mask1[(int) Math.floor((double) range.lowerEndpoint() / (double) length * (double) bins)] = true;
-      mask1[(int) Math.floor((double) range.upperEndpoint() / (double) length * (double) bins)] = true;
+      mask1[(int) Math.floor((double) range.lowerEndpoint() / (double) length * (double) bins)] =
+          true;
+      mask1[(int) Math.floor((double) range.upperEndpoint() / (double) length * (double) bins)] =
+          true;
     }
     for (Range<Integer> range : ranges2) {
-      mask2[(int) Math.floor((double) range.lowerEndpoint() / (double) length * (double) bins)] = true;
-      mask2[(int) Math.floor((double) range.upperEndpoint() / (double) length * (double) bins)] = true;
+      mask2[(int) Math.floor((double) range.lowerEndpoint() / (double) length * (double) bins)] =
+          true;
+      mask2[(int) Math.floor((double) range.upperEndpoint() / (double) length * (double) bins)] =
+          true;
     }
     double count = 0;
     for (int i = 0; i < bins; i++) {
@@ -33,5 +56,4 @@ public class ExtractionSetDistance implements Distance<Set<Range<Integer>>> {
     }
     return ((double) length - count) / (double) length;
   }
-
 }
