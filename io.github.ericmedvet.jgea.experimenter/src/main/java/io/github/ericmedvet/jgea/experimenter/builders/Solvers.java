@@ -160,7 +160,7 @@ public class Solvers {
             StopConditions.nOfFitnessEvaluations(nEval));
   }
 
-  public static <S, Q> Function<S, DifferentialEvolution<S, Q>> differentialEvolutionEs(
+  public static <S, Q> Function<S, DifferentialEvolution<S, Q>> differentialEvolution(
       @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
       @Param(value = "initialMinV", dD = -1d) double initialMinV,
       @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
