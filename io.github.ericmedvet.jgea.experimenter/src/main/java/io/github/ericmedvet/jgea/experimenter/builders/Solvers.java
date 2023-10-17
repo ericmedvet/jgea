@@ -160,6 +160,30 @@ public class Solvers {
             StopConditions.nOfFitnessEvaluations(nEval));
   }
 
+  public static <S, Q> Function<S, DifferentialEvolution<S, Q>> differentialEvolution(
+      @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
+      @Param(value = "initialMinV", dD = -1d) double initialMinV,
+      @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
+      @Param(value = "batchSize", dI = 15) int populationSize,
+      @Param(value = "nEval") int nEval,
+      @Param(value = "differentialWeight", dD = 0.5) double differentialWeight,
+      @Param(value = "crossoverProb", dD = 0.8) double crossoverProb,
+      @Param(value = "remap") boolean remap
+  ) {
+    return exampleS -> new DifferentialEvolution<>(
+        mapper.mapperFor(exampleS),
+        new FixedLengthListFactory<>(
+            mapper.exampleFor(exampleS).size(),
+            new UniformDoubleFactory(initialMinV, initialMaxV)
+        ),
+        populationSize,
+        StopConditions.nOfFitnessEvaluations(nEval),
+        differentialWeight,
+        crossoverProb,
+        remap
+    );
+  }
+
   @SuppressWarnings("unused")
   public static <S, Q>
       Function<
