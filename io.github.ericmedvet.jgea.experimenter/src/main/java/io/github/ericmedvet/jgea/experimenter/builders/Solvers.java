@@ -57,7 +57,6 @@ import io.github.ericmedvet.jgea.core.solver.speciation.SpeciatedEvolver;
 import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jgea.experimenter.InvertibleMapper;
 import io.github.ericmedvet.jnb.core.Param;
-
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -166,7 +165,7 @@ public class Solvers {
       @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
       @Param(value = "initialMinV", dD = -1d) double initialMinV,
       @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
-      @Param(value = "batchSize", dI = 15) int populationSize,
+      @Param(value = "populationSize", dI = 15) int populationSize,
       @Param(value = "nEval") int nEval,
       @Param(value = "differentialWeight", dD = 0.5) double differentialWeight,
       @Param(value = "crossoverProb", dD = 0.8) double crossoverProb,
