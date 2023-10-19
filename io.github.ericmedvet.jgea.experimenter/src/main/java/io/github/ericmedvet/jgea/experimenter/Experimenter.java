@@ -26,6 +26,8 @@ import io.github.ericmedvet.jgea.core.listener.ScreenProgressMonitor;
 import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jnb.core.MapNamedParamMap;
 import io.github.ericmedvet.jnb.core.NamedBuilder;
+import io.github.ericmedvet.jnb.core.ProjectInfoProvider;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -54,7 +56,7 @@ public class Experimenter {
       ExecutorService runExecutorService,
       ExecutorService listenerExecutorService,
       boolean closeListeners) {
-    this.namedBuilder = PreparedNamedBuilder.get().and(namedBuilder);
+    this.namedBuilder = namedBuilder;
     this.experimentExecutorService = experimentExecutorService;
     this.runExecutorService = runExecutorService;
     this.listenerExecutorService = listenerExecutorService;
@@ -104,6 +106,7 @@ public class Experimenter {
   }
 
   public void run(Experiment experiment, boolean verbose) {
+    ProjectInfoProvider.of(getClass()).ifPresent(pi -> L.info("Starting %s".formatted(pi)));
     // preapare factories
     List<? extends ListenerFactory<? super POSetPopulationState<?, ?, ?>, Run<?, ?, ?, ?>>>
         factories =
