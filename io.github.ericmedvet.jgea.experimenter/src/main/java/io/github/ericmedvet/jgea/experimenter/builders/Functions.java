@@ -20,12 +20,15 @@
 
 package io.github.ericmedvet.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jnb.core.Discoverable;
+
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.util.Base64;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
+@Discoverable(prefixTemplate = "ea.functions|s")
 public class Functions {
 
   private static final Logger L = Logger.getLogger(Functions.class.getName());

@@ -21,10 +21,13 @@
 package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
+import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
+
 import java.util.Comparator;
 import java.util.function.Function;
 
+@Discoverable(prefixTemplate = "ea.problem|p")
 public class Problems {
 
   private Problems() {}

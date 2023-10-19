@@ -24,9 +24,12 @@ import io.github.ericmedvet.jgea.problem.regression.NumericalDataset;
 import io.github.ericmedvet.jgea.problem.regression.multivariate.MultivariateRegressionFitness;
 import io.github.ericmedvet.jgea.problem.regression.multivariate.MultivariateRegressionProblem;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
+import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
+
 import java.util.function.Supplier;
 
+@Discoverable(prefixTemplate = "ea.problem|p.multivariateRegression|mr")
 public class MultivariateRegressionProblems {
   private MultivariateRegressionProblems() {}
 

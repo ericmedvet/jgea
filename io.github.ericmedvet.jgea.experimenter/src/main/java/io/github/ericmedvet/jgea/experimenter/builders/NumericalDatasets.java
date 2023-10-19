@@ -24,11 +24,14 @@ import io.github.ericmedvet.jgea.problem.regression.ListNumericalDataset;
 import io.github.ericmedvet.jgea.problem.regression.NumericalDataset;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionProblem;
+import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Supplier;
 
+@Discoverable(prefixTemplate = "ea.problem|p.dataset|d.numerical|num")
 public class NumericalDatasets {
   private NumericalDatasets() {}
 

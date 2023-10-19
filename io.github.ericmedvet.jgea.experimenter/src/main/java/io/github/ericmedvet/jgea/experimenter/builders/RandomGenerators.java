@@ -20,10 +20,13 @@
 
 package io.github.ericmedvet.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
+
 import java.util.Random;
 import java.util.random.RandomGenerator;
 
+@Discoverable(prefixTemplate = "ea.randomGenerator|rg")
 public class RandomGenerators {
 
   private RandomGenerators() {}
