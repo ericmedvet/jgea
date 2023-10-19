@@ -44,7 +44,6 @@ import io.github.ericmedvet.jsdynsym.core.StatelessSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

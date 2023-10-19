@@ -27,7 +27,6 @@ import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegress
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.*;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Supplier;

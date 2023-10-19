@@ -26,7 +26,6 @@ import io.github.ericmedvet.jgea.problem.regression.multivariate.MultivariateReg
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
-
 import java.util.function.Supplier;
 
 @Discoverable(prefixTemplate = "ea.problem|p.multivariateRegression|mr")

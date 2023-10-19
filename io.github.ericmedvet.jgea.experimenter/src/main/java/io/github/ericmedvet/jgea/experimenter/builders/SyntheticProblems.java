@@ -24,7 +24,6 @@ import io.github.ericmedvet.jgea.problem.grid.CharShapeApproximation;
 import io.github.ericmedvet.jgea.problem.synthetic.*;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
-
 import java.io.IOException;
 
 @Discoverable(prefixTemplate = "ea.problem|p.synthetic|s")

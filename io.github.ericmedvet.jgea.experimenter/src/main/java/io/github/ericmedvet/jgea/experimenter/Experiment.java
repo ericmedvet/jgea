@@ -24,7 +24,6 @@ import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
 import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
-
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;

@@ -27,7 +27,6 @@ import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jnb.core.MapNamedParamMap;
 import io.github.ericmedvet.jnb.core.NamedBuilder;
 import io.github.ericmedvet.jnb.core.ProjectInfoProvider;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;

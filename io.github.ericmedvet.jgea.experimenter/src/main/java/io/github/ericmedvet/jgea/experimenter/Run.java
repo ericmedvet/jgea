@@ -30,7 +30,6 @@ import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.core.ParamMap;
-
 import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;

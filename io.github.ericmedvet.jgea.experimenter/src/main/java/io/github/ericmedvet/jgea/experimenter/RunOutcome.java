@@ -22,7 +22,6 @@ package io.github.ericmedvet.jgea.experimenter;
 
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
-
 import java.util.List;
 
 @Discoverable(prefixTemplate = "ea")
