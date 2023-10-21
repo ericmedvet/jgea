@@ -24,7 +24,7 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.order.DAGPartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationStateC;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -65,7 +65,7 @@ public class SimpleEvolutionaryStrategy<S, Q>
     this.remap = remap;
   }
 
-  public static class State<S, Q> extends POSetPopulationState<List<Double>, S, Q> {
+  public static class State<S, Q> extends POSetPopulationStateC<List<Double>, S, Q> {
     protected double[] means;
 
     public State() {

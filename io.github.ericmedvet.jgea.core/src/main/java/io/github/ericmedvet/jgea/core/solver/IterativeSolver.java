@@ -21,13 +21,13 @@ package io.github.ericmedvet.jgea.core.solver;
 
 import io.github.ericmedvet.jgea.core.listener.Listener;
 import io.github.ericmedvet.jgea.core.problem.Problem;
-import io.github.ericmedvet.jgea.core.util.Copyable;
+import io.github.ericmedvet.jgea.core.solver.state.State;
 import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
 
-public interface IterativeSolver<T extends Copyable, P extends Problem<S>, S> extends Solver<P, S> {
+public interface IterativeSolver<T extends State, P extends Problem<S>, S> extends Solver<P, S> {
 
   Collection<S> extractSolutions(
       P problem, RandomGenerator random, ExecutorService executor, T state) throws SolverException;
@@ -37,7 +37,7 @@ public interface IterativeSolver<T extends Copyable, P extends Problem<S>, S> ex
   boolean terminate(P problem, RandomGenerator random, ExecutorService executor, T state)
       throws SolverException;
 
-  void update(P problem, RandomGenerator random, ExecutorService executor, T state)
+  T update(P problem, RandomGenerator random, ExecutorService executor, T state)
       throws SolverException;
 
   @Override
@@ -46,15 +46,14 @@ public interface IterativeSolver<T extends Copyable, P extends Problem<S>, S> ex
     return solve(problem, random, executor, Listener.deaf());
   }
 
-  @SuppressWarnings("unchecked")
   default Collection<S> solve(
       P problem, RandomGenerator random, ExecutorService executor, Listener<? super T> listener)
       throws SolverException {
     T state = init(problem, random, executor);
     listener.listen(state);
     while (!terminate(problem, random, executor, state)) {
-      update(problem, random, executor, state);
-      listener.listen((T) state.immutableCopy());
+      state = update(problem, random, executor, state);
+      listener.listen(state);
     }
     listener.done();
     return extractSolutions(problem, random, executor, state);
@@ -87,9 +86,10 @@ public interface IterativeSolver<T extends Copyable, P extends Problem<S>, S> ex
       }
 
       @Override
-      public void update(P2 problem, RandomGenerator random, ExecutorService executor, T state)
+      public T update(P2 problem, RandomGenerator random, ExecutorService executor, T state)
           throws SolverException {
-        thisIterativeSolver.update(problemTransformer.apply(problem), random, executor, state);
+        return thisIterativeSolver.update(
+            problemTransformer.apply(problem), random, executor, state);
       }
     };
   }

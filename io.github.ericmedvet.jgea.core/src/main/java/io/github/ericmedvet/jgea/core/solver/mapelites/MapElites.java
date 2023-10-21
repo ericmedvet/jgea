@@ -29,7 +29,7 @@ import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSolver;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationStateC;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -65,7 +65,7 @@ public class MapElites<G, P extends QualityBasedProblem<S, Q>, S, Q>
     features = MapOfElites.buildFeatures(featuresSizes, featuresMinValues, featuresMaxValues);
   }
 
-  public static class State<G, S, Q> extends POSetPopulationState<G, S, Q> {
+  public static class State<G, S, Q> extends POSetPopulationStateC<G, S, Q> {
 
     private final MapOfElites<Individual<G, S, Q>> mapOfElites;
 

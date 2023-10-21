@@ -25,7 +25,7 @@ import io.github.ericmedvet.jgea.core.order.DAGPartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.sequence.FixedLengthListFactory;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationStateC;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -66,7 +66,7 @@ public class OpenAIEvolutionaryStrategy<S, Q>
     gaussianSamplesFactory = new FixedLengthListFactory<>(n, RandomGenerator::nextGaussian);
   }
 
-  public static class State<S, Q> extends POSetPopulationState<List<Double>, S, Q> {
+  public static class State<S, Q> extends POSetPopulationStateC<List<Double>, S, Q> {
     private final boolean wDecay = false;
     private final double stepSize = 0.02;
     private final double beta1 = 0.9;

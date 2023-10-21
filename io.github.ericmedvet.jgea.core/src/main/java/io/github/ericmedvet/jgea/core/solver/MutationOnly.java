@@ -24,7 +24,7 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.selector.Selector;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationStateC;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +35,7 @@ import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
 public class MutationOnly<
-        T extends POSetPopulationState<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q>
+        T extends POSetPopulationStateC<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q>
     extends StandardEvolver<T, P, G, S, Q> {
 
   private final Mutation<G> mutation;

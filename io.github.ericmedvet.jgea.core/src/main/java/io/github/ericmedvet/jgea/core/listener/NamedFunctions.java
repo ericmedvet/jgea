@@ -21,8 +21,8 @@
 package io.github.ericmedvet.jgea.core.listener;
 
 import io.github.ericmedvet.jgea.core.solver.Individual;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
-import io.github.ericmedvet.jgea.core.solver.state.State;
+import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationStateC;
+import io.github.ericmedvet.jgea.core.solver.state.StateC;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.core.util.Sized;
@@ -39,7 +39,7 @@ public class NamedFunctions {
 
   public static <G, S, F>
       NamedFunction<
-              POSetPopulationState<? extends G, ? extends S, ? extends F>,
+              POSetPopulationStateC<? extends G, ? extends S, ? extends F>,
               Collection<? extends Individual<? extends G, ? extends S, ? extends F>>>
           all() {
     return f("all", e -> e.getPopulation().all());
@@ -72,15 +72,15 @@ public class NamedFunctions {
 
   public static <G, S, F>
       NamedFunction<
-              POSetPopulationState<? extends G, ? extends S, ? extends F>,
+              POSetPopulationStateC<? extends G, ? extends S, ? extends F>,
               Individual<? extends G, ? extends S, ? extends F>>
           best() {
     return f("best", e -> Misc.first(e.getPopulation().firsts()));
   }
 
   public static <G, S, F>
-      NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Long> births() {
-    return f("births", "%5d", POSetPopulationState::getNOfBirths);
+      NamedFunction<POSetPopulationStateC<? extends G, ? extends S, ? extends F>, Long> births() {
+    return f("births", "%5d", POSetPopulationStateC::getNOfBirths);
   }
 
   public static <F, T> NamedFunction<F, T> cachedF(String name, Function<F, T> function) {
@@ -97,11 +97,11 @@ public class NamedFunctions {
     return f(name, format, Misc.cached(function, size));
   }
 
-  public static <T> NamedFunction<State, T> constant(String name, String format, T value) {
+  public static <T> NamedFunction<StateC, T> constant(String name, String format, T value) {
     return f(name, format, e -> value);
   }
 
-  public static <T> NamedFunction<State, T> constant(String name, T value) {
+  public static <T> NamedFunction<StateC, T> constant(String name, T value) {
     return constant(name, NamedFunction.format(value.toString().length()), value);
   }
 
@@ -113,7 +113,7 @@ public class NamedFunctions {
             individuals.stream().map(mapper).collect(java.util.stream.Collectors.toList()));
   }
 
-  public static NamedFunction<State, Float> elapsedSeconds() {
+  public static NamedFunction<StateC, Float> elapsedSeconds() {
     return f("elapsed.seconds", "%5.1f", e -> e.getElapsedMillis() / 1000f);
   }
 
@@ -127,7 +127,7 @@ public class NamedFunctions {
 
   public static <G, S, F>
       NamedFunction<
-              POSetPopulationState<? extends G, ? extends S, ? extends F>,
+              POSetPopulationStateC<? extends G, ? extends S, ? extends F>,
               Collection<? extends Individual<? extends G, ? extends S, ? extends F>>>
           firsts() {
     return f("firsts", e -> e.getPopulation().firsts());
@@ -138,9 +138,9 @@ public class NamedFunctions {
   }
 
   public static <G, S, F>
-      NamedFunction<POSetPopulationState<? extends G, ? extends S, ? extends F>, Long>
+      NamedFunction<POSetPopulationStateC<? extends G, ? extends S, ? extends F>, Long>
           fitnessEvaluations() {
-    return f("fitness.evaluations", "%5d", POSetPopulationState::getNOfFitnessEvaluations);
+    return f("fitness.evaluations", "%5d", POSetPopulationStateC::getNOfFitnessEvaluations);
   }
 
   public static <G, S, F>
@@ -170,13 +170,13 @@ public class NamedFunctions {
                 bins));
   }
 
-  public static NamedFunction<State, Long> iterations() {
-    return f("iterations", "%4d", State::getNOfIterations);
+  public static NamedFunction<StateC, Long> iterations() {
+    return f("iterations", "%4d", StateC::getNOfIterations);
   }
 
   public static <G, S, F>
       NamedFunction<
-              POSetPopulationState<? extends G, ? extends S, ? extends F>,
+              POSetPopulationStateC<? extends G, ? extends S, ? extends F>,
               Collection<? extends Individual<? extends G, ? extends S, ? extends F>>>
           lasts() {
     return f("lasts", e -> e.getPopulation().lasts());
@@ -202,7 +202,7 @@ public class NamedFunctions {
     return f("one", Misc::first);
   }
 
-  public static NamedFunction<State, Double> progress() {
+  public static NamedFunction<StateC, Double> progress() {
     return f("progress", "%4.2f", s -> s.getProgress().rate());
   }
 

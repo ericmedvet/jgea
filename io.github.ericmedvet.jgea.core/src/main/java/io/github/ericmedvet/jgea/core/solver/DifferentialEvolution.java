@@ -24,7 +24,7 @@ import io.github.ericmedvet.jgea.core.order.DAGPartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationStateC;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,7 +37,7 @@ import java.util.random.RandomGenerator;
 
 public class DifferentialEvolution<S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        POSetPopulationState<List<Double>, S, Q>,
+        POSetPopulationStateC<List<Double>, S, Q>,
         TotalOrderQualityBasedProblem<S, Q>,
         List<Double>,
         S,
@@ -52,7 +52,7 @@ public class DifferentialEvolution<S, Q>
       Function<? super List<Double>, ? extends S> solutionMapper,
       Factory<? extends List<Double>> genotypeFactory,
       int populationSize,
-      Predicate<? super POSetPopulationState<List<Double>, S, Q>> stopCondition,
+      Predicate<? super POSetPopulationStateC<List<Double>, S, Q>> stopCondition,
       double differentialWeight,
       double crossoverProb,
       boolean remap) {
@@ -96,11 +96,11 @@ public class DifferentialEvolution<S, Q>
   }
 
   @Override
-  protected POSetPopulationState<List<Double>, S, Q> initState(
+  protected POSetPopulationStateC<List<Double>, S, Q> initState(
       TotalOrderQualityBasedProblem<S, Q> problem,
       RandomGenerator random,
       ExecutorService executor) {
-    return new POSetPopulationState<>();
+    return new POSetPopulationStateC<>();
   }
 
   @Override
@@ -108,7 +108,7 @@ public class DifferentialEvolution<S, Q>
       TotalOrderQualityBasedProblem<S, Q> problem,
       RandomGenerator random,
       ExecutorService executor,
-      POSetPopulationState<List<Double>, S, Q> state)
+      POSetPopulationStateC<List<Double>, S, Q> state)
       throws SolverException {
     List<Individual<List<Double>, S, Q>> offspring = new ArrayList<>(populationSize * 2);
     Collection<List<Double>> trialGenotypes = computeTrials(state.getPopulation(), random);

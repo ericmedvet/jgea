@@ -19,6 +19,7 @@
  */
 module io.github.ericmedvet.jgea.tui {
   requires io.github.ericmedvet.jgea.core;
+
   requires java.logging;
   requires com.googlecode.lanterna;
   requires jdk.management;

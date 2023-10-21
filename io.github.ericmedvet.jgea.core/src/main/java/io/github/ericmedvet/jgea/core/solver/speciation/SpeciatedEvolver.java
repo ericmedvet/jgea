@@ -29,7 +29,7 @@ import io.github.ericmedvet.jgea.core.selector.Last;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.solver.StandardEvolver;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationStateC;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import java.time.LocalDateTime;
@@ -83,7 +83,7 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
 
   public record Species<T>(Collection<T> elements, T representative) {}
 
-  public static class State<G, S, Q> extends POSetPopulationState<G, S, Q> {
+  public static class State<G, S, Q> extends POSetPopulationStateC<G, S, Q> {
     private Collection<Species<Individual<G, S, Q>>> parentSpecies;
 
     public State() {

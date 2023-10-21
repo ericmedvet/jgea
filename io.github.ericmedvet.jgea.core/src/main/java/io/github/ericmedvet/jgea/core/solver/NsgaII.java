@@ -25,7 +25,7 @@ import io.github.ericmedvet.jgea.core.order.DAGPartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.MultiHomogeneousObjectiveProblem;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationStateC;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import java.time.LocalDateTime;
@@ -103,7 +103,7 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
     }
   }
 
-  public static class State<G, S> extends POSetPopulationState<G, S, List<Double>> {
+  public static class State<G, S> extends POSetPopulationStateC<G, S, List<Double>> {
 
     private List<RankedWithDistanceIndividual<G, S>> rankedWithDistanceIndividuals;
 

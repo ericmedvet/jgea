@@ -24,7 +24,7 @@ import io.github.ericmedvet.jgea.core.order.DAGPartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationStateC;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import java.time.LocalDateTime;
@@ -40,8 +40,8 @@ import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
 public class CooperativeSolver<
-        T1 extends POSetPopulationState<G1, S1, Q>,
-        T2 extends POSetPopulationState<G2, S2, Q>,
+        T1 extends POSetPopulationStateC<G1, S1, Q>,
+        T2 extends POSetPopulationStateC<G2, S2, Q>,
         G1,
         G2,
         S1,
@@ -84,15 +84,15 @@ public class CooperativeSolver<
   }
 
   public static class State<
-          T1 extends POSetPopulationState<G1, S1, Q>,
-          T2 extends POSetPopulationState<G2, S2, Q>,
+          T1 extends POSetPopulationStateC<G1, S1, Q>,
+          T2 extends POSetPopulationStateC<G2, S2, Q>,
           G1,
           G2,
           S1,
           S2,
           S,
           Q>
-      extends POSetPopulationState<Void, S, Q> {
+      extends POSetPopulationStateC<Void, S, Q> {
     private final T1 state1;
     private final T2 state2;
 

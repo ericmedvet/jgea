@@ -24,7 +24,7 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.order.DAGPartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationStateC;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,7 +38,7 @@ import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
 public abstract class AbstractPopulationBasedIterativeSolver<
-        T extends POSetPopulationState<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q>
+        T extends POSetPopulationStateC<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q>
     implements IterativeSolver<T, P, S> {
 
   protected final Function<? super G, ? extends S> solutionMapper;
@@ -71,14 +71,15 @@ public abstract class AbstractPopulationBasedIterativeSolver<
     return results;
   }
 
-  protected static <T extends POSetPopulationState<G, S, F>, G, S, F> List<Individual<G, S, F>> map(
-      Collection<? extends G> genotypes,
-      Collection<Individual<G, S, F>> individuals,
-      Function<? super G, ? extends S> solutionMapper,
-      Function<? super S, ? extends F> fitnessFunction,
-      ExecutorService executor,
-      T state)
-      throws SolverException {
+  protected static <T extends POSetPopulationStateC<G, S, F>, G, S, F>
+      List<Individual<G, S, F>> map(
+          Collection<? extends G> genotypes,
+          Collection<Individual<G, S, F>> individuals,
+          Function<? super G, ? extends S> solutionMapper,
+          Function<? super S, ? extends F> fitnessFunction,
+          ExecutorService executor,
+          T state)
+          throws SolverException {
     List<Callable<Individual<G, S, F>>> callables =
         new ArrayList<>(genotypes.size() + individuals.size());
     callables.addAll(
