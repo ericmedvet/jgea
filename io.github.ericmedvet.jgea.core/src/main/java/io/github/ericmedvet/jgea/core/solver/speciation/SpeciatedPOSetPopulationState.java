@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * jgea-tui
+ * jgea-core
  * %%
  * Copyright (C) 2018 - 2023 Eric Medvet
  * %%
@@ -17,13 +17,16 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-module io.github.ericmedvet.jgea.tui {
-  requires io.github.ericmedvet.jgea.core;
-  requires java.logging;
-  requires com.googlecode.lanterna;
-  requires jdk.management;
+package io.github.ericmedvet.jgea.core.solver.speciation;
 
-  exports io.github.ericmedvet.jgea.tui;
-  exports io.github.ericmedvet.jgea.tui.util;
-  exports io.github.ericmedvet.jgea.tui.table;
+import io.github.ericmedvet.jgea.core.solver.Individual;
+import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import java.util.Collection;
+
+/**
+ * @author "Eric Medvet" on 2023/10/21 for jgea
+ */
+public interface SpeciatedPOSetPopulationState<I extends Individual<G, S, Q>, G, S, Q>
+    extends POSetPopulationState<I, G, S, Q> {
+  Collection<SpeciatedEvolver.Species<I>> parentSpecies();
 }

@@ -24,21 +24,19 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.GeneticOperator;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.selector.Selector;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationStateC;
+import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
-public class StandardWithEnforcedDiversityEvolver<
-        T extends POSetPopulationStateC<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q>
-    extends StandardEvolver<T, P, G, S, Q> {
+public class StandardWithEnforcedDiversityEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
+    extends StandardEvolver<P, G, S, Q> {
 
   private final int maxAttempts;
 
@@ -46,14 +44,13 @@ public class StandardWithEnforcedDiversityEvolver<
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       int populationSize,
-      Predicate<? super T> stopCondition,
+      Predicate<? super POSetPopulationState<Individual<G, S, Q>, G, S, Q>> stopCondition,
       Map<GeneticOperator<G>, Double> operators,
       Selector<? super Individual<? super G, ? super S, ? super Q>> parentSelector,
       Selector<? super Individual<? super G, ? super S, ? super Q>> unsurvivalSelector,
       int offspringSize,
       boolean overlapping,
       boolean remap,
-      BiFunction<P, RandomGenerator, T> stateInitializer,
       int maxAttempts) {
     super(
         solutionMapper,
@@ -65,17 +62,20 @@ public class StandardWithEnforcedDiversityEvolver<
         unsurvivalSelector,
         offspringSize,
         overlapping,
-        remap,
-        stateInitializer);
+        remap);
     this.maxAttempts = maxAttempts;
   }
 
   @Override
-  protected Collection<Individual<G, S, Q>> buildOffspring(
-      T state, P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
+  protected Collection<Individual<G, S, Q>> buildOffspringGenotypes(
+      POSetPopulationState<Individual<G, S, Q>, G, S, Q> state,
+      P problem,
+      RandomGenerator random,
+      ExecutorService executor)
+      throws SolverException {
     Collection<G> offspringGenotypes = new ArrayList<>();
     Collection<G> existingGenotypes =
-        state.getPopulation().all().stream().map(Individual::genotype).toList();
+        state.population().all().stream().map(Individual::genotype).toList();
     while (offspringGenotypes.size() < offspringSize) {
       GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
       List<G> parentGenotypes = new ArrayList<>(operator.arity());
@@ -83,7 +83,7 @@ public class StandardWithEnforcedDiversityEvolver<
       while (true) {
         parentGenotypes.clear();
         for (int j = 0; j < operator.arity(); j++) {
-          Individual<G, S, Q> parent = parentSelector.select(state.getPopulation(), random);
+          Individual<G, S, Q> parent = parentSelector.select(state.population(), random);
           parentGenotypes.add(parent.genotype());
         }
         List<G> childGenotypes = new ArrayList<>(operator.apply(parentGenotypes, random));
@@ -102,7 +102,7 @@ public class StandardWithEnforcedDiversityEvolver<
         attempts = attempts + 1;
       }
     }
-    return map(
-        offspringGenotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state);
+    return getAll(
+        map(offspringGenotypes, state.nOfIterations(), problem.qualityFunction(), executor));
   }
 }

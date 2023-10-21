@@ -134,7 +134,7 @@ public class NamedFunctions {
   }
 
   public static <F> NamedFunction<Individual<?, ?, ? extends F>, F> fitness() {
-    return f("fitness", Individual::fitness);
+    return f("fitness", Individual::quality);
   }
 
   public static <G, S, F>

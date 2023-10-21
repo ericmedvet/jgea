@@ -25,73 +25,82 @@ import io.github.ericmedvet.jgea.core.order.DAGPartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.selector.Selector;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationStateC;
+import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POSetState;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.random.RandomGenerator;
 
-public class StandardEvolver<
-        T extends POSetPopulationStateC<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q>
-    extends AbstractPopulationBasedIterativeSolver<T, P, G, S, Q> {
+public class StandardEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
+    extends AbstractPopulationBasedIterativeSolver<
+        POSetPopulationState<Individual<G, S, Q>, G, S, Q>, P, Individual<G, S, Q>, G, S, Q> {
 
   private static final Logger L = Logger.getLogger(StandardEvolver.class.getName());
   protected final Map<GeneticOperator<G>, Double> operators;
   protected final Selector<? super Individual<? super G, ? super S, ? super Q>> parentSelector;
   protected final Selector<? super Individual<? super G, ? super S, ? super Q>> unsurvivalSelector;
+  protected final int populationSize;
   protected final int offspringSize;
   protected final boolean overlapping;
-  protected final boolean remap;
-  protected final BiFunction<P, RandomGenerator, T> stateInitializer;
 
   public StandardEvolver(
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       int populationSize,
-      Predicate<? super T> stopCondition,
+      Predicate<? super POSetPopulationState<Individual<G, S, Q>, G, S, Q>> stopCondition,
       Map<GeneticOperator<G>, Double> operators,
       Selector<? super Individual<? super G, ? super S, ? super Q>> parentSelector,
       Selector<? super Individual<? super G, ? super S, ? super Q>> unsurvivalSelector,
       int offspringSize,
       boolean overlapping,
-      boolean remap,
-      BiFunction<P, RandomGenerator, T> stateInitializer) {
-    super(solutionMapper, genotypeFactory, populationSize, stopCondition);
+      boolean remap) {
+    super(solutionMapper, genotypeFactory, i -> i, stopCondition, remap);
     this.operators = operators;
     this.parentSelector = parentSelector;
     this.unsurvivalSelector = unsurvivalSelector;
+    this.populationSize = populationSize;
     this.offspringSize = offspringSize;
     this.overlapping = overlapping;
-    this.remap = remap;
-    this.stateInitializer = stateInitializer;
   }
 
-  protected Collection<Individual<G, S, Q>> buildOffspring(
-      T state, P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
+  protected Collection<G> buildOffspringGenotypes(
+      POSetPopulationState<Individual<G, S, Q>, G, S, Q> state,
+      P problem,
+      RandomGenerator random,
+      ExecutorService executor)
+      throws SolverException {
     Collection<G> offspringGenotypes = new ArrayList<>();
     while (offspringGenotypes.size() < offspringSize) {
       GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
       List<G> parentGenotypes = new ArrayList<>(operator.arity());
       for (int j = 0; j < operator.arity(); j++) {
-        Individual<G, S, Q> parent = parentSelector.select(state.getPopulation(), random);
+        Individual<G, S, Q> parent = parentSelector.select(state.population(), random);
         parentGenotypes.add(parent.genotype());
       }
       offspringGenotypes.addAll(operator.apply(parentGenotypes, random));
     }
-    return map(
-        offspringGenotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state);
+    return offspringGenotypes;
   }
 
   @Override
-  protected T initState(P problem, RandomGenerator random, ExecutorService executor) {
-    return stateInitializer.apply(problem, random);
+  public POSetPopulationState<Individual<G, S, Q>, G, S, Q> init(
+      P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
+    return new POSetState<>(
+        new DAGPartiallyOrderedCollection<>(
+            getAll(
+                map(
+                    genotypeFactory.build(populationSize, random),
+                    0,
+                    problem.qualityFunction(),
+                    executor)),
+            comparator(problem)));
   }
 
   protected Collection<Individual<G, S, Q>> trimPopulation(
@@ -106,30 +115,30 @@ public class StandardEvolver<
   }
 
   @Override
-  public void update(P problem, RandomGenerator random, ExecutorService executor, T state)
+  public POSetPopulationState<Individual<G, S, Q>, G, S, Q> update(
+      P problem,
+      RandomGenerator random,
+      ExecutorService executor,
+      POSetPopulationState<Individual<G, S, Q>, G, S, Q> state)
       throws SolverException {
-    Collection<Individual<G, S, Q>> offspring = buildOffspring(state, problem, random, executor);
-    L.fine(String.format("Offspring built: %d individuals", offspring.size()));
-    if (overlapping) {
-      if (remap) {
-        offspring.addAll(
-            map(
-                List.of(),
-                state.getPopulation().all(),
-                solutionMapper,
-                problem.qualityFunction(),
-                executor,
-                state));
-      } else {
-        offspring.addAll(state.getPopulation().all());
-      }
-      L.fine(String.format("Offspring merged with parents: %d individuals", offspring.size()));
-    }
-    offspring = trimPopulation(offspring, problem, random);
-    L.fine(String.format("Offspring trimmed: %d individuals", offspring.size()));
-    // update state
-    state.setPopulation(new DAGPartiallyOrderedCollection<>(offspring, comparator(problem)));
-    state.incNOfIterations();
-    state.updateElapsedMillis();
+    Collection<G> offspringGenotypes = buildOffspringGenotypes(state, problem, random, executor);
+    int nOfBirths = offspringGenotypes.size();
+    L.fine(String.format("%d offspring genotypes built", nOfBirths));
+    Collection<Individual<G, S, Q>> newPopulation =
+        map(
+            offspringGenotypes,
+            overlapping ? state.population().all() : List.of(),
+            state.nOfIterations(),
+            problem.qualityFunction(),
+            executor);
+    L.fine(String.format("Offspring merged with parents: %d individuals", newPopulation.size()));
+    newPopulation = trimPopulation(newPopulation, problem, random);
+    L.fine(String.format("Offspring trimmed: %d individuals", newPopulation.size()));
+    return POSetState.from(
+        (POSetState<Individual<G, S, Q>, G, S, Q>) state,
+        progress(state),
+        nOfBirths,
+        nOfBirths + (remap ? state.population().size() : 0),
+        new DAGPartiallyOrderedCollection<>(newPopulation, comparator(problem)));
   }
 }

@@ -21,58 +21,96 @@
 package io.github.ericmedvet.jgea.core.solver;
 
 import io.github.ericmedvet.jgea.core.Factory;
-import io.github.ericmedvet.jgea.core.order.DAGPartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
+import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationStateC;
-import java.util.Collection;
-import java.util.List;
+import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.util.Progress;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
 public class RandomSearch<P extends QualityBasedProblem<S, Q>, G, S, Q>
-    extends AbstractPopulationBasedIterativeSolver<POSetPopulationStateC<G, S, Q>, P, G, S, Q> {
+    extends AbstractPopulationBasedIterativeSolver<
+        POSetPopulationState<Individual<G, S, Q>, G, S, Q>, P, Individual<G, S, Q>, G, S, Q> {
+
+  protected record State<I extends Individual<G, S, Q>, G, S, Q>(
+      LocalDateTime startingDateTime,
+      long elapsedMillis,
+      int nOfIterations,
+      Progress progress,
+      long nOfBirths,
+      long nOfFitnessEvaluations,
+      I individual)
+      implements POSetPopulationState<I, G, S, Q> {
+    @Override
+    public PartiallyOrderedCollection<I> population() {
+      return PartiallyOrderedCollection.of(individual);
+    }
+
+    public static <I extends Individual<G, S, Q>, G, S, Q> State<I, G, S, Q> from(
+        State<I, G, S, Q> state,
+        Progress progress,
+        int nOfBirths,
+        int nOfFitnessEvaluations,
+        I individual) {
+      return new State<>(
+          state.startingDateTime,
+          ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
+          state.nOfIterations() + 1,
+          progress,
+          state.nOfBirths() + nOfBirths,
+          state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
+          individual);
+    }
+
+    public State(I individual) {
+      this(LocalDateTime.now(), 0, 0, Progress.NA, 1, 1, individual);
+    }
+  }
 
   public RandomSearch(
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
-      Predicate<? super POSetPopulationStateC<G, S, Q>> stopCondition) {
-    super(solutionMapper, genotypeFactory, 1, stopCondition);
+      Predicate<? super POSetPopulationState<Individual<G, S, Q>, G, S, Q>> stopCondition) {
+    super(solutionMapper, genotypeFactory, i -> i, stopCondition);
   }
 
   @Override
-  protected POSetPopulationStateC<G, S, Q> initState(
-      P problem, RandomGenerator random, ExecutorService executor) {
-    return new POSetPopulationStateC<>();
+  public POSetPopulationState<Individual<G, S, Q>, G, S, Q> init(
+      P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
+    return new State<>(
+        getAll(map(genotypeFactory.build(1, random), 0, problem.qualityFunction(), executor))
+            .iterator()
+            .next());
   }
 
   @Override
-  public void update(
+  public POSetPopulationState<Individual<G, S, Q>, G, S, Q> update(
       P problem,
       RandomGenerator random,
       ExecutorService executor,
-      POSetPopulationStateC<G, S, Q> state)
+      POSetPopulationState<Individual<G, S, Q>, G, S, Q> state)
       throws SolverException {
-    Individual<G, S, Q> currentIndividual = state.getPopulation().firsts().iterator().next();
-    G genotype = genotypeFactory.independent().build(random);
-    Collection<Individual<G, S, Q>> offspring =
-        map(
-            List.of(genotype),
-            List.of(),
-            solutionMapper,
-            problem.qualityFunction(),
-            executor,
-            state);
-    Individual<G, S, Q> newIndividual = offspring.iterator().next();
+    Individual<G, S, Q> currentIndividual = state.population().firsts().iterator().next();
+    Individual<G, S, Q> newIndividual =
+        getAll(
+                map(
+                    genotypeFactory.build(1, random),
+                    state.nOfIterations(),
+                    problem.qualityFunction(),
+                    executor))
+            .iterator()
+            .next();
     if (comparator(problem)
         .compare(newIndividual, currentIndividual)
         .equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
-      state.setPopulation(new DAGPartiallyOrderedCollection<>(offspring, comparator(problem)));
+      currentIndividual = newIndividual;
     }
-    // update state
-    state.incNOfIterations();
-    state.updateElapsedMillis();
+    return State.from(
+        (State<Individual<G, S, Q>, G, S, Q>) state, progress(state), 1, 1, currentIndividual);
   }
 }

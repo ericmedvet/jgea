@@ -21,6 +21,6 @@ package io.github.ericmedvet.jgea.core.solver;
 
 import java.io.Serializable;
 
-public record Individual<G, S, F>(
-    G genotype, S solution, F fitness, long fitnessMappingIteration, long genotypeBirthIteration)
+public record Individual<G, S, Q>(
+    G genotype, S solution, Q quality, long fitnessMappingIteration, long genotypeBirthIteration)
     implements Serializable {}

@@ -55,7 +55,7 @@ public class StopConditions {
       Predicate<POSetPopulationStateC<?, ?, ? extends F>> targetFitness(final F targetF) {
     return s ->
         s.getPopulation().firsts().stream()
-            .map(Individual::fitness)
+            .map(Individual::quality)
             .anyMatch(f -> f.compareTo(targetF) <= 0);
   }
 }

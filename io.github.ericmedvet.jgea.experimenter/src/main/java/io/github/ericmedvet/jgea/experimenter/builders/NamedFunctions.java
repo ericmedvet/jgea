@@ -173,7 +173,7 @@ public class NamedFunctions {
           NamedFunction<X, Individual<?, ?, F>> individualF,
       @Param(value = "s", dS = "%s") String s) {
     return NamedFunction.build(
-        c("fitness", individualF.getName()), s, x -> individualF.apply(x).fitness());
+        c("fitness", individualF.getName()), s, x -> individualF.apply(x).quality());
   }
 
   @SuppressWarnings("unused")

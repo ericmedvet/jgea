@@ -168,20 +168,20 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
         .forEach(
             m -> {
               Comparator<RankedIndividual<G, S>> mObjectiveComparator =
-                  Comparator.comparing(i -> i.individual.fitness().get(m), comparators.get(m));
+                  Comparator.comparing(i -> i.individual.quality().get(m), comparators.get(m));
               List<RankedWithDistanceIndividual<G, S>> mSortedIndividuals =
                   rankedWithDistanceIndividuals.stream().sorted(mObjectiveComparator).toList();
               mSortedIndividuals.get(0).crowdingDistance = Double.POSITIVE_INFINITY;
               mSortedIndividuals.get(l - 1).crowdingDistance = Double.POSITIVE_INFINITY;
               double mNormalization =
-                  mSortedIndividuals.get(l - 1).individual.fitness().get(m)
-                      - mSortedIndividuals.get(0).individual.fitness().get(m);
+                  mSortedIndividuals.get(l - 1).individual.quality().get(m)
+                      - mSortedIndividuals.get(0).individual.quality().get(m);
               IntStream.range(1, l - 2)
                   .forEach(
                       i -> {
                         double ithDistanceIncrement =
-                            (mSortedIndividuals.get(i + 1).individual.fitness().get(m)
-                                    - mSortedIndividuals.get(i - 1).individual.fitness().get(m))
+                            (mSortedIndividuals.get(i + 1).individual.quality().get(m)
+                                    - mSortedIndividuals.get(i - 1).individual.quality().get(m))
                                 / mNormalization;
                         mSortedIndividuals.get(i).crowdingDistance += ithDistanceIncrement;
                       });

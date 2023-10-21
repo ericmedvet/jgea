@@ -24,146 +24,153 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.order.DAGPartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationStateC;
+import io.github.ericmedvet.jgea.core.solver.state.ESState;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.logging.Logger;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
 public class SimpleEvolutionaryStrategy<S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        SimpleEvolutionaryStrategy.State<S, Q>,
+        ESState<Individual<List<Double>, S, Q>, S, Q>,
         TotalOrderQualityBasedProblem<S, Q>,
+        Individual<List<Double>, S, Q>,
         List<Double>,
         S,
         Q> {
 
+  private static final Logger L = Logger.getLogger(SimpleEvolutionaryStrategy.class.getName());
+  protected final int populationSize;
   protected final int nOfParents;
   protected final int nOfElites;
   protected final double sigma;
-  protected final boolean remap;
 
   public SimpleEvolutionaryStrategy(
       Function<? super List<Double>, ? extends S> solutionMapper,
       Factory<? extends List<Double>> genotypeFactory,
       int populationSize,
-      Predicate<? super State<S, Q>> stopCondition,
+      Predicate<? super ESState<Individual<List<Double>, S, Q>, S, Q>> stopCondition,
       int nOfParents,
       int nOfElites,
       double sigma,
       boolean remap) {
-    super(solutionMapper, genotypeFactory, populationSize, stopCondition);
+    super(solutionMapper, genotypeFactory, i -> i, stopCondition, remap);
+    this.populationSize = populationSize;
     this.nOfParents = nOfParents;
     this.nOfElites = nOfElites;
     this.sigma = sigma;
-    this.remap = remap;
   }
 
-  public static class State<S, Q> extends POSetPopulationStateC<List<Double>, S, Q> {
-    protected double[] means;
-
-    public State() {
-      means = new double[0];
-    }
-
-    protected State(
-        LocalDateTime startingDateTime,
-        long elapsedMillis,
-        long nOfIterations,
+  public record State<I extends Individual<List<Double>, S, Q>, S, Q>(
+      LocalDateTime startingDateTime,
+      long elapsedMillis,
+      int nOfIterations,
+      Progress progress,
+      long nOfBirths,
+      long nOfFitnessEvaluations,
+      PartiallyOrderedCollection<I> population,
+      List<Double> means)
+      implements ESState<I, S, Q> {
+    public static <I extends Individual<List<Double>, S, Q>, S, Q> State<I, S, Q> from(
+        State<I, S, Q> state,
         Progress progress,
-        long nOfBirths,
-        long nOfFitnessEvaluations,
-        PartiallyOrderedCollection<Individual<List<Double>, S, Q>> population,
-        double[] means) {
-      super(
-          startingDateTime,
-          elapsedMillis,
-          nOfIterations,
-          progress,
-          nOfBirths,
-          nOfFitnessEvaluations,
-          population);
-      this.means = means;
-    }
-
-    @Override
-    public State<S, Q> immutableCopy() {
+        int nOfBirths,
+        int nOfFitnessEvaluations,
+        PartiallyOrderedCollection<I> population,
+        List<Double> means) {
       return new State<>(
-          startingDateTime,
-          elapsedMillis,
-          nOfIterations,
+          state.startingDateTime,
+          ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
+          state.nOfIterations() + 1,
           progress,
-          nOfBirths,
-          nOfFitnessEvaluations,
-          population.immutableCopy(),
-          Arrays.copyOf(means, means.length));
+          state.nOfBirths() + nOfBirths,
+          state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
+          population,
+          means);
+    }
+
+    public State(PartiallyOrderedCollection<I> population) {
+      this(
+          LocalDateTime.now(),
+          0,
+          0,
+          Progress.NA,
+          population.size(),
+          population.size(),
+          population,
+          computeMeans(population.all().stream().map(Individual::genotype).toList()));
     }
   }
 
   @Override
-  protected State<S, Q> initState(
-      TotalOrderQualityBasedProblem<S, Q> problem,
-      RandomGenerator random,
-      ExecutorService executor) {
-    return new State<>();
+  public ESState<Individual<List<Double>, S, Q>, S, Q> init(
+      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
+      throws SolverException {
+    return new State<>(
+        new DAGPartiallyOrderedCollection<>(
+            getAll(
+                map(
+                    genotypeFactory.build(populationSize, random),
+                    0,
+                    problem.qualityFunction(),
+                    executor)),
+            comparator(problem)));
   }
 
   @Override
-  public void update(
+  public ESState<Individual<List<Double>, S, Q>, S, Q> update(
       TotalOrderQualityBasedProblem<S, Q> problem,
       RandomGenerator random,
       ExecutorService executor,
-      State<S, Q> state)
+      ESState<Individual<List<Double>, S, Q>, S, Q> state)
       throws SolverException {
     // sort population
     List<Individual<List<Double>, S, Q>> population =
-        state.getPopulation().all().stream().sorted(comparator(problem).comparator()).toList();
+        state.population().all().stream().sorted(comparator(problem).comparator()).toList();
     // select elites
     List<Individual<List<Double>, S, Q>> elites = population.stream().limit(nOfElites).toList();
     // select parents
-    List<Individual<List<Double>, S, Q>> parents =
-        population.stream().limit(Math.round(nOfParents)).toList();
+    List<Individual<List<Double>, S, Q>> parents = population.stream().limit(nOfParents).toList();
     // compute mean
-    if (parents.stream().map(i -> i.genotype().size()).distinct().count() > 1) {
-      throw new IllegalStateException(
-          String.format(
-              "Genotype size should be the same for all parents: found different sizes %s",
-              parents.stream().map(i -> i.genotype().size()).distinct().toList()));
-    }
-    int l = parents.get(0).genotype().size();
-    final double[] sums = new double[l];
-    parents.forEach(
-        i -> IntStream.range(0, l).forEach(j -> sums[j] = sums[j] + i.genotype().get(j)));
-    state.means = Arrays.stream(sums).map(v -> v / (double) parents.size()).toArray();
+    List<Double> means = computeMeans(parents.stream().map(Individual::genotype).toList());
     // generate offspring
     List<List<Double>> offspringGenotypes = new ArrayList<>();
     while (offspringGenotypes.size() < populationSize - elites.size()) {
-      offspringGenotypes.add(
-          Arrays.stream(state.means).map(m -> m + random.nextGaussian() * sigma).boxed().toList());
+      offspringGenotypes.add(means.stream().map(m -> m + random.nextGaussian() * sigma).toList());
     }
-    List<Individual<List<Double>, S, Q>> offspring = new ArrayList<>();
-    if (remap) {
-      map(offspringGenotypes, elites, solutionMapper, problem.qualityFunction(), executor, state);
-    } else {
-      offspring.addAll(elites);
-      offspring.addAll(
-          map(
-              offspringGenotypes,
-              List.of(),
-              solutionMapper,
-              problem.qualityFunction(),
-              executor,
-              state));
+    int nOfBirths = offspringGenotypes.size();
+    L.fine(String.format("%d offspring genotypes built", nOfBirths));
+    Collection<Individual<List<Double>, S, Q>> newPopulation =
+        map(offspringGenotypes, elites, state.nOfIterations(), problem.qualityFunction(), executor);
+    L.fine(String.format("Offspring and elite merged: %d individuals", newPopulation.size()));
+    return State.from(
+        (State<Individual<List<Double>, S, Q>, S, Q>) state,
+        progress(state),
+        nOfBirths,
+        nOfBirths + (remap ? elites.size() : 0),
+        new DAGPartiallyOrderedCollection<>(newPopulation, comparator(problem)),
+        means);
+  }
+
+  protected static List<Double> computeMeans(Collection<List<Double>> genotypes) {
+    if (genotypes.stream().map(List::size).distinct().count() > 1) {
+      throw new IllegalStateException(
+          String.format(
+              "Genotype size should be the same for all parents: found different sizes %s",
+              genotypes.stream().map(List::size).distinct().toList()));
     }
-    // update state
-    state.setPopulation(new DAGPartiallyOrderedCollection<>(offspring, comparator(problem)));
-    state.incNOfIterations();
-    state.updateElapsedMillis();
+    int l = genotypes.iterator().next().size();
+    final double[] sums = new double[l];
+    genotypes.forEach(g -> IntStream.range(0, l).forEach(j -> sums[j] = sums[j] + g.get(j)));
+    return Arrays.stream(sums).map(v -> v / (double) genotypes.size()).boxed().toList();
   }
 }

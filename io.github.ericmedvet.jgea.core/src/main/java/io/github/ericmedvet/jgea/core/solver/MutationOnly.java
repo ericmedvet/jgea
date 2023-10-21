@@ -24,19 +24,16 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.selector.Selector;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationStateC;
+import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
-public class MutationOnly<
-        T extends POSetPopulationStateC<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q>
-    extends StandardEvolver<T, P, G, S, Q> {
+public class MutationOnly<P extends QualityBasedProblem<S, Q>, G, S, Q>
+    extends StandardEvolver<P, G, S, Q> {
 
   private final Mutation<G> mutation;
 
@@ -44,9 +41,8 @@ public class MutationOnly<
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       int populationSize,
-      Predicate<? super T> stopCondition,
+      Predicate<? super POSetPopulationState<Individual<G, S, Q>, G, S, Q>> stopCondition,
       Selector<? super Individual<? super G, ? super S, ? super Q>> unsurvivalSelector,
-      BiFunction<P, RandomGenerator, T> stateInitializer,
       Mutation<G> mutation) {
     super(
         solutionMapper,
@@ -58,19 +54,18 @@ public class MutationOnly<
         unsurvivalSelector,
         0,
         true,
-        false,
-        stateInitializer);
+        false);
     this.mutation = mutation;
   }
 
   @Override
-  protected Collection<Individual<G, S, Q>> buildOffspring(
-      T state, P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
-    Collection<G> offspringGenotypes =
-        state.getPopulation().all().stream()
-            .map(i -> mutation.mutate(i.genotype(), random))
-            .toList();
-    return map(
-        offspringGenotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state);
+  protected Collection<G> buildOffspringGenotypes(
+      POSetPopulationState<Individual<G, S, Q>, G, S, Q> state,
+      P problem,
+      RandomGenerator random,
+      ExecutorService executor) {
+    return state.population().all().stream()
+        .map(i -> mutation.mutate(i.genotype(), random))
+        .toList();
   }
 }
