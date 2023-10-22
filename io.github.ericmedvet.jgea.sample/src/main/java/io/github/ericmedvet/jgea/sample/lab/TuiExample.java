@@ -33,7 +33,7 @@ import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedUniva
 import io.github.ericmedvet.jgea.core.selector.Last;
 import io.github.ericmedvet.jgea.core.selector.Tournament;
 import io.github.ericmedvet.jgea.core.solver.*;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.problem.regression.FormulaMapper;
 import io.github.ericmedvet.jgea.problem.regression.MathUtils;
@@ -49,7 +49,7 @@ import java.util.logging.Logger;
 
 public class TuiExample implements Runnable {
 
-  public static final List<NamedFunction<? super POSetPopulationState<?, ?, ?>, ?>>
+  public static final List<NamedFunction<? super POCPopulationState<?, ?, ?>, ?>>
       BASIC_FUNCTIONS =
           List.of(
               iterations(),
@@ -65,7 +65,7 @@ public class TuiExample implements Runnable {
               size().of(solution()).of(best()),
               fitnessMappingIteration().of(best()));
 
-  public static final List<NamedFunction<? super POSetPopulationState<?, ?, ? extends Double>, ?>>
+  public static final List<NamedFunction<? super POCPopulationState<?, ?, ? extends Double>, ?>>
       DOUBLE_FUNCTIONS =
           List.of(
               fitness().reformat("%5.3f").of(best()),
@@ -86,7 +86,7 @@ public class TuiExample implements Runnable {
 
   @Override
   public void run() {
-    TerminalMonitor<? super POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>> tm =
+    TerminalMonitor<? super POCPopulationState<?, ?, ? extends Double>, Map<String, Object>> tm =
         new TerminalMonitor<>(
             Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)),
             List.of(),
@@ -127,7 +127,7 @@ public class TuiExample implements Runnable {
     }
     List<
             IterativeSolver<
-                ? extends POSetPopulationState<?, NamedUnivariateRealFunction, Double>,
+                ? extends POCPopulationState<?, NamedUnivariateRealFunction, Double>,
                 SyntheticUnivariateRegressionProblem,
                 NamedUnivariateRealFunction>>
         solvers = new ArrayList<>();
@@ -154,7 +154,7 @@ public class TuiExample implements Runnable {
             100,
             true,
             false,
-            (srp, rnd) -> new POSetPopulationState<>()));
+            (srp, rnd) -> new POCPopulationState<>()));
     solvers.add(
         new StandardWithEnforcedDiversityEvolver<>(
             new FormulaMapper()
@@ -178,13 +178,13 @@ public class TuiExample implements Runnable {
             100,
             true,
             false,
-            (srp, rnd) -> new POSetPopulationState<>(),
+            (srp, rnd) -> new POCPopulationState<>(),
             100));
     int counter = 0;
     for (int seed : seeds) {
       Random r = new Random(1);
       for (IterativeSolver<
-              ? extends POSetPopulationState<?, NamedUnivariateRealFunction, Double>,
+              ? extends POCPopulationState<?, NamedUnivariateRealFunction, Double>,
               SyntheticUnivariateRegressionProblem,
               NamedUnivariateRealFunction>
           solver : solvers) {

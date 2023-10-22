@@ -23,7 +23,7 @@ package io.github.ericmedvet.jgea.experimenter;
 import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
 import io.github.ericmedvet.jgea.core.listener.ProgressMonitor;
 import io.github.ericmedvet.jgea.core.listener.ScreenProgressMonitor;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jnb.core.MapNamedParamMap;
 import io.github.ericmedvet.jnb.core.NamedBuilder;
 import io.github.ericmedvet.jnb.core.ProjectInfoProvider;
@@ -107,12 +107,12 @@ public class Experimenter {
   public void run(Experiment experiment, boolean verbose) {
     ProjectInfoProvider.of(getClass()).ifPresent(pi -> L.info("Starting %s".formatted(pi)));
     // preapare factories
-    List<? extends ListenerFactory<? super POSetPopulationState<?, ?, ?>, Run<?, ?, ?, ?>>>
+    List<? extends ListenerFactory<? super POCPopulationState<?, ?, ?>, Run<?, ?, ?, ?>>>
         factories =
             experiment.listeners().stream()
                 .map(l -> l.apply(experiment, listenerExecutorService))
                 .toList();
-    ListenerFactory<? super POSetPopulationState<?, ?, ?>, Run<?, ?, ?, ?>> factory =
+    ListenerFactory<? super POCPopulationState<?, ?, ?>, Run<?, ?, ?, ?>> factory =
         ListenerFactory.all(factories);
     List<ProgressMonitor> progressMonitors =
         factories.stream()

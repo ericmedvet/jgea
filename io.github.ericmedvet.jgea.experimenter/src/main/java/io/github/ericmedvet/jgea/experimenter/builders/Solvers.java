@@ -54,7 +54,7 @@ import io.github.ericmedvet.jgea.core.selector.Tournament;
 import io.github.ericmedvet.jgea.core.solver.*;
 import io.github.ericmedvet.jgea.core.solver.speciation.LazySpeciator;
 import io.github.ericmedvet.jgea.core.solver.speciation.SpeciatedEvolver;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jgea.experimenter.InvertibleMapper;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
@@ -74,7 +74,7 @@ public class Solvers {
       Function<
               S,
               StandardEvolver<
-                  POSetPopulationState<BitString, S, Q>,
+                  POCPopulationState<BitString, S, Q>,
                   QualityBasedProblem<S, Q>,
                   BitString,
                   S,
@@ -111,7 +111,7 @@ public class Solvers {
             nPop,
             true,
             remap,
-            (p, r) -> new POSetPopulationState<>());
+            (p, r) -> new POCPopulationState<>());
       } else {
         return new StandardWithEnforcedDiversityEvolver<>(
             mapper.mapperFor(exampleS),
@@ -125,7 +125,7 @@ public class Solvers {
             nPop,
             true,
             remap,
-            (p, r) -> new POSetPopulationState<>(),
+            (p, r) -> new POCPopulationState<>(),
             100);
       }
     };
@@ -190,7 +190,7 @@ public class Solvers {
       Function<
               S,
               StandardEvolver<
-                  POSetPopulationState<List<Double>, S, Q>,
+                  POCPopulationState<List<Double>, S, Q>,
                   QualityBasedProblem<S, Q>,
                   List<Double>,
                   S,
@@ -230,7 +230,7 @@ public class Solvers {
             nPop,
             true,
             remap,
-            (p, r) -> new POSetPopulationState<>());
+            (p, r) -> new POCPopulationState<>());
       } else {
         return new StandardWithEnforcedDiversityEvolver<>(
             mapper.mapperFor(exampleS),
@@ -244,7 +244,7 @@ public class Solvers {
             nPop,
             true,
             remap,
-            (p, r) -> new POSetPopulationState<>(),
+            (p, r) -> new POCPopulationState<>(),
             100);
       }
     };
@@ -255,7 +255,7 @@ public class Solvers {
       Function<
               S,
               StandardEvolver<
-                  POSetPopulationState<IntString, S, Q>,
+                  POCPopulationState<IntString, S, Q>,
                   QualityBasedProblem<S, Q>,
                   IntString,
                   S,
@@ -294,7 +294,7 @@ public class Solvers {
             nPop,
             true,
             remap,
-            (p, r) -> new POSetPopulationState<>());
+            (p, r) -> new POCPopulationState<>());
       } else {
         return new StandardWithEnforcedDiversityEvolver<>(
             mapper.mapperFor(exampleS),
@@ -308,7 +308,7 @@ public class Solvers {
             nPop,
             true,
             remap,
-            (p, r) -> new POSetPopulationState<>(),
+            (p, r) -> new POCPopulationState<>(),
             100);
       }
     };
@@ -319,7 +319,7 @@ public class Solvers {
       Function<
               S,
               StandardEvolver<
-                  POSetPopulationState<List<Tree<Element>>, S, Q>,
+                  POCPopulationState<List<Tree<Element>>, S, Q>,
                   QualityBasedProblem<S, Q>,
                   List<Tree<Element>>,
                   S,
@@ -412,7 +412,7 @@ public class Solvers {
             nPop,
             true,
             remap,
-            (p, r) -> new POSetPopulationState<>());
+            (p, r) -> new POCPopulationState<>());
       }
       return new StandardWithEnforcedDiversityEvolver<>(
           mapper.mapperFor(exampleS),
@@ -425,7 +425,7 @@ public class Solvers {
           nPop,
           true,
           remap,
-          (p, r) -> new POSetPopulationState<>(),
+          (p, r) -> new POCPopulationState<>(),
           nAttemptsDiversity);
     };
   }
@@ -561,7 +561,7 @@ public class Solvers {
       Function<
               S,
               StandardEvolver<
-                  POSetPopulationState<Tree<Element>, S, Q>,
+                  POCPopulationState<Tree<Element>, S, Q>,
                   QualityBasedProblem<S, Q>,
                   Tree<Element>,
                   S,
@@ -629,7 +629,7 @@ public class Solvers {
             nPop,
             true,
             remap,
-            (p, r) -> new POSetPopulationState<>());
+            (p, r) -> new POCPopulationState<>());
       }
       return new StandardWithEnforcedDiversityEvolver<>(
           mapper.mapperFor(exampleS),
@@ -642,7 +642,7 @@ public class Solvers {
           nPop,
           true,
           remap,
-          (p, r) -> new POSetPopulationState<>(),
+          (p, r) -> new POCPopulationState<>(),
           nAttemptsDiversity);
     };
   }

@@ -58,7 +58,7 @@ import io.github.ericmedvet.jgea.core.solver.*;
 import io.github.ericmedvet.jgea.core.solver.speciation.KMeansSpeciator;
 import io.github.ericmedvet.jgea.core.solver.speciation.LazySpeciator;
 import io.github.ericmedvet.jgea.core.solver.speciation.SpeciatedEvolver;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.problem.regression.FormulaMapper;
 import io.github.ericmedvet.jgea.problem.regression.MathUtils;
@@ -134,7 +134,7 @@ public class SymbolicRegressionComparison extends Worker {
             // new Pagie1(metric)
             );
     // consumers
-    List<NamedFunction<? super POSetPopulationState<?, ?, ? extends Double>, ?>> functions =
+    List<NamedFunction<? super POCPopulationState<?, ?, ? extends Double>, ?>> functions =
         List.of(
             iterations(),
             births(),
@@ -160,7 +160,7 @@ public class SymbolicRegressionComparison extends Worker {
                     NamedFunction.formatOfLongest(
                         problems.stream().map(p -> p.getClass().getSimpleName()).toList())),
             attribute("evolver").reformat("%20.20s"));
-    ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>>
+    ListenerFactory<POCPopulationState<?, ?, ? extends Double>, Map<String, Object>>
         listenerFactory = new TabularPrinter<>(functions, kFunctions);
     if (a("file", null) != null) {
       listenerFactory =
@@ -175,7 +175,7 @@ public class SymbolicRegressionComparison extends Worker {
             Function<
                 SyntheticUnivariateRegressionProblem,
                 IterativeSolver<
-                    ? extends POSetPopulationState<?, NamedUnivariateRealFunction, Double>,
+                    ? extends POCPopulationState<?, NamedUnivariateRealFunction, Double>,
                     SyntheticUnivariateRegressionProblem,
                     NamedUnivariateRealFunction>>>
         solvers = new TreeMap<>();
@@ -218,7 +218,7 @@ public class SymbolicRegressionComparison extends Worker {
               nPop,
               true,
               false,
-              (srp, r) -> new POSetPopulationState<>());
+              (srp, r) -> new POCPopulationState<>());
         });
     solvers.put(
         "tree-ga-noxover",
@@ -257,7 +257,7 @@ public class SymbolicRegressionComparison extends Worker {
               nPop,
               true,
               false,
-              (srp, r) -> new POSetPopulationState<>());
+              (srp, r) -> new POCPopulationState<>());
         });
     solvers.put(
         "tree-gadiv",
@@ -298,7 +298,7 @@ public class SymbolicRegressionComparison extends Worker {
               nPop,
               true,
               false,
-              (srp, r) -> new POSetPopulationState<>(),
+              (srp, r) -> new POCPopulationState<>(),
               diversityMaxAttempts);
         });
     solvers.put(
@@ -327,7 +327,7 @@ public class SymbolicRegressionComparison extends Worker {
               nPop,
               true,
               false,
-              (srp, r) -> new POSetPopulationState<>());
+              (srp, r) -> new POCPopulationState<>());
         });
     solvers.put(
         "cfgtree-ga-noxover",
@@ -351,7 +351,7 @@ public class SymbolicRegressionComparison extends Worker {
               nPop,
               true,
               false,
-              (srp, r) -> new POSetPopulationState<>());
+              (srp, r) -> new POCPopulationState<>());
         });
     solvers.put(
         "cfgtree-gadiv",
@@ -379,7 +379,7 @@ public class SymbolicRegressionComparison extends Worker {
               nPop,
               true,
               false,
-              (srp, r) -> new POSetPopulationState<>(),
+              (srp, r) -> new POCPopulationState<>(),
               diversityMaxAttempts);
         });
     solvers.put(
@@ -433,7 +433,7 @@ public class SymbolicRegressionComparison extends Worker {
                 nPop,
                 true,
                 false,
-                (srp, r) -> new POSetPopulationState<>()));
+                (srp, r) -> new POCPopulationState<>()));
     solvers.put(
         "fgraph-lim-ga-noxover",
         p ->
@@ -476,7 +476,7 @@ public class SymbolicRegressionComparison extends Worker {
                 nPop,
                 true,
                 false,
-                (srp, r) -> new POSetPopulationState<>()));
+                (srp, r) -> new POCPopulationState<>()));
     solvers.put(
         "fgraph-lim-speciated-noxover-kmeans",
         p ->
@@ -657,7 +657,7 @@ public class SymbolicRegressionComparison extends Worker {
                 nPop,
                 true,
                 false,
-                (srp, r) -> new POSetPopulationState<>(),
+                (srp, r) -> new POCPopulationState<>(),
                 diversityMaxAttempts));
     solvers.put(
         "fgraph-lim-speciated",
@@ -809,7 +809,7 @@ public class SymbolicRegressionComparison extends Worker {
                 nPop,
                 true,
                 false,
-                (srp, r) -> new POSetPopulationState<>()));
+                (srp, r) -> new POCPopulationState<>()));
     solvers.put(
         "ograph-seq-ga",
         p ->
@@ -857,7 +857,7 @@ public class SymbolicRegressionComparison extends Worker {
                 nPop,
                 true,
                 false,
-                (srp, r) -> new POSetPopulationState<>()));
+                (srp, r) -> new POCPopulationState<>()));
     solvers.put(
         "ograph-seq-speciated-noxover",
         p ->
@@ -947,7 +947,7 @@ public class SymbolicRegressionComparison extends Worker {
               nPop,
               true,
               false,
-              (srp, r) -> new POSetPopulationState<>());
+              (srp, r) -> new POCPopulationState<>());
         });
     solvers.put(
         "fgraph-hash-speciated",
@@ -1205,7 +1205,7 @@ public class SymbolicRegressionComparison extends Worker {
                 nPop,
                 true,
                 false,
-                (srp, r) -> new POSetPopulationState<>()));
+                (srp, r) -> new POCPopulationState<>()));
     solvers.put(
         "fgraph-seq-gadiv",
         p ->
@@ -1257,7 +1257,7 @@ public class SymbolicRegressionComparison extends Worker {
                 nPop,
                 true,
                 false,
-                (srp, r) -> new POSetPopulationState<>(),
+                (srp, r) -> new POCPopulationState<>(),
                 diversityMaxAttempts));
 
     // filter evolvers
@@ -1274,7 +1274,7 @@ public class SymbolicRegressionComparison extends Worker {
                 Function<
                     SyntheticUnivariateRegressionProblem,
                     IterativeSolver<
-                        ? extends POSetPopulationState<?, NamedUnivariateRealFunction, Double>,
+                        ? extends POCPopulationState<?, NamedUnivariateRealFunction, Double>,
                         SyntheticUnivariateRegressionProblem,
                         NamedUnivariateRealFunction>>>
             solverEntry : solvers.entrySet()) {
@@ -1286,7 +1286,7 @@ public class SymbolicRegressionComparison extends Worker {
           try {
             Stopwatch stopwatch = Stopwatch.createStarted();
             IterativeSolver<
-                    ? extends POSetPopulationState<?, NamedUnivariateRealFunction, Double>,
+                    ? extends POCPopulationState<?, NamedUnivariateRealFunction, Double>,
                     SyntheticUnivariateRegressionProblem,
                     NamedUnivariateRealFunction>
                 solver = solverEntry.getValue().apply(problem);

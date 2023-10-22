@@ -48,7 +48,7 @@ import io.github.ericmedvet.jgea.core.selector.Tournament;
 import io.github.ericmedvet.jgea.core.solver.*;
 import io.github.ericmedvet.jgea.core.solver.speciation.LazySpeciator;
 import io.github.ericmedvet.jgea.core.solver.speciation.SpeciatedEvolver;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.problem.extraction.ExtractionFitness;
@@ -112,7 +112,7 @@ public class ExtractionComparison extends Worker {
     List<
             NamedFunction<
                 ? super
-                    POSetPopulationState<?, ? extends Extractor<Character>, ? extends List<Double>>,
+                    POCPopulationState<?, ? extends Extractor<Character>, ? extends List<Double>>,
                 ?>>
         functions =
             List.of(
@@ -136,7 +136,7 @@ public class ExtractionComparison extends Worker {
             attribute("problem").reformat("%20.20s"),
             attribute("evolver").reformat("%20.20s"));
     ListenerFactory<
-            POSetPopulationState<?, ? extends Extractor<Character>, ? extends List<Double>>,
+        POCPopulationState<?, ? extends Extractor<Character>, ? extends List<Double>>,
             Map<String, Object>>
         listenerFactory = new TabularPrinter<>(functions, kFunctions);
     if (a("file", null) != null) {
@@ -152,7 +152,7 @@ public class ExtractionComparison extends Worker {
             Function<
                 RegexExtractionProblem,
                 IterativeSolver<
-                    ? extends POSetPopulationState<?, Extractor<Character>, List<Double>>,
+                    ? extends POCPopulationState<?, Extractor<Character>, List<Double>>,
                     QualityBasedProblem<Extractor<Character>, List<Double>>,
                     Extractor<Character>>>>
         solvers = new TreeMap<>();
@@ -177,7 +177,7 @@ public class ExtractionComparison extends Worker {
               nPop,
               true,
               false,
-              (ep, r) -> new POSetPopulationState<>());
+              (ep, r) -> new POCPopulationState<>());
         });
     solvers.put(
         "cfgtree-gadiv",
@@ -200,7 +200,7 @@ public class ExtractionComparison extends Worker {
               nPop,
               true,
               false,
-              (ep, r) -> new POSetPopulationState<>(),
+              (ep, r) -> new POCPopulationState<>(),
               diversityMaxAttempts);
         });
     solvers.put(
@@ -483,7 +483,7 @@ public class ExtractionComparison extends Worker {
               nPop,
               true,
               false,
-              (ep, r) -> new POSetPopulationState<>());
+              (ep, r) -> new POCPopulationState<>());
         });
     solvers.put(
         "dfa-hash+-speciated-noxover",
@@ -574,7 +574,7 @@ public class ExtractionComparison extends Worker {
                 Function<
                     RegexExtractionProblem,
                     IterativeSolver<
-                        ? extends POSetPopulationState<?, Extractor<Character>, List<Double>>,
+                        ? extends POCPopulationState<?, Extractor<Character>, List<Double>>,
                         QualityBasedProblem<Extractor<Character>, List<Double>>,
                         Extractor<Character>>>>
             solverEntry : solvers.entrySet()) {
@@ -587,7 +587,7 @@ public class ExtractionComparison extends Worker {
             RegexExtractionProblem p = problemEntry.getValue();
             Stopwatch stopwatch = Stopwatch.createStarted();
             IterativeSolver<
-                    ? extends POSetPopulationState<?, Extractor<Character>, List<Double>>,
+                    ? extends POCPopulationState<?, Extractor<Character>, List<Double>>,
                     QualityBasedProblem<Extractor<Character>, List<Double>>,
                     Extractor<Character>>
                 solver = solverEntry.getValue().apply(p);

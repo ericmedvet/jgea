@@ -21,7 +21,7 @@
 package io.github.ericmedvet.jgea.experimenter.net;
 
 import io.github.ericmedvet.jgea.core.listener.*;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
@@ -36,15 +36,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 public class NetListenerClient<G, S, Q>
-    implements ListenerFactory<POSetPopulationState<G, S, Q>, Run<?, G, S, Q>> {
+    implements ListenerFactory<POCPopulationState<G, S, Q>, Run<?, G, S, Q>> {
 
   private static final Logger L = Logger.getLogger(NetListenerClient.class.getName());
   private final String serverAddress;
   private final int serverPort;
   private final String serverKey;
   private final double pollInterval;
-  private final List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> stateFunctions;
-  private final List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> plotTableBuilders;
+  private final List<NamedFunction<? super POCPopulationState<G, S, Q>, ?>> stateFunctions;
+  private final List<PlotTableBuilder<? super POCPopulationState<G, S, Q>>> plotTableBuilders;
   private final List<NamedFunction<? super Run<?, G, S, Q>, ?>> runFunctions;
   private final Experiment experiment;
   private final Map<Integer, Update> updates;
@@ -57,8 +57,8 @@ public class NetListenerClient<G, S, Q>
       int serverPort,
       String serverKey,
       double pollInterval,
-      List<NamedFunction<? super POSetPopulationState<G, S, Q>, ?>> stateFunctions,
-      List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> plotTableBuilders,
+      List<NamedFunction<? super POCPopulationState<G, S, Q>, ?>> stateFunctions,
+      List<PlotTableBuilder<? super POCPopulationState<G, S, Q>>> plotTableBuilders,
       List<NamedFunction<? super Run<?, G, S, Q>, ?>> runFunctions,
       Experiment experiment) {
     this.serverAddress = serverAddress;
@@ -70,7 +70,7 @@ public class NetListenerClient<G, S, Q>
     this.runFunctions = runFunctions;
     this.experiment = experiment;
     // check plot builders
-    List<PlotTableBuilder<? super POSetPopulationState<G, S, Q>>> wrongPlotTableBuilders =
+    List<PlotTableBuilder<? super POCPopulationState<G, S, Q>>> wrongPlotTableBuilders =
         plotTableBuilders.stream().filter(ptb -> ptb.yFunctions().size() != 1).toList();
     if (!wrongPlotTableBuilders.isEmpty()) {
       throw new IllegalArgumentException(
@@ -84,10 +84,10 @@ public class NetListenerClient<G, S, Q>
   }
 
   @Override
-  public Listener<POSetPopulationState<G, S, Q>> build(Run<?, G, S, Q> run) {
+  public Listener<POCPopulationState<G, S, Q>> build(Run<?, G, S, Q> run) {
     return new Listener<>() {
       @Override
-      public void listen(POSetPopulationState<G, S, Q> state) {
+      public void listen(POCPopulationState<G, S, Q> state) {
         synchronized (updates) {
           Update update =
               updates.getOrDefault(
@@ -114,7 +114,7 @@ public class NetListenerClient<G, S, Q>
                 double maxX = Double.NaN;
                 if (p
                     instanceof
-                    XYPlotTableBuilder<? super POSetPopulationState<G, S, Q>>
+                    XYPlotTableBuilder<? super POCPopulationState<G, S, Q>>
                     xyPlotTableBuilder) {
                   minX = xyPlotTableBuilder.getMinX();
                   maxX = xyPlotTableBuilder.getMaxX();

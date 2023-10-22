@@ -24,7 +24,7 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.GeneticOperator;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.selector.Selector;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,7 +44,7 @@ public class StandardWithEnforcedDiversityEvolver<P extends QualityBasedProblem<
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       int populationSize,
-      Predicate<? super POSetPopulationState<Individual<G, S, Q>, G, S, Q>> stopCondition,
+      Predicate<? super POCPopulationState<Individual<G, S, Q>, G, S, Q>> stopCondition,
       Map<GeneticOperator<G>, Double> operators,
       Selector<? super Individual<? super G, ? super S, ? super Q>> parentSelector,
       Selector<? super Individual<? super G, ? super S, ? super Q>> unsurvivalSelector,
@@ -68,7 +68,7 @@ public class StandardWithEnforcedDiversityEvolver<P extends QualityBasedProblem<
 
   @Override
   protected Collection<Individual<G, S, Q>> buildOffspringGenotypes(
-      POSetPopulationState<Individual<G, S, Q>, G, S, Q> state,
+      POCPopulationState<Individual<G, S, Q>, G, S, Q> state,
       P problem,
       RandomGenerator random,
       ExecutorService executor)

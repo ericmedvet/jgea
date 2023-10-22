@@ -45,7 +45,7 @@ import java.util.random.RandomGenerator;
 
 public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        SpeciatedPOSetPopulationState<Individual<G, S, Q>, G, S, Q>,
+    SpeciatedPOCPopulationState<Individual<G, S, Q>, G, S, Q>,
         P,
         Individual<G, S, Q>,
         G,
@@ -62,7 +62,7 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       Function<Individual<G, S, Q>, Individual<G, S, Q>> individualBuilder,
-      Predicate<? super SpeciatedPOSetPopulationState<Individual<G, S, Q>, G, S, Q>> stopCondition,
+      Predicate<? super SpeciatedPOCPopulationState<Individual<G, S, Q>, G, S, Q>> stopCondition,
       Map<GeneticOperator<G>, Double> operators,
       int populationSize,
       boolean remap,
@@ -92,7 +92,7 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<I> population,
       Collection<Species<I>> parentSpecies)
-      implements SpeciatedPOSetPopulationState<I, G, S, Q> {
+      implements SpeciatedPOCPopulationState<I, G, S, Q> {
     public static <I extends Individual<G, S, Q>, G, S, Q> State<I, G, S, Q> from(
         State<I, G, S, Q> state,
         Progress progress,
@@ -125,7 +125,7 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
   }
 
   @Override
-  public SpeciatedPOSetPopulationState<Individual<G, S, Q>, G, S, Q> init(
+  public SpeciatedPOCPopulationState<Individual<G, S, Q>, G, S, Q> init(
       P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
     return new State<>(
         new DAGPartiallyOrderedCollection<>(
@@ -139,11 +139,11 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
   }
 
   @Override
-  public SpeciatedPOSetPopulationState<Individual<G, S, Q>, G, S, Q> update(
+  public SpeciatedPOCPopulationState<Individual<G, S, Q>, G, S, Q> update(
       P problem,
       RandomGenerator random,
       ExecutorService executor,
-      SpeciatedPOSetPopulationState<Individual<G, S, Q>, G, S, Q> state)
+      SpeciatedPOCPopulationState<Individual<G, S, Q>, G, S, Q> state)
       throws SolverException {
     Collection<Individual<G, S, Q>> parents = state.population().all();
     // partition in species

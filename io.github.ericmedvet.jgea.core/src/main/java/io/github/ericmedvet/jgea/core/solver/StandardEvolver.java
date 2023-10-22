@@ -25,8 +25,8 @@ import io.github.ericmedvet.jgea.core.order.DAGPartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.selector.Selector;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
-import io.github.ericmedvet.jgea.core.solver.state.POSetState;
+import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POCState;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,7 +40,7 @@ import java.util.random.RandomGenerator;
 
 public class StandardEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        POSetPopulationState<Individual<G, S, Q>, G, S, Q>, P, Individual<G, S, Q>, G, S, Q> {
+    POCPopulationState<Individual<G, S, Q>, G, S, Q>, P, Individual<G, S, Q>, G, S, Q> {
 
   private static final Logger L = Logger.getLogger(StandardEvolver.class.getName());
   protected final Map<GeneticOperator<G>, Double> operators;
@@ -54,7 +54,7 @@ public class StandardEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       int populationSize,
-      Predicate<? super POSetPopulationState<Individual<G, S, Q>, G, S, Q>> stopCondition,
+      Predicate<? super POCPopulationState<Individual<G, S, Q>, G, S, Q>> stopCondition,
       Map<GeneticOperator<G>, Double> operators,
       Selector<? super Individual<? super G, ? super S, ? super Q>> parentSelector,
       Selector<? super Individual<? super G, ? super S, ? super Q>> unsurvivalSelector,
@@ -71,7 +71,7 @@ public class StandardEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
   }
 
   protected Collection<G> buildOffspringGenotypes(
-      POSetPopulationState<Individual<G, S, Q>, G, S, Q> state,
+      POCPopulationState<Individual<G, S, Q>, G, S, Q> state,
       P problem,
       RandomGenerator random,
       ExecutorService executor)
@@ -90,9 +90,9 @@ public class StandardEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
   }
 
   @Override
-  public POSetPopulationState<Individual<G, S, Q>, G, S, Q> init(
+  public POCPopulationState<Individual<G, S, Q>, G, S, Q> init(
       P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
-    return new POSetState<>(
+    return new POCState<>(
         new DAGPartiallyOrderedCollection<>(
             getAll(
                 map(
@@ -115,11 +115,11 @@ public class StandardEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
   }
 
   @Override
-  public POSetPopulationState<Individual<G, S, Q>, G, S, Q> update(
+  public POCPopulationState<Individual<G, S, Q>, G, S, Q> update(
       P problem,
       RandomGenerator random,
       ExecutorService executor,
-      POSetPopulationState<Individual<G, S, Q>, G, S, Q> state)
+      POCPopulationState<Individual<G, S, Q>, G, S, Q> state)
       throws SolverException {
     Collection<G> offspringGenotypes = buildOffspringGenotypes(state, problem, random, executor);
     int nOfBirths = offspringGenotypes.size();
@@ -134,8 +134,8 @@ public class StandardEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
     L.fine(String.format("Offspring merged with parents: %d individuals", newPopulation.size()));
     newPopulation = trimPopulation(newPopulation, problem, random);
     L.fine(String.format("Offspring trimmed: %d individuals", newPopulation.size()));
-    return POSetState.from(
-        (POSetState<Individual<G, S, Q>, G, S, Q>) state,
+    return POCState.from(
+        (POCState<Individual<G, S, Q>, G, S, Q>) state,
         progress(state),
         nOfBirths,
         nOfBirths + (remap ? state.population().size() : 0),

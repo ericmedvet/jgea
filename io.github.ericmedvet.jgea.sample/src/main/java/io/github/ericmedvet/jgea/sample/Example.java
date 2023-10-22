@@ -45,7 +45,7 @@ import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedUniva
 import io.github.ericmedvet.jgea.core.selector.Last;
 import io.github.ericmedvet.jgea.core.selector.Tournament;
 import io.github.ericmedvet.jgea.core.solver.*;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.problem.regression.FormulaMapper;
 import io.github.ericmedvet.jgea.problem.regression.MathUtils;
@@ -60,7 +60,7 @@ import java.util.function.Function;
 
 public class Example extends Worker {
 
-  public static final List<NamedFunction<? super POSetPopulationState<?, ?, ?>, ?>>
+  public static final List<NamedFunction<? super POCPopulationState<?, ?, ?>, ?>>
       BASIC_FUNCTIONS =
           List.of(
               iterations(),
@@ -76,7 +76,7 @@ public class Example extends Worker {
               size().of(solution()).of(best()),
               fitnessMappingIteration().of(best()));
 
-  public static final List<NamedFunction<? super POSetPopulationState<?, ?, ? extends Double>, ?>>
+  public static final List<NamedFunction<? super POCPopulationState<?, ?, ? extends Double>, ?>>
       DOUBLE_FUNCTIONS =
           List.of(
               fitness().reformat("%5.3f").of(best()),
@@ -106,7 +106,7 @@ public class Example extends Worker {
   }
 
   public void runAckley() {
-    ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>>
+    ListenerFactory<POCPopulationState<?, ?, ? extends Double>, Map<String, Object>>
         listenerFactory =
             new TabularPrinter<>(
                 Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)), List.of());
@@ -114,7 +114,7 @@ public class Example extends Worker {
     TotalOrderQualityBasedProblem<List<Double>, Double> p = new Ackley(10);
     List<
             IterativeSolver<
-                ? extends POSetPopulationState<List<Double>, List<Double>, Double>,
+                ? extends POCPopulationState<List<Double>, List<Double>, Double>,
                 TotalOrderQualityBasedProblem<List<Double>, Double>,
                 List<Double>>>
         solvers = new ArrayList<>();
@@ -131,7 +131,7 @@ public class Example extends Worker {
             new GaussianMutation(0.01d)));
     solvers.add(
         new StandardEvolver<
-            POSetPopulationState<List<Double>, List<Double>, Double>,
+            POCPopulationState<List<Double>, List<Double>, Double>,
             TotalOrderQualityBasedProblem<List<Double>, Double>,
             List<Double>,
             List<Double>,
@@ -149,7 +149,7 @@ public class Example extends Worker {
             100,
             true,
             false,
-            (problem, random) -> new POSetPopulationState<>()));
+            (problem, random) -> new POCPopulationState<>()));
     solvers.add(
         new SimpleEvolutionaryStrategy<>(
             Function.identity(),
@@ -161,7 +161,7 @@ public class Example extends Worker {
             0.1,
             false));
     for (IterativeSolver<
-            ? extends POSetPopulationState<List<Double>, List<Double>, Double>,
+            ? extends POCPopulationState<List<Double>, List<Double>, Double>,
             TotalOrderQualityBasedProblem<List<Double>, Double>,
             List<Double>>
         solver : solvers) {
@@ -183,8 +183,8 @@ public class Example extends Worker {
     int size = 1000;
     Random r = new Random(1);
     QualityBasedProblem<BitString, Double> p = new OneMax(size);
-    List<NamedFunction<? super POSetPopulationState<?, ?, ?>, ?>> keysFunctions = List.of();
-    ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>>
+    List<NamedFunction<? super POCPopulationState<?, ?, ?>, ?>> keysFunctions = List.of();
+    ListenerFactory<POCPopulationState<?, ?, ? extends Double>, Map<String, Object>>
         listenerFactory =
             ListenerFactory.all(
                 List.of(
@@ -193,7 +193,7 @@ public class Example extends Worker {
                         List.of(attribute("solver")))));
     List<
             IterativeSolver<
-                ? extends POSetPopulationState<?, BitString, Double>,
+                ? extends POCPopulationState<?, BitString, Double>,
                 QualityBasedProblem<BitString, Double>,
                 BitString>>
         solvers = new ArrayList<>();
@@ -210,7 +210,7 @@ public class Example extends Worker {
             new BitStringFlipMutation(0.01d)));
     solvers.add(
         new StandardEvolver<
-            POSetPopulationState<BitString, BitString, Double>,
+            POCPopulationState<BitString, BitString, Double>,
             QualityBasedProblem<BitString, Double>,
             BitString,
             BitString,
@@ -225,10 +225,10 @@ public class Example extends Worker {
             100,
             true,
             false,
-            (problem, random) -> new POSetPopulationState<>()));
+            (problem, random) -> new POCPopulationState<>()));
     solvers.add(
         new StandardWithEnforcedDiversityEvolver<
-            POSetPopulationState<BitString, BitString, Double>,
+            POCPopulationState<BitString, BitString, Double>,
             QualityBasedProblem<BitString, Double>,
             BitString,
             BitString,
@@ -243,10 +243,10 @@ public class Example extends Worker {
             100,
             true,
             false,
-            (problem, random) -> new POSetPopulationState<>(),
+            (problem, random) -> new POCPopulationState<>(),
             100));
     for (IterativeSolver<
-            ? extends POSetPopulationState<?, BitString, Double>,
+            ? extends POCPopulationState<?, BitString, Double>,
             QualityBasedProblem<BitString, Double>,
             BitString>
         evolver : solvers) {
@@ -270,7 +270,7 @@ public class Example extends Worker {
   }
 
   public void runSymbolicRegression() {
-    ListenerFactory<? super POSetPopulationState<?, ?, ? extends Double>, Void> listenerFactory =
+    ListenerFactory<? super POCPopulationState<?, ?, ? extends Double>, Void> listenerFactory =
         new TabularPrinter<>(Misc.concat(List.of(BASIC_FUNCTIONS, DOUBLE_FUNCTIONS)), List.of());
     Random r = new Random(1);
     SyntheticUnivariateRegressionProblem p = new Nguyen7(UnivariateRegressionFitness.Metric.MSE, 1);
@@ -286,7 +286,7 @@ public class Example extends Worker {
     }
     List<
             IterativeSolver<
-                ? extends POSetPopulationState<?, NamedUnivariateRealFunction, Double>,
+                ? extends POCPopulationState<?, NamedUnivariateRealFunction, Double>,
                 SyntheticUnivariateRegressionProblem,
                 NamedUnivariateRealFunction>>
         solvers = new ArrayList<>();
@@ -313,7 +313,7 @@ public class Example extends Worker {
             100,
             true,
             false,
-            (srp, rnd) -> new POSetPopulationState<>()));
+            (srp, rnd) -> new POCPopulationState<>()));
     solvers.add(
         new StandardWithEnforcedDiversityEvolver<>(
             new FormulaMapper()
@@ -337,10 +337,10 @@ public class Example extends Worker {
             100,
             true,
             false,
-            (srp, rnd) -> new POSetPopulationState<>(),
+            (srp, rnd) -> new POCPopulationState<>(),
             100));
     for (IterativeSolver<
-            ? extends POSetPopulationState<?, NamedUnivariateRealFunction, Double>,
+            ? extends POCPopulationState<?, NamedUnivariateRealFunction, Double>,
             SyntheticUnivariateRegressionProblem,
             NamedUnivariateRealFunction>
         solver : solvers) {

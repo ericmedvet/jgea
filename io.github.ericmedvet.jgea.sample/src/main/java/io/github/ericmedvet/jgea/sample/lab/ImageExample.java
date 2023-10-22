@@ -40,7 +40,7 @@ import io.github.ericmedvet.jgea.core.solver.IterativeSolver;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.solver.StandardEvolver;
 import io.github.ericmedvet.jgea.core.solver.StopConditions;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jgea.problem.image.ImageReconstruction;
 import io.github.ericmedvet.jgea.sample.Worker;
 import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
@@ -76,7 +76,7 @@ public class ImageExample extends Worker {
     List<String> images =
         l(a("images", "/home/eric/experiments/2020-graphea/image/glasses-32x32.png"));
     // listeners
-    List<NamedFunction<? super POSetPopulationState<?, ?, ? extends Double>, ?>> functions =
+    List<NamedFunction<? super POCPopulationState<?, ?, ? extends Double>, ?>> functions =
         List.of(
             iterations(),
             births(),
@@ -96,7 +96,7 @@ public class ImageExample extends Worker {
             attribute("seed").reformat("%2d"),
             attribute("image").reformat("%20.20s"),
             attribute("evolver").reformat("%20.20s"));
-    ListenerFactory<? super POSetPopulationState<?, ?, ? extends Double>, Map<String, Object>>
+    ListenerFactory<? super POCPopulationState<?, ?, ? extends Double>, Map<String, Object>>
         listenerFactory = new TabularPrinter<>(functions, kFunctions);
     if (a("file", null) != null) {
       listenerFactory =
@@ -108,7 +108,7 @@ public class ImageExample extends Worker {
     Map<
             String,
             IterativeSolver<
-                ? extends POSetPopulationState<?, UnivariateRealFunction, Double>,
+                ? extends POCPopulationState<?, UnivariateRealFunction, Double>,
                 ImageReconstruction,
                 UnivariateRealFunction>>
         solvers = new TreeMap<>();
@@ -142,14 +142,14 @@ public class ImageExample extends Worker {
             nPop,
             true,
             false,
-            (srp, r) -> new POSetPopulationState<>()));
+            (srp, r) -> new POCPopulationState<>()));
     // run
     for (int seed : seeds) {
       for (String image : images) {
         for (Map.Entry<
                 String,
                 IterativeSolver<
-                    ? extends POSetPopulationState<?, UnivariateRealFunction, Double>,
+                    ? extends POCPopulationState<?, UnivariateRealFunction, Double>,
                     ImageReconstruction,
                     UnivariateRealFunction>>
             solverEntry : solvers.entrySet()) {
@@ -164,7 +164,7 @@ public class ImageExample extends Worker {
                 new ImageReconstruction(ImageIO.read(new File(image)), true);
             Stopwatch stopwatch = Stopwatch.createStarted();
             IterativeSolver<
-                    ? extends POSetPopulationState<?, UnivariateRealFunction, Double>,
+                    ? extends POCPopulationState<?, UnivariateRealFunction, Double>,
                     ImageReconstruction,
                     UnivariateRealFunction>
                 solver = solverEntry.getValue();

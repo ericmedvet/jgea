@@ -21,7 +21,9 @@
 package io.github.ericmedvet.jgea.core.order;
 
 import io.github.ericmedvet.jgea.core.util.Sized;
+
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 public interface PartiallyOrderedCollection<T> extends Sized {
@@ -41,6 +43,7 @@ public interface PartiallyOrderedCollection<T> extends Sized {
   }
 
   static <T> PartiallyOrderedCollection<T> of(T t) {
+    Collection<T> collection = List.of(t);
     return new PartiallyOrderedCollection<>() {
       @Override
       public void add(T t) {
@@ -49,17 +52,48 @@ public interface PartiallyOrderedCollection<T> extends Sized {
 
       @Override
       public Collection<T> all() {
-        return List.of(t);
+        return collection;
       }
 
       @Override
       public Collection<T> firsts() {
-        return List.of(t);
+        return collection;
       }
 
       @Override
       public Collection<T> lasts() {
-        return List.of(t);
+        return collection;
+      }
+
+      @Override
+      public boolean remove(T t) {
+        throw new UnsupportedOperationException();
+      }
+    };
+  }
+  static <T> PartiallyOrderedCollection<T> from(Collection<T> ts, Comparator<T> comparator) {
+    List<T> all = ts.stream().sorted(comparator).toList();
+    List<T> firsts = all.stream().filter(t -> comparator.compare(t, all.get(0)) == 0).toList();
+    List<T> lasts = all.stream().filter(t -> comparator.compare(t, all.get(all.size() - 1)) == 0).toList();
+    return new PartiallyOrderedCollection<T>() {
+      @Override
+      public void add(T t) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Collection<T> all() {
+        return all;
+      }
+
+      @Override
+      public Collection<T> firsts() {
+        return firsts;
+      }
+
+      @Override
+      public Collection<T> lasts() {
+        return lasts;
       }
 
       @Override

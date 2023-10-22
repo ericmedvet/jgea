@@ -24,7 +24,7 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.selector.Selector;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -41,7 +41,7 @@ public class MutationOnly<P extends QualityBasedProblem<S, Q>, G, S, Q>
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       int populationSize,
-      Predicate<? super POSetPopulationState<Individual<G, S, Q>, G, S, Q>> stopCondition,
+      Predicate<? super POCPopulationState<Individual<G, S, Q>, G, S, Q>> stopCondition,
       Selector<? super Individual<? super G, ? super S, ? super Q>> unsurvivalSelector,
       Mutation<G> mutation) {
     super(
@@ -60,7 +60,7 @@ public class MutationOnly<P extends QualityBasedProblem<S, Q>, G, S, Q>
 
   @Override
   protected Collection<G> buildOffspringGenotypes(
-      POSetPopulationState<Individual<G, S, Q>, G, S, Q> state,
+      POCPopulationState<Individual<G, S, Q>, G, S, Q> state,
       P problem,
       RandomGenerator random,
       ExecutorService executor) {

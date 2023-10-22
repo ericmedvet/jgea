@@ -22,7 +22,7 @@ package io.github.ericmedvet.jgea.experimenter.builders;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.listener.XYPlotTableBuilder;
 import io.github.ericmedvet.jgea.core.solver.Individual;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import java.util.Collection;
@@ -39,10 +39,10 @@ public class Plots {
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> XYPlotTableBuilder<POSetPopulationState<G, S, Q>> dyPlot(
+  public static <G, S, Q> XYPlotTableBuilder<POCPopulationState<G, S, Q>> dyPlot(
       @Param(value = "x", dNPM = "ea.nf.iterations()")
-          NamedFunction<? super POSetPopulationState<G, S, Q>, ? extends Number> xFunction,
-      @Param("y") NamedFunction<? super POSetPopulationState<G, S, Q>, ? extends Number> yFunction,
+          NamedFunction<? super POCPopulationState<G, S, Q>, ? extends Number> xFunction,
+      @Param("y") NamedFunction<? super POCPopulationState<G, S, Q>, ? extends Number> yFunction,
       @Param(value = "w", dI = 600) int width,
       @Param(value = "h", dI = 400) int height,
       @Param(value = "minX", dD = Double.NEGATIVE_INFINITY) double minX,
@@ -54,11 +54,11 @@ public class Plots {
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> XYPlotTableBuilder<POSetPopulationState<G, S, Q>> elapsed(
+  public static <G, S, Q> XYPlotTableBuilder<POCPopulationState<G, S, Q>> elapsed(
       @Param(value = "x", dNPM = "ea.nf.iterations()")
-          NamedFunction<? super POSetPopulationState<G, S, Q>, ? extends Number> xFunction,
+          NamedFunction<? super POCPopulationState<G, S, Q>, ? extends Number> xFunction,
       @Param(value = "y", dNPM = "ea.nf.elapsed()")
-          NamedFunction<? super POSetPopulationState<G, S, Q>, ? extends Number> yFunction,
+          NamedFunction<? super POCPopulationState<G, S, Q>, ? extends Number> yFunction,
       @Param(value = "w", dI = 600) int width,
       @Param(value = "h", dI = 400) int height,
       @Param(value = "minX", dD = Double.NEGATIVE_INFINITY) double minX,
@@ -70,11 +70,11 @@ public class Plots {
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> XYPlotTableBuilder<POSetPopulationState<G, S, Q>> fitness(
+  public static <G, S, Q> XYPlotTableBuilder<POCPopulationState<G, S, Q>> fitness(
       @Param(value = "x", dNPM = "ea.nf.iterations()")
-          NamedFunction<? super POSetPopulationState<G, S, Q>, ? extends Number> xFunction,
+          NamedFunction<? super POCPopulationState<G, S, Q>, ? extends Number> xFunction,
       @Param(value = "collection", dNPM = "ea.nf.all()")
-          NamedFunction<POSetPopulationState<G, S, Q>, Collection<Individual<G, S, Q>>>
+          NamedFunction<POCPopulationState<G, S, Q>, Collection<Individual<G, S, Q>>>
               collectionFunction,
       @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<Q, Double> fFunction,
       @Param(value = "w", dI = 600) int width,
@@ -85,12 +85,12 @@ public class Plots {
       @Param(value = "maxY", dD = Double.NEGATIVE_INFINITY) double maxY,
       @Param(value = "sort", dS = "min") Sorting sorting,
       @Param(value = "s", dS = "%.2f") String s) {
-    NamedFunction<POSetPopulationState<G, S, Q>, Collection<Double>> collFFunction =
+    NamedFunction<POCPopulationState<G, S, Q>, Collection<Double>> collFFunction =
         NamedFunctions.each(
             fFunction.of(NamedFunctions.fitness(NamedFunctions.identity(), s)),
             collectionFunction,
             "%s");
-    List<NamedFunction<? super POSetPopulationState<G, S, Q>, ? extends Number>> yFunctions =
+    List<NamedFunction<? super POCPopulationState<G, S, Q>, ? extends Number>> yFunctions =
         switch (sorting) {
           case MIN -> List.of(
               NamedFunctions.min(collFFunction, s),
@@ -106,9 +106,9 @@ public class Plots {
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> XYPlotTableBuilder<POSetPopulationState<G, S, Q>> uniqueness(
+  public static <G, S, Q> XYPlotTableBuilder<POCPopulationState<G, S, Q>> uniqueness(
       @Param(value = "x", dNPM = "ea.nf.iterations()")
-          NamedFunction<? super POSetPopulationState<G, S, Q>, ? extends Number> xFunction,
+          NamedFunction<? super POCPopulationState<G, S, Q>, ? extends Number> xFunction,
       @Param(
               value = "ys",
               dNPMs = {
@@ -116,7 +116,7 @@ public class Plots {
                 "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.solution();collection=ea.nf.all()))",
                 "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.fitness();collection=ea.nf.all()))"
               })
-          List<NamedFunction<? super POSetPopulationState<G, S, Q>, ? extends Number>> yFunctions,
+          List<NamedFunction<? super POCPopulationState<G, S, Q>, ? extends Number>> yFunctions,
       @Param(value = "w", dI = 600) int width,
       @Param(value = "h", dI = 400) int height,
       @Param(value = "minX", dD = Double.NEGATIVE_INFINITY) double minX,
@@ -156,10 +156,10 @@ public class Plots {
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> XYPlotTableBuilder<POSetPopulationState<G, S, Q>> yPlot(
+  public static <G, S, Q> XYPlotTableBuilder<POCPopulationState<G, S, Q>> yPlot(
       @Param(value = "x", dNPM = "ea.nf.iterations()")
-          NamedFunction<? super POSetPopulationState<G, S, Q>, ? extends Number> xFunction,
-      @Param("y") NamedFunction<? super POSetPopulationState<G, S, Q>, ? extends Number> yFunction,
+          NamedFunction<? super POCPopulationState<G, S, Q>, ? extends Number> xFunction,
+      @Param("y") NamedFunction<? super POCPopulationState<G, S, Q>, ? extends Number> yFunction,
       @Param(value = "w", dI = 600) int width,
       @Param(value = "h", dI = 400) int height,
       @Param(value = "minX", dD = Double.NEGATIVE_INFINITY) double minX,
@@ -171,11 +171,11 @@ public class Plots {
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> XYPlotTableBuilder<POSetPopulationState<G, S, Q>> ysPlot(
+  public static <G, S, Q> XYPlotTableBuilder<POCPopulationState<G, S, Q>> ysPlot(
       @Param(value = "x", dNPM = "ea.nf.iterations()")
-          NamedFunction<? super POSetPopulationState<G, S, Q>, ? extends Number> xFunction,
+          NamedFunction<? super POCPopulationState<G, S, Q>, ? extends Number> xFunction,
       @Param("ys")
-          List<NamedFunction<? super POSetPopulationState<G, S, Q>, ? extends Number>> yFunctions,
+          List<NamedFunction<? super POCPopulationState<G, S, Q>, ? extends Number>> yFunctions,
       @Param(value = "w", dI = 600) int width,
       @Param(value = "h", dI = 400) int height,
       @Param(value = "minX", dD = Double.NEGATIVE_INFINITY) double minX,

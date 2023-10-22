@@ -28,7 +28,7 @@ import java.time.temporal.ChronoUnit;
 /**
  * @author "Eric Medvet" on 2023/10/21 for jgea
  */
-public record POSetState<I extends Individual<G, S, Q>, G, S, Q>(
+public record POCState<I extends Individual<G, S, Q>, G, S, Q>(
     LocalDateTime startingDateTime,
     long elapsedMillis,
     int nOfIterations,
@@ -36,14 +36,14 @@ public record POSetState<I extends Individual<G, S, Q>, G, S, Q>(
     long nOfBirths,
     long nOfFitnessEvaluations,
     PartiallyOrderedCollection<I> population)
-    implements POSetPopulationState<I, G, S, Q> {
-  public static <I extends Individual<G, S, Q>, G, S, Q> POSetState<I, G, S, Q> from(
-      POSetState<I, G, S, Q> state,
+    implements POCPopulationState<I, G, S, Q> {
+  public static <I extends Individual<G, S, Q>, G, S, Q> POCState<I, G, S, Q> from(
+      POCState<I, G, S, Q> state,
       Progress progress,
       int nOfBirths,
       int nOfFitnessEvaluations,
       PartiallyOrderedCollection<I> population) {
-    return new POSetState<>(
+    return new POCState<>(
         state.startingDateTime,
         ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
         state.nOfIterations() + 1,
@@ -53,7 +53,7 @@ public record POSetState<I extends Individual<G, S, Q>, G, S, Q>(
         population);
   }
 
-  public POSetState(PartiallyOrderedCollection<I> population) {
+  public POCState(PartiallyOrderedCollection<I> population) {
     this(LocalDateTime.now(), 0, 0, Progress.NA, population.size(), population.size(), population);
   }
 }

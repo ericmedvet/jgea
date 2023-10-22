@@ -25,7 +25,7 @@ import io.github.ericmedvet.jgea.core.solver.Individual;
 /**
  * @author "Eric Medvet" on 2023/10/21 for jgea
  */
-public interface POSetPopulationState<I extends Individual<G, S, Q>, G, S, Q> extends State {
+public interface POCPopulationState<I extends Individual<G, S, Q>, G, S, Q> extends State {
   long nOfBirths();
 
   long nOfFitnessEvaluations();

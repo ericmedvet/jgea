@@ -23,7 +23,7 @@ package io.github.ericmedvet.jgea.core.solver;
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,7 +38,7 @@ import java.util.random.RandomGenerator;
 import java.util.stream.Stream;
 
 public abstract class AbstractPopulationBasedIterativeSolver<
-        T extends POSetPopulationState<I, G, S, Q>,
+        T extends POCPopulationState<I, G, S, Q>,
         P extends QualityBasedProblem<S, Q>,
         I extends Individual<G, S, Q>,
         G,

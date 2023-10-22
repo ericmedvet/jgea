@@ -21,7 +21,7 @@
 package io.github.ericmedvet.jgea.experimenter;
 
 import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationState;
+import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import java.util.List;
@@ -39,5 +39,5 @@ public record Experiment(
                 BiFunction<
                     Experiment,
                     ExecutorService,
-                    ListenerFactory<? super POSetPopulationState<?, ?, ?>, Run<?, ?, ?, ?>>>>
+                    ListenerFactory<? super POCPopulationState<?, ?, ?>, Run<?, ?, ?, ?>>>>
             listeners) {}
