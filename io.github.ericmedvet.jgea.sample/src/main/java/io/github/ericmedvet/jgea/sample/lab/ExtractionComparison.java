@@ -116,7 +116,7 @@ public class ExtractionComparison extends Worker {
                 ?>>
         functions =
             List.of(
-                iterations(),
+                nOfIterations(),
                 births(),
                 elapsedSeconds(),
                 size().of(all()),
@@ -124,10 +124,10 @@ public class ExtractionComparison extends Worker {
                 size().of(lasts()),
                 uniqueness().of(each(genotype())).of(all()),
                 uniqueness().of(each(solution())).of(all()),
-                uniqueness().of(each(fitness())).of(all()),
+                uniqueness().of(each(quality())).of(all()),
                 size().of(genotype()).of(best()),
                 size().of(solution()).of(best()),
-                nth(0).reformat("%5.3f").of(fitness()).of(best()),
+                nth(0).reformat("%5.3f").of(quality()).of(best()),
                 fitnessMappingIteration().of(best()),
                 solution().reformat("%30.30s").of(best()));
     List<NamedFunction<? super Map<String, Object>, ?>> kFunctions =

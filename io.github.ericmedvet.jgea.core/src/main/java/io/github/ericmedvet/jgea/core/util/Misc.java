@@ -40,20 +40,6 @@ public class Misc {
 
   private Misc() {}
 
-  public static <T, R> CachedFunction<T, R> cached(Function<T, R> function, long size) {
-    return new CachedFunction<>(function, size);
-  }
-
-  public static <T, U, R> CachedBiFunction<T, U, R> cached(
-      BiFunction<T, U, R> function, long size) {
-    return new CachedBiFunction<>(function, size);
-  }
-
-  public static <T> Distance<T> cached(Distance<T> function, long size) {
-    final CachedBiFunction<T, T, Double> cached = new CachedBiFunction<>(function, size);
-    return cached::apply;
-  }
-
   public static <K> List<K> concat(List<List<? extends K>> lists) {
     return lists.stream().flatMap(List::stream).collect(Collectors.toList());
   }

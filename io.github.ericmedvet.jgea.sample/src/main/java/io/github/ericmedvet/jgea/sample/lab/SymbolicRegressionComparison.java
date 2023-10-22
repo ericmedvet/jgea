@@ -136,7 +136,7 @@ public class SymbolicRegressionComparison extends Worker {
     // consumers
     List<NamedFunction<? super POCPopulationState<?, ?, ? extends Double>, ?>> functions =
         List.of(
-            iterations(),
+            nOfIterations(),
             births(),
             elapsedSeconds(),
             bar(8).of(progress()),
@@ -145,12 +145,12 @@ public class SymbolicRegressionComparison extends Worker {
             size().of(lasts()),
             uniqueness().of(each(genotype())).of(all()),
             uniqueness().of(each(solution())).of(all()),
-            uniqueness().of(each(fitness())).of(all()),
+            uniqueness().of(each(quality())).of(all()),
             size().of(genotype()).of(best()),
             size().of(solution()).of(best()),
             fitnessMappingIteration().of(best()),
-            fitness().reformat("%5.3f").of(best()),
-            hist(8).of(each(fitness())).of(all()),
+            quality().reformat("%5.3f").of(best()),
+            hist(8).of(each(quality())).of(all()),
             solution().reformat("%30.30s").of(best()));
     List<NamedFunction<? super Map<String, Object>, ?>> kFunctions =
         List.of(

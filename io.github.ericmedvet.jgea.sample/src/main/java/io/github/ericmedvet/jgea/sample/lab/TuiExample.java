@@ -52,7 +52,7 @@ public class TuiExample implements Runnable {
   public static final List<NamedFunction<? super POCPopulationState<?, ?, ?>, ?>>
       BASIC_FUNCTIONS =
           List.of(
-              iterations(),
+              nOfIterations(),
               births(),
               elapsedSeconds(),
               size().of(all()),
@@ -60,7 +60,7 @@ public class TuiExample implements Runnable {
               size().of(lasts()),
               uniqueness().of(each(genotype())).of(all()),
               uniqueness().of(each(solution())).of(all()),
-              uniqueness().of(each(fitness())).of(all()),
+              uniqueness().of(each(quality())).of(all()),
               size().of(genotype()).of(best()),
               size().of(solution()).of(best()),
               fitnessMappingIteration().of(best()));
@@ -68,9 +68,9 @@ public class TuiExample implements Runnable {
   public static final List<NamedFunction<? super POCPopulationState<?, ?, ? extends Double>, ?>>
       DOUBLE_FUNCTIONS =
           List.of(
-              fitness().reformat("%5.3f").of(best()),
-              hist(8).of(each(fitness())).of(all()),
-              max(Double::compare).reformat("%5.3f").of(each(fitness())).of(all()));
+              quality().reformat("%5.3f").of(best()),
+              hist(8).of(each(quality())).of(all()),
+              max(Double::compare).reformat("%5.3f").of(each(quality())).of(all()));
 
   private static final Logger L = Logger.getLogger(TuiExample.class.getName());
 
@@ -93,7 +93,7 @@ public class TuiExample implements Runnable {
             List.of(
                 new XYPlotTableBuilder<>(
                     progress(),
-                    List.of(fitness().reformat("%5.3f").of(best()).as(Number.class)),
+                    List.of(quality().reformat("%5.3f").of(best()).as(Number.class)),
                     1,
                     1,
                     Double.NaN,
