@@ -20,7 +20,7 @@
 
 package io.github.ericmedvet.jgea.core.solver;
 
-import io.github.ericmedvet.jgea.core.solver.state.POCState;
+import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.state.State;
 import io.github.ericmedvet.jgea.core.util.Progress;
 
@@ -37,12 +37,12 @@ public class StopConditions {
   }
 
   @SuppressWarnings("unused")
-  public static ProgressBasedStopCondition<POCState<?, ?, ?, ?>> nOfBirths(final long n) {
+  public static ProgressBasedStopCondition<POCPopulationState<?, ?, ?, ?>> nOfBirths(final long n) {
     return s -> new Progress(0, n, s.nOfBirths());
   }
 
   @SuppressWarnings("unused")
-  public static ProgressBasedStopCondition<POCState<?, ?, ?, ?>> nOfFitnessEvaluations(
+  public static ProgressBasedStopCondition<POCPopulationState<?, ?, ?, ?>> nOfFitnessEvaluations(
       final long n
   ) {
     return s -> new Progress(0, n, s.nOfFitnessEvaluations());
@@ -55,7 +55,7 @@ public class StopConditions {
 
   @SuppressWarnings("unused")
   public static <F extends Comparable<F>>
-  Predicate<POCState<?, ?, ?, ? extends F>> targetFitness(final F targetF) {
+  Predicate<POCPopulationState<?, ?, ?, ? extends F>> targetFitness(final F targetF) {
     return s ->
         s.population().firsts().stream()
             .map(Individual::quality)
