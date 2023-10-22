@@ -26,8 +26,11 @@ import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.selector.Selector;
 import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
-import io.github.ericmedvet.jgea.core.solver.state.POCState;
 import io.github.ericmedvet.jgea.core.util.Misc;
+import io.github.ericmedvet.jgea.core.util.Progress;
+
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -49,6 +52,37 @@ public class StandardEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
   protected final int populationSize;
   protected final int offspringSize;
   protected final boolean overlapping;
+
+  protected record State<I extends Individual<G, S, Q>, G, S, Q>(
+      LocalDateTime startingDateTime,
+      long elapsedMillis,
+      long nOfIterations,
+      Progress progress,
+      long nOfBirths,
+      long nOfFitnessEvaluations,
+      PartiallyOrderedCollection<I> population)
+      implements POCPopulationState<I, G, S, Q> {
+    public static <I extends Individual<G, S, Q>, G, S, Q> State<I, G, S, Q> from(
+        State<I, G, S, Q> state,
+        Progress progress,
+        int nOfBirths,
+        int nOfFitnessEvaluations,
+        PartiallyOrderedCollection<I> population) {
+      return new State<>(
+          state.startingDateTime,
+          ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
+          state.nOfIterations() + 1,
+          progress,
+          state.nOfBirths() + nOfBirths,
+          state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
+          population);
+    }
+
+    public State(PartiallyOrderedCollection<I> population) {
+      this(LocalDateTime.now(), 0, 0, Progress.NA, population.size(), population.size(), population);
+    }
+  }
+
 
   public StandardEvolver(
       Function<? super G, ? extends S> solutionMapper,
@@ -92,7 +126,7 @@ public class StandardEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
   @Override
   public POCPopulationState<Individual<G, S, Q>, G, S, Q> init(
       P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
-    return new POCState<>(
+    return new State<>(
         new DAGPartiallyOrderedCollection<>(
             getAll(
                 map(
@@ -134,8 +168,8 @@ public class StandardEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
     L.fine(String.format("Offspring merged with parents: %d individuals", newPopulation.size()));
     newPopulation = trimPopulation(newPopulation, problem, random);
     L.fine(String.format("Offspring trimmed: %d individuals", newPopulation.size()));
-    return POCState.from(
-        (POCState<Individual<G, S, Q>, G, S, Q>) state,
+    return State.from(
+        (State<Individual<G, S, Q>, G, S, Q>) state,
         progress(state),
         nOfBirths,
         nOfBirths + (remap ? state.population().size() : 0),

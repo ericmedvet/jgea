@@ -67,7 +67,7 @@ public class StandardWithEnforcedDiversityEvolver<P extends QualityBasedProblem<
   }
 
   @Override
-  protected Collection<Individual<G, S, Q>> buildOffspringGenotypes(
+  protected Collection<G> buildOffspringGenotypes(
       POCPopulationState<Individual<G, S, Q>, G, S, Q> state,
       P problem,
       RandomGenerator random,
@@ -102,7 +102,6 @@ public class StandardWithEnforcedDiversityEvolver<P extends QualityBasedProblem<
         attempts = attempts + 1;
       }
     }
-    return getAll(
-        map(offspringGenotypes, state.nOfIterations(), problem.qualityFunction(), executor));
+    return offspringGenotypes;
   }
 }

@@ -71,7 +71,7 @@ public class SimpleEvolutionaryStrategy<S, Q>
   protected record State<I extends Individual<List<Double>, S, Q>, S, Q>(
       LocalDateTime startingDateTime,
       long elapsedMillis,
-      int nOfIterations,
+      long nOfIterations,
       Progress progress,
       long nOfBirths,
       long nOfFitnessEvaluations,

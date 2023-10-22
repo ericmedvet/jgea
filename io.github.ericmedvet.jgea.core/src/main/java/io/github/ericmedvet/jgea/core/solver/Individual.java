@@ -21,6 +21,46 @@ package io.github.ericmedvet.jgea.core.solver;
 
 import java.io.Serializable;
 
-public record Individual<G, S, Q>(
-    G genotype, S solution, Q quality, long fitnessMappingIteration, long genotypeBirthIteration)
-    implements Serializable {}
+public interface Individual<G, S, Q> extends Serializable {
+  G genotype();
+
+  S solution();
+
+  Q quality();
+
+  long qualityMappingIteration();
+
+  long genotypeBirthIteration();
+
+  static <G1, S1, Q1> Individual<G1, S1, Q1> of(
+      G1 genotype, S1 solution, Q1 quality, long qualityMappingIteration, long genotypeBirthIteration
+  ) {
+    return new Individual<>() {
+      @Override
+      public G1 genotype() {
+        return genotype;
+      }
+
+      @Override
+      public S1 solution() {
+        return solution;
+      }
+
+      @Override
+      public Q1 quality() {
+        return quality;
+      }
+
+      @Override
+      public long qualityMappingIteration() {
+        return qualityMappingIteration;
+      }
+
+      @Override
+      public long genotypeBirthIteration() {
+        return genotypeBirthIteration;
+      }
+    };
+
+  }
+}

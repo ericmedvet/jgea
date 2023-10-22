@@ -25,6 +25,7 @@ import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jgea.core.util.Progress;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -38,12 +39,12 @@ import java.util.random.RandomGenerator;
 import java.util.stream.Stream;
 
 public abstract class AbstractPopulationBasedIterativeSolver<
-        T extends POCPopulationState<I, G, S, Q>,
-        P extends QualityBasedProblem<S, Q>,
-        I extends Individual<G, S, Q>,
-        G,
-        S,
-        Q>
+    T extends POCPopulationState<I, G, S, Q>,
+    P extends QualityBasedProblem<S, Q>,
+    I extends Individual<G, S, Q>,
+    G,
+    S,
+    Q>
     implements IterativeSolver<T, P, S> {
 
   protected final Function<? super G, ? extends S> solutionMapper;
@@ -57,7 +58,8 @@ public abstract class AbstractPopulationBasedIterativeSolver<
       Factory<? extends G> genotypeFactory,
       Function<Individual<G, S, Q>, I> individualBuilder,
       Predicate<? super T> stopCondition,
-      boolean remap) {
+      boolean remap
+  ) {
     this.solutionMapper = solutionMapper;
     this.genotypeFactory = genotypeFactory;
     this.individualBuilder = individualBuilder;
@@ -67,9 +69,10 @@ public abstract class AbstractPopulationBasedIterativeSolver<
 
   protected Collection<Future<I>> map(
       Collection<? extends G> genotypes,
-      int iteration,
+      long iteration,
       Function<? super S, ? extends Q> qualityFunction,
-      ExecutorService executor)
+      ExecutorService executor
+  )
       throws SolverException {
     try {
       return executor.invokeAll(
@@ -83,9 +86,10 @@ public abstract class AbstractPopulationBasedIterativeSolver<
 
   protected Collection<Future<I>> remap(
       Collection<I> individuals,
-      int iteration,
+      long iteration,
       Function<? super S, ? extends Q> qualityFunction,
-      ExecutorService executor)
+      ExecutorService executor
+  )
       throws SolverException {
     try {
       return executor.invokeAll(
@@ -95,12 +99,13 @@ public abstract class AbstractPopulationBasedIterativeSolver<
                       (Callable<I>)
                           () ->
                               individualBuilder.apply(
-                                  new Individual<>(
+                                  Individual.of(
                                       i.genotype(),
                                       i.solution(),
                                       qualityFunction.apply(i.solution()),
                                       iteration,
-                                      i.genotypeBirthIteration())))
+                                      i.genotypeBirthIteration()
+                                  )))
               .toList());
     } catch (InterruptedException e) {
       throw new SolverException(e);
@@ -108,11 +113,11 @@ public abstract class AbstractPopulationBasedIterativeSolver<
   }
 
   protected I individual(
-      G genotype, int iteration, Function<? super S, ? extends Q> qualityFunction) {
+      G genotype, long iteration, Function<? super S, ? extends Q> qualityFunction
+  ) {
     S solution = solutionMapper.apply(genotype);
     Q quality = qualityFunction.apply(solution);
-    return individualBuilder.apply(
-        new Individual<>(genotype, solution, quality, iteration, iteration));
+    return individualBuilder.apply(Individual.of(genotype, solution, quality, iteration, iteration));
   }
 
   protected static <T> List<T> getAll(Collection<Future<T>> futures) throws SolverException {
@@ -128,13 +133,14 @@ public abstract class AbstractPopulationBasedIterativeSolver<
   }
 
   protected static <P extends QualityBasedProblem<?, Q>, I extends Individual<?, ?, Q>, Q>
-      PartialComparator<? super I> comparator(P problem) {
+  PartialComparator<? super I> comparator(P problem) {
     return (i1, i2) -> problem.qualityComparator().compare(i1.quality(), i2.quality());
   }
 
   @Override
   public Collection<S> extractSolutions(
-      P problem, RandomGenerator random, ExecutorService executor, T state) {
+      P problem, RandomGenerator random, ExecutorService executor, T state
+  ) {
     return state.population().firsts().stream().map(Individual::solution).toList();
   }
 
@@ -154,15 +160,17 @@ public abstract class AbstractPopulationBasedIterativeSolver<
   protected Collection<I> map(
       Collection<G> genotypes,
       Collection<I> individuals,
-      int iteration,
+      long iteration,
       Function<? super S, ? extends Q> qualityFunction,
-      ExecutorService executor)
+      ExecutorService executor
+  )
       throws SolverException {
     if (remap) {
       return getAll(
           Stream.of(
                   map(genotypes, iteration, qualityFunction, executor),
-                  remap(individuals, iteration, qualityFunction, executor))
+                  remap(individuals, iteration, qualityFunction, executor)
+              )
               .flatMap(Collection::stream)
               .toList());
     }

@@ -124,7 +124,7 @@ public class NamedFunctions {
   public static <I extends Individual<G, S, Q>, G, S, Q>
   NamedFunction<I, Long>
   fitnessMappingIteration() {
-    return f("birth.iteration", "%4d", Individual::fitnessMappingIteration);
+    return f("birth.iteration", "%4d", Individual::qualityMappingIteration);
   }
 
   public static <I extends Individual<G, S, Q>, G, S, Q> NamedFunction<I, G> genotype() {

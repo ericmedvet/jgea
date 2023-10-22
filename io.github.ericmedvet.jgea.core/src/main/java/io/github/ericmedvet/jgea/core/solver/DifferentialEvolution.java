@@ -24,10 +24,12 @@ import io.github.ericmedvet.jgea.core.order.DAGPartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
+import io.github.ericmedvet.jgea.core.solver.state.ESState;
 import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationStateC;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
@@ -37,47 +39,48 @@ import java.util.random.RandomGenerator;
 
 public class DifferentialEvolution<S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        POSetPopulationStateC<List<Double>, S, Q>,
-        TotalOrderQualityBasedProblem<S, Q>,
-        List<Double>,
-        S,
-        Q> {
+    ESState<Individual<List<Double>, S, Q>, S, Q>,
+    TotalOrderQualityBasedProblem<S, Q>,
+    Individual<List<Double>, S, Q>,
+    List<Double>,
+    S,
+    Q> {
 
   private static final Logger L = Logger.getLogger(DifferentialEvolution.class.getName());
+  private final int populationSize;
   protected final double differentialWeight;
   protected final double crossoverProb;
-  protected final boolean remap;
 
   public DifferentialEvolution(
       Function<? super List<Double>, ? extends S> solutionMapper,
       Factory<? extends List<Double>> genotypeFactory,
       int populationSize,
-      Predicate<? super POSetPopulationStateC<List<Double>, S, Q>> stopCondition,
+      Predicate<? super ESState<Individual<List<Double>, S, Q>, S, Q>> stopCondition,
       double differentialWeight,
       double crossoverProb,
       boolean remap) {
-    super(solutionMapper, genotypeFactory, populationSize, stopCondition);
+    super(solutionMapper, genotypeFactory, i -> i, stopCondition, remap);
+    this.populationSize = populationSize
     this.differentialWeight = differentialWeight;
     this.crossoverProb = crossoverProb;
-    this.remap = remap;
   }
 
   protected static <S, Q> List<Double> pickParents(
-      PartiallyOrderedCollection<Individual<List<Double>, S, Q>> population,
+      Collection<Individual<List<Double>, S, Q>> population,
       RandomGenerator random,
       List<Double> prev) {
     List<Double> current = prev;
-    while (current == prev) {
-      current = Misc.pickRandomly(population.all(), random).genotype();
+    while (current.equals(prev)) {
+      current = Misc.pickRandomly(population, random).genotype();
     }
     return current;
   }
 
   protected Collection<List<Double>> computeTrials(
-      PartiallyOrderedCollection<Individual<List<Double>, S, Q>> population,
+      Collection<Individual<List<Double>, S, Q>> population,
       RandomGenerator random) {
     Collection<List<Double>> trialGenotypes = new ArrayList<>(populationSize);
-    for (Individual<List<Double>, S, Q> parent : population.all()) {
+    for (Individual<List<Double>, S, Q> parent : population) {
       List<Double> x = parent.genotype();
       List<Double> trial = new ArrayList<>(x.size());
       List<Double> a = pickParents(population, random, x);
@@ -96,11 +99,56 @@ public class DifferentialEvolution<S, Q>
   }
 
   @Override
-  protected POSetPopulationStateC<List<Double>, S, Q> initState(
+  public ESState<Individual<List<Double>, S, Q>, S, Q> init(
       TotalOrderQualityBasedProblem<S, Q> problem,
       RandomGenerator random,
-      ExecutorService executor) {
-    return new POSetPopulationStateC<>();
+      ExecutorService executor
+  ) throws SolverException {
+    Comparator<Individual<List<Double>, S, Q>> comparator = (i1, i2) -> problem.totalOrderComparator()
+        .compare(i1.quality(), i2.quality());
+    return new SimpleEvolutionaryStrategy.State<>(
+        getAll(
+            map(
+                genotypeFactory.build(populationSize, random),
+                0,
+                problem.qualityFunction(),
+                executor
+            )),
+        comparator
+    );
+  }
+
+  @Override
+  public ESState<Individual<List<Double>, S, Q>, S, Q> update(
+      TotalOrderQualityBasedProblem<S, Q> problem,
+      RandomGenerator random,
+      ExecutorService executor,
+      ESState<Individual<List<Double>, S, Q>, S, Q> state
+  ) throws SolverException {
+    Collection<List<Double>> trialGenotypes = computeTrials(state.individuals(), random);
+    L.fine(String.format("Trials computed: %d individuals", trialGenotypes.size()));
+    Comparator<Individual<List<Double>, S, Q>> comparator = (i1, i2) -> problem.totalOrderComparator()
+        .compare(i1.quality(), i2.quality());
+    List<Individual<List<Double>, S, Q>> newPopulation = map(
+        trialGenotypes,
+        state.individuals(),
+        state.nOfIterations(),
+        problem.qualityFunction(),
+        executor
+    ).stream().sorted(comparator).toList();
+    L.fine(String.format("Trials evaluated: %d individuals", trialGenotypes.size()));
+    for (int i = 0, j = populationSize; i < populationSize && j < newPopulation.size(); ++i, ++j) {
+      if (comparator(problem)
+          .compare(newPopulation.get(i), newPopulation.get(j))
+          .equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
+        newPopulation.remove(j);
+      } else {
+        newPopulation.remove(i);
+        i = i - 1;
+      }
+      j = j - 1;
+    }
+    L.fine(String.format("Population selected: %d individuals", offspring.size()));
   }
 
   @Override

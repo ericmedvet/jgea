@@ -27,7 +27,7 @@ import io.github.ericmedvet.jgea.core.util.Progress;
 public interface State {
   long elapsedMillis();
 
-  int nOfIterations();
+  long nOfIterations();
 
   Progress progress();
 }

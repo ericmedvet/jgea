@@ -20,41 +20,44 @@
 
 package io.github.ericmedvet.jgea.core.solver;
 
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationStateC;
-import io.github.ericmedvet.jgea.core.solver.state.StateC;
+import io.github.ericmedvet.jgea.core.solver.state.POCState;
+import io.github.ericmedvet.jgea.core.solver.state.State;
 import io.github.ericmedvet.jgea.core.util.Progress;
+
 import java.util.function.Predicate;
 
 public class StopConditions {
 
-  private StopConditions() {}
-
-  @SuppressWarnings("unused")
-  public static ProgressBasedStopCondition<StateC> elapsedMillis(final long n) {
-    return s -> new Progress(0, n, s.getElapsedMillis());
+  private StopConditions() {
   }
 
   @SuppressWarnings("unused")
-  public static ProgressBasedStopCondition<POSetPopulationStateC<?, ?, ?>> nOfBirths(final long n) {
-    return s -> new Progress(0, n, s.getNOfBirths());
+  public static ProgressBasedStopCondition<State> elapsedMillis(final long n) {
+    return s -> new Progress(0, n, s.elapsedMillis());
   }
 
   @SuppressWarnings("unused")
-  public static ProgressBasedStopCondition<POSetPopulationStateC<?, ?, ?>> nOfFitnessEvaluations(
-      final long n) {
-    return s -> new Progress(0, n, s.getNOfFitnessEvaluations());
+  public static ProgressBasedStopCondition<POCState<?, ?, ?, ?>> nOfBirths(final long n) {
+    return s -> new Progress(0, n, s.nOfBirths());
   }
 
   @SuppressWarnings("unused")
-  public static ProgressBasedStopCondition<StateC> nOfIterations(final long n) {
-    return s -> new Progress(0, n, s.getNOfIterations());
+  public static ProgressBasedStopCondition<POCState<?, ?, ?, ?>> nOfFitnessEvaluations(
+      final long n
+  ) {
+    return s -> new Progress(0, n, s.nOfFitnessEvaluations());
+  }
+
+  @SuppressWarnings("unused")
+  public static ProgressBasedStopCondition<State> nOfIterations(final long n) {
+    return s -> new Progress(0, n, s.nOfIterations());
   }
 
   @SuppressWarnings("unused")
   public static <F extends Comparable<F>>
-      Predicate<POSetPopulationStateC<?, ?, ? extends F>> targetFitness(final F targetF) {
+  Predicate<POCState<?, ?, ?, ? extends F>> targetFitness(final F targetF) {
     return s ->
-        s.getPopulation().firsts().stream()
+        s.population().firsts().stream()
             .map(Individual::quality)
             .anyMatch(f -> f.compareTo(targetF) <= 0);
   }
