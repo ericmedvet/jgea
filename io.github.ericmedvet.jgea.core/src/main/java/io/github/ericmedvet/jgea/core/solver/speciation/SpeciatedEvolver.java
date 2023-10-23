@@ -89,7 +89,7 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
       Progress progress,
       long nOfBirths,
       long nOfFitnessEvaluations,
-      PartiallyOrderedCollection<I> population,
+      PartiallyOrderedCollection<I> pocPopulation,
       Collection<Species<I>> parentSpecies)
       implements SpeciatedPOCPopulationState<I, G, S, Q> {
     public static <I extends Individual<G, S, Q>, G, S, Q> State<I, G, S, Q> from(
