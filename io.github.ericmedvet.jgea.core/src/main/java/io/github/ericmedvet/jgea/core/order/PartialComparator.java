@@ -35,7 +35,7 @@ public interface PartialComparator<K> {
 
   PartialComparatorOutcome compare(K k1, K k2);
 
-  static <C extends Comparator<C>> PartialComparator<C> from(Comparator<? super C> comparator) {
+  static <C> PartialComparator<C> from(Comparator<? super C> comparator) {
     return (c1, c2) -> {
       int o = comparator.compare(c1, c2);
       if (o < 0) {

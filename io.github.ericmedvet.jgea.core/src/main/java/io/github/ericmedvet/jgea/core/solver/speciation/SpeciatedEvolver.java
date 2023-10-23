@@ -22,7 +22,6 @@ package io.github.ericmedvet.jgea.core.solver.speciation;
 
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.GeneticOperator;
-import io.github.ericmedvet.jgea.core.order.DAGPartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
@@ -86,7 +85,7 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
   public record State<I extends Individual<G, S, Q>, G, S, Q>(
       LocalDateTime startingDateTime,
       long elapsedMillis,
-      int nOfIterations,
+      long nOfIterations,
       Progress progress,
       long nOfBirths,
       long nOfFitnessEvaluations,
@@ -128,7 +127,7 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
   public SpeciatedPOCPopulationState<Individual<G, S, Q>, G, S, Q> init(
       P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
     return new State<>(
-        new DAGPartiallyOrderedCollection<>(
+        PartiallyOrderedCollection.from(
             getAll(
                 map(
                     genotypeFactory.build(populationSize, random),
@@ -228,7 +227,7 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
         progress(state),
         nOfBirths,
         nOfBirths + (remap ? elites.size() : 0),
-        new DAGPartiallyOrderedCollection<>(newPopulation, comparator(problem)),
+        PartiallyOrderedCollection.from(newPopulation, comparator(problem)),
         allSpecies);
   }
 }

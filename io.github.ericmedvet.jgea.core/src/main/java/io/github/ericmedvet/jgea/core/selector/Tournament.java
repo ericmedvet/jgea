@@ -42,14 +42,8 @@ public class Tournament implements Selector<Object> {
     for (int i = 0; i < size; i++) {
       tournament.add(Misc.pickRandomly(all, random));
     }
-    if (ks instanceof DAGPartiallyOrderedCollection) {
-      PartiallyOrderedCollection<K> poTournament =
-          new DAGPartiallyOrderedCollection<>(
-              tournament, ((DAGPartiallyOrderedCollection<K>) ks).getPartialComparator());
-      tournament.clear();
-      tournament.addAll(poTournament.firsts());
-    }
-    return Misc.pickRandomly(tournament, random);
+    PartiallyOrderedCollection<K> poc = PartiallyOrderedCollection.from(tournament,ks.comparator());
+    return Misc.pickRandomly(poc.firsts(), random);
   }
 
   @Override

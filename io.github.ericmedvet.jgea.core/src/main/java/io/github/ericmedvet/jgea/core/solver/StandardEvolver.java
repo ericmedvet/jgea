@@ -21,7 +21,6 @@ package io.github.ericmedvet.jgea.core.solver;
 
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.GeneticOperator;
-import io.github.ericmedvet.jgea.core.order.DAGPartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.selector.Selector;
@@ -127,7 +126,7 @@ public class StandardEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
   public POCPopulationState<Individual<G, S, Q>, G, S, Q> init(
       P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
     return new State<>(
-        new DAGPartiallyOrderedCollection<>(
+        PartiallyOrderedCollection.from(
             getAll(
                 map(
                     genotypeFactory.build(populationSize, random),
@@ -140,7 +139,7 @@ public class StandardEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
   protected Collection<Individual<G, S, Q>> trimPopulation(
       Collection<Individual<G, S, Q>> population, P problem, RandomGenerator random) {
     PartiallyOrderedCollection<Individual<G, S, Q>> orderedPopulation =
-        new DAGPartiallyOrderedCollection<>(population, comparator(problem));
+        PartiallyOrderedCollection.from(population, comparator(problem));
     while (orderedPopulation.size() > populationSize) {
       Individual<G, S, Q> toRemoveIndividual = unsurvivalSelector.select(orderedPopulation, random);
       orderedPopulation.remove(toRemoveIndividual);
@@ -173,6 +172,6 @@ public class StandardEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
         progress(state),
         nOfBirths,
         nOfBirths + (remap ? state.population().size() : 0),
-        new DAGPartiallyOrderedCollection<>(newPopulation, comparator(problem)));
+        PartiallyOrderedCollection.from(newPopulation, comparator(problem)));
   }
 }

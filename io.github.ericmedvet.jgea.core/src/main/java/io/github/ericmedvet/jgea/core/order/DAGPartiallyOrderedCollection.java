@@ -118,6 +118,11 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
     return removed;
   }
 
+  @Override
+  public PartialComparator<? super T> comparator() {
+    return partialComparator;
+  }
+
   private Collection<T> filterNodes(Predicate<Node<Collection<T>>> predicate) {
     return nodes.stream()
         .filter(predicate)

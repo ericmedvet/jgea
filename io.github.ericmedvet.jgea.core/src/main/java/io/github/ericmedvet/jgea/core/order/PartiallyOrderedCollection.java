@@ -37,12 +37,52 @@ public interface PartiallyOrderedCollection<T> extends Sized {
 
   boolean remove(T t);
 
+  PartialComparator<? super T> comparator();
+
   @Override
   default int size() {
     return all().size();
   }
 
-  static <T> PartiallyOrderedCollection<T> of(T t) {
+  static <T> PartiallyOrderedCollection<T> from(Collection<T> ts, PartialComparator<? super T> comparator) {
+    PartiallyOrderedCollection<T> poc = new DAGPartiallyOrderedCollection<>(ts, comparator);
+    Collection<T> firsts = poc.firsts();
+    Collection<T> lasts = poc.lasts();
+    Collection<T> all = poc.all();
+    return new PartiallyOrderedCollection<T>() {
+      @Override
+      public void add(T t) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Collection<T> all() {
+        return all;
+      }
+
+      @Override
+      public Collection<T> firsts() {
+        return firsts;
+      }
+
+      @Override
+      public Collection<T> lasts() {
+        return lasts;
+      }
+
+      @Override
+      public boolean remove(T t) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public PartialComparator<? super T> comparator() {
+        return comparator;
+      }
+    };
+  }
+
+  static <T> PartiallyOrderedCollection<T> from(T t) {
     Collection<T> collection = List.of(t);
     return new PartiallyOrderedCollection<>() {
       @Override
@@ -69,9 +109,16 @@ public interface PartiallyOrderedCollection<T> extends Sized {
       public boolean remove(T t) {
         throw new UnsupportedOperationException();
       }
+
+      @Override
+      public PartialComparator<? super T> comparator() {
+        return (k1, k2) -> PartialComparator.PartialComparatorOutcome.SAME;
+      }
+
     };
   }
-  static <T> PartiallyOrderedCollection<T> from(Collection<T> ts, Comparator<T> comparator) {
+
+  static <T> PartiallyOrderedCollection<T> from(Collection<T> ts, Comparator<? super T> comparator) {
     List<T> all = ts.stream().sorted(comparator).toList();
     List<T> firsts = all.stream().filter(t -> comparator.compare(t, all.get(0)) == 0).toList();
     List<T> lasts = all.stream().filter(t -> comparator.compare(t, all.get(all.size() - 1)) == 0).toList();
@@ -99,6 +146,11 @@ public interface PartiallyOrderedCollection<T> extends Sized {
       @Override
       public boolean remove(T t) {
         throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public PartialComparator<? super T> comparator() {
+        return PartialComparator.from(comparator);
       }
     };
   }

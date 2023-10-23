@@ -48,7 +48,7 @@ public class RandomSearch<P extends QualityBasedProblem<S, Q>, G, S, Q>
       implements POCPopulationState<I, G, S, Q> {
     @Override
     public PartiallyOrderedCollection<I> population() {
-      return PartiallyOrderedCollection.of(individual);
+      return PartiallyOrderedCollection.from(individual);
     }
 
     public static <I extends Individual<G, S, Q>, G, S, Q> State<I, G, S, Q> from(
