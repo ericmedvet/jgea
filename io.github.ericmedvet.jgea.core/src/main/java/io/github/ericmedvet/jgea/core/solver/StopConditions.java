@@ -57,7 +57,7 @@ public class StopConditions {
   public static <F extends Comparable<F>>
   Predicate<POCPopulationState<?, ?, ?, ? extends F>> targetFitness(final F targetF) {
     return s ->
-        s.population().firsts().stream()
+        s.pocPopulation().firsts().stream()
             .map(Individual::quality)
             .anyMatch(f -> f.compareTo(targetF) <= 0);
   }

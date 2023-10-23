@@ -75,7 +75,7 @@ public class StandardWithEnforcedDiversityEvolver<P extends QualityBasedProblem<
       throws SolverException {
     Collection<G> offspringGenotypes = new ArrayList<>();
     Collection<G> existingGenotypes =
-        state.population().all().stream().map(Individual::genotype).toList();
+        state.pocPopulation().all().stream().map(Individual::genotype).toList();
     while (offspringGenotypes.size() < offspringSize) {
       GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
       List<G> parentGenotypes = new ArrayList<>(operator.arity());
@@ -83,7 +83,7 @@ public class StandardWithEnforcedDiversityEvolver<P extends QualityBasedProblem<
       while (true) {
         parentGenotypes.clear();
         for (int j = 0; j < operator.arity(); j++) {
-          Individual<G, S, Q> parent = parentSelector.select(state.population(), random);
+          Individual<G, S, Q> parent = parentSelector.select(state.pocPopulation(), random);
           parentGenotypes.add(parent.genotype());
         }
         List<G> childGenotypes = new ArrayList<>(operator.apply(parentGenotypes, random));

@@ -62,7 +62,7 @@ public class RandomWalk<P extends QualityBasedProblem<S, Q>, G, S, Q>
       ExecutorService executor,
       POCPopulationState<Individual<G, S, Q>, G, S, Q> state)
       throws SolverException {
-    Individual<G, S, Q> currentIndividual = state.population().firsts().iterator().next();
+    Individual<G, S, Q> currentIndividual = state.pocPopulation().firsts().iterator().next();
     Individual<G, S, Q> newIndividual =
         getAll(
                 map(

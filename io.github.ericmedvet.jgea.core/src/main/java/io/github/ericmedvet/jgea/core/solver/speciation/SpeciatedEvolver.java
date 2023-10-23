@@ -144,10 +144,10 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
       ExecutorService executor,
       SpeciatedPOCPopulationState<Individual<G, S, Q>, G, S, Q> state)
       throws SolverException {
-    Collection<Individual<G, S, Q>> parents = state.population().all();
+    Collection<Individual<G, S, Q>> parents = state.pocPopulation().all();
     // partition in species
     List<Species<Individual<G, S, Q>>> allSpecies =
-        new ArrayList<>(speciator.speciate(state.population()));
+        new ArrayList<>(speciator.speciate(state.pocPopulation()));
     L.fine(
         String.format(
             "Population speciated in %d species of sizes %s",

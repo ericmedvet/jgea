@@ -64,7 +64,7 @@ public class MutationOnly<P extends QualityBasedProblem<S, Q>, G, S, Q>
       P problem,
       RandomGenerator random,
       ExecutorService executor) {
-    return state.population().all().stream()
+    return state.pocPopulation().all().stream()
         .map(i -> mutation.mutate(i.genotype(), random))
         .toList();
   }

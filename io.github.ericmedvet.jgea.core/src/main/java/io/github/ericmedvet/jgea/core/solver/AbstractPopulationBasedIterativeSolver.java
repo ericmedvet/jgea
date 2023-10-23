@@ -141,7 +141,7 @@ public abstract class AbstractPopulationBasedIterativeSolver<
   public Collection<S> extractSolutions(
       P problem, RandomGenerator random, ExecutorService executor, T state
   ) {
-    return state.population().firsts().stream().map(Individual::solution).toList();
+    return state.pocPopulation().firsts().stream().map(Individual::solution).toList();
   }
 
   protected Progress progress(T state) {

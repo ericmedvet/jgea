@@ -40,7 +40,7 @@ public class NamedFunctions {
 
   public static <I extends Individual<G, S, Q>, G, S, Q> NamedFunction<POCPopulationState<I, G, S, Q>, Collection<I>>
   all() {
-    return f("all", e -> e.population().all());
+    return f("all", e -> e.pocPopulation().all());
   }
 
   @SuppressWarnings("unchecked")
@@ -70,7 +70,7 @@ public class NamedFunctions {
   }
 
   public static <I extends Individual<G, S, Q>, G, S, Q> NamedFunction<POCPopulationState<I, G, S, Q>, I> best() {
-    return f("best", e -> Misc.first(e.population().firsts()));
+    return f("best", e -> Misc.first(e.pocPopulation().firsts()));
   }
 
   public static <I extends Individual<G, S, Q>, G, S, Q> NamedFunction<POCPopulationState<I, G, S, Q>, Long> births() {
@@ -109,7 +109,7 @@ public class NamedFunctions {
 
   public static <I extends Individual<G, S, Q>, G, S, Q> NamedFunction<POCPopulationState<I, G, S, Q>, Collection<I>>
   firsts() {
-    return f("firsts", e -> e.population().firsts());
+    return f("firsts", e -> e.pocPopulation().firsts());
   }
 
   public static <I extends Individual<?, ?, ? extends F>, F> NamedFunction<I, F> quality() {
@@ -155,7 +155,7 @@ public class NamedFunctions {
 
   public static <I extends Individual<G, S, Q>, G, S, Q> NamedFunction<POCPopulationState<I, G, S, Q>, Collection<I>>
   lasts() {
-    return f("lasts", e -> e.population().lasts());
+    return f("lasts", e -> e.pocPopulation().lasts());
   }
 
   public static <T> NamedFunction<Collection<? extends T>, T> max(Comparator<T> comparator) {

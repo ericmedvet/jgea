@@ -59,7 +59,8 @@ public class StandardEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
       Progress progress,
       long nOfBirths,
       long nOfFitnessEvaluations,
-      PartiallyOrderedCollection<I> population)
+      PartiallyOrderedCollection<I> pocPopulation
+  )
       implements POCPopulationState<I, G, S, Q> {
     public static <I extends Individual<G, S, Q>, G, S, Q> State<I, G, S, Q> from(
         State<I, G, S, Q> state,
@@ -114,7 +115,7 @@ public class StandardEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
       GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
       List<G> parentGenotypes = new ArrayList<>(operator.arity());
       for (int j = 0; j < operator.arity(); j++) {
-        Individual<G, S, Q> parent = parentSelector.select(state.population(), random);
+        Individual<G, S, Q> parent = parentSelector.select(state.pocPopulation(), random);
         parentGenotypes.add(parent.genotype());
       }
       offspringGenotypes.addAll(operator.apply(parentGenotypes, random));
@@ -160,7 +161,7 @@ public class StandardEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
     Collection<Individual<G, S, Q>> newPopulation =
         map(
             offspringGenotypes,
-            overlapping ? state.population().all() : List.of(),
+            overlapping ? state.pocPopulation().all() : List.of(),
             state.nOfIterations(),
             problem.qualityFunction(),
             executor);
@@ -171,7 +172,7 @@ public class StandardEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
         (State<Individual<G, S, Q>, G, S, Q>) state,
         progress(state),
         nOfBirths,
-        nOfBirths + (remap ? state.population().size() : 0),
+        nOfBirths + (remap ? state.pocPopulation().size() : 0),
         PartiallyOrderedCollection.from(newPopulation, comparator(problem)));
   }
 }

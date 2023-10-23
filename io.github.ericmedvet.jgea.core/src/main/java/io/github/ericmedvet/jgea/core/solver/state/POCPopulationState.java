@@ -30,5 +30,5 @@ public interface POCPopulationState<I extends Individual<G, S, Q>, G, S, Q> exte
 
   long nOfFitnessEvaluations();
 
-  PartiallyOrderedCollection<I> population();
+  PartiallyOrderedCollection<I> pocPopulation();
 }

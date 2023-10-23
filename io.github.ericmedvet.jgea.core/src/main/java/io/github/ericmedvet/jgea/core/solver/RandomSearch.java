@@ -47,7 +47,7 @@ public class RandomSearch<P extends QualityBasedProblem<S, Q>, G, S, Q>
       I individual)
       implements POCPopulationState<I, G, S, Q> {
     @Override
-    public PartiallyOrderedCollection<I> population() {
+    public PartiallyOrderedCollection<I> pocPopulation() {
       return PartiallyOrderedCollection.from(individual);
     }
 
@@ -95,7 +95,7 @@ public class RandomSearch<P extends QualityBasedProblem<S, Q>, G, S, Q>
       ExecutorService executor,
       POCPopulationState<Individual<G, S, Q>, G, S, Q> state)
       throws SolverException {
-    Individual<G, S, Q> currentIndividual = state.population().firsts().iterator().next();
+    Individual<G, S, Q> currentIndividual = state.pocPopulation().firsts().iterator().next();
     Individual<G, S, Q> newIndividual =
         getAll(
                 map(
