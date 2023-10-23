@@ -33,7 +33,7 @@ import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
 public class MutationOnly<P extends QualityBasedProblem<S, Q>, G, S, Q>
-    extends StandardEvolver<P, G, S, Q> {
+    extends AbstractStandardEvolver<P, G, S, Q> {
 
   private final Mutation<G> mutation;
 

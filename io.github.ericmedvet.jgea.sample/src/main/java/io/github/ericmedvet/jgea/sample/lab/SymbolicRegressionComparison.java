@@ -190,7 +190,7 @@ public class SymbolicRegressionComparison extends Worker {
                           .toList()),
                   IndependentFactory.picker(
                       constants.stream().map(Element.Constant::new).toList()));
-          return new StandardEvolver<>(
+          return new AbstractStandardEvolver<>(
               TreeBasedUnivariateRealFunction.mapper(
                       p.qualityFunction().getDataset().xVarNames(),
                       p.qualityFunction().getDataset().yVarNames().get(0))
@@ -231,7 +231,7 @@ public class SymbolicRegressionComparison extends Worker {
                           .toList()),
                   IndependentFactory.picker(
                       constants.stream().map(Element.Constant::new).toList()));
-          return new StandardEvolver<>(
+          return new AbstractStandardEvolver<>(
               TreeBasedUnivariateRealFunction.mapper(
                       p.qualityFunction().getDataset().xVarNames(),
                       p.qualityFunction().getDataset().yVarNames().get(0))
@@ -270,7 +270,7 @@ public class SymbolicRegressionComparison extends Worker {
                           .toList()),
                   IndependentFactory.picker(
                       constants.stream().map(Element.Constant::new).toList()));
-          return new StandardWithEnforcedDiversityEvolver<>(
+          return new AbstractStandardWithEnforcedDiversityEvolver<>(
               TreeBasedUnivariateRealFunction.mapper(
                       p.qualityFunction().getDataset().xVarNames(),
                       p.qualityFunction().getDataset().yVarNames().get(0))
@@ -307,7 +307,7 @@ public class SymbolicRegressionComparison extends Worker {
           SymbolicRegressionGrammar g =
               new SymbolicRegressionGrammar(
                   List.of(operators), p.qualityFunction().getDataset().xVarNames(), constants);
-          return new StandardEvolver<>(
+          return new AbstractStandardEvolver<>(
               new FormulaMapper()
                   .andThen(
                       TreeBasedUnivariateRealFunction.mapper(
@@ -335,7 +335,7 @@ public class SymbolicRegressionComparison extends Worker {
           SymbolicRegressionGrammar g =
               new SymbolicRegressionGrammar(
                   List.of(operators), p.qualityFunction().getDataset().xVarNames(), constants);
-          return new StandardEvolver<>(
+          return new AbstractStandardEvolver<>(
               new FormulaMapper()
                   .andThen(
                       TreeBasedUnivariateRealFunction.mapper(
@@ -359,7 +359,7 @@ public class SymbolicRegressionComparison extends Worker {
           SymbolicRegressionGrammar g =
               new SymbolicRegressionGrammar(
                   List.of(operators), p.qualityFunction().getDataset().xVarNames(), constants);
-          return new StandardWithEnforcedDiversityEvolver<>(
+          return new AbstractStandardWithEnforcedDiversityEvolver<>(
               new FormulaMapper()
                   .andThen(
                       TreeBasedUnivariateRealFunction.mapper(
@@ -385,7 +385,7 @@ public class SymbolicRegressionComparison extends Worker {
     solvers.put(
         "fgraph-lim-ga",
         p ->
-            new StandardEvolver<>(
+            new AbstractStandardEvolver<>(
                 FunctionGraph.mapper(
                         p.qualityFunction().getDataset().xVarNames(),
                         p.qualityFunction().getDataset().yVarNames())
@@ -437,7 +437,7 @@ public class SymbolicRegressionComparison extends Worker {
     solvers.put(
         "fgraph-lim-ga-noxover",
         p ->
-            new StandardEvolver<>(
+            new AbstractStandardEvolver<>(
                 FunctionGraph.mapper(
                         p.qualityFunction().getDataset().xVarNames(),
                         p.qualityFunction().getDataset().yVarNames())
@@ -610,7 +610,7 @@ public class SymbolicRegressionComparison extends Worker {
     solvers.put(
         "fgraph-lim-gadiv",
         p ->
-            new StandardWithEnforcedDiversityEvolver<>(
+            new AbstractStandardWithEnforcedDiversityEvolver<>(
                 FunctionGraph.mapper(
                         p.qualityFunction().getDataset().xVarNames(),
                         p.qualityFunction().getDataset().yVarNames())
@@ -761,7 +761,7 @@ public class SymbolicRegressionComparison extends Worker {
     solvers.put(
         "fgraph-seq-ga",
         p ->
-            new StandardEvolver<>(
+            new AbstractStandardEvolver<>(
                 FunctionGraph.mapper(
                         p.qualityFunction().getDataset().xVarNames(),
                         p.qualityFunction().getDataset().yVarNames())
@@ -813,7 +813,7 @@ public class SymbolicRegressionComparison extends Worker {
     solvers.put(
         "ograph-seq-ga",
         p ->
-            new StandardEvolver<>(
+            new AbstractStandardEvolver<>(
                 OperatorGraph.mapper(
                         p.qualityFunction().getDataset().xVarNames(),
                         p.qualityFunction().getDataset().yVarNames())
@@ -901,7 +901,7 @@ public class SymbolicRegressionComparison extends Worker {
           Function<Graph<IndexedNode<Node>, Double>, Graph<Node, Double>> graphMapper =
               GraphUtils.mapper(IndexedNode::content, Misc::first);
           Predicate<Graph<Node, Double>> checker = FunctionGraph.checker();
-          return new StandardEvolver<>(
+          return new AbstractStandardEvolver<>(
               graphMapper
                   .andThen(
                       FunctionGraph.mapper(
@@ -1166,7 +1166,7 @@ public class SymbolicRegressionComparison extends Worker {
     solvers.put(
         "fgraph-seq-ga-noxover",
         p ->
-            new StandardEvolver<>(
+            new AbstractStandardEvolver<>(
                 FunctionGraph.mapper(
                         p.qualityFunction().getDataset().xVarNames(),
                         p.qualityFunction().getDataset().yVarNames())
@@ -1209,7 +1209,7 @@ public class SymbolicRegressionComparison extends Worker {
     solvers.put(
         "fgraph-seq-gadiv",
         p ->
-            new StandardWithEnforcedDiversityEvolver<>(
+            new AbstractStandardWithEnforcedDiversityEvolver<>(
                 FunctionGraph.mapper(
                         p.qualityFunction().getDataset().xVarNames(),
                         p.qualityFunction().getDataset().yVarNames())

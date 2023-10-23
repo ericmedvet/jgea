@@ -132,7 +132,7 @@ public class TuiExample implements Runnable {
                 NamedUnivariateRealFunction>>
         solvers = new ArrayList<>();
     solvers.add(
-        new StandardEvolver<>(
+        new AbstractStandardEvolver<>(
             new FormulaMapper()
                 .andThen(
                     n ->
@@ -156,7 +156,7 @@ public class TuiExample implements Runnable {
             false,
             (srp, rnd) -> new POCPopulationState<>()));
     solvers.add(
-        new StandardWithEnforcedDiversityEvolver<>(
+        new AbstractStandardWithEnforcedDiversityEvolver<>(
             new FormulaMapper()
                 .andThen(
                     n ->

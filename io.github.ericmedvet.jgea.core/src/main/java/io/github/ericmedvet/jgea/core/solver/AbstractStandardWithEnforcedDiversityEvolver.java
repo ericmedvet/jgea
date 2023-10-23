@@ -35,12 +35,12 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
-public class StandardWithEnforcedDiversityEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
-    extends StandardEvolver<P, G, S, Q> {
+public class AbstractStandardWithEnforcedDiversityEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
+    extends AbstractStandardEvolver<P, G, S, Q> {
 
   private final int maxAttempts;
 
-  public StandardWithEnforcedDiversityEvolver(
+  public AbstractStandardWithEnforcedDiversityEvolver(
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       int populationSize,

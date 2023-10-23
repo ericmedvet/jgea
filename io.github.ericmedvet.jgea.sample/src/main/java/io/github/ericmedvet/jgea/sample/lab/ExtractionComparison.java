@@ -160,7 +160,7 @@ public class ExtractionComparison extends Worker {
         "cfgtree-ga",
         p -> {
           RegexGrammar g = new RegexGrammar(p.qualityFunction(), options);
-          return new StandardEvolver<>(
+          return new AbstractStandardEvolver<>(
               t ->
                   new RegexBasedExtractor(
                       t.leaves().stream().map(Tree::content).collect(Collectors.joining())),
@@ -183,7 +183,7 @@ public class ExtractionComparison extends Worker {
         "cfgtree-gadiv",
         p -> {
           RegexGrammar g = new RegexGrammar(p.qualityFunction(), options);
-          return new StandardWithEnforcedDiversityEvolver<>(
+          return new AbstractStandardWithEnforcedDiversityEvolver<>(
               tree ->
                   new RegexBasedExtractor(
                       tree.leaves().stream().map(Tree::content).collect(Collectors.joining())),
@@ -426,7 +426,7 @@ public class ExtractionComparison extends Worker {
                   .orElse(Set.of());
           Predicate<Graph<DeterministicFiniteAutomaton.State, Set<Character>>> checker =
               DeterministicFiniteAutomaton.checker();
-          return new StandardEvolver<>(
+          return new AbstractStandardEvolver<>(
               graphMapper.andThen(DeterministicFiniteAutomaton.builder()),
               new ShallowDFAFactory<>(2, positiveChars)
                   .then(

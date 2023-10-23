@@ -73,12 +73,12 @@ public class Solvers {
   public static <S, Q>
       Function<
               S,
-              StandardEvolver<
-                  POCPopulationState<BitString, S, Q>,
-                  QualityBasedProblem<S, Q>,
-                  BitString,
-                  S,
-                  Q>>
+          AbstractStandardEvolver<
+                            POCPopulationState<BitString, S, Q>,
+                            QualityBasedProblem<S, Q>,
+                            BitString,
+                            S,
+                            Q>>
           bitStringGa(
               @Param(value = "mapper") InvertibleMapper<BitString, S> mapper,
               @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
@@ -99,7 +99,7 @@ public class Solvers {
                   new BitStringUniformCrossover().andThen(new BitStringFlipMutation(pMut)),
                   crossoverP));
       if (!diversity) {
-        return new StandardEvolver<>(
+        return new AbstractStandardEvolver<>(
             mapper.mapperFor(exampleS),
             factory,
             nPop,
@@ -113,7 +113,7 @@ public class Solvers {
             remap,
             (p, r) -> new POCPopulationState<>());
       } else {
-        return new StandardWithEnforcedDiversityEvolver<>(
+        return new AbstractStandardWithEnforcedDiversityEvolver<>(
             mapper.mapperFor(exampleS),
             factory,
             nPop,
@@ -189,12 +189,12 @@ public class Solvers {
   public static <S, Q>
       Function<
               S,
-              StandardEvolver<
-                  POCPopulationState<List<Double>, S, Q>,
-                  QualityBasedProblem<S, Q>,
-                  List<Double>,
-                  S,
-                  Q>>
+          AbstractStandardEvolver<
+                            POCPopulationState<List<Double>, S, Q>,
+                            QualityBasedProblem<S, Q>,
+                            List<Double>,
+                            S,
+                            Q>>
           doubleStringGa(
               @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
               @Param(value = "initialMinV", dD = -1d) double initialMinV,
@@ -218,7 +218,7 @@ public class Solvers {
               Map.entry(new GaussianMutation(sigmaMut), 1d - crossoverP),
               Map.entry(crossover.andThen(new GaussianMutation(sigmaMut)), crossoverP));
       if (!diversity) {
-        return new StandardEvolver<>(
+        return new AbstractStandardEvolver<>(
             mapper.mapperFor(exampleS),
             doublesFactory,
             nPop,
@@ -232,7 +232,7 @@ public class Solvers {
             remap,
             (p, r) -> new POCPopulationState<>());
       } else {
-        return new StandardWithEnforcedDiversityEvolver<>(
+        return new AbstractStandardWithEnforcedDiversityEvolver<>(
             mapper.mapperFor(exampleS),
             doublesFactory,
             nPop,
@@ -254,12 +254,12 @@ public class Solvers {
   public static <S, Q>
       Function<
               S,
-              StandardEvolver<
-                  POCPopulationState<IntString, S, Q>,
-                  QualityBasedProblem<S, Q>,
-                  IntString,
-                  S,
-                  Q>>
+          AbstractStandardEvolver<
+                            POCPopulationState<IntString, S, Q>,
+                            QualityBasedProblem<S, Q>,
+                            IntString,
+                            S,
+                            Q>>
           intStringGa(
               @Param(value = "mapper") InvertibleMapper<IntString, S> mapper,
               @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
@@ -282,7 +282,7 @@ public class Solvers {
                   new IntStringUniformCrossover().andThen(new IntStringFlipMutation(pMut)),
                   crossoverP));
       if (!diversity) {
-        return new StandardEvolver<>(
+        return new AbstractStandardEvolver<>(
             mapper.mapperFor(exampleS),
             factory,
             nPop,
@@ -296,7 +296,7 @@ public class Solvers {
             remap,
             (p, r) -> new POCPopulationState<>());
       } else {
-        return new StandardWithEnforcedDiversityEvolver<>(
+        return new AbstractStandardWithEnforcedDiversityEvolver<>(
             mapper.mapperFor(exampleS),
             factory,
             nPop,
@@ -318,12 +318,12 @@ public class Solvers {
   public static <S, Q>
       Function<
               S,
-              StandardEvolver<
-                  POCPopulationState<List<Tree<Element>>, S, Q>,
-                  QualityBasedProblem<S, Q>,
-                  List<Tree<Element>>,
-                  S,
-                  Q>>
+          AbstractStandardEvolver<
+                            POCPopulationState<List<Tree<Element>>, S, Q>,
+                            QualityBasedProblem<S, Q>,
+                            List<Tree<Element>>,
+                            S,
+                            Q>>
           multiSRTreeGp(
               @Param(value = "mapper") InvertibleMapper<List<Tree<Element>>, S> mapper,
               @Param(
@@ -400,7 +400,7 @@ public class Solvers {
               Map.entry(uniformCrossover, crossoverP / 2d),
               Map.entry(allSubtreeMutations, 1d - crossoverP));
       if (!diversity) {
-        return new StandardEvolver<>(
+        return new AbstractStandardEvolver<>(
             mapper.mapperFor(exampleS),
             treeListFactory,
             nPop,
@@ -414,7 +414,7 @@ public class Solvers {
             remap,
             (p, r) -> new POCPopulationState<>());
       }
-      return new StandardWithEnforcedDiversityEvolver<>(
+      return new AbstractStandardWithEnforcedDiversityEvolver<>(
           mapper.mapperFor(exampleS),
           treeListFactory,
           nPop,
@@ -560,12 +560,12 @@ public class Solvers {
   public static <S, Q>
       Function<
               S,
-              StandardEvolver<
-                  POCPopulationState<Tree<Element>, S, Q>,
-                  QualityBasedProblem<S, Q>,
-                  Tree<Element>,
-                  S,
-                  Q>>
+          AbstractStandardEvolver<
+                            POCPopulationState<Tree<Element>, S, Q>,
+                            QualityBasedProblem<S, Q>,
+                            Tree<Element>,
+                            S,
+                            Q>>
           srTreeGp(
               @Param(value = "mapper") InvertibleMapper<Tree<Element>, S> mapper,
               @Param(
@@ -617,7 +617,7 @@ public class Solvers {
               Map.entry(new SubtreeCrossover<>(maxTreeH), crossoverP),
               Map.entry(new SubtreeMutation<>(maxTreeH, treeBuilder), 1d - crossoverP));
       if (!diversity) {
-        return new StandardEvolver<>(
+        return new AbstractStandardEvolver<>(
             mapper.mapperFor(exampleS),
             treeFactory,
             nPop,
@@ -631,7 +631,7 @@ public class Solvers {
             remap,
             (p, r) -> new POCPopulationState<>());
       }
-      return new StandardWithEnforcedDiversityEvolver<>(
+      return new AbstractStandardWithEnforcedDiversityEvolver<>(
           mapper.mapperFor(exampleS),
           treeFactory,
           nPop,

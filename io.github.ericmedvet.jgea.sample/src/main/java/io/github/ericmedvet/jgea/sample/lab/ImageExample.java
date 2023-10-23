@@ -38,7 +38,7 @@ import io.github.ericmedvet.jgea.core.selector.Last;
 import io.github.ericmedvet.jgea.core.selector.Tournament;
 import io.github.ericmedvet.jgea.core.solver.IterativeSolver;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
-import io.github.ericmedvet.jgea.core.solver.StandardEvolver;
+import io.github.ericmedvet.jgea.core.solver.AbstractStandardEvolver;
 import io.github.ericmedvet.jgea.core.solver.StopConditions;
 import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jgea.problem.image.ImageReconstruction;
@@ -114,7 +114,7 @@ public class ImageExample extends Worker {
         solvers = new TreeMap<>();
     solvers.put(
         "graph-seq-ga",
-        new StandardEvolver<>(
+        new AbstractStandardEvolver<>(
             FunctionGraph.mapper(List.of("x", "y"), List.of("out"))
                 .andThen(UnivariateRealFunction::from),
             new ShallowSparseFactory(0d, 0d, 1d, List.of("x", "y"), List.of("out")),

@@ -130,12 +130,12 @@ public class Example extends Worker {
             StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
             new GaussianMutation(0.01d)));
     solvers.add(
-        new StandardEvolver<
-            POCPopulationState<List<Double>, List<Double>, Double>,
-            TotalOrderQualityBasedProblem<List<Double>, Double>,
-            List<Double>,
-            List<Double>,
-            Double>(
+        new AbstractStandardEvolver<
+                    POCPopulationState<List<Double>, List<Double>, Double>,
+                    TotalOrderQualityBasedProblem<List<Double>, Double>,
+                    List<Double>,
+                    List<Double>,
+                    Double>(
             Function.identity(),
             new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
             100,
@@ -209,12 +209,12 @@ public class Example extends Worker {
             StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
             new BitStringFlipMutation(0.01d)));
     solvers.add(
-        new StandardEvolver<
-            POCPopulationState<BitString, BitString, Double>,
-            QualityBasedProblem<BitString, Double>,
-            BitString,
-            BitString,
-            Double>(
+        new AbstractStandardEvolver<
+                    POCPopulationState<BitString, BitString, Double>,
+                    QualityBasedProblem<BitString, Double>,
+                    BitString,
+                    BitString,
+                    Double>(
             Function.identity(),
             new BitStringFactory(size),
             100,
@@ -227,12 +227,12 @@ public class Example extends Worker {
             false,
             (problem, random) -> new POCPopulationState<>()));
     solvers.add(
-        new StandardWithEnforcedDiversityEvolver<
-            POCPopulationState<BitString, BitString, Double>,
-            QualityBasedProblem<BitString, Double>,
-            BitString,
-            BitString,
-            Double>(
+        new AbstractStandardWithEnforcedDiversityEvolver<
+                    POCPopulationState<BitString, BitString, Double>,
+                    QualityBasedProblem<BitString, Double>,
+                    BitString,
+                    BitString,
+                    Double>(
             Function.identity(),
             new BitStringFactory(size),
             100,
@@ -291,7 +291,7 @@ public class Example extends Worker {
                 NamedUnivariateRealFunction>>
         solvers = new ArrayList<>();
     solvers.add(
-        new StandardEvolver<>(
+        new AbstractStandardEvolver<>(
             new FormulaMapper()
                 .andThen(
                     n ->
@@ -315,7 +315,7 @@ public class Example extends Worker {
             false,
             (srp, rnd) -> new POCPopulationState<>()));
     solvers.add(
-        new StandardWithEnforcedDiversityEvolver<>(
+        new AbstractStandardWithEnforcedDiversityEvolver<>(
             new FormulaMapper()
                 .andThen(
                     n ->
