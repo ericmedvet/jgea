@@ -30,8 +30,6 @@ public class LoggerProgressMonitor implements ProgressMonitor {
 
   @Override
   public void notify(Progress progress, String message) {
-    L.info(
-        String.format(
-            "Progress: %s %s%n", TextPlotter.horizontalBar(progress.rate(), 0, 1, 8), message));
+    L.info(String.format("Progress: %s %s%n", TextPlotter.horizontalBar(progress.rate(), 0, 1, 8), message));
   }
 }

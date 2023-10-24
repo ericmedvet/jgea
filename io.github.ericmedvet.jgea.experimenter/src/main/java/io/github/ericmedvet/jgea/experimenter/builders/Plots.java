@@ -74,8 +74,7 @@ public class Plots {
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<G, S, Q>, ? extends Number> xFunction,
       @Param(value = "collection", dNPM = "ea.nf.all()")
-          NamedFunction<POCPopulationState<G, S, Q>, Collection<Individual<G, S, Q>>>
-              collectionFunction,
+          NamedFunction<POCPopulationState<G, S, Q>, Collection<Individual<G, S, Q>>> collectionFunction,
       @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<Q, Double> fFunction,
       @Param(value = "w", dI = 600) int width,
       @Param(value = "h", dI = 400) int height,
@@ -85,11 +84,8 @@ public class Plots {
       @Param(value = "maxY", dD = Double.NEGATIVE_INFINITY) double maxY,
       @Param(value = "sort", dS = "min") Sorting sorting,
       @Param(value = "s", dS = "%.2f") String s) {
-    NamedFunction<POCPopulationState<G, S, Q>, Collection<Double>> collFFunction =
-        NamedFunctions.each(
-            fFunction.of(NamedFunctions.fitness(NamedFunctions.identity(), s)),
-            collectionFunction,
-            "%s");
+    NamedFunction<POCPopulationState<G, S, Q>, Collection<Double>> collFFunction = NamedFunctions.each(
+        fFunction.of(NamedFunctions.fitness(NamedFunctions.identity(), s)), collectionFunction, "%s");
     List<NamedFunction<? super POCPopulationState<G, S, Q>, ? extends Number>> yFunctions =
         switch (sorting) {
           case MIN -> List.of(
@@ -101,8 +97,7 @@ public class Plots {
               NamedFunctions.median(collFFunction, s),
               NamedFunctions.min(collFFunction, s));
         };
-    return new XYPlotTableBuilder<>(
-        xFunction, yFunctions, width, height, minX, maxX, minY, maxY, true, false);
+    return new XYPlotTableBuilder<>(xFunction, yFunctions, width, height, minX, maxX, minY, maxY, true, false);
   }
 
   @SuppressWarnings("unused")
@@ -123,8 +118,7 @@ public class Plots {
       @Param(value = "maxX", dD = Double.NEGATIVE_INFINITY) double maxX,
       @Param(value = "minY", dD = 0) double minY,
       @Param(value = "maxY", dD = 1) double maxY) {
-    return new XYPlotTableBuilder<>(
-        xFunction, yFunctions, width, height, minX, maxX, minY, maxY, true, false);
+    return new XYPlotTableBuilder<>(xFunction, yFunctions, width, height, minX, maxX, minY, maxY, true, false);
   }
 
   @SuppressWarnings("unused")
@@ -151,8 +145,7 @@ public class Plots {
       @Param(value = "maxX", dD = Double.NEGATIVE_INFINITY) double maxX,
       @Param(value = "minY", dD = Double.NEGATIVE_INFINITY) double minY,
       @Param(value = "maxY", dD = Double.NEGATIVE_INFINITY) double maxY) {
-    return new XYPlotTableBuilder<>(
-        xFunction, yFunctions, width, height, minX, maxX, minY, maxY, true, false);
+    return new XYPlotTableBuilder<>(xFunction, yFunctions, width, height, minX, maxX, minY, maxY, true, false);
   }
 
   @SuppressWarnings("unused")
@@ -174,15 +167,13 @@ public class Plots {
   public static <G, S, Q> XYPlotTableBuilder<POCPopulationState<G, S, Q>> ysPlot(
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<G, S, Q>, ? extends Number> xFunction,
-      @Param("ys")
-          List<NamedFunction<? super POCPopulationState<G, S, Q>, ? extends Number>> yFunctions,
+      @Param("ys") List<NamedFunction<? super POCPopulationState<G, S, Q>, ? extends Number>> yFunctions,
       @Param(value = "w", dI = 600) int width,
       @Param(value = "h", dI = 400) int height,
       @Param(value = "minX", dD = Double.NEGATIVE_INFINITY) double minX,
       @Param(value = "maxX", dD = Double.NEGATIVE_INFINITY) double maxX,
       @Param(value = "minY", dD = Double.NEGATIVE_INFINITY) double minY,
       @Param(value = "maxY", dD = Double.NEGATIVE_INFINITY) double maxY) {
-    return new XYPlotTableBuilder<>(
-        xFunction, yFunctions, width, height, minX, maxX, minY, maxY, true, false);
+    return new XYPlotTableBuilder<>(xFunction, yFunctions, width, height, minX, maxX, minY, maxY, true, false);
   }
 }

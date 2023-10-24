@@ -66,10 +66,7 @@ public class MapOfElites<T> implements PartiallyOrderedCollection<T> {
       List<Double> featuresMaxValues,
       Function<T, List<Double>> featuresExtractor,
       PartialComparator<? super T> comparator) {
-    this(
-        buildFeatures(featuresSizes, featuresMinValues, featuresMaxValues),
-        featuresExtractor,
-        comparator);
+    this(buildFeatures(featuresSizes, featuresMinValues, featuresMaxValues), featuresExtractor, comparator);
   }
 
   public static List<Feature> buildFeatures(
@@ -80,10 +77,7 @@ public class MapOfElites<T> implements PartiallyOrderedCollection<T> {
           "Conflicting number of features values: all lists must have the same length");
     }
     return IntStream.range(0, nFeatures)
-        .mapToObj(
-            i ->
-                new Feature(
-                    featuresMinValues.get(i), featuresMaxValues.get(i), featuresSizes.get(i)))
+        .mapToObj(i -> new Feature(featuresMinValues.get(i), featuresMaxValues.get(i), featuresSizes.get(i)))
         .collect(Collectors.toList());
   }
 
@@ -131,9 +125,7 @@ public class MapOfElites<T> implements PartiallyOrderedCollection<T> {
       elites.put(elite, t);
       lastAddedPerformance.add(t);
     } else {
-      if (comparator
-          .compare(t, previousT)
-          .equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
+      if (comparator.compare(t, previousT).equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
         elites.put(elite, t);
         lastAddedPerformance.add(t);
         updatedSolutionsCounter++;

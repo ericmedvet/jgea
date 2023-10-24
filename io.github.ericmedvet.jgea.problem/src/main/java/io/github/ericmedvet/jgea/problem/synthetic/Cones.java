@@ -27,8 +27,7 @@ import java.util.List;
 import java.util.function.Function;
 
 public class Cones
-    implements MultiHomogeneousObjectiveProblem<List<Double>, Double>,
-        ProblemWithExampleSolution<List<Double>> {
+    implements MultiHomogeneousObjectiveProblem<List<Double>, Double>, ProblemWithExampleSolution<List<Double>> {
 
   @Override
   public List<Comparator<Double>> comparators() {

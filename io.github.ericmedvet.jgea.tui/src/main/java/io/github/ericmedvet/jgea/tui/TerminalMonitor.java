@@ -47,15 +47,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
-public class TerminalMonitor<E, K> extends ListLogHandler
-    implements ListenerFactory<E, K>, ProgressMonitor {
+public class TerminalMonitor<E, K> extends ListLogHandler implements ListenerFactory<E, K>, ProgressMonitor {
 
-  public static final Map<Level, TextColor> LEVEL_COLORS =
-      Map.ofEntries(
-          Map.entry(Level.SEVERE, TextColor.Factory.fromString("#EE3E38")),
-          Map.entry(Level.WARNING, TextColor.Factory.fromString("#FBA465")),
-          Map.entry(Level.INFO, TextColor.Factory.fromString("#D8E46B")),
-          Map.entry(Level.CONFIG, TextColor.Factory.fromString("#6D8700")));
+  public static final Map<Level, TextColor> LEVEL_COLORS = Map.ofEntries(
+      Map.entry(Level.SEVERE, TextColor.Factory.fromString("#EE3E38")),
+      Map.entry(Level.WARNING, TextColor.Factory.fromString("#FBA465")),
+      Map.entry(Level.INFO, TextColor.Factory.fromString("#D8E46B")),
+      Map.entry(Level.CONFIG, TextColor.Factory.fromString("#6D8700")));
   private static final Configuration DEFAULT_CONFIGURATION =
       new Configuration(0.7f, 0.8f, 0.5f, 0.65f, 16, 250, true, true);
   private static final TextColor FRAME_COLOR = TextColor.Factory.fromString("#105010");
@@ -100,30 +98,23 @@ public class TerminalMonitor<E, K> extends ListLogHandler
       Configuration configuration) {
     super(configuration.dumpLogAfterStop());
     // set functions
-    this.eFunctions =
-        configuration.robust()
-            ? eFunctions.stream().map(NamedFunction::robust).toList()
-            : eFunctions;
-    this.kFunctions =
-        configuration.robust()
-            ? kFunctions.stream().map(NamedFunction::robust).toList()
-            : kFunctions;
+    this.eFunctions = configuration.robust()
+        ? eFunctions.stream().map(NamedFunction::robust).toList()
+        : eFunctions;
+    this.kFunctions = configuration.robust()
+        ? kFunctions.stream().map(NamedFunction::robust).toList()
+        : kFunctions;
     this.plotTableBuilders = plotTableBuilders;
-    formats =
-        Misc.concat(
-            List.of(
-                eFunctions.stream().map(NamedFunction::getFormat).toList(),
-                kFunctions.stream().map(NamedFunction::getFormat).toList()));
+    formats = Misc.concat(List.of(
+        eFunctions.stream().map(NamedFunction::getFormat).toList(),
+        kFunctions.stream().map(NamedFunction::getFormat).toList()));
     plotAccumulators = new ArrayList<>();
     // read configuration
     this.configuration = configuration;
     // prepare data object stores
-    runTable =
-        new ArrayTable<>(
-            Misc.concat(
-                List.of(
-                    eFunctions.stream().map(NamedFunction::getName).toList(),
-                    kFunctions.stream().map(NamedFunction::getName).toList())));
+    runTable = new ArrayTable<>(Misc.concat(List.of(
+        eFunctions.stream().map(NamedFunction::getName).toList(),
+        kFunctions.stream().map(NamedFunction::getName).toList())));
     // prepare screen
     DefaultTerminalFactory defaultTerminalFactory = new DefaultTerminalFactory();
     try {
@@ -138,9 +129,8 @@ public class TerminalMonitor<E, K> extends ListLogHandler
     }
     // start painting scheduler
     uiExecutorService = Executors.newSingleThreadScheduledExecutor();
-    painterTask =
-        uiExecutorService.scheduleAtFixedRate(
-            this::repaint, 0, configuration.refreshIntervalMillis, TimeUnit.MILLISECONDS);
+    painterTask = uiExecutorService.scheduleAtFixedRate(
+        this::repaint, 0, configuration.refreshIntervalMillis, TimeUnit.MILLISECONDS);
     // set default locale
     Locale.setDefault(Locale.ENGLISH);
     startingInstant = Instant.now();
@@ -192,8 +182,7 @@ public class TerminalMonitor<E, K> extends ListLogHandler
   }
 
   private int getNumberOfProcessors() {
-    return ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class)
-        .getAvailableProcessors();
+    return ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class).getAvailableProcessors();
   }
 
   @Override
@@ -232,13 +221,16 @@ public class TerminalMonitor<E, K> extends ListLogHandler
     Rectangle w = all.splitHorizontally(configuration.verticalSplit).get(1);
     Rectangle runR = e.splitVertically(configuration.leftHorizontalSplit).get(0);
     Rectangle logR = e.splitVertically(configuration.leftHorizontalSplit).get(1);
-    Rectangle legendR = w.splitVertically(configuration.rightHorizontalSplit).get(0);
-    Rectangle statusR = w.splitVertically(configuration.rightHorizontalSplit).get(1);
+    Rectangle legendR =
+        w.splitVertically(configuration.rightHorizontalSplit).get(0);
+    Rectangle statusR =
+        w.splitVertically(configuration.rightHorizontalSplit).get(1);
     List<Rectangle> plotRs;
     if (plotTableBuilders.isEmpty()) {
       plotRs = List.of();
     } else {
-      Rectangle plotsR = runR.splitVertically(configuration.plotHorizontalSplit).get(1);
+      Rectangle plotsR =
+          runR.splitVertically(configuration.plotHorizontalSplit).get(1);
       runR = runR.splitVertically(configuration.plotHorizontalSplit).get(0);
       if (plotTableBuilders.size() > 1) {
         float[] splits = new float[plotTableBuilders.size() - 1];
@@ -257,8 +249,8 @@ public class TerminalMonitor<E, K> extends ListLogHandler
     DrawUtils.drawFrame(tg, logR, "Log", FRAME_COLOR, FRAME_LABEL_COLOR);
     DrawUtils.drawFrame(tg, statusR, "Status", FRAME_COLOR, FRAME_LABEL_COLOR);
     for (int i = 0; i < plotTableBuilders.size(); i++) {
-      String plotName =
-          plotTableBuilders.get(i).yNames().get(0) + " vs. " + plotTableBuilders.get(i).xName();
+      String plotName = plotTableBuilders.get(i).yNames().get(0) + " vs. "
+          + plotTableBuilders.get(i).xName();
       DrawUtils.drawFrame(tg, plotRs.get(i), plotName, FRAME_COLOR, FRAME_LABEL_COLOR);
     }
     // draw data: logs
@@ -291,10 +283,7 @@ public class TerminalMonitor<E, K> extends ListLogHandler
     DrawUtils.clipPut(tg, r, 14, 1, String.format(DATETIME_FORMAT, Date.from(Instant.now())));
     float maxGigaMemory = Runtime.getRuntime().maxMemory() / 1024f / 1024f / 1024f;
     float usedGigaMemory =
-        (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())
-            / 1024f
-            / 1024f
-            / 1024f;
+        (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024f / 1024f / 1024f;
     double cpuLoad = getCPULoad();
     int nOfProcessors = getNumberOfProcessors();
     DrawUtils.drawHorizontalBar(
@@ -325,20 +314,14 @@ public class TerminalMonitor<E, K> extends ListLogHandler
         configuration.barLength,
         PLOT1_COLOR,
         PLOT_BG_COLOR);
-    DrawUtils.clipPut(
-        tg,
-        r,
-        labelLength + configuration.barLength + 2,
-        3,
-        String.format("%.1fGB", maxGigaMemory));
+    DrawUtils.clipPut(tg, r, labelLength + configuration.barLength + 2, 3, String.format("%.1fGB", maxGigaMemory));
     if (overallProgress != null) {
       Progress progress = overallProgress;
       if (partialProgress != null && !Double.isNaN(partialProgress.rate())) {
-        progress =
-            new Progress(
-                progress.start(),
-                progress.end(),
-                Math.floor(progress.current().doubleValue()) + partialProgress.rate());
+        progress = new Progress(
+            progress.start(),
+            progress.end(),
+            Math.floor(progress.current().doubleValue()) + partialProgress.rate());
       }
       DrawUtils.drawHorizontalBar(
           tg,
@@ -352,17 +335,11 @@ public class TerminalMonitor<E, K> extends ListLogHandler
           PLOT1_COLOR,
           PLOT_BG_COLOR);
       DrawUtils.clipPut(
-          tg,
-          r,
-          labelLength + configuration.barLength + 2,
-          4,
-          "%3.0f%%".formatted(progress.rate() * 100));
+          tg, r, labelLength + configuration.barLength + 2, 4, "%3.0f%%".formatted(progress.rate() * 100));
       if (progress.rate() > 0) {
-        Instant eta =
-            startingInstant.plus(
-                Math.round(
-                    ChronoUnit.MILLIS.between(startingInstant, Instant.now()) / progress.rate()),
-                ChronoUnit.MILLIS);
+        Instant eta = startingInstant.plus(
+            Math.round(ChronoUnit.MILLIS.between(startingInstant, Instant.now()) / progress.rate()),
+            ChronoUnit.MILLIS);
         DrawUtils.clipPut(tg, r, labelLength + 1, 6, DATETIME_FORMAT.formatted(Date.from(eta)));
       }
     }
@@ -393,9 +370,11 @@ public class TerminalMonitor<E, K> extends ListLogHandler
     synchronized (runTable) {
       r = legendR.inner(1);
       DrawUtils.clear(tg, r);
-      List<Pair<String, String>> legendItems =
-          runTable.names().stream().map(s -> new Pair<>(StringUtils.collapse(s), s)).toList();
-      int shortLabelW = legendItems.stream().mapToInt(p -> p.first().length()).max().orElse(0);
+      List<Pair<String, String>> legendItems = runTable.names().stream()
+          .map(s -> new Pair<>(StringUtils.collapse(s), s))
+          .toList();
+      int shortLabelW =
+          legendItems.stream().mapToInt(p -> p.first().length()).max().orElse(0);
       for (int i = 0; i < legendItems.size(); i = i + 1) {
         tg.setForegroundColor(DATA_LABEL_COLOR);
         DrawUtils.clipPut(tg, r, 0, i, legendItems.get(i).first());
@@ -405,17 +384,15 @@ public class TerminalMonitor<E, K> extends ListLogHandler
       // draw data: run
       r = runR.inner(1);
       DrawUtils.clear(tg, r);
-      int[] colWidths =
-          IntStream.range(0, runTable.nColumns())
-              .map(
-                  x ->
-                      Math.max(
-                          legendItems.get(x).first().length(),
-                          runTable.column(x).stream()
-                              .mapToInt(o -> String.format(formats.get(x), o).length())
-                              .max()
-                              .orElse(0)))
-              .toArray();
+      int[] colWidths = IntStream.range(0, runTable.nColumns())
+          .map(x -> Math.max(
+              legendItems.get(x).first().length(),
+              runTable.column(x).stream()
+                  .mapToInt(o ->
+                      String.format(formats.get(x), o).length())
+                  .max()
+                  .orElse(0)))
+          .toArray();
       tg.setForegroundColor(DATA_LABEL_COLOR);
       int x = 0;
       for (int i = 0; i < colWidths.length; i = i + 1) {
@@ -431,14 +408,13 @@ public class TerminalMonitor<E, K> extends ListLogHandler
           try {
             DrawUtils.clipPut(tg, r, x, j + 1, String.format(formats.get(i), value));
           } catch (IllegalFormatConversionException ex) {
-            L.warning(
-                String.format(
-                    "Cannot format %s %s as a \"%s\" with %s: %s",
-                    value.getClass().getSimpleName(),
-                    value,
-                    formats.get(rowIndex),
-                    legendItems.get(i).second(),
-                    ex));
+            L.warning(String.format(
+                "Cannot format %s %s as a \"%s\" with %s: %s",
+                value.getClass().getSimpleName(),
+                value,
+                formats.get(rowIndex),
+                legendItems.get(i).second(),
+                ex));
           }
           x = x + colWidths[i] + 1;
         }
@@ -452,29 +428,14 @@ public class TerminalMonitor<E, K> extends ListLogHandler
         double minY = Double.NaN;
         double maxY = Double.NaN;
         if (plotTableBuilders.get(i) instanceof XYPlotTableBuilder<?> xyPlotTableBuilder) {
-          minX =
-              Double.isFinite(xyPlotTableBuilder.getMinX())
-                  ? xyPlotTableBuilder.getMinX()
-                  : Double.NaN;
-          maxX =
-              Double.isFinite(xyPlotTableBuilder.getMaxX())
-                  ? xyPlotTableBuilder.getMaxX()
-                  : Double.NaN;
-          minY =
-              Double.isFinite(xyPlotTableBuilder.getMinY())
-                  ? xyPlotTableBuilder.getMinY()
-                  : Double.NaN;
-          maxY =
-              Double.isFinite(xyPlotTableBuilder.getMaxY())
-                  ? xyPlotTableBuilder.getMaxY()
-                  : Double.NaN;
+          minX = Double.isFinite(xyPlotTableBuilder.getMinX()) ? xyPlotTableBuilder.getMinX() : Double.NaN;
+          maxX = Double.isFinite(xyPlotTableBuilder.getMaxX()) ? xyPlotTableBuilder.getMaxX() : Double.NaN;
+          minY = Double.isFinite(xyPlotTableBuilder.getMinY()) ? xyPlotTableBuilder.getMinY() : Double.NaN;
+          maxY = Double.isFinite(xyPlotTableBuilder.getMaxY()) ? xyPlotTableBuilder.getMaxY() : Double.NaN;
         }
         try {
-          Table<Number> table =
-              plotAccumulators
-                  .get(i)
-                  .get()
-                  .filter(row -> row.stream().noneMatch(n -> Double.isNaN(n.doubleValue())));
+          Table<Number> table = plotAccumulators.get(i).get().filter(row -> row.stream()
+              .noneMatch(n -> Double.isNaN(n.doubleValue())));
           DrawUtils.drawPlot(
               tg,
               plotRs.get(i).inner(1),
@@ -489,10 +450,11 @@ public class TerminalMonitor<E, K> extends ListLogHandler
               minY,
               maxY);
         } catch (RuntimeException ex) {
-          L.warning(
-              String.format(
-                  "Cannot do plot %s vs. %s: %s",
-                  plotTableBuilders.get(i).yNames().get(0), plotTableBuilders.get(i).xName(), ex));
+          L.warning(String.format(
+              "Cannot do plot %s vs. %s: %s",
+              plotTableBuilders.get(i).yNames().get(0),
+              plotTableBuilders.get(i).xName(),
+              ex));
         }
       }
     }

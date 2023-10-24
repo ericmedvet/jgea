@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class SingleVarNamedMultivariateRealFunction
-    extends AbstractComposed<NamedMultivariateRealFunction> implements NamedUnivariateRealFunction {
+public class SingleVarNamedMultivariateRealFunction extends AbstractComposed<NamedMultivariateRealFunction>
+    implements NamedUnivariateRealFunction {
 
   public SingleVarNamedMultivariateRealFunction(NamedMultivariateRealFunction inner) {
     super(inner);

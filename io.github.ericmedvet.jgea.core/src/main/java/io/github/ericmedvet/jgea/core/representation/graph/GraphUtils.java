@@ -31,8 +31,7 @@ public class GraphUtils {
     return graph -> transform(graph, nodeF, arcF);
   }
 
-  public static <N> void removeUnconnectedNodes(
-      Graph<N, ?> graph, Predicate<N> unremovableNodePredicate) {
+  public static <N> void removeUnconnectedNodes(Graph<N, ?> graph, Predicate<N> unremovableNodePredicate) {
     while (true) {
       Set<N> toRemoveNodes = new LinkedHashSet<>();
       for (N node : graph.nodes()) {
@@ -58,29 +57,28 @@ public class GraphUtils {
     }
     Map<Graph.Arc<N2>, Collection<A1>> arcMap = new HashMap<>();
     for (Graph.Arc<N1> fromArc : fromGraph.arcs()) {
-      N1 fromSourceNode =
-          fromGraph.nodes().stream()
-              .filter(n -> n.equals(fromArc.getSource()))
-              .findFirst()
-              .orElse(null);
-      N1 fromTargetNode =
-          fromGraph.nodes().stream()
-              .filter(n -> n.equals(fromArc.getTarget()))
-              .findFirst()
-              .orElse(null);
+      N1 fromSourceNode = fromGraph.nodes().stream()
+          .filter(n -> n.equals(fromArc.getSource()))
+          .findFirst()
+          .orElse(null);
+      N1 fromTargetNode = fromGraph.nodes().stream()
+          .filter(n -> n.equals(fromArc.getTarget()))
+          .findFirst()
+          .orElse(null);
       if (fromSourceNode == null || fromTargetNode == null) {
         throw new IllegalStateException("Cannot find source or target nodes");
       }
       Graph.Arc<N2> toArc = Graph.Arc.of(nodeF.apply(fromSourceNode), nodeF.apply(fromTargetNode));
-      if (!toGraph.nodes().contains(toArc.getSource())
-          || !toGraph.nodes().contains(toArc.getTarget())) {
+      if (!toGraph.nodes().contains(toArc.getSource()) || !toGraph.nodes().contains(toArc.getTarget())) {
 
         System.out.println(fromArc);
         System.out.println(toArc);
-        System.out.println(
-            fromGraph.nodes().stream().filter(n -> n.equals(fromArc.getSource())).toList());
-        System.out.println(
-            fromGraph.nodes().stream().filter(n -> n.equals(fromArc.getTarget())).toList());
+        System.out.println(fromGraph.nodes().stream()
+            .filter(n -> n.equals(fromArc.getSource()))
+            .toList());
+        System.out.println(fromGraph.nodes().stream()
+            .filter(n -> n.equals(fromArc.getTarget()))
+            .toList());
 
         System.out.println("OCIO!");
       }

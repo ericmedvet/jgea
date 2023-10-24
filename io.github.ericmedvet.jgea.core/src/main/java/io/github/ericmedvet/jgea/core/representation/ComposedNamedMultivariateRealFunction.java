@@ -28,8 +28,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class ComposedNamedMultivariateRealFunction
-    extends AbstractComposed<MultivariateRealFunction> implements NamedMultivariateRealFunction {
+public class ComposedNamedMultivariateRealFunction extends AbstractComposed<MultivariateRealFunction>
+    implements NamedMultivariateRealFunction {
   private final List<String> xVarNames;
   private final List<String> yVarNames;
 
@@ -38,13 +38,11 @@ public class ComposedNamedMultivariateRealFunction
     super(inner);
     if (xVarNames.size() != inner().nOfInputs()) {
       throw new IllegalArgumentException(
-          "Wrong input size: %d expected by inner, %d vars"
-              .formatted(inner().nOfInputs(), xVarNames.size()));
+          "Wrong input size: %d expected by inner, %d vars".formatted(inner().nOfInputs(), xVarNames.size()));
     }
     if (yVarNames.size() != inner().nOfOutputs()) {
-      throw new IllegalArgumentException(
-          "Wrong output size: %d produced by inner, %d vars"
-              .formatted(inner().nOfOutputs(), yVarNames.size()));
+      throw new IllegalArgumentException("Wrong output size: %d produced by inner, %d vars"
+          .formatted(inner().nOfOutputs(), yVarNames.size()));
     }
     this.xVarNames = xVarNames;
     this.yVarNames = yVarNames;

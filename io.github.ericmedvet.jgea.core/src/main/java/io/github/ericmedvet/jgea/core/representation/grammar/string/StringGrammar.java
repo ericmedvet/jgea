@@ -40,8 +40,7 @@ public class StringGrammar<T> implements Serializable, Grammar<T, List<T>> {
     return load(inputStream, "UTF-8");
   }
 
-  public static StringGrammar<String> load(InputStream inputStream, String charset)
-      throws IOException {
+  public static StringGrammar<String> load(InputStream inputStream, String charset) throws IOException {
     StringGrammar<String> grammar = new StringGrammar<>();
     BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, charset));
     String line;

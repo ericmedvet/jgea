@@ -87,14 +87,11 @@ public interface Graph<N, A> extends Sized {
       throw new RuntimeException();
     }
     visited.add(node);
-    graph
-        .successors(node)
-        .forEach(
-            s -> {
-              Set<M> updated = new HashSet<>(visited);
-              updated.add(node);
-              recursivelyVisit(graph, s, updated);
-            });
+    graph.successors(node).forEach(s -> {
+      Set<M> updated = new HashSet<>(visited);
+      updated.add(node);
+      recursivelyVisit(graph, s, updated);
+    });
   }
 
   default A getArcValue(N source, N target) {

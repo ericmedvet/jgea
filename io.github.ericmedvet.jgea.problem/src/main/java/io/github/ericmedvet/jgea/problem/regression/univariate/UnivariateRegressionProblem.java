@@ -42,7 +42,8 @@ public class UnivariateRegressionProblem<F extends UnivariateRegressionFitness>
   @Override
   public NamedUnivariateRealFunction example() {
     return NamedUnivariateRealFunction.from(
-        UnivariateRealFunction.from(xs -> 0d, fitness.getDataset().xVarNames().size()),
+        UnivariateRealFunction.from(
+            xs -> 0d, fitness.getDataset().xVarNames().size()),
         fitness.getDataset().xVarNames(),
         fitness.getDataset().yVarNames().get(0));
   }

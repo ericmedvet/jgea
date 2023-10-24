@@ -38,10 +38,9 @@ public interface CaseBasedFitness<S, C, CO, AF> extends Function<S, AF> {
 
   @Override
   default AF apply(S s) {
-    List<CO> outcomes =
-        IntStream.range(0, nOfCases())
-            .mapToObj(i -> caseFunction().apply(s, caseProvider().apply(i)))
-            .toList();
+    List<CO> outcomes = IntStream.range(0, nOfCases())
+        .mapToObj(i -> caseFunction().apply(s, caseProvider().apply(i)))
+        .toList();
     return aggregateFunction().apply(outcomes);
   }
 }

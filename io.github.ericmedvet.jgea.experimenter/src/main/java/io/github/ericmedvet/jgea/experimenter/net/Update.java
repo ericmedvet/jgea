@@ -36,8 +36,7 @@ public record Update(
     implements Serializable {
   public record DataItemKey(String name, String format) implements Serializable {}
 
-  public record PlotItemKey(String xName, String yName, double minX, double maxX)
-      implements Serializable {}
+  public record PlotItemKey(String xName, String yName, double minX, double maxX) implements Serializable {}
 
   public record PlotPoint(double x, double y) implements Serializable {}
 }

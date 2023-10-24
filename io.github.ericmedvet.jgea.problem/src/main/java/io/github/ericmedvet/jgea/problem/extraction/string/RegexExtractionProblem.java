@@ -48,11 +48,7 @@ public class RegexExtractionProblem extends ExtractionProblem<Character> {
   }
 
   private static String buildText(
-      int minExtractionsPerRegex,
-      List<String> regexes,
-      String alphabet,
-      int chunkSize,
-      Random random) {
+      int minExtractionsPerRegex, List<String> regexes, String alphabet, int chunkSize, Random random) {
     StringBuilder sb = new StringBuilder();
     while (true) {
       int initialLength = sb.length();
@@ -81,11 +77,8 @@ public class RegexExtractionProblem extends ExtractionProblem<Character> {
   public static RegexExtractionProblem varAlphabet(
       int symbols, int size, long seed, ExtractionFitness.Metric... metrics) {
     List<String> regexes = List.of("000000", "111(00)?+(11)++", "(110110)++");
-    String text =
-        buildText(
-            size, regexes, "0123456789".substring(0, Math.min(symbols, 10)), 100, new Random(seed));
-    return new RegexExtractionProblem(
-        new LinkedHashSet<>(regexes), text, 5, (int) seed % (size / 3), metrics);
+    String text = buildText(size, regexes, "0123456789".substring(0, Math.min(symbols, 10)), 100, new Random(seed));
+    return new RegexExtractionProblem(new LinkedHashSet<>(regexes), text, 5, (int) seed % (size / 3), metrics);
   }
 
   public Set<String> getRegexes() {

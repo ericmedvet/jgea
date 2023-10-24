@@ -42,8 +42,7 @@ public interface Mutation<G> extends GeneticOperator<G> {
   }
 
   static <G1, G2> Mutation<Pair<G1, G2>> pair(Mutation<G1> mutation1, Mutation<G2> mutation2) {
-    return (p, random) ->
-        Pair.of(mutation1.mutate(p.first(), random), mutation2.mutate(p.second(), random));
+    return (p, random) -> Pair.of(mutation1.mutate(p.first(), random), mutation2.mutate(p.second(), random));
   }
 
   @Override

@@ -39,32 +39,28 @@ public class TreeBasedUnivariateRealFunction
   private Tree<Element> tree;
 
   public TreeBasedUnivariateRealFunction(
-      Tree<Element> tree,
-      List<String> xVarNames,
-      String yVarName,
-      DoubleUnaryOperator postOperator) {
+      Tree<Element> tree, List<String> xVarNames, String yVarName, DoubleUnaryOperator postOperator) {
     this.tree = tree;
     this.xVarNames = xVarNames;
     this.yVarName = yVarName;
     this.postOperator = postOperator;
   }
 
-  public TreeBasedUnivariateRealFunction(
-      Tree<Element> tree, List<String> xVarNames, String yVarName) {
+  public TreeBasedUnivariateRealFunction(Tree<Element> tree, List<String> xVarNames, String yVarName) {
     this(tree, xVarNames, yVarName, x -> x);
   }
 
-  public static Tree<Element> sampleFor(
-      List<String> xVarNames, @SuppressWarnings("unused") String yVarName) {
+  public static Tree<Element> sampleFor(List<String> xVarNames, @SuppressWarnings("unused") String yVarName) {
     return Tree.of(
         Element.Operator.ADDITION,
-        xVarNames.stream().map(s -> Tree.of((Element) new Element.Variable(s))).toList());
+        xVarNames.stream()
+            .map(s -> Tree.of((Element) new Element.Variable(s)))
+            .toList());
   }
 
   protected static double compute(Tree<Element> tree, Map<String, Double> input) {
     if (tree.content() instanceof Element.Decoration) {
-      throw new RuntimeException(
-          String.format("Cannot compute: decoration node %s found", tree.content()));
+      throw new RuntimeException(String.format("Cannot compute: decoration node %s found", tree.content()));
     }
     if (tree.content() instanceof Element.Variable variable) {
       Double varValue = input.get(variable.name());
@@ -86,8 +82,7 @@ public class TreeBasedUnivariateRealFunction
     return ((Element.Operator) tree.content()).applyAsDouble(childrenValues);
   }
 
-  public static Function<Tree<Element>, NamedUnivariateRealFunction> mapper(
-      List<String> xVarNames, String yVarName) {
+  public static Function<Tree<Element>, NamedUnivariateRealFunction> mapper(List<String> xVarNames, String yVarName) {
     return t -> new TreeBasedUnivariateRealFunction(t, xVarNames, yVarName);
   }
 

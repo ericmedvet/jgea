@@ -38,17 +38,16 @@ public class IntStringFlipMutation implements Mutation<IntString> {
     }
     return new IntString(
         parent.genes().stream()
-            .map(
-                n -> {
-                  if (random.nextDouble() < p) {
-                    int newN = random.nextInt(parent.lowerBound(), parent.upperBound() - 1);
-                    if (newN >= n) {
-                      newN = newN + 1;
-                    }
-                    return newN;
-                  }
-                  return n;
-                })
+            .map(n -> {
+              if (random.nextDouble() < p) {
+                int newN = random.nextInt(parent.lowerBound(), parent.upperBound() - 1);
+                if (newN >= n) {
+                  newN = newN + 1;
+                }
+                return newN;
+              }
+              return n;
+            })
             .toList(),
         parent.lowerBound(),
         parent.upperBound());

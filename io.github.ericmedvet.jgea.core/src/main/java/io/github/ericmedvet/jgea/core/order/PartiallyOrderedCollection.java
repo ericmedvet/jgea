@@ -21,7 +21,6 @@
 package io.github.ericmedvet.jgea.core.order;
 
 import io.github.ericmedvet.jgea.core.util.Sized;
-
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -114,14 +113,16 @@ public interface PartiallyOrderedCollection<T> extends Sized {
       public PartialComparator<? super T> comparator() {
         return (k1, k2) -> PartialComparator.PartialComparatorOutcome.SAME;
       }
-
     };
   }
 
   static <T> PartiallyOrderedCollection<T> from(Collection<T> ts, Comparator<? super T> comparator) {
     List<T> all = ts.stream().sorted(comparator).toList();
-    List<T> firsts = all.stream().filter(t -> comparator.compare(t, all.get(0)) == 0).toList();
-    List<T> lasts = all.stream().filter(t -> comparator.compare(t, all.get(all.size() - 1)) == 0).toList();
+    List<T> firsts =
+        all.stream().filter(t -> comparator.compare(t, all.get(0)) == 0).toList();
+    List<T> lasts = all.stream()
+        .filter(t -> comparator.compare(t, all.get(all.size() - 1)) == 0)
+        .toList();
     return new PartiallyOrderedCollection<T>() {
       @Override
       public void add(T t) {

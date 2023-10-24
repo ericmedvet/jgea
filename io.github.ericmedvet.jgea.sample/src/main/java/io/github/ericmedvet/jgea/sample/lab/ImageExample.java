@@ -36,9 +36,9 @@ import io.github.ericmedvet.jgea.core.representation.graph.numeric.functiongraph
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.functiongraph.ShallowSparseFactory;
 import io.github.ericmedvet.jgea.core.selector.Last;
 import io.github.ericmedvet.jgea.core.selector.Tournament;
+import io.github.ericmedvet.jgea.core.solver.AbstractStandardEvolver;
 import io.github.ericmedvet.jgea.core.solver.IterativeSolver;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
-import io.github.ericmedvet.jgea.core.solver.AbstractStandardEvolver;
 import io.github.ericmedvet.jgea.core.solver.StopConditions;
 import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jgea.problem.image.ImageReconstruction;
@@ -71,39 +71,32 @@ public class ImageExample extends Worker {
     // BaseFunction[] baseFunctions = new BaseFunction[]{BaseFunction.STEP, BaseFunction.GAUSSIAN,
     // BaseFunction
     // .PROT_INVERSE, BaseFunction.SQ, BaseFunction.SAW, BaseFunction.SIN};
-    BaseFunction[] baseFunctions =
-        new BaseFunction[] {BaseFunction.GAUSSIAN, BaseFunction.SIN, BaseFunction.SQ};
-    List<String> images =
-        l(a("images", "/home/eric/experiments/2020-graphea/image/glasses-32x32.png"));
+    BaseFunction[] baseFunctions = new BaseFunction[] {BaseFunction.GAUSSIAN, BaseFunction.SIN, BaseFunction.SQ};
+    List<String> images = l(a("images", "/home/eric/experiments/2020-graphea/image/glasses-32x32.png"));
     // listeners
-    List<NamedFunction<? super POCPopulationState<?, ?, ? extends Double>, ?>> functions =
-        List.of(
-            nOfIterations(),
-            births(),
-            elapsedSeconds(),
-            size().of(all()),
-            size().of(firsts()),
-            size().of(lasts()),
-            uniqueness().of(each(genotype())).of(all()),
-            uniqueness().of(each(solution())).of(all()),
-            uniqueness().of(each(quality())).of(all()),
-            size().of(genotype()).of(best()),
-            size().of(solution()).of(best()),
-            quality().reformat("%5.3f").of(best()),
-            fitnessMappingIteration().of(best()));
-    List<NamedFunction<? super Map<String, Object>, ?>> kFunctions =
-        List.of(
-            attribute("seed").reformat("%2d"),
-            attribute("image").reformat("%20.20s"),
-            attribute("evolver").reformat("%20.20s"));
-    ListenerFactory<? super POCPopulationState<?, ?, ? extends Double>, Map<String, Object>>
-        listenerFactory = new TabularPrinter<>(functions, kFunctions);
+    List<NamedFunction<? super POCPopulationState<?, ?, ? extends Double>, ?>> functions = List.of(
+        nOfIterations(),
+        births(),
+        elapsedSeconds(),
+        size().of(all()),
+        size().of(firsts()),
+        size().of(lasts()),
+        uniqueness().of(each(genotype())).of(all()),
+        uniqueness().of(each(solution())).of(all()),
+        uniqueness().of(each(quality())).of(all()),
+        size().of(genotype()).of(best()),
+        size().of(solution()).of(best()),
+        quality().reformat("%5.3f").of(best()),
+        fitnessMappingIteration().of(best()));
+    List<NamedFunction<? super Map<String, Object>, ?>> kFunctions = List.of(
+        attribute("seed").reformat("%2d"),
+        attribute("image").reformat("%20.20s"),
+        attribute("evolver").reformat("%20.20s"));
+    ListenerFactory<? super POCPopulationState<?, ?, ? extends Double>, Map<String, Object>> listenerFactory =
+        new TabularPrinter<>(functions, kFunctions);
     if (a("file", null) != null) {
-      listenerFactory =
-          ListenerFactory.all(
-              List.of(
-                  listenerFactory,
-                  new CSVPrinter<>(functions, kFunctions, new File(a("file", null)), true)));
+      listenerFactory = ListenerFactory.all(
+          List.of(listenerFactory, new CSVPrinter<>(functions, kFunctions, new File(a("file", null)), true)));
     }
     Map<
             String,
@@ -115,8 +108,7 @@ public class ImageExample extends Worker {
     solvers.put(
         "graph-seq-ga",
         new AbstractStandardEvolver<>(
-            FunctionGraph.mapper(List.of("x", "y"), List.of("out"))
-                .andThen(UnivariateRealFunction::from),
+            FunctionGraph.mapper(List.of("x", "y"), List.of("out")).andThen(UnivariateRealFunction::from),
             new ShallowSparseFactory(0d, 0d, 1d, List.of("x", "y"), List.of("out")),
             nPop,
             StopConditions.nOfIterations(nIterations),
@@ -153,15 +145,12 @@ public class ImageExample extends Worker {
                     ImageReconstruction,
                     UnivariateRealFunction>>
             solverEntry : solvers.entrySet()) {
-          Map<String, Object> keys =
-              Map.ofEntries(
-                  Map.entry("seed", Integer.toString(seed)),
-                  Map.entry(
-                      "image", image.split(File.separator)[image.split(File.separator).length - 1]),
-                  Map.entry("evolver", solverEntry.getKey()));
+          Map<String, Object> keys = Map.ofEntries(
+              Map.entry("seed", Integer.toString(seed)),
+              Map.entry("image", image.split(File.separator)[image.split(File.separator).length - 1]),
+              Map.entry("evolver", solverEntry.getKey()));
           try {
-            ImageReconstruction problem =
-                new ImageReconstruction(ImageIO.read(new File(image)), true);
+            ImageReconstruction problem = new ImageReconstruction(ImageIO.read(new File(image)), true);
             Stopwatch stopwatch = Stopwatch.createStarted();
             IterativeSolver<
                     ? extends POCPopulationState<?, UnivariateRealFunction, Double>,
@@ -169,18 +158,14 @@ public class ImageExample extends Worker {
                     UnivariateRealFunction>
                 solver = solverEntry.getValue();
             L.info(String.format("Starting %s", keys));
-            Collection<UnivariateRealFunction> solutions =
-                solver.solve(
-                    problem,
-                    new Random(seed),
-                    executorService,
-                    listenerFactory.build(keys).deferred(executorService));
-            L.info(
-                String.format(
-                    "Done %s: %d solutions in %4.1fs",
-                    keys,
-                    solutions.size(),
-                    (double) stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000d));
+            Collection<UnivariateRealFunction> solutions = solver.solve(
+                problem,
+                new Random(seed),
+                executorService,
+                listenerFactory.build(keys).deferred(executorService));
+            L.info(String.format(
+                "Done %s: %d solutions in %4.1fs",
+                keys, solutions.size(), (double) stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000d));
           } catch (SolverException | IOException e) {
             L.severe(String.format("Cannot complete %s due to %s", keys, e));
           }

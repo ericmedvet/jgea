@@ -59,8 +59,7 @@ public class ClassificationFitness<O, L extends Enum<L>>
     BALANCED_ERROR_RATE
   }
 
-  private static class ClassErrorRate<E extends Enum<E>>
-      implements Function<List<E>, List<Pair<Integer, Integer>>> {
+  private static class ClassErrorRate<E extends Enum<E>> implements Function<List<E>, List<Pair<Integer, Integer>>> {
 
     private final List<E> actualLabels;
 
@@ -95,26 +94,33 @@ public class ClassificationFitness<O, L extends Enum<L>>
     if (metric.equals(Metric.CLASS_ERROR_RATE)) {
       return (List<E> predictedLabels) -> {
         List<Pair<Integer, Integer>> pairs = classErrorRate.apply(predictedLabels);
-        return pairs.stream().map(p -> ((double) p.first() / (double) p.second())).toList();
+        return pairs.stream()
+            .map(p -> ((double) p.first() / (double) p.second()))
+            .toList();
       };
     }
     if (metric.equals(Metric.ERROR_RATE)) {
       return (List<E> predictedLabels) -> {
         List<Pair<Integer, Integer>> pairs = classErrorRate.apply(predictedLabels);
-        int errors = pairs.stream().map(Pair::first).mapToInt(Integer::intValue).sum();
-        int count = pairs.stream().map(Pair::second).mapToInt(Integer::intValue).sum();
+        int errors = pairs.stream()
+            .map(Pair::first)
+            .mapToInt(Integer::intValue)
+            .sum();
+        int count = pairs.stream()
+            .map(Pair::second)
+            .mapToInt(Integer::intValue)
+            .sum();
         return List.of((double) errors / (double) count);
       };
     }
     if (metric.equals(Metric.BALANCED_ERROR_RATE)) {
       return (List<E> predictedLabels) -> {
         List<Pair<Integer, Integer>> pairs = classErrorRate.apply(predictedLabels);
-        return List.of(
-            pairs.stream()
-                .map(p -> ((double) p.first() / (double) p.second()))
-                .mapToDouble(Double::doubleValue)
-                .average()
-                .orElse(Double.NaN));
+        return List.of(pairs.stream()
+            .map(p -> ((double) p.first() / (double) p.second()))
+            .mapToDouble(Double::doubleValue)
+            .average()
+            .orElse(Double.NaN));
       };
     }
     return null;

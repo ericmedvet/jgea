@@ -41,11 +41,7 @@ import java.util.stream.IntStream;
 
 public class OpenAIEvolutionaryStrategy<S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        OpenAIEvolutionaryStrategy.State<S, Q>,
-        TotalOrderQualityBasedProblem<S, Q>,
-        List<Double>,
-        S,
-        Q> {
+        OpenAIEvolutionaryStrategy.State<S, Q>, TotalOrderQualityBasedProblem<S, Q>, List<Double>, S, Q> {
 
   private final int batchSize;
   private final double sigma;
@@ -131,9 +127,7 @@ public class OpenAIEvolutionaryStrategy<S, Q>
 
   @Override
   protected State<S, Q> initState(
-      TotalOrderQualityBasedProblem<S, Q> problem,
-      RandomGenerator random,
-      ExecutorService executor) {
+      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor) {
     return new State<>(n);
   }
 
@@ -144,13 +138,12 @@ public class OpenAIEvolutionaryStrategy<S, Q>
     State<S, Q> state = super.init(problem, random, executor);
     List<List<Double>> genotypes =
         state.getPopulation().all().stream().map(Individual::genotype).toList();
-    state.center =
-        IntStream.range(0, n)
-            .mapToDouble(
-                i ->
-                    genotypes.stream().mapToDouble(genotype -> genotype.get(i)).sum()
-                        / genotypes.size())
-            .toArray();
+    state.center = IntStream.range(0, n)
+        .mapToDouble(i -> genotypes.stream()
+                .mapToDouble(genotype -> genotype.get(i))
+                .sum()
+            / genotypes.size())
+        .toArray();
     return state;
   }
 
@@ -158,41 +151,36 @@ public class OpenAIEvolutionaryStrategy<S, Q>
     double[] utilities = new double[populationSize];
     IntStream.range(0, populationSize)
         .forEach(i -> utilities[state.indexes.get(i)] = (double) i / (populationSize - 1) - 0.5);
-    List<Double> weights =
-        IntStream.range(0, batchSize)
-            .mapToObj(i -> utilities[2 * i] - utilities[2 * i + 1])
-            .toList();
-    double[] g =
-        IntStream.range(0, n)
-            .mapToDouble(
-                i ->
-                    IntStream.range(0, batchSize)
-                            .mapToDouble(j -> weights.get(j) * state.samples.get(j).get(i))
-                            .sum()
-                        / populationSize)
-            .toArray();
-    double[] globalG =
-        state.wDecay
-            ? IntStream.range(0, n).mapToDouble(i -> -g[i] + 0.005 * state.center[i]).toArray()
-            : Arrays.stream(g).toArray();
-    double a =
-        state.stepSize
-            * Math.sqrt(1d - Math.pow(state.beta2, state.getNOfIterations()))
-            / (1d - Math.pow(state.beta1, state.getNOfIterations()));
-    state.m =
-        IntStream.range(0, n)
-            .mapToDouble(i -> state.beta1 * state.m[i] + (1d - state.beta1) * globalG[i])
-            .toArray();
-    state.v =
-        IntStream.range(0, n)
-            .mapToDouble(
-                i -> state.beta2 * state.v[i] + (1d - state.beta2) * (globalG[i] * globalG[i]))
-            .toArray();
-    double[] dCenter =
-        IntStream.range(0, n)
-            .mapToDouble(i -> -a * state.m[i] / (Math.sqrt(state.v[i]) + state.epsilon))
-            .toArray();
-    state.center = IntStream.range(0, n).mapToDouble(i -> state.center[i] + dCenter[i]).toArray();
+    List<Double> weights = IntStream.range(0, batchSize)
+        .mapToObj(i -> utilities[2 * i] - utilities[2 * i + 1])
+        .toList();
+    double[] g = IntStream.range(0, n)
+        .mapToDouble(i -> IntStream.range(0, batchSize)
+                .mapToDouble(j ->
+                    weights.get(j) * state.samples.get(j).get(i))
+                .sum()
+            / populationSize)
+        .toArray();
+    double[] globalG = state.wDecay
+        ? IntStream.range(0, n)
+            .mapToDouble(i -> -g[i] + 0.005 * state.center[i])
+            .toArray()
+        : Arrays.stream(g).toArray();
+    double a = state.stepSize
+        * Math.sqrt(1d - Math.pow(state.beta2, state.getNOfIterations()))
+        / (1d - Math.pow(state.beta1, state.getNOfIterations()));
+    state.m = IntStream.range(0, n)
+        .mapToDouble(i -> state.beta1 * state.m[i] + (1d - state.beta1) * globalG[i])
+        .toArray();
+    state.v = IntStream.range(0, n)
+        .mapToDouble(i -> state.beta2 * state.v[i] + (1d - state.beta2) * (globalG[i] * globalG[i]))
+        .toArray();
+    double[] dCenter = IntStream.range(0, n)
+        .mapToDouble(i -> -a * state.m[i] / (Math.sqrt(state.v[i]) + state.epsilon))
+        .toArray();
+    state.center = IntStream.range(0, n)
+        .mapToDouble(i -> state.center[i] + dCenter[i])
+        .toArray();
   }
 
   @Override
@@ -203,27 +191,28 @@ public class OpenAIEvolutionaryStrategy<S, Q>
       State<S, Q> state)
       throws SolverException {
     // create samples
-    state.samples =
-        IntStream.range(0, batchSize).mapToObj(i -> gaussianSamplesFactory.build(random)).toList();
+    state.samples = IntStream.range(0, batchSize)
+        .mapToObj(i -> gaussianSamplesFactory.build(random))
+        .toList();
     List<List<Double>> genotypes = new ArrayList<>();
-    state.samples.forEach(
-        sample -> {
-          genotypes.add(
-              IntStream.range(0, n)
-                  .mapToObj(i -> state.center[i] + sample.get(i) * sigma)
-                  .toList());
-          genotypes.add(
-              IntStream.range(0, n)
-                  .mapToObj(i -> state.center[i] - sample.get(i) * sigma)
-                  .toList());
-        });
+    state.samples.forEach(sample -> {
+      genotypes.add(IntStream.range(0, n)
+          .mapToObj(i -> state.center[i] + sample.get(i) * sigma)
+          .toList());
+      genotypes.add(IntStream.range(0, n)
+          .mapToObj(i -> state.center[i] - sample.get(i) * sigma)
+          .toList());
+    });
     // individuals and their fitness
     List<Individual<List<Double>, S, Q>> individuals =
         map(genotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state);
     // sort individuals and compute indexes
     Comparator<Integer> integerComparator =
         comparator(problem).comparing(individuals::get).comparator();
-    state.indexes = IntStream.range(0, populationSize).boxed().sorted(integerComparator).toList();
+    state.indexes = IntStream.range(0, populationSize)
+        .boxed()
+        .sorted(integerComparator)
+        .toList();
     // update state
     state.setPopulation(new DAGPartiallyOrderedCollection<>(individuals, comparator(problem)));
     state.incNOfIterations();

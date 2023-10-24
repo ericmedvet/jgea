@@ -1,46 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.github.ericmedvet</groupId>
+    <artifactId>jgea</artifactId>
+    <version>${revision}</version>
+  </parent>
+  <artifactId>jgea.core</artifactId>
+  <packaging>jar</packaging>
 
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>jgea</artifactId>
-        <groupId>io.github.ericmedvet</groupId>
-        <version>${revision}</version>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
+  <name>jgea-core</name>
+  <description>Core components of jgea.</description>
 
-    <name>jgea-core</name>
-    <description>Core components of jgea.</description>
-    <artifactId>jgea.core</artifactId>
-    <packaging>jar</packaging>
-
-    <dependencies>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>32.0.0-jre</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-math3</artifactId>
-            <version>3.6.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-csv</artifactId>
-            <version>1.10.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.knowm.xchart</groupId>
-            <artifactId>xchart</artifactId>
-            <version>3.8.4</version>
-        </dependency>
-        <dependency>
-            <groupId>io.github.ericmedvet</groupId>
-            <artifactId>jsdynsym.core</artifactId>
-            <version>${jsdynsym.version}</version>
-        </dependency>
-    </dependencies>
+  <dependencies>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>32.0.0-jre</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-math3</artifactId>
+      <version>3.6.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-csv</artifactId>
+      <version>1.10.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.knowm.xchart</groupId>
+      <artifactId>xchart</artifactId>
+      <version>3.8.4</version>
+    </dependency>
+    <dependency>
+      <groupId>io.github.ericmedvet</groupId>
+      <artifactId>jsdynsym.core</artifactId>
+      <version>${jsdynsym.version}</version>
+    </dependency>
+  </dependencies>
 
 </project>

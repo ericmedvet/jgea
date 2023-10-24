@@ -53,24 +53,16 @@ public class MapperGeneration
       List<FitnessFunction.Property> validationProperties,
       long seed)
       throws IOException {
-    this.grammar =
-        StringGrammar.load(StringGrammar.class.getResourceAsStream("/grammars/1d/mapper.bnf"));
-    learningFitnessFunction =
-        new FitnessFunction(
-            learningProblems,
-            learningGenotypeSize,
-            learningN,
-            learningMaxMappingDepth,
-            learningProperties,
-            seed);
-    validationFitnessFunction =
-        new FitnessFunction(
-            validationProblems,
-            validationGenotypeSize,
-            validationN,
-            validationMaxMappingDepth,
-            validationProperties,
-            seed);
+    this.grammar = StringGrammar.load(StringGrammar.class.getResourceAsStream("/grammars/1d/mapper.bnf"));
+    learningFitnessFunction = new FitnessFunction(
+        learningProblems, learningGenotypeSize, learningN, learningMaxMappingDepth, learningProperties, seed);
+    validationFitnessFunction = new FitnessFunction(
+        validationProblems,
+        validationGenotypeSize,
+        validationN,
+        validationMaxMappingDepth,
+        validationProperties,
+        seed);
     dimensionality = learningProperties.size();
   }
 

@@ -26,21 +26,16 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 
-public class TelegramUpdater<E, K> extends TelegramClient
-    implements ListenerFactory<E, K>, ProgressMonitor {
+public class TelegramUpdater<E, K> extends TelegramClient implements ListenerFactory<E, K>, ProgressMonitor {
 
   private final List<AccumulatorFactory<E, ?, K>> factories;
 
-  public TelegramUpdater(
-      List<AccumulatorFactory<E, ?, K>> factories, String botToken, long chatId) {
+  public TelegramUpdater(List<AccumulatorFactory<E, ?, K>> factories, String botToken, long chatId) {
     super(botToken, chatId);
     this.factories = factories;
-    sendText(
-        String.format(
-            "%s started on %s: will send updates with %d accumulators",
-            TelegramUpdater.class.getSimpleName(),
-            StringUtils.getUserMachineName(),
-            factories.size()));
+    sendText(String.format(
+        "%s started on %s: will send updates with %d accumulators",
+        TelegramUpdater.class.getSimpleName(), StringUtils.getUserMachineName(), factories.size()));
   }
 
   @Override
@@ -79,27 +74,24 @@ public class TelegramUpdater<E, K> extends TelegramClient
             } else if (outcome instanceof Table<?>) {
               if (factories.get(i) instanceof XYPlotTableBuilder<?> plotBuilder) {
                 //noinspection unchecked
-                BufferedImage plot =
-                    ImagePlotters.xyLines(plotBuilder.getWidth(), plotBuilder.getHeight())
-                        .apply((Table<? extends Number>) outcome);
+                BufferedImage plot = ImagePlotters.xyLines(
+                        plotBuilder.getWidth(), plotBuilder.getHeight())
+                    .apply((Table<? extends Number>) outcome);
                 sendImage(plot);
               } else {
-                L.info(
-                    String.format(
-                        "Skip table outcome of accumulator: do not know how to handle %s",
-                        outcome.getClass().getSimpleName()));
+                L.info(String.format(
+                    "Skip table outcome of accumulator: do not know how to handle %s",
+                    outcome.getClass().getSimpleName()));
               }
             } else {
-              L.info(
-                  String.format(
-                      "Skip outcome of accumulator: do not know how to handle %s",
-                      outcome.getClass().getSimpleName()));
+              L.info(String.format(
+                  "Skip outcome of accumulator: do not know how to handle %s",
+                  outcome.getClass().getSimpleName()));
             }
           } catch (Throwable e) {
-            L.warning(
-                String.format(
-                    "Cannot get outcome of accumulator %s: %s",
-                    accumulators.get(i).getClass().getSimpleName(), e));
+            L.warning(String.format(
+                "Cannot get outcome of accumulator %s: %s",
+                accumulators.get(i).getClass().getSimpleName(), e));
           }
         }
       }
@@ -108,19 +100,14 @@ public class TelegramUpdater<E, K> extends TelegramClient
 
   @Override
   public void shutdown() {
-    sendText(
-        String.format(
-            "%s shutting down on %s",
-            TelegramUpdater.class.getSimpleName(), StringUtils.getUserMachineName()));
+    sendText(String.format(
+        "%s shutting down on %s", TelegramUpdater.class.getSimpleName(), StringUtils.getUserMachineName()));
   }
 
   @Override
   public void notify(Progress progress, String message) {
-    sendText(
-        String.format(
-            "%s - progress %s %s",
-            StringUtils.getUserMachineName(),
-            TextPlotter.horizontalBar(progress.rate(), 0, 1, 8),
-            message));
+    sendText(String.format(
+        "%s - progress %s %s",
+        StringUtils.getUserMachineName(), TextPlotter.horizontalBar(progress.rate(), 0, 1, 8), message));
   }
 }

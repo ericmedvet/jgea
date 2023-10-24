@@ -68,12 +68,7 @@ public class Experimenter {
       ExecutorService experimentExecutorService,
       ExecutorService runExecutorService,
       ExecutorService listenerExecutorService) {
-    this(
-        namedBuilder,
-        experimentExecutorService,
-        runExecutorService,
-        listenerExecutorService,
-        false);
+    this(namedBuilder, experimentExecutorService, runExecutorService, listenerExecutorService, false);
   }
 
   @SuppressWarnings("unused")
@@ -94,8 +89,7 @@ public class Experimenter {
       experimentDescription = br.lines().collect(Collectors.joining());
     } catch (IOException e) {
       throw new IllegalArgumentException(
-          String.format(
-              "Cannot read provided experiment description at %s: %s", experimentFile, e));
+          String.format("Cannot read provided experiment description at %s: %s", experimentFile, e));
     }
     run(experimentDescription, verbose);
   }
@@ -107,67 +101,48 @@ public class Experimenter {
   public void run(Experiment experiment, boolean verbose) {
     ProjectInfoProvider.of(getClass()).ifPresent(pi -> L.info("Starting %s".formatted(pi)));
     // preapare factories
-    List<? extends ListenerFactory<? super POCPopulationState<?, ?, ?>, Run<?, ?, ?, ?>>>
-        factories =
-            experiment.listeners().stream()
-                .map(l -> l.apply(experiment, listenerExecutorService))
-                .toList();
-    ListenerFactory<? super POCPopulationState<?, ?, ?>, Run<?, ?, ?, ?>> factory =
-        ListenerFactory.all(factories);
-    List<ProgressMonitor> progressMonitors =
-        factories.stream()
-            .filter(f -> f instanceof ProgressMonitor)
-            .map(f -> (ProgressMonitor) f)
+    List<? extends ListenerFactory<? super POCPopulationState<?, ?, ?>, Run<?, ?, ?, ?>>> factories =
+        experiment.listeners().stream()
+            .map(l -> l.apply(experiment, listenerExecutorService))
             .toList();
-    ProgressMonitor progressMonitor =
-        progressMonitors.isEmpty()
-            ? new ScreenProgressMonitor(System.out)
-            : ProgressMonitor.all(progressMonitors);
+    ListenerFactory<? super POCPopulationState<?, ?, ?>, Run<?, ?, ?, ?>> factory = ListenerFactory.all(factories);
+    List<ProgressMonitor> progressMonitors = factories.stream()
+        .filter(f -> f instanceof ProgressMonitor)
+        .map(f -> (ProgressMonitor) f)
+        .toList();
+    ProgressMonitor progressMonitor = progressMonitors.isEmpty()
+        ? new ScreenProgressMonitor(System.out)
+        : ProgressMonitor.all(progressMonitors);
     // start experiments
     record RunOutcome(Run<?, ?, ?, ?> run, Future<Collection<?>> future) {}
-    List<RunOutcome> runOutcomes =
-        experiment.runs().stream()
-            .map(
-                run ->
-                    new RunOutcome(
-                        run,
-                        experimentExecutorService.submit(
-                            () -> {
-                              progressMonitor.notify(
-                                  run.index(),
-                                  experiment.runs().size(),
-                                  "Starting:%n%s"
-                                      .formatted(MapNamedParamMap.prettyToString(run.map(), 40)));
-                              Instant startingT = Instant.now();
-                              Collection<?> solutions =
-                                  run.run(runExecutorService, factory.build(run));
-                              double elapsedT =
-                                  Duration.between(startingT, Instant.now()).toMillis() / 1000d;
-                              String msg =
-                                  String.format(
-                                      "Run %d of %d done in %.2fs, found %d solutions",
-                                      run.index() + 1,
-                                      experiment.runs().size(),
-                                      elapsedT,
-                                      solutions.size());
-                              L.info(msg);
-                              progressMonitor.notify(
-                                  run.index() + 1, experiment.runs().size(), msg);
-                              return solutions;
-                            })))
-            .toList();
+    List<RunOutcome> runOutcomes = experiment.runs().stream()
+        .map(run -> new RunOutcome(run, experimentExecutorService.submit(() -> {
+          progressMonitor.notify(
+              run.index(),
+              experiment.runs().size(),
+              "Starting:%n%s".formatted(MapNamedParamMap.prettyToString(run.map(), 40)));
+          Instant startingT = Instant.now();
+          Collection<?> solutions = run.run(runExecutorService, factory.build(run));
+          double elapsedT = Duration.between(startingT, Instant.now()).toMillis() / 1000d;
+          String msg = String.format(
+              "Run %d of %d done in %.2fs, found %d solutions",
+              run.index() + 1, experiment.runs().size(), elapsedT, solutions.size());
+          L.info(msg);
+          progressMonitor.notify(run.index() + 1, experiment.runs().size(), msg);
+          return solutions;
+        })))
+        .toList();
     // wait for results
-    runOutcomes.forEach(
-        runOutcome -> {
-          try {
-            runOutcome.future().get();
-          } catch (InterruptedException | ExecutionException e) {
-            L.warning(String.format("Cannot solve %s: %s", runOutcome.run().map(), e));
-            if (verbose) {
-              e.printStackTrace();
-            }
-          }
-        });
+    runOutcomes.forEach(runOutcome -> {
+      try {
+        runOutcome.future().get();
+      } catch (InterruptedException | ExecutionException e) {
+        L.warning(String.format("Cannot solve %s: %s", runOutcome.run().map(), e));
+        if (verbose) {
+          e.printStackTrace();
+        }
+      }
+    });
     if (closeListeners) {
       L.info("Closing");
       experimentExecutorService.shutdown();

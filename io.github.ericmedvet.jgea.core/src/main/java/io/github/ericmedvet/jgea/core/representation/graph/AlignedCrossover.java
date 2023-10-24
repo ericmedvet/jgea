@@ -32,8 +32,7 @@ public class AlignedCrossover<N, A> implements Crossover<Graph<N, A>> {
   private final Predicate<N> unremovableNodePredicate;
   private final boolean allowCycles;
 
-  public AlignedCrossover(
-      Crossover<A> edgeCrossover, Predicate<N> unremovableNodePredicate, boolean allowCycles) {
+  public AlignedCrossover(Crossover<A> edgeCrossover, Predicate<N> unremovableNodePredicate, boolean allowCycles) {
     this.edgeCrossover = edgeCrossover;
     this.unremovableNodePredicate = unremovableNodePredicate;
     this.allowCycles = allowCycles;

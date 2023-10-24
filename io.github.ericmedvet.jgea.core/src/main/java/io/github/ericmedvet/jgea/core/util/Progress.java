@@ -28,8 +28,7 @@ public record Progress(Number start, Number end, Number current) implements Seri
   public double rate() {
     return Math.min(
         1d,
-        Math.max(0d, current.doubleValue() - start.doubleValue())
-            / (end.doubleValue() - start.doubleValue()));
+        Math.max(0d, current.doubleValue() - start.doubleValue()) / (end.doubleValue() - start.doubleValue()));
   }
 
   public Progress(double normalizedRate) {

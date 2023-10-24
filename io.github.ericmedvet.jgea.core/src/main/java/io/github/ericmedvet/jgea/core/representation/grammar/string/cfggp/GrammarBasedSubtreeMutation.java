@@ -44,8 +44,7 @@ public class GrammarBasedSubtreeMutation<T> implements Mutation<Tree<T>> {
     boolean done = false;
     for (Tree<T> toReplaceSubTree : nonTerminalTrees) {
       // TODO should select a depth randomly such that the resulting child is <= maxDepth
-      Tree<T> newSubTree =
-          factory.build(random, toReplaceSubTree.content(), toReplaceSubTree.height());
+      Tree<T> newSubTree = factory.build(random, toReplaceSubTree.content(), toReplaceSubTree.height());
       if (newSubTree != null) {
         toReplaceSubTree.clearChildren();
         newSubTree.childStream().forEach(toReplaceSubTree::addChild);

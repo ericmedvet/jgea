@@ -31,16 +31,15 @@ public interface NamedFunction<F, T> extends Function<F, T> {
 
   Logger L = Logger.getLogger(NamedFunction.class.getName());
 
-  BiFunction<String, String, String> NAME_COMPOSER =
-      (after, before) -> {
-        if (after.isEmpty()) {
-          return before;
-        }
-        if (before.isEmpty()) {
-          return after;
-        }
-        return before + "→" + after;
-      };
+  BiFunction<String, String, String> NAME_COMPOSER = (after, before) -> {
+    if (after.isEmpty()) {
+      return before;
+    }
+    if (before.isEmpty()) {
+      return after;
+    }
+    return before + "→" + after;
+  };
 
   static <F, T> NamedFunction<F, T> build(String name, Function<F, T> function) {
     return build(name, "%s", function);
@@ -53,8 +52,7 @@ public interface NamedFunction<F, T> extends Function<F, T> {
         try {
           return function.apply(f);
         } catch (Throwable t) {
-          throw new RuntimeException(
-              String.format("Cannot compute function %s: %s", getName(), t), t);
+          throw new RuntimeException(String.format("Cannot compute function %s: %s", getName(), t), t);
         }
       }
 
@@ -82,7 +80,11 @@ public interface NamedFunction<F, T> extends Function<F, T> {
   }
 
   static String formatOfLongest(List<?> items) {
-    int l = items.stream().map(Object::toString).mapToInt(String::length).max().orElse(1);
+    int l = items.stream()
+        .map(Object::toString)
+        .mapToInt(String::length)
+        .max()
+        .orElse(1);
     return format(l);
   }
 
@@ -199,17 +201,14 @@ public interface NamedFunction<F, T> extends Function<F, T> {
   }
 
   default NamedFunction<F, T> robust(T exceptionT) {
-    return NamedFunction.build(
-        getName(),
-        getFormat(),
-        f -> {
-          try {
-            return apply(f);
-          } catch (Throwable throwable) {
-            L.warning("Cannot compute %s: %s".formatted(getName(), throwable));
-            return exceptionT;
-          }
-        });
+    return NamedFunction.build(getName(), getFormat(), f -> {
+      try {
+        return apply(f);
+      } catch (Throwable throwable) {
+        L.warning("Cannot compute %s: %s".formatted(getName(), throwable));
+        return exceptionT;
+      }
+    });
   }
 
   default NamedFunction<F, T> robust() {
@@ -236,8 +235,7 @@ public interface NamedFunction<F, T> extends Function<F, T> {
     };
   }
 
-  default <V> List<? extends NamedFunction<F, ? extends V>> then(
-      List<NamedFunction<? super T, ? extends V>> afters) {
+  default <V> List<? extends NamedFunction<F, ? extends V>> then(List<NamedFunction<? super T, ? extends V>> afters) {
     NamedFunction<F, T> thisNamedFunction = this;
     return afters.stream().map(thisNamedFunction::then).toList();
   }

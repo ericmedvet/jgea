@@ -40,8 +40,9 @@ public class ListLogHandler extends Handler {
     Logger mainLogger = Logger.getLogger("");
     mainLogger.setLevel(Level.CONFIG);
     mainLogger.addHandler(this);
-    originalHandlers =
-        Arrays.stream(mainLogger.getHandlers()).filter(h -> h instanceof ConsoleHandler).toList();
+    originalHandlers = Arrays.stream(mainLogger.getHandlers())
+        .filter(h -> h instanceof ConsoleHandler)
+        .toList();
     originalHandlers.forEach(mainLogger::removeHandler);
   }
 

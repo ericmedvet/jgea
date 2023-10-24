@@ -54,7 +54,8 @@ public interface NumericalDataset {
 
   default NumericalDataset folds(List<Integer> folds, int n) {
     NumericalDataset thisDataset = this;
-    int[] indexes = IntStream.range(0, size()).filter(i -> folds.contains(i % n)).toArray();
+    int[] indexes =
+        IntStream.range(0, size()).filter(i -> folds.contains(i % n)).toArray();
     IntFunction<Example> provider = thisDataset.exampleProvider();
     return new NumericalDataset() {
       @Override

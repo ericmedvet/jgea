@@ -35,8 +35,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-public class NetListenerClient<G, S, Q>
-    implements ListenerFactory<POCPopulationState<G, S, Q>, Run<?, G, S, Q>> {
+public class NetListenerClient<G, S, Q> implements ListenerFactory<POCPopulationState<G, S, Q>, Run<?, G, S, Q>> {
 
   private static final Logger L = Logger.getLogger(NetListenerClient.class.getName());
   private final String serverAddress;
@@ -70,17 +69,19 @@ public class NetListenerClient<G, S, Q>
     this.runFunctions = runFunctions;
     this.experiment = experiment;
     // check plot builders
-    List<PlotTableBuilder<? super POCPopulationState<G, S, Q>>> wrongPlotTableBuilders =
-        plotTableBuilders.stream().filter(ptb -> ptb.yFunctions().size() != 1).toList();
+    List<PlotTableBuilder<? super POCPopulationState<G, S, Q>>> wrongPlotTableBuilders = plotTableBuilders.stream()
+        .filter(ptb -> ptb.yFunctions().size() != 1)
+        .toList();
     if (!wrongPlotTableBuilders.isEmpty()) {
       throw new IllegalArgumentException(
           "There are %d plot builders with num. of y data series not being 1, the first has %s"
-              .formatted(wrongPlotTableBuilders.size(), wrongPlotTableBuilders.get(0).yNames()));
+              .formatted(
+                  wrongPlotTableBuilders.size(),
+                  wrongPlotTableBuilders.get(0).yNames()));
     }
     updates = new HashMap<>();
     service = Executors.newSingleThreadScheduledExecutor();
-    service.scheduleAtFixedRate(
-        this::sendUpdates, 0, (int) (1000 * pollInterval), TimeUnit.MILLISECONDS);
+    service.scheduleAtFixedRate(this::sendUpdates, 0, (int) (1000 * pollInterval), TimeUnit.MILLISECONDS);
   }
 
   @Override
@@ -89,45 +90,37 @@ public class NetListenerClient<G, S, Q>
       @Override
       public void listen(POCPopulationState<G, S, Q> state) {
         synchronized (updates) {
-          Update update =
-              updates.getOrDefault(
-                  run.index(),
-                  new Update(
-                      0, "", -1, Progress.NA, true, new LinkedHashMap<>(), new LinkedHashMap<>()));
+          Update update = updates.getOrDefault(
+              run.index(),
+              new Update(0, "", -1, Progress.NA, true, new LinkedHashMap<>(), new LinkedHashMap<>()));
           Map<Update.DataItemKey, List<Object>> dataItems = update.dataItems();
-          stateFunctions.forEach(
-              f -> {
-                Update.DataItemKey dik = new Update.DataItemKey(f.getName(), f.getFormat());
-                dataItems.putIfAbsent(dik, new ArrayList<>());
-                dataItems.get(dik).add(f.apply(state));
-              });
-          runFunctions.forEach(
-              f -> {
-                Update.DataItemKey dik = new Update.DataItemKey(f.getName(), f.getFormat());
-                dataItems.putIfAbsent(dik, new ArrayList<>());
-                dataItems.get(dik).add(f.apply(run));
-              });
+          stateFunctions.forEach(f -> {
+            Update.DataItemKey dik = new Update.DataItemKey(f.getName(), f.getFormat());
+            dataItems.putIfAbsent(dik, new ArrayList<>());
+            dataItems.get(dik).add(f.apply(state));
+          });
+          runFunctions.forEach(f -> {
+            Update.DataItemKey dik = new Update.DataItemKey(f.getName(), f.getFormat());
+            dataItems.putIfAbsent(dik, new ArrayList<>());
+            dataItems.get(dik).add(f.apply(run));
+          });
           Map<Update.PlotItemKey, List<Update.PlotPoint>> plotItems = update.plotItems();
-          plotTableBuilders.forEach(
-              p -> {
-                double minX = Double.NaN;
-                double maxX = Double.NaN;
-                if (p
-                    instanceof
-                    XYPlotTableBuilder<? super POCPopulationState<G, S, Q>>
-                    xyPlotTableBuilder) {
-                  minX = xyPlotTableBuilder.getMinX();
-                  maxX = xyPlotTableBuilder.getMaxX();
-                }
-                Update.PlotItemKey pik =
-                    new Update.PlotItemKey(p.xName(), p.yNames().get(0), minX, maxX);
-                plotItems.putIfAbsent(pik, new ArrayList<>());
-                double x = p.xFunction().apply(state).doubleValue();
-                double y = p.yFunctions().get(0).apply(state).doubleValue();
-                if (Double.isFinite(x) && Double.isFinite(y)) {
-                  plotItems.get(pik).add(new Update.PlotPoint(x, y));
-                }
-              });
+          plotTableBuilders.forEach(p -> {
+            double minX = Double.NaN;
+            double maxX = Double.NaN;
+            if (p instanceof XYPlotTableBuilder<? super POCPopulationState<G, S, Q>> xyPlotTableBuilder) {
+              minX = xyPlotTableBuilder.getMinX();
+              maxX = xyPlotTableBuilder.getMaxX();
+            }
+            Update.PlotItemKey pik =
+                new Update.PlotItemKey(p.xName(), p.yNames().get(0), minX, maxX);
+            plotItems.putIfAbsent(pik, new ArrayList<>());
+            double x = p.xFunction().apply(state).doubleValue();
+            double y = p.yFunctions().get(0).apply(state).doubleValue();
+            if (Double.isFinite(x) && Double.isFinite(y)) {
+              plotItems.get(pik).add(new Update.PlotPoint(x, y));
+            }
+          });
           updates.put(
               run.index(),
               new Update(
@@ -154,15 +147,14 @@ public class NetListenerClient<G, S, Q>
                   false,
                   new LinkedHashMap<>(),
                   new LinkedHashMap<>()),
-              (ou, nu) ->
-                  new Update(
-                      System.currentTimeMillis(),
-                      run.map().toString(),
-                      run.index(),
-                      ou.runProgress(),
-                      false,
-                      ou.dataItems(),
-                      ou.plotItems()));
+              (ou, nu) -> new Update(
+                  System.currentTimeMillis(),
+                  run.map().toString(),
+                  run.index(),
+                  ou.runProgress(),
+                  false,
+                  ou.dataItems(),
+                  ou.plotItems()));
         }
       }
     };
@@ -211,24 +203,23 @@ public class NetListenerClient<G, S, Q>
       updates.clear();
     }
     // prepare message
-    Message message =
-        new Message(
-            System.currentTimeMillis(),
-            NetUtils.getMachineInfo(),
-            NetUtils.getProcessInfo(),
-            pollInterval,
-            experiment.runs().size(),
-            toSendUpdates);
+    Message message = new Message(
+        System.currentTimeMillis(),
+        NetUtils.getMachineInfo(),
+        NetUtils.getProcessInfo(),
+        pollInterval,
+        experiment.runs().size(),
+        toSendUpdates);
     // attempt send
     openConnection();
     if (oos != null) {
       try {
         oos.writeObject(message);
-        L.fine("Message sent with %d updates".formatted(message.updates().size()));
+        L.fine("Message sent with %d updates"
+            .formatted(message.updates().size()));
       } catch (IOException e) {
-        L.warning(
-            "Cannot send message with %d updates due to: %s"
-                .formatted(message.updates().size(), e));
+        L.warning("Cannot send message with %d updates due to: %s"
+            .formatted(message.updates().size(), e));
         synchronized (updates) {
           message.updates().forEach(u -> updates.put(u.runIndex(), u));
         }

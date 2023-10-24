@@ -56,8 +56,7 @@ public class GOSChooser<S, O> implements Chooser<S, O> {
       return Optional.of(grammar.rules().get(s).get(0));
     }
     if (!gos.options().containsKey(s)) {
-      throw new IllegalArgumentException(
-          "Invalid genotype, it does not contain symbol %s".formatted(s));
+      throw new IllegalArgumentException("Invalid genotype, it does not contain symbol %s".formatted(s));
     }
     List<Integer> optionIndexes = gos.options().get(s);
     if (counters.get(s) >= optionIndexes.size()) {

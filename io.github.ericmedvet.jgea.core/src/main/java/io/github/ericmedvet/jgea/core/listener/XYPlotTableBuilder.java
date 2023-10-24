@@ -27,8 +27,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.IntStream;
 
-public class XYPlotTableBuilder<E> extends TableBuilder<E, Number, Object>
-    implements PlotTableBuilder<E> {
+public class XYPlotTableBuilder<E> extends TableBuilder<E, Number, Object> implements PlotTableBuilder<E> {
   private final NamedFunction<? super E, ? extends Number> xFunction;
   private final List<NamedFunction<? super E, ? extends Number>> yFunctions;
   private final int width;
@@ -61,11 +60,9 @@ public class XYPlotTableBuilder<E> extends TableBuilder<E, Number, Object>
     super(Misc.concat(List.of(List.of(xFunction), yFunctions)), List.of());
     this.xFunction = xFunction;
     //noinspection unchecked,rawtypes
-    this.yFunctions =
-        (List)
-            yFunctions.stream()
-                .map(f -> firstDifference ? f.rename("delta[%s]".formatted(f.getName())) : f)
-                .toList();
+    this.yFunctions = (List) yFunctions.stream()
+        .map(f -> firstDifference ? f.rename("delta[%s]".formatted(f.getName())) : f)
+        .toList();
     this.width = width;
     this.height = height;
     this.minX = minX;
@@ -88,7 +85,8 @@ public class XYPlotTableBuilder<E> extends TableBuilder<E, Number, Object>
           List<List<Pair<String, Number>>> rows = table.rows();
           rows.stream()
               .sorted(Comparator.comparing(r -> r.get(0).second().doubleValue()))
-              .forEach(r -> sTable.addRow(r.stream().map(Pair::second).toList()));
+              .forEach(r ->
+                  sTable.addRow(r.stream().map(Pair::second).toList()));
           table = sTable;
         }
         if (firstDifference) {
@@ -96,17 +94,16 @@ public class XYPlotTableBuilder<E> extends TableBuilder<E, Number, Object>
           for (int rI = 1; rI < table.nRows(); rI++) {
             List<Number> currentRow = table.row(rI);
             List<Number> lastRow = table.row(rI - 1);
-            List<Number> diffRow =
-                IntStream.range(0, currentRow.size())
-                    .mapToObj(
-                        cI -> {
-                          if (cI == 0) {
-                            return currentRow.get(cI);
-                          } else {
-                            return currentRow.get(cI).doubleValue() - lastRow.get(cI).doubleValue();
-                          }
-                        })
-                    .toList();
+            List<Number> diffRow = IntStream.range(0, currentRow.size())
+                .mapToObj(cI -> {
+                  if (cI == 0) {
+                    return currentRow.get(cI);
+                  } else {
+                    return currentRow.get(cI).doubleValue()
+                        - lastRow.get(cI).doubleValue();
+                  }
+                })
+                .toList();
             dTable.addRow(diffRow);
           }
           table = dTable;

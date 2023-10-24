@@ -33,8 +33,7 @@ public abstract class Worker implements Runnable {
   static {
     try {
       LogManager.getLogManager()
-          .readConfiguration(
-              Worker.class.getClassLoader().getResourceAsStream("logging.properties"));
+          .readConfiguration(Worker.class.getClassLoader().getResourceAsStream("logging.properties"));
     } catch (IOException ex) {
       // ignore
     }
@@ -45,13 +44,8 @@ public abstract class Worker implements Runnable {
 
   public Worker(String[] args) {
     this.args = args;
-    executorService =
-        Executors.newFixedThreadPool(
-            Args.i(
-                Args.a(
-                    args,
-                    "threads",
-                    Integer.toString(Runtime.getRuntime().availableProcessors()))));
+    executorService = Executors.newFixedThreadPool(Args.i(
+        Args.a(args, "threads", Integer.toString(Runtime.getRuntime().availableProcessors()))));
     run();
     executorService.shutdown();
   }

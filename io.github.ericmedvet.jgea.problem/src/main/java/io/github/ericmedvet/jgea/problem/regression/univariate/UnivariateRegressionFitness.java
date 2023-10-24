@@ -45,32 +45,23 @@ public class UnivariateRegressionFitness
   }
 
   public enum Metric implements Function<List<Y>, Double> {
-    MAE(
-        ys ->
-            ys.stream()
-                .mapToDouble(y -> Math.abs(y.predicted - y.actual))
-                .average()
-                .orElse(Double.NaN)),
-    MSE(
-        ys ->
-            ys.stream()
-                .mapToDouble(y -> (y.predicted - y.actual) * (y.predicted - y.actual))
-                .average()
-                .orElse(Double.NaN)),
-    RMSE(
-        ys ->
-            Math.sqrt(
-                ys.stream()
-                    .mapToDouble(y -> (y.predicted - y.actual) * (y.predicted - y.actual))
-                    .average()
-                    .orElse(Double.NaN))),
-    NMSE(
-        ys ->
-            ys.stream()
-                    .mapToDouble(y -> (y.predicted - y.actual) * (y.predicted - y.actual))
-                    .average()
-                    .orElse(Double.NaN)
-                / ys.stream().mapToDouble(y -> y.actual).average().orElse(1d));
+    MAE(ys -> ys.stream()
+        .mapToDouble(y -> Math.abs(y.predicted - y.actual))
+        .average()
+        .orElse(Double.NaN)),
+    MSE(ys -> ys.stream()
+        .mapToDouble(y -> (y.predicted - y.actual) * (y.predicted - y.actual))
+        .average()
+        .orElse(Double.NaN)),
+    RMSE(ys -> Math.sqrt(ys.stream()
+        .mapToDouble(y -> (y.predicted - y.actual) * (y.predicted - y.actual))
+        .average()
+        .orElse(Double.NaN))),
+    NMSE(ys -> ys.stream()
+            .mapToDouble(y -> (y.predicted - y.actual) * (y.predicted - y.actual))
+            .average()
+            .orElse(Double.NaN)
+        / ys.stream().mapToDouble(y -> y.actual).average().orElse(1d));
     private final Function<List<Y>, Double> function;
 
     Metric(Function<List<Y>, Double> function) {
@@ -103,10 +94,9 @@ public class UnivariateRegressionFitness
   public Function<List<Double>, Double> aggregateFunction() {
     return predictedYs -> {
       if (actualYs == null) {
-        actualYs =
-            IntStream.range(0, dataset.size())
-                .mapToObj(i -> dataset.exampleProvider().apply(i).ys()[0])
-                .toList();
+        actualYs = IntStream.range(0, dataset.size())
+            .mapToObj(i -> dataset.exampleProvider().apply(i).ys()[0])
+            .toList();
       }
       return metric.apply(pairs(predictedYs, actualYs));
     };

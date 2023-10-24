@@ -25,10 +25,6 @@ import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.state.ESState;
 import io.github.ericmedvet.jgea.core.util.Progress;
-import org.apache.commons.math3.linear.EigenDecomposition;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
-
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -37,10 +33,20 @@ import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
+import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
 
 // source -> https://arxiv.org/pdf/1604.00772.pdf
 
-public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterativeSolver<ESState<CMAEvolutionaryStrategy.DecoratedIndividual<S, Q>, S, Q>, TotalOrderQualityBasedProblem<S, Q>, Individual<List<Double>, S, Q>, List<Double>, S, Q> {
+public class CMAEvolutionaryStrategy<S, Q>
+    extends AbstractPopulationBasedIterativeSolver<
+        ESState<CMAEvolutionaryStrategy.DecoratedIndividual<S, Q>, S, Q>,
+        TotalOrderQualityBasedProblem<S, Q>,
+        Individual<List<Double>, S, Q>,
+        List<Double>,
+        S,
+        Q> {
 
   private static final Logger L = Logger.getLogger(CMAEvolutionaryStrategy.class.getName());
   private final int mu;
@@ -58,17 +64,19 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
   public CMAEvolutionaryStrategy(
       Function<? super List<Double>, ? extends S> solutionMapper,
       Factory<? extends List<Double>> genotypeFactory,
-      Predicate<? super ESState<DecoratedIndividual<S, Q>, S, Q>> stopCondition
-  ) {
-    this(solutionMapper, genotypeFactory, stopCondition, genotypeFactory.build(1, new Random(0)).get(0).size());
+      Predicate<? super ESState<DecoratedIndividual<S, Q>, S, Q>> stopCondition) {
+    this(
+        solutionMapper,
+        genotypeFactory,
+        stopCondition,
+        genotypeFactory.build(1, new Random(0)).get(0).size());
   }
 
   private CMAEvolutionaryStrategy(
       Function<? super List<Double>, ? extends S> solutionMapper,
       Factory<? extends List<Double>> genotypeFactory,
       Predicate<? super ESState<DecoratedIndividual<S, Q>, S, Q>> stopCondition,
-      int n
-  ) {
+      int n) {
     super(solutionMapper, genotypeFactory, i -> i, stopCondition, false);
     populationSize = 4 + (int) Math.floor(3 * Math.log(n));
     // see table 1 of the linked paper for parameters values
@@ -98,8 +106,8 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
   }
 
   public record DecoratedIndividual<S, Q>(
-      Individual<List<Double>, S, Q> individual, double[] z, double[] y, double[] x
-  ) implements Individual<List<Double>, S, Q> {
+      Individual<List<Double>, S, Q> individual, double[] z, double[] y, double[] x)
+      implements Individual<List<Double>, S, Q> {
     @Override
     public List<Double> genotype() {
       return individual.genotype();
@@ -127,15 +135,29 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
   }
 
   protected record State<S, Q>(
-      LocalDateTime startingDateTime, long elapsedMillis, long nOfIterations, Progress progress, long nOfBirths,
-      long nOfFitnessEvaluations, PartiallyOrderedCollection<DecoratedIndividual<S, Q>> population,
-      List<DecoratedIndividual<S, Q>> individuals, List<Double> means, RealMatrix C, double sigma,
-      double[] sEvolutionPath, double[] cEvolutionPath, RealMatrix B, RealMatrix D, int lastEigenUpdateGeneration
-  ) implements ESState<DecoratedIndividual<S, Q>, S, Q> {
+      LocalDateTime startingDateTime,
+      long elapsedMillis,
+      long nOfIterations,
+      Progress progress,
+      long nOfBirths,
+      long nOfFitnessEvaluations,
+      PartiallyOrderedCollection<DecoratedIndividual<S, Q>> population,
+      List<DecoratedIndividual<S, Q>> individuals,
+      List<Double> means,
+      RealMatrix C,
+      double sigma,
+      double[] sEvolutionPath,
+      double[] cEvolutionPath,
+      RealMatrix B,
+      RealMatrix D,
+      int lastEigenUpdateGeneration)
+      implements ESState<DecoratedIndividual<S, Q>, S, Q> {
     public State(
-        int n, Collection<DecoratedIndividual<S, Q>> individuals, Comparator<DecoratedIndividual<S, Q>> comparator
-    ) {
-      this(LocalDateTime.now(),
+        int n,
+        Collection<DecoratedIndividual<S, Q>> individuals,
+        Comparator<DecoratedIndividual<S, Q>> comparator) {
+      this(
+          LocalDateTime.now(),
           0,
           0,
           Progress.NA,
@@ -143,15 +165,15 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
           individuals.size(),
           PartiallyOrderedCollection.from(individuals, comparator),
           individuals.stream().sorted(comparator).toList(),
-          SimpleEvolutionaryStrategy.computeMeans(individuals.stream().map(Individual::genotype).toList()),
+          SimpleEvolutionaryStrategy.computeMeans(
+              individuals.stream().map(Individual::genotype).toList()),
           MatrixUtils.createRealIdentityMatrix(n),
           0.5,
           new double[n],
           new double[n],
           MatrixUtils.createRealIdentityMatrix(n),
           MatrixUtils.createRealIdentityMatrix(n),
-          0
-      );
+          0);
     }
   }
 
@@ -174,14 +196,21 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
 
   @Override
   public ESState<DecoratedIndividual<S, Q>, S, Q> init(
-      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor
-  ) throws SolverException {
-    return new State<>(n, getAll(map(sampleNewGenotypes(random,
-        MatrixUtils.createRealIdentityMatrix(n),
-        MatrixUtils.createRealIdentityMatrix(n),
-        genotypeFactory.independent().build(random),
-        0.5
-    ), 0, problem.qualityFunction(), executor)), null);
+      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
+      throws SolverException {
+    return new State<>(
+        n,
+        getAll(map(
+            sampleNewGenotypes(
+                random,
+                MatrixUtils.createRealIdentityMatrix(n),
+                MatrixUtils.createRealIdentityMatrix(n),
+                genotypeFactory.independent().build(random),
+                0.5),
+            0,
+            problem.qualityFunction(),
+            executor)),
+        null);
   }
 
   @Override
@@ -189,47 +218,53 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
       TotalOrderQualityBasedProblem<S, Q> problem,
       RandomGenerator random,
       ExecutorService executor,
-      ESState<DecoratedIndividual<S, Q>, S, Q> state
-  ) throws SolverException {
+      ESState<DecoratedIndividual<S, Q>, S, Q> state)
+      throws SolverException {
     return null;
   }
 
   @Override
   protected OldState<S, Q> initState(
-      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor
-  ) {
+      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor) {
     return new OldState<>(n);
   }
 
   public OldState<S, Q> ainit(
-      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor
-  ) throws SolverException {
+      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
+      throws SolverException {
     OldState<S, Q> state = initState(problem, random, executor);
-    state.means = genotypeFactory.build(1, random).get(0).stream().mapToDouble(d -> d).toArray();
+    state.means = genotypeFactory.build(1, random).get(0).stream()
+        .mapToDouble(d -> d)
+        .toArray();
     sampleNewGenotypes(problem, random, executor, state);
     return state;
   }
 
   private Collection<List<Double>> sampleNewGenotypes(
-      RandomGenerator random, RealMatrix B, RealMatrix D, List<Double> means, double sigma
-  ) {
+      RandomGenerator random, RealMatrix B, RealMatrix D, List<Double> means, double sigma) {
     double[][] zK = new double[populationSize][n];
     double[][] yK = new double[populationSize][n];
     double[][] xK = new double[populationSize][n];
-    return IntStream.range(0, populationSize).mapToObj(k -> {
-      zK[k] = IntStream.range(0, n).mapToDouble(i -> random.nextGaussian()).toArray();
-      yK[k] = B.preMultiply(D.preMultiply(zK[k]));
-      xK[k] = IntStream.range(0, n).mapToDouble(i -> means.get(i) + sigma * yK[k][i]).toArray();
-      return Arrays.stream(xK[k]).boxed().toList();
-    }).toList();
+    return IntStream.range(0, populationSize)
+        .mapToObj(k -> {
+          zK[k] = IntStream.range(0, n)
+              .mapToDouble(i -> random.nextGaussian())
+              .toArray();
+          yK[k] = B.preMultiply(D.preMultiply(zK[k]));
+          xK[k] = IntStream.range(0, n)
+              .mapToDouble(i -> means.get(i) + sigma * yK[k][i])
+              .toArray();
+          return Arrays.stream(xK[k]).boxed().toList();
+        })
+        .toList();
   }
 
   public void aupdate(
       TotalOrderQualityBasedProblem<S, Q> problem,
       RandomGenerator random,
       ExecutorService executor,
-      OldState<S, Q> state
-  ) throws SolverException {
+      OldState<S, Q> state)
+      throws SolverException {
     updateDistribution(problem, state);
     // update B and D from C
     if ((state.getNOfIterations() - state.lastEigenUpdateGeneration) > (1d / (c1 + cMu) / n / 10d)) {
@@ -248,10 +283,12 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
   private void updateDistribution(TotalOrderQualityBasedProblem<S, Q> problem, OldState<S, Q> state) {
     // best mu ranked points
     Function<DecoratedIndividual<S, Q>, Individual<List<Double>, S, Q>> individualExtractor = i -> i.individual;
-    Comparator<DecoratedIndividual<S, Q>> decoratedIndividualComparator = comparator(problem).comparing(
-        individualExtractor).comparator();
-    List<DecoratedIndividual<S, Q>> bestMuIndividuals = state.decoratedIndividuals.stream().sorted(
-        decoratedIndividualComparator).limit(mu).toList();
+    Comparator<DecoratedIndividual<S, Q>> decoratedIndividualComparator =
+        comparator(problem).comparing(individualExtractor).comparator();
+    List<DecoratedIndividual<S, Q>> bestMuIndividuals = state.decoratedIndividuals.stream()
+        .sorted(decoratedIndividualComparator)
+        .limit(mu)
+        .toList();
 
     double[][] xMu = new double[mu][n];
     double[][] yMu = new double[mu][n];
@@ -263,38 +300,48 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
     }
 
     // selection and recombination
-    double[] updatedDistributionMean = IntStream.range(0, n).mapToDouble(j -> IntStream.range(0, mu)
-        .mapToDouble(i -> weights[i] * xMu[i][j])
-        .sum()).toArray();
+    double[] updatedDistributionMean = IntStream.range(0, n)
+        .mapToDouble(j -> IntStream.range(0, mu)
+            .mapToDouble(i -> weights[i] * xMu[i][j])
+            .sum())
+        .toArray();
     double[] yW = IntStream.range(0, n)
         .mapToDouble(i -> (updatedDistributionMean[i] - state.means[i]) / state.sigma)
         .toArray();
     state.means = updatedDistributionMean;
 
     // step size control
-    double[] zM = IntStream.range(0, n).mapToDouble(j -> IntStream.range(0, mu)
-        .mapToDouble(i -> weights[i] * zMu[i][j])
-        .sum()).toArray();
+    double[] zM = IntStream.range(0, n)
+        .mapToDouble(j -> IntStream.range(0, mu)
+            .mapToDouble(i -> weights[i] * zMu[i][j])
+            .sum())
+        .toArray();
     double[] bzM = state.B.preMultiply(zM);
-    state.sEvolutionPath = IntStream.range(0, n).mapToDouble(i -> (1d - cSigma) * state.sEvolutionPath[i] + (Math.sqrt(
-        cSigma * (2d - cSigma) * muEff)) * bzM[i]).toArray();
-    double psNorm = Math.sqrt(Arrays.stream(state.sEvolutionPath).map(d -> d * d).sum());
+    state.sEvolutionPath = IntStream.range(0, n)
+        .mapToDouble(i ->
+            (1d - cSigma) * state.sEvolutionPath[i] + (Math.sqrt(cSigma * (2d - cSigma) * muEff)) * bzM[i])
+        .toArray();
+    double psNorm =
+        Math.sqrt(Arrays.stream(state.sEvolutionPath).map(d -> d * d).sum());
     state.sigma *= Math.exp((cSigma / dSigma) * ((psNorm / chiN) - 1));
 
     // covariance matrix adaptation
-    int hSigma = psNorm / Math.sqrt(1 - Math.pow((1d - cSigma),
-        2 * state.getNOfIterations()
-    )) / chiN < (1.4 + 2d / (n + 1)) ? 1 : 0;
+    int hSigma = psNorm / Math.sqrt(1 - Math.pow((1d - cSigma), 2 * state.getNOfIterations())) / chiN
+            < (1.4 + 2d / (n + 1))
+        ? 1
+        : 0;
     state.cEvolutionPath = IntStream.range(0, n)
-        .mapToDouble(i -> (1 - cc) * state.cEvolutionPath[i] + hSigma * Math.sqrt(cc * (2 - cc) * muEff) * yW[i])
+        .mapToDouble(
+            i -> (1 - cc) * state.cEvolutionPath[i] + hSigma * Math.sqrt(cc * (2 - cc) * muEff) * yW[i])
         .toArray();
     double deltaH = (1 - hSigma) * cc * (2 - cc);
     IntStream.range(0, n).forEach(i -> IntStream.range(0, i + 1).forEach(j -> {
-      double cij = (1 + c1 * deltaH - c1 - cMu) * state.C.getEntry(i,
-          j
-      ) + c1 * state.cEvolutionPath[i] * state.cEvolutionPath[j] + cMu * IntStream.range(0, mu)
-          .mapToDouble(k -> weights[k] * yMu[k][i] * yMu[k][j])
-          .sum();
+      double cij = (1 + c1 * deltaH - c1 - cMu) * state.C.getEntry(i, j)
+          + c1 * state.cEvolutionPath[i] * state.cEvolutionPath[j]
+          + cMu
+              * IntStream.range(0, mu)
+                  .mapToDouble(k -> weights[k] * yMu[k][i] * yMu[k][j])
+                  .sum();
       state.C.setEntry(i, j, cij);
       state.C.setEntry(j, i, cij);
     }));

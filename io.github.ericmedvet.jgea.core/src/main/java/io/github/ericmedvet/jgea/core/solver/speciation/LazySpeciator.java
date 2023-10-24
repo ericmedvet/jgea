@@ -41,8 +41,9 @@ public class LazySpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Indivi
       PartiallyOrderedCollection<Individual<G, S, F>> population) {
     List<List<Individual<G, S, F>>> clusters = new ArrayList<>();
     for (Individual<G, S, F> individual : population.all()) {
-      List<Double> distances =
-          clusters.stream().map(c -> distance.apply(individual, c.get(0))).toList();
+      List<Double> distances = clusters.stream()
+          .map(c -> distance.apply(individual, c.get(0)))
+          .toList();
       if (distances.isEmpty()) {
         List<Individual<G, S, F>> cluster = new ArrayList<>();
         cluster.add(individual);
@@ -63,6 +64,8 @@ public class LazySpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Indivi
         }
       }
     }
-    return clusters.stream().map(c -> new SpeciatedEvolver.Species<>(c, c.get(0))).toList();
+    return clusters.stream()
+        .map(c -> new SpeciatedEvolver.Species<>(c, c.get(0)))
+        .toList();
   }
 }

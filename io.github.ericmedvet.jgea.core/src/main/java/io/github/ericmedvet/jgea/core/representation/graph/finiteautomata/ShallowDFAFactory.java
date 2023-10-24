@@ -27,8 +27,7 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import java.util.Set;
 import java.util.random.RandomGenerator;
 
-public class ShallowDFAFactory<C>
-    implements IndependentFactory<Graph<DeterministicFiniteAutomaton.State, Set<C>>> {
+public class ShallowDFAFactory<C> implements IndependentFactory<Graph<DeterministicFiniteAutomaton.State, Set<C>>> {
 
   private final int nOfStates;
   private final Set<C> arcLabels;

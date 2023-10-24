@@ -38,13 +38,10 @@ public class GrammarOptionStringFlipMutation<S> implements Mutation<GrammarOptio
   public GrammarOptionString<S> mutate(GrammarOptionString<S> parent, RandomGenerator random) {
     return new GrammarOptionString<>(
         parent.options().entrySet().stream()
-            .collect(
-                Collectors.toMap(
-                    Map.Entry::getKey,
-                    e ->
-                        e.getValue().stream()
-                            .map(i -> mutate(i, random, parent.grammar().rules().get(e.getKey())))
-                            .toList())),
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream()
+                .map(i -> mutate(
+                    i, random, parent.grammar().rules().get(e.getKey())))
+                .toList())),
         parent.grammar());
   }
 

@@ -45,7 +45,8 @@ public interface QualityBasedProblem<S, Q> extends Problem<S> {
 
   @Override
   default PartialComparatorOutcome compare(S s1, S s2) {
-    return qualityComparator().compare(qualityFunction().apply(s1), qualityFunction().apply(s2));
+    return qualityComparator()
+        .compare(qualityFunction().apply(s1), qualityFunction().apply(s2));
   }
 
   default QualityBasedProblem<S, Q> withComparator(PartialComparator<Q> comparator) {

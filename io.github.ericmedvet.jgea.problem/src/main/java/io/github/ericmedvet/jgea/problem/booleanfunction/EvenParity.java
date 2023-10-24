@@ -40,9 +40,7 @@ public class EvenParity
   private final Function<List<Tree<Element>>, Double> fitnessFunction;
 
   public EvenParity(final int size) throws IOException {
-    grammar =
-        StringGrammar.load(
-            StringGrammar.class.getResourceAsStream("/grammars/1d/boolean-parity-var.bnf"));
+    grammar = StringGrammar.load(StringGrammar.class.getResourceAsStream("/grammars/1d/boolean-parity-var.bnf"));
     List<List<String>> vars = new ArrayList<>();
     for (int i = 0; i < size; i++) {
       vars.add(Collections.singletonList("b" + i));
@@ -50,9 +48,8 @@ public class EvenParity
     grammar.rules().put("<v>", vars);
     solutionMapper = new FormulaMapper();
     TargetFunction targetFunction = new TargetFunction(size);
-    fitnessFunction =
-        new BooleanFunctionFitness(
-            targetFunction, BooleanUtils.buildCompleteObservations(targetFunction.varNames));
+    fitnessFunction = new BooleanFunctionFitness(
+        targetFunction, BooleanUtils.buildCompleteObservations(targetFunction.varNames));
   }
 
   private static class TargetFunction implements BooleanFunctionFitness.TargetFunction {

@@ -45,27 +45,24 @@ public class ShallowFactory implements IndependentFactory<Graph<Node, OperatorGr
   @Override
   public Graph<Node, OperatorGraph.NonValuedArc> build(RandomGenerator random) {
     Graph<Node, OperatorGraph.NonValuedArc> g = new LinkedHashGraph<>();
-    List<Input> inputs =
-        IntStream.range(0, xVarNames.size()).mapToObj(i -> new Input(i, xVarNames.get(i))).toList();
-    List<Output> outputs =
-        IntStream.range(0, yVarNames.size())
-            .mapToObj(i -> new Output(i, yVarNames.get(i)))
-            .toList();
-    List<Constant> constantNodes =
-        IntStream.range(0, constants.size())
-            .mapToObj(i -> new Constant(i, constants.get(i)))
-            .toList();
+    List<Input> inputs = IntStream.range(0, xVarNames.size())
+        .mapToObj(i -> new Input(i, xVarNames.get(i)))
+        .toList();
+    List<Output> outputs = IntStream.range(0, yVarNames.size())
+        .mapToObj(i -> new Output(i, yVarNames.get(i)))
+        .toList();
+    List<Constant> constantNodes = IntStream.range(0, constants.size())
+        .mapToObj(i -> new Constant(i, constants.get(i)))
+        .toList();
     inputs.forEach(g::addNode);
     outputs.forEach(g::addNode);
     constantNodes.forEach(g::addNode);
-    outputs.forEach(
-        o ->
-            g.setArcValue(
-                random.nextBoolean()
-                    ? inputs.get(random.nextInt(inputs.size()))
-                    : constantNodes.get(random.nextInt(constantNodes.size())),
-                o,
-                OperatorGraph.NON_VALUED_ARC));
+    outputs.forEach(o -> g.setArcValue(
+        random.nextBoolean()
+            ? inputs.get(random.nextInt(inputs.size()))
+            : constantNodes.get(random.nextInt(constantNodes.size())),
+        o,
+        OperatorGraph.NON_VALUED_ARC));
     return g;
   }
 }

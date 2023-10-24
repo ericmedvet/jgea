@@ -60,9 +60,7 @@ public class FitnessFunction implements Function<Pair<Tree<Element>, Tree<Elemen
     BitStringFactory factory = new BitStringFactory(genotypeSize);
     Set<BitString> set = new LinkedHashSet<>();
     for (int i = 0; i < Math.floor(Math.sqrt(n)); i++) {
-      set.addAll(
-          consecutiveMutations(
-              factory.build(random), (int) Math.floor(Math.sqrt(n)), mutation, random));
+      set.addAll(consecutiveMutations(factory.build(random), (int) Math.floor(Math.sqrt(n)), mutation, random));
     }
     while (set.size() < n) {
       set.add(factory.build(random));
@@ -85,39 +83,36 @@ public class FitnessFunction implements Function<Pair<Tree<Element>, Tree<Elemen
     for (EnhancedProblem problem : problems) {
       List<Double> localValues = apply(pair, problem);
       if (valuesLists.isEmpty()) {
-        localValues.forEach(
-            v -> {
-              List<Double> valuesList = new ArrayList<>(problems.size());
-              valuesLists.add(valuesList);
-            });
+        localValues.forEach(v -> {
+          List<Double> valuesList = new ArrayList<>(problems.size());
+          valuesLists.add(valuesList);
+        });
       }
       for (int i = 0; i < localValues.size(); i++) {
         valuesLists.get(i).add(localValues.get(i));
       }
     }
     return valuesLists.stream()
-        .map(
-            valuesList ->
-                valuesList.stream().mapToDouble(Double::doubleValue).average().orElse(Double.NaN))
+        .map(valuesList -> valuesList.stream()
+            .mapToDouble(Double::doubleValue)
+            .average()
+            .orElse(Double.NaN))
         .toList();
   }
 
-  protected <N, S> List<Double> apply(
-      Pair<Tree<Element>, Tree<Element>> pair, EnhancedProblem<N, S> problem) {
+  protected <N, S> List<Double> apply(Pair<Tree<Element>, Tree<Element>> pair, EnhancedProblem<N, S> problem) {
     // build mapper
-    RecursiveMapper<N> recursiveMapper =
-        new RecursiveMapper<>(
-            pair.first(),
-            pair.second(),
-            maxMappingDepth,
-            EXPRESSIVENESS_DEPTH,
-            problem.getProblem().getGrammar());
+    RecursiveMapper<N> recursiveMapper = new RecursiveMapper<>(
+        pair.first(),
+        pair.second(),
+        maxMappingDepth,
+        EXPRESSIVENESS_DEPTH,
+        problem.getProblem().getGrammar());
     // map
-    List<S> solutions =
-        genotypes.stream()
-            .map(recursiveMapper::apply)
-            .map(t -> problem.getProblem().getSolutionMapper().apply(t))
-            .toList();
+    List<S> solutions = genotypes.stream()
+        .map(recursiveMapper::apply)
+        .map(t -> problem.getProblem().getSolutionMapper().apply(t))
+        .toList();
     Multiset<S> multiset = LinkedHashMultiset.create();
     multiset.addAll(solutions);
     // compute properties
@@ -126,17 +121,14 @@ public class FitnessFunction implements Function<Pair<Tree<Element>, Tree<Elemen
       if (property.equals(Property.DEGENERACY)) {
         values.add(1d - (double) multiset.elementSet().size() / (double) genotypes.size());
       } else if (property.equals(Property.NON_UNIFORMITY)) {
-        double[] sizes =
-            multiset.entrySet().stream().mapToDouble(e -> (double) e.getCount()).toArray();
+        double[] sizes = multiset.entrySet().stream()
+            .mapToDouble(e -> (double) e.getCount())
+            .toArray();
         values.add(Math.sqrt(StatUtils.variance(sizes)) / StatUtils.mean(sizes));
       } else if (property.equals(Property.NON_LOCALITY)) {
         double[] solutionDistances = computeDistances(solutions, problem.getDistance());
         double locality =
-            1d
-                - (1d
-                        + (new PearsonsCorrelation()
-                            .correlation(genotypeDistances, solutionDistances)))
-                    / 2d;
+            1d - (1d + (new PearsonsCorrelation().correlation(genotypeDistances, solutionDistances))) / 2d;
         values.add(Double.isNaN(locality) ? 1d : locality);
       } else {
         values.add(0d);

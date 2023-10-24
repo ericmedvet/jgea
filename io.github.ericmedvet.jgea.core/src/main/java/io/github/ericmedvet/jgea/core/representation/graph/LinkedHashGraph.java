@@ -74,10 +74,9 @@ public class LinkedHashGraph<N, A> implements Graph<N, A>, Serializable {
   @Override
   public void setArcValue(Arc<N> arc, A value) {
     if (!nodes.contains(arc.getSource()) || !nodes.contains(arc.getTarget())) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Cannot set arc value between %s and %s because at least one endpoint node is not present",
-              arc.getSource(), arc.getTarget()));
+      throw new IllegalArgumentException(String.format(
+          "Cannot set arc value between %s and %s because at least one endpoint node is not present",
+          arc.getSource(), arc.getTarget()));
     }
     arcs.put(arc, value);
   }

@@ -81,7 +81,8 @@ public class Args {
   public static int[] ri(String s) {
     String[] pieces = s.split(RANGE_SEP);
     if (pieces.length > 1) {
-      return IntStream.range(Integer.parseInt(pieces[0]), Integer.parseInt(pieces[1])).toArray();
+      return IntStream.range(Integer.parseInt(pieces[0]), Integer.parseInt(pieces[1]))
+          .toArray();
     } else {
       return new int[] {Integer.parseInt(pieces[0])};
     }

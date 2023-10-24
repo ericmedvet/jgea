@@ -70,11 +70,7 @@ public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>> {
   private static <K> void prettyPrint(Tree<K> t, int d, PrintStream ps) {
     ps.printf(
         "%s (h=%2d d=%2d #c=%2d) %s",
-        String.join("", Collections.nCopies(d, "  ")),
-        t.height(),
-        t.depth(),
-        t.nChildren(),
-        t.content());
+        String.join("", Collections.nCopies(d, "  ")), t.height(), t.depth(), t.nChildren(), t.content());
     ps.println();
     t.forEach(c -> prettyPrint(c, d + 1, ps));
   }

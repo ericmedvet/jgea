@@ -50,30 +50,26 @@ public class ShallowSparseFactory implements IndependentFactory<Graph<Node, Doub
   @Override
   public Graph<Node, Double> build(RandomGenerator random) {
     Graph<Node, Double> g = new LinkedHashGraph<>();
-    List<Input> inputs =
-        IntStream.range(0, xVarNames.size()).mapToObj(i -> new Input(i, xVarNames.get(i))).toList();
-    List<Output> outputs =
-        IntStream.range(0, yVarNames.size())
-            .mapToObj(i -> new Output(i, yVarNames.get(i)))
-            .toList();
+    List<Input> inputs = IntStream.range(0, xVarNames.size())
+        .mapToObj(i -> new Input(i, xVarNames.get(i)))
+        .toList();
+    List<Output> outputs = IntStream.range(0, yVarNames.size())
+        .mapToObj(i -> new Output(i, yVarNames.get(i)))
+        .toList();
     Constant constant = new Constant(0, 1d);
     inputs.forEach(g::addNode);
     outputs.forEach(g::addNode);
     g.addNode(constant);
-    inputs.forEach(
-        i ->
-            outputs.forEach(
-                o -> {
-                  if (random.nextDouble() < (1d - sparsity)) {
-                    g.setArcValue(i, o, random.nextGaussian() * sigma + mu);
-                  }
-                }));
-    outputs.forEach(
-        o -> {
-          if (random.nextDouble() < (1d - sparsity)) {
-            g.setArcValue(constant, o, random.nextGaussian() * sigma + mu);
-          }
-        });
+    inputs.forEach(i -> outputs.forEach(o -> {
+      if (random.nextDouble() < (1d - sparsity)) {
+        g.setArcValue(i, o, random.nextGaussian() * sigma + mu);
+      }
+    }));
+    outputs.forEach(o -> {
+      if (random.nextDouble() < (1d - sparsity)) {
+        g.setArcValue(constant, o, random.nextGaussian() * sigma + mu);
+      }
+    });
     return g;
   }
 }

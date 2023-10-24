@@ -46,30 +46,24 @@ public record Rectangle(Point min, Point max) {
   public List<Rectangle> splitHorizontally(float... rs) {
     List<Rectangle> rectangles = new ArrayList<>();
     for (int i = 0; i < rs.length; i++) {
-      rectangles.add(
-          new Rectangle(
-              new Point(min().x() + (i == 0 ? 0 : Math.round(rs[i - 1] * w())), min().y()),
-              new Point(min().x() + Math.round(rs[i] * w()), max().y())));
+      rectangles.add(new Rectangle(
+          new Point(min().x() + (i == 0 ? 0 : Math.round(rs[i - 1] * w())), min().y()),
+          new Point(min().x() + Math.round(rs[i] * w()), max().y())));
     }
-    rectangles.add(
-        new Rectangle(
-            new Point(min().x() + Math.round(rs[rs.length - 1] * w()), min().y()),
-            new Point(max.x(), max().y())));
+    rectangles.add(new Rectangle(
+        new Point(min().x() + Math.round(rs[rs.length - 1] * w()), min().y()), new Point(max.x(), max().y())));
     return rectangles;
   }
 
   public List<Rectangle> splitVertically(float... rs) {
     List<Rectangle> rectangles = new ArrayList<>();
     for (int i = 0; i < rs.length; i++) {
-      rectangles.add(
-          new Rectangle(
-              new Point(min.x(), min().y() + (i == 0 ? 0 : Math.round(rs[i - 1] * h()))),
-              new Point(max.x(), min().y() + Math.round(rs[i] * h()))));
+      rectangles.add(new Rectangle(
+          new Point(min.x(), min().y() + (i == 0 ? 0 : Math.round(rs[i - 1] * h()))),
+          new Point(max.x(), min().y() + Math.round(rs[i] * h()))));
     }
-    rectangles.add(
-        new Rectangle(
-            new Point(min.x(), min().y() + Math.round(rs[rs.length - 1] * h())),
-            new Point(max.x(), max.y())));
+    rectangles.add(new Rectangle(
+        new Point(min.x(), min().y() + Math.round(rs[rs.length - 1] * h())), new Point(max.x(), max.y())));
     return rectangles;
   }
 

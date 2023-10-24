@@ -34,16 +34,15 @@ public class ElementWiseCrossover<E> implements Crossover<List<E>> {
 
   public List<E> recombine(List<E> l1, List<E> l2, RandomGenerator random) {
     return IntStream.range(0, Math.max(l1.size(), l2.size()))
-        .mapToObj(
-            i -> {
-              if (l1.size() > i && l2.size() > i) {
-                return crossover.recombine(l1.get(i), l2.get(i), random);
-              }
-              if (l1.size() > i) {
-                return l1.get(i);
-              }
-              return l2.get(i);
-            })
+        .mapToObj(i -> {
+          if (l1.size() > i && l2.size() > i) {
+            return crossover.recombine(l1.get(i), l2.get(i), random);
+          }
+          if (l1.size() > i) {
+            return l1.get(i);
+          }
+          return l2.get(i);
+        })
         .toList();
   }
 }

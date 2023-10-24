@@ -21,11 +21,8 @@
 package io.github.ericmedvet.jgea.core.util;
 
 import com.google.common.collect.Range;
-import io.github.ericmedvet.jgea.core.distance.Distance;
 import java.io.File;
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.random.RandomGenerator;
@@ -107,7 +104,8 @@ public class Misc {
   }
 
   public static <K> List<K> shuffle(List<K> list, RandomGenerator random) {
-    List<Integer> indexes = new ArrayList<>(IntStream.range(0, list.size()).boxed().toList());
+    List<Integer> indexes =
+        new ArrayList<>(IntStream.range(0, list.size()).boxed().toList());
     List<Integer> shuffledIndexes = new ArrayList<>(indexes.size());
     while (!indexes.isEmpty()) {
       int indexOfIndex = indexes.size() == 1 ? 0 : random.nextInt(indexes.size());
@@ -170,17 +168,15 @@ public class Misc {
       Matcher mNum = Pattern.compile("\\((?<n>[0-9]+)\\)\\.\\w+$").matcher(file.getPath());
       if (mNum.find()) {
         int n = Integer.parseInt(mNum.group("n"));
-        newName =
-            new StringBuilder(file.getPath())
-                .replace(mNum.start("n"), mNum.end("n"), Integer.toString(n + 1))
-                .toString();
+        newName = new StringBuilder(file.getPath())
+            .replace(mNum.start("n"), mNum.end("n"), Integer.toString(n + 1))
+            .toString();
       }
       Matcher mExtension = Pattern.compile("\\.\\w+$").matcher(file.getPath());
       if (newName == null && mExtension.find()) {
-        newName =
-            new StringBuilder(file.getPath())
-                .replace(mExtension.start(), mExtension.end(), ".(1)" + mExtension.group())
-                .toString();
+        newName = new StringBuilder(file.getPath())
+            .replace(mExtension.start(), mExtension.end(), ".(1)" + mExtension.group())
+            .toString();
       }
       if (newName == null) {
         newName = file.getPath() + ".newer";
@@ -190,8 +186,7 @@ public class Misc {
     if (!file.getPath().equals(originalFileName)) {
       L.log(
           Level.WARNING,
-          String.format(
-              "Given file name (%s) exists; will write on %s", originalFileName, file.getPath()));
+          String.format("Given file name (%s) exists; will write on %s", originalFileName, file.getPath()));
     }
     return file;
   }

@@ -35,7 +35,7 @@ import java.util.random.RandomGenerator;
 
 public class RandomSearch<P extends QualityBasedProblem<S, Q>, G, S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-    POCPopulationState<Individual<G, S, Q>, G, S, Q>, P, Individual<G, S, Q>, G, S, Q> {
+        POCPopulationState<Individual<G, S, Q>, G, S, Q>, P, Individual<G, S, Q>, G, S, Q> {
 
   protected record State<I extends Individual<G, S, Q>, G, S, Q>(
       LocalDateTime startingDateTime,
@@ -52,11 +52,7 @@ public class RandomSearch<P extends QualityBasedProblem<S, Q>, G, S, Q>
     }
 
     public static <I extends Individual<G, S, Q>, G, S, Q> State<I, G, S, Q> from(
-        State<I, G, S, Q> state,
-        Progress progress,
-        int nOfBirths,
-        int nOfFitnessEvaluations,
-        I individual) {
+        State<I, G, S, Q> state, Progress progress, int nOfBirths, int nOfFitnessEvaluations, I individual) {
       return new State<>(
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
@@ -82,10 +78,9 @@ public class RandomSearch<P extends QualityBasedProblem<S, Q>, G, S, Q>
   @Override
   public POCPopulationState<Individual<G, S, Q>, G, S, Q> init(
       P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
-    return new State<>(
-        getAll(map(genotypeFactory.build(1, random), 0, problem.qualityFunction(), executor))
-            .iterator()
-            .next());
+    return new State<>(getAll(map(genotypeFactory.build(1, random), 0, problem.qualityFunction(), executor))
+        .iterator()
+        .next());
   }
 
   @Override
@@ -95,22 +90,17 @@ public class RandomSearch<P extends QualityBasedProblem<S, Q>, G, S, Q>
       ExecutorService executor,
       POCPopulationState<Individual<G, S, Q>, G, S, Q> state)
       throws SolverException {
-    Individual<G, S, Q> currentIndividual = state.pocPopulation().firsts().iterator().next();
-    Individual<G, S, Q> newIndividual =
-        getAll(
-                map(
-                    genotypeFactory.build(1, random),
-                    state.nOfIterations(),
-                    problem.qualityFunction(),
-                    executor))
-            .iterator()
-            .next();
+    Individual<G, S, Q> currentIndividual =
+        state.pocPopulation().firsts().iterator().next();
+    Individual<G, S, Q> newIndividual = getAll(map(
+            genotypeFactory.build(1, random), state.nOfIterations(), problem.qualityFunction(), executor))
+        .iterator()
+        .next();
     if (comparator(problem)
         .compare(newIndividual, currentIndividual)
         .equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
       currentIndividual = newIndividual;
     }
-    return State.from(
-        (State<Individual<G, S, Q>, G, S, Q>) state, progress(state), 1, 1, currentIndividual);
+    return State.from((State<Individual<G, S, Q>, G, S, Q>) state, progress(state), 1, 1, currentIndividual);
   }
 }

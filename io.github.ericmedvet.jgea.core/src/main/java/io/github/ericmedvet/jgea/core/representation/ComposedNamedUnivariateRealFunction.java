@@ -31,13 +31,11 @@ public class ComposedNamedUnivariateRealFunction extends AbstractComposed<Univar
   private final List<String> xVarNames;
   private final String yVarName;
 
-  public ComposedNamedUnivariateRealFunction(
-      UnivariateRealFunction inner, List<String> xVarNames, String yVarName) {
+  public ComposedNamedUnivariateRealFunction(UnivariateRealFunction inner, List<String> xVarNames, String yVarName) {
     super(inner);
     if (xVarNames.size() != inner.nOfInputs()) {
       throw new IllegalArgumentException(
-          "Wrong input size: %d expected by inner, %d vars"
-              .formatted(inner.nOfInputs(), xVarNames.size()));
+          "Wrong input size: %d expected by inner, %d vars".formatted(inner.nOfInputs(), xVarNames.size()));
     }
     this.xVarNames = xVarNames;
     this.yVarName = yVarName;

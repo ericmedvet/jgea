@@ -27,8 +27,7 @@ import java.util.Collections;
 import java.util.function.Function;
 
 public class IntOneMax
-    implements ComparableQualityBasedProblem<IntString, Double>,
-        ProblemWithExampleSolution<IntString> {
+    implements ComparableQualityBasedProblem<IntString, Double>, ProblemWithExampleSolution<IntString> {
 
   private final int p;
   private final int upperBound;
@@ -37,14 +36,12 @@ public class IntOneMax
   public IntOneMax(int p, int upperBound) {
     this.p = p;
     this.upperBound = upperBound;
-    fitnessFunction =
-        s -> {
-          if (s.size() != p) {
-            throw new IllegalArgumentException(
-                "Wrong input size: %d expected, %d found".formatted(p, s.size()));
-          }
-          return s.genes().stream().mapToInt(n -> n).average().orElse(0d) / (double) s.size();
-        };
+    fitnessFunction = s -> {
+      if (s.size() != p) {
+        throw new IllegalArgumentException("Wrong input size: %d expected, %d found".formatted(p, s.size()));
+      }
+      return s.genes().stream().mapToInt(n -> n).average().orElse(0d) / (double) s.size();
+    };
   }
 
   @Override

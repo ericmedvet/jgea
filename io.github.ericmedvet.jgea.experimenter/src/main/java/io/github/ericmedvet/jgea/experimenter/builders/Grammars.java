@@ -33,8 +33,7 @@ public class Grammars {
   @SuppressWarnings("unused")
   public static GridGrammar<Character> gridBundled(@Param("name") String name) {
     try {
-      return GridGrammar.load(
-              GridGrammar.class.getResourceAsStream("/grammars/2d/" + name + ".bnf"))
+      return GridGrammar.load(GridGrammar.class.getResourceAsStream("/grammars/2d/" + name + ".bnf"))
           .map(s -> s == null ? null : s.charAt(0));
     } catch (IOException e) {
       throw new RuntimeException(e);

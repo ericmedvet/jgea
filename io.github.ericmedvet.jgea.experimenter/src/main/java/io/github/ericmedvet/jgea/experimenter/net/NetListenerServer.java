@@ -67,8 +67,7 @@ public class NetListenerServer extends ListLogHandler implements Runnable {
   public static final String EMPTY_CELL_CONTENT = "-";
   private static final Logger L = Logger.getLogger(NetListenerServer.class.getName());
   private static final Configuration DEFAULT_CONFIGURATION =
-      new Configuration(
-          0.5f, 0.85f, 0.5f, 0.5f, 8, 12, 500, 60, 10, 10000, 10979, "key", 100, 2, 5, 20);
+      new Configuration(0.5f, 0.85f, 0.5f, 0.5f, 8, 12, 500, 60, 10, 10000, 10979, "key", 100, 2, 5, 20);
   private static final int SERVER_SOCKET_TIMEOUT_MILLIS = 1000;
   private static final String STATUS_STRING = "⬤";
   private static final DateTimeFormatter SAME_DAY_DATETIME_FORMAT =
@@ -255,19 +254,16 @@ public class NetListenerServer extends ListLogHandler implements Runnable {
         return Instant.MAX;
       }
       return initialContact.plus(
-          Math.round(
-              ChronoUnit.MILLIS.between(initialContact, Instant.now())
-                  / (lastProgress.rate() - initialProgress.rate())),
+          Math.round(ChronoUnit.MILLIS.between(initialContact, Instant.now())
+              / (lastProgress.rate() - initialProgress.rate())),
           ChronoUnit.MILLIS);
     }
   }
 
-  private static <T> String areaPlot(
-      SortedMap<Long, T> data, Function<T, Number> function, double min, int l) {
+  private static <T> String areaPlot(SortedMap<Long, T> data, Function<T, Number> function, double min, int l) {
     return TextPlotter.areaPlot(
-        new TreeMap<>(
-            data.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> function.apply(e.getValue())))),
+        new TreeMap<>(data.entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> function.apply(e.getValue())))),
         min,
         data.lastKey(),
         l);
@@ -327,25 +323,23 @@ public class NetListenerServer extends ListLogHandler implements Runnable {
       jc.usage();
       System.exit(0);
     }
-    NetListenerServer server =
-        new NetListenerServer(
-            new Configuration(
-                DEFAULT_CONFIGURATION.runsSplit,
-                DEFAULT_CONFIGURATION.logsSplit,
-                DEFAULT_CONFIGURATION.legendSplit,
-                DEFAULT_CONFIGURATION.machinesProcessesSplit,
-                DEFAULT_CONFIGURATION.barLength,
-                DEFAULT_CONFIGURATION.barLength,
-                DEFAULT_CONFIGURATION.uiRefreshIntervalMillis,
-                DEFAULT_CONFIGURATION.machineHistorySeconds,
-                DEFAULT_CONFIGURATION.runDataHistorySize,
-                DEFAULT_CONFIGURATION.runPlotHistorySize,
-                cmdConfiguration.port,
-                cmdConfiguration.key,
-                DEFAULT_CONFIGURATION.nOfClients,
-                DEFAULT_CONFIGURATION.laterThreshold,
-                DEFAULT_CONFIGURATION.missingThreshold,
-                DEFAULT_CONFIGURATION.purgeThreshold));
+    NetListenerServer server = new NetListenerServer(new Configuration(
+        DEFAULT_CONFIGURATION.runsSplit,
+        DEFAULT_CONFIGURATION.logsSplit,
+        DEFAULT_CONFIGURATION.legendSplit,
+        DEFAULT_CONFIGURATION.machinesProcessesSplit,
+        DEFAULT_CONFIGURATION.barLength,
+        DEFAULT_CONFIGURATION.barLength,
+        DEFAULT_CONFIGURATION.uiRefreshIntervalMillis,
+        DEFAULT_CONFIGURATION.machineHistorySeconds,
+        DEFAULT_CONFIGURATION.runDataHistorySize,
+        DEFAULT_CONFIGURATION.runPlotHistorySize,
+        cmdConfiguration.port,
+        cmdConfiguration.key,
+        DEFAULT_CONFIGURATION.nOfClients,
+        DEFAULT_CONFIGURATION.laterThreshold,
+        DEFAULT_CONFIGURATION.missingThreshold,
+        DEFAULT_CONFIGURATION.purgeThreshold));
     server.run();
   }
 
@@ -360,8 +354,9 @@ public class NetListenerServer extends ListLogHandler implements Runnable {
     if (data.size() == 1) {
       return Trend.NONE;
     }
-    double[] ds =
-        data.values().stream().mapToDouble(v -> function.apply(v).doubleValue()).toArray();
+    double[] ds = data.values().stream()
+        .mapToDouble(v -> function.apply(v).doubleValue())
+        .toArray();
     double d1 = ds[ds.length - 1];
     double d2 = ds[ds.length - 2];
     return Trend.from(d1, d2);
@@ -374,8 +369,7 @@ public class NetListenerServer extends ListLogHandler implements Runnable {
       oos.writeObject(NetUtils.encrypt(Integer.toString(n), configuration.key));
       int m = Integer.parseInt(NetUtils.decrypt((String) ois.readObject(), configuration.key));
       if (m != n + 1) {
-        throw new IOException(
-            "Wrong answer to challenge from client: %d vs. %d".formatted(m, n + 1));
+        throw new IOException("Wrong answer to challenge from client: %d vs. %d".formatted(m, n + 1));
       }
     } catch (Exception e) {
       throw new IOException(e);
@@ -388,108 +382,98 @@ public class NetListenerServer extends ListLogHandler implements Runnable {
     machinesStatus.replaceAll((k, s) -> update(s, now));
     processesStatus.replaceAll((k, s) -> update(s, now));
     // purge
-    List<MachineKey> downMachineKeys =
-        machinesStatus.entrySet().stream()
-            .filter(e -> e.getValue().status().equals(TimeStatus.PURGE))
-            .map(Map.Entry::getKey)
-            .toList();
-    List<ProcessKey> downProcessKeys =
-        processesStatus.entrySet().stream()
-            .filter(e -> e.getValue().status().equals(TimeStatus.PURGE))
-            .map(Map.Entry::getKey)
-            .toList();
-    downMachineKeys.forEach(
-        mk -> {
-          machinesData.remove(mk);
-          machinesStatus.remove(mk);
-        });
-    downProcessKeys.forEach(
-        pk -> {
-          processesData.remove(pk);
-          processesStatus.remove(pk);
-        });
-    List<RunKey> downRunKeys =
-        runsData.keySet().stream()
-            .filter(rk -> downProcessKeys.stream().anyMatch(pk -> pk.equals(rk.processKey())))
-            .toList();
-    downRunKeys.forEach(
-        k -> {
-          runsData.remove(k);
-          runsProgress.remove(k);
-          runsPlots.remove(k);
-        });
+    List<MachineKey> downMachineKeys = machinesStatus.entrySet().stream()
+        .filter(e -> e.getValue().status().equals(TimeStatus.PURGE))
+        .map(Map.Entry::getKey)
+        .toList();
+    List<ProcessKey> downProcessKeys = processesStatus.entrySet().stream()
+        .filter(e -> e.getValue().status().equals(TimeStatus.PURGE))
+        .map(Map.Entry::getKey)
+        .toList();
+    downMachineKeys.forEach(mk -> {
+      machinesData.remove(mk);
+      machinesStatus.remove(mk);
+    });
+    downProcessKeys.forEach(pk -> {
+      processesData.remove(pk);
+      processesStatus.remove(pk);
+    });
+    List<RunKey> downRunKeys = runsData.keySet().stream()
+        .filter(rk -> downProcessKeys.stream().anyMatch(pk -> pk.equals(rk.processKey())))
+        .toList();
+    downRunKeys.forEach(k -> {
+      runsData.remove(k);
+      runsProgress.remove(k);
+      runsPlots.remove(k);
+    });
     // trim history
-    machinesData
-        .values()
-        .forEach(
-            h -> {
-              while (h.firstKey() < h.lastKey() - 1000L * configuration.machineHistorySeconds) {
-                h.remove(h.firstKey());
-              }
-            });
-    processesData
-        .values()
-        .forEach(
-            h -> {
-              while (h.firstKey() < h.lastKey() - 1000L * configuration.machineHistorySeconds) {
-                h.remove(h.firstKey());
-              }
-            });
+    machinesData.values().forEach(h -> {
+      while (h.firstKey() < h.lastKey() - 1000L * configuration.machineHistorySeconds) {
+        h.remove(h.firstKey());
+      }
+    });
+    processesData.values().forEach(h -> {
+      while (h.firstKey() < h.lastKey() - 1000L * configuration.machineHistorySeconds) {
+        h.remove(h.firstKey());
+      }
+    });
     // update progresses
     runsProgress.entrySet().stream()
         .collect(Collectors.groupingBy(e -> e.getKey().processKey(), Collectors.toList()))
-        .forEach(
-            (pk, m) ->
-                processesProgress.put(
-                    pk,
-                    new TimedProgress(
-                        m.stream()
-                            .map(Map.Entry::getValue)
-                            .map(TimedProgress::initialContact)
-                            .min(Instant::compareTo)
-                            .orElse(Instant.now()),
-                        Instant.now(),
-                        new Progress(
-                            0,
-                            processesData.get(pk).get(processesData.get(pk).lastKey()).nOfRuns(),
-                            m.stream()
-                                .map(Map.Entry::getValue)
-                                .mapToDouble(tp -> tp.initialProgress().rate())
-                                .sum()),
-                        new Progress(
-                            0,
-                            processesData.get(pk).get(processesData.get(pk).lastKey()).nOfRuns(),
-                            m.stream()
-                                .map(Map.Entry::getValue)
-                                .mapToDouble(tp -> tp.lastProgress().rate())
-                                .sum()),
-                        true)));
+        .forEach((pk, m) -> processesProgress.put(
+            pk,
+            new TimedProgress(
+                m.stream()
+                    .map(Map.Entry::getValue)
+                    .map(TimedProgress::initialContact)
+                    .min(Instant::compareTo)
+                    .orElse(Instant.now()),
+                Instant.now(),
+                new Progress(
+                    0,
+                    processesData
+                        .get(pk)
+                        .get(processesData.get(pk).lastKey())
+                        .nOfRuns(),
+                    m.stream()
+                        .map(Map.Entry::getValue)
+                        .mapToDouble(tp ->
+                            tp.initialProgress().rate())
+                        .sum()),
+                new Progress(
+                    0,
+                    processesData
+                        .get(pk)
+                        .get(processesData.get(pk).lastKey())
+                        .nOfRuns(),
+                    m.stream()
+                        .map(Map.Entry::getValue)
+                        .mapToDouble(
+                            tp -> tp.lastProgress().rate())
+                        .sum()),
+                true)));
     processesProgress.entrySet().stream()
         .collect(Collectors.groupingBy(e -> e.getKey().machineKey(), Collectors.toList()))
-        .forEach(
-            (mk, m) ->
-                machinesProgress.put(
-                    mk,
-                    new TimedProgress(
-                        m.stream()
-                            .map(Map.Entry::getValue)
-                            .map(TimedProgress::initialContact)
-                            .min(Instant::compareTo)
-                            .orElse(Instant.now()),
-                        Instant.now(),
-                        new Progress(
-                            m.stream()
-                                .map(Map.Entry::getValue)
-                                .mapToDouble(tp -> tp.initialProgress().rate())
-                                .average()
-                                .orElse(0)),
-                        new Progress(
-                            m.stream()
-                                .map(Map.Entry::getValue)
-                                .mapToDouble(tp -> tp.lastProgress().rate())
-                                .average()
-                                .orElse(0)),
-                        true)));
+        .forEach((mk, m) -> machinesProgress.put(
+            mk,
+            new TimedProgress(
+                m.stream()
+                    .map(Map.Entry::getValue)
+                    .map(TimedProgress::initialContact)
+                    .min(Instant::compareTo)
+                    .orElse(Instant.now()),
+                Instant.now(),
+                new Progress(m.stream()
+                    .map(Map.Entry::getValue)
+                    .mapToDouble(tp -> tp.initialProgress().rate())
+                    .average()
+                    .orElse(0)),
+                new Progress(m.stream()
+                    .map(Map.Entry::getValue)
+                    .mapToDouble(tp -> tp.lastProgress().rate())
+                    .average()
+                    .orElse(0)),
+                true)));
   }
 
   @Override
@@ -515,23 +499,23 @@ public class NetListenerServer extends ListLogHandler implements Runnable {
       while (isRunning) {
         try {
           Socket socket = serverSocket.accept();
-          clientsExecutorService.submit(
-              () -> {
-                try (socket;
-                    ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-                    ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream())) {
-                  doHandshake(ois, oos);
-                  while (isRunning) {
-                    Message message = (Message) ois.readObject();
-                    L.fine("Msg received with %d updates".formatted(message.updates().size()));
-                    storeMessage(message);
-                  }
-                } catch (IOException e) {
-                  L.warning("Cannot open input stream due to: %s".formatted(e));
-                } catch (ClassNotFoundException e) {
-                  L.warning("Cannot read message due to: %s".formatted(e));
-                }
-              });
+          clientsExecutorService.submit(() -> {
+            try (socket;
+                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+                ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream())) {
+              doHandshake(ois, oos);
+              while (isRunning) {
+                Message message = (Message) ois.readObject();
+                L.fine("Msg received with %d updates"
+                    .formatted(message.updates().size()));
+                storeMessage(message);
+              }
+            } catch (IOException e) {
+              L.warning("Cannot open input stream due to: %s".formatted(e));
+            } catch (ClassNotFoundException e) {
+              L.warning("Cannot read message due to: %s".formatted(e));
+            }
+          });
         } catch (SocketTimeoutException e) {
           // ignore
         } catch (IOException e) {
@@ -559,23 +543,17 @@ public class NetListenerServer extends ListLogHandler implements Runnable {
     MachineKey machineKey = new MachineKey(message.machineInfo().machineName());
     machinesData.putIfAbsent(machineKey, new TreeMap<>());
     machinesData.get(machineKey).put(message.localTime(), message.machineInfo());
-    machinesStatus.put(
-        machineKey, new Status(Instant.now(), message.pollInterval(), TimeStatus.OK));
-    ProcessKey processKey =
-        new ProcessKey(message.machineInfo().machineName(), message.processInfo().processName());
+    machinesStatus.put(machineKey, new Status(Instant.now(), message.pollInterval(), TimeStatus.OK));
+    ProcessKey processKey = new ProcessKey(
+        message.machineInfo().machineName(), message.processInfo().processName());
     processesData.putIfAbsent(processKey, new TreeMap<>());
     processesData
         .get(processKey)
-        .put(
-            message.localTime(), new EnhancedProcessInfo(message.processInfo(), message.nOfRuns()));
-    processesStatus.put(
-        processKey, new Status(Instant.now(), message.pollInterval(), TimeStatus.OK));
+        .put(message.localTime(), new EnhancedProcessInfo(message.processInfo(), message.nOfRuns()));
+    processesStatus.put(processKey, new Status(Instant.now(), message.pollInterval(), TimeStatus.OK));
     for (Update update : message.updates()) {
-      RunKey runKey =
-          new RunKey(
-              message.machineInfo().machineName(),
-              message.processInfo().processName(),
-              update.runIndex());
+      RunKey runKey = new RunKey(
+          message.machineInfo().machineName(), message.processInfo().processName(), update.runIndex());
       runsProgress.merge(
           runKey,
           new TimedProgress(
@@ -584,35 +562,19 @@ public class NetListenerServer extends ListLogHandler implements Runnable {
               update.runProgress(),
               update.runProgress(),
               update.isRunning()),
-          (otp, ntp) ->
-              new TimedProgress(
-                  otp.initialContact(),
-                  Instant.now(),
-                  otp.initialProgress,
-                  update.runProgress(),
-                  update.isRunning()));
+          (otp, ntp) -> new TimedProgress(
+              otp.initialContact(),
+              Instant.now(),
+              otp.initialProgress,
+              update.runProgress(),
+              update.isRunning()));
       runsData.putIfAbsent(runKey, new LinkedHashMap<>());
-      update
-          .dataItems()
-          .forEach(
-              (dik, vs) ->
-                  runsData
-                      .get(runKey)
-                      .merge(
-                          dik,
-                          vs,
-                          (ovs, nvs) -> concatAndTrim(ovs, nvs, configuration.runDataHistorySize)));
+      update.dataItems().forEach((dik, vs) -> runsData.get(runKey)
+          .merge(dik, vs, (ovs, nvs) -> concatAndTrim(ovs, nvs, configuration.runDataHistorySize)));
       runsPlots.putIfAbsent(runKey, new LinkedHashMap<>());
-      update
-          .plotItems()
-          .forEach(
-              (pik, ps) ->
-                  runsPlots
-                      .get(runKey)
-                      .merge(
-                          pik,
-                          ps,
-                          (ovs, nvs) -> concatAndTrim(ovs, nvs, configuration.runPlotHistorySize)));
+      update.plotItems().forEach((pik, ps) -> runsPlots
+          .get(runKey)
+          .merge(pik, ps, (ovs, nvs) -> concatAndTrim(ovs, nvs, configuration.runPlotHistorySize)));
     }
   }
 
@@ -656,58 +618,54 @@ public class NetListenerServer extends ListLogHandler implements Runnable {
     }
     // adjust rectangles
     Rectangle all = new Rectangle(new Point(0, 0), new Point(size.getColumns(), size.getRows()));
-    Rectangle nR = all.splitVertically(configuration.runsSplit, configuration.logsSplit).get(0);
-    Rectangle runsR = all.splitVertically(configuration.runsSplit, configuration.logsSplit).get(1);
-    Rectangle logsR = all.splitVertically(configuration.runsSplit, configuration.logsSplit).get(2);
+    Rectangle nR = all.splitVertically(configuration.runsSplit, configuration.logsSplit)
+        .get(0);
+    Rectangle runsR = all.splitVertically(configuration.runsSplit, configuration.logsSplit)
+        .get(1);
+    Rectangle logsR = all.splitVertically(configuration.runsSplit, configuration.logsSplit)
+        .get(2);
     Rectangle nwR = nR.splitHorizontally(configuration.legendSplit).get(0);
     Rectangle legendR = nR.splitHorizontally(configuration.legendSplit).get(1);
-    Rectangle machinesR = nwR.splitVertically(configuration.machinesProcessesSplit).get(0);
-    Rectangle processesR = nwR.splitVertically(configuration.machinesProcessesSplit).get(1);
+    Rectangle machinesR =
+        nwR.splitVertically(configuration.machinesProcessesSplit).get(0);
+    Rectangle processesR =
+        nwR.splitVertically(configuration.machinesProcessesSplit).get(1);
     // draw structure
     DrawUtils.drawFrame(
         tg,
         runsR,
-        "Runs (%d) - Local time: %s"
-            .formatted(runsData.size(), COMPLETE_DATETIME_FORMAT.format(Instant.now())),
+        "Runs (%d) - Local time: %s".formatted(runsData.size(), COMPLETE_DATETIME_FORMAT.format(Instant.now())),
         FRAME_COLOR,
         FRAME_LABEL_COLOR);
     DrawUtils.drawFrame(tg, legendR, "Legend", FRAME_COLOR, FRAME_LABEL_COLOR);
     DrawUtils.drawFrame(tg, logsR, "Logs", FRAME_COLOR, FRAME_LABEL_COLOR);
     DrawUtils.drawFrame(
-        tg,
-        machinesR,
-        "Machines (%d)".formatted(machinesData.size()),
-        FRAME_COLOR,
-        FRAME_LABEL_COLOR);
+        tg, machinesR, "Machines (%d)".formatted(machinesData.size()), FRAME_COLOR, FRAME_LABEL_COLOR);
     DrawUtils.drawFrame(
-        tg,
-        processesR,
-        "Experiments (%d)".formatted(processesData.size()),
-        FRAME_COLOR,
-        FRAME_LABEL_COLOR);
+        tg, processesR, "Experiments (%d)".formatted(processesData.size()), FRAME_COLOR, FRAME_LABEL_COLOR);
     // compute and show legend
     r = legendR.inner(1);
     DrawUtils.clear(tg, r);
     record LegendItem(String collapsed, String name) {}
-    List<LegendItem> legendItems =
-        Stream.of(
-                runsData.values().stream()
-                    .map(Map::keySet)
-                    .flatMap(Set::stream)
-                    .map(Update.DataItemKey::name)
-                    .toList(),
-                runsPlots.values().stream()
-                    .map(Map::keySet)
-                    .flatMap(Set::stream)
-                    .map(pik -> List.of(pik.xName(), pik.yName()))
-                    .flatMap(List::stream)
-                    .toList())
-            .flatMap(List::stream)
-            .sorted()
-            .distinct()
-            .map(s -> new LegendItem(StringUtils.collapse(s), s))
-            .toList();
-    int shortLabelW = legendItems.stream().mapToInt(p -> p.collapsed().length()).max().orElse(0);
+    List<LegendItem> legendItems = Stream.of(
+            runsData.values().stream()
+                .map(Map::keySet)
+                .flatMap(Set::stream)
+                .map(Update.DataItemKey::name)
+                .toList(),
+            runsPlots.values().stream()
+                .map(Map::keySet)
+                .flatMap(Set::stream)
+                .map(pik -> List.of(pik.xName(), pik.yName()))
+                .flatMap(List::stream)
+                .toList())
+        .flatMap(List::stream)
+        .sorted()
+        .distinct()
+        .map(s -> new LegendItem(StringUtils.collapse(s), s))
+        .toList();
+    int shortLabelW =
+        legendItems.stream().mapToInt(p -> p.collapsed().length()).max().orElse(0);
     for (int i = 0; i < legendItems.size(); i = i + 1) {
       tg.setForegroundColor(DATA_LABEL_COLOR);
       DrawUtils.clipPut(tg, r, 0, i, legendItems.get(i).collapsed());
@@ -727,147 +685,123 @@ public class NetListenerServer extends ListLogHandler implements Runnable {
           DATETIME_FORMAT);
     }
     // compute and show machines
-    Table<Cell> machinesTable =
-        new ArrayTable<>(List.of("", "", "Progress", "Machine", "Cores", "Load"));
+    Table<Cell> machinesTable = new ArrayTable<>(List.of("", "", "Progress", "Machine", "Cores", "Load"));
     forEach(
         machinesData,
-        (i, mk, v) ->
-            machinesTable.addRow(
-                List.of(
-                    new ColoredStringCell(
-                        STATUS_STRING, machinesStatus.get(mk).status().getColor()),
-                    new StringCell("M%02d".formatted(i)),
-                    new StringCell(
-                        machinesProgress.containsKey(mk)
-                            ? progressPlot(
-                                machinesProgress.get(mk).lastProgress(), configuration.barLength)
-                            : EMPTY_CELL_CONTENT),
-                    new StringCell(mk.machineName()),
-                    new StringCell(last(v, MachineInfo::numberOfProcessors, "%2d")),
-                    new CompositeCell(
-                        List.of(
-                            new StringCell(last(v, MachineInfo::cpuLoad, "%5.2f")),
-                            trend(v, MachineInfo::cpuLoad).cell(),
-                            new StringCell(
-                                areaPlot(
-                                    v,
-                                    MachineInfo::cpuLoad,
-                                    v.lastKey() - configuration.machineHistorySeconds * 1000d,
-                                    configuration.areaPlotLength)))))),
+        (i, mk, v) -> machinesTable.addRow(List.of(
+            new ColoredStringCell(
+                STATUS_STRING, machinesStatus.get(mk).status().getColor()),
+            new StringCell("M%02d".formatted(i)),
+            new StringCell(
+                machinesProgress.containsKey(mk)
+                    ? progressPlot(machinesProgress.get(mk).lastProgress(), configuration.barLength)
+                    : EMPTY_CELL_CONTENT),
+            new StringCell(mk.machineName()),
+            new StringCell(last(v, MachineInfo::numberOfProcessors, "%2d")),
+            new CompositeCell(List.of(
+                new StringCell(last(v, MachineInfo::cpuLoad, "%5.2f")),
+                trend(v, MachineInfo::cpuLoad).cell(),
+                new StringCell(areaPlot(
+                    v,
+                    MachineInfo::cpuLoad,
+                    v.lastKey() - configuration.machineHistorySeconds * 1000d,
+                    configuration.areaPlotLength)))))),
         false);
     DrawUtils.drawTable(tg, machinesR.inner(1), machinesTable, DATA_LABEL_COLOR, DATA_COLOR);
     // compute and show processes
-    Table<Cell> processesTable =
-        new ArrayTable<>(
-            List.of("", "", "ETA", "Progress", "Process", "Mac.", "User", "Used mem.", "Max mem."));
+    Table<Cell> processesTable = new ArrayTable<>(
+        List.of("", "", "ETA", "Progress", "Process", "Mac.", "User", "Used mem.", "Max mem."));
     forEach(
         processesData,
-        (i, pk, v) ->
-            processesTable.addRow(
-                List.of(
-                    new ColoredStringCell(
-                        STATUS_STRING, processesStatus.get(pk).status().getColor()),
-                    new StringCell("P%02d".formatted(i)),
-                    new StringCell(
-                        processesProgress.containsKey(pk)
-                            ? eta(processesProgress.get(pk).eta())
-                            : EMPTY_CELL_CONTENT),
-                    new StringCell(
-                        processesProgress.containsKey(pk)
-                            ? progressPlot(
-                                processesProgress.get(pk).lastProgress(), configuration.barLength)
-                            : EMPTY_CELL_CONTENT),
-                    new StringCell(pk.processName()),
-                    new StringCell(
-                        "M%02d"
-                            .formatted(
-                                machinesData.keySet().stream().toList().indexOf(pk.machineKey()))),
-                    new StringCell(last(v, pi -> pi.processInfo().username(), "%s")),
-                    new CompositeCell(
-                        List.of(
-                            new StringCell(
-                                last(v, pi -> pi.processInfo().usedMemory() / 1024 / 1024, "%5d")),
-                            trend(v, pi -> pi.processInfo().usedMemory()).cell(),
-                            new StringCell(
-                                areaPlot(
-                                    v,
-                                    pi -> pi.processInfo().usedMemory(),
-                                    v.lastKey() - configuration.machineHistorySeconds * 1000d,
-                                    configuration.areaPlotLength)))),
-                    new CompositeCell(
-                        List.of(
-                            new StringCell(
-                                last(v, pi -> pi.processInfo().maxMemory() / 1024 / 1024, "%5d")),
-                            trend(v, pi -> pi.processInfo().maxMemory()).cell())))),
+        (i, pk, v) -> processesTable.addRow(List.of(
+            new ColoredStringCell(
+                STATUS_STRING, processesStatus.get(pk).status().getColor()),
+            new StringCell("P%02d".formatted(i)),
+            new StringCell(
+                processesProgress.containsKey(pk)
+                    ? eta(processesProgress.get(pk).eta())
+                    : EMPTY_CELL_CONTENT),
+            new StringCell(
+                processesProgress.containsKey(pk)
+                    ? progressPlot(
+                        processesProgress.get(pk).lastProgress(), configuration.barLength)
+                    : EMPTY_CELL_CONTENT),
+            new StringCell(pk.processName()),
+            new StringCell("M%02d"
+                .formatted(
+                    machinesData.keySet().stream().toList().indexOf(pk.machineKey()))),
+            new StringCell(last(v, pi -> pi.processInfo().username(), "%s")),
+            new CompositeCell(List.of(
+                new StringCell(last(v, pi -> pi.processInfo().usedMemory() / 1024 / 1024, "%5d")),
+                trend(v, pi -> pi.processInfo().usedMemory()).cell(),
+                new StringCell(areaPlot(
+                    v,
+                    pi -> pi.processInfo().usedMemory(),
+                    v.lastKey() - configuration.machineHistorySeconds * 1000d,
+                    configuration.areaPlotLength)))),
+            new CompositeCell(List.of(
+                new StringCell(last(v, pi -> pi.processInfo().maxMemory() / 1024 / 1024, "%5d")),
+                trend(v, pi -> pi.processInfo().maxMemory()).cell())))),
         false);
     DrawUtils.drawTable(tg, processesR.inner(1), processesTable, DATA_LABEL_COLOR, DATA_COLOR);
     // compute and show runs
     Table<Cell> runsTable;
     List<String> columns = new ArrayList<>(List.of("", "", "ETA", "Progress", "Proc."));
-    List<Update.DataItemKey> dataItemKeys =
-        runsData.values().stream().map(Map::keySet).flatMap(Collection::stream).distinct().toList();
+    List<Update.DataItemKey> dataItemKeys = runsData.values().stream()
+        .map(Map::keySet)
+        .flatMap(Collection::stream)
+        .distinct()
+        .toList();
     dataItemKeys.forEach(dik -> columns.add(StringUtils.collapse(dik.name())));
-    List<Update.PlotItemKey> plotItemKeys =
-        runsPlots.values().stream()
-            .map(Map::keySet)
-            .flatMap(Collection::stream)
-            .distinct()
-            .toList();
+    List<Update.PlotItemKey> plotItemKeys = runsPlots.values().stream()
+        .map(Map::keySet)
+        .flatMap(Collection::stream)
+        .distinct()
+        .toList();
     plotItemKeys.forEach(
-        pik ->
-            columns.add(
-                StringUtils.collapse(pik.xName()) + "/" + StringUtils.collapse(pik.yName())));
+        pik -> columns.add(StringUtils.collapse(pik.xName()) + "/" + StringUtils.collapse(pik.yName())));
     runsTable = new ArrayTable<>(columns);
     forEach(
         runsData,
         (i, rk, v) -> {
           List<Cell> row = new ArrayList<>();
-          row.add(
-              new ColoredStringCell(
-                  STATUS_STRING,
-                  (runsProgress.containsKey(rk) && runsProgress.get(rk).isRunning())
-                      ? TimeStatus.OK.getColor()
-                      : TimeStatus.MISSING.getColor()));
+          row.add(new ColoredStringCell(
+              STATUS_STRING,
+              (runsProgress.containsKey(rk)
+                      && runsProgress.get(rk).isRunning())
+                  ? TimeStatus.OK.getColor()
+                  : TimeStatus.MISSING.getColor()));
           row.add(new StringCell("R%03d".formatted(rk.runIndex())));
-          row.add(
-              new StringCell(
-                  runsProgress.containsKey(rk)
-                      ? eta(runsProgress.get(rk).eta())
-                      : EMPTY_CELL_CONTENT));
-          row.add(
-              new StringCell(
-                  runsProgress.containsKey(rk)
-                      ? progressPlot(runsProgress.get(rk).lastProgress(), configuration.barLength)
-                      : EMPTY_CELL_CONTENT));
-          row.add(
-              new StringCell(
-                  "P%02d"
-                      .formatted(
-                          processesData.keySet().stream().toList().indexOf(rk.processKey()))));
-          dataItemKeys.forEach(
-              dik -> {
-                List<?> values = v.get(dik);
-                if (values != null && !values.isEmpty()) {
-                  row.add(new StringCell(dik.format().formatted(values.get(values.size() - 1))));
-                } else {
-                  row.add(new ColoredStringCell(EMPTY_CELL_CONTENT, MISSING_DATA_COLOR));
-                }
-              });
-          plotItemKeys.forEach(
-              pik -> {
-                String s = "";
-                if (runsPlots.containsKey(rk)) {
-                  List<Update.PlotPoint> ps = runsPlots.get(rk).get(pik);
-                  if (ps != null) {
-                    SortedMap<Double, Double> data = new TreeMap<>();
-                    ps.forEach(p -> data.put(p.x(), p.y()));
-                    s =
-                        TextPlotter.areaPlot(
-                            data, pik.minX(), pik.maxX(), configuration.areaPlotLength());
-                  }
-                }
-                row.add(new StringCell(s));
-              });
+          row.add(new StringCell(
+              runsProgress.containsKey(rk)
+                  ? eta(runsProgress.get(rk).eta())
+                  : EMPTY_CELL_CONTENT));
+          row.add(new StringCell(
+              runsProgress.containsKey(rk)
+                  ? progressPlot(runsProgress.get(rk).lastProgress(), configuration.barLength)
+                  : EMPTY_CELL_CONTENT));
+          row.add(new StringCell("P%02d"
+              .formatted(processesData.keySet().stream().toList().indexOf(rk.processKey()))));
+          dataItemKeys.forEach(dik -> {
+            List<?> values = v.get(dik);
+            if (values != null && !values.isEmpty()) {
+              row.add(new StringCell(dik.format().formatted(values.get(values.size() - 1))));
+            } else {
+              row.add(new ColoredStringCell(EMPTY_CELL_CONTENT, MISSING_DATA_COLOR));
+            }
+          });
+          plotItemKeys.forEach(pik -> {
+            String s = "";
+            if (runsPlots.containsKey(rk)) {
+              List<Update.PlotPoint> ps = runsPlots.get(rk).get(pik);
+              if (ps != null) {
+                SortedMap<Double, Double> data = new TreeMap<>();
+                ps.forEach(p -> data.put(p.x(), p.y()));
+                s = TextPlotter.areaPlot(data, pik.minX(), pik.maxX(), configuration.areaPlotLength());
+              }
+            }
+            row.add(new StringCell(s));
+          });
           runsTable.addRow(row);
         },
         true);

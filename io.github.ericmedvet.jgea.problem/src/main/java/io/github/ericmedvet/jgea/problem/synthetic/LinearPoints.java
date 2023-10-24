@@ -27,29 +27,26 @@ import java.util.List;
 import java.util.function.Function;
 
 public class LinearPoints
-    implements ComparableQualityBasedProblem<List<Double>, Double>,
-        ProblemWithExampleSolution<List<Double>> {
+    implements ComparableQualityBasedProblem<List<Double>, Double>, ProblemWithExampleSolution<List<Double>> {
 
   private final int p;
   private final Function<List<Double>, Double> fitnessFunction;
 
   public LinearPoints(int p) {
     this.p = p;
-    fitnessFunction =
-        vs -> {
-          if (vs.size() != p) {
-            throw new IllegalArgumentException(
-                "Wrong input size: %d expected, %d found".formatted(p, vs.size()));
-          }
-          double m = (vs.get(vs.size() - 1) - vs.get(0)) / (double) vs.size();
-          double q = vs.get(0);
-          double sumOfSquaredErrors = 0;
-          for (int i = 0; i < vs.size(); i++) {
-            double error = vs.get(i) - (m * (double) i + q);
-            sumOfSquaredErrors = sumOfSquaredErrors + error * error;
-          }
-          return sumOfSquaredErrors / (double) vs.size();
-        };
+    fitnessFunction = vs -> {
+      if (vs.size() != p) {
+        throw new IllegalArgumentException("Wrong input size: %d expected, %d found".formatted(p, vs.size()));
+      }
+      double m = (vs.get(vs.size() - 1) - vs.get(0)) / (double) vs.size();
+      double q = vs.get(0);
+      double sumOfSquaredErrors = 0;
+      for (int i = 0; i < vs.size(); i++) {
+        double error = vs.get(i) - (m * (double) i + q);
+        sumOfSquaredErrors = sumOfSquaredErrors + error * error;
+      }
+      return sumOfSquaredErrors / (double) vs.size();
+    };
   }
 
   @Override

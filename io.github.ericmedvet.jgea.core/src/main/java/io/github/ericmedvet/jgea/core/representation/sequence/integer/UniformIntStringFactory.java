@@ -38,7 +38,9 @@ public class UniformIntStringFactory implements IndependentFactory<IntString> {
   @Override
   public IntString build(RandomGenerator random) {
     return new IntString(
-        IntStream.range(0, size).mapToObj(i -> random.nextInt(lowerBound, upperBound)).toList(),
+        IntStream.range(0, size)
+            .mapToObj(i -> random.nextInt(lowerBound, upperBound))
+            .toList(),
         lowerBound,
         upperBound);
   }

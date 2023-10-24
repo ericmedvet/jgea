@@ -30,8 +30,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class BooleanFunctionFitness
-    extends ListCaseBasedFitness<List<Tree<Element>>, boolean[], Boolean, Double> {
+public class BooleanFunctionFitness extends ListCaseBasedFitness<List<Tree<Element>>, boolean[], Boolean, Double> {
 
   public BooleanFunctionFitness(TargetFunction targetFunction, List<boolean[]> observations) {
     super(observations, new Error(targetFunction), new ErrorRate());
@@ -40,8 +39,7 @@ public class BooleanFunctionFitness
   public interface TargetFunction extends Function<boolean[], boolean[]> {
     String[] varNames();
 
-    static TargetFunction from(
-        final Function<boolean[], boolean[]> function, final String... varNames) {
+    static TargetFunction from(final Function<boolean[], boolean[]> function, final String... varNames) {
       return new TargetFunction() {
         @Override
         public boolean[] apply(boolean[] values) {

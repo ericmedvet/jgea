@@ -41,8 +41,14 @@ public class SameRootSubtreeCrossover<N> implements Crossover<Tree<N>> {
     List<Tree<N>> subtrees2 = parent2.topSubtrees();
     Set<N> roots = subtrees1.stream().map(Tree::content).collect(Collectors.toSet());
     roots.retainAll(subtrees1.stream().map(Tree::content).collect(Collectors.toSet()));
-    subtrees1 = subtrees1.stream().filter(t -> roots.contains(t.content())).distinct().toList();
-    subtrees2 = subtrees2.stream().filter(t -> roots.contains(t.content())).distinct().toList();
+    subtrees1 = subtrees1.stream()
+        .filter(t -> roots.contains(t.content()))
+        .distinct()
+        .toList();
+    subtrees2 = subtrees2.stream()
+        .filter(t -> roots.contains(t.content()))
+        .distinct()
+        .toList();
     subtrees1 = Misc.shuffle(subtrees1, random);
     subtrees2 = Misc.shuffle(subtrees2, random);
     for (Tree<N> subtree1 : subtrees1) {

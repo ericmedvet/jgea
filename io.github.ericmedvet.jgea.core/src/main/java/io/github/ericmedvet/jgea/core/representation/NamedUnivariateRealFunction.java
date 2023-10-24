@@ -26,8 +26,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public interface NamedUnivariateRealFunction
-    extends NamedMultivariateRealFunction, UnivariateRealFunction {
+public interface NamedUnivariateRealFunction extends NamedMultivariateRealFunction, UnivariateRealFunction {
   double computeAsDouble(Map<String, Double> input);
 
   String yVarName();
@@ -57,8 +56,7 @@ public interface NamedUnivariateRealFunction
     };
   }
 
-  static NamedUnivariateRealFunction from(
-      UnivariateRealFunction urf, List<String> xVarNames, String yVarName) {
+  static NamedUnivariateRealFunction from(UnivariateRealFunction urf, List<String> xVarNames, String yVarName) {
     return new ComposedNamedUnivariateRealFunction(urf, xVarNames, yVarName);
   }
 
@@ -80,14 +78,12 @@ public interface NamedUnivariateRealFunction
   @Override
   default double[] compute(double... xs) {
     if (xs.length != xVarNames().size()) {
-      throw new IllegalArgumentException(
-          "Wrong number of inputs: %d expected, %d found".formatted(xVarNames().size(), xs.length));
+      throw new IllegalArgumentException("Wrong number of inputs: %d expected, %d found"
+          .formatted(xVarNames().size(), xs.length));
     }
-    Map<String, Double> output =
-        compute(
-            IntStream.range(0, xVarNames().size())
-                .mapToObj(i -> Map.entry(xVarNames().get(i), xs[i]))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+    Map<String, Double> output = compute(IntStream.range(0, xVarNames().size())
+        .mapToObj(i -> Map.entry(xVarNames().get(i), xs[i]))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
     return yVarNames().stream().mapToDouble(output::get).toArray();
   }
 

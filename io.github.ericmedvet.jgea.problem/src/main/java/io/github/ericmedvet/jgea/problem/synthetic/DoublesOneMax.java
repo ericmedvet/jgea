@@ -27,22 +27,19 @@ import java.util.List;
 import java.util.function.Function;
 
 public class DoublesOneMax
-    implements ComparableQualityBasedProblem<List<Double>, Double>,
-        ProblemWithExampleSolution<List<Double>> {
+    implements ComparableQualityBasedProblem<List<Double>, Double>, ProblemWithExampleSolution<List<Double>> {
 
   private final int p;
   private final Function<List<Double>, Double> fitnessFunction;
 
   public DoublesOneMax(int p) {
     this.p = p;
-    fitnessFunction =
-        vs -> {
-          if (vs.size() != p) {
-            throw new IllegalArgumentException(
-                "Wrong input size: %d expected, %d found".formatted(p, vs.size()));
-          }
-          return vs.stream().mapToDouble(Math::abs).sum() / (double) vs.size();
-        };
+    fitnessFunction = vs -> {
+      if (vs.size() != p) {
+        throw new IllegalArgumentException("Wrong input size: %d expected, %d found".formatted(p, vs.size()));
+      }
+      return vs.stream().mapToDouble(Math::abs).sum() / (double) vs.size();
+    };
   }
 
   @Override

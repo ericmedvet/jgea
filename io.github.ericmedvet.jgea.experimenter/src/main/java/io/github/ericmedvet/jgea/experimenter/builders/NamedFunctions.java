@@ -61,26 +61,23 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q>
-      NamedFunction<POCPopulationState<G, S, Q>, Collection<Individual<G, S, Q>>> all() {
+  public static <G, S, Q> NamedFunction<POCPopulationState<G, S, Q>, Collection<Individual<G, S, Q>>> all() {
     return NamedFunction.build("all", s -> s.getPopulation().all());
   }
 
   @SuppressWarnings("unused")
   public static <X> NamedFunction<X, String> base64(@Param("f") NamedFunction<X, Serializable> f) {
-    return NamedFunction.build(
-        c("base64", f.getName()),
-        x -> {
-          try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-              ObjectOutputStream oos = new ObjectOutputStream(baos)) {
-            oos.writeObject(f.apply(x));
-            oos.flush();
-            return Base64.getEncoder().encodeToString(baos.toByteArray());
-          } catch (Throwable t) {
-            L.warning("Cannot serialize %s due to %s".formatted(f.getName(), t));
-            return "not-serializable";
-          }
-        });
+    return NamedFunction.build(c("base64", f.getName()), x -> {
+      try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+          ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+        oos.writeObject(f.apply(x));
+        oos.flush();
+        return Base64.getEncoder().encodeToString(baos.toByteArray());
+      } catch (Throwable t) {
+        L.warning("Cannot serialize %s due to %s".formatted(f.getName(), t));
+        return "not-serializable";
+      }
+    });
   }
 
   @SuppressWarnings("unused")
@@ -95,9 +92,9 @@ public class NamedFunctions {
     return NamedFunction.build(
         c(function.getName(), "fitness", "best"),
         s.equals("%s") ? function.getFormat() : s,
-        state ->
-            function.apply(
-                Objects.requireNonNull(Misc.first(state.getPopulation().firsts())).fitness()));
+        state -> function.apply(
+            Objects.requireNonNull(Misc.first(state.getPopulation().firsts()))
+                .fitness()));
   }
 
   @SuppressWarnings("unused")
@@ -132,19 +129,14 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <X> NamedFunction<X, Double> expr(
-      @Param("f1") NamedFunction<X, Number> f1,
-      @Param("f2") NamedFunction<X, Number> f2,
-      @Param("op") Op op) {
+      @Param("f1") NamedFunction<X, Number> f1, @Param("f2") NamedFunction<X, Number> f2, @Param("op") Op op) {
     return NamedFunction.build(
-        "%s%s%s".formatted(f1.getName(), op.rendered, f2.getName()),
-        f1.getFormat(),
-        x ->
-            switch (op) {
-              case PLUS -> f1.apply(x).doubleValue() + f2.apply(x).doubleValue();
-              case MINUS -> f1.apply(x).doubleValue() - f2.apply(x).doubleValue();
-              case PROD -> f1.apply(x).doubleValue() * f2.apply(x).doubleValue();
-              case DIV -> f1.apply(x).doubleValue() / f2.apply(x).doubleValue();
-            });
+        "%s%s%s".formatted(f1.getName(), op.rendered, f2.getName()), f1.getFormat(), x -> switch (op) {
+          case PLUS -> f1.apply(x).doubleValue() + f2.apply(x).doubleValue();
+          case MINUS -> f1.apply(x).doubleValue() - f2.apply(x).doubleValue();
+          case PROD -> f1.apply(x).doubleValue() * f2.apply(x).doubleValue();
+          case DIV -> f1.apply(x).doubleValue() / f2.apply(x).doubleValue();
+        });
   }
 
   @SuppressWarnings("unused")
@@ -162,18 +154,17 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q>
-      NamedFunction<POCPopulationState<G, S, Q>, Collection<Individual<G, S, Q>>> firsts() {
+  public static <G, S, Q> NamedFunction<POCPopulationState<G, S, Q>, Collection<Individual<G, S, Q>>> firsts() {
     return NamedFunction.build("firsts", s -> s.getPopulation().firsts());
   }
 
   @SuppressWarnings("unused")
   public static <X, F> NamedFunction<X, F> fitness(
-      @Param(value = "individual", dNPM = "ea.nf.identity()")
-          NamedFunction<X, Individual<?, ?, F>> individualF,
+      @Param(value = "individual", dNPM = "ea.nf.identity()") NamedFunction<X, Individual<?, ?, F>> individualF,
       @Param(value = "s", dS = "%s") String s) {
-    return NamedFunction.build(
-        c("fitness", individualF.getName()), s, x -> individualF.apply(x).quality());
+    return NamedFunction.build(c("fitness", individualF.getName()), s, x -> individualF
+        .apply(x)
+        .quality());
   }
 
   @SuppressWarnings("unused")
@@ -184,25 +175,25 @@ public class NamedFunctions {
         c("hist", "each[%s]".formatted(c(function.getName(), "fitness")), "all"),
         "%" + nBins + "." + nBins + "s",
         state -> {
-          List<Number> numbers =
-              state.getPopulation().all().stream().map(i -> function.apply(i.fitness())).toList();
+          List<Number> numbers = state.getPopulation().all().stream()
+              .map(i -> function.apply(i.fitness()))
+              .toList();
           return TextPlotter.histogram(numbers, nBins);
         });
   }
 
   @SuppressWarnings("unused")
-  public static <T, R> NamedFunction<T, R> formatted(
-      @Param("s") String s, @Param("f") NamedFunction<T, R> f) {
+  public static <T, R> NamedFunction<T, R> formatted(@Param("s") String s, @Param("f") NamedFunction<T, R> f) {
     return f.reformat(s);
   }
 
   @SuppressWarnings("unused")
   public static <X, G> NamedFunction<X, G> genotype(
-      @Param(value = "individual", dNPM = "ea.nf.identity()")
-          NamedFunction<X, Individual<G, ?, ?>> individualF,
+      @Param(value = "individual", dNPM = "ea.nf.identity()") NamedFunction<X, Individual<G, ?, ?>> individualF,
       @Param(value = "s", dS = "%s") String s) {
-    return NamedFunction.build(
-        c("genotype", individualF.getName()), s, x -> individualF.apply(x).genotype());
+    return NamedFunction.build(c("genotype", individualF.getName()), s, x -> individualF
+        .apply(x)
+        .genotype());
   }
 
   @SuppressWarnings("unused")
@@ -213,54 +204,45 @@ public class NamedFunctions {
       @Param(value = "rowSeparator", dS = ";") String rowSeparator,
       @Param(value = "emptyCell", dS = "·") String emptyCell) {
     final String finalCellSeparator = cellSeparator == null ? "" : cellSeparator;
-    return NamedFunction.build(
-        c("grid", f.getName()),
-        s,
-        t -> {
-          Grid<Object> g = f.apply(t);
-          return IntStream.range(0, g.h())
-              .mapToObj(
-                  y ->
-                      IntStream.range(0, g.w())
-                          .mapToObj(x -> g.get(x, y) == null ? emptyCell : g.get(x, y).toString())
-                          .collect(Collectors.joining(finalCellSeparator)))
-              .collect(Collectors.joining(rowSeparator));
-        });
+    return NamedFunction.build(c("grid", f.getName()), s, t -> {
+      Grid<Object> g = f.apply(t);
+      return IntStream.range(0, g.h())
+          .mapToObj(y -> IntStream.range(0, g.w())
+              .mapToObj(x -> g.get(x, y) == null
+                  ? emptyCell
+                  : g.get(x, y).toString())
+              .collect(Collectors.joining(finalCellSeparator)))
+          .collect(Collectors.joining(rowSeparator));
+    });
   }
 
   @SuppressWarnings("unused")
   public static <X> NamedFunction<X, Integer> gridCount(
       @Param("f") NamedFunction<X, Grid<?>> f, @Param(value = "s", dS = "%2d") String s) {
-    return NamedFunction.build(
-        c("grid.count", f.getName()), s, x -> GridUtils.count(f.apply(x), Objects::nonNull));
+    return NamedFunction.build(c("grid.count", f.getName()), s, x -> GridUtils.count(f.apply(x), Objects::nonNull));
   }
 
   @SuppressWarnings("unused")
   public static <X> NamedFunction<X, Integer> gridH(
       @Param("f") NamedFunction<X, Grid<?>> f, @Param(value = "s", dS = "%2d") String s) {
-    return NamedFunction.build(
-        c("grid.h", f.getName()), s, x -> GridUtils.h(f.apply(x), Objects::nonNull));
+    return NamedFunction.build(c("grid.h", f.getName()), s, x -> GridUtils.h(f.apply(x), Objects::nonNull));
   }
 
   @SuppressWarnings("unused")
   public static <X> NamedFunction<X, Integer> gridW(
       @Param("f") NamedFunction<X, Grid<?>> f, @Param(value = "s", dS = "%2d") String s) {
-    return NamedFunction.build(
-        c("grid.w", f.getName()), s, x -> GridUtils.w(f.apply(x), Objects::nonNull));
+    return NamedFunction.build(c("grid.w", f.getName()), s, x -> GridUtils.w(f.apply(x), Objects::nonNull));
   }
 
   @SuppressWarnings("unused")
   public static <X> NamedFunction<X, String> hist(
       @Param("collection") NamedFunction<X, Collection<Number>> collectionF,
       @Param(value = "nBins", dI = 8) int nBins) {
-    return NamedFunction.build(
-        c("hist", collectionF.getName()),
-        "%" + nBins + "." + nBins + "s",
-        x -> {
-          Collection<Number> collection = collectionF.apply(x);
-          return TextPlotter.histogram(
-              collection instanceof List<Number> list ? list : new ArrayList<>(collection), nBins);
-        });
+    return NamedFunction.build(c("hist", collectionF.getName()), "%" + nBins + "." + nBins + "s", x -> {
+      Collection<Number> collection = collectionF.apply(x);
+      return TextPlotter.histogram(
+          collection instanceof List<Number> list ? list : new ArrayList<>(collection), nBins);
+    });
   }
 
   @SuppressWarnings("unused")
@@ -274,42 +256,32 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q>
-      NamedFunction<POCPopulationState<G, S, Q>, Collection<Individual<G, S, Q>>> lasts() {
+  public static <G, S, Q> NamedFunction<POCPopulationState<G, S, Q>, Collection<Individual<G, S, Q>>> lasts() {
     return NamedFunction.build("lasts", s -> s.getPopulation().lasts());
   }
 
   @SuppressWarnings("unused")
   public static <X, T extends Comparable<T>> NamedFunction<X, T> max(
-      @Param("collection") NamedFunction<X, Collection<T>> collectionF,
-      @Param(value = "s", dS = "%s") String s) {
-    return NamedFunction.build(
-        c("max", collectionF.getName()),
-        s,
-        x -> {
-          List<T> collection = collectionF.apply(x).stream().sorted().toList();
-          return collectionF.apply(x).stream().max(Comparable::compareTo).orElse(null);
-        });
+      @Param("collection") NamedFunction<X, Collection<T>> collectionF, @Param(value = "s", dS = "%s") String s) {
+    return NamedFunction.build(c("max", collectionF.getName()), s, x -> {
+      List<T> collection = collectionF.apply(x).stream().sorted().toList();
+      return collectionF.apply(x).stream().max(Comparable::compareTo).orElse(null);
+    });
   }
 
   @SuppressWarnings("unused")
   public static <X, T extends Comparable<T>> NamedFunction<X, T> median(
-      @Param("collection") NamedFunction<X, Collection<T>> collectionF,
-      @Param(value = "s", dS = "%s") String s) {
+      @Param("collection") NamedFunction<X, Collection<T>> collectionF, @Param(value = "s", dS = "%s") String s) {
     return percentile(collectionF, 0.5, s);
   }
 
   @SuppressWarnings("unused")
   public static <X, T extends Comparable<T>> NamedFunction<X, T> min(
-      @Param("collection") NamedFunction<X, Collection<T>> collectionF,
-      @Param(value = "s", dS = "%s") String s) {
-    return NamedFunction.build(
-        c("min", collectionF.getName()),
-        s,
-        x -> {
-          List<T> collection = collectionF.apply(x).stream().sorted().toList();
-          return collectionF.apply(x).stream().min(Comparable::compareTo).orElse(null);
-        });
+      @Param("collection") NamedFunction<X, Collection<T>> collectionF, @Param(value = "s", dS = "%s") String s) {
+    return NamedFunction.build(c("min", collectionF.getName()), s, x -> {
+      List<T> collection = collectionF.apply(x).stream().sorted().toList();
+      return collectionF.apply(x).stream().min(Comparable::compareTo).orElse(null);
+    });
   }
 
   @SuppressWarnings("unused")
@@ -317,15 +289,11 @@ public class NamedFunctions {
       @Param("collection") NamedFunction<X, Collection<T>> collectionF,
       @Param("p") double p,
       @Param(value = "s", dS = "%s") String s) {
-    return NamedFunction.build(
-        c("perc[%2d]".formatted((int) Math.round(p * 100)), collectionF.getName()),
-        s,
-        x -> {
-          List<T> collection = collectionF.apply(x).stream().sorted().toList();
-          int i =
-              (int) Math.max(Math.min(((double) collection.size()) * p, collection.size() - 1), 0);
-          return collection.get(i);
-        });
+    return NamedFunction.build(c("perc[%2d]".formatted((int) Math.round(p * 100)), collectionF.getName()), s, x -> {
+      List<T> collection = collectionF.apply(x).stream().sorted().toList();
+      int i = (int) Math.max(Math.min(((double) collection.size()) * p, collection.size() - 1), 0);
+      return collection.get(i);
+    });
   }
 
   @SuppressWarnings("unused")
@@ -344,22 +312,19 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <X, S> NamedFunction<X, S> solution(
-      @Param(value = "individual", dNPM = "ea.nf.identity()")
-          NamedFunction<X, Individual<?, S, ?>> individualF,
+      @Param(value = "individual", dNPM = "ea.nf.identity()") NamedFunction<X, Individual<?, S, ?>> individualF,
       @Param(value = "s", dS = "%s") String s) {
-    return NamedFunction.build(
-        c("solution", individualF.getName()), s, x -> individualF.apply(x).solution());
+    return NamedFunction.build(c("solution", individualF.getName()), s, x -> individualF
+        .apply(x)
+        .solution());
   }
 
   @SuppressWarnings("unused")
   public static <X, T> NamedFunction<X, Double> uniqueness(
       @Param("collection") NamedFunction<X, Collection<T>> collectionF) {
-    return NamedFunction.build(
-        c("uniqueness", collectionF.getName()),
-        "%4.2f",
-        x -> {
-          Collection<T> collection = collectionF.apply(x);
-          return ((double) (new HashSet<>(collection).size())) / ((double) collection.size());
-        });
+    return NamedFunction.build(c("uniqueness", collectionF.getName()), "%4.2f", x -> {
+      Collection<T> collection = collectionF.apply(x);
+      return ((double) (new HashSet<>(collection).size())) / ((double) collection.size());
+    });
   }
 }

@@ -28,24 +28,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public class StandardGridDeveloper<T>
-    implements Developer<T, Grid<T>, GridGrammar.ReferencedGrid<T>> {
+public class StandardGridDeveloper<T> implements Developer<T, Grid<T>, GridGrammar.ReferencedGrid<T>> {
   private final GridGrammar<T> grammar;
   private final boolean overwriting;
   private final Comparator<Grid.Entry<Decorated>> comparator;
 
-  public StandardGridDeveloper(
-      GridGrammar<T> grammar, boolean overwriting, List<SortingCriterion> criteria) {
+  public StandardGridDeveloper(GridGrammar<T> grammar, boolean overwriting, List<SortingCriterion> criteria) {
     this.grammar = grammar;
     this.overwriting = overwriting;
     if (criteria.isEmpty()) {
       throw new IllegalArgumentException("Empty list of sorting criteria");
     }
-    comparator =
-        criteria.stream()
-            .map(SortingCriterion::getComparator)
-            .reduce(Comparator::thenComparing)
-            .orElseThrow();
+    comparator = criteria.stream()
+        .map(SortingCriterion::getComparator)
+        .reduce(Comparator::thenComparing)
+        .orElseThrow();
   }
 
   public enum SortingCriterion {
@@ -79,45 +76,37 @@ public class StandardGridDeveloper<T>
     return n;
   }
 
-  private static boolean isWriteable(
-      Grid<?> original, GridGrammar.ReferencedGrid<?> replacement, Grid.Key k) {
+  private static boolean isWriteable(Grid<?> original, GridGrammar.ReferencedGrid<?> replacement, Grid.Key k) {
     return replacement.grid().entries().stream()
         .filter(e -> e.value() != null && !e.key().equals(replacement.referenceKey()))
-        .noneMatch(
-            e -> {
-              Grid.Key tK =
-                  e.key()
-                      .translated(k.x(), k.y())
-                      .translated(-replacement.referenceKey().x(), -replacement.referenceKey().y());
-              if (!original.isValid(tK)) {
-                return false;
-              }
-              return !original.isValid(tK) || original.get(tK) != null;
-            });
+        .noneMatch(e -> {
+          Grid.Key tK = e.key()
+              .translated(k.x(), k.y())
+              .translated(
+                  -replacement.referenceKey().x(),
+                  -replacement.referenceKey().y());
+          if (!original.isValid(tK)) {
+            return false;
+          }
+          return !original.isValid(tK) || original.get(tK) != null;
+        });
   }
 
   private static <T> Grid<Aged<T>> modify(
-      Grid<Aged<T>> original,
-      GridGrammar.ReferencedGrid<T> replacement,
-      Grid.Key k,
-      int iteration) {
-    List<Grid.Entry<T>> repEntries =
-        replacement.grid().entries().stream()
-            .map(
-                e ->
-                    new Grid.Entry<>(
-                        e.key()
-                            .translated(k.x(), k.y())
-                            .translated(
-                                -replacement.referenceKey().x(), -replacement.referenceKey().y()),
-                        e.value()))
-            .toList();
+      Grid<Aged<T>> original, GridGrammar.ReferencedGrid<T> replacement, Grid.Key k, int iteration) {
+    List<Grid.Entry<T>> repEntries = replacement.grid().entries().stream()
+        .map(e -> new Grid.Entry<>(
+            e.key()
+                .translated(k.x(), k.y())
+                .translated(
+                    -replacement.referenceKey().x(),
+                    -replacement.referenceKey().y()),
+            e.value()))
+        .toList();
     int minX = Math.min(repEntries.stream().mapToInt(e -> e.key().x()).min().orElse(0), 0);
-    int maxX =
-        Math.max(repEntries.stream().mapToInt(e -> e.key().x()).max().orElse(0), original.w() - 1);
+    int maxX = Math.max(repEntries.stream().mapToInt(e -> e.key().x()).max().orElse(0), original.w() - 1);
     int minY = Math.min(repEntries.stream().mapToInt(e -> e.key().y()).min().orElse(0), 0);
-    int maxY =
-        Math.max(repEntries.stream().mapToInt(e -> e.key().y()).max().orElse(0), original.h() - 1);
+    int maxY = Math.max(repEntries.stream().mapToInt(e -> e.key().y()).max().orElse(0), original.h() - 1);
     if (minX >= 0 && maxX < original.w() && minY >= 0 && maxY < original.h()) {
       // just write elements on the original grid
       repEntries.stream()
@@ -130,8 +119,7 @@ public class StandardGridDeveloper<T>
     original.entries().forEach(e -> enlarged.set(e.key().translated(-minX, -minY), e.value()));
     repEntries.stream()
         .filter(e -> e.value() != null)
-        .forEach(
-            e -> enlarged.set(e.key().translated(-minX, -minY), new Aged<>(iteration, e.value())));
+        .forEach(e -> enlarged.set(e.key().translated(-minX, -minY), new Aged<>(iteration, e.value())));
     return enlarged;
   }
 
@@ -143,15 +131,12 @@ public class StandardGridDeveloper<T>
     while (true) {
       // find the candidates
       final Grid<Aged<T>> finalPolyomino = polyomino;
-      List<Grid.Entry<Decorated>> candidates =
-          polyomino.entries().stream()
-              .filter(e -> e.value() != null && nonTerminalSymbols.contains(e.value().t()))
-              .map(
-                  e ->
-                      new Grid.Entry<>(
-                          e.key(),
-                          new Decorated(e.value().iteration, freeSides(finalPolyomino, e.key()))))
-              .toList();
+      List<Grid.Entry<Decorated>> candidates = polyomino.entries().stream()
+          .filter(e -> e.value() != null
+              && nonTerminalSymbols.contains(e.value().t()))
+          .map(e -> new Grid.Entry<>(
+              e.key(), new Decorated(e.value().iteration, freeSides(finalPolyomino, e.key()))))
+          .toList();
       // check if no non-terminal symbols
       if (candidates.isEmpty()) {
         return Optional.of(polyomino.map(a -> a == null ? null : a.t()));

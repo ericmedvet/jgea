@@ -43,8 +43,7 @@ public class MapperUtils {
           break;
         case WEIGHT_R:
           outputList.add(
-              (double) ((BitString) repeatedArg).nOfOnes()
-                  / (double) ((BitString) repeatedArg).size());
+              (double) ((BitString) repeatedArg).nOfOnes() / (double) ((BitString) repeatedArg).size());
           break;
         case INT:
           outputList.add((double) ((BitString) repeatedArg).toInt());
@@ -64,11 +63,7 @@ public class MapperUtils {
   }
 
   public static Object compute(
-      Tree<Element> tree,
-      BitString g,
-      List<Double> values,
-      int depth,
-      AtomicInteger globalCounter) {
+      Tree<Element> tree, BitString g, List<Double> values, int depth, AtomicInteger globalCounter) {
     Object result = null;
     if (tree.content() instanceof Element.Variable) {
       switch (((Element.Variable) tree.content())) {
@@ -91,125 +86,99 @@ public class MapperUtils {
     } else if (tree.content() instanceof Element.MapperFunction) {
       switch (((Element.MapperFunction) tree.content())) {
         case SIZE:
-          result =
-              (double) ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).size();
+          result = (double) ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).size();
           break;
         case WEIGHT:
-          result =
-              (double)
-                  ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).nOfOnes();
+          result = (double) ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).nOfOnes();
           break;
         case WEIGHT_R:
-          BitString bitsGenotype =
-              (BitString) compute(tree.child(0), g, values, depth, globalCounter);
+          BitString bitsGenotype = (BitString) compute(tree.child(0), g, values, depth, globalCounter);
           result = (double) bitsGenotype.nOfOnes() / (double) bitsGenotype.size();
           break;
         case INT:
-          result =
-              (double)
-                  ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).toInt();
+          result = (double) ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).toInt();
           break;
         case ADD:
-          result =
-              ((Double) compute(tree.child(0), g, values, depth, globalCounter)
-                  + (Double) compute(tree.child(1), g, values, depth, globalCounter));
+          result = ((Double) compute(tree.child(0), g, values, depth, globalCounter)
+              + (Double) compute(tree.child(1), g, values, depth, globalCounter));
           break;
         case SUBTRACT:
-          result =
-              ((Double) compute(tree.child(0), g, values, depth, globalCounter)
-                  - (Double) compute(tree.child(1), g, values, depth, globalCounter));
+          result = ((Double) compute(tree.child(0), g, values, depth, globalCounter)
+              - (Double) compute(tree.child(1), g, values, depth, globalCounter));
           break;
         case MULT:
-          result =
-              ((Double) compute(tree.child(0), g, values, depth, globalCounter)
-                  * (Double) compute(tree.child(1), g, values, depth, globalCounter));
+          result = ((Double) compute(tree.child(0), g, values, depth, globalCounter)
+              * (Double) compute(tree.child(1), g, values, depth, globalCounter));
           break;
         case DIVIDE:
           result =
-              protectedDivision(
-                  (Double) compute(tree.child(0), g, values, depth, globalCounter),
-                  (Double) compute(tree.child(1), g, values, depth, globalCounter));
+              protectedDivision((Double) compute(tree.child(0), g, values, depth, globalCounter), (Double)
+                  compute(tree.child(1), g, values, depth, globalCounter));
           break;
         case REMAINDER:
-          result =
-              protectedRemainder(
-                  (Double) compute(tree.child(0), g, values, depth, globalCounter),
-                  (Double) compute(tree.child(1), g, values, depth, globalCounter));
+          result = protectedRemainder(
+              (Double) compute(tree.child(0), g, values, depth, globalCounter),
+              (Double) compute(tree.child(1), g, values, depth, globalCounter));
           break;
         case LENGTH:
           result = (double) ((List) compute(tree.child(0), g, values, depth, globalCounter)).size();
           break;
         case MAX_INDEX:
-          result =
-              (double)
-                  maxIndex(
-                      (List<Double>) compute(tree.child(0), g, values, depth, globalCounter), 1d);
+          result = (double)
+              maxIndex((List<Double>) compute(tree.child(0), g, values, depth, globalCounter), 1d);
           break;
         case MIN_INDEX:
-          result =
-              (double)
-                  maxIndex(
-                      (List<Double>) compute(tree.child(0), g, values, depth, globalCounter), -1d);
+          result = (double)
+              maxIndex((List<Double>) compute(tree.child(0), g, values, depth, globalCounter), -1d);
           break;
         case GET:
-          result =
-              getFromList(
-                  (List) compute(tree.child(0), g, values, depth, globalCounter),
-                  ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue());
+          result = getFromList(
+              (List) compute(tree.child(0), g, values, depth, globalCounter),
+              ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue());
           break;
         case SEQ:
-          result =
-              seq(
-                  ((Double) compute(tree.child(0), g, values, depth, globalCounter)).intValue(),
-                  values.size());
+          result = seq(
+              ((Double) compute(tree.child(0), g, values, depth, globalCounter)).intValue(),
+              values.size());
           break;
         case REPEAT:
-          result =
-              repeat(
-                  compute(tree.child(0), g, values, depth, globalCounter),
-                  ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue(),
-                  values.size());
+          result = repeat(
+              compute(tree.child(0), g, values, depth, globalCounter),
+              ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue(),
+              values.size());
           break;
         case ROTATE_SX:
-          result =
-              rotateSx(
-                  (BitString) compute(tree.child(0), g, values, depth, globalCounter),
-                  ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue());
+          result = rotateSx(
+              (BitString) compute(tree.child(0), g, values, depth, globalCounter),
+              ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue());
           break;
         case ROTATE_DX:
-          result =
-              rotateDx(
-                  (BitString) compute(tree.child(0), g, values, depth, globalCounter),
-                  ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue());
+          result = rotateDx(
+              (BitString) compute(tree.child(0), g, values, depth, globalCounter),
+              ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue());
           break;
         case SUBSTRING:
-          result =
-              substring(
-                  (BitString) compute(tree.child(0), g, values, depth, globalCounter),
-                  ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue());
+          result = substring(
+              (BitString) compute(tree.child(0), g, values, depth, globalCounter),
+              ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue());
           break;
         case SPLIT:
-          result =
-              split(
-                  (BitString) compute(tree.child(0), g, values, depth, globalCounter),
-                  ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue(),
-                  values.size());
+          result = split(
+              (BitString) compute(tree.child(0), g, values, depth, globalCounter),
+              ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue(),
+              values.size());
           break;
         case SPLIT_W:
-          result =
-              splitWeighted(
-                  (BitString) compute(tree.child(0), g, values, depth, globalCounter),
-                  (List<Double>) compute(tree.child(1), g, values, depth, globalCounter),
-                  values.size());
+          result = splitWeighted(
+              (BitString) compute(tree.child(0), g, values, depth, globalCounter),
+              (List<Double>) compute(tree.child(1), g, values, depth, globalCounter),
+              values.size());
           break;
         case APPLY:
-          result =
-              apply(
-                  (Element.MapperFunction) tree.child(0).content(),
-                  ((List) compute(tree.child(1), g, values, depth, globalCounter)),
-                  (tree.nChildren() >= 3)
-                      ? compute(tree.child(2), g, values, depth, globalCounter)
-                      : null);
+          result = apply(
+              (Element.MapperFunction) tree.child(0).content(),
+              ((List) compute(tree.child(1), g, values, depth, globalCounter)),
+              (tree.nChildren() >= 3) ? compute(tree.child(2), g, values, depth, globalCounter) : null);
           break;
       }
     } else if (tree.content() instanceof Element.NumericConstant) {

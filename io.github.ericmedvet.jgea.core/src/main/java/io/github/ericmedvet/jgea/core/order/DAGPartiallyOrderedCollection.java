@@ -35,16 +35,13 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
     this.partialComparator = partialComparator;
   }
 
-  public DAGPartiallyOrderedCollection(
-      Collection<? extends T> ts, PartialComparator<? super T> partialComparator
-  ) {
+  public DAGPartiallyOrderedCollection(Collection<? extends T> ts, PartialComparator<? super T> partialComparator) {
     this(partialComparator);
     ts.forEach(this::add);
   }
 
-  private record Node<T1>(
-      T1 content, Collection<Node<T1>> beforeNodes, Collection<Node<T1>> afterNodes
-  ) implements Serializable {
+  private record Node<T1>(T1 content, Collection<Node<T1>> beforeNodes, Collection<Node<T1>> afterNodes)
+      implements Serializable {
     private Node(T1 content) {
       this(content, new ArrayList<>(), new ArrayList<>());
     }
@@ -88,12 +85,14 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
 
   @Override
   public Collection<T> firsts() {
-    return Collections.unmodifiableCollection(filterNodes(n -> n.beforeNodes().isEmpty()));
+    return Collections.unmodifiableCollection(
+        filterNodes(n -> n.beforeNodes().isEmpty()));
   }
 
   @Override
   public Collection<T> lasts() {
-    return Collections.unmodifiableCollection(filterNodes(n -> n.afterNodes().isEmpty()));
+    return Collections.unmodifiableCollection(
+        filterNodes(n -> n.afterNodes().isEmpty()));
   }
 
   @Override
@@ -127,12 +126,11 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
     return nodes.stream()
         .filter(predicate)
         .map(Node::content)
-        .reduce(
-            (c1, c2) -> {
-              Collection<T> c = new ArrayList<>(c1);
-              c.addAll(c2);
-              return c;
-            })
+        .reduce((c1, c2) -> {
+          Collection<T> c = new ArrayList<>(c1);
+          c.addAll(c2);
+          return c;
+        })
         .orElseThrow();
   }
 
@@ -153,12 +151,9 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
     visited.add(node);
     String s = node.content().toString();
     s = s + " < [";
-    s =
-        s
-            + node.afterNodes.stream()
-            .filter(
-                n ->
-                    n.beforeNodes.stream().noneMatch(node.afterNodes::contains))
+    s = s
+        + node.afterNodes.stream()
+            .filter(n -> n.beforeNodes.stream().noneMatch(node.afterNodes::contains))
             .map(n -> visited.contains(n) ? "..." : toString(n, visited))
             .collect(Collectors.joining(", "));
     s = s + "]";

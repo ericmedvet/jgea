@@ -23,13 +23,11 @@ package io.github.ericmedvet.jgea.core.solver;
 import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.state.State;
 import io.github.ericmedvet.jgea.core.util.Progress;
-
 import java.util.function.Predicate;
 
 public class StopConditions {
 
-  private StopConditions() {
-  }
+  private StopConditions() {}
 
   @SuppressWarnings("unused")
   public static ProgressBasedStopCondition<State> elapsedMillis(final long n) {
@@ -42,9 +40,7 @@ public class StopConditions {
   }
 
   @SuppressWarnings("unused")
-  public static ProgressBasedStopCondition<POCPopulationState<?, ?, ?, ?>> nOfFitnessEvaluations(
-      final long n
-  ) {
+  public static ProgressBasedStopCondition<POCPopulationState<?, ?, ?, ?>> nOfFitnessEvaluations(final long n) {
     return s -> new Progress(0, n, s.nOfFitnessEvaluations());
   }
 
@@ -54,11 +50,9 @@ public class StopConditions {
   }
 
   @SuppressWarnings("unused")
-  public static <F extends Comparable<F>>
-  Predicate<POCPopulationState<?, ?, ?, ? extends F>> targetFitness(final F targetF) {
+  public static <F extends Comparable<F>> Predicate<POCPopulationState<?, ?, ?, ? extends F>> targetFitness(
+      final F targetF) {
     return s ->
-        s.pocPopulation().firsts().stream()
-            .map(Individual::quality)
-            .anyMatch(f -> f.compareTo(targetF) <= 0);
+        s.pocPopulation().firsts().stream().map(Individual::quality).anyMatch(f -> f.compareTo(targetF) <= 0);
   }
 }

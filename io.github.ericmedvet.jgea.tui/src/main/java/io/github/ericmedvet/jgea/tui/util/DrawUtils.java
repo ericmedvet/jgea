@@ -100,8 +100,7 @@ public class DrawUtils {
     clipPut(tg, r, new Point(x, y), s, sgrs);
   }
 
-  private static void drawCell(
-      TextGraphics tg, Rectangle r, int x, int y, Cell c, TextColor cellColor) {
+  private static void drawCell(TextGraphics tg, Rectangle r, int x, int y, Cell c, TextColor cellColor) {
     if (c instanceof StringCell stringCell) {
       tg.setForegroundColor(cellColor);
       DrawUtils.clipPut(tg, r, x, y, stringCell.content());
@@ -175,7 +174,8 @@ public class DrawUtils {
       String levelFormat,
       String datetimeFormat) {
     int levelW = String.format(levelFormat, Level.WARNING).length();
-    int dateW = String.format(datetimeFormat, Instant.now().getEpochSecond()).length();
+    int dateW =
+        String.format(datetimeFormat, Instant.now().getEpochSecond()).length();
     DrawUtils.clear(tg, r);
     for (int i = 0; i < Math.min(r.h(), logRecords.size()); i = i + 1) {
       LogRecord record = logRecords.get(logRecords.size() - 1 - i);
@@ -233,10 +233,8 @@ public class DrawUtils {
           tg.setCharacter(r.se().delta(rx, -rh).tp(), FILLER);
         }
         double remainder = ry - Math.floor(ry);
-        tg.setCharacter(
-            r.se().delta(rx, -(int) Math.floor(ry)).tp(),
-            VERTICAL_PART_FILLER.charAt(
-                (int) Math.floor(remainder * VERTICAL_PART_FILLER.length())));
+        tg.setCharacter(r.se().delta(rx, -(int) Math.floor(ry)).tp(), VERTICAL_PART_FILLER.charAt((int)
+            Math.floor(remainder * VERTICAL_PART_FILLER.length())));
       }
     }
     // plot labels of ranges
@@ -258,14 +256,11 @@ public class DrawUtils {
       TextGraphics tg, Rectangle r, Table<Cell> t, TextColor labelColor, TextColor cellColor) {
     clear(tg, r);
     // compute columns width
-    int[] colWidths =
-        IntStream.range(0, t.nColumns())
-            .map(
-                c ->
-                    Math.max(
-                        t.names().get(c).length(),
-                        t.column(c).stream().mapToInt(Cell::length).max().orElse(0)))
-            .toArray();
+    int[] colWidths = IntStream.range(0, t.nColumns())
+        .map(c -> Math.max(
+            t.names().get(c).length(),
+            t.column(c).stream().mapToInt(Cell::length).max().orElse(0)))
+        .toArray();
     // draw header
     tg.setForegroundColor(labelColor);
     int x = 0;

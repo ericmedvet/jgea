@@ -50,8 +50,7 @@ public class TelegramClient {
 
   public String getChatInfo() {
     GetChatResponse chatResponse = bot.execute(new GetChat(chatId));
-    GetChatMemberCountResponse chatMemberCountResponse =
-        bot.execute(new GetChatMemberCount(chatId));
+    GetChatMemberCountResponse chatMemberCountResponse = bot.execute(new GetChatMemberCount(chatId));
     String title = chatResponse.chat().title();
     if (title == null) {
       title = chatResponse.chat().firstName() + " " + chatResponse.chat().lastName();

@@ -40,9 +40,7 @@ public class MultipleOutputParallelMultiplier
   private final Function<List<Tree<Element>>, Double> fitnessFunction;
 
   public MultipleOutputParallelMultiplier(final int size) throws IOException {
-    grammar =
-        StringGrammar.load(
-            StringGrammar.class.getResourceAsStream("/grammars/1d/boolean-parity-var.bnf"));
+    grammar = StringGrammar.load(StringGrammar.class.getResourceAsStream("/grammars/1d/boolean-parity-var.bnf"));
     List<List<String>> vars = new ArrayList<>();
     for (int j = 0; j < 2; j++) {
       for (int i = 0; i < size; i++) {
@@ -54,15 +52,12 @@ public class MultipleOutputParallelMultiplier
     for (int i = 0; i < 2 * size; i++) {
       output.add("<e>");
     }
-    grammar
-        .rules()
-        .put(FormulaMapper.MULTIPLE_OUTPUT_NON_TERMINAL, Collections.singletonList(output));
+    grammar.rules().put(FormulaMapper.MULTIPLE_OUTPUT_NON_TERMINAL, Collections.singletonList(output));
     grammar.setStartingSymbol(FormulaMapper.MULTIPLE_OUTPUT_NON_TERMINAL);
     solutionMapper = new FormulaMapper();
     TargetFunction targetFunction = new TargetFunction(size);
-    fitnessFunction =
-        new BooleanFunctionFitness(
-            targetFunction, BooleanUtils.buildCompleteObservations(targetFunction.varNames));
+    fitnessFunction = new BooleanFunctionFitness(
+        targetFunction, BooleanUtils.buildCompleteObservations(targetFunction.varNames));
   }
 
   private static class TargetFunction implements BooleanFunctionFitness.TargetFunction {

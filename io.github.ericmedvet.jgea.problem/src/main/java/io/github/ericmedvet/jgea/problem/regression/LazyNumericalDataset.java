@@ -42,15 +42,18 @@ public class LazyNumericalDataset implements NumericalDataset {
     this.yVarNames = yVarNames;
   }
 
-  public LazyNumericalDataset(String path, String xVarNamePattern, String yVarNamePattern)
-      throws IOException {
+  public LazyNumericalDataset(String path, String xVarNamePattern, String yVarNamePattern) throws IOException {
     // read just varNames
     NumericalDataset dataset = getDataset(path);
     this.path = path;
-    xVarNames =
-        dataset.xVarNames().stream().filter(n -> n.matches(xVarNamePattern)).sorted().toList();
-    yVarNames =
-        dataset.yVarNames().stream().filter(n -> n.matches(yVarNamePattern)).sorted().toList();
+    xVarNames = dataset.xVarNames().stream()
+        .filter(n -> n.matches(xVarNamePattern))
+        .sorted()
+        .toList();
+    yVarNames = dataset.yVarNames().stream()
+        .filter(n -> n.matches(yVarNamePattern))
+        .sorted()
+        .toList();
   }
 
   private record DatasetKey(String path, List<String> xVarNames, List<String> yVarNames) {}
@@ -61,8 +64,7 @@ public class LazyNumericalDataset implements NumericalDataset {
 
     private final List<String> yVarNames;
 
-    public FilteredNumericalDataset(
-        NumericalDataset dataset, List<String> xVarNames, List<String> yVarNames) {
+    public FilteredNumericalDataset(NumericalDataset dataset, List<String> xVarNames, List<String> yVarNames) {
       this.dataset = dataset;
       this.xVarNames = xVarNames;
       this.yVarNames = yVarNames;
@@ -98,8 +100,10 @@ public class LazyNumericalDataset implements NumericalDataset {
       return i -> {
         NamedExample ne = dataset.namedExampleProvider().apply(i);
         return new NamedExample(
-            xVarNames.stream().collect(Collectors.toMap(n -> n, n -> ne.x().get(n))),
-            yVarNames.stream().collect(Collectors.toMap(n -> n, n -> ne.x().get(n))));
+            xVarNames.stream()
+                .collect(Collectors.toMap(n -> n, n -> ne.x().get(n))),
+            yVarNames.stream()
+                .collect(Collectors.toMap(n -> n, n -> ne.x().get(n))));
       };
     }
   }

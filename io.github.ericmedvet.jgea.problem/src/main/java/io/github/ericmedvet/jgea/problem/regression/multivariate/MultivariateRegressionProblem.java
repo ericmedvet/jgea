@@ -41,7 +41,8 @@ public class MultivariateRegressionProblem<F extends MultivariateRegressionFitne
   @Override
   public NamedMultivariateRealFunction example() {
     return NamedMultivariateRealFunction.from(
-        UnivariateRealFunction.from(xs -> 0d, fitness.getDataset().xVarNames().size()),
+        UnivariateRealFunction.from(
+            xs -> 0d, fitness.getDataset().xVarNames().size()),
         fitness.getDataset().xVarNames(),
         fitness.getDataset().yVarNames());
   }

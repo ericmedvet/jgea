@@ -100,8 +100,7 @@ public class Mappers {
 
   @SuppressWarnings("unused")
   public static InvertibleMapper<Graph<Node, Double>, NamedMultivariateRealFunction> fGraphToMrf(
-      @Param(value = "postOperator", dS = "identity")
-          MultiLayerPerceptron.ActivationFunction postOperator) {
+      @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator) {
     return InvertibleMapper.from(
         (nmrf, g) -> new FunctionGraph(g, nmrf.xVarNames(), nmrf.yVarNames()),
         nmrf -> FunctionGraph.sampleFor(nmrf.xVarNames(), nmrf.yVarNames()));
@@ -138,99 +137,84 @@ public class Mappers {
       @Param(value = "nOfInnerLayers", dI = 1) int nOfInnerLayers,
       @Param(value = "activationFunction", dS = "tanh")
           MultiLayerPerceptron.ActivationFunction activationFunction) {
-    Function<NamedMultivariateRealFunction, int[]> innerNeuronsFunction =
-        nmrf -> {
-          int[] innerNeurons = new int[nOfInnerLayers];
-          int centerSize = (int) Math.max(2, Math.round(nmrf.xVarNames().size() * innerLayerRatio));
-          if (nOfInnerLayers > 1) {
-            for (int i = 0; i < nOfInnerLayers / 2; i++) {
-              innerNeurons[i] =
-                  nmrf.xVarNames().size()
-                      + (centerSize - nmrf.xVarNames().size()) / (nOfInnerLayers / 2 + 1) * (i + 1);
-            }
-            for (int i = nOfInnerLayers / 2; i < nOfInnerLayers; i++) {
-              innerNeurons[i] =
-                  centerSize
-                      + (nmrf.yVarNames().size() - centerSize)
-                          / (nOfInnerLayers / 2 + 1)
-                          * (i - nOfInnerLayers / 2);
-            }
-          } else if (nOfInnerLayers > 0) {
-            innerNeurons[0] = centerSize;
-          }
-          return innerNeurons;
-        };
+    Function<NamedMultivariateRealFunction, int[]> innerNeuronsFunction = nmrf -> {
+      int[] innerNeurons = new int[nOfInnerLayers];
+      int centerSize = (int) Math.max(2, Math.round(nmrf.xVarNames().size() * innerLayerRatio));
+      if (nOfInnerLayers > 1) {
+        for (int i = 0; i < nOfInnerLayers / 2; i++) {
+          innerNeurons[i] = nmrf.xVarNames().size()
+              + (centerSize - nmrf.xVarNames().size()) / (nOfInnerLayers / 2 + 1) * (i + 1);
+        }
+        for (int i = nOfInnerLayers / 2; i < nOfInnerLayers; i++) {
+          innerNeurons[i] = centerSize
+              + (nmrf.yVarNames().size() - centerSize)
+                  / (nOfInnerLayers / 2 + 1)
+                  * (i - nOfInnerLayers / 2);
+        }
+      } else if (nOfInnerLayers > 0) {
+        innerNeurons[0] = centerSize;
+      }
+      return innerNeurons;
+    };
     return InvertibleMapper.from(
-        (nmrf, params) ->
-            NamedMultivariateRealFunction.from(
-                new MultiLayerPerceptron(
+        (nmrf, params) -> NamedMultivariateRealFunction.from(
+            new MultiLayerPerceptron(
+                activationFunction,
+                nmrf.xVarNames().size(),
+                innerNeuronsFunction.apply(nmrf),
+                nmrf.yVarNames().size(),
+                params.stream().mapToDouble(v -> v).toArray()),
+            nmrf.xVarNames(),
+            nmrf.yVarNames()),
+        nmrf -> Collections.nCopies(
+            new MultiLayerPerceptron(
                     activationFunction,
                     nmrf.xVarNames().size(),
                     innerNeuronsFunction.apply(nmrf),
-                    nmrf.yVarNames().size(),
-                    params.stream().mapToDouble(v -> v).toArray()),
-                nmrf.xVarNames(),
-                nmrf.yVarNames()),
-        nmrf ->
-            Collections.nCopies(
-                new MultiLayerPerceptron(
-                        activationFunction,
-                        nmrf.xVarNames().size(),
-                        innerNeuronsFunction.apply(nmrf),
-                        nmrf.yVarNames().size())
-                    .getParams()
-                    .length,
-                0d));
+                    nmrf.yVarNames().size())
+                .getParams()
+                .length,
+            0d));
   }
 
   @SuppressWarnings("unused")
-  public static <T>
-      InvertibleMapper<NamedMultivariateRealFunction, NamedUnivariateRealFunction> mrfToUrf() {
-    return InvertibleMapper.from(
-        (nurf, nmrf) -> NamedUnivariateRealFunction.from(nmrf), nurf -> nurf);
+  public static <T> InvertibleMapper<NamedMultivariateRealFunction, NamedUnivariateRealFunction> mrfToUrf() {
+    return InvertibleMapper.from((nurf, nmrf) -> NamedUnivariateRealFunction.from(nmrf), nurf -> nurf);
   }
 
   @SuppressWarnings("unused")
-  public static InvertibleMapper<List<Tree<Element>>, NamedMultivariateRealFunction>
-      multiSrTreeToMrf(
-          @Param(value = "postOperator", dS = "identity")
-              MultiLayerPerceptron.ActivationFunction postOperator) {
+  public static InvertibleMapper<List<Tree<Element>>, NamedMultivariateRealFunction> multiSrTreeToMrf(
+      @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator) {
     return InvertibleMapper.from(
         (nmrf, ts) -> new TreeBasedMultivariateRealFunction(ts, nmrf.xVarNames(), nmrf.yVarNames()),
         nmrf -> TreeBasedMultivariateRealFunction.sampleFor(nmrf.xVarNames(), nmrf.yVarNames()));
   }
 
   @SuppressWarnings("unused")
-  public static InvertibleMapper<List<Double>, NamedMultivariateRealFunction>
-      numericalParametrizedToMrf(
-          @Param("function")
-              NumericalDynamicalSystems.Builder<MultivariateRealFunction, StatelessSystem.State>
-                  function) {
+  public static InvertibleMapper<List<Double>, NamedMultivariateRealFunction> numericalParametrizedToMrf(
+      @Param("function")
+          NumericalDynamicalSystems.Builder<MultivariateRealFunction, StatelessSystem.State> function) {
     return InvertibleMapper.from(
         (nmrf, params) -> {
           if (nmrf instanceof NumericalParametrized) {
             MultivariateRealFunction np = function.apply(nmrf.xVarNames(), nmrf.yVarNames());
-            ((NumericalParametrized) np).setParams(params.stream().mapToDouble(v -> v).toArray());
+            ((NumericalParametrized) np)
+                .setParams(params.stream().mapToDouble(v -> v).toArray());
             return NamedMultivariateRealFunction.from(np, nmrf.xVarNames(), nmrf.yVarNames());
           }
-          throw new IllegalArgumentException(
-              "The provided function is not numerical parametrized.");
+          throw new IllegalArgumentException("The provided function is not numerical parametrized.");
         },
         nmrf -> {
           if (nmrf instanceof NumericalParametrized parametrized) {
             return Arrays.stream(parametrized.getParams()).boxed().toList();
           }
-          throw new IllegalArgumentException(
-              "The provided function is not numerical parametrized.");
+          throw new IllegalArgumentException("The provided function is not numerical parametrized.");
         });
   }
 
   @SuppressWarnings("unused")
-  public static InvertibleMapper<
-          Graph<Node, OperatorGraph.NonValuedArc>, NamedMultivariateRealFunction>
-      oGraphToMrf(
-          @Param(value = "postOperator", dS = "identity")
-              MultiLayerPerceptron.ActivationFunction postOperator) {
+  public static InvertibleMapper<Graph<Node, OperatorGraph.NonValuedArc>, NamedMultivariateRealFunction> oGraphToMrf(
+      @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator) {
     return InvertibleMapper.from(
         (nmrf, g) -> new OperatorGraph(g, nmrf.xVarNames(), nmrf.yVarNames()),
         nmrf -> OperatorGraph.sampleFor(nmrf.xVarNames(), nmrf.yVarNames()));
@@ -238,8 +222,7 @@ public class Mappers {
 
   @SuppressWarnings("unused")
   public static InvertibleMapper<Tree<Element>, NamedUnivariateRealFunction> srTreeToUrf(
-      @Param(value = "postOperator", dS = "identity")
-          MultiLayerPerceptron.ActivationFunction postOperator) {
+      @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator) {
     return InvertibleMapper.from(
         (nurf, t) -> new TreeBasedUnivariateRealFunction(t, nurf.xVarNames(), nurf.yVarName()),
         nurf -> TreeBasedUnivariateRealFunction.sampleFor(nurf.xVarNames(), nurf.yVarName()));

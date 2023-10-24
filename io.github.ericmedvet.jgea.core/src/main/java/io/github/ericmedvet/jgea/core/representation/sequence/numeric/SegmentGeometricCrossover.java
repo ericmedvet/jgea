@@ -42,9 +42,7 @@ public class SegmentGeometricCrossover implements Crossover<List<Double>> {
       throw new IllegalArgumentException(
           "Parent genotype sizes are different: %d vs. %d".formatted(g1.size(), g2.size()));
     }
-    double alpha =
-        random.nextDouble() * (range.upperEndpoint() - range.lowerEndpoint())
-            + range.lowerEndpoint();
+    double alpha = random.nextDouble() * (range.upperEndpoint() - range.lowerEndpoint()) + range.lowerEndpoint();
     return IntStream.range(0, g1.size())
         .mapToObj(i -> g1.get(i) + (g2.get(i) - g1.get(i)) * alpha)
         .toList();

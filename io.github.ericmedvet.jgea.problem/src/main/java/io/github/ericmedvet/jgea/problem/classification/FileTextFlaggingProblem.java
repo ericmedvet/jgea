@@ -51,13 +51,15 @@ public class FileTextFlaggingProblem extends GrammarBasedTextFlaggingProblem {
         validationErrorMetric);
   }
 
-  private static List<Pair<String, Label>> buildData(
-      String positiveFileName, String negativeFileName) throws IOException {
+  private static List<Pair<String, Label>> buildData(String positiveFileName, String negativeFileName)
+      throws IOException {
     List<Pair<String, Label>> data = new ArrayList<>();
-    data.addAll(
-        Files.lines(Paths.get(positiveFileName)).map(s -> Pair.of(s, Label.FOUND)).toList());
-    data.addAll(
-        Files.lines(Paths.get(negativeFileName)).map(s -> Pair.of(s, Label.NOT_FOUND)).toList());
+    data.addAll(Files.lines(Paths.get(positiveFileName))
+        .map(s -> Pair.of(s, Label.FOUND))
+        .toList());
+    data.addAll(Files.lines(Paths.get(negativeFileName))
+        .map(s -> Pair.of(s, Label.NOT_FOUND))
+        .toList());
     return data;
   }
 }

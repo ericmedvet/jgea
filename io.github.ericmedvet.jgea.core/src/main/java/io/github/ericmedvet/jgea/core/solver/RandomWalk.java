@@ -33,7 +33,7 @@ import java.util.random.RandomGenerator;
 
 public class RandomWalk<P extends QualityBasedProblem<S, Q>, G, S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-    POCPopulationState<Individual<G, S, Q>, G, S, Q>, P, Individual<G, S, Q>, G, S, Q> {
+        POCPopulationState<Individual<G, S, Q>, G, S, Q>, P, Individual<G, S, Q>, G, S, Q> {
 
   private final Mutation<G> mutation;
 
@@ -62,26 +62,21 @@ public class RandomWalk<P extends QualityBasedProblem<S, Q>, G, S, Q>
       ExecutorService executor,
       POCPopulationState<Individual<G, S, Q>, G, S, Q> state)
       throws SolverException {
-    Individual<G, S, Q> currentIndividual = state.pocPopulation().firsts().iterator().next();
-    Individual<G, S, Q> newIndividual =
-        getAll(
-                map(
-                    List.of(mutation.mutate(currentIndividual.genotype(), random)),
-                    state.nOfIterations(),
-                    problem.qualityFunction(),
-                    executor))
-            .iterator()
-            .next();
+    Individual<G, S, Q> currentIndividual =
+        state.pocPopulation().firsts().iterator().next();
+    Individual<G, S, Q> newIndividual = getAll(map(
+            List.of(mutation.mutate(currentIndividual.genotype(), random)),
+            state.nOfIterations(),
+            problem.qualityFunction(),
+            executor))
+        .iterator()
+        .next();
     if (comparator(problem)
         .compare(newIndividual, currentIndividual)
         .equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
       currentIndividual = newIndividual;
     }
     return RandomSearch.State.from(
-        (RandomSearch.State<Individual<G, S, Q>, G, S, Q>) state,
-        progress(state),
-        1,
-        1,
-        currentIndividual);
+        (RandomSearch.State<Individual<G, S, Q>, G, S, Q>) state, progress(state), 1, 1, currentIndividual);
   }
 }

@@ -35,10 +35,8 @@ public class OperatorNode extends Node implements ToDoubleFunction<double[]> {
     this.operator = operator;
   }
 
-  public static IndependentFactory<OperatorNode> limitedIndexFactory(
-      int limit, BaseOperator... operators) {
-    return random ->
-        new OperatorNode(random.nextInt(limit), operators[random.nextInt(operators.length)]);
+  public static IndependentFactory<OperatorNode> limitedIndexFactory(int limit, BaseOperator... operators) {
+    return random -> new OperatorNode(random.nextInt(limit), operators[random.nextInt(operators.length)]);
   }
 
   public static IndependentFactory<OperatorNode> sequentialIndexFactory(BaseOperator... operators) {

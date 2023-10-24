@@ -22,7 +22,6 @@ package io.github.ericmedvet.jgea.core.solver;
 
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.GeneticOperator;
-import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.selector.Selector;
 import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jgea.core.util.Misc;
@@ -30,17 +29,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
-public class AbstractStandardWithEnforcedDiversityEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
-    extends AbstractStandardEvolver<P, G, S, Q> {
+public class StandardWithEnforcedDiversityEvolver<G, S, Q> extends StandardEvolver<G, S, Q> {
 
   private final int maxAttempts;
 
-  public AbstractStandardWithEnforcedDiversityEvolver(
+  public StandardWithEnforcedDiversityEvolver(
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       int populationSize,
@@ -68,11 +65,7 @@ public class AbstractStandardWithEnforcedDiversityEvolver<P extends QualityBased
 
   @Override
   protected Collection<G> buildOffspringGenotypes(
-      POCPopulationState<Individual<G, S, Q>, G, S, Q> state,
-      P problem,
-      RandomGenerator random,
-      ExecutorService executor)
-      throws SolverException {
+      POCPopulationState<Individual<G, S, Q>, G, S, Q> state, RandomGenerator random) {
     Collection<G> offspringGenotypes = new ArrayList<>();
     Collection<G> existingGenotypes =
         state.pocPopulation().all().stream().map(Individual::genotype).toList();
@@ -89,8 +82,7 @@ public class AbstractStandardWithEnforcedDiversityEvolver<P extends QualityBased
         List<G> childGenotypes = new ArrayList<>(operator.apply(parentGenotypes, random));
         boolean added = false;
         for (G childGenotype : childGenotypes) {
-          if ((!offspringGenotypes.contains(childGenotype)
-                  && !existingGenotypes.contains(childGenotype))
+          if ((!offspringGenotypes.contains(childGenotype) && !existingGenotypes.contains(childGenotype))
               || (attempts >= maxAttempts - 1)) {
             added = true;
             offspringGenotypes.add(childGenotype);

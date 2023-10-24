@@ -40,8 +40,7 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
   @Override
   public Tree<T> apply(BitString genotype) {
     if (genotype.size() < codonLength) {
-      throw new IllegalArgumentException(
-          String.format("Short genotype (%d<%d)", genotype.size(), codonLength));
+      throw new IllegalArgumentException(String.format("Short genotype (%d<%d)", genotype.size(), codonLength));
     }
     Tree<T> tree = Tree.of(grammar.startingSymbol());
     int currentCodonIndex = 0;
@@ -62,18 +61,15 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
         wraps = wraps + 1;
         currentCodonIndex = 0;
         if (wraps > maxWraps) {
-          throw new IllegalArgumentException(
-              String.format("Too many wraps (%d>%d)", wraps, maxWraps));
+          throw new IllegalArgumentException(String.format("Too many wraps (%d>%d)", wraps, maxWraps));
         }
       }
       List<List<T>> options = grammar.rules().get(treeToBeReplaced.content());
       int optionIndex = 0;
       if (options.size() > 1) {
-        optionIndex =
-            genotype
-                    .slice(currentCodonIndex * codonLength, (currentCodonIndex + 1) * codonLength)
-                    .toInt()
-                % options.size();
+        optionIndex = genotype.slice(currentCodonIndex * codonLength, (currentCodonIndex + 1) * codonLength)
+                .toInt()
+            % options.size();
         currentCodonIndex = currentCodonIndex + 1;
       }
       // add children

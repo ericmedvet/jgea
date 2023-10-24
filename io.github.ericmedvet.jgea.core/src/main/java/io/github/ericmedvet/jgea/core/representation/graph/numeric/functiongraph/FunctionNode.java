@@ -35,10 +35,8 @@ public class FunctionNode extends Node implements Function<Double, Double> {
     this.function = function;
   }
 
-  public static IndependentFactory<FunctionNode> limitedIndexFactory(
-      int limit, BaseFunction... functions) {
-    return random ->
-        new FunctionNode(random.nextInt(limit), functions[random.nextInt(functions.length)]);
+  public static IndependentFactory<FunctionNode> limitedIndexFactory(int limit, BaseFunction... functions) {
+    return random -> new FunctionNode(random.nextInt(limit), functions[random.nextInt(functions.length)]);
   }
 
   public static IndependentFactory<FunctionNode> sequentialIndexFactory(BaseFunction... functions) {

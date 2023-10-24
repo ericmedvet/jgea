@@ -121,39 +121,27 @@ public class MapElites<G, P extends QualityBasedProblem<S, Q>, S, Q>
   }
 
   @Override
-  public State<G, S, Q> init(P problem, RandomGenerator random, ExecutorService executor)
-      throws SolverException {
+  public State<G, S, Q> init(P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
     State<G, S, Q> state = super.init(problem, random, executor);
     state.mapOfElites.addAll(state.getPopulation().all());
     return state;
   }
 
   @Override
-  public void update(
-      P problem, RandomGenerator random, ExecutorService executor, State<G, S, Q> state)
+  public void update(P problem, RandomGenerator random, ExecutorService executor, State<G, S, Q> state)
       throws SolverException {
-    List<G> allGenotypes =
-        state.getPopulation().all().stream()
-            .filter(Objects::nonNull)
-            .map(Individual::genotype)
-            .toList();
-    Collection<G> offspringGenotypes =
-        IntStream.range(0, populationSize)
-            .mapToObj(
-                i -> mutation.mutate(allGenotypes.get(random.nextInt(allGenotypes.size())), random))
-            .toList();
+    List<G> allGenotypes = state.getPopulation().all().stream()
+        .filter(Objects::nonNull)
+        .map(Individual::genotype)
+        .toList();
+    Collection<G> offspringGenotypes = IntStream.range(0, populationSize)
+        .mapToObj(i -> mutation.mutate(allGenotypes.get(random.nextInt(allGenotypes.size())), random))
+        .toList();
     Collection<Individual<G, S, Q>> offspringIndividuals =
-        map(
-            offspringGenotypes,
-            List.of(),
-            solutionMapper,
-            problem.qualityFunction(),
-            executor,
-            state);
+        map(offspringGenotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state);
 
     state.mapOfElites.addAll(offspringIndividuals);
-    state.setPopulation(
-        new DAGPartiallyOrderedCollection<>(state.mapOfElites.all(), comparator(problem)));
+    state.setPopulation(new DAGPartiallyOrderedCollection<>(state.mapOfElites.all(), comparator(problem)));
 
     state.incNOfIterations();
     state.updateElapsedMillis();

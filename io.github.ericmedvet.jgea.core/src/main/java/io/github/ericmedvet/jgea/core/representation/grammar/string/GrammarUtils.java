@@ -27,8 +27,7 @@ public class GrammarUtils {
 
   private record Triplet<F, S, T>(F first, S second, T third) {}
 
-  public static <T> Map<T, List<Integer>> computeShortestOptionIndexesMap(
-      StringGrammar<T> grammar) {
+  public static <T> Map<T, List<Integer>> computeShortestOptionIndexesMap(StringGrammar<T> grammar) {
     Map<T, List<Integer>> optionJumpsToTerminalMap = new LinkedHashMap<>();
     for (Map.Entry<T, List<List<T>>> rule : grammar.rules().entrySet()) {
       List<Integer> optionsJumps = new ArrayList<>();
@@ -91,8 +90,7 @@ public class GrammarUtils {
     return shortestOptionIndexesMap;
   }
 
-  private static <T> Map<T, Triplet<Double, Boolean, Set<T>>> computeSymbolsMaxDepths(
-      StringGrammar<T> g) {
+  private static <T> Map<T, Triplet<Double, Boolean, Set<T>>> computeSymbolsMaxDepths(StringGrammar<T> g) {
     Map<T, Triplet<Double, Boolean, Set<T>>> map = new HashMap<>();
     map.put(g.startingSymbol(), new Triplet<>(0d, false, new HashSet<>()));
     for (List<List<T>> options : g.rules().values()) {
@@ -135,8 +133,7 @@ public class GrammarUtils {
           allResolved = true;
           maxDepth = Double.POSITIVE_INFINITY;
         }
-        Triplet<Double, Boolean, Set<T>> newTriplet =
-            new Triplet<>(maxDepth, allResolved, dependencies);
+        Triplet<Double, Boolean, Set<T>> newTriplet = new Triplet<>(maxDepth, allResolved, dependencies);
         if (!newTriplet.equals(triplet)) {
           map.put(nonTerminal, newTriplet);
           changed = true;
@@ -203,7 +200,9 @@ public class GrammarUtils {
     Map<T, Triplet<Double, Boolean, Set<T>>> maxDepths = computeSymbolsMaxDepths(g);
     Map<T, Pair<Double, Double>> map = new HashMap<>();
     for (T t : minDepths.keySet()) {
-      map.put(t, Pair.of((double) minDepths.get(t).first(), maxDepths.get(t).first()));
+      map.put(
+          t,
+          Pair.of((double) minDepths.get(t).first(), maxDepths.get(t).first()));
     }
     return map;
   }

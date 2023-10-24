@@ -39,8 +39,7 @@ public class Starter {
     Locale.setDefault(Locale.ROOT);
     try {
       LogManager.getLogManager()
-          .readConfiguration(
-              Starter.class.getClassLoader().getResourceAsStream("logging.properties"));
+          .readConfiguration(Starter.class.getClassLoader().getResourceAsStream("logging.properties"));
     } catch (IOException ex) {
       // ignore
     }
@@ -120,13 +119,10 @@ public class Starter {
     String expDescription = null;
     if (configuration.experimentDescriptionFilePath.isEmpty()
         && !configuration.exampleExperimentDescriptionResourceName.isEmpty()) {
-      L.config(
-          "Using example experiment description: %s"
-              .formatted(configuration.exampleExperimentDescriptionResourceName));
-      InputStream inputStream =
-          Starter.class.getResourceAsStream(
-              "/exp-examples/%s.txt"
-                  .formatted(configuration.exampleExperimentDescriptionResourceName));
+      L.config("Using example experiment description: %s"
+          .formatted(configuration.exampleExperimentDescriptionResourceName));
+      InputStream inputStream = Starter.class.getResourceAsStream(
+          "/exp-examples/%s.txt".formatted(configuration.exampleExperimentDescriptionResourceName));
       if (inputStream == null) {
         L.severe("Cannot find default experiment description");
       } else {
@@ -137,17 +133,13 @@ public class Starter {
         }
       }
     } else if (!configuration.experimentDescriptionFilePath.isEmpty()) {
-      L.config(
-          String.format(
-              "Using provided experiment description: %s",
-              configuration.experimentDescriptionFilePath));
-      try (BufferedReader br =
-          new BufferedReader(new FileReader(configuration.experimentDescriptionFilePath))) {
+      L.config(String.format(
+          "Using provided experiment description: %s", configuration.experimentDescriptionFilePath));
+      try (BufferedReader br = new BufferedReader(new FileReader(configuration.experimentDescriptionFilePath))) {
         expDescription = br.lines().collect(Collectors.joining());
       } catch (IOException e) {
-        L.severe(
-            "Cannot read provided experiment description at %s: %s"
-                .formatted(configuration.experimentDescriptionFilePath, e));
+        L.severe("Cannot read provided experiment description at %s: %s"
+            .formatted(configuration.experimentDescriptionFilePath, e));
       }
     }
     if (expDescription == null) {
@@ -173,8 +165,7 @@ public class Starter {
     }
     // prepare and run experimenter
     try {
-      Experimenter experimenter =
-          new Experimenter(nb, configuration.nOfConcurrentRuns, configuration.nOfThreads);
+      Experimenter experimenter = new Experimenter(nb, configuration.nOfConcurrentRuns, configuration.nOfThreads);
       experimenter.run(expDescription, configuration.verbose);
     } catch (BuilderException e) {
       L.severe("Cannot run experiment: %s%n".formatted(e));

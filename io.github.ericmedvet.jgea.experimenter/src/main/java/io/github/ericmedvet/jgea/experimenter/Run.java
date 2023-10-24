@@ -50,8 +50,7 @@ public record Run<P extends QualityBasedProblem<S, Q>, G, S, Q>(
     @Param("randomGenerator") RandomGenerator randomGenerator,
     @Param(value = "", injection = Param.Injection.MAP_WITH_DEFAULTS) ParamMap map) {
 
-  public Collection<S> run(
-      ExecutorService executorService, Listener<? super POCPopulationState<G, S, Q>> listener)
+  public Collection<S> run(ExecutorService executorService, Listener<? super POCPopulationState<G, S, Q>> listener)
       throws SolverException {
     IterativeSolver<? extends POCPopulationState<G, S, Q>, P, S> iterativeSolver;
     if (problem instanceof ProblemWithExampleSolution<?> pwes) {

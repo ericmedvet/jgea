@@ -83,8 +83,7 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
       this.crowdingDistance = crowdingDistance;
     }
 
-    public RankedWithDistanceIndividual(
-        RankedIndividual<G, S> rankedIndividual, double crowdingDistance) {
+    public RankedWithDistanceIndividual(RankedIndividual<G, S> rankedIndividual, double crowdingDistance) {
       this(rankedIndividual.individual, rankedIndividual.rank, crowdingDistance);
     }
 
@@ -95,8 +94,7 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
     @Override
     public int compareTo(RankedIndividual<G, S> o) {
       RankedWithDistanceIndividual<G, S> that = (RankedWithDistanceIndividual<G, S>) o;
-      Comparator<RankedWithDistanceIndividual<G, S>> rankComparator =
-          Comparator.comparing(i -> i.rank);
+      Comparator<RankedWithDistanceIndividual<G, S>> rankComparator = Comparator.comparing(i -> i.rank);
       Comparator<RankedWithDistanceIndividual<G, S>> distanceComparator =
           Comparator.comparing(i -> i.crowdingDistance);
       return rankComparator.thenComparing(distanceComparator).compare(this, that);
@@ -146,53 +144,50 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
   private Collection<RankedWithDistanceIndividual<G, S>> assignCrowdingDistance(
       Collection<RankedIndividual<G, S>> rankedIndividuals, List<Comparator<Double>> comparators) {
     int maxRank = rankedIndividuals.stream().mapToInt(i -> i.rank).max().orElse(0);
-    Collection<RankedWithDistanceIndividual<G, S>> rankedWithDistanceIndividuals =
-        new ArrayList<>();
-    IntStream.range(0, maxRank + 1)
-        .forEach(
-            rank -> {
-              Collection<RankedIndividual<G, S>> currentRankIndividuals =
-                  rankedIndividuals.stream().filter(i -> i.rank == rank).toList();
-              rankedWithDistanceIndividuals.addAll(
-                  assignCrowdingDistanceWithinRank(currentRankIndividuals, comparators));
-            });
+    Collection<RankedWithDistanceIndividual<G, S>> rankedWithDistanceIndividuals = new ArrayList<>();
+    IntStream.range(0, maxRank + 1).forEach(rank -> {
+      Collection<RankedIndividual<G, S>> currentRankIndividuals =
+          rankedIndividuals.stream().filter(i -> i.rank == rank).toList();
+      rankedWithDistanceIndividuals.addAll(assignCrowdingDistanceWithinRank(currentRankIndividuals, comparators));
+    });
     return rankedWithDistanceIndividuals;
   }
 
   private Collection<RankedWithDistanceIndividual<G, S>> assignCrowdingDistanceWithinRank(
       Collection<RankedIndividual<G, S>> rankedIndividuals, List<Comparator<Double>> comparators) {
     int l = rankedIndividuals.size();
-    List<RankedWithDistanceIndividual<G, S>> rankedWithDistanceIndividuals =
-        rankedIndividuals.stream().map(RankedWithDistanceIndividual::new).toList();
-    IntStream.range(0, comparators.size())
-        .forEach(
-            m -> {
-              Comparator<RankedIndividual<G, S>> mObjectiveComparator =
-                  Comparator.comparing(i -> i.individual.quality().get(m), comparators.get(m));
-              List<RankedWithDistanceIndividual<G, S>> mSortedIndividuals =
-                  rankedWithDistanceIndividuals.stream().sorted(mObjectiveComparator).toList();
-              mSortedIndividuals.get(0).crowdingDistance = Double.POSITIVE_INFINITY;
-              mSortedIndividuals.get(l - 1).crowdingDistance = Double.POSITIVE_INFINITY;
-              double mNormalization =
-                  mSortedIndividuals.get(l - 1).individual.quality().get(m)
-                      - mSortedIndividuals.get(0).individual.quality().get(m);
-              IntStream.range(1, l - 2)
-                  .forEach(
-                      i -> {
-                        double ithDistanceIncrement =
-                            (mSortedIndividuals.get(i + 1).individual.quality().get(m)
-                                    - mSortedIndividuals.get(i - 1).individual.quality().get(m))
-                                / mNormalization;
-                        mSortedIndividuals.get(i).crowdingDistance += ithDistanceIncrement;
-                      });
-            });
+    List<RankedWithDistanceIndividual<G, S>> rankedWithDistanceIndividuals = rankedIndividuals.stream()
+        .map(RankedWithDistanceIndividual::new)
+        .toList();
+    IntStream.range(0, comparators.size()).forEach(m -> {
+      Comparator<RankedIndividual<G, S>> mObjectiveComparator =
+          Comparator.comparing(i -> i.individual.quality().get(m), comparators.get(m));
+      List<RankedWithDistanceIndividual<G, S>> mSortedIndividuals = rankedWithDistanceIndividuals.stream()
+          .sorted(mObjectiveComparator)
+          .toList();
+      mSortedIndividuals.get(0).crowdingDistance = Double.POSITIVE_INFINITY;
+      mSortedIndividuals.get(l - 1).crowdingDistance = Double.POSITIVE_INFINITY;
+      double mNormalization =
+          mSortedIndividuals.get(l - 1).individual.quality().get(m)
+              - mSortedIndividuals.get(0).individual.quality().get(m);
+      IntStream.range(1, l - 2).forEach(i -> {
+        double ithDistanceIncrement =
+            (mSortedIndividuals.get(i + 1).individual.quality().get(m)
+                    - mSortedIndividuals
+                        .get(i - 1)
+                        .individual
+                        .quality()
+                        .get(m))
+                / mNormalization;
+        mSortedIndividuals.get(i).crowdingDistance += ithDistanceIncrement;
+      });
+    });
 
     return rankedWithDistanceIndividuals;
   }
 
   private Collection<Individual<G, S, List<Double>>> buildOffspring(
-      State<G, S> state, P problem, RandomGenerator random, ExecutorService executor)
-      throws SolverException {
+      State<G, S> state, P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
     Collection<G> offspringGenotypes = new ArrayList<>();
     while (offspringGenotypes.size() < populationSize) {
       GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
@@ -203,8 +198,7 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
       }
       offspringGenotypes.addAll(operator.apply(parentGenotypes, random));
     }
-    return map(
-        offspringGenotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state);
+    return map(offspringGenotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state);
   }
 
   private Collection<RankedIndividual<G, S>> fastNonDominatedSort(
@@ -262,54 +256,52 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
   }
 
   @Override
-  public State<G, S> init(P problem, RandomGenerator random, ExecutorService executor)
-      throws SolverException {
+  public State<G, S> init(P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
     State<G, S> state = super.init(problem, random, executor);
-    state.rankedWithDistanceIndividuals = trimPopulation(state.getPopulation().all(), problem);
+    state.rankedWithDistanceIndividuals =
+        trimPopulation(state.getPopulation().all(), problem);
     return state;
   }
 
   // TODO maybe remove from here and field with tournament selector (requires a DAG on
   // rankedWithDistanceIndividuals)
-  private Individual<G, S, List<Double>> selectParentWithBinaryTournament(
-      State<G, S> state, RandomGenerator random) {
-    RankedWithDistanceIndividual<G, S> c1 =
-        Misc.pickRandomly(state.rankedWithDistanceIndividuals, random);
-    RankedWithDistanceIndividual<G, S> c2 =
-        Misc.pickRandomly(state.rankedWithDistanceIndividuals, random);
+  private Individual<G, S, List<Double>> selectParentWithBinaryTournament(State<G, S> state, RandomGenerator random) {
+    RankedWithDistanceIndividual<G, S> c1 = Misc.pickRandomly(state.rankedWithDistanceIndividuals, random);
+    RankedWithDistanceIndividual<G, S> c2 = Misc.pickRandomly(state.rankedWithDistanceIndividuals, random);
 
     return c1.compareTo(c2) <= 0 ? c1.individual : c2.individual;
   }
 
   private List<RankedWithDistanceIndividual<G, S>> trimPopulation(
       Collection<Individual<G, S, List<Double>>> offspring, P problem) {
-    Collection<RankedIndividual<G, S>> rankedIndividuals =
-        fastNonDominatedSort(offspring, comparator(problem));
+    Collection<RankedIndividual<G, S>> rankedIndividuals = fastNonDominatedSort(offspring, comparator(problem));
     Collection<RankedWithDistanceIndividual<G, S>> rankedWithDistanceIndividuals =
         assignCrowdingDistance(rankedIndividuals, problem.comparators());
-    return rankedWithDistanceIndividuals.stream().sorted().limit(populationSize).toList();
+    return rankedWithDistanceIndividuals.stream()
+        .sorted()
+        .limit(populationSize)
+        .toList();
   }
 
   @Override
   public void update(P problem, RandomGenerator random, ExecutorService executor, State<G, S> state)
       throws SolverException {
-    Collection<Individual<G, S, List<Double>>> offspring =
-        buildOffspring(state, problem, random, executor);
+    Collection<Individual<G, S, List<Double>>> offspring = buildOffspring(state, problem, random, executor);
     if (remap) {
-      offspring.addAll(
-          map(
-              List.of(),
-              state.getPopulation().all(),
-              solutionMapper,
-              problem.qualityFunction(),
-              executor,
-              state));
+      offspring.addAll(map(
+          List.of(),
+          state.getPopulation().all(),
+          solutionMapper,
+          problem.qualityFunction(),
+          executor,
+          state));
     } else {
       offspring.addAll(state.getPopulation().all());
     }
     state.rankedWithDistanceIndividuals = trimPopulation(offspring, problem);
-    Collection<Individual<G, S, List<Double>>> population =
-        state.rankedWithDistanceIndividuals.stream().map(i -> i.individual).toList();
+    Collection<Individual<G, S, List<Double>>> population = state.rankedWithDistanceIndividuals.stream()
+        .map(i -> i.individual)
+        .toList();
 
     // update state
     state.setPopulation(new DAGPartiallyOrderedCollection<>(population, comparator(problem)));

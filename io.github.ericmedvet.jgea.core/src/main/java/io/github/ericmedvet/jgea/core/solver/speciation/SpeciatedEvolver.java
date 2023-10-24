@@ -44,12 +44,7 @@ import java.util.random.RandomGenerator;
 
 public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-    SpeciatedPOCPopulationState<Individual<G, S, Q>, G, S, Q>,
-        P,
-        Individual<G, S, Q>,
-        G,
-        S,
-        Q> {
+        SpeciatedPOCPopulationState<Individual<G, S, Q>, G, S, Q>, P, Individual<G, S, Q>, G, S, Q> {
   private static final Logger L = Logger.getLogger(SpeciatedEvolver.class.getName());
   protected final Map<GeneticOperator<G>, Double> operators;
   protected final int populationSize;
@@ -111,30 +106,16 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
     }
 
     public State(PartiallyOrderedCollection<I> population) {
-      this(
-          LocalDateTime.now(),
-          0,
-          0,
-          Progress.NA,
-          population.size(),
-          population.size(),
-          population,
-          List.of());
+      this(LocalDateTime.now(), 0, 0, Progress.NA, population.size(), population.size(), population, List.of());
     }
   }
 
   @Override
   public SpeciatedPOCPopulationState<Individual<G, S, Q>, G, S, Q> init(
       P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
-    return new State<>(
-        PartiallyOrderedCollection.from(
-            getAll(
-                map(
-                    genotypeFactory.build(populationSize, random),
-                    0,
-                    problem.qualityFunction(),
-                    executor)),
-            comparator(problem)));
+    return new State<>(PartiallyOrderedCollection.from(
+        getAll(map(genotypeFactory.build(populationSize, random), 0, problem.qualityFunction(), executor)),
+        comparator(problem)));
   }
 
   @Override
@@ -146,33 +127,27 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
       throws SolverException {
     Collection<Individual<G, S, Q>> parents = state.pocPopulation().all();
     // partition in species
-    List<Species<Individual<G, S, Q>>> allSpecies =
-        new ArrayList<>(speciator.speciate(state.pocPopulation()));
-    L.fine(
-        String.format(
-            "Population speciated in %d species of sizes %s",
-            allSpecies.size(), allSpecies.stream().map(s -> s.elements().size()).toList()));
+    List<Species<Individual<G, S, Q>>> allSpecies = new ArrayList<>(speciator.speciate(state.pocPopulation()));
+    L.fine(String.format(
+        "Population speciated in %d species of sizes %s",
+        allSpecies.size(),
+        allSpecies.stream().map(s -> s.elements().size()).toList()));
     // put elites
     Collection<Individual<G, S, Q>> elites = new ArrayList<>();
     parents.stream()
-        .reduce(
-            (i1, i2) ->
-                comparator(problem)
-                        .compare(i1, i2)
-                        .equals(PartialComparator.PartialComparatorOutcome.BEFORE)
-                    ? i1
-                    : i2)
+        .reduce((i1, i2) ->
+            comparator(problem).compare(i1, i2).equals(PartialComparator.PartialComparatorOutcome.BEFORE)
+                ? i1
+                : i2)
         .ifPresent(elites::add);
     for (Species<Individual<G, S, Q>> species : allSpecies) {
       if (species.elements().size() >= minSpeciesSizeForElitism) {
         species.elements().stream()
-            .reduce(
-                (i1, i2) ->
-                    comparator(problem)
-                            .compare(i1, i2)
-                            .equals(PartialComparator.PartialComparatorOutcome.BEFORE)
-                        ? i1
-                        : i2)
+            .reduce((i1, i2) -> comparator(problem)
+                    .compare(i1, i2)
+                    .equals(PartialComparator.PartialComparatorOutcome.BEFORE)
+                ? i1
+                : i2)
             .ifPresent(elites::add);
       }
     }
@@ -180,21 +155,19 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
     int remaining = populationSize - elites.size();
     List<Individual<G, S, Q>> representers =
         allSpecies.stream().map(Species::representative).toList();
-    L.fine(
-        String.format(
-            "Representers determined for %d species: fitnesses are %s",
-            allSpecies.size(),
-            representers.stream().map(i -> String.format("%s", i.quality())).toList()));
+    L.fine(String.format(
+        "Representers determined for %d species: fitnesses are %s",
+        allSpecies.size(),
+        representers.stream().map(i -> String.format("%s", i.quality())).toList()));
     List<Individual<G, S, Q>> sortedRepresenters = new ArrayList<>(representers);
     sortedRepresenters.sort(comparator(problem).comparator());
-    List<Double> weights =
-        representers.stream().map(r -> Math.pow(rankBase, sortedRepresenters.indexOf(r))).toList();
+    List<Double> weights = representers.stream()
+        .map(r -> Math.pow(rankBase, sortedRepresenters.indexOf(r)))
+        .toList();
     double weightSum = weights.stream().mapToDouble(Double::doubleValue).sum();
-    List<Integer> sizes =
-        new ArrayList<>(
-            weights.stream()
-                .map(w -> (int) Math.floor(w / weightSum * (double) remaining))
-                .toList());
+    List<Integer> sizes = new ArrayList<>(weights.stream()
+        .map(w -> (int) Math.floor(w / weightSum * (double) remaining))
+        .toList());
     int sizeSum = sizes.stream().mapToInt(Integer::intValue).sum();
     sizes.set(0, sizes.get(0) + remaining - sizeSum);
     L.fine(String.format("Offspring sizes assigned to %d species: %s", allSpecies.size(), sizes));
@@ -202,7 +175,8 @@ public class SpeciatedEvolver<P extends QualityBasedProblem<S, Q>, G, S, Q>
     List<G> offspringGenotypes = new ArrayList<>(remaining);
     for (int i = 0; i < allSpecies.size(); i++) {
       int size = sizes.get(i);
-      List<Individual<G, S, Q>> species = new ArrayList<>(allSpecies.get(i).elements());
+      List<Individual<G, S, Q>> species =
+          new ArrayList<>(allSpecies.get(i).elements());
       species.sort(comparator(problem).comparator());
       List<G> speciesOffspringGenotypes = new ArrayList<>();
       int counter = 0;

@@ -33,10 +33,9 @@ public class SyntheticUnivariateRegressionFitness extends UnivariateRegressionFi
   public SyntheticUnivariateRegressionFitness(
       UnivariateRealFunction targetFunction, List<double[]> points, Metric metric) {
     super(
-        new ListNumericalDataset(
-            points.stream()
-                .map(xs -> new NumericalDataset.Example(xs, targetFunction.applyAsDouble(xs)))
-                .toList()),
+        new ListNumericalDataset(points.stream()
+            .map(xs -> new NumericalDataset.Example(xs, targetFunction.applyAsDouble(xs)))
+            .toList()),
         metric);
     this.targetFunction = targetFunction;
   }

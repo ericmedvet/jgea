@@ -96,34 +96,26 @@ public interface Table<T> {
   }
 
   default String prettyPrint(String format) {
-    int[] widths =
-        IntStream.range(0, nColumns())
-            .map(
-                x ->
-                    Math.max(
-                        names().get(x).length(),
-                        IntStream.range(0, nRows())
-                            .map(y -> String.format(format, get(x, y)).length())
-                            .max()
-                            .orElse(1)))
-            .toArray();
+    int[] widths = IntStream.range(0, nColumns())
+        .map(x -> Math.max(
+            names().get(x).length(),
+            IntStream.range(0, nRows())
+                .map(y -> String.format(format, get(x, y)).length())
+                .max()
+                .orElse(1)))
+        .toArray();
     StringBuilder sb = new StringBuilder();
     // print header
-    sb.append(
-        IntStream.range(0, nColumns())
-            .mapToObj(x -> String.format("%" + widths[x] + "." + widths[x] + "s", names().get(x)))
-            .collect(Collectors.joining(" ")));
+    sb.append(IntStream.range(0, nColumns())
+        .mapToObj(x -> String.format("%" + widths[x] + "." + widths[x] + "s", names().get(x)))
+        .collect(Collectors.joining(" ")));
     sb.append("\n");
     for (int y = 0; y < nRows(); y++) {
       int finalY = y;
-      sb.append(
-          IntStream.range(0, nColumns())
-              .mapToObj(
-                  x ->
-                      String.format(
-                          "%" + widths[x] + "." + widths[x] + "s",
-                          String.format(format, get(x, finalY))))
-              .collect(Collectors.joining(" ")));
+      sb.append(IntStream.range(0, nColumns())
+          .mapToObj(x -> String.format(
+              "%" + widths[x] + "." + widths[x] + "s", String.format(format, get(x, finalY))))
+          .collect(Collectors.joining(" ")));
       if (y < nRows() - 1) {
         sb.append("\n");
       }
@@ -139,11 +131,9 @@ public interface Table<T> {
   default List<List<Pair<String, T>>> rows() {
     int nColumns = nColumns();
     return IntStream.range(0, nRows())
-        .mapToObj(
-            y ->
-                IntStream.range(0, nColumns)
-                    .mapToObj(x -> Pair.of(names().get(x), get(x, y)))
-                    .toList())
+        .mapToObj(y -> IntStream.range(0, nColumns)
+            .mapToObj(x -> Pair.of(names().get(x), get(x, y)))
+            .toList())
         .toList();
   }
 }

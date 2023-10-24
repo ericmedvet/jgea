@@ -26,12 +26,10 @@ import io.github.ericmedvet.jgea.core.representation.sequence.ElementWiseCrossov
 public class HypercubeGeometricCrossover extends ElementWiseCrossover<Double> {
 
   public HypercubeGeometricCrossover(Range<Double> range) {
-    super(
-        (v1, v2, random) ->
-            v1
-                + (v2 - v1)
-                    * (random.nextDouble() * (range.upperEndpoint() - range.lowerEndpoint())
-                        + range.lowerEndpoint()));
+    super((v1, v2, random) -> v1
+        + (v2 - v1)
+            * (random.nextDouble() * (range.upperEndpoint() - range.lowerEndpoint())
+                + range.lowerEndpoint()));
   }
 
   public HypercubeGeometricCrossover() {

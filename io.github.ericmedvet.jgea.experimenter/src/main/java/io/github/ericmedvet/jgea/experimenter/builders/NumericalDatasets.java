@@ -52,8 +52,7 @@ public class NumericalDatasets {
       @Param(value = "yVarNamePattern", dS = "y.*") String yVarNamePattern) {
     return () -> {
       try {
-        return new LazyNumericalDataset(filePath, xVarNamePattern, yVarNamePattern)
-            .folds(folds, nFolds);
+        return new LazyNumericalDataset(filePath, xVarNamePattern, yVarNamePattern).folds(folds, nFolds);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }

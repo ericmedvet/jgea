@@ -41,10 +41,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class FunctionGraph
-    implements NamedMultivariateRealFunction,
-        Sized,
-        Serializable,
-        Parametrized<Graph<Node, Double>> {
+    implements NamedMultivariateRealFunction, Sized, Serializable, Parametrized<Graph<Node, Double>> {
 
   private final List<String> xVarNames;
   private final List<String> yVarNames;
@@ -85,17 +82,16 @@ public class FunctionGraph
         throw new IllegalArgumentException(
             String.format("Invalid graph: node %s is of wrong type %s", n, n.getClass()));
       }
-      if ((n instanceof Constant || n instanceof Input) && graph.predecessors(n).size() > 0) {
-        throw new IllegalArgumentException(
-            String.format(
-                "Invalid graph: constant/input node %s has more than 0 predecessors (%d)",
-                n, graph.predecessors(n).size()));
+      if ((n instanceof Constant || n instanceof Input)
+          && graph.predecessors(n).size() > 0) {
+        throw new IllegalArgumentException(String.format(
+            "Invalid graph: constant/input node %s has more than 0 predecessors (%d)",
+            n, graph.predecessors(n).size()));
       }
       if ((n instanceof Output) && graph.successors(n).size() > 0) {
-        throw new IllegalArgumentException(
-            String.format(
-                "Invalid graph: output node %s has more than 0 successors " + "(%d)",
-                n, graph.predecessors(n).size()));
+        throw new IllegalArgumentException(String.format(
+            "Invalid graph: output node %s has more than 0 successors " + "(%d)",
+            n, graph.predecessors(n).size()));
       }
     }
   }
@@ -162,8 +158,7 @@ public class FunctionGraph
   @Override
   public String toString() {
     return graph.arcs().stream()
-        .map(
-            e -> String.format("%s-[%.3f]->%s", e.getSource(), graph.getArcValue(e), e.getTarget()))
+        .map(e -> String.format("%s-[%.3f]->%s", e.getSource(), graph.getArcValue(e), e.getTarget()))
         .collect(Collectors.joining(","));
   }
 

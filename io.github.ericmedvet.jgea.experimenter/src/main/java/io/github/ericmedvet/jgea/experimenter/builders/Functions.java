@@ -37,7 +37,8 @@ public class Functions {
   @SuppressWarnings("unused")
   public static Function<String, Object> fromBase64() {
     return s -> {
-      try (ByteArrayInputStream bais = new ByteArrayInputStream(Base64.getDecoder().decode(s));
+      try (ByteArrayInputStream bais =
+              new ByteArrayInputStream(Base64.getDecoder().decode(s));
           ObjectInputStream ois = new ObjectInputStream(bais)) {
         return ois.readObject();
       } catch (Throwable t) {

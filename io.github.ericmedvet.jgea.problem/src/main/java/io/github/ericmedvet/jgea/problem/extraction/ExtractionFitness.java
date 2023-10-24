@@ -29,8 +29,7 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
 
   private final Aggregator<S> aggregator;
 
-  public ExtractionFitness(
-      List<S> sequence, Set<Range<Integer>> desiredExtractions, Metric... metrics) {
+  public ExtractionFitness(List<S> sequence, Set<Range<Integer>> desiredExtractions, Metric... metrics) {
     aggregator = new Aggregator<S>(sequence, desiredExtractions, metrics);
   }
 
@@ -86,18 +85,14 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
         double truePositiveSymbols = extractionMask.cardinality();
         double falseNegativeSymbols = positiveSymbols - truePositiveSymbols;
         double falsePositiveSymbols = extractedSymbols - truePositiveSymbols;
-        double trueNegativeChars =
-            desiredExtractionMask.length()
-                - falsePositiveSymbols
-                - truePositiveSymbols
-                - falseNegativeSymbols;
+        double trueNegativeChars = desiredExtractionMask.length()
+            - falsePositiveSymbols
+            - truePositiveSymbols
+            - falseNegativeSymbols;
+        values.put(Metric.SYMBOL_FPR, falsePositiveSymbols / (trueNegativeChars + falsePositiveSymbols));
+        values.put(Metric.SYMBOL_FNR, falseNegativeSymbols / (truePositiveSymbols + falseNegativeSymbols));
         values.put(
-            Metric.SYMBOL_FPR, falsePositiveSymbols / (trueNegativeChars + falsePositiveSymbols));
-        values.put(
-            Metric.SYMBOL_FNR, falseNegativeSymbols / (truePositiveSymbols + falseNegativeSymbols));
-        values.put(
-            Metric.SYMBOL_ERROR,
-            (falsePositiveSymbols + falseNegativeSymbols) / (double) sequence.size());
+            Metric.SYMBOL_ERROR, (falsePositiveSymbols + falseNegativeSymbols) / (double) sequence.size());
         values.put(
             Metric.SYMBOL_WEIGHTED_ERROR,
             (falsePositiveSymbols / (trueNegativeChars + falsePositiveSymbols)

@@ -50,8 +50,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
   public Tree<T> apply(BitString genotype) {
     AtomicInteger mappingGlobalCounter = new AtomicInteger();
     AtomicInteger finalizationGlobalCounter = new AtomicInteger();
-    return mapRecursively(
-        grammar.startingSymbol(), genotype, mappingGlobalCounter, finalizationGlobalCounter, 0);
+    return mapRecursively(grammar.startingSymbol(), genotype, mappingGlobalCounter, finalizationGlobalCounter, 0);
   }
 
   private Tree<T> mapRecursively(
@@ -66,22 +65,13 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
     }
     if (depth >= maxMappingDepth) {
       List<Integer> shortestOptionIndexTies = shortestOptionIndexesMap.get(symbol);
-      List<T> shortestOption =
-          grammar
-              .rules()
-              .get(symbol)
-              .get(
-                  shortestOptionIndexTies.get(
-                      finalizationGlobalCounter.getAndIncrement()
-                          % shortestOptionIndexTies.size()));
+      List<T> shortestOption = grammar.rules()
+          .get(symbol)
+          .get(shortestOptionIndexTies.get(
+              finalizationGlobalCounter.getAndIncrement() % shortestOptionIndexTies.size()));
       for (T optionSymbol : shortestOption) {
-        tree.addChild(
-            mapRecursively(
-                optionSymbol,
-                genotype,
-                mappingGlobalCounter,
-                finalizationGlobalCounter,
-                depth + 1));
+        tree.addChild(mapRecursively(
+            optionSymbol, genotype, mappingGlobalCounter, finalizationGlobalCounter, depth + 1));
       }
       return tree;
     }
@@ -95,11 +85,9 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
       }
       expressivenesses.add(expressiveness);
     }
-    int optionIndex =
-        ((Double)
-                MapperUtils.compute(
-                    optionChooser, genotype, expressivenesses, depth, mappingGlobalCounter))
-            .intValue();
+    int optionIndex = ((Double)
+            MapperUtils.compute(optionChooser, genotype, expressivenesses, depth, mappingGlobalCounter))
+        .intValue();
     optionIndex = Math.min(optionIndex, options.size() - 1);
     optionIndex = Math.max(0, optionIndex);
     // split genotype
@@ -108,10 +96,8 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
       expressivenesses.add((double) weightsMap.getOrDefault(optionSymbol, 1));
     }
     @SuppressWarnings("unchecked")
-    List<BitString> pieces =
-        ((List<BitString>)
-            MapperUtils.compute(
-                genoAssigner, genotype, expressivenesses, depth, mappingGlobalCounter));
+    List<BitString> pieces = ((List<BitString>)
+        MapperUtils.compute(genoAssigner, genotype, expressivenesses, depth, mappingGlobalCounter));
     for (int i = 0; i < options.get(optionIndex).size(); i++) {
       BitString piece;
       if (pieces.size() > i) {
@@ -119,13 +105,12 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
       } else {
         piece = new BitString(0);
       }
-      tree.addChild(
-          mapRecursively(
-              options.get(optionIndex).get(i),
-              piece,
-              mappingGlobalCounter,
-              finalizationGlobalCounter,
-              depth + 1));
+      tree.addChild(mapRecursively(
+          options.get(optionIndex).get(i),
+          piece,
+          mappingGlobalCounter,
+          finalizationGlobalCounter,
+          depth + 1));
     }
     return tree;
   }

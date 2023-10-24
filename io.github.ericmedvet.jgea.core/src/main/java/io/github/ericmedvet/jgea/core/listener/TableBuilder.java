@@ -41,11 +41,9 @@ public class TableBuilder<E, O, K> implements AccumulatorFactory<E, Table<O>, K>
     List<? extends O> kValues = kFunctions.stream().map(f -> f.apply(k)).toList();
     return new Accumulator<>() {
 
-      private final Table<O> table =
-          new ArrayTable<>(
-              Misc.concat(List.of(kFunctions, eFunctions)).stream()
-                  .map(NamedFunction::getName)
-                  .toList());
+      private final Table<O> table = new ArrayTable<>(Misc.concat(List.of(kFunctions, eFunctions)).stream()
+          .map(NamedFunction::getName)
+          .toList());
 
       @Override
       public Table<O> get() {
@@ -54,7 +52,8 @@ public class TableBuilder<E, O, K> implements AccumulatorFactory<E, Table<O>, K>
 
       @Override
       public void listen(E e) {
-        List<? extends O> eValues = eFunctions.stream().map(f -> f.apply(e)).toList();
+        List<? extends O> eValues =
+            eFunctions.stream().map(f -> f.apply(e)).toList();
         table.addRow(Misc.concat(List.of(kValues, eValues)));
       }
     };

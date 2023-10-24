@@ -51,10 +51,9 @@ public record BitString(boolean[] bits) implements Sized, Serializable, Cloneabl
   }
 
   public BitString compress(int newLength) {
-    List<BitString> slices =
-        Misc.slices(Range.closedOpen(0, bits.length), newLength).stream()
-            .map(r -> slice(r.lowerEndpoint(), r.upperEndpoint()))
-            .toList();
+    List<BitString> slices = Misc.slices(Range.closedOpen(0, bits.length), newLength).stream()
+        .map(r -> slice(r.lowerEndpoint(), r.upperEndpoint()))
+        .toList();
     boolean[] compressed = new boolean[slices.size()];
     for (int i = 0; i < slices.size(); i++) {
       compressed[i] = slices.get(i).nOfOnes() > slices.get(i).size() / 2;

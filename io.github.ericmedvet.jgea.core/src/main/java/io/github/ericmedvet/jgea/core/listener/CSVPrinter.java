@@ -45,8 +45,10 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
       List<NamedFunction<? super K, ?>> kFunctions,
       File file,
       boolean robust) {
-    this.eFunctions = robust ? eFunctions.stream().map(NamedFunction::robust).toList() : eFunctions;
-    this.kFunctions = robust ? kFunctions.stream().map(NamedFunction::robust).toList() : kFunctions;
+    this.eFunctions =
+        robust ? eFunctions.stream().map(NamedFunction::robust).toList() : eFunctions;
+    this.kFunctions =
+        robust ? kFunctions.stream().map(NamedFunction::robust).toList() : kFunctions;
     this.file = file;
     lineCounter = 0;
   }
@@ -54,18 +56,18 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
   @Override
   public Listener<E> build(K k) {
     List<?> kValues = kFunctions.stream().map(f -> f.apply(k)).toList();
-    List<String> headers =
-        Misc.concat(List.of(kFunctions, eFunctions)).stream().map(NamedFunction::getName).toList();
+    List<String> headers = Misc.concat(List.of(kFunctions, eFunctions)).stream()
+        .map(NamedFunction::getName)
+        .toList();
     return e -> {
       List<?> eValues = eFunctions.stream().map(f -> f.apply(e)).toList();
       synchronized (file) {
         if (printer == null) {
           File actualFile = Misc.checkExistenceAndChangeName(file);
           try {
-            printer =
-                new org.apache.commons.csv.CSVPrinter(
-                    new PrintStream(actualFile),
-                    CSVFormat.Builder.create().setDelimiter(";").build());
+            printer = new org.apache.commons.csv.CSVPrinter(
+                new PrintStream(actualFile),
+                CSVFormat.Builder.create().setDelimiter(";").build());
           } catch (IOException ex) {
             L.severe(String.format("Cannot create CSVPrinter: %s", ex));
             return;
@@ -76,10 +78,9 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
             L.warning(String.format("Cannot print header: %s", ex));
             return;
           }
-          L.info(
-              String.format(
-                  "File %s created and header for %d columns written",
-                  actualFile.getPath(), eFunctions.size() + kFunctions.size()));
+          L.info(String.format(
+              "File %s created and header for %d columns written",
+              actualFile.getPath(), eFunctions.size() + kFunctions.size()));
         }
         try {
           printer.printRecord(Misc.concat(List.of(kValues, eValues)));

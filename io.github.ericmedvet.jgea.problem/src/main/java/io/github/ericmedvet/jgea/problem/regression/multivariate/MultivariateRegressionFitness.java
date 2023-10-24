@@ -33,15 +33,13 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class MultivariateRegressionFitness
-    implements CaseBasedFitness<
-        NamedMultivariateRealFunction, Map<String, Double>, Map<String, Double>, Double> {
+    implements CaseBasedFitness<NamedMultivariateRealFunction, Map<String, Double>, Map<String, Double>, Double> {
   private final NumericalDataset dataset;
   private final UnivariateRegressionFitness.Metric metric;
 
   private Map<String, List<Double>> actualYs;
 
-  public MultivariateRegressionFitness(
-      NumericalDataset dataset, UnivariateRegressionFitness.Metric metric) {
+  public MultivariateRegressionFitness(NumericalDataset dataset, UnivariateRegressionFitness.Metric metric) {
     this.dataset = dataset;
     this.metric = metric;
     actualYs = null;
@@ -51,35 +49,28 @@ public class MultivariateRegressionFitness
   public Function<List<Map<String, Double>>, Double> aggregateFunction() {
     return outputs -> {
       if (actualYs == null) {
-        actualYs =
-            dataset.yVarNames().stream()
-                .collect(
-                    Collectors.toMap(
-                        yName -> yName,
-                        yName ->
-                            IntStream.range(0, dataset.size())
-                                .mapToObj(
-                                    i -> dataset.namedExampleProvider().apply(i).y().get(yName))
-                                .toList()));
+        actualYs = dataset.yVarNames().stream()
+            .collect(Collectors.toMap(yName -> yName, yName -> IntStream.range(0, dataset.size())
+                .mapToObj(i -> dataset.namedExampleProvider()
+                    .apply(i)
+                    .y()
+                    .get(yName))
+                .toList()));
       }
-      Map<String, List<Double>> predictedYs =
-          dataset.yVarNames().stream()
-              .collect(
-                  Collectors.toMap(
-                      yName -> yName, yName -> outputs.stream().map(o -> o.get(yName)).toList()));
+      Map<String, List<Double>> predictedYs = dataset.yVarNames().stream()
+          .collect(Collectors.toMap(
+              yName -> yName,
+              yName -> outputs.stream().map(o -> o.get(yName)).toList()));
       return predictedYs.entrySet().stream()
-          .mapToDouble(
-              e ->
-                  metric.apply(
-                      UnivariateRegressionFitness.pairs(e.getValue(), actualYs.get(e.getKey()))))
+          .mapToDouble(e ->
+              metric.apply(UnivariateRegressionFitness.pairs(e.getValue(), actualYs.get(e.getKey()))))
           .average()
           .orElse(Double.NaN);
     };
   }
 
   @Override
-  public BiFunction<NamedMultivariateRealFunction, Map<String, Double>, Map<String, Double>>
-      caseFunction() {
+  public BiFunction<NamedMultivariateRealFunction, Map<String, Double>, Map<String, Double>> caseFunction() {
     return NamedMultivariateRealFunction::compute;
   }
 

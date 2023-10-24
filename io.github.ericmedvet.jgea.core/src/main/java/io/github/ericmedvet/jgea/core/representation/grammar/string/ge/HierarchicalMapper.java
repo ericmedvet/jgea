@@ -99,9 +99,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
     int[] bitUsages = new int[genotype.size()];
     Tree<T> tree;
     if (recursive) {
-      tree =
-          mapRecursively(
-              grammar.startingSymbol(), Range.closedOpen(0, genotype.size()), genotype, bitUsages);
+      tree = mapRecursively(grammar.startingSymbol(), Range.closedOpen(0, genotype.size()), genotype, bitUsages);
     } else {
       tree = mapIteratively(genotype, bitUsages);
     }
@@ -114,10 +112,9 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
       return options.get(0);
     }
     double max = Double.NEGATIVE_INFINITY;
-    List<BitString> slices =
-        getOptionSlices(range, options).stream()
-            .map(s -> genotype.slice(s.lowerEndpoint(), s.upperEndpoint()))
-            .toList();
+    List<BitString> slices = getOptionSlices(range, options).stream()
+        .map(s -> genotype.slice(s.lowerEndpoint(), s.upperEndpoint()))
+        .toList();
     List<Integer> bestOptionIndexes = new ArrayList<>();
     for (int i = 0; i < options.size(); i++) {
       double value = optionSliceWeight(slices.get(i));
@@ -133,10 +130,8 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
     // for avoiding choosing always the 1st option in case of tie, choose depending on count of 1s
     // in genotype
     if (bestOptionIndexes.size() == 1) {
-      index =
-          bestOptionIndexes.get(
-              genotype.slice(range.lowerEndpoint(), range.upperEndpoint()).nOfOnes()
-                  % bestOptionIndexes.size());
+      index = bestOptionIndexes.get(
+          genotype.slice(range.lowerEndpoint(), range.upperEndpoint()).nOfOnes() % bestOptionIndexes.size());
     }
     return options.get(index);
   }
@@ -160,8 +155,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
 
   public Tree<T> mapIteratively(BitString genotype, int[] bitUsages) {
     Tree<EnhancedSymbol<T>> enhancedTree =
-        Tree.of(
-            new EnhancedSymbol<>(grammar.startingSymbol(), Range.closedOpen(0, genotype.size())));
+        Tree.of(new EnhancedSymbol<>(grammar.startingSymbol(), Range.closedOpen(0, genotype.size())));
     while (true) {
       Tree<EnhancedSymbol<T>> treeToBeReplaced = null;
       for (Tree<EnhancedSymbol<T>> tree : enhancedTree.leaves()) {
@@ -180,14 +174,13 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
       // get option
       List<T> symbols;
       if ((symbolRange.upperEndpoint() - symbolRange.lowerEndpoint()) < options.size()) {
-        int count =
-            (symbolRange.upperEndpoint() - symbolRange.lowerEndpoint() > 0)
-                ? genotype.slice(symbolRange.lowerEndpoint(), symbolRange.upperEndpoint()).nOfOnes()
-                : genotype.nOfOnes();
-        int index =
-            shortestOptionIndexesMap
-                .get(symbol)
-                .get(count % shortestOptionIndexesMap.get(symbol).size());
+        int count = (symbolRange.upperEndpoint() - symbolRange.lowerEndpoint() > 0)
+            ? genotype.slice(symbolRange.lowerEndpoint(), symbolRange.upperEndpoint())
+                .nOfOnes()
+            : genotype.nOfOnes();
+        int index = shortestOptionIndexesMap
+            .get(symbol)
+            .get(count % shortestOptionIndexesMap.get(symbol).size());
         symbols = options.get(index);
       } else {
         symbols = chooseOption(genotype, symbolRange, options);
@@ -201,11 +194,9 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
         Range<Integer> childRange = childRanges.get(i);
         if (childRanges.get(i).equals(symbolRange)
             && (childRange.upperEndpoint() - childRange.lowerEndpoint() > 0)) {
-          childRange =
-              Range.closedOpen(symbolRange.lowerEndpoint(), symbolRange.upperEndpoint() - 1);
+          childRange = Range.closedOpen(symbolRange.lowerEndpoint(), symbolRange.upperEndpoint() - 1);
         }
-        Tree<EnhancedSymbol<T>> newChild =
-            Tree.of(new EnhancedSymbol<>(symbols.get(i), childRange));
+        Tree<EnhancedSymbol<T>> newChild = Tree.of(new EnhancedSymbol<>(symbols.get(i), childRange));
         treeToBeReplaced.addChild(newChild);
       }
     }
@@ -213,8 +204,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
     return Tree.map(enhancedTree, EnhancedSymbol::symbol);
   }
 
-  public Tree<T> mapRecursively(
-      T symbol, Range<Integer> range, BitString genotype, int[] bitUsages) {
+  public Tree<T> mapRecursively(T symbol, Range<Integer> range, BitString genotype, int[] bitUsages) {
     Tree<T> tree = Tree.of(symbol);
     if (grammar.rules().containsKey(symbol)) {
       // a non-terminal node
@@ -226,14 +216,13 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
       // get option
       List<T> symbols;
       if ((range.upperEndpoint() - range.lowerEndpoint()) < options.size()) {
-        int count =
-            (range.upperEndpoint() - range.lowerEndpoint() > 0)
-                ? genotype.slice(range.lowerEndpoint(), range.upperEndpoint()).nOfOnes()
-                : genotype.nOfOnes();
-        int index =
-            shortestOptionIndexesMap
-                .get(symbol)
-                .get(count % shortestOptionIndexesMap.get(symbol).size());
+        int count = (range.upperEndpoint() - range.lowerEndpoint() > 0)
+            ? genotype.slice(range.lowerEndpoint(), range.upperEndpoint())
+                .nOfOnes()
+            : genotype.nOfOnes();
+        int index = shortestOptionIndexesMap
+            .get(symbol)
+            .get(count % shortestOptionIndexesMap.get(symbol).size());
         symbols = options.get(index);
       } else {
         symbols = chooseOption(genotype, range, options);
@@ -245,8 +234,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
       List<Range<Integer>> childRanges = getChildrenSlices(range, symbols);
       for (int i = 0; i < symbols.size(); i++) {
         Range<Integer> childRange = childRanges.get(i);
-        if (childRanges.get(i).equals(range)
-            && (childRange.upperEndpoint() - childRange.lowerEndpoint() > 0)) {
+        if (childRanges.get(i).equals(range) && (childRange.upperEndpoint() - childRange.lowerEndpoint() > 0)) {
           childRange = Range.closedOpen(range.lowerEndpoint(), range.upperEndpoint() - 1);
           childRanges.set(i, childRange);
         }

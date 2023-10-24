@@ -37,10 +37,8 @@ public class ArrayTable<T> implements Table<T> {
   @Override
   public void addColumn(String name, List<T> values) {
     if (values.size() != nRows()) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Wrong number of entries in new column: %d expected, %d found",
-              nRows(), values.size()));
+      throw new IllegalArgumentException(String.format(
+          "Wrong number of entries in new column: %d expected, %d found", nRows(), values.size()));
     }
     List<String> newNames = new ArrayList<>(names);
     newNames.add(name);
@@ -58,10 +56,8 @@ public class ArrayTable<T> implements Table<T> {
   @Override
   public void addRow(List<T> values) {
     if (values.size() != nColumns()) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Wrong number of entries in new row: %d expected, %d found",
-              nColumns(), values.size()));
+      throw new IllegalArgumentException(String.format(
+          "Wrong number of entries in new row: %d expected, %d found", nColumns(), values.size()));
     }
     this.values.addAll(values);
   }
@@ -110,7 +106,8 @@ public class ArrayTable<T> implements Table<T> {
 
   @Override
   public boolean removeRow(List<T> values) {
-    int[] ys = IntStream.range(0, nRows()).filter(y -> row(y).equals(values)).toArray();
+    int[] ys =
+        IntStream.range(0, nRows()).filter(y -> row(y).equals(values)).toArray();
     if (ys.length == 0) {
       return false;
     }

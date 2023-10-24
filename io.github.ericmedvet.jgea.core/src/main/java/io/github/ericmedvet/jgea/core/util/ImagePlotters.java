@@ -39,13 +39,12 @@ public class ImagePlotters {
         throw new IllegalArgumentException(
             String.format("Wrong number of data series: >1 expected, %d found", data.nColumns()));
       }
-      XYChart chart =
-          new XYChartBuilder()
-              .width(w)
-              .height(h)
-              .xAxisTitle(data.names().get(0))
-              .theme(Styler.ChartTheme.XChart)
-              .build();
+      XYChart chart = new XYChartBuilder()
+          .width(w)
+          .height(h)
+          .xAxisTitle(data.names().get(0))
+          .theme(Styler.ChartTheme.XChart)
+          .build();
       if (data.nColumns() == 2) {
         chart.setYAxisTitle(data.names().get(1));
         chart.getStyler().setLegendVisible(false);
@@ -55,9 +54,11 @@ public class ImagePlotters {
       chart.getStyler().setYAxisDecimalPattern("#.##");
       chart.getStyler().setXAxisDecimalPattern("#.##");
       chart.getStyler().setLegendPosition(Styler.LegendPosition.OutsideS);
-      double[] xs = data.column(0).stream().mapToDouble(Number::doubleValue).toArray();
+      double[] xs =
+          data.column(0).stream().mapToDouble(Number::doubleValue).toArray();
       for (int c = 1; c < data.nColumns(); c++) {
-        double[] ys = data.column(c).stream().mapToDouble(Number::doubleValue).toArray();
+        double[] ys =
+            data.column(c).stream().mapToDouble(Number::doubleValue).toArray();
         chart.addSeries(data.names().get(c), xs, ys);
       }
       return BitmapEncoder.getBufferedImage(chart);

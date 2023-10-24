@@ -64,16 +64,14 @@ public class OperatorGraph
     setParams(graph);
   }
 
-  public static Graph<Node, OperatorGraph.NonValuedArc> sampleFor(
-      List<String> xVarNames, List<String> yVarNames) {
+  public static Graph<Node, OperatorGraph.NonValuedArc> sampleFor(List<String> xVarNames, List<String> yVarNames) {
     Graph<Node, OperatorGraph.NonValuedArc> g = new LinkedHashGraph<>();
     IntStream.range(0, xVarNames.size()).forEach(i -> g.addNode(new Input(i, xVarNames.get(i))));
     IntStream.range(0, yVarNames.size()).forEach(i -> g.addNode(new Output(i, yVarNames.get(i))));
     return g;
   }
 
-  public OperatorGraph(
-      Graph<Node, NonValuedArc> graph, List<String> xVarNames, List<String> yVarNames) {
+  public OperatorGraph(Graph<Node, NonValuedArc> graph, List<String> xVarNames, List<String> yVarNames) {
     this(graph, xVarNames, yVarNames, x -> x);
   }
 
@@ -110,33 +108,32 @@ public class OperatorGraph
             String.format("Invalid graph: node %s is of wrong type %s", n, n.getClass()));
       }
       if ((n instanceof Output) && (graph.predecessors(n).size() > 1)) {
-        throw new IllegalArgumentException(
-            String.format(
-                "Invalid graph: output node %s has more than 1 predecessors " + "(%d)",
-                n, graph.predecessors(n).size()));
+        throw new IllegalArgumentException(String.format(
+            "Invalid graph: output node %s has more than 1 predecessors " + "(%d)",
+            n, graph.predecessors(n).size()));
       }
       if ((n instanceof OperatorNode)
-          && ((graph.predecessors(n).size() < ((OperatorNode) n).getOperator().minArity())
-              || (graph.predecessors(n).size() > ((OperatorNode) n).getOperator().maxArity()))) {
-        throw new IllegalArgumentException(
-            String.format(
-                "Invalid graph: operator node %s has wrong number of predecessors (%d, outside [%d,%d])",
-                n,
-                graph.predecessors(n).size(),
-                ((OperatorNode) n).getOperator().minArity(),
-                ((OperatorNode) n).getOperator().maxArity()));
+          && ((graph.predecessors(n).size()
+                  < ((OperatorNode) n).getOperator().minArity())
+              || (graph.predecessors(n).size()
+                  > ((OperatorNode) n).getOperator().maxArity()))) {
+        throw new IllegalArgumentException(String.format(
+            "Invalid graph: operator node %s has wrong number of predecessors (%d, outside [%d,%d])",
+            n,
+            graph.predecessors(n).size(),
+            ((OperatorNode) n).getOperator().minArity(),
+            ((OperatorNode) n).getOperator().maxArity()));
       }
-      if ((n instanceof Constant || n instanceof Input) && graph.predecessors(n).size() > 0) {
-        throw new IllegalArgumentException(
-            String.format(
-                "Invalid graph: constant/input node %s has more than 0 predecessors (%d)",
-                n, graph.predecessors(n).size()));
+      if ((n instanceof Constant || n instanceof Input)
+          && graph.predecessors(n).size() > 0) {
+        throw new IllegalArgumentException(String.format(
+            "Invalid graph: constant/input node %s has more than 0 predecessors (%d)",
+            n, graph.predecessors(n).size()));
       }
       if ((n instanceof Output) && graph.successors(n).size() > 0) {
-        throw new IllegalArgumentException(
-            String.format(
-                "Invalid graph: output node %s has more than 0 successors " + "(%d)",
-                n, graph.predecessors(n).size()));
+        throw new IllegalArgumentException(String.format(
+            "Invalid graph: output node %s has more than 0 successors " + "(%d)",
+            n, graph.predecessors(n).size()));
       }
     }
   }
@@ -204,13 +201,9 @@ public class OperatorGraph
   public String toString() {
     return graph.nodes().stream()
         .filter(n -> n instanceof Output)
-        .map(
-            n ->
-                n
-                    + "="
-                    + ((graph.predecessors(n).isEmpty())
-                        ? "0"
-                        : nodeToString(Misc.first(graph.predecessors(n)))))
+        .map(n -> n
+            + "="
+            + ((graph.predecessors(n).isEmpty()) ? "0" : nodeToString(Misc.first(graph.predecessors(n)))))
         .collect(Collectors.joining(";"));
   }
 
@@ -238,13 +231,10 @@ public class OperatorGraph
     if (node instanceof Constant constant) {
       return constant.getValue();
     }
-    double[] inValues =
-        graph.predecessors(node).stream()
-            .sorted(
-                Comparator.comparing((Node n) -> n.getClass().getName())
-                    .thenComparingInt(Node::getIndex))
-            .mapToDouble(n -> outValue(n, input))
-            .toArray();
+    double[] inValues = graph.predecessors(node).stream()
+        .sorted(Comparator.comparing((Node n) -> n.getClass().getName()).thenComparingInt(Node::getIndex))
+        .mapToDouble(n -> outValue(n, input))
+        .toArray();
     if (node instanceof Output) {
       return inValues.length > 0 ? inValues[0] : 0d;
     }

@@ -35,8 +35,7 @@ public class MultivariateRegressionProblems {
   @SuppressWarnings("unused")
   public static MultivariateRegressionProblem<MultivariateRegressionFitness> fromData(
       @Param("trainingDataset") Supplier<NumericalDataset> trainingDataset,
-      @Param(value = "testDataset", dNPM = "ea.d.num.empty()")
-          Supplier<NumericalDataset> testDataset,
+      @Param(value = "testDataset", dNPM = "ea.d.num.empty()") Supplier<NumericalDataset> testDataset,
       @Param(value = "metric", dS = "mse") UnivariateRegressionFitness.Metric metric) {
     return new MultivariateRegressionProblem<>(
         new MultivariateRegressionFitness(trainingDataset.get(), metric),

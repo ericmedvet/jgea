@@ -44,8 +44,7 @@ public class GridGrammar<T> implements Serializable, Grammar<T, GridGrammar.Refe
     return load(inputStream, "UTF-8");
   }
 
-  public static GridGrammar<String> load(InputStream inputStream, String charset)
-      throws IOException {
+  public static GridGrammar<String> load(InputStream inputStream, String charset) throws IOException {
     GridGrammar<String> grammar = new GridGrammar<>();
     try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, charset))) {
       String line;
@@ -62,10 +61,9 @@ public class GridGrammar<T> implements Serializable, Grammar<T, GridGrammar.Refe
           String[] rule = optionString.replaceAll("\\s+", "").split(";");
           String coordReference = rule[0].replaceAll("[()]", "");
 
-          Grid.Key referencePoint =
-              new Grid.Key(
-                  Integer.parseInt(coordReference.split(",")[0]),
-                  Integer.parseInt(coordReference.split(",")[1]));
+          Grid.Key referencePoint = new Grid.Key(
+              Integer.parseInt(coordReference.split(",")[0]),
+              Integer.parseInt(coordReference.split(",")[1]));
           String[] gridRows = Arrays.copyOfRange(rule, 1, rule.length);
 
           int height = gridRows.length;
@@ -94,13 +92,12 @@ public class GridGrammar<T> implements Serializable, Grammar<T, GridGrammar.Refe
 
   public <X> GridGrammar<X> map(Function<T, X> function) {
     GridGrammar<X> mapped = new GridGrammar<>();
-    rules.forEach(
-        (nt, list) ->
-            mapped.rules.put(
-                function.apply(nt),
-                list.stream()
-                    .map(rg -> new ReferencedGrid<>(rg.referenceKey(), rg.grid().map(function)))
-                    .toList()));
+    rules.forEach((nt, list) -> mapped.rules.put(
+        function.apply(nt),
+        list.stream()
+            .map(rg -> new ReferencedGrid<>(
+                rg.referenceKey(), rg.grid().map(function)))
+            .toList()));
     mapped.startingSymbol = function.apply(startingSymbol);
     return mapped;
   }

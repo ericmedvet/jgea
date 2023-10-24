@@ -71,32 +71,28 @@ public interface Listener<E> {
     return new Listener<>() {
       @Override
       public void listen(E e) {
-        executorService.submit(
-            () -> {
-              try {
-                thisListener.listen(e);
-              } catch (RuntimeException ex) {
-                L.warning(
-                    String.format(
-                        "Listener %s cannot listen() event: %s",
-                        thisListener.getClass().getSimpleName(), ex));
-              }
-            });
+        executorService.submit(() -> {
+          try {
+            thisListener.listen(e);
+          } catch (RuntimeException ex) {
+            L.warning(String.format(
+                "Listener %s cannot listen() event: %s",
+                thisListener.getClass().getSimpleName(), ex));
+          }
+        });
       }
 
       @Override
       public void done() {
-        executorService.submit(
-            () -> {
-              try {
-                thisListener.done();
-              } catch (RuntimeException ex) {
-                L.warning(
-                    String.format(
-                        "Listener %s cannot done() event: %s",
-                        thisListener.getClass().getSimpleName(), ex));
-              }
-            });
+        executorService.submit(() -> {
+          try {
+            thisListener.done();
+          } catch (RuntimeException ex) {
+            L.warning(String.format(
+                "Listener %s cannot done() event: %s",
+                thisListener.getClass().getSimpleName(), ex));
+          }
+        });
       }
     };
   }

@@ -42,10 +42,8 @@ public class RegexGrammar extends StringGrammar<String> {
   public RegexGrammar(ExtractionFitness<Character> fitness, Set<Option> options) {
     this(
         fitness.getDesiredExtractions().stream()
-            .map(
-                r ->
-                    fitness.getSequence().subList(r.lowerEndpoint(), r.upperEndpoint()).stream()
-                        .collect(Collectors.toSet()))
+            .map(r -> fitness.getSequence().subList(r.lowerEndpoint(), r.upperEndpoint()).stream()
+                .collect(Collectors.toSet()))
             .reduce(Sets::union)
             .orElse(Set.of()),
         options);
@@ -74,9 +72,7 @@ public class RegexGrammar extends StringGrammar<String> {
     }
     if (options.contains(Option.BOUNDED_QUANTIFIERS)) {
       rules().get("<term>").add(l("<element>", "{", "<digit>", ",", "<digit>", "}"));
-      rules()
-          .put(
-              "<digit>", l(l("1"), l("2"), l("3"), l("4"), l("5"), l("6"), l("7"), l("8"), l("9")));
+      rules().put("<digit>", l(l("1"), l("2"), l("3"), l("4"), l("5"), l("6"), l("7"), l("8"), l("9")));
     }
     rules().put("<element>", l(l("<char>")));
     if (options.contains(Option.CHAR_CLASS)) {

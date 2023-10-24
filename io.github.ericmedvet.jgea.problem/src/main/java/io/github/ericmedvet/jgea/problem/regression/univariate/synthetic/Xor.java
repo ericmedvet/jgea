@@ -35,16 +35,8 @@ public class Xor extends SyntheticUnivariateRegressionProblem {
               return x1 == x2 ? 0 : 1;
             },
             2),
-        List.of(
-            new double[] {0d, 0d},
-            new double[] {0d, 1d},
-            new double[] {1d, 0d},
-            new double[] {1d, 1d}),
-        List.of(
-            new double[] {0d, 0d},
-            new double[] {0d, 1d},
-            new double[] {1d, 0d},
-            new double[] {1d, 1d}),
+        List.of(new double[] {0d, 0d}, new double[] {0d, 1d}, new double[] {1d, 0d}, new double[] {1d, 1d}),
+        List.of(new double[] {0d, 0d}, new double[] {0d, 1d}, new double[] {1d, 0d}, new double[] {1d, 1d}),
         metric);
   }
 

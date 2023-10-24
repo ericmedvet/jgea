@@ -31,8 +31,7 @@ public interface ListenerFactory<E, K> {
 
   Listener<E> build(K k);
 
-  static <E, K> ListenerFactory<E, K> all(
-      List<? extends ListenerFactory<? super E, ? super K>> factories) {
+  static <E, K> ListenerFactory<E, K> all(List<? extends ListenerFactory<? super E, ? super K>> factories) {
     return new ListenerFactory<>() {
       @Override
       public Listener<E> build(K k) {
@@ -163,43 +162,39 @@ public interface ListenerFactory<E, K> {
                   return;
                 }
                 counter.incrementAndGet();
-                executorService.submit(
-                    () -> {
-                      try {
-                        innerListener.listen(e);
-                      } catch (RuntimeException ex) {
-                        L.warning(
-                            String.format(
-                                "Listener %s cannot listen() event: %s",
-                                innerListener.getClass().getSimpleName(), ex));
-                      } finally {
-                        synchronized (counter) {
-                          counter.decrementAndGet();
-                          counter.notifyAll();
-                        }
-                      }
-                    });
+                executorService.submit(() -> {
+                  try {
+                    innerListener.listen(e);
+                  } catch (RuntimeException ex) {
+                    L.warning(String.format(
+                        "Listener %s cannot listen() event: %s",
+                        innerListener.getClass().getSimpleName(), ex));
+                  } finally {
+                    synchronized (counter) {
+                      counter.decrementAndGet();
+                      counter.notifyAll();
+                    }
+                  }
+                });
               }
 
               @Override
               public void done() {
                 counter.incrementAndGet();
-                executorService.submit(
-                    () -> {
-                      try {
-                        innerListener.done();
-                      } catch (RuntimeException ex) {
-                        L.warning(
-                            String.format(
-                                "Listener %s cannot done() event: %s",
-                                innerListener.getClass().getSimpleName(), ex));
-                      } finally {
-                        synchronized (counter) {
-                          counter.decrementAndGet();
-                          counter.notifyAll();
-                        }
-                      }
-                    });
+                executorService.submit(() -> {
+                  try {
+                    innerListener.done();
+                  } catch (RuntimeException ex) {
+                    L.warning(String.format(
+                        "Listener %s cannot done() event: %s",
+                        innerListener.getClass().getSimpleName(), ex));
+                  } finally {
+                    synchronized (counter) {
+                      counter.decrementAndGet();
+                      counter.notifyAll();
+                    }
+                  }
+                });
               }
             };
           }

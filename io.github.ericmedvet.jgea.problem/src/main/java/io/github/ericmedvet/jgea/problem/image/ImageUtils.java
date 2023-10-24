@@ -30,8 +30,7 @@ public class ImageUtils {
     BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_BYTE_GRAY);
     for (int x = 0; x < w; x++) {
       for (int y = 0; y < h; y++) {
-        double fOut =
-            f.applyAsDouble(new double[] {(double) x / (double) w, (double) y / (double) h});
+        double fOut = f.applyAsDouble(new double[] {(double) x / (double) w, (double) y / (double) h});
         if (normalize) {
           fOut = Math.tanh(fOut) / 2d + 0.5d;
         }

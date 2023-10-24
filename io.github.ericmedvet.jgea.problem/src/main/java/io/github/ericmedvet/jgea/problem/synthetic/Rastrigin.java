@@ -27,23 +27,22 @@ import java.util.List;
 import java.util.function.Function;
 
 public class Rastrigin
-    implements ComparableQualityBasedProblem<List<Double>, Double>,
-        ProblemWithExampleSolution<List<Double>> {
+    implements ComparableQualityBasedProblem<List<Double>, Double>, ProblemWithExampleSolution<List<Double>> {
 
   private final int p;
   private final Function<List<Double>, Double> fitnessFunction;
 
   public Rastrigin(int p) {
     this.p = p;
-    fitnessFunction =
-        vs -> {
-          if (vs.size() != p) {
-            throw new IllegalArgumentException(
-                "Wrong input size: %d expected, %d found".formatted(p, vs.size()));
-          }
-          return 10d * (double) vs.size()
-              + vs.stream().mapToDouble(v -> v * v - 10 * Math.cos(2 * Math.PI * v)).sum();
-        };
+    fitnessFunction = vs -> {
+      if (vs.size() != p) {
+        throw new IllegalArgumentException("Wrong input size: %d expected, %d found".formatted(p, vs.size()));
+      }
+      return 10d * (double) vs.size()
+          + vs.stream()
+              .mapToDouble(v -> v * v - 10 * Math.cos(2 * Math.PI * v))
+              .sum();
+    };
   }
 
   @Override

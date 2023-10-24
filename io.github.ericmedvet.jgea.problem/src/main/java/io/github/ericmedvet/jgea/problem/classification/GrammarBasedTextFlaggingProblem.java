@@ -38,8 +38,7 @@ public class GrammarBasedTextFlaggingProblem extends TextFlaggingProblem
         QualityBasedProblem<Classifier<String, TextFlaggingProblem.Label>, List<Double>> {
 
   private final StringGrammar<String> grammar;
-  private final Function<Tree<String>, Classifier<String, TextFlaggingProblem.Label>>
-      solutionMapper;
+  private final Function<Tree<String>, Classifier<String, TextFlaggingProblem.Label>> solutionMapper;
 
   public GrammarBasedTextFlaggingProblem(
       Set<Character> alphabet,
@@ -50,15 +49,13 @@ public class GrammarBasedTextFlaggingProblem extends TextFlaggingProblem
       ClassificationFitness.Metric learningErrorMetric,
       ClassificationFitness.Metric validationErrorMetric) {
     super(data, folds, i, learningErrorMetric, validationErrorMetric);
-    solutionMapper =
-        (Tree<String> tree) -> {
-          String regex = tree.leaves().stream().map(Tree::content).collect(Collectors.joining());
-          return (Classifier<String, Label>)
-              s -> {
-                Matcher matcher = Pattern.compile(regex).matcher(s);
-                return matcher.find() ? Label.FOUND : Label.NOT_FOUND;
-              };
-        };
+    solutionMapper = (Tree<String> tree) -> {
+      String regex = tree.leaves().stream().map(Tree::content).collect(Collectors.joining());
+      return (Classifier<String, Label>) s -> {
+        Matcher matcher = Pattern.compile(regex).matcher(s);
+        return matcher.find() ? Label.FOUND : Label.NOT_FOUND;
+      };
+    };
     if (alphabet == null) {
       grammar = new RegexGrammar(data.stream().map(Pair::first).toList(), options);
     } else {

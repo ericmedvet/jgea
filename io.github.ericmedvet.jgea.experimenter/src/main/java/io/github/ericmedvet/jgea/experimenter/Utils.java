@@ -36,16 +36,14 @@ public class Utils {
 
   private static final String FORMAT_REGEX = "%#?\\d*(\\.\\d+)?[sdf]";
   private static final String MAP_KEYS_REGEX = "[A-Za-z][A-Za-z0-9_]*";
-  private static final Pattern INTERPOLATOR =
-      Pattern.compile(
-          "\\{(?<mapKeys>"
-              + MAP_KEYS_REGEX
-              + "(\\."
-              + MAP_KEYS_REGEX
-              + ")*)"
-              + "(:(?<format>"
-              + FORMAT_REGEX
-              + "))?\\}");
+  private static final Pattern INTERPOLATOR = Pattern.compile("\\{(?<mapKeys>"
+      + MAP_KEYS_REGEX
+      + "(\\."
+      + MAP_KEYS_REGEX
+      + ")*)"
+      + "(:(?<format>"
+      + FORMAT_REGEX
+      + "))?\\}");
 
   private Utils() {}
 
@@ -53,8 +51,7 @@ public class Utils {
     if (keyPieces.size() == 1) {
       return paramMap.value(keyPieces.get(0));
     }
-    NamedParamMap namedParamMap =
-        (NamedParamMap) paramMap.value(keyPieces.get(0), ParamMap.Type.NAMED_PARAM_MAP);
+    NamedParamMap namedParamMap = (NamedParamMap) paramMap.value(keyPieces.get(0), ParamMap.Type.NAMED_PARAM_MAP);
     if (namedParamMap == null) {
       return null;
     }
@@ -70,7 +67,8 @@ public class Utils {
       try {
         String mapKeys = m.group("mapKeys");
         String f = m.group("format") != null ? m.group("format") : "%s";
-        Object v = getKeyFromParamMap(map, Arrays.stream(mapKeys.split("\\.")).toList());
+        Object v = getKeyFromParamMap(
+            map, Arrays.stream(mapKeys.split("\\.")).toList());
         sb.append(f.formatted(v));
       } catch (RuntimeException e) {
         L.warning("Cannot interpolate name: %s".formatted(e));

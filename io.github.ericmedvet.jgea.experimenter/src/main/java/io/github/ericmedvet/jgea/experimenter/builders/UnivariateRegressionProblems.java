@@ -41,15 +41,11 @@ public class UnivariateRegressionProblems {
       @Param(value = "metric", dS = "mse") UnivariateRegressionFitness.Metric metric) {
     NumericalDataset dataset;
     try {
-      dataset =
-          switch (name) {
-            case "concrete" -> ListNumericalDataset.loadFromCSVResource(
-                "/datasets/regression/concrete.csv", "strength");
-            case "xor" -> ListNumericalDataset.loadFromCSVResource(
-                "/datasets/regression/xor.csv", "y");
-            default -> throw new IllegalArgumentException(
-                "Unknown bundled dataset: %s".formatted(name));
-          };
+      dataset = switch (name) {
+        case "concrete" -> ListNumericalDataset.loadFromCSVResource(
+            "/datasets/regression/concrete.csv", "strength");
+        case "xor" -> ListNumericalDataset.loadFromCSVResource("/datasets/regression/xor.csv", "y");
+        default -> throw new IllegalArgumentException("Unknown bundled dataset: %s".formatted(name));};
     } catch (IOException e) {
       throw new IllegalArgumentException("Cannot load bundled dataset: %s".formatted(name));
     }
@@ -58,8 +54,7 @@ public class UnivariateRegressionProblems {
           new UnivariateRegressionFitness(dataset.folds(List.of(0, 1, 2, 3), 5), metric),
           new UnivariateRegressionFitness(dataset.folds(List.of(4), 5), metric));
       case "xor" -> new UnivariateRegressionProblem<>(
-          new UnivariateRegressionFitness(dataset, metric),
-          new UnivariateRegressionFitness(dataset, metric));
+          new UnivariateRegressionFitness(dataset, metric), new UnivariateRegressionFitness(dataset, metric));
       default -> throw new IllegalArgumentException("Unknown bundled dataset: %s".formatted(name));
     };
   }
@@ -67,8 +62,7 @@ public class UnivariateRegressionProblems {
   @SuppressWarnings("unused")
   public static UnivariateRegressionProblem<UnivariateRegressionFitness> fromData(
       @Param("trainingDataset") Supplier<NumericalDataset> trainingDataset,
-      @Param(value = "testDataset", dNPM = "ea.d.num.empty()")
-          Supplier<NumericalDataset> testDataset,
+      @Param(value = "testDataset", dNPM = "ea.d.num.empty()") Supplier<NumericalDataset> testDataset,
       @Param(value = "metric", dS = "mse") UnivariateRegressionFitness.Metric metric) {
     return new UnivariateRegressionProblem<>(
         new UnivariateRegressionFitness(trainingDataset.get(), metric),
@@ -87,8 +81,7 @@ public class UnivariateRegressionProblems {
       case "polynomial4" -> new Polynomial4(metric);
       case "vladislavleva4" -> new Vladislavleva4(metric, seed);
       case "xor" -> new Xor(metric);
-      default -> throw new IllegalArgumentException(
-          "Unknown synthetic function: %s".formatted(name));
+      default -> throw new IllegalArgumentException("Unknown synthetic function: %s".formatted(name));
     };
   }
 }

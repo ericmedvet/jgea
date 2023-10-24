@@ -20,7 +20,6 @@
 
 package io.github.ericmedvet.jgea.core.selector;
 
-import io.github.ericmedvet.jgea.core.order.DAGPartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import java.util.ArrayList;
@@ -42,7 +41,7 @@ public class Tournament implements Selector<Object> {
     for (int i = 0; i < size; i++) {
       tournament.add(Misc.pickRandomly(all, random));
     }
-    PartiallyOrderedCollection<K> poc = PartiallyOrderedCollection.from(tournament,ks.comparator());
+    PartiallyOrderedCollection<K> poc = PartiallyOrderedCollection.from(tournament, ks.comparator());
     return Misc.pickRandomly(poc.firsts(), random);
   }
 

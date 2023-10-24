@@ -49,28 +49,25 @@ import java.util.logging.Logger;
 
 public class TuiExample implements Runnable {
 
-  public static final List<NamedFunction<? super POCPopulationState<?, ?, ?>, ?>>
-      BASIC_FUNCTIONS =
-          List.of(
-              nOfIterations(),
-              births(),
-              elapsedSeconds(),
-              size().of(all()),
-              size().of(firsts()),
-              size().of(lasts()),
-              uniqueness().of(each(genotype())).of(all()),
-              uniqueness().of(each(solution())).of(all()),
-              uniqueness().of(each(quality())).of(all()),
-              size().of(genotype()).of(best()),
-              size().of(solution()).of(best()),
-              fitnessMappingIteration().of(best()));
+  public static final List<NamedFunction<? super POCPopulationState<?, ?, ?>, ?>> BASIC_FUNCTIONS = List.of(
+      nOfIterations(),
+      births(),
+      elapsedSeconds(),
+      size().of(all()),
+      size().of(firsts()),
+      size().of(lasts()),
+      uniqueness().of(each(genotype())).of(all()),
+      uniqueness().of(each(solution())).of(all()),
+      uniqueness().of(each(quality())).of(all()),
+      size().of(genotype()).of(best()),
+      size().of(solution()).of(best()),
+      fitnessMappingIteration().of(best()));
 
-  public static final List<NamedFunction<? super POCPopulationState<?, ?, ? extends Double>, ?>>
-      DOUBLE_FUNCTIONS =
-          List.of(
-              quality().reformat("%5.3f").of(best()),
-              hist(8).of(each(quality())).of(all()),
-              max(Double::compare).reformat("%5.3f").of(each(quality())).of(all()));
+  public static final List<NamedFunction<? super POCPopulationState<?, ?, ? extends Double>, ?>> DOUBLE_FUNCTIONS =
+      List.of(
+          quality().reformat("%5.3f").of(best()),
+          hist(8).of(each(quality())).of(all()),
+          max(Double::compare).reformat("%5.3f").of(each(quality())).of(all()));
 
   private static final Logger L = Logger.getLogger(TuiExample.class.getName());
 
@@ -93,7 +90,10 @@ public class TuiExample implements Runnable {
             List.of(
                 new XYPlotTableBuilder<>(
                     progress(),
-                    List.of(quality().reformat("%5.3f").of(best()).as(Number.class)),
+                    List.of(quality()
+                        .reformat("%5.3f")
+                        .of(best())
+                        .as(Number.class)),
                     1,
                     1,
                     Double.NaN,
@@ -104,7 +104,9 @@ public class TuiExample implements Runnable {
                     false),
                 new XYPlotTableBuilder<>(
                     progress(),
-                    List.of(uniqueness().of(each(genotype())).of(all())),
+                    List.of(uniqueness()
+                        .of(each(genotype()))
+                        .of(all())),
                     1,
                     1,
                     Double.NaN,
@@ -117,10 +119,8 @@ public class TuiExample implements Runnable {
     SyntheticUnivariateRegressionProblem p = new Nguyen7(UnivariateRegressionFitness.Metric.MSE, 1);
     StringGrammar<String> srGrammar;
     try {
-      srGrammar =
-          StringGrammar.load(
-              StringGrammar.class.getResourceAsStream(
-                  "/grammars/1d/symbolic-regression-nguyen7.bnf"));
+      srGrammar = StringGrammar.load(
+          StringGrammar.class.getResourceAsStream("/grammars/1d/symbolic-regression-nguyen7.bnf"));
     } catch (IOException e) {
       L.severe(String.format("Cannot load grammar: %s", e));
       return;
@@ -131,55 +131,49 @@ public class TuiExample implements Runnable {
                 SyntheticUnivariateRegressionProblem,
                 NamedUnivariateRealFunction>>
         solvers = new ArrayList<>();
-    solvers.add(
-        new AbstractStandardEvolver<>(
-            new FormulaMapper()
-                .andThen(
-                    n ->
-                        new TreeBasedUnivariateRealFunction(
-                            n,
-                            p.qualityFunction().getDataset().xVarNames(),
-                            p.qualityFunction().getDataset().yVarNames().get(0)))
-                .andThen(MathUtils.linearScaler(p.qualityFunction())),
-            new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
-            100,
-            StopConditions.nOfIterations(500),
-            Map.of(
-                new SameRootSubtreeCrossover<>(12),
-                0.8d,
-                new GrammarBasedSubtreeMutation<>(12, srGrammar),
-                0.2d),
-            new Tournament(5),
-            new Last(),
-            100,
-            true,
-            false,
-            (srp, rnd) -> new POCPopulationState<>()));
-    solvers.add(
-        new AbstractStandardWithEnforcedDiversityEvolver<>(
-            new FormulaMapper()
-                .andThen(
-                    n ->
-                        new TreeBasedUnivariateRealFunction(
-                            n,
-                            p.qualityFunction().getDataset().xVarNames(),
-                            p.qualityFunction().getDataset().yVarNames().get(0)))
-                .andThen(MathUtils.linearScaler(p.qualityFunction())),
-            new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
-            100,
-            StopConditions.nOfIterations(100),
-            Map.of(
-                new SameRootSubtreeCrossover<>(12),
-                0.8d,
-                new GrammarBasedSubtreeMutation<>(12, srGrammar),
-                0.2d),
-            new Tournament(5),
-            new Last(),
-            100,
-            true,
-            false,
-            (srp, rnd) -> new POCPopulationState<>(),
-            100));
+    solvers.add(new AbstractStandardEvolver<>(
+        new FormulaMapper()
+            .andThen(n -> new TreeBasedUnivariateRealFunction(
+                n,
+                p.qualityFunction().getDataset().xVarNames(),
+                p.qualityFunction().getDataset().yVarNames().get(0)))
+            .andThen(MathUtils.linearScaler(p.qualityFunction())),
+        new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
+        100,
+        StopConditions.nOfIterations(500),
+        Map.of(
+            new SameRootSubtreeCrossover<>(12),
+            0.8d,
+            new GrammarBasedSubtreeMutation<>(12, srGrammar),
+            0.2d),
+        new Tournament(5),
+        new Last(),
+        100,
+        true,
+        false,
+        (srp, rnd) -> new POCPopulationState<>()));
+    solvers.add(new StandardWithEnforcedDiversityEvolver<>(
+        new FormulaMapper()
+            .andThen(n -> new TreeBasedUnivariateRealFunction(
+                n,
+                p.qualityFunction().getDataset().xVarNames(),
+                p.qualityFunction().getDataset().yVarNames().get(0)))
+            .andThen(MathUtils.linearScaler(p.qualityFunction())),
+        new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
+        100,
+        StopConditions.nOfIterations(100),
+        Map.of(
+            new SameRootSubtreeCrossover<>(12),
+            0.8d,
+            new GrammarBasedSubtreeMutation<>(12, srGrammar),
+            0.2d),
+        new Tournament(5),
+        new Last(),
+        100,
+        true,
+        false,
+        (srp, rnd) -> new POCPopulationState<>(),
+        100));
     int counter = 0;
     for (int seed : seeds) {
       Random r = new Random(1);
@@ -188,9 +182,9 @@ public class TuiExample implements Runnable {
               SyntheticUnivariateRegressionProblem,
               NamedUnivariateRealFunction>
           solver : solvers) {
-        Map<String, Object> keys =
-            Map.ofEntries(
-                Map.entry("seed", seed), Map.entry("solver", solver.getClass().getSimpleName()));
+        Map<String, Object> keys = Map.ofEntries(
+            Map.entry("seed", seed),
+            Map.entry("solver", solver.getClass().getSimpleName()));
         tm.notify(counter, seeds.size() * solvers.size(), "Starting " + keys);
         try {
           Collection<NamedUnivariateRealFunction> solutions =

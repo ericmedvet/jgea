@@ -30,8 +30,7 @@ import java.util.*;
 import java.util.function.Function;
 
 public class KLandscapes
-    implements GrammarBasedProblem<String, Tree<String>>,
-        ComparableQualityBasedProblem<Tree<String>, Double> {
+    implements GrammarBasedProblem<String, Tree<String>>, ComparableQualityBasedProblem<Tree<String>, Double> {
 
   private static final int ARITY = 2;
   private static final Range<Double> V_RANGE = Range.closed(-1d, 1d);
@@ -55,12 +54,7 @@ public class KLandscapes
   }
 
   public KLandscapes(
-      int k,
-      int arity,
-      Range<Double> vRange,
-      Range<Double> wRange,
-      int nTerminals,
-      int nNonTerminals) {
+      int k, int arity, Range<Double> vRange, Range<Double> wRange, int nTerminals, int nNonTerminals) {
     this.k = k;
     this.arity = arity;
     this.vRange = vRange;
@@ -118,13 +112,11 @@ public class KLandscapes
     return tree;
   }
 
-  protected static double f(
-      Tree<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
+  protected static double f(Tree<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
     return 1d / (1d + (double) Math.abs(k - tree.height())) * maxFK(tree, k, v, w);
   }
 
-  protected static double fK(
-      Tree<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
+  protected static double fK(Tree<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
     if (k == 0) {
       return v.get(tree.content());
     }
@@ -172,8 +164,7 @@ public class KLandscapes
     Tree<String> optimum = null;
     double maxFitness = Double.NEGATIVE_INFINITY;
     for (int d = 1; d <= k + 1; d++) {
-      int[] indexes =
-          new int[d]; // indexes of the (non)Terminals to be used. terminal is the last index.
+      int[] indexes = new int[d]; // indexes of the (non)Terminals to be used. terminal is the last index.
       while (true) {
         Tree<String> tree = levelEqualTree(indexes, arity);
         double fitness = f(tree, k, v, w);
@@ -214,14 +205,12 @@ public class KLandscapes
     for (int i = 0; i < nTerminals; i++) {
       v.put(
           "t" + i,
-          random.nextDouble() * (vRange.upperEndpoint() - vRange.lowerEndpoint())
-              + vRange.lowerEndpoint());
+          random.nextDouble() * (vRange.upperEndpoint() - vRange.lowerEndpoint()) + vRange.lowerEndpoint());
     }
     for (int i = 0; i < nNonTerminals; i++) {
       v.put(
           "n" + i,
-          random.nextDouble() * (vRange.upperEndpoint() - vRange.lowerEndpoint())
-              + vRange.lowerEndpoint());
+          random.nextDouble() * (vRange.upperEndpoint() - vRange.lowerEndpoint()) + vRange.lowerEndpoint());
     }
     // fill w map
     for (int j = 0; j < nNonTerminals; j++) {

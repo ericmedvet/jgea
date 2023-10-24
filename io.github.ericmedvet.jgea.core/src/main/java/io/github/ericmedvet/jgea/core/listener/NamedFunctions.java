@@ -27,7 +27,6 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.core.util.Sized;
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
-
 import java.util.*;
 import java.util.function.Function;
 
@@ -35,11 +34,10 @@ public class NamedFunctions {
 
   private static final String DEFAULT_FORMAT = "%s";
 
-  private NamedFunctions() {
-  }
+  private NamedFunctions() {}
 
-  public static <I extends Individual<G, S, Q>, G, S, Q> NamedFunction<POCPopulationState<I, G, S, Q>, Collection<I>>
-  all() {
+  public static <I extends Individual<G, S, Q>, G, S, Q>
+      NamedFunction<POCPopulationState<I, G, S, Q>, Collection<I>> all() {
     return f("all", e -> e.pocPopulation().all());
   }
 
@@ -62,18 +60,15 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static NamedFunction<Number, String> bar(int l) {
-    return f(
-        "bar",
-        NamedFunction.format(l),
-        value -> TextPlotter.horizontalBar(value.doubleValue(), 0, 1, l)
-    );
+    return f("bar", NamedFunction.format(l), value -> TextPlotter.horizontalBar(value.doubleValue(), 0, 1, l));
   }
 
   public static <I extends Individual<G, S, Q>, G, S, Q> NamedFunction<POCPopulationState<I, G, S, Q>, I> best() {
     return f("best", e -> Misc.first(e.pocPopulation().firsts()));
   }
 
-  public static <I extends Individual<G, S, Q>, G, S, Q> NamedFunction<POCPopulationState<I, G, S, Q>, Long> births() {
+  public static <I extends Individual<G, S, Q>, G, S, Q>
+      NamedFunction<POCPopulationState<I, G, S, Q>, Long> births() {
     return f("births", "%5d", POCPopulationState::nOfBirths);
   }
 
@@ -85,14 +80,10 @@ public class NamedFunctions {
     return constant(name, NamedFunction.format(value.toString().length()), value);
   }
 
-  public static <F, T> NamedFunction<Collection<? extends F>, Collection<T>> each(
-      NamedFunction<F, T> mapper
-  ) {
+  public static <F, T> NamedFunction<Collection<? extends F>, Collection<T>> each(NamedFunction<F, T> mapper) {
     return f(
         "each[" + mapper.getName() + "]",
-        individuals ->
-            individuals.stream().map(mapper).collect(java.util.stream.Collectors.toList())
-    );
+        individuals -> individuals.stream().map(mapper).collect(java.util.stream.Collectors.toList()));
   }
 
   public static NamedFunction<State, Float> elapsedSeconds() {
@@ -107,8 +98,8 @@ public class NamedFunctions {
     return NamedFunction.build(name, format, function);
   }
 
-  public static <I extends Individual<G, S, Q>, G, S, Q> NamedFunction<POCPopulationState<I, G, S, Q>, Collection<I>>
-  firsts() {
+  public static <I extends Individual<G, S, Q>, G, S, Q>
+      NamedFunction<POCPopulationState<I, G, S, Q>, Collection<I>> firsts() {
     return f("firsts", e -> e.pocPopulation().firsts());
   }
 
@@ -116,14 +107,12 @@ public class NamedFunctions {
     return f("quality", Individual::quality);
   }
 
-  public static <I extends Individual<G, S, Q>, G, S, Q> NamedFunction<POCPopulationState<I, G, S, Q>, Long>
-  fitnessEvaluations() {
+  public static <I extends Individual<G, S, Q>, G, S, Q>
+      NamedFunction<POCPopulationState<I, G, S, Q>, Long> fitnessEvaluations() {
     return f("fitness.evaluations", "%5d", POCPopulationState::nOfFitnessEvaluations);
   }
 
-  public static <I extends Individual<G, S, Q>, G, S, Q>
-  NamedFunction<I, Long>
-  fitnessMappingIteration() {
+  public static <I extends Individual<G, S, Q>, G, S, Q> NamedFunction<I, Long> fitnessMappingIteration() {
     return f("birth.iteration", "%4d", Individual::qualityMappingIteration);
   }
 
@@ -131,9 +120,7 @@ public class NamedFunctions {
     return f("genotype", Individual::genotype);
   }
 
-  public static <I extends Individual<G, S, Q>, G, S, Q>
-  NamedFunction<I, Long>
-  genotypeBirthIteration() {
+  public static <I extends Individual<G, S, Q>, G, S, Q> NamedFunction<I, Long> genotypeBirthIteration() {
     return f("genotype.birth.iteration", "%4d", Individual::genotypeBirthIteration);
   }
 
@@ -141,20 +128,16 @@ public class NamedFunctions {
     return f(
         "hist",
         NamedFunction.format(bins),
-        values ->
-            TextPlotter.histogram(
-                values instanceof List ? (List<? extends Number>) values : new ArrayList<>(values),
-                bins
-            )
-    );
+        values -> TextPlotter.histogram(
+            values instanceof List ? (List<? extends Number>) values : new ArrayList<>(values), bins));
   }
 
   public static NamedFunction<State, Integer> nOfIterations() {
     return f("iterations", "%4d", State::nOfIterations);
   }
 
-  public static <I extends Individual<G, S, Q>, G, S, Q> NamedFunction<POCPopulationState<I, G, S, Q>, Collection<I>>
-  lasts() {
+  public static <I extends Individual<G, S, Q>, G, S, Q>
+      NamedFunction<POCPopulationState<I, G, S, Q>, Collection<I>> lasts() {
     return f("lasts", e -> e.pocPopulation().lasts());
   }
 
@@ -214,7 +197,6 @@ public class NamedFunctions {
   }
 
   public static NamedFunction<Collection<?>, Double> uniqueness() {
-    return f(
-        "uniqueness", "%4.2f", ts -> (double) ts.stream().distinct().count() / (double) ts.size());
+    return f("uniqueness", "%4.2f", ts -> (double) ts.stream().distinct().count() / (double) ts.size());
   }
 }

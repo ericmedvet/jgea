@@ -32,33 +32,31 @@ import org.apache.commons.math3.stat.StatUtils;
 
 public class MathUtils {
 
-  private static class ScaledUnivariateRealFunction
-      extends AbstractComposed<NamedUnivariateRealFunction> implements NamedUnivariateRealFunction {
+  private static class ScaledUnivariateRealFunction extends AbstractComposed<NamedUnivariateRealFunction>
+      implements NamedUnivariateRealFunction {
     private final double a;
     private final double b;
 
     public ScaledUnivariateRealFunction(
-        NamedUnivariateRealFunction inner,
-        UnivariateRegressionFitness univariateRegressionFitness) {
+        NamedUnivariateRealFunction inner, UnivariateRegressionFitness univariateRegressionFitness) {
       super(inner);
-      double[] targetYs =
-          IntStream.range(0, univariateRegressionFitness.getDataset().size())
-              .mapToDouble(
-                  i -> univariateRegressionFitness.getDataset().exampleProvider().apply(i).ys()[0])
-              .toArray();
+      double[] targetYs = IntStream.range(
+              0, univariateRegressionFitness.getDataset().size())
+          .mapToDouble(i -> univariateRegressionFitness
+              .getDataset()
+              .exampleProvider()
+              .apply(i)
+              .ys()[0])
+          .toArray();
       double targetMean = StatUtils.mean(targetYs);
-      double[] ys =
-          IntStream.range(0, univariateRegressionFitness.getDataset().size())
-              .mapToDouble(
-                  i ->
-                      inner()
-                          .applyAsDouble(
-                              univariateRegressionFitness
-                                  .getDataset()
-                                  .exampleProvider()
-                                  .apply(i)
-                                  .xs()))
-              .toArray();
+      double[] ys = IntStream.range(
+              0, univariateRegressionFitness.getDataset().size())
+          .mapToDouble(i -> inner().applyAsDouble(univariateRegressionFitness
+              .getDataset()
+              .exampleProvider()
+              .apply(i)
+              .xs()))
+          .toArray();
       double mean = StatUtils.mean(ys);
       double nCovariance = 0d;
       double nVariance = 0d;
@@ -104,8 +102,7 @@ public class MathUtils {
     }
   }
 
-  private static class SizedUnivariateScaledRealFunction extends ScaledUnivariateRealFunction
-      implements Sized {
+  private static class SizedUnivariateScaledRealFunction extends ScaledUnivariateRealFunction implements Sized {
     private final int size;
 
     public SizedUnivariateScaledRealFunction(
@@ -152,20 +149,18 @@ public class MathUtils {
 
   public static UnaryOperator<NamedUnivariateRealFunction> linearScaler(
       SyntheticUnivariateRegressionFitness syntheticSymbolicRegressionFitness) {
-    return f ->
-        (f instanceof Sized)
-            ? new SizedUnivariateScaledRealFunction(f, syntheticSymbolicRegressionFitness)
-            : new ScaledUnivariateRealFunction(f, syntheticSymbolicRegressionFitness);
+    return f -> (f instanceof Sized)
+        ? new SizedUnivariateScaledRealFunction(f, syntheticSymbolicRegressionFitness)
+        : new ScaledUnivariateRealFunction(f, syntheticSymbolicRegressionFitness);
   }
 
   public static List<double[]> pairwise(double[]... xs) {
     int l = xs[0].length;
     for (int i = 1; i < xs.length; i++) {
       if (xs[i].length != l) {
-        throw new IllegalArgumentException(
-            String.format(
-                "Invalid input arrays: %d-th length (%d) is different than " + "1st length (%d)",
-                i + 1, xs[i].length, l));
+        throw new IllegalArgumentException(String.format(
+            "Invalid input arrays: %d-th length (%d) is different than " + "1st length (%d)",
+            i + 1, xs[i].length, l));
       }
     }
     List<double[]> list = new ArrayList<>(l);
