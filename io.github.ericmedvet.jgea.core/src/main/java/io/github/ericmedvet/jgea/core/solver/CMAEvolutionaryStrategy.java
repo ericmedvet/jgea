@@ -205,7 +205,7 @@ public class CMAEvolutionaryStrategy<S, Q>
                 random,
                 MatrixUtils.createRealIdentityMatrix(n),
                 MatrixUtils.createRealIdentityMatrix(n),
-                genotypeFactory.independent().build(random),
+                genotypeFactory.build(1, random).get(0),
                 0.5),
             0,
             problem.qualityFunction(),
