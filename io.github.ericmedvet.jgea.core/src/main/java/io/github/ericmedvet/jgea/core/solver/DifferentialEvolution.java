@@ -43,7 +43,6 @@ public class DifferentialEvolution<S, Q>
         S,
         Q> {
 
-  private static final Logger L = Logger.getLogger(DifferentialEvolution.class.getName());
   private final int populationSize;
   protected final double differentialWeight;
   protected final double crossoverProb;

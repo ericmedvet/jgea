@@ -24,59 +24,37 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
+import io.github.ericmedvet.jgea.core.selector.First;
+import io.github.ericmedvet.jgea.core.selector.Last;
 import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
+
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
-public class RandomWalk<P extends QualityBasedProblem<S, Q>, G, S, Q>
-    extends AbstractPopulationBasedIterativeSolver<
-        POCPopulationState<Individual<G, S, Q>, G, S, Q>, P, Individual<G, S, Q>, G, S, Q> {
-
-  private final Mutation<G> mutation;
+public class RandomWalk<G, S, Q> extends StandardEvolver<G, S, Q> {
 
   public RandomWalk(
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       Predicate<? super POCPopulationState<Individual<G, S, Q>, G, S, Q>> stopCondition,
-      Mutation<G> mutation) {
-    super(solutionMapper, genotypeFactory, i -> i, stopCondition, false);
-    this.mutation = mutation;
+      Mutation<G> mutation
+  ) {
+    super(
+        solutionMapper,
+        genotypeFactory,
+        1,
+        stopCondition,
+        Map.of(mutation, 1d),
+        new First(),
+        new Last(),
+        1,
+        true,
+        false
+    );
   }
 
-  @Override
-  public POCPopulationState<Individual<G, S, Q>, G, S, Q> init(
-      P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
-    return new RandomSearch.State<>(
-        getAll(map(genotypeFactory.build(1, random), 0, problem.qualityFunction(), executor))
-            .iterator()
-            .next());
-  }
-
-  @Override
-  public POCPopulationState<Individual<G, S, Q>, G, S, Q> update(
-      P problem,
-      RandomGenerator random,
-      ExecutorService executor,
-      POCPopulationState<Individual<G, S, Q>, G, S, Q> state)
-      throws SolverException {
-    Individual<G, S, Q> currentIndividual =
-        state.pocPopulation().firsts().iterator().next();
-    Individual<G, S, Q> newIndividual = getAll(map(
-            List.of(mutation.mutate(currentIndividual.genotype(), random)),
-            state.nOfIterations(),
-            problem.qualityFunction(),
-            executor))
-        .iterator()
-        .next();
-    if (comparator(problem)
-        .compare(newIndividual, currentIndividual)
-        .equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
-      currentIndividual = newIndividual;
-    }
-    return RandomSearch.State.from(
-        (RandomSearch.State<Individual<G, S, Q>, G, S, Q>) state, progress(state), 1, 1, currentIndividual);
-  }
 }
