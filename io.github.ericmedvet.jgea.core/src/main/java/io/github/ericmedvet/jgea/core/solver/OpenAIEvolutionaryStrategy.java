@@ -208,13 +208,13 @@ public class OpenAIEvolutionaryStrategy<S, Q>
         map(genotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state);
     // sort individuals and compute indexes
     Comparator<Integer> integerComparator =
-        comparator(problem).comparing(individuals::get).comparator();
+        partialComparator(problem).comparing(individuals::get).comparator();
     state.indexes = IntStream.range(0, populationSize)
         .boxed()
         .sorted(integerComparator)
         .toList();
     // update state
-    state.setPopulation(new DAGPartiallyOrderedCollection<>(individuals, comparator(problem)));
+    state.setPopulation(new DAGPartiallyOrderedCollection<>(individuals, partialComparator(problem)));
     state.incNOfIterations();
     state.updateElapsedMillis();
     // perform optimization

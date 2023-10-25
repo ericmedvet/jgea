@@ -102,8 +102,8 @@ public abstract class AbstractStandardEvolver<
         Progress progress,
         long nOfBirths,
         long nOfFitnessEvaluations,
-        List<I> listPopulation,
-        Comparator<I> comparator) {
+        Collection<I> listPopulation,
+        Comparator<? super I> comparator) {
       return new ListState<>(
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
@@ -112,11 +112,11 @@ public abstract class AbstractStandardEvolver<
           state.nOfBirths() + nOfBirths,
           state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
           PartiallyOrderedCollection.from(listPopulation, comparator),
-          listPopulation);
+          listPopulation.stream().sorted(comparator).toList());
     }
 
     public static <I extends Individual<G, S, Q>, G, S, Q> ListState<I, G, S, Q> from(
-        List<I> listPopulation, Comparator<I> comparator) {
+        Collection<I> listPopulation, Comparator<? super I> comparator) {
       return new ListState<>(
           LocalDateTime.now(),
           0,
@@ -125,7 +125,7 @@ public abstract class AbstractStandardEvolver<
           listPopulation.size(),
           listPopulation.size(),
           PartiallyOrderedCollection.from(listPopulation, comparator),
-          listPopulation);
+          listPopulation.stream().sorted(comparator).toList());
     }
   }
 
@@ -170,12 +170,12 @@ public abstract class AbstractStandardEvolver<
 
   @Override
   public T init(P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
-    return init(problem, getAll(map(genotypeFactory.build(populationSize, random), null, problem, executor)));
+    return init(problem, map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor));
   }
 
   protected Collection<I> trimPopulation(Collection<I> population, P problem, RandomGenerator random) {
     PartiallyOrderedCollection<I> orderedPopulation =
-        new DAGPartiallyOrderedCollection<>(population, comparator(problem));
+        new DAGPartiallyOrderedCollection<>(population, partialComparator(problem));
     while (orderedPopulation.size() > populationSize) {
       I toRemoveIndividual = unsurvivalSelector.select(orderedPopulation, random);
       orderedPopulation.remove(toRemoveIndividual);

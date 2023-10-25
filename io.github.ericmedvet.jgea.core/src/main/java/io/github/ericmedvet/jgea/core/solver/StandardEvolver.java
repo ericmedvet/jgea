@@ -58,13 +58,13 @@ public class StandardEvolver<G, S, Q>
         progress(state),
         nOfBirths,
         nOfFitnessEvaluations,
-        PartiallyOrderedCollection.from(individuals, comparator(problem)));
+        PartiallyOrderedCollection.from(individuals, partialComparator(problem)));
   }
 
   @Override
   protected POCPopulationState<Individual<G, S, Q>, G, S, Q> init(
       QualityBasedProblem<S, Q> problem, Collection<Individual<G, S, Q>> individuals) {
-    return POCState.from(PartiallyOrderedCollection.from(individuals, comparator(problem)));
+    return POCState.from(PartiallyOrderedCollection.from(individuals, partialComparator(problem)));
   }
 
   @Override

@@ -23,14 +23,13 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.selector.Last;
 import io.github.ericmedvet.jgea.core.solver.state.ListPopulationState;
+
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.logging.Logger;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
@@ -105,33 +104,27 @@ public class DifferentialEvolution<S, Q>
       Collection<Individual<List<Double>, S, Q>> individuals,
       long nOfNewBirths,
       long nOfNewFitnessEvaluations) {
-    Comparator<Individual<List<Double>, S, Q>> comparator =
-        (i1, i2) -> problem.totalOrderComparator().compare(i1.quality(), i2.quality());
     return ListState.from(
         (AbstractStandardEvolver.ListState<Individual<List<Double>, S, Q>, List<Double>, S, Q>) state,
         progress(state),
         state.nOfBirths() + nOfNewBirths,
         state.nOfFitnessEvaluations() + nOfNewFitnessEvaluations,
-        individuals.stream().sorted(comparator).toList(),
-        comparator);
+        individuals.stream().sorted(comparator(problem)).toList(),
+        comparator(problem));
   }
 
   @Override
   protected ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> init(
       TotalOrderQualityBasedProblem<S, Q> problem, Collection<Individual<List<Double>, S, Q>> individuals) {
-    Comparator<Individual<List<Double>, S, Q>> comparator =
-        (i1, i2) -> problem.totalOrderComparator().compare(i1.quality(), i2.quality());
-    return ListState.from(individuals.stream().sorted(comparator).toList(), comparator);
+    return ListState.from(individuals.stream().sorted(comparator(problem)).toList(), comparator(problem));
   }
 
   @Override
   public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> init(
       TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
       throws SolverException {
-    Comparator<Individual<List<Double>, S, Q>> comparator =
-        (i1, i2) -> problem.totalOrderComparator().compare(i1.quality(), i2.quality());
     return ListState.from(
-        getAll(map(genotypeFactory.build(populationSize, random), null, problem, executor)), comparator);
+        map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor), comparator(problem));
   }
 
   @Override

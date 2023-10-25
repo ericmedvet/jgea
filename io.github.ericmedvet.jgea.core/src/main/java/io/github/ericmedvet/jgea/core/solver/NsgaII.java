@@ -274,7 +274,7 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
 
   private List<RankedWithDistanceIndividual<G, S>> trimPopulation(
       Collection<Individual<G, S, List<Double>>> offspring, P problem) {
-    Collection<RankedIndividual<G, S>> rankedIndividuals = fastNonDominatedSort(offspring, comparator(problem));
+    Collection<RankedIndividual<G, S>> rankedIndividuals = fastNonDominatedSort(offspring, partialComparator(problem));
     Collection<RankedWithDistanceIndividual<G, S>> rankedWithDistanceIndividuals =
         assignCrowdingDistance(rankedIndividuals, problem.comparators());
     return rankedWithDistanceIndividuals.stream()
@@ -304,7 +304,7 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
         .toList();
 
     // update state
-    state.setPopulation(new DAGPartiallyOrderedCollection<>(population, comparator(problem)));
+    state.setPopulation(new DAGPartiallyOrderedCollection<>(population, partialComparator(problem)));
     state.incNOfIterations();
     state.updateElapsedMillis();
   }

@@ -200,7 +200,7 @@ public class CooperativeSolver<
     T2 state2 = solver2.init(problem2, random, executor);
     State<T1, T2, G1, G2, S1, S2, S, Q> state = new State<>(state1, state2);
     state.incNOfFitnessEvaluations(evaluatedIndividuals.size());
-    state.setPopulation(new DAGPartiallyOrderedCollection<>(evaluatedIndividuals, comparator(problem)));
+    state.setPopulation(new DAGPartiallyOrderedCollection<>(evaluatedIndividuals, partialComparator(problem)));
     return state;
   }
 
@@ -241,7 +241,7 @@ public class CooperativeSolver<
         problem.qualityComparator());
     solver1.update(problem1, random, executor, state.state1);
     solver2.update(problem2, random, executor, state.state2);
-    state.setPopulation(new DAGPartiallyOrderedCollection<>(evaluatedIndividuals, comparator(problem)));
+    state.setPopulation(new DAGPartiallyOrderedCollection<>(evaluatedIndividuals, partialComparator(problem)));
     state.incNOfFitnessEvaluations(evaluatedIndividuals.size());
     state.incNOfIterations();
     state.updateElapsedMillis();

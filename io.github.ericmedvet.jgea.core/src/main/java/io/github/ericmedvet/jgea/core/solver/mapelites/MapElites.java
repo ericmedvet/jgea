@@ -111,7 +111,7 @@ public class MapElites<G, P extends QualityBasedProblem<S, Q>, S, Q>
 
   @Override
   protected State<G, S, Q> initState(P problem, RandomGenerator random, ExecutorService executor) {
-    return new State<>(features, featuresExtractor, comparator(problem));
+    return new State<>(features, featuresExtractor, partialComparator(problem));
   }
 
   @Override
@@ -141,7 +141,7 @@ public class MapElites<G, P extends QualityBasedProblem<S, Q>, S, Q>
         map(offspringGenotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state);
 
     state.mapOfElites.addAll(offspringIndividuals);
-    state.setPopulation(new DAGPartiallyOrderedCollection<>(state.mapOfElites.all(), comparator(problem)));
+    state.setPopulation(new DAGPartiallyOrderedCollection<>(state.mapOfElites.all(), partialComparator(problem)));
 
     state.incNOfIterations();
     state.updateElapsedMillis();

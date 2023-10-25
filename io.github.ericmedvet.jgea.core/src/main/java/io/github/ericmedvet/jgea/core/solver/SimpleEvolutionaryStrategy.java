@@ -25,6 +25,7 @@ import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.state.ListPopulationState;
 import io.github.ericmedvet.jgea.core.util.Progress;
+
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -37,12 +38,12 @@ import java.util.stream.IntStream;
 
 public class SimpleEvolutionaryStrategy<S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>,
-        TotalOrderQualityBasedProblem<S, Q>,
-        Individual<List<Double>, S, Q>,
-        List<Double>,
-        S,
-        Q> {
+    ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>,
+    TotalOrderQualityBasedProblem<S, Q>,
+    Individual<List<Double>, S, Q>,
+    List<Double>,
+    S,
+    Q> {
 
   private static final Logger L = Logger.getLogger(SimpleEvolutionaryStrategy.class.getName());
   protected final int populationSize;
@@ -58,7 +59,8 @@ public class SimpleEvolutionaryStrategy<S, Q>
       int nOfParents,
       int nOfElites,
       double sigma,
-      boolean remap) {
+      boolean remap
+  ) {
     super(solutionMapper, genotypeFactory, stopCondition, remap);
     this.populationSize = populationSize;
     this.nOfParents = nOfParents;
@@ -75,16 +77,18 @@ public class SimpleEvolutionaryStrategy<S, Q>
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<Individual<List<Double>, S, Q>> pocPopulation,
       List<Individual<List<Double>, S, Q>> listPopulation,
-      List<Double> means)
+      List<Double> means
+  )
       implements ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> {
     public static <S, Q> State<S, Q> from(
         State<S, Q> state,
         Progress progress,
         int nOfBirths,
         int nOfFitnessEvaluations,
-        List<Individual<List<Double>, S, Q>> listPopulation,
+        Collection<Individual<List<Double>, S, Q>> listPopulation,
         List<Double> means,
-        Comparator<Individual<List<Double>, S, Q>> comparator) {
+        Comparator<? super Individual<List<Double>, S, Q>> comparator
+    ) {
       return new State<>(
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
@@ -93,13 +97,15 @@ public class SimpleEvolutionaryStrategy<S, Q>
           state.nOfBirths() + nOfBirths,
           state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
           PartiallyOrderedCollection.from(listPopulation, comparator),
-          listPopulation,
-          means);
+          listPopulation.stream().sorted(comparator).toList(),
+          means
+      );
     }
 
     public static <S, Q> State<S, Q> from(
-        List<Individual<List<Double>, S, Q>> listPopulation,
-        Comparator<Individual<List<Double>, S, Q>> comparator) {
+        Collection<Individual<List<Double>, S, Q>> listPopulation,
+        Comparator<? super Individual<List<Double>, S, Q>> comparator
+    ) {
       return new State<>(
           LocalDateTime.now(),
           0,
@@ -108,20 +114,20 @@ public class SimpleEvolutionaryStrategy<S, Q>
           listPopulation.size(),
           listPopulation.size(),
           PartiallyOrderedCollection.from(listPopulation, comparator),
-          listPopulation,
-          computeMeans(
-              listPopulation.stream().map(Individual::genotype).toList()));
+          listPopulation.stream().sorted(comparator).toList(),
+          computeMeans(listPopulation.stream().map(Individual::genotype).toList())
+      );
     }
   }
 
   @Override
   public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> init(
-      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
+      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor
+  )
       throws SolverException {
-    Comparator<Individual<List<Double>, S, Q>> comparator =
-        (i1, i2) -> problem.totalOrderComparator().compare(i1.quality(), i2.quality());
+    Comparator<? super Individual<?, ?, Q>> c1 = comparator(problem);
     return State.from(
-        getAll(map(genotypeFactory.build(populationSize, random), null, problem, executor)), comparator);
+        map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor), c1);
   }
 
   @Override
@@ -129,7 +135,8 @@ public class SimpleEvolutionaryStrategy<S, Q>
       TotalOrderQualityBasedProblem<S, Q> problem,
       RandomGenerator random,
       ExecutorService executor,
-      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state)
+      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state
+  )
       throws SolverException {
     // select elites
     List<Individual<List<Double>, S, Q>> elites =
@@ -148,11 +155,8 @@ public class SimpleEvolutionaryStrategy<S, Q>
     }
     int nOfBirths = offspringGenotypes.size();
     L.fine(String.format("%d offspring genotypes built", nOfBirths));
-    Comparator<Individual<List<Double>, S, Q>> comparator =
-        (i1, i2) -> problem.totalOrderComparator().compare(i1.quality(), i2.quality());
-    List<Individual<List<Double>, S, Q>> newPopulation =
+    Collection<Individual<List<Double>, S, Q>> newPopulation =
         map(offspringGenotypes, elites, state, problem, executor).stream()
-            .sorted(comparator)
             .toList();
     L.fine(String.format("Offspring and elite merged: %d individuals", newPopulation.size()));
     return State.from(
@@ -162,14 +166,16 @@ public class SimpleEvolutionaryStrategy<S, Q>
         nOfBirths + (remap ? elites.size() : 0),
         newPopulation,
         means,
-        comparator);
+        comparator(problem)
+    );
   }
 
   protected static List<Double> computeMeans(Collection<List<Double>> genotypes) {
     if (genotypes.stream().map(List::size).distinct().count() > 1) {
       throw new IllegalStateException(String.format(
           "Genotype size should be the same for all parents: found different sizes %s",
-          genotypes.stream().map(List::size).distinct().toList()));
+          genotypes.stream().map(List::size).distinct().toList()
+      ));
     }
     int l = genotypes.iterator().next().size();
     final double[] sums = new double[l];
@@ -184,26 +190,30 @@ public class SimpleEvolutionaryStrategy<S, Q>
   protected Individual<List<Double>, S, Q> newIndividual(
       List<Double> genotype,
       ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state,
-      TotalOrderQualityBasedProblem<S, Q> problem) {
+      TotalOrderQualityBasedProblem<S, Q> problem
+  ) {
     S solution = solutionMapper.apply(genotype);
     return Individual.of(
         genotype,
         solution,
         problem.qualityFunction().apply(solution),
         state == null ? 0 : state.nOfIterations(),
-        state == null ? 0 : state.nOfIterations());
+        state == null ? 0 : state.nOfIterations()
+    );
   }
 
   @Override
   protected Individual<List<Double>, S, Q> updateIndividual(
       Individual<List<Double>, S, Q> individual,
       ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state,
-      TotalOrderQualityBasedProblem<S, Q> problem) {
+      TotalOrderQualityBasedProblem<S, Q> problem
+  ) {
     return Individual.of(
         individual.genotype(),
         individual.solution(),
         problem.qualityFunction().apply(individual.solution()),
         individual.genotypeBirthIteration(),
-        state == null ? individual.qualityMappingIteration() : state.nOfIterations());
+        state == null ? individual.qualityMappingIteration() : state.nOfIterations()
+    );
   }
 }

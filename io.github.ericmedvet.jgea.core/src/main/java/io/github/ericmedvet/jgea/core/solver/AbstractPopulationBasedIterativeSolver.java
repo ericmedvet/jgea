@@ -23,10 +23,13 @@ package io.github.ericmedvet.jgea.core.solver;
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
+import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jgea.core.util.Progress;
+
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -38,12 +41,12 @@ import java.util.random.RandomGenerator;
 import java.util.stream.Stream;
 
 public abstract class AbstractPopulationBasedIterativeSolver<
-        T extends POCPopulationState<I, G, S, Q>,
-        P extends QualityBasedProblem<S, Q>,
-        I extends Individual<G, S, Q>,
-        G,
-        S,
-        Q>
+    T extends POCPopulationState<I, G, S, Q>,
+    P extends QualityBasedProblem<S, Q>,
+    I extends Individual<G, S, Q>,
+    G,
+    S,
+    Q>
     implements IterativeSolver<T, P, S> {
 
   protected final Function<? super G, ? extends S> solutionMapper;
@@ -55,7 +58,8 @@ public abstract class AbstractPopulationBasedIterativeSolver<
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       Predicate<? super T> stopCondition,
-      boolean remap) {
+      boolean remap
+  ) {
     this.solutionMapper = solutionMapper;
     this.genotypeFactory = genotypeFactory;
     this.stopCondition = stopCondition;
@@ -66,7 +70,7 @@ public abstract class AbstractPopulationBasedIterativeSolver<
 
   protected abstract I updateIndividual(I individual, T state, P problem);
 
-  protected Collection<Future<I>> map(Collection<? extends G> genotypes, T state, P problem, ExecutorService executor)
+  private Collection<Future<I>> map(Collection<? extends G> genotypes, T state, P problem, ExecutorService executor)
       throws SolverException {
     try {
       return executor.invokeAll(genotypes.stream()
@@ -77,7 +81,7 @@ public abstract class AbstractPopulationBasedIterativeSolver<
     }
   }
 
-  protected Collection<Future<I>> remap(Collection<I> individuals, T state, P problem, ExecutorService executor)
+  private Collection<Future<I>> remap(Collection<I> individuals, T state, P problem, ExecutorService executor)
       throws SolverException {
     try {
       return executor.invokeAll(individuals.stream()
@@ -88,7 +92,7 @@ public abstract class AbstractPopulationBasedIterativeSolver<
     }
   }
 
-  protected static <T> List<T> getAll(Collection<Future<T>> futures) throws SolverException {
+  private static <T> Collection<T> getAll(Collection<Future<T>> futures) throws SolverException {
     List<T> results = new ArrayList<>();
     for (Future<T> future : futures) {
       try {
@@ -101,8 +105,13 @@ public abstract class AbstractPopulationBasedIterativeSolver<
   }
 
   protected static <P extends QualityBasedProblem<?, Q>, I extends Individual<?, ?, Q>, Q>
-      PartialComparator<? super I> comparator(P problem) {
+  PartialComparator<? super I> partialComparator(P problem) {
     return (i1, i2) -> problem.qualityComparator().compare(i1.quality(), i2.quality());
+  }
+
+  protected static <P extends TotalOrderQualityBasedProblem<?, Q>, I extends Individual<?, ?, Q>, Q>
+  Comparator<? super I> comparator(P problem) {
+    return (i1, i2) -> problem.totalOrderComparator().compare(i1.quality(), i2.quality());
   }
 
   @Override
@@ -124,7 +133,8 @@ public abstract class AbstractPopulationBasedIterativeSolver<
   }
 
   protected Collection<I> map(
-      Collection<G> genotypes, Collection<I> individuals, T state, P problem, ExecutorService executor)
+      Collection<? extends G> genotypes, Collection<I> individuals, T state, P problem, ExecutorService executor
+  )
       throws SolverException {
     if (remap) {
       return getAll(

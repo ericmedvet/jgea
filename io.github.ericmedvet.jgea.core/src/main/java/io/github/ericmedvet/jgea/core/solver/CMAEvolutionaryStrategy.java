@@ -284,7 +284,7 @@ public class CMAEvolutionaryStrategy<S, Q>
     // best mu ranked points
     Function<DecoratedIndividual<S, Q>, Individual<List<Double>, S, Q>> individualExtractor = i -> i.individual;
     Comparator<DecoratedIndividual<S, Q>> decoratedIndividualComparator =
-        comparator(problem).comparing(individualExtractor).comparator();
+        partialComparator(problem).comparing(individualExtractor).comparator();
     List<DecoratedIndividual<S, Q>> bestMuIndividuals = state.decoratedIndividuals.stream()
         .sorted(decoratedIndividualComparator)
         .limit(mu)
