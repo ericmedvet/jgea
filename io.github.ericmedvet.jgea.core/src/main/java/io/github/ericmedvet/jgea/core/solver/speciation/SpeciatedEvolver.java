@@ -146,22 +146,6 @@ public class SpeciatedEvolver<G, S, Q>
       RandomGenerator random,
       ExecutorService executor,
       SpeciatedPOCPopulationState<G, S, Q> state)
-      throws SolverException {}
-
-  @Override
-  public SpeciatedPOCPopulationState<Individual<G, S, Q>, G, S, Q> oldinit(
-      P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
-    return new State<>(PartiallyOrderedCollection.from(
-        getAll(map(genotypeFactory.build(populationSize, random), 0, problem.qualityFunction(), executor)),
-        partialComparator(problem)));
-  }
-
-  @Override
-  public SpeciatedPOCPopulationState<Individual<G, S, Q>, G, S, Q> oldupdate(
-      P problem,
-      RandomGenerator random,
-      ExecutorService executor,
-      SpeciatedPOCPopulationState<Individual<G, S, Q>, G, S, Q> state)
       throws SolverException {
     Collection<Individual<G, S, Q>> parents = state.pocPopulation().all();
     // partition in species
@@ -174,8 +158,8 @@ public class SpeciatedEvolver<G, S, Q>
     Collection<Individual<G, S, Q>> elites = new ArrayList<>();
     parents.stream()
         .reduce((i1, i2) -> partialComparator(problem)
-                .compare(i1, i2)
-                .equals(PartialComparator.PartialComparatorOutcome.BEFORE)
+            .compare(i1, i2)
+            .equals(PartialComparator.PartialComparatorOutcome.BEFORE)
             ? i1
             : i2)
         .ifPresent(elites::add);
@@ -183,8 +167,8 @@ public class SpeciatedEvolver<G, S, Q>
       if (species.elements().size() >= minSpeciesSizeForElitism) {
         species.elements().stream()
             .reduce((i1, i2) -> partialComparator(problem)
-                    .compare(i1, i2)
-                    .equals(PartialComparator.PartialComparatorOutcome.BEFORE)
+                .compare(i1, i2)
+                .equals(PartialComparator.PartialComparatorOutcome.BEFORE)
                 ? i1
                 : i2)
             .ifPresent(elites::add);
@@ -230,17 +214,19 @@ public class SpeciatedEvolver<G, S, Q>
       }
       offspringGenotypes.addAll(speciesOffspringGenotypes);
     }
-    int nOfBirths = offspringGenotypes.size();
-    L.fine(String.format("%d offspring genotypes built", nOfBirths));
+    int nOfNewBirths = offspringGenotypes.size();
+    L.fine(String.format("%d offspring genotypes built", nOfNewBirths));
     Collection<Individual<G, S, Q>> newPopulation =
-        map(offspringGenotypes, elites, state.nOfIterations(), problem.qualityFunction(), executor);
+        map(offspringGenotypes, elites, state, problem, executor);
     L.fine(String.format("Offspring and elites merged: %d individuals", newPopulation.size()));
     return State.from(
-        (State<Individual<G, S, Q>, G, S, Q>) state,
+        (State<G, S, Q>) state,
         progress(state),
-        nOfBirths,
-        nOfBirths + (remap ? elites.size() : 0),
+        nOfNewBirths,
+        nOfNewBirths + (remap ? elites.size() : 0),
         PartiallyOrderedCollection.from(newPopulation, partialComparator(problem)),
         allSpecies);
+
   }
+
 }
