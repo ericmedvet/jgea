@@ -187,6 +187,7 @@
               <spaces>true</spaces>
               <spacesPerTab>2</spacesPerTab>
             </indent>
+            <removeUnusedImports></removeUnusedImports>
           </java>
           <pom>
             <sortPom></sortPom>

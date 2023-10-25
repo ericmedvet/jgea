@@ -23,7 +23,6 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.selector.Last;
 import io.github.ericmedvet.jgea.core.solver.state.ListPopulationState;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -124,7 +123,8 @@ public class DifferentialEvolution<S, Q>
       TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
       throws SolverException {
     return ListState.from(
-        map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor), comparator(problem));
+        map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor),
+        comparator(problem));
   }
 
   @Override

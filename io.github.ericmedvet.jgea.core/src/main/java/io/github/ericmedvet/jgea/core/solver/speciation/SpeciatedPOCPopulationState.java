@@ -21,13 +21,11 @@ package io.github.ericmedvet.jgea.core.solver.speciation;
 
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
-
 import java.util.Collection;
 
 /**
  * @author "Eric Medvet" on 2023/10/21 for jgea
  */
-public interface SpeciatedPOCPopulationState<G, S, Q>
-    extends POCPopulationState<Individual<G, S, Q>, G, S, Q> {
+public interface SpeciatedPOCPopulationState<G, S, Q> extends POCPopulationState<Individual<G, S, Q>, G, S, Q> {
   Collection<SpeciatedEvolver.Species<Individual<G, S, Q>>> parentSpecies();
 }

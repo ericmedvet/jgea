@@ -24,7 +24,6 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.selector.Selector;
 import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.Function;
@@ -41,8 +40,7 @@ public class MutationOnly<G, S, Q> extends StandardEvolver<G, S, Q> {
       int populationSize,
       Predicate<? super POCPopulationState<Individual<G, S, Q>, G, S, Q>> stopCondition,
       Selector<? super Individual<? super G, ? super S, ? super Q>> unsurvivalSelector,
-      Mutation<G> mutation
-  ) {
+      Mutation<G> mutation) {
     super(
         solutionMapper,
         genotypeFactory,
@@ -53,16 +51,13 @@ public class MutationOnly<G, S, Q> extends StandardEvolver<G, S, Q> {
         unsurvivalSelector,
         0,
         true,
-        false
-    );
+        false);
     this.mutation = mutation;
   }
 
   @Override
   protected Collection<G> buildOffspringGenotypes(
-      POCPopulationState<Individual<G, S, Q>, G, S, Q> state,
-      RandomGenerator random
-  ) {
+      POCPopulationState<Individual<G, S, Q>, G, S, Q> state, RandomGenerator random) {
     return state.pocPopulation().all().stream()
         .map(i -> mutation.mutate(i.genotype(), random))
         .toList();

@@ -25,7 +25,6 @@ import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.selector.First;
 import io.github.ericmedvet.jgea.core.selector.Last;
 import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
-
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -36,8 +35,7 @@ public class RandomWalk<G, S, Q> extends StandardEvolver<G, S, Q> {
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       Predicate<? super POCPopulationState<Individual<G, S, Q>, G, S, Q>> stopCondition,
-      Mutation<G> mutation
-  ) {
+      Mutation<G> mutation) {
     super(
         solutionMapper,
         genotypeFactory,
@@ -48,8 +46,6 @@ public class RandomWalk<G, S, Q> extends StandardEvolver<G, S, Q> {
         new Last(),
         1,
         true,
-        false
-    );
+        false);
   }
-
 }

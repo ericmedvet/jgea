@@ -26,7 +26,6 @@ import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jgea.core.util.Progress;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -41,12 +40,12 @@ import java.util.random.RandomGenerator;
 import java.util.stream.Stream;
 
 public abstract class AbstractPopulationBasedIterativeSolver<
-    T extends POCPopulationState<I, G, S, Q>,
-    P extends QualityBasedProblem<S, Q>,
-    I extends Individual<G, S, Q>,
-    G,
-    S,
-    Q>
+        T extends POCPopulationState<I, G, S, Q>,
+        P extends QualityBasedProblem<S, Q>,
+        I extends Individual<G, S, Q>,
+        G,
+        S,
+        Q>
     implements IterativeSolver<T, P, S> {
 
   protected final Function<? super G, ? extends S> solutionMapper;
@@ -58,8 +57,7 @@ public abstract class AbstractPopulationBasedIterativeSolver<
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       Predicate<? super T> stopCondition,
-      boolean remap
-  ) {
+      boolean remap) {
     this.solutionMapper = solutionMapper;
     this.genotypeFactory = genotypeFactory;
     this.stopCondition = stopCondition;
@@ -105,12 +103,12 @@ public abstract class AbstractPopulationBasedIterativeSolver<
   }
 
   protected static <P extends QualityBasedProblem<?, Q>, I extends Individual<?, ?, Q>, Q>
-  PartialComparator<? super I> partialComparator(P problem) {
+      PartialComparator<? super I> partialComparator(P problem) {
     return (i1, i2) -> problem.qualityComparator().compare(i1.quality(), i2.quality());
   }
 
   protected static <P extends TotalOrderQualityBasedProblem<?, Q>, I extends Individual<?, ?, Q>, Q>
-  Comparator<? super I> comparator(P problem) {
+      Comparator<? super I> comparator(P problem) {
     return (i1, i2) -> problem.totalOrderComparator().compare(i1.quality(), i2.quality());
   }
 
@@ -133,8 +131,7 @@ public abstract class AbstractPopulationBasedIterativeSolver<
   }
 
   protected Collection<I> map(
-      Collection<? extends G> genotypes, Collection<I> individuals, T state, P problem, ExecutorService executor
-  )
+      Collection<? extends G> genotypes, Collection<I> individuals, T state, P problem, ExecutorService executor)
       throws SolverException {
     if (remap) {
       return getAll(

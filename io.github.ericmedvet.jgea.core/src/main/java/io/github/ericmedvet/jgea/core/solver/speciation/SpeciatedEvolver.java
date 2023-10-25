@@ -30,7 +30,6 @@ import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
-
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -45,8 +44,7 @@ import java.util.random.RandomGenerator;
 
 public class SpeciatedEvolver<G, S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-    SpeciatedPOCPopulationState<G, S, Q>,
-    QualityBasedProblem<S, Q>, Individual<G, S, Q>, G, S, Q> {
+        SpeciatedPOCPopulationState<G, S, Q>, QualityBasedProblem<S, Q>, Individual<G, S, Q>, G, S, Q> {
   private static final Logger L = Logger.getLogger(SpeciatedEvolver.class.getName());
   protected final Map<GeneticOperator<G>, Double> operators;
   protected final int populationSize;
@@ -63,8 +61,7 @@ public class SpeciatedEvolver<G, S, Q>
       boolean remap,
       int minSpeciesSizeForElitism,
       Speciator<Individual<G, S, Q>> speciator,
-      double rankBase
-  ) {
+      double rankBase) {
     super(solutionMapper, genotypeFactory, stopCondition, remap);
     this.operators = operators;
     this.populationSize = populationSize;
@@ -87,8 +84,7 @@ public class SpeciatedEvolver<G, S, Q>
       long nOfBirths,
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<Individual<G, S, Q>> pocPopulation,
-      Collection<Species<Individual<G, S, Q>>> parentSpecies
-  )
+      Collection<Species<Individual<G, S, Q>>> parentSpecies)
       implements SpeciatedPOCPopulationState<G, S, Q> {
     public static <G, S, Q> State<G, S, Q> from(
         State<G, S, Q> state,
@@ -96,8 +92,7 @@ public class SpeciatedEvolver<G, S, Q>
         int nOfBirths,
         int nOfFitnessEvaluations,
         PartiallyOrderedCollection<Individual<G, S, Q>> population,
-        Collection<Species<Individual<G, S, Q>>> parentSpecies
-    ) {
+        Collection<Species<Individual<G, S, Q>>> parentSpecies) {
       return new State<>(
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
@@ -106,8 +101,7 @@ public class SpeciatedEvolver<G, S, Q>
           state.nOfBirths() + nOfBirths,
           state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
           population,
-          parentSpecies
-      );
+          parentSpecies);
     }
 
     public static <G, S, Q> State<G, S, Q> from(PartiallyOrderedCollection<Individual<G, S, Q>> population) {
@@ -119,17 +113,13 @@ public class SpeciatedEvolver<G, S, Q>
           population.size(),
           population.size(),
           population,
-          List.of()
-      );
+          List.of());
     }
   }
 
   @Override
   protected Individual<G, S, Q> newIndividual(
-      G genotype,
-      SpeciatedPOCPopulationState<G, S, Q> state,
-      QualityBasedProblem<S, Q> problem
-  ) {
+      G genotype, SpeciatedPOCPopulationState<G, S, Q> state, QualityBasedProblem<S, Q> problem) {
     return null;
   }
 
@@ -137,21 +127,17 @@ public class SpeciatedEvolver<G, S, Q>
   protected Individual<G, S, Q> updateIndividual(
       Individual<G, S, Q> individual,
       SpeciatedPOCPopulationState<G, S, Q> state,
-      QualityBasedProblem<S, Q> problem
-  ) {
+      QualityBasedProblem<S, Q> problem) {
     return null;
   }
 
   @Override
   public SpeciatedPOCPopulationState<G, S, Q> init(
-      QualityBasedProblem<S, Q> problem,
-      RandomGenerator random,
-      ExecutorService executor
-  ) throws SolverException {
+      QualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
+      throws SolverException {
     return State.from(PartiallyOrderedCollection.from(
-        map(genotypeFactory.build(populationSize,random),List.of(),null,problem,executor),
-        partialComparator(problem)
-    ));
+        map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor),
+        partialComparator(problem)));
   }
 
   @Override
@@ -159,19 +145,15 @@ public class SpeciatedEvolver<G, S, Q>
       QualityBasedProblem<S, Q> problem,
       RandomGenerator random,
       ExecutorService executor,
-      SpeciatedPOCPopulationState<G, S, Q> state
-  ) throws SolverException {
-
-  }
+      SpeciatedPOCPopulationState<G, S, Q> state)
+      throws SolverException {}
 
   @Override
   public SpeciatedPOCPopulationState<Individual<G, S, Q>, G, S, Q> oldinit(
-      P problem, RandomGenerator random, ExecutorService executor
-  ) throws SolverException {
+      P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
     return new State<>(PartiallyOrderedCollection.from(
         getAll(map(genotypeFactory.build(populationSize, random), 0, problem.qualityFunction(), executor)),
-        partialComparator(problem)
-    ));
+        partialComparator(problem)));
   }
 
   @Override
@@ -179,8 +161,7 @@ public class SpeciatedEvolver<G, S, Q>
       P problem,
       RandomGenerator random,
       ExecutorService executor,
-      SpeciatedPOCPopulationState<Individual<G, S, Q>, G, S, Q> state
-  )
+      SpeciatedPOCPopulationState<Individual<G, S, Q>, G, S, Q> state)
       throws SolverException {
     Collection<Individual<G, S, Q>> parents = state.pocPopulation().all();
     // partition in species
@@ -188,22 +169,22 @@ public class SpeciatedEvolver<G, S, Q>
     L.fine(String.format(
         "Population speciated in %d species of sizes %s",
         allSpecies.size(),
-        allSpecies.stream().map(s -> s.elements().size()).toList()
-    ));
+        allSpecies.stream().map(s -> s.elements().size()).toList()));
     // put elites
     Collection<Individual<G, S, Q>> elites = new ArrayList<>();
     parents.stream()
-        .reduce((i1, i2) ->
-            partialComparator(problem).compare(i1, i2).equals(PartialComparator.PartialComparatorOutcome.BEFORE)
-                ? i1
-                : i2)
+        .reduce((i1, i2) -> partialComparator(problem)
+                .compare(i1, i2)
+                .equals(PartialComparator.PartialComparatorOutcome.BEFORE)
+            ? i1
+            : i2)
         .ifPresent(elites::add);
     for (Species<Individual<G, S, Q>> species : allSpecies) {
       if (species.elements().size() >= minSpeciesSizeForElitism) {
         species.elements().stream()
             .reduce((i1, i2) -> partialComparator(problem)
-                .compare(i1, i2)
-                .equals(PartialComparator.PartialComparatorOutcome.BEFORE)
+                    .compare(i1, i2)
+                    .equals(PartialComparator.PartialComparatorOutcome.BEFORE)
                 ? i1
                 : i2)
             .ifPresent(elites::add);
@@ -216,8 +197,7 @@ public class SpeciatedEvolver<G, S, Q>
     L.fine(String.format(
         "Representers determined for %d species: fitnesses are %s",
         allSpecies.size(),
-        representers.stream().map(i -> String.format("%s", i.quality())).toList()
-    ));
+        representers.stream().map(i -> String.format("%s", i.quality())).toList()));
     List<Individual<G, S, Q>> sortedRepresenters = new ArrayList<>(representers);
     sortedRepresenters.sort(partialComparator(problem).comparator());
     List<Double> weights = representers.stream()
@@ -261,7 +241,6 @@ public class SpeciatedEvolver<G, S, Q>
         nOfBirths,
         nOfBirths + (remap ? elites.size() : 0),
         PartiallyOrderedCollection.from(newPopulation, partialComparator(problem)),
-        allSpecies
-    );
+        allSpecies);
   }
 }

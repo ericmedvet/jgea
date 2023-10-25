@@ -25,7 +25,6 @@ import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.selector.First;
 import io.github.ericmedvet.jgea.core.selector.Last;
 import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
-
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -41,12 +40,14 @@ public class RandomSearch<G, S, Q> extends StandardEvolver<G, S, Q> {
         genotypeFactory,
         1,
         stopCondition,
-        Map.of((Mutation<G>) (g, random) -> genotypeFactory.build(1,random).get(0), 1d),
+        Map.of(
+            (Mutation<G>)
+                (g, random) -> genotypeFactory.build(1, random).get(0),
+            1d),
         new First(),
         new Last(),
         1,
         true,
-        false
-    );
+        false);
   }
 }
