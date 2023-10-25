@@ -25,9 +25,11 @@ import io.github.ericmedvet.jgea.core.order.DAGPartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.MultiHomogeneousObjectiveProblem;
+import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationStateC;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
+
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -38,8 +40,11 @@ import java.util.stream.IntStream;
 
 // source -> https://doi.org/10.1109/4235.996017
 
-public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
-    extends AbstractPopulationBasedIterativeSolver<NsgaII.State<G, S>, P, G, S, List<Double>> {
+public class NsgaII<G, S>
+    extends AbstractPopulationBasedIterativeSolver<
+    POCPopulationState<G, S, List<Double>>,
+    MultiHomogeneousObjectiveProblem<S, Double>, Individual<G, S, List<Double>>,
+    G, S, List<Double>> {
 
   protected final Map<GeneticOperator<G>, Double> operators;
   private final boolean remap;
@@ -50,7 +55,8 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
       int populationSize,
       Predicate<? super State<G, S>> stopCondition,
       Map<GeneticOperator<G>, Double> operators,
-      boolean remap) {
+      boolean remap
+  ) {
     super(solutionMapper, genotypeFactory, populationSize, stopCondition);
     this.operators = operators;
     this.remap = remap;
@@ -78,7 +84,8 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
     private double crowdingDistance;
 
     public RankedWithDistanceIndividual(
-        Individual<G, S, List<Double>> individual, int rank, double crowdingDistance) {
+        Individual<G, S, List<Double>> individual, int rank, double crowdingDistance
+    ) {
       super(individual, rank);
       this.crowdingDistance = crowdingDistance;
     }
@@ -105,7 +112,8 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
 
     private List<RankedWithDistanceIndividual<G, S>> rankedWithDistanceIndividuals;
 
-    public State() {}
+    public State() {
+    }
 
     protected State(
         LocalDateTime startingDateTime,
@@ -115,7 +123,8 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
         long nOfBirths,
         long nOfFitnessEvaluations,
         PartiallyOrderedCollection<Individual<G, S, List<Double>>> population,
-        List<RankedWithDistanceIndividual<G, S>> rankedWithDistanceIndividuals) {
+        List<RankedWithDistanceIndividual<G, S>> rankedWithDistanceIndividuals
+    ) {
       super(
           startingDateTime,
           elapsedMillis,
@@ -123,7 +132,8 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
           progress,
           nOfBirths,
           nOfFitnessEvaluations,
-          population);
+          population
+      );
       this.rankedWithDistanceIndividuals = rankedWithDistanceIndividuals;
     }
 
@@ -137,12 +147,14 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
           nOfBirths,
           nOfFitnessEvaluations,
           population.immutableCopy(),
-          new ArrayList<>(rankedWithDistanceIndividuals));
+          new ArrayList<>(rankedWithDistanceIndividuals)
+      );
     }
   }
 
   private Collection<RankedWithDistanceIndividual<G, S>> assignCrowdingDistance(
-      Collection<RankedIndividual<G, S>> rankedIndividuals, List<Comparator<Double>> comparators) {
+      Collection<RankedIndividual<G, S>> rankedIndividuals, List<Comparator<Double>> comparators
+  ) {
     int maxRank = rankedIndividuals.stream().mapToInt(i -> i.rank).max().orElse(0);
     Collection<RankedWithDistanceIndividual<G, S>> rankedWithDistanceIndividuals = new ArrayList<>();
     IntStream.range(0, maxRank + 1).forEach(rank -> {
@@ -154,7 +166,8 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
   }
 
   private Collection<RankedWithDistanceIndividual<G, S>> assignCrowdingDistanceWithinRank(
-      Collection<RankedIndividual<G, S>> rankedIndividuals, List<Comparator<Double>> comparators) {
+      Collection<RankedIndividual<G, S>> rankedIndividuals, List<Comparator<Double>> comparators
+  ) {
     int l = rankedIndividuals.size();
     List<RankedWithDistanceIndividual<G, S>> rankedWithDistanceIndividuals = rankedIndividuals.stream()
         .map(RankedWithDistanceIndividual::new)
@@ -173,11 +186,11 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
       IntStream.range(1, l - 2).forEach(i -> {
         double ithDistanceIncrement =
             (mSortedIndividuals.get(i + 1).individual.quality().get(m)
-                    - mSortedIndividuals
-                        .get(i - 1)
-                        .individual
-                        .quality()
-                        .get(m))
+                - mSortedIndividuals
+                .get(i - 1)
+                .individual
+                .quality()
+                .get(m))
                 / mNormalization;
         mSortedIndividuals.get(i).crowdingDistance += ithDistanceIncrement;
       });
@@ -187,7 +200,8 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
   }
 
   private Collection<Individual<G, S, List<Double>>> buildOffspring(
-      State<G, S> state, P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
+      State<G, S> state, P problem, RandomGenerator random, ExecutorService executor
+  ) throws SolverException {
     Collection<G> offspringGenotypes = new ArrayList<>();
     while (offspringGenotypes.size() < populationSize) {
       GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
@@ -203,7 +217,8 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
 
   private Collection<RankedIndividual<G, S>> fastNonDominatedSort(
       Collection<Individual<G, S, List<Double>>> individuals,
-      PartialComparator<Individual<G, S, List<Double>>> comparator) {
+      PartialComparator<Individual<G, S, List<Double>>> comparator
+  ) {
     Collection<RankedIndividual<G, S>> rankedIndividuals = new ArrayList<>();
 
     int rank = 0;
@@ -273,7 +288,8 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
   }
 
   private List<RankedWithDistanceIndividual<G, S>> trimPopulation(
-      Collection<Individual<G, S, List<Double>>> offspring, P problem) {
+      Collection<Individual<G, S, List<Double>>> offspring, P problem
+  ) {
     Collection<RankedIndividual<G, S>> rankedIndividuals =
         fastNonDominatedSort(offspring, partialComparator(problem));
     Collection<RankedWithDistanceIndividual<G, S>> rankedWithDistanceIndividuals =
@@ -295,7 +311,8 @@ public class NsgaII<P extends MultiHomogeneousObjectiveProblem<S, Double>, G, S>
           solutionMapper,
           problem.qualityFunction(),
           executor,
-          state));
+          state
+      ));
     } else {
       offspring.addAll(state.getPopulation().all());
     }
