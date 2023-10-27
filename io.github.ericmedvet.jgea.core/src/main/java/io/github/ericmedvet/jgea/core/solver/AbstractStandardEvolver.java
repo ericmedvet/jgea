@@ -29,6 +29,7 @@ import io.github.ericmedvet.jgea.core.solver.state.ListPopulationState;
 import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
+
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -39,12 +40,12 @@ import java.util.logging.Logger;
 import java.util.random.RandomGenerator;
 
 public abstract class AbstractStandardEvolver<
-        T extends POCPopulationState<I, G, S, Q>,
-        I extends Individual<G, S, Q>,
-        P extends QualityBasedProblem<S, Q>,
-        G,
-        S,
-        Q>
+    T extends POCPopulationState<I, G, S, Q>,
+    P extends QualityBasedProblem<S, Q>,
+    I extends Individual<G, S, Q>,
+    G,
+    S,
+    Q>
     extends AbstractPopulationBasedIterativeSolver<T, P, I, G, S, Q> {
 
   private static final Logger L = Logger.getLogger(AbstractStandardEvolver.class.getName());
@@ -62,14 +63,16 @@ public abstract class AbstractStandardEvolver<
       Progress progress,
       long nOfBirths,
       long nOfFitnessEvaluations,
-      PartiallyOrderedCollection<I> pocPopulation)
+      PartiallyOrderedCollection<I> pocPopulation
+  )
       implements POCPopulationState<I, G, S, Q> {
     public static <I extends Individual<G, S, Q>, G, S, Q> POCState<I, G, S, Q> from(
         POCState<I, G, S, Q> state,
         Progress progress,
         long nOfBirths,
         long nOfFitnessEvaluations,
-        PartiallyOrderedCollection<I> population) {
+        PartiallyOrderedCollection<I> population
+    ) {
       return new POCState<>(
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
@@ -77,11 +80,13 @@ public abstract class AbstractStandardEvolver<
           progress,
           state.nOfBirths() + nOfBirths,
           state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
-          population);
+          population
+      );
     }
 
     public static <I extends Individual<G, S, Q>, G, S, Q> POCState<I, G, S, Q> from(
-        PartiallyOrderedCollection<I> population) {
+        PartiallyOrderedCollection<I> population
+    ) {
       return new POCState<>(
           LocalDateTime.now(), 0, 0, Progress.NA, population.size(), population.size(), population);
     }
@@ -95,7 +100,8 @@ public abstract class AbstractStandardEvolver<
       long nOfBirths,
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<I> pocPopulation,
-      List<I> listPopulation)
+      List<I> listPopulation
+  )
       implements ListPopulationState<I, G, S, Q> {
     public static <I extends Individual<G, S, Q>, G, S, Q> ListState<I, G, S, Q> from(
         ListState<I, G, S, Q> state,
@@ -103,7 +109,8 @@ public abstract class AbstractStandardEvolver<
         long nOfBirths,
         long nOfFitnessEvaluations,
         Collection<I> listPopulation,
-        Comparator<? super I> comparator) {
+        Comparator<? super I> comparator
+    ) {
       return new ListState<>(
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
@@ -112,11 +119,13 @@ public abstract class AbstractStandardEvolver<
           state.nOfBirths() + nOfBirths,
           state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
           PartiallyOrderedCollection.from(listPopulation, comparator),
-          listPopulation.stream().sorted(comparator).toList());
+          listPopulation.stream().sorted(comparator).toList()
+      );
     }
 
     public static <I extends Individual<G, S, Q>, G, S, Q> ListState<I, G, S, Q> from(
-        Collection<I> listPopulation, Comparator<? super I> comparator) {
+        Collection<I> listPopulation, Comparator<? super I> comparator
+    ) {
       return new ListState<>(
           LocalDateTime.now(),
           0,
@@ -125,7 +134,8 @@ public abstract class AbstractStandardEvolver<
           listPopulation.size(),
           listPopulation.size(),
           PartiallyOrderedCollection.from(listPopulation, comparator),
-          listPopulation.stream().sorted(comparator).toList());
+          listPopulation.stream().sorted(comparator).toList()
+      );
     }
   }
 
@@ -139,7 +149,8 @@ public abstract class AbstractStandardEvolver<
       Selector<? super I> unsurvivalSelector,
       int offspringSize,
       boolean overlapping,
-      boolean remap) {
+      boolean remap
+  ) {
     super(solutionMapper, genotypeFactory, stopCondition, remap);
     this.operators = operators;
     this.parentSelector = parentSelector;
@@ -164,7 +175,8 @@ public abstract class AbstractStandardEvolver<
   }
 
   protected abstract T update(
-      T state, P problem, Collection<I> individuals, long nOfNewBirths, long nOfNewFitnessEvaluations);
+      T state, P problem, Collection<I> individuals, long nOfNewBirths, long nOfNewFitnessEvaluations
+  );
 
   protected abstract T init(P problem, Collection<I> individuals);
 
@@ -198,6 +210,7 @@ public abstract class AbstractStandardEvolver<
         problem,
         newPopulation,
         nOfNewBirths,
-        nOfNewBirths + (remap ? state.pocPopulation().size() : 0));
+        nOfNewBirths + (remap ? state.pocPopulation().size() : 0)
+    );
   }
 }
