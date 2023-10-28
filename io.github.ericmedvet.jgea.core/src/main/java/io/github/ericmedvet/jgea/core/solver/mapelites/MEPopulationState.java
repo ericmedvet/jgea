@@ -10,4 +10,5 @@ import java.util.Map;
  */
 public interface MEPopulationState<G, S, Q> extends POCPopulationState<Individual<G, S, Q>, G, S, Q> {
   Map<List<Integer>, Individual<G, S, Q>> mapOfElites();
+  List<MapElites.Descriptor<G, S, Q>> descriptors();
 }
