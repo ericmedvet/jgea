@@ -39,6 +39,8 @@ import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
+//from https://medvet.inginf.units.it/publications/2023-c-nm-effects/
+
 public class CooperativeSolver<
         T1 extends POCPopulationState<Individual<G1, S1, Q>, G1, S1, Q>,
         T2 extends POCPopulationState<Individual<G2, S2, Q>, G2, S2, Q>,
