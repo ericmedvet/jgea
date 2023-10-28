@@ -21,7 +21,7 @@
 package io.github.ericmedvet.jgea.experimenter.net;
 
 import io.github.ericmedvet.jgea.core.listener.*;
-import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
+import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;

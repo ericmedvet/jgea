@@ -28,7 +28,7 @@ import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import io.github.ericmedvet.jgea.core.listener.*;
-import io.github.ericmedvet.jgea.core.solver.state.State;
+import io.github.ericmedvet.jgea.core.solver.State;
 import io.github.ericmedvet.jgea.core.util.*;
 import io.github.ericmedvet.jgea.tui.util.DrawUtils;
 import io.github.ericmedvet.jgea.tui.util.Point;

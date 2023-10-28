@@ -23,7 +23,7 @@ package io.github.ericmedvet.jgea.experimenter;
 import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
 import io.github.ericmedvet.jgea.core.listener.ProgressMonitor;
 import io.github.ericmedvet.jgea.core.listener.ScreenProgressMonitor;
-import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
+import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jnb.core.MapNamedParamMap;
 import io.github.ericmedvet.jnb.core.NamedBuilder;
 import io.github.ericmedvet.jnb.core.ProjectInfoProvider;

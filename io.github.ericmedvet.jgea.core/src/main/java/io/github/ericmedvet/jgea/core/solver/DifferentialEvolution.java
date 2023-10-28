@@ -22,7 +22,7 @@ package io.github.ericmedvet.jgea.core.solver;
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.selector.Last;
-import io.github.ericmedvet.jgea.core.solver.state.ListPopulationState;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

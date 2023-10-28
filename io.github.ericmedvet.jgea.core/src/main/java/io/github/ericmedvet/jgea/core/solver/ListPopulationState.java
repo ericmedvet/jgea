@@ -1,6 +1,8 @@
-package io.github.ericmedvet.jgea.core.solver.state;
+package io.github.ericmedvet.jgea.core.solver;
 
 import io.github.ericmedvet.jgea.core.solver.Individual;
+import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
+
 import java.util.List;
 
 /**

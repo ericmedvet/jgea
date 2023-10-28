@@ -21,8 +21,8 @@
 package io.github.ericmedvet.jgea.core.listener;
 
 import io.github.ericmedvet.jgea.core.solver.Individual;
-import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
-import io.github.ericmedvet.jgea.core.solver.state.State;
+import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
+import io.github.ericmedvet.jgea.core.solver.State;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.core.util.Sized;

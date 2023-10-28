@@ -1,7 +1,7 @@
 package io.github.ericmedvet.jgea.core.solver.mapelites;
 
 import io.github.ericmedvet.jgea.core.solver.Individual;
-import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
+import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import java.util.List;
 import java.util.Map;
 

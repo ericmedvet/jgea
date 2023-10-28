@@ -17,18 +17,17 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jgea.core.solver.state;
+package io.github.ericmedvet.jgea.core.solver;
 
-import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
-import io.github.ericmedvet.jgea.core.solver.Individual;
+import io.github.ericmedvet.jgea.core.util.Progress;
 
 /**
  * @author "Eric Medvet" on 2023/10/21 for jgea
  */
-public interface POCPopulationState<I extends Individual<G, S, Q>, G, S, Q> extends State {
-  long nOfBirths();
+public interface State {
+  long elapsedMillis();
 
-  long nOfFitnessEvaluations();
+  long nOfIterations();
 
-  PartiallyOrderedCollection<I> pocPopulation();
+  Progress progress();
 }

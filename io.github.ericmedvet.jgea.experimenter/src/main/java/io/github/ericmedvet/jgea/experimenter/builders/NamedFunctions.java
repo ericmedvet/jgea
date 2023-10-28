@@ -22,8 +22,8 @@ package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.solver.Individual;
-import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
-import io.github.ericmedvet.jgea.core.solver.state.State;
+import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
+import io.github.ericmedvet.jgea.core.solver.State;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
 import io.github.ericmedvet.jnb.core.Discoverable;

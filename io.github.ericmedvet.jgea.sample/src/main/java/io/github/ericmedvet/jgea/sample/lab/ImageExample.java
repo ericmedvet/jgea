@@ -40,7 +40,7 @@ import io.github.ericmedvet.jgea.core.solver.AbstractStandardEvolver;
 import io.github.ericmedvet.jgea.core.solver.IterativeSolver;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.solver.StopConditions;
-import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
+import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.problem.image.ImageReconstruction;
 import io.github.ericmedvet.jgea.sample.Worker;
 import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;

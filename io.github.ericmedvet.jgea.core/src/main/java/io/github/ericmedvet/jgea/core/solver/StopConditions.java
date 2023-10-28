@@ -20,8 +20,6 @@
 
 package io.github.ericmedvet.jgea.core.solver;
 
-import io.github.ericmedvet.jgea.core.solver.state.POCPopulationState;
-import io.github.ericmedvet.jgea.core.solver.state.State;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import java.util.function.Predicate;
 
