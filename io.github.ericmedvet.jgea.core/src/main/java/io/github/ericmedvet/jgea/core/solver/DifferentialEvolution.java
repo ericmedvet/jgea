@@ -23,7 +23,6 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.selector.Last;
 import io.github.ericmedvet.jgea.core.solver.state.ListPopulationState;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -35,12 +34,12 @@ import java.util.stream.IntStream;
 
 public class DifferentialEvolution<S, Q>
     extends AbstractStandardEvolver<
-    ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>,
-    TotalOrderQualityBasedProblem<S, Q>,
-    Individual<List<Double>, S, Q>,
-    List<Double>,
-    S,
-    Q> {
+        ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>,
+        TotalOrderQualityBasedProblem<S, Q>,
+        Individual<List<Double>, S, Q>,
+        List<Double>,
+        S,
+        Q> {
 
   private final int populationSize;
   protected final double differentialWeight;
@@ -53,8 +52,7 @@ public class DifferentialEvolution<S, Q>
       Predicate<? super ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>> stopCondition,
       double differentialWeight,
       double crossoverProb,
-      boolean remap
-  ) {
+      boolean remap) {
     super(
         solutionMapper,
         genotypeFactory,
@@ -65,8 +63,7 @@ public class DifferentialEvolution<S, Q>
         new Last(),
         populationSize,
         true,
-        remap
-    );
+        remap);
     this.populationSize = populationSize;
     this.differentialWeight = differentialWeight;
     this.crossoverProb = crossoverProb;
@@ -76,31 +73,27 @@ public class DifferentialEvolution<S, Q>
   protected Individual<List<Double>, S, Q> newIndividual(
       List<Double> genotype,
       ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state,
-      TotalOrderQualityBasedProblem<S, Q> problem
-  ) {
+      TotalOrderQualityBasedProblem<S, Q> problem) {
     S solution = solutionMapper.apply(genotype);
     return Individual.of(
         genotype,
         solution,
         problem.qualityFunction().apply(solution),
         state == null ? 0 : state.nOfIterations(),
-        state == null ? 0 : state.nOfIterations()
-    );
+        state == null ? 0 : state.nOfIterations());
   }
 
   @Override
   protected Individual<List<Double>, S, Q> updateIndividual(
       Individual<List<Double>, S, Q> individual,
       ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state,
-      TotalOrderQualityBasedProblem<S, Q> problem
-  ) {
+      TotalOrderQualityBasedProblem<S, Q> problem) {
     return Individual.of(
         individual.genotype(),
         individual.solution(),
         problem.qualityFunction().apply(individual.solution()),
         individual.genotypeBirthIteration(),
-        state == null ? individual.qualityMappingIteration() : state.nOfIterations()
-    );
+        state == null ? individual.qualityMappingIteration() : state.nOfIterations());
   }
 
   @Override
@@ -109,40 +102,34 @@ public class DifferentialEvolution<S, Q>
       TotalOrderQualityBasedProblem<S, Q> problem,
       Collection<Individual<List<Double>, S, Q>> individuals,
       long nOfNewBirths,
-      long nOfNewFitnessEvaluations
-  ) {
+      long nOfNewFitnessEvaluations) {
     return ListState.from(
         (AbstractStandardEvolver.ListState<Individual<List<Double>, S, Q>, List<Double>, S, Q>) state,
         progress(state),
         state.nOfBirths() + nOfNewBirths,
         state.nOfFitnessEvaluations() + nOfNewFitnessEvaluations,
         individuals.stream().sorted(comparator(problem)).toList(),
-        comparator(problem)
-    );
+        comparator(problem));
   }
 
   @Override
   protected ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> init(
-      TotalOrderQualityBasedProblem<S, Q> problem, Collection<Individual<List<Double>, S, Q>> individuals
-  ) {
+      TotalOrderQualityBasedProblem<S, Q> problem, Collection<Individual<List<Double>, S, Q>> individuals) {
     return ListState.from(individuals.stream().sorted(comparator(problem)).toList(), comparator(problem));
   }
 
   @Override
   public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> init(
-      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor
-  )
+      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
       throws SolverException {
     return ListState.from(
         map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor),
-        comparator(problem)
-    );
+        comparator(problem));
   }
 
   @Override
   protected Collection<List<Double>> buildOffspringGenotypes(
-      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state, RandomGenerator random
-  ) {
+      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state, RandomGenerator random) {
     return IntStream.range(0, state.listPopulation().size())
         .mapToObj(i -> {
           List<Double> parent = state.listPopulation().get(i).genotype();

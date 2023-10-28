@@ -158,8 +158,8 @@ public class SpeciatedEvolver<G, S, Q>
     Collection<Individual<G, S, Q>> elites = new ArrayList<>();
     parents.stream()
         .reduce((i1, i2) -> partialComparator(problem)
-            .compare(i1, i2)
-            .equals(PartialComparator.PartialComparatorOutcome.BEFORE)
+                .compare(i1, i2)
+                .equals(PartialComparator.PartialComparatorOutcome.BEFORE)
             ? i1
             : i2)
         .ifPresent(elites::add);
@@ -167,8 +167,8 @@ public class SpeciatedEvolver<G, S, Q>
       if (species.elements().size() >= minSpeciesSizeForElitism) {
         species.elements().stream()
             .reduce((i1, i2) -> partialComparator(problem)
-                .compare(i1, i2)
-                .equals(PartialComparator.PartialComparatorOutcome.BEFORE)
+                    .compare(i1, i2)
+                    .equals(PartialComparator.PartialComparatorOutcome.BEFORE)
                 ? i1
                 : i2)
             .ifPresent(elites::add);
@@ -216,8 +216,7 @@ public class SpeciatedEvolver<G, S, Q>
     }
     int nOfNewBirths = offspringGenotypes.size();
     L.fine(String.format("%d offspring genotypes built", nOfNewBirths));
-    Collection<Individual<G, S, Q>> newPopulation =
-        map(offspringGenotypes, elites, state, problem, executor);
+    Collection<Individual<G, S, Q>> newPopulation = map(offspringGenotypes, elites, state, problem, executor);
     L.fine(String.format("Offspring and elites merged: %d individuals", newPopulation.size()));
     return State.from(
         (State<G, S, Q>) state,
@@ -226,7 +225,5 @@ public class SpeciatedEvolver<G, S, Q>
         nOfNewBirths + (remap ? elites.size() : 0),
         PartiallyOrderedCollection.from(newPopulation, partialComparator(problem)),
         allSpecies);
-
   }
-
 }
