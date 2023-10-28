@@ -25,9 +25,11 @@ import io.github.ericmedvet.jgea.core.order.DAGPartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.sequence.FixedLengthListFactory;
-import io.github.ericmedvet.jgea.core.solver.state.POSetPopulationStateC;
+import io.github.ericmedvet.jgea.core.solver.state.ListPopulationState;
 import io.github.ericmedvet.jgea.core.util.Progress;
+
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
@@ -41,8 +43,14 @@ import java.util.stream.IntStream;
 
 public class OpenAIEvolutionaryStrategy<S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        OpenAIEvolutionaryStrategy.State<S, Q>, TotalOrderQualityBasedProblem<S, Q>, List<Double>, S, Q> {
+    ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>,
+    TotalOrderQualityBasedProblem<S, Q>,
+    Individual<List<Double>, S, Q>,
+    List<Double>,
+    S,
+    Q> {
 
+  private final int populationSize;
   private final int batchSize;
   private final double sigma;
 
@@ -52,172 +60,202 @@ public class OpenAIEvolutionaryStrategy<S, Q>
   public OpenAIEvolutionaryStrategy(
       Function<? super List<Double>, ? extends S> solutionMapper,
       Factory<? extends List<Double>> genotypeFactory,
+      Predicate<? super ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>> stopCondition,
+      int populationSize,
       int batchSize,
-      Predicate<? super State<S, Q>> stopCondition,
-      double sigma) {
-    super(solutionMapper, genotypeFactory, 2 * batchSize, stopCondition);
+      double sigma,
+      int n
+  ) {
+    super(solutionMapper, genotypeFactory, stopCondition, false);
+    this.populationSize = populationSize;
     this.batchSize = batchSize;
     this.sigma = sigma;
-    n = genotypeFactory.build(1, new Random(0)).get(0).size();
+    this.n = n;
     gaussianSamplesFactory = new FixedLengthListFactory<>(n, RandomGenerator::nextGaussian);
   }
 
-  public static class State<S, Q> extends POSetPopulationStateC<List<Double>, S, Q> {
-    private final boolean wDecay = false;
-    private final double stepSize = 0.02;
-    private final double beta1 = 0.9;
-    private final double beta2 = 0.999;
-    private final double epsilon = 1e-08;
-    protected double[] center;
-    private List<List<Double>> samples;
-    private List<Integer> indexes; // indexes of fitness in reversed order
-    private double[] m;
-    private double[] v;
-
-    public State(int n) {
-      m = new double[n];
-      v = new double[n];
-    }
-
-    protected State(
-        LocalDateTime startingDateTime,
-        long elapsedMillis,
-        long nOfIterations,
-        Progress progress,
-        long nOfBirths,
-        long nOfFitnessEvaluations,
-        PartiallyOrderedCollection<Individual<List<Double>, S, Q>> population,
-        double[] center,
-        List<List<Double>> samples,
-        List<Integer> indexes,
-        double[] m,
-        double[] v) {
-      super(
-          startingDateTime,
-          elapsedMillis,
-          nOfIterations,
-          progress,
-          nOfBirths,
-          nOfFitnessEvaluations,
-          population);
-      this.center = center;
-      this.samples = samples;
-      this.indexes = indexes;
-      this.m = m;
-      this.v = v;
-    }
-
-    @Override
-    public State<S, Q> immutableCopy() {
+  public record State<S, Q>(
+      LocalDateTime startingDateTime,
+      long elapsedMillis,
+      long nOfIterations,
+      Progress progress,
+      long nOfBirths,
+      long nOfFitnessEvaluations,
+      PartiallyOrderedCollection<Individual<List<Double>, S, Q>> pocPopulation,
+      List<Individual<List<Double>, S, Q>> listPopulation,
+      boolean wDecay,
+      double stepSize,
+      double beta1,
+      double beta2,
+      double epsilon,
+      double[] center,
+      double[] m,
+      double[] v
+  ) implements ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> {
+    public static <S, Q> State<S, Q> from(
+        Collection<Individual<List<Double>, S, Q>> individuals,
+        Comparator<? super Individual<List<Double>, S, Q>> comparator
+    ) {
+      int n = individuals.iterator().next().genotype().size();
       return new State<>(
-          startingDateTime,
-          elapsedMillis,
-          nOfIterations,
+          LocalDateTime.now(),
+          0,
+          0,
+          Progress.NA,
+          0,
+          0,
+          PartiallyOrderedCollection.from(individuals, comparator),
+          individuals.stream().sorted(comparator).toList(),
+          false,
+          0.02,
+          0.9,
+          0.999,
+          1e-08,
+          SimpleEvolutionaryStrategy.computeMeans(individuals.stream().map(Individual::genotype).toList())
+              .stream()
+              .mapToDouble(v -> v)
+              .toArray(),
+          new double[n],
+          new double[n]
+      );
+    }
+
+    public static <S, Q> State<S, Q> from(
+        State<S, Q> state,
+        Progress progress,
+        Collection<Individual<List<Double>, S, Q>> individuals,
+        Comparator<? super Individual<List<Double>, S, Q>> comparator,
+        double[] center,
+        double[] m,
+        double[] v
+    ) {
+      return new State<>(
+          state.startingDateTime,
+          ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
+          state.nOfIterations() + 1,
           progress,
-          nOfBirths,
-          nOfFitnessEvaluations,
-          population.immutableCopy(),
-          Arrays.copyOf(center, center.length),
-          new ArrayList<>(samples),
-          new ArrayList<>(indexes),
-          Arrays.copyOf(m, m.length),
-          Arrays.copyOf(v, v.length));
+          state.nOfBirths + individuals.size(),
+          state.nOfFitnessEvaluations + individuals.size(),
+          PartiallyOrderedCollection.from(individuals, comparator),
+          individuals.stream().sorted(comparator).toList(),
+          state.wDecay,
+          state.stepSize,
+          state.beta1,
+          state.beta2,
+          state.epsilon,
+          center,
+          m,
+          v
+      );
     }
   }
 
   @Override
-  protected State<S, Q> initState(
-      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor) {
-    return new State<>(n);
+  protected Individual<List<Double>, S, Q> newIndividual(
+      List<Double> genotype,
+      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state,
+      TotalOrderQualityBasedProblem<S, Q> problem
+  ) {
+    S solution = solutionMapper.apply(genotype);
+    return Individual.of(
+        genotype,
+        solution,
+        problem.qualityFunction().apply(solution),
+        state == null ? 0 : state.nOfIterations(),
+        state == null ? 0 : state.nOfIterations()
+    );
   }
 
   @Override
-  public State<S, Q> init(
-      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
-      throws SolverException {
-    State<S, Q> state = super.init(problem, random, executor);
-    List<List<Double>> genotypes =
-        state.getPopulation().all().stream().map(Individual::genotype).toList();
-    state.center = IntStream.range(0, n)
-        .mapToDouble(i -> genotypes.stream()
-                .mapToDouble(genotype -> genotype.get(i))
-                .sum()
-            / genotypes.size())
-        .toArray();
-    return state;
+  protected Individual<List<Double>, S, Q> updateIndividual(
+      Individual<List<Double>, S, Q> individual,
+      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state,
+      TotalOrderQualityBasedProblem<S, Q> problem
+  ) {
+    throw new UnsupportedOperationException("This method should not be called");
   }
 
-  private void optimize(State<S, Q> state) {
+  @Override
+  public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> init(
+      TotalOrderQualityBasedProblem<S, Q> problem,
+      RandomGenerator random,
+      ExecutorService executor
+  ) throws SolverException {
+    Collection<Individual<List<Double>, S, Q>> individuals = map(
+        genotypeFactory.build(populationSize, random),
+        List.of(),
+        null,
+        problem,
+        executor
+    );
+    return State.from(individuals, comparator(problem));
+  }
+
+  @Override
+  public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> update(
+      TotalOrderQualityBasedProblem<S, Q> problem,
+      RandomGenerator random,
+      ExecutorService executor,
+      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state
+  ) throws SolverException {
+    State<S, Q> esState = (State<S, Q>) state;
+    List<List<Double>> samples = IntStream.range(0, batchSize)
+        .mapToObj(i -> gaussianSamplesFactory.build(random))
+        .toList();
+    List<List<Double>> genotypes = new ArrayList<>();
+    samples.forEach(sample -> {
+      genotypes.add(IntStream.range(0, n)
+          .mapToObj(i -> esState.center[i] + sample.get(i) * sigma)
+          .toList());
+      genotypes.add(IntStream.range(0, n)
+          .mapToObj(i -> esState.center[i] - sample.get(i) * sigma)
+          .toList());
+    });
+    // individuals and their fitness
+    List<Individual<List<Double>, S, Q>> newIndividuals = map(genotypes, List.of(), esState, problem, executor).stream()
+        .toList();
+    // sort individuals and compute indexes
+    Comparator<Integer> integerComparator =
+        partialComparator(problem).comparing(newIndividuals::get).comparator();
+    List<Integer> indexes = IntStream.range(0, populationSize)
+        .boxed()
+        .sorted(integerComparator)
+        .toList();
+    //compute new state
     double[] utilities = new double[populationSize];
     IntStream.range(0, populationSize)
-        .forEach(i -> utilities[state.indexes.get(i)] = (double) i / (populationSize - 1) - 0.5);
+        .forEach(i -> utilities[indexes.get(i)] = (double) i / (populationSize - 1) - 0.5);
     List<Double> weights = IntStream.range(0, batchSize)
         .mapToObj(i -> utilities[2 * i] - utilities[2 * i + 1])
         .toList();
     double[] g = IntStream.range(0, n)
         .mapToDouble(i -> IntStream.range(0, batchSize)
-                .mapToDouble(j ->
-                    weights.get(j) * state.samples.get(j).get(i))
-                .sum()
+            .mapToDouble(j ->
+                weights.get(j) * samples.get(j).get(i))
+            .sum()
             / populationSize)
         .toArray();
-    double[] globalG = state.wDecay
+    double[] globalG = esState.wDecay
         ? IntStream.range(0, n)
-            .mapToDouble(i -> -g[i] + 0.005 * state.center[i])
-            .toArray()
+        .mapToDouble(i -> -g[i] + 0.005 * esState.center[i])
+        .toArray()
         : Arrays.stream(g).toArray();
-    double a = state.stepSize
-        * Math.sqrt(1d - Math.pow(state.beta2, state.getNOfIterations()))
-        / (1d - Math.pow(state.beta1, state.getNOfIterations()));
-    state.m = IntStream.range(0, n)
-        .mapToDouble(i -> state.beta1 * state.m[i] + (1d - state.beta1) * globalG[i])
+    double a = esState.stepSize
+        * Math.sqrt(1d - Math.pow(esState.beta2, esState.nOfIterations()))
+        / (1d - Math.pow(esState.beta1, esState.nOfIterations()));
+    double[] m = IntStream.range(0, n)
+        .mapToDouble(i -> esState.beta1 * esState.m[i] + (1d - esState.beta1) * globalG[i])
         .toArray();
-    state.v = IntStream.range(0, n)
-        .mapToDouble(i -> state.beta2 * state.v[i] + (1d - state.beta2) * (globalG[i] * globalG[i]))
+    double[] v = IntStream.range(0, n)
+        .mapToDouble(i -> esState.beta2 * esState.v[i] + (1d - esState.beta2) * (globalG[i] * globalG[i]))
         .toArray();
     double[] dCenter = IntStream.range(0, n)
-        .mapToDouble(i -> -a * state.m[i] / (Math.sqrt(state.v[i]) + state.epsilon))
+        .mapToDouble(i -> -a * m[i] / (Math.sqrt(v[i]) + esState.epsilon))
         .toArray();
-    state.center = IntStream.range(0, n)
-        .mapToDouble(i -> state.center[i] + dCenter[i])
+    double[] center = IntStream.range(0, n)
+        .mapToDouble(i -> esState.center[i] + dCenter[i])
         .toArray();
+    return State.from(esState, progress(state), newIndividuals, comparator(problem), center, m, v);
   }
 
-  @Override
-  public void update(
-      TotalOrderQualityBasedProblem<S, Q> problem,
-      RandomGenerator random,
-      ExecutorService executor,
-      State<S, Q> state)
-      throws SolverException {
-    // create samples
-    state.samples = IntStream.range(0, batchSize)
-        .mapToObj(i -> gaussianSamplesFactory.build(random))
-        .toList();
-    List<List<Double>> genotypes = new ArrayList<>();
-    state.samples.forEach(sample -> {
-      genotypes.add(IntStream.range(0, n)
-          .mapToObj(i -> state.center[i] + sample.get(i) * sigma)
-          .toList());
-      genotypes.add(IntStream.range(0, n)
-          .mapToObj(i -> state.center[i] - sample.get(i) * sigma)
-          .toList());
-    });
-    // individuals and their fitness
-    List<Individual<List<Double>, S, Q>> individuals =
-        map(genotypes, List.of(), solutionMapper, problem.qualityFunction(), executor, state);
-    // sort individuals and compute indexes
-    Comparator<Integer> integerComparator =
-        partialComparator(problem).comparing(individuals::get).comparator();
-    state.indexes = IntStream.range(0, populationSize)
-        .boxed()
-        .sorted(integerComparator)
-        .toList();
-    // update state
-    state.setPopulation(new DAGPartiallyOrderedCollection<>(individuals, partialComparator(problem)));
-    state.incNOfIterations();
-    state.updateElapsedMillis();
-    // perform optimization
-    optimize(state);
-  }
 }
