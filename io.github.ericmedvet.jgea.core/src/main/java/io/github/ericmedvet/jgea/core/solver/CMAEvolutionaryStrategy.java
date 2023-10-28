@@ -32,6 +32,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -109,21 +110,20 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
       List<Individual<List<Double>, S, Q>> listPopulation, List<Double> means, RealMatrix C, double sigma,
       double[] sEvolutionPath, double[] cEvolutionPath, RealMatrix B, RealMatrix D, long lastEigenUpdateIteration
   ) implements ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> {
-    public static <S, Q> State<S, Q> from(
-        Collection<DecoratedIndividual<S, Q>> individuals, Comparator<? super Individual<List<Double>, S, Q>> comparator
+    public static <S, Q> State<S, Q> empty(
+        List<Double> means
     ) {
-      int n = individuals.stream().findFirst().orElseThrow().genotype().size();
-      //noinspection rawtypes,unchecked
+      int n = means.size();
       return new State<>(
           LocalDateTime.now(),
           0,
           0,
           Progress.NA,
-          individuals.size(),
-          individuals.size(),
-          PartiallyOrderedCollection.from((Collection) individuals, comparator),
-          individuals.stream().map(i -> (Individual<List<Double>, S, Q>) i).sorted(comparator).toList(),
-          SimpleEvolutionaryStrategy.computeMeans(individuals.stream().map(Individual::genotype).toList()),
+          0,
+          0,
+          null,
+          null,
+          means,
           MatrixUtils.createRealIdentityMatrix(n),
           0.5,
           new double[n],
@@ -168,19 +168,20 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
           state.means, state.C, state.sigma, state.sEvolutionPath, state.cEvolutionPath, B, D, state.nOfIterations
       );
     }
+
     public static <S, Q> State<S, Q> from(
         State<S, Q> state,
         Progress progress,
         Collection<DecoratedIndividual<S, Q>> individuals, Comparator<? super Individual<List<Double>, S, Q>> comparator
-        ) {
+    ) {
       //noinspection unchecked,rawtypes
       return new State<>(
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
-          state.nOfIterations+1,
+          state.nOfIterations + 1,
           progress,
-          state.nOfBirths+ individuals.size(),
-          state.nOfFitnessEvaluations+ individuals.size(),
+          state.nOfBirths + individuals.size(),
+          state.nOfFitnessEvaluations + individuals.size(),
           PartiallyOrderedCollection.from((Collection) individuals, comparator),
           individuals.stream().map(i -> (Individual<List<Double>, S, Q>) i).sorted(comparator).toList(),
           state.means, state.C, state.sigma, state.sEvolutionPath, state.cEvolutionPath, state.B,
@@ -195,7 +196,7 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
       ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state,
       TotalOrderQualityBasedProblem<S, Q> problem
   ) {
-    return null; // TODO
+    throw new UnsupportedOperationException("This method should not be called");
   }
 
   @Override
@@ -204,23 +205,23 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
       ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state,
       TotalOrderQualityBasedProblem<S, Q> problem
   ) {
-    return new DecoratedIndividual<>(
-        individual.genotype(),
-        individual.solution(),
-        problem.qualityFunction().apply(individual.solution()),
-        individual.genotypeBirthIteration(),
-        state.nOfIterations(),
-        ((DecoratedIndividual<S, Q>) individual).z,
-        ((DecoratedIndividual<S, Q>) individual).y,
-        ((DecoratedIndividual<S, Q>) individual).x
-    );
+    throw new UnsupportedOperationException("This method should not be called");
   }
 
   @Override
   public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> init(
       TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor
   ) throws SolverException {
-    return null;
+    State<S,Q> state = State.empty(genotypeFactory.build(1,random).get(0));
+    Collection<DecoratedIndividual<S, Q>> newDecoratedIndividuals;
+    try {
+      newDecoratedIndividuals = getAll(executor.invokeAll(IntStream.range(0, populationSize)
+          .mapToObj(k -> newIndividualCallable(state, problem, random))
+          .toList()));
+    } catch (InterruptedException e) {
+      throw new SolverException(e);
+    }
+    return State.from(state, progress(state), newDecoratedIndividuals, comparator(problem));
   }
 
   @Override
@@ -239,25 +240,41 @@ public class CMAEvolutionaryStrategy<S, Q> extends AbstractPopulationBasedIterat
       cmaState = eigenDecomposition(cmaState);
     }
     // sample new population
-    final State<S,Q> newState = cmaState;
-    List<List<Double>> newGenotypes = IntStream.range(0, populationSize).mapToObj(k -> sampleGenotype(
-        k,
-        newState,
-        random
-    )).toList();
-    // map
-    Collection<Individual<List<Double>, S, Q>> newIndividuals = map(newGenotypes, List.of(), newState, problem, executor);
+    final State<S, Q> newState = cmaState;
+    Collection<DecoratedIndividual<S, Q>> newDecoratedIndividuals;
+    try {
+      newDecoratedIndividuals = getAll(executor.invokeAll(IntStream.range(0, populationSize)
+          .mapToObj(k -> newIndividualCallable(newState, problem, random))
+          .toList()));
+    } catch (InterruptedException e) {
+      throw new SolverException(e);
+    }
     // return
-    State.from(newState, progress(state), newIndividuals, null);
-    return (State<S, Q>) State.from(newState, progress(state), newIndividuals, comparator(problem));
+    return State.from(newState, progress(state), newDecoratedIndividuals, comparator(problem));
   }
 
-  private List<Double> sampleGenotype(int k, State<S, Q> state, RandomGenerator random) {
-    double[] zK = IntStream.range(0, n).mapToDouble(i -> random.nextGaussian()).toArray();
-    double[] yK = state.C.preMultiply(state.D.preMultiply(zK));
-    double[] xK = IntStream.range(0, n).mapToDouble(i -> state.means.get(i) + state.sigma * yK[i]).toArray();
-    // TODO there three values should go with the individual genotype
-    return Arrays.stream(xK).boxed().toList();
+  private Callable<DecoratedIndividual<S, Q>> newIndividualCallable(
+      State<S, Q> state,
+      TotalOrderQualityBasedProblem<S, Q> problem,
+      RandomGenerator random
+  ) {
+    return () -> {
+      double[] zK = IntStream.range(0, n).mapToDouble(i -> random.nextGaussian()).toArray();
+      double[] yK = state.C.preMultiply(state.D.preMultiply(zK));
+      double[] xK = IntStream.range(0, n).mapToDouble(i -> state.means.get(i) + state.sigma * yK[i]).toArray();
+      List<Double> genotype = Arrays.stream(xK).boxed().toList();
+      S solution = solutionMapper.apply(genotype);
+      return new DecoratedIndividual<>(
+          genotype,
+          solution,
+          problem.qualityFunction().apply(solution),
+          state.nOfIterations,
+          state.nOfIterations,
+          zK,
+          yK,
+          xK
+      );
+    };
   }
 
   private State<S, Q> eigenDecomposition(State<S, Q> state) {

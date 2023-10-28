@@ -90,7 +90,7 @@ public abstract class AbstractPopulationBasedIterativeSolver<
     }
   }
 
-  private static <T> Collection<T> getAll(Collection<Future<T>> futures) throws SolverException {
+  protected static <T> Collection<T> getAll(Collection<Future<T>> futures) throws SolverException {
     List<T> results = new ArrayList<>();
     for (Future<T> future : futures) {
       try {
