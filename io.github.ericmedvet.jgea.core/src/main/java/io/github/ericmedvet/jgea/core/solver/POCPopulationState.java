@@ -20,8 +20,6 @@
 package io.github.ericmedvet.jgea.core.solver;
 
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
-import io.github.ericmedvet.jgea.core.solver.Individual;
-import io.github.ericmedvet.jgea.core.solver.State;
 
 /**
  * @author "Eric Medvet" on 2023/10/21 for jgea

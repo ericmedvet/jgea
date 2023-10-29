@@ -23,7 +23,6 @@ package io.github.ericmedvet.jgea.core.solver;
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.selector.Selector;
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.Function;

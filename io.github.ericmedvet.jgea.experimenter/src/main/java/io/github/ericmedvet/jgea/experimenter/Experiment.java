@@ -39,5 +39,5 @@ public record Experiment(
                 BiFunction<
                     Experiment,
                     ExecutorService,
-                    ListenerFactory<? super POCPopulationState<?, ?, ?>, Run<?, ?, ?, ?>>>>
+                    ListenerFactory<? super POCPopulationState<?, ?, ?, ?>, Run<?, ?, ?, ?>>>>
             listeners) {}

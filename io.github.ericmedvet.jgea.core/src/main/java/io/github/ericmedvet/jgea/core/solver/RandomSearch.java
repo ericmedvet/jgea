@@ -24,7 +24,6 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.selector.First;
 import io.github.ericmedvet.jgea.core.selector.Last;
-
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;

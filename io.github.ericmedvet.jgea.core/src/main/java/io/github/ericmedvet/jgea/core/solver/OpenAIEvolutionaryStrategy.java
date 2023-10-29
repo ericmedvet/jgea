@@ -25,7 +25,6 @@ import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.sequence.FixedLengthListFactory;
 import io.github.ericmedvet.jgea.core.util.Progress;
-
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -41,12 +40,12 @@ import java.util.stream.IntStream;
 
 public class OpenAIEvolutionaryStrategy<S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-    ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>,
-    TotalOrderQualityBasedProblem<S, Q>,
-    Individual<List<Double>, S, Q>,
-    List<Double>,
-    S,
-    Q> {
+        ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>,
+        TotalOrderQualityBasedProblem<S, Q>,
+        Individual<List<Double>, S, Q>,
+        List<Double>,
+        S,
+        Q> {
 
   private final int populationSize;
   private final int batchSize;
@@ -59,16 +58,13 @@ public class OpenAIEvolutionaryStrategy<S, Q>
       Function<? super List<Double>, ? extends S> solutionMapper,
       Factory<? extends List<Double>> genotypeFactory,
       Predicate<? super ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>> stopCondition,
-      int populationSize,
       int batchSize,
-      double sigma,
-      int n
-  ) {
+      double sigma) {
     super(solutionMapper, genotypeFactory, stopCondition, false);
-    this.populationSize = populationSize;
     this.batchSize = batchSize;
     this.sigma = sigma;
-    this.n = n;
+    n = genotypeFactory.build(1, new Random(0)).get(0).size();
+    populationSize = 2 * batchSize;
     gaussianSamplesFactory = new FixedLengthListFactory<>(n, RandomGenerator::nextGaussian);
   }
 
@@ -88,12 +84,11 @@ public class OpenAIEvolutionaryStrategy<S, Q>
       double epsilon,
       double[] center,
       double[] m,
-      double[] v
-  ) implements ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> {
+      double[] v)
+      implements ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> {
     public static <S, Q> State<S, Q> from(
         Collection<Individual<List<Double>, S, Q>> individuals,
-        Comparator<? super Individual<List<Double>, S, Q>> comparator
-    ) {
+        Comparator<? super Individual<List<Double>, S, Q>> comparator) {
       int n = individuals.iterator().next().genotype().size();
       return new State<>(
           LocalDateTime.now(),
@@ -109,13 +104,14 @@ public class OpenAIEvolutionaryStrategy<S, Q>
           0.9,
           0.999,
           1e-08,
-          SimpleEvolutionaryStrategy.computeMeans(individuals.stream().map(Individual::genotype).toList())
+          SimpleEvolutionaryStrategy.computeMeans(individuals.stream()
+                  .map(Individual::genotype)
+                  .toList())
               .stream()
               .mapToDouble(v -> v)
               .toArray(),
           new double[n],
-          new double[n]
-      );
+          new double[n]);
     }
 
     public static <S, Q> State<S, Q> from(
@@ -125,8 +121,7 @@ public class OpenAIEvolutionaryStrategy<S, Q>
         Comparator<? super Individual<List<Double>, S, Q>> comparator,
         double[] center,
         double[] m,
-        double[] v
-    ) {
+        double[] v) {
       return new State<>(
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
@@ -143,8 +138,7 @@ public class OpenAIEvolutionaryStrategy<S, Q>
           state.epsilon,
           center,
           m,
-          v
-      );
+          v);
     }
   }
 
@@ -152,40 +146,30 @@ public class OpenAIEvolutionaryStrategy<S, Q>
   protected Individual<List<Double>, S, Q> newIndividual(
       List<Double> genotype,
       ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state,
-      TotalOrderQualityBasedProblem<S, Q> problem
-  ) {
+      TotalOrderQualityBasedProblem<S, Q> problem) {
     S solution = solutionMapper.apply(genotype);
     return Individual.of(
         genotype,
         solution,
         problem.qualityFunction().apply(solution),
         state == null ? 0 : state.nOfIterations(),
-        state == null ? 0 : state.nOfIterations()
-    );
+        state == null ? 0 : state.nOfIterations());
   }
 
   @Override
   protected Individual<List<Double>, S, Q> updateIndividual(
       Individual<List<Double>, S, Q> individual,
       ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state,
-      TotalOrderQualityBasedProblem<S, Q> problem
-  ) {
+      TotalOrderQualityBasedProblem<S, Q> problem) {
     throw new UnsupportedOperationException("This method should not be called");
   }
 
   @Override
   public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> init(
-      TotalOrderQualityBasedProblem<S, Q> problem,
-      RandomGenerator random,
-      ExecutorService executor
-  ) throws SolverException {
-    Collection<Individual<List<Double>, S, Q>> individuals = map(
-        genotypeFactory.build(populationSize, random),
-        List.of(),
-        null,
-        problem,
-        executor
-    );
+      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
+      throws SolverException {
+    Collection<Individual<List<Double>, S, Q>> individuals =
+        map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor);
     return State.from(individuals, comparator(problem));
   }
 
@@ -194,8 +178,8 @@ public class OpenAIEvolutionaryStrategy<S, Q>
       TotalOrderQualityBasedProblem<S, Q> problem,
       RandomGenerator random,
       ExecutorService executor,
-      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state
-  ) throws SolverException {
+      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state)
+      throws SolverException {
     State<S, Q> esState = (State<S, Q>) state;
     List<List<Double>> samples = IntStream.range(0, batchSize)
         .mapToObj(i -> gaussianSamplesFactory.build(random))
@@ -210,8 +194,8 @@ public class OpenAIEvolutionaryStrategy<S, Q>
           .toList());
     });
     // individuals and their fitness
-    List<Individual<List<Double>, S, Q>> newIndividuals = map(genotypes, List.of(), esState, problem, executor).stream()
-        .toList();
+    List<Individual<List<Double>, S, Q>> newIndividuals =
+        map(genotypes, List.of(), esState, problem, executor).stream().toList();
     // sort individuals and compute indexes
     Comparator<Integer> integerComparator =
         partialComparator(problem).comparing(newIndividuals::get).comparator();
@@ -219,7 +203,7 @@ public class OpenAIEvolutionaryStrategy<S, Q>
         .boxed()
         .sorted(integerComparator)
         .toList();
-    //compute new state
+    // compute new state
     double[] utilities = new double[populationSize];
     IntStream.range(0, populationSize)
         .forEach(i -> utilities[indexes.get(i)] = (double) i / (populationSize - 1) - 0.5);
@@ -228,15 +212,15 @@ public class OpenAIEvolutionaryStrategy<S, Q>
         .toList();
     double[] g = IntStream.range(0, n)
         .mapToDouble(i -> IntStream.range(0, batchSize)
-            .mapToDouble(j ->
-                weights.get(j) * samples.get(j).get(i))
-            .sum()
+                .mapToDouble(
+                    j -> weights.get(j) * samples.get(j).get(i))
+                .sum()
             / populationSize)
         .toArray();
     double[] globalG = esState.wDecay
         ? IntStream.range(0, n)
-        .mapToDouble(i -> -g[i] + 0.005 * esState.center[i])
-        .toArray()
+            .mapToDouble(i -> -g[i] + 0.005 * esState.center[i])
+            .toArray()
         : Arrays.stream(g).toArray();
     double a = esState.stepSize
         * Math.sqrt(1d - Math.pow(esState.beta2, esState.nOfIterations()))
@@ -255,5 +239,4 @@ public class OpenAIEvolutionaryStrategy<S, Q>
         .toArray();
     return State.from(esState, progress(state), newIndividuals, comparator(problem), center, m, v);
   }
-
 }

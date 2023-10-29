@@ -21,7 +21,6 @@ package io.github.ericmedvet.jgea.core.solver;
 
 import io.github.ericmedvet.jgea.core.listener.Listener;
 import io.github.ericmedvet.jgea.core.problem.Problem;
-
 import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;

@@ -25,8 +25,8 @@ import io.github.ericmedvet.jgea.core.problem.ProblemWithExampleSolution;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSolver;
 import io.github.ericmedvet.jgea.core.solver.IterativeSolver;
-import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
+import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.core.ParamMap;
@@ -44,15 +44,15 @@ public record Run<P extends QualityBasedProblem<S, Q>, G, S, Q>(
                 S,
                 ? extends
                     AbstractPopulationBasedIterativeSolver<
-                        ? extends POCPopulationState<G, S, Q>, P, G, S, Q>>
+                        ? extends POCPopulationState<?, G, S, Q>, P, ?, G, S, Q>>
             solver,
     @Param("problem") P problem,
     @Param("randomGenerator") RandomGenerator randomGenerator,
     @Param(value = "", injection = Param.Injection.MAP_WITH_DEFAULTS) ParamMap map) {
 
-  public Collection<S> run(ExecutorService executorService, Listener<? super POCPopulationState<G, S, Q>> listener)
+  public Collection<S> run(ExecutorService executorService, Listener<? super POCPopulationState<?, G, S, Q>> listener)
       throws SolverException {
-    IterativeSolver<? extends POCPopulationState<G, S, Q>, P, S> iterativeSolver;
+    IterativeSolver<? extends POCPopulationState<?, G, S, Q>, P, S> iterativeSolver;
     if (problem instanceof ProblemWithExampleSolution<?> pwes) {
       //noinspection unchecked
       iterativeSolver = solver.apply((S) pwes.example());

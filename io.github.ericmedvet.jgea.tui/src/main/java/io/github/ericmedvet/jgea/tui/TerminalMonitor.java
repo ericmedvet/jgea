@@ -167,7 +167,7 @@ public class TerminalMonitor<E, K> extends ListLogHandler implements ListenerFac
         localPlotAccumulators.forEach(a -> a.listen(e));
       }
       if (e instanceof State state) {
-        partialProgress = state.getProgress();
+        partialProgress = state.progress();
       }
     };
   }

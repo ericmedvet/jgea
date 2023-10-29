@@ -49,7 +49,9 @@ public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
   private final String header;
   private final String legend;
 
-  public TabularPrinter(List<NamedFunction<? super E, ?>> eFunctions, List<NamedFunction<? super K, ?>> kFunctions) {
+  public TabularPrinter(
+      List<? extends NamedFunction<? super E, ?>> eFunctions,
+      List<? extends NamedFunction<? super K, ?>> kFunctions) {
     this(eFunctions, kFunctions, System.out, 10, true, true, true, true);
   }
 

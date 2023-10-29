@@ -61,8 +61,9 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> NamedFunction<POCPopulationState<G, S, Q>, Collection<Individual<G, S, Q>>> all() {
-    return NamedFunction.build("all", s -> s.getPopulation().all());
+  public static <G, S, Q>
+      NamedFunction<POCPopulationState<?, G, S, Q>, Collection<? extends Individual<G, S, Q>>> all() {
+    return NamedFunction.build("all", s -> s.pocPopulation().all());
   }
 
   @SuppressWarnings("unused")
@@ -81,25 +82,25 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> NamedFunction<POCPopulationState<G, S, Q>, Individual<G, S, Q>> best() {
-    return NamedFunction.build("best", s -> Misc.first(s.getPopulation().firsts()));
+  public static <G, S, Q> NamedFunction<POCPopulationState<?, G, S, Q>, Individual<G, S, Q>> best() {
+    return NamedFunction.build("best", s -> Misc.first(s.pocPopulation().firsts()));
   }
 
   @SuppressWarnings("unused")
-  public static <Q, T> NamedFunction<POCPopulationState<?, ?, Q>, T> bestFitness(
+  public static <Q, T> NamedFunction<POCPopulationState<?, ?, ?, Q>, T> bestFitness(
       @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<Q, T> function,
       @Param(value = "s", dS = "%s") String s) {
     return NamedFunction.build(
         c(function.getName(), "fitness", "best"),
         s.equals("%s") ? function.getFormat() : s,
         state -> function.apply(
-            Objects.requireNonNull(Misc.first(state.getPopulation().firsts()))
-                .fitness()));
+            Objects.requireNonNull(Misc.first(state.pocPopulation().firsts()))
+                .quality()));
   }
 
   @SuppressWarnings("unused")
-  public static NamedFunction<POCPopulationState<?, ?, ?>, Long> births() {
-    return NamedFunction.build("births", "%6d", POCPopulationState::getNOfBirths);
+  public static NamedFunction<POCPopulationState<?, ?, ?, ?>, Long> births() {
+    return NamedFunction.build("births", "%6d", POCPopulationState::nOfBirths);
   }
 
   private static String c(String... names) {
@@ -118,13 +119,13 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static NamedFunction<POCPopulationState<?, ?, ?>, Double> elapsed() {
-    return NamedFunction.build("elapsed.seconds", "%5.1f", s -> s.getElapsedMillis() / 1000d);
+  public static NamedFunction<POCPopulationState<?, ?, ?, ?>, Double> elapsed() {
+    return NamedFunction.build("elapsed.seconds", "%5.1f", s -> s.elapsedMillis() / 1000d);
   }
 
   @SuppressWarnings("unused")
-  public static NamedFunction<POCPopulationState<?, ?, ?>, Long> evals() {
-    return NamedFunction.build("evals", "%6d", POCPopulationState::getNOfFitnessEvaluations);
+  public static NamedFunction<POCPopulationState<?, ?, ?, ?>, Long> evals() {
+    return NamedFunction.build("evals", "%6d", POCPopulationState::nOfFitnessEvaluations);
   }
 
   @SuppressWarnings("unused")
@@ -154,8 +155,9 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> NamedFunction<POCPopulationState<G, S, Q>, Collection<Individual<G, S, Q>>> firsts() {
-    return NamedFunction.build("firsts", s -> s.getPopulation().firsts());
+  public static <G, S, Q>
+      NamedFunction<POCPopulationState<?, G, S, Q>, Collection<? extends Individual<G, S, Q>>> firsts() {
+    return NamedFunction.build("firsts", s -> s.pocPopulation().firsts());
   }
 
   @SuppressWarnings("unused")
@@ -168,15 +170,15 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <Q> NamedFunction<POCPopulationState<?, ?, Q>, String> fitnessHist(
+  public static <Q> NamedFunction<POCPopulationState<?, ?, ?, Q>, String> fitnessHist(
       @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<Q, Number> function,
       @Param(value = "nBins", dI = 8) int nBins) {
     return NamedFunction.build(
         c("hist", "each[%s]".formatted(c(function.getName(), "fitness")), "all"),
         "%" + nBins + "." + nBins + "s",
         state -> {
-          List<Number> numbers = state.getPopulation().all().stream()
-              .map(i -> function.apply(i.fitness()))
+          List<Number> numbers = state.pocPopulation().all().stream()
+              .map(i -> function.apply(i.quality()))
               .toList();
           return TextPlotter.histogram(numbers, nBins);
         });
@@ -251,13 +253,14 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static NamedFunction<POCPopulationState<?, ?, ?>, Long> iterations() {
-    return NamedFunction.build("iterations", "%3d", State::getNOfIterations);
+  public static NamedFunction<POCPopulationState<?, ?, ?, ?>, Long> iterations() {
+    return NamedFunction.build("iterations", "%3d", State::nOfIterations);
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> NamedFunction<POCPopulationState<G, S, Q>, Collection<Individual<G, S, Q>>> lasts() {
-    return NamedFunction.build("lasts", s -> s.getPopulation().lasts());
+  public static <G, S, Q>
+      NamedFunction<POCPopulationState<?, G, S, Q>, Collection<? extends Individual<G, S, Q>>> lasts() {
+    return NamedFunction.build("lasts", s -> s.pocPopulation().lasts());
   }
 
   @SuppressWarnings("unused")
@@ -297,8 +300,8 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static NamedFunction<POCPopulationState<?, ?, ?>, Double> progress() {
-    return NamedFunction.build("progress", "%4.2f", s -> s.getProgress().rate());
+  public static NamedFunction<POCPopulationState<?, ?, ?, ?>, Double> progress() {
+    return NamedFunction.build("progress", "%4.2f", s -> s.progress().rate());
   }
 
   @SuppressWarnings("unused")

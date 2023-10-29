@@ -67,8 +67,7 @@ public class NamedFunctions {
     return f("best", e -> Misc.first(e.pocPopulation().firsts()));
   }
 
-  public static <I extends Individual<G, S, Q>, G, S, Q>
-      NamedFunction<POCPopulationState<I, G, S, Q>, Long> births() {
+  public static NamedFunction<POCPopulationState<?, ?, ?, ?>, Long> births() {
     return f("births", "%5d", POCPopulationState::nOfBirths);
   }
 
@@ -132,7 +131,7 @@ public class NamedFunctions {
             values instanceof List ? (List<? extends Number>) values : new ArrayList<>(values), bins));
   }
 
-  public static NamedFunction<State, Integer> nOfIterations() {
+  public static NamedFunction<State, Long> nOfIterations() {
     return f("iterations", "%4d", State::nOfIterations);
   }
 

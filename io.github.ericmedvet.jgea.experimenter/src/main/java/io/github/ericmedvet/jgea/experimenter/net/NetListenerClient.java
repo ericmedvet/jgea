@@ -35,15 +35,15 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-public class NetListenerClient<G, S, Q> implements ListenerFactory<POCPopulationState<G, S, Q>, Run<?, G, S, Q>> {
+public class NetListenerClient<G, S, Q> implements ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> {
 
   private static final Logger L = Logger.getLogger(NetListenerClient.class.getName());
   private final String serverAddress;
   private final int serverPort;
   private final String serverKey;
   private final double pollInterval;
-  private final List<NamedFunction<? super POCPopulationState<G, S, Q>, ?>> stateFunctions;
-  private final List<PlotTableBuilder<? super POCPopulationState<G, S, Q>>> plotTableBuilders;
+  private final List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions;
+  private final List<PlotTableBuilder<? super POCPopulationState<?, G, S, Q>>> plotTableBuilders;
   private final List<NamedFunction<? super Run<?, G, S, Q>, ?>> runFunctions;
   private final Experiment experiment;
   private final Map<Integer, Update> updates;
@@ -56,8 +56,8 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POCPopulation
       int serverPort,
       String serverKey,
       double pollInterval,
-      List<NamedFunction<? super POCPopulationState<G, S, Q>, ?>> stateFunctions,
-      List<PlotTableBuilder<? super POCPopulationState<G, S, Q>>> plotTableBuilders,
+      List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
+      List<PlotTableBuilder<? super POCPopulationState<?, G, S, Q>>> plotTableBuilders,
       List<NamedFunction<? super Run<?, G, S, Q>, ?>> runFunctions,
       Experiment experiment) {
     this.serverAddress = serverAddress;
@@ -69,9 +69,10 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POCPopulation
     this.runFunctions = runFunctions;
     this.experiment = experiment;
     // check plot builders
-    List<PlotTableBuilder<? super POCPopulationState<G, S, Q>>> wrongPlotTableBuilders = plotTableBuilders.stream()
-        .filter(ptb -> ptb.yFunctions().size() != 1)
-        .toList();
+    List<PlotTableBuilder<? super POCPopulationState<?, G, S, Q>>> wrongPlotTableBuilders =
+        plotTableBuilders.stream()
+            .filter(ptb -> ptb.yFunctions().size() != 1)
+            .toList();
     if (!wrongPlotTableBuilders.isEmpty()) {
       throw new IllegalArgumentException(
           "There are %d plot builders with num. of y data series not being 1, the first has %s"
@@ -85,10 +86,10 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POCPopulation
   }
 
   @Override
-  public Listener<POCPopulationState<G, S, Q>> build(Run<?, G, S, Q> run) {
+  public Listener<POCPopulationState<?, G, S, Q>> build(Run<?, G, S, Q> run) {
     return new Listener<>() {
       @Override
-      public void listen(POCPopulationState<G, S, Q> state) {
+      public void listen(POCPopulationState<?, G, S, Q> state) {
         synchronized (updates) {
           Update update = updates.getOrDefault(
               run.index(),
@@ -108,7 +109,10 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POCPopulation
           plotTableBuilders.forEach(p -> {
             double minX = Double.NaN;
             double maxX = Double.NaN;
-            if (p instanceof XYPlotTableBuilder<? super POCPopulationState<G, S, Q>> xyPlotTableBuilder) {
+            if (p
+                instanceof
+                XYPlotTableBuilder<? super POCPopulationState<?, G, S, Q>>
+                xyPlotTableBuilder) {
               minX = xyPlotTableBuilder.getMinX();
               maxX = xyPlotTableBuilder.getMaxX();
             }
@@ -127,7 +131,7 @@ public class NetListenerClient<G, S, Q> implements ListenerFactory<POCPopulation
                   System.currentTimeMillis(),
                   run.map().toString(),
                   run.index(),
-                  state.getProgress(),
+                  state.progress(),
                   true,
                   update.dataItems(),
                   update.plotItems()));
