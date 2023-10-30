@@ -64,7 +64,7 @@ public class Example {
 
   public static final List<NamedFunction<? extends State, ?>> BASIC_FUNCTIONS = List.of(
       nOfIterations(),
-      births(),
+      nOfBirths(),
       elapsedSeconds(),
       size().of(all()),
       size().of(firsts()),
@@ -170,7 +170,7 @@ public class Example {
 
     ListenerFactory<POCPopulationState<?, ?, BitString, Double>, Map<String, Object>> listenerFactory =
         new TabularPrinter<>(
-            List.of(nOfIterations(), elapsedSeconds(), births()), List.of(attribute("solver")));
+            List.of(nOfIterations(), elapsedSeconds(), nOfBirths()), List.of(attribute("solver")));
     // new TabularPrinter<>(Misc.concat(List.of(keysFunctions,BASIC_FUNCTIONS)), List.of(attribute("solver")));
     List<
         IterativeSolver<
