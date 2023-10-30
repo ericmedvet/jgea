@@ -33,32 +33,11 @@ public interface Individual<G, S, Q> extends Serializable {
   long genotypeBirthIteration();
 
   static <G1, S1, Q1> Individual<G1, S1, Q1> of(
-      G1 genotype, S1 solution, Q1 quality, long qualityMappingIteration, long genotypeBirthIteration) {
-    return new Individual<>() {
-      @Override
-      public G1 genotype() {
-        return genotype;
-      }
-
-      @Override
-      public S1 solution() {
-        return solution;
-      }
-
-      @Override
-      public Q1 quality() {
-        return quality;
-      }
-
-      @Override
-      public long qualityMappingIteration() {
-        return qualityMappingIteration;
-      }
-
-      @Override
-      public long genotypeBirthIteration() {
-        return genotypeBirthIteration;
-      }
-    };
+      G1 genotype, S1 solution, Q1 quality, long genotypeBirthIteration, long qualityMappingIteration
+  ) {
+    record HardIndividual<G1, S1, Q1>(
+        G1 genotype, S1 solution, Q1 quality, long genotypeBirthIteration, long qualityMappingIteration
+    ) implements Individual<G1, S1, Q1> {}
+    return new HardIndividual<>(genotype, solution, quality, genotypeBirthIteration, qualityMappingIteration);
   }
 }

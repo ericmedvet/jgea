@@ -50,8 +50,8 @@ public class NamedFunctions {
     return f(name, "%" + name.length() + "s", map -> map.get(name));
   }
 
-  public static <V> List<NamedFunction<? super Map<String, V>, V>> attributes(String... names) {
-    List<NamedFunction<? super Map<String, V>, V>> functions = new ArrayList<>();
+  public static <V> List<NamedFunction<Map<String, V>, V>> attributes(String... names) {
+    List<NamedFunction<Map<String, V>, V>> functions = new ArrayList<>();
     for (String name : names) {
       functions.add(attribute(name));
     }
@@ -67,7 +67,7 @@ public class NamedFunctions {
     return f("best", e -> Misc.first(e.pocPopulation().firsts()));
   }
 
-  public static NamedFunction<POCPopulationState<?, ?, ?, ?>, Long> nOfBirths() {
+  public static <I extends Individual<G, S, Q>, G, S, Q> NamedFunction<POCPopulationState<I, G, S, Q>, Long>  nOfBirths() {
     return f("births", "%5d", POCPopulationState::nOfBirths);
   }
 
@@ -102,7 +102,7 @@ public class NamedFunctions {
     return f("firsts", e -> e.pocPopulation().firsts());
   }
 
-  public static <I extends Individual<?, ?, ? extends F>, F> NamedFunction<I, F> quality() {
+  public static <I extends Individual<?, ?, Q>, Q> NamedFunction<I, Q> quality() {
     return f("quality", Individual::quality);
   }
 
