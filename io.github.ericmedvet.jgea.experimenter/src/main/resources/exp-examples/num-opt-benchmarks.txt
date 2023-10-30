@@ -9,7 +9,8 @@ ea.experiment(
     (solver = (nEval = [1000]) * [
       ea.s.doubleStringGa(mapper = ea.m.identity());
       ea.s.simpleEs(mapper = ea.m.identity());
-      ea.s.openAiEs(mapper = ea.m.identity())
+      ea.s.openAiEs(mapper = ea.m.identity());
+      ea.s.cmaEs(mapper = ea.m.identity())
     ]) * [
     ea.run()
   ];
@@ -20,7 +21,7 @@ ea.experiment(
         ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
         ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()))
       ];
-      runKeys = ["{problem:%#s}"; "{problem.p}"]
+      runKeys = ["{solver:%#s}"; "{problem:%#s}"; "{problem.p}"]
     )
   ]
 )
