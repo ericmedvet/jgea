@@ -20,6 +20,8 @@
 
 package io.github.ericmedvet.jgea.sample;
 
+import static io.github.ericmedvet.jgea.core.listener.NamedFunctions.*;
+
 import com.google.common.collect.Range;
 import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
@@ -54,47 +56,44 @@ import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Nguyen7
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.SyntheticUnivariateRegressionProblem;
 import io.github.ericmedvet.jgea.problem.synthetic.Ackley;
 import io.github.ericmedvet.jgea.problem.synthetic.OneMax;
-
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
 
-import static io.github.ericmedvet.jgea.core.listener.NamedFunctions.*;
-
-
 public class Example {
 
-  public static final List<NamedFunction<State, ?>> PLAIN_STATE_FUNCTIONS = List.of(nOfIterations(), elapsedSeconds());
+  public static final List<NamedFunction<State, ?>> PLAIN_STATE_FUNCTIONS =
+      List.of(nOfIterations(), elapsedSeconds());
 
-  public static final List<NamedFunction<POCPopulationState<Individual<Object, Object, Object>, Object, Object,
-      Object>, ?>> BASIC_FUNCTIONS = List.of(
-      nOfBirths(),
-      all().then(size()),
-      firsts().then(size()),
-      lasts().then(size()),
-      all().then(each(genotype())).then(uniqueness()),
-      all().then(each(solution())).then(uniqueness()),
-      all().then(each(quality())).then(uniqueness()),
-      best().then(genotype()).then(size()),
-      best().then(solution()).then(size()),
-      best().then(fitnessMappingIteration())
-  );
+  public static final List<
+          NamedFunction<POCPopulationState<Individual<Object, Object, Object>, Object, Object, Object>, ?>>
+      BASIC_FUNCTIONS = List.of(
+          nOfBirths(),
+          all().then(size()),
+          firsts().then(size()),
+          lasts().then(size()),
+          all().then(each(genotype())).then(uniqueness()),
+          all().then(each(solution())).then(uniqueness()),
+          all().then(each(quality())).then(uniqueness()),
+          best().then(genotype()).then(size()),
+          best().then(solution()).then(size()),
+          best().then(fitnessMappingIteration()));
 
-  public static final List<NamedFunction<POCPopulationState<Individual<Object, Object, Double>, Object, Object,
-      Double>, ?>> DOUBLE_FUNCTIONS = List.of(
-      NamedFunctions.<Individual<Object, Object, Double>, Object, Object, Double>best()
-          .then(quality())
-          .reformat("%5.3f"),
-      NamedFunctions.<Individual<Object, Object, Double>, Object, Object, Double>all()
-          .then(each(quality()))
-          .then(hist(8)),
-      NamedFunctions.<Individual<Object, Object, Double>, Object, Object, Double>all()
-          .then(each(quality()))
-          .then(max(Double::compare))
-          .reformat("%5.3f")
-  );
+  public static final List<
+          NamedFunction<POCPopulationState<Individual<Object, Object, Double>, Object, Object, Double>, ?>>
+      DOUBLE_FUNCTIONS = List.of(
+          NamedFunctions.<Individual<Object, Object, Double>, Object, Object, Double>best()
+              .then(quality())
+              .reformat("%5.3f"),
+          NamedFunctions.<Individual<Object, Object, Double>, Object, Object, Double>all()
+              .then(each(quality()))
+              .then(hist(8)),
+          NamedFunctions.<Individual<Object, Object, Double>, Object, Object, Double>all()
+              .then(each(quality()))
+              .then(max(Double::compare))
+              .reformat("%5.3f"));
 
   public static void main(String[] args) throws SolverException, IOException {
     String problem = args.length > 0 ? args[0] : "symbolicRegression";
@@ -110,7 +109,8 @@ public class Example {
   }
 
   public static void runAckley() throws SolverException {
-    ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
+    ExecutorService executor =
+        Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
     Random r = new Random(1);
     TotalOrderQualityBasedProblem<List<Double>, Double> p = new Ackley(10);
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -118,21 +118,22 @@ public class Example {
         new TabularPrinter<>(
             Misc.concat(
                 List.of((List) PLAIN_STATE_FUNCTIONS, (List) BASIC_FUNCTIONS, (List) DOUBLE_FUNCTIONS)),
-            List.of(attribute("solver"))
-        );
-    List<IterativeSolver<? extends POCPopulationState<?, List<Double>, List<Double>, Double>, ?
-        super TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>>> solvers = new ArrayList<>();
+            List.of(attribute("solver")));
+    List<
+            IterativeSolver<
+                ? extends POCPopulationState<?, List<Double>, List<Double>, Double>,
+                ? super TotalOrderQualityBasedProblem<List<Double>, Double>,
+                List<Double>>>
+        solvers = new ArrayList<>();
     solvers.add(new RandomSearch<>(
         Function.identity(),
         new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
-        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100))
-    ));
+        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100))));
     solvers.add(new RandomWalk<>(
         Function.identity(),
         new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
         StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
-        new GaussianMutation(0.01d)
-    ));
+        new GaussianMutation(0.01d)));
     solvers.add(new StandardEvolver<>(
         Function.identity(),
         new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
@@ -143,8 +144,7 @@ public class Example {
         new Last(),
         100,
         true,
-        false
-    ));
+        false));
     solvers.add(new SimpleEvolutionaryStrategy<>(
         Function.identity(),
         new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
@@ -153,25 +153,31 @@ public class Example {
         25,
         1,
         0.1,
-        false
-    ));
-    for (IterativeSolver<? extends POCPopulationState<?, List<Double>, List<Double>, Double>, ?
-        super TotalOrderQualityBasedProblem<List<Double>, Double>, List<Double>> solver : solvers) {
+        false));
+    for (IterativeSolver<
+            ? extends POCPopulationState<?, List<Double>, List<Double>, Double>,
+            ? super TotalOrderQualityBasedProblem<List<Double>, Double>,
+            List<Double>>
+        solver : solvers) {
       System.out.println(solver.getClass().getSimpleName());
       Collection<List<Double>> solutions = solver.solve(
           p,
           r,
           executor,
-          listenerFactory.build(Map.of("solver", solver.getClass().getSimpleName())).deferred(executor)
-      );
-      System.out.printf("Found %d solutions with " + "%s.%n", solutions.size(), solver.getClass().getSimpleName());
+          listenerFactory
+              .build(Map.of("solver", solver.getClass().getSimpleName()))
+              .deferred(executor));
+      System.out.printf(
+          "Found %d solutions with " + "%s.%n",
+          solutions.size(), solver.getClass().getSimpleName());
     }
     listenerFactory.shutdown();
     executor.shutdown();
   }
 
   public static void runOneMax() throws SolverException {
-    ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
+    ExecutorService executor =
+        Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
     int size = 1000;
     Random r = new Random(1);
     QualityBasedProblem<BitString, Double> p = new OneMax(size);
@@ -180,21 +186,22 @@ public class Example {
         new TabularPrinter<>(
             Misc.concat(
                 List.of((List) PLAIN_STATE_FUNCTIONS, (List) BASIC_FUNCTIONS, (List) DOUBLE_FUNCTIONS)),
-            List.of(attribute("solver"))
-        );
-    List<IterativeSolver<? extends POCPopulationState<?, ?, BitString, Double>, QualityBasedProblem<BitString,
-        Double>, BitString>> solvers = new ArrayList<>();
+            List.of(attribute("solver")));
+    List<
+            IterativeSolver<
+                ? extends POCPopulationState<?, ?, BitString, Double>,
+                QualityBasedProblem<BitString, Double>,
+                BitString>>
+        solvers = new ArrayList<>();
     solvers.add(new RandomSearch<>(
         Function.identity(),
         new BitStringFactory(size),
-        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100))
-    ));
+        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100))));
     solvers.add(new RandomWalk<>(
         Function.identity(),
         new BitStringFactory(size),
         StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
-        new BitStringFlipMutation(0.01d)
-    ));
+        new BitStringFlipMutation(0.01d)));
     solvers.add(new StandardEvolver<>(
         Function.identity(),
         new BitStringFactory(size),
@@ -205,8 +212,7 @@ public class Example {
         new Last(),
         100,
         true,
-        false
-    ));
+        false));
     solvers.add(new StandardWithEnforcedDiversityEvolver<>(
         Function.identity(),
         new BitStringFactory(size),
@@ -218,31 +224,36 @@ public class Example {
         100,
         true,
         false,
-        100
-    ));
-    for (IterativeSolver<? extends POCPopulationState<?, ?, BitString, Double>, QualityBasedProblem<BitString,
-        Double>, BitString> solver : solvers) {
+        100));
+    for (IterativeSolver<
+            ? extends POCPopulationState<?, ?, BitString, Double>,
+            QualityBasedProblem<BitString, Double>,
+            BitString>
+        solver : solvers) {
       Collection<BitString> solutions = solver.solve(
           p,
           r,
           executor,
-          listenerFactory.build(Map.of("solver", solver.getClass().getSimpleName())).deferred(executor)
-      );
-      System.out.printf("Found %d solutions with " + "%s.%n", solutions.size(), solver.getClass().getSimpleName());
+          listenerFactory
+              .build(Map.of("solver", solver.getClass().getSimpleName()))
+              .deferred(executor));
+      System.out.printf(
+          "Found %d solutions with " + "%s.%n",
+          solutions.size(), solver.getClass().getSimpleName());
     }
     listenerFactory.shutdown();
     executor.shutdown();
   }
 
   public static void runSymbolicRegression() throws IOException, SolverException {
-    ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
+    ExecutorService executor =
+        Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
     @SuppressWarnings({"unchecked", "rawtypes"})
-    ListenerFactory<POCPopulationState<?, ?, NamedUnivariateRealFunction, Double>, Map<String, Object>> listenerFactory =
-        new TabularPrinter<>(
+    ListenerFactory<POCPopulationState<?, ?, NamedUnivariateRealFunction, Double>, Map<String, Object>>
+        listenerFactory = new TabularPrinter<>(
             Misc.concat(
                 List.of((List) PLAIN_STATE_FUNCTIONS, (List) BASIC_FUNCTIONS, (List) DOUBLE_FUNCTIONS)),
-            List.of(attribute("solver"))
-        );
+            List.of(attribute("solver")));
     Random r = new Random(1);
     SyntheticUnivariateRegressionProblem p = new Nguyen7(UnivariateRegressionFitness.Metric.MSE, 1);
     StringGrammar<String> srGrammar = new SymbolicRegressionGrammar(
@@ -250,74 +261,91 @@ public class Example {
             Element.Operator.ADDITION,
             Element.Operator.MULTIPLICATION,
             Element.Operator.SUBTRACTION,
-            Element.Operator.PROT_DIVISION
-        ),
+            Element.Operator.PROT_DIVISION),
         List.of("x1"),
-        List.of(0.1, 1d, 5d)
-    );
-    List<IterativeSolver<? extends POCPopulationState<?, ?, NamedUnivariateRealFunction, Double>, ?
-        super SyntheticUnivariateRegressionProblem, NamedUnivariateRealFunction>> solvers = new ArrayList<>();
+        List.of(0.1, 1d, 5d));
+    List<
+            IterativeSolver<
+                ? extends POCPopulationState<?, ?, NamedUnivariateRealFunction, Double>,
+                ? super SyntheticUnivariateRegressionProblem,
+                NamedUnivariateRealFunction>>
+        solvers = new ArrayList<>();
     solvers.add(new StandardEvolver<>(
-        new FormulaMapper().andThen(n -> new TreeBasedUnivariateRealFunction(
+        new FormulaMapper()
+            .andThen(n -> new TreeBasedUnivariateRealFunction(
                 n,
                 p.qualityFunction().getDataset().xVarNames(),
-                p.qualityFunction().getDataset().yVarNames().get(0)
-            ))
+                p.qualityFunction().getDataset().yVarNames().get(0)))
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
         100,
         StopConditions.nOfIterations(100),
-        Map.of(new SameRootSubtreeCrossover<>(12), 0.8d, new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d),
+        Map.of(
+            new SameRootSubtreeCrossover<>(12),
+            0.8d,
+            new GrammarBasedSubtreeMutation<>(12, srGrammar),
+            0.2d),
         new Tournament(5),
         new Last(),
         100,
         true,
-        false
-    ));
+        false));
     solvers.add(new StandardEvolver<>(
-        new FormulaMapper().andThen(n -> new TreeBasedUnivariateRealFunction(
-            n,
-            p.qualityFunction().getDataset().xVarNames(),
-            p.qualityFunction().getDataset().yVarNames().get(0)
-        )),
+        new FormulaMapper()
+            .andThen(n -> new TreeBasedUnivariateRealFunction(
+                n,
+                p.qualityFunction().getDataset().xVarNames(),
+                p.qualityFunction().getDataset().yVarNames().get(0))),
         new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
         100,
         StopConditions.nOfIterations(100),
-        Map.of(new SameRootSubtreeCrossover<>(12), 0.8d, new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d),
+        Map.of(
+            new SameRootSubtreeCrossover<>(12),
+            0.8d,
+            new GrammarBasedSubtreeMutation<>(12, srGrammar),
+            0.2d),
         new Tournament(5),
         new Last(),
         100,
         true,
-        false
-    ));
+        false));
     solvers.add(new StandardWithEnforcedDiversityEvolver<>(
-        new FormulaMapper().andThen(n -> new TreeBasedUnivariateRealFunction(
+        new FormulaMapper()
+            .andThen(n -> new TreeBasedUnivariateRealFunction(
                 n,
                 p.qualityFunction().getDataset().xVarNames(),
-                p.qualityFunction().getDataset().yVarNames().get(0)
-            ))
+                p.qualityFunction().getDataset().yVarNames().get(0)))
             .andThen(MathUtils.linearScaler(p.qualityFunction())),
         new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
         100,
         StopConditions.nOfIterations(100),
-        Map.of(new SameRootSubtreeCrossover<>(12), 0.8d, new GrammarBasedSubtreeMutation<>(12, srGrammar), 0.2d),
+        Map.of(
+            new SameRootSubtreeCrossover<>(12),
+            0.8d,
+            new GrammarBasedSubtreeMutation<>(12, srGrammar),
+            0.2d),
         new Tournament(5),
         new Last(),
         100,
         true,
         false,
-        100
-    ));
-    for (IterativeSolver<? extends POCPopulationState<?, ?, NamedUnivariateRealFunction, Double>, ?
-        super SyntheticUnivariateRegressionProblem, NamedUnivariateRealFunction> solver : solvers) {
+        100));
+    for (IterativeSolver<
+            ? extends POCPopulationState<?, ?, NamedUnivariateRealFunction, Double>,
+            ? super SyntheticUnivariateRegressionProblem,
+            NamedUnivariateRealFunction>
+        solver : solvers) {
       System.out.println(solver.getClass().getSimpleName());
       Collection<NamedUnivariateRealFunction> solutions = solver.solve(
           p,
           r,
           executor,
-          listenerFactory.build(Map.of("solver", solver.getClass().getSimpleName())).deferred(executor)
-      );
-      System.out.printf("Found %d solutions with %s.%n", solutions.size(), solver.getClass().getSimpleName());
+          listenerFactory
+              .build(Map.of("solver", solver.getClass().getSimpleName()))
+              .deferred(executor));
+      System.out.printf(
+          "Found %d solutions with %s.%n",
+          solutions.size(), solver.getClass().getSimpleName());
     }
     listenerFactory.shutdown();
     executor.shutdown();

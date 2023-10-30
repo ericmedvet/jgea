@@ -67,7 +67,8 @@ public class NamedFunctions {
     return f("best", e -> Misc.first(e.pocPopulation().firsts()));
   }
 
-  public static <I extends Individual<G, S, Q>, G, S, Q> NamedFunction<POCPopulationState<I, G, S, Q>, Long>  nOfBirths() {
+  public static <I extends Individual<G, S, Q>, G, S, Q>
+      NamedFunction<POCPopulationState<I, G, S, Q>, Long> nOfBirths() {
     return f("births", "%5d", POCPopulationState::nOfBirths);
   }
 
