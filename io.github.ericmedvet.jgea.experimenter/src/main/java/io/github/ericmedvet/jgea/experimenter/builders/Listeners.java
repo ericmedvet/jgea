@@ -28,10 +28,11 @@ import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.Utils;
-import io.github.ericmedvet.jgea.experimenter.net.NetListenerClient;
-import io.github.ericmedvet.jgea.telegram.TelegramUpdater;
-import io.github.ericmedvet.jgea.tui.TerminalMonitor;
+import io.github.ericmedvet.jgea.experimenter.listener.net.NetListenerClient;
+import io.github.ericmedvet.jgea.experimenter.listener.telegram.TelegramUpdater;
+import io.github.ericmedvet.jgea.experimenter.listener.tui.TerminalMonitor;
 import io.github.ericmedvet.jnb.core.*;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -271,54 +272,6 @@ public class Listeners {
   @SuppressWarnings("unused")
   public static <G, S, Q>
       BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
-          net(
-              @Param(
-                      value = "defaultFunctions",
-                      dNPMs = {
-                        "ea.nf.iterations()",
-                        "ea.nf.evals()",
-                        "ea.nf.births()",
-                        "ea.nf.elapsed()",
-                        "ea.nf.size(f=ea.nf.all())",
-                        "ea.nf.size(f=ea.nf.firsts())",
-                        "ea.nf.size(f=ea.nf.lasts())",
-                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.genotype();collection=ea.nf.all()))",
-                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.solution();collection=ea.nf.all()))",
-                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.fitness();collection=ea.nf.all()))"
-                      })
-                  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>
-                      defaultStateFunctions,
-              @Param(value = "functions")
-                  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
-              @Param(value = "defaultPlots")
-                  List<PlotTableBuilder<? super POCPopulationState<?, G, S, Q>>>
-                      defaultPlotTableBuilders,
-              @Param("plots")
-                  List<PlotTableBuilder<? super POCPopulationState<?, G, S, Q>>> plotTableBuilders,
-              @Param("runKeys") List<String> runKeys,
-              @Param(value = "deferred") boolean deferred,
-              @Param(value = "onlyLast") boolean onlyLast,
-              @Param(value = "serverAddress", dS = "127.0.0.1") String serverAddress,
-              @Param(value = "serverPort", dI = 10979) int serverPort,
-              @Param(value = "serverKeyFilePath") String serverKeyFilePath,
-              @Param(value = "pollInterval", dD = 2) double pollInterval) {
-    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        new NetListenerClient<>(
-            serverAddress,
-            serverPort,
-            getCredentialFromFile(serverKeyFilePath),
-            pollInterval,
-            Misc.concat(List.of(defaultStateFunctions, stateFunctions)),
-            Misc.concat(List.of(defaultPlotTableBuilders, plotTableBuilders)),
-            buildRunNamedFunctions(runKeys, experiment),
-            experiment),
-        deferred ? executorService : null,
-        onlyLast);
-  }
-
-  @SuppressWarnings("unused")
-  public static <G, S, Q>
-      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
           outcomeSaver(
               @Param(value = "filePathTemplate", dS = "run-outcome-{index:%04d}.txt")
                   String filePathTemplate,
@@ -392,6 +345,53 @@ public class Listeners {
         (List) Misc.concat(List.of(defaultPlotTableBuilders, plotTableBuilders, accumulators));
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         new TelegramUpdater<>(accumulatorFactories, botId, longChatId),
+        deferred ? executorService : null,
+        onlyLast);
+  }
+
+  public static <G, S, Q>
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
+          net(
+              @Param(
+                      value = "defaultFunctions",
+                      dNPMs = {
+                        "ea.nf.iterations()",
+                        "ea.nf.evals()",
+                        "ea.nf.births()",
+                        "ea.nf.elapsed()",
+                        "ea.nf.size(f=ea.nf.all())",
+                        "ea.nf.size(f=ea.nf.firsts())",
+                        "ea.nf.size(f=ea.nf.lasts())",
+                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.genotype();collection=ea.nf.all()))",
+                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.solution();collection=ea.nf.all()))",
+                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.fitness();collection=ea.nf.all()))"
+                      })
+                  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>
+                      defaultStateFunctions,
+              @Param(value = "functions")
+                  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
+              @Param(value = "defaultPlots")
+                  List<PlotTableBuilder<? super POCPopulationState<?, G, S, Q>>>
+                      defaultPlotTableBuilders,
+              @Param("plots")
+                  List<PlotTableBuilder<? super POCPopulationState<?, G, S, Q>>> plotTableBuilders,
+              @Param("runKeys") List<String> runKeys,
+              @Param(value = "deferred") boolean deferred,
+              @Param(value = "onlyLast") boolean onlyLast,
+              @Param(value = "serverAddress", dS = "127.0.0.1") String serverAddress,
+              @Param(value = "serverPort", dI = 10979) int serverPort,
+              @Param(value = "serverKeyFilePath") String serverKeyFilePath,
+              @Param(value = "pollInterval", dD = 2) double pollInterval) {
+    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
+        new NetListenerClient<>(
+            serverAddress,
+            serverPort,
+            getCredentialFromFile(serverKeyFilePath),
+            pollInterval,
+            Misc.concat(List.of(defaultStateFunctions, stateFunctions)),
+            Misc.concat(List.of(defaultPlotTableBuilders, plotTableBuilders)),
+            buildRunNamedFunctions(runKeys, experiment),
+            experiment),
         deferred ? executorService : null,
         onlyLast);
   }

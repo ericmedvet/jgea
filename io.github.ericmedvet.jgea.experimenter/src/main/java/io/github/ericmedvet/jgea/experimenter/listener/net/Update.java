@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * jgea-sample
+ * jgea-experimenter
  * %%
  * Copyright (C) 2018 - 2023 Eric Medvet
  * %%
@@ -17,10 +17,27 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-module io.github.ericmedvet.jgea.sample {
-  requires io.github.ericmedvet.jgea.core;
-  requires io.github.ericmedvet.jgea.problem;
-  requires io.github.ericmedvet.jsdynsym.core;
-  requires java.logging;
-  requires java.desktop;
+
+package io.github.ericmedvet.jgea.experimenter.listener.net;
+
+import io.github.ericmedvet.jgea.core.util.Progress;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+
+public record Update(
+    long localTime,
+    String runMap,
+    int runIndex,
+    Progress runProgress,
+    boolean isRunning,
+    Map<DataItemKey, List<Object>> dataItems,
+    Map<PlotItemKey, List<PlotPoint>> plotItems)
+    implements Serializable {
+  public record DataItemKey(String name, String format) implements Serializable {}
+
+  public record PlotItemKey(String xName, String yName, double minX, double maxX) implements Serializable {}
+
+  public record PlotPoint(double x, double y) implements Serializable {}
 }

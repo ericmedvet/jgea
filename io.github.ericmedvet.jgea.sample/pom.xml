@@ -23,11 +23,6 @@
       <artifactId>jgea.problem</artifactId>
       <version>${revision}</version>
     </dependency>
-    <dependency>
-      <groupId>io.github.ericmedvet</groupId>
-      <artifactId>jgea.listener</artifactId>
-      <version>${revision}</version>
-    </dependency>
   </dependencies>
 
 </project>

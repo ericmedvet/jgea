@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * jgea-sample
+ * jgea-experimenter
  * %%
  * Copyright (C) 2018 - 2023 Eric Medvet
  * %%
@@ -17,10 +17,16 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-module io.github.ericmedvet.jgea.sample {
-  requires io.github.ericmedvet.jgea.core;
-  requires io.github.ericmedvet.jgea.problem;
-  requires io.github.ericmedvet.jsdynsym.core;
-  requires java.logging;
-  requires java.desktop;
-}
+package io.github.ericmedvet.jgea.experimenter.listener.net;
+
+import java.io.Serializable;
+import java.util.List;
+
+public record Message(
+    long localTime,
+    MachineInfo machineInfo,
+    ProcessInfo processInfo,
+    double pollInterval,
+    int nOfRuns,
+    List<Update> updates)
+    implements Serializable {}

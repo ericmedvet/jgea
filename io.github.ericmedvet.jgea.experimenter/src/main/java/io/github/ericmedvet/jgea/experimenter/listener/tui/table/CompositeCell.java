@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * jgea-sample
+ * jgea-tui
  * %%
  * Copyright (C) 2018 - 2023 Eric Medvet
  * %%
@@ -17,10 +17,15 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-module io.github.ericmedvet.jgea.sample {
-  requires io.github.ericmedvet.jgea.core;
-  requires io.github.ericmedvet.jgea.problem;
-  requires io.github.ericmedvet.jsdynsym.core;
-  requires java.logging;
-  requires java.desktop;
+
+package io.github.ericmedvet.jgea.experimenter.listener.tui.table;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+public record CompositeCell(List<Cell> cells) implements Cell {
+  @Override
+  public String content() {
+    return cells.stream().map(c -> c.content().toString()).collect(Collectors.joining(""));
+  }
 }

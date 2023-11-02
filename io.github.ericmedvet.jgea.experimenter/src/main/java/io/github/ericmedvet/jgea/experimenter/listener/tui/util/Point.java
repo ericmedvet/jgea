@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * jgea-sample
+ * jgea-tui
  * %%
  * Copyright (C) 2018 - 2023 Eric Medvet
  * %%
@@ -17,10 +17,16 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-module io.github.ericmedvet.jgea.sample {
-  requires io.github.ericmedvet.jgea.core;
-  requires io.github.ericmedvet.jgea.problem;
-  requires io.github.ericmedvet.jsdynsym.core;
-  requires java.logging;
-  requires java.desktop;
+package io.github.ericmedvet.jgea.experimenter.listener.tui.util;
+
+import com.googlecode.lanterna.TerminalPosition;
+
+public record Point(int x, int y) {
+  public Point delta(int dx, int dy) {
+    return new Point(x + dx, y + dy);
+  }
+
+  public TerminalPosition tp() {
+    return new TerminalPosition(x, y);
+  }
 }
