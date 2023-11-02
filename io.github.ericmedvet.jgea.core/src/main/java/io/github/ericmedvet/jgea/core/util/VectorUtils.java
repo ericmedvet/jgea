@@ -26,49 +26,60 @@ public class VectorUtils {
     if (v1.length != v2.length) {
       throw new IllegalArgumentException("Wrong arg lengths: %d and %d".formatted(v1.length, v2.length));
     }
-    double[] vs = new double[v1.length];
-    for (int i = 0; i < vs.length; i++) {
-      vs[i] = v1[i] + v2[i];
+    double[] outV = new double[v1.length];
+    for (int i = 0; i < outV.length; i++) {
+      outV[i] = v1[i] + v2[i];
     }
-    return vs;
+    return outV;
   }
 
   public static double[] diff(double[] v1, double[] v2) {
     if (v1.length != v2.length) {
       throw new IllegalArgumentException("Wrong arg lengths: %d and %d".formatted(v1.length, v2.length));
     }
-    double[] vs = new double[v1.length];
-    for (int i = 0; i < vs.length; i++) {
-      vs[i] = v1[i] - v2[i];
+    double[] outV = new double[v1.length];
+    for (int i = 0; i < outV.length; i++) {
+      outV[i] = v1[i] - v2[i];
     }
-    return vs;
+    return outV;
   }
 
   public static double[] mult(double[] v1, double[] v2) {
     if (v1.length != v2.length) {
       throw new IllegalArgumentException("Wrong arg lengths: %d and %d".formatted(v1.length, v2.length));
     }
-    double[] vs = new double[v1.length];
-    for (int i = 0; i < vs.length; i++) {
-      vs[i] = v1[i] * v2[i];
+    double[] outV = new double[v1.length];
+    for (int i = 0; i < outV.length; i++) {
+      outV[i] = v1[i] * v2[i];
     }
-    return vs;
+    return outV;
+  }
+  public static double[] div(double[] v1, double[] v2) {
+    if (v1.length != v2.length) {
+      throw new IllegalArgumentException("Wrong arg lengths: %d and %d".formatted(v1.length, v2.length));
+    }
+    double[] outV = new double[v1.length];
+    for (int i = 0; i < outV.length; i++) {
+      outV[i] = v1[i] / v2[i];
+    }
+    return outV;
   }
 
+
   public static double[] sum(double[] v, double a) {
-    double[] vs = new double[v.length];
-    for (int i = 0; i < vs.length; i++) {
-      vs[i] = v[i] + a;
+    double[] outV = new double[v.length];
+    for (int i = 0; i < outV.length; i++) {
+      outV[i] = v[i] + a;
     }
-    return vs;
+    return outV;
   }
 
   public static double[] mult(double[] v, double a) {
-    double[] vs = new double[v.length];
-    for (int i = 0; i < vs.length; i++) {
-      vs[i] = v[i] * a;
+    double[] outV = new double[v.length];
+    for (int i = 0; i < outV.length; i++) {
+      outV[i] = v[i] * a;
     }
-    return vs;
+    return outV;
   }
 
   public static double[] sum(double[] v1, List<Double> v2) {
@@ -77,6 +88,10 @@ public class VectorUtils {
 
   public static double[] diff(double[] v1, List<Double> v2) {
     return diff(v1, unboxed(v2));
+  }
+
+  public static double[] div(double[] v1, List<Double> v2) {
+    return div(v1, unboxed(v2));
   }
 
   public static double[] mult(double[] v1, List<Double> v2) {
@@ -110,6 +125,15 @@ public class VectorUtils {
         .toList();
   }
 
+  public static List<Double> div(List<Double> v1, List<Double> v2) {
+    if (v1.size() != v2.size()) {
+      throw new IllegalArgumentException("Wrong arg lengths: %d and %d".formatted(v1.size(), v2.size()));
+    }
+    return IntStream.range(0, v1.size())
+        .mapToObj(i -> v1.get(i) / v2.get(i))
+        .toList();
+  }
+
   public static List<Double> sum(List<Double> v, double a) {
     return v.stream().map(d -> d + a).toList();
   }
@@ -128,6 +152,9 @@ public class VectorUtils {
 
   public static List<Double> mult(List<Double> v1, double[] v2) {
     return mult(v1, boxed(v2));
+  }
+  public static List<Double> div(List<Double> v1, double[] v2) {
+    return div(v1, boxed(v2));
   }
 
   public static List<Double> meanList(Collection<List<Double>> vs) {
@@ -169,6 +196,18 @@ public class VectorUtils {
     return IntStream.range(0, l)
         .mapToObj(i -> s.getAsDouble())
         .toList();
+  }
+
+  public static double[] sqrt(double[] v) {
+    double[] outV = new double[v.length];
+    for (int i = 0; i < outV.length; i++) {
+      outV[i] = Math.sqrt(v[i]);
+    }
+    return outV;
+  }
+
+  public static List<Double> sqrt(List<Double> v) {
+    return v.stream().map(Math::sqrt).toList();
   }
 
 }

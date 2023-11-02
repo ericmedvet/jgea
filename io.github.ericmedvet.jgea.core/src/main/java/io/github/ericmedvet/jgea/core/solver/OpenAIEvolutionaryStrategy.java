@@ -24,7 +24,6 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.sequence.FixedLengthListFactory;
-import io.github.ericmedvet.jgea.core.util.IntRange;
 import io.github.ericmedvet.jgea.core.util.Progress;
 
 import java.time.LocalDateTime;
@@ -201,38 +200,30 @@ public class OpenAIEvolutionaryStrategy<S, Q>
     //evaluates scores (ie., map genotypes to individuals)
     List<List<Double>> plusGenotypes = samples.stream().map(s -> sum(s, esState.center)).toList();
     List<List<Double>> minusGenotypes = samples.stream().map(s -> sum(mult(s, -1), esState.center)).toList();
-    List<Individual<List<Double>, S, Q>> newIndividuals = map(Stream.of(plusGenotypes,minusGenotypes)
+    List<Individual<List<Double>, S, Q>> newIndividuals = map(Stream.of(plusGenotypes, minusGenotypes)
         .flatMap(List::stream).toList(), List.of(), state, problem, executor).stream().toList();
     //compute normalized ranks
     Comparator<Integer> integerComparator = partialComparator(problem)
         .comparing(newIndividuals::get)
-        .comparator()
-        .reversed();
+        .comparator();
     List<Double> normalizedRanks = IntStream.range(0, newIndividuals.size())
         .boxed()
         .sorted(integerComparator)
-        .map(i -> (double) i / (double) newIndividuals.size() - 0.5d)
+        .map(i -> (double) i / (double) (newIndividuals.size()-1) - 0.5d)
         .toList();
     //compute estimated gradient
     double[] g = unboxed(meanList(IntStream.range(0, normalizedRanks.size())
         .mapToObj(i -> mult(diff(newIndividuals.get(i).genotype(), esState.center), normalizedRanks.get(i)))
         .toList()));
-    //optimize (see https://en.wikipedia.org/wiki/Stochastic_gradient_descent#Adam)
-    double[] m = sum(mult(esState.m, esState.beta1), mult(g, 1-esState.beta1));
+    //optimize with adam (see https://en.wikipedia.org/wiki/Stochastic_gradient_descent#Adam)
+    double[] m = sum(mult(esState.m, esState.beta1), mult(g, 1 - esState.beta1));
     double[] v = sum(mult(esState.v, esState.beta2), mult(mult(g, g), 1d - esState.beta2));
-    double[] hatM = mult(m,1d/(1d- esState.beta1()));
-    double[] hatV = mult(v,1d/(1d- esState.beta2()));
-    double[] dCenter =
-
-    double[] globalG = esState.wDecay ? diff(mult(esState.center, 0.005), g) : g;
+    double[] hatM = mult(m, 1d / (1d - esState.beta1));
+    double[] hatV = mult(v, 1d / (1d - esState.beta2));
     double a = esState.stepSize
         * Math.sqrt(1d - Math.pow(esState.beta2, esState.nOfIterations() + 1))
         / (1d - Math.pow(esState.beta1, esState.nOfIterations() + 1));
-    double[] m = sum(mult(esState.m, esState.beta1), mult(globalG, 1d - esState.beta1));
-    double[] v = sum(mult(esState.v, esState.beta2), mult(mult(globalG, globalG), 1d - esState.beta2));
-    double[] dCenter = IntStream.range(0, n)
-        .mapToDouble(i -> -a * m[i] / (Math.sqrt(v[i]) + esState.epsilon))
-        .toArray();
+    double[] dCenter = mult(div(hatM, sum(sqrt(hatV), esState.epsilon)), -a);
     double[] center = sum(esState.center, dCenter);
     return State.from(esState, progress(state), newIndividuals, comparator(problem), center, m, v);
   }
