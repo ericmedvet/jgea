@@ -178,6 +178,7 @@
         <version>2.40.0</version>
         <configuration>
           <java>
+            <trimTrailingWhitespace></trimTrailingWhitespace>
             <palantirJavaFormat></palantirJavaFormat>
             <indent>
               <tabs>true</tabs>
