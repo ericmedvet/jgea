@@ -33,7 +33,7 @@
     <module>io.github.ericmedvet.jgea.telegram</module>
     <module>io.github.ericmedvet.jgea.sample</module>
     <module>io.github.ericmedvet.jgea.assembly</module>
-    <module>io.github.ericmedvet.jgea.tui</module>
+    <module>io.github.ericmedvet.jgea.listener</module>
     <module>io.github.ericmedvet.jgea.experimenter</module>
   </modules>
 

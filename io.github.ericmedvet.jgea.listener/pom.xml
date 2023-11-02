@@ -6,11 +6,11 @@
     <artifactId>jgea</artifactId>
     <version>${revision}</version>
   </parent>
-  <artifactId>jgea.tui</artifactId>
+  <artifactId>jgea.listener</artifactId>
   <packaging>jar</packaging>
 
-  <name>jgea-tui</name>
-  <description>Textual user interface listener for jgea.</description>
+  <name>jgea-listener</name>
+  <description>Advanced listeners for jgea.</description>
 
   <dependencies>
     <dependency>
