@@ -24,9 +24,13 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.util.Progress;
+import io.github.ericmedvet.jgea.core.util.VectorUtils;
+
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -34,14 +38,17 @@ import java.util.logging.Logger;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
+import static io.github.ericmedvet.jgea.core.util.VectorUtils.meanList;
+import static io.github.ericmedvet.jgea.core.util.VectorUtils.sum;
+
 public class SimpleEvolutionaryStrategy<S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>,
-        TotalOrderQualityBasedProblem<S, Q>,
-        Individual<List<Double>, S, Q>,
-        List<Double>,
-        S,
-        Q> {
+    ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>,
+    TotalOrderQualityBasedProblem<S, Q>,
+    Individual<List<Double>, S, Q>,
+    List<Double>,
+    S,
+    Q> {
 
   private static final Logger L = Logger.getLogger(SimpleEvolutionaryStrategy.class.getName());
   protected final int populationSize;
@@ -57,7 +64,8 @@ public class SimpleEvolutionaryStrategy<S, Q>
       int nOfParents,
       int nOfElites,
       double sigma,
-      boolean remap) {
+      boolean remap
+  ) {
     super(solutionMapper, genotypeFactory, stopCondition, remap);
     this.populationSize = populationSize;
     this.nOfParents = nOfParents;
@@ -74,7 +82,8 @@ public class SimpleEvolutionaryStrategy<S, Q>
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<Individual<List<Double>, S, Q>> pocPopulation,
       List<Individual<List<Double>, S, Q>> listPopulation,
-      List<Double> means)
+      List<Double> means
+  )
       implements ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> {
     public static <S, Q> State<S, Q> from(
         State<S, Q> state,
@@ -83,7 +92,8 @@ public class SimpleEvolutionaryStrategy<S, Q>
         int nOfFitnessEvaluations,
         Collection<Individual<List<Double>, S, Q>> listPopulation,
         List<Double> means,
-        Comparator<? super Individual<List<Double>, S, Q>> comparator) {
+        Comparator<? super Individual<List<Double>, S, Q>> comparator
+    ) {
       return new State<>(
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
@@ -93,12 +103,14 @@ public class SimpleEvolutionaryStrategy<S, Q>
           state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
           PartiallyOrderedCollection.from(listPopulation, comparator),
           listPopulation.stream().sorted(comparator).toList(),
-          means);
+          means
+      );
     }
 
     public static <S, Q> State<S, Q> from(
         Collection<Individual<List<Double>, S, Q>> listPopulation,
-        Comparator<? super Individual<List<Double>, S, Q>> comparator) {
+        Comparator<? super Individual<List<Double>, S, Q>> comparator
+    ) {
       return new State<>(
           LocalDateTime.now(),
           0,
@@ -108,14 +120,15 @@ public class SimpleEvolutionaryStrategy<S, Q>
           listPopulation.size(),
           PartiallyOrderedCollection.from(listPopulation, comparator),
           listPopulation.stream().sorted(comparator).toList(),
-          computeMeans(
-              listPopulation.stream().map(Individual::genotype).toList()));
+          meanList(listPopulation.stream().map(Individual::genotype).toList())
+      );
     }
   }
 
   @Override
   public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> init(
-      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
+      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor
+  )
       throws SolverException {
     Comparator<? super Individual<?, ?, Q>> c1 = comparator(problem);
     return State.from(map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor), c1);
@@ -126,7 +139,8 @@ public class SimpleEvolutionaryStrategy<S, Q>
       TotalOrderQualityBasedProblem<S, Q> problem,
       RandomGenerator random,
       ExecutorService executor,
-      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state)
+      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state
+  )
       throws SolverException {
     // select elites
     List<Individual<List<Double>, S, Q>> elites =
@@ -135,14 +149,11 @@ public class SimpleEvolutionaryStrategy<S, Q>
     List<Individual<List<Double>, S, Q>> parents =
         state.listPopulation().stream().limit(nOfParents).toList();
     // compute mean
-    List<Double> means =
-        computeMeans(parents.stream().map(Individual::genotype).toList());
+    List<Double> means = meanList(parents.stream().map(Individual::genotype).toList());
     // generate offspring
-    List<List<Double>> offspringGenotypes = new ArrayList<>();
-    while (offspringGenotypes.size() < populationSize - elites.size()) {
-      offspringGenotypes.add(
-          means.stream().map(m -> m + random.nextGaussian() * sigma).toList());
-    }
+    List<List<Double>> offspringGenotypes = IntStream.range(0, populationSize - elites.size())
+        .mapToObj(i -> sum(means, VectorUtils.buildList(means.size(), random::nextGaussian)))
+        .toList();
     int nOfBirths = offspringGenotypes.size();
     L.fine(String.format("%d offspring genotypes built", nOfBirths));
     Collection<Individual<List<Double>, S, Q>> newPopulation =
@@ -156,48 +167,38 @@ public class SimpleEvolutionaryStrategy<S, Q>
         nOfBirths + (remap ? elites.size() : 0),
         newPopulation,
         means,
-        comparator(problem));
-  }
-
-  protected static List<Double> computeMeans(Collection<List<Double>> genotypes) {
-    if (genotypes.stream().map(List::size).distinct().count() > 1) {
-      throw new IllegalStateException(String.format(
-          "Genotype size should be the same for all parents: found different sizes %s",
-          genotypes.stream().map(List::size).distinct().toList()));
-    }
-    int l = genotypes.iterator().next().size();
-    final double[] sums = new double[l];
-    genotypes.forEach(g -> IntStream.range(0, l).forEach(j -> sums[j] = sums[j] + g.get(j)));
-    return Arrays.stream(sums)
-        .map(v -> v / (double) genotypes.size())
-        .boxed()
-        .toList();
+        comparator(problem)
+    );
   }
 
   @Override
   protected Individual<List<Double>, S, Q> newIndividual(
       List<Double> genotype,
       ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state,
-      TotalOrderQualityBasedProblem<S, Q> problem) {
+      TotalOrderQualityBasedProblem<S, Q> problem
+  ) {
     S solution = solutionMapper.apply(genotype);
     return Individual.of(
         genotype,
         solution,
         problem.qualityFunction().apply(solution),
         state == null ? 0 : state.nOfIterations(),
-        state == null ? 0 : state.nOfIterations());
+        state == null ? 0 : state.nOfIterations()
+    );
   }
 
   @Override
   protected Individual<List<Double>, S, Q> updateIndividual(
       Individual<List<Double>, S, Q> individual,
       ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state,
-      TotalOrderQualityBasedProblem<S, Q> problem) {
+      TotalOrderQualityBasedProblem<S, Q> problem
+  ) {
     return Individual.of(
         individual.genotype(),
         individual.solution(),
         problem.qualityFunction().apply(individual.solution()),
         individual.genotypeBirthIteration(),
-        state == null ? individual.qualityMappingIteration() : state.nOfIterations());
+        state == null ? individual.qualityMappingIteration() : state.nOfIterations()
+    );
   }
 }
