@@ -20,8 +20,8 @@
 
 package io.github.ericmedvet.jgea.problem.extraction.string;
 
-import com.google.common.collect.Range;
 import io.github.ericmedvet.jgea.core.representation.graph.finiteautomata.Extractor;
+import io.github.ericmedvet.jgea.core.util.IntRange;
 import io.github.ericmedvet.jgea.core.util.Sized;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -40,17 +40,17 @@ public class RegexBasedExtractor implements Extractor<Character>, Sized {
   }
 
   @Override
-  public Set<Range<Integer>> extract(List<Character> sequence) {
+  public Set<IntRange> extract(List<Character> sequence) {
     String string = sequence.stream().map(String::valueOf).collect(Collectors.joining());
     if (Pattern.compile(regex).matcher("").matches()) {
       return Set.of();
     }
     Matcher matcher = Pattern.compile(regex).matcher(string);
-    Set<Range<Integer>> extractions = new LinkedHashSet<>();
+    Set<IntRange> extractions = new LinkedHashSet<>();
     int s = 0;
     while (matcher.find(s)) {
-      Range<Integer> extraction = Range.openClosed(matcher.start(), matcher.end());
-      s = extraction.upperEndpoint();
+      IntRange extraction = new IntRange(matcher.start(), matcher.end());
+      s = extraction.max();
       extractions.add(extraction);
     }
     return extractions;
@@ -64,7 +64,7 @@ public class RegexBasedExtractor implements Extractor<Character>, Sized {
   }
 
   @Override
-  public Set<Range<Integer>> extractNonOverlapping(List<Character> sequence) {
+  public Set<IntRange> extractNonOverlapping(List<Character> sequence) {
     return extract(sequence);
   }
 

@@ -19,9 +19,9 @@
  */
 package io.github.ericmedvet.jgea.problem.classification;
 
-import com.google.common.collect.EnumMultiset;
-import com.google.common.collect.Multiset;
 import io.github.ericmedvet.jgea.core.fitness.ListCaseBasedFitness;
+import io.github.ericmedvet.jgea.core.util.LinkedHashMultiset;
+import io.github.ericmedvet.jgea.core.util.Multiset;
 import io.github.ericmedvet.jgea.core.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,8 +72,8 @@ public class ClassificationFitness<O, L extends Enum<L>>
     public List<Pair<Integer, Integer>> apply(List<E> predictedLabels) {
       E protoLabel = actualLabels.get(0);
       E[] allLabels = (E[]) protoLabel.getClass().getEnumConstants();
-      Multiset<E> counts = EnumMultiset.create((Class<E>) protoLabel.getClass());
-      Multiset<E> errors = EnumMultiset.create((Class<E>) protoLabel.getClass());
+      Multiset<E> counts = new LinkedHashMultiset<>();
+      Multiset<E> errors = new LinkedHashMultiset<>();
       for (int i = 0; i < actualLabels.size(); i++) {
         counts.add(actualLabels.get(i));
         if (!actualLabels.get(i).equals(predictedLabels.get(i))) {

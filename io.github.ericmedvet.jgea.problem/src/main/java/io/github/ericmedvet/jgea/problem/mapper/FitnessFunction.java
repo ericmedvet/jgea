@@ -20,8 +20,6 @@
 
 package io.github.ericmedvet.jgea.problem.mapper;
 
-import com.google.common.collect.LinkedHashMultiset;
-import com.google.common.collect.Multiset;
 import io.github.ericmedvet.jgea.core.distance.BitStringHamming;
 import io.github.ericmedvet.jgea.core.distance.Distance;
 import io.github.ericmedvet.jgea.core.operator.GeneticOperator;
@@ -29,6 +27,8 @@ import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringFlipMutation;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
+import io.github.ericmedvet.jgea.core.util.LinkedHashMultiset;
+import io.github.ericmedvet.jgea.core.util.Multiset;
 import io.github.ericmedvet.jgea.core.util.Pair;
 import java.util.*;
 import java.util.function.Function;
@@ -110,10 +110,10 @@ public class FitnessFunction implements Function<Pair<Tree<Element>, Tree<Elemen
         problem.getProblem().getGrammar());
     // map
     List<S> solutions = genotypes.stream()
-        .map(recursiveMapper::apply)
+        .map(recursiveMapper)
         .map(t -> problem.getProblem().getSolutionMapper().apply(t))
         .toList();
-    Multiset<S> multiset = LinkedHashMultiset.create();
+    Multiset<S> multiset = new LinkedHashMultiset<>(solutions);
     multiset.addAll(solutions);
     // compute properties
     List<Double> values = new ArrayList<>();
@@ -121,8 +121,8 @@ public class FitnessFunction implements Function<Pair<Tree<Element>, Tree<Elemen
       if (property.equals(Property.DEGENERACY)) {
         values.add(1d - (double) multiset.elementSet().size() / (double) genotypes.size());
       } else if (property.equals(Property.NON_UNIFORMITY)) {
-        double[] sizes = multiset.entrySet().stream()
-            .mapToDouble(e -> (double) e.getCount())
+        double[] sizes = multiset.elementSet().stream()
+            .mapToDouble(multiset::count)
             .toArray();
         values.add(Math.sqrt(StatUtils.variance(sizes)) / StatUtils.mean(sizes));
       } else if (property.equals(Property.NON_LOCALITY)) {

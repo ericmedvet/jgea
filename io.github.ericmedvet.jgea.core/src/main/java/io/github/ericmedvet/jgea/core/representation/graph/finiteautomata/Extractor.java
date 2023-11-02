@@ -20,30 +20,30 @@
 
 package io.github.ericmedvet.jgea.core.representation.graph.finiteautomata;
 
-import com.google.common.collect.Range;
+import io.github.ericmedvet.jgea.core.util.IntRange;
 import java.util.*;
 
 public interface Extractor<S> {
-  Set<Range<Integer>> extract(List<S> sequence);
+  Set<IntRange> extract(List<S> sequence);
 
   boolean match(List<S> sequence);
 
-  default Set<Range<Integer>> extractNonOverlapping(List<S> sequence) {
-    List<Range<Integer>> all = new ArrayList<>(extract(sequence));
-    all.sort(Comparator.comparing(Range::lowerEndpoint));
+  default Set<IntRange> extractNonOverlapping(List<S> sequence) {
+    List<IntRange> all = new ArrayList<>(extract(sequence));
+    all.sort(Comparator.comparing(IntRange::min));
     boolean[] discarded = new boolean[all.size()];
     for (int i = 0; i < all.size(); i++) {
       if (discarded[i]) {
         continue;
       }
       for (int j = i + 1; j < all.size(); j++) {
-        if (all.get(j).lowerEndpoint() >= all.get(i).upperEndpoint()) {
+        if (all.get(j).min() >= all.get(i).max()) {
           break;
         }
         if (discarded[j]) {
           continue;
         }
-        if (all.get(j).encloses(all.get(i))) {
+        if (all.get(j).contains(all.get(i))) {
           discarded[i] = true;
           break;
         } else {
@@ -51,7 +51,7 @@ public interface Extractor<S> {
         }
       }
     }
-    Set<Range<Integer>> kept = new LinkedHashSet<>();
+    Set<IntRange> kept = new LinkedHashSet<>();
     for (int i = 0; i < all.size(); i++) {
       if (!discarded[i]) {
         kept.add(all.get(i));

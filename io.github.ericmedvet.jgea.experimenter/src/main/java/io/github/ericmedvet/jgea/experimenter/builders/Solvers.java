@@ -407,7 +407,8 @@ public class Solvers {
           nPop,
           remap,
           minSpeciesSizeForElitism,
-          new LazySpeciator<>((new Jaccard()).on(i -> i.genotype().nodes()), 0.25),
+          new LazySpeciator<>(
+              (new Jaccard<Node>()).on(i -> i.genotype().nodes()), 0.25),
           rankBase);
     };
   }

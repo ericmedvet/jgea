@@ -20,7 +20,6 @@
 
 package io.github.ericmedvet.jgea.core.util;
 
-import com.google.common.collect.Range;
 import java.io.File;
 import java.util.*;
 import java.util.logging.Level;
@@ -30,6 +29,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class Misc {
 
@@ -115,16 +115,12 @@ public class Misc {
     return shuffledIndexes.stream().map(list::get).toList();
   }
 
-  public static List<Range<Integer>> slices(Range<Integer> range, int pieces) {
-    List<Integer> sizes = new ArrayList<>(pieces);
-    for (int i = 0; i < pieces; i++) {
-      sizes.add(1);
-    }
-    return slices(range, sizes);
+  public static List<IntRange> slices(IntRange range, int pieces) {
+    return slices(range, Collections.nCopies(pieces, 1));
   }
 
-  public static List<Range<Integer>> slices(Range<Integer> range, List<Integer> sizes) {
-    int length = range.upperEndpoint() - range.lowerEndpoint();
+  public static List<IntRange> slices(IntRange range, List<Integer> sizes) {
+    int length = range.extent();
     int sumOfSizes = 0;
     for (int size : sizes) {
       sumOfSizes = sumOfSizes + size;
@@ -152,10 +148,10 @@ public class Misc {
       c = c + 1;
       missing = missing - 1;
     }
-    List<Range<Integer>> ranges = new ArrayList<>(sizes.size());
-    int offset = range.lowerEndpoint();
+    List<IntRange> ranges = new ArrayList<>(sizes.size());
+    int offset = range.min();
     for (int j : rangeSize) {
-      ranges.add(Range.closedOpen(offset, offset + j));
+      ranges.add(new IntRange(offset, offset + j));
       offset = offset + j;
     }
     return ranges;
@@ -189,5 +185,15 @@ public class Misc {
           String.format("Given file name (%s) exists; will write on %s", originalFileName, file.getPath()));
     }
     return file;
+  }
+
+  public static <T> Set<T> union(Set<T> set1, Set<T> set2) {
+    return Stream.of(set1, set2).flatMap(Set::stream).collect(Collectors.toSet());
+  }
+
+  public static <T> Set<T> intersection(Set<T> set1, Set<T> set2) {
+    return union(set1, set2).stream()
+        .filter(t -> set1.contains(t) && set2.contains(t))
+        .collect(Collectors.toSet());
   }
 }

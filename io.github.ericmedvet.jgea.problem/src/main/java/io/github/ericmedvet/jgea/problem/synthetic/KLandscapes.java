@@ -20,12 +20,12 @@
 
 package io.github.ericmedvet.jgea.problem.synthetic;
 
-import com.google.common.collect.Range;
 import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.util.Pair;
+import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import java.util.*;
 import java.util.function.Function;
 
@@ -33,16 +33,16 @@ public class KLandscapes
     implements GrammarBasedProblem<String, Tree<String>>, ComparableQualityBasedProblem<Tree<String>, Double> {
 
   private static final int ARITY = 2;
-  private static final Range<Double> V_RANGE = Range.closed(-1d, 1d);
-  private static final Range<Double> W_RANGE = Range.closed(0d, 1d);
+  private static final DoubleRange V_RANGE = DoubleRange.SYMMETRIC_UNIT;
+  private static final DoubleRange W_RANGE = DoubleRange.UNIT;
   private static final int N_TERMINALS = 4;
   private static final int N_NON_TERMINALS = 2;
 
   private final int k;
   private final StringGrammar<String> grammar;
   private final int arity;
-  private final Range<Double> vRange;
-  private final Range<Double> wRange;
+  private final DoubleRange vRange;
+  private final DoubleRange wRange;
   private final int nTerminals;
   private final int nNonTerminals;
 
@@ -53,8 +53,7 @@ public class KLandscapes
     this(k, ARITY, V_RANGE, W_RANGE, N_TERMINALS, N_NON_TERMINALS);
   }
 
-  public KLandscapes(
-      int k, int arity, Range<Double> vRange, Range<Double> wRange, int nTerminals, int nNonTerminals) {
+  public KLandscapes(int k, int arity, DoubleRange vRange, DoubleRange wRange, int nTerminals, int nNonTerminals) {
     this.k = k;
     this.arity = arity;
     this.vRange = vRange;
@@ -203,28 +202,18 @@ public class KLandscapes
     final Map<Pair<String, String>, Double> w = new LinkedHashMap<>();
     // fill v map
     for (int i = 0; i < nTerminals; i++) {
-      v.put(
-          "t" + i,
-          random.nextDouble() * (vRange.upperEndpoint() - vRange.lowerEndpoint()) + vRange.lowerEndpoint());
+      v.put("t" + i, vRange.denormalize(random.nextDouble()));
     }
     for (int i = 0; i < nNonTerminals; i++) {
-      v.put(
-          "n" + i,
-          random.nextDouble() * (vRange.upperEndpoint() - vRange.lowerEndpoint()) + vRange.lowerEndpoint());
+      v.put("n" + i, vRange.denormalize(random.nextDouble()));
     }
     // fill w map
     for (int j = 0; j < nNonTerminals; j++) {
       for (int i = 0; i < nTerminals; i++) {
-        w.put(
-            Pair.of("n" + j, "t" + i),
-            random.nextDouble() * (wRange.upperEndpoint() - wRange.lowerEndpoint())
-                + wRange.lowerEndpoint());
+        w.put(Pair.of("n" + j, "t" + i), wRange.denormalize(random.nextDouble()));
       }
       for (int i = 0; i < nNonTerminals; i++) {
-        w.put(
-            Pair.of("n" + j, "n" + i),
-            random.nextDouble() * (wRange.upperEndpoint() - wRange.lowerEndpoint())
-                + wRange.lowerEndpoint());
+        w.put(Pair.of("n" + j, "n" + i), wRange.denormalize(random.nextDouble()));
       }
     }
     // prepare fitness

@@ -20,10 +20,10 @@
 
 package io.github.ericmedvet.jgea.problem.extraction;
 
-import com.google.common.collect.Range;
-import com.google.common.collect.Sets;
 import io.github.ericmedvet.jgea.core.problem.MultiHomogeneousObjectiveProblem;
 import io.github.ericmedvet.jgea.core.representation.graph.finiteautomata.Extractor;
+import io.github.ericmedvet.jgea.core.util.IntRange;
+import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Pair;
 import java.util.*;
 
@@ -34,7 +34,7 @@ public class ExtractionProblem<S> implements MultiHomogeneousObjectiveProblem<Ex
 
   public ExtractionProblem(
       Set<Extractor<S>> extractors, List<S> sequence, int folds, int i, ExtractionFitness.Metric... metrics) {
-    Pair<List<S>, Set<Range<Integer>>> validationDataset = buildDataset(extractors, sequence, folds, i, false);
+    Pair<List<S>, Set<IntRange>> validationDataset = buildDataset(extractors, sequence, folds, i, false);
     fitnessFunction = new ExtractionFitness<>(
         buildDataset(extractors, sequence, folds, i, true).first(),
         buildDataset(extractors, sequence, folds, i, true).second(),
@@ -42,7 +42,7 @@ public class ExtractionProblem<S> implements MultiHomogeneousObjectiveProblem<Ex
     validationFunction = new ExtractionFitness<>(validationDataset.first(), validationDataset.second(), metrics);
   }
 
-  private static <S> Pair<List<S>, Set<Range<Integer>>> buildDataset(
+  private static <S> Pair<List<S>, Set<IntRange>> buildDataset(
       Set<Extractor<S>> extractors, List<S> sequence, int folds, int i, boolean takeAllButIth) {
     List<S> builtSequence = new ArrayList<>();
     double foldLength = (double) sequence.size() / (double) folds;
@@ -56,9 +56,9 @@ public class ExtractionProblem<S> implements MultiHomogeneousObjectiveProblem<Ex
         builtSequence.addAll(piece);
       }
     }
-    Set<Range<Integer>> desiredExtractions = extractors.stream()
+    Set<IntRange> desiredExtractions = extractors.stream()
         .map(e -> e.extractNonOverlapping(builtSequence))
-        .reduce(Sets::union)
+        .reduce(Misc::union)
         .orElse(Set.of());
     return Pair.of(builtSequence, desiredExtractions);
   }

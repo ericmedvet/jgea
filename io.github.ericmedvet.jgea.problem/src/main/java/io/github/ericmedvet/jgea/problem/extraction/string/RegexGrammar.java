@@ -20,8 +20,8 @@
 
 package io.github.ericmedvet.jgea.problem.extraction.string;
 
-import com.google.common.collect.Sets;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
+import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.problem.extraction.ExtractionFitness;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,7 +34,7 @@ public class RegexGrammar extends StringGrammar<String> {
     this(
         texts.stream()
             .map(s -> s.chars().mapToObj(c -> (char) c).collect(Collectors.toSet()))
-            .reduce(Sets::union)
+            .reduce(Misc::union)
             .orElse(Set.of()),
         options);
   }
@@ -42,9 +42,9 @@ public class RegexGrammar extends StringGrammar<String> {
   public RegexGrammar(ExtractionFitness<Character> fitness, Set<Option> options) {
     this(
         fitness.getDesiredExtractions().stream()
-            .map(r -> fitness.getSequence().subList(r.lowerEndpoint(), r.upperEndpoint()).stream()
-                .collect(Collectors.toSet()))
-            .reduce(Sets::union)
+            .map(r -> (Set<Character>)
+                (new HashSet<>(fitness.getSequence().subList(r.min(), r.max()))))
+            .reduce(Misc::union)
             .orElse(Set.of()),
         options);
   }

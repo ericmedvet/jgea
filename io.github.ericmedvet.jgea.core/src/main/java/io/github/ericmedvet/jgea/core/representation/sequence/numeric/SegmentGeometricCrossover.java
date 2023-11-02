@@ -19,21 +19,21 @@
  */
 package io.github.ericmedvet.jgea.core.representation.sequence.numeric;
 
-import com.google.common.collect.Range;
 import io.github.ericmedvet.jgea.core.operator.Crossover;
+import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import java.util.List;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
 public class SegmentGeometricCrossover implements Crossover<List<Double>> {
-  private final Range<Double> range;
+  private final DoubleRange range;
 
-  public SegmentGeometricCrossover(Range<Double> range) {
+  public SegmentGeometricCrossover(DoubleRange range) {
     this.range = range;
   }
 
   public SegmentGeometricCrossover() {
-    this(Range.openClosed(0d, 1d));
+    this(DoubleRange.UNIT);
   }
 
   @Override
@@ -42,7 +42,7 @@ public class SegmentGeometricCrossover implements Crossover<List<Double>> {
       throw new IllegalArgumentException(
           "Parent genotype sizes are different: %d vs. %d".formatted(g1.size(), g2.size()));
     }
-    double alpha = random.nextDouble() * (range.upperEndpoint() - range.lowerEndpoint()) + range.lowerEndpoint();
+    double alpha = range.denormalize(random.nextDouble());
     return IntStream.range(0, g1.size())
         .mapToObj(i -> g1.get(i) + (g2.get(i) - g1.get(i)) * alpha)
         .toList();

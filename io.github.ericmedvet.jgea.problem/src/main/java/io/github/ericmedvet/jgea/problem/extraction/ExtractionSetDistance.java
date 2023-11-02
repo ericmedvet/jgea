@@ -20,11 +20,11 @@
 
 package io.github.ericmedvet.jgea.problem.extraction;
 
-import com.google.common.collect.Range;
 import io.github.ericmedvet.jgea.core.distance.Distance;
+import io.github.ericmedvet.jgea.core.util.IntRange;
 import java.util.Set;
 
-public class ExtractionSetDistance implements Distance<Set<Range<Integer>>> {
+public class ExtractionSetDistance implements Distance<Set<IntRange>> {
 
   private final int length;
   private final int bins;
@@ -35,16 +35,16 @@ public class ExtractionSetDistance implements Distance<Set<Range<Integer>>> {
   }
 
   @Override
-  public Double apply(Set<Range<Integer>> ranges1, Set<Range<Integer>> ranges2) {
+  public Double apply(Set<IntRange> ranges1, Set<IntRange> ranges2) {
     boolean[] mask1 = new boolean[bins + 1];
     boolean[] mask2 = new boolean[bins + 1];
-    for (Range<Integer> range : ranges1) {
-      mask1[(int) Math.floor((double) range.lowerEndpoint() / (double) length * (double) bins)] = true;
-      mask1[(int) Math.floor((double) range.upperEndpoint() / (double) length * (double) bins)] = true;
+    for (IntRange range : ranges1) {
+      mask1[(int) Math.floor((double) range.min() / (double) length * (double) bins)] = true;
+      mask1[(int) Math.floor((double) range.max() / (double) length * (double) bins)] = true;
     }
-    for (Range<Integer> range : ranges2) {
-      mask2[(int) Math.floor((double) range.lowerEndpoint() / (double) length * (double) bins)] = true;
-      mask2[(int) Math.floor((double) range.upperEndpoint() / (double) length * (double) bins)] = true;
+    for (IntRange range : ranges2) {
+      mask2[(int) Math.floor((double) range.min() / (double) length * (double) bins)] = true;
+      mask2[(int) Math.floor((double) range.max() / (double) length * (double) bins)] = true;
     }
     double count = 0;
     for (int i = 0; i < bins; i++) {

@@ -20,11 +20,11 @@
 
 package io.github.ericmedvet.jgea.core.representation.graph.finiteautomata;
 
-import com.google.common.collect.Range;
-import com.google.common.collect.Sets;
 import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jgea.core.representation.graph.Graph;
 import io.github.ericmedvet.jgea.core.representation.graph.Node;
+import io.github.ericmedvet.jgea.core.util.IntRange;
+import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Sized;
 import java.io.Serializable;
 import java.util.*;
@@ -44,7 +44,7 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized, Ser
     this.startingState = graph.nodes().stream()
         .filter(s -> s.getIndex() == 0)
         .findFirst()
-        .get();
+        .orElseThrow();
   }
 
   public static class State extends Node {
@@ -82,7 +82,7 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized, Ser
           .collect(Collectors.toSet());
       if (outgoingArcValues.size() > 1) {
         Set<K> intersection =
-            outgoingArcValues.stream().reduce(Sets::intersection).orElse(new HashSet<>());
+            outgoingArcValues.stream().reduce(Misc::intersection).orElse(new HashSet<>());
         if (!intersection.isEmpty()) {
           throw new IllegalArgumentException(String.format(
               "Invalid graph: state %s has one or more outgoing symbols " + "(%s)", state, intersection));
@@ -115,13 +115,13 @@ public class DeterministicFiniteAutomaton<S> implements Extractor<S>, Sized, Ser
   }
 
   @Override
-  public Set<Range<Integer>> extract(List<S> sequence) {
-    Set<Range<Integer>> ranges = new LinkedHashSet<>();
+  public Set<IntRange> extract(List<S> sequence) {
+    Set<IntRange> ranges = new LinkedHashSet<>();
     State current = startingState;
     int lastStart = 0;
     for (int i = 0; i < sequence.size(); i++) {
       if (current.isAccepting()) {
-        ranges.add(Range.closedOpen(lastStart, i));
+        ranges.add(new IntRange(lastStart, i));
       }
       current = next(current, sequence.get(i));
       if (current == null) {

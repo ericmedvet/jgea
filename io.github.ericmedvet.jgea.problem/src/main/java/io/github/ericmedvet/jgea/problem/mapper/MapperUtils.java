@@ -20,10 +20,10 @@
 
 package io.github.ericmedvet.jgea.problem.mapper;
 
-import com.google.common.collect.Range;
-import io.github.ericmedvet.jgea.core.representation.grammar.string.ge.HierarchicalMapper;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
+import io.github.ericmedvet.jgea.core.util.IntRange;
+import io.github.ericmedvet.jgea.core.util.Misc;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -462,8 +462,8 @@ public class MapperUtils {
     }
     n = Math.max(1, n);
     n = Math.min(n, g.size());
-    return HierarchicalMapper.slices(Range.closedOpen(0, g.size()), n).stream()
-        .map(s -> g.slice(s.lowerEndpoint(), s.upperEndpoint()))
+    return Misc.slices(new IntRange(0, g.size()), n).stream()
+        .map(s -> g.slice(s.min(), s.max()))
         .toList();
   }
 
@@ -488,8 +488,8 @@ public class MapperUtils {
     for (double w : weights) {
       intWeights.add((int) Math.max(Math.round(w / minWeight), 0d));
     }
-    return HierarchicalMapper.slices(Range.closedOpen(0, g.size()), intWeights).stream()
-        .map(s -> g.slice(s.lowerEndpoint(), s.upperEndpoint()))
+    return Misc.slices(new IntRange(0, g.size()), intWeights).stream()
+        .map(s -> g.slice(s.min(), s.max()))
         .toList();
   }
 

@@ -22,7 +22,6 @@ package io.github.ericmedvet.jgea.sample;
 
 import static io.github.ericmedvet.jgea.core.listener.NamedFunctions.*;
 
-import com.google.common.collect.Range;
 import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.listener.NamedFunctions;
@@ -56,6 +55,7 @@ import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Nguyen7
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.SyntheticUnivariateRegressionProblem;
 import io.github.ericmedvet.jgea.problem.synthetic.Ackley;
 import io.github.ericmedvet.jgea.problem.synthetic.OneMax;
+import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -139,7 +139,9 @@ public class Example {
         new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
         100,
         StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
-        Map.of(new HypercubeGeometricCrossover(Range.open(-1d, 2d)).andThen(new GaussianMutation(0.01)), 1d),
+        Map.of(
+            new HypercubeGeometricCrossover(new DoubleRange(-1d, 2d)).andThen(new GaussianMutation(0.01)),
+            1d),
         new Tournament(5),
         new Last(),
         100,

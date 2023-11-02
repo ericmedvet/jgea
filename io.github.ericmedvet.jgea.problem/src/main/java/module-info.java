@@ -36,7 +36,6 @@ module io.github.ericmedvet.jgea.problem {
   requires io.github.ericmedvet.jsdynsym.core;
   requires commons.math3;
   requires java.desktop;
-  requires com.google.common;
   requires org.apache.commons.csv;
   requires java.logging;
 }

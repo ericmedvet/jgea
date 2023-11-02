@@ -20,8 +20,8 @@
 
 package io.github.ericmedvet.jgea.problem.extraction;
 
-import com.google.common.collect.Range;
 import io.github.ericmedvet.jgea.core.representation.graph.finiteautomata.Extractor;
+import io.github.ericmedvet.jgea.core.util.IntRange;
 import java.util.*;
 import java.util.function.Function;
 
@@ -29,7 +29,7 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
 
   private final Aggregator<S> aggregator;
 
-  public ExtractionFitness(List<S> sequence, Set<Range<Integer>> desiredExtractions, Metric... metrics) {
+  public ExtractionFitness(List<S> sequence, Set<IntRange> desiredExtractions, Metric... metrics) {
     aggregator = new Aggregator<S>(sequence, desiredExtractions, metrics);
   }
 
@@ -43,15 +43,15 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
     SYMBOL_WEIGHTED_ERROR;
   }
 
-  private static class Aggregator<S> implements Function<Set<Range<Integer>>, List<Double>> {
+  private static class Aggregator<S> implements Function<Set<IntRange>, List<Double>> {
 
     private final List<S> sequence;
-    private final Set<Range<Integer>> desiredExtractions;
+    private final Set<IntRange> desiredExtractions;
     private final List<Metric> metrics;
     private final BitSet desiredExtractionMask;
     private final int positiveSymbols;
 
-    public Aggregator(List<S> sequence, Set<Range<Integer>> desiredExtractions, Metric... metrics) {
+    public Aggregator(List<S> sequence, Set<IntRange> desiredExtractions, Metric... metrics) {
       this.sequence = sequence;
       this.desiredExtractions = desiredExtractions;
       this.metrics = Arrays.asList(metrics);
@@ -60,13 +60,13 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
     }
 
     @Override
-    public List<Double> apply(Set<Range<Integer>> extractions) {
+    public List<Double> apply(Set<IntRange> extractions) {
       Map<Metric, Double> values = new EnumMap<>(Metric.class);
       if (metrics.contains(Metric.ONE_MINUS_FM)
           || metrics.contains(Metric.ONE_MINUS_PREC)
           || metrics.contains(Metric.ONE_MINUS_REC)) {
         // precision and recall
-        Set<Range<Integer>> correctExtractions = new LinkedHashSet<>(extractions);
+        Set<IntRange> correctExtractions = new LinkedHashSet<>(extractions);
         correctExtractions.retainAll(desiredExtractions);
         double recall = (double) correctExtractions.size() / (double) desiredExtractions.size();
         double precision = (double) correctExtractions.size() / (double) extractions.size();
@@ -106,7 +106,7 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
       return results;
     }
 
-    public Set<Range<Integer>> getDesiredExtractions() {
+    public Set<IntRange> getDesiredExtractions() {
       return desiredExtractions;
     }
 
@@ -118,20 +118,20 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
       return sequence;
     }
 
-    private Set<Range<Integer>> intersections(Range<Integer> range, Set<Range<Integer>> others) {
-      Set<Range<Integer>> intersections = new HashSet<>();
-      for (Range<Integer> other : others) {
-        if (range.isConnected(other)) {
-          intersections.add(range.intersection(other));
+    private Set<IntRange> intersections(IntRange range, Set<IntRange> others) {
+      Set<IntRange> intersections = new HashSet<>();
+      for (IntRange other : others) {
+        if (range.overlaps(other)) {
+          intersections.add(range.intersection(other).orElseThrow());
         }
       }
       return intersections;
     }
   }
 
-  private static BitSet buildMask(Set<Range<Integer>> extractions, int size) {
+  private static BitSet buildMask(Set<IntRange> extractions, int size) {
     BitSet bitSet = new BitSet(size);
-    extractions.forEach(r -> bitSet.set(r.lowerEndpoint(), r.upperEndpoint()));
+    extractions.forEach(r -> bitSet.set(r.min(), r.max()));
     return bitSet;
   }
 
@@ -144,7 +144,7 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
     return new ExtractionFitness<>(aggregator.sequence, aggregator.desiredExtractions, metrics);
   }
 
-  public Set<Range<Integer>> getDesiredExtractions() {
+  public Set<IntRange> getDesiredExtractions() {
     return aggregator.getDesiredExtractions();
   }
 
