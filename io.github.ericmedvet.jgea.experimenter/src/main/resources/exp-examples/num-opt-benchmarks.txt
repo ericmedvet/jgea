@@ -1,10 +1,11 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
     (problem = [
-      ea.p.s.doublesOneMax(p = 1000);
-      ea.p.s.ackley(p = 10);
-      ea.p.s.rastrigin(p = 10);
-      ea.p.s.sphere(p = 10)
+      ea.p.s.pointAiming(p = 250);
+      ea.p.s.circularPointsAiming(p = 100);
+      ea.p.s.ackley(p = 25);
+      ea.p.s.rastrigin(p = 25);
+      ea.p.s.sphere(p = 25)
     ]) *
     (solver = (nEval = [1000]) * [
       ea.s.doubleStringGa(mapper = ea.m.identity());

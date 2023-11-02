@@ -186,11 +186,11 @@ public class VectorUtils {
   }
 
   public static double norm(List<Double> v, double n) {
-    return Math.pow(v.stream().mapToDouble(d -> Math.pow(d, n)).sum(), 1d / n);
+    return Math.pow(v.stream().mapToDouble(d -> Math.abs(Math.pow(d, n))).sum(), 1d / n);
   }
 
   public static double norm(double[] v, double n) {
-    return Math.pow(Arrays.stream(v).map(d -> Math.pow(d, n)).sum(), 1d / n);
+    return Math.pow(Arrays.stream(v).map(d -> Math.abs(Math.pow(d, n))).sum(), 1d / n);
   }
 
   public static double[] sqrt(double[] v) {
