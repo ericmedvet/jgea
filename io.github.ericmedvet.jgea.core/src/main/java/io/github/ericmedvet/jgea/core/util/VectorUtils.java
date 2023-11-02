@@ -33,6 +33,17 @@ public class VectorUtils {
     return vs;
   }
 
+  public static double[] diff(double[] v1, double[] v2) {
+    if (v1.length != v2.length) {
+      throw new IllegalArgumentException("Wrong arg lengths: %d and %d".formatted(v1.length, v2.length));
+    }
+    double[] vs = new double[v1.length];
+    for (int i = 0; i < vs.length; i++) {
+      vs[i] = v1[i] - v2[i];
+    }
+    return vs;
+  }
+
   public static double[] mult(double[] v1, double[] v2) {
     if (v1.length != v2.length) {
       throw new IllegalArgumentException("Wrong arg lengths: %d and %d".formatted(v1.length, v2.length));
@@ -64,6 +75,10 @@ public class VectorUtils {
     return sum(v1, unboxed(v2));
   }
 
+  public static double[] diff(double[] v1, List<Double> v2) {
+    return diff(v1, unboxed(v2));
+  }
+
   public static double[] mult(double[] v1, List<Double> v2) {
     return mult(v1, unboxed(v2));
   }
@@ -74,6 +89,15 @@ public class VectorUtils {
     }
     return IntStream.range(0, v1.size())
         .mapToObj(i -> v1.get(i) + v2.get(i))
+        .toList();
+  }
+
+  public static List<Double> diff(List<Double> v1, List<Double> v2) {
+    if (v1.size() != v2.size()) {
+      throw new IllegalArgumentException("Wrong arg lengths: %d and %d".formatted(v1.size(), v2.size()));
+    }
+    return IntStream.range(0, v1.size())
+        .mapToObj(i -> v1.get(i) - v2.get(i))
         .toList();
   }
 
@@ -96,6 +120,10 @@ public class VectorUtils {
 
   public static List<Double> sum(List<Double> v1, double[] v2) {
     return sum(v1, boxed(v2));
+  }
+
+  public static List<Double> diff(List<Double> v1, double[] v2) {
+    return diff(v1, boxed(v2));
   }
 
   public static List<Double> mult(List<Double> v1, double[] v2) {

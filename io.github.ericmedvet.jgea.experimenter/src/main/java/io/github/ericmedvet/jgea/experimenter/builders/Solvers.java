@@ -418,8 +418,8 @@ public class Solvers {
       @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
       @Param(value = "initialMinV", dD = -1d) double initialMinV,
       @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
-      @Param(value = "sigma", dD = 0.35d) double sigma,
-      @Param(value = "batchSize", dI = 15) int batchSize,
+      @Param(value = "sigma", dD = 0.02d) double sigma,
+      @Param(value = "batchSize", dI = 250) int batchSize,
       @Param(value = "nEval") int nEval) {
     return exampleS -> new OpenAIEvolutionaryStrategy<>(
         mapper.mapperFor(exampleS),
