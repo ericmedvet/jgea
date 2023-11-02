@@ -60,7 +60,7 @@
     <jnb.version>1.2.0</jnb.version>
     <jsdynsym.version>0.10.5</jsdynsym.version>
   </properties>
-  <dependencies></dependencies>
+  <dependencies/>
 
   <repositories>
     <repository>
@@ -178,8 +178,10 @@
         <version>2.40.0</version>
         <configuration>
           <java>
-            <trimTrailingWhitespace></trimTrailingWhitespace>
-            <palantirJavaFormat></palantirJavaFormat>
+            <importOrder/>
+            <trimTrailingWhitespace/>
+            <removeUnusedImports/>
+            <palantirJavaFormat/>
             <indent>
               <tabs>true</tabs>
               <spacesPerTab>4</spacesPerTab>
@@ -188,10 +190,11 @@
               <spaces>true</spaces>
               <spacesPerTab>2</spacesPerTab>
             </indent>
-            <removeUnusedImports></removeUnusedImports>
           </java>
           <pom>
-            <sortPom></sortPom>
+            <sortPom>
+              <expandEmptyElements>false</expandEmptyElements>
+            </sortPom>
           </pom>
         </configuration>
         <executions>
