@@ -20,14 +20,13 @@
 
 package io.github.ericmedvet.jgea.problem.synthetic;
 
+import static io.github.ericmedvet.jgea.core.util.VectorUtils.*;
+
 import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.problem.ProblemWithExampleSolution;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
-
-import static io.github.ericmedvet.jgea.core.util.VectorUtils.*;
 
 public class PointsAiming
     implements ComparableQualityBasedProblem<List<Double>, Double>, ProblemWithExampleSolution<List<Double>> {

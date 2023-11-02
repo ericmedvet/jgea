@@ -12,35 +12,26 @@ import java.util.stream.IntStream;
  */
 public class VectorUtils {
 
-  private VectorUtils() {
-  }
+  private VectorUtils() {}
 
   public static List<Double> boxed(double[] v) {
     return Arrays.stream(v).boxed().toList();
   }
 
   public static double[] buildArray(int l, DoubleSupplier s) {
-    return IntStream.range(0, l)
-        .mapToDouble(i -> s.getAsDouble())
-        .toArray();
+    return IntStream.range(0, l).mapToDouble(i -> s.getAsDouble()).toArray();
   }
 
   public static double[] buildArray(int l, IntToDoubleFunction f) {
-    return IntStream.range(0, l)
-        .mapToDouble(f)
-        .toArray();
+    return IntStream.range(0, l).mapToDouble(f).toArray();
   }
 
   public static List<Double> buildList(int l, DoubleSupplier s) {
-    return IntStream.range(0, l)
-        .mapToObj(i -> s.getAsDouble())
-        .toList();
+    return IntStream.range(0, l).mapToObj(i -> s.getAsDouble()).toList();
   }
 
   public static List<Double> buildList(int l, IntToDoubleFunction f) {
-    return IntStream.range(0, l)
-        .mapToObj(f::applyAsDouble)
-        .toList();
+    return IntStream.range(0, l).mapToObj(f::applyAsDouble).toList();
   }
 
   public static void checkLengths(List<Double> v1, List<Double> v2) {
@@ -59,8 +50,7 @@ public class VectorUtils {
     if (vs.stream().map(v -> v.length).distinct().count() > 1) {
       throw new IllegalStateException(String.format(
           "Vector sizes not consistent: found different sizes %s",
-          vs.stream().map(v -> v.length).distinct().toList()
-      ));
+          vs.stream().map(v -> v.length).distinct().toList()));
     }
   }
 
@@ -68,8 +58,7 @@ public class VectorUtils {
     if (Arrays.stream(vs).map(v -> v.length).distinct().count() > 1) {
       throw new IllegalStateException(String.format(
           "Vector sizes not consistent: found different sizes %s",
-          Arrays.stream(vs).map(v -> v.length).distinct().toList()
-      ));
+          Arrays.stream(vs).map(v -> v.length).distinct().toList()));
     }
   }
 
@@ -77,13 +66,12 @@ public class VectorUtils {
     if (vs.stream().map(List::size).distinct().count() > 1) {
       throw new IllegalStateException(String.format(
           "Vector sizes not consistent: found different sizes %s",
-          vs.stream().map(List::size).distinct().toList()
-      ));
+          vs.stream().map(List::size).distinct().toList()));
     }
   }
 
   public static double[] diff(double[] v1, double[] v2) {
-    checkLengths(v1,v2);
+    checkLengths(v1, v2);
     double[] outV = new double[v1.length];
     for (int i = 0; i < outV.length; i++) {
       outV[i] = v1[i] - v2[i];
@@ -96,7 +84,7 @@ public class VectorUtils {
   }
 
   public static List<Double> diff(List<Double> v1, List<Double> v2) {
-    checkLengths(v1,v2);
+    checkLengths(v1, v2);
     return IntStream.range(0, v1.size())
         .mapToObj(i -> v1.get(i) - v2.get(i))
         .toList();
@@ -107,7 +95,7 @@ public class VectorUtils {
   }
 
   public static double[] div(double[] v1, double[] v2) {
-    checkLengths(v1,v2);
+    checkLengths(v1, v2);
     double[] outV = new double[v1.length];
     for (int i = 0; i < outV.length; i++) {
       outV[i] = v1[i] / v2[i];
@@ -120,7 +108,7 @@ public class VectorUtils {
   }
 
   public static List<Double> div(List<Double> v1, List<Double> v2) {
-    checkLengths(v1,v2);
+    checkLengths(v1, v2);
     return IntStream.range(0, v1.size())
         .mapToObj(i -> v1.get(i) / v2.get(i))
         .toList();
@@ -143,14 +131,11 @@ public class VectorUtils {
     int l = vs.iterator().next().size();
     final double[] sums = new double[l];
     vs.forEach(v -> IntStream.range(0, l).forEach(j -> sums[j] = sums[j] + v.get(j)));
-    return Arrays.stream(sums)
-        .map(v -> v / (double) vs.size())
-        .boxed()
-        .toList();
+    return Arrays.stream(sums).map(v -> v / (double) vs.size()).boxed().toList();
   }
 
   public static double[] mult(double[] v1, double[] v2) {
-    checkLengths(v1,v2);
+    checkLengths(v1, v2);
     double[] outV = new double[v1.length];
     for (int i = 0; i < outV.length; i++) {
       outV[i] = v1[i] * v2[i];
@@ -171,7 +156,7 @@ public class VectorUtils {
   }
 
   public static List<Double> mult(List<Double> v1, List<Double> v2) {
-    checkLengths(v1,v2);
+    checkLengths(v1, v2);
     return IntStream.range(0, v1.size())
         .mapToObj(i -> v1.get(i) * v2.get(i))
         .toList();
@@ -206,7 +191,7 @@ public class VectorUtils {
   }
 
   public static double[] sum(double[] v1, double[] v2) {
-    checkLengths(v1,v2);
+    checkLengths(v1, v2);
     double[] outV = new double[v1.length];
     for (int i = 0; i < outV.length; i++) {
       outV[i] = v1[i] + v2[i];
@@ -227,7 +212,7 @@ public class VectorUtils {
   }
 
   public static List<Double> sum(List<Double> v1, List<Double> v2) {
-    checkLengths(v1,v2);
+    checkLengths(v1, v2);
     return IntStream.range(0, v1.size())
         .mapToObj(i -> v1.get(i) + v2.get(i))
         .toList();
@@ -247,55 +232,40 @@ public class VectorUtils {
 
   public static double[] weightedMeanArray(List<double[]> vs, double[] weights) {
     if (vs.size() != weights.length) {
-      throw new IllegalArgumentException("Unconsistent samples and weights sizes: %d vs %d".formatted(
-          vs.size(),
-          weights.length
-      ));
+      throw new IllegalArgumentException(
+          "Unconsistent samples and weights sizes: %d vs %d".formatted(vs.size(), weights.length));
     }
     checkLengthsArray(vs);
     int l = vs.iterator().next().length;
     final double[] sums = new double[l];
     IntStream.range(0, vs.size())
-        .forEach(i -> IntStream.range(0, l)
-            .forEach(j -> sums[j] = sums[j] + vs.get(i)[j] * weights[i])
-        );
+        .forEach(i -> IntStream.range(0, l).forEach(j -> sums[j] = sums[j] + vs.get(i)[j] * weights[i]));
     return sums;
   }
 
   public static double[] weightedMeanArray(double[][] vs, double[] weights) {
     if (vs.length != weights.length) {
-      throw new IllegalArgumentException("Unconsistent samples and weights sizes: %d vs %d".formatted(
-          vs.length,
-          weights.length
-      ));
+      throw new IllegalArgumentException(
+          "Unconsistent samples and weights sizes: %d vs %d".formatted(vs.length, weights.length));
     }
     checkLengthsArray(vs);
     int l = vs[0].length;
     final double[] sums = new double[l];
     IntStream.range(0, vs.length)
-        .forEach(i -> IntStream.range(0, l)
-            .forEach(j -> sums[j] = sums[j] + vs[i][j] * weights[i])
-        );
+        .forEach(i -> IntStream.range(0, l).forEach(j -> sums[j] = sums[j] + vs[i][j] * weights[i]));
     return sums;
   }
 
   public static List<Double> weightedMeanList(List<List<Double>> vs, List<Double> weights) {
     if (vs.size() != weights.size()) {
-      throw new IllegalArgumentException("Unconsistent samples and weights sizes: %d vs %d".formatted(
-          vs.size(),
-          weights.size()
-      ));
+      throw new IllegalArgumentException(
+          "Unconsistent samples and weights sizes: %d vs %d".formatted(vs.size(), weights.size()));
     }
     checkLengthsList(vs);
     int l = vs.iterator().next().size();
     final double[] sums = new double[l];
-    IntStream.range(0, vs.size())
-        .forEach(i -> IntStream.range(0, l)
-            .forEach(j -> sums[j] = sums[j] + vs.get(i).get(j) * weights.get(i))
-        );
-    return Arrays.stream(sums)
-        .boxed()
-        .toList();
+    IntStream.range(0, vs.size()).forEach(i -> IntStream.range(0, l)
+        .forEach(j -> sums[j] = sums[j] + vs.get(i).get(j) * weights.get(i)));
+    return Arrays.stream(sums).boxed().toList();
   }
-
 }
