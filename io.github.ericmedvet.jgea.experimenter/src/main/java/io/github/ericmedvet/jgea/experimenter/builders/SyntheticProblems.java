@@ -50,12 +50,12 @@ public class SyntheticProblems {
   }
 
   @SuppressWarnings("unused")
-  public static DoublesOneMax doublesOneMax(@Param(value = "p", dI = 100) int p) {
+  public static DoublesOneMax doublesOneMax(@Param(value = "p", dI = 100) int p) { // TODO rename to PointAiming
     return new DoublesOneMax(p);
   }
 
   @SuppressWarnings("unused")
-  public static DoublesVariableTarget doublesVariableTarget(
+  public static DoublesVariableTarget doublesVariableTarget( // TODO rename to PointAiming
       @Param(value = "p", dI = 100) int p, @Param(value = "target") double target) {
     return new DoublesVariableTarget(p, target);
   }

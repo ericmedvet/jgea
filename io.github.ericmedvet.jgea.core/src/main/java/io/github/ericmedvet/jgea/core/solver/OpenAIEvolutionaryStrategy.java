@@ -56,7 +56,6 @@ public class OpenAIEvolutionaryStrategy<S, Q>
 
   private final int batchSize;
 
-  private final int n;
   private final FixedLengthListFactory<Double> gaussianSamplesFactory;
 
   public OpenAIEvolutionaryStrategy(
@@ -68,8 +67,8 @@ public class OpenAIEvolutionaryStrategy<S, Q>
   ) {
     super(solutionMapper, genotypeFactory, stopCondition, false);
     this.batchSize = batchSize;
-    n = genotypeFactory.build(1, new Random(0)).get(0).size();
-    gaussianSamplesFactory = new FixedLengthListFactory<>(n, r -> r.nextGaussian() * sigma);
+    int p = genotypeFactory.build(1, new Random(0)).get(0).size();
+    gaussianSamplesFactory = new FixedLengthListFactory<>(p, r -> r.nextGaussian() * sigma);
   }
 
   public record State<S, Q>(

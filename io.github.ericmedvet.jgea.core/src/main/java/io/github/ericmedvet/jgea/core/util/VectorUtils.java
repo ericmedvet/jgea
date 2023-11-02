@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.DoubleSupplier;
+import java.util.function.IntToDoubleFunction;
 import java.util.stream.IntStream;
 
 /**
@@ -54,6 +55,7 @@ public class VectorUtils {
     }
     return outV;
   }
+
   public static double[] div(double[] v1, double[] v2) {
     if (v1.length != v2.length) {
       throw new IllegalArgumentException("Wrong arg lengths: %d and %d".formatted(v1.length, v2.length));
@@ -153,6 +155,7 @@ public class VectorUtils {
   public static List<Double> mult(List<Double> v1, double[] v2) {
     return mult(v1, boxed(v2));
   }
+
   public static List<Double> div(List<Double> v1, double[] v2) {
     return div(v1, boxed(v2));
   }
@@ -171,6 +174,74 @@ public class VectorUtils {
         .map(v -> v / (double) vs.size())
         .boxed()
         .toList();
+  }
+
+  public static List<Double> weightedMeanList(List<List<Double>> vs, List<Double> weights) {
+    if (vs.size() != weights.size()) {
+      throw new IllegalArgumentException("Unconsistent samples and weights sizes: %d vs %d".formatted(
+          vs.size(),
+          weights.size()
+      ));
+    }
+    if (vs.stream().map(List::size).distinct().count() > 1) {
+      throw new IllegalStateException(String.format(
+          "Vector sizes not consistent: found different sizes %s",
+          vs.stream().map(List::size).distinct().toList()
+      ));
+    }
+    int l = vs.iterator().next().size();
+    final double[] sums = new double[l];
+    IntStream.range(0, vs.size())
+        .forEach(i -> IntStream.range(0, l)
+            .forEach(j -> sums[j] = sums[j] + vs.get(i).get(j) * weights.get(i))
+        );
+    return Arrays.stream(sums)
+        .boxed()
+        .toList();
+  }
+
+  public static double[] weightedMeanArray(List<double[]> vs, double[] weights) {
+    if (vs.size() != weights.length) {
+      throw new IllegalArgumentException("Unconsistent samples and weights sizes: %d vs %d".formatted(
+          vs.size(),
+          weights.length
+      ));
+    }
+    if (vs.stream().map(v -> v.length).distinct().count() > 1) {
+      throw new IllegalStateException(String.format(
+          "Vector sizes not consistent: found different sizes %s",
+          vs.stream().map(v -> v.length).distinct().toList()
+      ));
+    }
+    int l = vs.iterator().next().length;
+    final double[] sums = new double[l];
+    IntStream.range(0, vs.size())
+        .forEach(i -> IntStream.range(0, l)
+            .forEach(j -> sums[j] = sums[j] + vs.get(i)[j] * weights[i])
+        );
+    return sums;
+  }
+
+  public static double[] weightedMeanArray(double[][] vs, double[] weights) {
+    if (vs.length != weights.length) {
+      throw new IllegalArgumentException("Unconsistent samples and weights sizes: %d vs %d".formatted(
+          vs.length,
+          weights.length
+      ));
+    }
+    if (Arrays.stream(vs).map(v -> v.length).distinct().count() > 1) {
+      throw new IllegalStateException(String.format(
+          "Vector sizes not consistent: found different sizes %s",
+          Arrays.stream(vs).map(v -> v.length).distinct().toList()
+      ));
+    }
+    int l = vs[0].length;
+    final double[] sums = new double[l];
+    IntStream.range(0, vs.length)
+        .forEach(i -> IntStream.range(0, l)
+            .forEach(j -> sums[j] = sums[j] + vs[i][j] * weights[i])
+        );
+    return sums;
   }
 
   public static double[] meanArray(Collection<double[]> vs) {
@@ -192,9 +263,21 @@ public class VectorUtils {
         .toArray();
   }
 
+  public static double[] buildArray(int l, IntToDoubleFunction f) {
+    return IntStream.range(0, l)
+        .mapToDouble(f)
+        .toArray();
+  }
+
   public static List<Double> buildList(int l, DoubleSupplier s) {
     return IntStream.range(0, l)
         .mapToObj(i -> s.getAsDouble())
+        .toList();
+  }
+
+  public static List<Double> buildList(int l, IntToDoubleFunction f) {
+    return IntStream.range(0, l)
+        .mapToObj(f::applyAsDouble)
         .toList();
   }
 
@@ -208,6 +291,14 @@ public class VectorUtils {
 
   public static List<Double> sqrt(List<Double> v) {
     return v.stream().map(Math::sqrt).toList();
+  }
+
+  public static double norm(List<Double> v, double n) {
+    return Math.pow(v.stream().mapToDouble(d -> Math.pow(d, n)).sum(), 1d / n);
+  }
+
+  public static double norm(double[] v, double n) {
+    return Math.pow(Arrays.stream(v).map(d -> Math.pow(d, n)).sum(), 1d / n);
   }
 
 }
