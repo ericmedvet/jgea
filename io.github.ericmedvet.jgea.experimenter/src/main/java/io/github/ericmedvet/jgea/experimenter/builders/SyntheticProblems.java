@@ -25,6 +25,8 @@ import io.github.ericmedvet.jgea.problem.synthetic.*;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 @Discoverable(prefixTemplate = "ea.problem|p.synthetic|s")
 public class SyntheticProblems {
@@ -50,14 +52,11 @@ public class SyntheticProblems {
   }
 
   @SuppressWarnings("unused")
-  public static DoublesOneMax doublesOneMax(@Param(value = "p", dI = 100) int p) { // TODO rename to PointAiming
-    return new DoublesOneMax(p);
-  }
-
-  @SuppressWarnings("unused")
-  public static DoublesVariableTarget doublesVariableTarget( // TODO rename to PointAiming
-      @Param(value = "p", dI = 100) int p, @Param(value = "target") double target) {
-    return new DoublesVariableTarget(p, target);
+  public static PointsAiming pointAiming(
+      @Param(value = "p", dI = 100) int p,
+      @Param(value = "target", dD = 1d) double target
+  ) {
+    return new PointsAiming(List.of(Collections.nCopies(p,target)));
   }
 
   @SuppressWarnings("unused")

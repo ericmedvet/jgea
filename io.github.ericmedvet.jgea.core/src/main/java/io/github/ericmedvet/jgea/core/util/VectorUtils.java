@@ -19,244 +19,6 @@ public class VectorUtils {
     return Arrays.stream(v).boxed().toList();
   }
 
-  public static double[] unboxed(List<Double> v) {
-    return v.stream().mapToDouble(d -> d).toArray();
-  }
-
-  public static double[] sum(double[] v1, double[] v2) {
-    if (v1.length != v2.length) {
-      throw new IllegalArgumentException("Wrong arg lengths: %d and %d".formatted(v1.length, v2.length));
-    }
-    double[] outV = new double[v1.length];
-    for (int i = 0; i < outV.length; i++) {
-      outV[i] = v1[i] + v2[i];
-    }
-    return outV;
-  }
-
-  public static double[] diff(double[] v1, double[] v2) {
-    if (v1.length != v2.length) {
-      throw new IllegalArgumentException("Wrong arg lengths: %d and %d".formatted(v1.length, v2.length));
-    }
-    double[] outV = new double[v1.length];
-    for (int i = 0; i < outV.length; i++) {
-      outV[i] = v1[i] - v2[i];
-    }
-    return outV;
-  }
-
-  public static double[] mult(double[] v1, double[] v2) {
-    if (v1.length != v2.length) {
-      throw new IllegalArgumentException("Wrong arg lengths: %d and %d".formatted(v1.length, v2.length));
-    }
-    double[] outV = new double[v1.length];
-    for (int i = 0; i < outV.length; i++) {
-      outV[i] = v1[i] * v2[i];
-    }
-    return outV;
-  }
-
-  public static double[] div(double[] v1, double[] v2) {
-    if (v1.length != v2.length) {
-      throw new IllegalArgumentException("Wrong arg lengths: %d and %d".formatted(v1.length, v2.length));
-    }
-    double[] outV = new double[v1.length];
-    for (int i = 0; i < outV.length; i++) {
-      outV[i] = v1[i] / v2[i];
-    }
-    return outV;
-  }
-
-
-  public static double[] sum(double[] v, double a) {
-    double[] outV = new double[v.length];
-    for (int i = 0; i < outV.length; i++) {
-      outV[i] = v[i] + a;
-    }
-    return outV;
-  }
-
-  public static double[] mult(double[] v, double a) {
-    double[] outV = new double[v.length];
-    for (int i = 0; i < outV.length; i++) {
-      outV[i] = v[i] * a;
-    }
-    return outV;
-  }
-
-  public static double[] sum(double[] v1, List<Double> v2) {
-    return sum(v1, unboxed(v2));
-  }
-
-  public static double[] diff(double[] v1, List<Double> v2) {
-    return diff(v1, unboxed(v2));
-  }
-
-  public static double[] div(double[] v1, List<Double> v2) {
-    return div(v1, unboxed(v2));
-  }
-
-  public static double[] mult(double[] v1, List<Double> v2) {
-    return mult(v1, unboxed(v2));
-  }
-
-  public static List<Double> sum(List<Double> v1, List<Double> v2) {
-    if (v1.size() != v2.size()) {
-      throw new IllegalArgumentException("Wrong arg lengths: %d and %d".formatted(v1.size(), v2.size()));
-    }
-    return IntStream.range(0, v1.size())
-        .mapToObj(i -> v1.get(i) + v2.get(i))
-        .toList();
-  }
-
-  public static List<Double> diff(List<Double> v1, List<Double> v2) {
-    if (v1.size() != v2.size()) {
-      throw new IllegalArgumentException("Wrong arg lengths: %d and %d".formatted(v1.size(), v2.size()));
-    }
-    return IntStream.range(0, v1.size())
-        .mapToObj(i -> v1.get(i) - v2.get(i))
-        .toList();
-  }
-
-  public static List<Double> mult(List<Double> v1, List<Double> v2) {
-    if (v1.size() != v2.size()) {
-      throw new IllegalArgumentException("Wrong arg lengths: %d and %d".formatted(v1.size(), v2.size()));
-    }
-    return IntStream.range(0, v1.size())
-        .mapToObj(i -> v1.get(i) * v2.get(i))
-        .toList();
-  }
-
-  public static List<Double> div(List<Double> v1, List<Double> v2) {
-    if (v1.size() != v2.size()) {
-      throw new IllegalArgumentException("Wrong arg lengths: %d and %d".formatted(v1.size(), v2.size()));
-    }
-    return IntStream.range(0, v1.size())
-        .mapToObj(i -> v1.get(i) / v2.get(i))
-        .toList();
-  }
-
-  public static List<Double> sum(List<Double> v, double a) {
-    return v.stream().map(d -> d + a).toList();
-  }
-
-  public static List<Double> mult(List<Double> v, double a) {
-    return v.stream().map(d -> d * a).toList();
-  }
-
-  public static List<Double> sum(List<Double> v1, double[] v2) {
-    return sum(v1, boxed(v2));
-  }
-
-  public static List<Double> diff(List<Double> v1, double[] v2) {
-    return diff(v1, boxed(v2));
-  }
-
-  public static List<Double> mult(List<Double> v1, double[] v2) {
-    return mult(v1, boxed(v2));
-  }
-
-  public static List<Double> div(List<Double> v1, double[] v2) {
-    return div(v1, boxed(v2));
-  }
-
-  public static List<Double> meanList(Collection<List<Double>> vs) {
-    if (vs.stream().map(List::size).distinct().count() > 1) {
-      throw new IllegalStateException(String.format(
-          "Vector sizes not consistent: found different sizes %s",
-          vs.stream().map(List::size).distinct().toList()
-      ));
-    }
-    int l = vs.iterator().next().size();
-    final double[] sums = new double[l];
-    vs.forEach(v -> IntStream.range(0, l).forEach(j -> sums[j] = sums[j] + v.get(j)));
-    return Arrays.stream(sums)
-        .map(v -> v / (double) vs.size())
-        .boxed()
-        .toList();
-  }
-
-  public static List<Double> weightedMeanList(List<List<Double>> vs, List<Double> weights) {
-    if (vs.size() != weights.size()) {
-      throw new IllegalArgumentException("Unconsistent samples and weights sizes: %d vs %d".formatted(
-          vs.size(),
-          weights.size()
-      ));
-    }
-    if (vs.stream().map(List::size).distinct().count() > 1) {
-      throw new IllegalStateException(String.format(
-          "Vector sizes not consistent: found different sizes %s",
-          vs.stream().map(List::size).distinct().toList()
-      ));
-    }
-    int l = vs.iterator().next().size();
-    final double[] sums = new double[l];
-    IntStream.range(0, vs.size())
-        .forEach(i -> IntStream.range(0, l)
-            .forEach(j -> sums[j] = sums[j] + vs.get(i).get(j) * weights.get(i))
-        );
-    return Arrays.stream(sums)
-        .boxed()
-        .toList();
-  }
-
-  public static double[] weightedMeanArray(List<double[]> vs, double[] weights) {
-    if (vs.size() != weights.length) {
-      throw new IllegalArgumentException("Unconsistent samples and weights sizes: %d vs %d".formatted(
-          vs.size(),
-          weights.length
-      ));
-    }
-    if (vs.stream().map(v -> v.length).distinct().count() > 1) {
-      throw new IllegalStateException(String.format(
-          "Vector sizes not consistent: found different sizes %s",
-          vs.stream().map(v -> v.length).distinct().toList()
-      ));
-    }
-    int l = vs.iterator().next().length;
-    final double[] sums = new double[l];
-    IntStream.range(0, vs.size())
-        .forEach(i -> IntStream.range(0, l)
-            .forEach(j -> sums[j] = sums[j] + vs.get(i)[j] * weights[i])
-        );
-    return sums;
-  }
-
-  public static double[] weightedMeanArray(double[][] vs, double[] weights) {
-    if (vs.length != weights.length) {
-      throw new IllegalArgumentException("Unconsistent samples and weights sizes: %d vs %d".formatted(
-          vs.length,
-          weights.length
-      ));
-    }
-    if (Arrays.stream(vs).map(v -> v.length).distinct().count() > 1) {
-      throw new IllegalStateException(String.format(
-          "Vector sizes not consistent: found different sizes %s",
-          Arrays.stream(vs).map(v -> v.length).distinct().toList()
-      ));
-    }
-    int l = vs[0].length;
-    final double[] sums = new double[l];
-    IntStream.range(0, vs.length)
-        .forEach(i -> IntStream.range(0, l)
-            .forEach(j -> sums[j] = sums[j] + vs[i][j] * weights[i])
-        );
-    return sums;
-  }
-
-  public static double[] meanArray(Collection<double[]> vs) {
-    if (vs.stream().map(v -> v.length).distinct().count() > 1) {
-      throw new IllegalStateException(String.format(
-          "Vector sizes not consistent: found different sizes %s",
-          vs.stream().map(v -> v.length).distinct().toList()
-      ));
-    }
-    int l = vs.iterator().next().length;
-    final double[] sum = new double[l];
-    vs.forEach(v -> IntStream.range(0, l).forEach(j -> sum[j] = sum[j] + v[j]));
-    return mult(sum, 1d / (double) vs.size());
-  }
-
   public static double[] buildArray(int l, DoubleSupplier s) {
     return IntStream.range(0, l)
         .mapToDouble(i -> s.getAsDouble())
@@ -281,6 +43,156 @@ public class VectorUtils {
         .toList();
   }
 
+  public static void checkLengths(List<Double> v1, List<Double> v2) {
+    if (v1.size() != v2.size()) {
+      throw new IllegalArgumentException("Wrong arg lengths: %d and %d".formatted(v1.size(), v2.size()));
+    }
+  }
+
+  public static void checkLengths(double[] v1, double[] v2) {
+    if (v1.length != v2.length) {
+      throw new IllegalArgumentException("Wrong arg lengths: %d and %d".formatted(v1.length, v2.length));
+    }
+  }
+
+  public static void checkLengthsArray(Collection<double[]> vs) {
+    if (vs.stream().map(v -> v.length).distinct().count() > 1) {
+      throw new IllegalStateException(String.format(
+          "Vector sizes not consistent: found different sizes %s",
+          vs.stream().map(v -> v.length).distinct().toList()
+      ));
+    }
+  }
+
+  public static void checkLengthsArray(double[][] vs) {
+    if (Arrays.stream(vs).map(v -> v.length).distinct().count() > 1) {
+      throw new IllegalStateException(String.format(
+          "Vector sizes not consistent: found different sizes %s",
+          Arrays.stream(vs).map(v -> v.length).distinct().toList()
+      ));
+    }
+  }
+
+  public static void checkLengthsList(Collection<List<Double>> vs) {
+    if (vs.stream().map(List::size).distinct().count() > 1) {
+      throw new IllegalStateException(String.format(
+          "Vector sizes not consistent: found different sizes %s",
+          vs.stream().map(List::size).distinct().toList()
+      ));
+    }
+  }
+
+  public static double[] diff(double[] v1, double[] v2) {
+    checkLengths(v1,v2);
+    double[] outV = new double[v1.length];
+    for (int i = 0; i < outV.length; i++) {
+      outV[i] = v1[i] - v2[i];
+    }
+    return outV;
+  }
+
+  public static double[] diff(double[] v1, List<Double> v2) {
+    return diff(v1, unboxed(v2));
+  }
+
+  public static List<Double> diff(List<Double> v1, List<Double> v2) {
+    checkLengths(v1,v2);
+    return IntStream.range(0, v1.size())
+        .mapToObj(i -> v1.get(i) - v2.get(i))
+        .toList();
+  }
+
+  public static List<Double> diff(List<Double> v1, double[] v2) {
+    return diff(v1, boxed(v2));
+  }
+
+  public static double[] div(double[] v1, double[] v2) {
+    checkLengths(v1,v2);
+    double[] outV = new double[v1.length];
+    for (int i = 0; i < outV.length; i++) {
+      outV[i] = v1[i] / v2[i];
+    }
+    return outV;
+  }
+
+  public static double[] div(double[] v1, List<Double> v2) {
+    return div(v1, unboxed(v2));
+  }
+
+  public static List<Double> div(List<Double> v1, List<Double> v2) {
+    checkLengths(v1,v2);
+    return IntStream.range(0, v1.size())
+        .mapToObj(i -> v1.get(i) / v2.get(i))
+        .toList();
+  }
+
+  public static List<Double> div(List<Double> v1, double[] v2) {
+    return div(v1, boxed(v2));
+  }
+
+  public static double[] meanArray(Collection<double[]> vs) {
+    checkLengthsArray(vs);
+    int l = vs.iterator().next().length;
+    final double[] sum = new double[l];
+    vs.forEach(v -> IntStream.range(0, l).forEach(j -> sum[j] = sum[j] + v[j]));
+    return mult(sum, 1d / (double) vs.size());
+  }
+
+  public static List<Double> meanList(Collection<List<Double>> vs) {
+    checkLengthsList(vs);
+    int l = vs.iterator().next().size();
+    final double[] sums = new double[l];
+    vs.forEach(v -> IntStream.range(0, l).forEach(j -> sums[j] = sums[j] + v.get(j)));
+    return Arrays.stream(sums)
+        .map(v -> v / (double) vs.size())
+        .boxed()
+        .toList();
+  }
+
+  public static double[] mult(double[] v1, double[] v2) {
+    checkLengths(v1,v2);
+    double[] outV = new double[v1.length];
+    for (int i = 0; i < outV.length; i++) {
+      outV[i] = v1[i] * v2[i];
+    }
+    return outV;
+  }
+
+  public static double[] mult(double[] v, double a) {
+    double[] outV = new double[v.length];
+    for (int i = 0; i < outV.length; i++) {
+      outV[i] = v[i] * a;
+    }
+    return outV;
+  }
+
+  public static double[] mult(double[] v1, List<Double> v2) {
+    return mult(v1, unboxed(v2));
+  }
+
+  public static List<Double> mult(List<Double> v1, List<Double> v2) {
+    checkLengths(v1,v2);
+    return IntStream.range(0, v1.size())
+        .mapToObj(i -> v1.get(i) * v2.get(i))
+        .toList();
+  }
+
+  public static List<Double> mult(List<Double> v, double a) {
+    return v.stream().map(d -> d * a).toList();
+  }
+
+  public static List<Double> mult(List<Double> v1, double[] v2) {
+    return mult(v1, boxed(v2));
+  }
+
+  public static double norm(List<Double> v, double n) {
+    return Math.pow(v.stream().mapToDouble(d -> Math.pow(d, n)).sum(), 1d / n);
+  }
+
+  public static double norm(double[] v, double n) {
+    return Math.pow(Arrays.stream(v).map(d -> Math.pow(d, n)).sum(), 1d / n);
+  }
+
   public static double[] sqrt(double[] v) {
     double[] outV = new double[v.length];
     for (int i = 0; i < outV.length; i++) {
@@ -293,12 +205,97 @@ public class VectorUtils {
     return v.stream().map(Math::sqrt).toList();
   }
 
-  public static double norm(List<Double> v, double n) {
-    return Math.pow(v.stream().mapToDouble(d -> Math.pow(d, n)).sum(), 1d / n);
+  public static double[] sum(double[] v1, double[] v2) {
+    checkLengths(v1,v2);
+    double[] outV = new double[v1.length];
+    for (int i = 0; i < outV.length; i++) {
+      outV[i] = v1[i] + v2[i];
+    }
+    return outV;
   }
 
-  public static double norm(double[] v, double n) {
-    return Math.pow(Arrays.stream(v).map(d -> Math.pow(d, n)).sum(), 1d / n);
+  public static double[] sum(double[] v, double a) {
+    double[] outV = new double[v.length];
+    for (int i = 0; i < outV.length; i++) {
+      outV[i] = v[i] + a;
+    }
+    return outV;
+  }
+
+  public static double[] sum(double[] v1, List<Double> v2) {
+    return sum(v1, unboxed(v2));
+  }
+
+  public static List<Double> sum(List<Double> v1, List<Double> v2) {
+    checkLengths(v1,v2);
+    return IntStream.range(0, v1.size())
+        .mapToObj(i -> v1.get(i) + v2.get(i))
+        .toList();
+  }
+
+  public static List<Double> sum(List<Double> v, double a) {
+    return v.stream().map(d -> d + a).toList();
+  }
+
+  public static List<Double> sum(List<Double> v1, double[] v2) {
+    return sum(v1, boxed(v2));
+  }
+
+  public static double[] unboxed(List<Double> v) {
+    return v.stream().mapToDouble(d -> d).toArray();
+  }
+
+  public static double[] weightedMeanArray(List<double[]> vs, double[] weights) {
+    if (vs.size() != weights.length) {
+      throw new IllegalArgumentException("Unconsistent samples and weights sizes: %d vs %d".formatted(
+          vs.size(),
+          weights.length
+      ));
+    }
+    checkLengthsArray(vs);
+    int l = vs.iterator().next().length;
+    final double[] sums = new double[l];
+    IntStream.range(0, vs.size())
+        .forEach(i -> IntStream.range(0, l)
+            .forEach(j -> sums[j] = sums[j] + vs.get(i)[j] * weights[i])
+        );
+    return sums;
+  }
+
+  public static double[] weightedMeanArray(double[][] vs, double[] weights) {
+    if (vs.length != weights.length) {
+      throw new IllegalArgumentException("Unconsistent samples and weights sizes: %d vs %d".formatted(
+          vs.length,
+          weights.length
+      ));
+    }
+    checkLengthsArray(vs);
+    int l = vs[0].length;
+    final double[] sums = new double[l];
+    IntStream.range(0, vs.length)
+        .forEach(i -> IntStream.range(0, l)
+            .forEach(j -> sums[j] = sums[j] + vs[i][j] * weights[i])
+        );
+    return sums;
+  }
+
+  public static List<Double> weightedMeanList(List<List<Double>> vs, List<Double> weights) {
+    if (vs.size() != weights.size()) {
+      throw new IllegalArgumentException("Unconsistent samples and weights sizes: %d vs %d".formatted(
+          vs.size(),
+          weights.size()
+      ));
+    }
+    checkLengthsList(vs);
+    int l = vs.iterator().next().size();
+    final double[] sums = new double[l];
+    IntStream.range(0, vs.size())
+        .forEach(i -> IntStream.range(0, l)
+            .forEach(j -> sums[j] = sums[j] + vs.get(i).get(j) * weights.get(i))
+        );
+    return Arrays.stream(sums)
+        .boxed()
+        .toList();
   }
 
 }
