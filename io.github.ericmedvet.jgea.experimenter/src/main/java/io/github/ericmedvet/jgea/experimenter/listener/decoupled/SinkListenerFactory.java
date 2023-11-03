@@ -17,17 +17,19 @@ import java.util.stream.Stream;
 /**
  * @author "Eric Medvet" on 2023/11/03 for jgea
  */
-public class ListenerFactorySink<G, S, Q> implements ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> {
+public class SinkListenerFactory<G, S, Q> implements ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> {
   private final List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions;
   private final List<NamedFunction<? super Run<?, G, S, Q>, ?>> runFunctions;
   private final Experiment experiment;
   private final Sink sink;
 
-  public ListenerFactorySink(
+  public SinkListenerFactory(
       List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
       List<NamedFunction<? super Run<?, G, S, Q>, ?>> runFunctions,
       Experiment experiment,
-      Sink sink) {
+      Sink sink
+  ) {
+    // TODO add log entries forwarding
     this.stateFunctions = stateFunctions;
     this.runFunctions = runFunctions;
     this.experiment = experiment;
@@ -36,7 +38,8 @@ public class ListenerFactorySink<G, S, Q> implements ListenerFactory<POCPopulati
         NetUtils.getMachineName(),
         NetUtils.getNumberOfProcessors(),
         NetUtils.getCPULoad(),
-        LocalDateTime.now()));
+        LocalDateTime.now()
+    ));
     sink.push(
         experimentKey(),
         new ExperimentInfo(
@@ -44,7 +47,9 @@ public class ListenerFactorySink<G, S, Q> implements ListenerFactory<POCPopulati
             Stream.of(stateFunctions, runFunctions)
                 .flatMap(List::stream)
                 .collect(Collectors.toMap(NamedFunction::getName, NamedFunction::getFormat)),
-            LocalDateTime.now()));
+            LocalDateTime.now()
+        )
+    );
   }
 
   @Override
@@ -52,13 +57,14 @@ public class ListenerFactorySink<G, S, Q> implements ListenerFactory<POCPopulati
     RunKey runKey = runKey(run);
     LocalDateTime startDateTime = LocalDateTime.now();
     sink.push(runKey, new RunInfo(run.index(), startDateTime, Progress.NA, false));
-    runFunctions.forEach(f -> sink.push(new DataItemKey(runKey, f.getName()), new DataItemInfo(f.apply(run))));
+    sink.push(runFunctions.stream()
+        .collect(Collectors.toMap(f -> new DataItemKey(runKey, f.getName()), f -> new DataItemInfo(f.apply(run)))));
     return new Listener<>() {
       @Override
       public void listen(POCPopulationState<?, G, S, Q> state) {
         sink.push(runKey, new RunInfo(run.index(), startDateTime, state.progress(), false));
-        stateFunctions.forEach(
-            f -> sink.push(new DataItemKey(runKey, f.getName()), new DataItemInfo(f.apply(state))));
+        sink.push(stateFunctions.stream()
+            .collect(Collectors.toMap(f -> new DataItemKey(runKey, f.getName()), f -> new DataItemInfo(f.apply(state)))));
       }
 
       @Override
