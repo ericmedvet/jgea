@@ -40,7 +40,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.stream.IntStream;
+import java.util.stream.Collectors;
 
 public class DrawUtils {
 
@@ -192,7 +192,7 @@ public class DrawUtils {
   public static void drawPlot(
       TextGraphics tg,
       Rectangle r,
-      Table<? extends Number> data,
+      Table<Integer, String, ? extends Number> data,
       TextColor fgColor,
       TextColor labelsColor,
       TextColor bgColor,
@@ -210,8 +210,12 @@ public class DrawUtils {
       return;
     }
     // get data
-    double[] xs = data.column(0).stream().mapToDouble(Number::doubleValue).toArray();
-    double[] ys = data.column(1).stream().mapToDouble(Number::doubleValue).toArray();
+    double[] xs = data.columnValues(data.colIndexes().get(0)).stream()
+        .mapToDouble(Number::doubleValue)
+        .toArray();
+    double[] ys = data.columnValues(data.colIndexes().get(0)).stream()
+        .mapToDouble(Number::doubleValue)
+        .toArray();
     RealFunction f = RealFunction.from(xs, ys);
     // compute ranges
     double fXMin = Arrays.stream(xs).min().orElse(0);
@@ -253,30 +257,35 @@ public class DrawUtils {
     }
   }
 
-  public static void drawTable(
-      TextGraphics tg, Rectangle r, Table<Cell> t, TextColor labelColor, TextColor cellColor) {
+  public static <R> void drawTable(
+      TextGraphics tg, Rectangle r, Table<R, String, Cell> t, TextColor labelColor, TextColor cellColor) {
     clear(tg, r);
     // compute columns width
-    int[] colWidths = IntStream.range(0, t.nColumns())
-        .map(c -> Math.max(
-            t.names().get(c).length(),
-            t.column(c).stream().mapToInt(Cell::length).max().orElse(0)))
-        .toArray();
+    Map<String, Integer> widths = t.colIndexes().stream()
+        .collect(Collectors.toMap(
+            ci -> ci,
+            ci -> Math.max(
+                ci.length(),
+                t.rowIndexes().stream()
+                    .mapToInt(ri -> t.get(ri, ci).length())
+                    .max()
+                    .orElse(0))));
     // draw header
     tg.setForegroundColor(labelColor);
     int x = 0;
-    for (int i = 0; i < colWidths.length; i = i + 1) {
-      DrawUtils.clipPut(tg, r, x, 0, t.names().get(i));
-      x = x + colWidths[i] + 1;
+    for (String ci : t.colIndexes()) {
+      DrawUtils.clipPut(tg, r, x, 0, ci);
+      x = x + widths.get(ci) + 1;
     }
     // draw data
     int y = 1;
-    x = 0;
-    for (int cI = 0; cI < t.nColumns(); cI = cI + 1) {
-      for (int rI = 0; rI < t.nRows(); rI = rI + 1) {
-        drawCell(tg, r, x, y + rI, t.get(cI, rI), cellColor);
+    for (R ri : t.rowIndexes()) {
+      x = 0;
+      for (String ci : t.colIndexes()) {
+        drawCell(tg, r, x, y, t.get(ri, ci), cellColor);
+        x = x + widths.get(ci) + 1;
       }
-      x = x + colWidths[cI] + 1;
+      y = y + 1;
     }
   }
 

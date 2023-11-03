@@ -5,8 +5,4 @@ import java.time.LocalDateTime;
 /**
  * @author "Eric Medvet" on 2023/11/03 for jgea
  */
-public
-record MachineInfo(
-    String machineName, int numberOfProcessors, double cpuLoad, String processName, String username, long usedMemory,
-    long maxMemory, LocalDateTime localDateTime
-) {}
+public record MachineInfo(String machineName, int numberOfProcessors, double cpuLoad, LocalDateTime localDateTime) {}

@@ -2,32 +2,30 @@ package io.github.ericmedvet.jgea.experimenter.listener.decoupled;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.List;
+import java.util.SortedMap;
 
 /**
  * @author "Eric Medvet" on 2023/11/03 for jgea
  */
 public interface Source {
 
-  Collection<DataItemKey> dataItemKeys(MachineKey machineKey, ExperimentKey experimentKey, RunKey runKey);
+  Collection<DataItemKey> dataItemKeys(RunKey runKey);
 
-  Collection<ExperimentKey> experimentKeys(MachineKey machineKey);
+  Collection<ExperimentKey> experimentKeys(ProcessKey processKey);
+
+  SortedMap<LocalDateTime, MachineInfo> pop(MachineKey machineKey, LocalDateTime from);
+
+  SortedMap<LocalDateTime, ProcessInfo> pop(ProcessKey experimentKey, LocalDateTime from);
 
   Collection<MachineKey> machineKeys();
 
-  List<MachineInfo> pop(MachineKey machineKey, LocalDateTime from);
+  SortedMap<LocalDateTime, ExperimentInfo> pop(ExperimentKey experimentKey, LocalDateTime from);
 
-  List<ExperimentInfo> pop(MachineKey machineKey, ExperimentKey experimentKey, LocalDateTime from);
+  SortedMap<LocalDateTime, RunInfo> pop(RunKey runKey, LocalDateTime from);
 
-  List<RunKey> pop(MachineKey machineKey, ExperimentKey experimentKey, RunKey runKey, LocalDateTime from);
+  SortedMap<LocalDateTime, DataItemInfo> pop(DataItemKey dataItemKey, LocalDateTime from);
 
-  List<DataItemInfo> pop(
-      MachineKey machineKey,
-      ExperimentKey experimentKey,
-      RunKey runKey,
-      DataItemKey dataItemKey,
-      LocalDateTime from
-  );
+  Collection<ProcessKey> processKeys(MachineKey machineKey);
 
-  Collection<RunKey> runKeys(MachineKey machineKey, ExperimentKey experimentKey);
+  Collection<RunKey> runKeys(ExperimentKey experimentKey);
 }

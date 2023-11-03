@@ -19,121 +19,185 @@
  */
 package io.github.ericmedvet.jgea.core.util;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public interface Table<T> {
+public interface Table<R, C, T> {
 
-  void addColumn(String name, List<T> values);
+  void addColumn(C columnIndex, Map<R, T> values);
 
-  void addRow(List<T> values);
+  void addRow(R rowIndex, Map<C, T> values);
 
-  boolean removeRow(List<T> values);
+  List<C> colIndexes();
 
-  void removeRow(int y);
+  T get(R rowIndex, C columnIndex);
 
-  void clear();
+  void removeColumn(C columnIndex);
 
-  T get(int x, int y);
+  void removeRow(R rowIndex);
 
-  int nColumns();
+  List<R> rowIndexes();
 
-  int nRows();
+  void set(R rowIndex, C columnIndex, T t);
 
-  List<String> names();
-
-  void set(int x, int y, T t);
-
-  private static void checkIndex(String name, int i, int maxExcluded) {
-    if (i < 0 || i >= maxExcluded) {
-      throw new IndexOutOfBoundsException(
-          String.format("Invalid %s index: %d not in [0,%d]", name, i, maxExcluded));
-    }
+  default void clear() {
+    rowIndexes().forEach(this::removeRow);
   }
 
-  default void checkIndexes(int x, int y) {
-    checkIndex("column", x, nColumns());
-    checkIndex("column", y, nRows());
-  }
-
-  default List<T> column(String name) {
-    int x = names().indexOf(name);
-    if (x < 0) {
-      throw new IndexOutOfBoundsException(String.format("No column %s in the table", name));
-    }
-    return column(x);
-  }
-
-  default List<T> column(int x) {
-    checkIndex("x", x, nColumns());
-    return IntStream.range(0, nRows()).mapToObj(y -> get(x, y)).toList();
-  }
-
-  default List<Pair<String, List<T>>> columns() {
-    return IntStream.range(0, nColumns())
-        .mapToObj(x -> Pair.of(names().get(x), column(x)))
-        .toList();
-  }
-
-  default <K> Table<K> map(Function<T, K> function) {
-    Table<K> table = new ArrayTable<>(names());
-    for (int y = 0; y < nRows(); y++) {
-      table.addRow(row(y).stream().map(function).toList());
-    }
+  default Table<R, C, T> colSlide(int n, Function<List<T>, T> aggregator) {
+    Table<R, C, T> table = new HashMapTable<>();
+    rowIndexes().forEach(ri -> IntStream.range(n, colIndexes().size()).forEach(i -> {
+      List<T> ts = IntStream.range(i - n, i)
+          .mapToObj(j -> get(ri, colIndexes().get(j)))
+          .toList();
+      table.set(ri, colIndexes().get(i - 1), aggregator.apply(ts));
+    }));
     return table;
   }
 
-  default Table<T> filter(Predicate<List<T>> rowPredicate) {
-    Table<T> table = new ArrayTable<>(names());
-    rows().stream()
-        .map(r -> r.stream().map(Pair::second).toList())
-        .filter(rowPredicate)
-        .forEach(table::addRow);
-    return table;
+  default Map<R, T> column(C columnIndex) {
+    return rowIndexes().stream().collect(Collectors.toMap(ri -> ri, ri -> get(ri, columnIndex)));
   }
 
-  default String prettyPrint(String format) {
-    int[] widths = IntStream.range(0, nColumns())
-        .map(x -> Math.max(
-            names().get(x).length(),
-            IntStream.range(0, nRows())
-                .map(y -> String.format(format, get(x, y)).length())
-                .max()
-                .orElse(1)))
-        .toArray();
+  default List<T> columnValues(C columnIndex) {
+    Map<R, T> column = column(columnIndex);
+    return rowIndexes().stream().map(column::get).toList();
+  }
+
+  default T get(int x, int y) {
+    R ri = rowIndexes().get(y);
+    C ci = colIndexes().get(x);
+    if (ri == null || ci == null) {
+      throw new IndexOutOfBoundsException(String.format(
+          "Invalid %d,%d coords in a %d,%d table",
+          x, y, colIndexes().size(), rowIndexes().size()));
+    }
+    return get(ri, ci);
+  }
+
+  default int nColumns() {
+    return colIndexes().size();
+  }
+
+  default int nRows() {
+    return rowIndexes().size();
+  }
+
+  default String prettyPrint(String rFormat, String cFormat, String tFormat) {
+    String colSep = " ";
+    Map<C, Integer> widths = colIndexes().stream()
+        .collect(Collectors.toMap(
+            ci -> ci,
+            ci -> Math.max(
+                cFormat.formatted(ci).length(),
+                rowIndexes().stream()
+                    .mapToInt(ri ->
+                        tFormat.formatted(get(ri, ci)).length())
+                    .max()
+                    .orElse(0))));
+    int riWidth = rowIndexes().stream()
+        .mapToInt(ri -> rFormat.formatted(ri).length())
+        .max()
+        .orElse(0);
     StringBuilder sb = new StringBuilder();
     // print header
-    sb.append(IntStream.range(0, nColumns())
-        .mapToObj(x -> String.format("%" + widths[x] + "." + widths[x] + "s", names().get(x)))
-        .collect(Collectors.joining(" ")));
+    sb.append(StringUtils.justify("", riWidth));
+    sb.append(riWidth > 0 ? colSep : "");
+    sb.append(colIndexes().stream()
+        .map(ci -> StringUtils.justify(cFormat.formatted(ci), widths.get(ci)))
+        .collect(Collectors.joining(colSep)));
     sb.append("\n");
-    for (int y = 0; y < nRows(); y++) {
-      int finalY = y;
-      sb.append(IntStream.range(0, nColumns())
-          .mapToObj(x -> String.format(
-              "%" + widths[x] + "." + widths[x] + "s", String.format(format, get(x, finalY))))
-          .collect(Collectors.joining(" ")));
-      if (y < nRows() - 1) {
-        sb.append("\n");
-      }
-    }
+    // print rows
+    rowIndexes().forEach(ri -> {
+      sb.append(StringUtils.justify(rFormat.formatted(ri), riWidth));
+      sb.append(riWidth > 0 ? colSep : "");
+      sb.append(colIndexes().stream()
+          .map(ci -> StringUtils.justify(tFormat.formatted(get(ri, ci)), widths.get(ci)))
+          .collect(Collectors.joining(colSep)));
+      sb.append("\n");
+    });
     return sb.toString();
   }
 
-  default List<T> row(int y) {
-    checkIndex("y", y, nRows());
-    return IntStream.range(0, nColumns()).mapToObj(x -> get(x, y)).toList();
+  default Map<C, T> row(R rowIndex) {
+    return colIndexes().stream().collect(Collectors.toMap(ci -> ci, ci -> get(rowIndex, ci)));
   }
 
-  default List<List<Pair<String, T>>> rows() {
-    int nColumns = nColumns();
-    return IntStream.range(0, nRows())
-        .mapToObj(y -> IntStream.range(0, nColumns)
-            .mapToObj(x -> Pair.of(names().get(x), get(x, y)))
-            .toList())
-        .toList();
+  default Table<R, C, T> rowSlide(int n, Function<List<T>, T> aggregator) {
+    Table<R, C, T> table = new HashMapTable<>();
+    colIndexes().forEach(ci -> IntStream.range(n, rowIndexes().size()).forEach(i -> {
+      List<T> ts = IntStream.range(i - n, i)
+          .mapToObj(j -> get(rowIndexes().get(j), ci))
+          .toList();
+      table.set(rowIndexes().get(i - 1), ci, aggregator.apply(ts));
+    }));
+    return table;
+  }
+
+  default List<T> rowValues(R rowIndex) {
+    Map<C, T> row = row(rowIndex);
+    return colIndexes().stream().map(row::get).toList();
+  }
+
+  default void set(int x, int y, T t) {
+    R ri = rowIndexes().get(y);
+    C ci = colIndexes().get(x);
+    if (ri == null || ci == null) {
+      throw new IndexOutOfBoundsException(String.format(
+          "Invalid %d,%d coords in a %d,%d table",
+          x, y, colIndexes().size(), rowIndexes().size()));
+    }
+    set(ri, ci, t);
+  }
+
+  default Table<R, C, T> sorted(C c, Comparator<T> comparator) {
+    Table<R, C, T> thisTable = this;
+    return new Table<R, C, T>() {
+      @Override
+      public List<R> rowIndexes() {
+        return thisTable.rowIndexes().stream()
+            .sorted((ri1, ri2) -> comparator.compare(get(ri1, c), get(ri2, c)))
+            .toList();
+      }
+
+      @Override
+      public List<C> colIndexes() {
+        return thisTable.colIndexes();
+      }
+
+      @Override
+      public void addRow(R rowIndex, Map<C, T> values) {
+        thisTable.addRow(rowIndex, values);
+      }
+
+      @Override
+      public void addColumn(C columnIndex, Map<R, T> values) {
+        thisTable.addColumn(columnIndex, values);
+      }
+
+      @Override
+      public void removeRow(R rowIndex) {
+        thisTable.removeRow(rowIndex);
+      }
+
+      @Override
+      public void removeColumn(C columnIndex) {
+        thisTable.removeColumn(columnIndex);
+      }
+
+      @Override
+      public T get(R rowIndex, C columnIndex) {
+        return thisTable.get(rowIndex, columnIndex);
+      }
+
+      @Override
+      public void set(R rowIndex, C columnIndex, T t) {
+        thisTable.set(rowIndex, columnIndex, t);
+      }
+    };
   }
 }

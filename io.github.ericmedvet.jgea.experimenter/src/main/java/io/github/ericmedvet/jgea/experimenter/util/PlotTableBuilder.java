@@ -17,12 +17,14 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jgea.core.listener;
+package io.github.ericmedvet.jgea.experimenter.util;
 
-import io.github.ericmedvet.jgea.core.util.Table;
+import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
+import io.github.ericmedvet.jgea.core.listener.NamedFunction;
+
 import java.util.List;
 
-public interface PlotTableBuilder<E> extends AccumulatorFactory<E, Table<Number>, Object> {
+public interface PlotTableBuilder<E> extends AccumulatorFactory<E, XYPlotTable, Object> {
 
   NamedFunction<? super E, ? extends Number> xFunction();
 

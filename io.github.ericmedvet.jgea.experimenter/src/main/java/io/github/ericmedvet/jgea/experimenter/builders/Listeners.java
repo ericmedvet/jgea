@@ -30,7 +30,7 @@ import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.Utils;
 import io.github.ericmedvet.jgea.experimenter.listener.net.NetListenerClient;
 import io.github.ericmedvet.jgea.experimenter.listener.telegram.TelegramUpdater;
-import io.github.ericmedvet.jgea.experimenter.listener.tui.TerminalMonitor;
+import io.github.ericmedvet.jgea.experimenter.util.PlotTableBuilder;
 import io.github.ericmedvet.jnb.core.*;
 
 import java.io.*;
@@ -396,45 +396,47 @@ public class Listeners {
         onlyLast);
   }
 
+  /*
   @SuppressWarnings("unused")
   public static <G, S, Q>
-      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
-          tui(
-              @Param(
-                      value = "defaultFunctions",
-                      dNPMs = {
-                        "ea.nf.iterations()",
-                        "ea.nf.evals()",
-                        "ea.nf.births()",
-                        "ea.nf.elapsed()",
-                        "ea.nf.size(f=ea.nf.all())",
-                        "ea.nf.size(f=ea.nf.firsts())",
-                        "ea.nf.size(f=ea.nf.lasts())",
-                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.genotype();collection=ea.nf.all()))",
-                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.solution();collection=ea.nf.all()))",
-                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.fitness();collection=ea.nf.all()))"
-                      })
-                  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>
-                      defaultStateFunctions,
-              @Param(value = "functions")
-                  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
-              @Param("runKeys") List<String> runKeys,
-              @Param(
-                      value = "defaultPlots",
-                      dNPMs = {"ea.plot.elapsed()"})
-                  List<PlotTableBuilder<? super POCPopulationState<?, G, S, Q>>>
-                      defaultPlotTableBuilders,
-              @Param("plots")
-                  List<PlotTableBuilder<? super POCPopulationState<?, G, S, Q>>> plotTableBuilders,
-              @Param(value = "deferred") boolean deferred,
-              @Param(value = "onlyLast") boolean onlyLast) {
-    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        new TerminalMonitor<>(
-            (List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>)
-                Misc.concat(List.of(defaultStateFunctions, stateFunctions)),
-            buildRunNamedFunctions(runKeys, experiment),
-            Misc.concat(List.of(defaultPlotTableBuilders, plotTableBuilders))),
-        deferred ? executorService : null,
-        onlyLast);
+  BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
+  tui(
+  @Param(
+  value = "defaultFunctions",
+  dNPMs = {
+  "ea.nf.iterations()",
+  "ea.nf.evals()",
+  "ea.nf.births()",
+  "ea.nf.elapsed()",
+  "ea.nf.size(f=ea.nf.all())",
+  "ea.nf.size(f=ea.nf.firsts())",
+  "ea.nf.size(f=ea.nf.lasts())",
+  "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.genotype();collection=ea.nf.all()))",
+  "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.solution();collection=ea.nf.all()))",
+  "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.fitness();collection=ea.nf.all()))"
+  })
+  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>
+  defaultStateFunctions,
+  @Param(value = "functions")
+  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
+  @Param("runKeys") List<String> runKeys,
+  @Param(
+  value = "defaultPlots",
+  dNPMs = {"ea.plot.elapsed()"})
+  List<PlotTableBuilder<? super POCPopulationState<?, G, S, Q>>>
+  defaultPlotTableBuilders,
+  @Param("plots")
+  List<PlotTableBuilder<? super POCPopulationState<?, G, S, Q>>> plotTableBuilders,
+  @Param(value = "deferred") boolean deferred,
+  @Param(value = "onlyLast") boolean onlyLast) {
+  return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
+  new TerminalMonitor<>(
+  (List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>)
+  Misc.concat(List.of(defaultStateFunctions, stateFunctions)),
+  buildRunNamedFunctions(runKeys, experiment),
+  Misc.concat(List.of(defaultPlotTableBuilders, plotTableBuilders))),
+  deferred ? executorService : null,
+  onlyLast);
   }
+  */
 }

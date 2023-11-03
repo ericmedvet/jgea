@@ -30,13 +30,11 @@ import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
-import io.github.ericmedvet.jgea.core.util.*;
+import io.github.ericmedvet.jgea.core.util.Progress;
+import io.github.ericmedvet.jgea.core.util.StringUtils;
+import io.github.ericmedvet.jgea.core.util.TextPlotter;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.ListLogHandler;
-import io.github.ericmedvet.jgea.experimenter.listener.tui.TerminalMonitor;
-import io.github.ericmedvet.jgea.experimenter.listener.tui.table.Cell;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.table.ColoredStringCell;
-import io.github.ericmedvet.jgea.experimenter.listener.tui.table.CompositeCell;
-import io.github.ericmedvet.jgea.experimenter.listener.tui.table.StringCell;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.DrawUtils;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.Point;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.Rectangle;
@@ -58,6 +56,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
@@ -65,6 +64,11 @@ import java.util.stream.Stream;
 
 public class NetListenerServer extends ListLogHandler implements Runnable {
 
+  public static final Map<Level, TextColor> LEVEL_COLORS = Map.ofEntries(
+      Map.entry(Level.SEVERE, TextColor.Factory.fromString("#EE3E38")),
+      Map.entry(Level.WARNING, TextColor.Factory.fromString("#FBA465")),
+      Map.entry(Level.INFO, TextColor.Factory.fromString("#D8E46B")),
+      Map.entry(Level.CONFIG, TextColor.Factory.fromString("#6D8700")));
   public static final String EMPTY_CELL_CONTENT = "-";
   private static final Logger L = Logger.getLogger(NetListenerServer.class.getName());
   private static final Configuration DEFAULT_CONFIGURATION =
@@ -679,134 +683,136 @@ public class NetListenerServer extends ListLogHandler implements Runnable {
           tg,
           logsR.inner(1),
           getLogRecords(),
-          TerminalMonitor.LEVEL_COLORS,
+          LEVEL_COLORS,
           DATA_COLOR,
           MAIN_DATA_COLOR,
           LEVEL_FORMAT,
           DATETIME_FORMAT);
     }
     // compute and show machines
+    /*
     Table<Cell> machinesTable = new ArrayTable<>(List.of("", "", "Progress", "Machine", "Cores", "Load"));
     forEach(
-        machinesData,
-        (i, mk, v) -> machinesTable.addRow(List.of(
-            new ColoredStringCell(
-                STATUS_STRING, machinesStatus.get(mk).status().getColor()),
-            new StringCell("M%02d".formatted(i)),
-            new StringCell(
-                machinesProgress.containsKey(mk)
-                    ? progressPlot(machinesProgress.get(mk).lastProgress(), configuration.barLength)
-                    : EMPTY_CELL_CONTENT),
-            new StringCell(mk.machineName()),
-            new StringCell(last(v, MachineInfo::numberOfProcessors, "%2d")),
-            new CompositeCell(List.of(
-                new StringCell(last(v, MachineInfo::cpuLoad, "%5.2f")),
-                trend(v, MachineInfo::cpuLoad).cell(),
-                new StringCell(areaPlot(
-                    v,
-                    MachineInfo::cpuLoad,
-                    v.lastKey() - configuration.machineHistorySeconds * 1000d,
-                    configuration.areaPlotLength)))))),
-        false);
+    machinesData,
+    (i, mk, v) -> machinesTable.addRow(List.of(
+    new ColoredStringCell(
+    STATUS_STRING, machinesStatus.get(mk).status().getColor()),
+    new StringCell("M%02d".formatted(i)),
+    new StringCell(
+    machinesProgress.containsKey(mk)
+    ? progressPlot(machinesProgress.get(mk).lastProgress(), configuration.barLength)
+    : EMPTY_CELL_CONTENT),
+    new StringCell(mk.machineName()),
+    new StringCell(last(v, MachineInfo::numberOfProcessors, "%2d")),
+    new CompositeCell(List.of(
+    new StringCell(last(v, MachineInfo::cpuLoad, "%5.2f")),
+    trend(v, MachineInfo::cpuLoad).cell(),
+    new StringCell(areaPlot(
+    v,
+    MachineInfo::cpuLoad,
+    v.lastKey() - configuration.machineHistorySeconds * 1000d,
+    configuration.areaPlotLength)))))),
+    false);
     DrawUtils.drawTable(tg, machinesR.inner(1), machinesTable, DATA_LABEL_COLOR, DATA_COLOR);
     // compute and show processes
     Table<Cell> processesTable = new ArrayTable<>(
-        List.of("", "", "ETA", "Progress", "Process", "Mac.", "User", "Used mem.", "Max mem."));
+    List.of("", "", "ETA", "Progress", "Process", "Mac.", "User", "Used mem.", "Max mem."));
     forEach(
-        processesData,
-        (i, pk, v) -> processesTable.addRow(List.of(
-            new ColoredStringCell(
-                STATUS_STRING, processesStatus.get(pk).status().getColor()),
-            new StringCell("P%02d".formatted(i)),
-            new StringCell(
-                processesProgress.containsKey(pk)
-                    ? eta(processesProgress.get(pk).eta())
-                    : EMPTY_CELL_CONTENT),
-            new StringCell(
-                processesProgress.containsKey(pk)
-                    ? progressPlot(
-                        processesProgress.get(pk).lastProgress(), configuration.barLength)
-                    : EMPTY_CELL_CONTENT),
-            new StringCell(pk.processName()),
-            new StringCell("M%02d"
-                .formatted(
-                    machinesData.keySet().stream().toList().indexOf(pk.machineKey()))),
-            new StringCell(last(v, pi -> pi.processInfo().username(), "%s")),
-            new CompositeCell(List.of(
-                new StringCell(last(v, pi -> pi.processInfo().usedMemory() / 1024 / 1024, "%5d")),
-                trend(v, pi -> pi.processInfo().usedMemory()).cell(),
-                new StringCell(areaPlot(
-                    v,
-                    pi -> pi.processInfo().usedMemory(),
-                    v.lastKey() - configuration.machineHistorySeconds * 1000d,
-                    configuration.areaPlotLength)))),
-            new CompositeCell(List.of(
-                new StringCell(last(v, pi -> pi.processInfo().maxMemory() / 1024 / 1024, "%5d")),
-                trend(v, pi -> pi.processInfo().maxMemory()).cell())))),
-        false);
+    processesData,
+    (i, pk, v) -> processesTable.addRow(List.of(
+    new ColoredStringCell(
+    STATUS_STRING, processesStatus.get(pk).status().getColor()),
+    new StringCell("P%02d".formatted(i)),
+    new StringCell(
+    processesProgress.containsKey(pk)
+    ? eta(processesProgress.get(pk).eta())
+    : EMPTY_CELL_CONTENT),
+    new StringCell(
+    processesProgress.containsKey(pk)
+    ? progressPlot(
+    processesProgress.get(pk).lastProgress(), configuration.barLength)
+    : EMPTY_CELL_CONTENT),
+    new StringCell(pk.processName()),
+    new StringCell("M%02d"
+    .formatted(
+    machinesData.keySet().stream().toList().indexOf(pk.machineKey()))),
+    new StringCell(last(v, pi -> pi.processInfo().username(), "%s")),
+    new CompositeCell(List.of(
+    new StringCell(last(v, pi -> pi.processInfo().usedMemory() / 1024 / 1024, "%5d")),
+    trend(v, pi -> pi.processInfo().usedMemory()).cell(),
+    new StringCell(areaPlot(
+    v,
+    pi -> pi.processInfo().usedMemory(),
+    v.lastKey() - configuration.machineHistorySeconds * 1000d,
+    configuration.areaPlotLength)))),
+    new CompositeCell(List.of(
+    new StringCell(last(v, pi -> pi.processInfo().maxMemory() / 1024 / 1024, "%5d")),
+    trend(v, pi -> pi.processInfo().maxMemory()).cell())))),
+    false);
     DrawUtils.drawTable(tg, processesR.inner(1), processesTable, DATA_LABEL_COLOR, DATA_COLOR);
     // compute and show runs
     Table<Cell> runsTable;
     List<String> columns = new ArrayList<>(List.of("", "", "ETA", "Progress", "Proc."));
     List<Update.DataItemKey> dataItemKeys = runsData.values().stream()
-        .map(Map::keySet)
-        .flatMap(Collection::stream)
-        .distinct()
-        .toList();
+    .map(Map::keySet)
+    .flatMap(Collection::stream)
+    .distinct()
+    .toList();
     dataItemKeys.forEach(dik -> columns.add(StringUtils.collapse(dik.name())));
     List<Update.PlotItemKey> plotItemKeys = runsPlots.values().stream()
-        .map(Map::keySet)
-        .flatMap(Collection::stream)
-        .distinct()
-        .toList();
+    .map(Map::keySet)
+    .flatMap(Collection::stream)
+    .distinct()
+    .toList();
     plotItemKeys.forEach(
-        pik -> columns.add(StringUtils.collapse(pik.xName()) + "/" + StringUtils.collapse(pik.yName())));
+    pik -> columns.add(StringUtils.collapse(pik.xName()) + "/" + StringUtils.collapse(pik.yName())));
     runsTable = new ArrayTable<>(columns);
     forEach(
-        runsData,
-        (i, rk, v) -> {
-          List<Cell> row = new ArrayList<>();
-          row.add(new ColoredStringCell(
-              STATUS_STRING,
-              (runsProgress.containsKey(rk)
-                      && runsProgress.get(rk).isRunning())
-                  ? TimeStatus.OK.getColor()
-                  : TimeStatus.MISSING.getColor()));
-          row.add(new StringCell("R%03d".formatted(rk.runIndex())));
-          row.add(new StringCell(
-              runsProgress.containsKey(rk)
-                  ? eta(runsProgress.get(rk).eta())
-                  : EMPTY_CELL_CONTENT));
-          row.add(new StringCell(
-              runsProgress.containsKey(rk)
-                  ? progressPlot(runsProgress.get(rk).lastProgress(), configuration.barLength)
-                  : EMPTY_CELL_CONTENT));
-          row.add(new StringCell("P%02d"
-              .formatted(processesData.keySet().stream().toList().indexOf(rk.processKey()))));
-          dataItemKeys.forEach(dik -> {
-            List<?> values = v.get(dik);
-            if (values != null && !values.isEmpty()) {
-              row.add(new StringCell(dik.format().formatted(values.get(values.size() - 1))));
-            } else {
-              row.add(new ColoredStringCell(EMPTY_CELL_CONTENT, MISSING_DATA_COLOR));
-            }
-          });
-          plotItemKeys.forEach(pik -> {
-            String s = "";
-            if (runsPlots.containsKey(rk)) {
-              List<Update.PlotPoint> ps = runsPlots.get(rk).get(pik);
-              if (ps != null) {
-                SortedMap<Double, Double> data = new TreeMap<>();
-                ps.forEach(p -> data.put(p.x(), p.y()));
-                s = TextPlotter.areaPlot(data, pik.minX(), pik.maxX(), configuration.areaPlotLength());
-              }
-            }
-            row.add(new StringCell(s));
-          });
-          runsTable.addRow(row);
-        },
-        true);
+    runsData,
+    (i, rk, v) -> {
+    List<Cell> row = new ArrayList<>();
+    row.add(new ColoredStringCell(
+    STATUS_STRING,
+    (runsProgress.containsKey(rk)
+    && runsProgress.get(rk).isRunning())
+    ? TimeStatus.OK.getColor()
+    : TimeStatus.MISSING.getColor()));
+    row.add(new StringCell("R%03d".formatted(rk.runIndex())));
+    row.add(new StringCell(
+    runsProgress.containsKey(rk)
+    ? eta(runsProgress.get(rk).eta())
+    : EMPTY_CELL_CONTENT));
+    row.add(new StringCell(
+    runsProgress.containsKey(rk)
+    ? progressPlot(runsProgress.get(rk).lastProgress(), configuration.barLength)
+    : EMPTY_CELL_CONTENT));
+    row.add(new StringCell("P%02d"
+    .formatted(processesData.keySet().stream().toList().indexOf(rk.processKey()))));
+    dataItemKeys.forEach(dik -> {
+    List<?> values = v.get(dik);
+    if (values != null && !values.isEmpty()) {
+    row.add(new StringCell(dik.format().formatted(values.get(values.size() - 1))));
+    } else {
+    row.add(new ColoredStringCell(EMPTY_CELL_CONTENT, MISSING_DATA_COLOR));
+    }
+    });
+    plotItemKeys.forEach(pik -> {
+    String s = "";
+    if (runsPlots.containsKey(rk)) {
+    List<Update.PlotPoint> ps = runsPlots.get(rk).get(pik);
+    if (ps != null) {
+    SortedMap<Double, Double> data = new TreeMap<>();
+    ps.forEach(p -> data.put(p.x(), p.y()));
+    s = TextPlotter.areaPlot(data, pik.minX(), pik.maxX(), configuration.areaPlotLength());
+    }
+    }
+    row.add(new StringCell(s));
+    });
+    runsTable.addRow(row);
+    },
+    true);
     DrawUtils.drawTable(tg, runsR.inner(1), runsTable, DATA_LABEL_COLOR, DATA_COLOR);
+    */
     // refresh
     try {
       screen.refresh();

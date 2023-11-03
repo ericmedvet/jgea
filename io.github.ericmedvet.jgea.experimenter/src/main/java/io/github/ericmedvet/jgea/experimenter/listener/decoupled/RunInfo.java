@@ -7,5 +7,4 @@ import java.time.LocalDateTime;
 /**
  * @author "Eric Medvet" on 2023/11/03 for jgea
  */
-public
-record RunInfo(int index, String map, LocalDateTime startLocalDateTime, Progress progress) {}
+public record RunInfo(int index, LocalDateTime startLocalDateTime, Progress progress, boolean ended) {}

@@ -17,14 +17,19 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jgea.core.listener;
+package io.github.ericmedvet.jgea.experimenter.util;
 
-import io.github.ericmedvet.jgea.core.util.ArrayTable;
-import io.github.ericmedvet.jgea.core.util.Misc;
+import io.github.ericmedvet.jgea.core.listener.Accumulator;
+import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
+import io.github.ericmedvet.jgea.core.listener.NamedFunction;
+import io.github.ericmedvet.jgea.core.util.HashMapTable;
 import io.github.ericmedvet.jgea.core.util.Table;
-import java.util.List;
 
-public class TableBuilder<E, O, K> implements AccumulatorFactory<E, Table<O>, K> {
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+public class TableBuilder<E, O, K> implements AccumulatorFactory<E, Table<Integer, String, O>, K> {
 
   private final List<NamedFunction<? super E, ? extends O>> eFunctions;
   private final List<NamedFunction<? super K, ? extends O>> kFunctions;
@@ -37,24 +42,23 @@ public class TableBuilder<E, O, K> implements AccumulatorFactory<E, Table<O>, K>
   }
 
   @Override
-  public Accumulator<E, Table<O>> build(K k) {
-    List<? extends O> kValues = kFunctions.stream().map(f -> f.apply(k)).toList();
+  public Accumulator<E, Table<Integer, String, O>> build(K k) {
+    Map<String, ? extends O> kValues =
+        kFunctions.stream().collect(Collectors.toMap(NamedFunction::getName, f -> f.apply(k)));
     return new Accumulator<>() {
 
-      private final Table<O> table = new ArrayTable<>(Misc.concat(List.of(kFunctions, eFunctions)).stream()
-          .map(NamedFunction::getName)
-          .toList());
+      private final Table<Integer, String, O> table = new HashMapTable<>();
 
       @Override
-      public Table<O> get() {
+      public Table<Integer, String, O> get() {
         return table;
       }
 
       @Override
       public void listen(E e) {
-        List<? extends O> eValues =
-            eFunctions.stream().map(f -> f.apply(e)).toList();
-        table.addRow(Misc.concat(List.of(kValues, eValues)));
+        int ri = table.nRows();
+        kValues.forEach((k, v) -> table.set(ri, k, v));
+        eFunctions.forEach(f -> table.set(ri, f.getName(), f.apply(e)));
       }
     };
   }

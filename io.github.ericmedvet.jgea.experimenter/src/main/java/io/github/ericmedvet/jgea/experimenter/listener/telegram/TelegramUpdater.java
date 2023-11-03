@@ -21,7 +21,12 @@
 package io.github.ericmedvet.jgea.experimenter.listener.telegram;
 
 import io.github.ericmedvet.jgea.core.listener.*;
-import io.github.ericmedvet.jgea.core.util.*;
+import io.github.ericmedvet.jgea.core.util.Progress;
+import io.github.ericmedvet.jgea.core.util.StringUtils;
+import io.github.ericmedvet.jgea.core.util.TextPlotter;
+import io.github.ericmedvet.jgea.experimenter.util.ImagePlotters;
+import io.github.ericmedvet.jgea.experimenter.util.XYPlotTable;
+import io.github.ericmedvet.jgea.experimenter.util.XYPlotTableBuilder;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -72,12 +77,11 @@ public class TelegramUpdater<E, K> extends TelegramClient implements ListenerFac
                   sendDocument(file);
                 }
               }
-            } else if (outcome instanceof Table<?>) {
+            } else if (outcome instanceof XYPlotTable xyPlotTable) {
               if (factories.get(i) instanceof XYPlotTableBuilder<?> plotBuilder) {
-                //noinspection unchecked
                 BufferedImage plot = ImagePlotters.xyLines(
                         plotBuilder.getWidth(), plotBuilder.getHeight())
-                    .apply((Table<? extends Number>) outcome);
+                    .apply(xyPlotTable);
                 sendImage(plot);
               } else {
                 L.info(String.format(
