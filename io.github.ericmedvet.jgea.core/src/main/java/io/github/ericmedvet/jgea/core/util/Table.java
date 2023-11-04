@@ -88,21 +88,24 @@ public interface Table<R, C, T> {
     return rowIndexes().size();
   }
 
-  default String prettyPrint(String rFormat, String cFormat, String tFormat) {
+  default String prettyPrint(Function<R,String> rFormat, Function<C,String> cFormat, Function<T,String> tFormat) {
+    if (nColumns()==0) {
+      return "";
+    }
     String colSep = " ";
     Map<C, Integer> widths = colIndexes().stream()
         .collect(Collectors.toMap(
             ci -> ci,
             ci -> Math.max(
-                cFormat.formatted(ci).length(),
+                cFormat.apply(ci).length(),
                 rowIndexes().stream()
-                    .mapToInt(ri -> tFormat.formatted(get(ri, ci)).length())
+                    .mapToInt(ri -> tFormat.apply(get(ri, ci)).length())
                     .max()
                     .orElse(0)
             )
         ));
     int riWidth = rowIndexes().stream()
-        .mapToInt(ri -> rFormat.formatted(ri).length())
+        .mapToInt(ri -> rFormat.apply(ri).length())
         .max()
         .orElse(0);
     StringBuilder sb = new StringBuilder();
@@ -110,15 +113,18 @@ public interface Table<R, C, T> {
     sb.append(StringUtils.justify("", riWidth));
     sb.append(riWidth > 0 ? colSep : "");
     sb.append(colIndexes().stream()
-        .map(ci -> StringUtils.justify(cFormat.formatted(ci), widths.get(ci)))
+        .map(ci -> StringUtils.justify(cFormat.apply(ci), widths.get(ci)))
         .collect(Collectors.joining(colSep)));
+    if (nRows()==0) {
+      return sb.toString();
+    }
     sb.append("\n");
     // print rows
     sb.append(rowIndexes().stream().map(ri -> {
-      String s = StringUtils.justify(rFormat.formatted(ri), riWidth);
+      String s = StringUtils.justify(rFormat.apply(ri), riWidth);
       s = s+(riWidth > 0 ? colSep : "");
       s = s+colIndexes().stream()
-          .map(ci -> StringUtils.justify(tFormat.formatted(get(ri, ci)), widths.get(ci)))
+          .map(ci -> StringUtils.justify(tFormat.apply(get(ri, ci)), widths.get(ci)))
           .collect(Collectors.joining(colSep));
       return s;
     }).collect(Collectors.joining("\n")));
@@ -146,7 +152,7 @@ public interface Table<R, C, T> {
   }
 
   default String prettyPrint() {
-    return prettyPrint("%s", "%s", "%s");
+    return prettyPrint("%s"::formatted, "%s"::formatted, "%s"::formatted);
   }
 
   default Table<R, C, T> sorted(C c, Comparator<T> comparator) {

@@ -32,21 +32,23 @@ public class HashMapTable<R, C, T> implements Table<R, C, T> {
   }
 
   @Override
-  public void addRow(R rowIndex, Map<C, T> values) {
-    if (rowIndexes.contains(rowIndex)) {
-      throw new IllegalArgumentException("Column %s is already in the table".formatted(rowIndex));
-    }
-    rowIndexes.add(rowIndex);
-    values.forEach((colIndex, value) -> map.put(new Key<>(rowIndex, colIndex), value));
-  }
-
-  @Override
   public void addColumn(C columnIndex, Map<R, T> values) {
     if (colIndexes.contains(columnIndex)) {
       throw new IllegalArgumentException("Column %s is already in the table".formatted(columnIndex));
     }
     colIndexes.add(columnIndex);
+    rowIndexes.addAll(values.keySet());
     values.forEach((rowIndex, value) -> map.put(new Key<>(rowIndex, columnIndex), value));
+  }
+
+  @Override
+  public void addRow(R rowIndex, Map<C, T> values) {
+    if (rowIndexes.contains(rowIndex)) {
+      throw new IllegalArgumentException("Row %s is already in the table".formatted(rowIndex));
+    }
+    rowIndexes.add(rowIndex);
+    colIndexes.addAll(values.keySet());
+    values.forEach((colIndex, value) -> map.put(new Key<>(rowIndex, colIndex), value));
   }
 
   @Override

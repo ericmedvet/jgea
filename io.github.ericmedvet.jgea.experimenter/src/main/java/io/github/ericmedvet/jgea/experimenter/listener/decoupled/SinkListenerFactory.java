@@ -7,7 +7,6 @@ import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
-import io.github.ericmedvet.jgea.experimenter.listener.net.NetUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,17 +28,12 @@ public class SinkListenerFactory<G, S, Q> implements ListenerFactory<POCPopulati
       Experiment experiment,
       Sink sink
   ) {
-    // TODO add log entries forwarding
+    // TODO add process and log entries forwarding
     this.stateFunctions = stateFunctions;
     this.runFunctions = runFunctions;
     this.experiment = experiment;
     this.sink = sink;
-    sink.push(new MachineInfo(
-        NetUtils.getMachineName(),
-        NetUtils.getNumberOfProcessors(),
-        NetUtils.getCPULoad(),
-        LocalDateTime.now()
-    ));
+    sink.push();
     sink.push(
         experimentKey(),
         new ExperimentInfo(
@@ -56,19 +50,25 @@ public class SinkListenerFactory<G, S, Q> implements ListenerFactory<POCPopulati
   public Listener<POCPopulationState<?, G, S, Q>> build(Run<?, G, S, Q> run) {
     RunKey runKey = runKey(run);
     LocalDateTime startDateTime = LocalDateTime.now();
+    sink.push();
     sink.push(runKey, new RunInfo(run.index(), startDateTime, Progress.NA, false));
     sink.push(runFunctions.stream()
         .collect(Collectors.toMap(f -> new DataItemKey(runKey, f.getName()), f -> new DataItemInfo(f.apply(run)))));
     return new Listener<>() {
       @Override
       public void listen(POCPopulationState<?, G, S, Q> state) {
+        sink.push();
         sink.push(runKey, new RunInfo(run.index(), startDateTime, state.progress(), false));
         sink.push(stateFunctions.stream()
-            .collect(Collectors.toMap(f -> new DataItemKey(runKey, f.getName()), f -> new DataItemInfo(f.apply(state)))));
+            .collect(Collectors.toMap(
+                f -> new DataItemKey(runKey, f.getName()),
+                f -> new DataItemInfo(f.apply(state))
+            )));
       }
 
       @Override
       public void done() {
+        sink.push();
         sink.push(runKey, new RunInfo(run.index(), startDateTime, Progress.NA, true));
       }
     };

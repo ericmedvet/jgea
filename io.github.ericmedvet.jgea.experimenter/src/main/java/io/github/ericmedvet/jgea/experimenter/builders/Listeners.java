@@ -29,7 +29,9 @@ import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.Utils;
 import io.github.ericmedvet.jgea.experimenter.listener.decoupled.DirectSinkSource;
+import io.github.ericmedvet.jgea.experimenter.listener.decoupled.MostRecentTableSource;
 import io.github.ericmedvet.jgea.experimenter.listener.decoupled.SinkListenerFactory;
+import io.github.ericmedvet.jgea.experimenter.listener.decoupled.TSChecker;
 import io.github.ericmedvet.jgea.experimenter.listener.net.NetListenerClient;
 import io.github.ericmedvet.jgea.experimenter.listener.telegram.TelegramUpdater;
 import io.github.ericmedvet.jgea.experimenter.util.PlotTableBuilder;
@@ -490,8 +492,16 @@ public class Listeners {
       List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
       @Param("runKeys") List<String> runKeys
   ) {
+    DirectSinkSource sinkSource = new DirectSinkSource();
+    //TuiMonitor tuiMonitor = new TuiMonitor((Source) sink);
+    //tuiMonitor.run();
+    TSChecker tsc = new TSChecker(new MostRecentTableSource(sinkSource));
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        new SinkListenerFactory<>(List.of(), List.of(), experiment, new DirectSinkSource()),
+        new SinkListenerFactory<>(
+            Misc.concat(List.of(defaultStateFunctions, stateFunctions)),
+            buildRunNamedFunctions(runKeys, experiment),
+            experiment, sinkSource
+        ),
         executorService,
         false
     );

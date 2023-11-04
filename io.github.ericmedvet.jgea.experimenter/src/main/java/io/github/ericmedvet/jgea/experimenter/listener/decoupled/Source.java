@@ -1,8 +1,5 @@
 package io.github.ericmedvet.jgea.experimenter.listener.decoupled;
 
-import io.github.ericmedvet.jgea.core.util.HashMapTable;
-import io.github.ericmedvet.jgea.core.util.Table;
-
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.SortedMap;
@@ -34,9 +31,20 @@ public interface Source {
 
   SortedMap<LocalDateTime, RunInfo> runInfos(RunKey runKey, LocalDateTime from);
 
-  default Table<LocalDateTime, DataItemKey, Object> runData(RunKey runKey, LocalDateTime from) {
-    Table<LocalDateTime, DataItemKey, Object> table = new HashMapTable<>();
-    dataItemKeys(runKey).forEach(dik -> dataItemInfos(dik, from).forEach((t, dif) -> table.set(t, dik, dif.content())));
-    return table;
+  default Collection<DataItemKey> dataItemKeys() {
+    return runKeys().stream().map(this::dataItemKeys).flatMap(Collection::stream).toList();
   }
+
+  default Collection<ExperimentKey> experimentKeys() {
+    return processKeys().stream().map(this::experimentKeys).flatMap(Collection::stream).toList();
+  }
+
+  default Collection<ProcessKey> processKeys() {
+    return machineKeys().stream().map(this::processKeys).flatMap(Collection::stream).toList();
+  }
+
+  default Collection<RunKey> runKeys() {
+    return experimentKeys().stream().map(this::runKeys).flatMap(Collection::stream).toList();
+  }
+
 }
