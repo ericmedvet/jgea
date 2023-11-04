@@ -22,6 +22,7 @@ package io.github.ericmedvet.jgea.core.util;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -43,6 +44,55 @@ public interface Table<R, C, T> {
   List<R> rowIndexes();
 
   void set(R rowIndex, C columnIndex, T t);
+
+  static <R, C, T> Table<R, C, T> of(Map<R, Map<C, T>> map) {
+    List<R> rowIndexes = map.keySet().stream().toList();
+    List<C> colIndexes = map.values().stream().map(Map::keySet)
+        .flatMap(Set::stream)
+        .distinct()
+        .toList();
+    return new Table<R, C, T>() {
+      @Override
+      public void addColumn(C columnIndex, Map<R, T> values) {
+        throw new UnsupportedOperationException("This is a read only table");
+      }
+
+      @Override
+      public void addRow(R rowIndex, Map<C, T> values) {
+        throw new UnsupportedOperationException("This is a read only table");
+      }
+
+      @Override
+      public List<C> colIndexes() {
+        return colIndexes;
+      }
+
+      @Override
+      public T get(R rowIndex, C columnIndex) {
+        return map.getOrDefault(rowIndex, Map.of()).get(columnIndex);
+      }
+
+      @Override
+      public void removeColumn(C columnIndex) {
+        throw new UnsupportedOperationException("This is a read only table");
+      }
+
+      @Override
+      public void removeRow(R rowIndex) {
+        throw new UnsupportedOperationException("This is a read only table");
+      }
+
+      @Override
+      public List<R> rowIndexes() {
+        return rowIndexes;
+      }
+
+      @Override
+      public void set(R rowIndex, C columnIndex, T t) {
+        throw new UnsupportedOperationException("This is a read only table");
+      }
+    };
+  }
 
   default void clear() {
     rowIndexes().forEach(this::removeRow);
@@ -88,8 +138,55 @@ public interface Table<R, C, T> {
     return rowIndexes().size();
   }
 
-  default String prettyPrint(Function<R,String> rFormat, Function<C,String> cFormat, Function<T,String> tFormat) {
-    if (nColumns()==0) {
+  default <T1, K> Table<R, C, T1> aggregate(
+      Function<Map<C, T>, K> rowKey,
+      Comparator<R> comparator,
+      Function<List<Map<C, T>>, Map<C, T1>> aggregator
+  ) {
+    Map<R, Map<C, T1>> map = rowIndexes().stream()
+        .map(ri -> Map.entry(ri, row(ri)))
+        .collect(Collectors.groupingBy(e -> rowKey.apply(e.getValue())))
+        .values()
+        .stream()
+        .map(l -> {
+              List<Map.Entry<R, Map<C, T>>> list = l.stream()
+                  .sorted((e1, e2) -> comparator.compare(e1.getKey(), e2.getKey()))
+                  .toList();
+              R ri = list.stream().map(Map.Entry::getKey).min(comparator).orElseThrow();
+              Map<C, T1> row = aggregator.apply(list.stream().map(Map.Entry::getValue).toList());
+              return Map.entry(ri, row);
+            }
+        )
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    return Table.of(map);
+  }
+
+  default Map<C, T> row(R rowIndex) {
+    return colIndexes().stream().collect(Collectors.toMap(ci -> ci, ci -> get(rowIndex, ci)));
+  }
+
+  default <T1, K> Table<R, C, T1> aggregateSingle(
+      Function<Map<C, T>, K> rowKey,
+      Comparator<R> comparator,
+      Function<List<T>, T1> aggregator
+  ) {
+    Function<List<Map<C, T>>, Map<C, T1>> rowAggregator = maps -> maps.get(0).keySet().stream()
+        .map(c -> Map.entry(
+            c,
+            aggregator.apply(maps.stream().map(m -> m.get(c)).toList())
+        ))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    return aggregate(rowKey, comparator, rowAggregator);
+  }
+
+  default <C1, T1> Table<R, C1, T1> expandColumn(C columnIndex, Function<T, Map<C1, T1>> f) {
+    Table<R, C1, T1> table = new HashMapTable<>();
+    column(columnIndex).forEach((ri, t) -> table.addRow(ri, f.apply(t)));
+    return table;
+  }
+
+  default String prettyPrint(Function<R, String> rFormat, Function<C, String> cFormat, Function<T, String> tFormat) {
+    if (nColumns() == 0) {
       return "";
     }
     String colSep = " ";
@@ -115,15 +212,15 @@ public interface Table<R, C, T> {
     sb.append(colIndexes().stream()
         .map(ci -> StringUtils.justify(cFormat.apply(ci), widths.get(ci)))
         .collect(Collectors.joining(colSep)));
-    if (nRows()==0) {
+    if (nRows() == 0) {
       return sb.toString();
     }
     sb.append("\n");
     // print rows
     sb.append(rowIndexes().stream().map(ri -> {
       String s = StringUtils.justify(rFormat.apply(ri), riWidth);
-      s = s+(riWidth > 0 ? colSep : "");
-      s = s+colIndexes().stream()
+      s = s + (riWidth > 0 ? colSep : "");
+      s = s + colIndexes().stream()
           .map(ci -> StringUtils.justify(tFormat.apply(get(ri, ci)), widths.get(ci)))
           .collect(Collectors.joining(colSep));
       return s;
@@ -131,12 +228,8 @@ public interface Table<R, C, T> {
     return sb.toString();
   }
 
-  default Map<C, T> row(R rowIndex) {
-    return colIndexes().stream().collect(Collectors.toMap(ci -> ci, ci -> get(rowIndex, ci)));
-  }
-
-  default Table<R, C, T> rowSlide(int n, Function<List<T>, T> aggregator) {
-    Table<R, C, T> table = new HashMapTable<>();
+  default <T1> Table<R, C, T1> rowSlide(int n, Function<List<T>, T1> aggregator) {
+    Table<R, C, T1> table = new HashMapTable<>();
     colIndexes().forEach(ci -> IntStream.range(n, rowIndexes().size()).forEach(i -> {
       List<T> ts = IntStream.range(i - n, i)
           .mapToObj(j -> get(rowIndexes().get(j), ci))

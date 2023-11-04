@@ -5,6 +5,7 @@ import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.core.util.Table;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -14,6 +15,8 @@ public class TabledSource {
 
   public static final String VALUE_NAME = "value";
   private final Source source;
+
+  private final int lastN;
   protected final Table<Pair<LocalDateTime, MachineKey>, String, MachineInfo> machines;
   protected final Table<Pair<LocalDateTime, ProcessKey>, String, ProcessInfo> processes;
   protected final Table<Pair<LocalDateTime, ProcessKey>, String, LogInfo> logs;
@@ -23,8 +26,9 @@ public class TabledSource {
 
   private LocalDateTime lastRefresh;
 
-  public TabledSource(Source source) {
+  public TabledSource(Source source, int lastN) {
     this.source = source;
+    this.lastN = lastN;
     machines = new HashMapTable<>();
     processes = new HashMapTable<>();
     logs = new HashMapTable<>();
@@ -32,6 +36,15 @@ public class TabledSource {
     runs = new HashMapTable<>();
     dataItems = new HashMapTable<>();
     lastRefresh = LocalDateTime.MIN;
+  }
+
+  private static <K> void prune(Table<Pair<LocalDateTime, K>, String, ?> table, int n) {
+    Collection<K> ks = table.rowIndexes().stream().map(Pair::second).distinct().toList();
+    ks.forEach(k -> table.rowIndexes().stream()
+        .filter(p -> p.second().equals(k))
+        .sorted((p1, p2) -> p2.first().compareTo(p1.first()))
+        .skip(n)
+        .forEach(table::removeRow));
   }
 
   public Table<Pair<LocalDateTime, DataItemKey>, String, DataItemInfo> getDataItems() {
@@ -77,5 +90,13 @@ public class TabledSource {
         source.dataItemInfos(dik, lastRefresh)
             .forEach((t, v) -> dataItems.set(new Pair<>(t, dik), VALUE_NAME, v)));
     lastRefresh = LocalDateTime.now();
+    if (lastN > 0) {
+      prune(machines, lastN);
+      prune(processes, lastN);
+      prune(logs, lastN);
+      prune(experiments, lastN);
+      prune(runs, lastN);
+      prune(dataItems, lastN);
+    }
   }
 }
