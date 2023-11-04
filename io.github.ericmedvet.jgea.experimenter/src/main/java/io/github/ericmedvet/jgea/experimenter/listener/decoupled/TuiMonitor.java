@@ -83,9 +83,8 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
 
   private Screen screen;
   private boolean isRunning;
-  private final TabledSource tabledSource;
 
-  public TuiMonitor(Source source) {
+  public TuiMonitor() {
     this(
         new Configuration(
             DEFAULT_CONFIGURATION.runsSplit,
@@ -101,15 +100,13 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
             DEFAULT_CONFIGURATION.laterThreshold,
             DEFAULT_CONFIGURATION.missingThreshold,
             DEFAULT_CONFIGURATION.purgeThreshold
-        ),
-        source
+        )
     );
   }
 
-  public TuiMonitor(Configuration configuration, Source source) {
+  public TuiMonitor(Configuration configuration) {
     super(true);
     this.configuration = configuration;
-    tabledSource = new TabledSource(source);
     uiExecutorService = Executors.newSingleThreadScheduledExecutor();
     // prepare screen
     DefaultTerminalFactory defaultTerminalFactory = new DefaultTerminalFactory();
@@ -287,7 +284,6 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
 
   private synchronized void updateUI() {
 
-    tabledSource.refresh();
     System.out.println("updating");
 
     // check keystrokes

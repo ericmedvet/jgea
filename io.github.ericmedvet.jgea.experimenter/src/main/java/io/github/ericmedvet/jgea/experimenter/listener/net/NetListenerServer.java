@@ -89,7 +89,7 @@ public class NetListenerServer extends ListLogHandler implements Runnable {
   private static final String DATETIME_FORMAT = "%1$tm-%1$td %1$tH:%1$tM:%1$tS";
 
   private final Configuration configuration;
-  private final Map<MachineKey, SortedMap<Long, MachineInfo>> machinesData;
+  private final Map<MachineKey, SortedMap<Long, OldMachineInfo>> machinesData;
   private final Map<ProcessKey, SortedMap<Long, EnhancedProcessInfo>> processesData;
   private final Map<RunKey, Map<Update.DataItemKey, List<Object>>> runsData;
   private final Map<RunKey, Map<Update.PlotItemKey, List<Update.PlotPoint>>> runsPlots;
@@ -225,7 +225,7 @@ public class NetListenerServer extends ListLogHandler implements Runnable {
       double missingThreshold,
       double purgeThreshold) {}
 
-  private record EnhancedProcessInfo(ProcessInfo processInfo, int nOfRuns) {}
+  private record EnhancedProcessInfo(OldProcessInfo processInfo, int nOfRuns) {}
 
   private record MachineKey(String machineName) {}
 

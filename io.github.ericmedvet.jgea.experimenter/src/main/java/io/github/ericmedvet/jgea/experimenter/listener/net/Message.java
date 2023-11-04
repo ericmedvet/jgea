@@ -24,8 +24,8 @@ import java.util.List;
 
 public record Message(
     long localTime,
-    MachineInfo machineInfo,
-    ProcessInfo processInfo,
+    OldMachineInfo machineInfo,
+    OldProcessInfo processInfo,
     double pollInterval,
     int nOfRuns,
     List<Update> updates)

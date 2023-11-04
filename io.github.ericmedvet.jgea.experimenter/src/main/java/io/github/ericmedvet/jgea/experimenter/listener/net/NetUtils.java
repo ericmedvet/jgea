@@ -47,8 +47,8 @@ public class NetUtils {
     return ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class).getSystemLoadAverage();
   }
 
-  public static MachineInfo getMachineInfo() {
-    return new MachineInfo(getMachineName(), getNumberOfProcessors(), getCPULoad());
+  public static OldMachineInfo getMachineInfo() {
+    return new OldMachineInfo(getMachineName(), getNumberOfProcessors(), getCPULoad());
   }
 
   public static String getMachineName() {
@@ -63,8 +63,8 @@ public class NetUtils {
     return ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class).getAvailableProcessors();
   }
 
-  public static ProcessInfo getProcessInfo() {
-    return new ProcessInfo(getProcessName(), getUserName(), getProcessUsedMemory(), getProcessMaxMemory());
+  public static OldProcessInfo getProcessInfo() {
+    return new OldProcessInfo(getProcessName(), getUserName(), getProcessUsedMemory(), getProcessMaxMemory());
   }
 
   public static long getProcessMaxMemory() {

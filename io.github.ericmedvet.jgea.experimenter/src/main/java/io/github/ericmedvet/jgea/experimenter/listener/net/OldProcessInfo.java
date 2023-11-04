@@ -21,4 +21,5 @@ package io.github.ericmedvet.jgea.experimenter.listener.net;
 
 import java.io.Serializable;
 
-public record MachineInfo(String machineName, int numberOfProcessors, double cpuLoad) implements Serializable {}
+public record OldProcessInfo(String processName, String username, long usedMemory, long maxMemory)
+    implements Serializable {}
