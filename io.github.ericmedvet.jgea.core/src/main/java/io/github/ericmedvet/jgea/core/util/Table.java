@@ -74,7 +74,8 @@ public interface Table<R, C, T> {
     if (ri == null || ci == null) {
       throw new IndexOutOfBoundsException(String.format(
           "Invalid %d,%d coords in a %d,%d table",
-          x, y, colIndexes().size(), rowIndexes().size()));
+          x, y, colIndexes().size(), rowIndexes().size()
+      ));
     }
     return get(ri, ci);
   }
@@ -95,10 +96,11 @@ public interface Table<R, C, T> {
             ci -> Math.max(
                 cFormat.formatted(ci).length(),
                 rowIndexes().stream()
-                    .mapToInt(ri ->
-                        tFormat.formatted(get(ri, ci)).length())
+                    .mapToInt(ri -> tFormat.formatted(get(ri, ci)).length())
                     .max()
-                    .orElse(0))));
+                    .orElse(0)
+            )
+        ));
     int riWidth = rowIndexes().stream()
         .mapToInt(ri -> rFormat.formatted(ri).length())
         .max()
@@ -112,14 +114,14 @@ public interface Table<R, C, T> {
         .collect(Collectors.joining(colSep)));
     sb.append("\n");
     // print rows
-    rowIndexes().forEach(ri -> {
-      sb.append(StringUtils.justify(rFormat.formatted(ri), riWidth));
-      sb.append(riWidth > 0 ? colSep : "");
-      sb.append(colIndexes().stream()
+    sb.append(rowIndexes().stream().map(ri -> {
+      String s = StringUtils.justify(rFormat.formatted(ri), riWidth);
+      s = s+(riWidth > 0 ? colSep : "");
+      s = s+colIndexes().stream()
           .map(ci -> StringUtils.justify(tFormat.formatted(get(ri, ci)), widths.get(ci)))
-          .collect(Collectors.joining(colSep)));
-      sb.append("\n");
-    });
+          .collect(Collectors.joining(colSep));
+      return s;
+    }).collect(Collectors.joining("\n")));
     return sb.toString();
   }
 
@@ -143,15 +145,8 @@ public interface Table<R, C, T> {
     return colIndexes().stream().map(row::get).toList();
   }
 
-  default void set(int x, int y, T t) {
-    R ri = rowIndexes().get(y);
-    C ci = colIndexes().get(x);
-    if (ri == null || ci == null) {
-      throw new IndexOutOfBoundsException(String.format(
-          "Invalid %d,%d coords in a %d,%d table",
-          x, y, colIndexes().size(), rowIndexes().size()));
-    }
-    set(ri, ci, t);
+  default String prettyPrint() {
+    return prettyPrint("%s", "%s", "%s");
   }
 
   default Table<R, C, T> sorted(C c, Comparator<T> comparator) {
@@ -200,4 +195,17 @@ public interface Table<R, C, T> {
       }
     };
   }
+
+  default void set(int x, int y, T t) {
+    R ri = rowIndexes().get(y);
+    C ci = colIndexes().get(x);
+    if (ri == null || ci == null) {
+      throw new IndexOutOfBoundsException(String.format(
+          "Invalid %d,%d coords in a %d,%d table",
+          x, y, colIndexes().size(), rowIndexes().size()
+      ));
+    }
+    set(ri, ci, t);
+  }
+
 }
