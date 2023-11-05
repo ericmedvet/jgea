@@ -5,7 +5,7 @@ ea.experiment(
       ea.p.ur.synthetic(name = "nguyen7");
       ea.p.ur.bundled(name = "concrete")
     ]) *
-    (solver = (nEval = [2000]) * [
+    (solver = (nEval = [20000]) * [
       ea.s.srTreeGp(
         mapper = ea.m.srTreeToUrf()
       );

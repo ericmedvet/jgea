@@ -23,9 +23,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public interface Table<R, C, T> {
 
@@ -138,6 +140,16 @@ public interface Table<R, C, T> {
   }
 
   default <T1, K> Table<R, C, T1> aggregateByIndexSingle(
+      Function<R, K> rowKey, Comparator<R> comparator, BiFunction<C, List<T>, T1> aggregator
+  ) {
+    Function<List<Map<C, T>>, Map<C, T1>> rowAggregator = maps -> maps.get(0).keySet().stream()
+        .map(c -> Map.entry(
+            c, aggregator.apply(c, maps.stream().map(m -> m.get(c)).toList())))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    return aggregateByIndex(rowKey, comparator, rowAggregator);
+  }
+
+  default <T1, K> Table<R, C, T1> aggregateByIndexSingle(
       Function<R, K> rowKey, Comparator<R> comparator, Function<List<T>, T1> aggregator
   ) {
     Function<List<Map<C, T>>, Map<C, T1>> rowAggregator = maps -> maps.get(0).keySet().stream()
@@ -155,6 +167,22 @@ public interface Table<R, C, T> {
             c, aggregator.apply(maps.stream().map(m -> m.get(c)).toList())))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     return aggregate(rowKey, comparator, rowAggregator);
+  }
+
+  default <T1, K> Table<R, C, T1> aggregateSingle(
+      Function<Map<C, T>, K> rowKey, Comparator<R> comparator, BiFunction<C, List<T>, T1> aggregator
+  ) {
+    Function<List<Map<C, T>>, Map<C, T1>> rowAggregator = maps -> maps.get(0).keySet().stream()
+        .map(c -> Map.entry(
+            c, aggregator.apply(c, maps.stream().map(m -> m.get(c)).toList())))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    return aggregate(rowKey, comparator, rowAggregator);
+  }
+
+  default <R1> Table<R1, C, T> remapRowIndex(Function<R, R1> f) {
+    return of(rowIndexes().stream()
+        .map(ri -> Map.entry(f.apply(ri), row(ri)))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
   }
 
   default void clear() {
@@ -182,9 +210,71 @@ public interface Table<R, C, T> {
   }
 
   default <C1, T1> Table<R, C1, T1> expandColumn(C columnIndex, Function<T, Map<C1, T1>> f) {
-    Table<R, C1, T1> table = new HashMapTable<>();
-    column(columnIndex).forEach((ri, t) -> table.addRow(ri, f.apply(t)));
-    return table;
+    return of(rowIndexes().stream()
+        .map(ri -> Map.entry(ri, f.apply(get(ri, columnIndex))))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+  }
+
+  default Table<R, C, T> expandRowIndex(Function<R, Map<C, T>> f) {
+    return of(rowIndexes().stream()
+        .map(ri -> Map.entry(
+            ri,
+            Stream.of(f.apply(ri).entrySet(), row(ri).entrySet())
+                .flatMap(Set::stream)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+        ))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+  }
+
+  default Table<R, C, T> with(C newColumnIndex, T newT) {
+    List<C> newColIndexes = Stream.of(colIndexes(), List.of(newColumnIndex))
+        .flatMap(List::stream)
+        .toList();
+    Table<R, C, T> thisTable = this;
+    return new Table<R, C, T>() {
+      @Override
+      public void addColumn(C columnIndex, Map<R, T> values) {
+        throw new UnsupportedOperationException("This is a read only table");
+      }
+
+      @Override
+      public void addRow(R rowIndex, Map<C, T> values) {
+        throw new UnsupportedOperationException("This is a read only table");
+      }
+
+      @Override
+      public List<C> colIndexes() {
+        return newColIndexes;
+      }
+
+      @Override
+      public T get(R rowIndex, C columnIndex) {
+        if (columnIndex.equals(newColumnIndex)) {
+          return newT;
+        }
+        return thisTable.get(rowIndex, columnIndex);
+      }
+
+      @Override
+      public void removeColumn(C columnIndex) {
+        throw new UnsupportedOperationException("This is a read only table");
+      }
+
+      @Override
+      public void removeRow(R rowIndex) {
+        throw new UnsupportedOperationException("This is a read only table");
+      }
+
+      @Override
+      public List<R> rowIndexes() {
+        return thisTable.rowIndexes();
+      }
+
+      @Override
+      public void set(R rowIndex, C columnIndex, T t) {
+        throw new UnsupportedOperationException("This is a read only table");
+      }
+    };
   }
 
   default T get(int x, int y) {
@@ -292,7 +382,7 @@ public interface Table<R, C, T> {
 
   default Table<R, C, T> sorted(C c, Comparator<T> comparator) {
     Table<R, C, T> thisTable = this;
-    return new Table<R, C, T>() {
+    return new Table<>() {
       @Override
       public void addColumn(C columnIndex, Map<R, T> values) {
         thisTable.addColumn(columnIndex, values);
@@ -335,5 +425,63 @@ public interface Table<R, C, T> {
         thisTable.set(rowIndex, columnIndex, t);
       }
     };
+  }
+
+  default Table<R, C, T> sorted(Comparator<R> comparator) {
+    Table<R, C, T> thisTable = this;
+    return new Table<>() {
+      @Override
+      public void addColumn(C columnIndex, Map<R, T> values) {
+        thisTable.addColumn(columnIndex, values);
+      }
+
+      @Override
+      public void addRow(R rowIndex, Map<C, T> values) {
+        thisTable.addRow(rowIndex, values);
+      }
+
+      @Override
+      public List<C> colIndexes() {
+        return thisTable.colIndexes();
+      }
+
+      @Override
+      public T get(R rowIndex, C columnIndex) {
+        return thisTable.get(rowIndex, columnIndex);
+      }
+
+      @Override
+      public void removeColumn(C columnIndex) {
+        thisTable.removeColumn(columnIndex);
+      }
+
+      @Override
+      public void removeRow(R rowIndex) {
+        thisTable.removeRow(rowIndex);
+      }
+
+      @Override
+      public List<R> rowIndexes() {
+        return thisTable.rowIndexes().stream()
+            .sorted(comparator)
+            .toList();
+      }
+
+      @Override
+      public void set(R rowIndex, C columnIndex, T t) {
+        thisTable.set(rowIndex, columnIndex, t);
+      }
+    };
+  }
+
+  static <R, C, T> Table<R, C, T> colLeftJoin(Table<R, C, T> t1, Table<R, C, T> t2) {
+    return of(t1.rowIndexes().stream()
+        .map(ri -> Map.entry(
+            ri,
+            Stream.of(t1.row(ri).entrySet(), t2.row(ri).entrySet())
+                .flatMap(Set::stream)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+        ))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
   }
 }
