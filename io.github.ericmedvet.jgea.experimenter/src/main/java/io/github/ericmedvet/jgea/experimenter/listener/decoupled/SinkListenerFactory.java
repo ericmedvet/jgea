@@ -97,7 +97,7 @@ public class SinkListenerFactory<G, S, Q> implements ListenerFactory<POCPopulati
       @Override
       public void done() {
         pushMachineAndProcess();
-        runSink.push(runKey, new RunInfo(run.index(), startDateTime, Progress.NA, true));
+        runSink.push(runKey, new RunInfo(run.index(), startDateTime, Progress.DONE, true));
       }
     };
   }

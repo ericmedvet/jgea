@@ -469,7 +469,14 @@ public class Listeners {
     DirectSinkSource<ExperimentKey, ExperimentInfo> experimentSinkSource = new DirectSinkSource<>();
     DirectSinkSource<RunKey, RunInfo> runSinkSource = new DirectSinkSource<>();
     DirectSinkSource<DataItemKey, DataItemInfo> dataItemSinkSource = new DirectSinkSource<>();
-    new TSChecker<>(runSinkSource);
+    new TuiMonitor(
+            machineSinkSource,
+            processSinkSource,
+            logSinkSource,
+            experimentSinkSource,
+            runSinkSource,
+            dataItemSinkSource)
+        .run();
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         new SinkListenerFactory<>(
             Misc.concat(List.of(defaultStateFunctions, stateFunctions)),

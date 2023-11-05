@@ -27,14 +27,14 @@ import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
-import io.github.ericmedvet.jgea.core.util.Progress;
-import io.github.ericmedvet.jgea.core.util.TextPlotter;
+import io.github.ericmedvet.jgea.core.util.*;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.ListLogHandler;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.table.ColoredStringCell;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.Point;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.Rectangle;
 import java.io.IOException;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -61,7 +61,6 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
   private static final Logger L = Logger.getLogger(TuiMonitor.class.getName());
   private static final Configuration DEFAULT_CONFIGURATION =
       new Configuration(0.5f, 0.85f, 0.5f, 0.5f, 8, 12, 500, 60, 10, 10000, 2, 5, 20);
-  private static final int SERVER_SOCKET_TIMEOUT_MILLIS = 1000;
   private static final String STATUS_STRING = "⬤";
   private static final DateTimeFormatter SAME_DAY_DATETIME_FORMAT =
       DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
@@ -82,27 +81,60 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
   private Screen screen;
   private boolean isRunning;
 
-  public TuiMonitor() {
-    this(new Configuration(
-        DEFAULT_CONFIGURATION.runsSplit,
-        DEFAULT_CONFIGURATION.logsSplit,
-        DEFAULT_CONFIGURATION.legendSplit,
-        DEFAULT_CONFIGURATION.machinesProcessesSplit,
-        DEFAULT_CONFIGURATION.barLength,
-        DEFAULT_CONFIGURATION.barLength,
-        DEFAULT_CONFIGURATION.uiRefreshIntervalMillis,
-        DEFAULT_CONFIGURATION.machineHistorySeconds,
-        DEFAULT_CONFIGURATION.runDataHistorySize,
-        DEFAULT_CONFIGURATION.runPlotHistorySize,
-        DEFAULT_CONFIGURATION.laterThreshold,
-        DEFAULT_CONFIGURATION.missingThreshold,
-        DEFAULT_CONFIGURATION.purgeThreshold));
+  private final Source<MachineKey, MachineInfo> machineSource;
+  private final Source<ProcessKey, ProcessInfo> processSource;
+  private final Source<ProcessKey, LogInfo> logSource;
+  private final Source<ExperimentKey, ExperimentInfo> experimentSource;
+  private final Source<RunKey, RunInfo> runSource;
+  private final Source<DataItemKey, DataItemInfo> dataItemSource;
+  private final Table<Pair<LocalDateTime, MachineKey>, String, MachineInfo> machineTable;
+  private final Table<Pair<LocalDateTime, ProcessKey>, String, ProcessInfo> processTable;
+  private final Table<Pair<LocalDateTime, ProcessKey>, String, LogInfo> logTable;
+  private final Table<Pair<LocalDateTime, ExperimentKey>, String, ExperimentInfo> experimentTable;
+  private final Table<Pair<LocalDateTime, RunKey>, String, RunInfo> runTable;
+  private final Table<Pair<LocalDateTime, DataItemKey>, String, DataItemInfo> dataItemTable;
+
+  public TuiMonitor(
+      Source<MachineKey, MachineInfo> machineSource,
+      Source<ProcessKey, ProcessInfo> processSource,
+      Source<ProcessKey, LogInfo> logSource,
+      Source<ExperimentKey, ExperimentInfo> experimentSource,
+      Source<RunKey, RunInfo> runSource,
+      Source<DataItemKey, DataItemInfo> dataItemSource) {
+
+    this(
+        DEFAULT_CONFIGURATION,
+        machineSource,
+        processSource,
+        logSource,
+        experimentSource,
+        runSource,
+        dataItemSource);
   }
 
-  public TuiMonitor(Configuration configuration) {
+  public TuiMonitor(
+      Configuration configuration,
+      Source<MachineKey, MachineInfo> machineSource,
+      Source<ProcessKey, ProcessInfo> processSource,
+      Source<ProcessKey, LogInfo> logSource,
+      Source<ExperimentKey, ExperimentInfo> experimentSource,
+      Source<RunKey, RunInfo> runSource,
+      Source<DataItemKey, DataItemInfo> dataItemSource) {
     super(true);
     this.configuration = configuration;
+    this.machineSource = machineSource;
+    this.processSource = processSource;
+    this.logSource = logSource;
+    this.experimentSource = experimentSource;
+    this.runSource = runSource;
+    this.dataItemSource = dataItemSource;
     uiExecutorService = Executors.newSingleThreadScheduledExecutor();
+    machineTable = new HashMapTable<>();
+    processTable = new HashMapTable<>();
+    logTable = new HashMapTable<>();
+    experimentTable = new HashMapTable<>();
+    runTable = new HashMapTable<>();
+    dataItemTable = new HashMapTable<>();
     // prepare screen
     DefaultTerminalFactory defaultTerminalFactory = new DefaultTerminalFactory();
     try {
