@@ -21,7 +21,6 @@ package io.github.ericmedvet.jgea.experimenter.util;
 
 import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
-
 import java.util.List;
 
 public interface PlotTableBuilder<E> extends AccumulatorFactory<E, XYPlotTable, Object> {

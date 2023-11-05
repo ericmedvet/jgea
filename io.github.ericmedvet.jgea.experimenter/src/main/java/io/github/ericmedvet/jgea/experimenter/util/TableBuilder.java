@@ -24,7 +24,6 @@ import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.util.HashMapTable;
 import io.github.ericmedvet.jgea.core.util.Table;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;

@@ -33,7 +33,6 @@ import io.github.ericmedvet.jgea.experimenter.listener.tui.ListLogHandler;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.table.ColoredStringCell;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.Point;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.Rectangle;
-
 import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -57,8 +56,7 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
       Map.entry(Level.SEVERE, TextColor.Factory.fromString("#EE3E38")),
       Map.entry(Level.WARNING, TextColor.Factory.fromString("#FBA465")),
       Map.entry(Level.INFO, TextColor.Factory.fromString("#D8E46B")),
-      Map.entry(Level.CONFIG, TextColor.Factory.fromString("#6D8700"))
-  );
+      Map.entry(Level.CONFIG, TextColor.Factory.fromString("#6D8700")));
   public static final String EMPTY_CELL_CONTENT = "-";
   private static final Logger L = Logger.getLogger(TuiMonitor.class.getName());
   private static final Configuration DEFAULT_CONFIGURATION =
@@ -85,23 +83,20 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
   private boolean isRunning;
 
   public TuiMonitor() {
-    this(
-        new Configuration(
-            DEFAULT_CONFIGURATION.runsSplit,
-            DEFAULT_CONFIGURATION.logsSplit,
-            DEFAULT_CONFIGURATION.legendSplit,
-            DEFAULT_CONFIGURATION.machinesProcessesSplit,
-            DEFAULT_CONFIGURATION.barLength,
-            DEFAULT_CONFIGURATION.barLength,
-            DEFAULT_CONFIGURATION.uiRefreshIntervalMillis,
-            DEFAULT_CONFIGURATION.machineHistorySeconds,
-            DEFAULT_CONFIGURATION.runDataHistorySize,
-            DEFAULT_CONFIGURATION.runPlotHistorySize,
-            DEFAULT_CONFIGURATION.laterThreshold,
-            DEFAULT_CONFIGURATION.missingThreshold,
-            DEFAULT_CONFIGURATION.purgeThreshold
-        )
-    );
+    this(new Configuration(
+        DEFAULT_CONFIGURATION.runsSplit,
+        DEFAULT_CONFIGURATION.logsSplit,
+        DEFAULT_CONFIGURATION.legendSplit,
+        DEFAULT_CONFIGURATION.machinesProcessesSplit,
+        DEFAULT_CONFIGURATION.barLength,
+        DEFAULT_CONFIGURATION.barLength,
+        DEFAULT_CONFIGURATION.uiRefreshIntervalMillis,
+        DEFAULT_CONFIGURATION.machineHistorySeconds,
+        DEFAULT_CONFIGURATION.runDataHistorySize,
+        DEFAULT_CONFIGURATION.runPlotHistorySize,
+        DEFAULT_CONFIGURATION.laterThreshold,
+        DEFAULT_CONFIGURATION.missingThreshold,
+        DEFAULT_CONFIGURATION.purgeThreshold));
   }
 
   public TuiMonitor(Configuration configuration) {
@@ -192,9 +187,7 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
       int runPlotHistorySize,
       double laterThreshold,
       double missingThreshold,
-      double purgeThreshold
-  ) {}
-
+      double purgeThreshold) {}
 
   private static <T> List<T> concatAndTrim(List<T> ts1, List<T> ts2, int n) {
     List<T> ts = Stream.of(ts1, ts2).flatMap(List::stream).toList();
@@ -250,7 +243,6 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
     return Trend.from(d1, d2);
   }
 
-
   @Override
   public void run() {
     // start painter task
@@ -264,8 +256,7 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
         },
         0,
         configuration.uiRefreshIntervalMillis,
-        TimeUnit.MILLISECONDS
-    );
+        TimeUnit.MILLISECONDS);
     isRunning = true;
   }
 
@@ -280,8 +271,6 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
     uiExecutorService.shutdownNow();
   }
 
-
-
   private synchronized void updateUI() {
 
     System.out.println("updating");
@@ -292,7 +281,7 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
       if (k != null
           && k.getCharacter() != null
           && ((k.getCharacter().equals('c') && k.isCtrlDown())
-          || k.getKeyType().equals(KeyType.EOF))) {
+              || k.getKeyType().equals(KeyType.EOF))) {
         stop();
       }
     } catch (IOException e) {

@@ -1,10 +1,28 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-experimenter
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package io.github.ericmedvet.jgea.experimenter.listener.decoupled;
 
 import io.github.ericmedvet.jgea.core.util.HashMapTable;
 import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -41,21 +59,22 @@ public class TSChecker<K, V> {
 
   private void check() {
     try {
-      source.pull(LocalDateTime.now())
-          .forEach((p, v) -> table.set(p, "value", v));
+      source.pull(LocalDateTime.now()).forEach((p, v) -> table.set(p, "value", v));
       prune(table, 2);
-      System.out.println(table.expandColumn("value", v -> Map.ofEntries(
-              Map.entry("progress", TextPlotter.horizontalBar(((RunInfo) v).progress().rate(), 0, 1, 8)),
-              Map.entry("ended", ((RunInfo) v).ended())
-          ))
+      System.out.println(table.expandColumn(
+              "value",
+              v -> Map.ofEntries(
+                  Map.entry(
+                      "progress",
+                      TextPlotter.horizontalBar(
+                          ((RunInfo) v).progress().rate(), 0, 1, 8)),
+                  Map.entry("ended", ((RunInfo) v).ended())))
           .prettyPrint(
               p -> "%tT %s".formatted(p.first(), ((RunKey) p.second()).value()),
               "%5.5s"::formatted,
-              Object::toString
-          ));
+              Object::toString));
     } catch (Throwable t) {
       t.printStackTrace();
     }
   }
-
 }

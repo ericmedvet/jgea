@@ -29,7 +29,6 @@ import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.util.PlotTableBuilder;
 import io.github.ericmedvet.jgea.experimenter.util.XYPlotTableBuilder;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;

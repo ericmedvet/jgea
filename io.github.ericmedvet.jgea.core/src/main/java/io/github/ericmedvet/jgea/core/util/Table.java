@@ -47,7 +47,8 @@ public interface Table<R, C, T> {
 
   static <R, C, T> Table<R, C, T> of(Map<R, Map<C, T>> map) {
     List<R> rowIndexes = map.keySet().stream().toList();
-    List<C> colIndexes = map.values().stream().map(Map::keySet)
+    List<C> colIndexes = map.values().stream()
+        .map(Map::keySet)
         .flatMap(Set::stream)
         .distinct()
         .toList();
@@ -124,8 +125,7 @@ public interface Table<R, C, T> {
     if (ri == null || ci == null) {
       throw new IndexOutOfBoundsException(String.format(
           "Invalid %d,%d coords in a %d,%d table",
-          x, y, colIndexes().size(), rowIndexes().size()
-      ));
+          x, y, colIndexes().size(), rowIndexes().size()));
     }
     return get(ri, ci);
   }
@@ -139,24 +139,21 @@ public interface Table<R, C, T> {
   }
 
   default <T1, K> Table<R, C, T1> aggregate(
-      Function<Map<C, T>, K> rowKey,
-      Comparator<R> comparator,
-      Function<List<Map<C, T>>, Map<C, T1>> aggregator
-  ) {
+      Function<Map<C, T>, K> rowKey, Comparator<R> comparator, Function<List<Map<C, T>>, Map<C, T1>> aggregator) {
     Map<R, Map<C, T1>> map = rowIndexes().stream()
         .map(ri -> Map.entry(ri, row(ri)))
         .collect(Collectors.groupingBy(e -> rowKey.apply(e.getValue())))
         .values()
         .stream()
         .map(l -> {
-              List<Map.Entry<R, Map<C, T>>> list = l.stream()
-                  .sorted((e1, e2) -> comparator.compare(e1.getKey(), e2.getKey()))
-                  .toList();
-              R ri = list.stream().map(Map.Entry::getKey).min(comparator).orElseThrow();
-              Map<C, T1> row = aggregator.apply(list.stream().map(Map.Entry::getValue).toList());
-              return Map.entry(ri, row);
-            }
-        )
+          List<Map.Entry<R, Map<C, T>>> list = l.stream()
+              .sorted((e1, e2) -> comparator.compare(e1.getKey(), e2.getKey()))
+              .toList();
+          R ri = list.stream().map(Map.Entry::getKey).min(comparator).orElseThrow();
+          Map<C, T1> row = aggregator.apply(
+              list.stream().map(Map.Entry::getValue).toList());
+          return Map.entry(ri, row);
+        })
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     return Table.of(map);
   }
@@ -166,15 +163,10 @@ public interface Table<R, C, T> {
   }
 
   default <T1, K> Table<R, C, T1> aggregateSingle(
-      Function<Map<C, T>, K> rowKey,
-      Comparator<R> comparator,
-      Function<List<T>, T1> aggregator
-  ) {
+      Function<Map<C, T>, K> rowKey, Comparator<R> comparator, Function<List<T>, T1> aggregator) {
     Function<List<Map<C, T>>, Map<C, T1>> rowAggregator = maps -> maps.get(0).keySet().stream()
         .map(c -> Map.entry(
-            c,
-            aggregator.apply(maps.stream().map(m -> m.get(c)).toList())
-        ))
+            c, aggregator.apply(maps.stream().map(m -> m.get(c)).toList())))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     return aggregate(rowKey, comparator, rowAggregator);
   }
@@ -196,11 +188,10 @@ public interface Table<R, C, T> {
             ci -> Math.max(
                 cFormat.apply(ci).length(),
                 rowIndexes().stream()
-                    .mapToInt(ri -> tFormat.apply(get(ri, ci)).length())
+                    .mapToInt(
+                        ri -> tFormat.apply(get(ri, ci)).length())
                     .max()
-                    .orElse(0)
-            )
-        ));
+                    .orElse(0))));
     int riWidth = rowIndexes().stream()
         .mapToInt(ri -> rFormat.apply(ri).length())
         .max()
@@ -217,14 +208,17 @@ public interface Table<R, C, T> {
     }
     sb.append("\n");
     // print rows
-    sb.append(rowIndexes().stream().map(ri -> {
-      String s = StringUtils.justify(rFormat.apply(ri), riWidth);
-      s = s + (riWidth > 0 ? colSep : "");
-      s = s + colIndexes().stream()
-          .map(ci -> StringUtils.justify(tFormat.apply(get(ri, ci)), widths.get(ci)))
-          .collect(Collectors.joining(colSep));
-      return s;
-    }).collect(Collectors.joining("\n")));
+    sb.append(rowIndexes().stream()
+        .map(ri -> {
+          String s = StringUtils.justify(rFormat.apply(ri), riWidth);
+          s = s + (riWidth > 0 ? colSep : "");
+          s = s
+              + colIndexes().stream()
+                  .map(ci -> StringUtils.justify(tFormat.apply(get(ri, ci)), widths.get(ci)))
+                  .collect(Collectors.joining(colSep));
+          return s;
+        })
+        .collect(Collectors.joining("\n")));
     return sb.toString();
   }
 
@@ -301,10 +295,8 @@ public interface Table<R, C, T> {
     if (ri == null || ci == null) {
       throw new IndexOutOfBoundsException(String.format(
           "Invalid %d,%d coords in a %d,%d table",
-          x, y, colIndexes().size(), rowIndexes().size()
-      ));
+          x, y, colIndexes().size(), rowIndexes().size()));
     }
     set(ri, ci, t);
   }
-
 }

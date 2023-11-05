@@ -27,7 +27,6 @@ import io.github.ericmedvet.jgea.core.util.TextPlotter;
 import io.github.ericmedvet.jgea.experimenter.util.ImagePlotters;
 import io.github.ericmedvet.jgea.experimenter.util.XYPlotTable;
 import io.github.ericmedvet.jgea.experimenter.util.XYPlotTableBuilder;
-
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;

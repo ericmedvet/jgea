@@ -33,7 +33,6 @@ import io.github.ericmedvet.jgea.experimenter.listener.net.NetListenerClient;
 import io.github.ericmedvet.jgea.experimenter.listener.telegram.TelegramUpdater;
 import io.github.ericmedvet.jgea.experimenter.util.PlotTableBuilder;
 import io.github.ericmedvet.jnb.core.*;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,16 +47,14 @@ public class Listeners {
 
   private static final Logger L = Logger.getLogger(Listeners.class.getName());
 
-  private Listeners() {
-  }
+  private Listeners() {}
 
   private static class ListenerFactoryAndMonitor<E, K> implements ListenerFactory<E, K>, ProgressMonitor {
     private final ListenerFactory<E, K> innerListenerFactory;
     private final ListenerFactory<E, K> outerListenerFactory;
 
     public ListenerFactoryAndMonitor(
-        ListenerFactory<E, K> innerListenerFactory, ExecutorService executorService, boolean onLast
-    ) {
+        ListenerFactory<E, K> innerListenerFactory, ExecutorService executorService, boolean onLast) {
       this.innerListenerFactory = innerListenerFactory;
       if (onLast) {
         if (executorService != null) {
@@ -94,25 +91,24 @@ public class Listeners {
 
   @SuppressWarnings("unused")
   public static <G, S, Q>
-  BiFunction<
-      Experiment,
-      ExecutorService,
-      ListenerFactory<? super POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
-  allCsv(
-      @Param("filePath") String filePath,
-      @Param(
-          value = "defaultFunctions",
-          dNPMs = {"ea.nf.iterations()"})
-      List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>
-          defaultStateFunctions,
-      @Param(value = "functions")
-      List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
-      @Param("individualFunctions")
-      List<NamedFunction<? super Individual<G, S, Q>, ?>> individualFunctions,
-      @Param("runKeys") List<String> runKeys,
-      @Param(value = "deferred") boolean deferred,
-      @Param(value = "onlyLast") boolean onlyLast
-  ) {
+      BiFunction<
+              Experiment,
+              ExecutorService,
+              ListenerFactory<? super POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
+          allCsv(
+              @Param("filePath") String filePath,
+              @Param(
+                      value = "defaultFunctions",
+                      dNPMs = {"ea.nf.iterations()"})
+                  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>
+                      defaultStateFunctions,
+              @Param(value = "functions")
+                  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
+              @Param("individualFunctions")
+                  List<NamedFunction<? super Individual<G, S, Q>, ?>> individualFunctions,
+              @Param("runKeys") List<String> runKeys,
+              @Param(value = "deferred") boolean deferred,
+              @Param(value = "onlyLast") boolean onlyLast) {
     record PopIndividualPair<G, S, Q>(POCPopulationState<?, G, S, Q> pop, Individual<G, S, Q> individual) {}
     return (experiment, executorService) -> {
       List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> popFunctions =
@@ -126,8 +122,7 @@ public class Listeners {
           .map(f -> NamedFunction.build(
               f.getName(),
               f.getFormat(),
-              (PopIndividualPair<G, S, Q> pair) -> f.apply(pair.individual())
-          ))
+              (PopIndividualPair<G, S, Q> pair) -> f.apply(pair.individual())))
           .forEach(pairFunctions::add);
       CSVPrinter<PopIndividualPair<G, S, Q>, Run<?, G, S, Q>> innerListenerFactory = new CSVPrinter<>(
           pairFunctions, buildRunNamedFunctions(runKeys, experiment), new File(filePath), true);
@@ -163,50 +158,46 @@ public class Listeners {
 
   @SuppressWarnings("unused")
   public static <G, S, Q>
-  BiFunction<
-      Experiment,
-      ExecutorService,
-      ListenerFactory<? super POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
-  bestCsv(
-      @Param("filePath") String filePath,
-      @Param(
-          value = "defaultFunctions",
-          dNPMs = {
-              "ea.nf.iterations()",
-              "ea.nf.evals()",
-              "ea.nf.births()",
-              "ea.nf.elapsed()",
-              "ea.nf.size(f=ea.nf.all())",
-              "ea.nf.size(f=ea.nf.firsts())",
-              "ea.nf.size(f=ea.nf.lasts())",
-              "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.genotype();collection=ea.nf.all()))",
-              "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.solution();collection=ea.nf.all()))",
-              "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.fitness();collection=ea.nf.all()))"
-          })
-      List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>
-          defaultStateFunctions,
-      @Param(value = "functions")
-      List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
-      @Param("runKeys") List<String> runKeys,
-      @Param(value = "deferred") boolean deferred,
-      @Param(value = "onlyLast") boolean onlyLast
-  ) {
+      BiFunction<
+              Experiment,
+              ExecutorService,
+              ListenerFactory<? super POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
+          bestCsv(
+              @Param("filePath") String filePath,
+              @Param(
+                      value = "defaultFunctions",
+                      dNPMs = {
+                        "ea.nf.iterations()",
+                        "ea.nf.evals()",
+                        "ea.nf.births()",
+                        "ea.nf.elapsed()",
+                        "ea.nf.size(f=ea.nf.all())",
+                        "ea.nf.size(f=ea.nf.firsts())",
+                        "ea.nf.size(f=ea.nf.lasts())",
+                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.genotype();collection=ea.nf.all()))",
+                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.solution();collection=ea.nf.all()))",
+                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.fitness();collection=ea.nf.all()))"
+                      })
+                  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>
+                      defaultStateFunctions,
+              @Param(value = "functions")
+                  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
+              @Param("runKeys") List<String> runKeys,
+              @Param(value = "deferred") boolean deferred,
+              @Param(value = "onlyLast") boolean onlyLast) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         new CSVPrinter<>(
             (List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>)
                 Misc.concat(List.of(defaultStateFunctions, stateFunctions)),
             buildRunNamedFunctions(runKeys, experiment),
             new File(filePath),
-            true
-        ),
+            true),
         deferred ? executorService : null,
-        onlyLast
-    );
+        onlyLast);
   }
 
   private static <G, S, Q> List<NamedFunction<? super Run<?, G, S, Q>, ?>> buildRunNamedFunctions(
-      List<String> runKeys, Experiment experiment
-  ) {
+      List<String> runKeys, Experiment experiment) {
     List<NamedFunction<? super Run<?, G, S, Q>, ?>> functions = new ArrayList<>();
     runKeys.stream()
         .map(k -> NamedFunction.build(
@@ -214,52 +205,48 @@ public class Listeners {
             "%"
                 .concat(""
                     + experiment.runs().stream()
-                    .map(r -> Utils.interpolate(k, r.map()))
-                    .mapToInt(String::length)
-                    .max()
-                    .orElse(10))
+                        .map(r -> Utils.interpolate(k, r.map()))
+                        .mapToInt(String::length)
+                        .max()
+                        .orElse(10))
                 .concat("s"),
-            (Run<?, G, S, Q> run) -> Utils.interpolate(k, run.map())
-        ))
+            (Run<?, G, S, Q> run) -> Utils.interpolate(k, run.map())))
         .forEach(functions::add);
     return Collections.unmodifiableList(functions);
   }
 
   @SuppressWarnings("unused")
   public static <G, S, Q>
-  BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
-  console(
-      @Param(
-          value = "defaultFunctions",
-          dNPMs = {
-              "ea.nf.iterations()",
-              "ea.nf.evals()",
-              "ea.nf.births()",
-              "ea.nf.elapsed()",
-              "ea.nf.size(f=ea.nf.all())",
-              "ea.nf.size(f=ea.nf.firsts())",
-              "ea.nf.size(f=ea.nf.lasts())",
-              "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.genotype();collection=ea.nf.all()))",
-              "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.solution();collection=ea.nf.all()))",
-              "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.fitness();collection=ea.nf.all()))"
-          })
-      List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>
-          defaultStateFunctions,
-      @Param(value = "functions")
-      List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
-      @Param("runKeys") List<String> runKeys,
-      @Param(value = "deferred") boolean deferred,
-      @Param(value = "onlyLast") boolean onlyLast
-  ) {
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
+          console(
+              @Param(
+                      value = "defaultFunctions",
+                      dNPMs = {
+                        "ea.nf.iterations()",
+                        "ea.nf.evals()",
+                        "ea.nf.births()",
+                        "ea.nf.elapsed()",
+                        "ea.nf.size(f=ea.nf.all())",
+                        "ea.nf.size(f=ea.nf.firsts())",
+                        "ea.nf.size(f=ea.nf.lasts())",
+                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.genotype();collection=ea.nf.all()))",
+                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.solution();collection=ea.nf.all()))",
+                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.fitness();collection=ea.nf.all()))"
+                      })
+                  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>
+                      defaultStateFunctions,
+              @Param(value = "functions")
+                  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
+              @Param("runKeys") List<String> runKeys,
+              @Param(value = "deferred") boolean deferred,
+              @Param(value = "onlyLast") boolean onlyLast) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         new TabularPrinter<>(
             (List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>)
                 Misc.concat(List.of(defaultStateFunctions, stateFunctions)),
-            buildRunNamedFunctions(runKeys, experiment)
-        ),
+            buildRunNamedFunctions(runKeys, experiment)),
         deferred ? executorService : null,
-        onlyLast
-    );
+        onlyLast);
   }
 
   private static String getCredentialFromFile(String credentialFilePath) {
@@ -283,39 +270,38 @@ public class Listeners {
   }
 
   public static <G, S, Q>
-  BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
-  net(
-      @Param(
-          value = "defaultFunctions",
-          dNPMs = {
-              "ea.nf.iterations()",
-              "ea.nf.evals()",
-              "ea.nf.births()",
-              "ea.nf.elapsed()",
-              "ea.nf.size(f=ea.nf.all())",
-              "ea.nf.size(f=ea.nf.firsts())",
-              "ea.nf.size(f=ea.nf.lasts())",
-              "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.genotype();collection=ea.nf.all()))",
-              "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.solution();collection=ea.nf.all()))",
-              "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.fitness();collection=ea.nf.all()))"
-          })
-      List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>
-          defaultStateFunctions,
-      @Param(value = "functions")
-      List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
-      @Param(value = "defaultPlots")
-      List<PlotTableBuilder<? super POCPopulationState<?, G, S, Q>>>
-          defaultPlotTableBuilders,
-      @Param("plots")
-      List<PlotTableBuilder<? super POCPopulationState<?, G, S, Q>>> plotTableBuilders,
-      @Param("runKeys") List<String> runKeys,
-      @Param(value = "deferred") boolean deferred,
-      @Param(value = "onlyLast") boolean onlyLast,
-      @Param(value = "serverAddress", dS = "127.0.0.1") String serverAddress,
-      @Param(value = "serverPort", dI = 10979) int serverPort,
-      @Param(value = "serverKeyFilePath") String serverKeyFilePath,
-      @Param(value = "pollInterval", dD = 2) double pollInterval
-  ) {
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
+          net(
+              @Param(
+                      value = "defaultFunctions",
+                      dNPMs = {
+                        "ea.nf.iterations()",
+                        "ea.nf.evals()",
+                        "ea.nf.births()",
+                        "ea.nf.elapsed()",
+                        "ea.nf.size(f=ea.nf.all())",
+                        "ea.nf.size(f=ea.nf.firsts())",
+                        "ea.nf.size(f=ea.nf.lasts())",
+                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.genotype();collection=ea.nf.all()))",
+                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.solution();collection=ea.nf.all()))",
+                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.fitness();collection=ea.nf.all()))"
+                      })
+                  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>
+                      defaultStateFunctions,
+              @Param(value = "functions")
+                  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
+              @Param(value = "defaultPlots")
+                  List<PlotTableBuilder<? super POCPopulationState<?, G, S, Q>>>
+                      defaultPlotTableBuilders,
+              @Param("plots")
+                  List<PlotTableBuilder<? super POCPopulationState<?, G, S, Q>>> plotTableBuilders,
+              @Param("runKeys") List<String> runKeys,
+              @Param(value = "deferred") boolean deferred,
+              @Param(value = "onlyLast") boolean onlyLast,
+              @Param(value = "serverAddress", dS = "127.0.0.1") String serverAddress,
+              @Param(value = "serverPort", dI = 10979) int serverPort,
+              @Param(value = "serverKeyFilePath") String serverKeyFilePath,
+              @Param(value = "pollInterval", dD = 2) double pollInterval) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         new NetListenerClient<>(
             serverAddress,
@@ -325,21 +311,18 @@ public class Listeners {
             Misc.concat(List.of(defaultStateFunctions, stateFunctions)),
             Misc.concat(List.of(defaultPlotTableBuilders, plotTableBuilders)),
             buildRunNamedFunctions(runKeys, experiment),
-            experiment
-        ),
+            experiment),
         deferred ? executorService : null,
-        onlyLast
-    );
+        onlyLast);
   }
 
   @SuppressWarnings("unused")
   public static <G, S, Q>
-  BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
-  outcomeSaver(
-      @Param(value = "filePathTemplate", dS = "run-outcome-{index:%04d}.txt")
-      String filePathTemplate,
-      @Param(value = "deferred", dB = true) boolean deferred
-  ) {
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
+          outcomeSaver(
+              @Param(value = "filePathTemplate", dS = "run-outcome-{index:%04d}.txt")
+                  String filePathTemplate,
+              @Param(value = "deferred", dB = true) boolean deferred) {
     NamedFunction<Object, String> serializer = NamedFunctions.base64(x -> (Serializable) x);
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         (ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>)
@@ -354,19 +337,14 @@ public class Listeners {
                   Map.ofEntries(
                       Map.entry(
                           new MapNamedParamMap.TypedKey("index", ParamMap.Type.INT),
-                          run.index()
-                      ),
+                          run.index()),
                       Map.entry(
                           new MapNamedParamMap.TypedKey("run", ParamMap.Type.NAMED_PARAM_MAP),
-                          run.map()
-                      ),
+                          run.map()),
                       Map.entry(
                           new MapNamedParamMap.TypedKey(
                               "serializedGenotypes", ParamMap.Type.STRINGS),
-                          serializedGenotypes
-                      )
-                  )
-              );
+                          serializedGenotypes)));
               // write on file
               File file = Misc.checkExistenceAndChangeName(
                   new File(Utils.interpolate(filePathTemplate, run)));
@@ -379,30 +357,28 @@ public class Listeners {
               }
             },
         deferred ? executorService : null,
-        true
-    );
+        true);
   }
 
   @SuppressWarnings("unused")
   public static <G, S, Q>
-  BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
-  telegram(
-      @Param("chatId") String chatId,
-      @Param("botIdFilePath") String botIdFilePath,
-      @Param(
-          value = "defaultPlots",
-          dNPMs = {"ea.plot.elapsed()"})
-      List<PlotTableBuilder<? super POCPopulationState<?, G, S, Q>>>
-          defaultPlotTableBuilders,
-      @Param("plots")
-      List<PlotTableBuilder<? super POCPopulationState<?, G, S, Q>>> plotTableBuilders,
-      @Param("accumulators")
-      List<AccumulatorFactory<? super POCPopulationState<?, G, S, Q>, ?, Run<?, G, S, Q>>>
-          accumulators,
-      @Param("runKeys") List<String> runKeys, // TODO: these are currently ignored
-      @Param(value = "deferred", dB = true) boolean deferred,
-      @Param(value = "onlyLast") boolean onlyLast
-  ) {
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
+          telegram(
+              @Param("chatId") String chatId,
+              @Param("botIdFilePath") String botIdFilePath,
+              @Param(
+                      value = "defaultPlots",
+                      dNPMs = {"ea.plot.elapsed()"})
+                  List<PlotTableBuilder<? super POCPopulationState<?, G, S, Q>>>
+                      defaultPlotTableBuilders,
+              @Param("plots")
+                  List<PlotTableBuilder<? super POCPopulationState<?, G, S, Q>>> plotTableBuilders,
+              @Param("accumulators")
+                  List<AccumulatorFactory<? super POCPopulationState<?, G, S, Q>, ?, Run<?, G, S, Q>>>
+                      accumulators,
+              @Param("runKeys") List<String> runKeys, // TODO: these are currently ignored
+              @Param(value = "deferred", dB = true) boolean deferred,
+              @Param(value = "onlyLast") boolean onlyLast) {
     // read credential files
     long longChatId;
     String botId = getCredentialFromFile(botIdFilePath);
@@ -417,8 +393,7 @@ public class Listeners {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         new TelegramUpdater<>(accumulatorFactories, botId, longChatId),
         deferred ? executorService : null,
-        onlyLast
-    );
+        onlyLast);
   }
 
   /*
@@ -467,28 +442,27 @@ public class Listeners {
 
   @SuppressWarnings("unused")
   public static <G, S, Q>
-  BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
-  tui(
-      @Param(
-          value = "defaultFunctions",
-          dNPMs = {
-              "ea.nf.iterations()",
-              "ea.nf.evals()",
-              "ea.nf.births()",
-              "ea.nf.elapsed()",
-              "ea.nf.size(f=ea.nf.all())",
-              "ea.nf.size(f=ea.nf.firsts())",
-              "ea.nf.size(f=ea.nf.lasts())",
-              "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.genotype();collection=ea.nf.all()))",
-              "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.solution();collection=ea.nf.all()))",
-              "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.fitness();collection=ea.nf.all()))"
-          })
-      List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>
-          defaultStateFunctions,
-      @Param(value = "functions")
-      List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
-      @Param("runKeys") List<String> runKeys
-  ) {
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
+          tui(
+              @Param(
+                      value = "defaultFunctions",
+                      dNPMs = {
+                        "ea.nf.iterations()",
+                        "ea.nf.evals()",
+                        "ea.nf.births()",
+                        "ea.nf.elapsed()",
+                        "ea.nf.size(f=ea.nf.all())",
+                        "ea.nf.size(f=ea.nf.firsts())",
+                        "ea.nf.size(f=ea.nf.lasts())",
+                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.genotype();collection=ea.nf.all()))",
+                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.solution();collection=ea.nf.all()))",
+                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.fitness();collection=ea.nf.all()))"
+                      })
+                  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>
+                      defaultStateFunctions,
+              @Param(value = "functions")
+                  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
+              @Param("runKeys") List<String> runKeys) {
     DirectSinkSource<MachineKey, MachineInfo> machineSinkSource = new DirectSinkSource<>();
     DirectSinkSource<ProcessKey, ProcessInfo> processSinkSource = new DirectSinkSource<>();
     DirectSinkSource<ProcessKey, LogInfo> logSinkSource = new DirectSinkSource<>();
@@ -506,10 +480,8 @@ public class Listeners {
             logSinkSource,
             experimentSinkSource,
             runSinkSource,
-            dataItemSinkSource
-        ),
+            dataItemSinkSource),
         executorService,
-        false
-    );
+        false);
   }
 }

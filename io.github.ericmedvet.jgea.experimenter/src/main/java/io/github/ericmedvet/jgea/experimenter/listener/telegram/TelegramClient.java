@@ -25,13 +25,12 @@ import com.pengrad.telegrambot.request.*;
 import com.pengrad.telegrambot.response.GetChatMemberCountResponse;
 import com.pengrad.telegrambot.response.GetChatResponse;
 import com.pengrad.telegrambot.response.SendResponse;
-
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.Set;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 
 public class TelegramClient {
 

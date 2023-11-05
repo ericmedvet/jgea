@@ -21,7 +21,6 @@
 package io.github.ericmedvet.jgea.experimenter.listener.net;
 
 import io.github.ericmedvet.jgea.core.util.Progress;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;

@@ -31,7 +31,6 @@ import io.github.ericmedvet.jgea.experimenter.listener.tui.table.Cell;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.table.ColoredStringCell;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.table.CompositeCell;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.table.StringCell;
-
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.IllegalFormatException;

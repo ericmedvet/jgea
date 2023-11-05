@@ -25,7 +25,6 @@ import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.core.ParamMap;
-
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;

@@ -1,3 +1,22 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-experimenter
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package io.github.ericmedvet.jgea.experimenter.listener.decoupled;
 
 import io.github.ericmedvet.jgea.core.listener.Listener;
@@ -8,7 +27,6 @@ import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.listener.net.NetUtils;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,8 +55,7 @@ public class SinkListenerFactory<G, S, Q> implements ListenerFactory<POCPopulati
       Sink<ProcessKey, LogInfo> logSink,
       Sink<ExperimentKey, ExperimentInfo> experimentSink,
       Sink<RunKey, RunInfo> runSink,
-      Sink<DataItemKey, DataItemInfo> dataItemSink
-  ) {
+      Sink<DataItemKey, DataItemInfo> dataItemSink) {
     // TODO add process and log entries forwarding
     this.stateFunctions = stateFunctions;
     this.runFunctions = runFunctions;
@@ -57,9 +74,7 @@ public class SinkListenerFactory<G, S, Q> implements ListenerFactory<POCPopulati
             Stream.of(stateFunctions, runFunctions)
                 .flatMap(List::stream)
                 .collect(Collectors.toMap(NamedFunction::getName, NamedFunction::getFormat)),
-            LocalDateTime.now()
-        )
-    );
+            LocalDateTime.now()));
   }
 
   @Override
@@ -68,16 +83,15 @@ public class SinkListenerFactory<G, S, Q> implements ListenerFactory<POCPopulati
     LocalDateTime startDateTime = LocalDateTime.now();
     pushMachineAndProcess();
     runSink.push(runKey, new RunInfo(run.index(), startDateTime, Progress.NA, false));
-    runFunctions.forEach(f -> dataItemSink.push(new DataItemKey(runKey, f.getName()), new DataItemInfo(f.apply(run))));
+    runFunctions.forEach(
+        f -> dataItemSink.push(new DataItemKey(runKey, f.getName()), new DataItemInfo(f.apply(run))));
     return new Listener<>() {
       @Override
       public void listen(POCPopulationState<?, G, S, Q> state) {
         pushMachineAndProcess();
         runSink.push(runKey, new RunInfo(run.index(), startDateTime, state.progress(), false));
-        stateFunctions.forEach(f -> dataItemSink.push(
-            new DataItemKey(runKey, f.getName()),
-            new DataItemInfo(f.apply(state))
-        ));
+        stateFunctions.forEach(
+            f -> dataItemSink.push(new DataItemKey(runKey, f.getName()), new DataItemInfo(f.apply(state))));
       }
 
       @Override
@@ -99,18 +113,14 @@ public class SinkListenerFactory<G, S, Q> implements ListenerFactory<POCPopulati
             NetUtils.getMachineName(),
             NetUtils.getNumberOfProcessors(),
             NetUtils.getCPULoad(),
-            LocalDateTime.now()
-        )
-    );
+            LocalDateTime.now()));
     processSink.push(
         ProcessKey.get(),
         new ProcessInfo(
             NetUtils.getProcessName(),
             NetUtils.getUserName(),
             NetUtils.getProcessUsedMemory(),
-            NetUtils.getProcessMaxMemory()
-        )
-    );
+            NetUtils.getProcessMaxMemory()));
   }
 
   private RunKey runKey(Run<?, ?, ?, ?> run) {

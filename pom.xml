@@ -179,7 +179,9 @@
             <importOrder/>
             <trimTrailingWhitespace/>
             <removeUnusedImports/>
-            <palantirJavaFormat/>
+            <palantirJavaFormat>
+              <version>2.38.0</version>
+            </palantirJavaFormat>
             <indent>
               <tabs>true</tabs>
               <spacesPerTab>4</spacesPerTab>

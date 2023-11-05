@@ -19,6 +19,8 @@
  */
 package io.github.ericmedvet.jgea.experimenter.util;
 
+import java.awt.image.BufferedImage;
+import java.util.function.Function;
 import org.knowm.xchart.BitmapEncoder;
 import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYChartBuilder;
@@ -26,9 +28,6 @@ import org.knowm.xchart.XYSeries;
 import org.knowm.xchart.style.Styler;
 import org.knowm.xchart.style.markers.Marker;
 import org.knowm.xchart.style.markers.SeriesMarkers;
-
-import java.awt.image.BufferedImage;
-import java.util.function.Function;
 
 public class ImagePlotters {
 

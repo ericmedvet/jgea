@@ -38,7 +38,6 @@ import io.github.ericmedvet.jgea.experimenter.listener.tui.table.ColoredStringCe
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.DrawUtils;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.Point;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.Rectangle;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
