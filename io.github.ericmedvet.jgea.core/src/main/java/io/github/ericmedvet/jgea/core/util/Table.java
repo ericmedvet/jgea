@@ -95,6 +95,68 @@ public interface Table<R, C, T> {
     };
   }
 
+  default <T1, K> Table<R, C, T1> aggregate(
+      Function<Map<C, T>, K> rowKey, Comparator<R> comparator, Function<List<Map<C, T>>, Map<C, T1>> aggregator
+  ) {
+    Map<R, Map<C, T1>> map = rowIndexes().stream()
+        .map(ri -> Map.entry(ri, row(ri)))
+        .collect(Collectors.groupingBy(e -> rowKey.apply(e.getValue())))
+        .values()
+        .stream()
+        .map(l -> {
+          List<Map.Entry<R, Map<C, T>>> list = l.stream()
+              .sorted((e1, e2) -> comparator.compare(e1.getKey(), e2.getKey()))
+              .toList();
+          R ri = list.stream().map(Map.Entry::getKey).min(comparator).orElseThrow();
+          Map<C, T1> row = aggregator.apply(
+              list.stream().map(Map.Entry::getValue).toList());
+          return Map.entry(ri, row);
+        })
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    return Table.of(map);
+  }
+
+  default <T1, K> Table<R, C, T1> aggregateByIndex(
+      Function<R, K> rowKey, Comparator<R> comparator, Function<List<Map<C, T>>, Map<C, T1>> aggregator
+  ) {
+    Map<R, Map<C, T1>> map = rowIndexes().stream()
+        .map(ri -> Map.entry(ri, row(ri)))
+        .collect(Collectors.groupingBy(e -> rowKey.apply(e.getKey())))
+        .values()
+        .stream()
+        .map(l -> {
+          List<Map.Entry<R, Map<C, T>>> list = l.stream()
+              .sorted((e1, e2) -> comparator.compare(e1.getKey(), e2.getKey()))
+              .toList();
+          R ri = list.stream().map(Map.Entry::getKey).min(comparator).orElseThrow();
+          Map<C, T1> row = aggregator.apply(
+              list.stream().map(Map.Entry::getValue).toList());
+          return Map.entry(ri, row);
+        })
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    return Table.of(map);
+  }
+
+  default <T1, K> Table<R, C, T1> aggregateByIndexSingle(
+      Function<R, K> rowKey, Comparator<R> comparator, Function<List<T>, T1> aggregator
+  ) {
+    Function<List<Map<C, T>>, Map<C, T1>> rowAggregator = maps -> maps.get(0).keySet().stream()
+        .map(c -> Map.entry(
+            c, aggregator.apply(maps.stream().map(m -> m.get(c)).toList())))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    return aggregateByIndex(rowKey, comparator, rowAggregator);
+  }
+
+  default <T1, K> Table<R, C, T1> aggregateSingle(
+      Function<Map<C, T>, K> rowKey, Comparator<R> comparator, Function<List<T>, T1> aggregator
+  ) {
+    Function<List<Map<C, T>>, Map<C, T1>> rowAggregator = maps -> maps.get(0).keySet().stream()
+        .map(c -> Map.entry(
+            c, aggregator.apply(maps.stream().map(m -> m.get(c)).toList())))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    return aggregate(rowKey, comparator, rowAggregator);
+  }
+
   default void clear() {
     rowIndexes().forEach(this::removeRow);
   }
@@ -119,13 +181,20 @@ public interface Table<R, C, T> {
     return rowIndexes().stream().map(column::get).toList();
   }
 
+  default <C1, T1> Table<R, C1, T1> expandColumn(C columnIndex, Function<T, Map<C1, T1>> f) {
+    Table<R, C1, T1> table = new HashMapTable<>();
+    column(columnIndex).forEach((ri, t) -> table.addRow(ri, f.apply(t)));
+    return table;
+  }
+
   default T get(int x, int y) {
     R ri = rowIndexes().get(y);
     C ci = colIndexes().get(x);
     if (ri == null || ci == null) {
       throw new IndexOutOfBoundsException(String.format(
           "Invalid %d,%d coords in a %d,%d table",
-          x, y, colIndexes().size(), rowIndexes().size()));
+          x, y, colIndexes().size(), rowIndexes().size()
+      ));
     }
     return get(ri, ci);
   }
@@ -136,45 +205,6 @@ public interface Table<R, C, T> {
 
   default int nRows() {
     return rowIndexes().size();
-  }
-
-  default <T1, K> Table<R, C, T1> aggregate(
-      Function<Map<C, T>, K> rowKey, Comparator<R> comparator, Function<List<Map<C, T>>, Map<C, T1>> aggregator) {
-    Map<R, Map<C, T1>> map = rowIndexes().stream()
-        .map(ri -> Map.entry(ri, row(ri)))
-        .collect(Collectors.groupingBy(e -> rowKey.apply(e.getValue())))
-        .values()
-        .stream()
-        .map(l -> {
-          List<Map.Entry<R, Map<C, T>>> list = l.stream()
-              .sorted((e1, e2) -> comparator.compare(e1.getKey(), e2.getKey()))
-              .toList();
-          R ri = list.stream().map(Map.Entry::getKey).min(comparator).orElseThrow();
-          Map<C, T1> row = aggregator.apply(
-              list.stream().map(Map.Entry::getValue).toList());
-          return Map.entry(ri, row);
-        })
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    return Table.of(map);
-  }
-
-  default Map<C, T> row(R rowIndex) {
-    return colIndexes().stream().collect(Collectors.toMap(ci -> ci, ci -> get(rowIndex, ci)));
-  }
-
-  default <T1, K> Table<R, C, T1> aggregateSingle(
-      Function<Map<C, T>, K> rowKey, Comparator<R> comparator, Function<List<T>, T1> aggregator) {
-    Function<List<Map<C, T>>, Map<C, T1>> rowAggregator = maps -> maps.get(0).keySet().stream()
-        .map(c -> Map.entry(
-            c, aggregator.apply(maps.stream().map(m -> m.get(c)).toList())))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    return aggregate(rowKey, comparator, rowAggregator);
-  }
-
-  default <C1, T1> Table<R, C1, T1> expandColumn(C columnIndex, Function<T, Map<C1, T1>> f) {
-    Table<R, C1, T1> table = new HashMapTable<>();
-    column(columnIndex).forEach((ri, t) -> table.addRow(ri, f.apply(t)));
-    return table;
   }
 
   default String prettyPrint(Function<R, String> rFormat, Function<C, String> cFormat, Function<T, String> tFormat) {
@@ -191,7 +221,9 @@ public interface Table<R, C, T> {
                     .mapToInt(
                         ri -> tFormat.apply(get(ri, ci)).length())
                     .max()
-                    .orElse(0))));
+                    .orElse(0)
+            )
+        ));
     int riWidth = rowIndexes().stream()
         .mapToInt(ri -> rFormat.apply(ri).length())
         .max()
@@ -214,12 +246,20 @@ public interface Table<R, C, T> {
           s = s + (riWidth > 0 ? colSep : "");
           s = s
               + colIndexes().stream()
-                  .map(ci -> StringUtils.justify(tFormat.apply(get(ri, ci)), widths.get(ci)))
-                  .collect(Collectors.joining(colSep));
+              .map(ci -> StringUtils.justify(tFormat.apply(get(ri, ci)), widths.get(ci)))
+              .collect(Collectors.joining(colSep));
           return s;
         })
         .collect(Collectors.joining("\n")));
     return sb.toString();
+  }
+
+  default String prettyPrint() {
+    return prettyPrint("%s"::formatted, "%s"::formatted, "%s"::formatted);
+  }
+
+  default Map<C, T> row(R rowIndex) {
+    return colIndexes().stream().collect(Collectors.toMap(ci -> ci, ci -> get(rowIndex, ci)));
   }
 
   default <T1> Table<R, C, T1> rowSlide(int n, Function<List<T>, T1> aggregator) {
@@ -238,23 +278,24 @@ public interface Table<R, C, T> {
     return colIndexes().stream().map(row::get).toList();
   }
 
-  default String prettyPrint() {
-    return prettyPrint("%s"::formatted, "%s"::formatted, "%s"::formatted);
+  default void set(int x, int y, T t) {
+    R ri = rowIndexes().get(y);
+    C ci = colIndexes().get(x);
+    if (ri == null || ci == null) {
+      throw new IndexOutOfBoundsException(String.format(
+          "Invalid %d,%d coords in a %d,%d table",
+          x, y, colIndexes().size(), rowIndexes().size()
+      ));
+    }
+    set(ri, ci, t);
   }
 
   default Table<R, C, T> sorted(C c, Comparator<T> comparator) {
     Table<R, C, T> thisTable = this;
     return new Table<R, C, T>() {
       @Override
-      public List<R> rowIndexes() {
-        return thisTable.rowIndexes().stream()
-            .sorted((ri1, ri2) -> comparator.compare(get(ri1, c), get(ri2, c)))
-            .toList();
-      }
-
-      @Override
-      public List<C> colIndexes() {
-        return thisTable.colIndexes();
+      public void addColumn(C columnIndex, Map<R, T> values) {
+        thisTable.addColumn(columnIndex, values);
       }
 
       @Override
@@ -263,18 +304,8 @@ public interface Table<R, C, T> {
       }
 
       @Override
-      public void addColumn(C columnIndex, Map<R, T> values) {
-        thisTable.addColumn(columnIndex, values);
-      }
-
-      @Override
-      public void removeRow(R rowIndex) {
-        thisTable.removeRow(rowIndex);
-      }
-
-      @Override
-      public void removeColumn(C columnIndex) {
-        thisTable.removeColumn(columnIndex);
+      public List<C> colIndexes() {
+        return thisTable.colIndexes();
       }
 
       @Override
@@ -283,20 +314,26 @@ public interface Table<R, C, T> {
       }
 
       @Override
+      public void removeColumn(C columnIndex) {
+        thisTable.removeColumn(columnIndex);
+      }
+
+      @Override
+      public void removeRow(R rowIndex) {
+        thisTable.removeRow(rowIndex);
+      }
+
+      @Override
+      public List<R> rowIndexes() {
+        return thisTable.rowIndexes().stream()
+            .sorted((ri1, ri2) -> comparator.compare(get(ri1, c), get(ri2, c)))
+            .toList();
+      }
+
+      @Override
       public void set(R rowIndex, C columnIndex, T t) {
         thisTable.set(rowIndex, columnIndex, t);
       }
     };
-  }
-
-  default void set(int x, int y, T t) {
-    R ri = rowIndexes().get(y);
-    C ci = colIndexes().get(x);
-    if (ri == null || ci == null) {
-      throw new IndexOutOfBoundsException(String.format(
-          "Invalid %d,%d coords in a %d,%d table",
-          x, y, colIndexes().size(), rowIndexes().size()));
-    }
-    set(ri, ci, t);
   }
 }
