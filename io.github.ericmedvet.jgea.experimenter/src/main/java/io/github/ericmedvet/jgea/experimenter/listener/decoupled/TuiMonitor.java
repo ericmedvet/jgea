@@ -22,33 +22,30 @@ package io.github.ericmedvet.jgea.experimenter.listener.decoupled;
 
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
-import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
-import io.github.ericmedvet.jgea.core.util.*;
+import io.github.ericmedvet.jgea.core.util.HashMapTable;
+import io.github.ericmedvet.jgea.core.util.Pair;
+import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.ListLogHandler;
-import io.github.ericmedvet.jgea.experimenter.listener.tui.table.Cell;
-import io.github.ericmedvet.jgea.experimenter.listener.tui.table.ColoredStringCell;
-import io.github.ericmedvet.jgea.experimenter.listener.tui.table.CompositeCell;
-import io.github.ericmedvet.jgea.experimenter.listener.tui.table.StringCell;
-import io.github.ericmedvet.jgea.experimenter.listener.tui.util.DrawUtils;
-import io.github.ericmedvet.jgea.experimenter.listener.tui.util.Point;
-import io.github.ericmedvet.jgea.experimenter.listener.tui.util.Rectangle;
+import io.github.ericmedvet.jgea.experimenter.listener.tui.table.*;
+import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -71,12 +68,6 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
       DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
   private static final DateTimeFormatter COMPLETE_DATETIME_FORMAT =
       DateTimeFormatter.ofPattern("MM-dd HH:mm").withZone(ZoneId.systemDefault());
-  private static final TextColor FRAME_COLOR = TextColor.Factory.fromString("#105010");
-  private static final TextColor FRAME_LABEL_COLOR = TextColor.Factory.fromString("#10A010");
-  private static final TextColor DATA_LABEL_COLOR = TextColor.Factory.fromString("#A01010");
-  private static final TextColor MISSING_DATA_COLOR = TextColor.Factory.fromString("#404040");
-  private static final TextColor DATA_COLOR = TextColor.Factory.fromString("#A0A0A0");
-  private static final TextColor MAIN_DATA_COLOR = TextColor.Factory.fromString("#F0F0F0");
   private static final String LEVEL_FORMAT = "%4.4s";
   private static final String DATETIME_FORMAT = "%1$tm-%1$td %1$tH:%1$tM:%1$tS";
 
@@ -252,22 +243,8 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
   }
 
 
-  @Override
-  public void run() {
-    // start painter task
-    uiExecutorService.scheduleAtFixedRate(
-        () -> {
-          try {
-            updateUI();
-          } catch (RuntimeException e) {
-            L.warning("Unexpected exception: %s".formatted(e));
-          }
-        },
-        0,
-        configuration.uiRefreshIntervalMillis,
-        TimeUnit.MILLISECONDS
-    );
-    isRunning = true;
+  private static <T> T last(List<T> ts) {
+    return ts.get(ts.size() - 1);
   }
 
   private void stop() {
@@ -291,12 +268,6 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
       dataItemSource.pull(lastRefreshLocalDateTime).forEach((p, v) -> dataItemTable.set(p, VALUE_NAME, v));
       lastRefreshLocalDateTime = LocalDateTime.now();
     }
-    prune(machineTable, 3);
-    prune(processTable, 3);
-    prune(logTable, 1);
-    prune(experimentTable, 1);
-    prune(runTable, 3);
-    prune(dataItemTable, 3);
   }
 
   private static <K, V> void prune(Table<Pair<LocalDateTime, K>, String, V> table, int n) {
@@ -313,53 +284,80 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
     toRemovePs.forEach(table::removeRow);
   }
 
-  private <V> Cell toCell(List<V> vs, Function<V, String> formatter) {
-    if (vs.isEmpty()) {
-      return new StringCell(EMPTY_CELL_CONTENT);
-    }
-    V newest = vs.get(vs.size() - 1);
-    if (newest == null) {
-      return new StringCell(EMPTY_CELL_CONTENT);
-    }
-    if (newest instanceof String s) {
-      return new StringCell(formatter.apply(newest));
-    }
-    if (newest instanceof Number n) {
-      return new CompositeCell(List.of(
-          new StringCell(formatter.apply(newest)),
-          Trend.from(n.doubleValue(), ((Number) vs.get(0)).doubleValue()).cell()
-      ));
-    }
-    if (newest instanceof Progress p) {
-      if (Double.isNaN(p.rate())) {
-        return new StringCell(EMPTY_CELL_CONTENT);
-      }
-      return new StringCell(TextPlotter.horizontalBar(p.rate(), 0, 1, PROGRESS_BAR_LENGTH, false));
-    }
-    return new StringCell(newest.toString());
-  }
-
-  private <K, V> Table<Pair<LocalDateTime, K>, String, Cell> cellTable(
-      Table<Pair<LocalDateTime, K>, String, V> table,
-      Map<String, Function<V, String>> formatters
-  ) {
-    return table.aggregateByIndexSingle(
-        Pair::second,
-        Comparator.comparing(Pair::first),
-        (name, vs) -> toCell(vs, formatters.getOrDefault(name, Object::toString))
+  @Override
+  public void run() {
+    // start painter task
+    uiExecutorService.scheduleAtFixedRate(
+        () -> {
+          try {
+            updateUI();
+          } catch (RuntimeException e) {
+            L.warning("Unexpected exception: %s".formatted(e));
+            e.printStackTrace();
+          }
+        },
+        0,
+        configuration.uiRefreshIntervalMillis,
+        TimeUnit.MILLISECONDS
     );
+    isRunning = true;
   }
 
   private synchronized void updateUI() {
     refreshTables();
     List<MachineKey> machineKeys = machineTable.rowIndexes().stream().map(Pair::second).distinct().toList();
     List<ExperimentKey> experimentsKeys = experimentTable.rowIndexes().stream().map(Pair::second).distinct().toList();
+
+    Table<MachineKey, String, ? extends Cell> mCells = machineTable.aggregateByIndexSingle(
+        Pair::second,
+        Comparator.comparing(Pair::first),
+        vs -> vs
+    ).expandColumn(VALUE_NAME, vs -> Map.ofEntries(
+        Map.entry("Name", new StringCell(last(vs).machineName())),
+        Map.entry("CPUs", new NumericCell(last(vs).numberOfProcessors(), "%d").rightAligned()),
+        Map.entry(
+            "Load",
+            new TrendedNumericCell<>(vs.stream().map(MachineInfo::cpuLoad).toList(), "%.1f").rightAligned()
+        )
+    )).remapRowIndex(Pair::second);
+    Table<MachineKey, String, ? extends Cell> pCells = processTable.aggregateByIndexSingle(
+        Pair::second,
+        Comparator.comparing(Pair::first),
+        TuiMonitor::last
+    ).aggregateByIndexSingle(
+        p -> p.second().machineKey(),
+        Comparator.comparing(Pair::first),
+        vs -> vs
+    ).expandColumn(VALUE_NAME, vs -> Map.ofEntries(
+        Map.entry(
+            "Used",
+            new NumericCell(
+                vs.stream().mapToDouble(v -> v.usedMemory() / 1024d / 1024d).average().orElse(0),
+                "%.0fMB"
+            ).rightAligned()
+        ),
+        Map.entry(
+            "Tot",
+            new NumericCell(
+                vs.stream().mapToDouble(v -> v.maxMemory() / 1024d / 1024d).average().orElse(0),
+                "%.0fMB"
+            ).rightAligned()
+        ),
+        Map.entry(
+            "#Proc.",
+            new NumericCell(vs.size(), "d").rightAligned()
+        )
+    )).remapRowIndex(p -> p.second().machineKey());
+    mCells = Table.colLeftJoin(mCells, pCells);
+
+
     //build machines+processes renderable table
+    /*
     Table<MachineKey, String, Cell> machines = Table.colLeftJoin(
         cellTable(machineTable.expandColumn(
             VALUE_NAME,
             v -> Map.ofEntries(
-                Map.entry("Name", (Object)v.machineName()),
+                Map.entry("Name", (Object) v.machineName()),
                 Map.entry("Load", v.cpuLoad()),
                 Map.entry("CPUs", v.numberOfProcessors())
             )
@@ -373,7 +371,7 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
                 v -> Map.ofEntries(
                     Map.entry("Us. mem.", v.usedMemory() / 1024 / 1024),
                     Map.entry("Max mem.", v.maxMemory() / 1024 / 1024),
-                    Map.entry("Proc.", (Object)1)
+                    Map.entry("Proc.", (Object) 1)
                 )
             ).aggregateByIndexSingle(
                 Pair::second,
@@ -397,16 +395,16 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
         experimentTable.expandColumn(
             VALUE_NAME,
             v -> Map.ofEntries(
-                Map.entry("Started", (Object)v.startLocalDateTime())
+                Map.entry("Started", (Object) v.startLocalDateTime())
             )
         ).expandRowIndex(p -> Map.ofEntries(
             Map.entry("MK", p.second().processKey().machineKey())
         )),
         Map.ofEntries(
-            Map.entry("Started", d -> COMPLETE_DATETIME_FORMAT.format((LocalDateTime)d))
+            Map.entry("Started", d -> COMPLETE_DATETIME_FORMAT.format((LocalDateTime) d))
         )
     ).remapRowIndex(Pair::second);
-
+  */
 
     // check keystrokes
     try {
@@ -422,44 +420,16 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
     }
     // update size
     TerminalSize size = screen.doResizeIfNecessary();
-    TextGraphics tg = screen.newTextGraphics();
-    Rectangle r;
     if (size == null) {
-      size = screen.getTerminalSize();
-    } else {
       screen.clear();
     }
-    // adjust rectangles
-    Rectangle all = new Rectangle(new Point(0, 0), new Point(size.getColumns(), size.getRows()));
-    Rectangle nR = all.splitVertically(configuration.runsSplit, configuration.logsSplit)
-        .get(0);
-    Rectangle runsR = all.splitVertically(configuration.runsSplit, configuration.logsSplit)
-        .get(1);
-    Rectangle logsR = all.splitVertically(configuration.runsSplit, configuration.logsSplit)
-        .get(2);
-    Rectangle nwR = nR.splitHorizontally(configuration.legendSplit).get(0);
-    Rectangle legendR = nR.splitHorizontally(configuration.legendSplit).get(1);
-    Rectangle machinesR =
-        nwR.splitVertically(configuration.machinesProcessesSplit).get(0);
-    Rectangle experimentsR =
-        nwR.splitVertically(configuration.machinesProcessesSplit).get(1);
+    TuiDrawer td = new TuiDrawer(screen.newTextGraphics());
     // draw structure
-    DrawUtils.drawFrame(
-        tg,
-        runsR,
-        "Runs (%d) - Local time: %s".formatted(runTable.nRows(), COMPLETE_DATETIME_FORMAT.format(LocalDateTime.now())),
-        FRAME_COLOR,
-        FRAME_LABEL_COLOR
-    );
-    DrawUtils.drawFrame(tg, legendR, "Legend", FRAME_COLOR, FRAME_LABEL_COLOR);
-    DrawUtils.drawFrame(tg, logsR, "Logs", FRAME_COLOR, FRAME_LABEL_COLOR);
-    DrawUtils.drawFrame(
-        tg, machinesR, "Machines (%d)".formatted(machines.nRows()), FRAME_COLOR, FRAME_LABEL_COLOR);
-    DrawUtils.drawFrame(
-        tg, experimentsR, "Experiments (%d)".formatted(experimentTable.nRows()), FRAME_COLOR, FRAME_LABEL_COLOR);
-    // draw tables
-    DrawUtils.drawTable(tg, machinesR.inner(1), machines, DATA_LABEL_COLOR, DATA_COLOR);
-    DrawUtils.drawTable(tg, experimentsR.inner(1), experiments, DATA_LABEL_COLOR, DATA_COLOR);
+    td.inX(0, 0.6f).inY(0, 0.33f)
+        .clear()
+        .drawFrame("Machines (%d)".formatted(mCells.nRows()))
+        .inner(1)
+        .drawTable(mCells);
     // refresh
     try {
       screen.refresh();

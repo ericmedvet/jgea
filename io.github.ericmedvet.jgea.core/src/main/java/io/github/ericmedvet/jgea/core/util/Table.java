@@ -474,7 +474,7 @@ public interface Table<R, C, T> {
     };
   }
 
-  static <R, C, T> Table<R, C, T> colLeftJoin(Table<R, C, T> t1, Table<R, C, T> t2) {
+  static <R, C, T> Table<R, C, ? extends T> colLeftJoin(Table<R, C, ? extends T> t1, Table<R, C, ? extends T> t2) {
     return of(t1.rowIndexes().stream()
         .map(ri -> Map.entry(
             ri,
@@ -484,4 +484,5 @@ public interface Table<R, C, T> {
         ))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
   }
+
 }

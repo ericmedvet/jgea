@@ -19,10 +19,31 @@
  */
 package io.github.ericmedvet.jgea.experimenter.listener.tui.table;
 
-public interface Cell {
-  Object content();
+import io.github.ericmedvet.jgea.experimenter.listener.tui.util.Point;
+import io.github.ericmedvet.jgea.experimenter.listener.tui.util.Rectangle;
+import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
 
-  default int length() {
-    return content().toString().length();
+public interface Cell {
+
+  void draw(TuiDrawer td, int width);
+
+  int preferredWidth();
+
+  default Cell rightAligned() {
+    Cell thisCell = this;
+    return new Cell() {
+      @Override
+      public int preferredWidth() {
+        return thisCell.preferredWidth();
+      }
+
+      @Override
+      public void draw(TuiDrawer td, int width) {
+        thisCell.draw(
+            td.in(new Rectangle(new Point(width - thisCell.preferredWidth(), 0), new Point(width, 1))),
+            width
+        );
+      }
+    };
   }
 }

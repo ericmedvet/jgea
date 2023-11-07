@@ -19,4 +19,16 @@
  */
 package io.github.ericmedvet.jgea.experimenter.listener.tui.table;
 
-public record StringCell(String content) implements Cell {}
+import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
+
+public record StringCell(String content) implements Cell {
+  @Override
+  public void draw(TuiDrawer td, int width) {
+    td.drawString(0, 0, content);
+  }
+
+  @Override
+  public int preferredWidth() {
+    return content.length();
+  }
+}
