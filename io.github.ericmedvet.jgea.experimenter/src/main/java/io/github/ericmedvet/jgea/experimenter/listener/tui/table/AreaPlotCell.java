@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * jgea-tui
+ * jgea-experimenter
  * %%
  * Copyright (C) 2018 - 2023 Eric Medvet
  * %%
@@ -19,30 +19,33 @@
  */
 package io.github.ericmedvet.jgea.experimenter.listener.tui.table;
 
-import io.github.ericmedvet.jgea.experimenter.listener.tui.util.Point;
-import io.github.ericmedvet.jgea.experimenter.listener.tui.util.Rectangle;
+import io.github.ericmedvet.jgea.core.util.TextPlotter;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-public interface Cell {
+public record AreaPlotCell(int l, SortedMap<? extends Number, ? extends Number> data) implements Cell {
 
-  void draw(TuiDrawer td, int width);
+  public AreaPlotCell(int l, List<? extends Number> data) {
+    this(l, (SortedMap<Integer, ? extends Number>) IntStream.range(0, data.size())
+        .boxed()
+        .collect(Collectors.toMap(i -> i, data::get, (n1, n2) -> n1, TreeMap::new)));
+  }
 
-  int preferredWidth();
+  @Override
+  public void draw(TuiDrawer td, int width) {
+    td.drawString(
+        0,
+        0,
+        TextPlotter.areaPlot(
+            data, data.firstKey().doubleValue(), data.lastKey().doubleValue(), l));
+  }
 
-  default Cell rightAligned() {
-    Cell thisCell = this;
-    return new Cell() {
-      @Override
-      public int preferredWidth() {
-        return thisCell.preferredWidth();
-      }
-
-      @Override
-      public void draw(TuiDrawer td, int width) {
-        thisCell.draw(
-            td.in(new Rectangle(new Point(width - thisCell.preferredWidth(), 0), new Point(width, 1))),
-            width);
-      }
-    };
+  @Override
+  public int preferredWidth() {
+    return l;
   }
 }

@@ -29,6 +29,8 @@ public class DirectSinkSource<K, V> extends AbstractAutoPurgingSource<K, V> impl
 
   @Override
   public void push(LocalDateTime t, K k, V v) {
-    map.put(new Pair<>(t, k), v);
+    synchronized (map) {
+      map.put(new Pair<>(t, k), v);
+    }
   }
 }

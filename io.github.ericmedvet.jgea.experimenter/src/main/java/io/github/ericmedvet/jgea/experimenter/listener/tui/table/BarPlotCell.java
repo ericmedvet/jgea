@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * jgea-tui
+ * jgea-experimenter
  * %%
  * Copyright (C) 2018 - 2023 Eric Medvet
  * %%
@@ -19,30 +19,17 @@
  */
 package io.github.ericmedvet.jgea.experimenter.listener.tui.table;
 
-import io.github.ericmedvet.jgea.experimenter.listener.tui.util.Point;
-import io.github.ericmedvet.jgea.experimenter.listener.tui.util.Rectangle;
+import io.github.ericmedvet.jgea.core.util.TextPlotter;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
 
-public interface Cell {
+public record BarPlotCell(int l, double min, double max, double value) implements Cell {
+  @Override
+  public void draw(TuiDrawer td, int width) {
+    td.drawString(0, 0, TextPlotter.horizontalBar(value, min, max, l, false));
+  }
 
-  void draw(TuiDrawer td, int width);
-
-  int preferredWidth();
-
-  default Cell rightAligned() {
-    Cell thisCell = this;
-    return new Cell() {
-      @Override
-      public int preferredWidth() {
-        return thisCell.preferredWidth();
-      }
-
-      @Override
-      public void draw(TuiDrawer td, int width) {
-        thisCell.draw(
-            td.in(new Rectangle(new Point(width - thisCell.preferredWidth(), 0), new Point(width, 1))),
-            width);
-      }
-    };
+  @Override
+  public int preferredWidth() {
+    return l;
   }
 }

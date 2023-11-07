@@ -1,3 +1,22 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jgea-experimenter
+ * %%
+ * Copyright (C) 2018 - 2023 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package io.github.ericmedvet.jgea.experimenter.listener.tui.util;
 
 import com.googlecode.lanterna.SGR;
@@ -7,7 +26,6 @@ import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.graphics.TextGraphics;
 import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.table.Cell;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,11 +43,11 @@ public class TuiDrawer {
       TextColor.Factory.fromString("#A01010"),
       TextColor.Factory.fromString("#404040"),
       TextColor.Factory.fromString("#A0A0A0"),
-      TextColor.Factory.fromString("#F0F0F0")
-  );
+      TextColor.Factory.fromString("#F0F0F0"));
   private final Configuration configuration;
   private final TextGraphics textGraphics;
   private final Rectangle viewport;
+
   public TuiDrawer(Configuration configuration, TextGraphics textGraphics, Rectangle viewport) {
     this.configuration = configuration;
     this.textGraphics = textGraphics;
@@ -44,8 +62,11 @@ public class TuiDrawer {
     this(
         DEFAULT_CONFIGURATION,
         textGraphics,
-        new Rectangle(new Point(0, 0), new Point(textGraphics.getSize().getColumns(), textGraphics.getSize().getRows()))
-    );
+        new Rectangle(
+            new Point(0, 0),
+            new Point(
+                textGraphics.getSize().getColumns(),
+                textGraphics.getSize().getRows())));
   }
 
   public record Configuration(
@@ -54,38 +75,23 @@ public class TuiDrawer {
       TextColor dataLabelColor,
       TextColor missingDataColor,
       TextColor dataColor,
-      TextColor mainDataColor
-  ) {}
+      TextColor mainDataColor) {}
 
   public TuiDrawer clear() {
     textGraphics.fillRectangle(viewport.ne().tp(), new TerminalSize(viewport.w(), viewport.h()), ' ');
     return this;
   }
 
-  public TuiDrawer drawFrame(
-      String label
-  ) {
+  public TuiDrawer drawFrame(String label) {
     textGraphics.setForegroundColor(configuration.frameColor);
     textGraphics.drawLine(
-        viewport.ne().delta(1, 0).tp(),
-        viewport.nw().delta(-1, 0).tp(),
-        Symbols.SINGLE_LINE_HORIZONTAL
-    );
+        viewport.ne().delta(1, 0).tp(), viewport.nw().delta(-1, 0).tp(), Symbols.SINGLE_LINE_HORIZONTAL);
     textGraphics.drawLine(
-        viewport.se().delta(1, 0).tp(),
-        viewport.sw().delta(-1, 0).tp(),
-        Symbols.SINGLE_LINE_HORIZONTAL
-    );
+        viewport.se().delta(1, 0).tp(), viewport.sw().delta(-1, 0).tp(), Symbols.SINGLE_LINE_HORIZONTAL);
     textGraphics.drawLine(
-        viewport.ne().delta(0, 1).tp(),
-        viewport.se().delta(0, -1).tp(),
-        Symbols.SINGLE_LINE_VERTICAL
-    );
+        viewport.ne().delta(0, 1).tp(), viewport.se().delta(0, -1).tp(), Symbols.SINGLE_LINE_VERTICAL);
     textGraphics.drawLine(
-        viewport.nw().delta(0, 1).tp(),
-        viewport.sw().delta(0, -1).tp(),
-        Symbols.SINGLE_LINE_VERTICAL
-    );
+        viewport.nw().delta(0, 1).tp(), viewport.sw().delta(0, -1).tp(), Symbols.SINGLE_LINE_VERTICAL);
     textGraphics.setCharacter(viewport.ne().tp(), Symbols.SINGLE_LINE_TOP_LEFT_CORNER);
     textGraphics.setCharacter(viewport.se().tp(), Symbols.SINGLE_LINE_BOTTOM_LEFT_CORNER);
     textGraphics.setCharacter(viewport.nw().tp(), Symbols.SINGLE_LINE_TOP_RIGHT_CORNER);
@@ -117,11 +123,14 @@ public class TuiDrawer {
     s = s.substring(headD, s.length() - tailD);
     textGraphics.setForegroundColor(textColor);
     if (sgrs.length == 0) {
-      textGraphics.putString(p.delta(headD + viewport.min().x(), viewport.min().y()).tp(), s);
+      textGraphics.putString(
+          p.delta(headD + viewport.min().x(), viewport.min().y()).tp(), s);
     } else if (sgrs.length == 1) {
-      textGraphics.putString(p.delta(headD + viewport.min().x(), viewport.min().y()).tp(), s, sgrs[0]);
+      textGraphics.putString(
+          p.delta(headD + viewport.min().x(), viewport.min().y()).tp(), s, sgrs[0]);
     } else {
-      textGraphics.putString(p.delta(headD + viewport.min().x(), viewport.min().y()).tp(), s, sgrs[0], sgrs);
+      textGraphics.putString(
+          p.delta(headD + viewport.min().x(), viewport.min().y()).tp(), s, sgrs[0], sgrs);
     }
     return this;
   }
@@ -135,18 +144,23 @@ public class TuiDrawer {
   }
 
   public <K> TuiDrawer drawTable(Table<K, String, ? extends Cell> table) {
-    Map<String, Integer> widths = table.colIndexes().stream()
+    return drawTable(table, table.colIndexes());
+  }
+
+  public <K> TuiDrawer drawTable(Table<K, String, ? extends Cell> table, List<String> columns) {
+    Map<String, Integer> widths = columns.stream()
         .collect(Collectors.toMap(
             ci -> ci,
             ci -> Math.max(
                 ci.length(),
-                table.columnValues(ci).stream().mapToInt(Cell::preferredWidth).max().orElse(0)
-            )
-        ));
+                table.columnValues(ci).stream()
+                    .mapToInt(Cell::preferredWidth)
+                    .max()
+                    .orElse(0))));
     int x = 0;
     int y = 0;
     // header
-    for (String ci : table.colIndexes()) {
+    for (String ci : columns) {
       drawString(x, y, ci, configuration.dataLabelColor);
       x = x + widths.get(ci) + 1;
     }
@@ -154,7 +168,7 @@ public class TuiDrawer {
     // rows
     for (K ri : table.rowIndexes()) {
       x = 0;
-      for (String ci : table.colIndexes()) {
+      for (String ci : columns) {
         int w = widths.get(ci);
         TuiDrawer cellTd = in(new Rectangle(new Point(x, y), new Point(x + w + 1, y + 1)));
         table.get(ri, ci).draw(cellTd, w);
@@ -170,24 +184,33 @@ public class TuiDrawer {
   }
 
   public TuiDrawer in(Rectangle rectangle) {
-    return new TuiDrawer(configuration, textGraphics, new Rectangle(
-        this.viewport.min().delta(rectangle.min().x(), rectangle.min().y()),
-        this.viewport.min().delta(rectangle.min().x(), rectangle.min().y()).delta(rectangle.w(), rectangle.h())
-    ));
+    return new TuiDrawer(
+        configuration,
+        textGraphics,
+        new Rectangle(
+            this.viewport
+                .min()
+                .delta(
+                    Math.max(0, rectangle.min().x()),
+                    Math.max(0, rectangle.min().y())),
+            new Point(
+                Math.min(
+                    viewport.min().x() + rectangle.min().x() + rectangle.w(),
+                    viewport.max().x()),
+                Math.min(
+                    viewport.min().y() + rectangle.min().y() + rectangle.h(),
+                    viewport.max().y()))));
   }
 
   public TuiDrawer inX(float x, float w) {
     return in(new Rectangle(
         new Point((int) (viewport.w() * x), 0),
-        new Point((int) (viewport.w() * (x + w)), viewport.max().y())
-    ));
+        new Point((int) (viewport.w() * (x + w)), viewport.max().y())));
   }
 
   public TuiDrawer inY(float y, float h) {
     return in(new Rectangle(
-        new Point(0, (int) (viewport.h() * y)),
-        new Point(viewport.max().x(), (int) (viewport.h() * (y + h)))
-    ));
+        new Point(0, (int) (viewport.h() * y)), new Point(viewport.max().x(), (int) (viewport.h() * (y + h)))));
   }
 
   public TuiDrawer inner(int delta) {

@@ -25,7 +25,7 @@ import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
 public record ColoredStringCell(String content, TextColor color) implements Cell {
   @Override
   public void draw(TuiDrawer td, int width) {
-    td.drawString(0,0,content, color);
+    td.drawString(0, 0, content, color);
   }
 
   @Override

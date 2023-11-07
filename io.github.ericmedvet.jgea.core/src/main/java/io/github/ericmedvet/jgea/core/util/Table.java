@@ -54,7 +54,7 @@ public interface Table<R, C, T> {
         .flatMap(Set::stream)
         .distinct()
         .toList();
-    return new Table<R, C, T>() {
+    return new Table<>() {
       @Override
       public void addColumn(C columnIndex, Map<R, T> values) {
         throw new UnsupportedOperationException("This is a read only table");
@@ -98,8 +98,7 @@ public interface Table<R, C, T> {
   }
 
   default <T1, K> Table<R, C, T1> aggregate(
-      Function<Map<C, T>, K> rowKey, Comparator<R> comparator, Function<List<Map<C, T>>, Map<C, T1>> aggregator
-  ) {
+      Function<Map<C, T>, K> rowKey, Comparator<R> comparator, Function<List<Map<C, T>>, Map<C, T1>> aggregator) {
     Map<R, Map<C, T1>> map = rowIndexes().stream()
         .map(ri -> Map.entry(ri, row(ri)))
         .collect(Collectors.groupingBy(e -> rowKey.apply(e.getValue())))
@@ -119,8 +118,7 @@ public interface Table<R, C, T> {
   }
 
   default <T1, K> Table<R, C, T1> aggregateByIndex(
-      Function<R, K> rowKey, Comparator<R> comparator, Function<List<Map<C, T>>, Map<C, T1>> aggregator
-  ) {
+      Function<R, K> rowKey, Comparator<R> comparator, Function<List<Map<C, T>>, Map<C, T1>> aggregator) {
     Map<R, Map<C, T1>> map = rowIndexes().stream()
         .map(ri -> Map.entry(ri, row(ri)))
         .collect(Collectors.groupingBy(e -> rowKey.apply(e.getKey())))
@@ -140,8 +138,7 @@ public interface Table<R, C, T> {
   }
 
   default <T1, K> Table<R, C, T1> aggregateByIndexSingle(
-      Function<R, K> rowKey, Comparator<R> comparator, BiFunction<C, List<T>, T1> aggregator
-  ) {
+      Function<R, K> rowKey, Comparator<R> comparator, BiFunction<C, List<T>, T1> aggregator) {
     Function<List<Map<C, T>>, Map<C, T1>> rowAggregator = maps -> maps.get(0).keySet().stream()
         .map(c -> Map.entry(
             c, aggregator.apply(c, maps.stream().map(m -> m.get(c)).toList())))
@@ -150,8 +147,7 @@ public interface Table<R, C, T> {
   }
 
   default <T1, K> Table<R, C, T1> aggregateByIndexSingle(
-      Function<R, K> rowKey, Comparator<R> comparator, Function<List<T>, T1> aggregator
-  ) {
+      Function<R, K> rowKey, Comparator<R> comparator, Function<List<T>, T1> aggregator) {
     Function<List<Map<C, T>>, Map<C, T1>> rowAggregator = maps -> maps.get(0).keySet().stream()
         .map(c -> Map.entry(
             c, aggregator.apply(maps.stream().map(m -> m.get(c)).toList())))
@@ -160,8 +156,7 @@ public interface Table<R, C, T> {
   }
 
   default <T1, K> Table<R, C, T1> aggregateSingle(
-      Function<Map<C, T>, K> rowKey, Comparator<R> comparator, Function<List<T>, T1> aggregator
-  ) {
+      Function<Map<C, T>, K> rowKey, Comparator<R> comparator, Function<List<T>, T1> aggregator) {
     Function<List<Map<C, T>>, Map<C, T1>> rowAggregator = maps -> maps.get(0).keySet().stream()
         .map(c -> Map.entry(
             c, aggregator.apply(maps.stream().map(m -> m.get(c)).toList())))
@@ -170,8 +165,7 @@ public interface Table<R, C, T> {
   }
 
   default <T1, K> Table<R, C, T1> aggregateSingle(
-      Function<Map<C, T>, K> rowKey, Comparator<R> comparator, BiFunction<C, List<T>, T1> aggregator
-  ) {
+      Function<Map<C, T>, K> rowKey, Comparator<R> comparator, BiFunction<C, List<T>, T1> aggregator) {
     Function<List<Map<C, T>>, Map<C, T1>> rowAggregator = maps -> maps.get(0).keySet().stream()
         .map(c -> Map.entry(
             c, aggregator.apply(c, maps.stream().map(m -> m.get(c)).toList())))
@@ -221,8 +215,7 @@ public interface Table<R, C, T> {
             ri,
             Stream.of(f.apply(ri).entrySet(), row(ri).entrySet())
                 .flatMap(Set::stream)
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-        ))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
   }
 
@@ -283,8 +276,7 @@ public interface Table<R, C, T> {
     if (ri == null || ci == null) {
       throw new IndexOutOfBoundsException(String.format(
           "Invalid %d,%d coords in a %d,%d table",
-          x, y, colIndexes().size(), rowIndexes().size()
-      ));
+          x, y, colIndexes().size(), rowIndexes().size()));
     }
     return get(ri, ci);
   }
@@ -311,9 +303,7 @@ public interface Table<R, C, T> {
                     .mapToInt(
                         ri -> tFormat.apply(get(ri, ci)).length())
                     .max()
-                    .orElse(0)
-            )
-        ));
+                    .orElse(0))));
     int riWidth = rowIndexes().stream()
         .mapToInt(ri -> rFormat.apply(ri).length())
         .max()
@@ -336,8 +326,8 @@ public interface Table<R, C, T> {
           s = s + (riWidth > 0 ? colSep : "");
           s = s
               + colIndexes().stream()
-              .map(ci -> StringUtils.justify(tFormat.apply(get(ri, ci)), widths.get(ci)))
-              .collect(Collectors.joining(colSep));
+                  .map(ci -> StringUtils.justify(tFormat.apply(get(ri, ci)), widths.get(ci)))
+                  .collect(Collectors.joining(colSep));
           return s;
         })
         .collect(Collectors.joining("\n")));
@@ -374,8 +364,7 @@ public interface Table<R, C, T> {
     if (ri == null || ci == null) {
       throw new IndexOutOfBoundsException(String.format(
           "Invalid %d,%d coords in a %d,%d table",
-          x, y, colIndexes().size(), rowIndexes().size()
-      ));
+          x, y, colIndexes().size(), rowIndexes().size()));
     }
     set(ri, ci, t);
   }
@@ -462,9 +451,7 @@ public interface Table<R, C, T> {
 
       @Override
       public List<R> rowIndexes() {
-        return thisTable.rowIndexes().stream()
-            .sorted(comparator)
-            .toList();
+        return thisTable.rowIndexes().stream().sorted(comparator).toList();
       }
 
       @Override
@@ -480,9 +467,7 @@ public interface Table<R, C, T> {
             ri,
             Stream.of(t1.row(ri).entrySet(), t2.row(ri).entrySet())
                 .flatMap(Set::stream)
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-        ))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
   }
-
 }
