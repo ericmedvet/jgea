@@ -30,7 +30,6 @@ public record ProcessInfo(String processName, String username, long usedMemory, 
         NetUtils.getProcessName(),
         NetUtils.getUserName(),
         NetUtils.getProcessUsedMemory(),
-        NetUtils.getProcessMaxMemory()
-    );
+        NetUtils.getProcessMaxMemory());
   }
 }

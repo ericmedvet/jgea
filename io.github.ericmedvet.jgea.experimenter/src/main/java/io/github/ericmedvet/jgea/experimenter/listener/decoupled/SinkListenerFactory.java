@@ -26,7 +26,6 @@ import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
-import io.github.ericmedvet.jgea.experimenter.listener.net.NetUtils;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,8 +42,8 @@ public class SinkListenerFactory<G, S, Q> implements ListenerFactory<POCPopulati
   private final Sink<RunKey, RunInfo> runSink;
   private final Sink<DataItemKey, DataItemInfo> dataItemSink;
 
-  private final AutoEmitterSink<MachineKey,MachineInfo> machineAutoEmitterSink;
-  private final AutoEmitterSink<ProcessKey,ProcessInfo> processAutoEmitterSink;
+  private final AutoEmitterSink<MachineKey, MachineInfo> machineAutoEmitterSink;
+  private final AutoEmitterSink<ProcessKey, ProcessInfo> processAutoEmitterSink;
 
   public SinkListenerFactory(
       List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,

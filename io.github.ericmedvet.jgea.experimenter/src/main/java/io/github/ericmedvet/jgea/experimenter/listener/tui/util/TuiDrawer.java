@@ -47,8 +47,7 @@ public class TuiDrawer {
       TextColor.Factory.fromString("#F0F0F0"),
       TextColor.Factory.fromString("#303030"),
       TextColor.Factory.fromString("#22EE22"),
-      TextColor.Factory.fromString("#EE2222")
-  );
+      TextColor.Factory.fromString("#EE2222"));
   private final Configuration configuration;
   private final TextGraphics textGraphics;
   private final Rectangle viewport;
@@ -84,8 +83,7 @@ public class TuiDrawer {
       TextColor primaryPlotColor,
       TextColor secondaryPlotColor,
       TextColor positivePlotColor,
-      TextColor negativePlotColor
-  ) {}
+      TextColor negativePlotColor) {}
 
   public TuiDrawer clear() {
     textGraphics.fillRectangle(viewport.ne().tp(), new TerminalSize(viewport.w(), viewport.h()), ' ');
