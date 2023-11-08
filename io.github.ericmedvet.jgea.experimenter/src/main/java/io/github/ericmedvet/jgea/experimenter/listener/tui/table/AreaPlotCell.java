@@ -27,7 +27,12 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public record AreaPlotCell(int l, SortedMap<? extends Number, ? extends Number> data) implements Cell {
+public record AreaPlotCell(int l, SortedMap<? extends Number, ? extends Number> data, double xMin, double xMax)
+    implements Cell {
+
+  public AreaPlotCell(int l, SortedMap<? extends Number, ? extends Number> data) {
+    this(l, data, data.firstKey().doubleValue(), data.lastKey().doubleValue());
+  }
 
   public AreaPlotCell(int l, List<? extends Number> data) {
     this(l, (SortedMap<Integer, ? extends Number>) IntStream.range(0, data.size())
@@ -40,8 +45,9 @@ public record AreaPlotCell(int l, SortedMap<? extends Number, ? extends Number> 
     td.drawString(
         0,
         0,
-        TextPlotter.areaPlot(
-            data, data.firstKey().doubleValue(), data.lastKey().doubleValue(), l));
+        TextPlotter.areaPlot(data, xMin, xMax, l),
+        td.getConfiguration().primaryPlotColor(),
+        td.getConfiguration().secondaryPlotColor());
   }
 
   @Override

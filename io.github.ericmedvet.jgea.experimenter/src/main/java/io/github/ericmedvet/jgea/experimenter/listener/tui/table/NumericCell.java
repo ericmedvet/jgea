@@ -39,6 +39,6 @@ public record NumericCell(Number value, String format, String suffix) implements
 
   @Override
   public int preferredWidth() {
-    return format.formatted(value).length();
+    return format.formatted(value).length() + suffix.length();
   }
 }

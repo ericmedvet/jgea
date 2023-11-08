@@ -36,17 +36,16 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class TuiMonitor extends ListLogHandler implements Runnable {
@@ -56,11 +55,9 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
       Map.entry(Level.WARNING, TextColor.Factory.fromString("#FBA465")),
       Map.entry(Level.INFO, TextColor.Factory.fromString("#D8E46B")),
       Map.entry(Level.CONFIG, TextColor.Factory.fromString("#6D8700")));
-  public static final String EMPTY_CELL_CONTENT = "-";
-  public static final int PROGRESS_BAR_LENGTH = 5;
   private static final Logger L = Logger.getLogger(TuiMonitor.class.getName());
   private static final Configuration DEFAULT_CONFIGURATION =
-      new Configuration(0.5f, 0.85f, 0.5f, 0.5f, 8, 12, 500, 60, 10, 10000, 2, 5, 20);
+      new Configuration(0.5f, 0.85f, 0.5f, 0.5f, 8, 12, 1000, 60, 10, 10000, 2, 5, 20);
   private static final String STATUS_STRING = "⬤";
   private static final DateTimeFormatter SAME_DAY_DATETIME_FORMAT =
       DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
@@ -228,7 +225,7 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
 
   private static String eta(Instant eta) {
     if (eta.equals(Instant.MAX)) {
-      return EMPTY_CELL_CONTENT;
+      return "-";
     }
     if (!eta.truncatedTo(ChronoUnit.DAYS).equals(Instant.now().truncatedTo(ChronoUnit.DAYS))) {
       return COMPLETE_DATETIME_FORMAT.format(eta);
@@ -302,46 +299,64 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
         .map(Pair::second)
         .distinct()
         .toList();
+    LocalDateTime machineHistoryStartTime = LocalDateTime.now().minusSeconds(configuration.machineHistorySeconds);
+    LocalDateTime machineHistoryEndTime = LocalDateTime.now();
 
     Table<MachineKey, String, ? extends Cell> machines = machineTable
         .aggregateByIndexSingle(Pair::second, Comparator.comparing(Pair::first), vs -> vs)
         .expandColumn(
             VALUE_NAME,
-            vs -> Map.ofEntries(
-                Map.entry("Name", new StringCell(last(vs).machineName())),
-                Map.entry("CPUs", new NumericCell(last(vs).numberOfProcessors(), "%d").rightAligned()),
+            (p, vs) -> Map.ofEntries(
+                Map.entry(
+                    "Name",
+                    new StringCell(last(vs).getValue().machineName())),
+                Map.entry(
+                    "CPUs",
+                    new NumericCell(last(vs).getValue().numberOfProcessors(), "%d").rightAligned()),
                 Map.entry(
                     "Load",
                     new TrendedNumericCell<>(
                             vs.stream()
-                                .map(MachineInfo::cpuLoad)
+                                .map(v -> v.getValue()
+                                    .cpuLoad())
                                 .toList(),
                             "%.1f")
                         .rightAligned()),
                 Map.entry(
                     "~Load",
                     new AreaPlotCell(
-                        8,
-                        vs.stream()
-                            .map(MachineInfo::cpuLoad)
-                            .toList()))))
+                        configuration.areaPlotLength,
+                        (SortedMap<? extends Number, ? extends Number>) vs.stream()
+                            .filter(v -> v.getKey()
+                                .first()
+                                .isAfter(machineHistoryStartTime))
+                            .collect(Collectors.toMap(
+                                v -> v.getKey()
+                                    .first()
+                                    .toEpochSecond(ZoneOffset.UTC),
+                                v -> v.getValue()
+                                    .cpuLoad(),
+                                (n1, n2) -> n1,
+                                TreeMap::new)),
+                        machineHistoryStartTime.toEpochSecond(ZoneOffset.UTC),
+                        machineHistoryEndTime.toEpochSecond(ZoneOffset.UTC)))))
         .remapRowIndex(Pair::second);
-    Table<MachineKey, String, ? extends Cell> pCells = processTable
-        .aggregateByIndexSingle(Pair::second, Comparator.comparing(Pair::first), TuiMonitor::last)
-        .aggregateByIndexSingle(p -> p.second().machineKey(), Comparator.comparing(Pair::first), vs -> vs)
-        .expandColumn(VALUE_NAME, vs -> {
+    Table<MachineKey, String, Cell> pCells = processTable
+        .aggregateByIndexSingle(Pair::second, Comparator.comparing(Pair::first), ps -> last(ps).getValue())
+        .aggregateByIndexSingle(p -> p.second().machineKey(), Comparator.comparing(Pair::first), ps -> ps)
+        .expandColumn(VALUE_NAME, (p, vs) -> {
           double usedMemory = vs.stream()
-              .mapToDouble(v -> v.usedMemory() / 1024d / 1024d)
+              .mapToDouble(v -> v.getValue().usedMemory() / 1024d / 1024d)
               .average()
               .orElse(0);
           double maxMemory = vs.stream()
-              .mapToDouble(v -> v.maxMemory() / 1024d / 1024d)
+              .mapToDouble(v -> v.getValue().maxMemory() / 1024d / 1024d)
               .average()
               .orElse(0);
           return Map.ofEntries(
               Map.entry("Used", new NumericCell(usedMemory, "%.0f", "MB").rightAligned()),
               Map.entry("Tot", new NumericCell(maxMemory, "%.0f", "MB").rightAligned()),
-              Map.entry("%Mem", new BarPlotCell(6, 0, maxMemory, usedMemory)),
+              Map.entry("%Mem", new HorizontalBarCell(configuration.barLength, 0, maxMemory, usedMemory)),
               Map.entry("#Proc", new NumericCell(vs.size(), "%d").rightAligned()));
         })
         .remapRowIndex(p -> p.second().machineKey());

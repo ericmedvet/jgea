@@ -118,7 +118,9 @@ public interface Table<R, C, T> {
   }
 
   default <T1, K> Table<R, C, T1> aggregateByIndex(
-      Function<R, K> rowKey, Comparator<R> comparator, Function<List<Map<C, T>>, Map<C, T1>> aggregator) {
+      Function<R, K> rowKey,
+      Comparator<R> comparator,
+      Function<List<Map.Entry<R, Map<C, T>>>, Map<C, T1>> aggregator) {
     Map<R, Map<C, T1>> map = rowIndexes().stream()
         .map(ri -> Map.entry(ri, row(ri)))
         .collect(Collectors.groupingBy(e -> rowKey.apply(e.getKey())))
@@ -129,8 +131,7 @@ public interface Table<R, C, T> {
               .sorted((e1, e2) -> comparator.compare(e1.getKey(), e2.getKey()))
               .toList();
           R ri = list.stream().map(Map.Entry::getKey).min(comparator).orElseThrow();
-          Map<C, T1> row = aggregator.apply(
-              list.stream().map(Map.Entry::getValue).toList());
+          Map<C, T1> row = aggregator.apply(list);
           return Map.entry(ri, row);
         })
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -138,21 +139,25 @@ public interface Table<R, C, T> {
   }
 
   default <T1, K> Table<R, C, T1> aggregateByIndexSingle(
-      Function<R, K> rowKey, Comparator<R> comparator, BiFunction<C, List<T>, T1> aggregator) {
-    Function<List<Map<C, T>>, Map<C, T1>> rowAggregator = maps -> maps.get(0).keySet().stream()
-        .map(c -> Map.entry(
-            c, aggregator.apply(c, maps.stream().map(m -> m.get(c)).toList())))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+      Function<R, K> rowKey, Comparator<R> comparator, BiFunction<C, List<Map.Entry<R, T>>, T1> aggregator) {
+    Function<List<Map.Entry<R, Map<C, T>>>, Map<C, T1>> rowAggregator =
+        rows -> rows.get(0).getValue().keySet().stream()
+            .map(c -> Map.entry(
+                c,
+                aggregator.apply(
+                    c,
+                    rows.stream()
+                        .map(r -> Map.entry(
+                            r.getKey(), r.getValue().get(c)))
+                        .toList())))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     return aggregateByIndex(rowKey, comparator, rowAggregator);
   }
 
   default <T1, K> Table<R, C, T1> aggregateByIndexSingle(
-      Function<R, K> rowKey, Comparator<R> comparator, Function<List<T>, T1> aggregator) {
-    Function<List<Map<C, T>>, Map<C, T1>> rowAggregator = maps -> maps.get(0).keySet().stream()
-        .map(c -> Map.entry(
-            c, aggregator.apply(maps.stream().map(m -> m.get(c)).toList())))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    return aggregateByIndex(rowKey, comparator, rowAggregator);
+      Function<R, K> rowKey, Comparator<R> comparator, Function<List<Map.Entry<R, T>>, T1> aggregator) {
+    BiFunction<C, List<Map.Entry<R, T>>, T1> rowAggregator = (c, rows) -> aggregator.apply(rows);
+    return aggregateByIndexSingle(rowKey, comparator, rowAggregator);
   }
 
   default <T1, K> Table<R, C, T1> aggregateSingle(
@@ -203,9 +208,9 @@ public interface Table<R, C, T> {
     return rowIndexes().stream().map(column::get).toList();
   }
 
-  default <C1, T1> Table<R, C1, T1> expandColumn(C columnIndex, Function<T, Map<C1, T1>> f) {
+  default <C1, T1> Table<R, C1, T1> expandColumn(C columnIndex, BiFunction<R, T, Map<C1, T1>> f) {
     return of(rowIndexes().stream()
-        .map(ri -> Map.entry(ri, f.apply(get(ri, columnIndex))))
+        .map(ri -> Map.entry(ri, f.apply(ri, get(ri, columnIndex))))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
   }
 
@@ -224,7 +229,7 @@ public interface Table<R, C, T> {
         .flatMap(List::stream)
         .toList();
     Table<R, C, T> thisTable = this;
-    return new Table<R, C, T>() {
+    return new Table<>() {
       @Override
       public void addColumn(C columnIndex, Map<R, T> values) {
         throw new UnsupportedOperationException("This is a read only table");

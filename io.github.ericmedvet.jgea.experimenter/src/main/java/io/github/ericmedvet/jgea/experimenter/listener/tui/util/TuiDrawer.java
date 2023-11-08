@@ -47,7 +47,8 @@ public class TuiDrawer {
       TextColor.Factory.fromString("#F0F0F0"),
       TextColor.Factory.fromString("#303030"),
       TextColor.Factory.fromString("#22EE22"),
-      TextColor.Factory.fromString("#EE2222"));
+      TextColor.Factory.fromString("#EE2222"),
+      TextColor.ANSI.BLACK);
   private final Configuration configuration;
   private final TextGraphics textGraphics;
   private final Rectangle viewport;
@@ -83,7 +84,8 @@ public class TuiDrawer {
       TextColor primaryPlotColor,
       TextColor secondaryPlotColor,
       TextColor positivePlotColor,
-      TextColor negativePlotColor) {}
+      TextColor negativePlotColor,
+      TextColor bgColor) {}
 
   public TuiDrawer clear() {
     textGraphics.fillRectangle(viewport.ne().tp(), new TerminalSize(viewport.w(), viewport.h()), ' ');
@@ -91,6 +93,7 @@ public class TuiDrawer {
   }
 
   public TuiDrawer drawFrame(String label) {
+    textGraphics.setBackgroundColor(configuration.bgColor);
     textGraphics.setForegroundColor(configuration.frameColor);
     textGraphics.drawLine(
         viewport.ne().delta(1, 0).tp(), viewport.nw().delta(-1, 0).tp(), Symbols.SINGLE_LINE_HORIZONTAL);
@@ -111,12 +114,12 @@ public class TuiDrawer {
     return this;
   }
 
-  public TuiDrawer drawString(Point p, String s, TextColor textColor, SGR... sgrs) {
+  public TuiDrawer drawString(Point p, String s, TextColor textColor, TextColor bgColor, SGR... sgrs) {
     // multiline
     if (s.lines().count() > 1) {
       List<String> lines = s.lines().toList();
       for (int i = 0; i < lines.size(); i++) {
-        drawString(p.delta(0, i), lines.get(i), textColor, sgrs);
+        drawString(p.delta(0, i), lines.get(i), textColor, bgColor, sgrs);
       }
       return this;
     }
@@ -130,6 +133,7 @@ public class TuiDrawer {
     }
     s = s.substring(headD, s.length() - tailD);
     textGraphics.setForegroundColor(textColor);
+    textGraphics.setBackgroundColor(bgColor);
     if (sgrs.length == 0) {
       textGraphics.putString(
           p.delta(headD + viewport.min().x(), viewport.min().y()).tp(), s);
@@ -144,7 +148,11 @@ public class TuiDrawer {
   }
 
   public TuiDrawer drawString(int x, int y, String s, TextColor textColor, SGR... sgrs) {
-    return drawString(new Point(x, y), s, textColor, sgrs);
+    return drawString(x, y, s, textColor, configuration.bgColor, sgrs);
+  }
+
+  public TuiDrawer drawString(int x, int y, String s, TextColor textColor, TextColor bgColor, SGR... sgrs) {
+    return drawString(new Point(x, y), s, textColor, bgColor, sgrs);
   }
 
   public TuiDrawer drawString(int x, int y, String s, SGR... sgrs) {
