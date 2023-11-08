@@ -24,10 +24,17 @@ import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
 /**
  * @author "Eric Medvet" on 2023/11/07 for jgea
  */
-public record NumericCell(Number value, String format) implements Cell {
+public record NumericCell(Number value, String format, String suffix) implements Cell {
+
+  public NumericCell(Number value, String format) {
+    this(value, format, "");
+  }
+
   @Override
   public void draw(TuiDrawer td, int width) {
-    td.drawString(0, 0, format.formatted(value));
+    String s = format.formatted(value);
+    td.drawString(0, 0, s);
+    td.drawString(s.length(), 0, suffix, td.getConfiguration().secondaryStringColor());
   }
 
   @Override

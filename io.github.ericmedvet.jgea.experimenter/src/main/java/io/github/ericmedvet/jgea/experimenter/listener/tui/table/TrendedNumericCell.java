@@ -28,9 +28,6 @@ import java.util.List;
  */
 public record TrendedNumericCell<C extends Comparable<C>>(List<C> values, String format) implements Cell {
 
-  private static final TextColor INCREASING_COLOR = TextColor.Factory.fromString("#22EE22");
-  private static final TextColor SAME_COLOR = TextColor.Factory.fromString("#666666");
-  private static final TextColor DECREASING_COLOR = TextColor.Factory.fromString("#EE2222");
   private static final char INCREASING_CHAR = '↑';
   private static final char SAME_CHAR = '=';
   private static final char DECREASING_CHAR = '↓';
@@ -48,19 +45,19 @@ public record TrendedNumericCell<C extends Comparable<C>>(List<C> values, String
             s.length(),
             0,
             "" + INCREASING_CHAR,
-            changed ? INCREASING_COLOR : td.getConfiguration().dataColor());
+            changed ? td.getConfiguration().positivePlotColor() : td.getConfiguration().secondaryStringColor());
       } else if (lastTrend < 0) {
         td.drawString(
             s.length(),
             0,
             "" + DECREASING_CHAR,
-            changed ? DECREASING_COLOR : td.getConfiguration().dataColor());
+            changed ? td.getConfiguration().negativePlotColor() : td.getConfiguration().secondaryStringColor());
       } else {
         td.drawString(
             s.length(),
             0,
             "" + SAME_CHAR,
-            changed ? SAME_COLOR : td.getConfiguration().dataColor());
+            changed ? td.getConfiguration().primaryStringColor() : td.getConfiguration().secondaryStringColor());
       }
     }
   }

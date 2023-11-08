@@ -42,8 +42,13 @@ public class TuiDrawer {
       TextColor.Factory.fromString("#10A010"),
       TextColor.Factory.fromString("#A01010"),
       TextColor.Factory.fromString("#404040"),
-      TextColor.Factory.fromString("#A0A0A0"),
-      TextColor.Factory.fromString("#F0F0F0"));
+      TextColor.Factory.fromString("#F0F0F0"),
+      TextColor.Factory.fromString("#606060"),
+      TextColor.Factory.fromString("#F0F0F0"),
+      TextColor.Factory.fromString("#303030"),
+      TextColor.Factory.fromString("#22EE22"),
+      TextColor.Factory.fromString("#EE2222")
+  );
   private final Configuration configuration;
   private final TextGraphics textGraphics;
   private final Rectangle viewport;
@@ -72,10 +77,15 @@ public class TuiDrawer {
   public record Configuration(
       TextColor frameColor,
       TextColor frameLabelColor,
-      TextColor dataLabelColor,
+      TextColor labelColor,
       TextColor missingDataColor,
-      TextColor dataColor,
-      TextColor mainDataColor) {}
+      TextColor primaryStringColor,
+      TextColor secondaryStringColor,
+      TextColor primaryPlotColor,
+      TextColor secondaryPlotColor,
+      TextColor positivePlotColor,
+      TextColor negativePlotColor
+  ) {}
 
   public TuiDrawer clear() {
     textGraphics.fillRectangle(viewport.ne().tp(), new TerminalSize(viewport.w(), viewport.h()), ' ');
@@ -140,7 +150,7 @@ public class TuiDrawer {
   }
 
   public TuiDrawer drawString(int x, int y, String s, SGR... sgrs) {
-    return drawString(x, y, s, configuration.dataColor, sgrs);
+    return drawString(x, y, s, configuration.primaryStringColor, sgrs);
   }
 
   public <K> TuiDrawer drawTable(Table<K, String, ? extends Cell> table) {
@@ -161,7 +171,7 @@ public class TuiDrawer {
     int y = 0;
     // header
     for (String ci : columns) {
-      drawString(x, y, ci, configuration.dataLabelColor);
+      drawString(x, y, ci, configuration.labelColor);
       x = x + widths.get(ci) + 1;
     }
     y = y + 1;

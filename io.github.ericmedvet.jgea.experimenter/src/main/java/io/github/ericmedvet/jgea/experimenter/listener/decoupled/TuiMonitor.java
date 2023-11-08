@@ -339,8 +339,8 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
               .average()
               .orElse(0);
           return Map.ofEntries(
-              Map.entry("Used", new NumericCell(usedMemory, "%.0fMB").rightAligned()),
-              Map.entry("Tot", new NumericCell(maxMemory, "%.0fMB").rightAligned()),
+              Map.entry("Used", new NumericCell(usedMemory, "%.0f", "MB").rightAligned()),
+              Map.entry("Tot", new NumericCell(maxMemory, "%.0f", "MB").rightAligned()),
               Map.entry("%Mem", new BarPlotCell(6, 0, maxMemory, usedMemory)),
               Map.entry("#Proc", new NumericCell(vs.size(), "%d").rightAligned()));
         })
