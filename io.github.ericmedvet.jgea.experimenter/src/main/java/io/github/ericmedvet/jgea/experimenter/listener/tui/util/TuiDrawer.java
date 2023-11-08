@@ -26,6 +26,7 @@ import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.graphics.TextGraphics;
 import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.table.Cell;
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -48,7 +49,8 @@ public class TuiDrawer {
       TextColor.Factory.fromString("#303030"),
       TextColor.Factory.fromString("#22EE22"),
       TextColor.Factory.fromString("#EE2222"),
-      TextColor.ANSI.BLACK);
+      TextColor.ANSI.BLACK
+  );
   private final Configuration configuration;
   private final TextGraphics textGraphics;
   private final Rectangle viewport;
@@ -71,7 +73,10 @@ public class TuiDrawer {
             new Point(0, 0),
             new Point(
                 textGraphics.getSize().getColumns(),
-                textGraphics.getSize().getRows())));
+                textGraphics.getSize().getRows()
+            )
+        )
+    );
   }
 
   public record Configuration(
@@ -85,9 +90,11 @@ public class TuiDrawer {
       TextColor secondaryPlotColor,
       TextColor positivePlotColor,
       TextColor negativePlotColor,
-      TextColor bgColor) {}
+      TextColor bgColor
+  ) {}
 
   public TuiDrawer clear() {
+    textGraphics.setBackgroundColor(configuration.bgColor);
     textGraphics.fillRectangle(viewport.ne().tp(), new TerminalSize(viewport.w(), viewport.h()), ' ');
     return this;
   }
@@ -172,7 +179,9 @@ public class TuiDrawer {
                 table.columnValues(ci).stream()
                     .mapToInt(Cell::preferredWidth)
                     .max()
-                    .orElse(0))));
+                    .orElse(0)
+            )
+        ));
     int x = 0;
     int y = 0;
     // header
@@ -199,7 +208,7 @@ public class TuiDrawer {
     return configuration;
   }
 
-  public TuiDrawer in(Rectangle rectangle) {
+  public TuiDrawer in(Rectangle offset) {
     return new TuiDrawer(
         configuration,
         textGraphics,
@@ -207,29 +216,41 @@ public class TuiDrawer {
             this.viewport
                 .min()
                 .delta(
-                    Math.max(0, rectangle.min().x()),
-                    Math.max(0, rectangle.min().y())),
+                    Math.max(0, offset.min().x()),
+                    Math.max(0, offset.min().y())
+                ),
             new Point(
                 Math.min(
-                    viewport.min().x() + rectangle.min().x() + rectangle.w(),
-                    viewport.max().x()),
+                    viewport.min().x() + offset.min().x() + offset.w(),
+                    viewport.max().x()
+                ),
                 Math.min(
-                    viewport.min().y() + rectangle.min().y() + rectangle.h(),
-                    viewport.max().y()))));
+                    viewport.min().y() + offset.min().y() + offset.h(),
+                    viewport.max().y()
+                )
+            )
+        )
+    );
   }
 
   public TuiDrawer inX(float x, float w) {
     return in(new Rectangle(
         new Point((int) (viewport.w() * x), 0),
-        new Point((int) (viewport.w() * (x + w)), viewport.max().y())));
+        new Point((int) (viewport.w() * (x + w)), viewport.h())
+    ));
   }
 
   public TuiDrawer inY(float y, float h) {
     return in(new Rectangle(
-        new Point(0, (int) (viewport.h() * y)), new Point(viewport.max().x(), (int) (viewport.h() * (y + h)))));
+        new Point(0, (int) (viewport.h() * y)),
+        new Point(viewport.w(), (int) (viewport.h() * (y + h)))
+    ));
   }
 
   public TuiDrawer inner(int delta) {
-    return in(viewport.inner(delta));
+    return in(new Rectangle(
+        new Point(delta, delta),
+        new Point(viewport.w() - delta, viewport.h() - delta)
+    ));
   }
 }

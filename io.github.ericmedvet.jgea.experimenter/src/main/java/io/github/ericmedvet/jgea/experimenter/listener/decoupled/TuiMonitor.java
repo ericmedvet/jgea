@@ -32,6 +32,7 @@ import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.ListLogHandler;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.table.*;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
+
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -43,6 +44,7 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -54,7 +56,8 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
       Map.entry(Level.SEVERE, TextColor.Factory.fromString("#EE3E38")),
       Map.entry(Level.WARNING, TextColor.Factory.fromString("#FBA465")),
       Map.entry(Level.INFO, TextColor.Factory.fromString("#D8E46B")),
-      Map.entry(Level.CONFIG, TextColor.Factory.fromString("#6D8700")));
+      Map.entry(Level.CONFIG, TextColor.Factory.fromString("#6D8700"))
+  );
   private static final Logger L = Logger.getLogger(TuiMonitor.class.getName());
   private static final Configuration DEFAULT_CONFIGURATION =
       new Configuration(0.5f, 0.85f, 0.5f, 0.5f, 8, 12, 1000, 60, 10, 10000, 2, 5, 20);
@@ -94,7 +97,8 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
       Source<ProcessKey, LogInfo> logSource,
       Source<ExperimentKey, ExperimentInfo> experimentSource,
       Source<RunKey, RunInfo> runSource,
-      Source<DataItemKey, DataItemInfo> dataItemSource) {
+      Source<DataItemKey, DataItemInfo> dataItemSource
+  ) {
 
     this(
         DEFAULT_CONFIGURATION,
@@ -103,7 +107,8 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
         logSource,
         experimentSource,
         runSource,
-        dataItemSource);
+        dataItemSource
+    );
   }
 
   public TuiMonitor(
@@ -113,7 +118,8 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
       Source<ProcessKey, LogInfo> logSource,
       Source<ExperimentKey, ExperimentInfo> experimentSource,
       Source<RunKey, RunInfo> runSource,
-      Source<DataItemKey, DataItemInfo> dataItemSource) {
+      Source<DataItemKey, DataItemInfo> dataItemSource
+  ) {
     super(true);
     this.configuration = configuration;
     this.machineSource = machineSource;
@@ -213,7 +219,8 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
       int runPlotHistorySize,
       double laterThreshold,
       double missingThreshold,
-      double purgeThreshold) {}
+      double purgeThreshold
+  ) {}
 
   private static <T> List<T> concatAndTrim(List<T> ts1, List<T> ts2, int n) {
     List<T> ts = Stream.of(ts1, ts2).flatMap(List::stream).toList();
@@ -287,7 +294,8 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
         },
         0,
         configuration.uiRefreshIntervalMillis,
-        TimeUnit.MILLISECONDS);
+        TimeUnit.MILLISECONDS
+    );
     isRunning = true;
   }
 
@@ -302,26 +310,30 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
     LocalDateTime machineHistoryStartTime = LocalDateTime.now().minusSeconds(configuration.machineHistorySeconds);
     LocalDateTime machineHistoryEndTime = LocalDateTime.now();
 
-    Table<MachineKey, String, ? extends Cell> machines = machineTable
+    Table<MachineKey, String, Cell> machines = machineTable
         .aggregateByIndexSingle(Pair::second, Comparator.comparing(Pair::first), vs -> vs)
         .expandColumn(
             VALUE_NAME,
             (p, vs) -> Map.ofEntries(
                 Map.entry(
                     "Name",
-                    new StringCell(last(vs).getValue().machineName())),
+                    new StringCell(last(vs).getValue().machineName())
+                ),
                 Map.entry(
                     "CPUs",
-                    new NumericCell(last(vs).getValue().numberOfProcessors(), "%d").rightAligned()),
+                    new NumericCell(last(vs).getValue().numberOfProcessors(), "%d").rightAligned()
+                ),
                 Map.entry(
                     "Load",
                     new TrendedNumericCell<>(
-                            vs.stream()
-                                .map(v -> v.getValue()
-                                    .cpuLoad())
-                                .toList(),
-                            "%.1f")
-                        .rightAligned()),
+                        vs.stream()
+                            .map(v -> v.getValue()
+                                .cpuLoad())
+                            .toList(),
+                        "%.1f"
+                    )
+                        .rightAligned()
+                ),
                 Map.entry(
                     "~Load",
                     new AreaPlotCell(
@@ -337,9 +349,14 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
                                 v -> v.getValue()
                                     .cpuLoad(),
                                 (n1, n2) -> n1,
-                                TreeMap::new)),
+                                TreeMap::new
+                            )),
                         machineHistoryStartTime.toEpochSecond(ZoneOffset.UTC),
-                        machineHistoryEndTime.toEpochSecond(ZoneOffset.UTC)))))
+                        machineHistoryEndTime.toEpochSecond(ZoneOffset.UTC)
+                    )
+                )
+            )
+        )
         .remapRowIndex(Pair::second);
     Table<MachineKey, String, Cell> pCells = processTable
         .aggregateByIndexSingle(Pair::second, Comparator.comparing(Pair::first), ps -> last(ps).getValue())
@@ -357,20 +374,35 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
               Map.entry("Used", new NumericCell(usedMemory, "%.0f", "MB").rightAligned()),
               Map.entry("Tot", new NumericCell(maxMemory, "%.0f", "MB").rightAligned()),
               Map.entry("%Mem", new HorizontalBarCell(configuration.barLength, 0, maxMemory, usedMemory)),
-              Map.entry("#Proc", new NumericCell(vs.size(), "%d").rightAligned()));
+              Map.entry("#Proc", new NumericCell(vs.size(), "%d").rightAligned())
+          );
         })
         .remapRowIndex(p -> p.second().machineKey());
-    //noinspection rawtypes,unchecked
-    machines = Table.colLeftJoin(machines, pCells).expandRowIndex(m ->
-        (Map) Map.ofEntries(Map.entry("Key", new StringCell("M%02d".formatted(machineKeys.indexOf(m))))));
-
+    machines = machines.colLeftJoin(pCells)
+        .expandRowIndex("MK", m -> new StringCell("M%02d".formatted(machineKeys.indexOf(m))));
+    Table<ExperimentKey, String, Cell> experiments = experimentTable
+        .aggregateByIndexSingle(Pair::second, Comparator.comparing(Pair::first), vs -> vs)
+        .expandColumn(
+            VALUE_NAME,
+            (p, vs) -> Map.ofEntries(
+                Map.entry(
+                    "#Runs",
+                    new NumericCell(last(vs).getValue().nOfRuns(), "%d").rightAligned()
+                )
+            )
+        )
+        .remapRowIndex(Pair::second)
+        .expandRowIndex(e -> Map.ofEntries(
+            Map.entry("EK", new StringCell("E%02d".formatted(experimentsKeys.indexOf(e)))),
+            Map.entry("MK", new StringCell("M%02d".formatted(machineKeys.indexOf(e.processKey().machineKey()))))
+        ));
     // check keystrokes
     try {
       KeyStroke k = screen.pollInput();
       if (k != null
           && k.getCharacter() != null
           && ((k.getCharacter().equals('c') && k.isCtrlDown())
-              || k.getKeyType().equals(KeyType.EOF))) {
+          || k.getKeyType().equals(KeyType.EOF))) {
         stop();
       }
     } catch (IOException e) {
@@ -384,11 +416,20 @@ public class TuiMonitor extends ListLogHandler implements Runnable {
     TuiDrawer td = new TuiDrawer(screen.newTextGraphics());
     // draw structure
     td.inX(0, 0.6f)
-        .inY(0, 0.33f)
+        .inY(0, 0.2f)
         .clear()
         .drawFrame("Machines (%d)".formatted(machines.nRows()))
         .inner(1)
-        .drawTable(machines, List.of("Key", "Name", "Load", "~Load", "CPUs", "#Proc", "Used", "Tot", "%Mem"));
+        .drawTable(machines, List.of("MK", "Name", "Load", "~Load", "CPUs", "#Proc", "Used", "Tot", "%Mem"));
+    td.inX(0, 0.6f)
+        .inY(0.2f, 0.2f)
+        .clear()
+        .drawFrame("Experiments (%d)".formatted(experiments.nRows()))
+        .inner(1)
+        .drawTable(experiments, List.of("EK", "MK", "#Runs"));
+
+    TuiDrawer tds = td.inX(0, 0.6f).inY(0.2f, 0.2f);
+
     // refresh
     try {
       screen.refresh();
