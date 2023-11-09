@@ -29,6 +29,7 @@ import io.github.ericmedvet.jgea.experimenter.listener.tui.table.Cell;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 /**
@@ -171,13 +172,21 @@ public class TuiDrawer {
   }
 
   public <K> TuiDrawer drawTable(Table<K, String, ? extends Cell> table, List<String> columns) {
+    return drawTable(table, columns, s -> s);
+  }
+
+  public <K> TuiDrawer drawTable(
+      Table<K, String, ? extends Cell> table,
+      List<String> columns,
+      UnaryOperator<String> colProcessor
+  ) {
     Map<String, Integer> widths = columns.stream()
         .collect(Collectors.toMap(
             ci -> ci,
             ci -> Math.max(
-                ci.length(),
+                colProcessor.apply(ci).length(),
                 table.columnValues(ci).stream()
-                    .mapToInt(Cell::preferredWidth)
+                    .mapToInt(c -> c != null ? c.preferredWidth() : 0)
                     .max()
                     .orElse(0)
             )
@@ -186,7 +195,7 @@ public class TuiDrawer {
     int y = 0;
     // header
     for (String ci : columns) {
-      drawString(x, y, ci, configuration.labelColor);
+      drawString(x, y, colProcessor.apply(ci), configuration.labelColor);
       x = x + widths.get(ci) + 1;
     }
     y = y + 1;
@@ -195,8 +204,10 @@ public class TuiDrawer {
       x = 0;
       for (String ci : columns) {
         int w = widths.get(ci);
-        TuiDrawer cellTd = in(new Rectangle(new Point(x, y), new Point(x + w + 1, y + 1)));
-        table.get(ri, ci).draw(cellTd, w);
+        Cell cell = table.get(ri, ci);
+        if (cell != null) {
+          cell.draw(in(new Rectangle(new Point(x, y), new Point(x + w + 1, y + 1))), w);
+        }
         x = x + w + 1;
       }
       y = y + 1;

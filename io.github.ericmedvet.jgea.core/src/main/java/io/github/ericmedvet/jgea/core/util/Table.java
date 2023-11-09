@@ -212,8 +212,9 @@ public interface Table<R, C, T> {
     return table;
   }
 
-  default Map<R, T> column(C columnIndex) {
-    return rowIndexes().stream().collect(Collectors.toMap(ri -> ri, ri -> get(ri, columnIndex)));
+  @FunctionalInterface
+  interface TriFunction<I1, I2, I3, O> {
+    O apply(I1 i1, I2 i2, I3 i3);
   }
 
   default List<T> columnValues(C columnIndex) {
@@ -289,55 +290,25 @@ public interface Table<R, C, T> {
     return rowIndexes().size();
   }
 
-  default String prettyPrint(Function<R, String> rFormat, Function<C, String> cFormat, Function<T, String> tFormat) {
-    if (nColumns() == 0) {
-      return "";
-    }
-    String colSep = " ";
-    Map<C, Integer> widths = colIndexes().stream()
-        .collect(Collectors.toMap(
-            ci -> ci,
-            ci -> Math.max(
-                cFormat.apply(ci).length(),
-                rowIndexes().stream()
-                    .mapToInt(
-                        ri -> tFormat.apply(get(ri, ci)).length())
-                    .max()
-                    .orElse(0)
-            )
-        ));
-    int riWidth = rowIndexes().stream()
-        .mapToInt(ri -> rFormat.apply(ri).length())
-        .max()
-        .orElse(0);
-    StringBuilder sb = new StringBuilder();
-    // print header
-    sb.append(StringUtils.justify("", riWidth));
-    sb.append(riWidth > 0 ? colSep : "");
-    sb.append(colIndexes().stream()
-        .map(ci -> StringUtils.justify(cFormat.apply(ci), widths.get(ci)))
-        .collect(Collectors.joining(colSep)));
-    if (nRows() == 0) {
-      return sb.toString();
-    }
-    sb.append("\n");
-    // print rows
-    sb.append(rowIndexes().stream()
-        .map(ri -> {
-          String s = StringUtils.justify(rFormat.apply(ri), riWidth);
-          s = s + (riWidth > 0 ? colSep : "");
-          s = s
-              + colIndexes().stream()
-              .map(ci -> StringUtils.justify(tFormat.apply(get(ri, ci)), widths.get(ci)))
-              .collect(Collectors.joining(colSep));
-          return s;
-        })
-        .collect(Collectors.joining("\n")));
-    return sb.toString();
+  public static void main(String[] args) {
+    Table<String, String, Integer> t = new HashMapTable<>();
+    t.set("aa", "V", 1);
+    t.set("ab", "V", 2);
+    t.set("ac", "V", 3);
+    t.set("ba", "V", 4);
+    t.set("bb", "V", 5);
+    t.set("ca", "V", 6);
+    System.out.println(t.prettyToString());
+    System.out.println(t.wider(s -> s.substring(1, 2), "V", s -> s.substring(0, 1)).prettyToString());
+    System.out.println(t.column("V"));
+    System.out.println(t.column("Vg").values().stream().mapToInt(i -> i).sum());
   }
 
-  default String prettyPrint() {
-    return prettyPrint("%s"::formatted, "%s"::formatted, "%s"::formatted);
+  default Map<R, T> column(C columnIndex) {
+    if (!colIndexes().contains(columnIndex)) {
+      return Map.of();
+    }
+    return rowIndexes().stream().collect(Collectors.toMap(ri -> ri, ri -> get(ri, columnIndex)));
   }
 
   default Map<C, T> row(R rowIndex) {
@@ -490,6 +461,113 @@ public interface Table<R, C, T> {
         return thisTable.rowIndexes();
       }
     };
+  }
+
+  default <T1> Table<R, C, T1> map(TriFunction<R, C, T, T1> mapper) {
+    Table<R, C, T> thisTable = this;
+    return new Unmodifiable<>() {
+      @Override
+      public List<C> colIndexes() {
+        return thisTable.colIndexes();
+      }
+
+      @Override
+      public T1 get(R rowIndex, C columnIndex) {
+        return mapper.apply(rowIndex, columnIndex, thisTable.get(rowIndex, columnIndex));
+      }
+
+      @Override
+      public List<R> rowIndexes() {
+        return thisTable.rowIndexes();
+      }
+    };
+  }
+
+  default <T1> Table<R, C, T1> map(Function<T, T1> mapper) {
+    Table<R, C, T> thisTable = this;
+    return new Unmodifiable<>() {
+      @Override
+      public List<C> colIndexes() {
+        return thisTable.colIndexes();
+      }
+
+      @Override
+      public T1 get(R rowIndex, C columnIndex) {
+        return mapper.apply(thisTable.get(rowIndex, columnIndex));
+      }
+
+      @Override
+      public List<R> rowIndexes() {
+        return thisTable.rowIndexes();
+      }
+    };
+  }
+
+  default String prettyToString(Function<R, String> rFormat, Function<C, String> cFormat, Function<T, String> tFormat) {
+    if (nColumns() == 0) {
+      return "";
+    }
+    String colSep = " ";
+    Map<C, Integer> widths = colIndexes().stream()
+        .collect(Collectors.toMap(
+            ci -> ci,
+            ci -> Math.max(
+                cFormat.apply(ci).length(),
+                rowIndexes().stream()
+                    .mapToInt(
+                        ri -> tFormat.apply(get(ri, ci)).length())
+                    .max()
+                    .orElse(0)
+            )
+        ));
+    int riWidth = rowIndexes().stream()
+        .mapToInt(ri -> rFormat.apply(ri).length())
+        .max()
+        .orElse(0);
+    StringBuilder sb = new StringBuilder();
+    // print header
+    sb.append(StringUtils.justify("", riWidth));
+    sb.append(riWidth > 0 ? colSep : "");
+    sb.append(colIndexes().stream()
+        .map(ci -> StringUtils.justify(cFormat.apply(ci), widths.get(ci)))
+        .collect(Collectors.joining(colSep)));
+    if (nRows() == 0) {
+      return sb.toString();
+    }
+    sb.append("\n");
+    // print rows
+    sb.append(rowIndexes().stream()
+        .map(ri -> {
+          String s = StringUtils.justify(rFormat.apply(ri), riWidth);
+          s = s + (riWidth > 0 ? colSep : "");
+          s = s
+              + colIndexes().stream()
+              .map(ci -> StringUtils.justify(tFormat.apply(get(ri, ci)), widths.get(ci)))
+              .collect(Collectors.joining(colSep));
+          return s;
+        })
+        .collect(Collectors.joining("\n")));
+    return sb.toString();
+  }
+
+  default String prettyToString() {
+    return prettyToString("%s"::formatted, "%s"::formatted, "%s"::formatted);
+  }
+
+  default <R1, C1> Table<R1, C1, T> wider(Function<R, R1> rowKey, C colIndex, Function<R, C1> spreader) {
+    return of(rowIndexes().stream()
+        .collect(Collectors.groupingBy(rowKey))
+        .entrySet()
+        .stream()
+        .collect(Collectors.toMap(
+            Map.Entry::getKey,
+            e -> e.getValue().stream()
+                .collect(Collectors.toMap(
+                    spreader,
+                    r -> get(r, colIndex)
+                ))
+
+        )));
   }
 
 }
