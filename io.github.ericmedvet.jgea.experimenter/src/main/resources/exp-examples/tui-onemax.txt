@@ -3,7 +3,7 @@ ea.experiment(
     ea.run(
       solver = ea.s.bitStringGa(
         mapper = ea.m.identity();
-        nEval = 100000
+        nEval = 10000
       );
       problem = ea.p.s.oneMax(p = 2000)
     )

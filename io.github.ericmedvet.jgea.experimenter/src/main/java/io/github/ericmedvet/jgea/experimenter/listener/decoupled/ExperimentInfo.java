@@ -27,4 +27,5 @@ import java.util.List;
 /**
  * @author "Eric Medvet" on 2023/11/03 for jgea
  */
-public record ExperimentInfo(String map, int nOfRuns, List<Pair<String, String>> formats, LocalDateTime startLocalDateTime) {}
+public record ExperimentInfo(
+    String map, int nOfRuns, List<Pair<String, String>> formats, LocalDateTime startLocalDateTime) {}

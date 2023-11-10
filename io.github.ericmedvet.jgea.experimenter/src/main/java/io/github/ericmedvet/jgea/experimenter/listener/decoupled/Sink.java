@@ -31,4 +31,7 @@ public interface Sink<K, V> {
   default void push(K k, V v) {
     push(LocalDateTime.now(), k, v);
   }
+
+  default void close() {}
+  ;
 }

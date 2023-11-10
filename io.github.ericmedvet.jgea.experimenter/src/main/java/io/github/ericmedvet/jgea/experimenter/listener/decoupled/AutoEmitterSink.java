@@ -37,8 +37,9 @@ public class AutoEmitterSink<K, V> {
           Pair<K, V> pair = pairSupplier.get();
           sink.push(pair.first(), pair.second());
         },
-        0, millisInterval, TimeUnit.MILLISECONDS
-    );
+        0,
+        millisInterval,
+        TimeUnit.MILLISECONDS);
   }
 
   public void shutdown() {

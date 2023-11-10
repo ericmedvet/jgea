@@ -34,6 +34,7 @@ public class LogCapturer extends Handler {
   private final List<LogRecord> logRecords;
 
   private final Consumer<LogRecord> consumer;
+
   public LogCapturer(Consumer<LogRecord> consumer, boolean replaceConsoleHandlers) {
     this.consumer = consumer;
     this.replaceConsoleHandlers = replaceConsoleHandlers;
@@ -67,8 +68,7 @@ public class LogCapturer extends Handler {
   }
 
   @Override
-  public void flush() {
-  }
+  public void flush() {}
 
   @Override
   public void close() throws SecurityException {

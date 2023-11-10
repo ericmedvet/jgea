@@ -46,11 +46,9 @@ public class TextPlotter {
       Map.entry("0111", '▟'),
       Map.entry("1110", '▛'),
       Map.entry("1101", '▜'),
-      Map.entry("1111", '█')
-  );
+      Map.entry("1111", '█'));
 
-  private TextPlotter() {
-  }
+  private TextPlotter() {}
 
   public record Miniplot(String content) {
     @Override
@@ -59,9 +57,10 @@ public class TextPlotter {
     }
   }
 
-  public static Miniplot areaPlot(SortedMap<? extends Number, ? extends Number> data, double minX, double maxX, int l) {
+  public static Miniplot areaPlot(
+      SortedMap<? extends Number, ? extends Number> data, double minX, double maxX, int l) {
     if (data.isEmpty()) {
-      return barplot(Arrays.copyOf(new double[]{Double.NaN}, l));
+      return barplot(Arrays.copyOf(new double[] {Double.NaN}, l));
     }
     SortedMap<Double, Double> d = new TreeMap<>(data.entrySet().stream()
         .collect(Collectors.toMap(
