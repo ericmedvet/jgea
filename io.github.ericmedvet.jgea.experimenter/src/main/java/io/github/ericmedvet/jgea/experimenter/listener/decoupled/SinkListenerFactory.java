@@ -29,13 +29,15 @@ import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Stream;
 
 /**
  * @author "Eric Medvet" on 2023/11/03 for jgea
  */
-public class SinkListenerFactory<G, S, Q> implements ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> {
+public class SinkListenerFactory<G, S, Q> implements ListenerFactory<POCPopulationState<?, G,
+    S, Q>, Run<?, G, S, Q>> {
   private final List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions;
   private final List<NamedFunction<? super Run<?, G, S, Q>, ?>> runFunctions;
   private final Experiment experiment;
@@ -46,6 +48,7 @@ public class SinkListenerFactory<G, S, Q> implements ListenerFactory<POCPopulati
   private final AutoEmitterSink<MachineKey, MachineInfo> machineAutoEmitterSink;
   private final AutoEmitterSink<ProcessKey, ProcessInfo> processAutoEmitterSink;
   private final AutoEmitterSink<ExperimentKey, ExperimentInfo> experimentAutoEmitterSink;
+  private final LogCapturer logCapturer;
 
   public SinkListenerFactory(
       List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
@@ -58,7 +61,6 @@ public class SinkListenerFactory<G, S, Q> implements ListenerFactory<POCPopulati
       Sink<RunKey, RunInfo> runSink,
       Sink<DataItemKey, DataItemInfo> dataItemSink
   ) {
-    // TODO add log entries forwarding
     this.stateFunctions = stateFunctions;
     this.runFunctions = runFunctions;
     this.experiment = experiment;
@@ -66,17 +68,36 @@ public class SinkListenerFactory<G, S, Q> implements ListenerFactory<POCPopulati
     this.runSink = runSink;
     this.dataItemSink = dataItemSink;
     LocalDateTime now = LocalDateTime.now();
-    machineAutoEmitterSink = new AutoEmitterSink<>(1000, MachineKey::local, MachineInfo::local, machineSink);
-    processAutoEmitterSink = new AutoEmitterSink<>(1000, ProcessKey::local, ProcessInfo::local, processSink);
-    experimentAutoEmitterSink = new AutoEmitterSink<>(5000, this::experimentKey, () -> new ExperimentInfo(
-        experiment.map().toString(),
-        experiment.runs().size(),
-        Stream.of(stateFunctions, runFunctions)
-            .flatMap(List::stream)
-            .map(f -> new Pair<>(f.getName(), f.getFormat()))
-            .toList(),
-        now
+    machineAutoEmitterSink = new AutoEmitterSink<>(
+        1000,
+        () -> new Pair<>(MachineKey.local(), MachineInfo.local()),
+        machineSink
+    );
+    processAutoEmitterSink = new AutoEmitterSink<>(
+        1000,
+        () -> new Pair<>(ProcessKey.local(), ProcessInfo.local()),
+        processSink
+    );
+    experimentAutoEmitterSink = new AutoEmitterSink<>(5000, () -> new Pair<>(
+        experimentKey(),
+        new ExperimentInfo(
+            experiment.map().toString(),
+            experiment.runs().size(),
+            Stream.of(stateFunctions, runFunctions)
+                .flatMap(List::stream)
+                .map(f -> new Pair<>(f.getName(), f.getFormat()))
+                .toList(),
+            now
+        )
     ), experimentSink);
+    logCapturer = new LogCapturer(lr -> logSink.push(
+        LocalDateTime.ofInstant(lr.getInstant(), ZoneId.systemDefault()),
+        ProcessKey.local(),
+        new LogInfo(
+            lr.getLevel(),
+            lr.getMessage()
+        )
+    ), false);
   }
 
   @Override
@@ -89,14 +110,19 @@ public class SinkListenerFactory<G, S, Q> implements ListenerFactory<POCPopulati
     return new Listener<>() {
       @Override
       public void listen(POCPopulationState<?, G, S, Q> state) {
-        runSink.push(runKey, new RunInfo(run.index(), startDateTime, state.progress(), false));
-        stateFunctions.forEach(
-            f -> dataItemSink.push(new DataItemKey(runKey, f.getName()), new DataItemInfo(f.apply(state))));
+        synchronized (runSink) {
+          LocalDateTime now = LocalDateTime.now();
+          runSink.push(now, runKey, new RunInfo(run.index(), startDateTime, state.progress(), false));
+          stateFunctions.forEach(
+              f -> dataItemSink.push(now, new DataItemKey(runKey, f.getName()), new DataItemInfo(f.apply(state))));
+        }
       }
 
       @Override
       public void done() {
-        runSink.push(runKey, new RunInfo(run.index(), startDateTime, Progress.DONE, true));
+        synchronized (runSink) {
+          runSink.push(runKey, new RunInfo(run.index(), startDateTime, Progress.DONE, true));
+        }
       }
     };
   }
@@ -114,5 +140,6 @@ public class SinkListenerFactory<G, S, Q> implements ListenerFactory<POCPopulati
     machineAutoEmitterSink.shutdown();
     processAutoEmitterSink.shutdown();
     experimentAutoEmitterSink.shutdown();
+    logCapturer.close();
   }
 }

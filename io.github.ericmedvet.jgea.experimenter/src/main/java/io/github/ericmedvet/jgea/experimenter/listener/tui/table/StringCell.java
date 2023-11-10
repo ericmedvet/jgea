@@ -19,12 +19,18 @@
  */
 package io.github.ericmedvet.jgea.experimenter.listener.tui.table;
 
+import com.googlecode.lanterna.TextColor;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
 
-public record StringCell(String content) implements Cell {
+public record StringCell(String content, TextColor color) implements Cell {
+
+  public StringCell(String content) {
+    this(content, null);
+  }
+
   @Override
   public void draw(TuiDrawer td, int width) {
-    td.drawString(0, 0, content);
+    td.drawString(0, 0, content, color == null ? td.getConfiguration().primaryStringColor() : color);
   }
 
   @Override

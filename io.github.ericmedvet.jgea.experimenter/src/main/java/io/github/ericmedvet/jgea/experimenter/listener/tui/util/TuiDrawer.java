@@ -115,9 +115,8 @@ public class TuiDrawer {
     textGraphics.setCharacter(viewport.se().tp(), Symbols.SINGLE_LINE_BOTTOM_LEFT_CORNER);
     textGraphics.setCharacter(viewport.nw().tp(), Symbols.SINGLE_LINE_TOP_RIGHT_CORNER);
     textGraphics.setCharacter(viewport.sw().tp(), Symbols.SINGLE_LINE_BOTTOM_RIGHT_CORNER);
-    textGraphics.setForegroundColor(configuration.frameLabelColor);
     if (!label.isEmpty()) {
-      drawString(2, 0, "[" + label + "]");
+      drawString(2, 0, "[" + label + "]", configuration.frameLabelColor);
     }
     return this;
   }

@@ -17,57 +17,64 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jgea.experimenter.listener.tui;
+package io.github.ericmedvet.jgea.experimenter.listener.decoupled;
 
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.logging.*;
 
-public class ListLogHandler extends Handler {
+public class LogCapturer extends Handler {
+  private static final Logger L = Logger.getLogger(LogCapturer.class.getName());
   private static final int LOG_HISTORY_SIZE = 100;
-  private static final Logger L = Logger.getLogger(ListLogHandler.class.getName());
 
-  private final boolean dumpLogAfterStop;
+  private final boolean replaceConsoleHandlers;
   private final List<Handler> originalHandlers;
   private final List<LogRecord> logRecords;
 
-  public ListLogHandler(boolean dumpLogAfterStop) {
-    this.dumpLogAfterStop = dumpLogAfterStop;
+  private final Consumer<LogRecord> consumer;
+  public LogCapturer(Consumer<LogRecord> consumer, boolean replaceConsoleHandlers) {
+    this.consumer = consumer;
+    this.replaceConsoleHandlers = replaceConsoleHandlers;
     // prepare data object stores
     logRecords = new LinkedList<>();
     // capture logs
     Logger mainLogger = Logger.getLogger("");
     mainLogger.setLevel(Level.CONFIG);
     mainLogger.addHandler(this);
-    originalHandlers = Arrays.stream(mainLogger.getHandlers())
-        .filter(h -> h instanceof ConsoleHandler)
-        .toList();
-    originalHandlers.forEach(mainLogger::removeHandler);
-  }
-
-  protected List<LogRecord> getLogRecords() {
-    return logRecords;
+    if (replaceConsoleHandlers) {
+      originalHandlers = Arrays.stream(mainLogger.getHandlers())
+          .filter(h -> h instanceof ConsoleHandler)
+          .toList();
+      originalHandlers.forEach(mainLogger::removeHandler);
+    } else {
+      originalHandlers = List.of();
+    }
   }
 
   @Override
   public synchronized void publish(LogRecord record) {
-    synchronized (logRecords) {
-      logRecords.add(record);
-      while (logRecords.size() > LOG_HISTORY_SIZE) {
-        logRecords.remove(0);
+    consumer.accept(record);
+    if (replaceConsoleHandlers) {
+      synchronized (logRecords) {
+        logRecords.add(record);
+        while (logRecords.size() > LOG_HISTORY_SIZE) {
+          logRecords.remove(0);
+        }
       }
     }
   }
 
   @Override
-  public void flush() {}
+  public void flush() {
+  }
 
   @Override
   public void close() throws SecurityException {
     Logger.getLogger("").removeHandler(this);
-    originalHandlers.forEach(h -> Logger.getLogger("").addHandler(h));
-    if (dumpLogAfterStop) {
+    if (replaceConsoleHandlers) {
+      originalHandlers.forEach(h -> Logger.getLogger("").addHandler(h));
       logRecords.forEach(L::log);
     }
   }

@@ -48,7 +48,9 @@ public class TextPlotter {
       Map.entry("1101", '▜'),
       Map.entry("1111", '█'));
 
-  public TextPlotter() {}
+  private TextPlotter() {}
+
+  public record Miniplot(String content) {}
 
   public static String areaPlot(SortedMap<? extends Number, ? extends Number> data, double minX, double maxX, int l) {
     if (data.isEmpty()) {
