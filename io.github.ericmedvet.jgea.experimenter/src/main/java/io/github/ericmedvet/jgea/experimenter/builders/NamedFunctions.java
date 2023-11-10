@@ -32,6 +32,7 @@ import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.core.ParamMap;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 import io.github.ericmedvet.jsdynsym.grid.GridUtils;
+
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -170,7 +171,7 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <Q> NamedFunction<POCPopulationState<?, ?, ?, Q>, String> fitnessHist(
+  public static <Q> NamedFunction<POCPopulationState<?, ?, ?, Q>, TextPlotter.Miniplot> fitnessHist(
       @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<Q, Number> function,
       @Param(value = "nBins", dI = 8) int nBins) {
     return NamedFunction.build(
@@ -237,7 +238,7 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <X> NamedFunction<X, String> hist(
+  public static <X> NamedFunction<X, TextPlotter.Miniplot> hist(
       @Param("collection") NamedFunction<X, Collection<Number>> collectionF,
       @Param(value = "nBins", dI = 8) int nBins) {
     return NamedFunction.build(c("hist", collectionF.getName()), "%" + nBins + "." + nBins + "s", x -> {

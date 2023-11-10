@@ -28,7 +28,7 @@ public record HorizontalBarCell(int l, double min, double max, double value) imp
     td.drawString(
         0,
         0,
-        TextPlotter.horizontalBar(value, min, max, l, false),
+        TextPlotter.horizontalBar(value, min, max, l, false).content(),
         td.getConfiguration().primaryPlotColor(),
         td.getConfiguration().secondaryPlotColor());
   }

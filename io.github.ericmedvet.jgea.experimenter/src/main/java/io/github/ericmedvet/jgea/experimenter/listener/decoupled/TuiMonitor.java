@@ -439,6 +439,9 @@ public class TuiMonitor implements Runnable {
                 format
             ).rightAligned();
           }
+          if (last(vs) instanceof TextPlotter.Miniplot miniplot) {
+            return new MiniplotCell(miniplot);
+          }
           return new StringCell(format.formatted(last(vs).toString()));
         });
     runs = runs.colLeftJoin(diCells);

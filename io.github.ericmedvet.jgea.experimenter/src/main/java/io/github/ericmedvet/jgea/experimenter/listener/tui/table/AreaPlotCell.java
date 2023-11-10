@@ -21,6 +21,7 @@ package io.github.ericmedvet.jgea.experimenter.listener.tui.table;
 
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
+
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -45,7 +46,7 @@ public record AreaPlotCell(int l, SortedMap<? extends Number, ? extends Number> 
     td.drawString(
         0,
         0,
-        TextPlotter.areaPlot(data, xMin, xMax, l),
+        TextPlotter.areaPlot(data, xMin, xMax, l).content(),
         td.getConfiguration().primaryPlotColor(),
         td.getConfiguration().secondaryPlotColor());
   }

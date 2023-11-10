@@ -46,15 +46,22 @@ public class TextPlotter {
       Map.entry("0111", '▟'),
       Map.entry("1110", '▛'),
       Map.entry("1101", '▜'),
-      Map.entry("1111", '█'));
+      Map.entry("1111", '█')
+  );
 
-  private TextPlotter() {}
+  private TextPlotter() {
+  }
 
-  public record Miniplot(String content) {}
+  public record Miniplot(String content) {
+    @Override
+    public String toString() {
+      return content;
+    }
+  }
 
-  public static String areaPlot(SortedMap<? extends Number, ? extends Number> data, double minX, double maxX, int l) {
+  public static Miniplot areaPlot(SortedMap<? extends Number, ? extends Number> data, double minX, double maxX, int l) {
     if (data.isEmpty()) {
-      return barplot(Arrays.copyOf(new double[] {Double.NaN}, l));
+      return barplot(Arrays.copyOf(new double[]{Double.NaN}, l));
     }
     SortedMap<Double, Double> d = new TreeMap<>(data.entrySet().stream()
         .collect(Collectors.toMap(
@@ -81,7 +88,7 @@ public class TextPlotter {
     return barplot(values);
   }
 
-  private static String barplot(double[] values, double min, double max) {
+  private static Miniplot barplot(double[] values, double min, double max) {
     StringBuilder sb = new StringBuilder();
     for (double value : values) {
       if (Double.isFinite(value)) {
@@ -92,28 +99,28 @@ public class TextPlotter {
         sb.append("·");
       }
     }
-    return sb.toString();
+    return new Miniplot(sb.toString());
   }
 
-  public static String barplot(double[] values) {
+  public static Miniplot barplot(double[] values) {
     double min = DoubleStream.of(values).filter(Double::isFinite).min().orElse(0);
     double max = DoubleStream.of(values).filter(Double::isFinite).max().orElse(0);
     return barplot(values, min, max);
   }
 
-  public static String barplot(double[] values, int l) {
+  public static Miniplot barplot(double[] values, int l) {
     return barplot(resize(values, l));
   }
 
-  public static String barplot(List<? extends Number> values) {
+  public static Miniplot barplot(List<? extends Number> values) {
     return barplot(values.stream().mapToDouble(Number::doubleValue).toArray());
   }
 
-  public static String barplot(List<? extends Number> values, int l) {
+  public static Miniplot barplot(List<? extends Number> values, int l) {
     return barplot(values.stream().mapToDouble(Number::doubleValue).toArray(), l);
   }
 
-  public static String binaryMap(boolean[][] b, int l) {
+  public static Miniplot binaryMap(boolean[][] b, int l) {
     float bW = b.length;
     float bH = b[0].length;
     float mW = 2 * l;
@@ -144,10 +151,10 @@ public class TextPlotter {
           + (m[i * 2 + 1][0] ? '1' : '0');
       sb.append(GRID_MAP.get(k));
     }
-    return sb.toString();
+    return new Miniplot(sb.toString());
   }
 
-  public static String histogram(List<? extends Number> values, int bins) {
+  public static Miniplot histogram(List<? extends Number> values, int bins) {
     double[] vs = values.stream().mapToDouble(Number::doubleValue).toArray();
     double min = DoubleStream.of(vs).min().orElse(0);
     double max = DoubleStream.of(vs).max().orElse(0);
@@ -159,11 +166,11 @@ public class TextPlotter {
     return barplot(counts, 0, Arrays.stream(counts).max().orElse(0));
   }
 
-  public static String horizontalBar(double value, double min, double max, int l) {
+  public static Miniplot horizontalBar(double value, double min, double max, int l) {
     return horizontalBar(value, min, max, l, true);
   }
 
-  public static String horizontalBar(double value, double min, double max, int l, boolean withBg) {
+  public static Miniplot horizontalBar(double value, double min, double max, int l, boolean withBg) {
     StringBuilder sb = new StringBuilder();
     double r = (max - min) / (double) l;
     for (double i = 0; i < l; i++) {
@@ -179,7 +186,7 @@ public class TextPlotter {
         sb.append(FILLER);
       }
     }
-    return sb.toString();
+    return new Miniplot(sb.toString());
   }
 
   private static double[] resize(double[] values, int l) {

@@ -16,7 +16,7 @@ public record ProgressCell(int l, Progress progress) implements Cell {
       td.drawString(
           0,
           0,
-          TextPlotter.horizontalBar(progress.rate(), 0, 1, l, false),
+          TextPlotter.horizontalBar(progress.rate(), 0, 1, l, false).content(),
           td.getConfiguration().primaryPlotColor(),
           td.getConfiguration().secondaryPlotColor()
       );
