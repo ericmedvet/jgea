@@ -26,6 +26,7 @@ import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import io.github.ericmedvet.jgea.core.util.*;
+import io.github.ericmedvet.jgea.experimenter.listener.net.NetUtils;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.table.*;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
 
@@ -37,6 +38,7 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,7 +46,7 @@ import java.util.stream.Stream;
 public class TuiMonitor implements Runnable {
 
   private static final Logger L = Logger.getLogger(TuiMonitor.class.getName());
-  private static final Configuration DEFAULT_CONFIGURATION = new Configuration(8, 12, 1000, 60, 1000, 60);
+  private static final Configuration DEFAULT_CONFIGURATION = new Configuration(8, 12, 1000, 60, 1000, 30);
   private static final String DATETIME_FORMAT = "%1$tm-%1$td %1$tH:%1$tM:%1$tS";
 
   private static final String VALUE_NAME = "VALUE";
@@ -65,9 +67,12 @@ public class TuiMonitor implements Runnable {
   private final Table<Pair<LocalDateTime, ExperimentKey>, String, ExperimentInfo> experimentTable;
   private final Table<Pair<LocalDateTime, RunKey>, String, RunInfo> runTable;
   private final Table<Pair<LocalDateTime, DataItemKey>, String, DataItemInfo> dataItemTable;
+  private final LogCapturer logCapturer;
   private LocalDateTime lastRefreshLocalDateTime = LocalDateTime.MIN;
+  private final Supplier<String> title;
 
   public TuiMonitor(
+      Supplier<String> title,
       Source<MachineKey, MachineInfo> machineSource,
       Source<ProcessKey, ProcessInfo> processSource,
       Source<ProcessKey, LogInfo> logSource,
@@ -75,6 +80,7 @@ public class TuiMonitor implements Runnable {
       Source<RunKey, RunInfo> runSource,
       Source<DataItemKey, DataItemInfo> dataItemSource) {
     this(
+        title,
         DEFAULT_CONFIGURATION,
         machineSource,
         processSource,
@@ -85,6 +91,7 @@ public class TuiMonitor implements Runnable {
   }
 
   public TuiMonitor(
+      Supplier<String> title,
       Configuration configuration,
       Source<MachineKey, MachineInfo> machineSource,
       Source<ProcessKey, ProcessInfo> processSource,
@@ -92,6 +99,7 @@ public class TuiMonitor implements Runnable {
       Source<ExperimentKey, ExperimentInfo> experimentSource,
       Source<RunKey, RunInfo> runSource,
       Source<DataItemKey, DataItemInfo> dataItemSource) {
+    this.title = title;
     this.configuration = configuration;
     this.machineSource = machineSource;
     this.processSource = processSource;
@@ -106,6 +114,12 @@ public class TuiMonitor implements Runnable {
     experimentTable = new HashMapTable<>();
     runTable = new HashMapTable<>();
     dataItemTable = new HashMapTable<>();
+    logCapturer = new LogCapturer(
+        lr -> logTable.set(
+            new Pair<>(LocalDateTime.now(), ProcessKey.local()),
+            VALUE_NAME,
+            new LogInfo(lr.getLevel(), lr.getMessage())),
+        true);
     // prepare screen
     DefaultTerminalFactory defaultTerminalFactory = new DefaultTerminalFactory();
     try {
@@ -134,13 +148,19 @@ public class TuiMonitor implements Runnable {
     return ts.get(ts.size() - 1);
   }
 
-  private void stop() {
-    try {
-      screen.stopScreen();
-    } catch (IOException e) {
-      L.warning(String.format("Cannot stop screen: %s", e));
+  private static int compareRunTableItems(
+      List<Map.Entry<Pair<LocalDateTime, RunKey>, RunInfo>> es1,
+      List<Map.Entry<Pair<LocalDateTime, RunKey>, RunInfo>> es2) {
+    if (es1.get(0).getValue().ended() && !es2.get(0).getValue().ended()) {
+      return 1;
     }
-    uiExecutorService.shutdownNow();
+    if (!es1.get(0).getValue().ended() && es2.get(0).getValue().ended()) {
+      return -1;
+    }
+    return es1.get(0)
+        .getValue()
+        .startLocalDateTime()
+        .compareTo(es2.get(0).getValue().startLocalDateTime());
   }
 
   private void refreshTables() {
@@ -152,8 +172,31 @@ public class TuiMonitor implements Runnable {
     dataItemSource.pull(lastRefreshLocalDateTime).forEach((p, v) -> dataItemTable.set(p, VALUE_NAME, v));
     lastRefreshLocalDateTime = LocalDateTime.now();
     // TODO align remote and local times
-    // prune
     LocalDateTime now = LocalDateTime.now();
+    // prune shallowly
+    List<Pair<LocalDateTime, RunKey>> toRemoveRKs = runTable
+        .aggregateByIndexSingle(Pair::second, Comparator.comparing(Pair::first), es -> es.stream()
+            .map(Map.Entry::getKey)
+            .sorted((p1, p2) -> p2.first().compareTo(p1.first()))
+            .skip(3)
+            .toList())
+        .columnValues(VALUE_NAME)
+        .stream()
+        .flatMap(List::stream)
+        .toList();
+    toRemoveRKs.forEach(runTable::removeRow);
+    List<Pair<LocalDateTime, DataItemKey>> toRemoveDIKs = dataItemTable
+        .aggregateByIndexSingle(Pair::second, Comparator.comparing(Pair::first), es -> es.stream()
+            .map(Map.Entry::getKey)
+            .sorted((p1, p2) -> p2.first().compareTo(p1.first()))
+            .skip(3)
+            .toList())
+        .columnValues(VALUE_NAME)
+        .stream()
+        .flatMap(List::stream)
+        .toList();
+    toRemoveDIKs.forEach(dataItemTable::removeRow);
+    // prune deeply
     List<Pair<LocalDateTime, MachineKey>> toRemoveMKs = machineTable
         .aggregateByIndexSingle(Pair::second, (p1, p2) -> p2.first().compareTo(p1.first()), vs -> "")
         .rowIndexes()
@@ -180,11 +223,11 @@ public class TuiMonitor implements Runnable {
         .filter(ep -> toRemovePKs.stream()
             .anyMatch(pp -> pp.second().equals(ep.second().processKey())))
         .toList();
-    List<Pair<LocalDateTime, RunKey>> toRemoveRKs = runTable.rowIndexes().stream()
+    toRemoveRKs = runTable.rowIndexes().stream()
         .filter(rp -> toRemovePKs.stream().anyMatch(pp -> pp.second()
             .equals(rp.second().experimentKey().processKey())))
         .toList();
-    List<Pair<LocalDateTime, DataItemKey>> toRemoveDIKs = dataItemTable.rowIndexes().stream()
+    toRemoveDIKs = dataItemTable.rowIndexes().stream()
         .filter(dip -> toRemovePKs.stream().anyMatch(pp -> pp.second()
             .equals(dip.second().runKey().experimentKey().processKey())))
         .toList();
@@ -198,20 +241,6 @@ public class TuiMonitor implements Runnable {
     }
   }
 
-  private static <K, V> void prune(Table<Pair<LocalDateTime, K>, String, V> table, int n) {
-    List<Pair<LocalDateTime, K>> toRemovePs = table.rowIndexes().stream()
-        .map(Pair::second)
-        .distinct()
-        .map(k -> table.rowIndexes().stream()
-            .filter(p -> p.second().equals(k))
-            .sorted((p1, p2) -> p2.first().compareTo(p1.first()))
-            .skip(n)
-            .toList())
-        .flatMap(List::stream)
-        .toList();
-    toRemovePs.forEach(table::removeRow);
-  }
-
   @Override
   public void run() {
     // start painter task
@@ -219,13 +248,30 @@ public class TuiMonitor implements Runnable {
         () -> {
           try {
             updateUI();
-          } catch (RuntimeException e) {
+          } catch (Throwable e) {
+            e.printStackTrace();
             L.warning("Unexpected exception: %s".formatted(e));
           }
         },
         0,
         configuration.uiRefreshIntervalMillis,
         TimeUnit.MILLISECONDS);
+  }
+
+  private void stop() {
+    try {
+      screen.stopScreen();
+    } catch (IOException e) {
+      L.warning(String.format("Cannot stop screen: %s", e));
+    }
+    uiExecutorService.shutdownNow();
+    logCapturer.close();
+    machineSource.close();
+    processSource.close();
+    logSource.close();
+    experimentSource.close();
+    runSource.close();
+    dataItemSource.close();
   }
 
   private synchronized void updateUI() {
@@ -267,7 +313,7 @@ public class TuiMonitor implements Runnable {
             .map(p -> Map.entry(new Pair<>(e.getKey(), p.first()), p.second()))
             .toList())
         .flatMap(List::stream)
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (v1, v2) -> v1));
     // machines table
     Table<MachineKey, String, Cell> machines = machineTable
         .aggregateByIndexSingle(Pair::second, (p1, p2) -> p2.first().compareTo(p1.first()), vs -> vs)
@@ -391,10 +437,7 @@ public class TuiMonitor implements Runnable {
     // runs table
     Table<RunKey, String, Cell> runs = runTable.aggregateByIndexSingle(
             Pair::second, (p1, p2) -> p2.first().compareTo(p1.first()), vs -> vs)
-        .sorted(VALUE_NAME, (es1, es2) -> es2.get(0)
-            .getValue()
-            .startLocalDateTime()
-            .compareTo(es1.get(0).getValue().startLocalDateTime()))
+        .sorted(VALUE_NAME, TuiMonitor::compareRunTableItems)
         .expandColumn(
             VALUE_NAME,
             (p, vs) -> Map.ofEntries(
@@ -431,6 +474,9 @@ public class TuiMonitor implements Runnable {
         .aggregateByIndexSingle(Pair::second, Comparator.comparing(Pair::first), vs -> vs)
         .wider(p -> p.second().runKey(), VALUE_NAME, p -> p.second().name())
         .map((rk, name, es) -> {
+          if (es == null || es.isEmpty()) {
+            return new EmptyCell();
+          }
           List<Object> vs =
               es.stream().map(e -> e.getValue().content()).toList();
           String format = formats.getOrDefault(new Pair<>(rk.experimentKey(), name), "%s");
@@ -444,15 +490,6 @@ public class TuiMonitor implements Runnable {
           return new StringCell(format.formatted(last(vs).toString()));
         });
     runs = runs.colLeftJoin(diCells);
-    // legend table
-    Table<String, String, StringCell> legend = Table.of(dataItemNames.stream()
-            .distinct()
-            .collect(Collectors.toMap(
-                n -> n,
-                n -> Map.ofEntries(
-                    Map.entry("Short", new StringCell(StringUtils.collapse(n))),
-                    Map.entry("Long", new StringCell(n))))))
-        .sorted(String::compareTo);
     // log table
     Table<Pair<LocalDateTime, ProcessKey>, String, Cell> logs = logTable.sorted(
             (p1, p2) -> p2.first().compareTo(p1.first()))
@@ -471,6 +508,43 @@ public class TuiMonitor implements Runnable {
             new StringCell(
                 "M%02d".formatted(machineKeys.indexOf(p.second().machineKey())),
                 td.getConfiguration().secondaryStringColor()))));
+    // legend table
+    Table<String, String, StringCell> legend = Table.of(dataItemNames.stream()
+            .distinct()
+            .collect(Collectors.toMap(
+                n -> n,
+                n -> Map.ofEntries(
+                    Map.entry("Short", new StringCell(StringUtils.collapse(n))),
+                    Map.entry("Long", new StringCell(n))))))
+        .sorted(String::compareTo);
+    // local machine table
+    Table<Integer, String, Cell> local = new HashMapTable<>();
+    local.set(1, "Name", new StringCell("#Machines", td.getConfiguration().secondaryStringColor()));
+    local.set(2, "Name", new StringCell("#Processes", td.getConfiguration().secondaryStringColor()));
+    local.set(3, "Name", new StringCell("#Logs", td.getConfiguration().secondaryStringColor()));
+    local.set(
+        4, "Name", new StringCell("#Experiments", td.getConfiguration().secondaryStringColor()));
+    local.set(5, "Name", new StringCell("#Runs", td.getConfiguration().secondaryStringColor()));
+    local.set(6, "Name", new StringCell("#DataItems", td.getConfiguration().secondaryStringColor()));
+    local.set(1, "Value", new NumericCell(machineTable.nRows(), "%d").rightAligned());
+    local.set(2, "Value", new NumericCell(processTable.nRows(), "%d").rightAligned());
+    local.set(3, "Value", new NumericCell(logTable.nRows(), "%d").rightAligned());
+    local.set(4, "Value", new NumericCell(experimentTable.nRows(), "%d").rightAligned());
+    local.set(5, "Value", new NumericCell(runTable.nRows(), "%d").rightAligned());
+    local.set(6, "Value", new NumericCell(dataItemTable.nRows(), "%d").rightAligned());
+    local.set(7, "Name", new StringCell("Memory", td.getConfiguration().secondaryStringColor()));
+    local.set(
+        7,
+        "Value",
+        new HorizontalBarCell(8, 0, NetUtils.getProcessMaxMemory(), NetUtils.getProcessUsedMemory()));
+    local.set(8, "Name", new StringCell("Load", td.getConfiguration().secondaryStringColor()));
+    local.set(
+        8,
+        "Value",
+        new CompositeCell(
+            "/",
+            new NumericCell(NetUtils.getCPULoad(), "%.1f"),
+            new NumericCell(NetUtils.getNumberOfProcessors(), "%d")));
     // check keystrokes
     try {
       KeyStroke k = screen.pollInput();
@@ -483,7 +557,7 @@ public class TuiMonitor implements Runnable {
     } catch (IOException e) {
       L.warning(String.format("Cannot check key strokes: %s", e));
     }
-    // draw structure
+    // draw
     td.inX(0, 0.6f)
         .inY(0, 0.2f)
         .clear()
@@ -502,12 +576,18 @@ public class TuiMonitor implements Runnable {
                 "Used",
                 "Tot",
                 "%Mem"));
-    td.inX(0, 0.6f)
+    td.inX(0, 0.4f)
         .inY(0.2f, 0.2f)
         .clear()
         .drawFrame("Experiments (%d)".formatted(experiments.nRows()))
         .inner(1)
         .drawTable(experiments, List.of("S", "EK", "MK", "User", "#Runs", "Progress", "ETA"));
+    td.inX(0.4f, 0.2f)
+        .inY(0.2f, 0.2f)
+        .clear()
+        .drawFrame("Local")
+        .inner(1)
+        .drawTable(local, List.of("Name", "Value"));
     td.inX(0.6f, 0.4f)
         .inY(0, 0.4f)
         .clear()
@@ -529,7 +609,11 @@ public class TuiMonitor implements Runnable {
         .drawFrame("Logs (%d)".formatted(logs.nRows()))
         .inner(1)
         .drawTable(logs, List.of("MK", "Level", "Time", "Message"));
-
+    td.drawString(
+        1,
+        -1,
+        "[" + DATETIME_FORMAT.formatted(LocalDateTime.now()) + " - " + title.get() + "]",
+        td.getConfiguration().frameLabelColor());
     // refresh
     try {
       screen.refresh();

@@ -20,9 +20,12 @@
 package io.github.ericmedvet.jgea.experimenter.listener.decoupled;
 
 import io.github.ericmedvet.jgea.core.util.Progress;
+
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * @author "Eric Medvet" on 2023/11/03 for jgea
  */
-public record RunInfo(int index, LocalDateTime startLocalDateTime, Progress progress, boolean ended) {}
+public record RunInfo(int index, LocalDateTime startLocalDateTime, Progress progress, boolean ended)
+    implements Serializable {}

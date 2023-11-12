@@ -20,6 +20,8 @@
 module io.github.ericmedvet.jgea.experimenter {
   opens io.github.ericmedvet.jgea.experimenter.builders to
       io.github.ericmedvet.jnb.core;
+  opens io.github.ericmedvet.jgea.experimenter.listener.net to
+      jcommander;
 
   exports io.github.ericmedvet.jgea.experimenter;
 

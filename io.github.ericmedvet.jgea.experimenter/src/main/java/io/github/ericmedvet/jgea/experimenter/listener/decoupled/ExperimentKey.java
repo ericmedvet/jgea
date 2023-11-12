@@ -19,7 +19,9 @@
  */
 package io.github.ericmedvet.jgea.experimenter.listener.decoupled;
 
+import java.io.Serializable;
+
 /**
  * @author "Eric Medvet" on 2023/11/03 for jgea
  */
-public record ExperimentKey(ProcessKey processKey, String value) {}
+public record ExperimentKey(ProcessKey processKey, String value) implements Serializable {}

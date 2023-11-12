@@ -20,6 +20,7 @@
 
 package io.github.ericmedvet.jgea.core.util;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
@@ -50,7 +51,7 @@ public class TextPlotter {
 
   private TextPlotter() {}
 
-  public record Miniplot(String content) {
+  public record Miniplot(String content) implements Serializable {
     @Override
     public String toString() {
       return content;

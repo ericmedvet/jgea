@@ -37,8 +37,6 @@ import java.util.stream.Collectors;
  */
 public class TuiDrawer {
 
-  private static final String VERTICAL_PART_FILLER = " ▁▂▃▄▅▆▇";
-  private static final char FILLER = '█';
   private static final Configuration DEFAULT_CONFIGURATION = new Configuration(
       TextColor.Factory.fromString("#10A010"),
       TextColor.Factory.fromString("#10A010"),
@@ -117,6 +115,12 @@ public class TuiDrawer {
   }
 
   public TuiDrawer drawString(Point p, String s, TextColor textColor, TextColor bgColor, SGR... sgrs) {
+    if (p.x() < 0) {
+      p = new Point(viewport.max().x() + p.x(), p.y());
+    }
+    if (p.y() < 0) {
+      p = new Point(p.x(), viewport.max().y() + p.y());
+    }
     // multiline
     if (s.lines().count() > 1) {
       List<String> lines = s.lines().toList();
