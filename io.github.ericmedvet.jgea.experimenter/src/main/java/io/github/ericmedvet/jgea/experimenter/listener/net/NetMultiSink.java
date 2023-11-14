@@ -59,6 +59,7 @@ public class NetMultiSink {
   private final ScheduledExecutorService executorService;
   private final List<Item<?, ?>> toSendItems;
   private ObjectOutputStream oos = null;
+
   public NetMultiSink(double pollInterval, String serverAddress, int serverPort, String serverKey) {
     this.serverAddress = serverAddress;
     this.serverPort = serverPort;
