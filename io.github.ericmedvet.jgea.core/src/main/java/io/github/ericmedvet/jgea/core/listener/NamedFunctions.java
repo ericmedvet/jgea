@@ -27,7 +27,6 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.core.util.Sized;
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
-
 import java.util.*;
 import java.util.function.Function;
 

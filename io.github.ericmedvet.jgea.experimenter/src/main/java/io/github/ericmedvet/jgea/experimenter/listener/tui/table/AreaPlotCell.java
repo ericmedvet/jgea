@@ -21,7 +21,6 @@ package io.github.ericmedvet.jgea.experimenter.listener.tui.table;
 
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
-
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;

@@ -26,7 +26,6 @@ import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.graphics.TextGraphics;
 import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.table.Cell;
-
 import java.util.List;
 import java.util.Map;
 import java.util.function.UnaryOperator;

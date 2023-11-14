@@ -21,7 +21,6 @@ package io.github.ericmedvet.jgea.experimenter.listener.tui.table;
 
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
-
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;

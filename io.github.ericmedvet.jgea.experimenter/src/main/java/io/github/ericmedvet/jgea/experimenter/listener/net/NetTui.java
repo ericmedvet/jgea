@@ -23,7 +23,6 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import io.github.ericmedvet.jgea.experimenter.listener.decoupled.TuiMonitor;
-
 import java.util.logging.Logger;
 
 /**

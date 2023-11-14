@@ -21,7 +21,6 @@ package io.github.ericmedvet.jgea.experimenter.listener.tui.table;
 
 import com.googlecode.lanterna.TextColor;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
-
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 

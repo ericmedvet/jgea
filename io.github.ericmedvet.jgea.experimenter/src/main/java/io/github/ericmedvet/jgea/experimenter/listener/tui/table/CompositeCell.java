@@ -22,7 +22,6 @@ package io.github.ericmedvet.jgea.experimenter.listener.tui.table;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.Point;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.Rectangle;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
-
 import java.util.Arrays;
 
 /**

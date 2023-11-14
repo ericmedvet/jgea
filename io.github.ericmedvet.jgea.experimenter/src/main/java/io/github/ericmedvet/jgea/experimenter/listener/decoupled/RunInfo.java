@@ -20,7 +20,6 @@
 package io.github.ericmedvet.jgea.experimenter.listener.decoupled;
 
 import io.github.ericmedvet.jgea.core.util.Progress;
-
 import java.io.Serializable;
 import java.time.LocalDateTime;
 

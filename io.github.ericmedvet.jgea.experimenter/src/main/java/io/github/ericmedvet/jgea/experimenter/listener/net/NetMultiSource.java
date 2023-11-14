@@ -20,7 +20,6 @@
 package io.github.ericmedvet.jgea.experimenter.listener.net;
 
 import io.github.ericmedvet.jgea.experimenter.listener.decoupled.*;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
