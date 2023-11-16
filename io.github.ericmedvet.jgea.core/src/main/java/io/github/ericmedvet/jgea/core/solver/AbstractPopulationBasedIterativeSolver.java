@@ -25,7 +25,6 @@ import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.util.Progress;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
