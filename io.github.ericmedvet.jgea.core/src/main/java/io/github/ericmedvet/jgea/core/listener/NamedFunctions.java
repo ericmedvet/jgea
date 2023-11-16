@@ -59,7 +59,7 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static NamedFunction<Number, String> bar(int l) {
+  public static NamedFunction<Number, TextPlotter.Miniplot> bar(int l) {
     return f("bar", NamedFunction.format(l), value -> TextPlotter.horizontalBar(value.doubleValue(), 0, 1, l));
   }
 
@@ -124,7 +124,7 @@ public class NamedFunctions {
     return f("genotype.birth.iteration", "%4d", Individual::genotypeBirthIteration);
   }
 
-  public static NamedFunction<Collection<? extends Number>, String> hist(int bins) {
+  public static NamedFunction<Collection<? extends Number>, TextPlotter.Miniplot> hist(int bins) {
     return f(
         "hist",
         NamedFunction.format(bins),

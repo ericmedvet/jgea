@@ -20,9 +20,9 @@
 package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
-import io.github.ericmedvet.jgea.core.listener.XYPlotTableBuilder;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
+import io.github.ericmedvet.jgea.experimenter.util.XYPlotTableBuilder;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import java.util.Collection;

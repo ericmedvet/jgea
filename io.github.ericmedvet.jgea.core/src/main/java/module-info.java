@@ -50,7 +50,6 @@ module io.github.ericmedvet.jgea.core {
   exports io.github.ericmedvet.jgea.core.representation.grammar.string;
 
   requires io.github.ericmedvet.jsdynsym.core;
-  requires org.knowm.xchart;
   requires java.desktop;
   requires java.logging;
   requires commons.math3;

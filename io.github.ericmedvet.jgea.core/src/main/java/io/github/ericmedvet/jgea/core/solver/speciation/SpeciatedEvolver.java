@@ -118,20 +118,6 @@ public class SpeciatedEvolver<G, S, Q>
   }
 
   @Override
-  protected Individual<G, S, Q> newIndividual(
-      G genotype, SpeciatedPOCPopulationState<G, S, Q> state, QualityBasedProblem<S, Q> problem) {
-    return null;
-  }
-
-  @Override
-  protected Individual<G, S, Q> updateIndividual(
-      Individual<G, S, Q> individual,
-      SpeciatedPOCPopulationState<G, S, Q> state,
-      QualityBasedProblem<S, Q> problem) {
-    return null;
-  }
-
-  @Override
   public SpeciatedPOCPopulationState<G, S, Q> init(
       QualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
       throws SolverException {
@@ -225,5 +211,30 @@ public class SpeciatedEvolver<G, S, Q>
         nOfNewBirths + (remap ? elites.size() : 0),
         PartiallyOrderedCollection.from(newPopulation, partialComparator(problem)),
         allSpecies);
+  }
+
+  @Override
+  protected Individual<G, S, Q> newIndividual(
+      G genotype, SpeciatedPOCPopulationState<G, S, Q> state, QualityBasedProblem<S, Q> problem) {
+    S solution = solutionMapper.apply(genotype);
+    return Individual.of(
+        genotype,
+        solution,
+        problem.qualityFunction().apply(solution),
+        state == null ? 0 : state.nOfIterations(),
+        state == null ? 0 : state.nOfIterations());
+  }
+
+  @Override
+  protected Individual<G, S, Q> updateIndividual(
+      Individual<G, S, Q> individual,
+      SpeciatedPOCPopulationState<G, S, Q> state,
+      QualityBasedProblem<S, Q> problem) {
+    return Individual.of(
+        individual.genotype(),
+        individual.solution(),
+        problem.qualityFunction().apply(individual.solution()),
+        individual.genotypeBirthIteration(),
+        state == null ? individual.qualityMappingIteration() : state.nOfIterations());
   }
 }

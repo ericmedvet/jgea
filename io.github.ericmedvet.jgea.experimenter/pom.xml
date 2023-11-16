@@ -15,6 +15,11 @@
   <dependencies>
     <dependency>
       <groupId>io.github.ericmedvet</groupId>
+      <artifactId>jnb.core</artifactId>
+      <version>${jnb.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.github.ericmedvet</groupId>
       <artifactId>jgea.core</artifactId>
       <version>${revision}</version>
     </dependency>
@@ -25,23 +30,8 @@
     </dependency>
     <dependency>
       <groupId>io.github.ericmedvet</groupId>
-      <artifactId>jgea.tui</artifactId>
-      <version>${revision}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.github.ericmedvet</groupId>
-      <artifactId>jgea.telegram</artifactId>
-      <version>${revision}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.github.ericmedvet</groupId>
-      <artifactId>jnb.core</artifactId>
-      <version>${jnb.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.googlecode.lanterna</groupId>
-      <artifactId>lanterna</artifactId>
-      <version>3.1.1</version>
+      <artifactId>jsdynsym.buildable</artifactId>
+      <version>${jsdynsym.version}</version>
     </dependency>
     <dependency>
       <groupId>com.beust</groupId>
@@ -49,9 +39,19 @@
       <version>1.82</version>
     </dependency>
     <dependency>
-      <groupId>io.github.ericmedvet</groupId>
-      <artifactId>jsdynsym.buildable</artifactId>
-      <version>${jsdynsym.version}</version>
+      <groupId>com.googlecode.lanterna</groupId>
+      <artifactId>lanterna</artifactId>
+      <version>3.1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.pengrad</groupId>
+      <artifactId>java-telegram-bot-api</artifactId>
+      <version>6.5.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.knowm.xchart</groupId>
+      <artifactId>xchart</artifactId>
+      <version>3.8.4</version>
     </dependency>
   </dependencies>
 

@@ -49,8 +49,8 @@ public abstract class AbstractPopulationBasedIterativeSolver<
 
   protected final Function<? super G, ? extends S> solutionMapper;
   protected final Factory<? extends G> genotypeFactory;
-  private final Predicate<? super T> stopCondition;
   protected final boolean remap;
+  private final Predicate<? super T> stopCondition;
 
   public AbstractPopulationBasedIterativeSolver(
       Function<? super G, ? extends S> solutionMapper,
@@ -67,26 +67,9 @@ public abstract class AbstractPopulationBasedIterativeSolver<
 
   protected abstract I updateIndividual(I individual, T state, P problem);
 
-  private Collection<Future<I>> map(Collection<? extends G> genotypes, T state, P problem, ExecutorService executor)
-      throws SolverException {
-    try {
-      return executor.invokeAll(genotypes.stream()
-          .map(g -> (Callable<I>) () -> newIndividual(g, state, problem))
-          .toList());
-    } catch (InterruptedException e) {
-      throw new SolverException(e);
-    }
-  }
-
-  private Collection<Future<I>> remap(Collection<I> individuals, T state, P problem, ExecutorService executor)
-      throws SolverException {
-    try {
-      return executor.invokeAll(individuals.stream()
-          .map(i -> (Callable<I>) () -> updateIndividual(i, state, problem))
-          .toList());
-    } catch (InterruptedException e) {
-      throw new SolverException(e);
-    }
+  protected static <P extends TotalOrderQualityBasedProblem<?, Q>, I extends Individual<?, ?, Q>, Q>
+      Comparator<? super I> comparator(P problem) {
+    return (i1, i2) -> problem.totalOrderComparator().compare(i1.quality(), i2.quality());
   }
 
   protected static <T> Collection<T> getAll(Collection<Future<T>> futures) throws SolverException {
@@ -106,27 +89,25 @@ public abstract class AbstractPopulationBasedIterativeSolver<
     return (i1, i2) -> problem.qualityComparator().compare(i1.quality(), i2.quality());
   }
 
-  protected static <P extends TotalOrderQualityBasedProblem<?, Q>, I extends Individual<?, ?, Q>, Q>
-      Comparator<? super I> comparator(P problem) {
-    return (i1, i2) -> problem.totalOrderComparator().compare(i1.quality(), i2.quality());
-  }
-
   @Override
   public Collection<S> extractSolutions(P problem, RandomGenerator random, ExecutorService executor, T state) {
     return state.pocPopulation().firsts().stream().map(Individual::solution).toList();
   }
 
-  protected Progress progress(T state) {
-    if (stopCondition instanceof ProgressBasedStopCondition<?> progressBasedStopCondition) {
-      //noinspection unchecked
-      return ((ProgressBasedStopCondition<T>) progressBasedStopCondition).progress(state);
-    }
-    return Progress.NA;
-  }
-
   @Override
   public boolean terminate(P problem, RandomGenerator random, ExecutorService executor, T state) {
     return stopCondition.test(state);
+  }
+
+  private Collection<Future<I>> map(Collection<? extends G> genotypes, T state, P problem, ExecutorService executor)
+      throws SolverException {
+    try {
+      return executor.invokeAll(genotypes.stream()
+          .map(g -> (Callable<I>) () -> newIndividual(g, state, problem))
+          .toList());
+    } catch (InterruptedException e) {
+      throw new SolverException(e);
+    }
   }
 
   protected Collection<I> map(
@@ -141,5 +122,24 @@ public abstract class AbstractPopulationBasedIterativeSolver<
     return Stream.of(getAll(map(genotypes, state, problem, executor)), individuals)
         .flatMap(Collection::stream)
         .toList();
+  }
+
+  protected Progress progress(T state) {
+    if (stopCondition instanceof ProgressBasedStopCondition<?> progressBasedStopCondition) {
+      //noinspection unchecked
+      return ((ProgressBasedStopCondition<T>) progressBasedStopCondition).progress(state);
+    }
+    return Progress.NA;
+  }
+
+  private Collection<Future<I>> remap(Collection<I> individuals, T state, P problem, ExecutorService executor)
+      throws SolverException {
+    try {
+      return executor.invokeAll(individuals.stream()
+          .map(i -> (Callable<I>) () -> updateIndividual(i, state, problem))
+          .toList());
+    } catch (InterruptedException e) {
+      throw new SolverException(e);
+    }
   }
 }
