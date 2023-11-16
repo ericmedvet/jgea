@@ -9,7 +9,7 @@ ea.experiment(
     )
   ];
   listeners = [
-    ea.l.net(
+    ea.l.tui(
       functions = [
         ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
         ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
