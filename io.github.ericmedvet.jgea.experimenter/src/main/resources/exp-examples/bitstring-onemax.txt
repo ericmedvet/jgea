@@ -1,11 +1,17 @@
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) * [
-    ea.run(
-      solver = ea.s.bitStringGa(
+  runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
+    (solver = [
+      ea.s.bitStringGa(
         mapper = ea.m.identity();
         nEval = 10000
       );
-      problem = ea.p.s.oneMax()
+      ea.s.bitStringCabea(
+        mapper = ea.m.identity();
+        nEval = 10000
+      )
+    ]) * [
+    ea.run(
+      problem = ea.p.s.oneMax(p = 1000)
     )
   ];
   listeners = [
