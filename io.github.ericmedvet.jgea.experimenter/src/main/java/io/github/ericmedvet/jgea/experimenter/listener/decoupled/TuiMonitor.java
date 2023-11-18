@@ -581,12 +581,7 @@ public class TuiMonitor implements Runnable {
         .drawFrame("Experiments (%d)".formatted(experiments.nRows()))
         .inner(1)
         .drawTable(experiments, List.of("S", "EK", "MK", "User", "#Runs", "Progress", "ETA"));
-    td.inX(0.8f, 0.2f)
-        .inY(0, 0.4f)
-        .clear()
-        .drawFrame("Local")
-        .inner(1)
-        .drawTable(local, List.of("Name", "Value"));
+    td.inX(0.8f, 0.2f).inY(0, 0.4f).clear().drawFrame("Local").inner(1).drawTable(local, List.of("Name", "Value"));
     td.inX(0.5f, 0.3f)
         .inY(0, 0.4f)
         .clear()
