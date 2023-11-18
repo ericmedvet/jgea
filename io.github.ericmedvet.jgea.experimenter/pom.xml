@@ -59,21 +59,25 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>3.5.1</version>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.6.0</version>
+        <configuration>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+          <archive>
+            <manifest>
+              <mainClass>io.github.ericmedvet.jgea.experimenter.Starter</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
         <executions>
           <execution>
+            <id>make-assembly</id>
             <goals>
-              <goal>shade</goal>
+              <goal>single</goal>
             </goals>
             <phase>package</phase>
-            <configuration>
-              <transformers>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>io.github.ericmedvet.jgea.experimenter.Starter</mainClass>
-                </transformer>
-              </transformers>
-            </configuration>
           </execution>
         </executions>
       </plugin>

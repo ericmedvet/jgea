@@ -46,7 +46,7 @@ mvn clean package
 
 Then run an example experiment
 ```shell
-java -jar io.github.ericmedvet.jgea.experimenter/target/jgea.experimenter-${project.version}.jar -e sr-comparison
+java -jar io.github.ericmedvet.jgea.experimenter/target/jgea.experimenter-${project.version}-jar-with-dependencies.jar -e sr-comparison
 ```
 
 ## Main components
