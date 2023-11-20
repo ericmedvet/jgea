@@ -107,7 +107,7 @@ public class CellularAutomataBasedSolver<G, S, Q>
             throw new SolverException(e);
         }
         Grid<Individual<G, S, Q>> newGrid = newEntries.stream().map(cpo -> cpo.entry).collect(Grid.collector());
-        int updatedCells = (int)newEntries.stream().filter(cpo -> cpo.updated).count();
+        int updatedCells = (int) newEntries.stream().filter(cpo -> cpo.updated).count();
         return State.from(
                 (State<G, S, Q>) state,
                 progress(state),
@@ -118,10 +118,10 @@ public class CellularAutomataBasedSolver<G, S, Q>
         );
     }
 
-    private Callable<CellProcessOutcome<Individual<G,S,Q>>> processCell(Grid.Entry<Individual<G,S,Q>> entry, GridPopulationState<G, S, Q> state, QualityBasedProblem<S, Q> problem, RandomGenerator random) {
+    private Callable<CellProcessOutcome<Individual<G, S, Q>>> processCell(Grid.Entry<Individual<G, S, Q>> entry, GridPopulationState<G, S, Q> state, QualityBasedProblem<S, Q> problem, RandomGenerator random) {
         return () -> {
             // decide if to keep
-            if (random.nextDouble()<keepProbability) {
+            if (random.nextDouble() < keepProbability) {
                 return new CellProcessOutcome<>(false, entry);
             }
             // find neighborhood
@@ -136,9 +136,14 @@ public class CellularAutomataBasedSolver<G, S, Q>
                 parentGenotypes.add(parentSelector.select(state.pocPopulation(), random).genotype());
             }
             G childGenotype = operator.apply(parentGenotypes, random).get(0);
-            return new CellProcessOutcome<>(true, new Grid.Entry<>(entry.key(), newIndividual(childGenotype, state, problem)));
+            Individual<G, S, Q> child = newIndividual(childGenotype, state, problem);
+            if (partialComparator(problem).compare(child, entry.value()).equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
+                return new CellProcessOutcome<>(true, new Grid.Entry<>(entry.key(), child));
+            }
+            return new CellProcessOutcome<>(true, entry);
         };
     }
+
     public interface Neighborhood {
         <T> List<Grid.Key> of(Grid<T> grid, Grid.Key key);
     }
@@ -198,19 +203,24 @@ public class CellularAutomataBasedSolver<G, S, Q>
         }
     }
 
-    private record CellProcessOutcome<T>(boolean updated, Grid.Entry<T> entry) {}
+    private record CellProcessOutcome<T>(boolean updated, Grid.Entry<T> entry) {
+    }
 
-    public record MooreNeighborhood(int radius) implements Neighborhood {
+    public record MooreNeighborhood(int radius, boolean toroidal) implements Neighborhood {
+
         @Override
         public <T> List<Grid.Key> of(Grid<T> grid, Grid.Key key) {
-            return IntStream.range(key.x() - radius, key.x() + radius + 1)
-                    .mapToObj(x -> IntStream.range(key.y() - radius, key.y() + radius + 1)
+            int gridWidth = grid.w(); // Get the width of the grid
+            int gridHeight = grid.h(); // Get the height of the grid
+
+            return IntStream.rangeClosed(key.x() - radius, key.x() + radius)
+                    .mapToObj(x -> IntStream.rangeClosed(key.y() - radius, key.y() + radius)
                             .mapToObj(y -> new Grid.Key(x, y))
-                            .toList()
-                    )
+                            .toList())
                     .flatMap(List::stream)
+                    .map(k -> toroidal?new Grid.Key(Math.floorDiv(k.x(), gridWidth), Math.floorDiv(k.y(), gridHeight)):k)
+                    .filter(grid::isValid)
                     .toList();
-            // TODO make Moore with bull, maybe use mod
         }
     }
 }
