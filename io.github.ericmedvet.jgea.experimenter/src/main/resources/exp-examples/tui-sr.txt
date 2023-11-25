@@ -19,15 +19,14 @@ ea.experiment(
     ea.run()
   ];
   listeners = [
-    ea.l.net(
+    ea.l.tui(
       functions = [
         ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
         ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
         ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
         ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.2f")
       ];
-      runKeys = ["{problem.name}"];
-      serverKeyFilePath = "/home/eric/Documenti/experiments/new-jgea/server-key.txt"
+      runKeys = ["{problem.name}"]
     )
   ]
 )
