@@ -30,7 +30,6 @@ import io.github.ericmedvet.jgea.core.solver.*;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
-
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -42,185 +41,204 @@ import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
 public class CellularAutomataBasedSolver<G, S, Q>
-        extends AbstractPopulationBasedIterativeSolver<
+    extends AbstractPopulationBasedIterativeSolver<
         GridPopulationState<G, S, Q>, QualityBasedProblem<S, Q>, Individual<G, S, Q>, G, S, Q> {
 
-    protected final Map<GeneticOperator<G>, Double> operators;
-    protected final Selector<? super Individual<G, S, Q>> parentSelector;
-    private final Grid<Boolean> substrate;
-    private final Neighborhood neighborhood;
-    private final double keepProbability;
+  protected final Map<GeneticOperator<G>, Double> operators;
+  protected final Selector<? super Individual<G, S, Q>> parentSelector;
+  private final Grid<Boolean> substrate;
+  private final Neighborhood neighborhood;
+  private final double keepProbability;
 
-    public CellularAutomataBasedSolver(Function<? super G, ? extends S> solutionMapper, Factory<? extends G> genotypeFactory, Predicate<? super GridPopulationState<G, S, Q>> stopCondition, Grid<Boolean> substrate, Neighborhood neighborhood, double keepProbability, Map<GeneticOperator<G>, Double> operators, Selector<? super Individual<G, S, Q>> parentSelector) {
-        super(solutionMapper, genotypeFactory, stopCondition, false);
-        this.substrate = substrate;
-        this.neighborhood = neighborhood;
-        this.keepProbability = keepProbability;
-        this.operators = operators;
-        this.parentSelector = parentSelector;
+  public CellularAutomataBasedSolver(
+      Function<? super G, ? extends S> solutionMapper,
+      Factory<? extends G> genotypeFactory,
+      Predicate<? super GridPopulationState<G, S, Q>> stopCondition,
+      Grid<Boolean> substrate,
+      Neighborhood neighborhood,
+      double keepProbability,
+      Map<GeneticOperator<G>, Double> operators,
+      Selector<? super Individual<G, S, Q>> parentSelector) {
+    super(solutionMapper, genotypeFactory, stopCondition, false);
+    this.substrate = substrate;
+    this.neighborhood = neighborhood;
+    this.keepProbability = keepProbability;
+    this.operators = operators;
+    this.parentSelector = parentSelector;
+  }
+
+  @Override
+  protected Individual<G, S, Q> newIndividual(
+      G genotype, GridPopulationState<G, S, Q> state, QualityBasedProblem<S, Q> problem) {
+    S solution = solutionMapper.apply(genotype);
+    return Individual.of(
+        genotype,
+        solution,
+        problem.qualityFunction().apply(solution),
+        state == null ? 0 : state.nOfIterations(),
+        state == null ? 0 : state.nOfIterations());
+  }
+
+  @Override
+  protected Individual<G, S, Q> updateIndividual(
+      Individual<G, S, Q> individual, GridPopulationState<G, S, Q> state, QualityBasedProblem<S, Q> problem) {
+    return Individual.of(
+        individual.genotype(),
+        individual.solution(),
+        problem.qualityFunction().apply(individual.solution()),
+        individual.genotypeBirthIteration(),
+        state == null ? individual.qualityMappingIteration() : state.nOfIterations());
+  }
+
+  @Override
+  public GridPopulationState<G, S, Q> init(
+      QualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
+      throws SolverException {
+    List<Grid.Key> freeCells =
+        substrate.keys().stream().filter(substrate::get).toList();
+    List<Individual<G, S, Q>> individuals =
+        map(genotypeFactory.build(freeCells.size(), random), List.of(), null, problem, executor).stream()
+            .toList();
+    Grid<Individual<G, S, Q>> grid = Grid.create(substrate.w(), substrate.h());
+    for (int i = 0; i < freeCells.size(); i = i + 1) {
+      grid.set(freeCells.get(i), individuals.get(i));
     }
+    return State.from(grid, partialComparator(problem));
+  }
+
+  @Override
+  public GridPopulationState<G, S, Q> update(
+      QualityBasedProblem<S, Q> problem,
+      RandomGenerator random,
+      ExecutorService executor,
+      GridPopulationState<G, S, Q> state)
+      throws SolverException {
+    List<Callable<CellProcessOutcome<Individual<G, S, Q>>>> callables = state.gridPopulation().entries().stream()
+        .filter(e -> e.value() != null)
+        .map(e -> processCell(e, state, problem, random))
+        .toList();
+    Collection<CellProcessOutcome<Individual<G, S, Q>>> newEntries;
+    try {
+      newEntries = getAll(executor.invokeAll(callables));
+    } catch (InterruptedException e) {
+      throw new SolverException(e);
+    }
+    Grid<Individual<G, S, Q>> newGrid =
+        newEntries.stream().map(cpo -> cpo.entry).collect(Grid.collector());
+    int updatedCells = (int) newEntries.stream().filter(cpo -> cpo.updated).count();
+    return State.from(
+        (State<G, S, Q>) state,
+        progress(state),
+        updatedCells,
+        updatedCells,
+        newGrid,
+        partialComparator(problem));
+  }
+
+  private Callable<CellProcessOutcome<Individual<G, S, Q>>> processCell(
+      Grid.Entry<Individual<G, S, Q>> entry,
+      GridPopulationState<G, S, Q> state,
+      QualityBasedProblem<S, Q> problem,
+      RandomGenerator random) {
+    return () -> {
+      // decide if to keep
+      if (random.nextDouble() < keepProbability) {
+        return new CellProcessOutcome<>(false, entry);
+      }
+      // find neighborhood
+      List<Individual<G, S, Q>> neighbors = neighborhood.of(state.gridPopulation(), entry.key()).stream()
+          .map(k -> state.gridPopulation().get(k))
+          .filter(Objects::nonNull)
+          .toList();
+      PartiallyOrderedCollection.from(neighbors, partialComparator(problem));
+      GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
+      List<G> parentGenotypes = new ArrayList<>(operator.arity());
+      for (int j = 0; j < operator.arity(); j++) {
+        parentGenotypes.add(
+            parentSelector.select(state.pocPopulation(), random).genotype());
+      }
+      G childGenotype = operator.apply(parentGenotypes, random).get(0);
+      Individual<G, S, Q> child = newIndividual(childGenotype, state, problem);
+      if (partialComparator(problem)
+          .compare(child, entry.value())
+          .equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
+        return new CellProcessOutcome<>(true, new Grid.Entry<>(entry.key(), child));
+      }
+      return new CellProcessOutcome<>(true, entry);
+    };
+  }
+
+  public interface Neighborhood {
+    <T> List<Grid.Key> of(Grid<T> grid, Grid.Key key);
+  }
+
+  private record State<G, S, Q>(
+      LocalDateTime startingDateTime,
+      long elapsedMillis,
+      long nOfIterations,
+      Progress progress,
+      long nOfBirths,
+      long nOfFitnessEvaluations,
+      PartiallyOrderedCollection<Individual<G, S, Q>> pocPopulation,
+      Grid<Individual<G, S, Q>> gridPopulation)
+      implements GridPopulationState<G, S, Q> {
+    public static <G, S, Q> GridPopulationState<G, S, Q> from(
+        State<G, S, Q> state,
+        Progress progress,
+        long nOfBirths,
+        long nOfFitnessEvaluations,
+        Grid<Individual<G, S, Q>> gridPopulation,
+        PartialComparator<? super Individual<G, S, Q>> comparator) {
+      return new State<>(
+          state.startingDateTime,
+          ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
+          state.nOfIterations() + 1,
+          progress,
+          state.nOfBirths() + nOfBirths,
+          state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
+          PartiallyOrderedCollection.from(
+              gridPopulation.values().stream()
+                  .filter(Objects::nonNull)
+                  .toList(),
+              comparator),
+          gridPopulation);
+    }
+
+    public static <G, S, Q> State<G, S, Q> from(
+        Grid<Individual<G, S, Q>> gridPopulation, PartialComparator<? super Individual<G, S, Q>> comparator) {
+      List<Individual<G, S, Q>> individuals =
+          gridPopulation.values().stream().filter(Objects::nonNull).toList();
+      return new State<>(
+          LocalDateTime.now(),
+          0,
+          0,
+          Progress.NA,
+          individuals.size(),
+          individuals.size(),
+          PartiallyOrderedCollection.from(individuals, comparator),
+          gridPopulation);
+    }
+  }
+
+  private record CellProcessOutcome<T>(boolean updated, Grid.Entry<T> entry) {}
+
+  public record MooreNeighborhood(int radius, boolean toroidal) implements Neighborhood {
 
     @Override
-    protected Individual<G, S, Q> newIndividual(G genotype, GridPopulationState<G, S, Q> state, QualityBasedProblem<S, Q> problem) {
-        S solution = solutionMapper.apply(genotype);
-        return Individual.of(
-                genotype,
-                solution,
-                problem.qualityFunction().apply(solution),
-                state == null ? 0 : state.nOfIterations(),
-                state == null ? 0 : state.nOfIterations());
+    public <T> List<Grid.Key> of(Grid<T> grid, Grid.Key key) {
+      int gridWidth = grid.w(); // Get the width of the grid
+      int gridHeight = grid.h(); // Get the height of the grid
+
+      return IntStream.rangeClosed(key.x() - radius, key.x() + radius)
+          .mapToObj(x -> IntStream.rangeClosed(key.y() - radius, key.y() + radius)
+              .mapToObj(y -> new Grid.Key(x, y))
+              .toList())
+          .flatMap(List::stream)
+          .map(k -> toroidal
+              ? new Grid.Key(Math.floorDiv(k.x(), gridWidth), Math.floorDiv(k.y(), gridHeight))
+              : k)
+          .filter(grid::isValid)
+          .toList();
     }
-
-    @Override
-    protected Individual<G, S, Q> updateIndividual(Individual<G, S, Q> individual, GridPopulationState<G, S, Q> state, QualityBasedProblem<S, Q> problem) {
-        return Individual.of(
-                individual.genotype(),
-                individual.solution(),
-                problem.qualityFunction().apply(individual.solution()),
-                individual.genotypeBirthIteration(),
-                state == null ? individual.qualityMappingIteration() : state.nOfIterations());
-    }
-
-    @Override
-    public GridPopulationState<G, S, Q> init(QualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor) throws SolverException {
-        List<Grid.Key> freeCells = substrate.keys().stream()
-                .filter(substrate::get)
-                .toList();
-        List<Individual<G, S, Q>> individuals = map(genotypeFactory.build(freeCells.size(), random), List.of(), null, problem, executor).stream().toList();
-        Grid<Individual<G, S, Q>> grid = Grid.create(substrate.w(), substrate.h());
-        for (int i = 0; i < freeCells.size(); i = i + 1) {
-            grid.set(freeCells.get(i), individuals.get(i));
-        }
-        return State.from(grid, partialComparator(problem));
-    }
-
-    @Override
-    public GridPopulationState<G, S, Q> update(QualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor, GridPopulationState<G, S, Q> state) throws SolverException {
-        List<Callable<CellProcessOutcome<Individual<G, S, Q>>>> callables = state.gridPopulation().entries().stream()
-                .filter(e -> e.value() != null)
-                .map(e -> processCell(e, state, problem, random))
-                .toList();
-        Collection<CellProcessOutcome<Individual<G, S, Q>>> newEntries;
-        try {
-            newEntries = getAll(executor.invokeAll(callables));
-        } catch (InterruptedException e) {
-            throw new SolverException(e);
-        }
-        Grid<Individual<G, S, Q>> newGrid = newEntries.stream().map(cpo -> cpo.entry).collect(Grid.collector());
-        int updatedCells = (int) newEntries.stream().filter(cpo -> cpo.updated).count();
-        return State.from(
-                (State<G, S, Q>) state,
-                progress(state),
-                updatedCells,
-                updatedCells,
-                newGrid,
-                partialComparator(problem)
-        );
-    }
-
-    private Callable<CellProcessOutcome<Individual<G, S, Q>>> processCell(Grid.Entry<Individual<G, S, Q>> entry, GridPopulationState<G, S, Q> state, QualityBasedProblem<S, Q> problem, RandomGenerator random) {
-        return () -> {
-            // decide if to keep
-            if (random.nextDouble() < keepProbability) {
-                return new CellProcessOutcome<>(false, entry);
-            }
-            // find neighborhood
-            List<Individual<G, S, Q>> neighbors = neighborhood.of(state.gridPopulation(), entry.key()).stream()
-                    .map(k -> state.gridPopulation().get(k))
-                    .filter(Objects::nonNull)
-                    .toList();
-            PartiallyOrderedCollection.from(neighbors, partialComparator(problem));
-            GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
-            List<G> parentGenotypes = new ArrayList<>(operator.arity());
-            for (int j = 0; j < operator.arity(); j++) {
-                parentGenotypes.add(parentSelector.select(state.pocPopulation(), random).genotype());
-            }
-            G childGenotype = operator.apply(parentGenotypes, random).get(0);
-            Individual<G, S, Q> child = newIndividual(childGenotype, state, problem);
-            if (partialComparator(problem).compare(child, entry.value()).equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
-                return new CellProcessOutcome<>(true, new Grid.Entry<>(entry.key(), child));
-            }
-            return new CellProcessOutcome<>(true, entry);
-        };
-    }
-
-    public interface Neighborhood {
-        <T> List<Grid.Key> of(Grid<T> grid, Grid.Key key);
-    }
-
-    private record State<G, S, Q>(
-            LocalDateTime startingDateTime,
-            long elapsedMillis,
-            long nOfIterations,
-            Progress progress,
-            long nOfBirths,
-            long nOfFitnessEvaluations,
-            PartiallyOrderedCollection<Individual<G, S, Q>> pocPopulation,
-            Grid<Individual<G, S, Q>> gridPopulation
-
-    ) implements GridPopulationState<G, S, Q> {
-        public static <G, S, Q> GridPopulationState<G, S, Q> from(
-                State<G, S, Q> state,
-                Progress progress,
-                long nOfBirths,
-                long nOfFitnessEvaluations,
-                Grid<Individual<G, S, Q>> gridPopulation,
-                PartialComparator<? super Individual<G, S, Q>> comparator
-        ) {
-            return new State<>(
-                    state.startingDateTime,
-                    ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
-                    state.nOfIterations() + 1,
-                    progress,
-                    state.nOfBirths() + nOfBirths,
-                    state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
-                    PartiallyOrderedCollection.from(
-                            gridPopulation.values().stream()
-                                    .filter(Objects::nonNull)
-                                    .toList(),
-                            comparator
-                    ),
-                    gridPopulation
-            );
-        }
-
-        public static <G, S, Q> State<G, S, Q> from(
-                Grid<Individual<G, S, Q>> gridPopulation,
-                PartialComparator<? super Individual<G, S, Q>> comparator) {
-            List<Individual<G, S, Q>> individuals = gridPopulation.values().stream()
-                    .filter(Objects::nonNull)
-                    .toList();
-            return new State<>(
-                    LocalDateTime.now(),
-                    0,
-                    0,
-                    Progress.NA,
-                    individuals.size(),
-                    individuals.size(),
-                    PartiallyOrderedCollection.from(individuals, comparator),
-                    gridPopulation
-            );
-        }
-    }
-
-    private record CellProcessOutcome<T>(boolean updated, Grid.Entry<T> entry) {
-    }
-
-    public record MooreNeighborhood(int radius, boolean toroidal) implements Neighborhood {
-
-        @Override
-        public <T> List<Grid.Key> of(Grid<T> grid, Grid.Key key) {
-            int gridWidth = grid.w(); // Get the width of the grid
-            int gridHeight = grid.h(); // Get the height of the grid
-
-            return IntStream.rangeClosed(key.x() - radius, key.x() + radius)
-                    .mapToObj(x -> IntStream.rangeClosed(key.y() - radius, key.y() + radius)
-                            .mapToObj(y -> new Grid.Key(x, y))
-                            .toList())
-                    .flatMap(List::stream)
-                    .map(k -> toroidal?new Grid.Key(Math.floorDiv(k.x(), gridWidth), Math.floorDiv(k.y(), gridHeight)):k)
-                    .filter(grid::isValid)
-                    .toList();
-        }
-    }
+  }
 }

@@ -23,12 +23,9 @@ import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 
-import java.util.List;
-import java.util.Map;
-
 /**
  * @author "Eric Medvet" on 2023/10/28 for jgea
  */
 public interface GridPopulationState<G, S, Q> extends POCPopulationState<Individual<G, S, Q>, G, S, Q> {
-  Grid<Individual<G,S,Q>> gridPopulation();
+  Grid<Individual<G, S, Q>> gridPopulation();
 }
