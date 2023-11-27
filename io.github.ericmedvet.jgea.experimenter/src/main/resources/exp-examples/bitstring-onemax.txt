@@ -3,11 +3,13 @@ ea.experiment(
     (solver = [
       ea.s.bitStringGa(
         mapper = ea.m.identity();
+        nPop=900;
         nEval = 10000
       );
       ea.s.bitStringCabea(
         mapper = ea.m.identity();
-        nEval = 1000
+        gridSize = 30;
+        nEval = 10000
       )
     ]) * [
     ea.run(
@@ -15,12 +17,15 @@ ea.experiment(
     )
   ];
   listeners = [
-    ea.l.console(functions = [
-      ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
-      ea.nf.fitness(individual = ea.nf.best(); s = "%6.4f");
-      ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
-      ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.4f");
-      ea.nf.solution(individual = ea.nf.best(); s = "%60.60s")
-    ])
+    ea.l.console(
+      functions = [
+        ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
+        ea.nf.fitness(individual = ea.nf.best(); s = "%6.4f");
+        ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
+        ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.4f");
+        ea.nf.solution(individual = ea.nf.best(); s = "%60.60s")
+      ];
+      runKeys = ["{solver:%#s}"]
+    )
   ]
 )
