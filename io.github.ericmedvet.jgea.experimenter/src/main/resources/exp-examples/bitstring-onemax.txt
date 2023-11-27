@@ -7,7 +7,7 @@ ea.experiment(
       );
       ea.s.bitStringCabea(
         mapper = ea.m.identity();
-        nEval = 10000
+        nEval = 1000
       )
     ]) * [
     ea.run(
