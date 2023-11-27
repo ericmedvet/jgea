@@ -20,14 +20,12 @@
 
 package io.github.ericmedvet.jgea.core.solver;
 
-import static io.github.ericmedvet.jgea.core.util.VectorUtils.meanList;
-import static io.github.ericmedvet.jgea.core.util.VectorUtils.sum;
+import static io.github.ericmedvet.jgea.core.util.VectorUtils.*;
 
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.util.Progress;
-import io.github.ericmedvet.jgea.core.util.VectorUtils;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -143,7 +141,7 @@ public class SimpleEvolutionaryStrategy<S, Q>
     List<Double> means = meanList(parents.stream().map(Individual::genotype).toList());
     // generate offspring
     List<List<Double>> offspringGenotypes = IntStream.range(0, populationSize - elites.size())
-        .mapToObj(i -> sum(means, VectorUtils.buildList(means.size(), random::nextGaussian)))
+        .mapToObj(i -> sum(means, buildList(means.size(), () -> random.nextGaussian() * sigma)))
         .toList();
     int nOfBirths = offspringGenotypes.size();
     L.fine(String.format("%d offspring genotypes built", nOfBirths));
