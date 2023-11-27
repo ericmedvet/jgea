@@ -1,5 +1,5 @@
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:10]) * [ea.rg.defaultRG()]) *
+  runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
     (problem = [
       ea.p.ur.synthetic(name = "keijzer6");
       ea.p.ur.synthetic(name = "nguyen7");
@@ -16,7 +16,7 @@ ea.experiment(
     ea.run()
   ];
   listeners = [
-    ea.l.tui(
+    ea.l.console(
       functions = [
         ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
         ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
@@ -27,7 +27,7 @@ ea.experiment(
       runKeys = ["{solver:%#s}"; "{problem.name}"]
     );
     ea.l.bestCsv(
-      filePath = "/home/gpietrop/sr.csv";
+      filePath = "/home/gpietrop/cabea/sr.csv";
       functions = [
         ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
         ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");

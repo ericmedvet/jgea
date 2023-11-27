@@ -157,6 +157,47 @@ public class Solvers {
     }
 
     @SuppressWarnings("unused")
+    public static <S, Q> Function<S, CellularAutomataBasedSolver<List<Double>, S, Q>> doubleStringCabea(
+        @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
+        @Param(value = "initialMinV", dD = -1d) double initialMinV,
+        @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
+        @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
+        @Param(value = "sigmaMut", dD = 0.35d) double sigmaMut,
+        @Param(value = "tournamentRate", dD = 0.05d) double tournamentRate,
+        @Param(value = "minNTournament", dI = 3) int minNTournament,
+        @Param(value = "nPop", dI = 100) int nPop,
+        @Param(value = "nEval") int nEval,
+        @Param(value = "diversity") boolean diversity,
+        @Param(value = "remap") boolean remap,
+        @Param(value = "pMut", dD = 0.001d) double pMut,
+        @Param(value = "keepProbability", dD = 0.01d) double keepProbability,
+        @Param(value = "nTour", dI = 3) int nTour,
+        @Param(value = "toroidal", dB = true) boolean toroidal,
+        @Param(value = "mooreRadius", dI = 1) int mooreRadius,
+        @Param(value = "gridSize", dI = 10) int gridSize) {
+        return exampleS -> {
+            IndependentFactory<List<Double>> doublesFactory = new FixedLengthListFactory<>(
+                mapper.exampleFor(exampleS).size(), new UniformDoubleFactory(initialMinV, initialMaxV));
+            Crossover<List<Double>> crossover = new HypercubeGeometricCrossover();
+            Map<GeneticOperator<List<Double>>, Double> geneticOperators = Map.ofEntries(
+                Map.entry(new GaussianMutation(sigmaMut), 1d - crossoverP),
+                Map.entry(crossover.andThen(new GaussianMutation(sigmaMut)), crossoverP));
+
+            return new CellularAutomataBasedSolver<>(
+                mapper.mapperFor(exampleS),
+                doublesFactory,
+                StopConditions.nOfFitnessEvaluations(nEval),
+                Grid.create(gridSize, gridSize, true),
+                new CellularAutomataBasedSolver.MooreNeighborhood(mooreRadius, toroidal),
+                keepProbability,
+                geneticOperators,
+                new Tournament(nTour)
+            );
+        };
+    }
+
+
+    @SuppressWarnings("unused")
     public static <S, Q> Function<S, StandardEvolver<BitString, S, Q>> bitStringGa(
             @Param(value = "mapper") InvertibleMapper<BitString, S> mapper,
             @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
