@@ -557,7 +557,7 @@ public class TuiMonitor implements Runnable {
       L.warning(String.format("Cannot check key strokes: %s", e));
     }
     // draw
-    td.inX(0, 0.6f)
+    td.inX(0, 0.5f)
         .inY(0, 0.2f)
         .clear()
         .drawFrame("Machines (%d)".formatted(machines.nRows()))
@@ -575,19 +575,14 @@ public class TuiMonitor implements Runnable {
                 "Used",
                 "Tot",
                 "%Mem"));
-    td.inX(0, 0.4f)
+    td.inX(0, 0.5f)
         .inY(0.2f, 0.2f)
         .clear()
         .drawFrame("Experiments (%d)".formatted(experiments.nRows()))
         .inner(1)
         .drawTable(experiments, List.of("S", "EK", "MK", "User", "#Runs", "Progress", "ETA"));
-    td.inX(0.4f, 0.2f)
-        .inY(0.2f, 0.2f)
-        .clear()
-        .drawFrame("Local")
-        .inner(1)
-        .drawTable(local, List.of("Name", "Value"));
-    td.inX(0.6f, 0.4f)
+    td.inX(0.8f, 0.2f).inY(0, 0.4f).clear().drawFrame("Local").inner(1).drawTable(local, List.of("Name", "Value"));
+    td.inX(0.5f, 0.3f)
         .inY(0, 0.4f)
         .clear()
         .drawFrame("Legend")
