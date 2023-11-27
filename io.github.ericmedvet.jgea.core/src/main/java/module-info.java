@@ -44,6 +44,7 @@ module io.github.ericmedvet.jgea.core {
   exports io.github.ericmedvet.jgea.core.solver;
   exports io.github.ericmedvet.jgea.core.solver.mapelites;
   exports io.github.ericmedvet.jgea.core.solver.speciation;
+  exports io.github.ericmedvet.jgea.core.solver.cabea;
   exports io.github.ericmedvet.jgea.core.util;
   exports io.github.ericmedvet.jgea.core.representation.sequence.integer;
   exports io.github.ericmedvet.jgea.core.problem;
