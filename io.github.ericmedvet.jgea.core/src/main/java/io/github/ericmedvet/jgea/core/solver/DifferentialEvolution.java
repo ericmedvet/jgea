@@ -105,8 +105,8 @@ public class DifferentialEvolution<S, Q>
     return ListState.from(
         (AbstractStandardEvolver.ListState<Individual<List<Double>, S, Q>, List<Double>, S, Q>) state,
         progress(state),
-        state.nOfBirths() + nOfNewBirths,
-        state.nOfFitnessEvaluations() + nOfNewFitnessEvaluations,
+        nOfNewBirths,
+        nOfNewFitnessEvaluations,
         individuals.stream().sorted(comparator(problem)).toList(),
         comparator(problem));
   }

@@ -2,13 +2,15 @@
 
 Java General Evolutionary Algorithm (jgea) is a modular Java framework for experimenting with [Evolutionary Computation](https://en.wikipedia.org/wiki/Evolutionary_computation).
 
-JGEA aims at providing a general interface to potentially *all* evolutionary algorithms (EA). To do so, it provides an interface to problems that can be solved with an EA and components of an EA (e.g., genetic operators, selection criteria, ...).
+JGEA aims at providing a general interface to potentially *all* evolutionary algorithms (EA).
+To do so, it provides an interface to problems that can be solved with an EA and components of an EA (e.g., genetic operators, selection criteria, ...).
 
-Moreover, a few EAs are actually implemented in JGEA, most of them being related to Genetic Programming (GP) and its Grammar-guided variants (G3P).
+Moreover, a few EAs are actually implemented in JGEA: Map-Elites, NSGA-II, OpenAI-ES, CMA-ES, Differential Evolution, Graphea, GA, GP, and some variants of Grammar-guided GP. 
 
-Several research papers have been published in which the experimental evaluation is based on JGEA or its previous version [evolved-ge](https://github.com/ericmedvet/evolved-ge). See a partial [list](#research-papers-based-on-jgea) below.
+Several research papers have been published in which the experimental evaluation is based on JGEA or its previous version [evolved-ge](https://github.com/ericmedvet/evolved-ge).
+See a partial [list](#research-papers-based-on-jgea) below.
 
-If you use JGEA please _cite_ [our paper](https://medvet.inginf.units.it/publications/2022-c-mnm-jgea/):
+If you use JGEA _please cite_ [our paper](https://medvet.inginf.units.it/publications/2022-c-mnm-jgea/):
 
 ```
 @inproceedings{medvet2022jgea,
@@ -21,8 +23,9 @@ If you use JGEA please _cite_ [our paper](https://medvet.inginf.units.it/publica
 
 ## Usage
 
-Add (at least) this to your `pom.xml`:
+### JGEA inside your Java project
 
+Add (at least) this to your `pom.xml`:
 ```xml
 
 <dependency>
@@ -30,6 +33,20 @@ Add (at least) this to your `pom.xml`:
     <artifactId>jgea.core</artifactId>
     <version>${project.version}</version>
 </dependency>
+```
+
+### Standalone (through the Experimenter)
+
+First, get the code:
+```shell
+git clone https://github.com/ericmedvet/jgea.git
+cd jgea
+mvn clean package
+```
+
+Then run an example experiment
+```shell
+java -jar io.github.ericmedvet.jgea.experimenter/target/jgea.experimenter-${project.version}-jar-with-dependencies.jar -e sr-comparison
 ```
 
 ## Main components
@@ -136,21 +153,25 @@ One, that is at the same time pretty standard and a template that can be realize
 `StandardEvolver` parameters are set using the only class constructor: names of the parameters indicate the corresponding meaning.
 
 ```java
-public class StandardEvolver<T extends POSetPopulationState<G, S, Q>, P extends QualityBasedProblem<S, Q>, G, S, Q> extends AbstractPopulationIterativeBasedSolver<T, P, G, S, Q> {
-
+public class StandardEvolver<G, S, Q>
+    extends AbstractStandardEvolver<
+    POCPopulationState<Individual<G, S, Q>, G, S, Q>,
+    QualityBasedProblem<S, Q>,
+    Individual<G, S, Q>,
+    G,
+    S,
+    Q> {
   public StandardEvolver(
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       int populationSize,
-      Predicate<? super T> stopCondition,
+      Predicate<? super POCPopulationState<Individual<G, S, Q>, G, S, Q>> stopCondition,
       Map<GeneticOperator<G>, Double> operators,
-      Selector<? super Individual<? super G, ? super S, ? super Q>> parentSelector,
-      Selector<? super Individual<? super G, ? super S, ? super Q>> unsurvivalSelector,
+      Selector<? super Individual<G, S, Q>> parentSelector,
+      Selector<? super Individual<G, S, Q>> unsurvivalSelector,
       int offspringSize,
       boolean overlapping,
-      boolean remap,
-      BiFunction<P, RandomGenerator, T> stateInitializer
-  ) {
+      boolean remap) {
     /* ... */
   }
 }
@@ -158,14 +179,13 @@ public class StandardEvolver<T extends POSetPopulationState<G, S, Q>, P extends 
 
 `StandardEvolver` automatically exploits parallelism using the `ExecutorService` parameter of `solve()`.
 
-`POSetPopulationState` is a state that includes the population, in the form of a partially ordered set ([poset](https://en.wikipedia.org/wiki/Partially_ordered_set)).
+`POCPopulationState` is a state that includes the population, in the form of a partially ordered set ([poset](https://en.wikipedia.org/wiki/Partially_ordered_set)).
 
 ```java
-public class POSetPopulationState<G, S, F> extends State {
-  protected long nOfBirths;
-  protected long nOfFitnessEvaluations;
-  protected PartiallyOrderedCollection<Individual<G, S, F>> population;
-  /* ... */
+public interface POCPopulationState<I extends Individual<G, S, Q>, G, S, Q> extends State {
+  long nOfBirths();
+  long nOfFitnessEvaluations();
+  PartiallyOrderedCollection<I> pocPopulation();
 }
 ```
 
@@ -173,7 +193,7 @@ public class POSetPopulationState<G, S, F> extends State {
 
 ```java
 public interface Selector<T> {
-  <K extends T> K select(PartiallyOrderedCollection<K> ks, RandomGenerator random);
+  <K extends T> K select(POCPopulationState<K> ks, RandomGenerator random);
 }
 
 ```
@@ -187,50 +207,80 @@ In this example, JGEA is used for solving the *parity problem* with the standard
 ```java
 public class Example {
   public static void main(String[] args) {
-    ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-    RandomGenerator r = new Random(1);
-    EvenParity p = new EvenParity(8);
-    IterativeSolver<POSetPopulationState<Tree<String>, List<Tree<Element>>, Double>, EvenParity, List<Tree<Element>>> solver = new StandardEvolver<>(
-        new FormulaMapper(),
-        new GrammarRampedHalfAndHalf<>(3, 12, p.getGrammar()),
+    ExecutorService executor =
+        Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    ListenerFactory<POCPopulationState<?, ?, NamedUnivariateRealFunction, Double>, Void>
+        listenerFactory = new TabularPrinter<>(
+        (List) List.of(
+            nOfIterations(),
+            elapsedSeconds(),
+            nOfBirths(),
+            all().then(size()),
+            firsts().then(size()),
+            lasts().then(size()),
+            all().then(each(genotype())).then(uniqueness()),
+            all().then(each(solution())).then(uniqueness()),
+            all().then(each(quality())).then(uniqueness()),
+            best().then(genotype()).then(size()),
+            best().then(solution()).then(size()),
+            best().then(fitnessMappingIteration()),
+            NamedFunctions.<Individual<Object, Object, Double>, Object, Object, Double>best()
+                .then(quality())
+                .reformat("%5.3f"),
+            NamedFunctions.<Individual<Object, Object, Double>, Object, Object, Double>all()
+                .then(each(quality()))
+                .then(hist(8)),
+            best().then(solution()).reformat("%20.20s")
+        ),
+        List.of()
+    );
+    Random r = new Random(1);
+    SyntheticUnivariateRegressionProblem p = new Nguyen7(UnivariateRegressionFitness.Metric.MSE, 1);
+    List<Element.Variable> variables = p.qualityFunction()
+        .getDataset()
+        .xVarNames()
+        .stream()
+        .map(Element.Variable::new)
+        .toList();
+    List<Element.Constant> constantElements = Stream.of(0.1, 1d, 10d).map(Element.Constant::new).toList();
+    IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
+        IndependentFactory.picker(variables), IndependentFactory.picker(constantElements));
+    IndependentFactory<Element> nonTerminalFactory = IndependentFactory.picker(List.of(
+        Element.Operator.ADDITION,
+        Element.Operator.SUBTRACTION,
+        Element.Operator.MULTIPLICATION,
+        Element.Operator.PROT_DIVISION
+    ));
+    TreeBuilder<Element> treeBuilder = new GrowTreeBuilder<>(x -> 2, nonTerminalFactory, terminalFactory);
+    // operators
+    Map<GeneticOperator<Tree<Element>>, Double> geneticOperators = Map.ofEntries(
+        Map.entry(new SubtreeCrossover<>(10), 0.80),
+        Map.entry(new SubtreeMutation<>(10, treeBuilder), 0.20)
+    );
+    StandardEvolver<Tree<Element>, NamedUnivariateRealFunction, Double> solver = new StandardEvolver<>(
+        t -> new TreeBasedUnivariateRealFunction(
+            t,
+            p.qualityFunction().getDataset().xVarNames(),
+            p.qualityFunction().getDataset().yVarNames().get(0)
+        ),
+        new RampedHalfAndHalf<>(4, 10, x -> 2, nonTerminalFactory, terminalFactory),
         100,
-        StopConditions.nOfIterations(100),
-        Map.of(new SameRootSubtreeCrossover<>(12), 0.8d, new GrammarBasedSubtreeMutation<>(12, p.getGrammar()), 0.2d),
-        new Tournament(3),
+        StopConditions.nOfFitnessEvaluations(10000),
+        geneticOperators,
+        new Tournament(5),
         new Last(),
         100,
         true,
-        false,
-        (ep, tr) -> new POSetPopulationState<>()
+        false
     );
-    ListenerFactory<POSetPopulationState<?, ?, ? extends Double>, Void> listenerFactory =
-        new TabularPrinter<>(List.of(
-            iterations(),
-            births(),
-            elapsedSeconds(),
-            size().of(all()),
-            size().of(firsts()),
-            size().of(lasts()),
-            uniqueness().of(each(genotype())).of(all()),
-            uniqueness().of(each(solution())).of(all()),
-            uniqueness().of(each(fitness())).of(all()),
-            size().of(genotype()).of(best()),
-            size().of(solution()).of(best()),
-            fitnessMappingIteration().of(best())
-        ), List.of());
-    Collection<List<Tree<Element>>> solutions = solver.solve(
-        p,
-        r,
-        executorService,
-        listenerFactory.build(null).deferred(executorService)
-    );
-    System.out.printf("Found %d solutions with %s" + ".%n", solutions.size(), solver.getClass().getSimpleName());
-    listenerFactory.shutdown();
+    Collection<NamedUnivariateRealFunction> solutions = solver.solve(p, r, executor, listenerFactory.build(null));
+    System.out.printf("Found %d solutions%n", solutions.size());
   }
 }
 ```
 
-Methods inside the constructor of `TabularPrinter` are static methods of the class `NamedFunctions` that return functions that take an evolution `Event` and return an object that will be printed as a table cell.
+Methods inside the constructor of `TabularPrinter` are static methods of the class `NamedFunctions` that return functions that take an evolution `State` and return an object that will be printed as a table cell.
 
 ## Research papers based on JGEA
 

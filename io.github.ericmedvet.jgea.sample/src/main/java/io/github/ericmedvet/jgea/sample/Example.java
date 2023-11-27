@@ -22,10 +22,12 @@ package io.github.ericmedvet.jgea.sample;
 
 import static io.github.ericmedvet.jgea.core.listener.NamedFunctions.*;
 
+import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.listener.NamedFunctions;
 import io.github.ericmedvet.jgea.core.listener.TabularPrinter;
+import io.github.ericmedvet.jgea.core.operator.GeneticOperator;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.NamedUnivariateRealFunction;
@@ -41,7 +43,7 @@ import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringUnifo
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.GaussianMutation;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.HypercubeGeometricCrossover;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.UniformDoubleFactory;
-import io.github.ericmedvet.jgea.core.representation.tree.SameRootSubtreeCrossover;
+import io.github.ericmedvet.jgea.core.representation.tree.*;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedUnivariateRealFunction;
 import io.github.ericmedvet.jgea.core.selector.Last;
@@ -61,6 +63,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class Example {
 
@@ -351,5 +354,68 @@ public class Example {
     }
     listenerFactory.shutdown();
     executor.shutdown();
+  }
+
+  public static void runNguyen7() throws SolverException {
+    ExecutorService executor =
+        Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    ListenerFactory<POCPopulationState<?, ?, NamedUnivariateRealFunction, Double>, Void> listenerFactory =
+        new TabularPrinter<>(
+            (List) List.of(
+                nOfIterations(),
+                elapsedSeconds(),
+                nOfBirths(),
+                all().then(size()),
+                firsts().then(size()),
+                lasts().then(size()),
+                all().then(each(genotype())).then(uniqueness()),
+                all().then(each(solution())).then(uniqueness()),
+                all().then(each(quality())).then(uniqueness()),
+                best().then(genotype()).then(size()),
+                best().then(solution()).then(size()),
+                best().then(fitnessMappingIteration()),
+                NamedFunctions.<Individual<Object, Object, Double>, Object, Object, Double>best()
+                    .then(quality())
+                    .reformat("%5.3f"),
+                NamedFunctions.<Individual<Object, Object, Double>, Object, Object, Double>all()
+                    .then(each(quality()))
+                    .then(hist(8)),
+                best().then(solution()).reformat("%20.20s")),
+            List.of());
+    Random r = new Random(1);
+    SyntheticUnivariateRegressionProblem p = new Nguyen7(UnivariateRegressionFitness.Metric.MSE, 1);
+    List<Element.Variable> variables = p.qualityFunction().getDataset().xVarNames().stream()
+        .map(Element.Variable::new)
+        .toList();
+    List<Element.Constant> constantElements =
+        Stream.of(0.1, 1d, 10d).map(Element.Constant::new).toList();
+    IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
+        IndependentFactory.picker(variables), IndependentFactory.picker(constantElements));
+    IndependentFactory<Element> nonTerminalFactory = IndependentFactory.picker(List.of(
+        Element.Operator.ADDITION,
+        Element.Operator.SUBTRACTION,
+        Element.Operator.MULTIPLICATION,
+        Element.Operator.PROT_DIVISION));
+    TreeBuilder<Element> treeBuilder = new GrowTreeBuilder<>(x -> 2, nonTerminalFactory, terminalFactory);
+    // operators
+    Map<GeneticOperator<Tree<Element>>, Double> geneticOperators = Map.ofEntries(
+        Map.entry(new SubtreeCrossover<>(10), 0.80), Map.entry(new SubtreeMutation<>(10, treeBuilder), 0.20));
+    StandardEvolver<Tree<Element>, NamedUnivariateRealFunction, Double> solver = new StandardEvolver<>(
+        t -> new TreeBasedUnivariateRealFunction(
+            t,
+            p.qualityFunction().getDataset().xVarNames(),
+            p.qualityFunction().getDataset().yVarNames().get(0)),
+        new RampedHalfAndHalf<>(4, 10, x -> 2, nonTerminalFactory, terminalFactory),
+        100,
+        StopConditions.nOfFitnessEvaluations(10000),
+        geneticOperators,
+        new Tournament(5),
+        new Last(),
+        100,
+        true,
+        false);
+    Collection<NamedUnivariateRealFunction> solutions = solver.solve(p, r, executor, listenerFactory.build(null));
+    System.out.printf("Found %d solutions%n", solutions.size());
   }
 }
