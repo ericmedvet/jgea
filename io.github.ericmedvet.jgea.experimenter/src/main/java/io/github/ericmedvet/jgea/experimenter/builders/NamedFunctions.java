@@ -292,11 +292,10 @@ public class NamedFunctions {
       @Param("collection") NamedFunction<X, Collection<T>> collectionF,
       @Param("p") double p,
       @Param(value = "s", dS = "%s") String s) {
-    return NamedFunction.build(c("perc[%2d]".formatted((int) Math.round(p * 100)), collectionF.getName()), s, x -> {
-      List<T> collection = collectionF.apply(x).stream().sorted().toList();
-      int i = (int) Math.max(Math.min(((double) collection.size()) * p, collection.size() - 1), 0);
-      return collection.get(i);
-    });
+    return NamedFunction.build(
+        c("perc[%2d]".formatted((int) Math.round(p * 100)), collectionF.getName()),
+        s,
+        x -> Misc.percentile(collectionF.apply(x), Comparable::compareTo, p));
   }
 
   @SuppressWarnings("unused")

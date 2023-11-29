@@ -1,5 +1,5 @@
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
+  runs = (randomGenerator = (seed = [1:1:3]) * [ea.rg.defaultRG()]) *
     (problem = [
       ea.p.s.pointAiming(p = 200);
       ea.p.s.circularPointsAiming(p = 200);
@@ -7,7 +7,7 @@ ea.experiment(
       ea.p.s.rastrigin(p = 20);
       ea.p.s.sphere(p = 20)
     ]) *
-    (solver = (nEval = [1000]) * [
+    (solver = (nEval = [500]) * [
       ea.s.doubleStringGa(mapper = ea.m.identity());
       ea.s.simpleEs(mapper = ea.m.identity());
       ea.s.openAiEs(mapper = ea.m.identity());
@@ -27,6 +27,9 @@ ea.experiment(
         ea.misc.sEntry(key = "problem.p"; value = "{problem.p}");
         ea.misc.sEntry(key = "solver"; value = "{solver:%#s}")
       ]
+    );
+    ea.l.aggregatedLinePlots(
+      filePath = "plot.png"
     )
   ]
 )

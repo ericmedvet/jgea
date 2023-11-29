@@ -20,10 +20,14 @@
 
 package io.github.ericmedvet.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.core.Discoverable;
+import io.github.ericmedvet.jnb.core.Param;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.util.Base64;
+import java.util.Comparator;
+import java.util.List;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
@@ -51,5 +55,40 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <T> Function<T, T> identity() {
     return t -> t;
+  }
+
+  @SuppressWarnings("unused")
+  public static Function<List<Number>, Number> min() {
+    return vs -> vs.stream().mapToDouble(Number::doubleValue).min().orElse(Double.NaN);
+  }
+
+  @SuppressWarnings("unused")
+  public static Function<List<Number>, Number> max() {
+    return vs -> vs.stream().mapToDouble(Number::doubleValue).max().orElse(Double.NaN);
+  }
+
+  @SuppressWarnings("unused")
+  public static Function<List<Number>, Number> avg() {
+    return vs -> vs.stream().mapToDouble(Number::doubleValue).average().orElse(Double.NaN);
+  }
+
+  @SuppressWarnings("unused")
+  public static Function<List<Number>, Number> median() {
+    return vs -> Misc.median(vs.stream().mapToDouble(Number::doubleValue).toArray());
+  }
+
+  @SuppressWarnings("unused")
+  public static Function<List<Number>, Number> percentile(@Param("p") double p) {
+    return vs -> Misc.percentile(vs, Comparator.comparingDouble(Number::doubleValue), p);
+  }
+
+  @SuppressWarnings("unused")
+  public static Function<List<Number>, Number> first() {
+    return vs -> vs.get(0);
+  }
+
+  @SuppressWarnings("unused")
+  public static Function<List<Number>, Number> last() {
+    return vs -> vs.get(vs.size() - 1);
   }
 }

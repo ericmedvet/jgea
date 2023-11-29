@@ -28,6 +28,11 @@ import java.util.stream.Stream;
 
 public interface Table<R, C, T> {
 
+  @FunctionalInterface
+  interface TriFunction<I1, I2, I3, O> {
+    O apply(I1 i1, I2 i2, I3 i3);
+  }
+
   interface Unmodifiable<R, C, T> extends Table<R, C, T> {
     @Override
     default void addColumn(C columnIndex, Map<R, T> values) {
@@ -75,21 +80,6 @@ public interface Table<R, C, T> {
     return t1;
   }
 
-  public static void main(String[] args) {
-    Table<String, String, Integer> t = new HashMapTable<>();
-    t.set("aa", "V", 1);
-    t.set("ab", "V", 2);
-    t.set("ac", "V", 3);
-    t.set("ba", "V", 4);
-    t.set("bb", "V", 5);
-    t.set("ca", "V", 6);
-    System.out.println(t.prettyToString());
-    System.out.println(
-        t.wider(s -> s.substring(1, 2), "V", s -> s.substring(0, 1)).prettyToString());
-    System.out.println(t.column("V"));
-    System.out.println(t.column("Vg").values().stream().mapToInt(i -> i).sum());
-  }
-
   static <R, C, T> Table<R, C, T> of(Map<R, Map<C, T>> map) {
     List<R> rowIndexes = map.keySet().stream().toList();
     List<C> colIndexes = map.values().stream()
@@ -114,6 +104,10 @@ public interface Table<R, C, T> {
         return rowIndexes;
       }
     };
+  }
+
+  static <R1, C1, T1> Table<R1, C1, T1> copyOf(Table<R1, C1, T1> table) {
+    return table.map(Function.identity());
   }
 
   default <T1, K> Table<R, C, T1> aggregate(
@@ -233,26 +227,6 @@ public interface Table<R, C, T> {
     };
   }
 
-  @FunctionalInterface
-  interface TriFunction<I1, I2, I3, O> {
-    O apply(I1 i1, I2 i2, I3 i3);
-  }
-
-  default List<T> columnValues(C columnIndex) {
-    Map<R, T> column = column(columnIndex);
-    return rowIndexes().stream().map(column::get).toList();
-  }
-
-  default <C1, T1> Table<R, C1, T1> expandColumn(C columnIndex, BiFunction<R, T, Map<C1, T1>> f) {
-    return of(rowIndexes().stream()
-        .map(ri -> Map.entry(ri, f.apply(ri, get(ri, columnIndex))))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, Table::first, LinkedHashMap::new)));
-  }
-
-  default Table<R, C, T> expandRowIndex(C c, Function<R, ? extends T> f) {
-    return expandRowIndex(r -> Map.ofEntries(Map.entry(c, f.apply(r))));
-  }
-
   default Table<R, C, T> colSlide(int n, Function<List<T>, T> aggregator) {
     Table<R, C, T> table = new HashMapTable<>();
     rowIndexes().forEach(ri -> IntStream.range(n, colIndexes().size()).forEach(i -> {
@@ -272,6 +246,21 @@ public interface Table<R, C, T> {
         .collect(Collectors.toMap(ri -> ri, ri -> get(ri, columnIndex), Table::first, LinkedHashMap::new));
   }
 
+  default List<T> columnValues(C columnIndex) {
+    Map<R, T> column = column(columnIndex);
+    return rowIndexes().stream().map(column::get).toList();
+  }
+
+  default <C1, T1> Table<R, C1, T1> expandColumn(C columnIndex, BiFunction<R, T, Map<C1, T1>> f) {
+    return of(rowIndexes().stream()
+        .map(ri -> Map.entry(ri, f.apply(ri, get(ri, columnIndex))))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, Table::first, LinkedHashMap::new)));
+  }
+
+  default Table<R, C, T> expandRowIndex(C c, Function<R, ? extends T> f) {
+    return expandRowIndex(r -> Map.ofEntries(Map.entry(c, f.apply(r))));
+  }
+
   default Table<R, C, T> expandRowIndex(Function<R, Map<C, T>> f) {
     return of(rowIndexes().stream()
         .map(ri -> Map.entry(
@@ -281,14 +270,6 @@ public interface Table<R, C, T> {
                 .collect(Collectors.toMap(
                     Map.Entry::getKey, Map.Entry::getValue, Table::first, LinkedHashMap::new))))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, Table::first, LinkedHashMap::new)));
-  }
-
-  default int nColumns() {
-    return colIndexes().size();
-  }
-
-  default int nRows() {
-    return rowIndexes().size();
   }
 
   default T get(int x, int y) {
@@ -302,10 +283,52 @@ public interface Table<R, C, T> {
     return get(ri, ci);
   }
 
-  default <R1> Table<R1, C, T> remapRowIndex(Function<R, R1> f) {
-    return of(rowIndexes().stream()
-        .map(ri -> Map.entry(f.apply(ri), row(ri)))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, Table::first, LinkedHashMap::new)));
+  default <T1> Table<R, C, T1> map(TriFunction<R, C, T, T1> mapper) {
+    Table<R, C, T> thisTable = this;
+    return new Unmodifiable<>() {
+      @Override
+      public List<C> colIndexes() {
+        return thisTable.colIndexes();
+      }
+
+      @Override
+      public T1 get(R rowIndex, C columnIndex) {
+        return mapper.apply(rowIndex, columnIndex, thisTable.get(rowIndex, columnIndex));
+      }
+
+      @Override
+      public List<R> rowIndexes() {
+        return thisTable.rowIndexes();
+      }
+    };
+  }
+
+  default <T1> Table<R, C, T1> map(Function<T, T1> mapper) {
+    Table<R, C, T> thisTable = this;
+    return new Unmodifiable<>() {
+      @Override
+      public List<C> colIndexes() {
+        return thisTable.colIndexes();
+      }
+
+      @Override
+      public T1 get(R rowIndex, C columnIndex) {
+        return mapper.apply(thisTable.get(rowIndex, columnIndex));
+      }
+
+      @Override
+      public List<R> rowIndexes() {
+        return thisTable.rowIndexes();
+      }
+    };
+  }
+
+  default int nColumns() {
+    return colIndexes().size();
+  }
+
+  default int nRows() {
+    return rowIndexes().size();
   }
 
   default String prettyToString(
@@ -356,14 +379,19 @@ public interface Table<R, C, T> {
     return sb.toString();
   }
 
+  default String prettyToString() {
+    return prettyToString("%s"::formatted, "%s"::formatted, "%s"::formatted);
+  }
+
+  default <R1> Table<R1, C, T> remapRowIndex(Function<R, R1> f) {
+    return of(rowIndexes().stream()
+        .map(ri -> Map.entry(f.apply(ri), row(ri)))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, Table::first, LinkedHashMap::new)));
+  }
+
   default Map<C, T> row(R rowIndex) {
     return colIndexes().stream()
         .collect(Collectors.toMap(ci -> ci, ci -> get(rowIndex, ci), Table::first, LinkedHashMap::new));
-  }
-
-  default List<T> rowValues(R rowIndex) {
-    Map<C, T> row = row(rowIndex);
-    return colIndexes().stream().map(row::get).toList();
   }
 
   default <T1> Table<R, C, T1> rowSlide(int n, Function<List<T>, T1> aggregator) {
@@ -375,6 +403,11 @@ public interface Table<R, C, T> {
       table.set(rowIndexes().get(i - 1), ci, aggregator.apply(ts));
     }));
     return table;
+  }
+
+  default List<T> rowValues(R rowIndex) {
+    Map<C, T> row = row(rowIndex);
+    return colIndexes().stream().map(row::get).toList();
   }
 
   default void set(int x, int y, T t) {
@@ -480,46 +513,6 @@ public interface Table<R, C, T> {
     };
   }
 
-  default <T1> Table<R, C, T1> map(TriFunction<R, C, T, T1> mapper) {
-    Table<R, C, T> thisTable = this;
-    return new Unmodifiable<>() {
-      @Override
-      public List<C> colIndexes() {
-        return thisTable.colIndexes();
-      }
-
-      @Override
-      public T1 get(R rowIndex, C columnIndex) {
-        return mapper.apply(rowIndex, columnIndex, thisTable.get(rowIndex, columnIndex));
-      }
-
-      @Override
-      public List<R> rowIndexes() {
-        return thisTable.rowIndexes();
-      }
-    };
-  }
-
-  default <T1> Table<R, C, T1> map(Function<T, T1> mapper) {
-    Table<R, C, T> thisTable = this;
-    return new Unmodifiable<>() {
-      @Override
-      public List<C> colIndexes() {
-        return thisTable.colIndexes();
-      }
-
-      @Override
-      public T1 get(R rowIndex, C columnIndex) {
-        return mapper.apply(thisTable.get(rowIndex, columnIndex));
-      }
-
-      @Override
-      public List<R> rowIndexes() {
-        return thisTable.rowIndexes();
-      }
-    };
-  }
-
   default <R1, C1> Table<R1, C1, T> wider(Function<R, R1> rowKey, C colIndex, Function<R, C1> spreader) {
     return of(rowIndexes().stream().collect(Collectors.groupingBy(rowKey)).entrySet().stream()
         .collect(Collectors.toMap(
@@ -529,10 +522,6 @@ public interface Table<R, C, T> {
                     spreader, r -> get(r, colIndex), Table::first, LinkedHashMap::new)),
             Table::first,
             LinkedHashMap::new)));
-  }
-
-  default String prettyToString() {
-    return prettyToString("%s"::formatted, "%s"::formatted, "%s"::formatted);
   }
 
   default Table<R, C, T> with(C newColumnIndex, T newT) {

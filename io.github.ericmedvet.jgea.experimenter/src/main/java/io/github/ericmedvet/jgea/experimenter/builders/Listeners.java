@@ -28,11 +28,13 @@ import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.Utils;
+import io.github.ericmedvet.jgea.experimenter.listener.AggregatedLinePlots;
 import io.github.ericmedvet.jgea.experimenter.listener.decoupled.*;
 import io.github.ericmedvet.jgea.experimenter.listener.net.NetMultiSink;
 import io.github.ericmedvet.jgea.experimenter.listener.telegram.TelegramUpdater;
 import io.github.ericmedvet.jgea.experimenter.util.PlotTableBuilder;
 import io.github.ericmedvet.jnb.core.*;
+import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.logging.Logger;
 
 @Discoverable(prefixTemplate = "ea.listener|l")
@@ -329,7 +332,8 @@ public class Listeners {
               @Param("accumulators")
                   List<AccumulatorFactory<? super POCPopulationState<?, G, S, Q>, ?, Run<?, G, S, Q>>>
                       accumulators,
-              @Param("runKeys") List<Map.Entry<String, String>> runKeys, // TODO: these are currently ignored
+              @Param("runKeys")
+                  List<Map.Entry<String, String>> runKeys, // TODO: these are currently ignored
               @Param(value = "deferred", dB = true) boolean deferred,
               @Param(value = "onlyLast") boolean onlyLast) {
     // read credential files
@@ -441,6 +445,57 @@ public class Listeners {
             experimentSinkSource,
             runSinkSource,
             dataItemSinkSource),
+        executorService,
+        false);
+  }
+
+  public static <G, S, Q>
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
+          aggregatedLinePlots(
+              @Param("xSubplotRunKeys") List<Map.Entry<String, String>> xSubplotRunKeys,
+              @Param(
+                      value = "ySubplotRunKeys",
+                      dNPMs = {"ea.misc.sEntry(key=problem;value=\"{problem}\")"})
+                  List<Map.Entry<String, String>> ySubplotRunKeys,
+              @Param(
+                      value = "lineRunKeys",
+                      dNPMs = {"ea.misc.sEntry(key=solver;value=\"{solver:%#s}\")"})
+                  List<Map.Entry<String, String>> lineRunKeys,
+              @Param(value = "xFunction", dNPM = "ea.nf.evals()")
+                  NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
+              @Param(value = "yFunction", dNPM = "ea.nf.bestFitness()")
+                  NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> yFunction,
+              @Param(value = "lineAggregator", dNPM = "ea.f.median()")
+                  Function<List<Number>, Number> lineAggregator,
+              @Param(value = "areaMinAggregator", dNPM = "ea.f.percentile(p=0.25)")
+                  Function<List<Number>, Number> areaMinAggregator,
+              @Param(value = "areaMaxAggregator", dNPM = "ea.f.percentile(p=0.75)")
+                  Function<List<Number>, Number> areaMaxAggregator,
+              @Param(
+                      value = "colors",
+                      dNPMs = {
+                        "ea.misc.colorByName(name=red)",
+                        "ea.misc.colorByName(name=green)",
+                        "ea.misc.colorByName(name=blue)"
+                      })
+                  List<Color> colors,
+              @Param(value = "plotW", dI = 400) int plotW,
+              @Param(value = "plotW", dI = 250) int plotH,
+              @Param("filePath") String filePath) {
+    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
+        new AggregatedLinePlots<>(
+            buildRunNamedFunctions(xSubplotRunKeys, experiment),
+            buildRunNamedFunctions(ySubplotRunKeys, experiment),
+            buildRunNamedFunctions(lineRunKeys, experiment),
+            xFunction,
+            yFunction,
+            lineAggregator,
+            areaMinAggregator,
+            areaMaxAggregator,
+            colors,
+            plotW,
+            plotH,
+            filePath),
         executorService,
         false);
   }
