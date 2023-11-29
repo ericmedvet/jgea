@@ -47,6 +47,14 @@ public class Misc {
   }
 
   @SuppressWarnings("unused")
+  public static Map.Entry<String, String> sEntry(
+      @Param("key") String key,
+      @Param("value") String value
+  ) {
+    return Map.entry(key, value);
+  }
+
+  @SuppressWarnings("unused")
   public static <K, V> Map<K, V> map(
       @Param("entries") List<Map.Entry<K, V>> entries
   ) {

@@ -106,7 +106,7 @@ public class Listeners {
                   List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
               @Param("individualFunctions")
                   List<NamedFunction<? super Individual<G, S, Q>, ?>> individualFunctions,
-              @Param("runKeys") List<String> runKeys,
+              @Param("runKeys") List<Map.Entry<String, String>> runKeys,
               @Param(value = "deferred") boolean deferred,
               @Param(value = "onlyLast") boolean onlyLast) {
     record PopIndividualPair<G, S, Q>(POCPopulationState<?, G, S, Q> pop, Individual<G, S, Q> individual) {}
@@ -182,7 +182,7 @@ public class Listeners {
                       defaultStateFunctions,
               @Param(value = "functions")
                   List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
-              @Param("runKeys") List<String> runKeys,
+              @Param("runKeys") List<Map.Entry<String, String>> runKeys,
               @Param(value = "deferred") boolean deferred,
               @Param(value = "onlyLast") boolean onlyLast) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
@@ -197,20 +197,20 @@ public class Listeners {
   }
 
   private static <G, S, Q> List<NamedFunction<? super Run<?, G, S, Q>, ?>> buildRunNamedFunctions(
-      List<String> runKeys, Experiment experiment) {
+      List<Map.Entry<String, String>> runKeys, Experiment experiment) {
     List<NamedFunction<? super Run<?, G, S, Q>, ?>> functions = new ArrayList<>();
     runKeys.stream()
         .map(k -> NamedFunction.build(
-            String.join("+", Utils.interpolationKeys(k)),
+            k.getKey(),
             "%"
                 .concat(""
                     + experiment.runs().stream()
-                        .map(r -> Utils.interpolate(k, r.map()))
+                        .map(r -> Utils.interpolate(k.getValue(), r.map()))
                         .mapToInt(String::length)
                         .max()
                         .orElse(10))
                 .concat("s"),
-            (Run<?, G, S, Q> run) -> Utils.interpolate(k, run.map())))
+            (Run<?, G, S, Q> run) -> Utils.interpolate(k.getValue(), run.map())))
         .forEach(functions::add);
     return Collections.unmodifiableList(functions);
   }
@@ -237,7 +237,7 @@ public class Listeners {
                       defaultStateFunctions,
               @Param(value = "functions")
                   List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
-              @Param("runKeys") List<String> runKeys,
+              @Param("runKeys") List<Map.Entry<String, String>> runKeys,
               @Param(value = "deferred") boolean deferred,
               @Param(value = "onlyLast") boolean onlyLast) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
@@ -329,7 +329,7 @@ public class Listeners {
               @Param("accumulators")
                   List<AccumulatorFactory<? super POCPopulationState<?, G, S, Q>, ?, Run<?, G, S, Q>>>
                       accumulators,
-              @Param("runKeys") List<String> runKeys, // TODO: these are currently ignored
+              @Param("runKeys") List<Map.Entry<String, String>> runKeys, // TODO: these are currently ignored
               @Param(value = "deferred", dB = true) boolean deferred,
               @Param(value = "onlyLast") boolean onlyLast) {
     // read credential files
@@ -370,7 +370,7 @@ public class Listeners {
                       defaultStateFunctions,
               @Param(value = "functions")
                   List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
-              @Param("runKeys") List<String> runKeys,
+              @Param("runKeys") List<Map.Entry<String, String>> runKeys,
               @Param(value = "serverAddress", dS = "127.0.0.1") String serverAddress,
               @Param(value = "serverPort", dI = 10979) int serverPort,
               @Param(value = "serverKeyFilePath") String serverKeyFilePath,
@@ -414,7 +414,7 @@ public class Listeners {
                       defaultStateFunctions,
               @Param(value = "functions")
                   List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
-              @Param("runKeys") List<String> runKeys) {
+              @Param("runKeys") List<Map.Entry<String, String>> runKeys) {
     DirectSinkSource<MachineKey, MachineInfo> machineSinkSource = new DirectSinkSource<>();
     DirectSinkSource<ProcessKey, ProcessInfo> processSinkSource = new DirectSinkSource<>();
     DirectSinkSource<ProcessKey, LogInfo> logSinkSource = new DirectSinkSource<>();
