@@ -17,24 +17,20 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jgea.experimenter.util.plot;
+package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
-import java.util.List;
+import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 
-public interface DataSeries<V extends Value> {
-  record Point<V extends Value>(Value x, V y) {
-    @Override
-    public String toString() {
-      return "(%s;%s)".formatted(this.x, this.y);
+public interface RangedValue extends Value {
+  DoubleRange range();
+
+  static RangedValue of(double v, double min, double max) {
+    record HardRangedValue(double v, DoubleRange range) implements RangedValue {
+      @Override
+      public String toString() {
+        return "%f[%f;%f]".formatted(v, this.range.min(), this.range.max());
+      }
     }
-  }
-
-  String yName();
-
-  List<Point<V>> points();
-
-  static <V extends Value> DataSeries<V> from(String yName, List<Point<V>> points) {
-    record HardDataSeries<V extends Value>(String yName, List<Point<V>> points) implements DataSeries<V> {}
-    return new HardDataSeries<>(yName, points);
+    return new HardRangedValue(v, new DoubleRange(min, max));
   }
 }

@@ -20,6 +20,7 @@
 package io.github.ericmedvet.jgea.experimenter.listener;
 
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.*;
 import io.github.ericmedvet.jgea.experimenter.util.plot.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;

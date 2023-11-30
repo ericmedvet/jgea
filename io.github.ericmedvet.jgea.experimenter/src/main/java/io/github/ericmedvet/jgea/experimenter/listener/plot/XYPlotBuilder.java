@@ -17,16 +17,15 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jgea.experimenter.util;
+package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
 import io.github.ericmedvet.jgea.core.listener.Accumulator;
 import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Table;
-import io.github.ericmedvet.jgea.experimenter.util.plot.DataSeries;
-import io.github.ericmedvet.jgea.experimenter.util.plot.Value;
-import io.github.ericmedvet.jgea.experimenter.util.plot.XYPlot;
+import io.github.ericmedvet.jgea.experimenter.util.TableBuilder;
+
 import java.util.Comparator;
 import java.util.List;
 

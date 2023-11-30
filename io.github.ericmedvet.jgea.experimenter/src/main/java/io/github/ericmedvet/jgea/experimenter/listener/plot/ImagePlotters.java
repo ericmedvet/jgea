@@ -17,7 +17,7 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jgea.experimenter.util.plot;
+package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

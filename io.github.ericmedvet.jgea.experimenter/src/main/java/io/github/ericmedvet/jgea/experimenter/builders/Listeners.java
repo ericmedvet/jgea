@@ -32,7 +32,7 @@ import io.github.ericmedvet.jgea.experimenter.listener.AggregatedLinePlotsAccumu
 import io.github.ericmedvet.jgea.experimenter.listener.decoupled.*;
 import io.github.ericmedvet.jgea.experimenter.listener.net.NetMultiSink;
 import io.github.ericmedvet.jgea.experimenter.listener.telegram.TelegramUpdater;
-import io.github.ericmedvet.jgea.experimenter.util.XYPlotBuilder;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlotBuilder;
 import io.github.ericmedvet.jnb.core.*;
 import java.awt.*;
 import java.io.*;

@@ -17,18 +17,20 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jgea.experimenter.util.plot;
+package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
-public interface Value {
-  double v();
+import java.util.List;
 
-  static Value of(double v) {
-    record HardValue(double v) implements Value {
-      @Override
-      public String toString() {
-        return Double.toString(v);
-      }
-    }
-    return new HardValue(v);
+public interface XYPlot<V extends Value> {
+  String xName();
+
+  String yName();
+
+  List<DataSeries<V>> dataSeries();
+
+  static <V extends Value> XYPlot<V> from(String xName, String yName, List<DataSeries<V>> dataSeries) {
+    record HardXYPlot<V extends Value>(String xName, String yName, List<DataSeries<V>> dataSeries)
+        implements XYPlot<V> {}
+    return new HardXYPlot<>(xName, yName, dataSeries);
   }
 }
