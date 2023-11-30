@@ -77,6 +77,10 @@ public interface Table<R, C, T> {
 
   void set(R rowIndex, C columnIndex, T t);
 
+  static <R1, C1, T1> Table<R1, C1, T1> copyOf(Table<R1, C1, T1> table) {
+    return table.map(Function.identity());
+  }
+
   private static <T> T first(T t1, T t2) {
     return t1;
   }
@@ -107,27 +111,9 @@ public interface Table<R, C, T> {
     };
   }
 
-  static <R1, C1, T1> Table<R1, C1, T1> copyOf(Table<R1, C1, T1> table) {
-    return table.map(Function.identity());
-  }
-
-  default Table<R, C, T> filter(Predicate<Map.Entry<R, Map<C, T>>> predicate) {
-    return Table.of(rowIndexes().stream()
-        .map(ri -> Map.entry(ri, row(ri)))
-        .filter(predicate)
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
-  }
-
-  default Table<R, C, T> filterByRowValue(Predicate<Map<C, T>> predicate) {
-    return filter(e -> predicate.test(e.getValue()));
-  }
-
-  default Table<R, C, T> filterByRowValue(C colIndex, Predicate<T> predicate) {
-    return filterByRowValue(r -> predicate.test(r.get(colIndex)));
-  }
-
   default <T1, K> Table<R, C, T1> aggregate(
-      Function<Map<C, T>, K> rowKey, Comparator<R> comparator, Function<List<Map<C, T>>, Map<C, T1>> aggregator) {
+      Function<Map<C, T>, K> rowKey, Comparator<R> comparator, Function<List<Map<C, T>>, Map<C, T1>> aggregator
+  ) {
     Map<R, Map<C, T1>> map = rowIndexes().stream()
         .map(ri -> Map.entry(ri, row(ri)))
         .collect(Collectors.groupingBy(e -> rowKey.apply(e.getValue())))
@@ -149,7 +135,8 @@ public interface Table<R, C, T> {
   default <T1, K> Table<R, C, T1> aggregateByIndex(
       Function<R, K> rowKey,
       Comparator<R> comparator,
-      Function<List<Map.Entry<R, Map<C, T>>>, Map<C, T1>> aggregator) {
+      Function<List<Map.Entry<R, Map<C, T>>>, Map<C, T1>> aggregator
+  ) {
     Map<R, Map<C, T1>> map = rowIndexes().stream()
         .map(ri -> Map.entry(ri, row(ri)))
         .collect(Collectors.groupingBy(e -> rowKey.apply(e.getKey())))
@@ -168,7 +155,8 @@ public interface Table<R, C, T> {
   }
 
   default <T1, K> Table<R, C, T1> aggregateByIndexSingle(
-      Function<R, K> rowKey, Comparator<R> comparator, BiFunction<C, List<Map.Entry<R, T>>, T1> aggregator) {
+      Function<R, K> rowKey, Comparator<R> comparator, BiFunction<C, List<Map.Entry<R, T>>, T1> aggregator
+  ) {
     Function<List<Map.Entry<R, Map<C, T>>>, Map<C, T1>> rowAggregator =
         rows -> rows.get(0).getValue().keySet().stream()
             .map(c -> Map.entry(
@@ -178,20 +166,24 @@ public interface Table<R, C, T> {
                     rows.stream()
                         .map(r -> Map.entry(
                             r.getKey(), r.getValue().get(c)))
-                        .toList())))
+                        .toList()
+                )
+            ))
             .collect(Collectors.toMap(
                 Map.Entry::getKey, Map.Entry::getValue, Table::first, LinkedHashMap::new));
     return aggregateByIndex(rowKey, comparator, rowAggregator);
   }
 
   default <T1, K> Table<R, C, T1> aggregateByIndexSingle(
-      Function<R, K> rowKey, Comparator<R> comparator, Function<List<Map.Entry<R, T>>, T1> aggregator) {
+      Function<R, K> rowKey, Comparator<R> comparator, Function<List<Map.Entry<R, T>>, T1> aggregator
+  ) {
     BiFunction<C, List<Map.Entry<R, T>>, T1> rowAggregator = (c, rows) -> aggregator.apply(rows);
     return aggregateByIndexSingle(rowKey, comparator, rowAggregator);
   }
 
   default <T1, K> Table<R, C, T1> aggregateSingle(
-      Function<Map<C, T>, K> rowKey, Comparator<R> comparator, Function<List<T>, T1> aggregator) {
+      Function<Map<C, T>, K> rowKey, Comparator<R> comparator, Function<List<T>, T1> aggregator
+  ) {
     Function<List<Map<C, T>>, Map<C, T1>> rowAggregator = maps -> maps.get(0).keySet().stream()
         .map(c -> Map.entry(
             c, aggregator.apply(maps.stream().map(m -> m.get(c)).toList())))
@@ -200,7 +192,8 @@ public interface Table<R, C, T> {
   }
 
   default <T1, K> Table<R, C, T1> aggregateSingle(
-      Function<Map<C, T>, K> rowKey, Comparator<R> comparator, BiFunction<C, List<T>, T1> aggregator) {
+      Function<Map<C, T>, K> rowKey, Comparator<R> comparator, BiFunction<C, List<T>, T1> aggregator
+  ) {
     Function<List<Map<C, T>>, Map<C, T1>> rowAggregator = maps -> maps.get(0).keySet().stream()
         .map(c -> Map.entry(
             c, aggregator.apply(c, maps.stream().map(m -> m.get(c)).toList())))
@@ -284,8 +277,24 @@ public interface Table<R, C, T> {
             Stream.of(f.apply(ri).entrySet(), row(ri).entrySet())
                 .flatMap(Set::stream)
                 .collect(Collectors.toMap(
-                    Map.Entry::getKey, Map.Entry::getValue, Table::first, LinkedHashMap::new))))
+                    Map.Entry::getKey, Map.Entry::getValue, Table::first, LinkedHashMap::new))
+        ))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, Table::first, LinkedHashMap::new)));
+  }
+
+  default Table<R, C, T> filter(Predicate<Map.Entry<R, Map<C, T>>> predicate) {
+    return Table.of(rowIndexes().stream()
+        .map(ri -> Map.entry(ri, row(ri)))
+        .filter(predicate)
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+  }
+
+  default Table<R, C, T> filterByRowValue(Predicate<Map<C, T>> predicate) {
+    return filter(e -> predicate.test(e.getValue()));
+  }
+
+  default Table<R, C, T> filterByRowValue(C colIndex, Predicate<T> predicate) {
+    return filterByRowValue(r -> predicate.test(r.get(colIndex)));
   }
 
   default T get(int x, int y) {
@@ -294,7 +303,8 @@ public interface Table<R, C, T> {
     if (ri == null || ci == null) {
       throw new IndexOutOfBoundsException(String.format(
           "Invalid %d,%d coords in a %d,%d table",
-          x, y, colIndexes().size(), rowIndexes().size()));
+          x, y, colIndexes().size(), rowIndexes().size()
+      ));
     }
     return get(ri, ci);
   }
@@ -348,7 +358,8 @@ public interface Table<R, C, T> {
   }
 
   default String prettyToString(
-      Function<R, String> rFormat, Function<C, String> cFormat, Function<T, String> tFormat) {
+      Function<R, String> rFormat, Function<C, String> cFormat, Function<T, String> tFormat
+  ) {
     if (nColumns() == 0) {
       return "";
     }
@@ -362,9 +373,11 @@ public interface Table<R, C, T> {
                     .mapToInt(
                         ri -> tFormat.apply(get(ri, ci)).length())
                     .max()
-                    .orElse(0)),
+                    .orElse(0)
+            ),
             Table::first,
-            LinkedHashMap::new));
+            LinkedHashMap::new
+        ));
     int riWidth = rowIndexes().stream()
         .mapToInt(ri -> rFormat.apply(ri).length())
         .max()
@@ -387,8 +400,8 @@ public interface Table<R, C, T> {
           s = s + (riWidth > 0 ? colSep : "");
           s = s
               + colIndexes().stream()
-                  .map(ci -> StringUtils.justify(tFormat.apply(get(ri, ci)), widths.get(ci)))
-                  .collect(Collectors.joining(colSep));
+              .map(ci -> StringUtils.justify(tFormat.apply(get(ri, ci)), widths.get(ci)))
+              .collect(Collectors.joining(colSep));
           return s;
         })
         .collect(Collectors.joining("\n")));
@@ -399,10 +412,14 @@ public interface Table<R, C, T> {
     return prettyToString("%s"::formatted, "%s"::formatted, "%s"::formatted);
   }
 
-  default <R1> Table<R1, C, T> remapRowIndex(Function<R, R1> f) {
+  default <R1> Table<R1, C, T> remapRowIndex(BiFunction<R, Map<C, T>, R1> f) {
     return of(rowIndexes().stream()
-        .map(ri -> Map.entry(f.apply(ri), row(ri)))
+        .map(ri -> Map.entry(f.apply(ri, row(ri)), row(ri)))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, Table::first, LinkedHashMap::new)));
+  }
+
+  default <R1> Table<R1, C, T> remapRowIndex(Function<R, R1> f) {
+    return remapRowIndex((ri, r) -> f.apply(ri));
   }
 
   default Map<C, T> row(R rowIndex) {
@@ -426,13 +443,32 @@ public interface Table<R, C, T> {
     return colIndexes().stream().map(row::get).toList();
   }
 
+  default Table<R, C, T> select(Predicate<C> predicate) {
+    return of(rowIndexes().stream().collect(Collectors.toMap(
+        ri -> ri,
+        ri -> row(ri).entrySet().stream()
+            .filter(e -> predicate.test(e.getKey()))
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                Map.Entry::getValue, Table::first, LinkedHashMap::new
+            )),
+        Table::first,
+        LinkedHashMap::new
+    )));
+  }
+
+  default Table<R, C, T> select(List<C> columnIndexes) {
+    return select(columnIndexes::contains);
+  }
+
   default void set(int x, int y, T t) {
     R ri = rowIndexes().get(y);
     C ci = colIndexes().get(x);
     if (ri == null || ci == null) {
       throw new IndexOutOfBoundsException(String.format(
           "Invalid %d,%d coords in a %d,%d table",
-          x, y, colIndexes().size(), rowIndexes().size()));
+          x, y, colIndexes().size(), rowIndexes().size()
+      ));
     }
     set(ri, ci, t);
   }
@@ -529,6 +565,21 @@ public interface Table<R, C, T> {
     };
   }
 
+  default <R1, C1> Table<R1, C1, T> wider(Function<R, R1> rowKey, BiFunction<R, C, C1> spreader) {
+    return of(rowIndexes().stream().collect(Collectors.groupingBy(rowKey)).entrySet().stream()
+        .collect(Collectors.toMap(
+            Map.Entry::getKey,
+            e -> e.getValue().stream()
+                .map(ri -> colIndexes().stream()
+                    .map(ci -> Map.entry(spreader.apply(ri, ci), get(ri, ci)))
+                    .toList())
+                .flatMap(List::stream)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, Table::first, LinkedHashMap::new)),
+            Table::first,
+            LinkedHashMap::new
+        )));
+  }
+
   default <R1, C1> Table<R1, C1, T> wider(Function<R, R1> rowKey, C colIndex, Function<R, C1> spreader) {
     return of(rowIndexes().stream().collect(Collectors.groupingBy(rowKey)).entrySet().stream()
         .collect(Collectors.toMap(
@@ -537,7 +588,8 @@ public interface Table<R, C, T> {
                 .collect(Collectors.toMap(
                     spreader, r -> get(r, colIndex), Table::first, LinkedHashMap::new)),
             Table::first,
-            LinkedHashMap::new)));
+            LinkedHashMap::new
+        )));
   }
 
   default Table<R, C, T> with(C newColumnIndex, T newT) {
@@ -545,7 +597,7 @@ public interface Table<R, C, T> {
         .flatMap(List::stream)
         .toList();
     Table<R, C, T> thisTable = this;
-    return new Unmodifiable<R, C, T>() {
+    return new Unmodifiable<>() {
 
       @Override
       public List<C> colIndexes() {
