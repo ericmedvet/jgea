@@ -24,7 +24,6 @@ import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.util.HashMapTable;
 import io.github.ericmedvet.jgea.core.util.Table;
-
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +37,7 @@ public abstract class AggregatorAccumulator<K, V, E, R, O> implements Accumulato
 
   public AggregatorAccumulator(
       List<NamedFunction<? super R, ? extends K>> rFunctions,
-      List<NamedFunction<? super E, ? extends V>> eFunctions
-  ) {
+      List<NamedFunction<? super E, ? extends V>> eFunctions) {
     this.rFunctions = rFunctions;
     this.eFunctions = eFunctions;
     data = new LinkedHashMap<>();
@@ -49,7 +47,7 @@ public abstract class AggregatorAccumulator<K, V, E, R, O> implements Accumulato
 
   @Override
   public Accumulator<E, O> build(R r) {
-    List<K> ks = rFunctions.stream().map(nf -> (K)nf.apply(r)).toList();
+    List<K> ks = rFunctions.stream().map(nf -> (K) nf.apply(r)).toList();
     Table<Integer, String, V> table = data.getOrDefault(ks, new HashMapTable<>());
     data.putIfAbsent(ks, table);
     return new Accumulator<>() {
@@ -63,10 +61,9 @@ public abstract class AggregatorAccumulator<K, V, E, R, O> implements Accumulato
       @Override
       public void listen(E e) {
         synchronized (data) {
-          table.addRow(table.nRows(), eFunctions.stream().collect(Collectors.toMap(
-              NamedFunction::getName,
-              nf -> nf.apply(e)
-          )));
+          table.addRow(
+              table.nRows(),
+              eFunctions.stream().collect(Collectors.toMap(NamedFunction::getName, nf -> nf.apply(e))));
         }
       }
     };

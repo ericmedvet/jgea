@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * jgea-core
+ * jgea-experimenter
  * %%
  * Copyright (C) 2018 - 2023 Eric Medvet
  * %%
@@ -17,31 +17,24 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jgea.experimenter.util;
+package io.github.ericmedvet.jgea.experimenter.util.plot;
 
-import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
-import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import java.util.List;
 
-public interface PlotTableBuilder<E> extends AccumulatorFactory<E, XYPlotTable, Object> {
-
-  NamedFunction<? super E, ? extends Number> xFunction();
-
-  List<NamedFunction<? super E, ? extends Number>> yFunctions();
-
-  default String xFormat() {
-    return xFunction().getFormat();
+public interface DataSeries<V extends Value> {
+  record Point<V extends Value>(Value x, V y) {
+    @Override
+    public String toString() {
+      return "(%s;%s)".formatted(this.x, this.y);
+    }
   }
 
-  default String xName() {
-    return xFunction().getName();
-  }
+  String yName();
 
-  default List<String> yFormats() {
-    return yFunctions().stream().map(NamedFunction::getFormat).toList();
-  }
+  List<Point<V>> points();
 
-  default List<String> yNames() {
-    return yFunctions().stream().map(NamedFunction::getName).toList();
+  static <V extends Value> DataSeries<V> from(String yName, List<Point<V>> points) {
+    record HardDataSeries<V extends Value>(String yName, List<Point<V>> points) implements DataSeries<V> {}
+    return new HardDataSeries<>(yName, points);
   }
 }

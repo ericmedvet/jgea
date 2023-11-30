@@ -22,7 +22,7 @@ package io.github.ericmedvet.jgea.experimenter.builders;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
-import io.github.ericmedvet.jgea.experimenter.util.XYPlotTableBuilder;
+import io.github.ericmedvet.jgea.experimenter.util.XYPlotBuilder;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import java.util.Collection;
@@ -39,7 +39,7 @@ public class Plots {
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> XYPlotTableBuilder<POCPopulationState<?, G, S, Q>> dyPlot(
+  public static <G, S, Q> XYPlotBuilder<POCPopulationState<?, G, S, Q>> dyPlot(
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
       @Param("y") NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> yFunction,
@@ -49,12 +49,11 @@ public class Plots {
       @Param(value = "maxX", dD = Double.NEGATIVE_INFINITY) double maxX,
       @Param(value = "minY", dD = Double.NEGATIVE_INFINITY) double minY,
       @Param(value = "maxY", dD = Double.NEGATIVE_INFINITY) double maxY) {
-    return new XYPlotTableBuilder<>(
-        xFunction, List.of(yFunction), width, height, minX, maxX, minY, maxY, true, true);
+    return new XYPlotBuilder<>(xFunction, List.of(yFunction), width, height, minX, maxX, minY, maxY, true, true);
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> XYPlotTableBuilder<POCPopulationState<?, G, S, Q>> elapsed(
+  public static <G, S, Q> XYPlotBuilder<POCPopulationState<?, G, S, Q>> elapsed(
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
       @Param(value = "y", dNPM = "ea.nf.elapsed()")
@@ -65,12 +64,11 @@ public class Plots {
       @Param(value = "maxX", dD = Double.NEGATIVE_INFINITY) double maxX,
       @Param(value = "minY", dD = 0) double minY,
       @Param(value = "maxY", dD = Double.NEGATIVE_INFINITY) double maxY) {
-    return new XYPlotTableBuilder<>(
-        xFunction, List.of(yFunction), width, height, minX, maxX, minY, maxY, true, true);
+    return new XYPlotBuilder<>(xFunction, List.of(yFunction), width, height, minX, maxX, minY, maxY, true, true);
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> XYPlotTableBuilder<POCPopulationState<?, G, S, Q>> fitness(
+  public static <G, S, Q> XYPlotBuilder<POCPopulationState<?, G, S, Q>> fitness(
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
       @Param(value = "collection", dNPM = "ea.nf.all()")
@@ -97,11 +95,11 @@ public class Plots {
               NamedFunctions.median(collFFunction, s),
               NamedFunctions.min(collFFunction, s));
         };
-    return new XYPlotTableBuilder<>(xFunction, yFunctions, width, height, minX, maxX, minY, maxY, true, false);
+    return new XYPlotBuilder<>(xFunction, yFunctions, width, height, minX, maxX, minY, maxY, true, false);
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> XYPlotTableBuilder<POCPopulationState<?, G, S, Q>> uniqueness(
+  public static <G, S, Q> XYPlotBuilder<POCPopulationState<?, G, S, Q>> uniqueness(
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
       @Param(
@@ -118,11 +116,11 @@ public class Plots {
       @Param(value = "maxX", dD = Double.NEGATIVE_INFINITY) double maxX,
       @Param(value = "minY", dD = 0) double minY,
       @Param(value = "maxY", dD = 1) double maxY) {
-    return new XYPlotTableBuilder<>(xFunction, yFunctions, width, height, minX, maxX, minY, maxY, true, false);
+    return new XYPlotBuilder<>(xFunction, yFunctions, width, height, minX, maxX, minY, maxY, true, false);
   }
 
   @SuppressWarnings("unused")
-  public static <E> XYPlotTableBuilder<E> xyPlot(
+  public static <E> XYPlotBuilder<E> xyPlot(
       @Param("x") NamedFunction<? super E, ? extends Number> xFunction,
       @Param("y") NamedFunction<? super E, ? extends Number> yFunction,
       @Param(value = "w", dI = 600) int width,
@@ -131,12 +129,11 @@ public class Plots {
       @Param(value = "maxX", dD = Double.NEGATIVE_INFINITY) double maxX,
       @Param(value = "minY", dD = Double.NEGATIVE_INFINITY) double minY,
       @Param(value = "maxY", dD = Double.NEGATIVE_INFINITY) double maxY) {
-    return new XYPlotTableBuilder<>(
-        xFunction, List.of(yFunction), width, height, minX, maxX, minY, maxY, true, false);
+    return new XYPlotBuilder<>(xFunction, List.of(yFunction), width, height, minX, maxX, minY, maxY, true, false);
   }
 
   @SuppressWarnings("unused")
-  public static <E> XYPlotTableBuilder<E> xysPlot(
+  public static <E> XYPlotBuilder<E> xysPlot(
       @Param("x") NamedFunction<? super E, ? extends Number> xFunction,
       @Param("ys") List<NamedFunction<? super E, ? extends Number>> yFunctions,
       @Param(value = "w", dI = 600) int width,
@@ -145,11 +142,11 @@ public class Plots {
       @Param(value = "maxX", dD = Double.NEGATIVE_INFINITY) double maxX,
       @Param(value = "minY", dD = Double.NEGATIVE_INFINITY) double minY,
       @Param(value = "maxY", dD = Double.NEGATIVE_INFINITY) double maxY) {
-    return new XYPlotTableBuilder<>(xFunction, yFunctions, width, height, minX, maxX, minY, maxY, true, false);
+    return new XYPlotBuilder<>(xFunction, yFunctions, width, height, minX, maxX, minY, maxY, true, false);
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> XYPlotTableBuilder<POCPopulationState<?, G, S, Q>> yPlot(
+  public static <G, S, Q> XYPlotBuilder<POCPopulationState<?, G, S, Q>> yPlot(
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
       @Param("y") NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> yFunction,
@@ -159,12 +156,11 @@ public class Plots {
       @Param(value = "maxX", dD = Double.NEGATIVE_INFINITY) double maxX,
       @Param(value = "minY", dD = Double.NEGATIVE_INFINITY) double minY,
       @Param(value = "maxY", dD = Double.NEGATIVE_INFINITY) double maxY) {
-    return new XYPlotTableBuilder<>(
-        xFunction, List.of(yFunction), width, height, minX, maxX, minY, maxY, true, false);
+    return new XYPlotBuilder<>(xFunction, List.of(yFunction), width, height, minX, maxX, minY, maxY, true, false);
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> XYPlotTableBuilder<POCPopulationState<?, G, S, Q>> ysPlot(
+  public static <G, S, Q> XYPlotBuilder<POCPopulationState<?, G, S, Q>> ysPlot(
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
       @Param("ys") List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number>> yFunctions,
@@ -174,6 +170,6 @@ public class Plots {
       @Param(value = "maxX", dD = Double.NEGATIVE_INFINITY) double maxX,
       @Param(value = "minY", dD = Double.NEGATIVE_INFINITY) double minY,
       @Param(value = "maxY", dD = Double.NEGATIVE_INFINITY) double maxY) {
-    return new XYPlotTableBuilder<>(xFunction, yFunctions, width, height, minX, maxX, minY, maxY, true, false);
+    return new XYPlotBuilder<>(xFunction, yFunctions, width, height, minX, maxX, minY, maxY, true, false);
   }
 }

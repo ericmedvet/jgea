@@ -20,34 +20,32 @@
 package io.github.ericmedvet.jgea.experimenter.util;
 
 import io.github.ericmedvet.jgea.core.listener.Accumulator;
+import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Table;
+import io.github.ericmedvet.jgea.experimenter.util.plot.DataSeries;
+import io.github.ericmedvet.jgea.experimenter.util.plot.Value;
+import io.github.ericmedvet.jgea.experimenter.util.plot.XYPlot;
 import java.util.Comparator;
 import java.util.List;
 
-public class XYPlotTableBuilder<E> implements PlotTableBuilder<E> {
+public class XYPlotBuilder<E> implements AccumulatorFactory<E, XYPlot<Value>, Object> {
 
   private TableBuilder<E, Number, Object> inner;
   private final NamedFunction<? super E, ? extends Number> xFunction;
   private final List<NamedFunction<? super E, ? extends Number>> yFunctions;
-  private final int width;
-  private final int height;
-  private final double minX;
-  private final double maxX;
-  private final double minY;
-  private final double maxY;
 
   private final boolean sorted;
   private final boolean firstDifference;
 
-  public XYPlotTableBuilder(
+  public XYPlotBuilder(
       NamedFunction<? super E, ? extends Number> xFunction,
       List<NamedFunction<? super E, ? extends Number>> yFunctions) {
     this(xFunction, yFunctions, 1, 1, Double.NaN, Double.NaN, Double.NaN, Double.NaN, true, false);
   }
 
-  public XYPlotTableBuilder(
+  public XYPlotBuilder(
       NamedFunction<? super E, ? extends Number> xFunction,
       List<NamedFunction<? super E, ? extends Number>> yFunctions,
       int width,
@@ -64,22 +62,16 @@ public class XYPlotTableBuilder<E> implements PlotTableBuilder<E> {
     this.yFunctions = (List) yFunctions.stream()
         .map(f -> firstDifference ? f.rename("delta[%s]".formatted(f.getName())) : f)
         .toList();
-    this.width = width;
-    this.height = height;
-    this.minX = minX;
-    this.maxX = maxX;
-    this.minY = minY;
-    this.maxY = maxY;
     this.sorted = sorted;
     this.firstDifference = firstDifference;
   }
 
   @Override
-  public Accumulator<E, XYPlotTable> build(Object o) {
+  public Accumulator<E, XYPlot<Value>> build(Object o) {
     Accumulator<E, Table<Integer, String, Number>> accumulator = inner.build(o);
     return new Accumulator<>() {
       @Override
-      public XYPlotTable get() {
+      public XYPlot<Value> get() {
         Table<Integer, String, Number> table = accumulator.get();
         if (sorted) {
           table = table.sorted(xFunction.getName(), Comparator.comparingDouble(Number::doubleValue));
@@ -90,7 +82,18 @@ public class XYPlotTableBuilder<E> implements PlotTableBuilder<E> {
               ns -> ns.get(ns.size() - 1).doubleValue()
                   - ns.get(0).doubleValue());
         }
-        return XYPlotTable.from(table);
+        Table<Integer, String, Number> fTable = table;
+        List<DataSeries<Value>> dss = yFunctions.stream()
+            .map(ynf -> DataSeries.from(
+                ynf.getName(),
+                fTable.rows().stream()
+                    .map(r -> new DataSeries.Point<>(
+                        Value.of(r.get(xFunction.getName())
+                            .doubleValue()),
+                        Value.of(r.get(ynf.getName()).doubleValue())))
+                    .toList()))
+            .toList();
+        return XYPlot.from(xFunction.getName(), "y", dss);
       }
 
       @Override
@@ -98,39 +101,5 @@ public class XYPlotTableBuilder<E> implements PlotTableBuilder<E> {
         accumulator.listen(e);
       }
     };
-  }
-
-  public int getHeight() {
-    return height;
-  }
-
-  public double getMaxX() {
-    return maxX;
-  }
-
-  public double getMaxY() {
-    return maxY;
-  }
-
-  public double getMinX() {
-    return minX;
-  }
-
-  public double getMinY() {
-    return minY;
-  }
-
-  public int getWidth() {
-    return width;
-  }
-
-  @Override
-  public NamedFunction<? super E, ? extends Number> xFunction() {
-    return xFunction;
-  }
-
-  @Override
-  public List<NamedFunction<? super E, ? extends Number>> yFunctions() {
-    return yFunctions;
   }
 }

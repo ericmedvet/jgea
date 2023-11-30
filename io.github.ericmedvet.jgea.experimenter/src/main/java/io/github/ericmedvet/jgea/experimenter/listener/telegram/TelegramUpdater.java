@@ -24,9 +24,10 @@ import io.github.ericmedvet.jgea.core.listener.*;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.core.util.StringUtils;
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
-import io.github.ericmedvet.jgea.experimenter.util.ImagePlotters;
-import io.github.ericmedvet.jgea.experimenter.util.XYPlotTable;
-import io.github.ericmedvet.jgea.experimenter.util.XYPlotTableBuilder;
+import io.github.ericmedvet.jgea.experimenter.util.XYPlotBuilder;
+import io.github.ericmedvet.jgea.experimenter.util.plot.ImagePlotters;
+import io.github.ericmedvet.jgea.experimenter.util.plot.Value;
+import io.github.ericmedvet.jgea.experimenter.util.plot.XYPlot;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
@@ -76,11 +77,11 @@ public class TelegramUpdater<E, K> extends TelegramClient implements ListenerFac
                   sendDocument(file);
                 }
               }
-            } else if (outcome instanceof XYPlotTable xyPlotTable) {
-              if (factories.get(i) instanceof XYPlotTableBuilder<?> plotBuilder) {
-                BufferedImage plot = ImagePlotters.xyLines(
-                        plotBuilder.getWidth(), plotBuilder.getHeight())
-                    .apply(xyPlotTable);
+            } else if (outcome instanceof XYPlot<? extends Value> xyPlot) {
+              // TODO fix: remove dependency from plot builder
+              if (factories.get(i) instanceof XYPlotBuilder<?> plotBuilder) {
+                BufferedImage plot =
+                    ImagePlotters.linesPlot(400, 300, "").apply(xyPlot);
                 sendImage(plot);
               } else {
                 L.info(String.format(

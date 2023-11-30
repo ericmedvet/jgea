@@ -20,13 +20,11 @@
 package io.github.ericmedvet.jgea.experimenter.listener;
 
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
-import io.github.ericmedvet.jgea.core.util.HashMapTable;
-import io.github.ericmedvet.jgea.core.util.Table;
-
+import io.github.ericmedvet.jgea.experimenter.util.plot.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author "Eric Medvet" on 2023/11/30 for jgea
@@ -57,8 +55,7 @@ public class AggregatedLinePlotsAccumulator<K, E, R> extends AggregatorAccumulat
       List<Color> colors,
       int plotW,
       int plotH,
-      String filePath
-  ) {
+      String filePath) {
     super(List.of(xSubplotFunction, ySubplotFunction, lineFunction), List.of(xFunction, yFunction));
     this.xSubplotFunction = xSubplotFunction;
     this.ySubplotFunction = ySubplotFunction;
@@ -76,53 +73,52 @@ public class AggregatedLinePlotsAccumulator<K, E, R> extends AggregatorAccumulat
 
   @Override
   protected BufferedImage computeOutcome() {
-    List<K> xSubplotKeys = data.keySet().stream().map(ks -> ks.get(0)).distinct().toList();
-    List<K> ySubplotKeys = data.keySet().stream().map(ks -> ks.get(1)).distinct().toList();
-    List<K> lineSubplotKeys = data.keySet().stream().map(ks -> ks.get(2)).distinct().toList();
+    List<K> xSubplotKeys =
+        data.keySet().stream().map(ks -> ks.get(0)).distinct().toList();
+    List<K> ySubplotKeys =
+        data.keySet().stream().map(ks -> ks.get(1)).distinct().toList();
+    List<K> lineKeys =
+        data.keySet().stream().map(ks -> ks.get(2)).distinct().toList();
     // aggregate
     for (K xsk : xSubplotKeys) {
       for (K ysk : ySubplotKeys) {
         System.out.printf("X=%s Y=%s%n", xsk, ysk);
-        Table<Integer, K, Number> wider = data.keySet()
-            .stream()
-            .filter(ks -> ks.subList(0, 2).equals(List.of(xsk, ysk)))
-            .map(ks -> data.get(ks).remapRowIndex(ri -> Map.entry(ri, ks.get(2))))
-            .reduce(new HashMapTable<>(), (t1, t2) -> {
 
-
-
-              t2.rowIndexes().forEach(ri -> t1.addRow(ri, t2.row(ri)));
-              return t1;
-            })
-            .wider(
-                Map.Entry::getKey,
-                (e, ci) -> e.getValue()
-            );
-        System.out.println(wider.prettyToString());
+        List<DataSeries<RangedValue>> dss = lineKeys.stream()
+            .map(lk -> DataSeries.from(
+                lk.toString(),
+                data.keySet().stream()
+                    .filter(ks -> ks.equals(List.of(xsk, ysk, lk)))
+                    .map(ks -> data
+                        .get(ks)
+                        .aggregateSingle(
+                            r -> r.get(xFunction.getName()),
+                            Integer::compare,
+                            vs -> RangedValue.of(
+                                lineAggregator
+                                    .apply(vs)
+                                    .doubleValue(),
+                                areaMinAggregator
+                                    .apply(vs)
+                                    .doubleValue(),
+                                areaMaxAggregator
+                                    .apply(vs)
+                                    .doubleValue()))
+                        .rows()
+                        .stream()
+                        .map(r -> new DataSeries.Point<>(
+                            Value.of(r.get(xFunction.getName())
+                                .v()),
+                            r.get(yFunction.getName())))
+                        .sorted(Comparator.comparingDouble(p -> p.x().v()))
+                        .toList())
+                    .flatMap(List::stream)
+                    .toList()))
+            .toList();
+        ImagePlotters.showImage(ImagePlotters.linesPlot(400, 300, xsk + " " + ysk)
+            .apply(XYPlot.from(xFunction.getName(), yFunction.getName(), dss)));
       }
     }
-
-    /*
-    data.entrySet().forEach(e -> {
-          System.out.println(e.getKey());
-          Table<Number, String, ImagePlotters.RangedNumber> localData = e.getValue()
-              .remapRowIndex((ri, row) -> row.get(xFunction.getName()))
-              .select(List.of(yFunction.getName()))
-              .aggregateByIndexSingle(
-                  Function.identity(),
-                  Comparator.comparingDouble(Number::doubleValue),
-                  es -> new ImagePlotters.RangedNumber(
-                      lineAggregator.apply(es.stream().map(Map.Entry::getValue).toList()),
-                      areaMinAggregator.apply(es.stream().map(Map.Entry::getValue).toList()),
-                      areaMaxAggregator.apply(es.stream().map(Map.Entry::getValue).toList())
-                  )
-              )
-              .sorted(Comparator.comparingDouble(Number::doubleValue));
-          System.out.println(localData.prettyToString());
-        }
-    );
-    */
-
     // iterate over subplots
     return null;
   }
