@@ -29,7 +29,9 @@ ea.experiment(
       ]
     );
     ea.l.aggregatedLinePlots(
-      filePath = "plot.png"
+      filePath = "plot.png";
+      areaMinAggregator = ea.nf.min(collection = ea.nf.identity());
+      areaMaxAggregator = ea.nf.max(collection = ea.nf.identity())
     )
   ]
 )

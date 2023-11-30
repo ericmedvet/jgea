@@ -22,64 +22,44 @@ package io.github.ericmedvet.jgea.experimenter.listener;
 import io.github.ericmedvet.jgea.core.listener.Accumulator;
 import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
-import io.github.ericmedvet.jgea.core.util.HashMapTable;
 import io.github.ericmedvet.jgea.core.util.Table;
-import java.awt.*;
-import java.awt.image.BufferedImage;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Function;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-public class AggregatedLinePlots<K, E, R> implements AccumulatorFactory<E, BufferedImage, R> {
+public abstract class AggregatorAccumulator<K, E, R, O> implements AccumulatorFactory<E, O, R> {
 
   private final List<NamedFunction<? super R, ? extends K>> xSubplotFunctions;
   private final List<NamedFunction<? super R, ? extends K>> ySubplotFunctions;
   private final List<NamedFunction<? super R, ? extends K>> lineFunctions;
-
   private final NamedFunction<? super E, ? extends Number> xFunction;
   private final NamedFunction<? super E, ? extends Number> yFunction;
+  private final List<NamedFunction<List<Number>, Number>> aggregateFunctions;
 
-  private final Function<List<Number>, Number> lineAggregator;
-  private final Function<List<Number>, Number> areaMinAggregator;
-  private final Function<List<Number>, Number> areaMaxAggregator;
-  private final List<Color> colors;
-  private final int plotW;
-  private final int plotH;
-  private final String filePath;
+  protected final Map<Key<K>, List<Number>> data;
 
-  private final Table<Key<K>, String, Number> table;
+  protected record Key<K>(List<K> xSubplotKeys, List<K> ySubplotKeys, List<K> lineKeys, Number x) {}
 
-  private record Key<K>(List<K> xSubplotKeys, List<K> ySubplotKeys, List<K> lineKeys, Number x) {}
-
-  public AggregatedLinePlots(
+  public AggregatorAccumulator(
       List<NamedFunction<? super R, ? extends K>> xSubplotFunctions,
       List<NamedFunction<? super R, ? extends K>> ySubplotFunctions,
       List<NamedFunction<? super R, ? extends K>> lineFunctions,
       NamedFunction<? super E, ? extends Number> xFunction,
       NamedFunction<? super E, ? extends Number> yFunction,
-      Function<List<Number>, Number> lineAggregator,
-      Function<List<Number>, Number> areaMinAggregator,
-      Function<List<Number>, Number> areaMaxAggregator,
-      List<Color> colors,
-      int plotW,
-      int plotH,
-      String filePath) {
+      List<NamedFunction<List<Number>, Number>> aggregateFunctions) {
     this.xSubplotFunctions = xSubplotFunctions;
     this.ySubplotFunctions = ySubplotFunctions;
     this.lineFunctions = lineFunctions;
     this.xFunction = xFunction;
     this.yFunction = yFunction;
-    this.lineAggregator = lineAggregator;
-    this.areaMinAggregator = areaMinAggregator;
-    this.areaMaxAggregator = areaMaxAggregator;
-    this.colors = colors;
-    this.plotW = plotW;
-    this.plotH = plotH;
-    table = new HashMapTable<>();
-    this.filePath = filePath;
+    this.aggregateFunctions = aggregateFunctions;
+    data = new LinkedHashMap<>();
   }
 
   @Override
-  public Accumulator<E, BufferedImage> build(R r) {
+  public Accumulator<E, O> build(R r) {
     List<K> xSubplotKeys =
         xSubplotFunctions.stream().map(f -> (K) f.apply(r)).toList();
     List<K> ySubplotKeys =
@@ -87,32 +67,30 @@ public class AggregatedLinePlots<K, E, R> implements AccumulatorFactory<E, Buffe
     List<K> lineKeys = lineFunctions.stream().map(f -> (K) f.apply(r)).toList();
     return new Accumulator<>() {
       @Override
-      public BufferedImage get() {
-        synchronized (table) {
-          return plot(Table.copyOf(table));
+      public O get() {
+        synchronized (data) {
+          return computeOutcome(aggregate());
         }
       }
 
       @Override
       public void listen(E s) {
-        synchronized (table) {
-          table.set(
-              new Key<>(xSubplotKeys, ySubplotKeys, lineKeys, xFunction.apply(s)),
-              "x",
-              yFunction.apply(s));
+        synchronized (data) {
+          Key<K> k = new Key<>(xSubplotKeys, ySubplotKeys, lineKeys, xFunction.apply(s));
+          Number y = yFunction.apply(s);
+          List<Number> vs = data.getOrDefault(k, new LinkedList<>());
+          vs.add(y);
+          data.put(k, vs);
         }
       }
     };
   }
 
-  @Override
-  public void shutdown() {
-    // TODO build and save image
-    System.out.println(table.prettyToString());
+  protected Table<Key<K>, String, Number> aggregate() {
+    return Table.of(
+        data.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> aggregateFunctions.stream()
+            .collect(Collectors.toMap(NamedFunction::getName, nf -> nf.apply(e.getValue()))))));
   }
 
-  private BufferedImage plot(Table<Key<K>, String, Number> table) {
-    // TODO
-    return null;
-  }
+  protected abstract O computeOutcome(Table<Key<K>, String, Number> table);
 }

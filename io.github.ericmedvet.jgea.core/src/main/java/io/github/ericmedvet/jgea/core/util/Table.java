@@ -22,6 +22,7 @@ package io.github.ericmedvet.jgea.core.util;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -108,6 +109,21 @@ public interface Table<R, C, T> {
 
   static <R1, C1, T1> Table<R1, C1, T1> copyOf(Table<R1, C1, T1> table) {
     return table.map(Function.identity());
+  }
+
+  default Table<R, C, T> filter(Predicate<Map.Entry<R, Map<C, T>>> predicate) {
+    return Table.of(rowIndexes().stream()
+        .map(ri -> Map.entry(ri, row(ri)))
+        .filter(predicate)
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+  }
+
+  default Table<R, C, T> filterByRowValue(Predicate<Map<C, T>> predicate) {
+    return filter(e -> predicate.test(e.getValue()));
+  }
+
+  default Table<R, C, T> filterByRowValue(C colIndex, Predicate<T> predicate) {
+    return filterByRowValue(r -> predicate.test(r.get(colIndex)));
   }
 
   default <T1, K> Table<R, C, T1> aggregate(

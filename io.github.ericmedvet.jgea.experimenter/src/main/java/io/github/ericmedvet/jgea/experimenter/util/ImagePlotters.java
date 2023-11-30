@@ -19,7 +19,9 @@
  */
 package io.github.ericmedvet.jgea.experimenter.util;
 
+import io.github.ericmedvet.jgea.core.util.Table;
 import java.awt.image.BufferedImage;
+import java.util.Objects;
 import java.util.function.Function;
 import org.knowm.xchart.BitmapEncoder;
 import org.knowm.xchart.XYChart;
@@ -32,6 +34,8 @@ import org.knowm.xchart.style.markers.SeriesMarkers;
 public class ImagePlotters {
 
   private ImagePlotters() {}
+
+  public record RangedNumber(Number value, Number min, Number max) {}
 
   public static Function<XYPlotTable, BufferedImage> xyLines(int w, int h) {
     return data -> {
@@ -56,6 +60,43 @@ public class ImagePlotters {
       chart.getStyler().setLegendPosition(Styler.LegendPosition.OutsideS);
       double[] xs = data.xValues();
       data.yNames().forEach(n -> chart.addSeries(n, xs, data.yValues(n)));
+      return BitmapEncoder.getBufferedImage(chart);
+    };
+  }
+
+  public static Function<Table<? extends Number, String, RangedNumber>, BufferedImage> xyShadedLines(
+      int w, int h, String xAxisLabel) {
+    return data -> {
+      if (data.colIndexes().isEmpty()) {
+        throw new IllegalArgumentException(
+            String.format("Wrong number of data series: >1 expected, %d found", data.nColumns()));
+      }
+      // prepare and style
+      XYChart chart = new XYChartBuilder()
+          .width(w)
+          .height(h)
+          .xAxisTitle(xAxisLabel)
+          .theme(Styler.ChartTheme.XChart)
+          .build();
+      chart.getStyler().setDefaultSeriesRenderStyle(XYSeries.XYSeriesRenderStyle.Line);
+      chart.getStyler().setSeriesMarkers(new Marker[] {SeriesMarkers.NONE});
+      chart.getStyler().setYAxisDecimalPattern("#.##");
+      chart.getStyler().setXAxisDecimalPattern("#.##");
+      chart.getStyler().setLegendPosition(Styler.LegendPosition.OutsideS);
+      // iterate over data series
+      data.colIndexes().forEach(yName -> {
+        Table<? extends Number, String, RangedNumber> localData =
+            data.filterByRowValue(yName, Objects::nonNull);
+        chart.addSeries(
+            yName,
+            localData.rowIndexes().stream()
+                .mapToDouble(Number::doubleValue)
+                .toArray(),
+            localData.columnValues(yName).stream()
+                .mapToDouble(rn -> rn.value.doubleValue())
+                .toArray());
+      });
+      // return
       return BitmapEncoder.getBufferedImage(chart);
     };
   }
