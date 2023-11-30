@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -50,6 +50,7 @@ public class ParticleSwarmOptimization<S, Q> extends AbstractPopulationBasedIter
     List<Double> velocity();
 
     List<Double> bestKnownPosition();
+
     Q bestKnownQuality();
 
     default List<Double> position() {
@@ -187,12 +188,11 @@ public class ParticleSwarmOptimization<S, Q> extends AbstractPopulationBasedIter
             Q newQuality = problem.qualityFunction().apply(newSolution);
             List<Double> newBestKnownPosition = i.bestKnownPosition();
             Q newBestKnownQuality = i.bestKnownQuality();
-            if (problem.totalOrderComparator().compare(newQuality,i.quality())<0) {
+            if (problem.totalOrderComparator().compare(newQuality, i.quality()) < 0) {
               newBestKnownPosition = newPosition;
               newBestKnownQuality = newQuality;
             }
-            // TODO create the individual
-            return null;
+            return PSOIndividual.of(newPosition, newVelocity, newBestKnownPosition, newBestKnownQuality, newSolution, newQuality, state.nOfIterations(), state.nOfIterations());
           })
           .toList()));
       List<PSOIndividual<S, Q>> sortedIndividuals = individuals.stream().sorted(comparator(problem)).toList();
