@@ -28,22 +28,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class TableAccumulatorFactory<E, V, K> implements AccumulatorFactory<E, Table<Integer, String, V>, K> {
+public class TableAccumulatorFactory<E, V, R> implements AccumulatorFactory<E, Table<Integer, String, V>, R> {
 
   private final List<NamedFunction<? super E, ? extends V>> eFunctions;
-  private final List<NamedFunction<? super K, ? extends V>> kFunctions;
+  private final List<NamedFunction<? super R, ? extends V>> rFunctions;
 
   public TableAccumulatorFactory(
       List<NamedFunction<? super E, ? extends V>> eFunctions,
-      List<NamedFunction<? super K, ? extends V>> kFunctions) {
+      List<NamedFunction<? super R, ? extends V>> rFunctions) {
     this.eFunctions = eFunctions;
-    this.kFunctions = kFunctions;
+    this.rFunctions = rFunctions;
   }
 
   @Override
-  public Accumulator<E, Table<Integer, String, V>> build(K k) {
+  public Accumulator<E, Table<Integer, String, V>> build(R r) {
     Map<String, ? extends V> kValues =
-        kFunctions.stream().collect(Collectors.toMap(NamedFunction::getName, f -> f.apply(k)));
+        rFunctions.stream().collect(Collectors.toMap(NamedFunction::getName, f -> f.apply(r)));
     return new Accumulator<>() {
 
       private final Table<Integer, String, V> table = new HashMapTable<>();

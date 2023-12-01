@@ -19,17 +19,26 @@
  */
 package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
-import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+import java.util.List;
 
 /**
  * @author "Eric Medvet" on 2023/12/01 for jgea
  */
-public interface XYPlot {
-  String xName();
+public interface XYDataSeries<VX extends Value, VY extends Value> {
+  record Point<VX extends Value, VY extends Value>(VX x, VY y) {
+    @Override
+    public String toString() {
+      return "(%s;%s)".formatted(this.x, this.y);
+    }
+  }
 
-  String yName();
+  String name();
 
-  DoubleRange xRange();
+  List<Point<VX, VY>> points();
 
-  DoubleRange yRange();
+  static <VX extends Value, VY extends Value> XYDataSeries<VX, VY> of(String name, List<Point<VX, VY>> points) {
+    record HardXYDataSeries<VX extends Value, VY extends Value>(String name, List<Point<VX, VY>> points)
+        implements XYDataSeries<VX, VY> {}
+    return new HardXYDataSeries<>(name, points);
+  }
 }

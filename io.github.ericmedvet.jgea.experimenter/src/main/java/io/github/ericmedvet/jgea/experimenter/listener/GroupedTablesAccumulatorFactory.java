@@ -29,13 +29,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public abstract class AggregatorAccumulatorFactory<K, V, E, R, O> implements AccumulatorFactory<E, O, R> {
+public class GroupedTablesAccumulatorFactory<K, V, E, R>
+    implements AccumulatorFactory<E, Map<List<K>, Table<Integer, String, V>>, R> {
 
   protected final Map<List<K>, Table<Integer, String, V>> data;
   private final List<NamedFunction<? super R, ? extends K>> rFunctions;
   private final List<NamedFunction<? super E, ? extends V>> eFunctions;
 
-  public AggregatorAccumulatorFactory(
+  public GroupedTablesAccumulatorFactory(
       List<NamedFunction<? super R, ? extends K>> rFunctions,
       List<NamedFunction<? super E, ? extends V>> eFunctions) {
     this.rFunctions = rFunctions;
@@ -43,19 +44,15 @@ public abstract class AggregatorAccumulatorFactory<K, V, E, R, O> implements Acc
     data = new LinkedHashMap<>();
   }
 
-  protected abstract O computeOutcome();
-
   @Override
-  public Accumulator<E, O> build(R r) {
+  public Accumulator<E, Map<List<K>, Table<Integer, String, V>>> build(R r) {
     List<K> ks = rFunctions.stream().map(nf -> (K) nf.apply(r)).toList();
     Table<Integer, String, V> table = data.getOrDefault(ks, new HashMapTable<>());
     data.putIfAbsent(ks, table);
     return new Accumulator<>() {
       @Override
-      public O get() {
-        synchronized (data) {
-          return computeOutcome();
-        }
+      public Map<List<K>, Table<Integer, String, V>> get() {
+        return data;
       }
 
       @Override

@@ -24,10 +24,12 @@ ea.experiment(
         ea.misc.sEntry(key = "solver"; value = "{solver:%#s}")
       ]
     );
-    ea.l.aggregatedLinePlots(
+    ea.l.plotSaver(
       filePath = "plot.png";
-      areaMinAggregator = ea.nf.min(collection = ea.nf.identity());
-      areaMaxAggregator = ea.nf.max(collection = ea.nf.identity())
+      plot = ea.plot.fitnessPlotMatrix(
+        minAggregator = ea.nf.min(collection = ea.nf.identity());
+        maxAggregator = ea.nf.max(collection = ea.nf.identity())
+      )
     )
   ]
 )

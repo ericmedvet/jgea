@@ -19,22 +19,22 @@
  */
 package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
-import java.util.List;
-
-public interface DataSeries<V extends Value> {
-  record Point<V extends Value>(Value x, V y) {
-    @Override
-    public String toString() {
-      return "(%s;%s)".formatted(this.x, this.y);
+/**
+ * @author "Eric Medvet" on 2023/12/01 for jgea
+ */
+public interface Plotter<O> {
+  default O plot(XYPlot plot) {
+    if (plot instanceof XYSinglePlot<?, ?> xySinglePlot) {
+      return plot(xySinglePlot);
     }
+    if (plot instanceof XYMatrixPlot<?, ?> xyMatrixPlot) {
+      return plot(xyMatrixPlot);
+    }
+    throw new UnsupportedOperationException(
+        "Unknown kind of plot: %s".formatted(plot.getClass().getSimpleName()));
   }
 
-  String yName();
+  O plot(XYSinglePlot<?, ?> plot);
 
-  List<Point<V>> points();
-
-  static <V extends Value> DataSeries<V> from(String yName, List<Point<V>> points) {
-    record HardDataSeries<V extends Value>(String yName, List<Point<V>> points) implements DataSeries<V> {}
-    return new HardDataSeries<>(yName, points);
-  }
+  O plot(XYMatrixPlot<?, ?> plot);
 }

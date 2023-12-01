@@ -24,10 +24,6 @@ import io.github.ericmedvet.jgea.core.listener.*;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.core.util.StringUtils;
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.LinePlotAccumulatorFactory;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.ImagePlotters;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.Value;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlot;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
@@ -76,17 +72,6 @@ public class TelegramUpdater<E, K> extends TelegramClient implements ListenerFac
                 } else {
                   sendDocument(file);
                 }
-              }
-            } else if (outcome instanceof XYPlot<? extends Value> xyPlot) {
-              // TODO fix: remove dependency from plot builder
-              if (factories.get(i) instanceof LinePlotAccumulatorFactory<?> plotBuilder) {
-                BufferedImage plot =
-                    ImagePlotters.linesPlot(400, 300, "").apply(xyPlot);
-                sendImage(plot);
-              } else {
-                L.info(String.format(
-                    "Skip table outcome of accumulator: do not know how to handle %s",
-                    outcome.getClass().getSimpleName()));
               }
             } else {
               L.info(String.format(
