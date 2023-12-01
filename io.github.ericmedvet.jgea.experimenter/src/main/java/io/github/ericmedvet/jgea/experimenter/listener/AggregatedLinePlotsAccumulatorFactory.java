@@ -26,25 +26,22 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * @author "Eric Medvet" on 2023/11/30 for jgea
  */
-public class AggregatedLinePlotsAccumulatorFactoryFactory<K, E, R> extends AggregatorAccumulatorFactory<K, Number, E, R, BufferedImage> {
-  private final NamedFunction<? super R, ? extends K> xSubplotFunction;
-  private final NamedFunction<? super R, ? extends K> ySubplotFunction;
-  private final NamedFunction<? super R, ? extends K> lineFunction;
+public class AggregatedLinePlotsAccumulatorFactory<K, E, R> extends AggregatorAccumulatorFactory<K, Number, E, R, BufferedImage> {
   private final NamedFunction<? super E, ? extends Number> xFunction;
   private final NamedFunction<? super E, ? extends Number> yFunction;
   private final NamedFunction<List<Number>, Number> lineAggregator;
   private final NamedFunction<List<Number>, Number> areaMinAggregator;
   private final NamedFunction<List<Number>, Number> areaMaxAggregator;
-  private final List<Color> colors;
-  private final int plotW;
-  private final int plotH;
-  private final String filePath;
+  private final int w;
+  private final int h;
+  private final Consumer<BufferedImage> finalConsumer;
 
-  public AggregatedLinePlotsAccumulatorFactoryFactory(
+  public AggregatedLinePlotsAccumulatorFactory(
       NamedFunction<? super R, ? extends K> xSubplotFunction,
       NamedFunction<? super R, ? extends K> ySubplotFunction,
       NamedFunction<? super R, ? extends K> lineFunction,
@@ -53,23 +50,18 @@ public class AggregatedLinePlotsAccumulatorFactoryFactory<K, E, R> extends Aggre
       NamedFunction<List<Number>, Number> lineAggregator,
       NamedFunction<List<Number>, Number> areaMinAggregator,
       NamedFunction<List<Number>, Number> areaMaxAggregator,
-      List<Color> colors,
-      int plotW,
-      int plotH,
-      String filePath) {
+      int w,
+      int h,
+      Consumer<BufferedImage> finalConsumer) {
     super(List.of(xSubplotFunction, ySubplotFunction, lineFunction), List.of(xFunction, yFunction));
-    this.xSubplotFunction = xSubplotFunction;
-    this.ySubplotFunction = ySubplotFunction;
-    this.lineFunction = lineFunction;
     this.xFunction = xFunction;
     this.yFunction = yFunction;
     this.lineAggregator = lineAggregator;
     this.areaMinAggregator = areaMinAggregator;
     this.areaMaxAggregator = areaMaxAggregator;
-    this.colors = colors;
-    this.plotW = plotW;
-    this.plotH = plotH;
-    this.filePath = filePath;
+    this.w = w;
+    this.h = h;
+    this.finalConsumer = finalConsumer;
   }
 
   @Override
@@ -126,7 +118,6 @@ public class AggregatedLinePlotsAccumulatorFactoryFactory<K, E, R> extends Aggre
 
   @Override
   public void shutdown() {
-    // TODO save image
-    computeOutcome();
+    finalConsumer.accept(computeOutcome());
   }
 }

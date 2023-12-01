@@ -26,51 +26,47 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.experimenter.listener.TableAccumulatorFactory;
 
+import java.awt.image.BufferedImage;
 import java.util.Comparator;
 import java.util.List;
 
-public class XYPlotBuilder<E> implements AccumulatorFactory<E, XYPlot<Value>, Object> {
+public class LinePlotAccumulatorFactory<E> implements AccumulatorFactory<E, BufferedImage, Object> {
 
-  private TableAccumulatorFactory<E, Number, Object> inner;
+  private final TableAccumulatorFactory<E, Number, Object> inner;
   private final NamedFunction<? super E, ? extends Number> xFunction;
   private final List<NamedFunction<? super E, ? extends Number>> yFunctions;
+  private final int w;
+  private final int h;
 
   private final boolean sorted;
   private final boolean firstDifference;
 
-  public XYPlotBuilder(
-      NamedFunction<? super E, ? extends Number> xFunction,
-      List<NamedFunction<? super E, ? extends Number>> yFunctions) {
-    this(xFunction, yFunctions, 1, 1, Double.NaN, Double.NaN, Double.NaN, Double.NaN, true, false);
-  }
-
-  public XYPlotBuilder(
+  public LinePlotAccumulatorFactory(
       NamedFunction<? super E, ? extends Number> xFunction,
       List<NamedFunction<? super E, ? extends Number>> yFunctions,
-      int width,
-      int height,
-      double minX,
-      double maxX,
-      double minY,
-      double maxY,
+      int w,
+      int h,
       boolean sorted,
-      boolean firstDifference) {
+      boolean firstDifference
+  ) {
     inner = new TableAccumulatorFactory<>(Misc.concat(List.of(List.of(xFunction), yFunctions)), List.of());
     this.xFunction = xFunction;
     //noinspection unchecked,rawtypes
     this.yFunctions = (List) yFunctions.stream()
         .map(f -> firstDifference ? f.rename("delta[%s]".formatted(f.getName())) : f)
         .toList();
+    this.w = w;
+    this.h = h;
     this.sorted = sorted;
     this.firstDifference = firstDifference;
   }
 
   @Override
-  public Accumulator<E, XYPlot<Value>> build(Object o) {
+  public Accumulator<E, BufferedImage> build(Object o) {
     Accumulator<E, Table<Integer, String, Number>> accumulator = inner.build(o);
     return new Accumulator<>() {
       @Override
-      public XYPlot<Value> get() {
+      public BufferedImage get() {
         Table<Integer, String, Number> table = accumulator.get();
         if (sorted) {
           table = table.sorted(xFunction.getName(), Comparator.comparingDouble(Number::doubleValue));
@@ -79,7 +75,8 @@ public class XYPlotBuilder<E> implements AccumulatorFactory<E, XYPlot<Value>, Ob
           table = table.rowSlide(
               2,
               ns -> ns.get(ns.size() - 1).doubleValue()
-                  - ns.get(0).doubleValue());
+                  - ns.get(0).doubleValue()
+          );
         }
         Table<Integer, String, Number> fTable = table;
         List<DataSeries<Value>> dss = yFunctions.stream()
@@ -89,10 +86,12 @@ public class XYPlotBuilder<E> implements AccumulatorFactory<E, XYPlot<Value>, Ob
                     .map(r -> new DataSeries.Point<>(
                         Value.of(r.get(xFunction.getName())
                             .doubleValue()),
-                        Value.of(r.get(ynf.getName()).doubleValue())))
-                    .toList()))
+                        Value.of(r.get(ynf.getName()).doubleValue())
+                    ))
+                    .toList()
+            ))
             .toList();
-        return XYPlot.from(xFunction.getName(), "y", dss);
+        return ImagePlotters.linesPlot(w, h, "").apply(XYPlot.from(xFunction.getName(), "y", dss));
       }
 
       @Override

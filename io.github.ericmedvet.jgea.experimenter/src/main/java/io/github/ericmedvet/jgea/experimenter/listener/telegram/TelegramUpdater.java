@@ -24,7 +24,7 @@ import io.github.ericmedvet.jgea.core.listener.*;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.core.util.StringUtils;
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlotBuilder;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.LinePlotAccumulatorFactory;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.ImagePlotters;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.Value;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlot;
@@ -79,7 +79,7 @@ public class TelegramUpdater<E, K> extends TelegramClient implements ListenerFac
               }
             } else if (outcome instanceof XYPlot<? extends Value> xyPlot) {
               // TODO fix: remove dependency from plot builder
-              if (factories.get(i) instanceof XYPlotBuilder<?> plotBuilder) {
+              if (factories.get(i) instanceof LinePlotAccumulatorFactory<?> plotBuilder) {
                 BufferedImage plot =
                     ImagePlotters.linesPlot(400, 300, "").apply(xyPlot);
                 sendImage(plot);

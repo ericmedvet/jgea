@@ -28,11 +28,11 @@ import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.Utils;
-import io.github.ericmedvet.jgea.experimenter.listener.AggregatedLinePlotsAccumulatorFactoryFactory;
+import io.github.ericmedvet.jgea.experimenter.listener.AggregatedLinePlotsAccumulatorFactory;
 import io.github.ericmedvet.jgea.experimenter.listener.decoupled.*;
 import io.github.ericmedvet.jgea.experimenter.listener.net.NetMultiSink;
 import io.github.ericmedvet.jgea.experimenter.listener.telegram.TelegramUpdater;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlotBuilder;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.LinePlotAccumulatorFactory;
 import io.github.ericmedvet.jnb.core.*;
 import java.awt.*;
 import java.io.*;
@@ -126,7 +126,7 @@ public class Listeners {
               @Param(value = "plotW", dI = 250) int plotH,
               @Param("filePath") String filePath) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        new AggregatedLinePlotsAccumulatorFactoryFactory<>(
+        new AggregatedLinePlotsAccumulatorFactory<>(
             Listeners.<G, S, Q>buildRunNamedFunctions(List.of(xSubplotRunKey), experiment)
                 .get(0),
             Listeners.<G, S, Q>buildRunNamedFunctions(List.of(ySubplotRunKey), experiment)
@@ -138,10 +138,9 @@ public class Listeners {
             lineAggregator,
             areaMinAggregator,
             areaMaxAggregator,
-            colors,
             plotW,
             plotH,
-            filePath),
+            bi -> {}),
         executorService,
         false);
   }
@@ -422,10 +421,10 @@ public class Listeners {
               @Param(
                       value = "defaultPlots",
                       dNPMs = {"ea.plot.elapsed()"})
-                  List<XYPlotBuilder<? super POCPopulationState<?, G, S, Q>>>
+                  List<LinePlotAccumulatorFactory<? super POCPopulationState<?, G, S, Q>>>
                       defaultPlotTableBuilders,
               @Param("plots")
-                  List<XYPlotBuilder<? super POCPopulationState<?, G, S, Q>>> plotTableBuilders,
+                  List<LinePlotAccumulatorFactory<? super POCPopulationState<?, G, S, Q>>> plotTableBuilders,
               @Param("accumulators")
                   List<AccumulatorFactory<? super POCPopulationState<?, G, S, Q>, ?, Run<?, G, S, Q>>>
                       accumulators,
