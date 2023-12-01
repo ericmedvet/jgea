@@ -21,7 +21,7 @@ package io.github.ericmedvet.jgea.experimenter.listener;
 
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.*;
-import io.github.ericmedvet.jgea.experimenter.util.plot.*;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Comparator;
@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * @author "Eric Medvet" on 2023/11/30 for jgea
  */
-public class AggregatedLinePlotsAccumulator<K, E, R> extends AggregatorAccumulator<K, Number, E, R, BufferedImage> {
+public class AggregatedLinePlotsAccumulatorFactoryFactory<K, E, R> extends AggregatorAccumulatorFactory<K, Number, E, R, BufferedImage> {
   private final NamedFunction<? super R, ? extends K> xSubplotFunction;
   private final NamedFunction<? super R, ? extends K> ySubplotFunction;
   private final NamedFunction<? super R, ? extends K> lineFunction;
@@ -44,7 +44,7 @@ public class AggregatedLinePlotsAccumulator<K, E, R> extends AggregatorAccumulat
   private final int plotH;
   private final String filePath;
 
-  public AggregatedLinePlotsAccumulator(
+  public AggregatedLinePlotsAccumulatorFactoryFactory(
       NamedFunction<? super R, ? extends K> xSubplotFunction,
       NamedFunction<? super R, ? extends K> ySubplotFunction,
       NamedFunction<? super R, ? extends K> lineFunction,

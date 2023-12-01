@@ -17,7 +17,7 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jgea.experimenter.util;
+package io.github.ericmedvet.jgea.experimenter.listener;
 
 import io.github.ericmedvet.jgea.core.listener.Accumulator;
 import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
@@ -28,28 +28,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class TableBuilder<E, O, K> implements AccumulatorFactory<E, Table<Integer, String, O>, K> {
+public class TableAccumulatorFactory<E, V, K> implements AccumulatorFactory<E, Table<Integer, String, V>, K> {
 
-  private final List<NamedFunction<? super E, ? extends O>> eFunctions;
-  private final List<NamedFunction<? super K, ? extends O>> kFunctions;
+  private final List<NamedFunction<? super E, ? extends V>> eFunctions;
+  private final List<NamedFunction<? super K, ? extends V>> kFunctions;
 
-  public TableBuilder(
-      List<NamedFunction<? super E, ? extends O>> eFunctions,
-      List<NamedFunction<? super K, ? extends O>> kFunctions) {
+  public TableAccumulatorFactory(
+      List<NamedFunction<? super E, ? extends V>> eFunctions,
+      List<NamedFunction<? super K, ? extends V>> kFunctions) {
     this.eFunctions = eFunctions;
     this.kFunctions = kFunctions;
   }
 
   @Override
-  public Accumulator<E, Table<Integer, String, O>> build(K k) {
-    Map<String, ? extends O> kValues =
+  public Accumulator<E, Table<Integer, String, V>> build(K k) {
+    Map<String, ? extends V> kValues =
         kFunctions.stream().collect(Collectors.toMap(NamedFunction::getName, f -> f.apply(k)));
     return new Accumulator<>() {
 
-      private final Table<Integer, String, O> table = new HashMapTable<>();
+      private final Table<Integer, String, V> table = new HashMapTable<>();
 
       @Override
-      public Table<Integer, String, O> get() {
+      public Table<Integer, String, V> get() {
         return table;
       }
 

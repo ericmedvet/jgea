@@ -24,6 +24,7 @@ module io.github.ericmedvet.jgea.experimenter {
       jcommander;
 
   exports io.github.ericmedvet.jgea.experimenter;
+  exports io.github.ericmedvet.jgea.experimenter.listener;
 
   requires io.github.ericmedvet.jnb.core;
   requires io.github.ericmedvet.jgea.core;

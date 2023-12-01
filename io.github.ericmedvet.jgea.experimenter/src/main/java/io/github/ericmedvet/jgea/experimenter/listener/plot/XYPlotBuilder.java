@@ -24,14 +24,14 @@ import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Table;
-import io.github.ericmedvet.jgea.experimenter.util.TableBuilder;
+import io.github.ericmedvet.jgea.experimenter.listener.TableAccumulatorFactory;
 
 import java.util.Comparator;
 import java.util.List;
 
 public class XYPlotBuilder<E> implements AccumulatorFactory<E, XYPlot<Value>, Object> {
 
-  private TableBuilder<E, Number, Object> inner;
+  private TableAccumulatorFactory<E, Number, Object> inner;
   private final NamedFunction<? super E, ? extends Number> xFunction;
   private final List<NamedFunction<? super E, ? extends Number>> yFunctions;
 
@@ -55,7 +55,7 @@ public class XYPlotBuilder<E> implements AccumulatorFactory<E, XYPlot<Value>, Ob
       double maxY,
       boolean sorted,
       boolean firstDifference) {
-    inner = new TableBuilder<>(Misc.concat(List.of(List.of(xFunction), yFunctions)), List.of());
+    inner = new TableAccumulatorFactory<>(Misc.concat(List.of(List.of(xFunction), yFunctions)), List.of());
     this.xFunction = xFunction;
     //noinspection unchecked,rawtypes
     this.yFunctions = (List) yFunctions.stream()

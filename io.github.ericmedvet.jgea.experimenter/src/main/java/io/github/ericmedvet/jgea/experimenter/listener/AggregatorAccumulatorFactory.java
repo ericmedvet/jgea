@@ -29,13 +29,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public abstract class AggregatorAccumulator<K, V, E, R, O> implements AccumulatorFactory<E, O, R> {
+public abstract class AggregatorAccumulatorFactory<K, V, E, R, O> implements AccumulatorFactory<E, O, R> {
 
   protected final Map<List<K>, Table<Integer, String, V>> data;
   private final List<NamedFunction<? super R, ? extends K>> rFunctions;
   private final List<NamedFunction<? super E, ? extends V>> eFunctions;
 
-  public AggregatorAccumulator(
+  public AggregatorAccumulatorFactory(
       List<NamedFunction<? super R, ? extends K>> rFunctions,
       List<NamedFunction<? super E, ? extends V>> eFunctions) {
     this.rFunctions = rFunctions;
