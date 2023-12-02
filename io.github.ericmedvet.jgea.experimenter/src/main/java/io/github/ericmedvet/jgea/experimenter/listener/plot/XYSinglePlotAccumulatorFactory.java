@@ -26,7 +26,6 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.experimenter.listener.TableAccumulatorFactory;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
-
 import java.util.Comparator;
 import java.util.List;
 
@@ -48,8 +47,7 @@ public class XYSinglePlotAccumulatorFactory<E, R> implements AccumulatorFactory<
       DoubleRange xRange,
       DoubleRange yRange,
       boolean sorted,
-      boolean firstDifference
-  ) {
+      boolean firstDifference) {
     inner = new TableAccumulatorFactory<>(Misc.concat(List.of(List.of(xFunction), yFunctions)), List.of());
     this.titleFunction = titleFunction;
     this.xFunction = xFunction;
@@ -77,8 +75,7 @@ public class XYSinglePlotAccumulatorFactory<E, R> implements AccumulatorFactory<
           table = table.rowSlide(
               2,
               ns -> ns.get(ns.size() - 1).doubleValue()
-                  - ns.get(0).doubleValue()
-          );
+                  - ns.get(0).doubleValue());
         }
         Table<Integer, String, Number> fTable = table;
         List<XYDataSeries<Value, Value>> dss = yFunctions.stream()
@@ -88,10 +85,8 @@ public class XYSinglePlotAccumulatorFactory<E, R> implements AccumulatorFactory<
                     .map(r -> new XYDataSeries.Point<>(
                         Value.of(r.get(xFunction.getName())
                             .doubleValue()),
-                        Value.of(r.get(ynf.getName()).doubleValue())
-                    ))
-                    .toList()
-            ))
+                        Value.of(r.get(ynf.getName()).doubleValue())))
+                    .toList()))
             .toList();
         return XYSinglePlot.of(titleFunction.apply(r), xFunction.getName(), "", xRange, yRange, dss);
       }

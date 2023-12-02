@@ -119,13 +119,16 @@ public class XYMatrixPlotAccumulatorFactory<K, E, R>
                         .flatMap(List::stream)
                         .toList()))
                 .toList();
-            table.set(xsk.toString(), ysk.toString(), dss);
+            table.set(ysk.toString(), xsk.toString(), dss);
           }
         }
         return XYMatrixPlot.of(
             "%s vs. %s".formatted(ySubplotFunction.getName(), xSubplotFunction.getName()),
-            xFunction.getName(), yFunction.getName(), xRange, yRange, table
-        );
+            xFunction.getName(),
+            yFunction.getName(),
+            xRange,
+            yRange,
+            table);
       }
 
       @Override

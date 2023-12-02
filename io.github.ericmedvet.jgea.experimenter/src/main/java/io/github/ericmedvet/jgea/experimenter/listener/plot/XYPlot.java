@@ -26,6 +26,7 @@ import io.github.ericmedvet.jsdynsym.core.DoubleRange;
  */
 public interface XYPlot {
   String title();
+
   String xName();
 
   String yName();
