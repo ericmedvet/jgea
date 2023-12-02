@@ -24,8 +24,8 @@ ea.experiment(
         ea.misc.sEntry(key = "solver"; value = "{solver:%#s}")
       ]
     );
-    ea.l.plotSaver(
-      filePath = "plot.png";
+    ea.l.expPlotSaver(
+      filePath = "/home/eric/Scaricati/plot.png";
       plot = ea.plot.fitnessPlotMatrix()
     )
   ]

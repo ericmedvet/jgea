@@ -45,7 +45,7 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <G, S, Q> XYSinglePlotAccumulatorFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> dyPlot(
-      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"{run.index}\")")
+      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
@@ -58,7 +58,7 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <G, S, Q> XYSinglePlotAccumulatorFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> elapsed(
-      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"{run.index}\")")
+      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
@@ -72,7 +72,7 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <G, S, Q> XYSinglePlotAccumulatorFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> fitness(
-      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"{run.index}\")")
+      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
@@ -102,7 +102,7 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <G, S, Q> XYSinglePlotAccumulatorFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> uniqueness(
-      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"{run.index}\")")
+      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
@@ -122,7 +122,7 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <E, G, S, Q> XYSinglePlotAccumulatorFactory<E, Run<?, G, S, Q>> xyPlot(
-      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"{run.index}\")")
+      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
           Map.Entry<String, String> titleRunKey,
       @Param("x") NamedFunction<? super E, ? extends Number> xFunction,
       @Param("y") NamedFunction<? super E, ? extends Number> yFunction,
@@ -134,7 +134,7 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <E, G, S, Q> XYSinglePlotAccumulatorFactory<E, Run<?, G, S, Q>> xysPlot(
-      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"{run.index}\")")
+      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
           Map.Entry<String, String> titleRunKey,
       @Param("x") NamedFunction<? super E, ? extends Number> xFunction,
       @Param("ys") List<NamedFunction<? super E, ? extends Number>> yFunctions,
@@ -146,7 +146,7 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <G, S, Q> XYSinglePlotAccumulatorFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> yPlot(
-      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"{run.index}\")")
+      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
@@ -159,7 +159,7 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <G, S, Q> XYSinglePlotAccumulatorFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> ysPlot(
-      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"{run.index}\")")
+      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
@@ -243,6 +243,6 @@ public class Plots {
   private static <G, S, Q> NamedFunction<Run<?, G, S, Q>, String> buildRunNamedFunction(
       Map.Entry<String, String> runKey) {
     return NamedFunction.build(
-        runKey.getKey(), "%s", (Run<?, G, S, Q> run) -> Utils.interpolate(runKey.getValue(), run.map()));
+        runKey.getKey(), "%s", (Run<?, G, S, Q> run) -> Utils.interpolate(runKey.getValue(), run));
   }
 }

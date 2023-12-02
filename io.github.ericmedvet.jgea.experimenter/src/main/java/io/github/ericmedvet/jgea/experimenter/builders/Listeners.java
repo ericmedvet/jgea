@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 
 @Discoverable(prefixTemplate = "ea.listener|l")
 public class Listeners {
@@ -94,7 +95,7 @@ public class Listeners {
   @SuppressWarnings("unused")
   public static <G, S, Q>
       BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
-          plotSaver(
+          expPlotSaver(
               @Param("plot")
                   AccumulatorFactory<POCPopulationState<?, G, S, Q>, XYPlot, Run<?, G, S, Q>> plot,
               @Param(value = "w", dI = 600) int w,
@@ -102,7 +103,38 @@ public class Listeners {
               @Param("filePath") String filePath) {
     ImagePlotter imagePlotter = new ImagePlotter(w, h);
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        plot.thenOnShutdown(ps -> ImagePlotter.showImage(imagePlotter.plot(ps.get(ps.size() - 1)))),
+        plot.thenOnShutdown(ps -> {
+          File file = Misc.checkExistenceAndChangeName(new File(filePath));
+          try {
+            ImageIO.write(imagePlotter.plot(ps.get(ps.size() - 1)), "png", file);
+          } catch (IOException e) {
+            L.severe("Cannot save plot at `%s`: %s".formatted(file.getPath(), e));
+          }
+        }),
+        executorService,
+        false);
+  }
+
+  @SuppressWarnings("unused")
+  public static <G, S, Q>
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
+          runPlotSaver(
+              @Param("plot")
+                  AccumulatorFactory<POCPopulationState<?, G, S, Q>, XYPlot, Run<?, G, S, Q>> plot,
+              @Param(value = "w", dI = 600) int w,
+              @Param(value = "h", dI = 600) int h,
+              @Param(value = "filePathTemplate", dS = "run-{index:%04d}.png") String filePathTemplate) {
+    ImagePlotter imagePlotter = new ImagePlotter(w, h);
+    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
+        plot.thenOnDone((run, p) -> {
+          File file = Misc.checkExistenceAndChangeName(new File(Utils.interpolate(filePathTemplate, run)));
+          try {
+
+            ImageIO.write(imagePlotter.plot(p), "png", file);
+          } catch (IOException e) {
+            L.severe("Cannot save plot at `%s`: %s".formatted(file, e));
+          }
+        }),
         executorService,
         false);
   }
