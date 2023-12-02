@@ -97,8 +97,8 @@ public class Listeners {
           plotSaver(
               @Param("plot")
                   AccumulatorFactory<POCPopulationState<?, G, S, Q>, XYPlot, Run<?, G, S, Q>> plot,
-              @Param(value = "w", dI = 400) int w,
-              @Param(value = "h", dI = 250) int h,
+              @Param(value = "w", dI = 600) int w,
+              @Param(value = "h", dI = 400) int h,
               @Param("filePath") String filePath) {
     ImagePlotter imagePlotter = new ImagePlotter(w, h);
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
