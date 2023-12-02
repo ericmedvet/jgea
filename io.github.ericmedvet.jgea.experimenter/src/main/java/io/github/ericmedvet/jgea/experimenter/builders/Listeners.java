@@ -100,7 +100,7 @@ public class Listeners {
               @Param(value = "w", dI = 400) int w,
               @Param(value = "h", dI = 250) int h,
               @Param("filePath") String filePath) {
-    ImagePlotter imagePlotter = new ImagePlotter();
+    ImagePlotter imagePlotter = new ImagePlotter(w, h);
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         plot.thenOnShutdown(ps -> ImagePlotter.showImage(imagePlotter.plot(ps.get(ps.size() - 1)))),
         executorService,

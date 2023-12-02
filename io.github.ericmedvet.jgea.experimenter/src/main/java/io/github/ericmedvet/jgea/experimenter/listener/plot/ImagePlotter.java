@@ -21,6 +21,8 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
 import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+
+import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
@@ -32,16 +34,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
-import javax.swing.*;
 
 /**
  * @author "Eric Medvet" on 2023/12/01 for jgea
  */
 public class ImagePlotter implements Plotter<BufferedImage> {
   public record Configuration(
-      int w,
-      int h,
-      double marginRatio,
+      int margin,
       double tickLabelGapRatio,
       double plotDataRatio,
       int fontSize,
@@ -49,10 +48,15 @@ public class ImagePlotter implements Plotter<BufferedImage> {
       Color plotBgColor,
       Color boxColor,
       Color gridColor,
-      Color textColor,
+      Color labelColor,
+      Color tickLabelColor,
       List<Color> colors,
-      float stroke,
-      float alpha) {
+      float dataStroke,
+      float gridStroke,
+      float alpha,
+      int legendW,
+      int legendH
+  ) {
     public Font hFont() {
       return new Font("Monospaced", Font.PLAIN, fontSize);
     }
@@ -63,34 +67,51 @@ public class ImagePlotter implements Plotter<BufferedImage> {
       return hFont().deriveFont(at);
     }
 
-    public int margin() {
-      return (int) (Math.max(w, h) * marginRatio);
-    }
   }
 
   private record RangeMap(DoubleRange xRange, DoubleRange yRange, DoubleRange gxRange, DoubleRange gyRange) {}
 
+  private final int w;
+  private final int h;
   private final Configuration c;
 
-  public ImagePlotter() {
-    this(new Configuration(
-        800,
-        400,
-        0.01,
+  public ImagePlotter(int w, int h) {
+    this(w, h, new Configuration(
+        5,
         2d,
         0.9d,
         10,
-        Color.GRAY,
+        Color.LIGHT_GRAY,
         Color.WHITE,
         Color.DARK_GRAY,
         Color.LIGHT_GRAY,
+        Color.BLACK,
         Color.DARK_GRAY,
-        List.of(Color.RED, Color.BLUE, Color.GREEN),
+        List.of(
+            new Color(166, 206, 227),
+            new Color(227, 26, 28),
+            new Color(31, 120, 180),
+            new Color(178, 223, 138),
+            new Color(251, 154, 153),
+            new Color(51, 160, 44),
+            new Color(253, 191, 111),
+            new Color(106, 61, 154),
+            new Color(255, 127, 0),
+            new Color(202, 178, 214),
+            new Color(255, 255, 153),
+            new Color(177, 89, 40)
+        ),
         1.75f,
-        0.1f));
+        1f,
+        0.2f,
+        20,
+        10
+    ));
   }
 
-  public ImagePlotter(Configuration c) {
+  public ImagePlotter(int w, int h, Configuration c) {
+    this.w = w;
+    this.h = h;
     this.c = c;
   }
 
@@ -114,7 +135,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
                   .max()
                   .orElse(1d))
               .max()
-              .orElse(1d));
+              .orElse(1d)
+      );
     }
     if (yRange.equals(DoubleRange.UNBOUNDED)) {
       yRange = new DoubleRange(
@@ -131,12 +153,13 @@ public class ImagePlotter implements Plotter<BufferedImage> {
                   .max()
                   .orElse(1d))
               .max()
-              .orElse(1d));
+              .orElse(1d)
+      );
     }
     xRange = enlarge(xRange, 1d / c.plotDataRatio);
     yRange = enlarge(yRange, 1d / c.plotDataRatio);
     // prepare
-    BufferedImage img = new BufferedImage(c.w, c.h, BufferedImage.TYPE_3BYTE_BGR);
+    BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_3BYTE_BGR);
     Graphics2D g = img.createGraphics();
     g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     g.setFont(c.hFont());
@@ -144,51 +167,53 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     double fontW = g.getFontMetrics().charWidth('a');
     // fill background
     g.setColor(c.bgColor);
-    g.fill(new Rectangle2D.Double(0, 0, c.w, c.h));
+    g.fill(new Rectangle2D.Double(0, 0, w, h));
     // compute space
-    List<Double> xTicks = tickLabels(xRange, c.w - 2 * c.margin(), g);
-    List<Double> yTicks = tickLabels(yRange, c.h - 2 * c.margin(), g);
+    List<Double> xTicks = tickLabels(xRange, w - 2 * c.margin(), g);
+    List<Double> yTicks = tickLabels(yRange, h - 2 * c.margin(), g);
     String xTickFormat = ticksFormat(xRange, xTicks.size());
     String yTickFormat = ticksFormat(yRange, yTicks.size());
     double xAxisH = fontH
         + c.margin()
         + fontW
-            * xTicks.stream()
-                .map(xTickFormat::formatted)
-                .mapToInt(String::length)
-                .max()
-                .orElse(1);
+        * xTicks.stream()
+        .map(xTickFormat::formatted)
+        .mapToInt(String::length)
+        .max()
+        .orElse(1);
     double yAxisW = fontH
         + c.margin()
         + fontW
-            * yTicks.stream()
-                .map(yTickFormat::formatted)
-                .mapToInt(String::length)
-                .max()
-                .orElse(1);
+        * yTicks.stream()
+        .map(yTickFormat::formatted)
+        .mapToInt(String::length)
+        .max()
+        .orElse(1);
     RangeMap rm = new RangeMap(
         xRange,
         yRange,
-        new DoubleRange(c.margin() + yAxisW + c.margin(), c.w - c.margin()),
-        new DoubleRange(c.margin(), c.h - c.margin() - xAxisH - c.margin()));
+        new DoubleRange(c.margin() + yAxisW + c.margin(), w - c.margin()),
+        new DoubleRange(c.margin(), h - c.margin() - xAxisH - c.margin())
+    );
     drawLinePlot(g, rm, plot.dataSeries(), xTicks, yTicks);
-    drawXTicks(g, rm, xTicks, xTickFormat, plot.xName(), fontH, fontW);
-    drawYTicks(g, rm, yTicks, yTickFormat, plot.yName(), fontH, fontW);
+    drawXAxisText(g, rm, xTicks, xTickFormat, plot.xName(), fontH, fontW);
+    drawYAxisText(g, rm, yTicks, yTickFormat, plot.yName(), fontH, fontW);
     // TODO add legend
     // dispose
     g.dispose();
     return img;
   }
 
-  private void drawXTicks(
+  private void drawXAxisText(
       Graphics2D g,
       RangeMap rm,
       List<Double> xTicks,
       String xTickFormat,
       String xName,
       double fontH,
-      double fontW) {
-    g.setColor(c.textColor);
+      double fontW
+  ) {
+    g.setColor(c.tickLabelColor);
     g.setFont(c.vFont());
     xTicks.forEach(t -> {
       String s = xTickFormat.formatted(t);
@@ -200,19 +225,21 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         .max()
         .orElse(0);
     g.setFont(c.hFont());
+    g.setColor(c.labelColor);
     g.drawString(xName, (float) (rm.gxRange.min() + rm.gxRange.extent() / 2d - xName.length() * fontW / 2f), (float)
         (rm.gyRange.max() + c.margin() + labelsW + c.margin()));
   }
 
-  private void drawYTicks(
+  private void drawYAxisText(
       Graphics2D g,
       RangeMap rm,
       List<Double> yTicks,
       String yTickFormat,
       String yName,
       double fontH,
-      double fontW) {
-    g.setColor(c.textColor);
+      double fontW
+  ) {
+    g.setColor(c.tickLabelColor);
     g.setFont(c.hFont());
     yTicks.forEach(t -> {
       String s = yTickFormat.formatted(t);
@@ -224,6 +251,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         .max()
         .orElse(0);
     g.setFont(c.vFont());
+    g.setColor(c.labelColor);
     g.drawString(yName, (float) (rm.gxRange.min() - c.margin() - labelsW - c.margin()), (float)
         (y(rm.yRange.min() + rm.yRange.extent() / 2d, rm) + yName.length() * fontW / 2f));
   }
@@ -233,19 +261,22 @@ public class ImagePlotter implements Plotter<BufferedImage> {
       RangeMap rm,
       List<XYDataSeries<VX, VY>> dataSeries,
       List<Double> xTicks,
-      List<Double> yTicks) {
+      List<Double> yTicks
+  ) {
     // draw background
     g.setColor(c.plotBgColor);
     g.fill(new Rectangle2D.Double(rm.gxRange.min(), rm.gyRange.min(), rm.gxRange.extent(), rm.gyRange.extent()));
     // draw grid
-    g.setStroke(new BasicStroke(1));
+    g.setStroke(new BasicStroke(c.gridStroke, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{1, 2}, 0));
     g.setColor(c.gridColor);
     xTicks.forEach(x -> g.draw(new Line2D.Double(
         x(x, rm), y(rm.yRange.min(), rm),
-        x(x, rm), y(rm.yRange.max(), rm))));
+        x(x, rm), y(rm.yRange.max(), rm)
+    )));
     yTicks.forEach(y -> g.draw(new Line2D.Double(
         x(rm.xRange.min(), rm), y(y, rm),
-        x(rm.xRange.max(), rm), y(y, rm))));
+        x(rm.xRange.max(), rm), y(y, rm)
+    )));
     // draw data
     IntStream.range(0, dataSeries.size()).forEach(i -> {
       Color color = c.colors.get(i % c.colors.size());
@@ -288,7 +319,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
                   .max()
                   .orElse(1d))
               .max()
-              .orElse(1d));
+              .orElse(1d)
+      );
     }
     if (yRange.equals(DoubleRange.UNBOUNDED)) {
       yRange = new DoubleRange(
@@ -307,12 +339,13 @@ public class ImagePlotter implements Plotter<BufferedImage> {
                   .max()
                   .orElse(1d))
               .max()
-              .orElse(1d));
+              .orElse(1d)
+      );
     }
     xRange = enlarge(xRange, 1d / c.plotDataRatio);
     yRange = enlarge(yRange, 1d / c.plotDataRatio);
     // prepare
-    BufferedImage img = new BufferedImage(c.w, c.h, BufferedImage.TYPE_3BYTE_BGR);
+    BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_3BYTE_BGR);
     Graphics2D g = img.createGraphics();
     g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     g.setFont(c.hFont());
@@ -320,12 +353,12 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     double fontW = g.getFontMetrics().charWidth('a');
     // fill background
     g.setColor(c.bgColor);
-    g.fill(new Rectangle2D.Double(0, 0, c.w, c.h));
+    g.fill(new Rectangle2D.Double(0, 0, w, h));
     // compute space
     double subplotW =
-        (c.w - fontH - 3 * c.margin()) / (float) plot.dataSeries().nColumns();
+        (w - fontH - 3 * c.margin()) / (float) plot.dataSeries().nColumns();
     double subplotH =
-        (c.h - fontH - 3 * c.margin()) / (float) plot.dataSeries().nRows();
+        (h - fontH - 3 * c.margin()) / (float) plot.dataSeries().nRows();
     List<Double> xTicks = tickLabels(xRange, subplotW - 2 * c.margin(), g);
     List<Double> yTicks = tickLabels(yRange, subplotH - 2 * c.margin(), g);
     String xTickFormat = ticksFormat(xRange, xTicks.size());
@@ -333,22 +366,22 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     double xAxisH = fontH
         + c.margin()
         + fontW
-            * xTicks.stream()
-                .map(xTickFormat::formatted)
-                .mapToInt(String::length)
-                .max()
-                .orElse(1);
+        * xTicks.stream()
+        .map(xTickFormat::formatted)
+        .mapToInt(String::length)
+        .max()
+        .orElse(1);
     double yAxisW = fontH
         + c.margin()
         + fontW
-            * yTicks.stream()
-                .map(yTickFormat::formatted)
-                .mapToInt(String::length)
-                .max()
-                .orElse(1);
-    subplotW = ((double) c.w - yAxisW - fontH - 3 * c.margin())
+        * yTicks.stream()
+        .map(yTickFormat::formatted)
+        .mapToInt(String::length)
+        .max()
+        .orElse(1);
+    subplotW = ((double) w - yAxisW - fontH - 3 * c.margin())
         / (double) plot.dataSeries().nColumns();
-    subplotH = ((double) c.h - xAxisH - fontH - 3 * c.margin())
+    subplotH = ((double) h - xAxisH - fontH - 3 * c.margin())
         / (double) plot.dataSeries().nRows();
     // iterate
     for (int px = 0; px < plot.dataSeries().nColumns(); px = px + 1) {
@@ -359,31 +392,33 @@ public class ImagePlotter implements Plotter<BufferedImage> {
               yRange,
               new DoubleRange(px * subplotW + c.margin(), (px + 1) * subplotW).delta(c.margin() + yAxisW),
               new DoubleRange(py * subplotH, (py + 1) * subplotH - c.margin())
-                  .delta(c.margin() + fontH + c.margin()));
+                  .delta(c.margin() + fontH + c.margin())
+          );
           drawLinePlot(g, rm, plot.dataSeries().get(px, py), xTicks, yTicks);
           // ticks
           if (px == 0) {
-            drawYTicks(g, rm, yTicks, yTickFormat, plot.yName(), fontH, fontW);
+            drawYAxisText(g, rm, yTicks, yTickFormat, plot.yName(), fontH, fontW);
           }
           if (py == plot.dataSeries().nRows() - 1) {
-            drawXTicks(g, rm, xTicks, xTickFormat, plot.xName(), fontH, fontW);
+            drawXAxisText(g, rm, xTicks, xTickFormat, plot.xName(), fontH, fontW);
           }
           // titles
           if (px == plot.dataSeries().nColumns() - 1) {
             String s = plot.dataSeries().rowIndexes().get(py);
             g.setFont(c.vFont());
-            g.setColor(c.textColor);
-            g.drawString(s, (float) (c.w() - c.margin()), (float)
+            g.setColor(c.labelColor);
+            g.drawString(s, (float) (w - c.margin()), (float)
                 (rm.gyRange.min() + rm.gyRange.extent() / 2d - fontW * s.length() / 2d));
           }
           if (py == 0) {
             String s = plot.dataSeries().colIndexes().get(px);
             g.setFont(c.hFont());
-            g.setColor(c.textColor);
+            g.setColor(c.labelColor);
             g.drawString(
                 s,
                 (float) (rm.gxRange.min() + rm.gxRange.extent() / 2d - fontW * s.length() / 2d),
-                (float) (c.margin() + fontH));
+                (float) (c.margin() + fontH)
+            );
           }
         }
       }
@@ -395,9 +430,10 @@ public class ImagePlotter implements Plotter<BufferedImage> {
   }
 
   private List<Double> tickLabels(DoubleRange range, double gExtent, Graphics2D g) {
+    DoubleRange innerRange = enlarge(range, c.plotDataRatio);
     double gw = g.getFontMetrics().getHeight() * (1 + c.tickLabelGapRatio);
     int n = (int) Math.round(gExtent / gw);
-    return DoubleStream.iterate(range.min(), v -> v < range.max(), v -> v + range.extent() / (double) n)
+    return DoubleStream.iterate(innerRange.min(), v -> v <= range.max(), v -> v + innerRange.extent() / (double) n)
         .boxed()
         .toList();
   }
@@ -440,7 +476,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
       g.fill(sPath);
     }
     g.setColor(color);
-    g.setStroke(new BasicStroke(c.stroke));
+    g.setStroke(new BasicStroke(c.dataStroke));
     Path2D path = new Path2D.Double();
     path.moveTo(x(ds.points().get(0).x().v(), rm), y(ds.points().get(0).y().v(), rm));
     ds.points().stream().skip(1).forEach(p -> path.lineTo(x(p.x().v(), rm), y(p.y().v(), rm)));
@@ -487,14 +523,18 @@ public class ImagePlotter implements Plotter<BufferedImage> {
                 "sin(x)",
                 DoubleStream.iterate(-2.5, v -> v < 1.5, v -> v + .01)
                     .mapToObj(x -> new XYDataSeries.Point<>(Value.of(x), Value.of(Math.sin(x))))
-                    .toList()),
+                    .toList()
+            ),
             XYDataSeries.of(
                 "sin(x)/(1+|x|)",
                 DoubleStream.iterate(-2, v -> v < 15, v -> v + .1)
                     .mapToObj(x -> new XYDataSeries.Point<>(
                         Value.of(x), Value.of(Math.sin(x) / (1d + Math.abs(x)))))
-                    .toList())));
-    ImagePlotter ip = new ImagePlotter();
+                    .toList()
+            )
+        )
+    );
+    ImagePlotter ip = new ImagePlotter(600, 400);
     showImage(ip.plot(p));
     XYMatrixPlot<Value, Value> m = XYMatrixPlot.of(
         "x",
@@ -504,7 +544,9 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         Table.of(Map.ofEntries(
             Map.entry("1", Map.ofEntries(Map.entry("a", p.dataSeries()), Map.entry("b", p.dataSeries()))),
             Map.entry(
-                "2", Map.ofEntries(Map.entry("a", p.dataSeries()), Map.entry("b", p.dataSeries()))))));
+                "2", Map.ofEntries(Map.entry("a", p.dataSeries()), Map.entry("b", p.dataSeries())))
+        ))
+    );
     showImage(ip.plot(m));
   }
 }
