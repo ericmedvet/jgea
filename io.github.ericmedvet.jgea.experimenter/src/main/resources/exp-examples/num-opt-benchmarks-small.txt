@@ -1,13 +1,13 @@
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:3]) * [ea.rg.defaultRG()]) *
+  runs = (randomGenerator = (seed = [1:1:10]) * [ea.rg.defaultRG()]) *
     (problem = [
       ea.p.s.ackley(p = 20);
-      ea.p.s.rastrigin(p = 20);
       ea.p.s.sphere(p = 20)
     ]) *
-    (solver = (nEval = [500]) * [
+    (solver = (nEval = [1000]) * [
       ea.s.doubleStringGa(mapper = ea.m.identity());
-      ea.s.simpleEs(mapper = ea.m.identity())
+      ea.s.simpleEs(mapper = ea.m.identity());
+      ea.s.differentialEvolution(mapper = ea.m.identity())
     ]) * [
     ea.run()
   ];
@@ -26,10 +26,7 @@ ea.experiment(
     );
     ea.l.plotSaver(
       filePath = "plot.png";
-      plot = ea.plot.fitnessPlotMatrix(
-        minAggregator = ea.nf.min(collection = ea.nf.identity());
-        maxAggregator = ea.nf.max(collection = ea.nf.identity())
-      )
+      plot = ea.plot.fitnessPlotMatrix()
     )
   ]
 )

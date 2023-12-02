@@ -183,25 +183,25 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <G, S, Q>
-  XYMatrixPlotAccumulatorFactory<String, POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> fitnessPlotMatrix(
-      @Param(value = "xSubplotRunKey", dNPM = "ea.misc.sEntry(key=none;value=\"_\")")
-      Map.Entry<String, String> xSubplotRunKey,
-      @Param(value = "ySubplotRunKey", dNPM = "ea.misc.sEntry(key=problem;value=\"{problem}\")")
-      Map.Entry<String, String> ySubplotRunKey,
-      @Param(value = "lineRunKey", dNPM = "ea.misc.sEntry(key=solver;value=\"{solver:%#s}\")")
-      Map.Entry<String, String> lineRunKey,
-      @Param(value = "xFunction", dNPM = "ea.nf.evals()")
-      NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
-      @Param(value = "yFunction", dNPM = "ea.nf.bestFitness()")
-      NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> yFunction,
-      @Param(value = "valueAggregator", dNPM = "ea.nf.median(collection=ea.nf.identity())")
-      NamedFunction<List<Number>, Number> valueAggregator,
-      @Param(value = "minAggregator", dNPM = "ea.nf.percentile(collection=ea.nf.identity();p=0.25)")
-      NamedFunction<List<Number>, Number> minAggregator,
-      @Param(value = "maxAggregator", dNPM = "ea.nf.percentile(collection=ea.nf.identity();p=0.75)")
-      NamedFunction<List<Number>, Number> maxAggregator,
-      @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
-      @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
+      XYMatrixPlotAccumulatorFactory<String, POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> fitnessPlotMatrix(
+          @Param(value = "xSubplotRunKey", dNPM = "ea.misc.sEntry(key=none;value=\"_\")")
+              Map.Entry<String, String> xSubplotRunKey,
+          @Param(value = "ySubplotRunKey", dNPM = "ea.misc.sEntry(key=problem;value=\"{problem}\")")
+              Map.Entry<String, String> ySubplotRunKey,
+          @Param(value = "lineRunKey", dNPM = "ea.misc.sEntry(key=solver;value=\"{solver:%#s}\")")
+              Map.Entry<String, String> lineRunKey,
+          @Param(value = "xFunction", dNPM = "ea.nf.evals()")
+              NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
+          @Param(value = "yFunction", dNPM = "ea.nf.bestFitness()")
+              NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> yFunction,
+          @Param(value = "valueAggregator", dNPM = "ea.nf.median(collection=ea.nf.identity())")
+              NamedFunction<List<Number>, Number> valueAggregator,
+          @Param(value = "minAggregator", dNPM = "ea.nf.percentile(collection=ea.nf.identity();p=0.25)")
+              NamedFunction<List<Number>, Number> minAggregator,
+          @Param(value = "maxAggregator", dNPM = "ea.nf.percentile(collection=ea.nf.identity();p=0.75)")
+              NamedFunction<List<Number>, Number> maxAggregator,
+          @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
+          @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
 
     return new XYMatrixPlotAccumulatorFactory<>(
         buildRunNamedFunction(xSubplotRunKey),
@@ -215,7 +215,6 @@ public class Plots {
         xRange,
         yRange);
   }
-
 
   private static <G, S, Q> NamedFunction<Run<?, G, S, Q>, String> buildRunNamedFunction(
       Map.Entry<String, String> runKey) {

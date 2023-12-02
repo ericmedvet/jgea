@@ -20,7 +20,6 @@
 package io.github.ericmedvet.jgea.core.listener;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -63,24 +62,22 @@ public interface AccumulatorFactory<E, O, K> extends ListenerFactory<E, K> {
     };
   }
 
-  default AccumulatorFactory<E, O, K> thenOnShutdown(Consumer<List<O>> consumer) {
+  default ListenerFactory<E, K> thenOnShutdown(Consumer<List<O>> consumer) {
     AccumulatorFactory<E, O, K> thisFactory = this;
     List<O> os = new ArrayList<>();
-    return new AccumulatorFactory<>() {
+    return new ListenerFactory<>() {
       @Override
-      public Accumulator<E, O> build(K k) {
+      public Listener<E> build(K k) {
         Accumulator<E, O> accumulator = thisFactory.build(k);
-        return new Accumulator<E, O>() {
-          @Override
-          public O get() {
-            O o = accumulator.get();
-            os.add(o);
-            return o;
-          }
-
+        return new Listener<>() {
           @Override
           public void listen(E e) {
             accumulator.listen(e);
+          }
+
+          @Override
+          public void done() {
+            os.add(accumulator.get());
           }
         };
       }

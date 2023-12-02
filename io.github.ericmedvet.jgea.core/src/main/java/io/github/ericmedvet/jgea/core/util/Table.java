@@ -446,6 +446,16 @@ public interface Table<R, C, T> {
     return rowIndexes().stream().map(this::row).toList();
   }
 
+  default List<Map<R, T>> columns() {
+    return colIndexes().stream().map(this::column).toList();
+  }
+
+  default List<T> values() {
+    return rowIndexes().stream()
+        .flatMap(ri -> colIndexes().stream().map(ci -> get(ri, ci)))
+        .toList();
+  }
+
   default Table<R, C, T> select(List<C> columnIndexes) {
     return select(columnIndexes::contains);
   }
