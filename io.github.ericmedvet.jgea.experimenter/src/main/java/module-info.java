@@ -38,5 +38,4 @@ module io.github.ericmedvet.jgea.experimenter {
   requires jdk.management;
   requires com.googlecode.lanterna;
   requires jcommander;
-
 }

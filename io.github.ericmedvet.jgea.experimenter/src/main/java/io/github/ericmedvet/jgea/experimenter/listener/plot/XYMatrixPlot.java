@@ -30,18 +30,20 @@ public interface XYMatrixPlot<VX extends Value, VY extends Value> extends XYPlot
   Table<String, String, List<XYDataSeries<VX, VY>>> dataSeries();
 
   static <VX extends Value, VY extends Value> XYMatrixPlot<VX, VY> of(
+      String title,
       String xName,
       String yName,
       DoubleRange xRange,
       DoubleRange yRange,
       Table<String, String, List<XYDataSeries<VX, VY>>> dataSeries) {
     record HardXYMatrixPlot<VX extends Value, VY extends Value>(
+        String title,
         String xName,
         String yName,
         DoubleRange xRange,
         DoubleRange yRange,
         Table<String, String, List<XYDataSeries<VX, VY>>> dataSeries)
         implements XYMatrixPlot<VX, VY> {}
-    return new HardXYMatrixPlot<>(xName, yName, xRange, yRange, dataSeries);
+    return new HardXYMatrixPlot<>(title, xName, yName, xRange, yRange, dataSeries);
   }
 }

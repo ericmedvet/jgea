@@ -26,12 +26,14 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.experimenter.listener.TableAccumulatorFactory;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+
 import java.util.Comparator;
 import java.util.List;
 
-public class XYSinglePlotAccumulatorFactory<E> implements AccumulatorFactory<E, XYSinglePlot<Value, Value>, Object> {
+public class XYSinglePlotAccumulatorFactory<E, R> implements AccumulatorFactory<E, XYSinglePlot<Value, Value>, R> {
 
-  private final TableAccumulatorFactory<E, Number, Object> inner;
+  private final TableAccumulatorFactory<E, Number, R> inner;
+  private final NamedFunction<? super R, String> titleFunction;
   private final NamedFunction<? super E, ? extends Number> xFunction;
   private final List<NamedFunction<? super E, ? extends Number>> yFunctions;
   private final DoubleRange xRange;
@@ -40,13 +42,16 @@ public class XYSinglePlotAccumulatorFactory<E> implements AccumulatorFactory<E, 
   private final boolean firstDifference;
 
   public XYSinglePlotAccumulatorFactory(
+      NamedFunction<? super R, String> titleFunction,
       NamedFunction<? super E, ? extends Number> xFunction,
       List<NamedFunction<? super E, ? extends Number>> yFunctions,
       DoubleRange xRange,
       DoubleRange yRange,
       boolean sorted,
-      boolean firstDifference) {
+      boolean firstDifference
+  ) {
     inner = new TableAccumulatorFactory<>(Misc.concat(List.of(List.of(xFunction), yFunctions)), List.of());
+    this.titleFunction = titleFunction;
     this.xFunction = xFunction;
     //noinspection unchecked,rawtypes
     this.yFunctions = (List) yFunctions.stream()
@@ -59,8 +64,8 @@ public class XYSinglePlotAccumulatorFactory<E> implements AccumulatorFactory<E, 
   }
 
   @Override
-  public Accumulator<E, XYSinglePlot<Value, Value>> build(Object o) {
-    Accumulator<E, Table<Integer, String, Number>> accumulator = inner.build(o);
+  public Accumulator<E, XYSinglePlot<Value, Value>> build(R r) {
+    Accumulator<E, Table<Integer, String, Number>> accumulator = inner.build(r);
     return new Accumulator<>() {
       @Override
       public XYSinglePlot<Value, Value> get() {
@@ -72,7 +77,8 @@ public class XYSinglePlotAccumulatorFactory<E> implements AccumulatorFactory<E, 
           table = table.rowSlide(
               2,
               ns -> ns.get(ns.size() - 1).doubleValue()
-                  - ns.get(0).doubleValue());
+                  - ns.get(0).doubleValue()
+          );
         }
         Table<Integer, String, Number> fTable = table;
         List<XYDataSeries<Value, Value>> dss = yFunctions.stream()
@@ -82,10 +88,12 @@ public class XYSinglePlotAccumulatorFactory<E> implements AccumulatorFactory<E, 
                     .map(r -> new XYDataSeries.Point<>(
                         Value.of(r.get(xFunction.getName())
                             .doubleValue()),
-                        Value.of(r.get(ynf.getName()).doubleValue())))
-                    .toList()))
+                        Value.of(r.get(ynf.getName()).doubleValue())
+                    ))
+                    .toList()
+            ))
             .toList();
-        return XYSinglePlot.of(xFunction.getName(), "", xRange, yRange, dss);
+        return XYSinglePlot.of(titleFunction.apply(r), xFunction.getName(), "", xRange, yRange, dss);
       }
 
       @Override

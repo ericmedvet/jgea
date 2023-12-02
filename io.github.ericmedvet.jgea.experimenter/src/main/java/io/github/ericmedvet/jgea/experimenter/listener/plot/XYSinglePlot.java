@@ -20,6 +20,7 @@
 package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+
 import java.util.List;
 
 public interface XYSinglePlot<VX extends Value, VY extends Value> extends XYPlot {
@@ -27,14 +28,22 @@ public interface XYSinglePlot<VX extends Value, VY extends Value> extends XYPlot
   List<XYDataSeries<VX, VY>> dataSeries();
 
   static <VX extends Value, VY extends Value> XYSinglePlot<VX, VY> of(
-      String xName, String yName, DoubleRange xRange, DoubleRange yRange, List<XYDataSeries<VX, VY>> dataSeries) {
+      String title,
+      String xName,
+      String yName,
+      DoubleRange xRange,
+      DoubleRange yRange,
+      List<XYDataSeries<VX, VY>> dataSeries
+  ) {
     record HardXYSinglePlot<VX extends Value, VY extends Value>(
+        String title,
         String xName,
         String yName,
         DoubleRange xRange,
         DoubleRange yRange,
-        List<XYDataSeries<VX, VY>> dataSeries)
+        List<XYDataSeries<VX, VY>> dataSeries
+    )
         implements XYSinglePlot<VX, VY> {}
-    return new HardXYSinglePlot<>(xName, yName, xRange, yRange, dataSeries);
+    return new HardXYSinglePlot<>(title, xName, yName, xRange, yRange, dataSeries);
   }
 }

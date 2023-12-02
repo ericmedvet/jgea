@@ -37,6 +37,8 @@ public class XYMatrixPlotAccumulatorFactory<K, E, R>
     implements AccumulatorFactory<E, XYMatrixPlot<Value, RangedValue>, R> {
 
   private final GroupedTablesAccumulatorFactory<K, Number, E, R> inner;
+  private final NamedFunction<? super R, ? extends K> xSubplotFunction;
+  private final NamedFunction<? super R, ? extends K> ySubplotFunction;
   private final NamedFunction<? super E, ? extends Number> xFunction;
   private final NamedFunction<? super E, ? extends Number> yFunction;
   private final NamedFunction<List<Number>, Number> valueAggregator;
@@ -58,6 +60,8 @@ public class XYMatrixPlotAccumulatorFactory<K, E, R>
       DoubleRange yRange) {
     inner = new GroupedTablesAccumulatorFactory<>(
         List.of(xSubplotFunction, ySubplotFunction, lineFunction), List.of(xFunction, yFunction));
+    this.xSubplotFunction = xSubplotFunction;
+    this.ySubplotFunction = ySubplotFunction;
     this.xFunction = xFunction;
     this.yFunction = yFunction;
     this.valueAggregator = valueAggregator;
@@ -118,7 +122,10 @@ public class XYMatrixPlotAccumulatorFactory<K, E, R>
             table.set(xsk.toString(), ysk.toString(), dss);
           }
         }
-        return XYMatrixPlot.of(xFunction.getName(), yFunction.getName(), xRange, yRange, table);
+        return XYMatrixPlot.of(
+            "%s vs. %s".formatted(ySubplotFunction.getName(), xSubplotFunction.getName()),
+            xFunction.getName(), yFunction.getName(), xRange, yRange, table
+        );
       }
 
       @Override

@@ -25,6 +25,7 @@ import io.github.ericmedvet.jsdynsym.core.DoubleRange;
  * @author "Eric Medvet" on 2023/12/01 for jgea
  */
 public interface XYPlot {
+  String title();
   String xName();
 
   String yName();
