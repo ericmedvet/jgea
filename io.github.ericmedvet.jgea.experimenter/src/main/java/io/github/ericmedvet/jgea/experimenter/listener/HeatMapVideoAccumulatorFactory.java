@@ -26,7 +26,7 @@ import io.github.ericmedvet.jgea.core.solver.cabea.GridPopulationState;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.Utils;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.ImagePlotter;
+import io.github.ericmedvet.jgea.experimenter.util.ImagePlotters;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 import io.github.ericmedvet.mrsim2d.viewer.VideoUtils;
 import java.awt.*;
@@ -111,7 +111,7 @@ public class HeatMapVideoAccumulatorFactory<G, S, Q>
               .max()
               .orElse(0d);
           Function<Grid<? extends Number>, BufferedImage> plotter =
-              ImagePlotter.heatMap(w, h, minColor, maxColor, nullColor, gridColor, min, max);
+              ImagePlotters.heatMap(w, h, minColor, maxColor, nullColor, gridColor, min, max);
           L.info("Doing video for run %d on file %s"
               .formatted(run.index(), tempFile ? "temp" : file.getAbsolutePath()));
           VideoUtils.encodeAndSave(grids.stream().map(plotter).toList(), frameRate, file);

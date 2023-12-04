@@ -17,10 +17,6 @@ ea.experiment(
       ];
       runKeys = ["{solver:%#s}"; "{randomGenerator.seed}"; "{problem.p}"]
     );
-    ea.l.heatMapVideo(filePathTemplate = "/home/gpietrop/cabea/video/hm-{problem.p}-{randomGenerator.seed}.mp4");
-    ea.l.expPlotSaver(
-        filePath = "/home/eric/Scaricati/plot.png";
-        plot = ea.plot.fitnessPlotMatrix()
-      )
+    ea.l.heatMapVideo(filePathTemplate = "/home/eric/hm-{problem.p}-{randomGenerator.seed}.mp4")
   ]
 )

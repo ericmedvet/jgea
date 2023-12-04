@@ -1,20 +1,11 @@
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:10]) * [ea.rg.defaultRG()]) *
-    (solver = [
-      ea.s.bitStringGa(
-        mapper = ea.m.identity();
-        nPop=100;
-        nEval = 10000
-      );
-      ea.s.bitStringCabea(
-        mapper = ea.m.identity();
-        gridSize = 10;
-        nEval = 10000
-      )
+  runs = (randomGenerator = (seed = [1:1:3]) * [ea.rg.defaultRG()]) *
+    (solver = (nEval = [10000]) * [
+      ea.s.bitStringGa(mapper = ea.m.identity());
+      ea.s.bitStringCabea(mapper = ea.m.identity())
     ]) * [
-    ea.run(
-      problem = ea.p.s.oneMax(p = 1000)
-    )
+    ea.run(problem = ea.p.s.oneMax(p = 100));
+    ea.run(problem = ea.p.s.oneMax(p = 1000))
   ];
   listeners = [
     ea.l.console(
@@ -25,18 +16,7 @@ ea.experiment(
         ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.4f");
         ea.nf.solution(individual = ea.nf.best(); s = "%60.60s")
       ];
-      runKeys = ["{solver:%#s}"]
-    );
-        ea.l.bestCsv(
-          filePath = "/home/gpietrop/cabea/ds/bs.csv";
-          functions = [
-            ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
-                    ea.nf.fitness(individual = ea.nf.best(); s = "%6.4f");
-                    ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
-                    ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.4f");
-                    ea.nf.solution(individual = ea.nf.best(); s = "%60.60s")
-                  ];
-            runKeys = ["{solver:%#s}"]
-        )
-      ]
+      runKeys = ["{solver:%#s}"; "{randomGenerator.seed}"; "{problem.p}"]
     )
+  ]
+)
