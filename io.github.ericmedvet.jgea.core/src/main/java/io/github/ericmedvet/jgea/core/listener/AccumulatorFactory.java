@@ -19,7 +19,11 @@
  */
 package io.github.ericmedvet.jgea.core.listener;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public interface AccumulatorFactory<E, O, K> extends ListenerFactory<E, K> {
@@ -44,16 +48,49 @@ public interface AccumulatorFactory<E, O, K> extends ListenerFactory<E, K> {
     };
   }
 
-  default ListenerFactory<E, K> withAutoGet() {
+  default AccumulatorFactory<E, O, K> thenOnDone(BiConsumer<K, O> consumer) {
     AccumulatorFactory<E, O, K> thisFactory = this;
-    return new ListenerFactory<>() {
+    return new AccumulatorFactory<>() {
       @Override
-      public Listener<E> build(K k) {
-        return thisFactory.build(k).withAutoGet();
+      public Accumulator<E, O> build(K k) {
+        return thisFactory.build(k).thenOnDone(o -> consumer.accept(k, o));
       }
 
       @Override
       public void shutdown() {
+        thisFactory.shutdown();
+      }
+    };
+  }
+
+  default AccumulatorFactory<E, O, K> thenOnShutdown(Consumer<List<O>> consumer) {
+    AccumulatorFactory<E, O, K> thisFactory = this;
+    List<O> os = new ArrayList<>();
+    return new AccumulatorFactory<>() {
+      @Override
+      public Accumulator<E, O> build(K k) {
+        Accumulator<E, O> accumulator = thisFactory.build(k);
+        return new Accumulator<E, O>() {
+          @Override
+          public void listen(E e) {
+            accumulator.listen(e);
+          }
+
+          @Override
+          public O get() {
+            return accumulator.get();
+          }
+
+          @Override
+          public void done() {
+            os.add(accumulator.get());
+          }
+        };
+      }
+
+      @Override
+      public void shutdown() {
+        consumer.accept(os);
         thisFactory.shutdown();
       }
     };
