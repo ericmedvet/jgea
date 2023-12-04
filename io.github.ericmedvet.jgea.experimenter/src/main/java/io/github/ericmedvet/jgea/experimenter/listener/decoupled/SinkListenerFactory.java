@@ -82,7 +82,7 @@ public class SinkListenerFactory<G, S, Q> implements ListenerFactory<POCPopulati
             new ExperimentInfo(
                 experiment.map().toString(),
                 experiment.runs().size(),
-                Stream.of(stateFunctions, runFunctions)
+                Stream.of(runFunctions, stateFunctions)
                     .flatMap(List::stream)
                     .map(f -> new Pair<>(f.getName(), f.getFormat()))
                     .toList(),

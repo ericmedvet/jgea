@@ -23,16 +23,20 @@ package io.github.ericmedvet.jgea.experimenter.builders;
 import io.github.ericmedvet.jgea.core.listener.*;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
+import io.github.ericmedvet.jgea.core.solver.cabea.GridPopulationState;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.Utils;
+import io.github.ericmedvet.jgea.experimenter.listener.HeatMapVideoAccumulatorFactory;
 import io.github.ericmedvet.jgea.experimenter.listener.decoupled.*;
 import io.github.ericmedvet.jgea.experimenter.listener.net.NetMultiSink;
 import io.github.ericmedvet.jgea.experimenter.listener.telegram.TelegramUpdater;
+import io.github.ericmedvet.jgea.experimenter.util.ImagePlotters;
 import io.github.ericmedvet.jgea.experimenter.util.PlotTableBuilder;
 import io.github.ericmedvet.jnb.core.*;
+import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -349,6 +353,39 @@ public class Listeners {
         onlyLast);
   }
 
+  @SuppressWarnings("unused")
+  public static <G, S, Q>
+      BiFunction<
+              Experiment,
+              ExecutorService,
+              ListenerFactory<GridPopulationState<G, S, Number>, Run<?, G, S, Number>>>
+          heatMapVideo(
+              @Param(value = "w", dI = 100) int w,
+              @Param(value = "h", dI = 100) int h,
+              @Param(value = "frameRate", dD = 4) double frameRate,
+              @Param(value = "minColor", dS = "red") String minColor,
+              @Param(value = "maxColor", dS = "white") String maxColor,
+              @Param(value = "nullColor", dS = "blue") String nullColor,
+              @Param(value = "gridColor", dS = "gray") String gridColor,
+              @Param(value = "filePathTemplate", dS = "run-heatmap-{index:%04d}.mp4")
+                  String filePathTemplate) {
+    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
+        new HeatMapVideoAccumulatorFactory<G, S, Number>(
+                Individual::quality,
+                w,
+                h,
+                frameRate,
+                ImagePlotters.getColorByName(minColor),
+                ImagePlotters.getColorByName(maxColor),
+                ImagePlotters.getColorByName(nullColor),
+                ImagePlotters.getColorByName(gridColor),
+                filePathTemplate)
+            .withAutoGet(),
+        executorService,
+        false);
+  }
+
+  @SuppressWarnings("unused")
   public static <G, S, Q>
       BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
           net(
