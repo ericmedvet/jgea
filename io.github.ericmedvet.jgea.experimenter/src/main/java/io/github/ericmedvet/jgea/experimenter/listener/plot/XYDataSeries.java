@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * jgea-core
+ * jgea-experimenter
  * %%
  * Copyright (C) 2018 - 2023 Eric Medvet
  * %%
@@ -17,31 +17,28 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jgea.experimenter.util;
+package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
-import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
-import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import java.util.List;
 
-public interface PlotTableBuilder<E> extends AccumulatorFactory<E, XYPlotTable, Object> {
-
-  NamedFunction<? super E, ? extends Number> xFunction();
-
-  List<NamedFunction<? super E, ? extends Number>> yFunctions();
-
-  default String xFormat() {
-    return xFunction().getFormat();
+/**
+ * @author "Eric Medvet" on 2023/12/01 for jgea
+ */
+public interface XYDataSeries<VX extends Value, VY extends Value> {
+  record Point<VX extends Value, VY extends Value>(VX x, VY y) {
+    @Override
+    public String toString() {
+      return "(%s;%s)".formatted(this.x, this.y);
+    }
   }
 
-  default String xName() {
-    return xFunction().getName();
-  }
+  String name();
 
-  default List<String> yFormats() {
-    return yFunctions().stream().map(NamedFunction::getFormat).toList();
-  }
+  List<Point<VX, VY>> points();
 
-  default List<String> yNames() {
-    return yFunctions().stream().map(NamedFunction::getName).toList();
+  static <VX extends Value, VY extends Value> XYDataSeries<VX, VY> of(String name, List<Point<VX, VY>> points) {
+    record HardXYDataSeries<VX extends Value, VY extends Value>(String name, List<Point<VX, VY>> points)
+        implements XYDataSeries<VX, VY> {}
+    return new HardXYDataSeries<>(name, points);
   }
 }

@@ -98,4 +98,9 @@ public class HashMapTable<R, C, T> implements Table<R, C, T> {
     colIndexes.add(columnIndex);
     map.put(new Key<>(rowIndex, columnIndex), t);
   }
+
+  @Override
+  public String toString() {
+    return "Table[%dx%d]".formatted(nRows(), nColumns());
+  }
 }

@@ -1,17 +1,13 @@
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
+  runs = (randomGenerator = (seed = [1:1:10]) * [ea.rg.defaultRG()]) *
     (problem = [
-      ea.p.s.pointAiming(p = 200);
-      ea.p.s.circularPointsAiming(p = 200);
       ea.p.s.ackley(p = 20);
-      ea.p.s.rastrigin(p = 20);
       ea.p.s.sphere(p = 20)
     ]) *
-    (solver = (nEval = [10000]) * [
+    (solver = (nEval = [1000]) * [
       ea.s.doubleStringGa(mapper = ea.m.identity());
       ea.s.simpleEs(mapper = ea.m.identity());
-      ea.s.openAiEs(mapper = ea.m.identity());
-      ea.s.cmaEs(mapper = ea.m.identity())
+      ea.s.differentialEvolution(mapper = ea.m.identity())
     ]) * [
     ea.run()
   ];
@@ -22,7 +18,15 @@ ea.experiment(
         ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
         ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()))
       ];
-      runKeys = ["{solver:%#s}"; "{problem:%#s}"; "{problem.p}"]
+      runKeys = [
+        ea.misc.sEntry(key = "problem.name"; value = "{problem:%#s}");
+        ea.misc.sEntry(key = "problem.p"; value = "{problem.p}");
+        ea.misc.sEntry(key = "solver"; value = "{solver:%#s}")
+      ]
+    );
+    ea.l.expPlotSaver(
+      filePath = "/home/eric/Scaricati/plot.png";
+      plot = ea.plot.fitnessPlotMatrix()
     )
   ]
 )

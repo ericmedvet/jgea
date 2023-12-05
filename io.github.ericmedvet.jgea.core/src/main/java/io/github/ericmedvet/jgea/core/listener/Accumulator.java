@@ -19,6 +19,7 @@
  */
 package io.github.ericmedvet.jgea.core.listener;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public interface Accumulator<E, O> extends Listener<E> {
@@ -61,18 +62,23 @@ public interface Accumulator<E, O> extends Listener<E> {
     };
   }
 
-  default Listener<E> withAutoGet() {
+  default Accumulator<E, O> thenOnDone(Consumer<O> consumer) {
     Accumulator<E, O> thisAccumulator = this;
-    return new Listener<>() {
+    return new Accumulator<>() {
       @Override
       public void listen(E e) {
         thisAccumulator.listen(e);
       }
 
       @Override
+      public O get() {
+        return thisAccumulator.get();
+      }
+
+      @Override
       public void done() {
-        thisAccumulator.get();
         thisAccumulator.done();
+        consumer.accept(thisAccumulator.get());
       }
     };
   }

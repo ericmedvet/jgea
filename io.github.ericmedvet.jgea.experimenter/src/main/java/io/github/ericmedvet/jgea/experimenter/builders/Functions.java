@@ -27,7 +27,7 @@ import java.util.Base64;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
-@Discoverable(prefixTemplate = "ea.functions|s")
+@Discoverable(prefixTemplate = "ea.functions|f")
 public class Functions {
 
   private static final Logger L = Logger.getLogger(Functions.class.getName());
