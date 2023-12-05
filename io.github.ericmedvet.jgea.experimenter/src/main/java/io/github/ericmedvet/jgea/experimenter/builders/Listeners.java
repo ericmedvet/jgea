@@ -30,7 +30,7 @@ import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.Utils;
 import io.github.ericmedvet.jgea.experimenter.listener.decoupled.*;
 import io.github.ericmedvet.jgea.experimenter.listener.net.NetMultiSink;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.ImagePlotter;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.image.ImagePlotter;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlot;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYSinglePlotAccumulatorFactory;
 import io.github.ericmedvet.jgea.experimenter.listener.telegram.TelegramUpdater;
