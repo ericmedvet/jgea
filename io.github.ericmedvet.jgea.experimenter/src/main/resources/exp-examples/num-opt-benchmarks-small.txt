@@ -4,9 +4,10 @@ ea.experiment(
       ea.p.s.ackley(p = 20);
       ea.p.s.sphere(p = 20)
     ]) *
-    (solver = (nEval = [1000]) * [
+    (solver = (nEval = [10000]) * [
       ea.s.doubleStringGa(mapper = ea.m.identity());
       ea.s.simpleEs(mapper = ea.m.identity());
+      ea.s.pso(mapper = ea.m.identity());
       ea.s.differentialEvolution(mapper = ea.m.identity())
     ]) * [
     ea.run()
