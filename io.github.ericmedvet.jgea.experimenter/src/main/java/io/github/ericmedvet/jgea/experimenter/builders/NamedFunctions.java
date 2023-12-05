@@ -279,6 +279,16 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
+  public static <X> NamedFunction<X, Number> avg(
+      @Param("collection") NamedFunction<X, Collection<Number>> collectionF,
+      @Param(value = "s", dS = "%s") String s) {
+    return NamedFunction.build(c("avg", collectionF.getName()), s, x -> collectionF.apply(x).stream()
+        .mapToDouble(Number::doubleValue)
+        .average()
+        .orElse(Double.NaN));
+  }
+
+  @SuppressWarnings("unused")
   public static <X, T extends Comparable<T>> NamedFunction<X, T> min(
       @Param("collection") NamedFunction<X, Collection<T>> collectionF, @Param(value = "s", dS = "%s") String s) {
     return NamedFunction.build(c("min", collectionF.getName()), s, x -> {
@@ -292,11 +302,10 @@ public class NamedFunctions {
       @Param("collection") NamedFunction<X, Collection<T>> collectionF,
       @Param("p") double p,
       @Param(value = "s", dS = "%s") String s) {
-    return NamedFunction.build(c("perc[%2d]".formatted((int) Math.round(p * 100)), collectionF.getName()), s, x -> {
-      List<T> collection = collectionF.apply(x).stream().sorted().toList();
-      int i = (int) Math.max(Math.min(((double) collection.size()) * p, collection.size() - 1), 0);
-      return collection.get(i);
-    });
+    return NamedFunction.build(
+        c("perc[%2d]".formatted((int) Math.round(p * 100)), collectionF.getName()),
+        s,
+        x -> Misc.percentile(collectionF.apply(x), Comparable::compareTo, p));
   }
 
   @SuppressWarnings("unused")

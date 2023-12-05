@@ -17,8 +17,7 @@ ea.experiment(
         ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
         ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.2f");
         ea.nf.solution(individual = ea.nf.best(); s = "%60.60s")
-      ];
-      serverKeyFilePath = "/home/eric/Documenti/experiments/new-jgea/server-key.txt"
+      ]
     );
     ea.l.console(
       functions = [
@@ -26,7 +25,10 @@ ea.experiment(
         ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
         ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()))
       ];
-      runKeys = ["{solver:%#s}"; "{problem:%#s}"; "{problem.p}"]
+      runKeys = [
+        ea.misc.sEntry(key = "problem.p"; value = "{problem.p}");
+        ea.misc.sEntry(key = "solver"; value = "{solver:%#s}")
+      ]
     )
   ]
 )

@@ -56,6 +56,7 @@ import io.github.ericmedvet.jgea.core.solver.speciation.SpeciatedEvolver;
 import io.github.ericmedvet.jgea.experimenter.InvertibleMapper;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
+
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -65,7 +66,8 @@ import java.util.stream.IntStream;
 @Discoverable(prefixTemplate = "ea.solver|s")
 public class Solvers {
 
-  private Solvers() {}
+  private Solvers() {
+  }
 
   @SuppressWarnings("unused")
   public static <S, Q> Function<S, StandardEvolver<BitString, S, Q>> bitStringGa(
@@ -139,6 +141,29 @@ public class Solvers {
         new FixedLengthListFactory<>(
             mapper.exampleFor(exampleS).size(), new UniformDoubleFactory(initialMinV, initialMaxV)),
         StopConditions.nOfFitnessEvaluations(nEval));
+  }
+
+  @SuppressWarnings("unused")
+  public static <S, Q> Function<S, ParticleSwarmOptimization<S, Q>> pso(
+      @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
+      @Param(value = "initialMinV", dD = -1d) double initialMinV,
+      @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
+      @Param(value = "nEval") int nEval,
+      @Param(value = "nPop", dI = 100) int nPop,
+      @Param(value = "w", dD = 0.8d) double w,
+      @Param(value = "phiParticle", dD = 1.5d) double phiParticle,
+      @Param(value = "phiParticle", dD = 1.5d) double phiGlobal
+  ) {
+    return exampleS -> new ParticleSwarmOptimization<>(
+        mapper.mapperFor(exampleS),
+        new FixedLengthListFactory<>(
+            mapper.exampleFor(exampleS).size(), new UniformDoubleFactory(initialMinV, initialMaxV)),
+        StopConditions.nOfFitnessEvaluations(nEval),
+        nPop,
+        w,
+        phiParticle,
+        phiGlobal
+    );
   }
 
   @SuppressWarnings("unused")
@@ -262,13 +287,13 @@ public class Solvers {
   public static <S, Q> Function<S, StandardEvolver<List<Tree<Element>>, S, Q>> multiSRTreeGp(
       @Param(value = "mapper") InvertibleMapper<List<Tree<Element>>, S> mapper,
       @Param(
-              value = "constants",
-              dDs = {0.1, 1, 10})
-          List<Double> constants,
+          value = "constants",
+          dDs = {0.1, 1, 10})
+      List<Double> constants,
       @Param(
-              value = "operators",
-              dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
-          List<Element.Operator> operators,
+          value = "operators",
+          dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
+      List<Element.Operator> operators,
       @Param(value = "minTreeH", dI = 4) int minTreeH,
       @Param(value = "maxTreeH", dI = 10) int maxTreeH,
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
@@ -352,9 +377,9 @@ public class Solvers {
       @Param(value = "maxConst", dD = 5d) double maxConst,
       @Param(value = "nConst", dI = 10) int nConst,
       @Param(
-              value = "operators",
-              dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
-          List<BaseOperator> operators,
+          value = "operators",
+          dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
+      List<BaseOperator> operators,
       @Param(value = "nPop", dI = 100) int nPop,
       @Param(value = "nEval") int nEval,
       @Param(value = "arcAdditionRate", dD = 3d) double arcAdditionRate,
@@ -367,9 +392,9 @@ public class Solvers {
       Map<GeneticOperator<Graph<Node, OperatorGraph.NonValuedArc>>, Double> geneticOperators = Map.ofEntries(
           Map.entry(
               new NodeAddition<Node, OperatorGraph.NonValuedArc>(
-                      OperatorNode.sequentialIndexFactory(operators.toArray(BaseOperator[]::new)),
-                      Mutation.copy(),
-                      Mutation.copy())
+                  OperatorNode.sequentialIndexFactory(operators.toArray(BaseOperator[]::new)),
+                  Mutation.copy(),
+                  Mutation.copy())
                   .withChecker(OperatorGraph.checker()),
               nodeAdditionRate),
           Map.entry(
@@ -378,8 +403,8 @@ public class Solvers {
               arcAdditionRate),
           Map.entry(
               new ArcRemoval<Node, OperatorGraph.NonValuedArc>(node -> (node instanceof Input)
-                      || (node instanceof Constant)
-                      || (node instanceof Output))
+                  || (node instanceof Constant)
+                  || (node instanceof Output))
                   .withChecker(OperatorGraph.checker()),
               arcRemovalRate));
       Graph<Node, OperatorGraph.NonValuedArc> graph = mapper.exampleFor(exampleS);
@@ -457,13 +482,13 @@ public class Solvers {
   public static <S, Q> Function<S, StandardEvolver<Tree<Element>, S, Q>> srTreeGp(
       @Param(value = "mapper") InvertibleMapper<Tree<Element>, S> mapper,
       @Param(
-              value = "constants",
-              dDs = {0.1, 1, 10})
-          List<Double> constants,
+          value = "constants",
+          dDs = {0.1, 1, 10})
+      List<Double> constants,
       @Param(
-              value = "operators",
-              dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
-          List<Element.Operator> operators,
+          value = "operators",
+          dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
+      List<Element.Operator> operators,
       @Param(value = "minTreeH", dI = 4) int minTreeH,
       @Param(value = "maxTreeH", dI = 10) int maxTreeH,
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
@@ -526,13 +551,13 @@ public class Solvers {
   public static <S, Q> Function<S, RandomWalk<Tree<Element>, S, Q>> srTreeRandomWalk(
       @Param(value = "mapper") InvertibleMapper<Tree<Element>, S> mapper,
       @Param(
-              value = "constants",
-              dDs = {0.1, 1, 10})
-          List<Double> constants,
+          value = "constants",
+          dDs = {0.1, 1, 10})
+      List<Double> constants,
       @Param(
-              value = "operators",
-              dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
-          List<Element.Operator> operators,
+          value = "operators",
+          dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
+      List<Element.Operator> operators,
       @Param(value = "minTreeH", dI = 4) int minTreeH,
       @Param(value = "maxTreeH", dI = 10) int maxTreeH,
       @Param(value = "nEval") int nEval,
