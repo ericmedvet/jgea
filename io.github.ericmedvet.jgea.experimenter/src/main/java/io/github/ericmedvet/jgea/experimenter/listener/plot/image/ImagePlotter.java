@@ -24,27 +24,32 @@ import io.github.ericmedvet.jgea.experimenter.listener.plot.*;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 
+import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import javax.swing.*;
 
 /**
  * @author "Eric Medvet" on 2023/12/01 for jgea
  */
 public class ImagePlotter implements Plotter<BufferedImage> {
-  private final int w;
-  private final int h;
+  private final double w;
+  private final double h;
   private final Configuration c;
 
-  private final Map<Configuration.Text.Use, Map<Configuration.Text.Direction, Font>> fonts;
+  private final Map<Configuration.Text.Use, Font> fonts;
 
   public ImagePlotter(int w, int h) {
     this(w, h, Configuration.DEFAULT);
@@ -57,21 +62,20 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     fonts = Arrays.stream(Configuration.Text.Use.values())
         .collect(Collectors.toMap(
             u -> u,
-            u -> Map.ofEntries(
-                Map.entry( // TODO add also the case for Direction.V
-                    Configuration.Text.Direction.H,
-                    new Font(
-                        c.text().fontName(),
-                        Font.PLAIN,
-                        (int) Math.round((double) Math.max(w, h) * c.text()
-                            .sizeRates()
-                            .getOrDefault(u, c.text().fontSizeRate())
-                        )
-                    )
+            u -> new Font(
+                c.text().fontName(),
+                Font.PLAIN,
+                (int) Math.round((double) Math.max(w, h) * c.text()
+                    .sizeRates()
+                    .getOrDefault(u, c.text().fontSizeRate())
                 )
             )
         ));
   }
+
+  private enum AnchorH {L, C, R}
+
+  private enum AnchorV {T, C, B}
 
   private record Axes(
       DoubleRange xRange,
@@ -84,6 +88,26 @@ public class ImagePlotter implements Plotter<BufferedImage> {
 
 
   private record RangeMap(DoubleRange xRange, DoubleRange yRange, DoubleRange gxRange, DoubleRange gyRange) {}
+
+  private static String computeTicksFormat(DoubleRange range, int nOfTicks) {
+    int nOfDigits = 0;
+    double[] ticks = DoubleStream.iterate(
+            range.min(), v -> v <= range.max(), v -> v + range.extent() / (double) nOfTicks)
+        .toArray();
+    while (true) {
+      final int d = nOfDigits;
+      long nOfDistinct = Arrays.stream(ticks)
+          .mapToObj(("%." + d + "f")::formatted)
+          .map(String::toString)
+          .distinct()
+          .count();
+      if (nOfDistinct == ticks.length) {
+        break;
+      }
+      nOfDigits = nOfDigits + 1;
+    }
+    return "%." + nOfDigits + "f";
+  }
 
   public static void main(String[] args) {
     XYDataSeries<Value, Value> ds1 = XYDataSeries.of(
@@ -127,7 +151,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         DoubleRange.UNBOUNDED,
         List.of(ds1, ds2)
     );
-    ImagePlotter ip = new ImagePlotter(300, 600);
+    ImagePlotter ip = new ImagePlotter(1500, 1000);
     showImage(ip.plot(p));
     XYMatrixPlot<Value, Value> m = XYMatrixPlot.of(
         "functions matrix",
@@ -153,6 +177,21 @@ public class ImagePlotter implements Plotter<BufferedImage> {
   }
 
   private static <VX extends Value, VY extends Value> DoubleRange range(
+      XYDataSeries<VX, VY> dataSeries, ToDoubleFunction<XYDataSeries.Point<VX, VY>> vExtractor
+  ) {
+    return new DoubleRange(
+        dataSeries.points().stream()
+            .mapToDouble(vExtractor)
+            .min()
+            .orElse(0d),
+        dataSeries.points().stream()
+            .mapToDouble(vExtractor)
+            .max()
+            .orElse(1d)
+    );
+  }
+
+  private static <VX extends Value, VY extends Value> DoubleRange range(
       Collection<XYDataSeries<VX, VY>> dataSeries, ToDoubleFunction<XYDataSeries.Point<VX, VY>> vExtractor
   ) {
     return new DoubleRange(
@@ -168,21 +207,6 @@ public class ImagePlotter implements Plotter<BufferedImage> {
                 .mapToDouble(vExtractor)
                 .max()
                 .orElse(1d))
-            .max()
-            .orElse(1d)
-    );
-  }
-
-  private static <VX extends Value, VY extends Value> DoubleRange range(
-      XYDataSeries<VX, VY> dataSeries, ToDoubleFunction<XYDataSeries.Point<VX, VY>> vExtractor
-  ) {
-    return new DoubleRange(
-        dataSeries.points().stream()
-            .mapToDouble(vExtractor)
-            .min()
-            .orElse(0d),
-        dataSeries.points().stream()
-            .mapToDouble(vExtractor)
             .max()
             .orElse(1d)
     );
@@ -217,26 +241,6 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     });
   }
 
-  private static String computeTicksFormat(DoubleRange range, int nOfTicks) {
-    int nOfDigits = 0;
-    double[] ticks = DoubleStream.iterate(
-            range.min(), v -> v <= range.max(), v -> v + range.extent() / (double) nOfTicks)
-        .toArray();
-    while (true) {
-      final int d = nOfDigits;
-      long nOfDistinct = Arrays.stream(ticks)
-          .mapToObj(("%." + d + "f")::formatted)
-          .map(String::toString)
-          .distinct()
-          .count();
-      if (nOfDistinct == ticks.length) {
-        break;
-      }
-      nOfDigits = nOfDigits + 1;
-    }
-    return "%." + nOfDigits + "f";
-  }
-
   private static double x(double x, RangeMap rm) {
     return rm.gxRange.denormalize(rm.xRange.normalize(x));
   }
@@ -245,14 +249,16 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     return rm.gyRange.max() - rm.gyRange.extent() * rm.yRange.normalize(y);
   }
 
+  private Point2D center(Rectangle2D r) {
+    return new Point2D.Double(r.getCenterX(), r.getCenterY());
+  }
+
   private <VX extends Value, VY extends Value> Grid<Axes> computeAxes(
       Graphics2D g,
       Layout l,
       Grid<List<XYDataSeries<VX, VY>>> dataGrid,
       DoubleRange xRange,
-      DoubleRange yRange,
-      double w,
-      double h
+      DoubleRange yRange
   ) {
     //compute ranges
     Grid<Axes> grid = dataGrid.map(d -> new Axes(
@@ -374,15 +380,31 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     );
     int nOfIterations = 3;
     for (int i = 0; i < nOfIterations; i = i + 1) {
-      Grid<Axes> axesGrid = computeAxes(g, l, dataGrid, plot.xRange(), plot.yRange(), w, h);
-      l = l.refit( // TODO work here
-        0,
-        0
+      Grid<Axes> axesGrid = computeAxes(g, l, dataGrid, plot.xRange(), plot.yRange());
+      l = l.refit(
+          axesGrid.values().stream()
+              .map(a -> a.xLabels.stream()
+                  .mapToDouble(s -> computeStringW(g, a.xLabelFormat.formatted(s), Configuration.Text.Use.TICK_LABEL))
+                  .max()
+                  .orElse(0d)
+              ).mapToDouble(d -> d).max().orElse(0d) + computeStringH(
+              g,
+              "0",
+              Configuration.Text.Use.TICK_LABEL
+          ) + 2 * c.layout().xAxisMarginHRate() * h + c.layout().xAxisInnerMarginHRate() * h,
+          axesGrid.values().stream()
+              .map(a -> a.yLabels.stream()
+                  .mapToDouble(s -> computeStringW(g, a.yLabelFormat.formatted(s), Configuration.Text.Use.TICK_LABEL))
+                  .max()
+                  .orElse(0d)
+              ).mapToDouble(d -> d).max().orElse(0d) + computeStringH(
+              g,
+              "0",
+              Configuration.Text.Use.TICK_LABEL
+          ) + 2 * c.layout().yAxisMarginWRate() * w + c.layout().yAxisInnerMarginWRate() * w
       );
     }
-    //   compute grid of axes
-    //   update layout
-    return null;
+    return l;
   }
 
   private <VX extends Value, VY extends Value> double computeLegendH(
@@ -392,23 +414,14 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     return 0; // TODO fill
   }
 
-  @Override
-  public BufferedImage plot(XYSinglePlot<?, ?> plot) {
-    return null;
+  private double computeStringH(Graphics2D g, String s, Configuration.Text.Use fontUse) {
+    g.setFont(fonts.get(fontUse));
+    return g.getFontMetrics().getHeight();
   }
 
-  @Override
-  public BufferedImage plot(XYMatrixPlot<?, ?> plot) {
-    return null;
-  }
-
-  private List<Double> computeTicks(Graphics2D g, DoubleRange range, double l) {
-    DoubleRange innerRange = enlarge(range, c.general().plotDataRatio());
-    double labelLineL = computeStringH(g, "1", Configuration.Text.Use.TICK_LABEL) * (1d + c.general().tickLabelGapRatio());
-    int n = (int) Math.round(l / labelLineL);
-    return DoubleStream.iterate(innerRange.min(), v -> v <= range.max(), v -> v + innerRange.extent() / (double) n)
-        .boxed()
-        .toList();
+  private double computeStringW(Graphics2D g, String s, Configuration.Text.Use fontUse) {
+    g.setFont(fonts.get(fontUse));
+    return g.getFontMetrics().stringWidth(s);
   }
 
   /*
@@ -553,19 +566,50 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         (y(rm.yRange.min() + rm.yRange.extent() / 2d, rm) + yName.length() * fontW / 2f));
   }*/
 
+  private List<Double> computeTicks(Graphics2D g, DoubleRange range, double l) {
+    DoubleRange innerRange = enlarge(range, c.general().plotDataRatio());
+    double labelLineL = computeStringH(g, "1", Configuration.Text.Use.TICK_LABEL) * (1d + c.general()
+        .tickLabelGapRatio());
+    int n = (int) Math.round(l / labelLineL);
+    return DoubleStream.iterate(innerRange.min(), v -> v <= range.max(), v -> v + innerRange.extent() / (double) n)
+        .boxed()
+        .toList();
+  }
+
+  private void drawString(
+      Graphics2D g,
+      String s,
+      Point2D p,
+      AnchorH anchorH,
+      AnchorV anchorV,
+      Configuration.Text.Use use,
+      Configuration.Text.Direction direction
+  ) {
+    if (s.isEmpty()) {
+      return;
+    }
+    g.setFont(fonts.get(use));
+    double w = computeStringW(g, s, use);
+    double h = computeStringH(g, s, use);
+    double x = switch (anchorH) {
+      case L -> p.getX();
+      case C -> p.getX() - w / 2;
+      case R -> p.getX() - w;
+    };
+    double y = switch (anchorV) {
+      case T -> p.getY();
+      case C -> p.getY() + h / 2;
+      case B -> p.getY() + h;
+    };
+    if (direction.equals(Configuration.Text.Direction.V)) {
+      g.setFont(g.getFont().deriveFont(AffineTransform.getRotateInstance(Math.toRadians(-90))));
+    }
+    g.drawString(s, (float) x, (float) y);
+  }
+
   private DoubleRange enlarge(DoubleRange range, double r) {
     return new DoubleRange(
         range.min() - range.extent() * (r - 1d) / 2d, range.max() + range.extent() * (r - 1d) / 2d);
-  }
-
-  private DoubleRange largestRange(List<Axes> axesList, Function<Axes, DoubleRange> rangeExtractor) {
-    return axesList.stream()
-        .map(rangeExtractor)
-        .reduce((r1, r2) -> new DoubleRange(
-            Math.min(r1.min(), r2.min()),
-            Math.max(r1.max(), r2.max())
-        ))
-        .orElseThrow();
   }
 
   /*
@@ -765,6 +809,82 @@ public class ImagePlotter implements Plotter<BufferedImage> {
 
    */
 
+  private DoubleRange largestRange(List<Axes> axesList, Function<Axes, DoubleRange> rangeExtractor) {
+    return axesList.stream()
+        .map(rangeExtractor)
+        .reduce((r1, r2) -> new DoubleRange(
+            Math.min(r1.min(), r2.min()),
+            Math.max(r1.max(), r2.max())
+        ))
+        .orElseThrow();
+  }
+
+  @Override
+  public <VX extends Value, VY extends Value> BufferedImage plot(XYMatrixPlot<VX, VY> plot) {
+    // prepare image
+    BufferedImage img = new BufferedImage((int) w, (int) h, BufferedImage.TYPE_3BYTE_BGR);
+    Graphics2D g = img.createGraphics();
+    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    // compute layout and axes
+    Grid<List<XYDataSeries<VX, VY>>> dataGrid = Grid.create(
+        plot.dataSeries().nColumns(),
+        plot.dataSeries().nRows(),
+        (x, y) -> plot.dataSeries().get(x, y)
+    );
+    Layout l = computeLayout(g, plot);
+    Grid<Axes> axesGrid = computeAxes(g, l, dataGrid, plot.xRange(), plot.yRange());
+    // draw
+    g.setColor(c.colors().bgColor());
+    g.fill(new Rectangle2D.Double(0, 0, w, h));
+    g.setColor(c.colors().labelColor());
+    drawString(
+        g,
+        plot.title(),
+        center(l.mainTitle()),
+        AnchorH.C,
+        AnchorV.C,
+        Configuration.Text.Use.TITLE,
+        Configuration.Text.Direction.H
+    );
+    for (int px = 0; px < axesGrid.w(); px = px + 1) {
+      for (int py = 0; py < axesGrid.h(); py = py + 1) {
+        if (px == 0) {
+          // draw common y-axis
+        } else if (px == axesGrid.h() - 1) {
+          // draw common row title
+          g.setColor(c.colors().labelColor());
+          drawString(
+              g,
+              plot.dataSeries().colIndexes().get(py),
+              center(l.commonRowTitle(py)),
+              AnchorH.C,
+              AnchorV.C,
+              Configuration.Text.Use.AXIS_LABEL,
+              Configuration.Text.Direction.V
+          );
+        }
+        if (py == axesGrid.h() - 1) {
+          // draw common x-axis
+        } else if (py == 0) {
+          // draw common col title
+          g.setColor(c.colors().labelColor());
+          drawString(
+              g,
+              plot.dataSeries().rowIndexes().get(px),
+              center(l.commonColTitle(px)),
+              AnchorH.C,
+              AnchorV.C,
+              Configuration.Text.Use.AXIS_LABEL,
+              Configuration.Text.Direction.H
+          );
+        }
+      }
+    }
+    // return
+    g.dispose();
+    return img;
+  }
+
   private DoubleRange plotRange(
       boolean isXAxis,
       DoubleRange originalRange,
@@ -782,15 +902,5 @@ public class ImagePlotter implements Plotter<BufferedImage> {
       return rowLargestRange;
     }
     return allLargestRange;
-  }
-
-  private double computeStringH(Graphics2D g, String s, Configuration.Text.Use fontUse) {
-    g.setFont(fonts.get(fontUse).get(Configuration.Text.Direction.H));
-    return g.getFontMetrics().getHeight();
-  }
-
-  private double computeStringW(Graphics2D g, String s, Configuration.Text.Use fontUse) {
-    g.setFont(fonts.get(fontUse).get(Configuration.Text.Direction.H));
-    return g.getFontMetrics().stringWidth(s);
   }
 }

@@ -84,8 +84,8 @@ public record Configuration(
     public final static Layout DEFAULT = new Layout(
         0.005, 0.005, 0.005,
         0.005, 0.005, 0.005,
-        0, 0.0025,
-        0, 0.0025
+        0.001, 0.0025,
+        0.001, 0.0025
     );
 
   }
@@ -98,25 +98,6 @@ public record Configuration(
 
   }
 
-  public record Text(
-      double fontSizeRate,
-      Map<Use, Double> sizeRates,
-
-      String fontName
-  ) {
-
-    public enum Use {TITLE, AXIS_LABEL, TICK_LABEL, LEGEND_LABEL}
-    public enum Direction {H, V}
-    public final static Text DEFAULT = new Text(
-        0.025,
-        Map.ofEntries(
-            Map.entry(Use.TICK_LABEL, 0.015)
-        ),
-        "Monospaced"
-    );
-
-  }
-
   public record PlotMatrix(
       Show axesShow,
       Show titlesShow,
@@ -124,8 +105,27 @@ public record Configuration(
   ) {
 
     public final static PlotMatrix DEFAULT = new PlotMatrix(Show.BORDER, Show.BORDER, Set.of());
-    public enum Show {BORDER, ALL};
     public enum Independence {ROWS, COLS, ALL};
+    public enum Show {BORDER, ALL};
+  }
+
+  public record Text(
+      double fontSizeRate,
+      Map<Use, Double> sizeRates,
+
+      String fontName
+  ) {
+
+    public final static Text DEFAULT = new Text(
+        0.02,
+        Map.ofEntries(
+            Map.entry(Use.TICK_LABEL, 0.015)
+        ),
+        "Monospaced"
+    );
+    public enum Direction {H, V}
+    public enum Use {TITLE, AXIS_LABEL, TICK_LABEL, LEGEND_LABEL}
+
   }
 
 }

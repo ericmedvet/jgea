@@ -19,10 +19,16 @@
  */
 package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
+import io.github.ericmedvet.jgea.core.util.Table;
+
+import java.util.Map;
+
 /**
  * @author "Eric Medvet" on 2023/12/01 for jgea
  */
 public interface Plotter<O> {
+  <VX extends Value, VY extends Value> O plot(XYMatrixPlot<VX, VY> plot);
+
   default O plot(XYPlot plot) {
     if (plot instanceof XYSinglePlot<?, ?> xySinglePlot) {
       return plot(xySinglePlot);
@@ -34,7 +40,14 @@ public interface Plotter<O> {
         "Unknown kind of plot: %s".formatted(plot.getClass().getSimpleName()));
   }
 
-  O plot(XYSinglePlot<?, ?> plot);
-
-  O plot(XYMatrixPlot<?, ?> plot);
+  default <VX extends Value, VY extends Value> O plot(XYSinglePlot<VX, VY> plot) {
+    return plot(XYMatrixPlot.of(
+        plot.title(),
+        plot.xName(),
+        plot.yName(),
+        plot.xRange(),
+        plot.yRange(),
+        Table.of(Map.of("", Map.of("", plot.dataSeries())))
+    ));
+  }
 }
