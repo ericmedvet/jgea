@@ -25,7 +25,6 @@ import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 
 import java.awt.*;
-import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
@@ -45,6 +44,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
   private final int h;
   private final Configuration c;
 
+  private final Map<Configuration.Text.Use, Map<Configuration.Text.Direction, Font>> fonts;
+
   public ImagePlotter(int w, int h) {
     this(w, h, Configuration.DEFAULT);
   }
@@ -53,6 +54,23 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     this.w = w;
     this.h = h;
     this.c = c;
+    fonts = Arrays.stream(Configuration.Text.Use.values())
+        .collect(Collectors.toMap(
+            u -> u,
+            u -> Map.ofEntries(
+                Map.entry( // TODO add also the case for Direction.V
+                    Configuration.Text.Direction.H,
+                    new Font(
+                        c.text().fontName(),
+                        Font.PLAIN,
+                        (int) Math.round((double) Math.max(w, h) * c.text()
+                            .sizeRates()
+                            .getOrDefault(u, c.text().fontSizeRate())
+                        )
+                    )
+                )
+            )
+        ));
   }
 
   private record Axes(
@@ -230,7 +248,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
   private <VX extends Value, VY extends Value> Grid<Axes> computeAxes(
       Graphics2D g,
       Layout l,
-      Grid<XYDataSeries<VX, VY>> dataGrid,
+      Grid<List<XYDataSeries<VX, VY>>> dataGrid,
       DoubleRange xRange,
       DoubleRange yRange,
       double w,
@@ -305,13 +323,73 @@ public class ImagePlotter implements Plotter<BufferedImage> {
 
   private <VX extends Value, VY extends Value> Layout computeLayout(
       Graphics2D g,
-      Grid<XYDataSeries<VX, VY>> dataSeries
+      XYMatrixPlot<VX, VY> plot
   ) {
+    double initialXAxisL = computeStringW(g, "0", Configuration.Text.Use.TICK_LABEL) + 2 * c.layout()
+        .xAxisMarginHRate() * h + c.layout().xAxisInnerMarginHRate() * h;
+    double initialYAxisL = computeStringW(g, "0", Configuration.Text.Use.TICK_LABEL) + 2 * c.layout()
+        .yAxisMarginWRate() * w + c.layout().yAxisInnerMarginWRate() * w;
     // build an empty layout
+    Layout l = new Layout(
+        w, h,
+        plot.dataSeries().nColumns(),
+        plot.dataSeries().nRows(),
+        plot.title().isEmpty() ? 0 : (computeStringH(g, "a", Configuration.Text.Use.TITLE) + 2 * c.layout()
+            .mainTitleMarginHRate() * w),
+        computeLegendH(g, plot.dataSeries().values().stream().flatMap(List::stream).toList()),
+        c.plotMatrix().titlesShow().equals(Configuration.PlotMatrix.Show.BORDER) ?
+            plot.dataSeries().colIndexes().stream().allMatch(String::isEmpty) ? 0 : (computeStringH(
+                g,
+                "a",
+                Configuration.Text.Use.AXIS_LABEL
+            ) + 2 * c.layout().colTitleMarginHRate() * h) : 0,
+        c.plotMatrix().titlesShow().equals(Configuration.PlotMatrix.Show.BORDER) ?
+            plot.dataSeries().rowIndexes().stream().allMatch(String::isEmpty) ? 0 : (computeStringH(
+                g,
+                "a",
+                Configuration.Text.Use.AXIS_LABEL
+            ) + 2 * c.layout().rowTitleMarginWRate() * w) : 0,
+        c.plotMatrix().axesShow().equals(Configuration.PlotMatrix.Show.BORDER) ? initialXAxisL : 0,
+        c.plotMatrix().axesShow().equals(Configuration.PlotMatrix.Show.BORDER) ? initialYAxisL : 0,
+        c.plotMatrix().axesShow().equals(Configuration.PlotMatrix.Show.BORDER) ? 0 : initialXAxisL,
+        c.plotMatrix().axesShow().equals(Configuration.PlotMatrix.Show.BORDER) ? 0 : initialYAxisL,
+        c.plotMatrix().titlesShow().equals(Configuration.PlotMatrix.Show.BORDER) ? 0 :
+            plot.dataSeries().colIndexes().stream().allMatch(String::isEmpty) ? 0 : (computeStringH(
+                g,
+                "a",
+                Configuration.Text.Use.AXIS_LABEL
+            ) + 2 * c.layout().colTitleMarginHRate() * h),
+        c.plotMatrix().titlesShow().equals(Configuration.PlotMatrix.Show.BORDER) ? 0 :
+            plot.dataSeries().rowIndexes().stream().allMatch(String::isEmpty) ? 0 : (computeStringH(
+                g,
+                "a",
+                Configuration.Text.Use.AXIS_LABEL
+            ) + 2 * c.layout().rowTitleMarginWRate() * w)
+    );
     // iterate
+    Grid<List<XYDataSeries<VX, VY>>> dataGrid = Grid.create(
+        plot.dataSeries().nColumns(),
+        plot.dataSeries().nRows(),
+        (x, y) -> plot.dataSeries().get(x, y)
+    );
+    int nOfIterations = 3;
+    for (int i = 0; i < nOfIterations; i = i + 1) {
+      Grid<Axes> axesGrid = computeAxes(g, l, dataGrid, plot.xRange(), plot.yRange(), w, h);
+      l = l.refit( // TODO work here
+        0,
+        0
+      );
+    }
     //   compute grid of axes
     //   update layout
     return null;
+  }
+
+  private <VX extends Value, VY extends Value> double computeLegendH(
+      Graphics2D g,
+      Collection<XYDataSeries<VX, VY>> dataSeries
+  ) {
+    return 0; // TODO fill
   }
 
   @Override
@@ -326,7 +404,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
 
   private List<Double> computeTicks(Graphics2D g, DoubleRange range, double l) {
     DoubleRange innerRange = enlarge(range, c.general().plotDataRatio());
-    double labelLineL = stringH(g, "1") * (1d + c.general().tickLabelGapRatio());
+    double labelLineL = computeStringH(g, "1", Configuration.Text.Use.TICK_LABEL) * (1d + c.general().tickLabelGapRatio());
     int n = (int) Math.round(l / labelLineL);
     return DoubleStream.iterate(innerRange.min(), v -> v <= range.max(), v -> v + innerRange.extent() / (double) n)
         .boxed()
@@ -706,21 +784,13 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     return allLargestRange;
   }
 
-  private double stringH(Graphics2D g, String s) {
-    g.setFont(new Font(
-        c.text().fontName(),
-        Font.PLAIN,
-        (int) Math.round((double) Math.max(w, h) * c.text().fontSizeRate())
-    ));
+  private double computeStringH(Graphics2D g, String s, Configuration.Text.Use fontUse) {
+    g.setFont(fonts.get(fontUse).get(Configuration.Text.Direction.H));
     return g.getFontMetrics().getHeight();
   }
 
-  private double stringW(Graphics2D g, String s) {
-    g.setFont(new Font(
-        c.text().fontName(),
-        Font.PLAIN,
-        (int) Math.round((double) Math.max(w, h) * c.text().fontSizeRate())
-    ));
+  private double computeStringW(Graphics2D g, String s, Configuration.Text.Use fontUse) {
+    g.setFont(fonts.get(fontUse).get(Configuration.Text.Direction.H));
     return g.getFontMetrics().stringWidth(s);
   }
 }

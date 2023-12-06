@@ -18,6 +18,29 @@ record Layout(
     double colTitleH,
     double rowTitleW
 ) {
+
+  Layout refit(
+      double xAxisH,
+      double yAxisW
+  ) {
+    return new Layout(
+        w,
+        h,
+        plotCols,
+        plotRows,
+        mainTitleH,
+        legendH,
+        commonColTitleH,
+        commonRowTitleW,
+        commonXAxesH() == 0 ? 0 : xAxisH,
+        commonYAxesW() == 0 ? 0 : yAxisW,
+        xAxisH() == 0 ? 0 : xAxisH,
+        yAxisW() == 0 ? 0 : yAxisW,
+        colTitleH,
+        rowTitleW
+    );
+  }
+
   double plotInnerW() {
     return plotOuterW() - yAxisW - rowTitleW;
   }

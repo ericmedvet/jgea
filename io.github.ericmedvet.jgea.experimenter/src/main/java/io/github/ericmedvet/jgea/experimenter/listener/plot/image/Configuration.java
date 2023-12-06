@@ -2,6 +2,7 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot.image;
 
 import java.awt.*;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public record Configuration(
@@ -78,7 +79,7 @@ public record Configuration(
       double yAxisMarginWRate,
       double yAxisInnerMarginWRate,
       double xAxisMarginHRate,
-      double xAxisInnerMarginRate
+      double xAxisInnerMarginHRate
   ) {
     public final static Layout DEFAULT = new Layout(
         0.005, 0.005, 0.005,
@@ -99,18 +100,30 @@ public record Configuration(
 
   public record Text(
       double fontSizeRate,
+      Map<Use, Double> sizeRates,
+
       String fontName
   ) {
-    public final static Text DEFAULT = new Text(0.025, "Monospaced");
+
+    public enum Use {TITLE, AXIS_LABEL, TICK_LABEL, LEGEND_LABEL}
+    public enum Direction {H, V}
+    public final static Text DEFAULT = new Text(
+        0.025,
+        Map.ofEntries(
+            Map.entry(Use.TICK_LABEL, 0.015)
+        ),
+        "Monospaced"
+    );
 
   }
 
   public record PlotMatrix(
-      Show show,
+      Show axesShow,
+      Show titlesShow,
       Set<Independence> independences
   ) {
 
-    public final static PlotMatrix DEFAULT = new PlotMatrix(Show.BORDER, Set.of());
+    public final static PlotMatrix DEFAULT = new PlotMatrix(Show.BORDER, Show.BORDER, Set.of());
     public enum Show {BORDER, ALL};
     public enum Independence {ROWS, COLS, ALL};
   }
