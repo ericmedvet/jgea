@@ -26,6 +26,7 @@ import io.github.ericmedvet.jgea.core.util.HashMapTable;
 import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.experimenter.listener.GroupedTablesAccumulatorFactory;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,7 @@ import java.util.Map;
  * @author "Eric Medvet" on 2023/11/30 for jgea
  */
 public class XYMatrixPlotAccumulatorFactory<K, E, R>
-    implements AccumulatorFactory<E, XYMatrixPlot<Value, RangedValue>, R> {
+    implements AccumulatorFactory<E, XYMatrixPlot, R> {
 
   private final GroupedTablesAccumulatorFactory<K, Number, E, R> inner;
   private final NamedFunction<? super R, ? extends K> xSubplotFunction;
@@ -72,11 +73,11 @@ public class XYMatrixPlotAccumulatorFactory<K, E, R>
   }
 
   @Override
-  public Accumulator<E, XYMatrixPlot<Value, RangedValue>> build(R r) {
+  public Accumulator<E, XYMatrixPlot> build(R r) {
     Accumulator<E, Map<List<K>, Table<Integer, String, Number>>> accumulator = inner.build(r);
     return new Accumulator<>() {
       @Override
-      public XYMatrixPlot<Value, RangedValue> get() {
+      public XYMatrixPlot get() {
         Map<List<K>, Table<Integer, String, Number>> data = accumulator.get();
         List<K> xSubplotKeys =
             data.keySet().stream().map(ks -> ks.get(0)).distinct().toList();
@@ -84,11 +85,11 @@ public class XYMatrixPlotAccumulatorFactory<K, E, R>
             data.keySet().stream().map(ks -> ks.get(1)).distinct().toList();
         List<K> lineKeys =
             data.keySet().stream().map(ks -> ks.get(2)).distinct().toList();
-        Table<String, String, List<XYDataSeries<Value, RangedValue>>> table = new HashMapTable<>();
+        Table<String, String, List<XYDataSeries>> table = new HashMapTable<>();
         // aggregate
         for (K xsk : xSubplotKeys) {
           for (K ysk : ySubplotKeys) {
-            List<XYDataSeries<Value, RangedValue>> dss = lineKeys.stream()
+            List<XYDataSeries> dss = lineKeys.stream()
                 .map(lk -> XYDataSeries.of(
                     lk.toString(),
                     data.keySet().stream()
@@ -110,7 +111,7 @@ public class XYMatrixPlotAccumulatorFactory<K, E, R>
                                         .doubleValue()))
                             .rows()
                             .stream()
-                            .map(r -> new XYDataSeries.Point<>(
+                            .map(r -> new XYDataSeries.Point(
                                 Value.of(r.get(xFunction.getName())
                                     .v()),
                                 r.get(yFunction.getName())))

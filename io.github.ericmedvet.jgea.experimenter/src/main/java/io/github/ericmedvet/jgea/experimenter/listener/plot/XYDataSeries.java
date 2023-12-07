@@ -24,8 +24,8 @@ import java.util.List;
 /**
  * @author "Eric Medvet" on 2023/12/01 for jgea
  */
-public interface XYDataSeries<VX extends Value, VY extends Value> {
-  record Point<VX extends Value, VY extends Value>(VX x, VY y) {
+public interface XYDataSeries {
+  record Point(Value x, Value y) {
     @Override
     public String toString() {
       return "(%s;%s)".formatted(this.x, this.y);
@@ -34,11 +34,11 @@ public interface XYDataSeries<VX extends Value, VY extends Value> {
 
   String name();
 
-  List<Point<VX, VY>> points();
+  List<Point> points();
 
-  static <VX extends Value, VY extends Value> XYDataSeries<VX, VY> of(String name, List<Point<VX, VY>> points) {
-    record HardXYDataSeries<VX extends Value, VY extends Value>(String name, List<Point<VX, VY>> points)
-        implements XYDataSeries<VX, VY> {}
-    return new HardXYDataSeries<>(name, points);
+  static XYDataSeries of(String name, List<Point> points) {
+    record HardXYDataSeries(String name, List<Point> points)
+        implements XYDataSeries {}
+    return new HardXYDataSeries(name, points);
   }
 }

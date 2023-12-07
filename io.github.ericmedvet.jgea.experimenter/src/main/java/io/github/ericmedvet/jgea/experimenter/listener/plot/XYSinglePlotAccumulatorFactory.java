@@ -26,10 +26,11 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.experimenter.listener.TableAccumulatorFactory;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+
 import java.util.Comparator;
 import java.util.List;
 
-public class XYSinglePlotAccumulatorFactory<E, R> implements AccumulatorFactory<E, XYSinglePlot<Value, Value>, R> {
+public class XYSinglePlotAccumulatorFactory<E, R> implements AccumulatorFactory<E, XYSinglePlot, R> {
 
   private final TableAccumulatorFactory<E, Number, R> inner;
   private final NamedFunction<? super R, String> titleFunction;
@@ -62,11 +63,11 @@ public class XYSinglePlotAccumulatorFactory<E, R> implements AccumulatorFactory<
   }
 
   @Override
-  public Accumulator<E, XYSinglePlot<Value, Value>> build(R r) {
+  public Accumulator<E, XYSinglePlot> build(R r) {
     Accumulator<E, Table<Integer, String, Number>> accumulator = inner.build(r);
     return new Accumulator<>() {
       @Override
-      public XYSinglePlot<Value, Value> get() {
+      public XYSinglePlot get() {
         Table<Integer, String, Number> table = accumulator.get();
         if (sorted) {
           table = table.sorted(xFunction.getName(), Comparator.comparingDouble(Number::doubleValue));
@@ -78,11 +79,11 @@ public class XYSinglePlotAccumulatorFactory<E, R> implements AccumulatorFactory<
                   - ns.get(0).doubleValue());
         }
         Table<Integer, String, Number> fTable = table;
-        List<XYDataSeries<Value, Value>> dss = yFunctions.stream()
+        List<XYDataSeries> dss = yFunctions.stream()
             .map(ynf -> XYDataSeries.of(
                 ynf.getName(),
                 fTable.rows().stream()
-                    .map(r -> new XYDataSeries.Point<>(
+                    .map(r -> new XYDataSeries.Point(
                         Value.of(r.get(xFunction.getName())
                             .doubleValue()),
                         Value.of(r.get(ynf.getName()).doubleValue())))

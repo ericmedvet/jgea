@@ -33,4 +33,11 @@ public interface RangedValue extends Value {
     }
     return new HardRangedValue(v, new DoubleRange(min, max));
   }
+
+  static DoubleRange range(Value v) {
+    if (v instanceof RangedValue rv) {
+      return rv.range();
+    }
+    return new DoubleRange(v.v(), v.v());
+  }
 }

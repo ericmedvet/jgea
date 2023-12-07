@@ -27,19 +27,21 @@ public record Configuration(
   public record Colors(
       Color bgColor,
       Color plotBgColor,
-      Color boxColor,
+      Color plotBorderColor,
       Color gridColor,
-      Color labelColor,
+      Color titleColor,
+      Color axisLabelColor,
       Color tickLabelColor,
-      List<Color> colors
+      List<Color> dataColors
   ) {
     public final static Colors DEFAULT = new Colors(
+        Color.WHITE,
+        new Color(230,230,230),
         Color.LIGHT_GRAY,
         Color.WHITE,
-        Color.DARK_GRAY,
-        Color.LIGHT_GRAY,
         Color.BLACK,
         Color.DARK_GRAY,
+        Color.LIGHT_GRAY,
         List.of(
             new Color(166, 206, 227),
             new Color(227, 26, 28),
@@ -61,11 +63,11 @@ public record Configuration(
   public record General(
       double tickLabelGapRatio,
       double plotDataRatio,
-      float gridStrokeSize,
+      double gridStrokeSizeRate,
       double legendImageWRate,
       double legendImageHRate
   ) {
-    public static final General DEFAULT = new General(2, 0.9, 1, 0.025, 0.15);
+    public static final General DEFAULT = new General(2, 0.9, 0.0005, 0.025, 0.15);
 
   }
 
@@ -79,22 +81,25 @@ public record Configuration(
       double yAxisMarginWRate,
       double yAxisInnerMarginWRate,
       double xAxisMarginHRate,
-      double xAxisInnerMarginHRate
+      double xAxisInnerMarginHRate,
+      double plotMarginWRate,
+      double plotMarginHRate
   ) {
     public final static Layout DEFAULT = new Layout(
         0.005, 0.005, 0.005,
         0.005, 0.005, 0.005,
         0.001, 0.0025,
-        0.001, 0.0025
+        0.001, 0.0025,
+        0.01, 0.01
     );
 
   }
 
   public record LinePlot(
-      float dataStrokeSize,
-      float alpha
+      double dataStrokeSize,
+      double alpha
   ) {
-    public final static LinePlot DEFAULT = new LinePlot(2f, 0.2f);
+    public final static LinePlot DEFAULT = new LinePlot(0.002, 0.25);
 
   }
 

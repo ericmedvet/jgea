@@ -21,29 +21,30 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
 import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+
 import java.util.List;
 
 /**
  * @author "Eric Medvet" on 2023/12/01 for jgea
  */
-public interface XYMatrixPlot<VX extends Value, VY extends Value> extends XYPlot {
-  Table<String, String, List<XYDataSeries<VX, VY>>> dataSeries();
+public interface XYMatrixPlot extends XYPlot {
+  Table<String, String, List<XYDataSeries>> dataSeries();
 
-  static <VX extends Value, VY extends Value> XYMatrixPlot<VX, VY> of(
+  static <VX extends Value, VY extends Value> XYMatrixPlot of(
       String title,
       String xName,
       String yName,
       DoubleRange xRange,
       DoubleRange yRange,
-      Table<String, String, List<XYDataSeries<VX, VY>>> dataSeries) {
+      Table<String, String, List<XYDataSeries>> dataSeries) {
     record HardXYMatrixPlot<VX extends Value, VY extends Value>(
         String title,
         String xName,
         String yName,
         DoubleRange xRange,
         DoubleRange yRange,
-        Table<String, String, List<XYDataSeries<VX, VY>>> dataSeries)
-        implements XYMatrixPlot<VX, VY> {}
+        Table<String, String, List<XYDataSeries>> dataSeries)
+        implements XYMatrixPlot {}
     return new HardXYMatrixPlot<>(title, xName, yName, xRange, yRange, dataSeries);
   }
 }
