@@ -20,14 +20,13 @@
 package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
-
 import java.util.List;
 
 public interface XYSinglePlot extends XYPlot {
 
   List<XYDataSeries> dataSeries();
 
-  static  XYSinglePlot of(
+  static XYSinglePlot of(
       String title,
       String xName,
       String yName,

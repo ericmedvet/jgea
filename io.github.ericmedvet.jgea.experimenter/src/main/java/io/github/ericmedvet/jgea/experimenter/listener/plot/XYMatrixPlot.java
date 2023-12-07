@@ -21,7 +21,6 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
 import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
-
 import java.util.List;
 
 /**

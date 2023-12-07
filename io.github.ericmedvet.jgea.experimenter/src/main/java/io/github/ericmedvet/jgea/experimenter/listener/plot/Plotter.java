@@ -20,7 +20,6 @@
 package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
 import io.github.ericmedvet.jgea.core.util.Table;
-
 import java.util.Map;
 
 /**
@@ -47,7 +46,6 @@ public interface Plotter<O> {
         plot.yName(),
         plot.xRange(),
         plot.yRange(),
-        Table.of(Map.of("", Map.of("", plot.dataSeries())))
-    ));
+        Table.of(Map.of("", Map.of("", plot.dataSeries())))));
   }
 }

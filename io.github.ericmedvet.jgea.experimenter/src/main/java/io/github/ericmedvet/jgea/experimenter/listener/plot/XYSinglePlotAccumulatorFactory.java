@@ -26,7 +26,6 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.experimenter.listener.TableAccumulatorFactory;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
-
 import java.util.Comparator;
 import java.util.List;
 

@@ -26,7 +26,6 @@ import io.github.ericmedvet.jgea.core.util.HashMapTable;
 import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.experimenter.listener.GroupedTablesAccumulatorFactory;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -34,8 +33,7 @@ import java.util.Map;
 /**
  * @author "Eric Medvet" on 2023/11/30 for jgea
  */
-public class XYMatrixPlotAccumulatorFactory<K, E, R>
-    implements AccumulatorFactory<E, XYMatrixPlot, R> {
+public class XYMatrixPlotAccumulatorFactory<K, E, R> implements AccumulatorFactory<E, XYMatrixPlot, R> {
 
   private final GroupedTablesAccumulatorFactory<K, Number, E, R> inner;
   private final NamedFunction<? super R, ? extends K> xSubplotFunction;

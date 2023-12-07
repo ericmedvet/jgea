@@ -37,8 +37,7 @@ public interface XYDataSeries {
   List<Point> points();
 
   static XYDataSeries of(String name, List<Point> points) {
-    record HardXYDataSeries(String name, List<Point> points)
-        implements XYDataSeries {}
+    record HardXYDataSeries(String name, List<Point> points) implements XYDataSeries {}
     return new HardXYDataSeries(name, points);
   }
 }

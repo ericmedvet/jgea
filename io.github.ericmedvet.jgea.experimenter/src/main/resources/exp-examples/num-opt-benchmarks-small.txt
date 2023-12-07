@@ -1,10 +1,10 @@
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:10]) * [ea.rg.defaultRG()]) *
+  runs = (randomGenerator = (seed = [1:1:5]) * [ea.rg.defaultRG()]) *
     (problem = [
-      ea.p.s.ackley(p = 20);
-      ea.p.s.sphere(p = 20)
+      ea.p.s.ackley(p = 2);
+      ea.p.s.sphere(p = 2)
     ]) *
-    (solver = (nEval = [10000]) * [
+    (solver = (nEval = [2500]) * [
       ea.s.doubleStringGa(mapper = ea.m.identity());
       ea.s.simpleEs(mapper = ea.m.identity());
       ea.s.pso(mapper = ea.m.identity());
