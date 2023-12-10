@@ -26,26 +26,13 @@ import java.util.Map;
  * @author "Eric Medvet" on 2023/12/01 for jgea
  */
 public interface Plotter<O> {
-  O plot(XYMatrixPlot plot);
+  O plot(XYDataSeriesPlot plot);
 
-  default O plot(XYPlot plot) {
-    if (plot instanceof XYSinglePlot xySinglePlot) {
-      return plot(xySinglePlot);
-    }
-    if (plot instanceof XYMatrixPlot xyMatrixPlot) {
-      return plot(xyMatrixPlot);
+  default O plot(XYPlot<?> plot) {
+    if (plot instanceof XYDataSeriesPlot xyDataSeriesPlot) {
+      return plot(xyDataSeriesPlot);
     }
     throw new UnsupportedOperationException(
         "Unknown kind of plot: %s".formatted(plot.getClass().getSimpleName()));
-  }
-
-  default O plot(XYSinglePlot plot) {
-    return plot(XYMatrixPlot.of(
-        plot.title(),
-        plot.xName(),
-        plot.yName(),
-        plot.xRange(),
-        plot.yRange(),
-        Table.of(Map.of("", Map.of("", plot.dataSeries())))));
   }
 }

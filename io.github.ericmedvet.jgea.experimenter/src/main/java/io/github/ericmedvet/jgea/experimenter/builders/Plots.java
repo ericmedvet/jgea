@@ -24,8 +24,8 @@ import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.Utils;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.XYMatrixPlotAccumulatorFactory;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.XYSinglePlotAccumulatorFactory;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.GridXYDataSeriesPlotAccumulatorFactory;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.SingleXYDataSeriesPlotAccumulatorFactory;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
@@ -44,7 +44,7 @@ public class Plots {
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> XYSinglePlotAccumulatorFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> dyPlot(
+  public static <G, S, Q> SingleXYDataSeriesPlotAccumulatorFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> dyPlot(
       @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
@@ -52,12 +52,12 @@ public class Plots {
       @Param("y") NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> yFunction,
       @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
       @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
-    return new XYSinglePlotAccumulatorFactory<>(
+    return new SingleXYDataSeriesPlotAccumulatorFactory<>(
         buildRunNamedFunction(titleRunKey), xFunction, List.of(yFunction), xRange, yRange, true, true);
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> XYSinglePlotAccumulatorFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> elapsed(
+  public static <G, S, Q> SingleXYDataSeriesPlotAccumulatorFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> elapsed(
       @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
@@ -66,12 +66,12 @@ public class Plots {
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> yFunction,
       @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
       @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
-    return new XYSinglePlotAccumulatorFactory<>(
+    return new SingleXYDataSeriesPlotAccumulatorFactory<>(
         buildRunNamedFunction(titleRunKey), xFunction, List.of(yFunction), xRange, yRange, true, true);
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> XYSinglePlotAccumulatorFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> fitness(
+  public static <G, S, Q> SingleXYDataSeriesPlotAccumulatorFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> fitness(
       @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
@@ -96,12 +96,12 @@ public class Plots {
               NamedFunctions.median(collFFunction, s),
               NamedFunctions.min(collFFunction, s));
         };
-    return new XYSinglePlotAccumulatorFactory<>(
+    return new SingleXYDataSeriesPlotAccumulatorFactory<>(
         buildRunNamedFunction(titleRunKey), xFunction, yFunctions, xRange, yRange, true, false);
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> XYSinglePlotAccumulatorFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> uniqueness(
+  public static <G, S, Q> SingleXYDataSeriesPlotAccumulatorFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> uniqueness(
       @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
@@ -116,36 +116,36 @@ public class Plots {
           List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number>> yFunctions,
       @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
       @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
-    return new XYSinglePlotAccumulatorFactory<>(
+    return new SingleXYDataSeriesPlotAccumulatorFactory<>(
         buildRunNamedFunction(titleRunKey), xFunction, yFunctions, xRange, yRange, true, false);
   }
 
   @SuppressWarnings("unused")
-  public static <E, G, S, Q> XYSinglePlotAccumulatorFactory<E, Run<?, G, S, Q>> xyPlot(
+  public static <E, G, S, Q> SingleXYDataSeriesPlotAccumulatorFactory<E, Run<?, G, S, Q>> xyPlot(
       @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
           Map.Entry<String, String> titleRunKey,
       @Param("x") NamedFunction<? super E, ? extends Number> xFunction,
       @Param("y") NamedFunction<? super E, ? extends Number> yFunction,
       @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
       @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
-    return new XYSinglePlotAccumulatorFactory<>(
+    return new SingleXYDataSeriesPlotAccumulatorFactory<>(
         buildRunNamedFunction(titleRunKey), xFunction, List.of(yFunction), xRange, yRange, true, false);
   }
 
   @SuppressWarnings("unused")
-  public static <E, G, S, Q> XYSinglePlotAccumulatorFactory<E, Run<?, G, S, Q>> xysPlot(
+  public static <E, G, S, Q> SingleXYDataSeriesPlotAccumulatorFactory<E, Run<?, G, S, Q>> xysPlot(
       @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
           Map.Entry<String, String> titleRunKey,
       @Param("x") NamedFunction<? super E, ? extends Number> xFunction,
       @Param("ys") List<NamedFunction<? super E, ? extends Number>> yFunctions,
       @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
       @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
-    return new XYSinglePlotAccumulatorFactory<>(
+    return new SingleXYDataSeriesPlotAccumulatorFactory<>(
         buildRunNamedFunction(titleRunKey), xFunction, yFunctions, xRange, yRange, true, false);
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> XYSinglePlotAccumulatorFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> yPlot(
+  public static <G, S, Q> SingleXYDataSeriesPlotAccumulatorFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> yPlot(
       @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
@@ -153,12 +153,12 @@ public class Plots {
       @Param("y") NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> yFunction,
       @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
       @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
-    return new XYSinglePlotAccumulatorFactory<>(
+    return new SingleXYDataSeriesPlotAccumulatorFactory<>(
         buildRunNamedFunction(titleRunKey), xFunction, List.of(yFunction), xRange, yRange, true, false);
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> XYSinglePlotAccumulatorFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> ysPlot(
+  public static <G, S, Q> SingleXYDataSeriesPlotAccumulatorFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> ysPlot(
       @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
@@ -166,13 +166,13 @@ public class Plots {
       @Param("ys") List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number>> yFunctions,
       @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
       @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
-    return new XYSinglePlotAccumulatorFactory<>(
+    return new SingleXYDataSeriesPlotAccumulatorFactory<>(
         buildRunNamedFunction(titleRunKey), xFunction, yFunctions, xRange, yRange, true, false);
   }
 
   @SuppressWarnings("unused")
   public static <G, S, Q>
-      XYMatrixPlotAccumulatorFactory<String, POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> xyPlotMatrix(
+  GridXYDataSeriesPlotAccumulatorFactory<String, POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> xyPlotMatrix(
           @Param(value = "xSubplotRunKey", dNPM = "ea.misc.sEntry(key=none;value=\"_\")")
               Map.Entry<String, String> xSubplotRunKey,
           @Param(value = "ySubplotRunKey", dNPM = "ea.misc.sEntry(key=problem;value=\"{problem}\")")
@@ -192,7 +192,7 @@ public class Plots {
           @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
           @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
 
-    return new XYMatrixPlotAccumulatorFactory<>(
+    return new GridXYDataSeriesPlotAccumulatorFactory<>(
         buildRunNamedFunction(xSubplotRunKey),
         buildRunNamedFunction(ySubplotRunKey),
         buildRunNamedFunction(lineRunKey),
@@ -207,7 +207,7 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <G, S, Q>
-      XYMatrixPlotAccumulatorFactory<String, POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> fitnessPlotMatrix(
+  GridXYDataSeriesPlotAccumulatorFactory<String, POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> fitnessPlotMatrix(
           @Param(value = "xSubplotRunKey", dNPM = "ea.misc.sEntry(key=none;value=\"_\")")
               Map.Entry<String, String> xSubplotRunKey,
           @Param(value = "ySubplotRunKey", dNPM = "ea.misc.sEntry(key=problem;value=\"{problem}\")")
@@ -227,7 +227,7 @@ public class Plots {
           @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
           @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
 
-    return new XYMatrixPlotAccumulatorFactory<>(
+    return new GridXYDataSeriesPlotAccumulatorFactory<>(
         buildRunNamedFunction(xSubplotRunKey),
         buildRunNamedFunction(ySubplotRunKey),
         buildRunNamedFunction(lineRunKey),

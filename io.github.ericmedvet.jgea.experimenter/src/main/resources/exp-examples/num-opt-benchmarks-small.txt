@@ -1,8 +1,8 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:5]) * [ea.rg.defaultRG()]) *
-    (problem = [
-      ea.p.s.ackley(p = 2);
-      ea.p.s.sphere(p = 2)
+    (problem = (p = [2; 10]) * [
+      ea.p.s.ackley();
+      ea.p.s.sphere()
     ]) *
     (solver = (nEval = [2500]) * [
       ea.s.doubleStringGa(mapper = ea.m.identity());
@@ -26,8 +26,12 @@ ea.experiment(
       ]
     );
     ea.l.expPlotSaver(
-      filePath = "/home/eric/Scaricati/plot.png";
-      plot = ea.plot.fitnessPlotMatrix()
+      filePath = "/home/eric/Scaricati/plot-xy.png";
+      freeScales = true;
+      plot = ea.plot.fitnessPlotMatrix(
+        xSubplotRunKey = ea.misc.sEntry(key = p; value = "{problem.p}");
+        ySubplotRunKey = ea.misc.sEntry(key = problem; value = "{problem:%#s}")
+      )
     )
   ]
 )

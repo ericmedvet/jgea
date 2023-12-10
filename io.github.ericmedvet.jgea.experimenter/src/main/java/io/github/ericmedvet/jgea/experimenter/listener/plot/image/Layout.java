@@ -142,7 +142,7 @@ record Layout(
 
   Rectangle2D yAxis(int plotX, int plotY) {
     return new Rectangle2D.Double(
-        commonYAxesW + (double) plotX * plotOuterH() + configuration.yAxisMarginWRate() * w,
+        commonYAxesW + (double) plotX * plotOuterW() + configuration.yAxisMarginWRate() * w,
         innerPlot(plotX, plotY).getY(),
         yAxisW - 2d * configuration.yAxisMarginWRate() * w,
         innerPlot(plotX, plotY).getHeight());

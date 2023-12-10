@@ -26,10 +26,12 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.experimenter.listener.TableAccumulatorFactory;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+import io.github.ericmedvet.jsdynsym.grid.Grid;
+
 import java.util.Comparator;
 import java.util.List;
 
-public class XYSinglePlotAccumulatorFactory<E, R> implements AccumulatorFactory<E, XYSinglePlot, R> {
+public class SingleXYDataSeriesPlotAccumulatorFactory<E, R> implements AccumulatorFactory<E, XYDataSeriesPlot, R> {
 
   private final TableAccumulatorFactory<E, Number, R> inner;
   private final NamedFunction<? super R, String> titleFunction;
@@ -40,14 +42,15 @@ public class XYSinglePlotAccumulatorFactory<E, R> implements AccumulatorFactory<
   private final boolean sorted;
   private final boolean firstDifference;
 
-  public XYSinglePlotAccumulatorFactory(
+  public SingleXYDataSeriesPlotAccumulatorFactory(
       NamedFunction<? super R, String> titleFunction,
       NamedFunction<? super E, ? extends Number> xFunction,
       List<NamedFunction<? super E, ? extends Number>> yFunctions,
       DoubleRange xRange,
       DoubleRange yRange,
       boolean sorted,
-      boolean firstDifference) {
+      boolean firstDifference
+  ) {
     inner = new TableAccumulatorFactory<>(Misc.concat(List.of(List.of(xFunction), yFunctions)), List.of());
     this.titleFunction = titleFunction;
     this.xFunction = xFunction;
@@ -62,11 +65,11 @@ public class XYSinglePlotAccumulatorFactory<E, R> implements AccumulatorFactory<
   }
 
   @Override
-  public Accumulator<E, XYSinglePlot> build(R r) {
+  public Accumulator<E, XYDataSeriesPlot> build(R r) {
     Accumulator<E, Table<Integer, String, Number>> accumulator = inner.build(r);
     return new Accumulator<>() {
       @Override
-      public XYSinglePlot get() {
+      public XYDataSeriesPlot get() {
         Table<Integer, String, Number> table = accumulator.get();
         if (sorted) {
           table = table.sorted(xFunction.getName(), Comparator.comparingDouble(Number::doubleValue));
@@ -75,7 +78,8 @@ public class XYSinglePlotAccumulatorFactory<E, R> implements AccumulatorFactory<
           table = table.rowSlide(
               2,
               ns -> ns.get(ns.size() - 1).doubleValue()
-                  - ns.get(0).doubleValue());
+                  - ns.get(0).doubleValue()
+          );
         }
         Table<Integer, String, Number> fTable = table;
         List<XYDataSeries> dss = yFunctions.stream()
@@ -85,10 +89,21 @@ public class XYSinglePlotAccumulatorFactory<E, R> implements AccumulatorFactory<
                     .map(r -> new XYDataSeries.Point(
                         Value.of(r.get(xFunction.getName())
                             .doubleValue()),
-                        Value.of(r.get(ynf.getName()).doubleValue())))
-                    .toList()))
+                        Value.of(r.get(ynf.getName()).doubleValue())
+                    ))
+                    .toList()
+            ))
             .toList();
-        return XYSinglePlot.of(titleFunction.apply(r), xFunction.getName(), "", xRange, yRange, dss);
+        return new XYDataSeriesPlot(
+            titleFunction.apply(r),
+            "",
+            "",
+            xFunction.getName(),
+            "y",
+            xRange,
+            yRange,
+            Grid.create(1, 1, (x, y) -> new XYPlot.TitledData<>("", "", dss))
+        );
       }
 
       @Override
