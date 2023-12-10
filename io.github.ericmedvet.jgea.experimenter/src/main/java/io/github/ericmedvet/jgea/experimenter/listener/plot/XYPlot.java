@@ -30,7 +30,9 @@ public interface XYPlot<D> {
   record TitledData<D>(String xTitle, String yTitle, D data) {}
 
   String title();
+
   String xTitleName();
+
   String yTitleName();
 
   String xName();
@@ -40,6 +42,6 @@ public interface XYPlot<D> {
   DoubleRange xRange();
 
   DoubleRange yRange();
-  Grid<TitledData<D>> dataGrid();
 
+  Grid<TitledData<D>> dataGrid();
 }

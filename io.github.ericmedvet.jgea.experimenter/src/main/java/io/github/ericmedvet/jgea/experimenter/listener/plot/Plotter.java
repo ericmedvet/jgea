@@ -19,9 +19,6 @@
  */
 package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
-import io.github.ericmedvet.jgea.core.util.Table;
-import java.util.Map;
-
 /**
  * @author "Eric Medvet" on 2023/12/01 for jgea
  */

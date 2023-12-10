@@ -27,7 +27,6 @@ import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.experimenter.listener.TableAccumulatorFactory;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
-
 import java.util.Comparator;
 import java.util.List;
 
@@ -49,8 +48,7 @@ public class SingleXYDataSeriesPlotAccumulatorFactory<E, R> implements Accumulat
       DoubleRange xRange,
       DoubleRange yRange,
       boolean sorted,
-      boolean firstDifference
-  ) {
+      boolean firstDifference) {
     inner = new TableAccumulatorFactory<>(Misc.concat(List.of(List.of(xFunction), yFunctions)), List.of());
     this.titleFunction = titleFunction;
     this.xFunction = xFunction;
@@ -78,8 +76,7 @@ public class SingleXYDataSeriesPlotAccumulatorFactory<E, R> implements Accumulat
           table = table.rowSlide(
               2,
               ns -> ns.get(ns.size() - 1).doubleValue()
-                  - ns.get(0).doubleValue()
-          );
+                  - ns.get(0).doubleValue());
         }
         Table<Integer, String, Number> fTable = table;
         List<XYDataSeries> dss = yFunctions.stream()
@@ -89,10 +86,8 @@ public class SingleXYDataSeriesPlotAccumulatorFactory<E, R> implements Accumulat
                     .map(r -> new XYDataSeries.Point(
                         Value.of(r.get(xFunction.getName())
                             .doubleValue()),
-                        Value.of(r.get(ynf.getName()).doubleValue())
-                    ))
-                    .toList()
-            ))
+                        Value.of(r.get(ynf.getName()).doubleValue())))
+                    .toList()))
             .toList();
         return new XYDataSeriesPlot(
             titleFunction.apply(r),
@@ -102,8 +97,7 @@ public class SingleXYDataSeriesPlotAccumulatorFactory<E, R> implements Accumulat
             "y",
             xRange,
             yRange,
-            Grid.create(1, 1, (x, y) -> new XYPlot.TitledData<>("", "", dss))
-        );
+            Grid.create(1, 1, (x, y) -> new XYPlot.TitledData<>("", "", dss)));
       }
 
       @Override

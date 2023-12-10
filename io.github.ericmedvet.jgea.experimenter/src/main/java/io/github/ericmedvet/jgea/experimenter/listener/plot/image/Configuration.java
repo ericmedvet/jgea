@@ -31,8 +31,7 @@ public record Configuration(
     Text text,
     PlotMatrix plotMatrix,
     LinePlot linePlot,
-    boolean debug
-) {
+    boolean debug) {
 
   public static final Configuration DEFAULT = new Configuration(
       General.DEFAULT, Layout.DEFAULT, Colors.DEFAULT, Text.DEFAULT, PlotMatrix.DEFAULT, LinePlot.DEFAULT, false);
@@ -45,8 +44,7 @@ public record Configuration(
       Color titleColor,
       Color axisLabelColor,
       Color tickLabelColor,
-      List<Color> dataColors
-  ) {
+      List<Color> dataColors) {
     public static final Colors DEFAULT = new Colors(
         Color.WHITE,
         new Color(230, 230, 230),
@@ -67,9 +65,7 @@ public record Configuration(
             new Color(255, 127, 0),
             new Color(202, 178, 214),
             new Color(255, 255, 153),
-            new Color(177, 89, 40)
-        )
-    );
+            new Color(177, 89, 40)));
   }
 
   public record General(
@@ -77,8 +73,7 @@ public record Configuration(
       double plotDataRatio,
       double gridStrokeSizeRate,
       double legendImageWRate,
-      double legendImageHRate
-  ) {
+      double legendImageHRate) {
     public static final General DEFAULT = new General(2, 0.9, 0.0005, 0.04, 0.025);
   }
 
@@ -95,8 +90,7 @@ public record Configuration(
       double xAxisMarginHRate,
       double xAxisInnerMarginHRate,
       double plotMarginWRate,
-      double plotMarginHRate
-  ) {
+      double plotMarginHRate) {
     public static final Layout DEFAULT = new Layout(
         0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.001, 0.001, 0.001, 0.001, 0.005, 0.005);
   }
@@ -108,11 +102,7 @@ public record Configuration(
   public record PlotMatrix(Show axesShow, Show titlesShow, Set<Independence> independences) {
 
     public static final PlotMatrix DEFAULT =
-        new PlotMatrix(
-            Show.BORDER,
-            Show.BORDER,
-            Set.of(Independence.ROWS, Independence.COLS)
-        );
+        new PlotMatrix(Show.BORDER, Show.BORDER, Set.of(Independence.ROWS, Independence.COLS));
 
     public enum Independence {
       ROWS,
@@ -124,7 +114,6 @@ public record Configuration(
       BORDER,
       ALL
     }
-
   }
 
   public record Text(double fontSizeRate, Map<Use, Double> sizeRates, String fontName) {
