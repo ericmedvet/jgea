@@ -31,7 +31,6 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 import io.github.ericmedvet.jsdynsym.grid.HashGrid;
-
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -44,7 +43,7 @@ import java.util.stream.IntStream;
 
 public class CellularAutomataBasedSolver<G, S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-    GridPopulationState<G, S, Q>, QualityBasedProblem<S, Q>, Individual<G, S, Q>, G, S, Q> {
+        GridPopulationState<G, S, Q>, QualityBasedProblem<S, Q>, Individual<G, S, Q>, G, S, Q> {
 
   protected final Map<GeneticOperator<G>, Double> operators;
   protected final Selector<? super Individual<G, S, Q>> parentSelector;
@@ -152,12 +151,12 @@ public class CellularAutomataBasedSolver<G, S, Q>
           .map(k -> state.gridPopulation().get(k))
           .filter(Objects::nonNull)
           .toList();
-      PartiallyOrderedCollection<Individual<G, S, Q>> localPoc = PartiallyOrderedCollection.from(neighbors, partialComparator(problem));
+      PartiallyOrderedCollection<Individual<G, S, Q>> localPoc =
+          PartiallyOrderedCollection.from(neighbors, partialComparator(problem));
       GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
       List<G> parentGenotypes = new ArrayList<>(operator.arity());
       for (int j = 0; j < operator.arity(); j++) {
-        parentGenotypes.add(
-            parentSelector.select(localPoc, random).genotype());
+        parentGenotypes.add(parentSelector.select(localPoc, random).genotype());
       }
       G childGenotype = operator.apply(parentGenotypes, random).get(0);
       Individual<G, S, Q> child = newIndividual(childGenotype, state, problem);
@@ -222,8 +221,7 @@ public class CellularAutomataBasedSolver<G, S, Q>
     }
   }
 
-  private record CellProcessOutcome<T>(boolean updated, Grid.Entry<T> entry) {
-  }
+  private record CellProcessOutcome<T>(boolean updated, Grid.Entry<T> entry) {}
 
   public record MooreNeighborhood(int radius, boolean toroidal) implements Neighborhood {
 
@@ -234,14 +232,12 @@ public class CellularAutomataBasedSolver<G, S, Q>
               .mapToObj(y -> new Grid.Key(x, y))
               .toList())
           .flatMap(List::stream)
-          .map(k -> toroidal
-              ? new Grid.Key(Math.floorMod(k.x(), grid.w()), Math.floorMod(k.y(), grid.h()))
-              : k)
+          .map(k ->
+              toroidal ? new Grid.Key(Math.floorMod(k.x(), grid.w()), Math.floorMod(k.y(), grid.h())) : k)
           .filter(grid::isValid)
           .toList();
     }
   }
-
 
   public static void main(String[] args) {
     System.out.println(Math.floorMod(5, 5));
