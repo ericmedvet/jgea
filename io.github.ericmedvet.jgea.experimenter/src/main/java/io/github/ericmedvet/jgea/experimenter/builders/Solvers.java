@@ -52,12 +52,14 @@ import io.github.ericmedvet.jgea.core.selector.Last;
 import io.github.ericmedvet.jgea.core.selector.Tournament;
 import io.github.ericmedvet.jgea.core.solver.*;
 import io.github.ericmedvet.jgea.core.solver.cabea.CellularAutomataBasedSolver;
+import io.github.ericmedvet.jgea.core.solver.cabea.MakeSubstrateGrid;
 import io.github.ericmedvet.jgea.core.solver.speciation.LazySpeciator;
 import io.github.ericmedvet.jgea.core.solver.speciation.SpeciatedEvolver;
 import io.github.ericmedvet.jgea.experimenter.InvertibleMapper;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
+
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -67,30 +69,37 @@ import java.util.stream.IntStream;
 @Discoverable(prefixTemplate = "ea.solver|s")
 public class Solvers {
 
-  private Solvers() {}
+  private Solvers() {
+  }
 
   @SuppressWarnings("unused")
   public static <S, Q> Function<S, CellularAutomataBasedSolver<BitString, S, Q>> bitStringCabea(
       @Param(value = "mapper") InvertibleMapper<BitString, S> mapper,
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
-      @Param(value = "pMut", dD = 0.001d) double pMut,
+      @Param(value = "pMut", dD = 0.35d) double pMut,
       @Param(value = "keepProbability", dD = 0.01d) double keepProbability,
       @Param(value = "nTour", dI = 3) int nTour,
       @Param(value = "nEval") int nEval,
       @Param(value = "toroidal", dB = true) boolean toroidal,
       @Param(value = "mooreRadius", dI = 1) int mooreRadius,
-      @Param(value = "gridSize", dI = 10) int gridSize) {
+      @Param(value = "gridSize", dI = 10) int gridSize,
+      @Param(value = "gridType", dS = "classic") String gridType) {
     return exampleS -> {
       BitString exampleGenotype = mapper.exampleFor(exampleS);
       IndependentFactory<BitString> factory = new BitStringFactory(exampleGenotype.size());
       Map<GeneticOperator<BitString>, Double> geneticOperators = Map.ofEntries(
           Map.entry(new BitStringFlipMutation(pMut), 1d - crossoverP),
           Map.entry(new BitStringUniformCrossover().andThen(new BitStringFlipMutation(pMut)), crossoverP));
+
+      MakeSubstrateGrid substrateGrid = new MakeSubstrateGrid(gridType, gridSize);
+      Grid<Boolean> grid = substrateGrid.getGrid(); // This gets the Grid object
+
       return new CellularAutomataBasedSolver<>(
           mapper.mapperFor(exampleS),
           factory,
           StopConditions.nOfFitnessEvaluations(nEval),
-          Grid.create(gridSize, gridSize, true),
+          //Grid.create(gridSize, gridSize, true),
+          grid,
           new CellularAutomataBasedSolver.MooreNeighborhood(mooreRadius, toroidal),
           keepProbability,
           geneticOperators,
@@ -103,13 +112,13 @@ public class Solvers {
       @Param(value = "mapper") InvertibleMapper<Tree<Element>, S> mapper,
       @Param(value = "keepProbability", dD = 0.01d) double keepProbability,
       @Param(
-              value = "constants",
-              dDs = {0.1, 1, 10})
-          List<Double> constants,
+          value = "constants",
+          dDs = {0.1, 1, 10})
+      List<Double> constants,
       @Param(
-              value = "operators",
-              dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
-          List<Element.Operator> operators,
+          value = "operators",
+          dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
+      List<Element.Operator> operators,
       @Param(value = "minTreeH", dI = 4) int minTreeH,
       @Param(value = "maxTreeH", dI = 10) int maxTreeH,
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
@@ -151,10 +160,48 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
+  public static <S, Q> Function<S, CellularAutomataBasedSolver<List<Double>, S, Q>> doubleStringCabea(
+      @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
+      @Param(value = "initialMinV", dD = -1d) double initialMinV,
+      @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
+      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
+      @Param(value = "sigmaMut", dD = 0.35d) double sigmaMut,
+      @Param(value = "tournamentRate", dD = 0.05d) double tournamentRate,
+      @Param(value = "minNTournament", dI = 3) int minNTournament,
+      @Param(value = "nEval") int nEval,
+      @Param(value = "diversity") boolean diversity,
+      @Param(value = "remap") boolean remap,
+      @Param(value = "pMut", dD = 0.001d) double pMut,
+      @Param(value = "keepProbability", dD = 0.01d) double keepProbability,
+      @Param(value = "nTour", dI = 3) int nTour,
+      @Param(value = "toroidal", dB = true) boolean toroidal,
+      @Param(value = "mooreRadius", dI = 1) int mooreRadius,
+      @Param(value = "gridSize", dI = 10) int gridSize) {
+    return exampleS -> {
+      IndependentFactory<List<Double>> doublesFactory = new FixedLengthListFactory<>(
+          mapper.exampleFor(exampleS).size(), new UniformDoubleFactory(initialMinV, initialMaxV));
+      Crossover<List<Double>> crossover = new HypercubeGeometricCrossover();
+      Map<GeneticOperator<List<Double>>, Double> geneticOperators = Map.ofEntries(
+          Map.entry(new GaussianMutation(sigmaMut), 1d - crossoverP),
+          Map.entry(crossover.andThen(new GaussianMutation(sigmaMut)), crossoverP));
+
+      return new CellularAutomataBasedSolver<>(
+          mapper.mapperFor(exampleS),
+          doublesFactory,
+          StopConditions.nOfFitnessEvaluations(nEval),
+          Grid.create(gridSize, gridSize, true),
+          new CellularAutomataBasedSolver.MooreNeighborhood(mooreRadius, toroidal),
+          keepProbability,
+          geneticOperators,
+          new Tournament(nTour));
+    };
+  }
+
+  @SuppressWarnings("unused")
   public static <S, Q> Function<S, StandardEvolver<BitString, S, Q>> bitStringGa(
       @Param(value = "mapper") InvertibleMapper<BitString, S> mapper,
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
-      @Param(value = "pMut", dD = 0.001d) double pMut,
+      @Param(value = "pMut", dD = 0.35d) double pMut,
       @Param(value = "tournamentRate", dD = 0.05d) double tournamentRate,
       @Param(value = "minNTournament", dI = 3) int minNTournament,
       @Param(value = "nPop", dI = 100) int nPop,
@@ -345,13 +392,13 @@ public class Solvers {
   public static <S, Q> Function<S, StandardEvolver<List<Tree<Element>>, S, Q>> multiSRTreeGp(
       @Param(value = "mapper") InvertibleMapper<List<Tree<Element>>, S> mapper,
       @Param(
-              value = "constants",
-              dDs = {0.1, 1, 10})
-          List<Double> constants,
+          value = "constants",
+          dDs = {0.1, 1, 10})
+      List<Double> constants,
       @Param(
-              value = "operators",
-              dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
-          List<Element.Operator> operators,
+          value = "operators",
+          dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
+      List<Element.Operator> operators,
       @Param(value = "minTreeH", dI = 4) int minTreeH,
       @Param(value = "maxTreeH", dI = 10) int maxTreeH,
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
@@ -435,9 +482,9 @@ public class Solvers {
       @Param(value = "maxConst", dD = 5d) double maxConst,
       @Param(value = "nConst", dI = 10) int nConst,
       @Param(
-              value = "operators",
-              dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
-          List<BaseOperator> operators,
+          value = "operators",
+          dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
+      List<BaseOperator> operators,
       @Param(value = "nPop", dI = 100) int nPop,
       @Param(value = "nEval") int nEval,
       @Param(value = "arcAdditionRate", dD = 3d) double arcAdditionRate,
@@ -450,9 +497,9 @@ public class Solvers {
       Map<GeneticOperator<Graph<Node, OperatorGraph.NonValuedArc>>, Double> geneticOperators = Map.ofEntries(
           Map.entry(
               new NodeAddition<Node, OperatorGraph.NonValuedArc>(
-                      OperatorNode.sequentialIndexFactory(operators.toArray(BaseOperator[]::new)),
-                      Mutation.copy(),
-                      Mutation.copy())
+                  OperatorNode.sequentialIndexFactory(operators.toArray(BaseOperator[]::new)),
+                  Mutation.copy(),
+                  Mutation.copy())
                   .withChecker(OperatorGraph.checker()),
               nodeAdditionRate),
           Map.entry(
@@ -461,8 +508,8 @@ public class Solvers {
               arcAdditionRate),
           Map.entry(
               new ArcRemoval<Node, OperatorGraph.NonValuedArc>(node -> (node instanceof Input)
-                      || (node instanceof Constant)
-                      || (node instanceof Output))
+                  || (node instanceof Constant)
+                  || (node instanceof Output))
                   .withChecker(OperatorGraph.checker()),
               arcRemovalRate));
       Graph<Node, OperatorGraph.NonValuedArc> graph = mapper.exampleFor(exampleS);
@@ -540,13 +587,13 @@ public class Solvers {
   public static <S, Q> Function<S, StandardEvolver<Tree<Element>, S, Q>> srTreeGp(
       @Param(value = "mapper") InvertibleMapper<Tree<Element>, S> mapper,
       @Param(
-              value = "constants",
-              dDs = {0.1, 1, 10})
-          List<Double> constants,
+          value = "constants",
+          dDs = {0.1, 1, 10})
+      List<Double> constants,
       @Param(
-              value = "operators",
-              dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
-          List<Element.Operator> operators,
+          value = "operators",
+          dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
+      List<Element.Operator> operators,
       @Param(value = "minTreeH", dI = 4) int minTreeH,
       @Param(value = "maxTreeH", dI = 10) int maxTreeH,
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
@@ -609,13 +656,13 @@ public class Solvers {
   public static <S, Q> Function<S, RandomWalk<Tree<Element>, S, Q>> srTreeRandomWalk(
       @Param(value = "mapper") InvertibleMapper<Tree<Element>, S> mapper,
       @Param(
-              value = "constants",
-              dDs = {0.1, 1, 10})
-          List<Double> constants,
+          value = "constants",
+          dDs = {0.1, 1, 10})
+      List<Double> constants,
       @Param(
-              value = "operators",
-              dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
-          List<Element.Operator> operators,
+          value = "operators",
+          dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
+      List<Element.Operator> operators,
       @Param(value = "minTreeH", dI = 4) int minTreeH,
       @Param(value = "maxTreeH", dI = 10) int maxTreeH,
       @Param(value = "nEval") int nEval,

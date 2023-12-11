@@ -30,6 +30,8 @@ import io.github.ericmedvet.jgea.core.solver.*;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
+import io.github.ericmedvet.jsdynsym.grid.HashGrid;
+
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -42,7 +44,7 @@ import java.util.stream.IntStream;
 
 public class CellularAutomataBasedSolver<G, S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        GridPopulationState<G, S, Q>, QualityBasedProblem<S, Q>, Individual<G, S, Q>, G, S, Q> {
+    GridPopulationState<G, S, Q>, QualityBasedProblem<S, Q>, Individual<G, S, Q>, G, S, Q> {
 
   protected final Map<GeneticOperator<G>, Double> operators;
   protected final Selector<? super Individual<G, S, Q>> parentSelector;
@@ -123,8 +125,8 @@ public class CellularAutomataBasedSolver<G, S, Q>
     } catch (InterruptedException e) {
       throw new SolverException(e);
     }
-    Grid<Individual<G, S, Q>> newGrid =
-        newEntries.stream().map(cpo -> cpo.entry).collect(Grid.collector());
+    Grid<Individual<G, S, Q>> newGrid = new HashGrid<>(substrate.w(), substrate.h());
+    newEntries.forEach(e -> newGrid.set(e.entry.key(), e.entry().value()));
     int updatedCells = (int) newEntries.stream().filter(cpo -> cpo.updated).count();
     return State.from(
         (State<G, S, Q>) state,
@@ -150,12 +152,12 @@ public class CellularAutomataBasedSolver<G, S, Q>
           .map(k -> state.gridPopulation().get(k))
           .filter(Objects::nonNull)
           .toList();
-      PartiallyOrderedCollection.from(neighbors, partialComparator(problem));
+      PartiallyOrderedCollection<Individual<G, S, Q>> localPoc = PartiallyOrderedCollection.from(neighbors, partialComparator(problem));
       GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
       List<G> parentGenotypes = new ArrayList<>(operator.arity());
       for (int j = 0; j < operator.arity(); j++) {
         parentGenotypes.add(
-            parentSelector.select(state.pocPopulation(), random).genotype());
+            parentSelector.select(localPoc, random).genotype());
       }
       G childGenotype = operator.apply(parentGenotypes, random).get(0);
       Individual<G, S, Q> child = newIndividual(childGenotype, state, problem);
@@ -220,25 +222,29 @@ public class CellularAutomataBasedSolver<G, S, Q>
     }
   }
 
-  private record CellProcessOutcome<T>(boolean updated, Grid.Entry<T> entry) {}
+  private record CellProcessOutcome<T>(boolean updated, Grid.Entry<T> entry) {
+  }
 
   public record MooreNeighborhood(int radius, boolean toroidal) implements Neighborhood {
 
     @Override
     public <T> List<Grid.Key> of(Grid<T> grid, Grid.Key key) {
-      int gridWidth = grid.w(); // Get the width of the grid
-      int gridHeight = grid.h(); // Get the height of the grid
-
       return IntStream.rangeClosed(key.x() - radius, key.x() + radius)
           .mapToObj(x -> IntStream.rangeClosed(key.y() - radius, key.y() + radius)
               .mapToObj(y -> new Grid.Key(x, y))
               .toList())
           .flatMap(List::stream)
           .map(k -> toroidal
-              ? new Grid.Key(Math.floorDiv(k.x(), gridWidth), Math.floorDiv(k.y(), gridHeight))
+              ? new Grid.Key(Math.floorMod(k.x(), grid.w()), Math.floorMod(k.y(), grid.h()))
               : k)
           .filter(grid::isValid)
           .toList();
     }
+  }
+
+
+  public static void main(String[] args) {
+    System.out.println(Math.floorMod(5, 5));
+    System.out.println(Math.floorMod(4, 5));
   }
 }
