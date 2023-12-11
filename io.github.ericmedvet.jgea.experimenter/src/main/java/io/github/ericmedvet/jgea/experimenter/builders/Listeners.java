@@ -112,6 +112,7 @@ public class Listeners {
               Configuration.PlotMatrix.Show.BORDER,
               Set.of(Configuration.PlotMatrix.Independence.ALL)),
           Configuration.LinePlot.DEFAULT,
+          Configuration.GridPlot.DEFAULT,
           false);
     }
     ImagePlotter imagePlotter = new ImagePlotter(w, h, configuration);

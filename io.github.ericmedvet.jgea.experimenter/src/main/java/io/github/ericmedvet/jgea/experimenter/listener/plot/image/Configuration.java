@@ -31,10 +31,18 @@ public record Configuration(
     Text text,
     PlotMatrix plotMatrix,
     LinePlot linePlot,
+    GridPlot gridPlot,
     boolean debug) {
 
   public static final Configuration DEFAULT = new Configuration(
-      General.DEFAULT, Layout.DEFAULT, Colors.DEFAULT, Text.DEFAULT, PlotMatrix.DEFAULT, LinePlot.DEFAULT, false);
+      General.DEFAULT,
+      Layout.DEFAULT,
+      Colors.DEFAULT,
+      Text.DEFAULT,
+      PlotMatrix.DEFAULT,
+      LinePlot.DEFAULT,
+      GridPlot.DEFAULT,
+      false);
 
   public record Colors(
       Color bgColor,
@@ -44,7 +52,11 @@ public record Configuration(
       Color titleColor,
       Color axisLabelColor,
       Color tickLabelColor,
-      List<Color> dataColors) {
+      List<Color> dataColors,
+      ColorRange continuousDataColorRange) {
+
+    public record ColorRange(Color min, Color max) {}
+
     public static final Colors DEFAULT = new Colors(
         Color.WHITE,
         new Color(230, 230, 230),
@@ -65,16 +77,12 @@ public record Configuration(
             new Color(255, 127, 0),
             new Color(202, 178, 214),
             new Color(255, 255, 153),
-            new Color(177, 89, 40)));
+            new Color(177, 89, 40)),
+        new ColorRange(new Color(31, 120, 180), new Color(227, 26, 28)));
   }
 
-  public record General(
-      double tickLabelGapRatio,
-      double plotDataRatio,
-      double gridStrokeSizeRate,
-      double legendImageWRate,
-      double legendImageHRate) {
-    public static final General DEFAULT = new General(2, 0.9, 0.0005, 0.04, 0.025);
+  public record General(double tickLabelGapRatio, double plotDataRatio, double gridStrokeSizeRate) {
+    public static final General DEFAULT = new General(2, 0.9, 0.0005);
   }
 
   public record Layout(
@@ -95,8 +103,12 @@ public record Configuration(
         0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.001, 0.001, 0.001, 0.001, 0.005, 0.005);
   }
 
-  public record LinePlot(double dataStrokeSize, double alpha) {
-    public static final LinePlot DEFAULT = new LinePlot(0.0025, 0.3);
+  public record LinePlot(double dataStrokeSize, double alpha, double legendImageWRate, double legendImageHRate) {
+    public static final LinePlot DEFAULT = new LinePlot(0.0025, 0.3, 0.04, 0.025);
+  }
+
+  public record GridPlot(double cellSideRate, int legendSteps, double legendImageWRate, double legendImageHRate) {
+    public static final GridPlot DEFAULT = new GridPlot(0.9, 100, 0.2, 0.025);
   }
 
   public record PlotMatrix(Show axesShow, Show titlesShow, Set<Independence> independences) {

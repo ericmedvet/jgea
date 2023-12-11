@@ -19,6 +19,9 @@
  */
 package io.github.ericmedvet.jgea.experimenter.listener.plot.image;
 
+import io.github.ericmedvet.jgea.experimenter.listener.plot.SingleGridPlot;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeriesPlot;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlot;
 import java.awt.geom.Rectangle2D;
 
 record Layout(
@@ -36,7 +39,8 @@ record Layout(
     double yAxisW,
     double colTitleH,
     double rowTitleW,
-    Configuration.Layout configuration) {
+    Configuration.Layout configuration,
+    XYPlot<?> plot) {
   Layout refit(double newXAxisH, double newYAxisW) {
     return new Layout(
         w,
@@ -53,7 +57,8 @@ record Layout(
         yAxisW == 0 ? 0 : newYAxisW,
         colTitleH,
         rowTitleW,
-        configuration);
+        configuration,
+        plot);
   }
 
   double plotInnerW() {
@@ -162,14 +167,37 @@ record Layout(
   }
 
   Rectangle2D innerPlot(int plotX, int plotY) {
-    return new Rectangle2D.Double(
-        commonYAxesW + (double) plotX * plotOuterW() + yAxisW + configuration.plotMarginWRate() * w,
-        mainTitleH
-            + commonColTitleH
-            + (double) plotY * plotOuterH()
-            + colTitleH
-            + configuration.plotMarginHRate() * h,
-        plotInnerW() - 2d * configuration.plotMarginWRate() * w,
-        plotInnerH() - 2d * configuration.plotMarginHRate() * h);
+    if (plot instanceof XYDataSeriesPlot) {
+      return new Rectangle2D.Double(
+          commonYAxesW + (double) plotX * plotOuterW() + yAxisW + configuration.plotMarginWRate() * w,
+          mainTitleH
+              + commonColTitleH
+              + (double) plotY * plotOuterH()
+              + colTitleH
+              + configuration.plotMarginHRate() * h,
+          plotInnerW() - 2d * configuration.plotMarginWRate() * w,
+          plotInnerH() - 2d * configuration.plotMarginHRate() * h);
+    } else if (plot instanceof SingleGridPlot) {
+      double sideW = plotInnerW() - 2d * configuration.plotMarginWRate() * w;
+      double sideH = plotInnerH() - 2d * configuration.plotMarginHRate() * h;
+      double side = Math.min(sideW, sideH);
+      return new Rectangle2D.Double(
+          commonYAxesW
+              + (double) plotX * plotOuterW()
+              + yAxisW
+              + configuration.plotMarginWRate() * w
+              + (sideW - side) / 2d,
+          mainTitleH
+              + commonColTitleH
+              + (double) plotY * plotOuterH()
+              + colTitleH
+              + configuration.plotMarginHRate() * h
+              + (sideH - side) / 2d,
+          side,
+          side);
+    } else {
+      throw new UnsupportedOperationException("Cannot compute layout for plot %s"
+          .formatted(plot.getClass().getSimpleName()));
+    }
   }
 }
