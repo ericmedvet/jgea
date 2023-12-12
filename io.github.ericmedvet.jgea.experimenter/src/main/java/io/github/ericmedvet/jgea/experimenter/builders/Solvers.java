@@ -82,7 +82,7 @@ public class Solvers {
       @Param(value = "toroidal", dB = true) boolean toroidal,
       @Param(value = "mooreRadius", dI = 1) int mooreRadius,
       @Param(value = "gridSize", dI = 10) int gridSize,
-      @Param(value = "substrateFiller", dS = "empty") SubstrateFiller.Predefined substrateFiller) {
+      @Param(value = "substrate", dS = "empty") SubstrateFiller.Predefined substrate) {
     return exampleS -> {
       BitString exampleGenotype = mapper.exampleFor(exampleS);
       IndependentFactory<BitString> factory = new BitStringFactory(exampleGenotype.size());
@@ -93,7 +93,7 @@ public class Solvers {
           mapper.mapperFor(exampleS),
           factory,
           StopConditions.nOfFitnessEvaluations(nEval),
-          substrateFiller.apply(Grid.create(gridSize, gridSize, true)),
+          substrate.apply(Grid.create(gridSize, gridSize, true)),
           new CellularAutomataBasedSolver.MooreNeighborhood(mooreRadius, toroidal),
           keepProbability,
           geneticOperators,
@@ -211,7 +211,7 @@ public class Solvers {
       @Param(value = "toroidal", dB = true) boolean toroidal,
       @Param(value = "mooreRadius", dI = 1) int mooreRadius,
       @Param(value = "gridSize", dI = 10) int gridSize,
-      @Param(value = "substrateFiller", dS = "empty") SubstrateFiller.Predefined substrateFiller) {
+      @Param(value = "substrate", dS = "empty") SubstrateFiller.Predefined substrate) {
     return exampleS -> {
       IndependentFactory<List<Double>> doublesFactory = new FixedLengthListFactory<>(
           mapper.exampleFor(exampleS).size(), new UniformDoubleFactory(initialMinV, initialMaxV));
@@ -224,7 +224,7 @@ public class Solvers {
           mapper.mapperFor(exampleS),
           doublesFactory,
           StopConditions.nOfFitnessEvaluations(nEval),
-          substrateFiller.apply(Grid.create(gridSize, gridSize, true)),
+          substrate.apply(Grid.create(gridSize, gridSize, true)),
           new CellularAutomataBasedSolver.MooreNeighborhood(mooreRadius, toroidal),
           keepProbability,
           geneticOperators,
@@ -564,7 +564,7 @@ public class Solvers {
       @Param(value = "toroidal", dB = true) boolean toroidal,
       @Param(value = "mooreRadius", dI = 1) int mooreRadius,
       @Param(value = "gridSize", dI = 10) int gridSize,
-      @Param(value = "substrateFiller", dS = "empty") SubstrateFiller.Predefined substrateFiller) {
+      @Param(value = "substrate", dS = "empty") SubstrateFiller.Predefined substrate) {
     return exampleS -> {
       List<Element.Variable> variables = mapper.exampleFor(exampleS).visitDepth().stream()
           .filter(e -> e instanceof Element.Variable)
@@ -589,7 +589,7 @@ public class Solvers {
           mapper.mapperFor(exampleS),
           treeFactory,
           StopConditions.nOfFitnessEvaluations(nEval),
-          substrateFiller.apply(Grid.create(gridSize, gridSize, true)),
+          substrate.apply(Grid.create(gridSize, gridSize, true)),
           new CellularAutomataBasedSolver.MooreNeighborhood(mooreRadius, toroidal),
           keepProbability,
           geneticOperators,
