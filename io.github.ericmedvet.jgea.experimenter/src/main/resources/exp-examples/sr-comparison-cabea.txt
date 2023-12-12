@@ -8,12 +8,17 @@ ea.experiment(
       ea.p.ur.synthetic(name = "nguyen7");
       ea.p.ur.bundled(name = "concrete")
     ]) *
+<<<<<<<< HEAD:io.github.ericmedvet.jgea.experimenter/src/main/resources/exp-examples/sr-comparison-pkeep.txt
     (solver = (nEval = [10000]) * [
+========
+    (solver = (nEval = [1000]) * [
+>>>>>>>> origin/develop:io.github.ericmedvet.jgea.experimenter/src/main/resources/exp-examples/sr-comparison-cabea.txt
       ea.s.srTreeGp(
         mapper = ea.m.srTreeToUrf()
       );
       ea.s.srTreeCabea(
         mapper = ea.m.srTreeToUrf();
+<<<<<<<< HEAD:io.github.ericmedvet.jgea.experimenter/src/main/resources/exp-examples/sr-comparison-pkeep.txt
         keepProbability = 0.0
       );
       ea.s.srTreeCabea(
@@ -31,6 +36,10 @@ ea.experiment(
       ea.s.srTreeCabea(
         mapper = ea.m.srTreeToUrf();
         keepProbability = 0.35
+========
+        gridSize = 10;
+        mooreRadius = 1
+>>>>>>>> origin/develop:io.github.ericmedvet.jgea.experimenter/src/main/resources/exp-examples/sr-comparison-cabea.txt
       )
     ]) * [
     ea.run()
@@ -47,13 +56,21 @@ ea.experiment(
       runKeys = ["{solver:%#s}"; "{problem.name}"]
     );
     ea.l.bestCsv(
+<<<<<<<< HEAD:io.github.ericmedvet.jgea.experimenter/src/main/resources/exp-examples/sr-comparison-pkeep.txt
       filePath = "/home/gpietrop/cabea/ds/sr_pk.csv";
+========
+      filePath = "/home/gpietrop/cabea/ds/sr.csv";
+>>>>>>>> origin/develop:io.github.ericmedvet.jgea.experimenter/src/main/resources/exp-examples/sr-comparison-cabea.txt
       functions = [
         ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
         ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
         ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.2f")
       ];
+<<<<<<<< HEAD:io.github.ericmedvet.jgea.experimenter/src/main/resources/exp-examples/sr-comparison-pkeep.txt
       runKeys = ["{solver:%#s}"; "{problem.name}"; "{solver.keepProbability}"; "{solver.gridSize}"; "{solver.mooreRadius}"]
+========
+      runKeys = ["{solver:%#s}"; "{problem.name}"; "{solver.gridSize}"; "{solver.mooreRadius}"]
+>>>>>>>> origin/develop:io.github.ericmedvet.jgea.experimenter/src/main/resources/exp-examples/sr-comparison-cabea.txt
     )
   ]
 )

@@ -52,6 +52,7 @@ import io.github.ericmedvet.jgea.core.selector.Last;
 import io.github.ericmedvet.jgea.core.selector.Tournament;
 import io.github.ericmedvet.jgea.core.solver.*;
 import io.github.ericmedvet.jgea.core.solver.cabea.CellularAutomataBasedSolver;
+import io.github.ericmedvet.jgea.core.solver.cabea.SubstrateFiller;
 import io.github.ericmedvet.jgea.core.solver.speciation.LazySpeciator;
 import io.github.ericmedvet.jgea.core.solver.speciation.SpeciatedEvolver;
 import io.github.ericmedvet.jgea.experimenter.InvertibleMapper;
@@ -73,13 +74,14 @@ public class Solvers {
   public static <S, Q> Function<S, CellularAutomataBasedSolver<BitString, S, Q>> bitStringCabea(
       @Param(value = "mapper") InvertibleMapper<BitString, S> mapper,
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
-      @Param(value = "pMut", dD = 0.001d) double pMut,
+      @Param(value = "pMut", dD = 0.35d) double pMut,
       @Param(value = "keepProbability", dD = 0.01d) double keepProbability,
       @Param(value = "nTour", dI = 3) int nTour,
       @Param(value = "nEval") int nEval,
       @Param(value = "toroidal", dB = true) boolean toroidal,
       @Param(value = "mooreRadius", dI = 1) int mooreRadius,
-      @Param(value = "gridSize", dI = 10) int gridSize) {
+      @Param(value = "gridSize", dI = 10) int gridSize,
+      @Param(value = "substrateFiller", dS = "empty") SubstrateFiller.Predefined substrateFiller) {
     return exampleS -> {
       BitString exampleGenotype = mapper.exampleFor(exampleS);
       IndependentFactory<BitString> factory = new BitStringFactory(exampleGenotype.size());
@@ -90,7 +92,7 @@ public class Solvers {
           mapper.mapperFor(exampleS),
           factory,
           StopConditions.nOfFitnessEvaluations(nEval),
-          Grid.create(gridSize, gridSize, true),
+          substrateFiller.apply(Grid.create(gridSize, gridSize, true)),
           new CellularAutomataBasedSolver.MooreNeighborhood(mooreRadius, toroidal),
           keepProbability,
           geneticOperators,
@@ -117,7 +119,8 @@ public class Solvers {
       @Param(value = "nEval") int nEval,
       @Param(value = "toroidal", dB = true) boolean toroidal,
       @Param(value = "mooreRadius", dI = 1) int mooreRadius,
-      @Param(value = "gridSize", dI = 10) int gridSize) {
+      @Param(value = "gridSize", dI = 10) int gridSize,
+      @Param(value = "substrateFiller", dS = "contour") SubstrateFiller.Predefined substrateFiller) {
     return exampleS -> {
       List<Element.Variable> variables = mapper.exampleFor(exampleS).visitDepth().stream()
           .filter(e -> e instanceof Element.Variable)
@@ -142,7 +145,7 @@ public class Solvers {
           mapper.mapperFor(exampleS),
           treeFactory,
           StopConditions.nOfFitnessEvaluations(nEval),
-          Grid.create(gridSize, gridSize, true),
+          substrateFiller.apply(Grid.create(gridSize, gridSize, true)),
           new CellularAutomataBasedSolver.MooreNeighborhood(mooreRadius, toroidal),
           keepProbability,
           geneticOperators,
@@ -167,7 +170,8 @@ public class Solvers {
       @Param(value = "nTour", dI = 3) int nTour,
       @Param(value = "toroidal", dB = true) boolean toroidal,
       @Param(value = "mooreRadius", dI = 1) int mooreRadius,
-      @Param(value = "gridSize", dI = 10) int gridSize) {
+      @Param(value = "gridSize", dI = 10) int gridSize,
+      @Param(value = "substrateFiller", dS = "empty") SubstrateFiller.Predefined substrateFiller) {
     return exampleS -> {
       IndependentFactory<List<Double>> doublesFactory = new FixedLengthListFactory<>(
           mapper.exampleFor(exampleS).size(), new UniformDoubleFactory(initialMinV, initialMaxV));
@@ -180,7 +184,7 @@ public class Solvers {
           mapper.mapperFor(exampleS),
           doublesFactory,
           StopConditions.nOfFitnessEvaluations(nEval),
-          Grid.create(gridSize, gridSize, true),
+          substrateFiller.apply(Grid.create(gridSize, gridSize, true)),
           new CellularAutomataBasedSolver.MooreNeighborhood(mooreRadius, toroidal),
           keepProbability,
           geneticOperators,
@@ -260,6 +264,27 @@ public class Solvers {
         new FixedLengthListFactory<>(
             mapper.exampleFor(exampleS).size(), new UniformDoubleFactory(initialMinV, initialMaxV)),
         StopConditions.nOfFitnessEvaluations(nEval));
+  }
+
+  @SuppressWarnings("unused")
+  public static <S, Q> Function<S, ParticleSwarmOptimization<S, Q>> pso(
+      @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
+      @Param(value = "initialMinV", dD = -1d) double initialMinV,
+      @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
+      @Param(value = "nEval") int nEval,
+      @Param(value = "nPop", dI = 100) int nPop,
+      @Param(value = "w", dD = 0.8d) double w,
+      @Param(value = "phiParticle", dD = 1.5d) double phiParticle,
+      @Param(value = "phiParticle", dD = 1.5d) double phiGlobal) {
+    return exampleS -> new ParticleSwarmOptimization<>(
+        mapper.mapperFor(exampleS),
+        new FixedLengthListFactory<>(
+            mapper.exampleFor(exampleS).size(), new UniformDoubleFactory(initialMinV, initialMaxV)),
+        StopConditions.nOfFitnessEvaluations(nEval),
+        nPop,
+        w,
+        phiParticle,
+        phiGlobal);
   }
 
   @SuppressWarnings("unused")

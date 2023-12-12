@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * jgea-core
+ * jgea-experimenter
  * %%
  * Copyright (C) 2018 - 2023 Eric Medvet
  * %%
@@ -17,31 +17,22 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jgea.experimenter.util;
+package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
-import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
-import io.github.ericmedvet.jgea.core.listener.NamedFunction;
+import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+import io.github.ericmedvet.jsdynsym.grid.Grid;
 import java.util.List;
 
-public interface PlotTableBuilder<E> extends AccumulatorFactory<E, XYPlotTable, Object> {
-
-  NamedFunction<? super E, ? extends Number> xFunction();
-
-  List<NamedFunction<? super E, ? extends Number>> yFunctions();
-
-  default String xFormat() {
-    return xFunction().getFormat();
-  }
-
-  default String xName() {
-    return xFunction().getName();
-  }
-
-  default List<String> yFormats() {
-    return yFunctions().stream().map(NamedFunction::getFormat).toList();
-  }
-
-  default List<String> yNames() {
-    return yFunctions().stream().map(NamedFunction::getName).toList();
-  }
-}
+/**
+ * @author "Eric Medvet" on 2023/12/10 for jgea
+ */
+public record XYDataSeriesPlot(
+    String title,
+    String xTitleName,
+    String yTitleName,
+    String xName,
+    String yName,
+    DoubleRange xRange,
+    DoubleRange yRange,
+    Grid<TitledData<List<XYDataSeries>>> dataGrid)
+    implements XYPlot<List<XYDataSeries>> {}

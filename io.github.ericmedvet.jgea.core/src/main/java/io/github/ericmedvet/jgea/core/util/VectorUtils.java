@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntToDoubleFunction;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -62,6 +63,27 @@ public class VectorUtils {
   public static void checkLengths(double[] v1, double[] v2) {
     if (v1.length != v2.length) {
       throw new IllegalArgumentException("Wrong arg lengths: %d and %d".formatted(v1.length, v2.length));
+    }
+  }
+
+  public static void checkLengths(double[]... vs) {
+    if (Arrays.stream(vs).mapToInt(v -> v.length).distinct().count() != 1) {
+      throw new IllegalArgumentException("Wrong arg lengths: %s"
+          .formatted(Arrays.stream(vs)
+              .map(v -> Integer.toString(v.length))
+              .distinct()
+              .collect(Collectors.joining(", "))));
+    }
+  }
+
+  @SafeVarargs
+  public static void checkLengths(List<Double>... vs) {
+    if (Arrays.stream(vs).mapToInt(List::size).distinct().count() != 1) {
+      throw new IllegalArgumentException("Wrong arg lengths: %s"
+          .formatted(Arrays.stream(vs)
+              .map(v -> Integer.toString(v.size()))
+              .distinct()
+              .collect(Collectors.joining(", "))));
     }
   }
 
@@ -218,6 +240,16 @@ public class VectorUtils {
     return outV;
   }
 
+  public static double[] sum(double[]... vs) {
+    checkLengths(vs);
+    double[] outV = new double[vs[0].length];
+    for (int i = 0; i < outV.length; i++) {
+      final int localI = i;
+      outV[i] = Arrays.stream(vs).mapToDouble(v -> v[localI]).sum();
+    }
+    return outV;
+  }
+
   public static double[] sum(double[] v, double a) {
     double[] outV = new double[v.length];
     for (int i = 0; i < outV.length; i++) {
@@ -234,6 +266,14 @@ public class VectorUtils {
     checkLengths(v1, v2);
     return IntStream.range(0, v1.size())
         .mapToObj(i -> v1.get(i) + v2.get(i))
+        .toList();
+  }
+
+  @SafeVarargs
+  public static List<Double> sum(List<Double>... vs) {
+    checkLengths(vs);
+    return IntStream.range(0, vs[0].size())
+        .mapToObj(i -> Arrays.stream(vs).mapToDouble(v -> v.get(i)).sum())
         .toList();
   }
 
