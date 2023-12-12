@@ -33,7 +33,6 @@ module io.github.ericmedvet.jgea.experimenter {
   requires io.github.ericmedvet.jgea.problem;
   requires io.github.ericmedvet.jsdynsym.core;
   requires io.github.ericmedvet.jsdynsym.buildable;
-  requires io.github.ericmedvet.mrsim2d.viewer;
   requires java.desktop;
   requires java.telegram.bot.api;
   requires java.logging;
