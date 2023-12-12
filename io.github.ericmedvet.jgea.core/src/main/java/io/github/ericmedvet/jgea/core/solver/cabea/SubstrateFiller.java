@@ -31,7 +31,7 @@ public interface SubstrateFiller extends Function<Grid<Boolean>, Grid<Boolean>> 
     H_HALVED(new HorizontalSections(2)),
     V_HALVED(new VerticalSections(2)),
     CROSS(new HorizontalSections(2).andThen(new VerticalSections(2))),
-    COUNTOUR_CROSS(new Contour().andThen(new HorizontalSections(2).andThen(new VerticalSections(2))));
+    CONTOUR_CROSS(new Contour().andThen(new HorizontalSections(2).andThen(new VerticalSections(2))));
     private final Function<Grid<Boolean>, Grid<Boolean>> inner;
 
     Predefined(Function<Grid<Boolean>, Grid<Boolean>> inner) {
@@ -54,14 +54,15 @@ public interface SubstrateFiller extends Function<Grid<Boolean>, Grid<Boolean>> 
   record HorizontalSections(int n) implements SubstrateFiller {
     @Override
     public Grid<Boolean> apply(Grid<Boolean> grid) {
-      return grid.map((k, b) -> Math.floorMod(k.y(), (grid.h() / n)) == 0 ? !b : b);
+      return grid.map((k, b) -> ((k.y() + 1) % Math.ceil((double) grid.h() / (double) n)) == 0 ? !b : b);
     }
   }
 
   record VerticalSections(int n) implements SubstrateFiller {
     @Override
     public Grid<Boolean> apply(Grid<Boolean> grid) {
-      return grid.map((k, b) -> Math.floorMod(k.x(), (grid.w() / n)) == 0 ? !b : b);
+      return grid.map((k, b) -> ((k.x() + 1) % Math.ceil((double) grid.w() / (double) n)) == 0 ? !b : b);
     }
   }
+
 }
