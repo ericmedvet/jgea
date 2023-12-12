@@ -19,9 +19,10 @@
  */
 package io.github.ericmedvet.jgea.experimenter.listener.plot.image;
 
-import io.github.ericmedvet.jgea.experimenter.listener.plot.SingleGridPlot;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.UnivariateGridPlot;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeriesPlot;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlot;
+
 import java.awt.geom.Rectangle2D;
 
 record Layout(
@@ -41,56 +42,12 @@ record Layout(
     double rowTitleW,
     Configuration.Layout configuration,
     XYPlot<?> plot) {
-  Layout refit(double newXAxisH, double newYAxisW) {
-    return new Layout(
-        w,
-        h,
-        plotCols,
-        plotRows,
-        mainTitleH,
-        legendH,
-        commonColTitleH,
-        commonRowTitleW,
-        commonXAxesH == 0 ? 0 : newXAxisH,
-        commonYAxesW == 0 ? 0 : newYAxisW,
-        xAxisH == 0 ? 0 : newXAxisH,
-        yAxisW == 0 ? 0 : newYAxisW,
-        colTitleH,
-        rowTitleW,
-        configuration,
-        plot);
-  }
-
-  double plotInnerW() {
-    return plotOuterW() - yAxisW - rowTitleW;
-  }
-
-  double plotOuterW() {
-    return (w - commonYAxesW - commonRowTitleW) / (double) plotCols;
-  }
-
-  double plotInnerH() {
-    return plotOuterH() - xAxisH - colTitleH;
-  }
-
-  double plotOuterH() {
-    return (h - mainTitleH - commonColTitleH - legendH - commonXAxesH) / (double) plotRows;
-  }
-
-  Rectangle2D mainTitle() {
+  Rectangle2D colTitle(int plotX, int plotY) {
     return new Rectangle2D.Double(
-        0,
-        configuration.mainTitleMarginHRate() * h,
-        w,
-        mainTitleH - 2d * configuration.mainTitleMarginHRate() * h);
-  }
-
-  Rectangle2D legend() {
-    return new Rectangle2D.Double(
-        configuration.legendMarginWRate() * w,
-        h - legendH + configuration.legendMarginHRate() * h,
-        w - 2d * configuration.legendMarginWRate() * w,
-        legendH - 2d * configuration.legendMarginHRate() * h);
+        commonYAxesW + (double) plotX * plotOuterW() + yAxisW,
+        mainTitleH + commonColTitleH + (double) plotY * plotOuterH() + configuration.colTitleMarginHRate() * h,
+        plotInnerW(),
+        colTitleH - 2d * configuration.colTitleMarginHRate() * h);
   }
 
   Rectangle2D commonColTitle(int plotX) {
@@ -125,47 +82,6 @@ record Layout(
         innerPlot(0, plotY).getHeight());
   }
 
-  Rectangle2D colTitle(int plotX, int plotY) {
-    return new Rectangle2D.Double(
-        commonYAxesW + (double) plotX * plotOuterW() + yAxisW,
-        mainTitleH + commonColTitleH + (double) plotY * plotOuterH() + configuration.colTitleMarginHRate() * h,
-        plotInnerW(),
-        colTitleH - 2d * configuration.colTitleMarginHRate() * h);
-  }
-
-  Rectangle2D rowTitle(int plotX, int plotY) {
-    return new Rectangle2D.Double(
-        commonYAxesW
-            + yAxisW
-            + (double) plotX * plotOuterW()
-            + plotInnerW()
-            + configuration.rowTitleMarginWRate() * w,
-        mainTitleH + commonColTitleH + (double) plotY * plotOuterH() + colTitleH,
-        rowTitleW - 2d * configuration.rowTitleMarginWRate() * w,
-        plotInnerH());
-  }
-
-  Rectangle2D yAxis(int plotX, int plotY) {
-    return new Rectangle2D.Double(
-        commonYAxesW + (double) plotX * plotOuterW() + configuration.yAxisMarginWRate() * w,
-        innerPlot(plotX, plotY).getY(),
-        yAxisW - 2d * configuration.yAxisMarginWRate() * w,
-        innerPlot(plotX, plotY).getHeight());
-  }
-
-  Rectangle2D xAxis(int plotX, int plotY) {
-    return new Rectangle2D.Double(
-        innerPlot(plotX, plotY).getX(),
-        mainTitleH
-            + commonColTitleH
-            + (double) plotY * plotOuterH()
-            + colTitleH
-            + plotInnerH()
-            + configuration.xAxisMarginHRate() * h,
-        innerPlot(plotX, plotY).getWidth(),
-        xAxisH - 2d * configuration.xAxisMarginHRate() * h);
-  }
-
   Rectangle2D innerPlot(int plotX, int plotY) {
     if (plot instanceof XYDataSeriesPlot) {
       return new Rectangle2D.Double(
@@ -177,7 +93,7 @@ record Layout(
               + configuration.plotMarginHRate() * h,
           plotInnerW() - 2d * configuration.plotMarginWRate() * w,
           plotInnerH() - 2d * configuration.plotMarginHRate() * h);
-    } else if (plot instanceof SingleGridPlot) {
+    } else if (plot instanceof UnivariateGridPlot) {
       double sideW = plotInnerW() - 2d * configuration.plotMarginWRate() * w;
       double sideH = plotInnerH() - 2d * configuration.plotMarginHRate() * h;
       double side = Math.min(sideW, sideH);
@@ -199,5 +115,90 @@ record Layout(
       throw new UnsupportedOperationException("Cannot compute layout for plot %s"
           .formatted(plot.getClass().getSimpleName()));
     }
+  }
+
+  Rectangle2D legend() {
+    return new Rectangle2D.Double(
+        configuration.legendMarginWRate() * w,
+        h - legendH + configuration.legendMarginHRate() * h,
+        w - 2d * configuration.legendMarginWRate() * w,
+        legendH - 2d * configuration.legendMarginHRate() * h);
+  }
+
+  Rectangle2D mainTitle() {
+    return new Rectangle2D.Double(
+        0,
+        configuration.mainTitleMarginHRate() * h,
+        w,
+        mainTitleH - 2d * configuration.mainTitleMarginHRate() * h);
+  }
+
+  double plotInnerH() {
+    return plotOuterH() - xAxisH - colTitleH;
+  }
+
+  double plotInnerW() {
+    return plotOuterW() - yAxisW - rowTitleW;
+  }
+
+  double plotOuterH() {
+    return (h - mainTitleH - commonColTitleH - legendH - commonXAxesH) / (double) plotRows;
+  }
+
+  double plotOuterW() {
+    return (w - commonYAxesW - commonRowTitleW) / (double) plotCols;
+  }
+
+  Layout refit(double newXAxisH, double newYAxisW) {
+    return new Layout(
+        w,
+        h,
+        plotCols,
+        plotRows,
+        mainTitleH,
+        legendH,
+        commonColTitleH,
+        commonRowTitleW,
+        commonXAxesH == 0 ? 0 : newXAxisH,
+        commonYAxesW == 0 ? 0 : newYAxisW,
+        xAxisH == 0 ? 0 : newXAxisH,
+        yAxisW == 0 ? 0 : newYAxisW,
+        colTitleH,
+        rowTitleW,
+        configuration,
+        plot);
+  }
+
+  Rectangle2D rowTitle(int plotX, int plotY) {
+    return new Rectangle2D.Double(
+        commonYAxesW
+            + yAxisW
+            + (double) plotX * plotOuterW()
+            + plotInnerW()
+            + configuration.rowTitleMarginWRate() * w,
+        mainTitleH + commonColTitleH + (double) plotY * plotOuterH() + colTitleH,
+        rowTitleW - 2d * configuration.rowTitleMarginWRate() * w,
+        plotInnerH());
+  }
+
+  Rectangle2D xAxis(int plotX, int plotY) {
+    return new Rectangle2D.Double(
+        innerPlot(plotX, plotY).getX(),
+        mainTitleH
+            + commonColTitleH
+            + (double) plotY * plotOuterH()
+            + colTitleH
+            + plotInnerH()
+            + configuration.xAxisMarginHRate() * h,
+        innerPlot(plotX, plotY).getWidth(),
+        xAxisH - 2d * configuration.xAxisMarginHRate() * h);
+  }
+
+  Rectangle2D yAxis(int plotX, int plotY) {
+    return new Rectangle2D.Double(
+        commonYAxesW + (double) plotX * plotOuterW() + configuration.yAxisMarginWRate() * w,
+        innerPlot(plotX, plotY).getY(),
+        yAxisW - 2d * configuration.yAxisMarginWRate() * w,
+        innerPlot(plotX, plotY).getHeight());
   }
 }
