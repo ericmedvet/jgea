@@ -23,28 +23,25 @@ package io.github.ericmedvet.jgea.experimenter.builders;
 import io.github.ericmedvet.jgea.core.listener.*;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
-import io.github.ericmedvet.jgea.core.solver.cabea.GridPopulationState;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.Utils;
-import io.github.ericmedvet.jgea.experimenter.listener.HeatMapVideoAccumulatorFactory;
 import io.github.ericmedvet.jgea.experimenter.listener.decoupled.*;
 import io.github.ericmedvet.jgea.experimenter.listener.net.NetMultiSink;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.SingleXYDataSeriesPlotAccumulatorFactory;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlot;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.image.Configuration;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.image.ImagePlotter;
 import io.github.ericmedvet.jgea.experimenter.listener.telegram.TelegramUpdater;
-import io.github.ericmedvet.jgea.experimenter.util.ImagePlotters;
-import io.github.ericmedvet.jgea.experimenter.util.PlotTableBuilder;
 import io.github.ericmedvet.jnb.core.*;
-import java.awt.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 
 @Discoverable(prefixTemplate = "ea.listener|l")
 public class Listeners {
@@ -95,6 +92,69 @@ public class Listeners {
 
   @SuppressWarnings("unused")
   public static <G, S, Q>
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
+          expPlotSaver(
+              @Param("plot")
+                  AccumulatorFactory<POCPopulationState<?, G, S, Q>, XYPlot<?>, Run<?, G, S, Q>> plot,
+              @Param(value = "w", dI = 800) int w,
+              @Param(value = "h", dI = 800) int h,
+              @Param(value = "freeScales") boolean freeScales,
+              @Param("filePath") String filePath) {
+    Configuration configuration = Configuration.DEFAULT;
+    if (freeScales) {
+      configuration = new Configuration(
+          Configuration.General.DEFAULT,
+          Configuration.Layout.DEFAULT,
+          Configuration.Colors.DEFAULT,
+          Configuration.Text.DEFAULT,
+          new Configuration.PlotMatrix(
+              Configuration.PlotMatrix.Show.ALL,
+              Configuration.PlotMatrix.Show.BORDER,
+              Set.of(Configuration.PlotMatrix.Independence.ALL)),
+          Configuration.LinePlot.DEFAULT,
+          Configuration.GridPlot.DEFAULT,
+          false);
+    }
+    ImagePlotter imagePlotter = new ImagePlotter(w, h, configuration);
+    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
+        plot.thenOnShutdown(ps -> {
+          File file = Misc.checkExistenceAndChangeName(new File(filePath));
+          try {
+            ImageIO.write(imagePlotter.plot(ps.get(ps.size() - 1)), "png", file);
+          } catch (IOException e) {
+            L.severe("Cannot save plot at `%s`: %s".formatted(file.getPath(), e));
+          }
+        }),
+        executorService,
+        false);
+  }
+
+  @SuppressWarnings("unused")
+  public static <G, S, Q>
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
+          runPlotSaver(
+              @Param("plot")
+                  AccumulatorFactory<POCPopulationState<?, G, S, Q>, XYPlot<?>, Run<?, G, S, Q>> plot,
+              @Param(value = "w", dI = 800) int w,
+              @Param(value = "h", dI = 800) int h,
+              @Param(value = "filePathTemplate", dS = "run-{index:%04d}.png") String filePathTemplate) {
+    ImagePlotter imagePlotter = new ImagePlotter(w, h);
+    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
+        plot.thenOnDone((run, p) -> {
+          File file = Misc.checkExistenceAndChangeName(new File(Utils.interpolate(filePathTemplate, run)));
+          try {
+
+            ImageIO.write(imagePlotter.plot(p), "png", file);
+          } catch (IOException e) {
+            L.severe("Cannot save plot at `%s`: %s".formatted(file, e));
+          }
+        }),
+        executorService,
+        false);
+  }
+
+  @SuppressWarnings("unused")
+  public static <G, S, Q>
       BiFunction<
               Experiment,
               ExecutorService,
@@ -110,7 +170,7 @@ public class Listeners {
                   List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
               @Param("individualFunctions")
                   List<NamedFunction<? super Individual<G, S, Q>, ?>> individualFunctions,
-              @Param("runKeys") List<String> runKeys,
+              @Param("runKeys") List<Map.Entry<String, String>> runKeys,
               @Param(value = "deferred") boolean deferred,
               @Param(value = "onlyLast") boolean onlyLast) {
     record PopIndividualPair<G, S, Q>(POCPopulationState<?, G, S, Q> pop, Individual<G, S, Q> individual) {}
@@ -186,7 +246,7 @@ public class Listeners {
                       defaultStateFunctions,
               @Param(value = "functions")
                   List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
-              @Param("runKeys") List<String> runKeys,
+              @Param("runKeys") List<Map.Entry<String, String>> runKeys,
               @Param(value = "deferred") boolean deferred,
               @Param(value = "onlyLast") boolean onlyLast) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
@@ -201,20 +261,20 @@ public class Listeners {
   }
 
   private static <G, S, Q> List<NamedFunction<? super Run<?, G, S, Q>, ?>> buildRunNamedFunctions(
-      List<String> runKeys, Experiment experiment) {
+      List<Map.Entry<String, String>> runKeys, Experiment experiment) {
     List<NamedFunction<? super Run<?, G, S, Q>, ?>> functions = new ArrayList<>();
     runKeys.stream()
         .map(k -> NamedFunction.build(
-            String.join("+", Utils.interpolationKeys(k)),
+            k.getKey(),
             "%"
                 .concat(""
                     + experiment.runs().stream()
-                        .map(r -> Utils.interpolate(k, r.map()))
+                        .map(r -> Utils.interpolate(k.getValue(), r.map()))
                         .mapToInt(String::length)
                         .max()
                         .orElse(10))
                 .concat("s"),
-            (Run<?, G, S, Q> run) -> Utils.interpolate(k, run.map())))
+            (Run<?, G, S, Q> run) -> Utils.interpolate(k.getValue(), run.map())))
         .forEach(functions::add);
     return Collections.unmodifiableList(functions);
   }
@@ -241,7 +301,7 @@ public class Listeners {
                       defaultStateFunctions,
               @Param(value = "functions")
                   List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
-              @Param("runKeys") List<String> runKeys,
+              @Param("runKeys") List<Map.Entry<String, String>> runKeys,
               @Param(value = "deferred") boolean deferred,
               @Param(value = "onlyLast") boolean onlyLast) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
@@ -271,6 +331,49 @@ public class Listeners {
           String.format("Cannot read credentials at %s: %s", credentialFilePath, e));
     }
     return credential;
+  }
+
+  public static <G, S, Q>
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
+          net(
+              @Param(
+                      value = "defaultFunctions",
+                      dNPMs = {
+                        "ea.nf.iterations()",
+                        "ea.nf.evals()",
+                        "ea.nf.births()",
+                        "ea.nf.elapsed()",
+                        "ea.nf.size(f=ea.nf.all())",
+                        "ea.nf.size(f=ea.nf.firsts())",
+                        "ea.nf.size(f=ea.nf.lasts())",
+                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.genotype();collection=ea.nf.all()))",
+                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.solution();collection=ea.nf.all()))",
+                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.fitness();collection=ea.nf.all()))"
+                      })
+                  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>
+                      defaultStateFunctions,
+              @Param(value = "functions")
+                  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
+              @Param("runKeys") List<Map.Entry<String, String>> runKeys,
+              @Param(value = "serverAddress", dS = "127.0.0.1") String serverAddress,
+              @Param(value = "serverPort", dI = 10979) int serverPort,
+              @Param(value = "serverKeyFilePath") String serverKeyFilePath,
+              @Param(value = "pollInterval", dD = 1) double pollInterval) {
+    NetMultiSink netMultiSink =
+        new NetMultiSink(pollInterval, serverAddress, serverPort, getCredentialFromFile(serverKeyFilePath));
+    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
+        new SinkListenerFactory<>(
+            Misc.concat(List.of(defaultStateFunctions, stateFunctions)),
+            buildRunNamedFunctions(runKeys, experiment),
+            experiment,
+            netMultiSink.getMachineSink(),
+            netMultiSink.getProcessSink(),
+            netMultiSink.getLogSink(),
+            netMultiSink.getExperimentSink(),
+            netMultiSink.getRunSink(),
+            netMultiSink.getDatItemSink()),
+        executorService,
+        false);
   }
 
   @SuppressWarnings("unused")
@@ -326,14 +429,20 @@ public class Listeners {
               @Param(
                       value = "defaultPlots",
                       dNPMs = {"ea.plot.elapsed()"})
-                  List<PlotTableBuilder<? super POCPopulationState<?, G, S, Q>>>
+                  List<
+                          SingleXYDataSeriesPlotAccumulatorFactory<
+                              ? super POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
                       defaultPlotTableBuilders,
               @Param("plots")
-                  List<PlotTableBuilder<? super POCPopulationState<?, G, S, Q>>> plotTableBuilders,
+                  List<
+                          SingleXYDataSeriesPlotAccumulatorFactory<
+                              ? super POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
+                      plotTableBuilders,
               @Param("accumulators")
                   List<AccumulatorFactory<? super POCPopulationState<?, G, S, Q>, ?, Run<?, G, S, Q>>>
                       accumulators,
-              @Param("runKeys") List<String> runKeys, // TODO: these are currently ignored
+              @Param("runKeys")
+                  List<Map.Entry<String, String>> runKeys, // TODO: these are currently ignored
               @Param(value = "deferred", dB = true) boolean deferred,
               @Param(value = "onlyLast") boolean onlyLast) {
     // read credential files
@@ -351,82 +460,6 @@ public class Listeners {
         new TelegramUpdater<>(accumulatorFactories, botId, longChatId),
         deferred ? executorService : null,
         onlyLast);
-  }
-
-  @SuppressWarnings("unused")
-  public static <G, S, Q>
-      BiFunction<
-              Experiment,
-              ExecutorService,
-              ListenerFactory<GridPopulationState<G, S, Number>, Run<?, G, S, Number>>>
-          heatMapVideo(
-              @Param(value = "w", dI = 100) int w,
-              @Param(value = "h", dI = 100) int h,
-              @Param(value = "frameRate", dD = 4) double frameRate,
-              @Param(value = "minColor", dS = "red") String minColor,
-              @Param(value = "maxColor", dS = "white") String maxColor,
-              @Param(value = "nullColor", dS = "blue") String nullColor,
-              @Param(value = "gridColor", dS = "gray") String gridColor,
-              @Param(value = "filePathTemplate", dS = "run-heatmap-{index:%04d}.mp4")
-                  String filePathTemplate) {
-    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        new HeatMapVideoAccumulatorFactory<G, S, Number>(
-                Individual::quality,
-                w,
-                h,
-                frameRate,
-                ImagePlotters.getColorByName(minColor),
-                ImagePlotters.getColorByName(maxColor),
-                ImagePlotters.getColorByName(nullColor),
-                ImagePlotters.getColorByName(gridColor),
-                filePathTemplate)
-            .withAutoGet(),
-        executorService,
-        false);
-  }
-
-  @SuppressWarnings("unused")
-  public static <G, S, Q>
-      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
-          net(
-              @Param(
-                      value = "defaultFunctions",
-                      dNPMs = {
-                        "ea.nf.iterations()",
-                        "ea.nf.evals()",
-                        "ea.nf.births()",
-                        "ea.nf.elapsed()",
-                        "ea.nf.size(f=ea.nf.all())",
-                        "ea.nf.size(f=ea.nf.firsts())",
-                        "ea.nf.size(f=ea.nf.lasts())",
-                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.genotype();collection=ea.nf.all()))",
-                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.solution();collection=ea.nf.all()))",
-                        "ea.nf.uniqueness(collection=ea.nf.each(map=ea.nf.fitness();collection=ea.nf.all()))"
-                      })
-                  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>
-                      defaultStateFunctions,
-              @Param(value = "functions")
-                  List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
-              @Param("runKeys") List<String> runKeys,
-              @Param(value = "serverAddress", dS = "127.0.0.1") String serverAddress,
-              @Param(value = "serverPort", dI = 10979) int serverPort,
-              @Param(value = "serverKeyFilePath") String serverKeyFilePath,
-              @Param(value = "pollInterval", dD = 1) double pollInterval) {
-    NetMultiSink netMultiSink =
-        new NetMultiSink(pollInterval, serverAddress, serverPort, getCredentialFromFile(serverKeyFilePath));
-    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        new SinkListenerFactory<>(
-            Misc.concat(List.of(defaultStateFunctions, stateFunctions)),
-            buildRunNamedFunctions(runKeys, experiment),
-            experiment,
-            netMultiSink.getMachineSink(),
-            netMultiSink.getProcessSink(),
-            netMultiSink.getLogSink(),
-            netMultiSink.getExperimentSink(),
-            netMultiSink.getRunSink(),
-            netMultiSink.getDatItemSink()),
-        executorService,
-        false);
   }
 
   @SuppressWarnings("unused")
@@ -451,7 +484,7 @@ public class Listeners {
                       defaultStateFunctions,
               @Param(value = "functions")
                   List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
-              @Param("runKeys") List<String> runKeys) {
+              @Param("runKeys") List<Map.Entry<String, String>> runKeys) {
     DirectSinkSource<MachineKey, MachineInfo> machineSinkSource = new DirectSinkSource<>();
     DirectSinkSource<ProcessKey, ProcessInfo> processSinkSource = new DirectSinkSource<>();
     DirectSinkSource<ProcessKey, LogInfo> logSinkSource = new DirectSinkSource<>();

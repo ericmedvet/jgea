@@ -19,25 +19,23 @@
  */
 package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
+import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+import io.github.ericmedvet.jsdynsym.grid.Grid;
 import java.util.List;
+import java.util.function.DoubleBinaryOperator;
 
 /**
- * @author "Eric Medvet" on 2023/12/01 for jgea
+ * @author "Eric Medvet" on 2023/12/10 for jgea
  */
-public interface XYDataSeries {
-  record Point(Value x, Value y) {
-    @Override
-    public String toString() {
-      return "(%s;%s)".formatted(this.x, this.y);
-    }
-  }
-
-  String name();
-
-  List<Point> points();
-
-  static XYDataSeries of(String name, List<Point> points) {
-    record HardXYDataSeries(String name, List<Point> points) implements XYDataSeries {}
-    return new HardXYDataSeries(name, points);
-  }
+public record LandscapePlot(
+    String title,
+    String xTitleName,
+    String yTitleName,
+    String xName,
+    String yName,
+    DoubleRange xRange,
+    DoubleRange yRange,
+    Grid<TitledData<Data>> dataGrid)
+    implements XYPlot<LandscapePlot.Data> {
+  record Data(DoubleBinaryOperator f, List<XYDataSeries> xyDataSeries) {}
 }

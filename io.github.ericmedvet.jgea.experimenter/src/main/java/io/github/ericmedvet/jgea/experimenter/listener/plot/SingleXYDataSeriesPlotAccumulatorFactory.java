@@ -26,10 +26,11 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.experimenter.listener.TableAccumulatorFactory;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+import io.github.ericmedvet.jsdynsym.grid.Grid;
 import java.util.Comparator;
 import java.util.List;
 
-public class XYSinglePlotAccumulatorFactory<E, R> implements AccumulatorFactory<E, XYSinglePlot<Value, Value>, R> {
+public class SingleXYDataSeriesPlotAccumulatorFactory<E, R> implements AccumulatorFactory<E, XYDataSeriesPlot, R> {
 
   private final TableAccumulatorFactory<E, Number, R> inner;
   private final NamedFunction<? super R, String> titleFunction;
@@ -40,7 +41,7 @@ public class XYSinglePlotAccumulatorFactory<E, R> implements AccumulatorFactory<
   private final boolean sorted;
   private final boolean firstDifference;
 
-  public XYSinglePlotAccumulatorFactory(
+  public SingleXYDataSeriesPlotAccumulatorFactory(
       NamedFunction<? super R, String> titleFunction,
       NamedFunction<? super E, ? extends Number> xFunction,
       List<NamedFunction<? super E, ? extends Number>> yFunctions,
@@ -62,11 +63,11 @@ public class XYSinglePlotAccumulatorFactory<E, R> implements AccumulatorFactory<
   }
 
   @Override
-  public Accumulator<E, XYSinglePlot<Value, Value>> build(R r) {
+  public Accumulator<E, XYDataSeriesPlot> build(R r) {
     Accumulator<E, Table<Integer, String, Number>> accumulator = inner.build(r);
     return new Accumulator<>() {
       @Override
-      public XYSinglePlot<Value, Value> get() {
+      public XYDataSeriesPlot get() {
         Table<Integer, String, Number> table = accumulator.get();
         if (sorted) {
           table = table.sorted(xFunction.getName(), Comparator.comparingDouble(Number::doubleValue));
@@ -78,17 +79,25 @@ public class XYSinglePlotAccumulatorFactory<E, R> implements AccumulatorFactory<
                   - ns.get(0).doubleValue());
         }
         Table<Integer, String, Number> fTable = table;
-        List<XYDataSeries<Value, Value>> dss = yFunctions.stream()
+        List<XYDataSeries> dss = yFunctions.stream()
             .map(ynf -> XYDataSeries.of(
                 ynf.getName(),
                 fTable.rows().stream()
-                    .map(r -> new XYDataSeries.Point<>(
+                    .map(r -> new XYDataSeries.Point(
                         Value.of(r.get(xFunction.getName())
                             .doubleValue()),
                         Value.of(r.get(ynf.getName()).doubleValue())))
                     .toList()))
             .toList();
-        return XYSinglePlot.of(titleFunction.apply(r), xFunction.getName(), "", xRange, yRange, dss);
+        return new XYDataSeriesPlot(
+            titleFunction.apply(r),
+            "",
+            "",
+            xFunction.getName(),
+            "y",
+            xRange,
+            yRange,
+            Grid.create(1, 1, (x, y) -> new XYPlot.TitledData<>("", "", dss)));
       }
 
       @Override

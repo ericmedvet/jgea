@@ -20,12 +20,20 @@
 package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+import io.github.ericmedvet.jsdynsym.grid.Grid;
 
 /**
  * @author "Eric Medvet" on 2023/12/01 for jgea
  */
-public interface XYPlot {
+public interface XYPlot<D> {
+
+  record TitledData<D>(String xTitle, String yTitle, D data) {}
+
   String title();
+
+  String xTitleName();
+
+  String yTitleName();
 
   String xName();
 
@@ -34,4 +42,6 @@ public interface XYPlot {
   DoubleRange xRange();
 
   DoubleRange yRange();
+
+  Grid<TitledData<D>> dataGrid();
 }

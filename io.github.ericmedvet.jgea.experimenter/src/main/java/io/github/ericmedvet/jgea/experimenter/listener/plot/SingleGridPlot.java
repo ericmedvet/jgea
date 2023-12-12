@@ -20,27 +20,18 @@
 package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
-import java.util.List;
+import io.github.ericmedvet.jsdynsym.grid.Grid;
 
-public interface XYSinglePlot<VX extends Value, VY extends Value> extends XYPlot {
-
-  List<XYDataSeries<VX, VY>> dataSeries();
-
-  static <VX extends Value, VY extends Value> XYSinglePlot<VX, VY> of(
-      String title,
-      String xName,
-      String yName,
-      DoubleRange xRange,
-      DoubleRange yRange,
-      List<XYDataSeries<VX, VY>> dataSeries) {
-    record HardXYSinglePlot<VX extends Value, VY extends Value>(
-        String title,
-        String xName,
-        String yName,
-        DoubleRange xRange,
-        DoubleRange yRange,
-        List<XYDataSeries<VX, VY>> dataSeries)
-        implements XYSinglePlot<VX, VY> {}
-    return new HardXYSinglePlot<>(title, xName, yName, xRange, yRange, dataSeries);
-  }
-}
+/**
+ * @author "Eric Medvet" on 2023/12/10 for jgea
+ */
+public record SingleGridPlot(
+    String title,
+    String xTitleName,
+    String yTitleName,
+    String xName,
+    String yName,
+    DoubleRange xRange,
+    DoubleRange yRange,
+    Grid<TitledData<Grid<Double>>> dataGrid)
+    implements XYPlot<Grid<Double>> {}
