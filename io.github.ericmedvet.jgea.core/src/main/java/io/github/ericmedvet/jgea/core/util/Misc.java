@@ -74,6 +74,12 @@ public class Misc {
     return all.get(all.size() / 2);
   }
 
+  public static <K> K percentile(Collection<K> ks, Comparator<? super K> comparator, double p) {
+    List<K> collection = ks.stream().sorted(comparator).toList();
+    int i = (int) Math.max(Math.min(((double) collection.size()) * p, collection.size() - 1), 0);
+    return collection.get(i);
+  }
+
   @SafeVarargs
   public static <K, V> Map<K, V> merge(Map<K, V>... maps) {
     Map<K, V> map = new LinkedHashMap<>();

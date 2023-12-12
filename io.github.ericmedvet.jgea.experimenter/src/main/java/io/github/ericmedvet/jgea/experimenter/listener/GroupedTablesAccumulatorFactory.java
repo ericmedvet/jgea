@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * jgea-core
+ * jgea-experimenter
  * %%
  * Copyright (C) 2018 - 2023 Eric Medvet
  * %%
@@ -17,47 +17,51 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jgea.experimenter.util;
+package io.github.ericmedvet.jgea.experimenter.listener;
 
 import io.github.ericmedvet.jgea.core.listener.Accumulator;
 import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.util.HashMapTable;
 import io.github.ericmedvet.jgea.core.util.Table;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class TableBuilder<E, O, K> implements AccumulatorFactory<E, Table<Integer, String, O>, K> {
+public class GroupedTablesAccumulatorFactory<K, V, E, R>
+    implements AccumulatorFactory<E, Map<List<K>, Table<Integer, String, V>>, R> {
 
-  private final List<NamedFunction<? super E, ? extends O>> eFunctions;
-  private final List<NamedFunction<? super K, ? extends O>> kFunctions;
+  protected final Map<List<K>, Table<Integer, String, V>> data;
+  private final List<NamedFunction<? super R, ? extends K>> rFunctions;
+  private final List<NamedFunction<? super E, ? extends V>> eFunctions;
 
-  public TableBuilder(
-      List<NamedFunction<? super E, ? extends O>> eFunctions,
-      List<NamedFunction<? super K, ? extends O>> kFunctions) {
+  public GroupedTablesAccumulatorFactory(
+      List<NamedFunction<? super R, ? extends K>> rFunctions,
+      List<NamedFunction<? super E, ? extends V>> eFunctions) {
+    this.rFunctions = rFunctions;
     this.eFunctions = eFunctions;
-    this.kFunctions = kFunctions;
+    data = new LinkedHashMap<>();
   }
 
   @Override
-  public Accumulator<E, Table<Integer, String, O>> build(K k) {
-    Map<String, ? extends O> kValues =
-        kFunctions.stream().collect(Collectors.toMap(NamedFunction::getName, f -> f.apply(k)));
+  public Accumulator<E, Map<List<K>, Table<Integer, String, V>>> build(R r) {
+    List<K> ks = rFunctions.stream().map(nf -> (K) nf.apply(r)).toList();
+    Table<Integer, String, V> table = data.getOrDefault(ks, new HashMapTable<>());
+    data.putIfAbsent(ks, table);
     return new Accumulator<>() {
-
-      private final Table<Integer, String, O> table = new HashMapTable<>();
-
       @Override
-      public Table<Integer, String, O> get() {
-        return table;
+      public Map<List<K>, Table<Integer, String, V>> get() {
+        return data;
       }
 
       @Override
       public void listen(E e) {
-        int ri = table.nRows();
-        kValues.forEach((k, v) -> table.set(ri, k, v));
-        eFunctions.forEach(f -> table.set(ri, f.getName(), f.apply(e)));
+        synchronized (data) {
+          table.addRow(
+              table.nRows(),
+              eFunctions.stream().collect(Collectors.toMap(NamedFunction::getName, nf -> nf.apply(e))));
+        }
       }
     };
   }

@@ -267,6 +267,27 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
+  public static <S, Q> Function<S, ParticleSwarmOptimization<S, Q>> pso(
+      @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
+      @Param(value = "initialMinV", dD = -1d) double initialMinV,
+      @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
+      @Param(value = "nEval") int nEval,
+      @Param(value = "nPop", dI = 100) int nPop,
+      @Param(value = "w", dD = 0.8d) double w,
+      @Param(value = "phiParticle", dD = 1.5d) double phiParticle,
+      @Param(value = "phiParticle", dD = 1.5d) double phiGlobal) {
+    return exampleS -> new ParticleSwarmOptimization<>(
+        mapper.mapperFor(exampleS),
+        new FixedLengthListFactory<>(
+            mapper.exampleFor(exampleS).size(), new UniformDoubleFactory(initialMinV, initialMaxV)),
+        StopConditions.nOfFitnessEvaluations(nEval),
+        nPop,
+        w,
+        phiParticle,
+        phiGlobal);
+  }
+
+  @SuppressWarnings("unused")
   public static <S, Q> Function<S, DifferentialEvolution<S, Q>> differentialEvolution(
       @Param(value = "mapper") InvertibleMapper<List<Double>, S> mapper,
       @Param(value = "initialMinV", dD = -1d) double initialMinV,
