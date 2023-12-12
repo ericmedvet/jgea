@@ -22,7 +22,6 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.image.ImagePlotter;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
-
 import java.util.List;
 import java.util.Random;
 import java.util.random.RandomGenerator;

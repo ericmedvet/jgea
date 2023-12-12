@@ -59,7 +59,6 @@ import io.github.ericmedvet.jgea.experimenter.InvertibleMapper;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
-
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;

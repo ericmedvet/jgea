@@ -20,7 +20,6 @@
 package io.github.ericmedvet.jgea.core.solver.cabea;
 
 import io.github.ericmedvet.jsdynsym.grid.Grid;
-
 import java.util.function.Function;
 
 public interface SubstrateFiller extends Function<Grid<Boolean>, Grid<Boolean>> {
@@ -47,7 +46,8 @@ public interface SubstrateFiller extends Function<Grid<Boolean>, Grid<Boolean>> 
   class Contour implements SubstrateFiller {
     @Override
     public Grid<Boolean> apply(Grid<Boolean> grid) {
-      return grid.map((k, b) -> (k.x() == 0 || k.x() == grid.w() - 1 || k.y() == 0 || k.y() == grid.h() - 1) ? !b : b);
+      return grid.map(
+          (k, b) -> (k.x() == 0 || k.x() == grid.w() - 1 || k.y() == 0 || k.y() == grid.h() - 1) ? !b : b);
     }
   }
 
@@ -64,5 +64,4 @@ public interface SubstrateFiller extends Function<Grid<Boolean>, Grid<Boolean>> 
       return grid.map((k, b) -> ((k.x() + 1) % Math.ceil((double) grid.w() / (double) n)) == 0 ? !b : b);
     }
   }
-
 }

@@ -24,7 +24,6 @@ import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.util.HashMapTable;
 import io.github.ericmedvet.jgea.core.util.Table;
-
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,8 +38,7 @@ public class GroupedTablesAccumulatorFactory<K, V, E, R>
 
   public GroupedTablesAccumulatorFactory(
       List<NamedFunction<? super R, ? extends K>> rFunctions,
-      List<NamedFunction<? super E, ? extends V>> eFunctions
-  ) {
+      List<NamedFunction<? super E, ? extends V>> eFunctions) {
     this.rFunctions = rFunctions;
     this.eFunctions = eFunctions;
     data = new LinkedHashMap<>();
@@ -65,8 +63,7 @@ public class GroupedTablesAccumulatorFactory<K, V, E, R>
         synchronized (data) {
           table.addRow(
               table.nRows(),
-              eFunctions.stream().collect(Collectors.toMap(NamedFunction::getName, nf -> nf.apply(e)))
-          );
+              eFunctions.stream().collect(Collectors.toMap(NamedFunction::getName, nf -> nf.apply(e))));
         }
       }
     };

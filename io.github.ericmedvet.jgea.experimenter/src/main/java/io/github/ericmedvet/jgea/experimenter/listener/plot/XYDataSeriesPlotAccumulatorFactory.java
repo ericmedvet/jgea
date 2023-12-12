@@ -27,7 +27,6 @@ import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.experimenter.listener.TableAccumulatorFactory;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
-
 import java.util.Comparator;
 import java.util.List;
 

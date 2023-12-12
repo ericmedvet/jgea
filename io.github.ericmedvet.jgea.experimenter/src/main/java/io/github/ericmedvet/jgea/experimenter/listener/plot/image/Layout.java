@@ -22,7 +22,6 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot.image;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.UnivariateGridPlot;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeriesPlot;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlot;
-
 import java.awt.geom.Rectangle2D;
 
 record Layout(
