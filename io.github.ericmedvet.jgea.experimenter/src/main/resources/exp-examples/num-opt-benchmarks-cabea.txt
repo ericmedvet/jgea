@@ -1,0 +1,41 @@
+ea.experiment(
+  runs = (randomGenerator = (seed = [1:1:10]) * [ea.rg.defaultRG()]) *
+    (problem = [
+      ea.p.s.linearPoints(p = 200);
+      ea.p.s.pointAiming(p = 200);
+      ea.p.s.circularPointsAiming(p = 200);
+      ea.p.s.ackley(p = 20);
+      ea.p.s.rastrigin(p = 20);
+      ea.p.s.sphere(p = 20)
+    ]) *
+    (solver = (nEval = [5000]) * [
+      ea.s.doubleStringGa(mapper = ea.m.identity()
+      );
+      ea.s.doubleStringCabea(
+      mapper = ea.m.identity();
+      gridSize = 10;
+      mooreRadius = 1
+      )
+    ]) * [
+    ea.run()
+  ];
+  listeners = [
+    ea.l.console(
+      functions = [
+        ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
+        ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
+        ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()))
+      ];
+      runKeys = ["{solver:%#s}"; "{problem:%#s}"; "{problem.p}"]
+  );
+      ea.l.bestCsv(
+        filePath = "/home/gpietrop/cabea/ds/numOpt.csv";
+        functions = [
+          ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
+          ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
+          ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()))
+        ];
+        runKeys = ["{solver:%#s}"; "{problem:%#s}"; "{problem.p}"; "{solver.gridSize}"; "{solver.mooreRadius}"]
+      )
+    ]
+  )
