@@ -26,6 +26,7 @@ import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.experimenter.listener.GroupedTablesAccumulatorFactory;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +57,8 @@ public class GridXYDataSeriesPlotAccumulatorFactory<K, E, R> implements Accumula
       NamedFunction<List<Number>, Number> minAggregator,
       NamedFunction<List<Number>, Number> maxAggregator,
       DoubleRange xRange,
-      DoubleRange yRange) {
+      DoubleRange yRange
+  ) {
     inner = new GroupedTablesAccumulatorFactory<>(
         List.of(xSubplotFunction, ySubplotFunction, lineFunction), List.of(xFunction, yFunction));
     this.xSubplotFunction = xSubplotFunction;
@@ -77,60 +79,69 @@ public class GridXYDataSeriesPlotAccumulatorFactory<K, E, R> implements Accumula
       @Override
       public XYDataSeriesPlot get() {
         Map<List<K>, Table<Integer, String, Number>> data = accumulator.get();
-        List<K> xSubplotKeys =
-            data.keySet().stream().map(ks -> ks.get(0)).distinct().toList();
-        List<K> ySubplotKeys =
-            data.keySet().stream().map(ks -> ks.get(1)).distinct().toList();
-        List<K> lineKeys =
-            data.keySet().stream().map(ks -> ks.get(2)).distinct().toList();
-        Grid<XYPlot.TitledData<List<XYDataSeries>>> dataGrid = Grid.create(
-            xSubplotKeys.size(),
-            ySubplotKeys.size(),
-            (x, y) -> new XYPlot.TitledData<>(
-                xSubplotKeys.get(x).toString(),
-                ySubplotKeys.get(y).toString(),
-                lineKeys.stream()
-                    .map(lk -> XYDataSeries.of(
-                        lk.toString(),
-                        data.keySet().stream()
-                            .filter(ks -> ks.equals(
-                                List.of(xSubplotKeys.get(x), ySubplotKeys.get(y), lk)))
-                            .map(ks -> data
-                                .get(ks)
-                                .aggregateSingle(
-                                    r -> r.get(xFunction.getName()),
-                                    Integer::compare,
-                                    vs -> RangedValue.of(
-                                        valueAggregator
-                                            .apply(vs)
-                                            .doubleValue(),
-                                        minAggregator
-                                            .apply(vs)
-                                            .doubleValue(),
-                                        maxAggregator
-                                            .apply(vs)
-                                            .doubleValue()))
-                                .rows()
-                                .stream()
-                                .map(r -> new XYDataSeries.Point(
-                                    Value.of(
-                                        r.get(xFunction.getName())
-                                            .v()),
-                                    r.get(yFunction.getName())))
-                                .sorted(Comparator.comparingDouble(p -> p.x().v()))
-                                .toList())
-                            .flatMap(List::stream)
-                            .toList()))
-                    .toList()));
-        return new XYDataSeriesPlot(
-            "%s vs. %s".formatted(ySubplotFunction.getName(), xSubplotFunction.getName()),
-            xSubplotFunction.getName(),
-            ySubplotFunction.getName(),
-            xFunction.getName(),
-            yFunction.getName(),
-            xRange,
-            yRange,
-            dataGrid);
+        synchronized (data) {
+          List<K> xSubplotKeys =
+              data.keySet().stream().map(ks -> ks.get(0)).distinct().toList();
+          List<K> ySubplotKeys =
+              data.keySet().stream().map(ks -> ks.get(1)).distinct().toList();
+          List<K> lineKeys =
+              data.keySet().stream().map(ks -> ks.get(2)).distinct().toList();
+          Grid<XYPlot.TitledData<List<XYDataSeries>>> dataGrid = Grid.create(
+              xSubplotKeys.size(),
+              ySubplotKeys.size(),
+              (x, y) -> new XYPlot.TitledData<>(
+                  xSubplotKeys.get(x).toString(),
+                  ySubplotKeys.get(y).toString(),
+                  lineKeys.stream()
+                      .map(lk -> XYDataSeries.of(
+                          lk.toString(),
+                          data.keySet().stream()
+                              .filter(ks -> ks.equals(
+                                  List.of(xSubplotKeys.get(x), ySubplotKeys.get(y), lk)))
+                              .map(ks -> data
+                                  .get(ks)
+                                  .aggregateSingle(
+                                      r -> r.get(xFunction.getName()),
+                                      Integer::compare,
+                                      vs -> RangedValue.of(
+                                          valueAggregator
+                                              .apply(vs)
+                                              .doubleValue(),
+                                          minAggregator
+                                              .apply(vs)
+                                              .doubleValue(),
+                                          maxAggregator
+                                              .apply(vs)
+                                              .doubleValue()
+                                      )
+                                  )
+                                  .rows()
+                                  .stream()
+                                  .map(r -> new XYDataSeries.Point(
+                                      Value.of(
+                                          r.get(xFunction.getName())
+                                              .v()),
+                                      r.get(yFunction.getName())
+                                  ))
+                                  .sorted(Comparator.comparingDouble(p -> p.x().v()))
+                                  .toList())
+                              .flatMap(List::stream)
+                              .toList()
+                      ))
+                      .toList()
+              )
+          );
+          return new XYDataSeriesPlot(
+              "%s vs. %s".formatted(ySubplotFunction.getName(), xSubplotFunction.getName()),
+              xSubplotFunction.getName(),
+              ySubplotFunction.getName(),
+              xFunction.getName(),
+              yFunction.getName(),
+              xRange,
+              yRange,
+              dataGrid
+          );
+        }
       }
 
       @Override

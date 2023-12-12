@@ -24,6 +24,7 @@ import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.util.HashMapTable;
 import io.github.ericmedvet.jgea.core.util.Table;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +39,8 @@ public class GroupedTablesAccumulatorFactory<K, V, E, R>
 
   public GroupedTablesAccumulatorFactory(
       List<NamedFunction<? super R, ? extends K>> rFunctions,
-      List<NamedFunction<? super E, ? extends V>> eFunctions) {
+      List<NamedFunction<? super E, ? extends V>> eFunctions
+  ) {
     this.rFunctions = rFunctions;
     this.eFunctions = eFunctions;
     data = new LinkedHashMap<>();
@@ -47,8 +49,11 @@ public class GroupedTablesAccumulatorFactory<K, V, E, R>
   @Override
   public Accumulator<E, Map<List<K>, Table<Integer, String, V>>> build(R r) {
     List<K> ks = rFunctions.stream().map(nf -> (K) nf.apply(r)).toList();
-    Table<Integer, String, V> table = data.getOrDefault(ks, new HashMapTable<>());
-    data.putIfAbsent(ks, table);
+    Table<Integer, String, V> table;
+    synchronized (data) {
+      table = data.getOrDefault(ks, new HashMapTable<>());
+      data.putIfAbsent(ks, table);
+    }
     return new Accumulator<>() {
       @Override
       public Map<List<K>, Table<Integer, String, V>> get() {
@@ -60,7 +65,8 @@ public class GroupedTablesAccumulatorFactory<K, V, E, R>
         synchronized (data) {
           table.addRow(
               table.nRows(),
-              eFunctions.stream().collect(Collectors.toMap(NamedFunction::getName, nf -> nf.apply(e))));
+              eFunctions.stream().collect(Collectors.toMap(NamedFunction::getName, nf -> nf.apply(e)))
+          );
         }
       }
     };
