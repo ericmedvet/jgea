@@ -119,7 +119,8 @@ public class Solvers {
       @Param(value = "nEval") int nEval,
       @Param(value = "toroidal", dB = true) boolean toroidal,
       @Param(value = "mooreRadius", dI = 1) int mooreRadius,
-      @Param(value = "gridSize", dI = 10) int gridSize) {
+      @Param(value = "gridSize", dI = 10) int gridSize,
+      @Param(value = "substrateFiller", dS = "contour") SubstrateFiller.Predefined substrateFiller) {
     return exampleS -> {
       List<Element.Variable> variables = mapper.exampleFor(exampleS).visitDepth().stream()
           .filter(e -> e instanceof Element.Variable)
@@ -144,7 +145,7 @@ public class Solvers {
           mapper.mapperFor(exampleS),
           treeFactory,
           StopConditions.nOfFitnessEvaluations(nEval),
-          Grid.create(gridSize, gridSize, true),
+          substrateFiller.apply(Grid.create(gridSize, gridSize, true)),
           new CellularAutomataBasedSolver.MooreNeighborhood(mooreRadius, toroidal),
           keepProbability,
           geneticOperators,
@@ -169,7 +170,8 @@ public class Solvers {
       @Param(value = "nTour", dI = 3) int nTour,
       @Param(value = "toroidal", dB = true) boolean toroidal,
       @Param(value = "mooreRadius", dI = 1) int mooreRadius,
-      @Param(value = "gridSize", dI = 10) int gridSize) {
+      @Param(value = "gridSize", dI = 10) int gridSize,
+      @Param(value = "substrateFiller", dS = "empty") SubstrateFiller.Predefined substrateFiller) {
     return exampleS -> {
       IndependentFactory<List<Double>> doublesFactory = new FixedLengthListFactory<>(
           mapper.exampleFor(exampleS).size(), new UniformDoubleFactory(initialMinV, initialMaxV));
@@ -182,7 +184,7 @@ public class Solvers {
           mapper.mapperFor(exampleS),
           doublesFactory,
           StopConditions.nOfFitnessEvaluations(nEval),
-          Grid.create(gridSize, gridSize, true),
+          substrateFiller.apply(Grid.create(gridSize, gridSize, true)),
           new CellularAutomataBasedSolver.MooreNeighborhood(mooreRadius, toroidal),
           keepProbability,
           geneticOperators,

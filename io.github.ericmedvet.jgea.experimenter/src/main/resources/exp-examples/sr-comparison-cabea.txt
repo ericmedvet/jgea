@@ -8,7 +8,7 @@ ea.experiment(
       ea.p.ur.synthetic(name = "nguyen7");
       ea.p.ur.bundled(name = "concrete")
     ]) *
-    (solver = (nEval = [10000]) * [
+    (solver = (nEval = [1000]) * [
       ea.s.srTreeGp(
         mapper = ea.m.srTreeToUrf()
       );
@@ -31,7 +31,6 @@ ea.experiment(
       ];
       runKeys = ["{solver:%#s}"; "{problem.name}"]
     );
-    ea.l.heatMapVideo(filePathTemplate = "/home/eric/hm-{problem.p}-{randomGenerator.seed}.mp4");
     ea.l.bestCsv(
       filePath = "/home/gpietrop/cabea/ds/sr.csv";
       functions = [

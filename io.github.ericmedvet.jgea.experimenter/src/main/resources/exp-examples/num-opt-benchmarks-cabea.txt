@@ -8,7 +8,7 @@ ea.experiment(
       ea.p.s.rastrigin(p = 20);
       ea.p.s.sphere(p = 20)
     ]) *
-    (solver = (nEval = [10000]) * [
+    (solver = (nEval = [5000]) * [
       ea.s.doubleStringGa(mapper = ea.m.identity()
       );
       ea.s.doubleStringCabea(
@@ -28,7 +28,6 @@ ea.experiment(
       ];
       runKeys = ["{solver:%#s}"; "{problem:%#s}"; "{problem.p}"]
   );
-      ea.l.heatMapVideo(filePathTemplate = "/home/gpietrop/cabea/video/hm-{problem.p}-{randomGenerator.seed}.mp4");
       ea.l.bestCsv(
         filePath = "/home/gpietrop/cabea/ds/numOpt.csv";
         functions = [
