@@ -34,7 +34,7 @@ import java.util.Map;
 /**
  * @author "Eric Medvet" on 2023/11/30 for jgea
  */
-public class GridXYDataSeriesPlotAccumulatorFactory<K, E, R> implements AccumulatorFactory<E, XYDataSeriesPlot, R> {
+public class MultipleXYDataSeriesPlotAccumulatorFactory<K, E, R> implements AccumulatorFactory<E, XYDataSeriesPlot, R> {
 
   private final GroupedTablesAccumulatorFactory<K, Number, E, R> inner;
   private final NamedFunction<? super R, ? extends K> xSubplotFunction;
@@ -47,7 +47,7 @@ public class GridXYDataSeriesPlotAccumulatorFactory<K, E, R> implements Accumula
   private final DoubleRange xRange;
   private final DoubleRange yRange;
 
-  public GridXYDataSeriesPlotAccumulatorFactory(
+  public MultipleXYDataSeriesPlotAccumulatorFactory(
       NamedFunction<? super R, ? extends K> xSubplotFunction,
       NamedFunction<? super R, ? extends K> ySubplotFunction,
       NamedFunction<? super R, ? extends K> lineFunction,
