@@ -1,7 +1,8 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
     (solver = (nEval = [10000]) * [
-      ea.s.intStringGa(mapper = ea.m.identity())
+      ea.s.intStringGa(mapper = ea.m.identity());
+      ea.s.intStringGa(mapper = ea.m.identity(); diversity = false)
     ]) * [
     ea.run(problem = ea.p.s.multiModalIntOneMax())
   ];
