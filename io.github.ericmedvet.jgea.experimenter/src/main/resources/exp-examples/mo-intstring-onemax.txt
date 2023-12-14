@@ -1,8 +1,14 @@
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
-    (solver = (nEval = [10000]) * [
-      ea.s.intStringGa(mapper = ea.m.identity());
-      ea.s.intStringNsga2(mapper = ea.m.identity())
+  runs = (randomGenerator = (seed = [1:1:10]) * [ea.rg.defaultRG()]) *
+    (solver = (nEval = [25000]) * [
+      ea.s.intStringGa(mapper = ea.m.identity(); diversity = false);
+      ea.s.intStringNsga2(mapper = ea.m.identity());
+      ea.s.intStringCabea(mapper = ea.m.identity(); keepProbability = 0; substrate = empty; nTour = 3; gridSize = 7);
+      ea.s.intStringCabea(mapper = ea.m.identity(); keepProbability = 0; substrate = empty; nTour = 3; gridSize = 11);
+      ea.s.intStringCabea(mapper = ea.m.identity(); keepProbability = 0; substrate = empty; nTour = 3; gridSize = 21);
+      ea.s.intStringCabea(mapper = ea.m.identity(); keepProbability = 0; substrate = contour_cross; nTour = 3; gridSize = 7);
+      ea.s.intStringCabea(mapper = ea.m.identity(); keepProbability = 0; substrate = contour_cross; nTour = 3; gridSize = 11);
+      ea.s.intStringCabea(mapper = ea.m.identity(); keepProbability = 0; substrate = contour_cross; nTour = 3; gridSize = 21)
     ]) * [
     ea.run(problem = ea.p.s.multiObjectiveIntOneMax())
   ];
@@ -18,8 +24,19 @@ ea.experiment(
         ea.nf.solution(individual = ea.nf.best(); s = "%40.40s")
       ];
       runKeys = [
-        ea.misc.sEntry(key = "solver"; value = "{solver:%#s}")
+        ea.misc.sEntry(key = "solver"; value = "{solver:%#s}-{solver.substrate}")
       ]
+    );
+    ea.l.expPlotSaver(
+      filePath = "/home/eric/Scaricati/plot-mo-hv.png";
+      freeScales = true;
+      plot = ea.plot.fitnessPlotMatrix(
+        lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver:%#s}-{solver.substrate}-{solver.gridSize}");
+        yFunction = ea.nf.hypervolume2D(
+          collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.firsts());
+          ranges = [ds.range(min = 0; max = 1); ds.range(min = 0; max = 1)]
+        )
+      )
     )
   ]
 )
