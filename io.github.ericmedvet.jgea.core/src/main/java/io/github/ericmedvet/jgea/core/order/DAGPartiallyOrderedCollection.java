@@ -23,7 +23,9 @@ package io.github.ericmedvet.jgea.core.order;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollection<T> {
 
@@ -45,6 +47,49 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
     private Node(T1 content) {
       this(content, new ArrayList<>(), new ArrayList<>());
     }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o)
+        return true;
+      if (o == null || getClass() != o.getClass())
+        return false;
+      Node<?> node = (Node<?>) o;
+      return Objects.equals(content, node.content) && Objects.equals(
+          beforeNodes,
+          node.beforeNodes
+      ) && Objects.equals(afterNodes, node.afterNodes);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(content, beforeNodes, afterNodes);
+    }
+  }
+
+  public static void main(String[] args) {
+    ParetoDominance<Double> pc = new ParetoDominance<>(List.of(
+        Double::compareTo,
+        Double::compareTo
+    ));
+    PartiallyOrderedCollection<List<Double>> poc = PartiallyOrderedCollection.from(
+        List.of(
+            List.of(1d, 1d),
+            List.of(2d, 2d),
+            List.of(2d, 1d),
+            List.of(1d, 1d),
+            List.of(3d, 1d)
+        ),
+        pc
+    );
+    RandomGenerator rg = new Random(1);
+    poc = PartiallyOrderedCollection.from(
+        IntStream.range(0, 100).mapToObj(i -> List.of((double) rg.nextInt(10), (double) rg.nextInt(10))).toList(),
+        pc
+    );
+    System.out.println(poc.lasts());
+
+
   }
 
   private static <T1> Node<Collection<T1>> newNode(T1 t) {
@@ -153,9 +198,9 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
     s = s + " < [";
     s = s
         + node.afterNodes.stream()
-            .filter(n -> n.beforeNodes.stream().noneMatch(node.afterNodes::contains))
-            .map(n -> visited.contains(n) ? "..." : toString(n, visited))
-            .collect(Collectors.joining(", "));
+        .filter(n -> n.beforeNodes.stream().noneMatch(node.afterNodes::contains))
+        .map(n -> visited.contains(n) ? "..." : toString(n, visited))
+        .collect(Collectors.joining(", "));
     s = s + "]";
     return s;
   }
