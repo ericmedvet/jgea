@@ -25,7 +25,7 @@ import io.github.ericmedvet.jsdynsym.grid.Grid;
 /**
  * @author "Eric Medvet" on 2023/12/10 for jgea
  */
-public record SingleGridPlot(
+public record UnivariateGridPlot(
     String title,
     String xTitleName,
     String yTitleName,

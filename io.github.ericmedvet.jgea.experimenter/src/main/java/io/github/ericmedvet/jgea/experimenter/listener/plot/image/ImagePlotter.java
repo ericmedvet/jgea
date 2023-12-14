@@ -42,6 +42,7 @@ import javax.swing.*;
 public class ImagePlotter implements Plotter<BufferedImage> {
   private final double w;
   private final double h;
+  private final double refL;
   private final Configuration c;
 
   private final Map<Configuration.Text.Use, Font> fonts;
@@ -53,11 +54,12 @@ public class ImagePlotter implements Plotter<BufferedImage> {
   public ImagePlotter(int w, int h, Configuration c) {
     this.w = w;
     this.h = h;
+    refL = Math.sqrt(w * h);
     this.c = c;
     fonts = Arrays.stream(Configuration.Text.Use.values())
         .collect(Collectors.toMap(
             u -> u,
-            u -> new Font(c.text().fontName(), Font.PLAIN, (int) Math.round((double) Math.max(w, h)
+            u -> new Font(c.text().fontName(), Font.PLAIN, (int) Math.round(refL
                 * c.text().sizeRates().getOrDefault(u, c.text().fontSizeRate())))));
   }
 
@@ -154,8 +156,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
               List.of(),
               "",
               ""));
-    } else if (plot instanceof SingleGridPlot singleGridPlot) {
-      grid = singleGridPlot
+    } else if (plot instanceof UnivariateGridPlot univariateGridPlot) {
+      grid = univariateGridPlot
           .dataGrid()
           .map(td -> new Axes(
               xRange.equals(DoubleRange.UNBOUNDED)
@@ -380,7 +382,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
       }
       return lH;
     }
-    if (plot instanceof SingleGridPlot) {
+    if (plot instanceof UnivariateGridPlot) {
       return Math.max(
           c.gridPlot().legendImageHRate() * h, computeStringH(g, "0", Configuration.Text.Use.LEGEND_LABEL));
     }
@@ -407,7 +409,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
   }
 
   private List<Double> computeTicks(Graphics2D g, DoubleRange range, double l, XYPlot<?> plot) {
-    if (plot instanceof SingleGridPlot) {
+    if (plot instanceof UnivariateGridPlot) {
       return IntStream.rangeClosed((int) range.min(), (int) range.max())
           .mapToDouble(i -> i)
           .boxed()
@@ -465,7 +467,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     }
     // draw line
     g.setColor(color);
-    g.setStroke(new BasicStroke((float) (c.linePlot().dataStrokeSize() * Math.max(w, h))));
+    g.setStroke(new BasicStroke((float) (c.linePlot().dataStrokeSize() * refL)));
     Path2D path = new Path2D.Double();
     path.moveTo(
         a.xIn(ds.points().get(0).x().v(), r),
@@ -498,7 +500,82 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     dataSeries.forEach(ds -> drawLine(g, r, ds, a, dataColors.get(ds.name())));
   }
 
-  private void drawSingleGridPlotLegend(Graphics2D g, Rectangle2D r, SingleGridPlot plot) {
+  private void drawLinePlotLegend(Graphics2D g, Rectangle2D r, XYDataSeriesPlot plot) {
+    SortedMap<String, Color> dataColors = computeSeriesDataColors(plot.dataGrid().values().stream()
+        .filter(Objects::nonNull)
+        .map(XYPlot.TitledData::data)
+        .flatMap(List::stream)
+        .distinct()
+        .toList());
+    if (c.debug()) {
+      g.setStroke(new BasicStroke(1));
+      g.setColor(Color.MAGENTA);
+      g.draw(r);
+    }
+    double lineH = Math.max(
+        c.linePlot().legendImageHRate() * h, computeStringH(g, "0", Configuration.Text.Use.LEGEND_LABEL));
+    double x = 0;
+    double y = 0;
+    for (Map.Entry<String, Color> e : dataColors.entrySet()) {
+      double localL = c.linePlot().legendImageWRate() * w
+          + 2d * c.layout().legendInnerMarginWRate() * w
+          + computeStringW(g, e.getKey(), Configuration.Text.Use.LEGEND_LABEL);
+      if (x + localL > r.getWidth()) {
+        y = y + c.layout().legendInnerMarginHRate() * h + lineH;
+        x = 0;
+      }
+      g.setColor(c.colors().plotBgColor());
+      g.fill(new Rectangle2D.Double(
+          r.getX() + x,
+          r.getY() + y,
+          c.linePlot().legendImageWRate() * w,
+          c.linePlot().legendImageHRate() * h));
+      g.setColor(e.getValue());
+      g.setStroke(new BasicStroke((float) (c.linePlot().dataStrokeSize() * refL)));
+      g.draw(new Line2D.Double(
+          r.getX() + x,
+          r.getY() + y + c.linePlot().legendImageHRate() * h / 2d,
+          r.getX() + x + c.linePlot().legendImageWRate() * w,
+          r.getY() + y + c.linePlot().legendImageHRate() * h / 2d));
+      drawString(
+          g,
+          new Point2D.Double(
+              r.getX()
+                  + x
+                  + c.linePlot().legendImageWRate() * w
+                  + c.layout().legendInnerMarginWRate() * w,
+              r.getY() + y),
+          e.getKey(),
+          AnchorH.L,
+          AnchorV.B,
+          Configuration.Text.Use.LEGEND_LABEL,
+          Configuration.Text.Direction.H,
+          c.colors().titleColor());
+      x = x + localL;
+    }
+  }
+
+  private void drawSingleGridPlot(Graphics2D g, Rectangle2D r, Grid<Double> data, Axes a, UnivariateGridPlot plot) {
+    DoubleFunction<Color> colorF = computeGridsDataColors(
+        plot.dataGrid().values().stream().map(XYPlot.TitledData::data).toList());
+    double cellW = r.getWidth() / (double) data.w() * c.gridPlot().cellSideRate();
+    double cellH = r.getHeight() / (double) data.h() * c.gridPlot().cellSideRate();
+    double cellMarginW =
+        r.getWidth() / (double) data.w() * (1 - c.gridPlot().cellSideRate()) / 2d;
+    double cellMarginH =
+        r.getHeight() / (double) data.h() * (1 - c.gridPlot().cellSideRate()) / 2d;
+    data.entries().stream()
+        .filter(e -> e.value() != null)
+        .filter(e -> Double.isFinite(e.value()))
+        .forEach(e -> {
+          g.setColor(colorF.apply(e.value()));
+          Rectangle2D.Double cellR = new Rectangle2D.Double(
+              a.xIn(e.key().x(), r) + cellMarginW, a.yIn(e.key().y() + 1, r) + cellMarginH, cellW, cellH);
+          g.fill(cellR);
+        });
+  }
+
+  private void drawSingleGridPlotLegend(Graphics2D g, Rectangle2D r, UnivariateGridPlot plot) {
     DoubleFunction<Color> colorF = computeGridsDataColors(
         plot.dataGrid().values().stream().map(XYPlot.TitledData::data).toList());
     double[] values = plot.dataGrid().values().stream()
@@ -559,81 +636,6 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         Configuration.Text.Use.LEGEND_LABEL,
         Configuration.Text.Direction.H,
         c.colors().titleColor());
-  }
-
-  private void drawLinePlotLegend(Graphics2D g, Rectangle2D r, XYDataSeriesPlot plot) {
-    SortedMap<String, Color> dataColors = computeSeriesDataColors(plot.dataGrid().values().stream()
-        .filter(Objects::nonNull)
-        .map(XYPlot.TitledData::data)
-        .flatMap(List::stream)
-        .distinct()
-        .toList());
-    if (c.debug()) {
-      g.setStroke(new BasicStroke(1));
-      g.setColor(Color.MAGENTA);
-      g.draw(r);
-    }
-    double lineH = Math.max(
-        c.linePlot().legendImageHRate() * h, computeStringH(g, "0", Configuration.Text.Use.LEGEND_LABEL));
-    double x = 0;
-    double y = 0;
-    for (Map.Entry<String, Color> e : dataColors.entrySet()) {
-      double localL = c.linePlot().legendImageWRate() * w
-          + 2d * c.layout().legendInnerMarginWRate() * w
-          + computeStringW(g, e.getKey(), Configuration.Text.Use.LEGEND_LABEL);
-      if (x + localL > r.getWidth()) {
-        y = y + c.layout().legendInnerMarginHRate() * h + lineH;
-        x = 0;
-      }
-      g.setColor(c.colors().plotBgColor());
-      g.fill(new Rectangle2D.Double(
-          r.getX() + x,
-          r.getY() + y,
-          c.linePlot().legendImageWRate() * w,
-          c.linePlot().legendImageHRate() * h));
-      g.setColor(e.getValue());
-      g.setStroke(new BasicStroke((float) (c.linePlot().dataStrokeSize() * Math.max(w, h))));
-      g.draw(new Line2D.Double(
-          r.getX() + x,
-          r.getY() + y + c.linePlot().legendImageHRate() * h / 2d,
-          r.getX() + x + c.linePlot().legendImageWRate() * w,
-          r.getY() + y + c.linePlot().legendImageHRate() * h / 2d));
-      drawString(
-          g,
-          new Point2D.Double(
-              r.getX()
-                  + x
-                  + c.linePlot().legendImageWRate() * w
-                  + c.layout().legendInnerMarginWRate() * w,
-              r.getY() + y),
-          e.getKey(),
-          AnchorH.L,
-          AnchorV.B,
-          Configuration.Text.Use.LEGEND_LABEL,
-          Configuration.Text.Direction.H,
-          c.colors().titleColor());
-      x = x + localL;
-    }
-  }
-
-  private void drawSingleGridPlot(Graphics2D g, Rectangle2D r, Grid<Double> data, Axes a, SingleGridPlot plot) {
-    DoubleFunction<Color> colorF = computeGridsDataColors(
-        plot.dataGrid().values().stream().map(XYPlot.TitledData::data).toList());
-    double cellW = r.getWidth() / (double) data.w() * c.gridPlot().cellSideRate();
-    double cellH = r.getHeight() / (double) data.h() * c.gridPlot().cellSideRate();
-    double cellMarginW =
-        r.getWidth() / (double) data.w() * (1 - c.gridPlot().cellSideRate()) / 2d;
-    double cellMarginH =
-        r.getHeight() / (double) data.h() * (1 - c.gridPlot().cellSideRate()) / 2d;
-    data.entries().stream()
-        .filter(e -> e.value() != null)
-        .filter(e -> Double.isFinite(e.value()))
-        .forEach(e -> {
-          g.setColor(colorF.apply(e.value()));
-          Rectangle2D.Double cellR = new Rectangle2D.Double(
-              a.xIn(e.key().x(), r) + cellMarginW, a.yIn(e.key().y() + 1, r) + cellMarginH, cellW, cellH);
-          g.fill(cellR);
-        });
   }
 
   private void drawString(
@@ -777,8 +779,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     // draw legend
     if (plot instanceof XYDataSeriesPlot xyDataSeriesPlot) {
       drawLinePlotLegend(g, l.legend(), xyDataSeriesPlot);
-    } else if (plot instanceof SingleGridPlot singleGridPlot) {
-      drawSingleGridPlotLegend(g, l.legend(), singleGridPlot);
+    } else if (plot instanceof UnivariateGridPlot univariateGridPlot) {
+      drawSingleGridPlotLegend(g, l.legend(), univariateGridPlot);
     }
     for (int px = 0; px < axesGrid.w(); px = px + 1) {
       for (int py = 0; py < axesGrid.h(); py = py + 1) {
@@ -846,7 +848,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         g.setColor(c.colors().plotBgColor());
         g.fill(l.innerPlot(px, py));
         // draw border and grid
-        g.setStroke(new BasicStroke((float) (c.general().gridStrokeSizeRate() * Math.max(w, h))));
+        g.setStroke(new BasicStroke((float) (c.general().gridStrokeSizeRate() * refL)));
         g.setColor(c.colors().plotBorderColor());
         g.draw(l.innerPlot(px, py));
         g.setClip(l.innerPlot(px, py));
@@ -857,13 +859,13 @@ public class ImagePlotter implements Plotter<BufferedImage> {
               xyDataSeriesPlot.dataGrid().get(px, py).data(),
               axesGrid.get(px, py),
               xyDataSeriesPlot);
-        } else if (plot instanceof SingleGridPlot singleGridPlot) {
+        } else if (plot instanceof UnivariateGridPlot univariateGridPlot) {
           drawSingleGridPlot(
               g,
               l.innerPlot(px, py),
-              singleGridPlot.dataGrid().get(px, py).data(),
+              univariateGridPlot.dataGrid().get(px, py).data(),
               axesGrid.get(px, py),
-              singleGridPlot);
+              univariateGridPlot);
         }
         g.setClip(new Rectangle2D.Double(0, 0, w, h));
       }

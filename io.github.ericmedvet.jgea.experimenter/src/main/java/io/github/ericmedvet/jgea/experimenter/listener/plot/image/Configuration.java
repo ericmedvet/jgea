@@ -44,6 +44,19 @@ public record Configuration(
       GridPlot.DEFAULT,
       false);
 
+  public static final Configuration FREE_SCALES = new Configuration(
+      Configuration.General.DEFAULT,
+      Configuration.Layout.DEFAULT,
+      Configuration.Colors.DEFAULT,
+      Configuration.Text.DEFAULT,
+      new Configuration.PlotMatrix(
+          Configuration.PlotMatrix.Show.ALL,
+          Configuration.PlotMatrix.Show.BORDER,
+          Set.of(Configuration.PlotMatrix.Independence.ALL)),
+      Configuration.LinePlot.DEFAULT,
+      Configuration.GridPlot.DEFAULT,
+      false);
+
   public record Colors(
       Color bgColor,
       Color plotBgColor,

@@ -30,7 +30,7 @@ import io.github.ericmedvet.jsdynsym.grid.Grid;
 import java.util.Comparator;
 import java.util.List;
 
-public class SingleXYDataSeriesPlotAccumulatorFactory<E, R> implements AccumulatorFactory<E, XYDataSeriesPlot, R> {
+public class XYDataSeriesPlotAccumulatorFactory<E, R> implements AccumulatorFactory<E, XYDataSeriesPlot, R> {
 
   private final TableAccumulatorFactory<E, Number, R> inner;
   private final NamedFunction<? super R, String> titleFunction;
@@ -41,7 +41,7 @@ public class SingleXYDataSeriesPlotAccumulatorFactory<E, R> implements Accumulat
   private final boolean sorted;
   private final boolean firstDifference;
 
-  public SingleXYDataSeriesPlotAccumulatorFactory(
+  public XYDataSeriesPlotAccumulatorFactory(
       NamedFunction<? super R, String> titleFunction,
       NamedFunction<? super E, ? extends Number> xFunction,
       List<NamedFunction<? super E, ? extends Number>> yFunctions,

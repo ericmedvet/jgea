@@ -47,8 +47,11 @@ public class GroupedTablesAccumulatorFactory<K, V, E, R>
   @Override
   public Accumulator<E, Map<List<K>, Table<Integer, String, V>>> build(R r) {
     List<K> ks = rFunctions.stream().map(nf -> (K) nf.apply(r)).toList();
-    Table<Integer, String, V> table = data.getOrDefault(ks, new HashMapTable<>());
-    data.putIfAbsent(ks, table);
+    Table<Integer, String, V> table;
+    synchronized (data) {
+      table = data.getOrDefault(ks, new HashMapTable<>());
+      data.putIfAbsent(ks, table);
+    }
     return new Accumulator<>() {
       @Override
       public Map<List<K>, Table<Integer, String, V>> get() {

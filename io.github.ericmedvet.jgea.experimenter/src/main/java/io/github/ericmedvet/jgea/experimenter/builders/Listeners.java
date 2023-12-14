@@ -30,14 +30,17 @@ import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.Utils;
 import io.github.ericmedvet.jgea.experimenter.listener.decoupled.*;
 import io.github.ericmedvet.jgea.experimenter.listener.net.NetMultiSink;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.SingleXYDataSeriesPlotAccumulatorFactory;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeriesPlotAccumulatorFactory;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlot;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.image.Configuration;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.image.ImagePlotter;
 import io.github.ericmedvet.jgea.experimenter.listener.telegram.TelegramUpdater;
 import io.github.ericmedvet.jnb.core.*;
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;
 import java.util.logging.Logger;
@@ -88,69 +91,6 @@ public class Listeners {
         progressMonitor.notify(progress, message);
       }
     }
-  }
-
-  @SuppressWarnings("unused")
-  public static <G, S, Q>
-      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
-          expPlotSaver(
-              @Param("plot")
-                  AccumulatorFactory<POCPopulationState<?, G, S, Q>, XYPlot<?>, Run<?, G, S, Q>> plot,
-              @Param(value = "w", dI = 800) int w,
-              @Param(value = "h", dI = 800) int h,
-              @Param(value = "freeScales") boolean freeScales,
-              @Param("filePath") String filePath) {
-    Configuration configuration = Configuration.DEFAULT;
-    if (freeScales) {
-      configuration = new Configuration(
-          Configuration.General.DEFAULT,
-          Configuration.Layout.DEFAULT,
-          Configuration.Colors.DEFAULT,
-          Configuration.Text.DEFAULT,
-          new Configuration.PlotMatrix(
-              Configuration.PlotMatrix.Show.ALL,
-              Configuration.PlotMatrix.Show.BORDER,
-              Set.of(Configuration.PlotMatrix.Independence.ALL)),
-          Configuration.LinePlot.DEFAULT,
-          Configuration.GridPlot.DEFAULT,
-          false);
-    }
-    ImagePlotter imagePlotter = new ImagePlotter(w, h, configuration);
-    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        plot.thenOnShutdown(ps -> {
-          File file = Misc.checkExistenceAndChangeName(new File(filePath));
-          try {
-            ImageIO.write(imagePlotter.plot(ps.get(ps.size() - 1)), "png", file);
-          } catch (IOException e) {
-            L.severe("Cannot save plot at `%s`: %s".formatted(file.getPath(), e));
-          }
-        }),
-        executorService,
-        false);
-  }
-
-  @SuppressWarnings("unused")
-  public static <G, S, Q>
-      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
-          runPlotSaver(
-              @Param("plot")
-                  AccumulatorFactory<POCPopulationState<?, G, S, Q>, XYPlot<?>, Run<?, G, S, Q>> plot,
-              @Param(value = "w", dI = 800) int w,
-              @Param(value = "h", dI = 800) int h,
-              @Param(value = "filePathTemplate", dS = "run-{index:%04d}.png") String filePathTemplate) {
-    ImagePlotter imagePlotter = new ImagePlotter(w, h);
-    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        plot.thenOnDone((run, p) -> {
-          File file = Misc.checkExistenceAndChangeName(new File(Utils.interpolate(filePathTemplate, run)));
-          try {
-
-            ImageIO.write(imagePlotter.plot(p), "png", file);
-          } catch (IOException e) {
-            L.severe("Cannot save plot at `%s`: %s".formatted(file, e));
-          }
-        }),
-        executorService,
-        false);
   }
 
   @SuppressWarnings("unused")
@@ -313,6 +253,31 @@ public class Listeners {
         onlyLast);
   }
 
+  @SuppressWarnings("unused")
+  public static <G, S, Q>
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
+          expPlotSaver(
+              @Param("plot")
+                  AccumulatorFactory<POCPopulationState<?, G, S, Q>, XYPlot<?>, Run<?, G, S, Q>> plot,
+              @Param(value = "w", dI = 800) int w,
+              @Param(value = "h", dI = 800) int h,
+              @Param(value = "freeScales") boolean freeScales,
+              @Param("filePath") String filePath) {
+    ImagePlotter imagePlotter =
+        new ImagePlotter(w, h, freeScales ? Configuration.FREE_SCALES : Configuration.DEFAULT);
+    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
+        plot.thenOnShutdown(ps -> {
+          File file = Misc.checkExistenceAndChangeName(new File(filePath));
+          try {
+            ImageIO.write(imagePlotter.plot(ps.get(ps.size() - 1)), "png", file);
+          } catch (IOException e) {
+            L.severe("Cannot save plot at `%s`: %s".formatted(file.getPath(), e));
+          }
+        }),
+        executorService,
+        false);
+  }
+
   private static String getCredentialFromFile(String credentialFilePath) {
     if (credentialFilePath == null) {
       throw new IllegalArgumentException("Credential file path not provided");
@@ -423,6 +388,31 @@ public class Listeners {
   @SuppressWarnings("unused")
   public static <G, S, Q>
       BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
+          runPlotSaver(
+              @Param("plot")
+                  AccumulatorFactory<POCPopulationState<?, G, S, Q>, XYPlot<?>, Run<?, G, S, Q>> plot,
+              @Param(value = "w", dI = 800) int w,
+              @Param(value = "h", dI = 800) int h,
+              @Param(value = "freeScales") boolean freeScales,
+              @Param(value = "filePathTemplate", dS = "run-{index:%04d}.png") String filePathTemplate) {
+    ImagePlotter imagePlotter =
+        new ImagePlotter(w, h, freeScales ? Configuration.FREE_SCALES : Configuration.DEFAULT);
+    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
+        plot.thenOnDone((run, p) -> {
+          File file = Misc.checkExistenceAndChangeName(new File(Utils.interpolate(filePathTemplate, run)));
+          try {
+            ImageIO.write(imagePlotter.plot(p), "png", file);
+          } catch (IOException e) {
+            L.severe("Cannot save plot at `%s`: %s".formatted(file, e));
+          }
+        }),
+        executorService,
+        false);
+  }
+
+  @SuppressWarnings("unused")
+  public static <G, S, Q>
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
           telegram(
               @Param("chatId") String chatId,
               @Param("botIdFilePath") String botIdFilePath,
@@ -430,12 +420,12 @@ public class Listeners {
                       value = "defaultPlots",
                       dNPMs = {"ea.plot.elapsed()"})
                   List<
-                          SingleXYDataSeriesPlotAccumulatorFactory<
+                          XYDataSeriesPlotAccumulatorFactory<
                               ? super POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
                       defaultPlotTableBuilders,
               @Param("plots")
                   List<
-                          SingleXYDataSeriesPlotAccumulatorFactory<
+                          XYDataSeriesPlotAccumulatorFactory<
                               ? super POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
                       plotTableBuilders,
               @Param("accumulators")

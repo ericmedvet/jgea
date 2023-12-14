@@ -98,7 +98,7 @@ public interface Plotter<O> {
                 new XYPlot.TitledData<>("x2", "y2", List.of(ds1, ds4)),
                 new XYPlot.TitledData<>("x3", "y2", List.of(ds2, ds5)))));
     ImagePlotter.showImage(ip.plot(m));
-    SingleGridPlot sgp = new SingleGridPlot(
+    UnivariateGridPlot sgp = new UnivariateGridPlot(
         "grid!!!",
         "",
         "",

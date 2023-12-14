@@ -20,16 +20,20 @@
 package io.github.ericmedvet.jgea.core.solver.cabea;
 
 import io.github.ericmedvet.jsdynsym.grid.Grid;
-import java.util.function.UnaryOperator;
+import java.util.function.Function;
 
-public interface SubstrateFiller extends UnaryOperator<Grid<Boolean>> {
+public interface SubstrateFiller extends Function<Grid<Boolean>, Grid<Boolean>> {
 
   enum Predefined implements SubstrateFiller {
     EMPTY(g -> g),
-    CONTOUR(new Contour());
-    private final SubstrateFiller inner;
+    CONTOUR(new Contour()),
+    H_HALVED(new HorizontalSections(2)),
+    V_HALVED(new VerticalSections(2)),
+    CROSS(new HorizontalSections(2).andThen(new VerticalSections(2))),
+    CONTOUR_CROSS(new Contour().andThen(new HorizontalSections(2).andThen(new VerticalSections(2))));
+    private final Function<Grid<Boolean>, Grid<Boolean>> inner;
 
-    Predefined(SubstrateFiller inner) {
+    Predefined(Function<Grid<Boolean>, Grid<Boolean>> inner) {
       this.inner = inner;
     }
 
@@ -42,14 +46,22 @@ public interface SubstrateFiller extends UnaryOperator<Grid<Boolean>> {
   class Contour implements SubstrateFiller {
     @Override
     public Grid<Boolean> apply(Grid<Boolean> grid) {
-      return grid.map((k, b) -> k.x() != 0 && k.x() != grid.w() - 1 && k.y() != 0 && k.y() != grid.h() - 1 && b);
+      return grid.map(
+          (k, b) -> (k.x() == 0 || k.x() == grid.w() - 1 || k.y() == 0 || k.y() == grid.h() - 1) ? !b : b);
     }
   }
 
   record HorizontalSections(int n) implements SubstrateFiller {
     @Override
     public Grid<Boolean> apply(Grid<Boolean> grid) {
-      return null;
+      return grid.map((k, b) -> ((k.y() + 1) % Math.ceil((double) grid.h() / (double) n)) == 0 ? !b : b);
+    }
+  }
+
+  record VerticalSections(int n) implements SubstrateFiller {
+    @Override
+    public Grid<Boolean> apply(Grid<Boolean> grid) {
+      return grid.map((k, b) -> ((k.x() + 1) % Math.ceil((double) grid.w() / (double) n)) == 0 ? !b : b);
     }
   }
 }
