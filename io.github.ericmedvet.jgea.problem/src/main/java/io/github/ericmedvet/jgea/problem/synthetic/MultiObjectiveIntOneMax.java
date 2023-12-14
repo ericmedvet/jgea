@@ -38,7 +38,6 @@ package io.github.ericmedvet.jgea.problem.synthetic;
 import io.github.ericmedvet.jgea.core.problem.MultiHomogeneousObjectiveProblem;
 import io.github.ericmedvet.jgea.core.problem.ProblemWithExampleSolution;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
-
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;

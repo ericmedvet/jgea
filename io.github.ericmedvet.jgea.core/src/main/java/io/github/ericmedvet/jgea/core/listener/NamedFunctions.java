@@ -29,7 +29,6 @@ import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.core.util.Sized;
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
-
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -180,12 +179,16 @@ public class NamedFunctions {
   }
 
   public static <S> NamedFunction<Collection<S>, Double> overallTargetDistance(MultiTargetProblem<S> problem) {
-    return f("overall.target.distance", "%5.3f", ss -> problem.targets().stream()
-        .mapToDouble(ts -> ss.stream()
-            .mapToDouble(s -> problem.distance().apply(s, ts))
-            .min()
-            .orElseThrow())
-        .sum()/(double) problem.targets().size());
+    return f(
+        "overall.target.distance",
+        "%5.3f",
+        ss -> problem.targets().stream()
+                .mapToDouble(ts -> ss.stream()
+                    .mapToDouble(s -> problem.distance().apply(s, ts))
+                    .min()
+                    .orElseThrow())
+                .sum()
+            / (double) problem.targets().size());
   }
 
   public static NamedFunction<State, Double> progress() {
