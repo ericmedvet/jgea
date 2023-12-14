@@ -22,10 +22,16 @@ package io.github.ericmedvet.jgea.core.representation.sequence.integer;
 
 import io.github.ericmedvet.jgea.core.util.Sized;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public record IntString(List<Integer> genes, int lowerBound, int upperBound) implements Sized {
   @Override
   public int size() {
     return genes().size();
+  }
+
+  @Override
+  public String toString() {
+    return genes().stream().map(Object::toString).collect(Collectors.joining(","));
   }
 }

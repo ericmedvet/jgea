@@ -35,13 +35,17 @@
 
 package io.github.ericmedvet.jgea.problem.synthetic;
 
+import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.MultiHomogeneousObjectiveProblem;
 import io.github.ericmedvet.jgea.core.problem.ProblemWithExampleSolution;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
+import io.github.ericmedvet.jgea.core.representation.sequence.integer.UniformIntStringFactory;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 import java.util.function.Function;
+import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
 public class MultiObjectiveIntOneMax
@@ -52,6 +56,16 @@ public class MultiObjectiveIntOneMax
   public MultiObjectiveIntOneMax(int p, int upperBound) {
     this.p = p;
     this.upperBound = upperBound;
+  }
+
+  public static void main(String[] args) {
+    RandomGenerator rg = new Random();
+    MultiObjectiveIntOneMax prob = new MultiObjectiveIntOneMax(10, 3);
+    for (int i = 0; i < 100; i++) {
+      UniformIntStringFactory factory = new UniformIntStringFactory(0, 3, 10);
+      PartiallyOrderedCollection<IntString> poc = PartiallyOrderedCollection.from(factory.build(100, rg), prob);
+      System.out.println(poc.firsts());
+    }
   }
 
   @Override

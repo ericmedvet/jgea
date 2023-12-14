@@ -1,0 +1,25 @@
+ea.experiment(
+  runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
+    (solver = (nEval = [10000]) * [
+      ea.s.intStringGa(mapper = ea.m.identity());
+      ea.s.intStringNsga2(mapper = ea.m.identity())
+    ]) * [
+    ea.run(problem = ea.p.s.multiObjectiveIntOneMax())
+  ];
+  listeners = [
+    ea.l.console(
+      functions = [
+        ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
+        ea.nf.fitness(individual = ea.nf.best(); s = "%16.16s");
+        ea.nf.hypervolume2D(
+          collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.firsts());
+          ranges = [ds.range(min = 0; max = 1); ds.range(min = 0; max = 1)]
+        );
+        ea.nf.solution(individual = ea.nf.best(); s = "%40.40s")
+      ];
+      runKeys = [
+        ea.misc.sEntry(key = "solver"; value = "{solver:%#s}")
+      ]
+    )
+  ]
+)

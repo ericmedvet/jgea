@@ -1,0 +1,24 @@
+ea.experiment(
+  runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
+    (solver = (nEval = [10000]) * [
+      ea.s.intStringGa(mapper = ea.m.identity())
+    ]) * [
+    ea.run(problem = ea.p.s.multiModalIntOneMax())
+  ];
+  listeners = [
+    ea.l.console(
+      functions = [
+        ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
+        ea.nf.fitness(individual = ea.nf.best(); s = "%5.3f");
+        ea.nf.overallTargetDistance(
+          collection = ea.nf.each(map = ea.nf.solution(); collection = ea.nf.all());
+          problem = ea.p.s.multiModalIntOneMax()
+        );
+        ea.nf.solution(individual = ea.nf.best(); s = "%40.40s")
+      ];
+      runKeys = [
+        ea.misc.sEntry(key = "solver"; value = "{solver:%#s}")
+      ]
+    )
+  ]
+)

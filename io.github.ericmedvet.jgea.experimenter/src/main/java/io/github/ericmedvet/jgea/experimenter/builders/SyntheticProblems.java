@@ -72,6 +72,7 @@ public class SyntheticProblems {
     return new LinearPoints(p);
   }
 
+  @SuppressWarnings("unused")
   public static MultiModalIntOneMax multiModalIntOneMax(
       @Param(value = "p", dI = 100) int p,
       @Param(value = "upperBound", dI = 10) int upperBound,

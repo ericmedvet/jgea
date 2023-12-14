@@ -328,6 +328,31 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
+  public static <S> Function<S, NsgaII<IntString, S>> intStringNsga2(
+      @Param(value = "mapper") InvertibleMapper<IntString, S> mapper,
+      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
+      @Param(value = "pMut", dD = 0.01d) double pMut,
+      @Param(value = "nPop", dI = 100) int nPop,
+      @Param(value = "nEval") int nEval,
+      @Param(value = "remap") boolean remap) {
+    return exampleS -> {
+      IntString exampleGenotype = mapper.exampleFor(exampleS);
+      IndependentFactory<IntString> factory = new UniformIntStringFactory(
+          exampleGenotype.lowerBound(), exampleGenotype.upperBound(), exampleGenotype.size());
+      Map<GeneticOperator<IntString>, Double> geneticOperators = Map.ofEntries(
+          Map.entry(new IntStringFlipMutation(pMut), 1d - crossoverP),
+          Map.entry(new IntStringUniformCrossover().andThen(new IntStringFlipMutation(pMut)), crossoverP));
+      return new NsgaII<>(
+          mapper.mapperFor(exampleS),
+          factory,
+          nPop,
+          StopConditions.nOfFitnessEvaluations(nEval),
+          geneticOperators,
+          remap);
+    };
+  }
+
+  @SuppressWarnings("unused")
   public static <S, Q> Function<S, StandardEvolver<List<Tree<Element>>, S, Q>> multiSRTreeGp(
       @Param(value = "mapper") InvertibleMapper<List<Tree<Element>>, S> mapper,
       @Param(

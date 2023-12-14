@@ -20,6 +20,7 @@
 
 package io.github.ericmedvet.jgea.core.listener;
 
+import io.github.ericmedvet.jgea.core.problem.MultiTargetProblem;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.State;
@@ -27,8 +28,10 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.core.util.Sized;
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
+import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class NamedFunctions {
 
@@ -67,11 +70,6 @@ public class NamedFunctions {
     return f("best", e -> Misc.first(e.pocPopulation().firsts()));
   }
 
-  public static <I extends Individual<G, S, Q>, G, S, Q>
-      NamedFunction<POCPopulationState<I, G, S, Q>, Long> nOfBirths() {
-    return f("births", "%5d", POCPopulationState::nOfBirths);
-  }
-
   public static <T> NamedFunction<State, T> constant(String name, String format, T value) {
     return f(name, format, e -> value);
   }
@@ -103,10 +101,6 @@ public class NamedFunctions {
     return f("firsts", e -> e.pocPopulation().firsts());
   }
 
-  public static <I extends Individual<?, ?, Q>, Q> NamedFunction<I, Q> quality() {
-    return f("quality", Individual::quality);
-  }
-
   public static <I extends Individual<G, S, Q>, G, S, Q>
       NamedFunction<POCPopulationState<I, G, S, Q>, Long> fitnessEvaluations() {
     return f("fitness.evaluations", "%5d", POCPopulationState::nOfFitnessEvaluations);
@@ -132,8 +126,22 @@ public class NamedFunctions {
             values instanceof List ? (List<? extends Number>) values : new ArrayList<>(values), bins));
   }
 
-  public static NamedFunction<State, Long> nOfIterations() {
-    return f("iterations", "%4d", State::nOfIterations);
+  public static NamedFunction<Collection<List<Double>>, Double> hypervolume2D(List<DoubleRange> ranges) {
+    return f("hypervolume", "%5.3f", ps -> {
+      record Point(double x, double y) {}
+      List<Point> points = ps.stream()
+          .map(p -> new Point(p.get(0), p.get(1)))
+          .sorted(Comparator.comparingDouble(Point::x))
+          .toList();
+      points = Stream.of(List.of(new Point(ranges.get(0).min(), points.get(0).y)), points)
+          .flatMap(List::stream)
+          .toList();
+      double v = 0;
+      for (int i = 1; i < points.size(); i = i + 1) {
+        v = v + (points.get(i).x - points.get(i - 1).x) * (points.get(i).y + points.get(i - 1).y) / 2d;
+      }
+      return v;
+    });
   }
 
   public static <I extends Individual<G, S, Q>, G, S, Q>
@@ -153,6 +161,15 @@ public class NamedFunctions {
     return f("min", ts -> ts.stream().min(comparator).orElse(null));
   }
 
+  public static <I extends Individual<G, S, Q>, G, S, Q>
+      NamedFunction<POCPopulationState<I, G, S, Q>, Long> nOfBirths() {
+    return f("births", "%5d", POCPopulationState::nOfBirths);
+  }
+
+  public static NamedFunction<State, Long> nOfIterations() {
+    return f("iterations", "%4d", State::nOfIterations);
+  }
+
   public static <T> NamedFunction<List<? extends T>, T> nth(int index) {
     return f("[" + index + "]", l -> l.get(index));
   }
@@ -161,8 +178,21 @@ public class NamedFunctions {
     return f("one", Misc::first);
   }
 
+  public static <S> NamedFunction<Collection<S>, Double> overallTargetDistance(MultiTargetProblem<S> problem) {
+    return f("overall.target.distance", "%5.3f", ss -> problem.targets().stream()
+        .mapToDouble(ts -> ss.stream()
+            .mapToDouble(s -> problem.distance().apply(s, ts))
+            .min()
+            .orElseThrow())
+        .sum());
+  }
+
   public static NamedFunction<State, Double> progress() {
     return f("progress", "%4.2f", s -> s.progress().rate());
+  }
+
+  public static <I extends Individual<?, ?, Q>, Q> NamedFunction<I, Q> quality() {
+    return f("quality", Individual::quality);
   }
 
   public static NamedFunction<Object, Number> size() {

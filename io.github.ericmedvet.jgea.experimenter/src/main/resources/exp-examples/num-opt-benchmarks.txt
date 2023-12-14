@@ -22,7 +22,11 @@ ea.experiment(
         ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
         ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()))
       ];
-      runKeys = ["{solver:%#s}"; "{problem:%#s}"; "{problem.p}"]
+      runKeys = [
+        ea.misc.sEntry(key = "problem.name"; value = "{problem:%#s}");
+        ea.misc.sEntry(key = "problem.p"; value = "{problem.p}");
+        ea.misc.sEntry(key = "solver"; value = "{solver:%#s}")
+      ]
     )
   ]
 )
