@@ -33,6 +33,7 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 import io.github.ericmedvet.jsdynsym.grid.HashGrid;
+
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -220,14 +221,16 @@ public class CellularAutomataBasedSolver<G, S, Q>
       }
       // find neighborhood
       List<Individual<G, S, Q>> neighbors = neighborhood.of(state.gridPopulation(), entry.key()).stream()
+          .filter(k -> !k.equals(entry.key()))
           .map(k -> state.gridPopulation().get(k))
           .filter(Objects::nonNull)
-          .toList();
+          .toList(); // neighbors does not include self
       PartiallyOrderedCollection<Individual<G, S, Q>> localPoc =
           PartiallyOrderedCollection.from(neighbors, partialComparator(problem));
       GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
       List<G> parentGenotypes = new ArrayList<>(operator.arity());
-      for (int j = 0; j < operator.arity(); j++) {
+      parentGenotypes.add(entry.value().genotype()); // self is always the 1st parent
+      for (int j = 1; j < operator.arity(); j++) {
         parentGenotypes.add(parentSelector.select(localPoc, random).genotype());
       }
       G childGenotype = operator.apply(parentGenotypes, random).get(0);
