@@ -25,6 +25,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import io.github.ericmedvet.jnb.core.BuilderException;
 import io.github.ericmedvet.jnb.core.NamedBuilder;
+
 import java.io.*;
 import java.util.Locale;
 import java.util.logging.LogManager;
@@ -124,7 +125,7 @@ public class Starter {
       InputStream inputStream = Starter.class.getResourceAsStream(
           "/exp-examples/%s.txt".formatted(configuration.exampleExperimentDescriptionResourceName));
       if (inputStream == null) {
-        L.severe("Cannot find default experiment description");
+        L.severe("Cannot find default experiment description: %s".formatted(configuration.exampleExperimentDescriptionResourceName));
       } else {
         try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
           expDescription = br.lines().collect(Collectors.joining());
