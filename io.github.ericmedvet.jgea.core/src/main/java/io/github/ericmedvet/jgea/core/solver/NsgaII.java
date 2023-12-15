@@ -49,6 +49,7 @@ public class NsgaII<G, S>
 
   protected final Map<GeneticOperator<G>, Double> operators;
   private final int populationSize;
+  private final int maxUniquenessAttempts;
 
   public NsgaII(
       Function<? super G, ? extends S> solutionMapper,
@@ -56,10 +57,12 @@ public class NsgaII<G, S>
       int populationSize,
       Predicate<? super POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>>> stopCondition,
       Map<GeneticOperator<G>, Double> operators,
+      int maxUniquenessAttempts,
       boolean remap) {
     super(solutionMapper, genotypeFactory, stopCondition, remap);
     this.operators = operators;
     this.populationSize = populationSize;
+    this.maxUniquenessAttempts = maxUniquenessAttempts;
   }
 
   private static class Box<T> {
@@ -216,6 +219,13 @@ public class NsgaII<G, S>
     State<G, S> listState = (State<G, S>) state;
     // build offspring
     Collection<G> offspringGenotypes = new ArrayList<>();
+    Set<G> uniqueOffspringGenotypes = new HashSet<>();
+    if (maxUniquenessAttempts > 0) {
+      uniqueOffspringGenotypes.addAll(state.pocPopulation().all().stream()
+          .map(Individual::genotype)
+          .toList());
+    }
+    int attempts = 0;
     int size = listState.listPopulation().size();
     while (offspringGenotypes.size() < populationSize) {
       GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
@@ -225,7 +235,15 @@ public class NsgaII<G, S>
               .get(Math.min(random.nextInt(size), random.nextInt(size)))
               .genotype)
           .toList();
-      offspringGenotypes.addAll(operator.apply(parentGenotypes, random));
+      List<? extends G> childGenotype = operator.apply(parentGenotypes, random);
+      if (attempts >= maxUniquenessAttempts
+          || childGenotype.stream().noneMatch(uniqueOffspringGenotypes::contains)) {
+        attempts = 0;
+        offspringGenotypes.addAll(childGenotype);
+        uniqueOffspringGenotypes.addAll(childGenotype);
+      } else {
+        attempts = attempts + 1;
+      }
     }
     // map and decorate and trim
     List<RankedIndividual<G, S>> rankedIndividuals =

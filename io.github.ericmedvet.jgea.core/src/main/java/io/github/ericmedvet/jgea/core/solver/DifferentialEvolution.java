@@ -62,6 +62,7 @@ public class DifferentialEvolution<S, Q>
         new Last(),
         populationSize,
         true,
+        0,
         remap);
     this.populationSize = populationSize;
     this.differentialWeight = differentialWeight;

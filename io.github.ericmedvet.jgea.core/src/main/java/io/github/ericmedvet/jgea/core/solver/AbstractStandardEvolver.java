@@ -52,6 +52,7 @@ public abstract class AbstractStandardEvolver<
   protected final int populationSize;
   protected final int offspringSize;
   protected final boolean overlapping;
+  protected final int maxUniquenessAttempts;
 
   protected record POCState<I extends Individual<G, S, Q>, G, S, Q>(
       LocalDateTime startingDateTime,
@@ -137,6 +138,7 @@ public abstract class AbstractStandardEvolver<
       Selector<? super I> unsurvivalSelector,
       int offspringSize,
       boolean overlapping,
+      int maxUniquenessAttempts,
       boolean remap) {
     super(solutionMapper, genotypeFactory, stopCondition, remap);
     this.operators = operators;
@@ -145,10 +147,18 @@ public abstract class AbstractStandardEvolver<
     this.populationSize = populationSize;
     this.offspringSize = offspringSize;
     this.overlapping = overlapping;
+    this.maxUniquenessAttempts = maxUniquenessAttempts;
   }
 
   protected Collection<G> buildOffspringGenotypes(T state, RandomGenerator random) {
     Collection<G> offspringGenotypes = new ArrayList<>();
+    Set<G> uniqueOffspringGenotypes = new HashSet<>();
+    if (maxUniquenessAttempts > 0) {
+      uniqueOffspringGenotypes.addAll(state.pocPopulation().all().stream()
+          .map(Individual::genotype)
+          .toList());
+    }
+    int attempts = 0;
     while (offspringGenotypes.size() < offspringSize) {
       GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
       List<G> parentGenotypes = new ArrayList<>(operator.arity());
@@ -156,7 +166,15 @@ public abstract class AbstractStandardEvolver<
         I parent = parentSelector.select(state.pocPopulation(), random);
         parentGenotypes.add(parent.genotype());
       }
-      offspringGenotypes.addAll(operator.apply(parentGenotypes, random));
+      List<? extends G> childGenotype = operator.apply(parentGenotypes, random);
+      if (attempts >= maxUniquenessAttempts
+          || childGenotype.stream().noneMatch(uniqueOffspringGenotypes::contains)) {
+        attempts = 0;
+        offspringGenotypes.addAll(childGenotype);
+        uniqueOffspringGenotypes.addAll(childGenotype);
+      } else {
+        attempts = attempts + 1;
+      }
     }
     return offspringGenotypes;
   }

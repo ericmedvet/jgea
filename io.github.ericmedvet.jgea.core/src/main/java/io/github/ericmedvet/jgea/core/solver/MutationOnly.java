@@ -50,6 +50,7 @@ public class MutationOnly<G, S, Q> extends StandardEvolver<G, S, Q> {
         unsurvivalSelector,
         0,
         true,
+        0,
         false);
     this.mutation = mutation;
   }

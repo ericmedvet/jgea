@@ -1,8 +1,8 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
     (solver = (nEval = [10000]) * [
-      ea.s.bitStringGa(mapper = ea.m.identity());
-      ea.s.bitStringCabea(mapper = ea.m.identity())
+      ea.s.bitStringGa();
+      ea.s.bitStringCabea()
     ]) * [
     ea.run(problem = ea.p.s.oneMax(p = 10000))
   ];
@@ -10,24 +10,12 @@ ea.experiment(
     ea.l.console(
       functions = [
         ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
-        ea.nf.fitness(individual = ea.nf.best(); s = "%6.4f");
+        ea.nf.bestFitness(s = "%6.4f");
         ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
         ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.4f");
         ea.nf.solution(individual = ea.nf.best(); s = "%60.60s")
       ];
       runKeys = ["{solver:%#s}"; "{randomGenerator.seed}"; "{problem.p}"]
-    );
-    ea.l.heatMapVideo(filePathTemplate = "/home/gpietrop/cabea/video/hm-{problem.p}-{randomGenerator.seed}.mp4");
-    ea.l.bestCsv(
-              filePath = "/home/gpietrop/cabea/ds/bs.csv";
-              functions = [
-                ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
-                        ea.nf.fitness(individual = ea.nf.best(); s = "%6.4f");
-                        ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
-                        ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.4f");
-                        ea.nf.solution(individual = ea.nf.best(); s = "%60.60s")
-                      ];
-                runKeys = ["{solver:%#s}"]
-            )
+    )
   ]
 )
