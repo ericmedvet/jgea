@@ -564,7 +564,7 @@ public class Solvers {
       @Param(value = "nPop", dI = 100) int nPop,
       @Param(value = "w", dD = 0.8d) double w,
       @Param(value = "phiParticle", dD = 1.5d) double phiParticle,
-      @Param(value = "phiParticle", dD = 1.5d) double phiGlobal) {
+      @Param(value = "phiGlobal", dD = 1.5d) double phiGlobal) {
     return exampleS -> new ParticleSwarmOptimization<>(
         mapper.mapperFor(exampleS),
         new FixedLengthListFactory<>(
