@@ -21,6 +21,7 @@
 package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
+import io.github.ericmedvet.jgea.core.problem.MultiTargetProblem;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.State;
@@ -30,6 +31,7 @@ import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.NamedParamMap;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.core.ParamMap;
+import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 import io.github.ericmedvet.jsdynsym.grid.GridUtils;
 import java.io.ByteArrayOutputStream;
@@ -64,6 +66,16 @@ public class NamedFunctions {
   public static <G, S, Q>
       NamedFunction<POCPopulationState<?, G, S, Q>, Collection<? extends Individual<G, S, Q>>> all() {
     return NamedFunction.build("all", s -> s.pocPopulation().all());
+  }
+
+  @SuppressWarnings("unused")
+  public static <X> NamedFunction<X, Number> avg(
+      @Param("collection") NamedFunction<X, Collection<Number>> collectionF,
+      @Param(value = "s", dS = "%s") String s) {
+    return NamedFunction.build(c("avg", collectionF.getName()), s, x -> collectionF.apply(x).stream()
+        .mapToDouble(Number::doubleValue)
+        .average()
+        .orElse(Double.NaN));
   }
 
   @SuppressWarnings("unused")
@@ -248,6 +260,14 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
+  public static <X> NamedFunction<X, Double> hypervolume2D(
+      @Param("collection") NamedFunction<X, Collection<List<Double>>> collectionF,
+      @Param("ranges") List<DoubleRange> ranges) {
+    return io.github.ericmedvet.jgea.core.listener.NamedFunctions.hypervolume2D(ranges)
+        .of(collectionF);
+  }
+
+  @SuppressWarnings("unused")
   public static <T> NamedFunction<T, T> identity() {
     return NamedFunction.build("", t -> t);
   }
@@ -279,22 +299,20 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <X> NamedFunction<X, Number> avg(
-      @Param("collection") NamedFunction<X, Collection<Number>> collectionF,
-      @Param(value = "s", dS = "%s") String s) {
-    return NamedFunction.build(c("avg", collectionF.getName()), s, x -> collectionF.apply(x).stream()
-        .mapToDouble(Number::doubleValue)
-        .average()
-        .orElse(Double.NaN));
-  }
-
-  @SuppressWarnings("unused")
   public static <X, T extends Comparable<T>> NamedFunction<X, T> min(
       @Param("collection") NamedFunction<X, Collection<T>> collectionF, @Param(value = "s", dS = "%s") String s) {
     return NamedFunction.build(c("min", collectionF.getName()), s, x -> {
       List<T> collection = collectionF.apply(x).stream().sorted().toList();
       return collectionF.apply(x).stream().min(Comparable::compareTo).orElse(null);
     });
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, S> NamedFunction<X, Double> overallTargetDistance(
+      @Param("collection") NamedFunction<X, Collection<S>> collectionF,
+      @Param("problem") MultiTargetProblem<S> problem) {
+    return io.github.ericmedvet.jgea.core.listener.NamedFunctions.overallTargetDistance(problem)
+        .of(collectionF);
   }
 
   @SuppressWarnings("unused")

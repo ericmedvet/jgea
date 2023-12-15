@@ -52,12 +52,6 @@ public class SyntheticProblems {
   }
 
   @SuppressWarnings("unused")
-  public static PointsAiming pointAiming(
-      @Param(value = "p", dI = 100) int p, @Param(value = "target", dD = 1d) double target) {
-    return new PointsAiming(List.of(Collections.nCopies(p, target)));
-  }
-
-  @SuppressWarnings("unused")
   public static CircularPointsAiming circularPointsAiming(
       @Param(value = "p", dI = 100) int p,
       @Param(value = "n", dI = 5) int n,
@@ -79,8 +73,28 @@ public class SyntheticProblems {
   }
 
   @SuppressWarnings("unused")
+  public static MultiModalIntOneMax multiModalIntOneMax(
+      @Param(value = "p", dI = 100) int p,
+      @Param(value = "upperBound", dI = 10) int upperBound,
+      @Param(value = "nOfTargets", dI = 3) int nOfTargets) {
+    return new MultiModalIntOneMax(p, upperBound, nOfTargets);
+  }
+
+  @SuppressWarnings("unused")
+  public static MultiObjectiveIntOneMax multiObjectiveIntOneMax(
+      @Param(value = "p", dI = 100) int p, @Param(value = "upperBound", dI = 3) int upperBound) {
+    return new MultiObjectiveIntOneMax(p, upperBound);
+  }
+
+  @SuppressWarnings("unused")
   public static OneMax oneMax(@Param(value = "p", dI = 100) int p) {
     return new OneMax(p);
+  }
+
+  @SuppressWarnings("unused")
+  public static PointsAiming pointAiming(
+      @Param(value = "p", dI = 100) int p, @Param(value = "target", dD = 1d) double target) {
+    return new PointsAiming(List.of(Collections.nCopies(p, target)));
   }
 
   @SuppressWarnings("unused")

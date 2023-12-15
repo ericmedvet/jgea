@@ -45,6 +45,21 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
     private Node(T1 content) {
       this(content, new ArrayList<>(), new ArrayList<>());
     }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      Node<?> node = (Node<?>) o;
+      return Objects.equals(content, node.content)
+          && Objects.equals(beforeNodes, node.beforeNodes)
+          && Objects.equals(afterNodes, node.afterNodes);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(content, beforeNodes, afterNodes);
+    }
   }
 
   private static <T1> Node<Collection<T1>> newNode(T1 t) {
@@ -126,12 +141,8 @@ public class DAGPartiallyOrderedCollection<T> implements PartiallyOrderedCollect
     return nodes.stream()
         .filter(predicate)
         .map(Node::content)
-        .reduce((c1, c2) -> {
-          Collection<T> c = new ArrayList<>(c1);
-          c.addAll(c2);
-          return c;
-        })
-        .orElseThrow();
+        .flatMap(Collection::stream)
+        .toList();
   }
 
   public PartialComparator<? super T> getPartialComparator() {

@@ -209,7 +209,7 @@ public class Solvers {
       @Param(value = "nTour", dI = 3) int nTour,
       @Param(value = "toroidal", dB = true) boolean toroidal,
       @Param(value = "mooreRadius", dI = 1) int mooreRadius,
-      @Param(value = "gridSize", dI = 10) int gridSize,
+      @Param(value = "gridSize", dI = 11) int gridSize,
       @Param(value = "substrate", dS = "empty") SubstrateFiller.Predefined substrate) {
     return exampleS -> {
       IndependentFactory<List<Double>> doublesFactory = new FixedLengthListFactory<>(
@@ -281,6 +281,37 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
+  public static <S, Q> Function<S, CellularAutomataBasedSolver<IntString, S, Q>> intStringCabea(
+      @Param(value = "mapper") InvertibleMapper<IntString, S> mapper,
+      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
+      @Param(value = "pMut", dD = 0.01d) double pMut,
+      @Param(value = "keepProbability", dD = 0.01d) double keepProbability,
+      @Param(value = "nTour", dI = 3) int nTour,
+      @Param(value = "nEval") int nEval,
+      @Param(value = "toroidal", dB = true) boolean toroidal,
+      @Param(value = "mooreRadius", dI = 1) int mooreRadius,
+      @Param(value = "gridSize", dI = 11) int gridSize,
+      @Param(value = "substrate", dS = "empty") SubstrateFiller.Predefined substrate) {
+    return exampleS -> {
+      IntString exampleGenotype = mapper.exampleFor(exampleS);
+      IndependentFactory<IntString> factory = new UniformIntStringFactory(
+          exampleGenotype.lowerBound(), exampleGenotype.upperBound(), exampleGenotype.size());
+      Map<GeneticOperator<IntString>, Double> geneticOperators = Map.ofEntries(
+          Map.entry(new IntStringFlipMutation(pMut), 1d - crossoverP),
+          Map.entry(new IntStringUniformCrossover().andThen(new IntStringFlipMutation(pMut)), crossoverP));
+      return new CellularAutomataBasedSolver<>(
+          mapper.mapperFor(exampleS),
+          factory,
+          StopConditions.nOfFitnessEvaluations(nEval),
+          substrate.apply(Grid.create(gridSize, gridSize, true)),
+          new CellularAutomataBasedSolver.MooreNeighborhood(mooreRadius, toroidal),
+          keepProbability,
+          geneticOperators,
+          new Tournament(nTour));
+    };
+  }
+
+  @SuppressWarnings("unused")
   public static <S, Q> Function<S, StandardEvolver<IntString, S, Q>> intStringGa(
       @Param(value = "mapper") InvertibleMapper<IntString, S> mapper,
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
@@ -324,6 +355,31 @@ public class Solvers {
             remap,
             100);
       }
+    };
+  }
+
+  @SuppressWarnings("unused")
+  public static <S> Function<S, NsgaII<IntString, S>> intStringNsga2(
+      @Param(value = "mapper") InvertibleMapper<IntString, S> mapper,
+      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
+      @Param(value = "pMut", dD = 0.01d) double pMut,
+      @Param(value = "nPop", dI = 100) int nPop,
+      @Param(value = "nEval") int nEval,
+      @Param(value = "remap") boolean remap) {
+    return exampleS -> {
+      IntString exampleGenotype = mapper.exampleFor(exampleS);
+      IndependentFactory<IntString> factory = new UniformIntStringFactory(
+          exampleGenotype.lowerBound(), exampleGenotype.upperBound(), exampleGenotype.size());
+      Map<GeneticOperator<IntString>, Double> geneticOperators = Map.ofEntries(
+          Map.entry(new IntStringFlipMutation(pMut), 1d - crossoverP),
+          Map.entry(new IntStringUniformCrossover().andThen(new IntStringFlipMutation(pMut)), crossoverP));
+      return new NsgaII<>(
+          mapper.mapperFor(exampleS),
+          factory,
+          nPop,
+          StopConditions.nOfFitnessEvaluations(nEval),
+          geneticOperators,
+          remap);
     };
   }
 
@@ -562,7 +618,7 @@ public class Solvers {
       @Param(value = "nEval") int nEval,
       @Param(value = "toroidal", dB = true) boolean toroidal,
       @Param(value = "mooreRadius", dI = 1) int mooreRadius,
-      @Param(value = "gridSize", dI = 10) int gridSize,
+      @Param(value = "gridSize", dI = 11) int gridSize,
       @Param(value = "substrate", dS = "empty") SubstrateFiller.Predefined substrate) {
     return exampleS -> {
       List<Element.Variable> variables = mapper.exampleFor(exampleS).visitDepth().stream()

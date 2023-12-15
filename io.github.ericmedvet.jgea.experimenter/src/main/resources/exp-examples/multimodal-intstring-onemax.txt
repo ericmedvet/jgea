@@ -1,0 +1,51 @@
+ea.experiment(
+  runs = (randomGenerator = (seed = [1:1:10]) * [ea.rg.defaultRG()]) *
+    (solver = (nEval = [20000]) * [
+      ea.s.intStringGa(mapper = ea.m.identity(); diversity = false);
+      ea.s.intStringCabea(mapper = ea.m.identity(); keepProbability = 0; substrate = empty; nTour = 1; gridSize = 11);
+      ea.s.intStringCabea(mapper = ea.m.identity(); keepProbability = 0; substrate = empty; nTour = 1; gridSize = 21);
+      ea.s.intStringCabea(mapper = ea.m.identity(); keepProbability = 0; substrate = contour_cross; nTour = 1; gridSize = 11);
+      ea.s.intStringCabea(mapper = ea.m.identity(); keepProbability = 0; substrate = contour_cross; nTour = 1; gridSize = 21)
+    ]) * [
+    ea.run(problem = ea.p.s.multiModalIntOneMax(nOfTargets = 10))
+  ];
+  listeners = [
+    ea.l.console(
+      functions = [
+        ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
+        ea.nf.fitness(individual = ea.nf.best(); s = "%5.3f");
+        ea.nf.overallTargetDistance(
+          collection = ea.nf.each(map = ea.nf.solution(); collection = ea.nf.all());
+          problem = ea.p.s.multiModalIntOneMax()
+        );
+        ea.nf.solution(individual = ea.nf.best(); s = "%40.40s")
+      ];
+      runKeys = [
+        ea.misc.sEntry(key = "solver"; value = "{solver:%#s}-{solver.substrate}-{solver.gridSize}")
+      ]
+    );
+    ea.l.expPlotSaver(
+      filePath = "/home/eric/Scaricati/plot-fitness.png";
+      freeScales = true;
+      plot = ea.plot.fitnessPlotMatrix(
+        lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver:%#s}-{solver.substrate}-{solver.gridSize}")
+      )
+    );
+    ea.l.expPlotSaver(
+      filePath = "/home/eric/Scaricati/plot-otd.png";
+      freeScales = true;
+      plot = ea.plot.fitnessPlotMatrix(
+        lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver:%#s}-{solver.substrate}-{solver.gridSize}");
+        yFunction = ea.nf.overallTargetDistance(
+          collection = ea.nf.each(map = ea.nf.solution(); collection = ea.nf.all());
+          problem = ea.p.s.multiModalIntOneMax()
+        )
+      )
+    );
+    ea.l.runPlotSaver(
+      w = 1000; h = 200;
+      filePathTemplate = "/home/eric/Scaricati/plot-mt-cabea-{randomGenerator.seed}-{solver.substrate}-{solver.gridSize}.png";
+      plot = ea.plot.gridPopulation(iterations = [0; 1; 5; 10; 25; 50])
+    )
+  ]
+)
