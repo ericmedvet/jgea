@@ -20,20 +20,22 @@
 
 package io.github.ericmedvet.jgea.problem.synthetic;
 
-import static io.github.ericmedvet.jgea.core.util.VectorUtils.*;
-
-import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
+import io.github.ericmedvet.jgea.core.distance.Distance;
+import io.github.ericmedvet.jgea.core.problem.MultiTargetProblem;
 import io.github.ericmedvet.jgea.core.problem.ProblemWithExampleSolution;
+
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
 
-public class PointsAiming
-    implements ComparableQualityBasedProblem<List<Double>, Double>, ProblemWithExampleSolution<List<Double>> {
+import static io.github.ericmedvet.jgea.core.util.VectorUtils.*;
+
+public class PointsAiming implements ProblemWithExampleSolution<List<Double>>, MultiTargetProblem<List<Double>> {
 
   private final List<List<Double>> targets;
   private final int p;
-  private final Function<List<Double>, Double> fitnessFunction;
+
+  private final Distance<List<Double>> distance;
 
   public PointsAiming(List<List<Double>> targets) {
     if (targets.isEmpty()) {
@@ -41,26 +43,22 @@ public class PointsAiming
     }
     checkLengthsList(targets);
     this.targets = Collections.unmodifiableList(targets);
+    distance = (vs1, vs2) -> norm(diff(vs1, vs2), 2);
     p = targets.get(0).size();
-    fitnessFunction = vs -> {
-      if (vs.size() != p) {
-        throw new IllegalArgumentException("Wrong input size: %d expected, %d found".formatted(p, vs.size()));
-      }
-      return targets.stream().mapToDouble(t -> norm(diff(vs, t), 2)).min().orElseThrow();
-    };
+  }
+
+  @Override
+  public Distance<List<Double>> distance() {
+    return distance;
+  }
+
+  @Override
+  public Collection<List<Double>> targets() {
+    return targets;
   }
 
   @Override
   public List<Double> example() {
     return Collections.nCopies(p, 0d);
-  }
-
-  @Override
-  public Function<List<Double>, Double> qualityFunction() {
-    return fitnessFunction;
-  }
-
-  public List<List<Double>> getTargets() {
-    return targets;
   }
 }
