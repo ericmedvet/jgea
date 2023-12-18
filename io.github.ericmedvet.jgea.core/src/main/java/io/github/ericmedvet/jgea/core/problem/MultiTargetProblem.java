@@ -37,7 +37,9 @@ package io.github.ericmedvet.jgea.core.problem;
 
 import io.github.ericmedvet.jgea.core.distance.Distance;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.function.Function;
 
 public interface MultiTargetProblem<S> extends TotalOrderQualityBasedProblem<S, Double> {
@@ -56,5 +58,22 @@ public interface MultiTargetProblem<S> extends TotalOrderQualityBasedProblem<S, 
   @Override
   default Comparator<Double> totalOrderComparator() {
     return Double::compareTo;
+  }
+
+  default MultiHomogeneousObjectiveProblem<S, Double> toMHOProblem() {
+    List<Comparator<Double>> comparators = Collections.nCopies(targets().size(), Double::compareTo);
+    Function<S, List<Double>> f =
+        s -> targets().stream().map(t -> distance().apply(s, t)).toList();
+    return new MultiHomogeneousObjectiveProblem<>() {
+      @Override
+      public List<Comparator<Double>> comparators() {
+        return comparators;
+      }
+
+      @Override
+      public Function<S, List<Double>> qualityFunction() {
+        return f;
+      }
+    };
   }
 }

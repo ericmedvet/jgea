@@ -20,6 +20,8 @@
 
 package io.github.ericmedvet.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jgea.core.problem.MultiHomogeneousObjectiveProblem;
+import io.github.ericmedvet.jgea.core.problem.MultiTargetProblem;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
@@ -56,5 +58,11 @@ public class Problems {
         return Comparator.comparing(comparableFunction);
       }
     };
+  }
+
+  @SuppressWarnings("unused")
+  public static <S> MultiHomogeneousObjectiveProblem<S, Double> mhoProblem(
+      @Param("mtProblem") MultiTargetProblem<S> mtProblem) {
+    return mtProblem.toMHOProblem();
   }
 }
