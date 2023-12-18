@@ -116,7 +116,7 @@ public class Plots {
           fitnessPlotMatrix(
               @Param(value = "xSubplotRunKey", dNPM = "ea.misc.sEntry(key=none;value=\"_\")")
                   Map.Entry<String, String> xSubplotRunKey,
-              @Param(value = "ySubplotRunKey", dNPM = "ea.misc.sEntry(key=problem;value=\"{problem}\")")
+              @Param(value = "ySubplotRunKey", dNPM = "ea.misc.sEntry(key=problem;value=\"{problem:%#s}\")")
                   Map.Entry<String, String> ySubplotRunKey,
               @Param(value = "lineRunKey", dNPM = "ea.misc.sEntry(key=solver;value=\"{solver:%#s}\")")
                   Map.Entry<String, String> lineRunKey,

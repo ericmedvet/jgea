@@ -7,8 +7,11 @@ ea.experiment(
       ea.s.intStringNsga2(name = "nsga2"; maxUniquenessAttempts = 0);
       ea.s.intStringCabea(name = "cabea-e"; keepProbability = 0; substrate = empty);
       ea.s.intStringCabea(name = "cabea-cc"; keepProbability = 0; substrate = contour_cross)
+    ]) * (problem = [
+      ea.p.s.multiObjectiveIntOneMax();
+      ea.p.mhoProblem(mtProblem = ea.p.s.multiModalIntOneMax(nOfTargets = 2))
     ]) * [
-    ea.run(problem = ea.p.s.multiObjectiveIntOneMax())
+    ea.run()
   ];
   listeners = [
     ea.l.console(
@@ -25,8 +28,9 @@ ea.experiment(
         ea.nf.solution(individual = ea.nf.best(); s = "%40.40s")
       ];
       runKeys = [
-        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}");
-        ea.misc.sEntry(key = "solver"; value = "{solver.name}")
+        ea.misc.sEntry(key = "solver"; value = "{solver.name}");
+        ea.misc.sEntry(key = "problem"; value = "{problem:%#s}");
+        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
       ]
     );
     ea.l.expPlotSaver(
