@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -41,6 +42,24 @@ public interface ListenerFactory<E, K> {
       @Override
       public void shutdown() {
         factories.forEach(ListenerFactory::shutdown);
+      }
+    };
+  }
+
+  default ListenerFactory<E, K> conditional(Predicate<K> predicate) {
+    ListenerFactory<E, K> inner = this;
+    return new ListenerFactory<>() {
+      @Override
+      public Listener<E> build(K k) {
+        if (predicate.test(k)) {
+          return inner.build(k);
+        }
+        return Listener.deaf();
+      }
+
+      @Override
+      public void shutdown() {
+        inner.shutdown();
       }
     };
   }
@@ -81,6 +100,21 @@ public interface ListenerFactory<E, K> {
     };
   }
 
+  default <F> ListenerFactory<F, K> forEach(Function<F, Collection<E>> splitter) {
+    ListenerFactory<E, K> thisListenerFactory = this;
+    return new ListenerFactory<>() {
+      @Override
+      public Listener<F> build(K k) {
+        return thisListenerFactory.build(k).forEach(splitter);
+      }
+
+      @Override
+      public void shutdown() {
+        thisListenerFactory.shutdown();
+      }
+    };
+  }
+
   default <F> ListenerFactory<F, K> on(Function<F, E> function) {
     ListenerFactory<E, K> inner = this;
     return new ListenerFactory<>() {
@@ -107,21 +141,6 @@ public interface ListenerFactory<E, K> {
       @Override
       public void shutdown() {
         thisFactory.shutdown();
-      }
-    };
-  }
-
-  default <F> ListenerFactory<F, K> forEach(Function<F, Collection<E>> splitter) {
-    ListenerFactory<E, K> thisListenerFactory = this;
-    return new ListenerFactory<>() {
-      @Override
-      public Listener<F> build(K k) {
-        return thisListenerFactory.build(k).forEach(splitter);
-      }
-
-      @Override
-      public void shutdown() {
-        thisListenerFactory.shutdown();
       }
     };
   }

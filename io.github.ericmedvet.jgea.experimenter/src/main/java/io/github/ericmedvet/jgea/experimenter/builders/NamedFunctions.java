@@ -27,6 +27,8 @@ import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.State;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
+import io.github.ericmedvet.jgea.experimenter.Run;
+import io.github.ericmedvet.jgea.experimenter.Utils;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.NamedParamMap;
 import io.github.ericmedvet.jnb.core.Param;
@@ -331,6 +333,11 @@ public class NamedFunctions {
   @SuppressWarnings("unused")
   public static NamedFunction<POCPopulationState<?, ?, ?, ?>, Double> progress() {
     return NamedFunction.build("progress", "%4.2f", s -> s.progress().rate());
+  }
+
+  @SuppressWarnings("unused")
+  public static NamedFunction<Run<?, ?, ?, ?>, ?> runKey(@Param("runKey") Map.Entry<String, String> entry) {
+    return NamedFunction.build(entry.getKey(), "%s", r -> Utils.interpolate(entry.getValue(), r));
   }
 
   @SuppressWarnings("unused")

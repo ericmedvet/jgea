@@ -1,6 +1,6 @@
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:5]) * [ea.rg.defaultRG()]) *
-    (solver = (nEval = [2500]) * [
+  runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
+    (solver = (nEval = [5000]) * [
       ea.s.intStringGa(name = "ga-div");
       ea.s.intStringGa(name = "ga"; maxUniquenessAttempts = 0);
       ea.s.intStringNsga2(name = "nsga2-div");
@@ -58,6 +58,10 @@ ea.experiment(
       plot = ea.plot.fitnessPlotMatrix(
         lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         yFunction = ea.nf.max(collection = ea.nf.each(map = ea.nf.fitness(f = ea.nf.nth(n = 1)); collection = ea.nf.all()))
+      );
+      condition = ea.predicate.matches(
+        f = ea.nf.runKey(runKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}"));
+        regex = "cabea.*"
       )
     )
   ]

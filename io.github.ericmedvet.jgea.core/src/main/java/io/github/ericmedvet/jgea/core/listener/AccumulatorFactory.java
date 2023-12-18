@@ -21,16 +21,40 @@ package io.github.ericmedvet.jgea.core.listener;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.*;
 
 public interface AccumulatorFactory<E, O, K> extends ListenerFactory<E, K> {
   Accumulator<E, O> build(K k);
 
   static <E, O, K> AccumulatorFactory<E, O, K> last(BiFunction<E, K, O> function) {
     return k -> Accumulator.<E>last().then(e -> function.apply(e, k));
+  }
+
+  @Override
+  default AccumulatorFactory<E, O, K> conditional(Predicate<K> predicate) {
+    AccumulatorFactory<E, O, K> inner = this;
+    return new AccumulatorFactory<>() {
+      @Override
+      public Accumulator<E, O> build(K k) {
+        if (predicate.test(k)) {
+          return inner.build(k);
+        }
+        return new Accumulator<>() {
+          @Override
+          public O get() {
+            return null; // TODO maybe find smth better
+          }
+
+          @Override
+          public void listen(E e) {}
+        };
+      }
+
+      @Override
+      public void shutdown() {
+        inner.shutdown();
+      }
+    };
   }
 
   default <Q> AccumulatorFactory<E, Q, K> then(Function<O, Q> function) {
@@ -72,13 +96,13 @@ public interface AccumulatorFactory<E, O, K> extends ListenerFactory<E, K> {
         Accumulator<E, O> accumulator = thisFactory.build(k);
         return new Accumulator<E, O>() {
           @Override
-          public void listen(E e) {
-            accumulator.listen(e);
+          public O get() {
+            return accumulator.get();
           }
 
           @Override
-          public O get() {
-            return accumulator.get();
+          public void listen(E e) {
+            accumulator.listen(e);
           }
 
           @Override

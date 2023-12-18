@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
@@ -58,19 +59,26 @@ public class Listeners {
     private final ListenerFactory<E, K> outerListenerFactory;
 
     public ListenerFactoryAndMonitor(
-        ListenerFactory<E, K> innerListenerFactory, ExecutorService executorService, boolean onLast) {
+        ListenerFactory<E, K> innerListenerFactory,
+        Predicate<K> predicate,
+        ExecutorService executorService,
+        boolean onLast) {
       this.innerListenerFactory = innerListenerFactory;
       if (onLast) {
         if (executorService != null) {
-          outerListenerFactory = innerListenerFactory.onLast().deferred(executorService);
+          outerListenerFactory = innerListenerFactory
+              .onLast()
+              .deferred(executorService)
+              .conditional(predicate);
         } else {
-          outerListenerFactory = innerListenerFactory.onLast();
+          outerListenerFactory = innerListenerFactory.onLast().conditional(predicate);
         }
       } else {
         if (executorService != null) {
-          outerListenerFactory = innerListenerFactory.deferred(executorService);
+          outerListenerFactory =
+              innerListenerFactory.deferred(executorService).conditional(predicate);
         } else {
-          outerListenerFactory = innerListenerFactory;
+          outerListenerFactory = innerListenerFactory.conditional(predicate);
         }
       }
     }
@@ -112,7 +120,9 @@ public class Listeners {
                   List<NamedFunction<? super Individual<G, S, Q>, ?>> individualFunctions,
               @Param("runKeys") List<Map.Entry<String, String>> runKeys,
               @Param(value = "deferred") boolean deferred,
-              @Param(value = "onlyLast") boolean onlyLast) {
+              @Param(value = "onlyLast") boolean onlyLast,
+              @Param(value = "condition", dNPM = "ea.predicate.always()")
+                  Predicate<Run<?, G, S, Q>> predicate) {
     record PopIndividualPair<G, S, Q>(POCPopulationState<?, G, S, Q> pop, Individual<G, S, Q> individual) {}
     return (experiment, executorService) -> {
       List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> popFunctions =
@@ -128,7 +138,7 @@ public class Listeners {
               f.getFormat(),
               (PopIndividualPair<G, S, Q> pair) -> f.apply(pair.individual())))
           .forEach(pairFunctions::add);
-      CSVPrinter<PopIndividualPair<G, S, Q>, Run<?, G, S, Q>> innerListenerFactory = new CSVPrinter<>(
+      ListenerFactory<PopIndividualPair<G, S, Q>, Run<?, G, S, Q>> innerListenerFactory = new CSVPrinter<>(
           pairFunctions, buildRunNamedFunctions(runKeys, experiment), new File(filePath), true);
       ListenerFactory<? super POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> allListenerFactory =
           new ListenerFactory<>() {
@@ -156,7 +166,8 @@ public class Listeners {
               innerListenerFactory.shutdown();
             }
           };
-      return new ListenerFactoryAndMonitor<>(allListenerFactory, deferred ? executorService : null, onlyLast);
+      return new ListenerFactoryAndMonitor<>(
+          allListenerFactory, predicate, deferred ? executorService : null, onlyLast);
     };
   }
 
@@ -188,7 +199,9 @@ public class Listeners {
                   List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
               @Param("runKeys") List<Map.Entry<String, String>> runKeys,
               @Param(value = "deferred") boolean deferred,
-              @Param(value = "onlyLast") boolean onlyLast) {
+              @Param(value = "onlyLast") boolean onlyLast,
+              @Param(value = "condition", dNPM = "ea.predicate.always()")
+                  Predicate<Run<?, G, S, Q>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         new CSVPrinter<>(
             (List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>)
@@ -196,6 +209,7 @@ public class Listeners {
             buildRunNamedFunctions(runKeys, experiment),
             new File(filePath),
             true),
+        predicate,
         deferred ? executorService : null,
         onlyLast);
   }
@@ -243,12 +257,15 @@ public class Listeners {
                   List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
               @Param("runKeys") List<Map.Entry<String, String>> runKeys,
               @Param(value = "deferred") boolean deferred,
-              @Param(value = "onlyLast") boolean onlyLast) {
+              @Param(value = "onlyLast") boolean onlyLast,
+              @Param(value = "condition", dNPM = "ea.predicate.always()")
+                  Predicate<Run<?, G, S, Q>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         new TabularPrinter<>(
             (List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>>)
                 Misc.concat(List.of(defaultStateFunctions, stateFunctions)),
             buildRunNamedFunctions(runKeys, experiment)),
+        predicate,
         deferred ? executorService : null,
         onlyLast);
   }
@@ -262,7 +279,9 @@ public class Listeners {
               @Param(value = "w", dI = 800) int w,
               @Param(value = "h", dI = 800) int h,
               @Param(value = "freeScales") boolean freeScales,
-              @Param("filePath") String filePath) {
+              @Param("filePath") String filePath,
+              @Param(value = "condition", dNPM = "ea.predicate.always()")
+                  Predicate<Run<?, G, S, Q>> predicate) {
     ImagePlotter imagePlotter =
         new ImagePlotter(w, h, freeScales ? Configuration.FREE_SCALES : Configuration.DEFAULT);
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
@@ -274,6 +293,7 @@ public class Listeners {
             L.severe("Cannot save plot at `%s`: %s".formatted(file.getPath(), e));
           }
         }),
+        predicate,
         executorService,
         false);
   }
@@ -323,7 +343,10 @@ public class Listeners {
               @Param(value = "serverAddress", dS = "127.0.0.1") String serverAddress,
               @Param(value = "serverPort", dI = 10979) int serverPort,
               @Param(value = "serverKeyFilePath") String serverKeyFilePath,
-              @Param(value = "pollInterval", dD = 1) double pollInterval) {
+              @Param(value = "pollInterval", dD = 1) double pollInterval,
+              @Param(value = "condition", dNPM = "ea.predicate.always()")
+                  Predicate<Run<?, G, S, Q>> predicate) {
+
     NetMultiSink netMultiSink =
         new NetMultiSink(pollInterval, serverAddress, serverPort, getCredentialFromFile(serverKeyFilePath));
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
@@ -337,6 +360,7 @@ public class Listeners {
             netMultiSink.getExperimentSink(),
             netMultiSink.getRunSink(),
             netMultiSink.getDatItemSink()),
+        predicate,
         executorService,
         false);
   }
@@ -347,7 +371,9 @@ public class Listeners {
           outcomeSaver(
               @Param(value = "filePathTemplate", dS = "run-outcome-{index:%04d}.txt")
                   String filePathTemplate,
-              @Param(value = "deferred", dB = true) boolean deferred) {
+              @Param(value = "deferred", dB = true) boolean deferred,
+              @Param(value = "condition", dNPM = "ea.predicate.always()")
+                  Predicate<Run<?, G, S, Q>> predicate) {
     NamedFunction<Object, String> serializer = NamedFunctions.base64(x -> (Serializable) x);
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         (ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>)
@@ -381,6 +407,7 @@ public class Listeners {
                 L.warning("Cannot save outcome file %s due to: %s".formatted(file.getPath(), e));
               }
             },
+        predicate,
         deferred ? executorService : null,
         true);
   }
@@ -394,7 +421,9 @@ public class Listeners {
               @Param(value = "w", dI = 800) int w,
               @Param(value = "h", dI = 800) int h,
               @Param(value = "freeScales") boolean freeScales,
-              @Param(value = "filePathTemplate", dS = "run-{index:%04d}.png") String filePathTemplate) {
+              @Param(value = "filePathTemplate", dS = "run-{index:%04d}.png") String filePathTemplate,
+              @Param(value = "condition", dNPM = "ea.predicate.always()")
+                  Predicate<Run<?, G, S, Q>> predicate) {
     ImagePlotter imagePlotter =
         new ImagePlotter(w, h, freeScales ? Configuration.FREE_SCALES : Configuration.DEFAULT);
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
@@ -406,6 +435,7 @@ public class Listeners {
             L.severe("Cannot save plot at `%s`: %s".formatted(file, e));
           }
         }),
+        predicate,
         executorService,
         false);
   }
@@ -434,7 +464,10 @@ public class Listeners {
               @Param("runKeys")
                   List<Map.Entry<String, String>> runKeys, // TODO: these are currently ignored
               @Param(value = "deferred", dB = true) boolean deferred,
-              @Param(value = "onlyLast") boolean onlyLast) {
+              @Param(value = "onlyLast") boolean onlyLast,
+              @Param(value = "condition", dNPM = "ea.predicate.always()")
+                  Predicate<Run<?, G, S, Q>> predicate) {
+
     // read credential files
     long longChatId;
     String botId = getCredentialFromFile(botIdFilePath);
@@ -448,6 +481,7 @@ public class Listeners {
         (List) Misc.concat(List.of(defaultPlotTableBuilders, plotTableBuilders, accumulators));
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         new TelegramUpdater<>(accumulatorFactories, botId, longChatId),
+        predicate,
         deferred ? executorService : null,
         onlyLast);
   }
@@ -474,7 +508,9 @@ public class Listeners {
                       defaultStateFunctions,
               @Param(value = "functions")
                   List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
-              @Param("runKeys") List<Map.Entry<String, String>> runKeys) {
+              @Param("runKeys") List<Map.Entry<String, String>> runKeys,
+              @Param(value = "condition", dNPM = "ea.predicate.always()")
+                  Predicate<Run<?, G, S, Q>> predicate) {
     DirectSinkSource<MachineKey, MachineInfo> machineSinkSource = new DirectSinkSource<>();
     DirectSinkSource<ProcessKey, ProcessInfo> processSinkSource = new DirectSinkSource<>();
     DirectSinkSource<ProcessKey, LogInfo> logSinkSource = new DirectSinkSource<>();
@@ -501,6 +537,7 @@ public class Listeners {
             experimentSinkSource,
             runSinkSource,
             dataItemSinkSource),
+        predicate,
         executorService,
         false);
   }
