@@ -75,7 +75,7 @@ public class Solvers {
       @Param(value = "name", dS = "") String name,
       @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<BitString, S> mapper,
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
-      @Param(value = "pMut", dD = 0.01d) double pMut,
+      @Param(value = "pMut", dD = 0.35d) double pMut,
       @Param(value = "keepProbability", dD = 0.01d) double keepProbability,
       @Param(value = "nTour", dI = 3) int nTour,
       @Param(value = "nEval") int nEval,
