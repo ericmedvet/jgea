@@ -92,7 +92,9 @@ public class Plots {
       @Param(value = "sort", dS = "min") Sorting sorting,
       @Param(value = "s", dS = "%.2f") String s) {
     NamedFunction<POCPopulationState<?, G, S, Q>, Collection<Double>> collFFunction = NamedFunctions.each(
-        fFunction.of(NamedFunctions.fitness(NamedFunctions.identity(), s)), collectionFunction, "%s");
+        fFunction.of(NamedFunctions.fitness(NamedFunctions.identity(), NamedFunctions.identity(), s)),
+        collectionFunction,
+        "%s");
     List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number>> yFunctions =
         switch (sorting) {
           case MIN -> List.of(

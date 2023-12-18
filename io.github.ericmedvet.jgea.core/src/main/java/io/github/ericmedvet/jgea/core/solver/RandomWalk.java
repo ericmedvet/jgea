@@ -45,6 +45,7 @@ public class RandomWalk<G, S, Q> extends StandardEvolver<G, S, Q> {
         new Last(),
         1,
         true,
+        0,
         false);
   }
 }

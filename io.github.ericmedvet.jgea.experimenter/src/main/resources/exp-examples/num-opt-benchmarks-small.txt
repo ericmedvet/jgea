@@ -5,10 +5,10 @@ ea.experiment(
       ea.p.s.sphere()
     ]) *
     (solver = (nEval = [2500]) * [
-      ea.s.doubleStringGa(mapper = ea.m.identity());
-      ea.s.simpleEs(mapper = ea.m.identity());
-      ea.s.pso(mapper = ea.m.identity());
-      ea.s.differentialEvolution(mapper = ea.m.identity())
+      ea.s.doubleStringGa();
+      ea.s.simpleEs();
+      ea.s.pso();
+      ea.s.differentialEvolution()
     ]) * [
     ea.run()
   ];
@@ -16,7 +16,7 @@ ea.experiment(
     ea.l.console(
       functions = [
         ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
-        ea.nf.fitness(individual = ea.nf.best(); s = "%6.2f");
+        ea.nf.bestFitness(s = "%6.2f");
         ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()))
       ];
       runKeys = [
@@ -26,7 +26,7 @@ ea.experiment(
       ]
     );
     ea.l.expPlotSaver(
-      filePath = "/home/eric/Scaricati/plot-xy.png";
+      filePath = "/home/eric/Scaricati/plot-num-opt.png";
       freeScales = true;
       plot = ea.plot.fitnessPlotMatrix(
         xSubplotRunKey = ea.misc.sEntry(key = p; value = "{problem.p}");

@@ -173,12 +173,14 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <X, F> NamedFunction<X, F> fitness(
+  public static <X, F, T> NamedFunction<X, T> fitness(
       @Param(value = "individual", dNPM = "ea.nf.identity()") NamedFunction<X, Individual<?, ?, F>> individualF,
+      @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<F, T> function,
       @Param(value = "s", dS = "%s") String s) {
-    return NamedFunction.build(c("fitness", individualF.getName()), s, x -> individualF
-        .apply(x)
-        .quality());
+    return NamedFunction.build(
+        c(function.getName(), "fitness", individualF.getName()),
+        s.equals("%s") ? function.getFormat() : s,
+        x -> function.apply(individualF.apply(x).quality()));
   }
 
   @SuppressWarnings("unused")
@@ -356,5 +358,16 @@ public class NamedFunctions {
       Collection<T> collection = collectionF.apply(x);
       return ((double) (new HashSet<>(collection).size())) / ((double) collection.size());
     });
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, T> NamedFunction<? super X, T> nth(
+      @Param(value = "list", dNPM = "ea.nf.identity()")
+          NamedFunction<? super X, ? extends List<? extends T>> listF,
+      @Param("n") int n,
+      @Param(value = "s", dS = "%s") String s) {
+    return io.github.ericmedvet.jgea.core.listener.NamedFunctions.<T>nth(n)
+        .of(listF)
+        .reformat(s);
   }
 }

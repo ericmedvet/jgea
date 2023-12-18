@@ -149,6 +149,7 @@ public class Example {
         new Last(),
         100,
         true,
+        0,
         false));
     solvers.add(new SimpleEvolutionaryStrategy<>(
         Function.identity(),
@@ -217,19 +218,8 @@ public class Example {
         new Last(),
         100,
         true,
+        0,
         false));
-    solvers.add(new StandardWithEnforcedDiversityEvolver<>(
-        Function.identity(),
-        new BitStringFactory(size),
-        100,
-        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
-        Map.of(new BitStringUniformCrossover(), 0.8d, new BitStringFlipMutation(0.01d), 0.2d),
-        new Tournament(5),
-        new Last(),
-        100,
-        true,
-        false,
-        100));
     for (IterativeSolver<
             ? extends POCPopulationState<?, ?, BitString, Double>,
             QualityBasedProblem<BitString, Double>,
@@ -294,6 +284,7 @@ public class Example {
         new Last(),
         100,
         true,
+        0,
         false));
     solvers.add(new StandardEvolver<>(
         new FormulaMapper()
@@ -313,28 +304,8 @@ public class Example {
         new Last(),
         100,
         true,
+        0,
         false));
-    solvers.add(new StandardWithEnforcedDiversityEvolver<>(
-        new FormulaMapper()
-            .andThen(n -> new TreeBasedUnivariateRealFunction(
-                n,
-                p.qualityFunction().getDataset().xVarNames(),
-                p.qualityFunction().getDataset().yVarNames().get(0)))
-            .andThen(MathUtils.linearScaler(p.qualityFunction())),
-        new GrammarRampedHalfAndHalf<>(3, 12, srGrammar),
-        100,
-        StopConditions.nOfIterations(100),
-        Map.of(
-            new SameRootSubtreeCrossover<>(12),
-            0.8d,
-            new GrammarBasedSubtreeMutation<>(12, srGrammar),
-            0.2d),
-        new Tournament(5),
-        new Last(),
-        100,
-        true,
-        false,
-        100));
     for (IterativeSolver<
             ? extends POCPopulationState<?, ?, NamedUnivariateRealFunction, Double>,
             ? super SyntheticUnivariateRegressionProblem,
@@ -414,6 +385,7 @@ public class Example {
         new Last(),
         100,
         true,
+        0,
         false);
     Collection<NamedUnivariateRealFunction> solutions = solver.solve(p, r, executor, listenerFactory.build(null));
     System.out.printf("Found %d solutions%n", solutions.size());

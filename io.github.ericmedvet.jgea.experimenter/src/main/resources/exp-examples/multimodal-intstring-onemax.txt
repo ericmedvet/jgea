@@ -1,7 +1,8 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:10]) * [ea.rg.defaultRG()]) *
     (solver = (nEval = [20000]) * [
-      ea.s.intStringGa(mapper = ea.m.identity(); diversity = false);
+      ea.s.intStringGa(mapper = ea.m.identity(maxUniquenessAttempts = 0));
+      ea.s.intStringGa(mapper = ea.m.identity(maxUniquenessAttempts = 100));
       ea.s.intStringCabea(mapper = ea.m.identity(); keepProbability = 0; substrate = empty; nTour = 1; gridSize = 11);
       ea.s.intStringCabea(mapper = ea.m.identity(); keepProbability = 0; substrate = empty; nTour = 1; gridSize = 21);
       ea.s.intStringCabea(mapper = ea.m.identity(); keepProbability = 0; substrate = contour_cross; nTour = 1; gridSize = 11);
@@ -21,7 +22,8 @@ ea.experiment(
         ea.nf.solution(individual = ea.nf.best(); s = "%40.40s")
       ];
       runKeys = [
-        ea.misc.sEntry(key = "solver"; value = "{solver:%#s}-{solver.substrate}-{solver.gridSize}")
+        ea.misc.sEntry(key = "solver"; value = "{solver:%#s}-{solver.substrate}-{solver.gridSize}");
+        ea.misc.sEntry(key = "solver.name"; value = "{solver.name}")
       ]
     );
     ea.l.expPlotSaver(

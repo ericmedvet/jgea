@@ -50,6 +50,7 @@ public class StandardEvolver<G, S, Q>
       Selector<? super Individual<G, S, Q>> unsurvivalSelector,
       int offspringSize,
       boolean overlapping,
+      int maxUniquenessAttempts,
       boolean remap) {
     super(
         solutionMapper,
@@ -61,6 +62,7 @@ public class StandardEvolver<G, S, Q>
         unsurvivalSelector,
         offspringSize,
         overlapping,
+        maxUniquenessAttempts,
         remap);
   }
 
