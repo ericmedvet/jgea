@@ -30,7 +30,8 @@ ea.experiment(
         ea.misc.sEntry(key = "problem.name"; value = "{problem:%#s}");
         ea.misc.sEntry(key = "problem.p"; value = "{problem.p}");
         ea.misc.sEntry(key = "solver.gridSize"; value = "{solver.gridSize}");
-        ea.misc.sEntry(key = "solver.mooreRadius"; value = "{solver.mooreRadius}")
+        ea.misc.sEntry(key = "solver.mooreRadius"; value = "{solver.mooreRadius}");
+        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
       ]
     )
   ]

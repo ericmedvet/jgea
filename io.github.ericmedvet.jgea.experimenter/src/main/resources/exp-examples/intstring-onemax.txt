@@ -6,12 +6,19 @@ ea.experiment(
     )
   ];
   listeners = [
-    ea.l.console(functions = [
-      ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
-      ea.nf.bestFitness(s = "%6.4f");
-      ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
-      ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.4f");
-      ea.nf.solution(individual = ea.nf.best(); s = "%60.60s")
-    ])
+    ea.l.console(
+      functions = [
+        ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
+        ea.nf.bestFitness(s = "%6.4f");
+        ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
+        ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.4f");
+        ea.nf.solution(individual = ea.nf.best(); s = "%60.60s")
+      ];
+      runKeys = [
+        ea.misc.sEntry(key = "problem.p"; value = "{problem.p}");
+        ea.misc.sEntry(key = "solver"; value = "{solver:%#s}");
+        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
+      ]
+    )
   ]
 )

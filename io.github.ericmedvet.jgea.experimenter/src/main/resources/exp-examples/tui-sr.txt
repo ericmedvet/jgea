@@ -28,7 +28,8 @@ ea.experiment(
       ];
       runKeys = [
         ea.misc.sEntry(key = "solver"; value = "{solver:%#s}");
-        ea.misc.sEntry(key = "problem"; value = "{problem.name}")
+        ea.misc.sEntry(key = "problem"; value = "{problem.name}");
+        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
       ]
     )
   ]

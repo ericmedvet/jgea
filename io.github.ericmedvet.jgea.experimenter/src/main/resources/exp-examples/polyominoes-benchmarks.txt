@@ -28,7 +28,9 @@ ea.experiment(
         ea.nf.grid(f = ea.nf.solution(individual = ea.nf.best()))
       ];
       runKeys = [
-        ea.misc.sEntry(key = "problem.target"; value = "{problem.target}")
+        ea.misc.sEntry(key = "target"; value = "{problem.target}");
+        ea.misc.sEntry(key = "grammar"; value = "{solver.mapper.grammar.name}");
+        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
       ]
     )
   ]

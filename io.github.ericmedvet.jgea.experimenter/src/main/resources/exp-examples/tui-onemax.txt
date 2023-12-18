@@ -13,6 +13,11 @@ ea.experiment(
         ea.nf.fitnessHist();
         ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
         ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.2f")
+      ];
+      runKeys = [
+        ea.misc.sEntry(key = "problem.p"; value = "{problem.p}");
+        ea.misc.sEntry(key = "solver"; value = "{solver:%#s}");
+        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
       ]
     );
     ea.l.console(
@@ -23,7 +28,8 @@ ea.experiment(
       ];
       runKeys = [
         ea.misc.sEntry(key = "problem.p"; value = "{problem.p}");
-        ea.misc.sEntry(key = "solver"; value = "{solver:%#s}")
+        ea.misc.sEntry(key = "solver"; value = "{solver:%#s}");
+        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
       ]
     )
   ]

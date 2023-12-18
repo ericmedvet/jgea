@@ -25,11 +25,12 @@ ea.experiment(
         ea.nf.solution(individual = ea.nf.best(); s = "%40.40s")
       ];
       runKeys = [
+        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}");
         ea.misc.sEntry(key = "solver"; value = "{solver.name}")
       ]
     );
     ea.l.expPlotSaver(
-      filePath = "/home/eric/Scaricati/plot-mo-hv.png";
+      filePath = "../plot-mo-hv.png";
       freeScales = true;
       plot = ea.plot.fitnessPlotMatrix(
         lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}");
@@ -40,7 +41,7 @@ ea.experiment(
       )
     );
     ea.l.expPlotSaver(
-      filePath = "/home/eric/Scaricati/plot-mo-obj0.png";
+      filePath = "../plot-mo-obj0.png";
       freeScales = true;
       plot = ea.plot.fitnessPlotMatrix(
         lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}");
@@ -48,7 +49,7 @@ ea.experiment(
       )
     );
     ea.l.expPlotSaver(
-      filePath = "/home/eric/Scaricati/plot-mo-obj1.png";
+      filePath = "../plot-mo-obj1.png";
       freeScales = true;
       plot = ea.plot.fitnessPlotMatrix(
         lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}");

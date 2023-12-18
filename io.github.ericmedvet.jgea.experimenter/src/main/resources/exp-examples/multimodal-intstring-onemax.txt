@@ -1,12 +1,14 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:10]) * [ea.rg.defaultRG()]) *
     (solver = (nEval = [20000]) * [
-      ea.s.intStringGa(mapper = ea.m.identity(maxUniquenessAttempts = 0));
-      ea.s.intStringGa(mapper = ea.m.identity(maxUniquenessAttempts = 100));
-      ea.s.intStringCabea(mapper = ea.m.identity(); keepProbability = 0; substrate = empty; nTour = 1; gridSize = 11);
-      ea.s.intStringCabea(mapper = ea.m.identity(); keepProbability = 0; substrate = empty; nTour = 1; gridSize = 21);
-      ea.s.intStringCabea(mapper = ea.m.identity(); keepProbability = 0; substrate = contour_cross; nTour = 1; gridSize = 11);
-      ea.s.intStringCabea(mapper = ea.m.identity(); keepProbability = 0; substrate = contour_cross; nTour = 1; gridSize = 21)
+      ea.s.intStringGa(name = "ga-div");
+      ea.s.intStringGa(name = "ga"; maxUniquenessAttempts = 0);
+      ea.s.intStringNsga2(name = "nsga2-div");
+      ea.s.intStringNsga2(name = "nsga2"; maxUniquenessAttempts = 0);
+      ea.s.intStringCabea(name = "cabea-e-11"; keepProbability = 0; substrate = empty; gridSize = 11);
+      ea.s.intStringCabea(name = "cabea-cc-11"; keepProbability = 0; substrate = contour_cross; gridSize = 11);
+      ea.s.intStringCabea(name = "cabea-e-21"; keepProbability = 0; substrate = empty; gridSize = 21);
+      ea.s.intStringCabea(name = "cabea-cc-21"; keepProbability = 0; substrate = contour_cross; gridSize = 21)
     ]) * [
     ea.run(problem = ea.p.s.multiModalIntOneMax(nOfTargets = 10))
   ];
@@ -22,22 +24,22 @@ ea.experiment(
         ea.nf.solution(individual = ea.nf.best(); s = "%40.40s")
       ];
       runKeys = [
-        ea.misc.sEntry(key = "solver"; value = "{solver:%#s}-{solver.substrate}-{solver.gridSize}");
-        ea.misc.sEntry(key = "solver.name"; value = "{solver.name}")
+        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}");
+        ea.misc.sEntry(key = "solver"; value = "{solver.name}")
       ]
     );
     ea.l.expPlotSaver(
-      filePath = "/home/eric/Scaricati/plot-fitness.png";
+      filePath = "../plot-fitness.png";
       freeScales = true;
       plot = ea.plot.fitnessPlotMatrix(
-        lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver:%#s}-{solver.substrate}-{solver.gridSize}")
+        lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}")
       )
     );
     ea.l.expPlotSaver(
-      filePath = "/home/eric/Scaricati/plot-otd.png";
+      filePath = "../plot-otd.png";
       freeScales = true;
       plot = ea.plot.fitnessPlotMatrix(
-        lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver:%#s}-{solver.substrate}-{solver.gridSize}");
+        lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         yFunction = ea.nf.overallTargetDistance(
           collection = ea.nf.each(map = ea.nf.solution(); collection = ea.nf.all());
           problem = ea.p.s.multiModalIntOneMax()
@@ -46,7 +48,7 @@ ea.experiment(
     );
     ea.l.runPlotSaver(
       w = 1000; h = 200;
-      filePathTemplate = "/home/eric/Scaricati/plot-mt-cabea-{randomGenerator.seed}-{solver.substrate}-{solver.gridSize}.png";
+      filePathTemplate = "../plot-mt-cabea-{randomGenerator.seed}-{solver.name}.png";
       plot = ea.plot.gridPopulation(iterations = [0; 1; 5; 10; 25; 50])
     )
   ]

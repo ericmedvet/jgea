@@ -16,7 +16,11 @@ ea.experiment(
         ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.4f");
         ea.nf.solution(individual = ea.nf.best(); s = "%60.60s")
       ];
-      runKeys = ["{solver:%#s}"; "{randomGenerator.seed}"; "{problem.p}"]
+      runKeys = [
+        ea.misc.sEntry(key = "problem.p"; value = "{problem.p}");
+        ea.misc.sEntry(key = "solver"; value = "{solver:%#s}");
+        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
+      ]
     )
   ]
 )
