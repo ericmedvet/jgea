@@ -1,10 +1,8 @@
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:10]) * [ea.rg.defaultRG()]) *
-    (solver = (nEval = [20000]) * [
+  runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
+    (solver = (nEval = [1000]) * [
       ea.s.intStringGa(name = "ga-div");
       ea.s.intStringGa(name = "ga"; maxUniquenessAttempts = 0);
-      ea.s.intStringNsga2(name = "nsga2-div");
-      ea.s.intStringNsga2(name = "nsga2"; maxUniquenessAttempts = 0);
       ea.s.intStringCabea(name = "cabea-e-11"; keepProbability = 0; substrate = empty; gridSize = 11);
       ea.s.intStringCabea(name = "cabea-cc-11"; keepProbability = 0; substrate = contour_cross; gridSize = 11);
       ea.s.intStringCabea(name = "cabea-e-21"; keepProbability = 0; substrate = empty; gridSize = 21);
@@ -16,10 +14,10 @@ ea.experiment(
     ea.l.console(
       functions = [
         ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
-        ea.nf.fitness(individual = ea.nf.best(); s = "%5.3f");
+        ea.nf.bestFitness(s = "%5.3f");
         ea.nf.overallTargetDistance(
           collection = ea.nf.each(map = ea.nf.solution(); collection = ea.nf.all());
-          problem = ea.p.s.multiModalIntOneMax()
+          problem = ea.p.s.multiModalIntOneMax(nOfTargets = 10)
         );
         ea.nf.solution(individual = ea.nf.best(); s = "%40.40s")
       ];
@@ -42,14 +40,9 @@ ea.experiment(
         lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         yFunction = ea.nf.overallTargetDistance(
           collection = ea.nf.each(map = ea.nf.solution(); collection = ea.nf.all());
-          problem = ea.p.s.multiModalIntOneMax()
+          problem = ea.p.s.multiModalIntOneMax(nOfTargets = 10)
         )
       )
-    );
-    ea.l.runPlotSaver(
-      w = 1000; h = 200;
-      filePathTemplate = "../plot-mt-cabea-{randomGenerator.seed}-{solver.name}.png";
-      plot = ea.plot.gridPopulation(iterations = [0; 1; 5; 10; 25; 50])
     )
   ]
 )

@@ -20,15 +20,14 @@
 
 package io.github.ericmedvet.jgea.problem.synthetic;
 
+import static io.github.ericmedvet.jgea.core.util.VectorUtils.*;
+
 import io.github.ericmedvet.jgea.core.distance.Distance;
 import io.github.ericmedvet.jgea.core.problem.MultiTargetProblem;
 import io.github.ericmedvet.jgea.core.problem.ProblemWithExampleSolution;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import static io.github.ericmedvet.jgea.core.util.VectorUtils.*;
 
 public class PointsAiming implements ProblemWithExampleSolution<List<Double>>, MultiTargetProblem<List<Double>> {
 
