@@ -23,7 +23,10 @@ ea.experiment(
         ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.2f");
         ea.nf.solution(individual = ea.nf.best(); s = "%60.60s")
       ];
-      runKeys = ["{solver:%#s}"; "{problem.name}"]
+      runKeys = [
+        ea.misc.sEntry(key = "problem.name"; value = "{problem:%#s}");
+        ea.misc.sEntry(key = "solver"; value = "{solver:%#s}")
+      ]
     )
   ]
 )
