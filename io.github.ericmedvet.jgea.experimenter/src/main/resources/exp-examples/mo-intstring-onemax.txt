@@ -1,6 +1,6 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
-    (solver = (nEval = [5000]) * [
+    (solver = (nEval = [10000]) * [
       ea.s.intStringGa(name = "ga-div");
       ea.s.intStringGa(name = "ga"; maxUniquenessAttempts = 0);
       ea.s.intStringNsga2(name = "nsga2-div");
@@ -61,15 +61,25 @@ ea.experiment(
       )
     );
     ea.l.runPlotSaver(
+      w = 1000; h = 200;
       filePathTemplate = "../grids-obj0-{solver.name}-{problem:%#s}-{randomGenerator.seed}.png";
       plot = ea.plot.gridPopulation(
         titleRunKey = ea.misc.sEntry(key = "run"; value = "obj0 for {solver.name}-{problem:%#s}-{randomGenerator.seed}");
-        individualFunction = ea.nf.fitness(f = ea.nf.nth(n = 0))
+        individualFunction = ea.nf.fitness(f = ea.nf.nth(n = 0));
+        predicateValue = ea.nf.iterations();
+        condition = ea.predicate.inL(
+          f = ea.nf.iterations();
+          values = [1; 10; 25; 50; 75]
+        )
       );
       condition = ea.predicate.all(conditions = [
         ea.predicate.matches(
           f = ea.nf.runKey(runKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}"));
           regex = "cabea.*"
+        );
+        ea.predicate.inS(
+          f = ea.nf.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
+          values = ["1"]
         )
       ])
     )

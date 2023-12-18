@@ -34,6 +34,7 @@ import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 @Discoverable(prefixTemplate = "ea.plot")
 public class Plots {
@@ -277,15 +278,15 @@ public class Plots {
                   Map.Entry<String, String> titleRunKey,
               @Param(value = "individualFunction", dNPM = "ea.nf.fitness()")
                   NamedFunction<? super Individual<G, S, Q>, ? extends Number> individualFunction,
-              @Param(
-                      value = "iterations",
-                      dIs = {0, 10, 100})
-                  List<Integer> iterations) {
+              @Param(value = "predicateValue", dNPM = "ea.nf.iterations()")
+                  NamedFunction<GridPopulationState<G, S, Q>, ?> predicateValueFunction,
+              @Param(value = "condition", dNPM = "ea.predicate.always()")
+                  Predicate<GridPopulationState<G, S, Q>> condition) {
     return new UnivariateGridPlotAccumulatorFactory<>(
         buildRunNamedFunction(titleRunKey),
         GridPopulationState::gridPopulation,
         individualFunction,
-        io.github.ericmedvet.jgea.core.listener.NamedFunctions.nOfIterations(),
-        o -> iterations.contains(o.intValue()));
+        predicateValueFunction,
+        condition);
   }
 }

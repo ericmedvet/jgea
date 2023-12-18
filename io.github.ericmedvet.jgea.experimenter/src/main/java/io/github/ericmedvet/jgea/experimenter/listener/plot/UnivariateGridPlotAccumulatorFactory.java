@@ -49,19 +49,19 @@ public class UnivariateGridPlotAccumulatorFactory<E, G, S, R> implements Accumul
   private final NamedFunction<? super R, String> titleFunction;
   private final NamedFunction<? super E, Grid<G>> gridFunction;
   private final NamedFunction<? super G, ? extends Number> gridValueFunction;
-  private final NamedFunction<? super E, S> predicateFunction;
-  private final Predicate<? super S> predicate;
+  private final NamedFunction<? super E, ?> predicateValueFunction;
+  private final Predicate<? super E> predicate;
 
   public UnivariateGridPlotAccumulatorFactory(
       NamedFunction<? super R, String> titleFunction,
       NamedFunction<? super E, Grid<G>> gridFunction,
       NamedFunction<? super G, ? extends Number> gridValueFunction,
-      NamedFunction<? super E, S> predicateFunction,
-      Predicate<? super S> predicate) {
+      NamedFunction<? super E, ?> predicateValueFunction,
+      Predicate<? super E> predicate) {
     this.titleFunction = titleFunction;
     this.gridFunction = gridFunction;
     this.gridValueFunction = gridValueFunction;
-    this.predicateFunction = predicateFunction;
+    this.predicateValueFunction = predicateValueFunction;
     this.predicate = predicate;
   }
 
@@ -75,7 +75,7 @@ public class UnivariateGridPlotAccumulatorFactory<E, G, S, R> implements Accumul
         synchronized (grids) {
           return new UnivariateGridPlot(
               titleFunction.apply(r),
-              predicateFunction.getName(),
+              predicateValueFunction.getName(),
               "",
               "x",
               "y",
@@ -87,11 +87,10 @@ public class UnivariateGridPlotAccumulatorFactory<E, G, S, R> implements Accumul
 
       @Override
       public void listen(E e) {
-        S predicateValue = predicateFunction.apply(e);
-        if (predicate.test(predicateValue)) {
+        if (predicate.test(e)) {
           synchronized (grids) {
             grids.add(new XYPlot.TitledData<>(
-                predicateFunction.getFormat().formatted(predicateValue),
+                predicateValueFunction.applyAndFormat(e),
                 "",
                 gridFunction.apply(e).map(g -> g == null ? null : f.apply(g))));
           }
