@@ -58,11 +58,20 @@ ea.experiment(
       plot = ea.plot.fitnessPlotMatrix(
         lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         yFunction = ea.nf.max(collection = ea.nf.each(map = ea.nf.fitness(f = ea.nf.nth(n = 1)); collection = ea.nf.all()))
-      );
-      condition = ea.predicate.matches(
-        f = ea.nf.runKey(runKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}"));
-        regex = "cabea.*"
       )
+    );
+    ea.l.runPlotSaver(
+      filePathTemplate = "../grids-obj0-{solver.name}-{problem:%#s}-{randomGenerator.seed}.png";
+      plot = ea.plot.gridPopulation(
+        titleRunKey = ea.misc.sEntry(key = "run"; value = "obj0 for {solver.name}-{problem:%#s}-{randomGenerator.seed}");
+        individualFunction = ea.nf.fitness(f = ea.nf.nth(n = 0))
+      );
+      condition = ea.predicate.all(conditions = [
+        ea.predicate.matches(
+          f = ea.nf.runKey(runKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}"));
+          regex = "cabea.*"
+        )
+      ])
     )
   ]
 )
