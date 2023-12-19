@@ -1,6 +1,6 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
-    (solver = (nEval = [5000]) * [
+    (solver = (nEval = [10000]) * [
       ea.s.intStringGa(name = "ga-div");
       ea.s.intStringGa(name = "ga"; maxUniquenessAttempts = 0);
       ea.s.intStringNsga2(name = "nsga2-div");
@@ -60,7 +60,7 @@ ea.experiment(
       )
     );
     ea.l.runPlotSaver(
-      w = 1000; h = 400;
+      w = 1000; h = 600;
       filePathTemplate = "../grids-{solver.name}-{problem:%#s}-{randomGenerator.seed}.png";
       plot = ea.plot.gridPopulation(
         titleRunKey = ea.misc.sEntry(key = "run"; value = "{solver.name} on {problem:%#s} seed={randomGenerator.seed}");
@@ -68,10 +68,9 @@ ea.experiment(
           ea.nf.fitness(f = ea.nf.nth(n = 0));
           ea.nf.fitness(f = ea.nf.nth(n = 1))
         ];
-        predicateValue = ea.nf.iterations();
-        condition = ea.predicate.inL(
-          f = ea.nf.quantized(f = ea.nf.evals(); r = 100);
-          values = [100; 500; 1000; 5000; 9500]
+        predicateValue = ea.nf.quantized(f = ea.nf.evals(); r = 1000; s = "%.0f");
+        condition = ea.predicate.inD(
+          values = [0; 1000; 2000; 5000; 10000]
         )
       );
       condition = ea.predicate.all(conditions = [

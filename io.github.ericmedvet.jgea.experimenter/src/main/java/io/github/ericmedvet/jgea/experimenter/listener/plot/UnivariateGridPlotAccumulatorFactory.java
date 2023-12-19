@@ -40,34 +40,36 @@ import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Predicate;
 
-public class UnivariateGridPlotAccumulatorFactory<E, G, S, R> implements AccumulatorFactory<E, UnivariateGridPlot, R> {
+public class UnivariateGridPlotAccumulatorFactory<E, G, X, R> implements AccumulatorFactory<E, UnivariateGridPlot, R> {
   private final NamedFunction<? super R, String> titleFunction;
   private final NamedFunction<? super E, Grid<G>> gridFunction;
   private final List<NamedFunction<? super G, ? extends Number>> gridValueFunctions;
-  private final NamedFunction<? super E, ?> predicateValueFunction;
-  private final Predicate<? super E> predicate;
+  private final NamedFunction<? super E, X> predicateValueFunction;
+  private final Predicate<? super X> predicate;
+  private final boolean unique;
 
   public UnivariateGridPlotAccumulatorFactory(
       NamedFunction<? super R, String> titleFunction,
       NamedFunction<? super E, Grid<G>> gridFunction,
       List<NamedFunction<? super G, ? extends Number>> gridValueFunctions,
-      NamedFunction<? super E, ?> predicateValueFunction,
-      Predicate<? super E> predicate) {
+      NamedFunction<? super E, X> predicateValueFunction,
+      Predicate<? super X> predicate,
+      boolean unique) {
     this.titleFunction = titleFunction;
     this.gridFunction = gridFunction;
     this.gridValueFunctions = gridValueFunctions;
     this.predicateValueFunction = predicateValueFunction;
     this.predicate = predicate;
+    this.unique = unique;
   }
 
   @Override
   public Accumulator<E, UnivariateGridPlot> build(R r) {
     List<List<XYPlot.TitledData<Grid<Double>>>> grids = new ArrayList<>();
+    Set<X> predicateValues = new HashSet<>();
     return new Accumulator<>() {
       @Override
       public UnivariateGridPlot get() {
@@ -87,12 +89,21 @@ public class UnivariateGridPlotAccumulatorFactory<E, G, S, R> implements Accumul
 
       @Override
       public void listen(E e) {
-        if (predicate.test(e)) {
+        X predicateValue = predicateValueFunction.apply(e);
+        if (predicate.test(predicateValue) && !predicateValues.contains(predicateValue)) {
+          if (unique) {
+            predicateValues.add(predicateValue);
+          }
           synchronized (grids) {
             Grid<G> grid = gridFunction.apply(e);
             grids.add(gridValueFunctions.stream()
                 .map(f -> new XYPlot.TitledData<>(
-                    predicateValueFunction.applyAndFormat(e),
+                    "%s = %s"
+                        .formatted(
+                            predicateValueFunction.getName(),
+                            predicateValueFunction
+                                .getFormat()
+                                .formatted(predicateValue)),
                     f.getName(),
                     grid.map(g -> Objects.isNull(g)
                         ? null

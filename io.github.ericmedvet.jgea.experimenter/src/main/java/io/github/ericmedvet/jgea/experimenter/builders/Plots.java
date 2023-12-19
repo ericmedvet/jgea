@@ -155,6 +155,33 @@ public class Plots {
   }
 
   @SuppressWarnings("unused")
+  public static <G, S, Q, X>
+      UnivariateGridPlotAccumulatorFactory<GridPopulationState<G, S, Q>, Individual<G, S, Q>, X, Run<?, G, S, Q>>
+          gridPopulation(
+              @Param(
+                      value = "titleRunKey",
+                      dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
+                  Map.Entry<String, String> titleRunKey,
+              @Param(
+                      value = "individualFunctions",
+                      dNPMs = {"ea.nf.fitness()"})
+                  List<NamedFunction<? super Individual<G, S, Q>, ? extends Number>>
+                      individualFunctions,
+              @Param(value = "predicateValue", dNPM = "ea.nf.iterations()")
+                  NamedFunction<GridPopulationState<G, S, Q>, X> predicateValueFunction,
+              @Param(value = "condition", dNPM = "ea.predicate.always()") Predicate<X> condition,
+              @Param(value = "unique", dB = true) boolean unique) {
+
+    return new UnivariateGridPlotAccumulatorFactory<>(
+        buildRunNamedFunction(titleRunKey),
+        GridPopulationState::gridPopulation,
+        individualFunctions,
+        predicateValueFunction,
+        condition,
+        unique);
+  }
+
+  @SuppressWarnings("unused")
   public static <G, S, Q>
       XYDataSeriesPlotAccumulatorFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> uniqueness(
           @Param(
@@ -265,31 +292,5 @@ public class Plots {
       @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
     return new XYDataSeriesPlotAccumulatorFactory<>(
         buildRunNamedFunction(titleRunKey), xFunction, yFunctions, xRange, yRange, true, false);
-  }
-
-  @SuppressWarnings("unused")
-  public static <G, S, Q>
-      UnivariateGridPlotAccumulatorFactory<
-              GridPopulationState<G, S, Q>, Individual<G, S, Q>, Long, Run<?, G, S, Q>>
-          gridPopulation(
-              @Param(
-                      value = "titleRunKey",
-                      dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
-                  Map.Entry<String, String> titleRunKey,
-              @Param(
-                      value = "individualFunctions",
-                      dNPMs = {"ea.nf.fitness()"})
-                  List<NamedFunction<? super Individual<G, S, Q>, ? extends Number>>
-                      individualFunctions,
-              @Param(value = "predicateValue", dNPM = "ea.nf.iterations()")
-                  NamedFunction<GridPopulationState<G, S, Q>, ?> predicateValueFunction,
-              @Param(value = "condition", dNPM = "ea.predicate.always()")
-                  Predicate<GridPopulationState<G, S, Q>> condition) {
-    return new UnivariateGridPlotAccumulatorFactory<>(
-        buildRunNamedFunction(titleRunKey),
-        GridPopulationState::gridPopulation,
-        individualFunctions,
-        predicateValueFunction,
-        condition);
   }
 }

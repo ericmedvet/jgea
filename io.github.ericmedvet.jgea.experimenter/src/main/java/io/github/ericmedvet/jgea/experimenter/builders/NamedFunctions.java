@@ -348,10 +348,10 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <X, N extends Number> NamedFunction<X, Double> quantized(
-      @Param("f") NamedFunction<X, N> f, @Param("r") double r) {
-    return io.github.ericmedvet.jgea.core.listener.NamedFunctions.quantized(r, f.getFormat())
+      @Param("f") NamedFunction<X, N> f, @Param("r") double r, @Param(value = "s", dS = "%s") String s) {
+    return io.github.ericmedvet.jgea.core.listener.NamedFunctions.quantized(r, s)
         .of(f)
-        .reformat(f.getFormat());
+        .reformat(s);
   }
 
   @SuppressWarnings("unused")

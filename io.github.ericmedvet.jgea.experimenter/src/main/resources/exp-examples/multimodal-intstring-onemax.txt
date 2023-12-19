@@ -1,6 +1,6 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
-    (solver = (nEval = [10000]) * [
+    (solver = (nEval = [15000]) * [
       ea.s.intStringGa(name = "ga-div");
       ea.s.intStringGa(name = "ga"; maxUniquenessAttempts = 0);
       ea.s.intStringCabea(name = "cabea-e-11"; keepProbability = 0; substrate = empty; gridSize = 11);
@@ -45,19 +45,19 @@ ea.experiment(
       )
     );
     ea.l.runPlotSaver(
-      w = 1000; h = 400;
+      w = 1000; h = 600;
       filePathTemplate = "../grids-{solver.name}-{problem:%#s}-{randomGenerator.seed}.png";
       plot = ea.plot.gridPopulation(
         titleRunKey = ea.misc.sEntry(key = "run"; value = "{solver.name} on {problem:%#s} seed={randomGenerator.seed}");
         individualFunctions = [
+          ea.nf.fitness();
           ea.nf.nth(n = 0; list = ea.nf.targetDistances(problem = ea.p.s.multiModalIntOneMax(nOfTargets = 3)));
           ea.nf.nth(n = 1; list = ea.nf.targetDistances(problem = ea.p.s.multiModalIntOneMax(nOfTargets = 3)));
           ea.nf.nth(n = 2; list = ea.nf.targetDistances(problem = ea.p.s.multiModalIntOneMax(nOfTargets = 3)))
         ];
-        predicateValue = ea.nf.evals();
+        predicateValue = ea.nf.quantized(f = ea.nf.evals(); r = 1000; s = "%.0f");
         condition = ea.predicate.inD(
-          f = ea.nf.quantized(f = ea.nf.evals(); r = 100);
-          values = [100; 500; 1000; 5000; 9500]
+          values = [0; 1000; 2000; 5000; 10000]
         )
       );
       condition = ea.predicate.all(conditions = [
