@@ -199,6 +199,10 @@ public class NamedFunctions {
     return f("quality", Individual::quality);
   }
 
+  public static <N extends Number> NamedFunction<N, Double> quantized(double r, String format) {
+    return NamedFunction.build("quant[%f]".formatted(r), format, v -> r * Math.floor(v.doubleValue() / r + 0.5));
+  }
+
   public static NamedFunction<Object, Number> size() {
     return f("size", "%3d", NamedFunctions::size);
   }

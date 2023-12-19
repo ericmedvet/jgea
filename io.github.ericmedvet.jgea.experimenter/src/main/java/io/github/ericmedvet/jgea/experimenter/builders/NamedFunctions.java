@@ -347,6 +347,14 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
+  public static <X, N extends Number> NamedFunction<X, Double> quantized(
+      @Param("f") NamedFunction<X, N> f, @Param("r") double r) {
+    return io.github.ericmedvet.jgea.core.listener.NamedFunctions.quantized(r, f.getFormat())
+        .of(f)
+        .reformat(f.getFormat());
+  }
+
+  @SuppressWarnings("unused")
   public static NamedFunction<Run<?, ?, ?, ?>, ?> runKey(@Param("runKey") Map.Entry<String, String> entry) {
     return NamedFunction.build(entry.getKey(), "%s", r -> Utils.interpolate(entry.getValue(), r));
   }

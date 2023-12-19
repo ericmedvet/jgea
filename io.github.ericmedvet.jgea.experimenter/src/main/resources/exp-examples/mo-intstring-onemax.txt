@@ -70,8 +70,8 @@ ea.experiment(
         ];
         predicateValue = ea.nf.iterations();
         condition = ea.predicate.inL(
-          f = ea.nf.iterations();
-          values = [1; 10; 25; 50; 75]
+          f = ea.nf.quantized(f = ea.nf.evals(); r = 100);
+          values = [100; 500; 1000; 5000; 9500]
         )
       );
       condition = ea.predicate.all(conditions = [

@@ -54,10 +54,10 @@ ea.experiment(
           ea.nf.nth(n = 1; list = ea.nf.targetDistances(problem = ea.p.s.multiModalIntOneMax(nOfTargets = 3)));
           ea.nf.nth(n = 2; list = ea.nf.targetDistances(problem = ea.p.s.multiModalIntOneMax(nOfTargets = 3)))
         ];
-        predicateValue = ea.nf.iterations();
-        condition = ea.predicate.inL(
-          f = ea.nf.iterations();
-          values = [1; 10; 25; 50; 75]
+        predicateValue = ea.nf.evals();
+        condition = ea.predicate.inD(
+          f = ea.nf.quantized(f = ea.nf.evals(); r = 100);
+          values = [100; 500; 1000; 5000; 9500]
         )
       );
       condition = ea.predicate.all(conditions = [
