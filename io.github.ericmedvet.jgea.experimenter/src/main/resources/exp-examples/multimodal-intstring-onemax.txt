@@ -1,6 +1,6 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
-    (solver = (nEval = [1000]) * [
+    (solver = (nEval = [10000]) * [
       ea.s.intStringGa(name = "ga-div");
       ea.s.intStringGa(name = "ga"; maxUniquenessAttempts = 0);
       ea.s.intStringCabea(name = "cabea-e-11"; keepProbability = 0; substrate = empty; gridSize = 11);
@@ -8,7 +8,7 @@ ea.experiment(
       ea.s.intStringCabea(name = "cabea-e-21"; keepProbability = 0; substrate = empty; gridSize = 21);
       ea.s.intStringCabea(name = "cabea-cc-21"; keepProbability = 0; substrate = contour_cross; gridSize = 21)
     ]) * [
-    ea.run(problem = ea.p.s.multiModalIntOneMax(nOfTargets = 10))
+    ea.run(problem = ea.p.s.multiModalIntOneMax(nOfTargets = 3))
   ];
   listeners = [
     ea.l.console(
@@ -17,7 +17,7 @@ ea.experiment(
         ea.nf.bestFitness(s = "%5.3f");
         ea.nf.overallTargetDistance(
           collection = ea.nf.each(map = ea.nf.solution(); collection = ea.nf.all());
-          problem = ea.p.s.multiModalIntOneMax(nOfTargets = 10)
+          problem = ea.p.s.multiModalIntOneMax(nOfTargets = 3)
         );
         ea.nf.solution(individual = ea.nf.best(); s = "%40.40s")
       ];
@@ -40,9 +40,36 @@ ea.experiment(
         lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         yFunction = ea.nf.overallTargetDistance(
           collection = ea.nf.each(map = ea.nf.solution(); collection = ea.nf.all());
-          problem = ea.p.s.multiModalIntOneMax(nOfTargets = 10)
+          problem = ea.p.s.multiModalIntOneMax(nOfTargets = 3)
         )
       )
+    );
+    ea.l.runPlotSaver(
+      w = 1000; h = 400;
+      filePathTemplate = "../grids-{solver.name}-{problem:%#s}-{randomGenerator.seed}.png";
+      plot = ea.plot.gridPopulation(
+        titleRunKey = ea.misc.sEntry(key = "run"; value = "{solver.name} on {problem:%#s} seed={randomGenerator.seed}");
+        individualFunctions = [
+          ea.nf.nth(n = 0; list = ea.nf.targetDistances(problem = ea.p.s.multiModalIntOneMax(nOfTargets = 3)));
+          ea.nf.nth(n = 1; list = ea.nf.targetDistances(problem = ea.p.s.multiModalIntOneMax(nOfTargets = 3)));
+          ea.nf.nth(n = 2; list = ea.nf.targetDistances(problem = ea.p.s.multiModalIntOneMax(nOfTargets = 3)))
+        ];
+        predicateValue = ea.nf.iterations();
+        condition = ea.predicate.inL(
+          f = ea.nf.iterations();
+          values = [1; 10; 25; 50; 75]
+        )
+      );
+      condition = ea.predicate.all(conditions = [
+        ea.predicate.matches(
+          f = ea.nf.runKey(runKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}"));
+          regex = "cabea.*"
+        );
+        ea.predicate.inS(
+          f = ea.nf.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
+          values = ["1"]
+        )
+      ])
     )
   ]
 )

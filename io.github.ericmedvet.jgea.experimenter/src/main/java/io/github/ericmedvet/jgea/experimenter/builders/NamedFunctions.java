@@ -312,6 +312,17 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
+  public static <X, T> NamedFunction<? super X, T> nth(
+      @Param(value = "list", dNPM = "ea.nf.identity()")
+          NamedFunction<? super X, ? extends List<? extends T>> listF,
+      @Param("n") int n,
+      @Param(value = "s", dS = "%s") String s) {
+    return io.github.ericmedvet.jgea.core.listener.NamedFunctions.<T>nth(n)
+        .of(listF)
+        .reformat(s);
+  }
+
+  @SuppressWarnings("unused")
   public static <X, S> NamedFunction<X, Double> overallTargetDistance(
       @Param("collection") NamedFunction<X, Collection<S>> collectionF,
       @Param("problem") MultiTargetProblem<S> problem) {
@@ -359,22 +370,23 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
+  public static <X, S> NamedFunction<X, List<Double>> targetDistances(
+      @Param(value = "individual", dNPM = "ea.nf.identity()") NamedFunction<X, Individual<?, S, ?>> individualF,
+      @Param("problem") MultiTargetProblem<S> problem) {
+    return NamedFunction.build(c("targets.dist", individualF.getName()), (X x) -> {
+      S s = individualF.apply(x).solution();
+      return problem.targets().stream()
+          .map(t -> problem.distance().apply(s, t))
+          .toList();
+    });
+  }
+
+  @SuppressWarnings("unused")
   public static <X, T> NamedFunction<X, Double> uniqueness(
       @Param("collection") NamedFunction<X, Collection<T>> collectionF) {
     return NamedFunction.build(c("uniqueness", collectionF.getName()), "%4.2f", x -> {
       Collection<T> collection = collectionF.apply(x);
       return ((double) (new HashSet<>(collection).size())) / ((double) collection.size());
     });
-  }
-
-  @SuppressWarnings("unused")
-  public static <X, T> NamedFunction<? super X, T> nth(
-      @Param(value = "list", dNPM = "ea.nf.identity()")
-          NamedFunction<? super X, ? extends List<? extends T>> listF,
-      @Param("n") int n,
-      @Param(value = "s", dS = "%s") String s) {
-    return io.github.ericmedvet.jgea.core.listener.NamedFunctions.<T>nth(n)
-        .of(listF)
-        .reformat(s);
   }
 }
