@@ -1,6 +1,6 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
-    (solver = (nEval = [10000]) * [
+    (solver = (nEval = [5000]) * [
       ea.s.intStringGa(name = "ga-div");
       ea.s.intStringGa(name = "ga"; maxUniquenessAttempts = 0);
       ea.s.intStringNsga2(name = "nsga2-div");
@@ -8,8 +8,7 @@ ea.experiment(
       ea.s.intStringCabea(name = "cabea-e"; keepProbability = 0; substrate = empty);
       ea.s.intStringCabea(name = "cabea-cc"; keepProbability = 0; substrate = contour_cross)
     ]) * (problem = [
-      ea.p.s.multiObjectiveIntOneMax();
-      ea.p.mhoProblem(mtProblem = ea.p.s.multiModalIntOneMax(nOfTargets = 2))
+      ea.p.s.multiObjectiveIntOneMax()
     ]) * [
     ea.run()
   ];
@@ -61,11 +60,14 @@ ea.experiment(
       )
     );
     ea.l.runPlotSaver(
-      w = 1000; h = 200;
-      filePathTemplate = "../grids-obj0-{solver.name}-{problem:%#s}-{randomGenerator.seed}.png";
+      w = 1000; h = 400;
+      filePathTemplate = "../grids-{solver.name}-{problem:%#s}-{randomGenerator.seed}.png";
       plot = ea.plot.gridPopulation(
-        titleRunKey = ea.misc.sEntry(key = "run"; value = "obj0 for {solver.name}-{problem:%#s}-{randomGenerator.seed}");
-        individualFunction = ea.nf.fitness(f = ea.nf.nth(n = 0));
+        titleRunKey = ea.misc.sEntry(key = "run"; value = "{solver.name} on {problem:%#s} seed={randomGenerator.seed}");
+        individualFunctions = [
+          ea.nf.fitness(f = ea.nf.nth(n = 0));
+          ea.nf.fitness(f = ea.nf.nth(n = 1))
+        ];
         predicateValue = ea.nf.iterations();
         condition = ea.predicate.inL(
           f = ea.nf.iterations();

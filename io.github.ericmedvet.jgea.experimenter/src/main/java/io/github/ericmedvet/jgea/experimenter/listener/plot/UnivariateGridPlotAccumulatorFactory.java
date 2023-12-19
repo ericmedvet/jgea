@@ -42,33 +42,32 @@ import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 public class UnivariateGridPlotAccumulatorFactory<E, G, S, R> implements AccumulatorFactory<E, UnivariateGridPlot, R> {
   private final NamedFunction<? super R, String> titleFunction;
   private final NamedFunction<? super E, Grid<G>> gridFunction;
-  private final NamedFunction<? super G, ? extends Number> gridValueFunction;
+  private final List<NamedFunction<? super G, ? extends Number>> gridValueFunctions;
   private final NamedFunction<? super E, ?> predicateValueFunction;
   private final Predicate<? super E> predicate;
 
   public UnivariateGridPlotAccumulatorFactory(
       NamedFunction<? super R, String> titleFunction,
       NamedFunction<? super E, Grid<G>> gridFunction,
-      NamedFunction<? super G, ? extends Number> gridValueFunction,
+      List<NamedFunction<? super G, ? extends Number>> gridValueFunctions,
       NamedFunction<? super E, ?> predicateValueFunction,
       Predicate<? super E> predicate) {
     this.titleFunction = titleFunction;
     this.gridFunction = gridFunction;
-    this.gridValueFunction = gridValueFunction;
+    this.gridValueFunctions = gridValueFunctions;
     this.predicateValueFunction = predicateValueFunction;
     this.predicate = predicate;
   }
 
   @Override
   public Accumulator<E, UnivariateGridPlot> build(R r) {
-    List<XYPlot.TitledData<Grid<Double>>> grids = new ArrayList<>();
-    Function<G, Double> f = t -> gridValueFunction.apply(t).doubleValue();
+    List<List<XYPlot.TitledData<Grid<Double>>>> grids = new ArrayList<>();
     return new Accumulator<>() {
       @Override
       public UnivariateGridPlot get() {
@@ -81,7 +80,8 @@ public class UnivariateGridPlotAccumulatorFactory<E, G, S, R> implements Accumul
               "y",
               DoubleRange.UNBOUNDED,
               DoubleRange.UNBOUNDED,
-              Grid.create(grids.size(), 1, (x, y) -> grids.get(x)));
+              Grid.create(grids.size(), gridValueFunctions.size(), (x, y) -> grids.get(x)
+                  .get(y)));
         }
       }
 
@@ -89,10 +89,15 @@ public class UnivariateGridPlotAccumulatorFactory<E, G, S, R> implements Accumul
       public void listen(E e) {
         if (predicate.test(e)) {
           synchronized (grids) {
-            grids.add(new XYPlot.TitledData<>(
-                predicateValueFunction.applyAndFormat(e),
-                "",
-                gridFunction.apply(e).map(g -> g == null ? null : f.apply(g))));
+            Grid<G> grid = gridFunction.apply(e);
+            grids.add(gridValueFunctions.stream()
+                .map(f -> new XYPlot.TitledData<>(
+                    predicateValueFunction.applyAndFormat(e),
+                    f.getName(),
+                    grid.map(g -> Objects.isNull(g)
+                        ? null
+                        : f.apply(g).doubleValue())))
+                .toList());
           }
         }
       }

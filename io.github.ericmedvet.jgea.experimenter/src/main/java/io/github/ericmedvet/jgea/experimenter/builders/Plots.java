@@ -276,8 +276,11 @@ public class Plots {
                       value = "titleRunKey",
                       dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
                   Map.Entry<String, String> titleRunKey,
-              @Param(value = "individualFunction", dNPM = "ea.nf.fitness()")
-                  NamedFunction<? super Individual<G, S, Q>, ? extends Number> individualFunction,
+              @Param(
+                      value = "individualFunctions",
+                      dNPMs = {"ea.nf.fitness()"})
+                  List<NamedFunction<? super Individual<G, S, Q>, ? extends Number>>
+                      individualFunctions,
               @Param(value = "predicateValue", dNPM = "ea.nf.iterations()")
                   NamedFunction<GridPopulationState<G, S, Q>, ?> predicateValueFunction,
               @Param(value = "condition", dNPM = "ea.predicate.always()")
@@ -285,7 +288,7 @@ public class Plots {
     return new UnivariateGridPlotAccumulatorFactory<>(
         buildRunNamedFunction(titleRunKey),
         GridPopulationState::gridPopulation,
-        individualFunction,
+        individualFunctions,
         predicateValueFunction,
         condition);
   }
