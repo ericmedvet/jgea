@@ -29,6 +29,7 @@ ea.experiment(
     ea.l.expPlotSaver(
       filePath = "../plot-fitness.png";
       freeScales = true;
+      saveCsvData = true;
       plot = ea.plot.fitnessPlotMatrix(
         lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}")
       )
