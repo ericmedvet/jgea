@@ -80,7 +80,7 @@ public class UnivariateGridPlotAccumulatorFactory<E, G, X, R> implements Accumul
           return new UnivariateGridPlot(
               titleFunction.apply(r),
               predicateValueFunction.getName(),
-              "",
+              "value",
               "x",
               "y",
               DoubleRange.UNBOUNDED,
@@ -102,12 +102,7 @@ public class UnivariateGridPlotAccumulatorFactory<E, G, X, R> implements Accumul
             Grid<G> grid = gridFunction.apply(e);
             grids.add(gridValueFunctions.stream()
                 .map(f -> new XYPlot.TitledData<>(
-                    "%s = %s"
-                        .formatted(
-                            predicateValueFunction.getName(),
-                            predicateValueFunction
-                                .getFormat()
-                                .formatted(predicateValue)),
+                    predicateValueFunction.applyAndFormat(e),
                     f.getName(),
                     grid.map(g -> Objects.isNull(g)
                         ? null

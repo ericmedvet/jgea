@@ -47,6 +47,7 @@ ea.experiment(
     ea.l.runPlotSaver(
       w = 1000; h = 600;
       filePathTemplate = "../grids-{solver.name}-{problem:%#s}-{randomGenerator.seed}.png";
+      saveCsvData = true;
       plot = ea.plot.gridPopulation(
         titleRunKey = ea.misc.sEntry(key = "run"; value = "{solver.name} on {problem:%#s} seed={randomGenerator.seed}");
         individualFunctions = [
