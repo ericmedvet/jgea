@@ -106,6 +106,7 @@ public interface Plotter<O> {
         "y",
         DoubleRange.UNBOUNDED,
         DoubleRange.UNBOUNDED,
+        DoubleRange.UNBOUNDED,
         Grid.create(
             4,
             2,

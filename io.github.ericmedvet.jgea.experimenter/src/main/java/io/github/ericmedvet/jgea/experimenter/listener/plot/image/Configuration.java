@@ -68,8 +68,6 @@ public record Configuration(
       List<Color> dataColors,
       ColorRange continuousDataColorRange) {
 
-    public record ColorRange(Color min, Color max) {}
-
     public static final Colors DEFAULT = new Colors(
         Color.WHITE,
         new Color(230, 230, 230),
@@ -92,10 +90,22 @@ public record Configuration(
             new Color(255, 255, 153),
             new Color(177, 89, 40)),
         new ColorRange(new Color(31, 120, 180), new Color(227, 26, 28)));
+
+    public record ColorRange(Color min, Color max) {}
   }
 
-  public record General(double tickLabelGapRatio, double plotDataRatio, double gridStrokeSizeRate) {
-    public static final General DEFAULT = new General(2, 0.9, 0.0005);
+  public record General(
+      double tickLabelGapRatio, double plotDataRatio, double gridStrokeSizeRate, double maxNOfDecimalDigits) {
+    public static final General DEFAULT = new General(2, 0.9, 0.0005, 5);
+  }
+
+  public record GridPlot(
+      double cellSideRate,
+      int legendSteps,
+      double legendImageWRate,
+      double legendImageHRate,
+      boolean showRanges) {
+    public static final GridPlot DEFAULT = new GridPlot(0.9, 100, 0.2, 0.025, true);
   }
 
   public record Layout(
@@ -118,10 +128,6 @@ public record Configuration(
 
   public record LinePlot(double dataStrokeSize, double alpha, double legendImageWRate, double legendImageHRate) {
     public static final LinePlot DEFAULT = new LinePlot(0.0025, 0.3, 0.04, 0.025);
-  }
-
-  public record GridPlot(double cellSideRate, int legendSteps, double legendImageWRate, double legendImageHRate) {
-    public static final GridPlot DEFAULT = new GridPlot(0.9, 100, 0.2, 0.025);
   }
 
   public record PlotMatrix(Show axesShow, Show titlesShow, Set<Independence> independences) {

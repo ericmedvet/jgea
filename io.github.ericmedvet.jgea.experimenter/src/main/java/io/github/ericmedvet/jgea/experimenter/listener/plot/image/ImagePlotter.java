@@ -91,6 +91,35 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     }
   }
 
+  private static DoubleRange computeRange(UnivariateGridPlot plot) {
+    if (!plot.valueRange().equals(DoubleRange.UNBOUNDED)) {
+      return plot.valueRange();
+    }
+    double[] values = plot.dataGrid().values().stream()
+        .map(XYPlot.TitledData::data)
+        .map(d -> d.values().stream()
+            .filter(Objects::nonNull)
+            .filter(Double::isFinite)
+            .toList())
+        .flatMap(List::stream)
+        .mapToDouble(v -> v)
+        .toArray();
+    return new DoubleRange(
+        Arrays.stream(values).min().orElse(0),
+        Arrays.stream(values).max().orElse(1));
+  }
+
+  private static DoubleRange computeRange(Grid<Double> grid) {
+    double[] values = grid.values().stream()
+        .filter(Objects::nonNull)
+        .filter(Double::isFinite)
+        .mapToDouble(v -> v)
+        .toArray();
+    return new DoubleRange(
+        Arrays.stream(values).min().orElse(0),
+        Arrays.stream(values).max().orElse(1));
+  }
+
   private static DoubleRange range(
       Collection<XYDataSeries> dataSeries, ToDoubleFunction<XYDataSeries.Point> vExtractor) {
     return new DoubleRange(
@@ -241,18 +270,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         .collect(Grid.collector());
   }
 
-  private DoubleFunction<Color> computeGridsDataColors(List<Grid<Double>> dataGrids) {
-    double[] values = dataGrids.stream()
-        .map(g -> g.values().stream()
-            .filter(Objects::nonNull)
-            .filter(Double::isFinite)
-            .toList())
-        .flatMap(List::stream)
-        .mapToDouble(v -> v)
-        .toArray();
-    DoubleRange range = new DoubleRange(
-        Arrays.stream(values).min().orElse(0),
-        Arrays.stream(values).max().orElse(1));
+  private DoubleFunction<Color> computeGridsDataColors(UnivariateGridPlot plot) {
+    DoubleRange range = computeRange(plot);
     double minR = c.colors().continuousDataColorRange().min().getRed() / 255f;
     double maxR = c.colors().continuousDataColorRange().max().getRed() / 255f;
     double minG = c.colors().continuousDataColorRange().min().getGreen() / 255f;
@@ -426,7 +445,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
 
   private String computeTicksFormat(List<Double> ticks) {
     int nOfDigits = 0;
-    while (true) {
+    while (nOfDigits < c.general().maxNOfDecimalDigits()) {
       final int d = nOfDigits;
       long nOfDistinct = ticks.stream()
           .map(("%." + d + "f")::formatted)
@@ -556,8 +575,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
   }
 
   private void drawSingleGridPlot(Graphics2D g, Rectangle2D r, Grid<Double> data, Axes a, UnivariateGridPlot plot) {
-    DoubleFunction<Color> colorF = computeGridsDataColors(
-        plot.dataGrid().values().stream().map(XYPlot.TitledData::data).toList());
+    DoubleFunction<Color> colorF = computeGridsDataColors(plot);
     double cellW = r.getWidth() / (double) data.w() * c.gridPlot().cellSideRate();
     double cellH = r.getHeight() / (double) data.h() * c.gridPlot().cellSideRate();
     double cellMarginW =
@@ -576,20 +594,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
   }
 
   private void drawSingleGridPlotLegend(Graphics2D g, Rectangle2D r, UnivariateGridPlot plot) {
-    DoubleFunction<Color> colorF = computeGridsDataColors(
-        plot.dataGrid().values().stream().map(XYPlot.TitledData::data).toList());
-    double[] values = plot.dataGrid().values().stream()
-        .map(XYPlot.TitledData::data)
-        .map(d -> d.values().stream()
-            .filter(Objects::nonNull)
-            .filter(Double::isFinite)
-            .toList())
-        .flatMap(List::stream)
-        .mapToDouble(v -> v)
-        .toArray();
-    DoubleRange range = new DoubleRange(
-        Arrays.stream(values).min().orElse(0),
-        Arrays.stream(values).max().orElse(1));
+    DoubleFunction<Color> colorF = computeGridsDataColors(plot);
     if (c.debug()) {
       g.setStroke(new BasicStroke(1));
       g.setColor(Color.MAGENTA);
@@ -597,6 +602,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     }
     double x = 0;
     double y = 0;
+    DoubleRange range = computeRange(plot);
     String format = computeTicksFormat(List.of(range.min(), range.max()));
     drawString(
         g,
@@ -782,6 +788,17 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     } else if (plot instanceof UnivariateGridPlot univariateGridPlot) {
       drawSingleGridPlotLegend(g, l.legend(), univariateGridPlot);
     }
+    // compute value range format for grid
+    String rangeFormat = "";
+    if (plot instanceof UnivariateGridPlot univariateGridPlot) {
+      rangeFormat = computeTicksFormat(univariateGridPlot.dataGrid().values().stream()
+          .map(t -> computeRange(t.data()))
+          .map(r -> List.of(r.min(), r.max()))
+          .flatMap(List::stream)
+          .distinct()
+          .toList());
+    }
+    // show plots
     for (int px = 0; px < axesGrid.w(); px = px + 1) {
       for (int py = 0; py < axesGrid.h(); py = py + 1) {
         if (px == 0 && c.plotMatrix().axesShow().equals(Configuration.PlotMatrix.Show.BORDER)) {
@@ -866,6 +883,23 @@ public class ImagePlotter implements Plotter<BufferedImage> {
               univariateGridPlot.dataGrid().get(px, py).data(),
               axesGrid.get(px, py),
               univariateGridPlot);
+          if (c.gridPlot().showRanges()) {
+            DoubleRange actualRange = computeRange(
+                univariateGridPlot.dataGrid().get(px, py).data());
+            g.setClip(new Rectangle2D.Double(0, 0, w, h));
+            drawString(
+                g,
+                new Point2D.Double(
+                    l.innerPlot(px, py).getMaxX(),
+                    l.innerPlot(px, py).getCenterY()),
+                rangeFormat.formatted(actualRange.min()) + "→"
+                    + rangeFormat.formatted(actualRange.max()),
+                AnchorH.L,
+                AnchorV.C,
+                Configuration.Text.Use.TICK_LABEL,
+                Configuration.Text.Direction.V,
+                c.colors().tickLabelColor());
+          }
         }
         g.setClip(new Rectangle2D.Double(0, 0, w, h));
       }

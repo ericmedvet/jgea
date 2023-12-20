@@ -33,5 +33,6 @@ public record UnivariateGridPlot(
     String yName,
     DoubleRange xRange,
     DoubleRange yRange,
+    DoubleRange valueRange,
     Grid<TitledData<Grid<Double>>> dataGrid)
     implements XYPlot<Grid<Double>> {}

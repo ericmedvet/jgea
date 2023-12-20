@@ -170,14 +170,16 @@ public class Plots {
               @Param(value = "predicateValue", dNPM = "ea.nf.iterations()")
                   NamedFunction<GridPopulationState<G, S, Q>, X> predicateValueFunction,
               @Param(value = "condition", dNPM = "ea.predicate.always()") Predicate<X> condition,
+              @Param(value = "valueRange", dNPM = "ds.range(min=-Infinity;max=Infinity)")
+                  DoubleRange valueRange,
               @Param(value = "unique", dB = true) boolean unique) {
-
     return new UnivariateGridPlotAccumulatorFactory<>(
         buildRunNamedFunction(titleRunKey),
         GridPopulationState::gridPopulation,
         individualFunctions,
         predicateValueFunction,
         condition,
+        valueRange,
         unique);
   }
 

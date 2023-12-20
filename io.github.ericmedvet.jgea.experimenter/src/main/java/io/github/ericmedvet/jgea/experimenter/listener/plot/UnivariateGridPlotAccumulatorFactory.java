@@ -49,6 +49,7 @@ public class UnivariateGridPlotAccumulatorFactory<E, G, X, R> implements Accumul
   private final List<NamedFunction<? super G, ? extends Number>> gridValueFunctions;
   private final NamedFunction<? super E, X> predicateValueFunction;
   private final Predicate<? super X> predicate;
+  private final DoubleRange valueRange;
   private final boolean unique;
 
   public UnivariateGridPlotAccumulatorFactory(
@@ -57,11 +58,13 @@ public class UnivariateGridPlotAccumulatorFactory<E, G, X, R> implements Accumul
       List<NamedFunction<? super G, ? extends Number>> gridValueFunctions,
       NamedFunction<? super E, X> predicateValueFunction,
       Predicate<? super X> predicate,
+      DoubleRange valueRange,
       boolean unique) {
     this.titleFunction = titleFunction;
     this.gridFunction = gridFunction;
     this.gridValueFunctions = gridValueFunctions;
     this.predicateValueFunction = predicateValueFunction;
+    this.valueRange = valueRange;
     this.predicate = predicate;
     this.unique = unique;
   }
@@ -82,6 +85,7 @@ public class UnivariateGridPlotAccumulatorFactory<E, G, X, R> implements Accumul
               "y",
               DoubleRange.UNBOUNDED,
               DoubleRange.UNBOUNDED,
+              valueRange,
               Grid.create(grids.size(), gridValueFunctions.size(), (x, y) -> grids.get(x)
                   .get(y)));
         }
