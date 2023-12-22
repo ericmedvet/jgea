@@ -20,17 +20,17 @@
 package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
 import io.github.ericmedvet.jgea.core.listener.Accumulator;
-import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.experimenter.listener.TableAccumulatorFactory;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
+
 import java.util.Comparator;
 import java.util.List;
 
-public class XYDataSeriesPlotAccumulatorFactory<E, R> implements AccumulatorFactory<E, XYDataSeriesPlot, R> {
+public class XYDataSeriesPlotAccumulatorFactory<E, R> implements PlotAccumulatorFactory<E, XYDataSeriesPlot, R, List<XYDataSeries>> {
 
   private final TableAccumulatorFactory<E, Number, R> inner;
   private final NamedFunction<? super R, String> titleFunction;

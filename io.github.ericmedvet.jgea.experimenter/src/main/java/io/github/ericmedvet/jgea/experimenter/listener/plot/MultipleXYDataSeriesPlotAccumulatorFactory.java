@@ -20,12 +20,12 @@
 package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
 import io.github.ericmedvet.jgea.core.listener.Accumulator;
-import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jgea.experimenter.listener.GroupedTablesAccumulatorFactory;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +33,7 @@ import java.util.Map;
 /**
  * @author "Eric Medvet" on 2023/11/30 for jgea
  */
-public class MultipleXYDataSeriesPlotAccumulatorFactory<K, E, R> implements AccumulatorFactory<E, XYDataSeriesPlot, R> {
+public class MultipleXYDataSeriesPlotAccumulatorFactory<K, E, R> implements PlotAccumulatorFactory<E, XYDataSeriesPlot, R, List<XYDataSeries>> {
 
   private final GroupedTablesAccumulatorFactory<K, Number, E, R> inner;
   private final NamedFunction<? super R, ? extends K> xSubplotFunction;

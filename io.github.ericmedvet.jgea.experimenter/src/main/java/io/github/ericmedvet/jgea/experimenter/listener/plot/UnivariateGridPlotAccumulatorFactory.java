@@ -36,14 +36,14 @@
 package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
 import io.github.ericmedvet.jgea.core.listener.Accumulator;
-import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
+
 import java.util.*;
 import java.util.function.Predicate;
 
-public class UnivariateGridPlotAccumulatorFactory<E, G, X, R> implements AccumulatorFactory<E, UnivariateGridPlot, R> {
+public class UnivariateGridPlotAccumulatorFactory<E, G, X, R> implements PlotAccumulatorFactory<E, UnivariateGridPlot, R, Grid<Double>> {
   private final NamedFunction<? super R, String> titleFunction;
   private final NamedFunction<? super E, Grid<G>> gridFunction;
   private final List<NamedFunction<? super G, ? extends Number>> gridValueFunctions;
