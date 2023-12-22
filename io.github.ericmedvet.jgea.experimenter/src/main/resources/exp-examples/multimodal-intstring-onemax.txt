@@ -30,6 +30,7 @@ ea.experiment(
       filePath = "../plot-fitness.png";
       freeScales = true;
       saveCsvData = true;
+      type = lines;
       plot = ea.plot.fitnessPlotMatrix(
         lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}")
       )
@@ -37,6 +38,7 @@ ea.experiment(
     ea.l.expPlotSaver(
       filePath = "../plot-otd.png";
       freeScales = true;
+      type = lines;
       plot = ea.plot.fitnessPlotMatrix(
         lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         yFunction = ea.nf.overallTargetDistance(
@@ -49,6 +51,7 @@ ea.experiment(
       w = 1000; h = 600;
       filePathTemplate = "../grids-{solver.name}-{problem:%#s}-{randomGenerator.seed}.png";
       saveCsvData = true;
+      type = univariate_grid;
       plot = ea.plot.gridPopulation(
         titleRunKey = ea.misc.sEntry(key = "run"; value = "{solver.name} on {problem:%#s} seed={randomGenerator.seed}");
         individualFunctions = [

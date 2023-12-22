@@ -32,7 +32,13 @@ import java.util.stream.DoubleStream;
  */
 public interface Plotter<O> {
 
-  O plot(XYPlot<?> plot);
+  enum Type {
+    LINES,
+    UNIVARIATE_GRID,
+    POINTS
+  }
+
+  O plot(XYPlot<?> plot, Type type);
 
   static void main(String[] args) {
     RandomGenerator rg = new Random(1);
@@ -78,7 +84,7 @@ public interface Plotter<O> {
         DoubleRange.UNBOUNDED,
         Grid.create(1, 1, (x, y) -> new XYPlot.TitledData<>("", "", List.of(ds1, ds2))));
     ImagePlotter ip = new ImagePlotter(800, 600);
-    ImagePlotter.showImage(ip.plot(p));
+    ImagePlotter.showImage(ip.plot(p, Type.LINES));
     XYDataSeriesPlot m = new XYDataSeriesPlot(
         "functions matrix",
         "x title",
@@ -97,7 +103,7 @@ public interface Plotter<O> {
                 new XYPlot.TitledData<>("x1", "y2", List.of(ds5)),
                 new XYPlot.TitledData<>("x2", "y2", List.of(ds1, ds4)),
                 new XYPlot.TitledData<>("x3", "y2", List.of(ds2, ds5)))));
-    ImagePlotter.showImage(ip.plot(m));
+    ImagePlotter.showImage(ip.plot(m, Type.LINES));
     UnivariateGridPlot sgp = new UnivariateGridPlot(
         "grid!!!",
         "",
@@ -117,6 +123,6 @@ public interface Plotter<O> {
                     10,
                     10,
                     (x, y) -> rg.nextDouble() < 0.1 ? null : (x + y + 1d + rg.nextGaussian())))));
-    ImagePlotter.showImage(ip.plot(sgp));
+    ImagePlotter.showImage(ip.plot(sgp, Type.UNIVARIATE_GRID));
   }
 }

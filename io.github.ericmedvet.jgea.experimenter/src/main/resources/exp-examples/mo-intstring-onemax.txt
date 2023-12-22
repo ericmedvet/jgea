@@ -35,6 +35,7 @@ ea.experiment(
     ea.l.expPlotSaver(
       filePath = "../plot-mo-hv.png";
       freeScales = true;
+      type = lines;
       plot = ea.plot.fitnessPlotMatrix(
         lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         yFunction = ea.nf.hypervolume2D(
@@ -46,6 +47,7 @@ ea.experiment(
     ea.l.expPlotSaver(
       filePath = "../plot-mo-obj0.png";
       freeScales = true;
+      type = lines;
       plot = ea.plot.fitnessPlotMatrix(
         lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         yFunction = ea.nf.max(collection = ea.nf.each(map = ea.nf.fitness(f = ea.nf.nth(n = 0)); collection = ea.nf.all()))
@@ -54,6 +56,7 @@ ea.experiment(
     ea.l.expPlotSaver(
       filePath = "../plot-mo-obj1.png";
       freeScales = true;
+      type = lines;
       plot = ea.plot.fitnessPlotMatrix(
         lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         yFunction = ea.nf.max(collection = ea.nf.each(map = ea.nf.fitness(f = ea.nf.nth(n = 1)); collection = ea.nf.all()))
@@ -62,6 +65,7 @@ ea.experiment(
     ea.l.runPlotSaver(
       w = 1000; h = 600;
       filePathTemplate = "../grids-{solver.name}-{problem:%#s}-{randomGenerator.seed}.png";
+      type = univariate_grid;
       plot = ea.plot.gridPopulation(
         titleRunKey = ea.misc.sEntry(key = "run"; value = "{solver.name} on {problem:%#s} seed={randomGenerator.seed}");
         individualFunctions = [

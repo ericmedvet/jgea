@@ -56,7 +56,7 @@ public class CsvPlotter implements Plotter<File> {
   }
 
   @Override
-  public File plot(XYPlot<?> plot) {
+  public File plot(XYPlot<?> plot, Type type) {
     if (plot instanceof XYDataSeriesPlot xyDataSeriesPlot) {
       File actualFile = Misc.checkExistenceAndChangeName(file);
       try (CSVPrinter csvPrinter = new CSVPrinter(

@@ -31,6 +31,7 @@ import io.github.ericmedvet.jgea.experimenter.Utils;
 import io.github.ericmedvet.jgea.experimenter.listener.decoupled.*;
 import io.github.ericmedvet.jgea.experimenter.listener.net.NetMultiSink;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.CsvPlotter;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.Plotter;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeriesPlotAccumulatorFactory;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlot;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.image.Configuration;
@@ -277,6 +278,7 @@ public class Listeners {
           expPlotSaver(
               @Param("plot")
                   AccumulatorFactory<POCPopulationState<?, G, S, Q>, XYPlot<?>, Run<?, G, S, Q>> plot,
+              @Param("type") Plotter.Type type,
               @Param(value = "w", dI = 800) int w,
               @Param(value = "h", dI = 800) int h,
               @Param(value = "freeScales") boolean freeScales,
@@ -290,9 +292,9 @@ public class Listeners {
         plot.thenOnShutdown(ps -> {
           File file = Misc.checkExistenceAndChangeName(new File(filePath));
           try {
-            ImageIO.write(imagePlotter.plot(ps.get(ps.size() - 1)), "png", file);
+            ImageIO.write(imagePlotter.plot(ps.get(ps.size() - 1), type), "png", file);
             if (saveCsvData) {
-              new CsvPlotter(new File(file.getPath() + ".txt")).plot(ps.get(ps.size() - 1));
+              new CsvPlotter(new File(file.getPath() + ".txt")).plot(ps.get(ps.size() - 1), type);
             }
           } catch (IOException e) {
             L.severe("Cannot save plot at `%s`: %s".formatted(file.getPath(), e));
@@ -423,6 +425,7 @@ public class Listeners {
           runPlotSaver(
               @Param("plot")
                   AccumulatorFactory<POCPopulationState<?, G, S, Q>, XYPlot<?>, Run<?, G, S, Q>> plot,
+              @Param("type") Plotter.Type type,
               @Param(value = "w", dI = 800) int w,
               @Param(value = "h", dI = 800) int h,
               @Param(value = "freeScales") boolean freeScales,
@@ -436,9 +439,9 @@ public class Listeners {
         plot.thenOnDone((run, p) -> {
           File file = Misc.checkExistenceAndChangeName(new File(Utils.interpolate(filePathTemplate, run)));
           try {
-            ImageIO.write(imagePlotter.plot(p), "png", file);
+            ImageIO.write(imagePlotter.plot(p, type), "png", file);
             if (saveCsvData) {
-              new CsvPlotter(new File(file.getPath() + ".txt")).plot(p);
+              new CsvPlotter(new File(file.getPath() + ".txt")).plot(p, type);
             }
           } catch (IOException e) {
             L.severe("Cannot save plot at `%s`: %s".formatted(file, e));

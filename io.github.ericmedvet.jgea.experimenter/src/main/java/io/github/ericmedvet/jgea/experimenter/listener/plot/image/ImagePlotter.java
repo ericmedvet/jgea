@@ -761,7 +761,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
   }
 
   @Override
-  public BufferedImage plot(XYPlot<?> plot) {
+  public BufferedImage plot(XYPlot<?> plot, Type type) {
     // prepare image
     BufferedImage img = new BufferedImage((int) w, (int) h, BufferedImage.TYPE_3BYTE_BGR);
     Graphics2D g = img.createGraphics();
@@ -783,9 +783,9 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         Configuration.Text.Direction.H,
         c.colors().titleColor());
     // draw legend
-    if (plot instanceof XYDataSeriesPlot xyDataSeriesPlot) {
+    if (plot instanceof XYDataSeriesPlot xyDataSeriesPlot && type.equals(Type.LINES)) {
       drawLinePlotLegend(g, l.legend(), xyDataSeriesPlot);
-    } else if (plot instanceof UnivariateGridPlot univariateGridPlot) {
+    } else if (plot instanceof UnivariateGridPlot univariateGridPlot && type.equals(Type.UNIVARIATE_GRID)) {
       drawSingleGridPlotLegend(g, l.legend(), univariateGridPlot);
     }
     // compute value range format for grid
@@ -869,14 +869,14 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         g.setColor(c.colors().plotBorderColor());
         g.draw(l.innerPlot(px, py));
         g.setClip(l.innerPlot(px, py));
-        if (plot instanceof XYDataSeriesPlot xyDataSeriesPlot) {
+        if (plot instanceof XYDataSeriesPlot xyDataSeriesPlot && type.equals(Type.LINES)) {
           drawLinePlot(
               g,
               l.innerPlot(px, py),
               xyDataSeriesPlot.dataGrid().get(px, py).data(),
               axesGrid.get(px, py),
               xyDataSeriesPlot);
-        } else if (plot instanceof UnivariateGridPlot univariateGridPlot) {
+        } else if (plot instanceof UnivariateGridPlot univariateGridPlot && type.equals(Type.UNIVARIATE_GRID)) {
           drawSingleGridPlot(
               g,
               l.innerPlot(px, py),
