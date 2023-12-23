@@ -495,7 +495,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     g.draw(path);
   }
 
-  private void drawLinePlot(
+  private void drawLinesPlot(
       Graphics2D g, Rectangle2D r, List<XYDataSeries> dataSeries, Axes a, XYDataSeriesPlot plot) {
     SortedMap<String, Color> dataColors = computeSeriesDataColors(plot.dataGrid().values().stream()
         .filter(Objects::nonNull)
@@ -519,7 +519,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     dataSeries.forEach(ds -> drawLine(g, r, ds, a, dataColors.get(ds.name())));
   }
 
-  private void drawLinePlotLegend(Graphics2D g, Rectangle2D r, XYDataSeriesPlot plot) {
+  private void drawLinesPlotLegend(Graphics2D g, Rectangle2D r, XYDataSeriesPlot plot) {
     SortedMap<String, Color> dataColors = computeSeriesDataColors(plot.dataGrid().values().stream()
         .filter(Objects::nonNull)
         .map(XYPlot.TitledData::data)
@@ -574,7 +574,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     }
   }
 
-  private void drawSingleGridPlot(Graphics2D g, Rectangle2D r, Grid<Double> data, Axes a, UnivariateGridPlot plot) {
+  private void drawUnivariateGridPlot(
+      Graphics2D g, Rectangle2D r, Grid<Double> data, Axes a, UnivariateGridPlot plot) {
     DoubleFunction<Color> colorF = computeGridsDataColors(plot);
     double cellW = r.getWidth() / (double) data.w() * c.gridPlot().cellSideRate();
     double cellH = r.getHeight() / (double) data.h() * c.gridPlot().cellSideRate();
@@ -591,9 +592,28 @@ public class ImagePlotter implements Plotter<BufferedImage> {
               a.xIn(e.key().x(), r) + cellMarginW, a.yIn(e.key().y() + 1, r) + cellMarginH, cellW, cellH);
           g.fill(cellR);
         });
+    if (c.gridPlot().showRanges()) {
+      String rangeFormat = computeTicksFormat(plot.dataGrid().values().stream()
+          .map(t -> computeRange(t.data()))
+          .map(range -> List.of(range.min(), range.max()))
+          .flatMap(List::stream)
+          .distinct()
+          .toList());
+      DoubleRange actualRange = computeRange(data);
+      g.setClip(new Rectangle2D.Double(0, 0, w, h));
+      drawString(
+          g,
+          new Point2D.Double(r.getMaxX(), r.getCenterY()),
+          rangeFormat.formatted(actualRange.min()) + "→" + rangeFormat.formatted(actualRange.max()),
+          AnchorH.L,
+          AnchorV.C,
+          Configuration.Text.Use.TICK_LABEL,
+          Configuration.Text.Direction.V,
+          c.colors().tickLabelColor());
+    }
   }
 
-  private void drawSingleGridPlotLegend(Graphics2D g, Rectangle2D r, UnivariateGridPlot plot) {
+  private void drawUnivariateGridPlotLegend(Graphics2D g, Rectangle2D r, UnivariateGridPlot plot) {
     DoubleFunction<Color> colorF = computeGridsDataColors(plot);
     if (c.debug()) {
       g.setStroke(new BasicStroke(1));
@@ -761,7 +781,32 @@ public class ImagePlotter implements Plotter<BufferedImage> {
   }
 
   @Override
-  public BufferedImage plot(XYPlot<?> plot, Type type) {
+  public BufferedImage lines(XYDataSeriesPlot plot) {
+    return plot(plot, this::drawLinesPlotLegend, this::drawLinesPlot);
+  }
+
+  @Override
+  public BufferedImage points(XYDataSeriesPlot plot) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public BufferedImage univariateGrid(UnivariateGridPlot plot) {
+    return plot(plot, this::drawUnivariateGridPlotLegend, this::drawUnivariateGridPlot);
+  }
+
+  @FunctionalInterface
+  private interface LegendDrawer<P extends XYPlot<D>, D> {
+    void draw(Graphics2D g, Rectangle2D r, P p);
+  }
+
+  @FunctionalInterface
+  private interface PlotDrawer<P extends XYPlot<D>, D> {
+    void draw(Graphics2D g, Rectangle2D r, D data, Axes a, P p);
+  }
+
+  private <P extends XYPlot<D>, D> BufferedImage plot(
+      P plot, LegendDrawer<P, D> legendDrawer, PlotDrawer<P, D> plotDrawer) {
     // prepare image
     BufferedImage img = new BufferedImage((int) w, (int) h, BufferedImage.TYPE_3BYTE_BGR);
     Graphics2D g = img.createGraphics();
@@ -783,21 +828,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         Configuration.Text.Direction.H,
         c.colors().titleColor());
     // draw legend
-    if (plot instanceof XYDataSeriesPlot xyDataSeriesPlot && type.equals(Type.LINES)) {
-      drawLinePlotLegend(g, l.legend(), xyDataSeriesPlot);
-    } else if (plot instanceof UnivariateGridPlot univariateGridPlot && type.equals(Type.UNIVARIATE_GRID)) {
-      drawSingleGridPlotLegend(g, l.legend(), univariateGridPlot);
-    }
-    // compute value range format for grid
-    String rangeFormat = "";
-    if (plot instanceof UnivariateGridPlot univariateGridPlot) {
-      rangeFormat = computeTicksFormat(univariateGridPlot.dataGrid().values().stream()
-          .map(t -> computeRange(t.data()))
-          .map(r -> List.of(r.min(), r.max()))
-          .flatMap(List::stream)
-          .distinct()
-          .toList());
-    }
+    legendDrawer.draw(g, l.legend(), plot);
     // show plots
     for (int px = 0; px < axesGrid.w(); px = px + 1) {
       for (int py = 0; py < axesGrid.h(); py = py + 1) {
@@ -869,38 +900,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         g.setColor(c.colors().plotBorderColor());
         g.draw(l.innerPlot(px, py));
         g.setClip(l.innerPlot(px, py));
-        if (plot instanceof XYDataSeriesPlot xyDataSeriesPlot && type.equals(Type.LINES)) {
-          drawLinePlot(
-              g,
-              l.innerPlot(px, py),
-              xyDataSeriesPlot.dataGrid().get(px, py).data(),
-              axesGrid.get(px, py),
-              xyDataSeriesPlot);
-        } else if (plot instanceof UnivariateGridPlot univariateGridPlot && type.equals(Type.UNIVARIATE_GRID)) {
-          drawSingleGridPlot(
-              g,
-              l.innerPlot(px, py),
-              univariateGridPlot.dataGrid().get(px, py).data(),
-              axesGrid.get(px, py),
-              univariateGridPlot);
-          if (c.gridPlot().showRanges()) {
-            DoubleRange actualRange = computeRange(
-                univariateGridPlot.dataGrid().get(px, py).data());
-            g.setClip(new Rectangle2D.Double(0, 0, w, h));
-            drawString(
-                g,
-                new Point2D.Double(
-                    l.innerPlot(px, py).getMaxX(),
-                    l.innerPlot(px, py).getCenterY()),
-                rangeFormat.formatted(actualRange.min()) + "→"
-                    + rangeFormat.formatted(actualRange.max()),
-                AnchorH.L,
-                AnchorV.C,
-                Configuration.Text.Use.TICK_LABEL,
-                Configuration.Text.Direction.V,
-                c.colors().tickLabelColor());
-          }
-        }
+        plotDrawer.draw(
+            g, l.innerPlot(px, py), plot.dataGrid().get(px, py).data(), axesGrid.get(px, py), plot);
         g.setClip(new Rectangle2D.Double(0, 0, w, h));
       }
     }

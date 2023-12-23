@@ -56,70 +56,70 @@ public class CsvPlotter implements Plotter<File> {
   }
 
   @Override
-  public File plot(XYPlot<?> plot, Type type) {
-    if (plot instanceof XYDataSeriesPlot xyDataSeriesPlot) {
-      File actualFile = Misc.checkExistenceAndChangeName(file);
-      try (CSVPrinter csvPrinter = new CSVPrinter(
-          new PrintStream(actualFile),
-          CSVFormat.Builder.create().setDelimiter(";").build())) {
-        csvPrinter.printRecord(List.of(
-            xyDataSeriesPlot.xTitleName(),
-            xyDataSeriesPlot.yTitleName(),
-            "series",
-            xyDataSeriesPlot.xName() + "[min]",
-            xyDataSeriesPlot.xName(),
-            xyDataSeriesPlot.xName() + "[max]",
-            xyDataSeriesPlot.yName() + "[min]",
-            xyDataSeriesPlot.yName(),
-            xyDataSeriesPlot.yName() + "[max]"));
-        for (XYPlot.TitledData<List<XYDataSeries>> td :
-            xyDataSeriesPlot.dataGrid().values()) {
-          for (XYDataSeries ds : td.data()) {
-            for (XYDataSeries.Point p : ds.points()) {
-              csvPrinter.printRecord(List.of(
-                  td.xTitle(),
-                  td.yTitle(),
-                  ds.name(),
-                  RangedValue.range(p.x()).min(),
-                  p.x().v(),
-                  RangedValue.range(p.x()).max(),
-                  RangedValue.range(p.y()).min(),
-                  p.y().v(),
-                  RangedValue.range(p.y()).max()));
-            }
+  public File lines(XYDataSeriesPlot plot) {
+    return xyDataSeries(plot);
+  }
+
+  @Override
+  public File points(XYDataSeriesPlot plot) {
+    return xyDataSeries(plot);
+  }
+
+  @Override
+  public File univariateGrid(UnivariateGridPlot p) {
+    File actualFile = Misc.checkExistenceAndChangeName(file);
+    try (CSVPrinter csvPrinter = new CSVPrinter(
+        new PrintStream(actualFile),
+        CSVFormat.Builder.create().setDelimiter(";").build())) {
+      csvPrinter.printRecord(List.of(p.xTitleName(), p.yTitleName(), "x", "y", "v"));
+      for (XYPlot.TitledData<Grid<Double>> td : p.dataGrid().values()) {
+        for (Grid.Entry<Double> e : td.data()) {
+          if (e.value() != null) {
+            csvPrinter.printRecord(List.of(
+                td.xTitle(), td.yTitle(), e.key().x(), e.key().y(), e.value()));
           }
         }
-      } catch (IOException e) {
-        throw new RuntimeException(e);
       }
-      return actualFile;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
-    if (plot instanceof UnivariateGridPlot univariateGridPlot) {
-      File actualFile = Misc.checkExistenceAndChangeName(file);
-      try (CSVPrinter csvPrinter = new CSVPrinter(
-          new PrintStream(actualFile),
-          CSVFormat.Builder.create().setDelimiter(";").build())) {
-        csvPrinter.printRecord(
-            List.of(univariateGridPlot.xTitleName(), univariateGridPlot.yTitleName(), "x", "y", "v"));
-        for (XYPlot.TitledData<Grid<Double>> td :
-            univariateGridPlot.dataGrid().values()) {
-          for (Grid.Entry<Double> e : td.data()) {
-            if (e.value() != null) {
-              csvPrinter.printRecord(List.of(
-                  td.xTitle(),
-                  td.yTitle(),
-                  e.key().x(),
-                  e.key().y(),
-                  e.value()));
-            }
+    return actualFile;
+  }
+
+  private File xyDataSeries(XYDataSeriesPlot p) {
+    File actualFile = Misc.checkExistenceAndChangeName(file);
+    try (CSVPrinter csvPrinter = new CSVPrinter(
+        new PrintStream(actualFile),
+        CSVFormat.Builder.create().setDelimiter(";").build())) {
+      csvPrinter.printRecord(List.of(
+          p.xTitleName(),
+          p.yTitleName(),
+          "series",
+          p.xName() + "[min]",
+          p.xName(),
+          p.xName() + "[max]",
+          p.yName() + "[min]",
+          p.yName(),
+          p.yName() + "[max]"));
+      for (XYPlot.TitledData<List<XYDataSeries>> td : p.dataGrid().values()) {
+        for (XYDataSeries ds : td.data()) {
+          for (XYDataSeries.Point point : ds.points()) {
+            csvPrinter.printRecord(List.of(
+                td.xTitle(),
+                td.yTitle(),
+                ds.name(),
+                RangedValue.range(point.x()).min(),
+                point.x().v(),
+                RangedValue.range(point.x()).max(),
+                RangedValue.range(point.y()).min(),
+                point.y().v(),
+                RangedValue.range(point.y()).max()));
           }
         }
-      } catch (IOException e) {
-        throw new RuntimeException(e);
       }
-      return actualFile;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
-    L.warning("Unknown type of plot: %s".formatted(plot.getClass().getSimpleName()));
-    return null;
+    return actualFile;
   }
 }
