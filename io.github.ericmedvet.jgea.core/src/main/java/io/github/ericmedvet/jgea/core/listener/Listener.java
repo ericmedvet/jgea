@@ -88,6 +88,10 @@ public interface Listener<E> {
           try {
             thisListener.done();
           } catch (RuntimeException ex) {
+
+            ex.printStackTrace();
+            System.exit(-1);
+
             L.warning(String.format(
                 "Listener %s cannot done() event: %s",
                 thisListener.getClass().getSimpleName(), ex));

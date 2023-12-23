@@ -32,8 +32,8 @@ import io.github.ericmedvet.jgea.experimenter.listener.decoupled.*;
 import io.github.ericmedvet.jgea.experimenter.listener.net.NetMultiSink;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.CsvPlotter;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.Plotter;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeriesPlotAccumulatorFactory;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlot;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator.PlotAccumulatorFactory;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.image.Configuration;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.image.ImagePlotter;
 import io.github.ericmedvet.jgea.experimenter.listener.telegram.TelegramUpdater;
@@ -462,13 +462,19 @@ public class Listeners {
                       value = "defaultPlots",
                       dNPMs = {"ea.plot.elapsed()"})
                   List<
-                          XYDataSeriesPlotAccumulatorFactory<
-                              ? super POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
+                          PlotAccumulatorFactory<
+                              ? super POCPopulationState<?, G, S, Q>,
+                              ?,
+                              Run<?, G, S, Q>,
+                              ?>>
                       defaultPlotTableBuilders,
               @Param("plots")
                   List<
-                          XYDataSeriesPlotAccumulatorFactory<
-                              ? super POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>>>
+                          PlotAccumulatorFactory<
+                              ? super POCPopulationState<?, G, S, Q>,
+                              ?,
+                              Run<?, G, S, Q>,
+                              ?>>
                       plotTableBuilders,
               @Param("accumulators")
                   List<AccumulatorFactory<? super POCPopulationState<?, G, S, Q>, ?, Run<?, G, S, Q>>>

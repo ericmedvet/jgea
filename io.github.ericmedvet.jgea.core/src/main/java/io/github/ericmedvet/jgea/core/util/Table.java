@@ -244,6 +244,7 @@ public interface Table<R, C, T> {
       return Map.of();
     }
     return rowIndexes().stream()
+        .filter(ri -> get(ri, columnIndex) != null)
         .collect(Collectors.toMap(ri -> ri, ri -> get(ri, columnIndex), Table::first, LinkedHashMap::new));
   }
 
@@ -411,6 +412,7 @@ public interface Table<R, C, T> {
 
   default Map<C, T> row(R rowIndex) {
     return colIndexes().stream()
+        .filter(ci -> get(rowIndex, ci) != null)
         .collect(Collectors.toMap(ci -> ci, ci -> get(rowIndex, ci), Table::first, LinkedHashMap::new));
   }
 
