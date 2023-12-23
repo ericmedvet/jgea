@@ -157,6 +157,17 @@ public class NamedFunctions {
     return f("median", ts -> Misc.median(ts, comparator));
   }
 
+  @SuppressWarnings("unused")
+  public static <I extends Individual<G, S, Q>, G, S, Q>
+      NamedFunction<POCPopulationState<I, G, S, Q>, Collection<I>> mids() {
+    return f("mids", e -> {
+      Collection<I> all = new ArrayList<>(e.pocPopulation().all());
+      all.removeAll(e.pocPopulation().firsts());
+      all.removeAll(e.pocPopulation().lasts());
+      return all;
+    });
+  }
+
   public static <T> NamedFunction<Collection<? extends T>, T> min(Comparator<T> comparator) {
     return f("min", ts -> ts.stream().min(comparator).orElse(null));
   }

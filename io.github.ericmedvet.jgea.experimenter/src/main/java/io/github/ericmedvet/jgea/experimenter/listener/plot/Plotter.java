@@ -103,6 +103,7 @@ public interface Plotter<O> {
         Grid.create(1, 1, (x, y) -> new XYPlot.TitledData<>("", "", List.of(ds1, ds2))));
     ImagePlotter ip = new ImagePlotter(800, 600);
     ImagePlotter.showImage(ip.lines(p));
+    ImagePlotter.showImage(ip.points(p));
     XYDataSeriesPlot m = new XYDataSeriesPlot(
         "functions matrix",
         "x title",

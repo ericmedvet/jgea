@@ -27,6 +27,7 @@ import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.Utils;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator.AggregatedXYDataSeriesMRPAF;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator.UnivariateGridSEPAF;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator.XYDataSeriesSEPAF;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator.XYDataSeriesSRPAF;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
@@ -170,6 +171,58 @@ public class Plots {
         GridPopulationState::gridPopulation,
         individualFunctions,
         valueRange);
+  }
+
+  @SuppressWarnings("unused")
+  public static <G, S, Q, X>
+      XYDataSeriesSEPAF<
+              POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>>,
+              Run<?, G, S, List<Double>>,
+              X,
+              Individual<G, S, List<Double>>>
+          biObjectivePopulation(
+              @Param(
+                      value = "titleRunKey",
+                      dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
+                  Map.Entry<String, String> titleRunKey,
+              @Param(value = "predicateValue", dNPM = "ea.nf.iterations()")
+                  NamedFunction<
+                          POCPopulationState<
+                              Individual<G, S, List<Double>>, G, S, List<Double>>,
+                          X>
+                      predicateValueFunction,
+              @Param(value = "condition", dNPM = "ea.predicate.always()") Predicate<X> condition,
+              @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
+              @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange,
+              @Param(value = "unique", dB = true) boolean unique) {
+    NamedFunction<
+            POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>>,
+            Collection<Individual<G, S, List<Double>>>>
+        firsts = io.github.ericmedvet.jgea.core.listener.NamedFunctions.firsts();
+    NamedFunction<
+            POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>>,
+            Collection<Individual<G, S, List<Double>>>>
+        lasts = io.github.ericmedvet.jgea.core.listener.NamedFunctions.lasts();
+    NamedFunction<
+            POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>>,
+            Collection<Individual<G, S, List<Double>>>>
+        mids = io.github.ericmedvet.jgea.core.listener.NamedFunctions.mids();
+    NamedFunction<Individual<G, S, List<Double>>, List<Double>> qF =
+        io.github.ericmedvet.jgea.core.listener.NamedFunctions.quality();
+    NamedFunction<Individual<G, S, List<Double>>, ? extends Number> xF =
+        qF.then(io.github.ericmedvet.jgea.core.listener.NamedFunctions.nth(0));
+    NamedFunction<Individual<G, S, List<Double>>, ? extends Number> yF =
+        qF.then(io.github.ericmedvet.jgea.core.listener.NamedFunctions.nth(1));
+    return new XYDataSeriesSEPAF<>(
+        buildRunNamedFunction(titleRunKey),
+        predicateValueFunction,
+        condition,
+        unique,
+        List.of(firsts, mids, lasts),
+        xF,
+        yF,
+        xRange,
+        yRange);
   }
 
   @SuppressWarnings("unused")

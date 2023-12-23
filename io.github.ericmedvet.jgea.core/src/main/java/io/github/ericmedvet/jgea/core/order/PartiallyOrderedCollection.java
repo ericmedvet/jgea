@@ -21,9 +21,7 @@
 package io.github.ericmedvet.jgea.core.order;
 
 import io.github.ericmedvet.jgea.core.util.Sized;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public interface PartiallyOrderedCollection<T> extends Sized {
   void add(T t);
@@ -37,6 +35,18 @@ public interface PartiallyOrderedCollection<T> extends Sized {
   boolean remove(T t);
 
   PartialComparator<? super T> comparator();
+
+  default List<Collection<T>> fronts() {
+    DAGPartiallyOrderedCollection<T> poc = new DAGPartiallyOrderedCollection<>(all(), comparator());
+    Collection<T> firsts = poc.firsts();
+    List<Collection<T>> fronts = new ArrayList<>();
+    while (!firsts.isEmpty()) {
+      fronts.add(Collections.unmodifiableCollection(firsts));
+      firsts.forEach(poc::remove);
+      firsts = poc.firsts();
+    }
+    return Collections.unmodifiableList(fronts);
+  }
 
   @Override
   default int size() {

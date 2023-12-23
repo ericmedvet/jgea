@@ -30,7 +30,8 @@ public record Configuration(
     Colors colors,
     Text text,
     PlotMatrix plotMatrix,
-    LinePlot linePlot,
+    LinesPlot linesPlot,
+    PointsPlot pointsPlot,
     GridPlot gridPlot,
     boolean debug) {
 
@@ -40,7 +41,8 @@ public record Configuration(
       Colors.DEFAULT,
       Text.DEFAULT,
       PlotMatrix.DEFAULT,
-      LinePlot.DEFAULT,
+      LinesPlot.DEFAULT,
+      PointsPlot.DEFAULT,
       GridPlot.DEFAULT,
       false);
 
@@ -53,7 +55,8 @@ public record Configuration(
           Configuration.PlotMatrix.Show.ALL,
           Configuration.PlotMatrix.Show.BORDER,
           Set.of(Configuration.PlotMatrix.Independence.ALL)),
-      Configuration.LinePlot.DEFAULT,
+      LinesPlot.DEFAULT,
+      PointsPlot.DEFAULT,
       Configuration.GridPlot.DEFAULT,
       false);
 
@@ -126,8 +129,12 @@ public record Configuration(
         0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.001, 0.001, 0.001, 0.001, 0.005, 0.005);
   }
 
-  public record LinePlot(double dataStrokeSize, double alpha, double legendImageWRate, double legendImageHRate) {
-    public static final LinePlot DEFAULT = new LinePlot(0.0025, 0.3, 0.04, 0.025);
+  public record LinesPlot(double dataStrokeSizeRate, double alpha, double legendImageWRate, double legendImageHRate) {
+    public static final LinesPlot DEFAULT = new LinesPlot(0.0025, 0.3, 0.04, 0.025);
+  }
+
+  public record PointsPlot(double markerSizeRate, double alpha, double legendImageSizeRate) {
+    public static final PointsPlot DEFAULT = new PointsPlot(0.01, 0.5, 0.02);
   }
 
   public record PlotMatrix(Show axesShow, Show titlesShow, Set<Independence> independences) {

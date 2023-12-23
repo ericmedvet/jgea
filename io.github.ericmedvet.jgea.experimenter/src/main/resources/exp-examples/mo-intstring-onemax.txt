@@ -87,6 +87,26 @@ ea.experiment(
           values = ["1"]
         )
       ])
+    );
+    ea.l.runPlotSaver(
+      w = 1000; h = 300;
+      filePathTemplate = "../mo-{solver.name}-{problem:%#s}-{randomGenerator.seed}.png";
+      type = points;
+      plot = ea.plot.biObjectivePopulation(
+        titleRunKey = ea.misc.sEntry(key = "run"; value = "{solver.name} on {problem:%#s} seed={randomGenerator.seed}");
+        predicateValue = ea.nf.quantized(f = ea.nf.evals(); r = 1000; s = "%.0f");
+        condition = ea.predicate.inD(
+          values = [0; 5000; 10000; 15000; 20000; 25000]
+        );
+        xRange = ds.range(min = 0; max = 1);
+        yRange = ds.range(min = 0; max = 1)
+      );
+      condition = ea.predicate.all(conditions = [
+        ea.predicate.inS(
+          f = ea.nf.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
+          values = ["1"]
+        )
+      ])
     )
   ]
 )

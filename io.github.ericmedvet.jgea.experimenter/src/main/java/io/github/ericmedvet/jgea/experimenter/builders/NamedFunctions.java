@@ -169,9 +169,9 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q>
-      NamedFunction<POCPopulationState<?, G, S, Q>, Collection<? extends Individual<G, S, Q>>> firsts() {
-    return NamedFunction.build("firsts", s -> s.pocPopulation().firsts());
+  public static <I extends Individual<G, S, Q>, G, S, Q>
+      NamedFunction<POCPopulationState<I, G, S, Q>, Collection<I>> firsts() {
+    return io.github.ericmedvet.jgea.core.listener.NamedFunctions.firsts();
   }
 
   @SuppressWarnings("unused")
@@ -282,9 +282,9 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q>
-      NamedFunction<POCPopulationState<?, G, S, Q>, Collection<? extends Individual<G, S, Q>>> lasts() {
-    return NamedFunction.build("lasts", s -> s.pocPopulation().lasts());
+  public static <I extends Individual<G, S, Q>, G, S, Q>
+      NamedFunction<POCPopulationState<I, G, S, Q>, Collection<I>> lasts() {
+    return io.github.ericmedvet.jgea.core.listener.NamedFunctions.lasts();
   }
 
   @SuppressWarnings("unused")
@@ -300,6 +300,12 @@ public class NamedFunctions {
   public static <X, T extends Comparable<T>> NamedFunction<X, T> median(
       @Param("collection") NamedFunction<X, Collection<T>> collectionF, @Param(value = "s", dS = "%s") String s) {
     return percentile(collectionF, 0.5, s);
+  }
+
+  @SuppressWarnings("unused")
+  public static <I extends Individual<G, S, Q>, G, S, Q>
+      NamedFunction<POCPopulationState<I, G, S, Q>, Collection<I>> mids() {
+    return io.github.ericmedvet.jgea.core.listener.NamedFunctions.mids();
   }
 
   @SuppressWarnings("unused")

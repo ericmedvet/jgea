@@ -52,26 +52,6 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     this(w, h, Configuration.DEFAULT);
   }
 
-  protected double w() {
-    return w;
-  }
-
-  protected double h() {
-    return h;
-  }
-
-  protected double refL() {
-    return refL;
-  }
-
-  protected Configuration c() {
-    return c;
-  }
-
-  protected Map<Configuration.Text.Use, Font> fonts() {
-    return fonts;
-  }
-
   public ImagePlotter(int w, int h, Configuration c) {
     this.w = w;
     this.h = h;
@@ -136,6 +116,10 @@ public class ImagePlotter implements Plotter<BufferedImage> {
       frame.setLocationRelativeTo(null);
       frame.setVisible(true);
     });
+  }
+
+  protected Configuration c() {
+    return c;
   }
 
   private Point2D center(Rectangle2D r) {
@@ -498,6 +482,10 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         range.min() - range.extent() * (r - 1d) / 2d, range.max() + range.extent() * (r - 1d) / 2d);
   }
 
+  protected double h() {
+    return h;
+  }
+
   private DoubleRange largestRange(List<Axes> axesList, Function<Axes, DoubleRange> rangeExtractor) {
     return axesList.stream()
         .map(rangeExtractor)
@@ -512,7 +500,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
 
   @Override
   public BufferedImage points(XYDataSeriesPlot plot) {
-    throw new UnsupportedOperationException();
+    return plot(plot, new PointsPlotDrawer());
   }
 
   @Override
@@ -645,5 +633,13 @@ public class ImagePlotter implements Plotter<BufferedImage> {
       return rowLargestRange;
     }
     return allLargestRange;
+  }
+
+  protected double refL() {
+    return refL;
+  }
+
+  protected double w() {
+    return w;
   }
 }
