@@ -21,7 +21,6 @@ package io.github.ericmedvet.jgea.core.solver;
 
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.GeneticOperator;
-import io.github.ericmedvet.jgea.core.order.DAGPartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.MultiHomogeneousObjectiveProblem;
@@ -65,43 +64,14 @@ public class NsgaII<G, S>
     this.maxUniquenessAttempts = maxUniquenessAttempts;
   }
 
-  private static class Box<T> {
-    private T content;
-
-    public Box(T content) {
-      this.content = content;
-    }
-
-    public T get() {
-      return content;
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(content);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      Box<?> box = (Box<?>) o;
-      return Objects.equals(content, box.content);
-    }
-
-    public void set(T content) {
-      this.content = content;
-    }
-  }
-
   private record RankedIndividual<G, S>(
       G genotype,
       S solution,
       List<Double> quality,
       long qualityMappingIteration,
       long genotypeBirthIteration,
-      Box<Integer> rank,
-      Box<Double> crowdingDistance)
+      int rank,
+      double crowdingDistance)
       implements Individual<G, S, List<Double>> {}
 
   private record State<G, S>(
@@ -150,50 +120,63 @@ public class NsgaII<G, S>
   }
 
   private static <G, S> Comparator<RankedIndividual<G, S>> rankedComparator() {
-    return Comparator.comparingInt((RankedIndividual<G, S> i) -> i.rank.content)
-        .thenComparingDouble(i -> i.crowdingDistance.content);
+    return Comparator.comparingInt((RankedIndividual<G, S> i) -> i.rank)
+        .thenComparing((i1, i2) -> Double.compare(i2.crowdingDistance, i1.crowdingDistance));
   }
 
-  private Collection<RankedIndividual<G, S>> decorate(
+  private static <G, S> List<Double> distances(
+      List<? extends Individual<G, S, List<Double>>> individuals, List<Comparator<Double>> comparators) {
+    double[] dists = new double[individuals.size()];
+    for (int oI = 0; oI < comparators.size(); oI = oI + 1) {
+      int finalOI = oI;
+      List<Integer> indexes = IntStream.range(0, individuals.size())
+          .boxed()
+          .sorted((ii1, ii2) -> comparators
+              .get(finalOI)
+              .compare(
+                  individuals.get(ii1).quality().get(finalOI),
+                  individuals.get(ii2).quality().get(finalOI)))
+          .toList();
+      for (int ii = 1; ii < indexes.size() - 1; ii = ii + 1) {
+        int previousIndex = indexes.get(ii - 1);
+        int nextIndex = indexes.get(ii + 1);
+        double dist = Math.abs(individuals.get(previousIndex).quality().get(finalOI)
+            - individuals.get(nextIndex).quality().get(finalOI));
+        dists[indexes.get(ii)] = dists[indexes.get(ii)] + dist;
+      }
+      dists[indexes.get(0)] = dists[indexes.get(0)] + Double.POSITIVE_INFINITY;
+      dists[indexes.get(indexes.size() - 1)] = dists[indexes.get(indexes.size() - 1)] + Double.POSITIVE_INFINITY;
+    }
+    return Arrays.stream(dists).boxed().toList();
+  }
+
+  private static <G, S> Collection<RankedIndividual<G, S>> decorate(
       Collection<? extends Individual<G, S, List<Double>>> individuals,
       MultiHomogeneousObjectiveProblem<S, Double> problem) {
-    // compute ranks
-    PartialComparator<? super Individual<?, ?, List<Double>>> partialComparator = partialComparator(problem);
-    PartiallyOrderedCollection<RankedIndividual<G, S>> poc = new DAGPartiallyOrderedCollection<>(
-        individuals.stream().map(i -> (RankedIndividual<G, S>) i).toList(), partialComparator);
-    int currentRank = 0;
-    List<RankedIndividual<G, S>> rankedIndividuals = new ArrayList<>();
-    while (!poc.all().isEmpty()) {
-      final int finalCurrentRank = currentRank;
-      Collection<RankedIndividual<G, S>> firsts = new ArrayList<>(poc.firsts());
-      firsts.forEach(i -> {
-        i.rank.set(finalCurrentRank);
-        poc.remove(i);
-      });
-      rankedIndividuals.addAll(firsts);
-      currentRank = currentRank + 1;
-    }
-    // add distances
-    int size = rankedIndividuals.size();
-    IntStream.range(0, problem.comparators().size()).forEach(k -> {
-      rankedIndividuals.sort(Comparator.comparing(
-          i -> i.quality.get(k), problem.comparators().get(k)));
-      rankedIndividuals.get(0).crowdingDistance.set(Double.POSITIVE_INFINITY);
-      rankedIndividuals.get(size - 1).crowdingDistance.set(Double.POSITIVE_INFINITY);
-      double min = rankedIndividuals.get(0).quality.get(k);
-      double max = rankedIndividuals.get(size - 1).quality.get(k);
-      double range = max == min ? 1d : Math.abs(max - min);
-      IntStream.range(1, size - 1).forEach(j -> {
-        double interDistance =
-            Math.abs(rankedIndividuals.get(j - 1).quality.get(k)
-                - rankedIndividuals.get(j + 1).quality.get(k));
-        rankedIndividuals
-            .get(j)
-            .crowdingDistance
-            .set(rankedIndividuals.get(j).crowdingDistance.get() + interDistance / range);
-      });
-    });
-    return Collections.unmodifiableCollection(rankedIndividuals);
+    List<? extends Collection<? extends Individual<G, S, List<Double>>>> fronts = PartiallyOrderedCollection.from(
+            individuals, partialComparator(problem))
+        .fronts();
+    return IntStream.range(0, fronts.size())
+        .mapToObj(fi -> {
+          List<? extends Individual<G, S, List<Double>>> is =
+              fronts.get(fi).stream().toList();
+          List<Double> distances = distances(is, problem.comparators());
+          return IntStream.range(0, is.size())
+              .mapToObj(ii -> {
+                Individual<G, S, List<Double>> individual = is.get(ii);
+                return new RankedIndividual<>(
+                    individual.genotype(),
+                    individual.solution(),
+                    individual.quality(),
+                    individual.qualityMappingIteration(),
+                    individual.genotypeBirthIteration(),
+                    fi,
+                    distances.get(ii));
+              })
+              .toList();
+        })
+        .flatMap(List::stream)
+        .toList();
   }
 
   @Override
@@ -274,8 +257,8 @@ public class NsgaII<G, S>
         problem.qualityFunction().apply(solution),
         state == null ? 0 : state.nOfIterations(),
         state == null ? 0 : state.nOfIterations(),
-        new Box<>(0),
-        new Box<>(0d));
+        0,
+        0d);
   }
 
   @Override
@@ -289,7 +272,7 @@ public class NsgaII<G, S>
         problem.qualityFunction().apply(individual.solution()),
         individual.genotypeBirthIteration(),
         state.nOfIterations(),
-        new Box<>(0),
-        new Box<>(0d));
+        0,
+        0d);
   }
 }
