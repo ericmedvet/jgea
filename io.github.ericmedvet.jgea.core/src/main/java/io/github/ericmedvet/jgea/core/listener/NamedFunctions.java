@@ -198,8 +198,7 @@ public class NamedFunctions {
                     .mapToDouble(s -> problem.distance().apply(s, ts))
                     .min()
                     .orElseThrow())
-                .sum()
-            / (double) problem.targets().size());
+                .average().orElseThrow());
   }
 
   public static NamedFunction<State, Double> progress() {
