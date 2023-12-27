@@ -33,6 +33,7 @@ import io.github.ericmedvet.jgea.core.util.Progress;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -149,7 +150,10 @@ public class MapElites<G, S, Q>
     return individuals.stream()
         .map(i -> Map.entry(descriptors.stream().map(d -> d.binOf(i)).toList(), i))
         .collect(Collectors.toMap(
-            Map.Entry::getKey, e -> chooseBest(e.getValue(), map.get(e.getKey()), partialComparator)));
+            Map.Entry::getKey,
+            Map.Entry::getValue,
+            (i1, i2) -> chooseBest(i1, i2, partialComparator),
+            LinkedHashMap::new));
   }
 
   private Individual<G, S, Q> chooseBest(

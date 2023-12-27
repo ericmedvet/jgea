@@ -22,6 +22,8 @@ package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.problem.MultiTargetProblem;
+import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
+import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.State;
@@ -72,7 +74,7 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <X> NamedFunction<X, Number> avg(
-      @Param("collection") NamedFunction<X, Collection<Number>> collectionF,
+      @Param(value = "collection", dNPM = "ea.nf.identity()") NamedFunction<X, Collection<Number>> collectionF,
       @Param(value = "s", dS = "%s") String s) {
     return NamedFunction.build(c("avg", collectionF.getName()), s, x -> collectionF.apply(x).stream()
         .mapToDouble(Number::doubleValue)
@@ -81,7 +83,8 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <X> NamedFunction<X, String> base64(@Param("f") NamedFunction<X, Serializable> f) {
+  public static <X> NamedFunction<X, String> base64(
+      @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<X, Serializable> f) {
     return NamedFunction.build(c("base64", f.getName()), x -> {
       try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
           ObjectOutputStream oos = new ObjectOutputStream(baos)) {
@@ -117,6 +120,17 @@ public class NamedFunctions {
     return NamedFunction.build("births", "%6d", POCPopulationState::nOfBirths);
   }
 
+  @SuppressWarnings("unused")
+  public static <X> NamedFunction<X, List<Integer>> bitStringAsNumbers(
+      @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<X, BitString> f) {
+    return NamedFunction.build(c("asNums", f.getName()), x -> {
+      BitString bs = f.apply(x);
+      return IntStream.range(0, bs.size())
+          .mapToObj(i -> bs.bits()[i] ? 1 : 0)
+          .toList();
+    });
+  }
+
   private static String c(String... names) {
     return Arrays.stream(names).reduce(NamedFunction.NAME_COMPOSER::apply).orElseThrow();
   }
@@ -124,7 +138,7 @@ public class NamedFunctions {
   @SuppressWarnings("unused")
   public static <X, T, R> NamedFunction<X, Collection<R>> each(
       @Param("map") NamedFunction<T, R> mapF,
-      @Param("collection") NamedFunction<X, Collection<T>> collectionF,
+      @Param(value = "collection", dNPM = "ea.nf.identity()") NamedFunction<X, Collection<T>> collectionF,
       @Param(value = "s", dS = "%s") String s) {
     return NamedFunction.build(
         c("each[%s]".formatted(mapF.getName()), collectionF.getName()),
@@ -216,7 +230,7 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <T> NamedFunction<T, String> grid(
-      @Param("f") NamedFunction<T, Grid<Object>> f,
+      @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<T, Grid<Object>> f,
       @Param(value = "s", dS = "%20.20s") String s,
       @Param(value = "cellSeparator", dS = "") String cellSeparator,
       @Param(value = "rowSeparator", dS = ";") String rowSeparator,
@@ -236,25 +250,28 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <X> NamedFunction<X, Integer> gridCount(
-      @Param("f") NamedFunction<X, Grid<?>> f, @Param(value = "s", dS = "%2d") String s) {
+      @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<X, Grid<?>> f,
+      @Param(value = "s", dS = "%2d") String s) {
     return NamedFunction.build(c("grid.count", f.getName()), s, x -> GridUtils.count(f.apply(x), Objects::nonNull));
   }
 
   @SuppressWarnings("unused")
   public static <X> NamedFunction<X, Integer> gridH(
-      @Param("f") NamedFunction<X, Grid<?>> f, @Param(value = "s", dS = "%2d") String s) {
+      @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<X, Grid<?>> f,
+      @Param(value = "s", dS = "%2d") String s) {
     return NamedFunction.build(c("grid.h", f.getName()), s, x -> GridUtils.h(f.apply(x), Objects::nonNull));
   }
 
   @SuppressWarnings("unused")
   public static <X> NamedFunction<X, Integer> gridW(
-      @Param("f") NamedFunction<X, Grid<?>> f, @Param(value = "s", dS = "%2d") String s) {
+      @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<X, Grid<?>> f,
+      @Param(value = "s", dS = "%2d") String s) {
     return NamedFunction.build(c("grid.w", f.getName()), s, x -> GridUtils.w(f.apply(x), Objects::nonNull));
   }
 
   @SuppressWarnings("unused")
   public static <X> NamedFunction<X, TextPlotter.Miniplot> hist(
-      @Param("collection") NamedFunction<X, Collection<Number>> collectionF,
+      @Param(value = "collection", dNPM = "ea.nf.identity()") NamedFunction<X, Collection<Number>> collectionF,
       @Param(value = "nBins", dI = 8) int nBins) {
     return NamedFunction.build(c("hist", collectionF.getName()), "%" + nBins + "." + nBins + "s", x -> {
       Collection<Number> collection = collectionF.apply(x);
@@ -265,7 +282,8 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <X> NamedFunction<X, Double> hypervolume2D(
-      @Param("collection") NamedFunction<X, Collection<List<Double>>> collectionF,
+      @Param(value = "collection", dNPM = "ea.nf.identity()")
+          NamedFunction<X, Collection<List<Double>>> collectionF,
       @Param("ranges") List<DoubleRange> ranges) {
     return io.github.ericmedvet.jgea.core.listener.NamedFunctions.hypervolume2D(ranges)
         .of(collectionF);
@@ -274,6 +292,12 @@ public class NamedFunctions {
   @SuppressWarnings("unused")
   public static <T> NamedFunction<T, T> identity() {
     return NamedFunction.build("", t -> t);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X> NamedFunction<X, List<Integer>> intStringAsNumbers(
+      @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<X, IntString> f) {
+    return NamedFunction.build(c("asNums", f.getName()), x -> f.apply(x).genes());
   }
 
   @SuppressWarnings("unused")
@@ -289,7 +313,8 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <X, T extends Comparable<T>> NamedFunction<X, T> max(
-      @Param("collection") NamedFunction<X, Collection<T>> collectionF, @Param(value = "s", dS = "%s") String s) {
+      @Param(value = "collection", dNPM = "ea.nf.identity()") NamedFunction<X, Collection<T>> collectionF,
+      @Param(value = "s", dS = "%s") String s) {
     return NamedFunction.build(c("max", collectionF.getName()), s, x -> {
       List<T> collection = collectionF.apply(x).stream().sorted().toList();
       return collectionF.apply(x).stream().max(Comparable::compareTo).orElse(null);
@@ -298,7 +323,8 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <X, T extends Comparable<T>> NamedFunction<X, T> median(
-      @Param("collection") NamedFunction<X, Collection<T>> collectionF, @Param(value = "s", dS = "%s") String s) {
+      @Param(value = "collection", dNPM = "ea.nf.identity()") NamedFunction<X, Collection<T>> collectionF,
+      @Param(value = "s", dS = "%s") String s) {
     return percentile(collectionF, 0.5, s);
   }
 
@@ -310,7 +336,8 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <X, T extends Comparable<T>> NamedFunction<X, T> min(
-      @Param("collection") NamedFunction<X, Collection<T>> collectionF, @Param(value = "s", dS = "%s") String s) {
+      @Param(value = "collection", dNPM = "ea.nf.identity()") NamedFunction<X, Collection<T>> collectionF,
+      @Param(value = "s", dS = "%s") String s) {
     return NamedFunction.build(c("min", collectionF.getName()), s, x -> {
       List<T> collection = collectionF.apply(x).stream().sorted().toList();
       return collectionF.apply(x).stream().min(Comparable::compareTo).orElse(null);
@@ -329,8 +356,22 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
+  public static <X, T> NamedFunction<X, List<T>> nthItems(
+      @Param(value = "list", dNPM = "ea.nf.identity()") NamedFunction<X, List<T>> listF,
+      @Param("n") int n,
+      @Param("k") int k) {
+    return NamedFunction.build(c("[%dn+%d]".formatted(n, k), listF.getName()), x -> {
+      List<T> l = listF.apply(x);
+      return IntStream.range(0, l.size())
+          .filter(i -> (i % n) == k)
+          .mapToObj(l::get)
+          .toList();
+    });
+  }
+
+  @SuppressWarnings("unused")
   public static <X, S> NamedFunction<X, Double> overallTargetDistance(
-      @Param("collection") NamedFunction<X, Collection<S>> collectionF,
+      @Param(value = "collection", dNPM = "ea.nf.identity()") NamedFunction<X, Collection<S>> collectionF,
       @Param("problem") MultiTargetProblem<S> problem) {
     return io.github.ericmedvet.jgea.core.listener.NamedFunctions.overallTargetDistance(problem)
         .of(collectionF);
@@ -338,7 +379,7 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <X, T extends Comparable<T>> NamedFunction<X, T> percentile(
-      @Param("collection") NamedFunction<X, Collection<T>> collectionF,
+      @Param(value = "collection", dNPM = "ea.nf.identity()") NamedFunction<X, Collection<T>> collectionF,
       @Param("p") double p,
       @Param(value = "s", dS = "%s") String s) {
     return NamedFunction.build(
@@ -354,7 +395,9 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <X, N extends Number> NamedFunction<X, Double> quantized(
-      @Param("f") NamedFunction<X, N> f, @Param("r") double r, @Param(value = "s", dS = "%s") String s) {
+      @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<X, N> f,
+      @Param("r") double r,
+      @Param(value = "s", dS = "%s") String s) {
     return io.github.ericmedvet.jgea.core.listener.NamedFunctions.quantized(r, s)
         .of(f)
         .reformat(s);
@@ -367,7 +410,8 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <X> NamedFunction<X, Integer> size(
-      @Param("f") NamedFunction<X, ?> f, @Param(value = "s", dS = "%s") String s) {
+      @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<X, ?> f,
+      @Param(value = "s", dS = "%s") String s) {
     return NamedFunction.build(
         c("size", f.getName()),
         s,
@@ -384,6 +428,17 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
+  public static <X, T> NamedFunction<X, List<T>> subList(
+      @Param(value = "list", dNPM = "ea.nf.identity()") NamedFunction<X, List<T>> listF,
+      @Param("n") int n,
+      @Param("i") int i) {
+    return NamedFunction.build(c("[%d/%d]".formatted(i, n), listF.getName()), x -> {
+      List<T> l = listF.apply(x);
+      return l.subList(l.size() / n * i, Math.min(l.size(), l.size() / n * (i + 1)));
+    });
+  }
+
+  @SuppressWarnings("unused")
   public static <X, S> NamedFunction<X, List<Double>> targetDistances(
       @Param(value = "individual", dNPM = "ea.nf.identity()") NamedFunction<X, Individual<?, S, ?>> individualF,
       @Param("problem") MultiTargetProblem<S> problem) {
@@ -397,7 +452,7 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <X, T> NamedFunction<X, Double> uniqueness(
-      @Param("collection") NamedFunction<X, Collection<T>> collectionF) {
+      @Param(value = "collection", dNPM = "ea.nf.identity()") NamedFunction<X, Collection<T>> collectionF) {
     return NamedFunction.build(c("uniqueness", collectionF.getName()), "%4.2f", x -> {
       Collection<T> collection = collectionF.apply(x);
       return ((double) (new HashSet<>(collection).size())) / ((double) collection.size());

@@ -1,9 +1,7 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
     (solver = (nEval = [25000]) * [
-      ea.s.intStringGa(name = "ga-div");
       ea.s.intStringGa(name = "ga"; maxUniquenessAttempts = 0);
-      ea.s.intStringNsga2(name = "nsga2-div");
       ea.s.intStringNsga2(name = "nsga2"; maxUniquenessAttempts = 0);
       ea.s.intStringCabea(name = "cabea-e"; keepProbability = 0; substrate = empty);
       ea.s.intStringCabea(name = "cabea-cc"; keepProbability = 0; substrate = contour_cross)

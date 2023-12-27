@@ -1,7 +1,6 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
     (solver = (nEval = [25000]) * [
-      ea.s.intStringGa(name = "ga-div");
       ea.s.intStringGa(name = "ga"; maxUniquenessAttempts = 0);
       ea.s.intStringCabea(name = "cabea-e-11"; keepProbability = 0; substrate = empty; gridSize = 11);
       ea.s.intStringCabea(name = "cabea-cc-11"; keepProbability = 0; substrate = contour_cross; gridSize = 11);
