@@ -21,13 +21,9 @@ package io.github.ericmedvet.jgea.core.solver;
 
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.GeneticOperator;
-import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.MultiHomogeneousObjectiveProblem;
 import io.github.ericmedvet.jgea.core.util.Misc;
-import io.github.ericmedvet.jgea.core.util.Progress;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
@@ -73,51 +69,6 @@ public class NsgaII<G, S>
       int rank,
       double crowdingDistance)
       implements Individual<G, S, List<Double>> {}
-
-  private record State<G, S>(
-      LocalDateTime startingDateTime,
-      long elapsedMillis,
-      long nOfIterations,
-      Progress progress,
-      long nOfBirths,
-      long nOfFitnessEvaluations,
-      PartiallyOrderedCollection<Individual<G, S, List<Double>>> pocPopulation,
-      List<RankedIndividual<G, S>> listPopulation)
-      implements POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>> {
-    public static <G, S> State<G, S> from(
-        State<G, S> state,
-        Progress progress,
-        long nOfBirths,
-        long nOfFitnessEvaluations,
-        List<RankedIndividual<G, S>> listPopulation,
-        PartialComparator<? super Individual<G, S, List<Double>>> partialComparator) {
-      //noinspection rawtypes,unchecked
-      return new State<>(
-          state.startingDateTime,
-          ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
-          state.nOfIterations() + 1,
-          progress,
-          state.nOfBirths() + nOfBirths,
-          state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
-          PartiallyOrderedCollection.from((Collection) listPopulation, partialComparator),
-          listPopulation);
-    }
-
-    public static <G, S> State<G, S> from(
-        List<RankedIndividual<G, S>> listPopulation,
-        PartialComparator<? super Individual<G, S, List<Double>>> partialComparator) {
-      //noinspection rawtypes,unchecked
-      return new State<>(
-          LocalDateTime.now(),
-          0,
-          0,
-          Progress.NA,
-          listPopulation.size(),
-          listPopulation.size(),
-          PartiallyOrderedCollection.from((Collection) listPopulation, partialComparator),
-          listPopulation);
-    }
-  }
 
   private static <G, S> Comparator<RankedIndividual<G, S>> rankedComparator() {
     return Comparator.comparingInt((RankedIndividual<G, S> i) -> i.rank)
@@ -185,11 +136,9 @@ public class NsgaII<G, S>
       throws SolverException {
     Collection<? extends Individual<G, S, List<Double>>> individuals =
         map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor);
-    return State.from(
-        decorate(individuals, problem).stream()
-            .sorted(rankedComparator())
-            .toList(),
-        partialComparator(problem));
+    //noinspection rawtypes,unchecked
+    return AbstractStandardEvolver.POCState.from(
+        PartiallyOrderedCollection.from((List) individuals, partialComparator(problem)));
   }
 
   @Override
@@ -199,7 +148,6 @@ public class NsgaII<G, S>
       ExecutorService executor,
       POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>> state)
       throws SolverException {
-    State<G, S> listState = (State<G, S>) state;
     // build offspring
     Collection<G> offspringGenotypes = new ArrayList<>();
     Set<G> uniqueOffspringGenotypes = new HashSet<>();
@@ -209,14 +157,15 @@ public class NsgaII<G, S>
           .toList());
     }
     int attempts = 0;
-    int size = listState.listPopulation().size();
+    List<Individual<G, S, List<Double>>> individuals =
+        state.pocPopulation().all().stream().toList();
+    int size = individuals.size();
     while (offspringGenotypes.size() < populationSize) {
       GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
       List<G> parentGenotypes = IntStream.range(0, operator.arity())
-          .mapToObj(n -> listState
-              .listPopulation()
+          .mapToObj(n -> individuals
               .get(Math.min(random.nextInt(size), random.nextInt(size)))
-              .genotype)
+              .genotype())
           .toList();
       List<? extends G> childGenotype = operator.apply(parentGenotypes, random);
       if (attempts >= maxUniquenessAttempts
@@ -235,14 +184,15 @@ public class NsgaII<G, S>
             .sorted(rankedComparator())
             .limit(populationSize)
             .toList();
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    List<Individual<G, S, List<Double>>> newIndividuals = (List) rankedIndividuals;
     int nOfNewBirths = offspringGenotypes.size();
-    return State.from(
-        listState,
+    return AbstractStandardEvolver.POCState.from(
+        (AbstractStandardEvolver.POCState<Individual<G, S, List<Double>>, G, S, List<Double>>) state,
         progress(state),
         nOfNewBirths,
         nOfNewBirths + (remap ? populationSize : 0),
-        rankedIndividuals,
-        partialComparator(problem));
+        PartiallyOrderedCollection.from(newIndividuals, partialComparator(problem)));
   }
 
   @Override

@@ -190,15 +190,13 @@ public class NamedFunctions {
   }
 
   public static <S> NamedFunction<Collection<S>, Double> overallTargetDistance(MultiTargetProblem<S> problem) {
-    return f(
-        "overall.target.distance",
-        "%5.3f",
-        ss -> problem.targets().stream()
-                .mapToDouble(ts -> ss.stream()
-                    .mapToDouble(s -> problem.distance().apply(s, ts))
-                    .min()
-                    .orElseThrow())
-                .average().orElseThrow());
+    return f("overall.target.distance", "%5.3f", ss -> problem.targets().stream()
+        .mapToDouble(ts -> ss.stream()
+            .mapToDouble(s -> problem.distance().apply(s, ts))
+            .min()
+            .orElseThrow())
+        .average()
+        .orElseThrow());
   }
 
   public static NamedFunction<State, Double> progress() {
