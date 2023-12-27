@@ -203,7 +203,7 @@ public class NamedFunctions {
     return f("progress", "%4.2f", s -> s.progress().rate());
   }
 
-  public static <I extends Individual<?, ?, Q>, Q> NamedFunction<I, Q> quality() {
+  public static <I extends Individual<G, S, Q>, G, S, Q> NamedFunction<I, Q> quality() {
     return f("quality", Individual::quality);
   }
 

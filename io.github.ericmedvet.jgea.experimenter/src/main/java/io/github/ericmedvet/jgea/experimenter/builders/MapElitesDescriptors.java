@@ -20,6 +20,8 @@
 package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
+import io.github.ericmedvet.jgea.core.listener.NamedFunctions;
+import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MapElites;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
@@ -29,15 +31,21 @@ import io.github.ericmedvet.jnb.core.Param;
  */
 @Discoverable(prefixTemplate = "ea.solver|s.mapelites|me.descriptor|d")
 public class MapElitesDescriptors {
-  private MapElitesDescriptors() {}
+  private MapElitesDescriptors() {
+  }
 
   @SuppressWarnings("unused")
   public static <G, S, Q> MapElites.Descriptor<G, S, Q> ofGenotype(
       @Param("f") NamedFunction<G, Double> f,
       @Param(value = "min", dD = 0d) double min,
       @Param(value = "max", dD = 1d) double max,
-      @Param(value = "nOfBins", dI = 20) int nOfBins) {
-    return new MapElites.Descriptor<>(i -> f.apply(i.genotype()), min, max, nOfBins);
+      @Param(value = "nOfBins", dI = 20) int nOfBins
+  ) {
+    NamedFunction<Individual<G, S, Q>, G> gF = NamedFunctions.<Individual<G, S, Q>, G, S, Q>genotype();
+    NamedFunction<Individual<G, S, Q>, Double> then = gF.then(f);
+    return new MapElites.Descriptor<>(
+        NamedFunctions.<Individual<G, S, Q>, G, S, Q>genotype().then(f)
+        , min, max, nOfBins);
   }
 
   @SuppressWarnings("unused")
@@ -45,8 +53,11 @@ public class MapElitesDescriptors {
       @Param("f") NamedFunction<S, Double> f,
       @Param(value = "min", dD = 0d) double min,
       @Param(value = "max", dD = 1d) double max,
-      @Param(value = "nOfBins", dI = 20) int nOfBins) {
-    return new MapElites.Descriptor<>(i -> f.apply(i.solution()), min, max, nOfBins);
+      @Param(value = "nOfBins", dI = 20) int nOfBins
+  ) {
+    return new MapElites.Descriptor<>(
+        NamedFunctions.<Individual<G, S, Q>, G, S, Q>solution().then(f)
+        , min, max, nOfBins);
   }
 
   @SuppressWarnings("unused")
@@ -54,7 +65,10 @@ public class MapElitesDescriptors {
       @Param("f") NamedFunction<Q, Double> f,
       @Param(value = "min", dD = 0d) double min,
       @Param(value = "max", dD = 1d) double max,
-      @Param(value = "nOfBins", dI = 20) int nOfBins) {
-    return new MapElites.Descriptor<>(i -> f.apply(i.quality()), min, max, nOfBins);
+      @Param(value = "nOfBins", dI = 20) int nOfBins
+  ) {
+    return new MapElites.Descriptor<>(
+        NamedFunctions.<Individual<G, S, Q>, G, S, Q>quality().then(f)
+        , min, max, nOfBins);
   }
 }
