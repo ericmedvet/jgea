@@ -124,6 +124,7 @@ public class AggregatedXYDataSeriesMRPAF<E, R, K>
                 ySubplotFunction
                     .getFormat()
                     .formatted(data.rowIndexes().get(y)),
+                "",
                 data.get(x, y))));
   }
 }

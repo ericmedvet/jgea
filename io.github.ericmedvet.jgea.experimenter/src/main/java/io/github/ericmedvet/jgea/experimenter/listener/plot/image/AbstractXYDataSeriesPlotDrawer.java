@@ -22,16 +22,82 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot.image;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeries;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeriesPlot;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlot;
+import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+import io.github.ericmedvet.jsdynsym.grid.Grid;
 import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.SortedMap;
+import java.util.function.ToDoubleFunction;
+import java.util.stream.DoubleStream;
+import java.util.stream.Stream;
 
 public abstract class AbstractXYDataSeriesPlotDrawer implements PlotDrawer<XYDataSeriesPlot, List<XYDataSeries>> {
+  protected abstract Point2D computeLegendImageSize(ImagePlotter ip);
+
+  protected abstract void drawData(
+      ImagePlotter ip, Graphics2D g, Rectangle2D r, Axis xA, Axis yA, XYDataSeries ds, Color color);
+
+  protected abstract void drawLegendImage(ImagePlotter ip, Graphics2D g, Color color, Rectangle2D r);
+
+  protected static Grid<Axis> computeAxes(
+      ImagePlotter ip, Graphics2D g, Layout l, XYDataSeriesPlot plot, boolean isXAxis) {
+    Grid<DoubleRange> grid = plot.dataGrid()
+        .map(td -> plot.xRange().equals(DoubleRange.UNBOUNDED)
+            ? range(td.data(), p -> isXAxis ? p.x().v() : p.y().v())
+            : plot.xRange());
+    List<DoubleRange> colLargestRanges =
+        grid.columns().stream().map(ImagePlotter::largestRange).toList();
+    List<DoubleRange> rowLargestRanges =
+        grid.rows().stream().map(ImagePlotter::largestRange).toList();
+    DoubleRange largestRange = ImagePlotter.largestRange(Stream.of(colLargestRanges, rowLargestRanges)
+        .flatMap(List::stream)
+        .toList());
+    return grid.keys().stream()
+        .map(k -> new Grid.Entry<>(
+            k,
+            ip.plotRange(
+                isXAxis,
+                grid.get(k),
+                colLargestRanges.get(k.x()),
+                rowLargestRanges.get(k.y()),
+                largestRange)))
+        .map(e -> {
+          Rectangle2D r = l.innerPlot(e.key().x(), e.key().y());
+          double size = isXAxis ? r.getWidth() : r.getHeight();
+          List<Double> ticks = computeTicks(ip, g, size, e.value());
+          String format = ip.computeTicksFormat(ticks);
+          return new Grid.Entry<>(
+              e.key(),
+              new Axis(
+                  e.value(),
+                  ticks,
+                  ticks.stream().map(format::formatted).toList()));
+        })
+        .collect(Grid.collector());
+  }
+
+  protected static DoubleRange range(
+      Collection<XYDataSeries> dataSeries, ToDoubleFunction<XYDataSeries.Point> vExtractor) {
+    return new DoubleRange(
+        dataSeries.stream()
+            .mapToDouble(ds -> ds.points().stream()
+                .mapToDouble(vExtractor)
+                .min()
+                .orElse(0d))
+            .min()
+            .orElse(0d),
+        dataSeries.stream()
+            .mapToDouble(ds -> ds.points().stream()
+                .mapToDouble(vExtractor)
+                .max()
+                .orElse(1d))
+            .max()
+            .orElse(1d));
+  }
+
   @Override
   public double computeLegendH(ImagePlotter ip, Graphics2D g, XYDataSeriesPlot plot) {
     double maxLineL = ip.w() - 2d * ip.c().layout().legendMarginWRate() * ip.w();
@@ -56,6 +122,16 @@ public abstract class AbstractXYDataSeriesPlotDrawer implements PlotDrawer<XYDat
       lineL = lineL + localL;
     }
     return lH;
+  }
+
+  @Override
+  public Grid<Axis> computeXAxes(ImagePlotter ip, Graphics2D g, Layout l, XYDataSeriesPlot plot) {
+    return computeAxes(ip, g, l, plot, true);
+  }
+
+  @Override
+  public Grid<Axis> computeYAxes(ImagePlotter ip, Graphics2D g, Layout l, XYDataSeriesPlot plot) {
+    return computeAxes(ip, g, l, plot, false);
   }
 
   @Override
@@ -111,7 +187,13 @@ public abstract class AbstractXYDataSeriesPlotDrawer implements PlotDrawer<XYDat
 
   @Override
   public void drawPlot(
-      ImagePlotter ip, Graphics2D g, Rectangle2D r, List<XYDataSeries> data, Axes a, XYDataSeriesPlot plot) {
+      ImagePlotter ip,
+      Graphics2D g,
+      Rectangle2D r,
+      List<XYDataSeries> data,
+      Axis xA,
+      Axis yA,
+      XYDataSeriesPlot plot) {
     SortedMap<String, Color> dataColors = ip.computeSeriesDataColors(plot.dataGrid().values().stream()
         .filter(Objects::nonNull)
         .map(XYPlot.TitledData::data)
@@ -119,27 +201,30 @@ public abstract class AbstractXYDataSeriesPlotDrawer implements PlotDrawer<XYDat
         .distinct()
         .toList());
     g.setColor(ip.c().colors().gridColor());
-    a.xTicks()
+    xA.ticks()
         .forEach(x -> g.draw(new Line2D.Double(
-            a.xIn(x, r), a.yIn(a.yRange().min(), r),
-            a.xIn(x, r), a.yIn(a.yRange().max(), r))));
-    a.yTicks()
+            xA.xIn(x, r), yA.yIn(yA.range().min(), r),
+            xA.xIn(x, r), yA.yIn(yA.range().max(), r))));
+    yA.ticks()
         .forEach(y -> g.draw(new Line2D.Double(
-            a.xIn(a.xRange().min(), r), a.yIn(y, r),
-            a.xIn(a.xRange().max(), r), a.yIn(y, r))));
+            xA.xIn(xA.range().min(), r), yA.yIn(y, r),
+            xA.xIn(xA.range().max(), r), yA.yIn(y, r))));
     if (ip.c().debug()) {
       g.setStroke(new BasicStroke(1));
       g.setColor(Color.MAGENTA);
       g.draw(r);
     }
     // draw data
-    data.forEach(ds -> drawData(ip, g, r, a, ds, dataColors.get(ds.name())));
+    data.forEach(ds -> drawData(ip, g, r, xA, yA, ds, dataColors.get(ds.name())));
   }
 
-  protected abstract Point2D computeLegendImageSize(ImagePlotter ip);
-
-  protected abstract void drawLegendImage(ImagePlotter ip, Graphics2D g, Color color, Rectangle2D r);
-
-  protected abstract void drawData(
-      ImagePlotter ip, Graphics2D g, Rectangle2D r, Axes a, XYDataSeries ds, Color color);
+  protected static List<Double> computeTicks(ImagePlotter ip, Graphics2D g, double size, DoubleRange range) {
+    DoubleRange innerRange = ImagePlotter.enlarge(range, ip.c().general().plotDataRatio());
+    double labelLineL = ip.computeStringH(g, "1", Configuration.Text.Use.TICK_LABEL)
+        * (1d + ip.c().general().tickLabelGapRatio());
+    int n = (int) Math.round(size / labelLineL);
+    return DoubleStream.iterate(innerRange.min(), v -> v <= range.max(), v -> v + innerRange.extent() / (double) n)
+        .boxed()
+        .toList();
+  }
 }

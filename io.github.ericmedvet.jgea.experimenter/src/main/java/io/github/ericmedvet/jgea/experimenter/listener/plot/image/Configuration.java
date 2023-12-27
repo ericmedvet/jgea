@@ -68,6 +68,7 @@ public record Configuration(
       Color titleColor,
       Color axisLabelColor,
       Color tickLabelColor,
+      Color noteColor,
       List<Color> dataColors,
       ColorRange continuousDataColorRange) {
 
@@ -77,7 +78,8 @@ public record Configuration(
         Color.LIGHT_GRAY,
         Color.WHITE,
         Color.BLACK,
-        Color.BLACK,
+        Color.GRAY,
+        Color.GRAY,
         Color.DARK_GRAY,
         List.of(
             new Color(166, 206, 227),
@@ -99,7 +101,7 @@ public record Configuration(
 
   public record General(
       double tickLabelGapRatio, double plotDataRatio, double gridStrokeSizeRate, double maxNOfDecimalDigits) {
-    public static final General DEFAULT = new General(2, 0.9, 0.0005, 5);
+    public static final General DEFAULT = new General(1.5, 0.9, 0.0005, 5);
   }
 
   public record GridPlot(
@@ -124,17 +126,15 @@ public record Configuration(
       double xAxisMarginHRate,
       double xAxisInnerMarginHRate,
       double plotMarginWRate,
-      double plotMarginHRate) {
+      double plotMarginHRate,
+      double noteMarginHRate) {
     public static final Layout DEFAULT = new Layout(
-        0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.001, 0.001, 0.001, 0.001, 0.005, 0.005);
+        0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.001, 0.001, 0.001, 0.001, 0.005, 0.005,
+        0.001);
   }
 
   public record LinesPlot(double dataStrokeSizeRate, double alpha, double legendImageWRate, double legendImageHRate) {
     public static final LinesPlot DEFAULT = new LinesPlot(0.0025, 0.3, 0.04, 0.025);
-  }
-
-  public record PointsPlot(double markerSizeRate, double alpha, double legendImageSizeRate) {
-    public static final PointsPlot DEFAULT = new PointsPlot(0.01, 0.5, 0.02);
   }
 
   public record PlotMatrix(Show axesShow, Show titlesShow, Set<Independence> independences) {
@@ -154,10 +154,18 @@ public record Configuration(
     }
   }
 
+  public record PointsPlot(
+      double dataStrokeSizeRate, double markerSizeRate, double alpha, double legendImageSizeRate) {
+    public static final PointsPlot DEFAULT = new PointsPlot(0.0015, 0.005, 0.35, 0.02);
+  }
+
   public record Text(double fontSizeRate, Map<Use, Double> sizeRates, String fontName) {
 
     public static final Text DEFAULT = new Text(
-        0.0175, Map.ofEntries(Map.entry(Use.TITLE, 0.025), Map.entry(Use.TICK_LABEL, 0.0125)), "SansSerif");
+        0.0175,
+        Map.ofEntries(
+            Map.entry(Use.TITLE, 0.025), Map.entry(Use.TICK_LABEL, 0.0125), Map.entry(Use.NOTE, 0.015)),
+        "SansSerif");
 
     public enum Direction {
       H,
@@ -168,7 +176,8 @@ public record Configuration(
       TITLE,
       AXIS_LABEL,
       TICK_LABEL,
-      LEGEND_LABEL
+      LEGEND_LABEL,
+      NOTE
     }
   }
 }

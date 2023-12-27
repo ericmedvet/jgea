@@ -83,6 +83,6 @@ public class XYDataSeriesSRPAF<E, R> extends AbstractSingleRPAF<E, XYDataSeriesP
         "value",
         xRange,
         yRange,
-        Grid.create(1, 1, new XYPlot.TitledData<>("", "", data)));
+        Grid.create(1, 1, new XYPlot.TitledData<>("", "", "", data)));
   }
 }

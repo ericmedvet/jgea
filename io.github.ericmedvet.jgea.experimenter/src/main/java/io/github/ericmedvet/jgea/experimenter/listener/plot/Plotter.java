@@ -100,7 +100,7 @@ public interface Plotter<O> {
         "y",
         DoubleRange.UNBOUNDED,
         DoubleRange.UNBOUNDED,
-        Grid.create(1, 1, (x, y) -> new XYPlot.TitledData<>("", "", List.of(ds1, ds2))));
+        Grid.create(1, 1, (x, y) -> new XYPlot.TitledData<>("", "", "", List.of(ds1, ds2))));
     ImagePlotter ip = new ImagePlotter(800, 600);
     ImagePlotter.showImage(ip.lines(p));
     ImagePlotter.showImage(ip.points(p));
@@ -116,12 +116,12 @@ public interface Plotter<O> {
             3,
             2,
             List.of(
-                new XYPlot.TitledData<>("x1", "y1", List.of(ds1)),
-                new XYPlot.TitledData<>("x2", "y1", List.of(ds2)),
-                new XYPlot.TitledData<>("x3", "y1", List.of(ds3, ds4)),
-                new XYPlot.TitledData<>("x1", "y2", List.of(ds5)),
-                new XYPlot.TitledData<>("x2", "y2", List.of(ds1, ds4)),
-                new XYPlot.TitledData<>("x3", "y2", List.of(ds2, ds5)))));
+                new XYPlot.TitledData<>("x1", "y1", "", List.of(ds1)),
+                new XYPlot.TitledData<>("x2", "y1", "", List.of(ds2)),
+                new XYPlot.TitledData<>("x3", "y1", "", List.of(ds3, ds4)),
+                new XYPlot.TitledData<>("x1", "y2", "", List.of(ds5)),
+                new XYPlot.TitledData<>("x2", "y2", "", List.of(ds1, ds4)),
+                new XYPlot.TitledData<>("x3", "y2", "ocio!", List.of(ds2, ds5)))));
     ImagePlotter.showImage(ip.lines(m));
     UnivariateGridPlot sgp = new UnivariateGridPlot(
         "grid!!!",
@@ -138,9 +138,10 @@ public interface Plotter<O> {
             (ox, oy) -> new XYPlot.TitledData<>(
                 "x%d".formatted(ox),
                 "y%d".formatted(oy),
+                "",
                 Grid.create(
                     10,
-                    10,
+                    16,
                     (x, y) -> rg.nextDouble() < 0.1 ? null : (x + y + 1d + rg.nextGaussian())))));
     ImagePlotter.showImage(ip.univariateGrid(sgp));
   }

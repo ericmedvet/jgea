@@ -19,6 +19,7 @@
  */
 package io.github.ericmedvet.jgea.experimenter.listener.plot.image;
 
+import io.github.ericmedvet.jgea.experimenter.listener.plot.RangedGrid;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.UnivariateGridPlot;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlot;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
@@ -30,13 +31,110 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.DoubleFunction;
+import java.util.stream.IntStream;
 
 public class UnivariateGridDrawer implements PlotDrawer<UnivariateGridPlot, Grid<Double>> {
+
+  private static DoubleRange computeRange(Grid<Double> grid) {
+    double[] values = grid.values().stream()
+        .filter(Objects::nonNull)
+        .filter(Double::isFinite)
+        .mapToDouble(v -> v)
+        .toArray();
+    return new DoubleRange(
+        Arrays.stream(values).min().orElse(0),
+        Arrays.stream(values).max().orElse(1));
+  }
+
+  private static DoubleRange computeRange(UnivariateGridPlot plot) {
+    if (!plot.valueRange().equals(DoubleRange.UNBOUNDED)) {
+      return plot.valueRange();
+    }
+    double[] values = plot.dataGrid().values().stream()
+        .map(XYPlot.TitledData::data)
+        .map(d -> d.values().stream()
+            .filter(Objects::nonNull)
+            .filter(Double::isFinite)
+            .toList())
+        .flatMap(List::stream)
+        .mapToDouble(v -> v)
+        .toArray();
+    return new DoubleRange(
+        Arrays.stream(values).min().orElse(0),
+        Arrays.stream(values).max().orElse(1));
+  }
+
+  private DoubleFunction<Color> computeGridsDataColors(Configuration c, UnivariateGridPlot plot) {
+    DoubleRange range = computeRange(plot);
+    double minR = c.colors().continuousDataColorRange().min().getRed() / 255f;
+    double maxR = c.colors().continuousDataColorRange().max().getRed() / 255f;
+    double minG = c.colors().continuousDataColorRange().min().getGreen() / 255f;
+    double maxG = c.colors().continuousDataColorRange().max().getGreen() / 255f;
+    double minB = c.colors().continuousDataColorRange().min().getBlue() / 255f;
+    double maxB = c.colors().continuousDataColorRange().max().getBlue() / 255f;
+    return v -> new Color(
+        (float) (minR + (maxR - minR) * range.normalize(v)),
+        (float) (minG + (maxG - minG) * range.normalize(v)),
+        (float) (minB + (maxB - minB) * range.normalize(v)));
+  }
+
   @Override
   public double computeLegendH(ImagePlotter ip, Graphics2D g, UnivariateGridPlot plot) {
     return Math.max(
         ip.c().gridPlot().legendImageHRate() * ip.h(),
         ip.computeStringH(g, "0", Configuration.Text.Use.LEGEND_LABEL));
+  }
+
+  @Override
+  public Grid<Axis> computeXAxes(ImagePlotter ip, Graphics2D g, Layout l, UnivariateGridPlot plot) {
+    return plot.dataGrid().map(td -> {
+      if (td.data() instanceof RangedGrid<Double> rg) {
+        List<Double> ticks = IntStream.range(0, td.data().w() + 1)
+            .mapToDouble(i -> rg.xRange().min())
+            .boxed()
+            .toList();
+        String format = ip.computeTicksFormat(ticks);
+        return new Axis(
+            rg.xRange(),
+            ticks,
+            ticks.stream().map(format::formatted).toList());
+      }
+      return new Axis(
+          new DoubleRange(0, td.data().w()),
+          IntStream.range(0, td.data().w())
+              .mapToDouble(i -> i + 0.5d)
+              .boxed()
+              .toList(),
+          IntStream.range(0, td.data().w())
+              .mapToObj(i -> Integer.toString(i + 1))
+              .toList());
+    });
+  }
+
+  @Override
+  public Grid<Axis> computeYAxes(ImagePlotter ip, Graphics2D g, Layout l, UnivariateGridPlot plot) {
+    return plot.dataGrid().map(td -> {
+      if (td.data() instanceof RangedGrid<Double> rg) {
+        List<Double> ticks = IntStream.range(0, td.data().h() + 1)
+            .mapToDouble(i -> rg.yRange().min())
+            .boxed()
+            .toList();
+        String format = ip.computeTicksFormat(ticks);
+        return new Axis(
+            rg.xRange(),
+            ticks,
+            ticks.stream().map(format::formatted).toList());
+      }
+      return new Axis(
+          new DoubleRange(0, td.data().h()),
+          IntStream.range(0, td.data().h())
+              .mapToDouble(i -> i + 0.5d)
+              .boxed()
+              .toList(),
+          IntStream.range(0, td.data().h())
+              .mapToObj(i -> Integer.toString(i + 1))
+              .toList());
+    });
   }
 
   @Override
@@ -93,7 +191,13 @@ public class UnivariateGridDrawer implements PlotDrawer<UnivariateGridPlot, Grid
 
   @Override
   public void drawPlot(
-      ImagePlotter ip, Graphics2D g, Rectangle2D r, Grid<Double> data, Axes a, UnivariateGridPlot plot) {
+      ImagePlotter ip,
+      Graphics2D g,
+      Rectangle2D r,
+      Grid<Double> data,
+      Axis xA,
+      Axis yA,
+      UnivariateGridPlot plot) {
     DoubleFunction<Color> colorF = computeGridsDataColors(ip.c(), plot);
     double cellW = r.getWidth() / (double) data.w() * ip.c().gridPlot().cellSideRate();
     double cellH = r.getHeight() / (double) data.h() * ip.c().gridPlot().cellSideRate();
@@ -107,70 +211,45 @@ public class UnivariateGridDrawer implements PlotDrawer<UnivariateGridPlot, Grid
         .forEach(e -> {
           g.setColor(colorF.apply(e.value()));
           Rectangle2D.Double cellR = new Rectangle2D.Double(
-              a.xIn(e.key().x(), r) + cellMarginW, a.yIn(e.key().y() + 1, r) + cellMarginH, cellW, cellH);
+              xA.xIn(e.key().x(), r) + cellMarginW,
+              yA.yIn(e.key().y() + 1, r) + cellMarginH,
+              cellW,
+              cellH);
           g.fill(cellR);
         });
-    if (ip.c().gridPlot().showRanges()) {
-      String rangeFormat = ip.computeTicksFormat(plot.dataGrid().values().stream()
-          .map(t -> computeRange(t.data()))
-          .map(range -> java.util.List.of(range.min(), range.max()))
-          .flatMap(List::stream)
-          .distinct()
-          .toList());
-      DoubleRange actualRange = computeRange(data);
-      g.setClip(new Rectangle2D.Double(0, 0, ip.w(), ip.h()));
-      ip.drawString(
-          g,
-          new Point2D.Double(r.getMaxX(), r.getCenterY()),
-          rangeFormat.formatted(actualRange.min()) + "→" + rangeFormat.formatted(actualRange.max()),
-          ImagePlotter.AnchorH.L,
-          ImagePlotter.AnchorV.C,
-          Configuration.Text.Use.TICK_LABEL,
-          Configuration.Text.Direction.V,
-          ip.c().colors().tickLabelColor());
+  }
+
+  @Override
+  public UnivariateGridPlot preprocess(ImagePlotter ip, UnivariateGridPlot plot) {
+    if (!ip.c().gridPlot().showRanges()) {
+      return plot;
     }
-  }
-
-  private DoubleFunction<Color> computeGridsDataColors(Configuration c, UnivariateGridPlot plot) {
-    DoubleRange range = computeRange(plot);
-    double minR = c.colors().continuousDataColorRange().min().getRed() / 255f;
-    double maxR = c.colors().continuousDataColorRange().max().getRed() / 255f;
-    double minG = c.colors().continuousDataColorRange().min().getGreen() / 255f;
-    double maxG = c.colors().continuousDataColorRange().max().getGreen() / 255f;
-    double minB = c.colors().continuousDataColorRange().min().getBlue() / 255f;
-    double maxB = c.colors().continuousDataColorRange().max().getBlue() / 255f;
-    return v -> new Color(
-        (float) (minR + (maxR - minR) * range.normalize(v)),
-        (float) (minG + (maxG - minG) * range.normalize(v)),
-        (float) (minB + (maxB - minB) * range.normalize(v)));
-  }
-
-  private static DoubleRange computeRange(Grid<Double> grid) {
-    double[] values = grid.values().stream()
-        .filter(Objects::nonNull)
-        .filter(Double::isFinite)
-        .mapToDouble(v -> v)
-        .toArray();
-    return new DoubleRange(
-        Arrays.stream(values).min().orElse(0),
-        Arrays.stream(values).max().orElse(1));
-  }
-
-  private static DoubleRange computeRange(UnivariateGridPlot plot) {
-    if (!plot.valueRange().equals(DoubleRange.UNBOUNDED)) {
-      return plot.valueRange();
-    }
-    double[] values = plot.dataGrid().values().stream()
-        .map(XYPlot.TitledData::data)
-        .map(d -> d.values().stream()
-            .filter(Objects::nonNull)
-            .filter(Double::isFinite)
-            .toList())
+    String rangeFormat = ip.computeTicksFormat(plot.dataGrid().values().stream()
+        .map(t -> computeRange(t.data()))
+        .map(range -> java.util.List.of(range.min(), range.max()))
         .flatMap(List::stream)
-        .mapToDouble(v -> v)
-        .toArray();
-    return new DoubleRange(
-        Arrays.stream(values).min().orElse(0),
-        Arrays.stream(values).max().orElse(1));
+        .distinct()
+        .toList());
+    return new UnivariateGridPlot(
+        plot.title(),
+        plot.xTitleName(),
+        plot.yTitleName(),
+        plot.xName(),
+        plot.yName(),
+        plot.xRange(),
+        plot.yRange(),
+        plot.valueRange(),
+        plot.dataGrid().map(td -> {
+          DoubleRange actualRange = computeRange(td.data());
+          return new XYPlot.TitledData<>(
+              td.xTitle(),
+              td.yTitle(),
+              String.join(
+                  " ",
+                  td.note(),
+                  rangeFormat.formatted(actualRange.min()) + "→"
+                      + rangeFormat.formatted(actualRange.max())),
+              td.data());
+        }));
   }
 }

@@ -45,7 +45,8 @@ public class LinesPlotDrawer extends AbstractXYDataSeriesPlotDrawer {
     g.draw(new Line2D.Double(r.getX(), r.getCenterY(), r.getMaxX(), r.getCenterY()));
   }
 
-  protected void drawData(ImagePlotter ip, Graphics2D g, Rectangle2D r, Axes a, XYDataSeries ds, Color color) {
+  protected void drawData(
+      ImagePlotter ip, Graphics2D g, Rectangle2D r, Axis xA, Axis yA, XYDataSeries ds, Color color) {
     ds = XYDataSeries.of(
         ds.name(),
         ds.points().stream()
@@ -55,15 +56,17 @@ public class LinesPlotDrawer extends AbstractXYDataSeriesPlotDrawer {
       // draw shaded area
       Path2D sPath = new Path2D.Double();
       sPath.moveTo(
-          a.xIn(ds.points().get(0).x().v(), r),
-          a.yIn(ds.points().get(0).y().v(), r));
+          xA.xIn(ds.points().get(0).x().v(), r),
+          yA.yIn(ds.points().get(0).y().v(), r));
       ds.points().stream()
           .skip(1)
           .forEach(p -> sPath.lineTo(
-              a.xIn(p.x().v(), r), a.yIn(RangedValue.range(p.y()).min(), r)));
+              xA.xIn(p.x().v(), r),
+              yA.yIn(RangedValue.range(p.y()).min(), r)));
       reverse(ds.points())
           .forEach(p -> sPath.lineTo(
-              a.xIn(p.x().v(), r), a.yIn(RangedValue.range(p.y()).max(), r)));
+              xA.xIn(p.x().v(), r),
+              yA.yIn(RangedValue.range(p.y()).max(), r)));
       sPath.closePath();
       g.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), (int)
           (color.getAlpha() * ip.c().linesPlot().alpha())));
@@ -74,9 +77,9 @@ public class LinesPlotDrawer extends AbstractXYDataSeriesPlotDrawer {
     g.setStroke(new BasicStroke((float) (ip.c().linesPlot().dataStrokeSizeRate() * ip.refL())));
     Path2D path = new Path2D.Double();
     path.moveTo(
-        a.xIn(ds.points().get(0).x().v(), r),
-        a.yIn(ds.points().get(0).y().v(), r));
-    ds.points().stream().skip(1).forEach(p -> path.lineTo(a.xIn(p.x().v(), r), a.yIn(p.y().v(), r)));
+        xA.xIn(ds.points().get(0).x().v(), r),
+        yA.yIn(ds.points().get(0).y().v(), r));
+    ds.points().stream().skip(1).forEach(p -> path.lineTo(xA.xIn(p.x().v(), r), yA.yIn(p.y().v(), r)));
     g.draw(path);
   }
 

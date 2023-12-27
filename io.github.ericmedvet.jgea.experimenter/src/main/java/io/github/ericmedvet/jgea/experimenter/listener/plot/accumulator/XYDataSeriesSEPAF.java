@@ -88,6 +88,6 @@ public class XYDataSeriesSEPAF<E, R, X, P> extends AbstractSingleEPAF<E, XYDataS
             data.nColumns(),
             data.nRows(),
             (x, y) -> new XYPlot.TitledData<>(
-                data.colIndexes().get(x), data.rowIndexes().get(y), data.get(x, y))));
+                data.colIndexes().get(x), data.rowIndexes().get(y), "", data.get(x, y))));
   }
 }

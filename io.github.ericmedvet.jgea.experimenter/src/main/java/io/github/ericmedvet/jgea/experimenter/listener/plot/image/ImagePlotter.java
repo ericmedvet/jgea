@@ -29,12 +29,8 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
-import java.util.function.Function;
-import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 import javax.swing.*;
 
 /**
@@ -55,7 +51,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
   public ImagePlotter(int w, int h, Configuration c) {
     this.w = w;
     this.h = h;
-    refL = Math.sqrt(w * h);
+    refL = Math.max(w, h);
     this.c = c;
     fonts = Arrays.stream(Configuration.Text.Use.values())
         .collect(Collectors.toMap(
@@ -76,23 +72,15 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     B
   }
 
-  private static DoubleRange range(
-      Collection<XYDataSeries> dataSeries, ToDoubleFunction<XYDataSeries.Point> vExtractor) {
+  protected static DoubleRange enlarge(DoubleRange range, double r) {
     return new DoubleRange(
-        dataSeries.stream()
-            .mapToDouble(ds -> ds.points().stream()
-                .mapToDouble(vExtractor)
-                .min()
-                .orElse(0d))
-            .min()
-            .orElse(0d),
-        dataSeries.stream()
-            .mapToDouble(ds -> ds.points().stream()
-                .mapToDouble(vExtractor)
-                .max()
-                .orElse(1d))
-            .max()
-            .orElse(1d));
+        range.min() - range.extent() * (r - 1d) / 2d, range.max() + range.extent() * (r - 1d) / 2d);
+  }
+
+  protected static DoubleRange largestRange(List<DoubleRange> ranges) {
+    return ranges.stream()
+        .reduce((r1, r2) -> new DoubleRange(Math.min(r1.min(), r2.min()), Math.max(r1.max(), r2.max())))
+        .orElseThrow();
   }
 
   public static void showImage(BufferedImage image) {
@@ -126,104 +114,6 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     return new Point2D.Double(r.getCenterX(), r.getCenterY());
   }
 
-  private Grid<Axes> computeAxes(Graphics2D g, Layout l, XYPlot<?> plot, DoubleRange xRange, DoubleRange yRange) {
-    // compute ranges
-    Grid<Axes> grid;
-    if (plot instanceof XYDataSeriesPlot xyDataSeriesPlot) {
-      grid = xyDataSeriesPlot
-          .dataGrid()
-          .map(td -> new Axes(
-              xRange.equals(DoubleRange.UNBOUNDED) ? range(td.data(), p -> p.x().v()) : xRange,
-              yRange.equals(DoubleRange.UNBOUNDED) ? range(td.data(), p -> p.y().v()) : yRange,
-              List.of(),
-              List.of(),
-              "",
-              ""));
-    } else if (plot instanceof UnivariateGridPlot univariateGridPlot) {
-      grid = univariateGridPlot
-          .dataGrid()
-          .map(td -> new Axes(
-              xRange.equals(DoubleRange.UNBOUNDED)
-                  ? new DoubleRange(0, td.data().w())
-                  : xRange,
-              yRange.equals(DoubleRange.UNBOUNDED)
-                  ? new DoubleRange(0, td.data().h())
-                  : yRange,
-              List.of(),
-              List.of(),
-              "",
-              ""));
-    } else {
-      throw new UnsupportedOperationException("Cannot compute axes for plot type %s"
-          .formatted(plot.getClass().getSimpleName()));
-    }
-    // compute ranges
-    List<DoubleRange> colXLargestRanges =
-        grid.columns().stream().map(c -> largestRange(c, Axes::xRange)).toList();
-    List<DoubleRange> colYLargestRanges =
-        grid.columns().stream().map(c -> largestRange(c, Axes::yRange)).toList();
-    List<DoubleRange> rowXLargestRanges =
-        grid.rows().stream().map(c -> largestRange(c, Axes::xRange)).toList();
-    List<DoubleRange> rowYLargestRanges =
-        grid.rows().stream().map(c -> largestRange(c, Axes::yRange)).toList();
-    DoubleRange largestXRange = Stream.of(colXLargestRanges, rowXLargestRanges)
-        .flatMap(List::stream)
-        .reduce((r1, r2) -> new DoubleRange(Math.min(r1.min(), r2.min()), Math.max(r1.max(), r2.max())))
-        .orElseThrow();
-    DoubleRange largestYRange = Stream.of(colYLargestRanges, rowYLargestRanges)
-        .flatMap(List::stream)
-        .reduce((r1, r2) -> new DoubleRange(Math.min(r1.min(), r2.min()), Math.max(r1.max(), r2.max())))
-        .orElseThrow();
-    // adjust considering independency and add labels
-    return grid.keys().stream()
-        .map(k -> new Grid.Entry<>(
-            k,
-            new Axes(
-                plotRange(
-                    true,
-                    grid.get(k).xRange(),
-                    colXLargestRanges.get(k.x()),
-                    rowXLargestRanges.get(k.y()),
-                    largestXRange),
-                plotRange(
-                    false,
-                    grid.get(k).yRange(),
-                    colYLargestRanges.get(k.x()),
-                    rowYLargestRanges.get(k.y()),
-                    largestYRange),
-                grid.get(k).xTicks(),
-                grid.get(k).yTicks(),
-                grid.get(k).xLabelFormat(),
-                grid.get(k).yLabelFormat())))
-        .map(e -> new Grid.Entry<>(
-            e.key(),
-            new Axes(
-                e.value().xRange(),
-                e.value().yRange(),
-                computeTicks(
-                    g,
-                    e.value().xRange(),
-                    l.innerPlot(e.key().x(), e.key().y()).getWidth(),
-                    plot),
-                computeTicks(
-                    g,
-                    e.value().yRange(),
-                    l.innerPlot(e.key().x(), e.key().y()).getHeight(),
-                    plot),
-                grid.get(e.key()).xLabelFormat(),
-                grid.get(e.key()).yLabelFormat())))
-        .map(e -> new Grid.Entry<>(
-            e.key(),
-            new Axes(
-                e.value().xRange(),
-                e.value().yRange(),
-                e.value().xTicks(),
-                e.value().yTicks(),
-                computeTicksFormat(e.value().xTicks()),
-                computeTicksFormat(e.value().yTicks()))))
-        .collect(Grid.collector());
-  }
-
   private <P extends XYPlot<D>, D> Layout computeLayout(Graphics2D g, P plot, PlotDrawer<P, D> plotDrawer) {
     double initialXAxisL = computeStringW(g, "0", Configuration.Text.Use.TICK_LABEL)
         + 2d * c.layout().xAxisMarginHRate() * h
@@ -240,7 +130,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         plot.title().isEmpty()
             ? 0
             : (computeStringH(g, "a", Configuration.Text.Use.TITLE)
-                + 2d * c.layout().mainTitleMarginHRate() * w),
+                + 2d * c.layout().mainTitleMarginHRate() * h),
         plotDrawer.computeLegendH(this, g, plot) + 2d * c.layout().legendMarginHRate() * h,
         c.plotMatrix().titlesShow().equals(Configuration.PlotMatrix.Show.BORDER)
             ? plot.dataGrid().entries().stream()
@@ -281,20 +171,23 @@ public class ImagePlotter implements Plotter<BufferedImage> {
                 ? 0
                 : (computeStringH(g, "a", Configuration.Text.Use.AXIS_LABEL)
                     + 2d * c.layout().rowTitleMarginWRate() * w),
+        plot.dataGrid().values().stream().map(XYPlot.TitledData::note).allMatch(String::isEmpty)
+            ? 0
+            : (computeStringH(g, "a", Configuration.Text.Use.NOTE)
+                + 2d * c.layout().noteMarginHRate() * h),
         c.layout(),
         plot);
     // iterate
     int nOfIterations = 3;
     for (int i = 0; i < nOfIterations; i = i + 1) {
-      Grid<Axes> axesGrid = computeAxes(g, l, plot, plot.xRange(), plot.yRange());
-      List<String> xTickLabels = axesGrid.values().stream()
-          .map(a ->
-              a.xTicks().stream().map(a.xLabelFormat()::formatted).toList())
+      Grid<Axis> xAxesGrid = plotDrawer.computeXAxes(this, g, l, plot);
+      Grid<Axis> yAxesGrid = plotDrawer.computeYAxes(this, g, l, plot);
+      List<String> xTickLabels = xAxesGrid.values().stream()
+          .map(Axis::labels)
           .flatMap(List::stream)
           .toList();
-      List<String> yTickLabels = axesGrid.values().stream()
-          .map(a ->
-              a.yTicks().stream().map(a.yLabelFormat()::formatted).toList())
+      List<String> yTickLabels = yAxesGrid.values().stream()
+          .map(Axis::labels)
           .flatMap(List::stream)
           .toList();
       double maxXTickL = xTickLabels.stream()
@@ -336,22 +229,6 @@ public class ImagePlotter implements Plotter<BufferedImage> {
   protected double computeStringW(Graphics2D g, String s, Configuration.Text.Use fontUse) {
     g.setFont(fonts.get(fontUse));
     return g.getFontMetrics().stringWidth(s);
-  }
-
-  private List<Double> computeTicks(Graphics2D g, DoubleRange range, double l, XYPlot<?> plot) {
-    if (plot instanceof UnivariateGridPlot) {
-      return IntStream.rangeClosed((int) range.min(), (int) range.max())
-          .mapToDouble(i -> i)
-          .boxed()
-          .toList();
-    }
-    DoubleRange innerRange = enlarge(range, c.general().plotDataRatio());
-    double labelLineL = computeStringH(g, "1", Configuration.Text.Use.TICK_LABEL)
-        * (1d + c.general().tickLabelGapRatio());
-    int n = (int) Math.round(l / labelLineL);
-    return DoubleStream.iterate(innerRange.min(), v -> v <= range.max(), v -> v + innerRange.extent() / (double) n)
-        .boxed()
-        .toList();
   }
 
   protected String computeTicksFormat(List<Double> ticks) {
@@ -423,7 +300,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     }
   }
 
-  private void drawXAxis(Graphics2D g, Rectangle2D r, String name, Axes a) {
+  private void drawXAxis(Graphics2D g, Rectangle2D r, String name, Axis a) {
     if (c.debug()) {
       g.setStroke(new BasicStroke(1));
       g.setColor(Color.MAGENTA);
@@ -433,16 +310,16 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         g,
         new Point2D.Double(r.getCenterX(), r.getY() + r.getHeight()),
         name,
-        AnchorH.L,
+        AnchorH.C,
         AnchorV.T,
         Configuration.Text.Use.AXIS_LABEL,
         Configuration.Text.Direction.H,
         c.colors().axisLabelColor());
-    a.xTicks()
-        .forEach(x -> drawString(
+    IntStream.range(0, a.ticks().size())
+        .forEach(i -> drawString(
             g,
-            new Point2D.Double(a.xIn(x, r), r.getY()),
-            a.xLabelFormat().formatted(x),
+            new Point2D.Double(a.xIn(a.ticks().get(i), r), r.getY()),
+            a.labels().get(i),
             AnchorH.C,
             AnchorV.B,
             Configuration.Text.Use.TICK_LABEL,
@@ -450,7 +327,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
             c.colors().tickLabelColor()));
   }
 
-  private void drawYAxis(Graphics2D g, Rectangle2D r, String name, Axes a) {
+  private void drawYAxis(Graphics2D g, Rectangle2D r, String name, Axis a) {
     if (c.debug()) {
       g.setStroke(new BasicStroke(1));
       g.setColor(Color.MAGENTA);
@@ -465,11 +342,12 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         Configuration.Text.Use.AXIS_LABEL,
         Configuration.Text.Direction.V,
         c.colors().axisLabelColor());
-    a.yTicks()
-        .forEach(y -> drawString(
+    IntStream.range(0, a.ticks().size())
+        .forEach(i -> drawString(
             g,
-            new Point2D.Double(r.getX() + r.getWidth(), a.yIn(y, r)),
-            a.yLabelFormat().formatted(y),
+            new Point2D.Double(
+                r.getX() + r.getWidth(), a.yIn(a.ticks().get(i), r)),
+            a.labels().get(i),
             AnchorH.R,
             AnchorV.C,
             Configuration.Text.Use.TICK_LABEL,
@@ -477,20 +355,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
             c.colors().tickLabelColor()));
   }
 
-  private DoubleRange enlarge(DoubleRange range, double r) {
-    return new DoubleRange(
-        range.min() - range.extent() * (r - 1d) / 2d, range.max() + range.extent() * (r - 1d) / 2d);
-  }
-
   protected double h() {
     return h;
-  }
-
-  private DoubleRange largestRange(List<Axes> axesList, Function<Axes, DoubleRange> rangeExtractor) {
-    return axesList.stream()
-        .map(rangeExtractor)
-        .reduce((r1, r2) -> new DoubleRange(Math.min(r1.min(), r2.min()), Math.max(r1.max(), r2.max())))
-        .orElseThrow();
   }
 
   @Override
@@ -509,13 +375,16 @@ public class ImagePlotter implements Plotter<BufferedImage> {
   }
 
   private <P extends XYPlot<D>, D> BufferedImage plot(P plot, PlotDrawer<P, D> plotDrawer) {
+    // preprocess
+    plot = plotDrawer.preprocess(this, plot);
     // prepare image
     BufferedImage img = new BufferedImage((int) w, (int) h, BufferedImage.TYPE_3BYTE_BGR);
     Graphics2D g = img.createGraphics();
     g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     // compute layout and axes
     Layout l = computeLayout(g, plot, plotDrawer);
-    Grid<Axes> axesGrid = computeAxes(g, l, plot, plot.xRange(), plot.yRange());
+    Grid<Axis> xAxesGrid = plotDrawer.computeXAxes(this, g, l, plot);
+    Grid<Axis> yAxesGrid = plotDrawer.computeYAxes(this, g, l, plot);
     // clean
     g.setColor(c.colors().bgColor());
     g.fill(new Rectangle2D.Double(0, 0, w, h));
@@ -532,13 +401,13 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     // draw legend
     plotDrawer.drawLegend(this, g, l.legend(), plot);
     // show plots
-    for (int px = 0; px < axesGrid.w(); px = px + 1) {
-      for (int py = 0; py < axesGrid.h(); py = py + 1) {
+    for (int px = 0; px < plot.dataGrid().w(); px = px + 1) {
+      for (int py = 0; py < plot.dataGrid().h(); py = py + 1) {
         if (px == 0 && c.plotMatrix().axesShow().equals(Configuration.PlotMatrix.Show.BORDER)) {
           // draw common y-axis
-          drawYAxis(g, l.commonYAxis(py), plot.yName(), axesGrid.get(0, py));
+          drawYAxis(g, l.commonYAxis(py), plot.yName(), yAxesGrid.get(0, py));
         }
-        if (px == axesGrid.w() - 1
+        if (px == plot.dataGrid().w() - 1
             && c.plotMatrix().titlesShow().equals(Configuration.PlotMatrix.Show.BORDER)) {
           // draw common row title
           drawString(
@@ -551,9 +420,10 @@ public class ImagePlotter implements Plotter<BufferedImage> {
               Configuration.Text.Direction.V,
               c.colors().titleColor());
         }
-        if (py == axesGrid.h() - 1 && c.plotMatrix().axesShow().equals(Configuration.PlotMatrix.Show.BORDER)) {
+        if (py == plot.dataGrid().h() - 1
+            && c.plotMatrix().axesShow().equals(Configuration.PlotMatrix.Show.BORDER)) {
           // draw common x-axis
-          drawXAxis(g, l.commonXAxis(px), plot.xName(), axesGrid.get(px, 0));
+          drawXAxis(g, l.commonXAxis(px), plot.xName(), xAxesGrid.get(px, 0));
         }
         if (py == 0 && c.plotMatrix().titlesShow().equals(Configuration.PlotMatrix.Show.BORDER)) {
           // draw common col title
@@ -590,10 +460,19 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         }
         // draw axes
         if (c.plotMatrix().axesShow().equals(Configuration.PlotMatrix.Show.ALL)) {
-          drawXAxis(g, l.xAxis(px, py), plot.xName(), axesGrid.get(px, py));
-          drawYAxis(g, l.yAxis(px, py), plot.yName(), axesGrid.get(px, py));
+          drawXAxis(g, l.xAxis(px, py), plot.xName(), xAxesGrid.get(px, py));
+          drawYAxis(g, l.yAxis(px, py), plot.yName(), yAxesGrid.get(px, py));
         }
-        // draw plot in grid
+        // draw notes
+        drawString(
+            g,
+            center(l.note(px, py)),
+            plot.dataGrid().get(px, py).note(),
+            AnchorH.C,
+            AnchorV.C,
+            Configuration.Text.Use.NOTE,
+            Configuration.Text.Direction.H,
+            c.colors().noteColor());
         // draw background
         g.setColor(c.colors().plotBgColor());
         g.fill(l.innerPlot(px, py));
@@ -601,13 +480,15 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         g.setStroke(new BasicStroke((float) (c.general().gridStrokeSizeRate() * refL)));
         g.setColor(c.colors().plotBorderColor());
         g.draw(l.innerPlot(px, py));
+        // draw plot
         g.setClip(l.innerPlot(px, py));
         plotDrawer.drawPlot(
             this,
             g,
             l.innerPlot(px, py),
             plot.dataGrid().get(px, py).data(),
-            axesGrid.get(px, py),
+            xAxesGrid.get(px, py),
+            yAxesGrid.get(px, py),
             plot);
         g.setClip(new Rectangle2D.Double(0, 0, w, h));
       }
@@ -617,7 +498,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     return img;
   }
 
-  private DoubleRange plotRange(
+  protected DoubleRange plotRange(
       boolean isXAxis,
       DoubleRange originalRange,
       DoubleRange colLargestRange,
