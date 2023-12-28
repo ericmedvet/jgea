@@ -23,8 +23,10 @@ import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.cabea.GridPopulationState;
+import io.github.ericmedvet.jgea.core.solver.mapelites.MEPopulationState;
 import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.Utils;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.RangedGrid;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator.AggregatedXYDataSeriesMRPAF;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator.UnivariateGridSEPAF;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator.XYDataSeriesSEPAF;
@@ -32,6 +34,7 @@ import io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator.XYDataSe
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+import io.github.ericmedvet.jsdynsym.grid.Grid;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +48,58 @@ public class Plots {
   public enum Sorting {
     MIN,
     MAX
+  }
+
+  @SuppressWarnings("unused")
+  public static <G, S, Q, X>
+      XYDataSeriesSEPAF<
+              POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>>,
+              Run<?, G, S, List<Double>>,
+              X,
+              Individual<G, S, List<Double>>>
+          biObjectivePopulation(
+              @Param(
+                      value = "titleRunKey",
+                      dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
+                  Map.Entry<String, String> titleRunKey,
+              @Param(value = "predicateValue", dNPM = "ea.nf.iterations()")
+                  NamedFunction<
+                          POCPopulationState<
+                              Individual<G, S, List<Double>>, G, S, List<Double>>,
+                          X>
+                      predicateValueFunction,
+              @Param(value = "condition", dNPM = "ea.predicate.always()") Predicate<X> condition,
+              @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
+              @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange,
+              @Param(value = "unique", dB = true) boolean unique) {
+    NamedFunction<
+            POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>>,
+            Collection<Individual<G, S, List<Double>>>>
+        firsts = io.github.ericmedvet.jgea.core.listener.NamedFunctions.firsts();
+    NamedFunction<
+            POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>>,
+            Collection<Individual<G, S, List<Double>>>>
+        lasts = io.github.ericmedvet.jgea.core.listener.NamedFunctions.lasts();
+    NamedFunction<
+            POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>>,
+            Collection<Individual<G, S, List<Double>>>>
+        mids = io.github.ericmedvet.jgea.core.listener.NamedFunctions.mids();
+    NamedFunction<Individual<G, S, List<Double>>, List<Double>> qF =
+        io.github.ericmedvet.jgea.core.listener.NamedFunctions.quality();
+    NamedFunction<Individual<G, S, List<Double>>, ? extends Number> xF =
+        qF.then(io.github.ericmedvet.jgea.core.listener.NamedFunctions.nth(0));
+    NamedFunction<Individual<G, S, List<Double>>, ? extends Number> yF =
+        qF.then(io.github.ericmedvet.jgea.core.listener.NamedFunctions.nth(1));
+    return new XYDataSeriesSEPAF<>(
+        buildRunNamedFunction(titleRunKey),
+        predicateValueFunction,
+        condition,
+        unique,
+        List.of(firsts, mids, lasts),
+        xF,
+        yF,
+        xRange,
+        yRange);
   }
 
   private static <G, S, Q> NamedFunction<Run<?, G, S, Q>, String> buildRunNamedFunction(
@@ -170,59 +225,57 @@ public class Plots {
         unique,
         GridPopulationState::gridPopulation,
         individualFunctions,
-        valueRange);
+        valueRange
+    );
   }
 
-  @SuppressWarnings("unused")
   public static <G, S, Q, X>
-      XYDataSeriesSEPAF<
-              POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>>,
-              Run<?, G, S, List<Double>>,
-              X,
-              Individual<G, S, List<Double>>>
-          biObjectivePopulation(
+      UnivariateGridSEPAF<MEPopulationState<G, S, Q>, Run<?, G, S, Q>, X, Individual<G, S, Q>>
+          mapElitesPopulation(
               @Param(
                       value = "titleRunKey",
                       dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
                   Map.Entry<String, String> titleRunKey,
+              @Param(
+                      value = "individualFunctions",
+                      dNPMs = {"ea.nf.fitness()"})
+                  List<NamedFunction<? super Individual<G, S, Q>, ? extends Number>>
+                      individualFunctions,
               @Param(value = "predicateValue", dNPM = "ea.nf.iterations()")
-                  NamedFunction<
-                          POCPopulationState<
-                              Individual<G, S, List<Double>>, G, S, List<Double>>,
-                          X>
-                      predicateValueFunction,
+                  NamedFunction<MEPopulationState<G, S, Q>, X> predicateValueFunction,
               @Param(value = "condition", dNPM = "ea.predicate.always()") Predicate<X> condition,
-              @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
-              @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange,
+              @Param(value = "valueRange", dNPM = "ds.range(min=-Infinity;max=Infinity)")
+                  DoubleRange valueRange,
               @Param(value = "unique", dB = true) boolean unique) {
-    NamedFunction<
-            POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>>,
-            Collection<Individual<G, S, List<Double>>>>
-        firsts = io.github.ericmedvet.jgea.core.listener.NamedFunctions.firsts();
-    NamedFunction<
-            POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>>,
-            Collection<Individual<G, S, List<Double>>>>
-        lasts = io.github.ericmedvet.jgea.core.listener.NamedFunctions.lasts();
-    NamedFunction<
-            POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>>,
-            Collection<Individual<G, S, List<Double>>>>
-        mids = io.github.ericmedvet.jgea.core.listener.NamedFunctions.mids();
-    NamedFunction<Individual<G, S, List<Double>>, List<Double>> qF =
-        io.github.ericmedvet.jgea.core.listener.NamedFunctions.quality();
-    NamedFunction<Individual<G, S, List<Double>>, ? extends Number> xF =
-        qF.then(io.github.ericmedvet.jgea.core.listener.NamedFunctions.nth(0));
-    NamedFunction<Individual<G, S, List<Double>>, ? extends Number> yF =
-        qF.then(io.github.ericmedvet.jgea.core.listener.NamedFunctions.nth(1));
-    return new XYDataSeriesSEPAF<>(
+    return new UnivariateGridSEPAF<>(
         buildRunNamedFunction(titleRunKey),
         predicateValueFunction,
         condition,
         unique,
-        List.of(firsts, mids, lasts),
-        xF,
-        yF,
-        xRange,
-        yRange);
+        s -> {
+          int w = s.descriptors().get(0).nOfBins();
+          int h = s.descriptors().get(1).nOfBins();
+          Grid<Individual<G, S, Q>> individualsGrid =
+              Grid.create(w, h, (x, y) -> s.mapOfElites().keySet().stream()
+                  .filter(k -> List.of(x, y).equals(k.subList(0, 2)))
+                  .map(k -> s.mapOfElites().get(k))
+                  .findFirst()
+                  .orElse(null));
+          return RangedGrid.from(
+              individualsGrid,
+              new DoubleRange(
+                  s.descriptors().get(0).min(),
+                  s.descriptors().get(0).max()),
+              new DoubleRange(
+                  s.descriptors().get(1).min(),
+                  s.descriptors().get(1).max()),
+              s.descriptors().get(0).function() instanceof NamedFunction<Individual<G,S,Q>, Double> nf?nf.getName():"x",
+              s.descriptors().get(1).function() instanceof NamedFunction<Individual<G,S,Q>, Double> nf?nf.getName():"y"
+          );
+        },
+        individualFunctions,
+        valueRange
+    );
   }
 
   @SuppressWarnings("unused")

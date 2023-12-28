@@ -21,10 +21,12 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator;
 
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.util.Table;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.RangedGrid;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.UnivariateGridPlot;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlot;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -42,7 +44,8 @@ public class UnivariateGridSEPAF<E, R, X, G> extends AbstractSingleEPAF<E, Univa
       boolean unique,
       NamedFunction<? super E, Grid<G>> gridFunction,
       List<NamedFunction<? super G, ? extends Number>> gridValueFunctions,
-      DoubleRange valueRange) {
+      DoubleRange valueRange
+  ) {
     super(titleFunction, predicateValueFunction, predicate, unique);
     this.gridFunction = gridFunction;
     this.gridValueFunctions = gridValueFunctions;
@@ -65,8 +68,8 @@ public class UnivariateGridSEPAF<E, R, X, G> extends AbstractSingleEPAF<E, Univa
         titleFunction.apply(r),
         predicateValueFunction.getName(),
         "value",
-        "x",
-        "y",
+        data.get(0,0) instanceof RangedGrid<?> rg?rg.xName():"x",
+        data.get(0,0) instanceof RangedGrid<?> rg?rg.yName():"y",
         DoubleRange.UNBOUNDED,
         DoubleRange.UNBOUNDED,
         valueRange,

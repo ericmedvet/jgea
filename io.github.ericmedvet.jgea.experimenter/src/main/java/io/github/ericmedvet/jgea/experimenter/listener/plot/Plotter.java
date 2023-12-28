@@ -153,7 +153,10 @@ public interface Plotter<O> {
                             ? null
                             : (x + y + 1d + rg.nextGaussian())),
                     new DoubleRange(-10, 10),
-                    new DoubleRange(25, 100)))));
+                    new DoubleRange(25, 100),
+                    "xg",
+                    "yg"
+                ))));
     ImagePlotter.showImage(ip.univariateGrid(sgp));
     ImagePlotter.showImage(ip.univariateGrid(sgp2));
   }

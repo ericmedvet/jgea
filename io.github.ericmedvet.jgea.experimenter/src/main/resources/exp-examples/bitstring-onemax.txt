@@ -1,9 +1,9 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
-    (solver = (nEval = [10000]) * [
+    (solver = (nEval = [20000]) * [
       ea.s.bitStringMapElites(descriptors = [
-        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 2; k = 0; list = ea.nf.bitStringAsNumbers())));
-        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 2; k = 1; list = ea.nf.bitStringAsNumbers())))
+        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 3; k = 0; list = ea.nf.bitStringAsNumbers())));
+        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 3; k = 1; list = ea.nf.bitStringAsNumbers())))
       ]);
       ea.s.bitStringGa()
     ]) * (problem = (p = [100]) * [ea.p.s.oneMax()]) * [ea.run()];

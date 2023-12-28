@@ -22,6 +22,8 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 
+import java.util.function.BiFunction;
+
 /**
  * @author "Eric Medvet" on 2023/12/27 for jgea
  */
@@ -30,19 +32,25 @@ public interface RangedGrid<T> extends Grid<T> {
 
   DoubleRange yRange();
 
+  String xName();
+
+  String yName();
+
   default DoubleRange xRange(int x) {
     return new DoubleRange(
         xRange().denormalize(new DoubleRange(0, w()).normalize(x)),
-        xRange().denormalize(new DoubleRange(0, w()).normalize(x + 1)));
+        xRange().denormalize(new DoubleRange(0, w()).normalize(x + 1))
+    );
   }
 
   default DoubleRange yRange(int y) {
     return new DoubleRange(
         yRange().denormalize(new DoubleRange(0, h()).normalize(y)),
-        yRange().denormalize(new DoubleRange(0, h()).normalize(y + 1)));
+        yRange().denormalize(new DoubleRange(0, h()).normalize(y + 1))
+    );
   }
 
-  static <T> RangedGrid<T> from(Grid<T> grid, DoubleRange xRange, DoubleRange yRange) {
+  static <T> RangedGrid<T> from(Grid<T> grid, DoubleRange xRange, DoubleRange yRange, String xName, String yName) {
     return new RangedGrid<T>() {
       @Override
       public DoubleRange xRange() {
@@ -52,6 +60,16 @@ public interface RangedGrid<T> extends Grid<T> {
       @Override
       public DoubleRange yRange() {
         return yRange;
+      }
+
+      @Override
+      public String xName() {
+        return xName;
+      }
+
+      @Override
+      public String yName() {
+        return yName;
       }
 
       @Override
@@ -75,4 +93,10 @@ public interface RangedGrid<T> extends Grid<T> {
       }
     };
   }
+
+  @Override
+  default <S> Grid<S> map(BiFunction<Key, T, S> function) {
+    return RangedGrid.from(Grid.super.map(function), xRange(), yRange(), xName(), yName());
+  }
+
 }

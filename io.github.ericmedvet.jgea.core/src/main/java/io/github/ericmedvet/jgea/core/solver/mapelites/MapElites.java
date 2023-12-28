@@ -42,6 +42,7 @@ import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class MapElites<G, S, Q>
     extends AbstractPopulationBasedIterativeSolver<
@@ -188,17 +189,23 @@ public class MapElites<G, S, Q>
       ExecutorService executor,
       MEPopulationState<G, S, Q> state)
       throws SolverException {
+    Collection<Individual<G, S, Q>> parents = ((State<G, S, Q>) state).mapOfElites.values();
     // build new genotypes
     List<G> offspringGenotypes = IntStream.range(0, populationSize)
         .mapToObj(j -> mutation.mutate(
-            Misc.pickRandomly(state.pocPopulation().all(), random).genotype(), random))
+            Misc.pickRandomly(parents, random).genotype(), random))
         .toList();
     return State.from(
         (State<G, S, Q>) state,
         progress(state),
         populationSize,
         populationSize,
-        mapOfElites(map(offspringGenotypes, List.of(), state, problem, executor), partialComparator(problem)),
+        mapOfElites(
+            Stream.of(
+                map(offspringGenotypes, List.of(), state, problem, executor),
+                parents
+            ).flatMap(Collection::stream).toList(),
+            partialComparator(problem)),
         partialComparator(problem));
   }
 }

@@ -3,6 +3,10 @@ ea.experiment(
     (solver = (nEval = [25000]) * [
       ea.s.intStringGa(name = "ga"; maxUniquenessAttempts = 0);
       ea.s.intStringNsga2(name = "nsga2"; maxUniquenessAttempts = 0);
+      ea.s.intStringMapElites(name = "me-3"; descriptors = [
+        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 3; k = 0; list = ea.nf.intStringAsNumbers())));
+        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 3; k = 1; list = ea.nf.intStringAsNumbers())))
+      ]);
       ea.s.intStringCabea(name = "cabea-e"; keepProbability = 0; substrate = empty);
       ea.s.intStringCabea(name = "cabea-cc"; keepProbability = 0; substrate = contour_cross)
     ]) * (problem = [
@@ -100,6 +104,28 @@ ea.experiment(
         yRange = ds.range(min = 0; max = 1)
       );
       condition = ea.predicate.all(conditions = [
+        ea.predicate.inS(
+          f = ea.nf.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
+          values = ["1"]
+        )
+      ])
+    );
+    ea.l.runPlotSaver(
+      w = 1000; h = 300;
+      filePathTemplate = "../me-{solver.name}-{problem:%#s}-{randomGenerator.seed}.png";
+      type = univariate_grid;
+      plot = ea.plot.mapElitesPopulation(
+        titleRunKey = ea.misc.sEntry(key = "run"; value = "Map of Elites on {problem:%#s} seed={randomGenerator.seed}");
+        predicateValue = ea.nf.quantized(f = ea.nf.evals(); r = 1000; s = "%.0f");
+        condition = ea.predicate.inD(
+          values = [0; 5000; 10000; 15000; 20000; 25000]
+        )
+      );
+      condition = ea.predicate.all(conditions = [
+        ea.predicate.matches(
+          f = ea.nf.runKey(runKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}"));
+          regex = "me.*"
+        );
         ea.predicate.inS(
           f = ea.nf.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
           values = ["1"]
