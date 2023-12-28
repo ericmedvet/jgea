@@ -1,7 +1,7 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) * [
     ea.run(
-      solver = ea.s.intStringGa(nEval = 10000);
+      solver = ea.s.ga(representation = ea.r.intString(); nEval = 10000);
       problem = ea.p.s.intOneMax()
     )
   ];

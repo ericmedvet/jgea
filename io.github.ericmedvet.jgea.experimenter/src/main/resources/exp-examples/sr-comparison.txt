@@ -1,21 +1,25 @@
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
+  runs = (randomGenerator = (seed = [1:1:5]) * [ea.rg.defaultRG()]) *
     (problem = [
       ea.p.ur.synthetic(name = "keijzer6");
       ea.p.ur.synthetic(name = "nguyen7");
       ea.p.ur.bundled(name = "concrete")
     ]) *
-    (solver = (nEval = [2000]) * [
+    (solver = (nEval = [1000]) * [
       ea.s.oGraphea(
         mapper = ea.m.compose(
           first = ea.m.oGraphToMrf();
           second = ea.m.mrfToUrf()
         )
       );
-      ea.s.srTreeGp(
+      ea.s.ga(
+        name = "gp";
+        representation = ea.r.srTree();
         mapper = ea.m.srTreeToUrf()
       );
-      ea.s.doubleStringGa(
+      ea.s.ga(
+        name = "ga+mlp";
+        representation = ea.r.doubleString();
         mapper = ea.m.compose(
           first = ea.m.mlpToMrf(activationFunction = relu);
           second = ea.m.mrfToUrf()
@@ -34,10 +38,20 @@ ea.experiment(
         ea.nf.solution(individual = ea.nf.best(); s = "%60.60s")
       ];
       runKeys = [
-        ea.misc.sEntry(key = "problem.name"; value = "{problem:%#s}");
-        ea.misc.sEntry(key = "solver"; value = "{solver:%#s}");
+        ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
+        ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
       ]
+    );
+    ea.l.expPlotSaver(
+      filePath = "../plot-sr.png";
+      freeScales = true;
+      w = 600; h = 1000;
+      type = lines;
+      plot = ea.plot.fitnessPlotMatrix(
+        xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 50; s = "%.0f");
+        ySubplotRunKey = ea.misc.sEntry(key = name; value = "{problem.name}")
+      )
     )
   ]
 )

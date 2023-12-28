@@ -8,7 +8,7 @@ ea.experiment(
       ea.p.s.sphere(p = 20)
     ]) *
     (solver = (nEval = [5000]) * [
-      ea.s.doubleStringGa();
+      ea.s.ga(representation = ea.r.doubleString());
       ea.s.simpleEs();
       ea.s.openAiEs();
       ea.s.pso();
@@ -26,7 +26,7 @@ ea.experiment(
       runKeys = [
         ea.misc.sEntry(key = "problem.name"; value = "{problem:%#s}");
         ea.misc.sEntry(key = "problem.p"; value = "{problem.p}");
-        ea.misc.sEntry(key = "solver"; value = "{solver:%#s}");
+        ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
       ]
     )

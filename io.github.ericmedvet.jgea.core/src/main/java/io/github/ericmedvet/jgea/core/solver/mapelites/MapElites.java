@@ -192,8 +192,8 @@ public class MapElites<G, S, Q>
     Collection<Individual<G, S, Q>> parents = ((State<G, S, Q>) state).mapOfElites.values();
     // build new genotypes
     List<G> offspringGenotypes = IntStream.range(0, populationSize)
-        .mapToObj(j -> mutation.mutate(
-            Misc.pickRandomly(parents, random).genotype(), random))
+        .mapToObj(
+            j -> mutation.mutate(Misc.pickRandomly(parents, random).genotype(), random))
         .toList();
     return State.from(
         (State<G, S, Q>) state,
@@ -201,10 +201,9 @@ public class MapElites<G, S, Q>
         populationSize,
         populationSize,
         mapOfElites(
-            Stream.of(
-                map(offspringGenotypes, List.of(), state, problem, executor),
-                parents
-            ).flatMap(Collection::stream).toList(),
+            Stream.of(map(offspringGenotypes, List.of(), state, problem, executor), parents)
+                .flatMap(Collection::stream)
+                .toList(),
             partialComparator(problem)),
         partialComparator(problem));
   }

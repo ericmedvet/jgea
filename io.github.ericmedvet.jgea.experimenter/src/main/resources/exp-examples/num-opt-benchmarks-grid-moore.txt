@@ -8,14 +8,15 @@ ea.experiment(
       ea.p.s.rastrigin(p = 20);
       ea.p.s.sphere(p = 20)
     ]) *
-    (solver = (nEval = [10000]) * [
-      ea.s.doubleStringCabea(gridSize = 10; mooreRadius = 1);
-      ea.s.doubleStringCabea(gridSize = 8; mooreRadius = 1);
-      ea.s.doubleStringCabea(gridSize = 6; mooreRadius = 1);
-      ea.s.doubleStringCabea(gridSize = 4; mooreRadius = 1);
-      ea.s.doubleStringCabea(gridSize = 10; mooreRadius = 2);
-      ea.s.doubleStringCabea(gridSize = 10; mooreRadius = 3);
-      ea.s.doubleStringCabea(gridSize = 10; mooreRadius = 4)
+    (solver = (nEval = [10000]) *
+    (representation = [ea.r.doubleString()]) * [
+      ea.s.cabea(gridSize = 10; mooreRadius = 1);
+      ea.s.cabea(gridSize = 8; mooreRadius = 1);
+      ea.s.cabea(gridSize = 6; mooreRadius = 1);
+      ea.s.cabea(gridSize = 4; mooreRadius = 1);
+      ea.s.cabea(gridSize = 10; mooreRadius = 2);
+      ea.s.cabea(gridSize = 10; mooreRadius = 3);
+      ea.s.cabea(gridSize = 10; mooreRadius = 4)
     ]) * [
     ea.run()
   ];

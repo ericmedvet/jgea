@@ -5,7 +5,7 @@ ea.experiment(
       ea.p.s.sphere()
     ]) *
     (solver = (nEval = [2500]) * [
-      ea.s.doubleStringGa();
+      ea.s.ga(representation = ea.r.doubleString());
       ea.s.simpleEs();
       ea.s.pso();
       ea.s.differentialEvolution()
@@ -22,13 +22,14 @@ ea.experiment(
       runKeys = [
         ea.misc.sEntry(key = "problem.name"; value = "{problem:%#s}");
         ea.misc.sEntry(key = "problem.p"; value = "{problem.p}");
-        ea.misc.sEntry(key = "solver"; value = "{solver:%#s}");
+        ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
       ]
     );
     ea.l.expPlotSaver(
       filePath = "../plot-num-opt.png";
       freeScales = true;
+      type = lines;
       plot = ea.plot.fitnessPlotMatrix(
         xSubplotRunKey = ea.misc.sEntry(key = p; value = "{problem.p}");
         ySubplotRunKey = ea.misc.sEntry(key = problem; value = "{problem:%#s}")

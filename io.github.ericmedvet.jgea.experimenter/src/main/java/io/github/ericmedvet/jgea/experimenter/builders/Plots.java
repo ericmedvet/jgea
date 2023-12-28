@@ -174,7 +174,7 @@ public class Plots {
               Map.Entry<String, String> xSubplotRunKey,
           @Param(value = "ySubplotRunKey", dNPM = "ea.misc.sEntry(key=problem;value=\"{problem:%#s}\")")
               Map.Entry<String, String> ySubplotRunKey,
-          @Param(value = "lineRunKey", dNPM = "ea.misc.sEntry(key=solver;value=\"{solver:%#s}\")")
+          @Param(value = "lineRunKey", dNPM = "ea.misc.sEntry(key=solver;value=\"{solver.name}\")")
               Map.Entry<String, String> lineRunKey,
           @Param(value = "xFunction", dNPM = "ea.nf.evals()")
               NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
@@ -225,8 +225,7 @@ public class Plots {
         unique,
         GridPopulationState::gridPopulation,
         individualFunctions,
-        valueRange
-    );
+        valueRange);
   }
 
   public static <G, S, Q, X>
@@ -269,13 +268,15 @@ public class Plots {
               new DoubleRange(
                   s.descriptors().get(1).min(),
                   s.descriptors().get(1).max()),
-              s.descriptors().get(0).function() instanceof NamedFunction<Individual<G,S,Q>, Double> nf?nf.getName():"x",
-              s.descriptors().get(1).function() instanceof NamedFunction<Individual<G,S,Q>, Double> nf?nf.getName():"y"
-          );
+              s.descriptors().get(0).function() instanceof NamedFunction<Individual<G, S, Q>, Double> nf
+                  ? nf.getName()
+                  : "x",
+              s.descriptors().get(1).function() instanceof NamedFunction<Individual<G, S, Q>, Double> nf
+                  ? nf.getName()
+                  : "y");
         },
         individualFunctions,
-        valueRange
-    );
+        valueRange);
   }
 
   @SuppressWarnings("unused")
@@ -317,7 +318,7 @@ public class Plots {
               Map.Entry<String, String> xSubplotRunKey,
           @Param(value = "ySubplotRunKey", dNPM = "ea.misc.sEntry(key=problem;value=\"{problem}\")")
               Map.Entry<String, String> ySubplotRunKey,
-          @Param(value = "lineRunKey", dNPM = "ea.misc.sEntry(key=solver;value=\"{solver:%#s}\")")
+          @Param(value = "lineRunKey", dNPM = "ea.misc.sEntry(key=solver;value=\"{solver.name}\")")
               Map.Entry<String, String> lineRunKey,
           @Param("xFunction")
               NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,

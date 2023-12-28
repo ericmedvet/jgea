@@ -1,14 +1,16 @@
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
-    (solver = (nEval = [25000]) * [
-      ea.s.intStringGa(name = "ga"; maxUniquenessAttempts = 0);
-      ea.s.intStringNsga2(name = "nsga2"; maxUniquenessAttempts = 0);
-      ea.s.intStringMapElites(name = "me-3"; descriptors = [
+  runs =
+    (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
+    (solver = (nEval = [25000]) *
+    (representation = [ea.r.intString()]) * [
+      ea.s.ga(maxUniquenessAttempts = 0);
+      ea.s.nsga2(maxUniquenessAttempts = 0);
+      ea.s.mapElites(name = "me-3"; descriptors = [
         ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 3; k = 0; list = ea.nf.intStringAsNumbers())));
         ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 3; k = 1; list = ea.nf.intStringAsNumbers())))
       ]);
-      ea.s.intStringCabea(name = "cabea-e"; keepProbability = 0; substrate = empty);
-      ea.s.intStringCabea(name = "cabea-cc"; keepProbability = 0; substrate = contour_cross)
+      ea.s.cabea(name = "cabea-e"; keepProbability = 0; substrate = empty);
+      ea.s.cabea(name = "cabea-cc"; keepProbability = 0; substrate = contour_cross)
     ]) * (problem = [
       ea.p.s.multiObjectiveIntOneMax()
     ]) * [

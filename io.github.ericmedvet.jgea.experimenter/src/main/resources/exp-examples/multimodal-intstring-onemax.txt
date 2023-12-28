@@ -1,11 +1,13 @@
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
-    (solver = (nEval = [25000]) * [
-      ea.s.intStringGa(name = "ga"; maxUniquenessAttempts = 0);
-      ea.s.intStringCabea(name = "cabea-e-11"; keepProbability = 0; substrate = empty; gridSize = 11);
-      ea.s.intStringCabea(name = "cabea-cc-11"; keepProbability = 0; substrate = contour_cross; gridSize = 11);
-      ea.s.intStringCabea(name = "cabea-e-21"; keepProbability = 0; substrate = empty; gridSize = 21);
-      ea.s.intStringCabea(name = "cabea-cc-21"; keepProbability = 0; substrate = contour_cross; gridSize = 21)
+  runs =
+    (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
+    (solver = (nEval = [25000]) *
+    (representation = [ea.r.intString()]) * [
+      ea.s.ga(maxUniquenessAttempts = 0);
+      ea.s.cabea(name = "cabea-e-11"; keepProbability = 0; substrate = empty; gridSize = 11);
+      ea.s.cabea(name = "cabea-cc-11"; keepProbability = 0; substrate = contour_cross; gridSize = 11);
+      ea.s.cabea(name = "cabea-e-21"; keepProbability = 0; substrate = empty; gridSize = 21);
+      ea.s.cabea(name = "cabea-cc-21"; keepProbability = 0; substrate = contour_cross; gridSize = 21)
     ]) * [
     ea.run(problem = ea.p.s.multiModalIntOneMax(nOfTargets = 3))
   ];

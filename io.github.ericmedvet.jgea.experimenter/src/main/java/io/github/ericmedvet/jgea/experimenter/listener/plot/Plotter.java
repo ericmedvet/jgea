@@ -155,8 +155,7 @@ public interface Plotter<O> {
                     new DoubleRange(-10, 10),
                     new DoubleRange(25, 100),
                     "xg",
-                    "yg"
-                ))));
+                    "yg"))));
     ImagePlotter.showImage(ip.univariateGrid(sgp));
     ImagePlotter.showImage(ip.univariateGrid(sgp2));
   }

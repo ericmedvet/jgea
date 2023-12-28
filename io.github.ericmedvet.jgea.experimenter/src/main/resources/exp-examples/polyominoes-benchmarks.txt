@@ -7,12 +7,13 @@ ea.experiment(
       ea.p.s.charShapeApproximation(target = alternated);
       ea.p.s.charShapeApproximation(target = dog)
     ]) *
-    (solver = (nEval = [10000]) * [
-      ea.s.bitStringGa(mapper = ea.m.bitStringToGrammarGrid(grammar = ea.grammar.gridBundled(name = monodirectional)));
-      ea.s.bitStringGa(mapper = ea.m.bitStringToGrammarGrid(grammar = ea.grammar.gridBundled(name = bidirectional)));
-      ea.s.bitStringGa(mapper = ea.m.bitStringToGrammarGrid(grammar = ea.grammar.gridBundled(name = worm)));
-      ea.s.bitStringGa(mapper = ea.m.bitStringToGrammarGrid(grammar = ea.grammar.gridBundled(name = alternated)));
-      ea.s.bitStringGa(mapper = ea.m.bitStringToGrammarGrid(grammar = ea.grammar.gridBundled(name = "dog-shape")))
+    (solver = (nEval = [10000]) *
+    (representation = [ea.r.bitString()]) * [
+      ea.s.ga(mapper = ea.m.bitStringToGrammarGrid(grammar = ea.grammar.gridBundled(name = monodirectional)));
+      ea.s.ga(mapper = ea.m.bitStringToGrammarGrid(grammar = ea.grammar.gridBundled(name = bidirectional)));
+      ea.s.ga(mapper = ea.m.bitStringToGrammarGrid(grammar = ea.grammar.gridBundled(name = worm)));
+      ea.s.ga(mapper = ea.m.bitStringToGrammarGrid(grammar = ea.grammar.gridBundled(name = alternated)));
+      ea.s.ga(mapper = ea.m.bitStringToGrammarGrid(grammar = ea.grammar.gridBundled(name = "dog-shape")))
     ]) * [
     ea.run()
   ];

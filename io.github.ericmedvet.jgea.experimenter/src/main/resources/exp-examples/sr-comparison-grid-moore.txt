@@ -8,14 +8,15 @@ ea.experiment(
       ea.p.ur.synthetic(name = "nguyen7");
       ea.p.ur.bundled(name = "concrete")
     ]) *
-    (solver = (nEval = [10000]) * [
-      ea.s.srTreeCabea(mapper = ea.m.srTreeToUrf(); gridSize = 10; mooreRadius = 1);
-      ea.s.srTreeCabea(mapper = ea.m.srTreeToUrf(); gridSize = 8; mooreRadius = 1);
-      ea.s.srTreeCabea(mapper = ea.m.srTreeToUrf(); gridSize = 6; mooreRadius = 1);
-      ea.s.srTreeCabea(mapper = ea.m.srTreeToUrf(); gridSize = 4; mooreRadius = 1);
-      ea.s.srTreeCabea(mapper = ea.m.srTreeToUrf(); gridSize = 10; mooreRadius = 2);
-      ea.s.srTreeCabea(mapper = ea.m.srTreeToUrf(); gridSize = 10; mooreRadius = 3);
-      ea.s.srTreeCabea(mapper = ea.m.srTreeToUrf(); gridSize = 10; mooreRadius = 4)
+    (solver = (nEval = [10000]) *
+    (representation = [ea.r.srTree()]) * [
+      ea.s.cabea(mapper = ea.m.srTreeToUrf(); gridSize = 10; mooreRadius = 1);
+      ea.s.cabea(mapper = ea.m.srTreeToUrf(); gridSize = 8; mooreRadius = 1);
+      ea.s.cabea(mapper = ea.m.srTreeToUrf(); gridSize = 6; mooreRadius = 1);
+      ea.s.cabea(mapper = ea.m.srTreeToUrf(); gridSize = 4; mooreRadius = 1);
+      ea.s.cabea(mapper = ea.m.srTreeToUrf(); gridSize = 10; mooreRadius = 2);
+      ea.s.cabea(mapper = ea.m.srTreeToUrf(); gridSize = 10; mooreRadius = 3);
+      ea.s.cabea(mapper = ea.m.srTreeToUrf(); gridSize = 10; mooreRadius = 4)
     ]) * [
     ea.run()
   ];
@@ -29,8 +30,7 @@ ea.experiment(
         ea.nf.solution(individual = ea.nf.best(); s = "%60.60s")
       ];
       runKeys = [
-        ea.misc.sEntry(key = "problem.name"; value = "{problem:%#s}");
-        ea.misc.sEntry(key = "problem.p"; value = "{problem.p}");
+        ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
         ea.misc.sEntry(key = "solver.gridSize"; value = "{solver.gridSize}");
         ea.misc.sEntry(key = "solver.mooreRadius"; value = "{solver.mooreRadius}");
         ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")

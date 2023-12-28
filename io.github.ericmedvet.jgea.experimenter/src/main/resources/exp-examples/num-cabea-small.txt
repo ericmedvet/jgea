@@ -3,10 +3,11 @@ ea.experiment(
     (problem = [
       ea.p.s.ackley(p = 25)
     ]) *
-    (solver = (nEval = [5000]) * [
-      ea.s.doubleStringCabea(gridSize = 11; substrate = empty);
-      ea.s.doubleStringCabea(gridSize = 11; substrate = cross);
-      ea.s.doubleStringCabea(gridSize = 11; substrate = contour_cross)
+    (solver = (nEval = [5000]) *
+    (representation = [ea.r.doubleString()]) * [
+      ea.s.cabea(name = "cabea-e"; gridSize = 11; substrate = empty);
+      ea.s.cabea(name = "cabea-c"; gridSize = 11; substrate = cross);
+      ea.s.cabea(name = "cabea-cc"; gridSize = 11; substrate = contour_cross)
     ]) * [
     ea.run()
   ];
@@ -20,11 +21,6 @@ ea.experiment(
       runKeys = [
         ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
       ]
-    );
-    ea.l.runPlotSaver(
-      w = 1000; h = 200;
-      filePathTemplate = "../plot-cabea-{solver.substrate}.png";
-      plot = ea.plot.gridPopulation(iterations = [0; 1; 5; 10; 25; 50])
     )
   ]
 )

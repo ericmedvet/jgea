@@ -20,10 +20,7 @@
 
 package io.github.ericmedvet.jgea.experimenter.builders;
 
-import io.github.ericmedvet.jgea.core.Factory;
-import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jgea.core.distance.Jaccard;
-import io.github.ericmedvet.jgea.core.operator.Crossover;
 import io.github.ericmedvet.jgea.core.operator.GeneticOperator;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.representation.graph.*;
@@ -34,20 +31,6 @@ import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph.OperatorGraph;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph.OperatorNode;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.operatorgraph.ShallowFactory;
-import io.github.ericmedvet.jgea.core.representation.sequence.FixedLengthListFactory;
-import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
-import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringFactory;
-import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringFlipMutation;
-import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringUniformCrossover;
-import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
-import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntStringFlipMutation;
-import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntStringUniformCrossover;
-import io.github.ericmedvet.jgea.core.representation.sequence.integer.UniformIntStringFactory;
-import io.github.ericmedvet.jgea.core.representation.sequence.numeric.GaussianMutation;
-import io.github.ericmedvet.jgea.core.representation.sequence.numeric.HypercubeGeometricCrossover;
-import io.github.ericmedvet.jgea.core.representation.sequence.numeric.UniformDoubleFactory;
-import io.github.ericmedvet.jgea.core.representation.tree.*;
-import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import io.github.ericmedvet.jgea.core.selector.Last;
 import io.github.ericmedvet.jgea.core.selector.Tournament;
 import io.github.ericmedvet.jgea.core.solver.*;
@@ -57,6 +40,7 @@ import io.github.ericmedvet.jgea.core.solver.mapelites.MapElites;
 import io.github.ericmedvet.jgea.core.solver.speciation.LazySpeciator;
 import io.github.ericmedvet.jgea.core.solver.speciation.SpeciatedEvolver;
 import io.github.ericmedvet.jgea.experimenter.InvertibleMapper;
+import io.github.ericmedvet.jgea.experimenter.Representation;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
@@ -64,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.DoubleStream;
-import java.util.stream.IntStream;
 
 @Discoverable(prefixTemplate = "ea.solver|s")
 public class Solvers {
@@ -72,11 +55,10 @@ public class Solvers {
   private Solvers() {}
 
   @SuppressWarnings("unused")
-  public static <S, Q> Function<S, CellularAutomataBasedSolver<BitString, S, Q>> bitStringCabea(
-      @Param(value = "name", dS = "") String name,
-      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<BitString, S> mapper,
-      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
-      @Param(value = "pMut", dD = 0.01d) double pMut,
+  public static <G, S, Q> Function<S, CellularAutomataBasedSolver<G, S, Q>> cabea(
+      @Param(value = "name", dS = "cabea") String name,
+      @Param("representation") Function<G, Representation<G>> representation,
+      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<G, S> mapper,
       @Param(value = "keepProbability", dD = 0.01d) double keepProbability,
       @Param(value = "nTour", dI = 3) int nTour,
       @Param(value = "nEval", dI = 1000) int nEval,
@@ -85,200 +67,62 @@ public class Solvers {
       @Param(value = "gridSize", dI = 10) int gridSize,
       @Param(value = "substrate", dS = "empty") SubstrateFiller.Predefined substrate) {
     return exampleS -> {
-      BitString exampleGenotype = mapper.exampleFor(exampleS);
-      IndependentFactory<BitString> factory = new BitStringFactory(exampleGenotype.size());
-      Map<GeneticOperator<BitString>, Double> geneticOperators = Map.ofEntries(
-          Map.entry(new BitStringFlipMutation(pMut), 1d - crossoverP),
-          Map.entry(new BitStringUniformCrossover().andThen(new BitStringFlipMutation(pMut)), crossoverP));
+      Representation<G> r = representation.apply(mapper.exampleFor(exampleS));
       return new CellularAutomataBasedSolver<>(
           mapper.mapperFor(exampleS),
-          factory,
+          r.factory(),
           StopConditions.nOfFitnessEvaluations(nEval),
           substrate.apply(Grid.create(gridSize, gridSize, true)),
           new CellularAutomataBasedSolver.MooreNeighborhood(mooreRadius, toroidal),
           keepProbability,
-          geneticOperators,
+          r.geneticOperators(),
           new Tournament(nTour));
     };
   }
 
   @SuppressWarnings("unused")
-  public static <S, Q> Function<S, StandardEvolver<BitString, S, Q>> bitStringGa(
-      @Param(value = "name", dS = "") String name,
-      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<BitString, S> mapper,
-      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
-      @Param(value = "pMut", dD = 0.01d) double pMut,
-      @Param(value = "tournamentRate", dD = 0.05d) double tournamentRate,
-      @Param(value = "minNTournament", dI = 3) int minNTournament,
-      @Param(value = "nPop", dI = 100) int nPop,
-      @Param(value = "nEval", dI = 1000) int nEval,
-      @Param(value = "maxUniquenessAttempts", dI = 100) int maxUniquenessAttempts,
-      @Param(value = "remap") boolean remap) {
-    return exampleS -> {
-      BitString exampleGenotype = mapper.exampleFor(exampleS);
-      IndependentFactory<BitString> factory = new BitStringFactory(exampleGenotype.size());
-      Map<GeneticOperator<BitString>, Double> geneticOperators = Map.ofEntries(
-          Map.entry(new BitStringFlipMutation(pMut), 1d - crossoverP),
-          Map.entry(new BitStringUniformCrossover().andThen(new BitStringFlipMutation(pMut)), crossoverP));
-      return new StandardEvolver<>(
-          mapper.mapperFor(exampleS),
-          factory,
-          nPop,
-          StopConditions.nOfFitnessEvaluations(nEval),
-          geneticOperators,
-          new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
-          new Last(),
-          nPop,
-          true,
-          maxUniquenessAttempts,
-          remap);
-    };
-  }
-
-  @SuppressWarnings("unused")
-  public static <S, Q> Function<S, MapElites<BitString, S, Q>> bitStringMapElites(
-      @Param(value = "name", dS = "") String name,
-      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<BitString, S> mapper,
-      @Param(value = "pMut", dD = 0.01d) double pMut,
-      @Param(value = "nPop", dI = 100) int nPop,
-      @Param(value = "nEval", dI = 1000) int nEval,
-      @Param("descriptors") List<MapElites.Descriptor<BitString, S, Q>> descriptors) {
-    return exampleS -> {
-      BitString exampleGenotype = mapper.exampleFor(exampleS);
-      IndependentFactory<BitString> factory = new BitStringFactory(exampleGenotype.size());
-      return new MapElites<>(
-          mapper.mapperFor(exampleS),
-          factory,
-          StopConditions.nOfFitnessEvaluations(nEval),
-          new BitStringFlipMutation(pMut),
-          nPop,
-          descriptors);
-    };
-  }
-
-  @SuppressWarnings("unused")
-  public static <S> Function<S, NsgaII<BitString, S>> bitStringNsga2(
-      @Param(value = "name", dS = "") String name,
-      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<BitString, S> mapper,
-      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
-      @Param(value = "pMut", dD = 0.01d) double pMut,
-      @Param(value = "nPop", dI = 100) int nPop,
-      @Param(value = "nEval", dI = 1000) int nEval,
-      @Param(value = "maxUniquenessAttempts", dI = 100) int maxUniquenessAttempts,
-      @Param(value = "remap") boolean remap) {
-    return exampleS -> {
-      BitString exampleGenotype = mapper.exampleFor(exampleS);
-      IndependentFactory<BitString> factory = new BitStringFactory(exampleGenotype.size());
-      Map<GeneticOperator<BitString>, Double> geneticOperators = Map.ofEntries(
-          Map.entry(new BitStringFlipMutation(pMut), 1d - crossoverP),
-          Map.entry(new BitStringUniformCrossover().andThen(new BitStringFlipMutation(pMut)), crossoverP));
-      return new NsgaII<>(
-          mapper.mapperFor(exampleS),
-          factory,
-          nPop,
-          StopConditions.nOfFitnessEvaluations(nEval),
-          geneticOperators,
-          maxUniquenessAttempts,
-          remap);
-    };
-  }
-
-  @SuppressWarnings("unused")
-  public static <S, Q> Function<S, RandomWalk<BitString, S, Q>> bitStringRandomWalk(
-      @Param(value = "name", dS = "") String name,
-      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<BitString, S> mapper,
-      @Param(value = "pMut", dD = 0.01d) double pMut,
-      @Param(value = "nEval", dI = 1000) int nEval) {
-    return exampleS -> {
-      BitString exampleGenotype = mapper.exampleFor(exampleS);
-      return new RandomWalk<>(
-          mapper.mapperFor(exampleS),
-          new BitStringFactory(exampleGenotype.size()),
-          StopConditions.nOfFitnessEvaluations(nEval),
-          new BitStringFlipMutation(pMut));
-    };
-  }
-
-  @SuppressWarnings("unused")
   public static <S, Q> Function<S, CMAEvolutionaryStrategy<S, Q>> cmaEs(
-      @Param(value = "name", dS = "") String name,
+      @Param(value = "name", dS = "cmaEs") String name,
       @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<List<Double>, S> mapper,
       @Param(value = "initialMinV", dD = -1d) double initialMinV,
       @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
       @Param(value = "nEval", dI = 1000) int nEval) {
     return exampleS -> new CMAEvolutionaryStrategy<>(
         mapper.mapperFor(exampleS),
-        new FixedLengthListFactory<>(
-            mapper.exampleFor(exampleS).size(), new UniformDoubleFactory(initialMinV, initialMaxV)),
+        Representations.doubleString(initialMinV, initialMaxV, 0, 0)
+            .apply(mapper.exampleFor(exampleS))
+            .factory(),
         StopConditions.nOfFitnessEvaluations(nEval));
   }
 
   @SuppressWarnings("unused")
   public static <S, Q> Function<S, DifferentialEvolution<S, Q>> differentialEvolution(
-      @Param(value = "name", dS = "") String name,
+      @Param(value = "name", dS = "de") String name,
       @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<List<Double>, S> mapper,
       @Param(value = "initialMinV", dD = -1d) double initialMinV,
       @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
       @Param(value = "populationSize", dI = 15) int populationSize,
       @Param(value = "nEval", dI = 1000) int nEval,
       @Param(value = "differentialWeight", dD = 0.5) double differentialWeight,
-      @Param(value = "crossoverProb", dD = 0.8) double crossoverProb,
+      @Param(value = "crossoverP", dD = 0.8) double crossoverP,
       @Param(value = "remap") boolean remap) {
     return exampleS -> new DifferentialEvolution<>(
         mapper.mapperFor(exampleS),
-        new FixedLengthListFactory<>(
-            mapper.exampleFor(exampleS).size(), new UniformDoubleFactory(initialMinV, initialMaxV)),
+        Representations.doubleString(initialMinV, initialMaxV, 0, 0)
+            .apply(mapper.exampleFor(exampleS))
+            .factory(),
         populationSize,
         StopConditions.nOfFitnessEvaluations(nEval),
         differentialWeight,
-        crossoverProb,
+        crossoverP,
         remap);
   }
 
   @SuppressWarnings("unused")
-  public static <S, Q> Function<S, CellularAutomataBasedSolver<List<Double>, S, Q>> doubleStringCabea(
-      @Param(value = "name", dS = "") String name,
-      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<List<Double>, S> mapper,
-      @Param(value = "initialMinV", dD = -1d) double initialMinV,
-      @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
-      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
-      @Param(value = "sigmaMut", dD = 0.35d) double sigmaMut,
-      @Param(value = "nEval", dI = 1000) int nEval,
-      @Param(value = "diversity") boolean diversity,
-      @Param(value = "remap") boolean remap,
-      @Param(value = "keepProbability", dD = 0.01d) double keepProbability,
-      @Param(value = "nTour", dI = 3) int nTour,
-      @Param(value = "toroidal", dB = true) boolean toroidal,
-      @Param(value = "mooreRadius", dI = 1) int mooreRadius,
-      @Param(value = "gridSize", dI = 11) int gridSize,
-      @Param(value = "substrate", dS = "empty") SubstrateFiller.Predefined substrate) {
-    return exampleS -> {
-      IndependentFactory<List<Double>> doublesFactory = new FixedLengthListFactory<>(
-          mapper.exampleFor(exampleS).size(), new UniformDoubleFactory(initialMinV, initialMaxV));
-      Crossover<List<Double>> crossover = new HypercubeGeometricCrossover();
-      Map<GeneticOperator<List<Double>>, Double> geneticOperators = Map.ofEntries(
-          Map.entry(new GaussianMutation(sigmaMut), 1d - crossoverP),
-          Map.entry(crossover.andThen(new GaussianMutation(sigmaMut)), crossoverP));
-      return new CellularAutomataBasedSolver<>(
-          mapper.mapperFor(exampleS),
-          doublesFactory,
-          StopConditions.nOfFitnessEvaluations(nEval),
-          substrate.apply(Grid.create(gridSize, gridSize, true)),
-          new CellularAutomataBasedSolver.MooreNeighborhood(mooreRadius, toroidal),
-          keepProbability,
-          geneticOperators,
-          new Tournament(nTour));
-    };
-  }
-
-  @SuppressWarnings("unused")
-  public static <S, Q> Function<S, StandardEvolver<List<Double>, S, Q>> doubleStringGa(
-      @Param(value = "name", dS = "") String name,
-      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<List<Double>, S> mapper,
-      @Param(value = "initialMinV", dD = -1d) double initialMinV,
-      @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
-      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
-      @Param(value = "sigmaMut", dD = 0.35d) double sigmaMut,
+  public static <G, S, Q> Function<S, StandardEvolver<G, S, Q>> ga(
+      @Param(value = "name", dS = "ga") String name,
+      @Param("representation") Function<G, Representation<G>> representation,
+      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<G, S> mapper,
       @Param(value = "tournamentRate", dD = 0.05d) double tournamentRate,
       @Param(value = "minNTournament", dI = 3) int minNTournament,
       @Param(value = "nPop", dI = 100) int nPop,
@@ -286,18 +130,13 @@ public class Solvers {
       @Param(value = "maxUniquenessAttempts", dI = 100) int maxUniquenessAttempts,
       @Param(value = "remap") boolean remap) {
     return exampleS -> {
-      IndependentFactory<List<Double>> doublesFactory = new FixedLengthListFactory<>(
-          mapper.exampleFor(exampleS).size(), new UniformDoubleFactory(initialMinV, initialMaxV));
-      Crossover<List<Double>> crossover = new HypercubeGeometricCrossover();
-      Map<GeneticOperator<List<Double>>, Double> geneticOperators = Map.ofEntries(
-          Map.entry(new GaussianMutation(sigmaMut), 1d - crossoverP),
-          Map.entry(crossover.andThen(new GaussianMutation(sigmaMut)), crossoverP));
+      Representation<G> r = representation.apply(mapper.exampleFor(exampleS));
       return new StandardEvolver<>(
           mapper.mapperFor(exampleS),
-          doublesFactory,
+          r.factory(),
           nPop,
           StopConditions.nOfFitnessEvaluations(nEval),
-          geneticOperators,
+          r.geneticOperators(),
           new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
           new Last(),
           nPop,
@@ -308,198 +147,42 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
-  public static <S> Function<S, NsgaII<List<Double>, S>> doubleStringNsga2(
-      @Param(value = "name", dS = "") String name,
-      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<List<Double>, S> mapper,
-      @Param(value = "initialMinV", dD = -1d) double initialMinV,
-      @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
-      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
-      @Param(value = "sigmaMut", dD = 0.35d) double sigmaMut,
+  public static <G, S, Q> Function<S, MapElites<G, S, Q>> mapElites(
+      @Param(value = "name", dS = "me") String name,
+      @Param("representation") Function<G, Representation<G>> representation,
+      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<G, S> mapper,
+      @Param(value = "nPop", dI = 100) int nPop,
+      @Param(value = "nEval", dI = 1000) int nEval,
+      @Param("descriptors") List<MapElites.Descriptor<G, S, Q>> descriptors) {
+    return exampleS -> {
+      Representation<G> r = representation.apply(mapper.exampleFor(exampleS));
+      return new MapElites<>(
+          mapper.mapperFor(exampleS),
+          r.factory(),
+          StopConditions.nOfFitnessEvaluations(nEval),
+          r.mutation(),
+          nPop,
+          descriptors);
+    };
+  }
+
+  @SuppressWarnings("unused")
+  public static <G, S> Function<S, NsgaII<G, S>> nsga2(
+      @Param(value = "name", dS = "nsga2") String name,
+      @Param("representation") Function<G, Representation<G>> representation,
+      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<G, S> mapper,
       @Param(value = "nPop", dI = 100) int nPop,
       @Param(value = "nEval", dI = 1000) int nEval,
       @Param(value = "maxUniquenessAttempts", dI = 100) int maxUniquenessAttempts,
       @Param(value = "remap") boolean remap) {
     return exampleS -> {
-      IndependentFactory<List<Double>> doublesFactory = new FixedLengthListFactory<>(
-          mapper.exampleFor(exampleS).size(), new UniformDoubleFactory(initialMinV, initialMaxV));
-      Crossover<List<Double>> crossover = new HypercubeGeometricCrossover();
-      Map<GeneticOperator<List<Double>>, Double> geneticOperators = Map.ofEntries(
-          Map.entry(new GaussianMutation(sigmaMut), 1d - crossoverP),
-          Map.entry(crossover.andThen(new GaussianMutation(sigmaMut)), crossoverP));
+      Representation<G> r = representation.apply(mapper.exampleFor(exampleS));
       return new NsgaII<>(
           mapper.mapperFor(exampleS),
-          doublesFactory,
+          r.factory(),
           nPop,
           StopConditions.nOfFitnessEvaluations(nEval),
-          geneticOperators,
-          maxUniquenessAttempts,
-          remap);
-    };
-  }
-
-  @SuppressWarnings("unused")
-  public static <S, Q> Function<S, CellularAutomataBasedSolver<IntString, S, Q>> intStringCabea(
-      @Param(value = "name", dS = "") String name,
-      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<IntString, S> mapper,
-      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
-      @Param(value = "pMut", dD = 0.01d) double pMut,
-      @Param(value = "keepProbability", dD = 0.01d) double keepProbability,
-      @Param(value = "nTour", dI = 3) int nTour,
-      @Param(value = "nEval", dI = 1000) int nEval,
-      @Param(value = "toroidal", dB = true) boolean toroidal,
-      @Param(value = "mooreRadius", dI = 1) int mooreRadius,
-      @Param(value = "gridSize", dI = 11) int gridSize,
-      @Param(value = "substrate", dS = "empty") SubstrateFiller.Predefined substrate) {
-    return exampleS -> {
-      IntString exampleGenotype = mapper.exampleFor(exampleS);
-      IndependentFactory<IntString> factory = new UniformIntStringFactory(
-          exampleGenotype.lowerBound(), exampleGenotype.upperBound(), exampleGenotype.size());
-      Map<GeneticOperator<IntString>, Double> geneticOperators = Map.ofEntries(
-          Map.entry(new IntStringFlipMutation(pMut), 1d - crossoverP),
-          Map.entry(new IntStringUniformCrossover().andThen(new IntStringFlipMutation(pMut)), crossoverP));
-      return new CellularAutomataBasedSolver<>(
-          mapper.mapperFor(exampleS),
-          factory,
-          StopConditions.nOfFitnessEvaluations(nEval),
-          substrate.apply(Grid.create(gridSize, gridSize, true)),
-          new CellularAutomataBasedSolver.MooreNeighborhood(mooreRadius, toroidal),
-          keepProbability,
-          geneticOperators,
-          new Tournament(nTour));
-    };
-  }
-
-  @SuppressWarnings("unused")
-  public static <S, Q> Function<S, StandardEvolver<IntString, S, Q>> intStringGa(
-      @Param(value = "name", dS = "") String name,
-      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<IntString, S> mapper,
-      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
-      @Param(value = "pMut", dD = 0.01d) double pMut,
-      @Param(value = "tournamentRate", dD = 0.05d) double tournamentRate,
-      @Param(value = "minNTournament", dI = 3) int minNTournament,
-      @Param(value = "nPop", dI = 100) int nPop,
-      @Param(value = "nEval", dI = 1000) int nEval,
-      @Param(value = "maxUniquenessAttempts", dI = 100) int maxUniquenessAttempts,
-      @Param(value = "remap") boolean remap) {
-    return exampleS -> {
-      IntString exampleGenotype = mapper.exampleFor(exampleS);
-      IndependentFactory<IntString> factory = new UniformIntStringFactory(
-          exampleGenotype.lowerBound(), exampleGenotype.upperBound(), exampleGenotype.size());
-      Map<GeneticOperator<IntString>, Double> geneticOperators = Map.ofEntries(
-          Map.entry(new IntStringFlipMutation(pMut), 1d - crossoverP),
-          Map.entry(new IntStringUniformCrossover().andThen(new IntStringFlipMutation(pMut)), crossoverP));
-      return new StandardEvolver<>(
-          mapper.mapperFor(exampleS),
-          factory,
-          nPop,
-          StopConditions.nOfFitnessEvaluations(nEval),
-          geneticOperators,
-          new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
-          new Last(),
-          nPop,
-          true,
-          maxUniquenessAttempts,
-          remap);
-    };
-  }
-
-  @SuppressWarnings("unused")
-  public static <S> Function<S, NsgaII<IntString, S>> intStringNsga2(
-      @Param(value = "name", dS = "") String name,
-      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<IntString, S> mapper,
-      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
-      @Param(value = "pMut", dD = 0.01d) double pMut,
-      @Param(value = "nPop", dI = 100) int nPop,
-      @Param(value = "nEval", dI = 1000) int nEval,
-      @Param(value = "maxUniquenessAttempts", dI = 100) int maxUniquenessAttempts,
-      @Param(value = "remap") boolean remap) {
-    return exampleS -> {
-      IntString exampleGenotype = mapper.exampleFor(exampleS);
-      IndependentFactory<IntString> factory = new UniformIntStringFactory(
-          exampleGenotype.lowerBound(), exampleGenotype.upperBound(), exampleGenotype.size());
-      Map<GeneticOperator<IntString>, Double> geneticOperators = Map.ofEntries(
-          Map.entry(new IntStringFlipMutation(pMut), 1d - crossoverP),
-          Map.entry(new IntStringUniformCrossover().andThen(new IntStringFlipMutation(pMut)), crossoverP));
-      return new NsgaII<>(
-          mapper.mapperFor(exampleS),
-          factory,
-          nPop,
-          StopConditions.nOfFitnessEvaluations(nEval),
-          geneticOperators,
-          maxUniquenessAttempts,
-          remap);
-    };
-  }
-
-  @SuppressWarnings("unused")
-  public static <S, Q> Function<S, StandardEvolver<List<Tree<Element>>, S, Q>> multiSRTreeGp(
-      @Param(value = "name", dS = "") String name,
-      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<List<Tree<Element>>, S> mapper,
-      @Param(
-              value = "constants",
-              dDs = {0.1, 1, 10})
-          List<Double> constants,
-      @Param(
-              value = "operators",
-              dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
-          List<Element.Operator> operators,
-      @Param(value = "minTreeH", dI = 4) int minTreeH,
-      @Param(value = "maxTreeH", dI = 10) int maxTreeH,
-      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
-      @Param(value = "tournamentRate", dD = 0.05d) double tournamentRate,
-      @Param(value = "minNTournament", dI = 3) int minNTournament,
-      @Param(value = "nPop", dI = 100) int nPop,
-      @Param(value = "nEval", dI = 1000) int nEval,
-      @Param(value = "maxUniquenessAttempts", dI = 100) int maxUniquenessAttempts,
-      @Param(value = "remap") boolean remap) {
-    return exampleS -> {
-      List<Element.Variable> variables = mapper.exampleFor(exampleS).stream()
-          .map(t -> t.visitDepth().stream()
-              .filter(e -> e instanceof Element.Variable)
-              .map(e -> ((Element.Variable) e).name())
-              .toList())
-          .flatMap(List::stream)
-          .distinct()
-          .map(Element.Variable::new)
-          .toList();
-      List<Element.Constant> constantElements =
-          constants.stream().map(Element.Constant::new).toList();
-      IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
-          IndependentFactory.picker(variables), IndependentFactory.picker(constantElements));
-      IndependentFactory<Element> nonTerminalFactory = IndependentFactory.picker(operators);
-      IndependentFactory<List<Tree<Element>>> treeListFactory = new FixedLengthListFactory<>(
-          mapper.exampleFor(exampleS).size(),
-          new TreeIndependentFactory<>(minTreeH, maxTreeH, x -> 2, nonTerminalFactory, terminalFactory, 0.5));
-      // single tree factory
-      TreeBuilder<Element> treeBuilder = new GrowTreeBuilder<>(x -> 2, nonTerminalFactory, terminalFactory);
-      // subtree between same position trees
-      SubtreeCrossover<Element> subtreeCrossover = new SubtreeCrossover<>(maxTreeH);
-      Crossover<List<Tree<Element>>> pairWiseSubtreeCrossover =
-          (list1, list2, rnd) -> IntStream.range(0, list1.size())
-              .mapToObj(i -> subtreeCrossover.recombine(list1.get(i), list2.get(i), rnd))
-              .toList();
-      // swap trees
-      Crossover<List<Tree<Element>>> uniformCrossover = (list1, list2, rnd) -> IntStream.range(0, list1.size())
-          .mapToObj(i -> rnd.nextDouble() < 0.5 ? list1.get(i) : list2.get(i))
-          .toList();
-      // subtree mutation
-      SubtreeMutation<Element> subtreeMutation = new SubtreeMutation<>(maxTreeH, treeBuilder);
-      Mutation<List<Tree<Element>>> allSubtreeMutations = (list, rnd) ->
-          list.stream().map(t -> subtreeMutation.mutate(t, rnd)).toList();
-      Map<GeneticOperator<List<Tree<Element>>>, Double> geneticOperators = Map.ofEntries(
-          Map.entry(pairWiseSubtreeCrossover, crossoverP / 2d),
-          Map.entry(uniformCrossover, crossoverP / 2d),
-          Map.entry(allSubtreeMutations, 1d - crossoverP));
-      return new StandardEvolver<>(
-          mapper.mapperFor(exampleS),
-          treeListFactory,
-          nPop,
-          StopConditions.nOfFitnessEvaluations(nEval),
-          geneticOperators,
-          new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
-          new Last(),
-          nPop,
-          true,
+          r.geneticOperators(),
           maxUniquenessAttempts,
           remap);
     };
@@ -507,7 +190,7 @@ public class Solvers {
 
   @SuppressWarnings("unused")
   public static <S, Q> Function<S, SpeciatedEvolver<Graph<Node, OperatorGraph.NonValuedArc>, S, Q>> oGraphea(
-      @Param(value = "name", dS = "") String name,
+      @Param(value = "name", dS = "oGraphea") String name,
       @Param(value = "mapper", dNPM = "ea.m.identity()")
           InvertibleMapper<Graph<Node, OperatorGraph.NonValuedArc>, S> mapper,
       @Param(value = "minConst", dD = 0d) double minConst,
@@ -577,7 +260,7 @@ public class Solvers {
 
   @SuppressWarnings("unused")
   public static <S, Q> Function<S, OpenAIEvolutionaryStrategy<S, Q>> openAiEs(
-      @Param(value = "name", dS = "") String name,
+      @Param(value = "name", dS = "openAiEs") String name,
       @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<List<Double>, S> mapper,
       @Param(value = "initialMinV", dD = -1d) double initialMinV,
       @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
@@ -586,8 +269,9 @@ public class Solvers {
       @Param(value = "nEval", dI = 1000) int nEval) {
     return exampleS -> new OpenAIEvolutionaryStrategy<>(
         mapper.mapperFor(exampleS),
-        new FixedLengthListFactory<>(
-            mapper.exampleFor(exampleS).size(), new UniformDoubleFactory(initialMinV, initialMaxV)),
+        Representations.doubleString(initialMinV, initialMaxV, 0, 0)
+            .apply(mapper.exampleFor(exampleS))
+            .factory(),
         StopConditions.nOfFitnessEvaluations(nEval),
         batchSize,
         sigma);
@@ -595,7 +279,7 @@ public class Solvers {
 
   @SuppressWarnings("unused")
   public static <S, Q> Function<S, ParticleSwarmOptimization<S, Q>> pso(
-      @Param(value = "name", dS = "") String name,
+      @Param(value = "name", dS = "pso") String name,
       @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<List<Double>, S> mapper,
       @Param(value = "initialMinV", dD = -1d) double initialMinV,
       @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
@@ -606,8 +290,9 @@ public class Solvers {
       @Param(value = "phiGlobal", dD = 1.5d) double phiGlobal) {
     return exampleS -> new ParticleSwarmOptimization<>(
         mapper.mapperFor(exampleS),
-        new FixedLengthListFactory<>(
-            mapper.exampleFor(exampleS).size(), new UniformDoubleFactory(initialMinV, initialMaxV)),
+        Representations.doubleString(initialMinV, initialMaxV, 0, 0)
+            .apply(mapper.exampleFor(exampleS))
+            .factory(),
         StopConditions.nOfFitnessEvaluations(nEval),
         nPop,
         w,
@@ -616,8 +301,34 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
+  public static <G, S, Q> Function<S, RandomSearch<G, S, Q>> randomSearch(
+      @Param(value = "name", dS = "rs") String name,
+      @Param("representation") Function<G, Representation<G>> representation,
+      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<G, S> mapper,
+      @Param(value = "nEval", dI = 1000) int nEval) {
+    return exampleS -> {
+      Representation<G> r = representation.apply(mapper.exampleFor(exampleS));
+      return new RandomSearch<>(
+          mapper.mapperFor(exampleS), r.factory(), StopConditions.nOfFitnessEvaluations(nEval));
+    };
+  }
+
+  @SuppressWarnings("unused")
+  public static <G, S, Q> Function<S, RandomWalk<G, S, Q>> randomWalk(
+      @Param(value = "name", dS = "rw") String name,
+      @Param("representation") Function<G, Representation<G>> representation,
+      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<G, S> mapper,
+      @Param(value = "nEval", dI = 1000) int nEval) {
+    return exampleS -> {
+      Representation<G> r = representation.apply(mapper.exampleFor(exampleS));
+      return new RandomWalk<>(
+          mapper.mapperFor(exampleS), r.factory(), StopConditions.nOfFitnessEvaluations(nEval), r.mutation());
+    };
+  }
+
+  @SuppressWarnings("unused")
   public static <S, Q> Function<S, SimpleEvolutionaryStrategy<S, Q>> simpleEs(
-      @Param(value = "name", dS = "") String name,
+      @Param(value = "name", dS = "es") String name,
       @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<List<Double>, S> mapper,
       @Param(value = "initialMinV", dD = -1d) double initialMinV,
       @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
@@ -629,212 +340,14 @@ public class Solvers {
       @Param(value = "remap") boolean remap) {
     return exampleS -> new SimpleEvolutionaryStrategy<>(
         mapper.mapperFor(exampleS),
-        new FixedLengthListFactory<>(
-            mapper.exampleFor(exampleS).size(), new UniformDoubleFactory(initialMinV, initialMaxV)),
+        Representations.doubleString(initialMinV, initialMaxV, 0, 0)
+            .apply(mapper.exampleFor(exampleS))
+            .factory(),
         nPop,
         StopConditions.nOfFitnessEvaluations(nEval),
         nOfElites,
         (int) Math.round(nPop * parentsRate),
         sigma,
         remap);
-  }
-
-  @SuppressWarnings("unused")
-  public static <S, Q> Function<S, CellularAutomataBasedSolver<Tree<Element>, S, Q>> srTreeCabea(
-      @Param(value = "name", dS = "") String name,
-      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<Tree<Element>, S> mapper,
-      @Param(value = "keepProbability", dD = 0.01d) double keepProbability,
-      @Param(
-              value = "constants",
-              dDs = {0.1, 1, 10})
-          List<Double> constants,
-      @Param(
-              value = "operators",
-              dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
-          List<Element.Operator> operators,
-      @Param(value = "minTreeH", dI = 4) int minTreeH,
-      @Param(value = "maxTreeH", dI = 10) int maxTreeH,
-      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
-      @Param(value = "nTour", dI = 3) int nTour,
-      @Param(value = "nEval", dI = 1000) int nEval,
-      @Param(value = "toroidal", dB = true) boolean toroidal,
-      @Param(value = "mooreRadius", dI = 1) int mooreRadius,
-      @Param(value = "gridSize", dI = 11) int gridSize,
-      @Param(value = "substrate", dS = "empty") SubstrateFiller.Predefined substrate) {
-    return exampleS -> {
-      List<Element.Variable> variables = mapper.exampleFor(exampleS).visitDepth().stream()
-          .filter(e -> e instanceof Element.Variable)
-          .map(e -> ((Element.Variable) e).name())
-          .distinct()
-          .map(Element.Variable::new)
-          .toList();
-      List<Element.Constant> constantElements =
-          constants.stream().map(Element.Constant::new).toList();
-      IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
-          IndependentFactory.picker(variables), IndependentFactory.picker(constantElements));
-      IndependentFactory<Element> nonTerminalFactory = IndependentFactory.picker(operators);
-      // single tree factory
-      TreeBuilder<Element> treeBuilder = new GrowTreeBuilder<>(x -> 2, nonTerminalFactory, terminalFactory);
-      Factory<Tree<Element>> treeFactory =
-          new RampedHalfAndHalf<>(minTreeH, maxTreeH, x -> 2, nonTerminalFactory, terminalFactory);
-      // operators
-      Map<GeneticOperator<Tree<Element>>, Double> geneticOperators = Map.ofEntries(
-          Map.entry(new SubtreeCrossover<>(maxTreeH), crossoverP),
-          Map.entry(new SubtreeMutation<>(maxTreeH, treeBuilder), 1d - crossoverP));
-      return new CellularAutomataBasedSolver<>(
-          mapper.mapperFor(exampleS),
-          treeFactory,
-          StopConditions.nOfFitnessEvaluations(nEval),
-          substrate.apply(Grid.create(gridSize, gridSize, true)),
-          new CellularAutomataBasedSolver.MooreNeighborhood(mooreRadius, toroidal),
-          keepProbability,
-          geneticOperators,
-          new Tournament(nTour));
-    };
-  }
-
-  @SuppressWarnings("unused")
-  public static <S, Q> Function<S, StandardEvolver<Tree<Element>, S, Q>> srTreeGp(
-      @Param(value = "name", dS = "") String name,
-      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<Tree<Element>, S> mapper,
-      @Param(
-              value = "constants",
-              dDs = {0.1, 1, 10})
-          List<Double> constants,
-      @Param(
-              value = "operators",
-              dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
-          List<Element.Operator> operators,
-      @Param(value = "minTreeH", dI = 4) int minTreeH,
-      @Param(value = "maxTreeH", dI = 10) int maxTreeH,
-      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
-      @Param(value = "tournamentRate", dD = 0.05d) double tournamentRate,
-      @Param(value = "minNTournament", dI = 3) int minNTournament,
-      @Param(value = "nPop", dI = 100) int nPop,
-      @Param(value = "nEval", dI = 1000) int nEval,
-      @Param(value = "maxUniquenessAttempts", dI = 100) int maxUniquenessAttempts,
-      @Param(value = "remap") boolean remap) {
-    return exampleS -> {
-      List<Element.Variable> variables = mapper.exampleFor(exampleS).visitDepth().stream()
-          .filter(e -> e instanceof Element.Variable)
-          .map(e -> ((Element.Variable) e).name())
-          .distinct()
-          .map(Element.Variable::new)
-          .toList();
-      List<Element.Constant> constantElements =
-          constants.stream().map(Element.Constant::new).toList();
-      IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
-          IndependentFactory.picker(variables), IndependentFactory.picker(constantElements));
-      IndependentFactory<Element> nonTerminalFactory = IndependentFactory.picker(operators);
-      // single tree factory
-      TreeBuilder<Element> treeBuilder = new GrowTreeBuilder<>(x -> 2, nonTerminalFactory, terminalFactory);
-      Factory<Tree<Element>> treeFactory =
-          new RampedHalfAndHalf<>(minTreeH, maxTreeH, x -> 2, nonTerminalFactory, terminalFactory);
-      // operators
-      Map<GeneticOperator<Tree<Element>>, Double> geneticOperators = Map.ofEntries(
-          Map.entry(new SubtreeCrossover<>(maxTreeH), crossoverP),
-          Map.entry(new SubtreeMutation<>(maxTreeH, treeBuilder), 1d - crossoverP));
-      return new StandardEvolver<>(
-          mapper.mapperFor(exampleS),
-          treeFactory,
-          nPop,
-          StopConditions.nOfFitnessEvaluations(nEval),
-          geneticOperators,
-          new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
-          new Last(),
-          nPop,
-          true,
-          maxUniquenessAttempts,
-          remap);
-    };
-  }
-
-  public static <S> Function<S, NsgaII<Tree<Element>, S>> srTreeNsga2(
-      @Param(value = "name", dS = "") String name,
-      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<Tree<Element>, S> mapper,
-      @Param(
-              value = "constants",
-              dDs = {0.1, 1, 10})
-          List<Double> constants,
-      @Param(
-              value = "operators",
-              dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
-          List<Element.Operator> operators,
-      @Param(value = "minTreeH", dI = 4) int minTreeH,
-      @Param(value = "maxTreeH", dI = 10) int maxTreeH,
-      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
-      @Param(value = "nPop", dI = 100) int nPop,
-      @Param(value = "nEval", dI = 1000) int nEval,
-      @Param(value = "maxUniquenessAttempts", dI = 100) int maxUniquenessAttempts,
-      @Param(value = "remap") boolean remap) {
-    return exampleS -> {
-      List<Element.Variable> variables = mapper.exampleFor(exampleS).visitDepth().stream()
-          .filter(e -> e instanceof Element.Variable)
-          .map(e -> ((Element.Variable) e).name())
-          .distinct()
-          .map(Element.Variable::new)
-          .toList();
-      List<Element.Constant> constantElements =
-          constants.stream().map(Element.Constant::new).toList();
-      IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
-          IndependentFactory.picker(variables), IndependentFactory.picker(constantElements));
-      IndependentFactory<Element> nonTerminalFactory = IndependentFactory.picker(operators);
-      // single tree factory
-      TreeBuilder<Element> treeBuilder = new GrowTreeBuilder<>(x -> 2, nonTerminalFactory, terminalFactory);
-      Factory<Tree<Element>> treeFactory =
-          new RampedHalfAndHalf<>(minTreeH, maxTreeH, x -> 2, nonTerminalFactory, terminalFactory);
-      // operators
-      Map<GeneticOperator<Tree<Element>>, Double> geneticOperators = Map.ofEntries(
-          Map.entry(new SubtreeCrossover<>(maxTreeH), crossoverP),
-          Map.entry(new SubtreeMutation<>(maxTreeH, treeBuilder), 1d - crossoverP));
-      return new NsgaII<>(
-          mapper.mapperFor(exampleS),
-          treeFactory,
-          nPop,
-          StopConditions.nOfFitnessEvaluations(nEval),
-          geneticOperators,
-          maxUniquenessAttempts,
-          remap);
-    };
-  }
-
-  @SuppressWarnings("unused")
-  public static <S, Q> Function<S, RandomWalk<Tree<Element>, S, Q>> srTreeRandomWalk(
-      @Param(value = "name", dS = "") String name,
-      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<Tree<Element>, S> mapper,
-      @Param(
-              value = "constants",
-              dDs = {0.1, 1, 10})
-          List<Double> constants,
-      @Param(
-              value = "operators",
-              dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
-          List<Element.Operator> operators,
-      @Param(value = "minTreeH", dI = 4) int minTreeH,
-      @Param(value = "maxTreeH", dI = 10) int maxTreeH,
-      @Param(value = "nEval", dI = 1000) int nEval,
-      @Param(value = "remap") boolean remap) {
-    return exampleS -> {
-      List<Element.Variable> variables = mapper.exampleFor(exampleS).visitDepth().stream()
-          .filter(e -> e instanceof Element.Variable)
-          .map(e -> ((Element.Variable) e).name())
-          .distinct()
-          .map(Element.Variable::new)
-          .toList();
-      List<Element.Constant> constantElements =
-          constants.stream().map(Element.Constant::new).toList();
-      IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
-          IndependentFactory.picker(variables), IndependentFactory.picker(constantElements));
-      IndependentFactory<Element> nonTerminalFactory = IndependentFactory.picker(operators);
-      // single tree factory
-      TreeBuilder<Element> treeBuilder = new GrowTreeBuilder<>(x -> 2, nonTerminalFactory, terminalFactory);
-      Factory<Tree<Element>> treeFactory =
-          new TreeIndependentFactory<>(minTreeH, maxTreeH, x -> 2, nonTerminalFactory, terminalFactory, 0.5d);
-      return new RandomWalk<>(
-          mapper.mapperFor(exampleS),
-          treeFactory,
-          StopConditions.nOfFitnessEvaluations(nEval),
-          new SubtreeMutation<>(maxTreeH, treeBuilder));
-    };
   }
 }

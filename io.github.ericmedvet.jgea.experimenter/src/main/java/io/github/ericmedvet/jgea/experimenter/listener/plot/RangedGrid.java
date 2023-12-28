@@ -21,7 +21,6 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
-
 import java.util.function.BiFunction;
 
 /**
@@ -39,15 +38,13 @@ public interface RangedGrid<T> extends Grid<T> {
   default DoubleRange xRange(int x) {
     return new DoubleRange(
         xRange().denormalize(new DoubleRange(0, w()).normalize(x)),
-        xRange().denormalize(new DoubleRange(0, w()).normalize(x + 1))
-    );
+        xRange().denormalize(new DoubleRange(0, w()).normalize(x + 1)));
   }
 
   default DoubleRange yRange(int y) {
     return new DoubleRange(
         yRange().denormalize(new DoubleRange(0, h()).normalize(y)),
-        yRange().denormalize(new DoubleRange(0, h()).normalize(y + 1))
-    );
+        yRange().denormalize(new DoubleRange(0, h()).normalize(y + 1)));
   }
 
   static <T> RangedGrid<T> from(Grid<T> grid, DoubleRange xRange, DoubleRange yRange, String xName, String yName) {
@@ -98,5 +95,4 @@ public interface RangedGrid<T> extends Grid<T> {
   default <S> Grid<S> map(BiFunction<Key, T, S> function) {
     return RangedGrid.from(Grid.super.map(function), xRange(), yRange(), xName(), yName());
   }
-
 }

@@ -21,7 +21,6 @@
 package io.github.ericmedvet.jgea.core.operator;
 
 import io.github.ericmedvet.jgea.core.util.Pair;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
@@ -41,9 +40,13 @@ public interface Crossover<G> extends GeneticOperator<G> {
     return (g1, g2, random) -> random.nextBoolean() ? g1 : g2;
   }
 
+  static <K> Crossover<K> from(GeneticOperator<K> op) {
+    return (g1, g2, random) -> op.apply(List.of(g1, g2), random).get(0);
+  }
+
   @Override
   default List<? extends G> apply(List<? extends G> gs, RandomGenerator random) {
-    return Collections.singletonList(recombine(gs.get(0), gs.get(1), random));
+    return List.of(recombine(gs.get(0), gs.get(1), random));
   }
 
   @Override
