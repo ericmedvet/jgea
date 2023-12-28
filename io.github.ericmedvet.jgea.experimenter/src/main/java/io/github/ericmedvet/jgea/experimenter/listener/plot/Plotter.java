@@ -44,20 +44,6 @@ public interface Plotter<O> {
 
   O univariateGrid(UnivariateGridPlot plot);
 
-  default O plot(XYPlot<?> plot, Type type) {
-    if (plot instanceof XYDataSeriesPlot xyDataSeriesPlot && type.equals(Type.LINES)) {
-      return lines(xyDataSeriesPlot);
-    }
-    if (plot instanceof XYDataSeriesPlot xyDataSeriesPlot && type.equals(Type.POINTS)) {
-      return points(xyDataSeriesPlot);
-    }
-    if (plot instanceof UnivariateGridPlot univariateGridPlot && type.equals(Type.UNIVARIATE_GRID)) {
-      return univariateGrid(univariateGridPlot);
-    }
-    throw new UnsupportedOperationException("Unknown plot type %s with data %s"
-        .formatted(type, plot.getClass().getSimpleName()));
-  }
-
   static void main(String[] args) {
     RandomGenerator rg = new Random(1);
     XYDataSeries ds1 = XYDataSeries.of(
@@ -143,6 +129,46 @@ public interface Plotter<O> {
                     10,
                     16,
                     (x, y) -> rg.nextDouble() < 0.1 ? null : (x + y + 1d + rg.nextGaussian())))));
+    UnivariateGridPlot sgp2 = new UnivariateGridPlot(
+        "ranged grid!!!",
+        "x title",
+        "y title",
+        "rx",
+        "ry",
+        DoubleRange.UNBOUNDED,
+        DoubleRange.UNBOUNDED,
+        DoubleRange.UNBOUNDED,
+        Grid.create(
+            2,
+            1,
+            (ox, oy) -> new XYPlot.TitledData<>(
+                "x%d".formatted(ox),
+                "y%d".formatted(oy),
+                "",
+                RangedGrid.from(
+                    Grid.create(
+                        60,
+                        16,
+                        (x, y) -> rg.nextDouble() < 0.1
+                            ? null
+                            : (x + y + 1d + rg.nextGaussian())),
+                    new DoubleRange(-10, 10),
+                    new DoubleRange(25, 100)))));
     ImagePlotter.showImage(ip.univariateGrid(sgp));
+    ImagePlotter.showImage(ip.univariateGrid(sgp2));
+  }
+
+  default O plot(XYPlot<?> plot, Type type) {
+    if (plot instanceof XYDataSeriesPlot xyDataSeriesPlot && type.equals(Type.LINES)) {
+      return lines(xyDataSeriesPlot);
+    }
+    if (plot instanceof XYDataSeriesPlot xyDataSeriesPlot && type.equals(Type.POINTS)) {
+      return points(xyDataSeriesPlot);
+    }
+    if (plot instanceof UnivariateGridPlot univariateGridPlot && type.equals(Type.UNIVARIATE_GRID)) {
+      return univariateGrid(univariateGridPlot);
+    }
+    throw new UnsupportedOperationException("Unknown plot type %s with data %s"
+        .formatted(type, plot.getClass().getSimpleName()));
   }
 }

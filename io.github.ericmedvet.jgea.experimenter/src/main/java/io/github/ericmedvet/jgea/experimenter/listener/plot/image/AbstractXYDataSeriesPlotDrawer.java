@@ -31,53 +31,14 @@ import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.List;
 import java.util.function.ToDoubleFunction;
-import java.util.stream.DoubleStream;
-import java.util.stream.Stream;
 
-public abstract class AbstractXYDataSeriesPlotDrawer implements PlotDrawer<XYDataSeriesPlot, List<XYDataSeries>> {
+public abstract class AbstractXYDataSeriesPlotDrawer extends AbstractPlotDrawer<XYDataSeriesPlot, List<XYDataSeries>> {
   protected abstract Point2D computeLegendImageSize(ImagePlotter ip);
 
   protected abstract void drawData(
       ImagePlotter ip, Graphics2D g, Rectangle2D r, Axis xA, Axis yA, XYDataSeries ds, Color color);
 
   protected abstract void drawLegendImage(ImagePlotter ip, Graphics2D g, Color color, Rectangle2D r);
-
-  protected static Grid<Axis> computeAxes(
-      ImagePlotter ip, Graphics2D g, Layout l, XYDataSeriesPlot plot, boolean isXAxis) {
-    Grid<DoubleRange> grid = plot.dataGrid()
-        .map(td -> plot.xRange().equals(DoubleRange.UNBOUNDED)
-            ? range(td.data(), p -> isXAxis ? p.x().v() : p.y().v())
-            : plot.xRange());
-    List<DoubleRange> colLargestRanges =
-        grid.columns().stream().map(ImagePlotter::largestRange).toList();
-    List<DoubleRange> rowLargestRanges =
-        grid.rows().stream().map(ImagePlotter::largestRange).toList();
-    DoubleRange largestRange = ImagePlotter.largestRange(Stream.of(colLargestRanges, rowLargestRanges)
-        .flatMap(List::stream)
-        .toList());
-    return grid.keys().stream()
-        .map(k -> new Grid.Entry<>(
-            k,
-            ip.plotRange(
-                isXAxis,
-                grid.get(k),
-                colLargestRanges.get(k.x()),
-                rowLargestRanges.get(k.y()),
-                largestRange)))
-        .map(e -> {
-          Rectangle2D r = l.innerPlot(e.key().x(), e.key().y());
-          double size = isXAxis ? r.getWidth() : r.getHeight();
-          List<Double> ticks = computeTicks(ip, g, size, e.value());
-          String format = ip.computeTicksFormat(ticks);
-          return new Grid.Entry<>(
-              e.key(),
-              new Axis(
-                  e.value(),
-                  ticks,
-                  ticks.stream().map(format::formatted).toList()));
-        })
-        .collect(Grid.collector());
-  }
 
   protected static DoubleRange range(
       Collection<XYDataSeries> dataSeries, ToDoubleFunction<XYDataSeries.Point> vExtractor) {
@@ -218,13 +179,8 @@ public abstract class AbstractXYDataSeriesPlotDrawer implements PlotDrawer<XYDat
     data.forEach(ds -> drawData(ip, g, r, xA, yA, ds, dataColors.get(ds.name())));
   }
 
-  protected static List<Double> computeTicks(ImagePlotter ip, Graphics2D g, double size, DoubleRange range) {
-    DoubleRange innerRange = ImagePlotter.enlarge(range, ip.c().general().plotDataRatio());
-    double labelLineL = ip.computeStringH(g, "1", Configuration.Text.Use.TICK_LABEL)
-        * (1d + ip.c().general().tickLabelGapRatio());
-    int n = (int) Math.round(size / labelLineL);
-    return DoubleStream.iterate(innerRange.min(), v -> v <= range.max(), v -> v + innerRange.extent() / (double) n)
-        .boxed()
-        .toList();
+  @Override
+  protected DoubleRange computeRange(List<XYDataSeries> data, boolean isXAxis) {
+    return range(data, p -> isXAxis ? p.x().v() : p.y().v());
   }
 }

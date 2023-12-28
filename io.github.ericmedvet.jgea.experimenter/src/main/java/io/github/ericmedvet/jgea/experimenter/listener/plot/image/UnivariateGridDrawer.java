@@ -33,7 +33,7 @@ import java.util.Objects;
 import java.util.function.DoubleFunction;
 import java.util.stream.IntStream;
 
-public class UnivariateGridDrawer implements PlotDrawer<UnivariateGridPlot, Grid<Double>> {
+public class UnivariateGridDrawer extends AbstractPlotDrawer<UnivariateGridPlot, Grid<Double>> {
 
   private static DoubleRange computeRange(Grid<Double> grid) {
     double[] values = grid.values().stream()
@@ -87,54 +87,12 @@ public class UnivariateGridDrawer implements PlotDrawer<UnivariateGridPlot, Grid
 
   @Override
   public Grid<Axis> computeXAxes(ImagePlotter ip, Graphics2D g, Layout l, UnivariateGridPlot plot) {
-    return plot.dataGrid().map(td -> {
-      if (td.data() instanceof RangedGrid<Double> rg) {
-        List<Double> ticks = IntStream.range(0, td.data().w() + 1)
-            .mapToDouble(i -> rg.xRange().min())
-            .boxed()
-            .toList();
-        String format = ip.computeTicksFormat(ticks);
-        return new Axis(
-            rg.xRange(),
-            ticks,
-            ticks.stream().map(format::formatted).toList());
-      }
-      return new Axis(
-          new DoubleRange(0, td.data().w()),
-          IntStream.range(0, td.data().w())
-              .mapToDouble(i -> i + 0.5d)
-              .boxed()
-              .toList(),
-          IntStream.range(0, td.data().w())
-              .mapToObj(i -> Integer.toString(i + 1))
-              .toList());
-    });
+    return computeAxes(ip, g, l, plot, true);
   }
 
   @Override
   public Grid<Axis> computeYAxes(ImagePlotter ip, Graphics2D g, Layout l, UnivariateGridPlot plot) {
-    return plot.dataGrid().map(td -> {
-      if (td.data() instanceof RangedGrid<Double> rg) {
-        List<Double> ticks = IntStream.range(0, td.data().h() + 1)
-            .mapToDouble(i -> rg.yRange().min())
-            .boxed()
-            .toList();
-        String format = ip.computeTicksFormat(ticks);
-        return new Axis(
-            rg.xRange(),
-            ticks,
-            ticks.stream().map(format::formatted).toList());
-      }
-      return new Axis(
-          new DoubleRange(0, td.data().h()),
-          IntStream.range(0, td.data().h())
-              .mapToDouble(i -> i + 0.5d)
-              .boxed()
-              .toList(),
-          IntStream.range(0, td.data().h())
-              .mapToObj(i -> Integer.toString(i + 1))
-              .toList());
-    });
+    return computeAxes(ip, g, l, plot, false);
   }
 
   @Override
@@ -205,18 +163,33 @@ public class UnivariateGridDrawer implements PlotDrawer<UnivariateGridPlot, Grid
         r.getWidth() / (double) data.w() * (1 - ip.c().gridPlot().cellSideRate()) / 2d;
     double cellMarginH =
         r.getHeight() / (double) data.h() * (1 - ip.c().gridPlot().cellSideRate()) / 2d;
-    data.entries().stream()
-        .filter(e -> e.value() != null)
-        .filter(e -> Double.isFinite(e.value()))
-        .forEach(e -> {
-          g.setColor(colorF.apply(e.value()));
-          Rectangle2D.Double cellR = new Rectangle2D.Double(
-              xA.xIn(e.key().x(), r) + cellMarginW,
-              yA.yIn(e.key().y() + 1, r) + cellMarginH,
-              cellW,
-              cellH);
-          g.fill(cellR);
-        });
+    if (data instanceof RangedGrid<Double> rg) {
+      data.entries().stream()
+          .filter(e -> e.value() != null)
+          .filter(e -> Double.isFinite(e.value()))
+          .forEach(e -> {
+            g.setColor(colorF.apply(e.value()));
+            Rectangle2D.Double cellR = new Rectangle2D.Double(
+                xA.xIn(rg.xRange(e.key().x()).min(), r) + cellMarginW,
+                yA.yIn(rg.yRange(e.key().y()).max(), r) + cellMarginH,
+                cellW,
+                cellH);
+            g.fill(cellR);
+          });
+    } else {
+      data.entries().stream()
+          .filter(e -> e.value() != null)
+          .filter(e -> Double.isFinite(e.value()))
+          .forEach(e -> {
+            g.setColor(colorF.apply(e.value()));
+            Rectangle2D.Double cellR = new Rectangle2D.Double(
+                xA.xIn(e.key().x(), r) + cellMarginW,
+                yA.yIn(e.key().y() + 1, r) + cellMarginH,
+                cellW,
+                cellH);
+            g.fill(cellR);
+          });
+    }
   }
 
   @Override
@@ -245,11 +218,62 @@ public class UnivariateGridDrawer implements PlotDrawer<UnivariateGridPlot, Grid
               td.xTitle(),
               td.yTitle(),
               String.join(
-                  " ",
-                  td.note(),
-                  rangeFormat.formatted(actualRange.min()) + "→"
-                      + rangeFormat.formatted(actualRange.max())),
+                      " ",
+                      td.note(),
+                      "[" + rangeFormat.formatted(actualRange.min()) + "; "
+                          + rangeFormat.formatted(actualRange.max()))
+                  + "]",
               td.data());
         }));
+  }
+
+  @Override
+  protected DoubleRange computeRange(Grid<Double> data, boolean isXAxis) {
+    if (data instanceof RangedGrid<Double> rg) {
+      return isXAxis ? rg.xRange() : rg.yRange();
+    }
+    return isXAxis ? new DoubleRange(0, data.w()) : new DoubleRange(0, data.h());
+  }
+
+  @Override
+  protected Axis computeAxis(
+      ImagePlotter ip, Graphics2D g, double size, Grid<Double> data, DoubleRange range, boolean isXAxis) {
+    int l = isXAxis ? data.w() : data.h();
+    double labelLineL = ip.computeStringH(g, "1", Configuration.Text.Use.TICK_LABEL);
+    if (data instanceof RangedGrid<Double> rg) {
+      List<Double> ticks;
+      int step = 1;
+      while (true) {
+        int finalStep = step;
+        ticks = IntStream.iterate(0, i -> i <= l + 1, i -> i + finalStep)
+            .mapToDouble(
+                i -> isXAxis ? rg.xRange(i).min() : rg.yRange(i).min())
+            .boxed()
+            .toList();
+        if (ticks.size() * labelLineL < size) {
+          break;
+        }
+        step = step + 1;
+      }
+      String format = ip.computeTicksFormat(ticks);
+      return new Axis(range, ticks, ticks.stream().map(format::formatted).toList());
+    }
+    List<Double> ticks;
+    int step = 1;
+    while (true) {
+      int finalStep = step;
+      ticks = IntStream.iterate(0, i -> i < l, i -> i + finalStep)
+          .mapToDouble(i -> i + 0.5d)
+          .boxed()
+          .toList();
+      if (ticks.size() * labelLineL < size) {
+        break;
+      }
+      step = step + 1;
+    }
+    return new Axis(
+        range,
+        ticks,
+        ticks.stream().map(t -> "%.0f".formatted(t + 0.5d)).toList());
   }
 }

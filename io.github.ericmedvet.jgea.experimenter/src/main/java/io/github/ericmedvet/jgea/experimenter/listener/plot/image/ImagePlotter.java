@@ -232,14 +232,12 @@ public class ImagePlotter implements Plotter<BufferedImage> {
   }
 
   protected String computeTicksFormat(List<Double> ticks) {
+    ticks = ticks.stream().distinct().toList();
     int nOfDigits = 0;
     while (nOfDigits < c.general().maxNOfDecimalDigits()) {
       final int d = nOfDigits;
-      long nOfDistinct = ticks.stream()
-          .map(("%." + d + "f")::formatted)
-          .map(String::toString)
-          .distinct()
-          .count();
+      long nOfDistinct =
+          ticks.stream().map(("%." + d + "f")::formatted).distinct().count();
       if (nOfDistinct == ticks.size()) {
         break;
       }

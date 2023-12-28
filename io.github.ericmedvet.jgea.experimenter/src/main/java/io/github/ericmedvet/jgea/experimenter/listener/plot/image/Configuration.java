@@ -101,7 +101,7 @@ public record Configuration(
 
   public record General(
       double tickLabelGapRatio, double plotDataRatio, double gridStrokeSizeRate, double maxNOfDecimalDigits) {
-    public static final General DEFAULT = new General(1.5, 0.9, 0.0005, 5);
+    public static final General DEFAULT = new General(1.25, 0.9, 0.0005, 5);
   }
 
   public record GridPlot(
