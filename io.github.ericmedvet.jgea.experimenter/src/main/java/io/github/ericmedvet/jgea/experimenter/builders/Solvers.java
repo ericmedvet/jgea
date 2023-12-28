@@ -59,12 +59,12 @@ public class Solvers {
       @Param(value = "name", dS = "cabea") String name,
       @Param("representation") Function<G, Representation<G>> representation,
       @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<G, S> mapper,
-      @Param(value = "keepProbability", dD = 0.01d) double keepProbability,
+      @Param(value = "keepProbability", dD = 0.00d) double keepProbability,
       @Param(value = "nTour", dI = 3) int nTour,
       @Param(value = "nEval", dI = 1000) int nEval,
       @Param(value = "toroidal", dB = true) boolean toroidal,
       @Param(value = "mooreRadius", dI = 1) int mooreRadius,
-      @Param(value = "gridSize", dI = 10) int gridSize,
+      @Param(value = "gridSize", dI = 11) int gridSize,
       @Param(value = "substrate", dS = "empty") SubstrateFiller.Predefined substrate) {
     return exampleS -> {
       Representation<G> r = representation.apply(mapper.exampleFor(exampleS));
