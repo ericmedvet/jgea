@@ -228,6 +228,7 @@ public class Plots {
         valueRange);
   }
 
+  @SuppressWarnings("unused")
   public static <G, S, Q, X>
       UnivariateGridSEPAF<MEPopulationState<G, S, Q>, Run<?, G, S, Q>, X, Individual<G, S, Q>>
           mapElitesPopulation(

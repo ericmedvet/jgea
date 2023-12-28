@@ -4,6 +4,14 @@ ea.experiment(
     (solver = (nEval = [25000]) *
     (representation = [ea.r.intString()]) * [
       ea.s.ga(maxUniquenessAttempts = 0);
+      ea.s.mapElites(name = "me-3"; descriptors = [
+        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 3; k = 0; list = ea.nf.intStringAsNumbers())));
+        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 3; k = 1; list = ea.nf.intStringAsNumbers())))
+      ]);
+      ea.s.mapElites(name = "me-2"; descriptors = [
+        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 2; k = 0; list = ea.nf.intStringAsNumbers())));
+        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 2; k = 1; list = ea.nf.intStringAsNumbers())))
+      ]);
       ea.s.cabea(name = "cabea-e-11"; keepProbability = 0; substrate = empty; gridSize = 11);
       ea.s.cabea(name = "cabea-cc-11"; keepProbability = 0; substrate = contour_cross; gridSize = 11);
       ea.s.cabea(name = "cabea-e-21"; keepProbability = 0; substrate = empty; gridSize = 21);
@@ -28,7 +36,7 @@ ea.experiment(
       ]
     );
     ea.l.expPlotSaver(
-      filePath = "../plot-fitness.png";
+      filePath = "../mm-fitness-vs-evals.png";
       freeScales = true;
       saveCsvData = true;
       type = lines;
@@ -37,9 +45,10 @@ ea.experiment(
       )
     );
     ea.l.expPlotSaver(
-      filePath = "../plot-otd.png";
+      filePath = "../mm-otd-vs-evals.png";
       freeScales = true;
       type = lines;
+      saveCsvData = true;
       plot = ea.plot.fitnessPlotMatrix(
         lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         yFunction = ea.nf.overallTargetDistance(
@@ -50,7 +59,7 @@ ea.experiment(
     );
     ea.l.runPlotSaver(
       w = 1000; h = 600;
-      filePathTemplate = "../grids-{solver.name}-{problem:%#s}-{randomGenerator.seed}.png";
+      filePathTemplate = "../{problem:%#s}-grids-{solver.name}-{randomGenerator.seed}.png";
       saveCsvData = true;
       type = univariate_grid;
       plot = ea.plot.gridPopulation(
@@ -70,6 +79,29 @@ ea.experiment(
         ea.predicate.matches(
           f = ea.nf.runKey(runKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}"));
           regex = "cabea.*"
+        );
+        ea.predicate.inS(
+          f = ea.nf.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
+          values = ["1"]
+        )
+      ])
+    );
+    ea.l.runPlotSaver(
+      w = 1000; h = 300;
+      filePathTemplate = "../{problem:%#s}-me-{solver.name}-{randomGenerator.seed}.png";
+      type = univariate_grid;
+      saveCsvData = true;
+      plot = ea.plot.mapElitesPopulation(
+        titleRunKey = ea.misc.sEntry(key = "run"; value = "Map of Elites on {problem:%#s} seed={randomGenerator.seed}");
+        predicateValue = ea.nf.quantized(f = ea.nf.evals(); r = 1000; s = "%.0f");
+        condition = ea.predicate.inD(
+          values = [0; 5000; 10000; 15000; 20000; 25000]
+        )
+      );
+      condition = ea.predicate.all(conditions = [
+        ea.predicate.matches(
+          f = ea.nf.runKey(runKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}"));
+          regex = "me.*"
         );
         ea.predicate.inS(
           f = ea.nf.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
