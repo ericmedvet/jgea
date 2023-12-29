@@ -21,7 +21,6 @@ package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jgea.core.operator.Crossover;
-import io.github.ericmedvet.jgea.core.operator.GeneticOperator;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.representation.sequence.FixedLengthListFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
@@ -41,7 +40,6 @@ import io.github.ericmedvet.jgea.experimenter.Representation;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
@@ -55,12 +53,10 @@ public class Representations {
   @SuppressWarnings("unused")
   public static Function<BitString, Representation<BitString>> bitString(
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP, @Param(value = "pMut", dD = 0.01d) double pMut) {
-    return g -> Representation.standard(
+    return g -> new Representation<>(
         new BitStringFactory(g.size()),
         new BitStringFlipMutation(pMut),
-        new BitStringUniformCrossover(),
-        crossoverP,
-        true);
+        new BitStringUniformCrossover().andThen(new BitStringFlipMutation(pMut)));
   }
 
   @SuppressWarnings("unused")
@@ -69,23 +65,19 @@ public class Representations {
       @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
       @Param(value = "sigmaMut", dD = 0.35d) double sigmaMut) {
-    return g -> Representation.standard(
+    return g -> new Representation<>(
         new FixedLengthListFactory<>(g.size(), new UniformDoubleFactory(initialMinV, initialMaxV)),
         new GaussianMutation(sigmaMut),
-        new HypercubeGeometricCrossover(),
-        crossoverP,
-        true);
+        new HypercubeGeometricCrossover().andThen(new GaussianMutation(sigmaMut)));
   }
 
   @SuppressWarnings("unused")
   public static Function<IntString, Representation<IntString>> intString(
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP, @Param(value = "pMut", dD = 0.01d) double pMut) {
-    return g -> Representation.standard(
+    return g -> new Representation<>(
         new UniformIntStringFactory(g.lowerBound(), g.upperBound(), g.size()),
         new IntStringFlipMutation(pMut),
-        new IntStringUniformCrossover(),
-        crossoverP,
-        true);
+        new IntStringUniformCrossover().andThen(new IntStringFlipMutation(pMut)));
   }
 
   @SuppressWarnings("unused")
@@ -115,12 +107,10 @@ public class Representations {
       IndependentFactory<Element> nonTerminalFactory = IndependentFactory.picker(operators);
       // single tree factory
       TreeBuilder<Element> treeBuilder = new GrowTreeBuilder<>(x -> 2, nonTerminalFactory, terminalFactory);
-      return Representation.standard(
+      return new Representation<>(
           new RampedHalfAndHalf<>(minTreeH, maxTreeH, x -> 2, nonTerminalFactory, terminalFactory),
           new SubtreeMutation<>(maxTreeH, treeBuilder),
-          new SubtreeCrossover<>(maxTreeH),
-          crossoverP,
-          false);
+          new SubtreeCrossover<>(maxTreeH));
     };
   }
 
@@ -171,12 +161,8 @@ public class Representations {
       SubtreeMutation<Element> subtreeMutation = new SubtreeMutation<>(maxTreeH, treeBuilder);
       Mutation<List<Tree<Element>>> allSubtreeMutations = (list, rnd) ->
           list.stream().map(t -> subtreeMutation.mutate(t, rnd)).toList();
-      Map<GeneticOperator<List<Tree<Element>>>, Double> geneticOperators = Map.ofEntries(
-          Map.entry(pairWiseSubtreeCrossover, crossoverP / 2d),
-          Map.entry(uniformCrossover, crossoverP / 2d),
-          Map.entry(allSubtreeMutations, 1d - crossoverP));
       return new Representation<>(
-          treeListFactory, allSubtreeMutations, pairWiseSubtreeCrossover, geneticOperators);
+          treeListFactory, List.of(allSubtreeMutations), List.of(pairWiseSubtreeCrossover, uniformCrossover));
     };
   }
 }

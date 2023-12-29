@@ -212,8 +212,11 @@ public class ImagePlotter implements Plotter<BufferedImage> {
   }
 
   protected SortedMap<String, Color> computeSeriesDataColors(List<XYDataSeries> dataSeries) {
-    List<String> names =
-        dataSeries.stream().map(XYDataSeries::name).distinct().sorted(String::compareTo).toList();
+    List<String> names = dataSeries.stream()
+        .map(XYDataSeries::name)
+        .distinct()
+        .sorted(String::compareTo)
+        .toList();
     return new TreeMap<>(
         IntStream.range(0, names.size()).boxed().collect(Collectors.toMap(names::get, i -> c.colors()
             .dataColors()

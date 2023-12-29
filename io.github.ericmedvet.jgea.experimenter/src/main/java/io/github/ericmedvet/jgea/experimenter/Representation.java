@@ -23,28 +23,25 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.Crossover;
 import io.github.ericmedvet.jgea.core.operator.GeneticOperator;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author "Eric Medvet" on 2023/12/28 for jgea
  */
-public record Representation<G>(
-    Factory<G> factory,
-    Mutation<G> mutation,
-    Crossover<G> crossover,
-    Map<GeneticOperator<G>, Double> geneticOperators) {
-  public static <G> Representation<G> standard(
-      Factory<G> factory,
-      Mutation<G> mutation,
-      Crossover<G> crossover,
-      double crossoverP,
-      boolean mutationAfterCrossover) {
-    return new Representation<>(
-        factory,
-        mutation,
-        crossover,
-        Map.ofEntries(
-            Map.entry(mutation, 1d - crossoverP),
-            Map.entry(mutationAfterCrossover ? crossover.andThen(mutation) : crossover, crossoverP)));
+public record Representation<G>(Factory<G> factory, List<Mutation<G>> mutations, List<Crossover<G>> crossovers) {
+
+  public Representation(Factory<G> factory, Mutation<G> mutation, GeneticOperator<G> crossover) {
+    this(factory, List.of(mutation), List.of(Crossover.from(crossover)));
+  }
+
+  public Map<GeneticOperator<G>, Double> geneticOperators(double crossoverP) {
+    return Stream.concat(
+            mutations.stream().map(m -> Map.entry(m, (1d - crossoverP) / (double) mutations.size())),
+            crossovers.stream().map(c -> Map.entry(c, crossoverP / (double) crossovers.size())))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (p1, p2) -> p1, LinkedHashMap::new));
   }
 }

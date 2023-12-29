@@ -60,6 +60,7 @@ public class Solvers {
       @Param("representation") Function<G, Representation<G>> representation,
       @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<G, S> mapper,
       @Param(value = "keepProbability", dD = 0.00d) double keepProbability,
+      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
       @Param(value = "nTour", dI = 3) int nTour,
       @Param(value = "nEval", dI = 1000) int nEval,
       @Param(value = "toroidal", dB = true) boolean toroidal,
@@ -75,7 +76,7 @@ public class Solvers {
           substrate.apply(Grid.create(gridSize, gridSize, true)),
           new CellularAutomataBasedSolver.MooreNeighborhood(mooreRadius, toroidal),
           keepProbability,
-          r.geneticOperators(),
+          r.geneticOperators(crossoverP),
           new Tournament(nTour));
     };
   }
@@ -123,6 +124,7 @@ public class Solvers {
       @Param(value = "name", dS = "ga") String name,
       @Param("representation") Function<G, Representation<G>> representation,
       @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<G, S> mapper,
+      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
       @Param(value = "tournamentRate", dD = 0.05d) double tournamentRate,
       @Param(value = "minNTournament", dI = 3) int minNTournament,
       @Param(value = "nPop", dI = 100) int nPop,
@@ -136,7 +138,7 @@ public class Solvers {
           r.factory(),
           nPop,
           StopConditions.nOfFitnessEvaluations(nEval),
-          r.geneticOperators(),
+          r.geneticOperators(crossoverP),
           new Tournament(Math.max(minNTournament, (int) Math.ceil((double) nPop * tournamentRate))),
           new Last(),
           nPop,
@@ -160,7 +162,7 @@ public class Solvers {
           mapper.mapperFor(exampleS),
           r.factory(),
           StopConditions.nOfFitnessEvaluations(nEval),
-          r.mutation(),
+          r.mutations().get(0),
           nPop,
           descriptors);
     };
@@ -171,6 +173,7 @@ public class Solvers {
       @Param(value = "name", dS = "nsga2") String name,
       @Param("representation") Function<G, Representation<G>> representation,
       @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<G, S> mapper,
+      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
       @Param(value = "nPop", dI = 100) int nPop,
       @Param(value = "nEval", dI = 1000) int nEval,
       @Param(value = "maxUniquenessAttempts", dI = 100) int maxUniquenessAttempts,
@@ -182,7 +185,7 @@ public class Solvers {
           r.factory(),
           nPop,
           StopConditions.nOfFitnessEvaluations(nEval),
-          r.geneticOperators(),
+          r.geneticOperators(crossoverP),
           maxUniquenessAttempts,
           remap);
     };
@@ -322,7 +325,10 @@ public class Solvers {
     return exampleS -> {
       Representation<G> r = representation.apply(mapper.exampleFor(exampleS));
       return new RandomWalk<>(
-          mapper.mapperFor(exampleS), r.factory(), StopConditions.nOfFitnessEvaluations(nEval), r.mutation());
+          mapper.mapperFor(exampleS),
+          r.factory(),
+          StopConditions.nOfFitnessEvaluations(nEval),
+          r.mutations().get(0));
     };
   }
 
