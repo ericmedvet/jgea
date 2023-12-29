@@ -126,22 +126,8 @@ public class NamedFunctions {
             values instanceof List ? (List<? extends Number>) values : new ArrayList<>(values), bins));
   }
 
-  public static NamedFunction<Collection<List<Double>>, Double> hypervolume2D(List<DoubleRange> ranges) {
-    return f("hypervolume", "%5.3f", ps -> {
-      record Point(double x, double y) {}
-      List<Point> points = ps.stream()
-          .map(p -> new Point(p.get(0), p.get(1)))
-          .sorted(Comparator.comparingDouble(Point::x))
-          .toList();
-      points = Stream.of(List.of(new Point(ranges.get(0).min(), points.get(0).y)), points)
-          .flatMap(List::stream)
-          .toList();
-      double v = 0;
-      for (int i = 1; i < points.size(); i = i + 1) {
-        v = v + (points.get(i).x - points.get(i - 1).x) * (points.get(i).y + points.get(i - 1).y) / 2d;
-      }
-      return v;
-    });
+  public static NamedFunction<Collection<List<Double>>, Double> hypervolume2D(List<Double> reference) {
+    return f("hypervolume", "%5.3f", ps -> Misc.hypervolume2D(ps,reference));
   }
 
   public static <I extends Individual<G, S, Q>, G, S, Q>

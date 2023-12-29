@@ -35,7 +35,45 @@ public class Misc {
 
   private static final Logger L = Logger.getLogger(Misc.class.getName());
 
-  private Misc() {}
+  private Misc() {
+  }
+
+  private record Point(double x, double y) {}
+
+  private static double area(Point a, Point b, Point c) {
+    return 0.5 * Math.abs(a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y));
+  }
+
+  public static File checkExistenceAndChangeName(File file) {
+    String originalFileName = file.getPath();
+    while (file.exists()) {
+      String newName = null;
+      Matcher mNum = Pattern.compile("\\((?<n>[0-9]+)\\)\\.\\w+$").matcher(file.getPath());
+      if (mNum.find()) {
+        int n = Integer.parseInt(mNum.group("n"));
+        newName = new StringBuilder(file.getPath())
+            .replace(mNum.start("n"), mNum.end("n"), Integer.toString(n + 1))
+            .toString();
+      }
+      Matcher mExtension = Pattern.compile("\\.\\w+$").matcher(file.getPath());
+      if (newName == null && mExtension.find()) {
+        newName = new StringBuilder(file.getPath())
+            .replace(mExtension.start(), mExtension.end(), ".(1)" + mExtension.group())
+            .toString();
+      }
+      if (newName == null) {
+        newName = file.getPath() + ".newer";
+      }
+      file = new File(newName);
+    }
+    if (!file.getPath().equals(originalFileName)) {
+      L.log(
+          Level.WARNING,
+          String.format("Given file name (%s) exists; will write on %s", originalFileName, file.getPath())
+      );
+    }
+    return file;
+  }
 
   public static <K> List<K> concat(List<List<? extends K>> lists) {
     return lists.stream().flatMap(List::stream).collect(Collectors.toList());
@@ -48,12 +86,21 @@ public class Misc {
     return ts.iterator().next();
   }
 
-  public static <V> Map<String, V> keyPrefix(String prefix, Map<String, V> original) {
-    Map<String, V> modified = new LinkedHashMap<>();
-    for (Map.Entry<String, V> entry : original.entrySet()) {
-      modified.put(prefix + entry.getKey(), entry.getValue());
-    }
-    return modified;
+  public static double hypervolume2D(Collection<List<Double>> points, List<Double> reference) {
+    Point min = new Point(reference.get(0), reference.get(1));
+    List<Point> ps = points.stream()
+        .map(vs -> new Point(vs.get(0), vs.get(1)))
+        .sorted(Comparator.comparingDouble(Point::x))
+        .toList();
+    return IntStream.range(1, ps.size())
+        .mapToDouble(i -> area(min, ps.get(i - 1), ps.get(i)))
+        .sum();
+  }
+
+  public static <T> Set<T> intersection(Set<T> set1, Set<T> set2) {
+    return union(set1, set2).stream()
+        .filter(t -> set1.contains(t) && set2.contains(t))
+        .collect(Collectors.toSet());
   }
 
   public static double median(double... values) {
@@ -78,15 +125,6 @@ public class Misc {
     List<K> collection = ks.stream().sorted(comparator).toList();
     int i = (int) Math.max(Math.min(((double) collection.size()) * p, collection.size() - 1), 0);
     return collection.get(i);
-  }
-
-  @SafeVarargs
-  public static <K, V> Map<K, V> merge(Map<K, V>... maps) {
-    Map<K, V> map = new LinkedHashMap<>();
-    for (Map<K, V> currentMap : maps) {
-      map.putAll(currentMap);
-    }
-    return map;
   }
 
   public static <T> T pickRandomly(Map<T, Double> options, RandomGenerator random) {
@@ -163,43 +201,8 @@ public class Misc {
     return ranges;
   }
 
-  public static File checkExistenceAndChangeName(File file) {
-    String originalFileName = file.getPath();
-    while (file.exists()) {
-      String newName = null;
-      Matcher mNum = Pattern.compile("\\((?<n>[0-9]+)\\)\\.\\w+$").matcher(file.getPath());
-      if (mNum.find()) {
-        int n = Integer.parseInt(mNum.group("n"));
-        newName = new StringBuilder(file.getPath())
-            .replace(mNum.start("n"), mNum.end("n"), Integer.toString(n + 1))
-            .toString();
-      }
-      Matcher mExtension = Pattern.compile("\\.\\w+$").matcher(file.getPath());
-      if (newName == null && mExtension.find()) {
-        newName = new StringBuilder(file.getPath())
-            .replace(mExtension.start(), mExtension.end(), ".(1)" + mExtension.group())
-            .toString();
-      }
-      if (newName == null) {
-        newName = file.getPath() + ".newer";
-      }
-      file = new File(newName);
-    }
-    if (!file.getPath().equals(originalFileName)) {
-      L.log(
-          Level.WARNING,
-          String.format("Given file name (%s) exists; will write on %s", originalFileName, file.getPath()));
-    }
-    return file;
-  }
-
   public static <T> Set<T> union(Set<T> set1, Set<T> set2) {
     return Stream.of(set1, set2).flatMap(Set::stream).collect(Collectors.toSet());
   }
 
-  public static <T> Set<T> intersection(Set<T> set1, Set<T> set2) {
-    return union(set1, set2).stream()
-        .filter(t -> set1.contains(t) && set2.contains(t))
-        .collect(Collectors.toSet());
-  }
 }
