@@ -33,6 +33,7 @@ import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntStringU
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.UniformIntStringFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.GaussianMutation;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.HypercubeGeometricCrossover;
+import io.github.ericmedvet.jgea.core.representation.sequence.numeric.SegmentGeometricCrossover;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.UniformDoubleFactory;
 import io.github.ericmedvet.jgea.core.representation.tree.*;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
@@ -68,7 +69,7 @@ public class Representations {
     return g -> new Representation<>(
         new FixedLengthListFactory<>(g.size(), new UniformDoubleFactory(initialMinV, initialMaxV)),
         new GaussianMutation(sigmaMut),
-        new HypercubeGeometricCrossover().andThen(new GaussianMutation(sigmaMut)));
+        new SegmentGeometricCrossover().andThen(new GaussianMutation(sigmaMut)));
   }
 
   @SuppressWarnings("unused")
