@@ -30,6 +30,7 @@ import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import javax.swing.*;
 
@@ -77,12 +78,6 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         range.min() - range.extent() * (r - 1d) / 2d, range.max() + range.extent() * (r - 1d) / 2d);
   }
 
-  protected static DoubleRange largestRange(List<DoubleRange> ranges) {
-    return ranges.stream()
-        .reduce((r1, r2) -> new DoubleRange(Math.min(r1.min(), r2.min()), Math.max(r1.max(), r2.max())))
-        .orElseThrow();
-  }
-
   public static void showImage(BufferedImage image) {
     EventQueue.invokeLater(() -> {
       JFrame frame = new JFrame("Image");
@@ -114,7 +109,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     return new Point2D.Double(r.getCenterX(), r.getCenterY());
   }
 
-  private <P extends XYPlot<D>, D> Layout computeLayout(Graphics2D g, P plot, PlotDrawer<P, D> plotDrawer) {
+  private <P extends XYPlot<D>, D> Layout computeLayout(Graphics2D g, P plot, PlotDrawer plotDrawer) {
     double initialXAxisL = computeStringW(g, "0", Configuration.Text.Use.TICK_LABEL)
         + 2d * c.layout().xAxisMarginHRate() * h
         + c.layout().xAxisInnerMarginHRate() * h;
@@ -131,7 +126,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
             ? 0
             : (computeStringH(g, "a", Configuration.Text.Use.TITLE)
                 + 2d * c.layout().mainTitleMarginHRate() * h),
-        plotDrawer.computeLegendH(this, g, plot) + 2d * c.layout().legendMarginHRate() * h,
+        plotDrawer.computeLegendH(g) + 2d * c.layout().legendMarginHRate() * h,
         c.plotMatrix().titlesShow().equals(Configuration.PlotMatrix.Show.BORDER)
             ? plot.dataGrid().entries().stream()
                     .filter(e -> e.key().y() == 0)
@@ -171,17 +166,17 @@ public class ImagePlotter implements Plotter<BufferedImage> {
                 ? 0
                 : (computeStringH(g, "a", Configuration.Text.Use.AXIS_LABEL)
                     + 2d * c.layout().rowTitleMarginWRate() * w),
-        plot.dataGrid().values().stream().map(XYPlot.TitledData::note).allMatch(String::isEmpty)
-            ? 0
-            : (computeStringH(g, "a", Configuration.Text.Use.NOTE)
-                + 2d * c.layout().noteMarginHRate() * h),
+        plot.dataGrid().keys().stream()
+            .mapToDouble(k -> plotDrawer.computeNoteH(g, k))
+            .max()
+            .orElse(0d),
         c.layout(),
         plot);
     // iterate
     int nOfIterations = 3;
     for (int i = 0; i < nOfIterations; i = i + 1) {
-      Grid<Axis> xAxesGrid = plotDrawer.computeXAxes(this, g, l, plot);
-      Grid<Axis> yAxesGrid = plotDrawer.computeYAxes(this, g, l, plot);
+      Grid<Axis> xAxesGrid = plotDrawer.computeXAxes(g, l);
+      Grid<Axis> yAxesGrid = plotDrawer.computeYAxes(g, l);
       List<String> xTickLabels = xAxesGrid.values().stream()
           .map(Axis::labels)
           .flatMap(List::stream)
@@ -211,16 +206,15 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     return l;
   }
 
-  protected SortedMap<String, Color> computeSeriesDataColors(List<XYDataSeries> dataSeries) {
+  protected SortedMap<String, Color> computeSeriesDataColors(List<XYDataSeries> dataSeries, List<Color> colors) {
     List<String> names = dataSeries.stream()
         .map(XYDataSeries::name)
         .distinct()
         .sorted(String::compareTo)
         .toList();
-    return new TreeMap<>(
-        IntStream.range(0, names.size()).boxed().collect(Collectors.toMap(names::get, i -> c.colors()
-            .dataColors()
-            .get(i % c.colors().dataColors().size()))));
+    return new TreeMap<>(IntStream.range(0, names.size())
+        .boxed()
+        .collect(Collectors.toMap(names::get, i -> colors.get(i % colors.size()))));
   }
 
   protected double computeStringH(
@@ -247,6 +241,63 @@ public class ImagePlotter implements Plotter<BufferedImage> {
       nOfDigits = nOfDigits + 1;
     }
     return "%." + nOfDigits + "f";
+  }
+
+  protected void drawColorBar(
+      Graphics2D g,
+      Rectangle2D r,
+      DoubleRange outerRange,
+      DoubleRange innerRange,
+      ColorRange colorRange,
+      double h,
+      int steps,
+      Configuration.Text.Use use,
+      Color labelColor,
+      AnchorV labelsAnchor) {
+    // background
+    double barY = labelsAnchor.equals(AnchorV.B) ? r.getY() : (r.getMaxY() - h);
+    double labelsY = labelsAnchor.equals(AnchorV.B) ? (r.getMaxY() - computeStringH(g, "0", use)) : r.getY();
+    Rectangle2D barR = new Rectangle2D.Double(r.getX(), barY, r.getWidth(), h);
+    g.setColor(c.colors().plotBgColor());
+    g.fill(barR);
+    // color bar
+    g.setClip(barR);
+    DoubleRange rRange = new DoubleRange(r.getX(), r.getMaxX());
+    double step = outerRange.extent() / (double) steps;
+    DoubleStream.iterate(outerRange.min(), v -> v < outerRange.max(), v -> v + step)
+        .filter(v -> v + step > innerRange.min())
+        .filter(v -> v < innerRange.max())
+        .forEach(v -> {
+          g.setColor(colorRange.interpolate(outerRange.normalize(v)));
+          double rMin = rRange.denormalize(outerRange.normalize(innerRange.clip(v)));
+          double rMax = rRange.denormalize(outerRange.normalize(innerRange.clip(v + step)));
+          g.fill(new Rectangle2D.Double(rMin, barY, rMax - rMin, h));
+        });
+    // border
+    restore(g);
+    g.setStroke(new BasicStroke((float) (c.general().borderStrokeSizeRate() * refL)));
+    g.setColor(c.colors().plotBorderColor());
+    g.draw(barR);
+    // labels
+    String format = computeTicksFormat(List.of(innerRange.min(), innerRange.max()));
+    drawString(
+        g,
+        new Point2D.Double(rRange.denormalize(outerRange.normalize(innerRange.min())), labelsY),
+        format.formatted(innerRange.min()),
+        AnchorH.C,
+        AnchorV.B,
+        use,
+        Configuration.Text.Direction.H,
+        labelColor);
+    drawString(
+        g,
+        new Point2D.Double(rRange.denormalize(outerRange.normalize(innerRange.max())), labelsY),
+        format.formatted(innerRange.max()),
+        AnchorH.C,
+        AnchorV.B,
+        use,
+        Configuration.Text.Direction.H,
+        labelColor);
   }
 
   protected void drawString(
@@ -287,11 +338,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
           case C -> p.getY() + h / 2;
           case B -> p.getY() + h;
         };
-    if (c.debug()) {
-      g.setStroke(new BasicStroke(1));
-      g.setColor(Color.MAGENTA);
-      g.draw(new Rectangle2D.Double(x, y - h, w, h));
-    }
+    markRectangle(g, new Rectangle2D.Double(x, y - h, w, h));
     g.setColor(color);
     if (direction.equals(Configuration.Text.Direction.V)) {
       g.setFont(g.getFont().deriveFont(AffineTransform.getRotateInstance(Math.toRadians(-90))));
@@ -302,11 +349,6 @@ public class ImagePlotter implements Plotter<BufferedImage> {
   }
 
   private void drawXAxis(Graphics2D g, Rectangle2D r, String name, Axis a) {
-    if (c.debug()) {
-      g.setStroke(new BasicStroke(1));
-      g.setColor(Color.MAGENTA);
-      g.draw(r);
-    }
     drawString(
         g,
         new Point2D.Double(r.getCenterX(), r.getY() + r.getHeight()),
@@ -329,11 +371,6 @@ public class ImagePlotter implements Plotter<BufferedImage> {
   }
 
   private void drawYAxis(Graphics2D g, Rectangle2D r, String name, Axis a) {
-    if (c.debug()) {
-      g.setStroke(new BasicStroke(1));
-      g.setColor(Color.MAGENTA);
-      g.draw(r);
-    }
     drawString(
         g,
         new Point2D.Double(r.getX(), r.getCenterY()),
@@ -362,34 +399,46 @@ public class ImagePlotter implements Plotter<BufferedImage> {
 
   @Override
   public BufferedImage lines(XYDataSeriesPlot plot) {
-    return plot(plot, new LinesPlotDrawer());
+    return plot(plot, new LinesPlotDrawer(this, plot, c.linesPlot()));
   }
 
   @Override
   public BufferedImage points(XYDataSeriesPlot plot) {
-    return plot(plot, new PointsPlotDrawer());
+    return plot(plot, new PointsPlotDrawer(this, plot, c.pointsPlot()));
   }
 
   @Override
   public BufferedImage univariateGrid(UnivariateGridPlot plot) {
-    return plot(plot, new UnivariateGridDrawer());
+    return plot(plot, new UnivariateGridPlotDrawer(this, plot, c.gridPlot()));
   }
 
-  private <P extends XYPlot<D>, D> BufferedImage plot(P plot, PlotDrawer<P, D> plotDrawer) {
-    // preprocess
-    plot = plotDrawer.preprocess(this, plot);
+  @Override
+  public BufferedImage landscape(LandscapePlot plot) {
+    return plot(plot, new LandscapePlotDrawer(this, plot, c.landscapePlot()));
+  }
+
+  private void markRectangle(Graphics2D g, Rectangle2D r) {
+    if (c.debug()) {
+      g.setStroke(new BasicStroke(1));
+      g.setColor(Color.MAGENTA);
+      g.draw(r);
+    }
+  }
+
+  private <P extends XYPlot<D>, D> BufferedImage plot(P plot, PlotDrawer plotDrawer) {
     // prepare image
     BufferedImage img = new BufferedImage((int) w, (int) h, BufferedImage.TYPE_3BYTE_BGR);
     Graphics2D g = img.createGraphics();
     g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     // compute layout and axes
     Layout l = computeLayout(g, plot, plotDrawer);
-    Grid<Axis> xAxesGrid = plotDrawer.computeXAxes(this, g, l, plot);
-    Grid<Axis> yAxesGrid = plotDrawer.computeYAxes(this, g, l, plot);
+    Grid<Axis> xAxesGrid = plotDrawer.computeXAxes(g, l);
+    Grid<Axis> yAxesGrid = plotDrawer.computeYAxes(g, l);
     // clean
     g.setColor(c.colors().bgColor());
     g.fill(new Rectangle2D.Double(0, 0, w, h));
     // draw title
+    markRectangle(g, l.mainTitle());
     drawString(
         g,
         center(l.mainTitle()),
@@ -400,17 +449,21 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         Configuration.Text.Direction.H,
         c.colors().titleColor());
     // draw legend
-    plotDrawer.drawLegend(this, g, l.legend(), plot);
+    markRectangle(g, l.legend());
+    plotDrawer.drawLegend(g, l.legend());
+    restore(g);
     // show plots
     for (int px = 0; px < plot.dataGrid().w(); px = px + 1) {
       for (int py = 0; py < plot.dataGrid().h(); py = py + 1) {
         if (px == 0 && c.plotMatrix().axesShow().equals(Configuration.PlotMatrix.Show.BORDER)) {
           // draw common y-axis
+          markRectangle(g, l.commonYAxis(py));
           drawYAxis(g, l.commonYAxis(py), plot.yName(), yAxesGrid.get(0, py));
         }
         if (px == plot.dataGrid().w() - 1
             && c.plotMatrix().titlesShow().equals(Configuration.PlotMatrix.Show.BORDER)) {
           // draw common row title
+          markRectangle(g, l.commonRowTitle(py));
           drawString(
               g,
               center(l.commonRowTitle(py)),
@@ -424,10 +477,12 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         if (py == plot.dataGrid().h() - 1
             && c.plotMatrix().axesShow().equals(Configuration.PlotMatrix.Show.BORDER)) {
           // draw common x-axis
+          markRectangle(g, l.commonXAxis(px));
           drawXAxis(g, l.commonXAxis(px), plot.xName(), xAxesGrid.get(px, 0));
         }
         if (py == 0 && c.plotMatrix().titlesShow().equals(Configuration.PlotMatrix.Show.BORDER)) {
           // draw common col title
+          markRectangle(g, l.commonColTitle(px));
           drawString(
               g,
               center(l.commonColTitle(px)),
@@ -440,6 +495,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         }
         // draw plot titles
         if (c.plotMatrix().titlesShow().equals(Configuration.PlotMatrix.Show.ALL)) {
+          markRectangle(g, l.colTitle(px, py));
           drawString(
               g,
               center(l.colTitle(px, py)),
@@ -449,6 +505,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
               Configuration.Text.Use.AXIS_LABEL,
               Configuration.Text.Direction.H,
               c.colors().titleColor());
+          markRectangle(g, l.rowTitle(px, py));
           drawString(
               g,
               center(l.rowTitle(px, py)),
@@ -461,37 +518,28 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         }
         // draw axes
         if (c.plotMatrix().axesShow().equals(Configuration.PlotMatrix.Show.ALL)) {
+          markRectangle(g, l.xAxis(px, py));
           drawXAxis(g, l.xAxis(px, py), plot.xName(), xAxesGrid.get(px, py));
+          markRectangle(g, l.yAxis(px, py));
           drawYAxis(g, l.yAxis(px, py), plot.yName(), yAxesGrid.get(px, py));
         }
         // draw notes
-        drawString(
-            g,
-            center(l.note(px, py)),
-            plot.dataGrid().get(px, py).note(),
-            AnchorH.C,
-            AnchorV.C,
-            Configuration.Text.Use.NOTE,
-            Configuration.Text.Direction.H,
-            c.colors().noteColor());
+        markRectangle(g, l.note(px, py));
+        plotDrawer.drawNote(g, l.note(px, py), new Grid.Key(px, py));
+        restore(g);
         // draw background
         g.setColor(c.colors().plotBgColor());
         g.fill(l.innerPlot(px, py));
-        // draw border and grid
-        g.setStroke(new BasicStroke((float) (c.general().gridStrokeSizeRate() * refL)));
+        // draw border
+        g.setStroke(new BasicStroke((float) (c.general().borderStrokeSizeRate() * refL)));
         g.setColor(c.colors().plotBorderColor());
         g.draw(l.innerPlot(px, py));
         // draw plot
+        markRectangle(g, l.innerPlot(px, py));
         g.setClip(l.innerPlot(px, py));
         plotDrawer.drawPlot(
-            this,
-            g,
-            l.innerPlot(px, py),
-            plot.dataGrid().get(px, py).data(),
-            xAxesGrid.get(px, py),
-            yAxesGrid.get(px, py),
-            plot);
-        g.setClip(new Rectangle2D.Double(0, 0, w, h));
+            g, l.innerPlot(px, py), new Grid.Key(px, py), xAxesGrid.get(px, py), yAxesGrid.get(px, py));
+        restore(g);
       }
     }
     // return
@@ -499,26 +547,13 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     return img;
   }
 
-  protected DoubleRange plotRange(
-      boolean isXAxis,
-      DoubleRange originalRange,
-      DoubleRange colLargestRange,
-      DoubleRange rowLargestRange,
-      DoubleRange allLargestRange) {
-    if (c.plotMatrix().independences().contains(Configuration.PlotMatrix.Independence.ALL)) {
-      return originalRange;
-    }
-    if (isXAxis && c.plotMatrix().independences().contains(Configuration.PlotMatrix.Independence.COLS)) {
-      return colLargestRange;
-    }
-    if (!isXAxis && c.plotMatrix().independences().contains(Configuration.PlotMatrix.Independence.ROWS)) {
-      return rowLargestRange;
-    }
-    return allLargestRange;
-  }
-
   protected double refL() {
     return refL;
+  }
+
+  private void restore(Graphics2D g) {
+    g.setClip(new Rectangle2D.Double(0, 0, w, h));
+    g.setStroke(new BasicStroke());
   }
 
   protected double w() {

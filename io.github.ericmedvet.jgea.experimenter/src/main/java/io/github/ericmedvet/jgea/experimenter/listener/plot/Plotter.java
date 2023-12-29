@@ -20,12 +20,14 @@
 package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
 import io.github.ericmedvet.jgea.experimenter.listener.plot.image.ImagePlotter;
+import io.github.ericmedvet.jgea.problem.synthetic.Ackley;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 import java.util.List;
 import java.util.Random;
 import java.util.random.RandomGenerator;
 import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 
 /**
  * @author "Eric Medvet" on 2023/12/01 for jgea
@@ -35,7 +37,8 @@ public interface Plotter<O> {
   enum Type {
     LINES,
     UNIVARIATE_GRID,
-    POINTS
+    POINTS,
+    LANDSCAPE_PLOT
   }
 
   O lines(XYDataSeriesPlot plot);
@@ -43,6 +46,8 @@ public interface Plotter<O> {
   O points(XYDataSeriesPlot plot);
 
   O univariateGrid(UnivariateGridPlot plot);
+
+  O landscape(LandscapePlot plot);
 
   static void main(String[] args) {
     RandomGenerator rg = new Random(1);
@@ -86,7 +91,7 @@ public interface Plotter<O> {
         "y",
         DoubleRange.UNBOUNDED,
         DoubleRange.UNBOUNDED,
-        Grid.create(1, 1, (x, y) -> new XYPlot.TitledData<>("", "", "", List.of(ds1, ds2))));
+        Grid.create(1, 1, (x, y) -> new XYPlot.TitledData<>("", "", List.of(ds1, ds2))));
     ImagePlotter ip = new ImagePlotter(800, 600);
     ImagePlotter.showImage(ip.lines(p));
     ImagePlotter.showImage(ip.points(p));
@@ -102,12 +107,12 @@ public interface Plotter<O> {
             3,
             2,
             List.of(
-                new XYPlot.TitledData<>("x1", "y1", "", List.of(ds1)),
-                new XYPlot.TitledData<>("x2", "y1", "", List.of(ds2)),
-                new XYPlot.TitledData<>("x3", "y1", "", List.of(ds3, ds4)),
-                new XYPlot.TitledData<>("x1", "y2", "", List.of(ds5)),
-                new XYPlot.TitledData<>("x2", "y2", "", List.of(ds1, ds4)),
-                new XYPlot.TitledData<>("x3", "y2", "ocio!", List.of(ds2, ds5)))));
+                new XYPlot.TitledData<>("x1", "y1", List.of(ds1)),
+                new XYPlot.TitledData<>("x2", "y1", List.of(ds2)),
+                new XYPlot.TitledData<>("x3", "y1", List.of(ds3, ds4)),
+                new XYPlot.TitledData<>("x1", "y2", List.of(ds5)),
+                new XYPlot.TitledData<>("x2", "y2", List.of(ds1, ds4)),
+                new XYPlot.TitledData<>("x3", "y2", List.of(ds2, ds5)))));
     ImagePlotter.showImage(ip.lines(m));
     UnivariateGridPlot sgp = new UnivariateGridPlot(
         "grid!!!",
@@ -124,7 +129,6 @@ public interface Plotter<O> {
             (ox, oy) -> new XYPlot.TitledData<>(
                 "x%d".formatted(ox),
                 "y%d".formatted(oy),
-                "",
                 Grid.create(
                     10,
                     16,
@@ -144,7 +148,6 @@ public interface Plotter<O> {
             (ox, oy) -> new XYPlot.TitledData<>(
                 "x%d".formatted(ox),
                 "y%d".formatted(oy),
-                "",
                 RangedGrid.from(
                     Grid.create(
                         60,
@@ -158,6 +161,42 @@ public interface Plotter<O> {
                     "yg"))));
     ImagePlotter.showImage(ip.univariateGrid(sgp));
     ImagePlotter.showImage(ip.univariateGrid(sgp2));
+    Ackley lF = new Ackley(2);
+    LandscapePlot lp = new LandscapePlot(
+        "Ackley",
+        "",
+        "",
+        "x1",
+        "x2",
+        DoubleRange.UNBOUNDED,
+        new DoubleRange(-1, 3),
+        DoubleRange.UNBOUNDED,
+        Grid.create(
+            2,
+            2,
+            (x, y) -> new XYPlot.TitledData<>(
+                Integer.toString(x),
+                Integer.toString(y),
+                new LandscapePlot.Data(
+                    (x1, x2) -> lF.qualityFunction().apply(List.of(x1, x2)),
+                    List.of(
+                        XYDataSeries.of(
+                            "uniform",
+                            IntStream.range(0, 20)
+                                .mapToObj(
+                                    i -> new XYDataSeries.Point(
+                                        Value.of(rg.nextDouble()),
+                                        Value.of(rg.nextDouble())))
+                                .toList()),
+                        XYDataSeries.of(
+                            "gaussian",
+                            IntStream.range(0, 20)
+                                .mapToObj(
+                                    i -> new XYDataSeries.Point(
+                                        Value.of(rg.nextGaussian()),
+                                        Value.of(rg.nextGaussian())))
+                                .toList()))))));
+    ImagePlotter.showImage(ip.landscape(lp));
   }
 
   default O plot(XYPlot<?> plot, Type type) {
@@ -169,6 +208,9 @@ public interface Plotter<O> {
     }
     if (plot instanceof UnivariateGridPlot univariateGridPlot && type.equals(Type.UNIVARIATE_GRID)) {
       return univariateGrid(univariateGridPlot);
+    }
+    if (plot instanceof LandscapePlot landscapePlot && type.equals(Type.LANDSCAPE_PLOT)) {
+      return landscape(landscapePlot);
     }
     throw new UnsupportedOperationException("Unknown plot type %s with data %s"
         .formatted(type, plot.getClass().getSimpleName()));

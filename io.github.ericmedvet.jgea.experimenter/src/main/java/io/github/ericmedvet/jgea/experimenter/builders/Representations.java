@@ -32,7 +32,6 @@ import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntStringF
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntStringUniformCrossover;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.UniformIntStringFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.GaussianMutation;
-import io.github.ericmedvet.jgea.core.representation.sequence.numeric.HypercubeGeometricCrossover;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.SegmentGeometricCrossover;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.UniformDoubleFactory;
 import io.github.ericmedvet.jgea.core.representation.tree.*;

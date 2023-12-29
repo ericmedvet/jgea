@@ -20,6 +20,7 @@
 package io.github.ericmedvet.jgea.experimenter.listener.plot.image;
 
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeries;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeriesPlot;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
@@ -27,29 +28,33 @@ import java.awt.geom.Rectangle2D;
 
 public class PointsPlotDrawer extends AbstractXYDataSeriesPlotDrawer {
 
-  @Override
-  protected Point2D computeLegendImageSize(ImagePlotter ip) {
-    return new Point2D.Double(
-        ip.c().pointsPlot().legendImageSizeRate() * ip.refL(),
-        ip.c().pointsPlot().legendImageSizeRate() * ip.refL());
+  private final Configuration.PointsPlot c;
+
+  public PointsPlotDrawer(ImagePlotter ip, XYDataSeriesPlot plot, Configuration.PointsPlot c) {
+    super(ip, plot, c.colors());
+    this.c = c;
   }
 
   @Override
-  protected void drawLegendImage(ImagePlotter ip, Graphics2D g, Color color, Rectangle2D r) {
-    double l = ip.c().pointsPlot().markerSizeRate() * ip.refL();
-    g.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), (int)
-        (color.getAlpha() * ip.c().pointsPlot().alpha())));
+  protected Point2D computeLegendImageSize() {
+    return new Point2D.Double(c.legendImageSizeRate() * ip.refL(), c.legendImageSizeRate() * ip.refL());
+  }
+
+  @Override
+  protected void drawLegendImage(Graphics2D g, Rectangle2D r, Color color) {
+    double l = c.markerSizeRate() * ip.refL();
+    g.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), (int) (color.getAlpha() * c.alpha())));
     g.fill(new Ellipse2D.Double(r.getCenterX() - l / 2d, r.getCenterY() - l / 2d, l, l));
   }
 
   @Override
-  protected void drawData(
-      ImagePlotter ip, Graphics2D g, Rectangle2D r, Axis xA, Axis yA, XYDataSeries ds, Color color) {
-    double l = ip.c().pointsPlot().markerSizeRate() * ip.refL();
+  protected void drawData(Graphics2D g, Rectangle2D r, Axis xA, Axis yA, XYDataSeries ds, Color color) {
+    double l = c.markerSizeRate() * ip.refL();
+    g.setStroke(new BasicStroke((float) (c.dataStrokeSizeRate() * ip.refL())));
     ds.points().forEach(p -> {
       Shape marker = new Ellipse2D.Double(xA.xIn(p.x().v(), r) - l / 2d, yA.yIn(p.y().v(), r) - l / 2d, l, l);
-      g.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), (int)
-          (color.getAlpha() * ip.c().pointsPlot().alpha())));
+      g.setColor(
+          new Color(color.getRed(), color.getGreen(), color.getBlue(), (int) (color.getAlpha() * c.alpha())));
       g.fill(marker);
       g.setColor(color);
       g.draw(marker);

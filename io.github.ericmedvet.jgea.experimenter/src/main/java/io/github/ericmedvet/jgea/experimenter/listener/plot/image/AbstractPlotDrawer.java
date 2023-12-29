@@ -31,9 +31,31 @@ import java.util.stream.Stream;
 /**
  * @author "Eric Medvet" on 2023/12/28 for jgea
  */
-public abstract class AbstractPlotDrawer<P extends XYPlot<D>, D> implements PlotDrawer<P, D> {
+public abstract class AbstractPlotDrawer<P extends XYPlot<D>, D> implements PlotDrawer {
 
-  protected Grid<Axis> computeAxes(ImagePlotter ip, Graphics2D g, Layout l, P plot, boolean isXAxis) {
+  protected final ImagePlotter ip;
+  protected final P plot;
+  protected final Grid<DoubleRange> xRanges;
+  protected final Grid<DoubleRange> yRanges;
+
+  public AbstractPlotDrawer(ImagePlotter ip, P plot) {
+    this.ip = ip;
+    this.plot = plot;
+    xRanges = computeRanges(true);
+    yRanges = computeRanges(false);
+  }
+
+  @Override
+  public Grid<Axis> computeXAxes(Graphics2D g, Layout l) {
+    return computeAxes(g, l, true);
+  }
+
+  @Override
+  public Grid<Axis> computeYAxes(Graphics2D g, Layout l) {
+    return computeAxes(g, l, false);
+  }
+
+  protected Grid<DoubleRange> computeRanges(boolean isXAxis) {
     Grid<DoubleRange> grid = plot.dataGrid().map((k, td) -> {
       DoubleRange extRange = isXAxis ? plot.xRange() : plot.yRange();
       if (extRange.equals(DoubleRange.UNBOUNDED)) {
@@ -41,36 +63,64 @@ public abstract class AbstractPlotDrawer<P extends XYPlot<D>, D> implements Plot
       }
       return extRange;
     });
-    java.util.List<DoubleRange> colLargestRanges =
-        grid.columns().stream().map(ImagePlotter::largestRange).toList();
-    java.util.List<DoubleRange> rowLargestRanges =
-        grid.rows().stream().map(ImagePlotter::largestRange).toList();
-    DoubleRange largestRange = ImagePlotter.largestRange(Stream.of(colLargestRanges, rowLargestRanges)
-        .flatMap(java.util.List::stream)
+    List<DoubleRange> colLargestRanges =
+        grid.columns().stream().map(DoubleRange::largest).toList();
+    List<DoubleRange> rowLargestRanges =
+        grid.rows().stream().map(DoubleRange::largest).toList();
+    DoubleRange largestRange = DoubleRange.largest(Stream.of(colLargestRanges, rowLargestRanges)
+        .flatMap(List::stream)
         .toList());
     return grid.keys().stream()
         .map(k -> new Grid.Entry<>(
             k,
-            ip.plotRange(
+            plotRange(
                 isXAxis,
                 grid.get(k),
                 colLargestRanges.get(k.x()),
                 rowLargestRanges.get(k.y()),
                 largestRange)))
-        .map(e -> {
-          Rectangle2D r = l.innerPlot(e.key().x(), e.key().y());
-          double size = isXAxis ? r.getWidth() : r.getHeight();
-          return new Grid.Entry<>(
-              e.key(),
-              computeAxis(
-                  ip, g, size, plot.dataGrid().get(e.key()).data(), e.value(), isXAxis));
-        })
         .collect(Grid.collector());
+  }
+
+  protected Grid<Axis> computeAxes(Graphics2D g, Layout l, boolean isXAxis) {
+    return (isXAxis ? xRanges : yRanges)
+        .entries().stream()
+            .map(e -> {
+              Rectangle2D r = l.innerPlot(e.key().x(), e.key().y());
+              double size = isXAxis ? r.getWidth() : r.getHeight();
+              return new Grid.Entry<>(
+                  e.key(),
+                  computeAxis(
+                      g,
+                      size,
+                      plot.dataGrid().get(e.key()).data(),
+                      e.value(),
+                      isXAxis));
+            })
+            .collect(Grid.collector());
+  }
+
+  protected DoubleRange plotRange(
+      boolean isXAxis,
+      DoubleRange originalRange,
+      DoubleRange colLargestRange,
+      DoubleRange rowLargestRange,
+      DoubleRange allLargestRange) {
+    if (ip.c().plotMatrix().independences().contains(Configuration.PlotMatrix.Independence.ALL)) {
+      return originalRange;
+    }
+    if (isXAxis && ip.c().plotMatrix().independences().contains(Configuration.PlotMatrix.Independence.COLS)) {
+      return colLargestRange;
+    }
+    if (!isXAxis && ip.c().plotMatrix().independences().contains(Configuration.PlotMatrix.Independence.ROWS)) {
+      return rowLargestRange;
+    }
+    return allLargestRange;
   }
 
   protected abstract DoubleRange computeRange(D data, boolean isXAxis);
 
-  protected Axis computeAxis(ImagePlotter ip, Graphics2D g, double size, D data, DoubleRange range, boolean isXAxis) {
+  protected Axis computeAxis(Graphics2D g, double size, D data, DoubleRange range, boolean isXAxis) {
     DoubleRange innerRange = ImagePlotter.enlarge(range, ip.c().general().plotDataRatio());
     double labelLineL = ip.computeStringH(g, "1", Configuration.Text.Use.TICK_LABEL)
         * (1d + ip.c().general().tickLabelGapRatio());

@@ -27,7 +27,7 @@ import io.github.ericmedvet.jsdynsym.grid.Grid;
  */
 public interface XYPlot<D> {
 
-  record TitledData<D>(String xTitle, String yTitle, String note, D data) {}
+  record TitledData<D>(String xTitle, String yTitle, D data) {}
 
   String title();
 

@@ -55,7 +55,7 @@
     <jdk.version>17</jdk.version>
     <revision>2.5.2-SNAPSHOT</revision>
     <jnb.version>1.2.1</jnb.version>
-    <jsdynsym.version>0.10.5</jsdynsym.version>
+    <jsdynsym.version>0.10.6-SNAPSHOT</jsdynsym.version>
   </properties>
   <dependencies/>
 

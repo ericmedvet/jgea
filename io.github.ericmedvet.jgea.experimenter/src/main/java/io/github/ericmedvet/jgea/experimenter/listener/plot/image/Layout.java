@@ -111,13 +111,13 @@ public record Layout(
 
   Rectangle2D note(int plotX, int plotY) {
     return new Rectangle2D.Double(
-        commonYAxesW + (double) plotX * plotOuterW() + yAxisW,
+        innerPlot(plotX, plotY).getX(),
         mainTitleH
             + commonColTitleH
             + (double) plotY * plotOuterH()
             + +colTitleH
             + configuration.noteMarginHRate() * h,
-        plotInnerW(),
+        innerPlot(plotX, plotY).getWidth(),
         noteH - 2d * configuration.noteMarginHRate() * h);
   }
 

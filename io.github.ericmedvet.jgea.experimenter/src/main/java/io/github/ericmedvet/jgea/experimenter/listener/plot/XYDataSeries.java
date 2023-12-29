@@ -19,10 +19,8 @@
  */
 package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+import java.util.*;
 
 /**
  * @author "Eric Medvet" on 2023/12/01 for jgea
@@ -60,5 +58,17 @@ public interface XYDataSeries {
           Value.of(points().get(i).y().v() - points().get(i - 1).y().v())));
     }
     return XYDataSeries.of(name(), Collections.unmodifiableList(points));
+  }
+
+  default DoubleRange xRange() {
+    double[] xs = points().stream().mapToDouble(p -> p.x.v()).toArray();
+    return new DoubleRange(
+        Arrays.stream(xs).min().orElse(0d), Arrays.stream(xs).max().orElse(1d));
+  }
+
+  default DoubleRange yRange() {
+    double[] ys = points().stream().mapToDouble(p -> p.y.v()).toArray();
+    return new DoubleRange(
+        Arrays.stream(ys).min().orElse(0d), Arrays.stream(ys).max().orElse(1d));
   }
 }

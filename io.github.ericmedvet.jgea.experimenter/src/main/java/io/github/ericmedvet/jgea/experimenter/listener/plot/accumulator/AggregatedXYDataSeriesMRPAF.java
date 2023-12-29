@@ -112,7 +112,6 @@ public class AggregatedXYDataSeriesMRPAF<E, R, K>
         (x, y) -> new XYPlot.TitledData<>(
             xSubplotFunction.getFormat().formatted(data.colIndexes().get(x)),
             ySubplotFunction.getFormat().formatted(data.rowIndexes().get(y)),
-            "",
             data.get(x, y)));
     String subtitle = "";
     if (grid.w() > 1 && grid.h() == 1) {

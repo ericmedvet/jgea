@@ -33,6 +33,7 @@ public record Configuration(
     LinesPlot linesPlot,
     PointsPlot pointsPlot,
     GridPlot gridPlot,
+    LandscapePlot landscapePlot,
     boolean debug) {
 
   public static final Configuration DEFAULT = new Configuration(
@@ -44,6 +45,7 @@ public record Configuration(
       LinesPlot.DEFAULT,
       PointsPlot.DEFAULT,
       GridPlot.DEFAULT,
+      LandscapePlot.DEFAULT,
       false);
 
   public static final Configuration FREE_SCALES = new Configuration(
@@ -58,6 +60,7 @@ public record Configuration(
       LinesPlot.DEFAULT,
       PointsPlot.DEFAULT,
       Configuration.GridPlot.DEFAULT,
+      LandscapePlot.DEFAULT,
       false);
 
   public record Colors(
@@ -70,7 +73,7 @@ public record Configuration(
       Color tickLabelColor,
       Color noteColor,
       List<Color> dataColors,
-      ColorRange continuousDataColorRange) {
+      List<ColorRange> continuousDataColorRanges) {
 
     public static final Colors DEFAULT = new Colors(
         Color.WHITE,
@@ -84,24 +87,32 @@ public record Configuration(
         List.of(
             new Color(227, 26, 28),
             new Color(31, 120, 180),
+            new Color(106, 61, 154),
+            new Color(51, 160, 44),
+            new Color(255, 127, 0),
+            new Color(177, 89, 40),
             new Color(178, 223, 138),
             new Color(251, 154, 153),
-            new Color(51, 160, 44),
             new Color(166, 206, 227),
             new Color(253, 191, 111),
-            new Color(106, 61, 154),
-            new Color(255, 127, 0),
             new Color(202, 178, 214),
-            new Color(255, 255, 153),
-            new Color(177, 89, 40)),
-        new ColorRange(new Color(31, 120, 180), new Color(227, 26, 28)));
-
-    public record ColorRange(Color min, Color max) {}
+            new Color(255, 255, 153)),
+        List.of(
+            new ColorRange(new Color(255, 255, 204), new Color(120, 198, 121), new Color(0, 90, 50)),
+            new ColorRange(new Color(140, 81, 10), new Color(245, 245, 245), new Color(1, 102, 94)),
+            new ColorRange(new Color(69, 117, 180), new Color(255, 255, 191), new Color(215, 48, 39)),
+            new ColorRange(new Color(222, 235, 247), new Color(49, 130, 189)),
+            new ColorRange(new Color(240, 240, 240), new Color(99, 99, 99)),
+            new ColorRange(new Color(49, 163, 84), new Color(229, 245, 224))));
   }
 
   public record General(
-      double tickLabelGapRatio, double plotDataRatio, double gridStrokeSizeRate, double maxNOfDecimalDigits) {
-    public static final General DEFAULT = new General(1.25, 0.9, 0.0005, 5);
+      double tickLabelGapRatio,
+      double plotDataRatio,
+      double gridStrokeSizeRate,
+      double borderStrokeSizeRate,
+      double maxNOfDecimalDigits) {
+    public static final General DEFAULT = new General(1.25, 0.9, 0.0005, 0.001, 5);
   }
 
   public record GridPlot(
@@ -109,8 +120,22 @@ public record Configuration(
       int legendSteps,
       double legendImageWRate,
       double legendImageHRate,
-      boolean showRanges) {
-    public static final GridPlot DEFAULT = new GridPlot(0.9, 100, 0.2, 0.025, true);
+      boolean showRanges,
+      ColorRange colorRange) {
+    public static final GridPlot DEFAULT = new GridPlot(
+        0.9,
+        20,
+        0.2,
+        0.025,
+        true,
+        Colors.DEFAULT.continuousDataColorRanges().get(0));
+  }
+
+  public record LandscapePlot(double fDensity, List<Color> colors, ColorRange colorRange) {
+    public static LandscapePlot DEFAULT = new LandscapePlot(
+        0.2,
+        Colors.DEFAULT.dataColors(),
+        Colors.DEFAULT.continuousDataColorRanges().get(0));
   }
 
   public record Layout(
@@ -133,8 +158,13 @@ public record Configuration(
         0.001);
   }
 
-  public record LinesPlot(double dataStrokeSizeRate, double alpha, double legendImageWRate, double legendImageHRate) {
-    public static final LinesPlot DEFAULT = new LinesPlot(0.0025, 0.3, 0.04, 0.025);
+  public record LinesPlot(
+      double dataStrokeSizeRate,
+      double alpha,
+      double legendImageWRate,
+      double legendImageHRate,
+      List<Color> colors) {
+    public static final LinesPlot DEFAULT = new LinesPlot(0.0025, 0.3, 0.04, 0.025, Colors.DEFAULT.dataColors);
   }
 
   public record PlotMatrix(Show axesShow, Show titlesShow, Set<Independence> independences) {
@@ -155,8 +185,12 @@ public record Configuration(
   }
 
   public record PointsPlot(
-      double dataStrokeSizeRate, double markerSizeRate, double alpha, double legendImageSizeRate) {
-    public static final PointsPlot DEFAULT = new PointsPlot(0.0015, 0.005, 0.35, 0.02);
+      double dataStrokeSizeRate,
+      double markerSizeRate,
+      double alpha,
+      double legendImageSizeRate,
+      List<Color> colors) {
+    public static final PointsPlot DEFAULT = new PointsPlot(0.0015, 0.005, 0.35, 0.02, Colors.DEFAULT.dataColors());
   }
 
   public record Text(double fontSizeRate, Map<Use, Double> sizeRates, String fontName) {

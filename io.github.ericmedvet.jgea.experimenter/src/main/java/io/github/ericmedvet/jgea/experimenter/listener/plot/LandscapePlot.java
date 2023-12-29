@@ -21,7 +21,9 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.DoubleBinaryOperator;
 
 /**
@@ -35,7 +37,42 @@ public record LandscapePlot(
     String yName,
     DoubleRange xRange,
     DoubleRange yRange,
+    DoubleRange valueRange,
     Grid<TitledData<Data>> dataGrid)
     implements XYPlot<LandscapePlot.Data> {
-  record Data(DoubleBinaryOperator f, List<XYDataSeries> xyDataSeries) {}
+  public record Data(DoubleBinaryOperator f, List<XYDataSeries> xyDataSeries) {}
+
+  public LandscapePlot {
+    if (xRange.equals(DoubleRange.UNBOUNDED)) {
+      xRange = dataGrid.values().stream()
+          .filter(Objects::nonNull)
+          .map(td -> td.data().xyDataSeries)
+          .flatMap(Collection::stream)
+          .map(XYDataSeries::xRange)
+          .reduce(DoubleRange::largest)
+          .orElseThrow();
+    }
+    if (yRange.equals(DoubleRange.UNBOUNDED)) {
+      yRange = dataGrid.values().stream()
+          .filter(Objects::nonNull)
+          .map(td -> td.data().xyDataSeries)
+          .flatMap(Collection::stream)
+          .map(XYDataSeries::yRange)
+          .reduce(DoubleRange::largest)
+          .orElseThrow();
+    }
+  }
+
+  public XYDataSeriesPlot toXYDataSeriesPlot() {
+    return new XYDataSeriesPlot(
+        title,
+        xTitleName,
+        yTitleName,
+        xName,
+        yName,
+        xRange,
+        yRange,
+        dataGrid.map(td -> new XYPlot.TitledData<>(
+            td.xTitle(), td.yTitle(), td.data().xyDataSeries())));
+  }
 }

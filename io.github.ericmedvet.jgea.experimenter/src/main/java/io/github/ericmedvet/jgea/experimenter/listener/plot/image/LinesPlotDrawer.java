@@ -21,6 +21,7 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot.image;
 
 import io.github.ericmedvet.jgea.experimenter.listener.plot.RangedValue;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeries;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeriesPlot;
 import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
@@ -32,21 +33,26 @@ import java.util.stream.IntStream;
 
 public class LinesPlotDrawer extends AbstractXYDataSeriesPlotDrawer {
 
-  @Override
-  protected Point2D computeLegendImageSize(ImagePlotter ip) {
-    return new Point2D.Double(
-        ip.c().linesPlot().legendImageWRate() * ip.w(),
-        +ip.c().linesPlot().legendImageHRate() * ip.h());
+  private final Configuration.LinesPlot c;
+
+  public LinesPlotDrawer(ImagePlotter ip, XYDataSeriesPlot plot, Configuration.LinesPlot c) {
+    super(ip, plot, c.colors());
+    this.c = c;
   }
 
-  protected void drawLegendImage(ImagePlotter ip, Graphics2D g, Color color, Rectangle2D r) {
+  @Override
+  protected Point2D computeLegendImageSize() {
+    return new Point2D.Double(c.legendImageWRate() * ip.w(), +c.legendImageHRate() * ip.h());
+  }
+
+  @Override
+  protected void drawLegendImage(Graphics2D g, Rectangle2D r, Color color) {
     g.setColor(color);
-    g.setStroke(new BasicStroke((float) (ip.c().linesPlot().dataStrokeSizeRate() * ip.refL())));
+    g.setStroke(new BasicStroke((float) (c.dataStrokeSizeRate() * ip.refL())));
     g.draw(new Line2D.Double(r.getX(), r.getCenterY(), r.getMaxX(), r.getCenterY()));
   }
 
-  protected void drawData(
-      ImagePlotter ip, Graphics2D g, Rectangle2D r, Axis xA, Axis yA, XYDataSeries ds, Color color) {
+  protected void drawData(Graphics2D g, Rectangle2D r, Axis xA, Axis yA, XYDataSeries ds, Color color) {
     ds = XYDataSeries.of(
         ds.name(),
         ds.points().stream()
@@ -68,13 +74,13 @@ public class LinesPlotDrawer extends AbstractXYDataSeriesPlotDrawer {
               xA.xIn(p.x().v(), r),
               yA.yIn(RangedValue.range(p.y()).max(), r)));
       sPath.closePath();
-      g.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), (int)
-          (color.getAlpha() * ip.c().linesPlot().alpha())));
+      g.setColor(
+          new Color(color.getRed(), color.getGreen(), color.getBlue(), (int) (color.getAlpha() * c.alpha())));
       g.fill(sPath);
     }
     // draw line
     g.setColor(color);
-    g.setStroke(new BasicStroke((float) (ip.c().linesPlot().dataStrokeSizeRate() * ip.refL())));
+    g.setStroke(new BasicStroke((float) (c.dataStrokeSizeRate() * ip.refL())));
     Path2D path = new Path2D.Double();
     path.moveTo(
         xA.xIn(ds.points().get(0).x().v(), r),

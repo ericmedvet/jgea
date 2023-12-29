@@ -19,24 +19,23 @@
  */
 package io.github.ericmedvet.jgea.experimenter.listener.plot.image;
 
-import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlot;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
-public interface PlotDrawer<P extends XYPlot<D>, D> {
+public interface PlotDrawer {
 
-  double computeLegendH(ImagePlotter ip, Graphics2D g, P plot);
+  double computeLegendH(Graphics2D g);
 
-  Grid<Axis> computeXAxes(ImagePlotter ip, Graphics2D g, Layout l, P plot);
+  double computeNoteH(Graphics2D g, Grid.Key k);
 
-  Grid<Axis> computeYAxes(ImagePlotter ip, Graphics2D g, Layout l, P plot);
+  Grid<Axis> computeXAxes(Graphics2D g, Layout l);
 
-  void drawLegend(ImagePlotter ip, Graphics2D g, Rectangle2D r, P p);
+  Grid<Axis> computeYAxes(Graphics2D g, Layout l);
 
-  void drawPlot(ImagePlotter ip, Graphics2D g, Rectangle2D r, D data, Axis xA, Axis yA, P p);
+  void drawLegend(Graphics2D g, Rectangle2D r);
 
-  default P preprocess(ImagePlotter ip, P plot) {
-    return plot;
-  }
+  void drawPlot(Graphics2D g, Rectangle2D r, Grid.Key k, Axis xA, Axis yA);
+
+  void drawNote(Graphics2D g, Rectangle2D r, Grid.Key k);
 }

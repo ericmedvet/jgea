@@ -86,6 +86,11 @@ public class CsvPlotter implements Plotter<File> {
     return actualFile;
   }
 
+  @Override
+  public File landscape(LandscapePlot plot) {
+    return points(plot.toXYDataSeriesPlot());
+  }
+
   private File xyDataSeries(XYDataSeriesPlot p) {
     File actualFile = Misc.checkExistenceAndChangeName(file);
     try (CSVPrinter csvPrinter = new CSVPrinter(

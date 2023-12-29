@@ -75,6 +75,6 @@ public class UnivariateGridSEPAF<E, R, X, G> extends AbstractSingleEPAF<E, Univa
             data.nColumns(),
             data.nRows(),
             (x, y) -> new XYPlot.TitledData<>(
-                data.colIndexes().get(x), data.rowIndexes().get(y), "", data.get(x, y))));
+                data.colIndexes().get(x), data.rowIndexes().get(y), data.get(x, y))));
   }
 }

@@ -76,9 +76,10 @@ ea.experiment(
       )
     );
     ea.l.runPlotSaver(
-      w = 1000; h = 600;
+      w = 1000; h = 700;
       filePathTemplate = "../{problem:%#s}-grids-{solver.name}-{randomGenerator.seed}.png";
       type = univariate_grid;
+      saveCsvData = true;
       plot = ea.plot.gridPopulation(
         individualFunctions = [
           ea.nf.fitness(f = ea.nf.nth(n = 0));
@@ -121,7 +122,7 @@ ea.experiment(
       ])
     );
     ea.l.runPlotSaver(
-      w = 1000; h = 300;
+      w = 1000; h = 350;
       filePathTemplate = "../{problem:%#s}-me-{solver.name}-{randomGenerator.seed}.png";
       type = univariate_grid;
       saveCsvData = true;
