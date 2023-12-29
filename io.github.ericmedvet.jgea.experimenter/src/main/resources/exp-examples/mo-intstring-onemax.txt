@@ -32,7 +32,7 @@ ea.experiment(
         ea.nf.max(collection = ea.nf.each(map = ea.nf.fitness(f = ea.nf.nth(n = 1)); collection = ea.nf.all()));
         ea.nf.hypervolume2D(
           collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.firsts());
-          reference = [0; 0]
+          reference = [1; 1]
         );
         ea.nf.solution(individual = ea.nf.best(); s = "%40.40s")
       ];
@@ -51,7 +51,7 @@ ea.experiment(
         lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         yFunction = ea.nf.hypervolume2D(
           collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.firsts());
-          reference = [0; 0]
+          reference = [1; 1]
         )
       )
     );
@@ -62,7 +62,7 @@ ea.experiment(
       type = lines;
       plot = ea.plot.fitnessPlotMatrix(
         lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}");
-        yFunction = ea.nf.max(collection = ea.nf.each(map = ea.nf.fitness(f = ea.nf.nth(n = 0)); collection = ea.nf.all()))
+        yFunction = ea.nf.min(collection = ea.nf.each(map = ea.nf.fitness(f = ea.nf.nth(n = 0)); collection = ea.nf.all()))
       )
     );
     ea.l.expPlotSaver(
@@ -72,7 +72,7 @@ ea.experiment(
       type = lines;
       plot = ea.plot.fitnessPlotMatrix(
         lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}");
-        yFunction = ea.nf.max(collection = ea.nf.each(map = ea.nf.fitness(f = ea.nf.nth(n = 1)); collection = ea.nf.all()))
+        yFunction = ea.nf.min(collection = ea.nf.each(map = ea.nf.fitness(f = ea.nf.nth(n = 1)); collection = ea.nf.all()))
       )
     );
     ea.l.runPlotSaver(
@@ -80,7 +80,7 @@ ea.experiment(
       filePathTemplate = "../{problem:%#s}-grids-{solver.name}-{randomGenerator.seed}.png";
       type = univariate_grid;
       plot = ea.plot.gridPopulation(
-        titleRunKey = ea.misc.sEntry(key = "run"; value = "{solver.name} on {problem:%#s} seed={randomGenerator.seed}");
+        titleRunKey = ea.misc.sEntry(key = "run"; value = "Population grid of {solver.name} on {problem:%#s} (seed={randomGenerator.seed})");
         individualFunctions = [
           ea.nf.fitness(f = ea.nf.nth(n = 0));
           ea.nf.fitness(f = ea.nf.nth(n = 1))
@@ -107,7 +107,7 @@ ea.experiment(
       saveCsvData = true;
       type = points;
       plot = ea.plot.biObjectivePopulation(
-        titleRunKey = ea.misc.sEntry(key = "run"; value = "{solver.name} on {problem:%#s} seed={randomGenerator.seed}");
+        titleRunKey = ea.misc.sEntry(key = "run"; value = "Fronts of {solver.name} on {problem:%#s} (seed={randomGenerator.seed})");
         predicateValue = ea.nf.quantized(f = ea.nf.evals(); r = 1000; s = "%.0f");
         condition = ea.predicate.inD(
           values = [0; 5000; 10000; 15000; 20000; 25000]
@@ -128,7 +128,7 @@ ea.experiment(
       type = univariate_grid;
       saveCsvData = true;
       plot = ea.plot.mapElitesPopulation(
-        titleRunKey = ea.misc.sEntry(key = "run"; value = "Map of Elites on {problem:%#s} seed={randomGenerator.seed}");
+        titleRunKey = ea.misc.sEntry(key = "run"; value = "Map of Elites of {solver.name} on {problem:%#s} (seed={randomGenerator.seed})");
         predicateValue = ea.nf.quantized(f = ea.nf.evals(); r = 1000; s = "%.0f");
         individualFunctions = [
           ea.nf.fitness(f = ea.nf.nth(n = 0));

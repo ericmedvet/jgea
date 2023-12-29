@@ -35,8 +35,7 @@ public class Misc {
 
   private static final Logger L = Logger.getLogger(Misc.class.getName());
 
-  private Misc() {
-  }
+  private Misc() {}
 
   private record Point(double x, double y) {}
 
@@ -69,8 +68,7 @@ public class Misc {
     if (!file.getPath().equals(originalFileName)) {
       L.log(
           Level.WARNING,
-          String.format("Given file name (%s) exists; will write on %s", originalFileName, file.getPath())
-      );
+          String.format("Given file name (%s) exists; will write on %s", originalFileName, file.getPath()));
     }
     return file;
   }
@@ -204,5 +202,4 @@ public class Misc {
   public static <T> Set<T> union(Set<T> set1, Set<T> set2) {
     return Stream.of(set1, set2).flatMap(Set::stream).collect(Collectors.toSet());
   }
-
 }

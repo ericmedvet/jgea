@@ -56,7 +56,7 @@ public class MultiObjectiveIntOneMax
 
   @Override
   public List<Comparator<Double>> comparators() {
-    return Collections.nCopies(upperBound - 1, Comparator.reverseOrder());
+    return Collections.nCopies(upperBound - 1, Double::compareTo);
   }
 
   @Override
@@ -67,8 +67,11 @@ public class MultiObjectiveIntOneMax
   @Override
   public Function<IntString, List<Double>> qualityFunction() {
     return is -> IntStream.range(1, upperBound)
-        .mapToObj(i ->
-            (double) is.genes().stream().filter(gi -> gi.equals(i)).count() / (double) is.size())
+        .mapToObj(i -> 1d
+            - (double) is.genes().stream()
+                    .filter(gi -> gi.equals(i))
+                    .count()
+                / (double) is.size())
         .toList();
   }
 }

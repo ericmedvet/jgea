@@ -28,10 +28,8 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.core.util.Sized;
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
-import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 public class NamedFunctions {
 
@@ -127,7 +125,7 @@ public class NamedFunctions {
   }
 
   public static NamedFunction<Collection<List<Double>>, Double> hypervolume2D(List<Double> reference) {
-    return f("hypervolume", "%5.3f", ps -> Misc.hypervolume2D(ps,reference));
+    return f("hypervolume", "%5.3f", ps -> Misc.hypervolume2D(ps, reference));
   }
 
   public static <I extends Individual<G, S, Q>, G, S, Q>
