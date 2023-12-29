@@ -12,6 +12,7 @@ ea.experiment(
         ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 2; k = 0; list = ea.nf.asDoubleString())));
         ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 2; k = 1; list = ea.nf.asDoubleString())))
       ]);
+      ea.s.pso(mapper = ea.m.doubleStringToIntString());
       ea.s.cabea(name = "cabea-e-11"; keepProbability = 0; substrate = empty; gridSize = 11);
       ea.s.cabea(name = "cabea-cc-11"; keepProbability = 0; substrate = contour_cross; gridSize = 11);
       ea.s.cabea(name = "cabea-e-21"; keepProbability = 0; substrate = empty; gridSize = 21);

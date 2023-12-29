@@ -37,6 +37,16 @@ public record BitString(boolean[] bits) implements Sized, Serializable, Cloneabl
     this(fromString(s));
   }
 
+  public BitString(List<Boolean> booleans) {
+    this(toArray(booleans));
+  }
+
+  private static boolean[] toArray(List<Boolean> booleans) {
+    boolean[] bits = new boolean[booleans.size()];
+    IntStream.range(0, booleans.size()).forEach(i -> bits[i] = booleans.get(i));
+    return bits;
+  }
+
   private static boolean[] fromString(String s) {
     boolean[] bits = new boolean[s.length()];
     for (int i = 0; i < s.length(); i = i + 1) {
