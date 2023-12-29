@@ -73,6 +73,33 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
+  public static <X, S> NamedFunction<X, List<Double>> asDoubleString(
+      @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<X, S> f) {
+    return NamedFunction.build(f.getName(), x -> {
+      S s = f.apply(x);
+      if (s instanceof IntString is) {
+        return is.asDoubleString();
+      }
+      if (s instanceof BitString bs) {
+        return bs.asDoubleString();
+      }
+      if (s instanceof List<?> list) {
+        return list.stream()
+            .map(i -> {
+              if (i instanceof Number n) {
+                return n.doubleValue();
+              }
+              throw new IllegalArgumentException("Cannot convert %s to double"
+                  .formatted(i.getClass().getSimpleName()));
+            })
+            .toList();
+      }
+      throw new IllegalArgumentException(
+          "Cannot convert %s to double string".formatted(s.getClass().getSimpleName()));
+    });
+  }
+
+  @SuppressWarnings("unused")
   public static <X> NamedFunction<X, Number> avg(
       @Param(value = "collection", dNPM = "ea.nf.identity()") NamedFunction<X, Collection<Number>> collectionF,
       @Param(value = "s", dS = "%s") String s) {
@@ -118,12 +145,6 @@ public class NamedFunctions {
   @SuppressWarnings("unused")
   public static NamedFunction<POCPopulationState<?, ?, ?, ?>, Long> births() {
     return NamedFunction.build("births", "%6d", POCPopulationState::nOfBirths);
-  }
-
-  @SuppressWarnings("unused")
-  public static <X> NamedFunction<X, List<Double>> bitStringAsNumbers(
-      @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<X, BitString> f) {
-    return NamedFunction.build(c("asNums", f.getName()), x -> f.apply(x).asDoubleString());
   }
 
   private static String c(String... names) {
@@ -290,12 +311,6 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <X> NamedFunction<X, List<Double>> intStringAsNumbers(
-      @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<X, IntString> f) {
-    return NamedFunction.build(c("asNums", f.getName()), x -> f.apply(x).asDoubleString());
-  }
-
-  @SuppressWarnings("unused")
   public static NamedFunction<POCPopulationState<?, ?, ?, ?>, Long> iterations() {
     return NamedFunction.build("iterations", "%3d", State::nOfIterations);
   }
@@ -347,7 +362,8 @@ public class NamedFunctions {
       @Param(value = "s", dS = "%s") String s) {
     return io.github.ericmedvet.jgea.core.listener.NamedFunctions.<T>nth(n)
         .of(listF)
-        .reformat(s);
+        .reformat(s)
+        .rename(listF.getName() + "[%d]".formatted(n));
   }
 
   @SuppressWarnings("unused")
@@ -355,7 +371,7 @@ public class NamedFunctions {
       @Param(value = "list", dNPM = "ea.nf.identity()") NamedFunction<X, List<T>> listF,
       @Param("n") int n,
       @Param("k") int k) {
-    return NamedFunction.build(c("[%dn+%d]".formatted(n, k), listF.getName()), x -> {
+    return NamedFunction.build(listF.getName() + "[%dn+%d]".formatted(n, k), x -> {
       List<T> l = listF.apply(x);
       return IntStream.range(0, l.size())
           .filter(i -> (i % n) == k)
@@ -427,7 +443,7 @@ public class NamedFunctions {
       @Param(value = "list", dNPM = "ea.nf.identity()") NamedFunction<X, List<T>> listF,
       @Param("n") int n,
       @Param("i") int i) {
-    return NamedFunction.build(c("[%d/%d]".formatted(i, n), listF.getName()), x -> {
+    return NamedFunction.build(listF.getName() + "[%d/%d]".formatted(i, n), x -> {
       List<T> l = listF.apply(x);
       return l.subList(l.size() / n * i, Math.min(l.size(), l.size() / n * (i + 1)));
     });
