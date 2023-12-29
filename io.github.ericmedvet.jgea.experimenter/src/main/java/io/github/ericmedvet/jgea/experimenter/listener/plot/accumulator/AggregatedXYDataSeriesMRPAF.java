@@ -106,25 +106,34 @@ public class AggregatedXYDataSeriesMRPAF<E, R, K>
 
   @Override
   protected XYDataSeriesPlot buildPlot(Table<K, K, List<XYDataSeries>> data) {
+    Grid<XYPlot.TitledData<List<XYDataSeries>>> grid = Grid.create(
+        data.nColumns(),
+        data.nRows(),
+        (x, y) -> new XYPlot.TitledData<>(
+            xSubplotFunction.getFormat().formatted(data.colIndexes().get(x)),
+            ySubplotFunction.getFormat().formatted(data.rowIndexes().get(y)),
+            "",
+            data.get(x, y)));
+    String subtitle = "";
+    if (grid.w() > 1 && grid.h() == 1) {
+      subtitle = "→ %s".formatted(xSubplotFunction.getName());
+    } else if (grid.w() == 1 && grid.h() > 1) {
+      subtitle = "↓ %s".formatted(ySubplotFunction.getName());
+    } else if (grid.w() > 1 && grid.h() > 1) {
+      subtitle = "→ %s, ↓ %s".formatted(xSubplotFunction.getName(), ySubplotFunction.getName());
+    }
     return new XYDataSeriesPlot(
-        "%s vs. %s".formatted(ySubplotFunction.getName(), xSubplotFunction.getName()),
+        "%s vs. %s%s"
+            .formatted(
+                yFunction.getName(),
+                xFunction.getName(),
+                subtitle.isEmpty() ? subtitle : (" (%s)".formatted(subtitle))),
         xSubplotFunction.getName(),
         ySubplotFunction.getName(),
         xFunction.getName(),
         yFunction.getName(),
         xRange,
         yRange,
-        Grid.create(
-            data.nColumns(),
-            data.nRows(),
-            (x, y) -> new XYPlot.TitledData<>(
-                xSubplotFunction
-                    .getFormat()
-                    .formatted(data.colIndexes().get(x)),
-                ySubplotFunction
-                    .getFormat()
-                    .formatted(data.rowIndexes().get(y)),
-                "",
-                data.get(x, y))));
+        grid);
   }
 }

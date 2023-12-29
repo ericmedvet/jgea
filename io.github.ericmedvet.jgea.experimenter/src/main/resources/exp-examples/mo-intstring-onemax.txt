@@ -80,7 +80,6 @@ ea.experiment(
       filePathTemplate = "../{problem:%#s}-grids-{solver.name}-{randomGenerator.seed}.png";
       type = univariate_grid;
       plot = ea.plot.gridPopulation(
-        titleRunKey = ea.misc.sEntry(key = "run"; value = "Population grid of {solver.name} on {problem:%#s} (seed={randomGenerator.seed})");
         individualFunctions = [
           ea.nf.fitness(f = ea.nf.nth(n = 0));
           ea.nf.fitness(f = ea.nf.nth(n = 1))
@@ -107,7 +106,6 @@ ea.experiment(
       saveCsvData = true;
       type = points;
       plot = ea.plot.biObjectivePopulation(
-        titleRunKey = ea.misc.sEntry(key = "run"; value = "Fronts of {solver.name} on {problem:%#s} (seed={randomGenerator.seed})");
         predicateValue = ea.nf.quantized(f = ea.nf.evals(); r = 1000; s = "%.0f");
         condition = ea.predicate.inD(
           values = [0; 5000; 10000; 15000; 20000; 25000]
@@ -128,7 +126,6 @@ ea.experiment(
       type = univariate_grid;
       saveCsvData = true;
       plot = ea.plot.mapElitesPopulation(
-        titleRunKey = ea.misc.sEntry(key = "run"; value = "Map of Elites of {solver.name} on {problem:%#s} (seed={randomGenerator.seed})");
         predicateValue = ea.nf.quantized(f = ea.nf.evals(); r = 1000; s = "%.0f");
         individualFunctions = [
           ea.nf.fitness(f = ea.nf.nth(n = 0));

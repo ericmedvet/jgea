@@ -60,7 +60,8 @@ public class Plots {
           biObjectivePopulation(
               @Param(
                       value = "titleRunKey",
-                      dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
+                      dNPM =
+                          "ea.misc.sEntry(key=title;value=\"Fronts of {solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
                   Map.Entry<String, String> titleRunKey,
               @Param(value = "predicateValue", dNPM = "ea.nf.iterations()")
                   NamedFunction<
@@ -110,7 +111,10 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <G, S, Q> XYDataSeriesSRPAF<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> dyPlot(
-      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
+      @Param(
+              value = "titleRunKey",
+              dNPM =
+                  "ea.misc.sEntry(key=title;value=\"{solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
@@ -123,7 +127,10 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <G, S, Q> XYDataSeriesSRPAF<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> elapsed(
-      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
+      @Param(
+              value = "titleRunKey",
+              dNPM =
+                  "ea.misc.sEntry(key=title;value=\"Elapsed time of {solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
@@ -137,7 +144,10 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <G, S, Q> XYDataSeriesSRPAF<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> fitness(
-      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
+      @Param(
+              value = "titleRunKey",
+              dNPM =
+                  "ea.misc.sEntry(key=title;value=\"Best fitness of {solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
@@ -207,7 +217,8 @@ public class Plots {
       UnivariateGridSEPAF<GridPopulationState<G, S, Q>, Run<?, G, S, Q>, X, Individual<G, S, Q>> gridPopulation(
           @Param(
                   value = "titleRunKey",
-                  dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
+                  dNPM =
+                      "ea.misc.sEntry(key=title;value=\"Population grid of {solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
               Map.Entry<String, String> titleRunKey,
           @Param(
                   value = "individualFunctions",
@@ -234,7 +245,8 @@ public class Plots {
           mapElitesPopulation(
               @Param(
                       value = "titleRunKey",
-                      dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
+                      dNPM =
+                          "ea.misc.sEntry(key=title;value=\"Map of elites of {solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
                   Map.Entry<String, String> titleRunKey,
               @Param(
                       value = "individualFunctions",
@@ -282,7 +294,10 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <G, S, Q> XYDataSeriesSRPAF<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> uniqueness(
-      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
+      @Param(
+              value = "titleRunKey",
+              dNPM =
+                  "ea.misc.sEntry(key=title;value=\"Uniqueness of {solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
@@ -302,7 +317,10 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <E, G, S, Q> XYDataSeriesSRPAF<E, Run<?, G, S, Q>> xyPlot(
-      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
+      @Param(
+              value = "titleRunKey",
+              dNPM =
+                  "ea.misc.sEntry(key=title;value=\"{solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
           Map.Entry<String, String> titleRunKey,
       @Param("x") NamedFunction<? super E, ? extends Number> xFunction,
       @Param("y") NamedFunction<? super E, ? extends Number> yFunction,
@@ -348,7 +366,10 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <E, G, S, Q> XYDataSeriesSRPAF<E, Run<?, G, S, Q>> xysPlot(
-      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
+      @Param(
+              value = "titleRunKey",
+              dNPM =
+                  "ea.misc.sEntry(key=title;value=\"{solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
           Map.Entry<String, String> titleRunKey,
       @Param("x") NamedFunction<? super E, ? extends Number> xFunction,
       @Param("ys") List<NamedFunction<? super E, ? extends Number>> yFunctions,
@@ -360,7 +381,10 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <G, S, Q> XYDataSeriesSRPAF<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> yPlot(
-      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
+      @Param(
+              value = "titleRunKey",
+              dNPM =
+                  "ea.misc.sEntry(key=title;value=\"{solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
@@ -373,7 +397,10 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <G, S, Q> XYDataSeriesSRPAF<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> ysPlot(
-      @Param(value = "titleRunKey", dNPM = "ea.misc.sEntry(key=\"run.index\";value=\"run index = {index}\")")
+      @Param(
+              value = "titleRunKey",
+              dNPM =
+                  "ea.misc.sEntry(key=title;value=\"{solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
