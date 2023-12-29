@@ -121,14 +121,9 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <X> NamedFunction<X, List<Integer>> bitStringAsNumbers(
+  public static <X> NamedFunction<X, List<Double>> bitStringAsNumbers(
       @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<X, BitString> f) {
-    return NamedFunction.build(c("asNums", f.getName()), x -> {
-      BitString bs = f.apply(x);
-      return IntStream.range(0, bs.size())
-          .mapToObj(i -> bs.bits()[i] ? 1 : 0)
-          .toList();
-    });
+    return NamedFunction.build(c("asNums", f.getName()), x -> f.apply(x).asDoubleString());
   }
 
   private static String c(String... names) {
@@ -295,9 +290,9 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <X> NamedFunction<X, List<Integer>> intStringAsNumbers(
+  public static <X> NamedFunction<X, List<Double>> intStringAsNumbers(
       @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<X, IntString> f) {
-    return NamedFunction.build(c("asNums", f.getName()), x -> f.apply(x).genes());
+    return NamedFunction.build(c("asNums", f.getName()), x -> f.apply(x).asDoubleString());
   }
 
   @SuppressWarnings("unused")

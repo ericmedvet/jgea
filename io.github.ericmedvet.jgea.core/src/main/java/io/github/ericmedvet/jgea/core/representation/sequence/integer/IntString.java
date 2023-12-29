@@ -34,4 +34,9 @@ public record IntString(List<Integer> genes, int lowerBound, int upperBound) imp
   public String toString() {
     return genes().stream().map(Object::toString).collect(Collectors.joining(","));
   }
+
+  public List<Double> asDoubleString() {
+    double extent = upperBound - lowerBound;
+    return genes.stream().map(i -> (double) (i - lowerBound) / extent).toList();
+  }
 }

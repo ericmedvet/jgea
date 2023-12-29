@@ -26,6 +26,7 @@ import io.github.ericmedvet.jgea.core.util.Sized;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public record BitString(boolean[] bits) implements Sized, Serializable, Cloneable {
   public BitString(int size) {
@@ -110,5 +111,9 @@ public record BitString(boolean[] bits) implements Sized, Serializable, Cloneabl
       s = s + (int) ((bs.bits[i] ? 1 : 0) * Math.pow(2, i));
     }
     return s;
+  }
+
+  public List<Double> asDoubleString() {
+    return IntStream.range(0, bits.length).mapToObj(i -> bits[i] ? 1d : 0d).toList();
   }
 }
