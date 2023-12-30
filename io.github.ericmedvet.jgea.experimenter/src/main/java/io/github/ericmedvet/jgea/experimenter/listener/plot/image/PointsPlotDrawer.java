@@ -21,7 +21,6 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot.image;
 
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeries;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeriesPlot;
-
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -50,21 +49,21 @@ public class PointsPlotDrawer extends AbstractXYDataSeriesPlotDrawer {
         c.marker(),
         color,
         c.alpha(),
-        c.dataStrokeSizeRate() * ip.refL()
-    );
+        c.dataStrokeSizeRate() * ip.refL());
   }
 
   @Override
   protected void drawData(Graphics2D g, Rectangle2D r, Axis xA, Axis yA, XYDataSeries ds, Color color) {
     double l = c.markerSizeRate() * ip.refL();
-    ds.points().forEach(p -> ip.drawMarker(
-        g,
-        new Point2D.Double(xA.xIn(p.x().v(), r), yA.yIn(p.y().v(), r)),
-        l,
-        c.marker(),
-        color,
-        c.alpha(),
-        c.dataStrokeSizeRate() * ip.refL()
-    ));
+    double strokeSize = c.dataStrokeSizeRate() * ip.refL();
+    ds.points()
+        .forEach(p -> ip.drawMarker(
+            g,
+            new Point2D.Double(xA.xIn(p.x().v(), r), yA.yIn(p.y().v(), r)),
+            l,
+            c.marker(),
+            color,
+            c.alpha(),
+            strokeSize));
   }
 }

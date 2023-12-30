@@ -20,7 +20,10 @@
 package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * @author "Eric Medvet" on 2023/12/01 for jgea
@@ -61,14 +64,26 @@ public interface XYDataSeries {
   }
 
   default DoubleRange xRange() {
-    double[] xs = points().stream().mapToDouble(p -> p.x.v()).toArray();
-    return new DoubleRange(
-        Arrays.stream(xs).min().orElse(0d), Arrays.stream(xs).max().orElse(1d));
+    return points().stream()
+        .map(p -> {
+          if (p.x instanceof RangedValue rv) {
+            return rv.range();
+          }
+          return new DoubleRange(p.x.v(), p.x.v());
+        })
+        .reduce(DoubleRange::largest)
+        .orElseThrow();
   }
 
   default DoubleRange yRange() {
-    double[] ys = points().stream().mapToDouble(p -> p.y.v()).toArray();
-    return new DoubleRange(
-        Arrays.stream(ys).min().orElse(0d), Arrays.stream(ys).max().orElse(1d));
+    return points().stream()
+        .map(p -> {
+          if (p.y instanceof RangedValue rv) {
+            return rv.range();
+          }
+          return new DoubleRange(p.y.v(), p.y.v());
+        })
+        .reduce(DoubleRange::largest)
+        .orElseThrow();
   }
 }

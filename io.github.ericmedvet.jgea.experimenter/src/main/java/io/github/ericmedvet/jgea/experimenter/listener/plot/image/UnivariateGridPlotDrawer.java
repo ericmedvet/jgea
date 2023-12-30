@@ -23,7 +23,6 @@ import io.github.ericmedvet.jgea.experimenter.listener.plot.RangedGrid;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.UnivariateGridPlot;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
-
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
@@ -61,8 +60,8 @@ public class UnivariateGridPlotDrawer extends AbstractPlotDrawer<UnivariateGridP
   public double computeNoteH(Graphics2D g, Grid.Key k) {
     return c.showRanges()
         ? (c.legendImageHRate() * ip.h()
-        + ip.computeStringH(g, "0", Configuration.Text.Use.TICK_LABEL)
-        + ip.c().layout().legendInnerMarginHRate() * ip.h())
+            + ip.computeStringH(g, "0", Configuration.Text.Use.TICK_LABEL)
+            + ip.c().layout().legendInnerMarginHRate() * ip.h())
         : 0;
   }
 
@@ -81,8 +80,7 @@ public class UnivariateGridPlotDrawer extends AbstractPlotDrawer<UnivariateGridP
         c.legendSteps(),
         Configuration.Text.Use.TICK_LABEL,
         ip.c().colors().tickLabelColor(),
-        ImagePlotter.AnchorV.T
-    );
+        ImagePlotter.AnchorV.T);
   }
 
   @Override
@@ -93,17 +91,15 @@ public class UnivariateGridPlotDrawer extends AbstractPlotDrawer<UnivariateGridP
             r.getCenterX() - c.legendImageWRate() * ip.w() / 2d,
             r.getY(),
             c.legendImageWRate() * ip.w(),
-            r.getHeight()
-        ),
+            r.getHeight()),
         valueRange,
         valueRange,
         c.colorRange(),
         c.legendImageHRate() * ip.h(),
         c.legendSteps(),
         Configuration.Text.Use.LEGEND_LABEL,
-        ip.c().colors().titleColor(),
-        ImagePlotter.AnchorV.B
-    );
+        ip.c().colors().legendLabelColor(),
+        ImagePlotter.AnchorV.B);
   }
 
   @Override
@@ -124,8 +120,7 @@ public class UnivariateGridPlotDrawer extends AbstractPlotDrawer<UnivariateGridP
                 xA.xIn(rg.xRange(e.key().x()).min(), r) + cellMarginW,
                 yA.yIn(rg.yRange(e.key().y()).max(), r) + cellMarginH,
                 cellW,
-                cellH
-            );
+                cellH);
             g.fill(cellR);
           });
     } else {
@@ -138,8 +133,7 @@ public class UnivariateGridPlotDrawer extends AbstractPlotDrawer<UnivariateGridP
                 xA.xIn(e.key().x(), r) + cellMarginW,
                 yA.yIn(e.key().y() + 1, r) + cellMarginH,
                 cellW,
-                cellH
-            );
+                cellH);
             g.fill(cellR);
           });
     }
@@ -153,8 +147,7 @@ public class UnivariateGridPlotDrawer extends AbstractPlotDrawer<UnivariateGridP
         .toArray();
     return new DoubleRange(
         Arrays.stream(values).min().orElse(0),
-        Arrays.stream(values).max().orElse(1)
-    );
+        Arrays.stream(values).max().orElse(1));
   }
 
   @Override
@@ -203,7 +196,6 @@ public class UnivariateGridPlotDrawer extends AbstractPlotDrawer<UnivariateGridP
     return new Axis(
         range,
         ticks,
-        ticks.stream().map(t -> "%.0f".formatted(t + 0.5d)).toList()
-    );
+        ticks.stream().map(t -> "%.0f".formatted(t + 0.5d)).toList());
   }
 }

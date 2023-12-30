@@ -29,7 +29,6 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.SortedMap;
 
@@ -65,22 +64,12 @@ public abstract class AbstractXYDataSeriesPlotDrawer extends AbstractPlotDrawer<
 
   @Override
   public double computeLegendH(Graphics2D g) {
-    double maxLineL = ip.w() - 2d * ip.c().layout().legendMarginWRate() * ip.w();
-    double lineH = Math.max(
-        computeLegendImageSize().getY(), ip.computeStringH(g, "0", Configuration.Text.Use.LEGEND_LABEL));
-    double lH = lineH;
-    double lineL = 0;
-    for (String s : dataColors.keySet()) {
-      double localL = computeLegendImageSize().getX()
-          + 2d * ip.c().layout().legendInnerMarginWRate() * ip.w()
-          + ip.computeStringW(g, s, Configuration.Text.Use.LEGEND_LABEL);
-      if (lineL + localL > maxLineL) {
-        lH = lH + ip.c().layout().legendInnerMarginHRate() * ip.h() + lineH;
-        lineL = 0;
-      }
-      lineL = lineL + localL;
-    }
-    return lH;
+    return ip.computeItemsLegendSize(
+            g,
+            dataColors,
+            ip.c().layout().legendInnerMarginWRate() * ip.w(),
+            ip.c().layout().legendInnerMarginHRate() * ip.h())
+        .getY();
   }
 
   @Override
@@ -93,47 +82,13 @@ public abstract class AbstractXYDataSeriesPlotDrawer extends AbstractPlotDrawer<
 
   @Override
   public void drawLegend(Graphics2D g, Rectangle2D r) {
-    if (ip.c().debug()) {
-      g.setStroke(new BasicStroke(1));
-      g.setColor(Color.MAGENTA);
-      g.draw(r);
-    }
-    double lineH = Math.max(
-        computeLegendImageSize().getY(), ip.computeStringH(g, "0", Configuration.Text.Use.LEGEND_LABEL));
-    double x = 0;
-    double y = 0;
-    for (Map.Entry<String, Color> e : dataColors.entrySet()) {
-      double localL = computeLegendImageSize().getX()
-          + 2d * ip.c().layout().legendInnerMarginWRate() * ip.w()
-          + ip.computeStringW(g, e.getKey(), Configuration.Text.Use.LEGEND_LABEL);
-      if (x + localL > r.getWidth()) {
-        y = y + ip.c().layout().legendInnerMarginHRate() * ip.h() + lineH;
-        x = 0;
-      }
-      Rectangle2D legendImageR = new Rectangle2D.Double(
-          r.getX() + x,
-          r.getY() + y,
-          computeLegendImageSize().getX(),
-          computeLegendImageSize().getY());
-      g.setColor(ip.c().colors().plotBgColor());
-      g.fill(legendImageR);
-      drawLegendImage(g, legendImageR, e.getValue());
-      ip.drawString(
-          g,
-          new Point2D.Double(
-              r.getX()
-                  + x
-                  + legendImageR.getWidth()
-                  + ip.c().layout().legendInnerMarginWRate() * ip.w(),
-              r.getY() + y),
-          e.getKey(),
-          ImagePlotter.AnchorH.L,
-          ImagePlotter.AnchorV.B,
-          Configuration.Text.Use.LEGEND_LABEL,
-          Configuration.Text.Direction.H,
-          ip.c().colors().titleColor());
-      x = x + localL;
-    }
+    ip.drawItemsLegend(
+        g,
+        r,
+        dataColors,
+        computeLegendImageSize().getX(),
+        computeLegendImageSize().getY(),
+        this::drawLegendImage);
   }
 
   @Override

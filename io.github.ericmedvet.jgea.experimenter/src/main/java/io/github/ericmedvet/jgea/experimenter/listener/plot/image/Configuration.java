@@ -69,6 +69,7 @@ public record Configuration(
       Color plotBorderColor,
       Color gridColor,
       Color titleColor,
+      Color legendLabelColor,
       Color axisLabelColor,
       Color tickLabelColor,
       Color noteColor,
@@ -81,6 +82,7 @@ public record Configuration(
         Color.LIGHT_GRAY,
         Color.WHITE,
         Color.BLACK,
+        Color.DARK_GRAY,
         Color.GRAY,
         Color.GRAY,
         Color.DARK_GRAY,
@@ -136,15 +138,14 @@ public record Configuration(
       double dataStrokeSizeRate,
       double markerSizeRate,
       double alpha,
-      double legendImageSizeRate,
+      double markerLegendImageSizeRate,
       ImagePlotter.Marker marker,
       int legendSteps,
-      double legendImageWRate,
-      double legendImageHRate,
+      double colorBarLegendImageWRate,
+      double colorBarLegendImageHRate,
       boolean showRanges,
       List<Color> colors,
-      ColorRange colorRange
-  ) {
+      ColorRange colorRange) {
     public static LandscapePlot DEFAULT = new LandscapePlot(
         0.2,
         PointsPlot.DEFAULT.dataStrokeSizeRate(),
@@ -213,7 +214,8 @@ public record Configuration(
       double legendImageSizeRate,
       ImagePlotter.Marker marker,
       List<Color> colors) {
-    public static final PointsPlot DEFAULT = new PointsPlot(0.0015, 0.005, 0.35, 0.02, ImagePlotter.Marker.CIRCLE, Colors.DEFAULT.dataColors());
+    public static final PointsPlot DEFAULT =
+        new PointsPlot(0.0015, 0.005, 0.35, 0.02, ImagePlotter.Marker.CIRCLE, Colors.DEFAULT.dataColors());
   }
 
   public record Text(double fontSizeRate, Map<Use, Double> sizeRates, String fontName) {
