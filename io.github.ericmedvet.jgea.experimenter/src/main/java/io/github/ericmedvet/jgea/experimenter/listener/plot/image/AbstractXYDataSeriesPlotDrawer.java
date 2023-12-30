@@ -87,7 +87,7 @@ public abstract class AbstractXYDataSeriesPlotDrawer extends AbstractPlotDrawer<
   protected DoubleRange computeRange(List<XYDataSeries> data, boolean isXAxis) {
     return data.stream()
         .map(d -> isXAxis ? d.xRange() : d.yRange())
-        .reduce((r1, r2) -> new DoubleRange(Math.min(r1.min(), r2.min()), Math.max(r1.max(), r2.max())))
+        .reduce(DoubleRange::largest)
         .orElseThrow();
   }
 

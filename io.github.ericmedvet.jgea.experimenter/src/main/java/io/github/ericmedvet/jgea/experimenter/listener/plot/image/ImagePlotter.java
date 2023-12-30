@@ -22,17 +22,16 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot.image;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.*;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
+
+import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+import java.awt.geom.*;
 import java.awt.image.BufferedImage;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
-import javax.swing.*;
 
 /**
  * @author "Eric Medvet" on 2023/12/01 for jgea
@@ -58,7 +57,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         .collect(Collectors.toMap(
             u -> u,
             u -> new Font(c.text().fontName(), Font.PLAIN, (int) Math.round(refL
-                * c.text().sizeRates().getOrDefault(u, c.text().fontSizeRate())))));
+                * c.text().sizeRates().getOrDefault(u, c.text().fontSizeRate())))
+        ));
   }
 
   protected enum AnchorH {
@@ -71,6 +71,10 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     T,
     C,
     B
+  }
+
+  protected enum Marker {
+    CIRCLE, PLUS, SQUARE, TIMES
   }
 
   protected static DoubleRange enlarge(DoubleRange range, double r) {
@@ -125,26 +129,26 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         plot.title().isEmpty()
             ? 0
             : (computeStringH(g, "a", Configuration.Text.Use.TITLE)
-                + 2d * c.layout().mainTitleMarginHRate() * h),
+            + 2d * c.layout().mainTitleMarginHRate() * h),
         plotDrawer.computeLegendH(g) + 2d * c.layout().legendMarginHRate() * h,
         c.plotMatrix().titlesShow().equals(Configuration.PlotMatrix.Show.BORDER)
             ? plot.dataGrid().entries().stream()
-                    .filter(e -> e.key().y() == 0)
-                    .map(e -> e.value().xTitle())
-                    .allMatch(String::isEmpty)
-                ? 0
-                : (computeStringH(g, "a", Configuration.Text.Use.AXIS_LABEL)
-                    + 2d * c.layout().colTitleMarginHRate() * h)
+            .filter(e -> e.key().y() == 0)
+            .map(e -> e.value().xTitle())
+            .allMatch(String::isEmpty)
+            ? 0
+            : (computeStringH(g, "a", Configuration.Text.Use.AXIS_LABEL)
+            + 2d * c.layout().colTitleMarginHRate() * h)
             : 0,
         c.plotMatrix().titlesShow().equals(Configuration.PlotMatrix.Show.BORDER)
             ? plot.dataGrid().entries().stream()
-                    .filter(e ->
-                        e.key().x() == plot.dataGrid().w() - 1)
-                    .map(e -> e.value().yTitle())
-                    .allMatch(String::isEmpty)
-                ? 0
-                : (computeStringH(g, "a", Configuration.Text.Use.AXIS_LABEL)
-                    + 2d * c.layout().rowTitleMarginWRate() * w)
+            .filter(e ->
+                e.key().x() == plot.dataGrid().w() - 1)
+            .map(e -> e.value().yTitle())
+            .allMatch(String::isEmpty)
+            ? 0
+            : (computeStringH(g, "a", Configuration.Text.Use.AXIS_LABEL)
+            + 2d * c.layout().rowTitleMarginWRate() * w)
             : 0,
         c.plotMatrix().axesShow().equals(Configuration.PlotMatrix.Show.BORDER) ? initialXAxisL : 0,
         c.plotMatrix().axesShow().equals(Configuration.PlotMatrix.Show.BORDER) ? initialYAxisL : 0,
@@ -153,25 +157,26 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         c.plotMatrix().titlesShow().equals(Configuration.PlotMatrix.Show.BORDER)
             ? 0
             : plot.dataGrid().entries().stream()
-                    .map(e -> e.value().xTitle())
-                    .allMatch(String::isEmpty)
-                ? 0
-                : (computeStringH(g, "a", Configuration.Text.Use.AXIS_LABEL)
-                    + 2d * c.layout().colTitleMarginHRate() * h),
+            .map(e -> e.value().xTitle())
+            .allMatch(String::isEmpty)
+            ? 0
+            : (computeStringH(g, "a", Configuration.Text.Use.AXIS_LABEL)
+            + 2d * c.layout().colTitleMarginHRate() * h),
         c.plotMatrix().titlesShow().equals(Configuration.PlotMatrix.Show.BORDER)
             ? 0
             : plot.dataGrid().entries().stream()
-                    .map(e -> e.value().yTitle())
-                    .allMatch(String::isEmpty)
-                ? 0
-                : (computeStringH(g, "a", Configuration.Text.Use.AXIS_LABEL)
-                    + 2d * c.layout().rowTitleMarginWRate() * w),
+            .map(e -> e.value().yTitle())
+            .allMatch(String::isEmpty)
+            ? 0
+            : (computeStringH(g, "a", Configuration.Text.Use.AXIS_LABEL)
+            + 2d * c.layout().rowTitleMarginWRate() * w),
         plot.dataGrid().keys().stream()
             .mapToDouble(k -> plotDrawer.computeNoteH(g, k))
             .max()
             .orElse(0d),
         c.layout(),
-        plot);
+        plot
+    );
     // iterate
     int nOfIterations = 3;
     for (int i = 0; i < nOfIterations; i = i + 1) {
@@ -201,7 +206,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
           maxYTickL
               + computeStringH(g, "0", Configuration.Text.Use.AXIS_LABEL)
               + 2d * c.layout().yAxisMarginWRate() * w
-              + c.layout().yAxisInnerMarginWRate() * w);
+              + c.layout().yAxisInnerMarginWRate() * w
+      );
     }
     return l;
   }
@@ -218,7 +224,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
   }
 
   protected double computeStringH(
-      Graphics2D g, @SuppressWarnings("unused") String s, Configuration.Text.Use fontUse) {
+      Graphics2D g, @SuppressWarnings("unused") String s, Configuration.Text.Use fontUse
+  ) {
     g.setFont(fonts.get(fontUse));
     return g.getFontMetrics().getHeight();
   }
@@ -253,7 +260,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
       int steps,
       Configuration.Text.Use use,
       Color labelColor,
-      AnchorV labelsAnchor) {
+      AnchorV labelsAnchor
+  ) {
     // background
     double barY = labelsAnchor.equals(AnchorV.B) ? r.getY() : (r.getMaxY() - h);
     double labelsY = labelsAnchor.equals(AnchorV.B) ? (r.getMaxY() - computeStringH(g, "0", use)) : r.getY();
@@ -288,7 +296,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         AnchorV.B,
         use,
         Configuration.Text.Direction.H,
-        labelColor);
+        labelColor
+    );
     drawString(
         g,
         new Point2D.Double(rRange.denormalize(outerRange.normalize(innerRange.max())), labelsY),
@@ -297,7 +306,40 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         AnchorV.B,
         use,
         Configuration.Text.Direction.H,
-        labelColor);
+        labelColor
+    );
+  }
+
+  protected void drawMarker(
+      Graphics2D g,
+      Point2D p,
+      double size,
+      Marker marker,
+      Color color,
+      double alpha,
+      double strokeSize
+  ) {
+    double l = size / 2d;
+    g.setStroke(new BasicStroke((float) strokeSize));
+    if (marker.equals(Marker.CIRCLE) || marker.equals(Marker.SQUARE)) {
+      Shape s = switch (marker) {
+        case CIRCLE -> new Ellipse2D.Double(p.getX() - l, p.getY() - l, size, size);
+        case SQUARE -> new Rectangle2D.Double(p.getX() - l, p.getY() - l, size, size);
+        default -> throw new IllegalArgumentException();
+      };
+      g.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), (int) (color.getAlpha() * alpha)));
+      g.fill(s);
+      g.setColor(color);
+      g.draw(s);
+    } else if (marker.equals(Marker.PLUS)) {
+      g.setColor(color);
+      g.draw(new Line2D.Double(p.getX(), p.getY() - l, p.getX(), p.getY() + l));
+      g.draw(new Line2D.Double(p.getX() - l, p.getY(), p.getX() + l, p.getY()));
+    } else if (marker.equals(Marker.TIMES)) {
+      g.setColor(color);
+      g.draw(new Line2D.Double(p.getX() - l, p.getY() - l, p.getX() + l, p.getY() + l));
+      g.draw(new Line2D.Double(p.getX() - l, p.getY() + l, p.getX() + l, p.getY() - l));
+    }
   }
 
   protected void drawString(
@@ -308,7 +350,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
       AnchorV anchorV,
       Configuration.Text.Use use,
       Configuration.Text.Direction direction,
-      Color color) {
+      Color color
+  ) {
     if (s.isEmpty()) {
       return;
     }
@@ -357,7 +400,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         AnchorV.T,
         Configuration.Text.Use.AXIS_LABEL,
         Configuration.Text.Direction.H,
-        c.colors().axisLabelColor());
+        c.colors().axisLabelColor()
+    );
     IntStream.range(0, a.ticks().size())
         .forEach(i -> drawString(
             g,
@@ -367,7 +411,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
             AnchorV.B,
             Configuration.Text.Use.TICK_LABEL,
             Configuration.Text.Direction.V,
-            c.colors().tickLabelColor()));
+            c.colors().tickLabelColor()
+        ));
   }
 
   private void drawYAxis(Graphics2D g, Rectangle2D r, String name, Axis a) {
@@ -379,7 +424,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         AnchorV.C,
         Configuration.Text.Use.AXIS_LABEL,
         Configuration.Text.Direction.V,
-        c.colors().axisLabelColor());
+        c.colors().axisLabelColor()
+    );
     IntStream.range(0, a.ticks().size())
         .forEach(i -> drawString(
             g,
@@ -390,7 +436,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
             AnchorV.C,
             Configuration.Text.Use.TICK_LABEL,
             Configuration.Text.Direction.H,
-            c.colors().tickLabelColor()));
+            c.colors().tickLabelColor()
+        ));
   }
 
   protected double h() {
@@ -447,7 +494,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
         AnchorV.C,
         Configuration.Text.Use.TITLE,
         Configuration.Text.Direction.H,
-        c.colors().titleColor());
+        c.colors().titleColor()
+    );
     // draw legend
     markRectangle(g, l.legend());
     plotDrawer.drawLegend(g, l.legend());
@@ -472,7 +520,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
               AnchorV.C,
               Configuration.Text.Use.AXIS_LABEL,
               Configuration.Text.Direction.V,
-              c.colors().titleColor());
+              c.colors().titleColor()
+          );
         }
         if (py == plot.dataGrid().h() - 1
             && c.plotMatrix().axesShow().equals(Configuration.PlotMatrix.Show.BORDER)) {
@@ -491,7 +540,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
               AnchorV.C,
               Configuration.Text.Use.AXIS_LABEL,
               Configuration.Text.Direction.H,
-              c.colors().titleColor());
+              c.colors().titleColor()
+          );
         }
         // draw plot titles
         if (c.plotMatrix().titlesShow().equals(Configuration.PlotMatrix.Show.ALL)) {
@@ -504,7 +554,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
               AnchorV.C,
               Configuration.Text.Use.AXIS_LABEL,
               Configuration.Text.Direction.H,
-              c.colors().titleColor());
+              c.colors().titleColor()
+          );
           markRectangle(g, l.rowTitle(px, py));
           drawString(
               g,
@@ -514,7 +565,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
               AnchorV.C,
               Configuration.Text.Use.AXIS_LABEL,
               Configuration.Text.Direction.V,
-              c.colors().titleColor());
+              c.colors().titleColor()
+          );
         }
         // draw axes
         if (c.plotMatrix().axesShow().equals(Configuration.PlotMatrix.Show.ALL)) {

@@ -22,8 +22,11 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot.image;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.LandscapePlot;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
+
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.util.List;
+import java.util.function.DoubleBinaryOperator;
 
 /**
  * @author "Eric Medvet" on 2023/12/29 for jgea
@@ -31,20 +34,40 @@ import java.awt.geom.Rectangle2D;
 public class LandscapePlotDrawer extends AbstractPlotDrawer<LandscapePlot, LandscapePlot.Data> {
 
   private final Configuration.LandscapePlot c;
-  private final PointsPlotDrawer pointsPlotDrawer;
+  protected final Grid<DoubleRange> valueRanges;
+  protected final DoubleRange valueRange;
 
   public LandscapePlotDrawer(ImagePlotter ip, LandscapePlot plot, Configuration.LandscapePlot c) {
     super(ip, plot);
     this.c = c;
-    pointsPlotDrawer = new PointsPlotDrawer(
-        ip,
-        plot.toXYDataSeriesPlot(),
-        new Configuration.PointsPlot(
-            Configuration.PointsPlot.DEFAULT.dataStrokeSizeRate(),
-            Configuration.PointsPlot.DEFAULT.markerSizeRate(),
-            Configuration.PointsPlot.DEFAULT.alpha(),
-            Configuration.PointsPlot.DEFAULT.legendImageSizeRate(),
-            c.colors()));
+    valueRanges = plot.dataGrid().map((k, td) -> computeValueRange(
+        k,
+        ip.w() / plot.dataGrid().w(),
+        ip.h() / plot.dataGrid().h()
+    ));
+    if (plot.valueRange().equals(DoubleRange.UNBOUNDED)) {
+      valueRange = DoubleRange.largest(valueRanges.values().stream().toList());
+    } else {
+      valueRange = plot.valueRange();
+    }
+  }
+
+  private DoubleRange computeValueRange(Grid.Key k, double w, double h) {
+    DoubleRange xRange = xRanges.get(k);
+    DoubleRange yRange = yRanges.get(k);
+    DoubleBinaryOperator f = plot.dataGrid().get(k).data().f();
+    List<Double> vs = xRange.points((int) w)
+        .mapToObj(x -> yRange.points((int) h)
+            .map(y -> f.applyAsDouble(x, y))
+            .boxed()
+            .toList()
+        )
+        .flatMap(List::stream)
+        .toList();
+    return new DoubleRange(
+        vs.stream().min(Double::compareTo).orElse(0d),
+        vs.stream().min(Double::compareTo).orElse(1d)
+    );
   }
 
   @Override
@@ -53,17 +76,19 @@ public class LandscapePlotDrawer extends AbstractPlotDrawer<LandscapePlot, Lands
   }
 
   @Override
-  public void drawNote(Graphics2D g, Rectangle2D r, Grid.Key k) {}
+  public void drawNote(Graphics2D g, Rectangle2D r, Grid.Key k) {
+  }
 
   @Override
   public double computeLegendH(Graphics2D g) {
-    return pointsPlotDrawer.computeLegendH(g) + ip.c().layout().legendMarginHRate() * ip.h();
+    return 10;
     // TODO add space for colorbar
   }
 
   @Override
   public void drawLegend(Graphics2D g, Rectangle2D r) {
-    pointsPlotDrawer.drawLegend(g, r);
+
+
   }
 
   @Override
@@ -97,11 +122,14 @@ public class LandscapePlotDrawer extends AbstractPlotDrawer<LandscapePlot, Lands
     }
      */
     // draw points
-    pointsPlotDrawer.drawPlot(g, r, k, xA, yA);
+    //pointsPlotDrawer.drawPlot(g, r, k, xA, yA);
   }
 
   @Override
   protected DoubleRange computeRange(LandscapePlot.Data data, boolean isXAxis) {
-    return pointsPlotDrawer.computeRange(data.xyDataSeries(), isXAxis);
+    return data.xyDataSeries().stream()
+        .map(d -> isXAxis ? d.xRange() : d.yRange())
+        .reduce(DoubleRange::largest)
+        .orElseThrow();
   }
 }

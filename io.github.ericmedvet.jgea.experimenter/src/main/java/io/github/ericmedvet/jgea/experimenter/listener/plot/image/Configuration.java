@@ -131,9 +131,31 @@ public record Configuration(
         Colors.DEFAULT.continuousDataColorRanges().get(0));
   }
 
-  public record LandscapePlot(double fDensity, List<Color> colors, ColorRange colorRange) {
+  public record LandscapePlot(
+      double fDensity,
+      double dataStrokeSizeRate,
+      double markerSizeRate,
+      double alpha,
+      double legendImageSizeRate,
+      ImagePlotter.Marker marker,
+      int legendSteps,
+      double legendImageWRate,
+      double legendImageHRate,
+      boolean showRanges,
+      List<Color> colors,
+      ColorRange colorRange
+  ) {
     public static LandscapePlot DEFAULT = new LandscapePlot(
         0.2,
+        PointsPlot.DEFAULT.dataStrokeSizeRate(),
+        PointsPlot.DEFAULT.markerSizeRate(),
+        PointsPlot.DEFAULT.alpha(),
+        PointsPlot.DEFAULT.legendImageSizeRate(),
+        PointsPlot.DEFAULT.marker(),
+        GridPlot.DEFAULT.legendSteps(),
+        GridPlot.DEFAULT.legendImageWRate(),
+        GridPlot.DEFAULT.legendImageHRate(),
+        GridPlot.DEFAULT.showRanges(),
         Colors.DEFAULT.dataColors(),
         Colors.DEFAULT.continuousDataColorRanges().get(0));
   }
@@ -189,8 +211,9 @@ public record Configuration(
       double markerSizeRate,
       double alpha,
       double legendImageSizeRate,
+      ImagePlotter.Marker marker,
       List<Color> colors) {
-    public static final PointsPlot DEFAULT = new PointsPlot(0.0015, 0.005, 0.35, 0.02, Colors.DEFAULT.dataColors());
+    public static final PointsPlot DEFAULT = new PointsPlot(0.0015, 0.005, 0.35, 0.02, ImagePlotter.Marker.CIRCLE, Colors.DEFAULT.dataColors());
   }
 
   public record Text(double fontSizeRate, Map<Use, Double> sizeRates, String fontName) {

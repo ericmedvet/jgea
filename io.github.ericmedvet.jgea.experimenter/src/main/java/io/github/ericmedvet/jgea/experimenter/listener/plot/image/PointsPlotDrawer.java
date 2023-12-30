@@ -21,8 +21,8 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot.image;
 
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeries;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeriesPlot;
+
 import java.awt.*;
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
@@ -43,21 +43,28 @@ public class PointsPlotDrawer extends AbstractXYDataSeriesPlotDrawer {
   @Override
   protected void drawLegendImage(Graphics2D g, Rectangle2D r, Color color) {
     double l = c.markerSizeRate() * ip.refL();
-    g.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), (int) (color.getAlpha() * c.alpha())));
-    g.fill(new Ellipse2D.Double(r.getCenterX() - l / 2d, r.getCenterY() - l / 2d, l, l));
+    ip.drawMarker(
+        g,
+        new Point2D.Double(r.getCenterX(), r.getCenterY()),
+        l,
+        c.marker(),
+        color,
+        c.alpha(),
+        c.dataStrokeSizeRate() * ip.refL()
+    );
   }
 
   @Override
   protected void drawData(Graphics2D g, Rectangle2D r, Axis xA, Axis yA, XYDataSeries ds, Color color) {
     double l = c.markerSizeRate() * ip.refL();
-    g.setStroke(new BasicStroke((float) (c.dataStrokeSizeRate() * ip.refL())));
-    ds.points().forEach(p -> {
-      Shape marker = new Ellipse2D.Double(xA.xIn(p.x().v(), r) - l / 2d, yA.yIn(p.y().v(), r) - l / 2d, l, l);
-      g.setColor(
-          new Color(color.getRed(), color.getGreen(), color.getBlue(), (int) (color.getAlpha() * c.alpha())));
-      g.fill(marker);
-      g.setColor(color);
-      g.draw(marker);
-    });
+    ds.points().forEach(p -> ip.drawMarker(
+        g,
+        new Point2D.Double(xA.xIn(p.x().v(), r), yA.yIn(p.y().v(), r)),
+        l,
+        c.marker(),
+        color,
+        c.alpha(),
+        c.dataStrokeSizeRate() * ip.refL()
+    ));
   }
 }
