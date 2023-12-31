@@ -18,9 +18,7 @@ ea.experiment(
       ea.s.cabea(name = "cabea-e-21"; keepProbability = 0; substrate = empty; gridSize = 21);
       ea.s.cabea(name = "cabea-cc-21"; keepProbability = 0; substrate = contour_cross; gridSize = 21)
     ]) * (problem = [
-      ea.p.s.multiModalIntOneMax(name = "mt-25"; nOfTargets = 3; p = 25);
-      ea.p.s.multiModalIntOneMax(name = "mt-100"; nOfTargets = 3; p = 100);
-      ea.p.s.multiModalIntOneMax(name = "mt-500"; nOfTargets = 3; p = 500)
+      ea.p.s.multiModalIntOneMax(name = "mt-25"; nOfTargets = 3; p = 25)
     ]) * [
     ea.run()
   ];
@@ -31,7 +29,7 @@ ea.experiment(
         ea.nf.bestFitness(s = "%5.3f");
         ea.nf.overallTargetDistance(
           collection = ea.nf.each(map = ea.nf.solution(); collection = ea.nf.all());
-          problem = ea.p.s.multiModalIntOneMax(nOfTargets = 3)
+          problem = ea.p.s.multiModalIntOneMax(name = "mt-25"; nOfTargets = 3; p = 25)
         );
         ea.nf.solution(individual = ea.nf.best(); s = "%40.40s")
       ];
@@ -59,7 +57,7 @@ ea.experiment(
         xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 250; s = "%.0f");
         yFunction = ea.nf.overallTargetDistance(
           collection = ea.nf.each(map = ea.nf.solution(); collection = ea.nf.all());
-          problem = ea.p.s.multiModalIntOneMax(nOfTargets = 3)
+          problem = ea.p.s.multiModalIntOneMax(name = "mt-25"; nOfTargets = 3; p = 25)
         )
       )
     );
@@ -71,9 +69,9 @@ ea.experiment(
       plot = ea.plot.gridPopulation(
         individualFunctions = [
           ea.nf.fitness();
-          ea.nf.nth(n = 0; list = ea.nf.targetDistances(problem = ea.p.s.multiModalIntOneMax(nOfTargets = 3)));
-          ea.nf.nth(n = 1; list = ea.nf.targetDistances(problem = ea.p.s.multiModalIntOneMax(nOfTargets = 3)));
-          ea.nf.nth(n = 2; list = ea.nf.targetDistances(problem = ea.p.s.multiModalIntOneMax(nOfTargets = 3)))
+          ea.nf.nth(n = 0; list = ea.nf.targetDistances(problem = ea.p.s.multiModalIntOneMax(name = "mt-25"; nOfTargets = 3; p = 25)));
+          ea.nf.nth(n = 1; list = ea.nf.targetDistances(problem = ea.p.s.multiModalIntOneMax(name = "mt-25"; nOfTargets = 3; p = 25)));
+          ea.nf.nth(n = 2; list = ea.nf.targetDistances(problem = ea.p.s.multiModalIntOneMax(name = "mt-25"; nOfTargets = 3; p = 25)))
         ];
         predicateValue = ea.nf.quantized(f = ea.nf.evals(); r = 1000; s = "%.0f");
         condition = ea.predicate.inD(
