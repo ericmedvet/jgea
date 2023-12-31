@@ -24,7 +24,6 @@ import io.github.ericmedvet.jgea.problem.grid.CharShapeApproximation;
 import io.github.ericmedvet.jgea.problem.synthetic.*;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -32,8 +31,7 @@ import java.util.List;
 @Discoverable(prefixTemplate = "ea.problem|p.synthetic|s")
 public class SyntheticProblems {
 
-  private SyntheticProblems() {
-  }
+  private SyntheticProblems() {}
 
   @SuppressWarnings("unused")
   public static Ackley ackley(@Param(value = "p", dI = 100) int p) {
@@ -46,8 +44,7 @@ public class SyntheticProblems {
       @Param("target") String syntheticTargetName,
       @Param(value = "translation", dB = true) boolean translation,
       @Param(value = "smoothed", dB = true) boolean smoothed,
-      @Param(value = "weighted", dB = true) boolean weighted
-  ) {
+      @Param(value = "weighted", dB = true) boolean weighted) {
     try {
       return new CharShapeApproximation(syntheticTargetName, translation, smoothed, weighted);
     } catch (IOException e) {
@@ -57,29 +54,26 @@ public class SyntheticProblems {
 
   @SuppressWarnings("unused")
   public static CircularPointsAiming circularPointsAiming(
-      @Param(value = "name", dS = "circularPointAiming") String name,
+      @Param(value = "name", dS = "circularPointsAiming") String name,
       @Param(value = "p", dI = 100) int p,
       @Param(value = "n", dI = 5) int n,
       @Param(value = "radius", dD = 0.5d) double radius,
       @Param(value = "center", dD = 1d) double center,
-      @Param(value = "seed", dI = 1) int seed
-  ) {
+      @Param(value = "seed", dI = 1) int seed) {
     return new CircularPointsAiming(p, n, radius, center, seed);
   }
 
   @SuppressWarnings("unused")
   public static IntOneMax intOneMax(
       @Param(value = "name", dS = "iOneMax") String name,
-      @Param(value = "p", dI = 100) int p, @Param(value = "upperBound", dI = 100) int upperBound
-  ) {
+      @Param(value = "p", dI = 100) int p,
+      @Param(value = "upperBound", dI = 100) int upperBound) {
     return new IntOneMax(p, upperBound);
   }
 
   @SuppressWarnings("unused")
   public static LinearPoints linearPoints(
-      @Param(value = "name", dS = "lPoints") String name,
-      @Param(value = "p", dI = 100) int p
-  ) {
+      @Param(value = "name", dS = "lPoints") String name, @Param(value = "p", dI = 100) int p) {
     return new LinearPoints(p);
   }
 
@@ -88,48 +82,41 @@ public class SyntheticProblems {
       @Param(value = "name", dS = "mmIOneMax") String name,
       @Param(value = "p", dI = 100) int p,
       @Param(value = "upperBound", dI = 10) int upperBound,
-      @Param(value = "nOfTargets", dI = 3) int nOfTargets
-  ) {
+      @Param(value = "nOfTargets", dI = 3) int nOfTargets) {
     return new MultiModalIntOneMax(p, upperBound, nOfTargets);
   }
 
   @SuppressWarnings("unused")
   public static MultiObjectiveIntOneMax multiObjectiveIntOneMax(
       @Param(value = "name", dS = "moIOneMax") String name,
-      @Param(value = "p", dI = 100) int p, @Param(value = "upperBound", dI = 3) int upperBound
-  ) {
+      @Param(value = "p", dI = 100) int p,
+      @Param(value = "upperBound", dI = 3) int upperBound) {
     return new MultiObjectiveIntOneMax(p, upperBound);
   }
 
   @SuppressWarnings("unused")
   public static OneMax oneMax(
-      @Param(value = "name", dS = "oneMax") String name,
-      @Param(value = "p", dI = 100) int p
-  ) {
+      @Param(value = "name", dS = "oneMax") String name, @Param(value = "p", dI = 100) int p) {
     return new OneMax(p);
   }
 
   @SuppressWarnings("unused")
   public static PointsAiming pointAiming(
       @Param(value = "name", dS = "pointAiming") String name,
-      @Param(value = "p", dI = 100) int p, @Param(value = "target", dD = 1d) double target
-  ) {
+      @Param(value = "p", dI = 100) int p,
+      @Param(value = "target", dD = 1d) double target) {
     return new PointsAiming(List.of(Collections.nCopies(p, target)));
   }
 
   @SuppressWarnings("unused")
   public static Rastrigin rastrigin(
-      @Param(value = "name", dS = "rastrigin") String name,
-      @Param(value = "p", dI = 100) int p
-  ) {
+      @Param(value = "name", dS = "rastrigin") String name, @Param(value = "p", dI = 100) int p) {
     return new Rastrigin(p);
   }
 
   @SuppressWarnings("unused")
   public static Sphere sphere(
-      @Param(value = "name", dS = "sphere") String name,
-      @Param(value = "p", dI = 100) int p
-  ) {
+      @Param(value = "name", dS = "sphere") String name, @Param(value = "p", dI = 100) int p) {
     return new Sphere(p);
   }
 }

@@ -2,28 +2,25 @@ ea.experiment(
   runs =
     (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
     (solver = (nEval = [25000]) *
-    (representation = [ea.r.intString()]) * [
+    (representation = [ea.r.doubleString()]) * [
       ea.s.ga(maxUniquenessAttempts = 0);
       ea.s.nsga2(maxUniquenessAttempts = 0);
       ea.s.mapElites(name = "me-3"; descriptors = [
-        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 3; k = 0; list = ea.nf.asDoubleString())));
-        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 3; k = 1; list = ea.nf.asDoubleString())))
+        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 3; k = 0)); min = -1; max = 1);
+        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 3; k = 1)); min = -1; max = 1)
       ]);
       ea.s.mapElites(name = "me-2"; descriptors = [
-        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 2; k = 0; list = ea.nf.asDoubleString())));
-        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 2; k = 1; list = ea.nf.asDoubleString())))
+        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 2; k = 0)); min = -1; max = 1);
+        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 2; k = 1)); min = -1; max = 1)
       ]);
       ea.s.cabea(name = "cabea-e-11"; keepProbability = 0; substrate = empty; gridSize = 11);
       ea.s.cabea(name = "cabea-cc-11"; keepProbability = 0; substrate = contour_cross; gridSize = 11);
       ea.s.cabea(name = "cabea-e-21"; keepProbability = 0; substrate = empty; gridSize = 21);
       ea.s.cabea(name = "cabea-cc-21"; keepProbability = 0; substrate = contour_cross; gridSize = 21)
     ]) * (problem = [
-      ea.p.s.multiObjectiveIntOneMax(name = "mo-25"; p = 25);
-      ea.p.mhoProblem(name = "mt2mo-25"; mtProblem = ea.p.s.multiModalIntOneMax(nOfTargets = 2; p = 25));
-      ea.p.s.multiObjectiveIntOneMax(name = "mo-100"; p = 100);
-      ea.p.mhoProblem(name = "mt2mo-100"; mtProblem = ea.p.s.multiModalIntOneMax(nOfTargets = 2; p = 100));
-      ea.p.s.multiObjectiveIntOneMax(name = "mo-500"; p = 500);
-      ea.p.mhoProblem(name = "mt2mo-500"; mtProblem = ea.p.s.multiModalIntOneMax(nOfTargets = 2; p = 500))
+      ea.p.mhoProblem(name = "mt2mo-cpa-2-2"; mtProblem = ea.p.s.circularPointsAiming(n = 2; p = 2));
+      ea.p.mhoProblem(name = "mt2mo-cpa-2-10"; mtProblem = ea.p.s.circularPointsAiming(n = 2; p = 10));
+      ea.p.mhoProblem(name = "mt2mo-cpa-2-50"; mtProblem = ea.p.s.circularPointsAiming(n = 2; p = 50))
     ]) * [
     ea.run()
   ];
@@ -39,8 +36,7 @@ ea.experiment(
           collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.firsts());
           reference = [1; 1];
           s = "%4.2f"
-        );
-        ea.nf.solution(individual = ea.nf.best(); s = "%40.40s")
+        )
       ];
       runKeys = [
         ea.misc.sEntry(key = "solver"; value = "{solver.name}");
@@ -49,8 +45,8 @@ ea.experiment(
       ]
     );
     ea.l.expPlotSaver(
-      filePath = "../mo-hv-vs-evals.png";
-      w = 600; h = 1200;
+      filePath = "../monum-hv-vs-evals.png";
+      w = 600; h = 700;
       freeScales = true;
       saveCsvData = true;
       type = lines;
@@ -63,8 +59,8 @@ ea.experiment(
       )
     );
     ea.l.expPlotSaver(
-      filePath = "../mo-obj0-vs-evals.png";
-      w = 600; h = 1200;
+      filePath = "../monum-obj0-vs-evals.png";
+      w = 600; h = 700;
       freeScales = true;
       saveCsvData = true;
       type = lines;
@@ -74,8 +70,8 @@ ea.experiment(
       )
     );
     ea.l.expPlotSaver(
-      w = 600; h = 1200;
-      filePath = "../mo-obj1-vs-evals.png";
+      w = 600; h = 700;
+      filePath = "../monum-obj1-vs-evals.png";
       freeScales = true;
       saveCsvData = true;
       type = lines;

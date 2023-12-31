@@ -64,8 +64,7 @@ public class Problems {
 
   @SuppressWarnings("unused")
   public static <S> MultiHomogeneousObjectiveProblem<S, Double> mhoProblem(
-      @Param(value = "name", dS = "mt2mho") String name,
-      @Param("mtProblem") MultiTargetProblem<S> mtProblem) {
+      @Param(value = "name", dS = "mt2mho") String name, @Param("mtProblem") MultiTargetProblem<S> mtProblem) {
     return mtProblem.toMHOProblem();
   }
 }
