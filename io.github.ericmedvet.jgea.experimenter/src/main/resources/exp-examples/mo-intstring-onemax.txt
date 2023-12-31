@@ -48,7 +48,6 @@ ea.experiment(
       saveCsvData = true;
       type = lines;
       plot = ea.plot.fitnessPlotMatrix(
-        lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         yFunction = ea.nf.hypervolume2D(
           collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.firsts());
           reference = [1; 1]
@@ -61,7 +60,6 @@ ea.experiment(
       saveCsvData = true;
       type = lines;
       plot = ea.plot.fitnessPlotMatrix(
-        lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         yFunction = ea.nf.min(collection = ea.nf.each(map = ea.nf.fitness(f = ea.nf.nth(n = 0)); collection = ea.nf.all()))
       )
     );
@@ -71,7 +69,6 @@ ea.experiment(
       saveCsvData = true;
       type = lines;
       plot = ea.plot.fitnessPlotMatrix(
-        lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         yFunction = ea.nf.min(collection = ea.nf.each(map = ea.nf.fitness(f = ea.nf.nth(n = 1)); collection = ea.nf.all()))
       )
     );

@@ -31,8 +31,8 @@ import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
+import io.github.ericmedvet.jsdynsym.grid.ArrayGrid;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
-import io.github.ericmedvet.jsdynsym.grid.HashGrid;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -165,7 +165,8 @@ public class CellularAutomataBasedSolver<G, S, Q>
       throws SolverException {
     List<Callable<CellProcessOutcome<Individual<G, S, Q>>>> callables = state.gridPopulation().entries().stream()
         .filter(e -> e.value() != null)
-        .map(e -> processCell(e, state, problem, random))
+        .map(e -> processCell(e, state, problem, new Random(random.nextLong())))
+        // this new random is needed for determinism, because process is done concurrently
         .toList();
     Collection<CellProcessOutcome<Individual<G, S, Q>>> newEntries;
     try {
@@ -173,7 +174,7 @@ public class CellularAutomataBasedSolver<G, S, Q>
     } catch (InterruptedException e) {
       throw new SolverException(e);
     }
-    Grid<Individual<G, S, Q>> newGrid = new HashGrid<>(substrate.w(), substrate.h());
+    Grid<Individual<G, S, Q>> newGrid = new ArrayGrid<>(substrate.w(), substrate.h());
     newEntries.forEach(e -> newGrid.set(e.entry.key(), e.entry().value()));
     int updatedCells = (int) newEntries.stream().filter(cpo -> cpo.updated).count();
     return State.from(

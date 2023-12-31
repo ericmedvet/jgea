@@ -1,13 +1,12 @@
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
+  runs = (randomGenerator = (seed = [1:1:5]) * [ea.rg.defaultRG()]) *
     (problem = [
-      ea.p.s.ackley(p = 25)
+      ea.p.s.ackley(p = 2)
     ]) *
     (solver = (nEval = [5000]) *
     (representation = [ea.r.doubleString()]) * [
-      ea.s.cabea(name = "cabea-e"; gridSize = 11; substrate = empty);
-      ea.s.cabea(name = "cabea-c"; gridSize = 11; substrate = cross);
-      ea.s.cabea(name = "cabea-cc"; gridSize = 11; substrate = contour_cross)
+      ea.s.ga();
+      ea.s.cabea(name = "cabea-c"; gridSize = 11; substrate = cross; crossoverP = 0)
     ]) * [
     ea.run()
   ];
@@ -21,6 +20,11 @@ ea.experiment(
       runKeys = [
         ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
       ]
+    );
+    ea.l.expPlotSaver(
+      filePath = "../ackley-fitness-vs-evals.png";
+      type = lines;
+      plot = ea.plot.fitnessPlotMatrix()
     )
   ]
 )

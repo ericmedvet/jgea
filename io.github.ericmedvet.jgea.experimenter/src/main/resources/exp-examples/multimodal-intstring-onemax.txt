@@ -41,9 +41,7 @@ ea.experiment(
       freeScales = true;
       saveCsvData = true;
       type = lines;
-      plot = ea.plot.fitnessPlotMatrix(
-        lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}")
-      )
+      plot = ea.plot.fitnessPlotMatrix()
     );
     ea.l.expPlotSaver(
       filePath = "../mm-otd-vs-evals.png";
@@ -51,7 +49,6 @@ ea.experiment(
       type = lines;
       saveCsvData = true;
       plot = ea.plot.fitnessPlotMatrix(
-        lineRunKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         yFunction = ea.nf.overallTargetDistance(
           collection = ea.nf.each(map = ea.nf.solution(); collection = ea.nf.all());
           problem = ea.p.s.multiModalIntOneMax(nOfTargets = 3)
