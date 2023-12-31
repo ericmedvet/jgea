@@ -61,6 +61,7 @@ public class UnivariateRegressionProblems {
 
   @SuppressWarnings("unused")
   public static UnivariateRegressionProblem<UnivariateRegressionFitness> fromData(
+      @Param(value = "name", dS = "dataset") String name,
       @Param("trainingDataset") Supplier<NumericalDataset> trainingDataset,
       @Param(value = "testDataset", dNPM = "ea.d.num.empty()") Supplier<NumericalDataset> testDataset,
       @Param(value = "metric", dS = "mse") UnivariateRegressionFitness.Metric metric) {

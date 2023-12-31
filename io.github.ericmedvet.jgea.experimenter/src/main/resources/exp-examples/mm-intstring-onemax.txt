@@ -57,7 +57,7 @@ ea.experiment(
     );
     ea.l.runPlotSaver(
       w = 1000; h = 700;
-      filePathTemplate = "../{problem:%#s}-grids-{solver.name}-{randomGenerator.seed}.png";
+      filePathTemplate = "../{problem.name}-grids-{solver.name}-{randomGenerator.seed}.png";
       saveCsvData = true;
       type = univariate_grid;
       plot = ea.plot.gridPopulation(
@@ -85,7 +85,7 @@ ea.experiment(
     );
     ea.l.runPlotSaver(
       w = 1000; h = 350;
-      filePathTemplate = "../{problem:%#s}-me-{solver.name}-{randomGenerator.seed}.png";
+      filePathTemplate = "../{problem.name}-me-{solver.name}-{randomGenerator.seed}.png";
       type = univariate_grid;
       saveCsvData = true;
       plot = ea.plot.mapElitesPopulation(

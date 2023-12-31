@@ -61,7 +61,7 @@ public class Plots {
               @Param(
                       value = "titleRunKey",
                       dNPM =
-                          "ea.misc.sEntry(key=title;value=\"Fronts of {solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
+                          "ea.misc.sEntry(key=title;value=\"Fronts of {solver.name} on {problem.name} (seed={randomGenerator.seed})\")")
                   Map.Entry<String, String> titleRunKey,
               @Param(value = "predicateValue", dNPM = "ea.nf.iterations()")
                   NamedFunction<
@@ -114,7 +114,7 @@ public class Plots {
       @Param(
               value = "titleRunKey",
               dNPM =
-                  "ea.misc.sEntry(key=title;value=\"{solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
+                  "ea.misc.sEntry(key=title;value=\"{solver.name} on {problem.name} (seed={randomGenerator.seed})\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
@@ -130,7 +130,7 @@ public class Plots {
       @Param(
               value = "titleRunKey",
               dNPM =
-                  "ea.misc.sEntry(key=title;value=\"Elapsed time of {solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
+                  "ea.misc.sEntry(key=title;value=\"Elapsed time of {solver.name} on {problem.name} (seed={randomGenerator.seed})\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
@@ -147,7 +147,7 @@ public class Plots {
       @Param(
               value = "titleRunKey",
               dNPM =
-                  "ea.misc.sEntry(key=title;value=\"Best fitness of {solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
+                  "ea.misc.sEntry(key=title;value=\"Best fitness of {solver.name} on {problem.name} (seed={randomGenerator.seed})\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
@@ -182,7 +182,7 @@ public class Plots {
       AggregatedXYDataSeriesMRPAF<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>, String> fitnessPlotMatrix(
           @Param(value = "xSubplotRunKey", dNPM = "ea.misc.sEntry(key=none;value=\"_\")")
               Map.Entry<String, String> xSubplotRunKey,
-          @Param(value = "ySubplotRunKey", dNPM = "ea.misc.sEntry(key=problem;value=\"{problem:%#s}\")")
+          @Param(value = "ySubplotRunKey", dNPM = "ea.misc.sEntry(key=problem;value=\"{problem.name}\")")
               Map.Entry<String, String> ySubplotRunKey,
           @Param(value = "lineRunKey", dNPM = "ea.misc.sEntry(key=solver;value=\"{solver.name}\")")
               Map.Entry<String, String> lineRunKey,
@@ -218,7 +218,7 @@ public class Plots {
           @Param(
                   value = "titleRunKey",
                   dNPM =
-                      "ea.misc.sEntry(key=title;value=\"Population grid of {solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
+                      "ea.misc.sEntry(key=title;value=\"Population grid of {solver.name} on {problem.name} (seed={randomGenerator.seed})\")")
               Map.Entry<String, String> titleRunKey,
           @Param(
                   value = "individualFunctions",
@@ -246,7 +246,7 @@ public class Plots {
               @Param(
                       value = "titleRunKey",
                       dNPM =
-                          "ea.misc.sEntry(key=title;value=\"Map of elites of {solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
+                          "ea.misc.sEntry(key=title;value=\"Map of elites of {solver.name} on {problem.name} (seed={randomGenerator.seed})\")")
                   Map.Entry<String, String> titleRunKey,
               @Param(
                       value = "individualFunctions",
@@ -297,7 +297,7 @@ public class Plots {
       @Param(
               value = "titleRunKey",
               dNPM =
-                  "ea.misc.sEntry(key=title;value=\"Uniqueness of {solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
+                  "ea.misc.sEntry(key=title;value=\"Uniqueness of {solver.name} on {problem.name} (seed={randomGenerator.seed})\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
@@ -320,7 +320,7 @@ public class Plots {
       @Param(
               value = "titleRunKey",
               dNPM =
-                  "ea.misc.sEntry(key=title;value=\"{solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
+                  "ea.misc.sEntry(key=title;value=\"{solver.name} on {problem.name} (seed={randomGenerator.seed})\")")
           Map.Entry<String, String> titleRunKey,
       @Param("x") NamedFunction<? super E, ? extends Number> xFunction,
       @Param("y") NamedFunction<? super E, ? extends Number> yFunction,
@@ -369,7 +369,7 @@ public class Plots {
       @Param(
               value = "titleRunKey",
               dNPM =
-                  "ea.misc.sEntry(key=title;value=\"{solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
+                  "ea.misc.sEntry(key=title;value=\"{solver.name} on {problem.name} (seed={randomGenerator.seed})\")")
           Map.Entry<String, String> titleRunKey,
       @Param("x") NamedFunction<? super E, ? extends Number> xFunction,
       @Param("ys") List<NamedFunction<? super E, ? extends Number>> yFunctions,
@@ -384,7 +384,7 @@ public class Plots {
       @Param(
               value = "titleRunKey",
               dNPM =
-                  "ea.misc.sEntry(key=title;value=\"{solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
+                  "ea.misc.sEntry(key=title;value=\"{solver.name} on {problem.name} (seed={randomGenerator.seed})\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,
@@ -400,7 +400,7 @@ public class Plots {
       @Param(
               value = "titleRunKey",
               dNPM =
-                  "ea.misc.sEntry(key=title;value=\"{solver.name} on {problem:%#s} (seed={randomGenerator.seed})\")")
+                  "ea.misc.sEntry(key=title;value=\"{solver.name} on {problem.name} (seed={randomGenerator.seed})\")")
           Map.Entry<String, String> titleRunKey,
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> xFunction,

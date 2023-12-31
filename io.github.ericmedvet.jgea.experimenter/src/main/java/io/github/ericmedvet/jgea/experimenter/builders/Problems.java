@@ -20,6 +20,7 @@
 
 package io.github.ericmedvet.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.problem.MultiHomogeneousObjectiveProblem;
 import io.github.ericmedvet.jgea.core.problem.MultiTargetProblem;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
@@ -41,8 +42,9 @@ public class Problems {
 
   @SuppressWarnings("unused")
   public static <S, Q, C extends Comparable<C>> TotalOrderQualityBasedProblem<S, Q> totalOrder(
-      @Param("qFunction") Function<S, Q> qualityFunction,
-      @Param(value = "cFunction", dNPM = "ea.f.identity()") Function<Q, C> comparableFunction,
+      @Param(value = "name", dS = "to") String name,
+      @Param("qFunction") NamedFunction<S, Q> qualityFunction,
+      @Param(value = "cFunction", dNPM = "ea.f.identity()") NamedFunction<Q, C> comparableFunction,
       @Param(value = "type", dS = "minimize") OptimizationType type) {
     return new TotalOrderQualityBasedProblem<>() {
       @Override
@@ -62,6 +64,7 @@ public class Problems {
 
   @SuppressWarnings("unused")
   public static <S> MultiHomogeneousObjectiveProblem<S, Double> mhoProblem(
+      @Param(value = "name", dS = "mt2mho") String name,
       @Param("mtProblem") MultiTargetProblem<S> mtProblem) {
     return mtProblem.toMHOProblem();
   }

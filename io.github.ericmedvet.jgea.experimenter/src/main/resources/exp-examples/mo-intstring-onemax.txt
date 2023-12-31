@@ -18,7 +18,8 @@ ea.experiment(
       ea.s.cabea(name = "cabea-e-21"; keepProbability = 0; substrate = empty; gridSize = 21);
       ea.s.cabea(name = "cabea-cc-21"; keepProbability = 0; substrate = contour_cross; gridSize = 21)
     ]) * (problem = [
-      ea.p.s.multiObjectiveIntOneMax()
+      ea.p.s.multiObjectiveIntOneMax();
+      ea.p.mhoProblem(mtProblem = ea.p.s.multiModalIntOneMax(nOfTargets = 2))
     ]) * [
     ea.run()
   ];
@@ -26,19 +27,20 @@ ea.experiment(
     ea.l.console(
       functions = [
         ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
-        ea.nf.bestFitness(f = ea.nf.nth(n = 0));
-        ea.nf.bestFitness(f = ea.nf.nth(n = 1));
-        ea.nf.max(collection = ea.nf.each(map = ea.nf.fitness(f = ea.nf.nth(n = 0)); collection = ea.nf.all()));
-        ea.nf.max(collection = ea.nf.each(map = ea.nf.fitness(f = ea.nf.nth(n = 1)); collection = ea.nf.all()));
+        ea.nf.bestFitness(f = ea.nf.nth(n = 0); s = "%4.2f");
+        ea.nf.bestFitness(f = ea.nf.nth(n = 1); s = "%4.2f");
+        ea.nf.max(collection = ea.nf.each(map = ea.nf.fitness(f = ea.nf.nth(n = 0)); collection = ea.nf.all()); s = "%4.2f");
+        ea.nf.max(collection = ea.nf.each(map = ea.nf.fitness(f = ea.nf.nth(n = 1)); collection = ea.nf.all()); s = "%4.2f");
         ea.nf.hypervolume2D(
           collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.firsts());
-          reference = [1; 1]
+          reference = [1; 1];
+          s = "%4.2f"
         );
         ea.nf.solution(individual = ea.nf.best(); s = "%40.40s")
       ];
       runKeys = [
         ea.misc.sEntry(key = "solver"; value = "{solver.name}");
-        ea.misc.sEntry(key = "problem"; value = "{problem:%#s}");
+        ea.misc.sEntry(key = "problem"; value = "{problem.name}");
         ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
       ]
     );
@@ -48,6 +50,7 @@ ea.experiment(
       saveCsvData = true;
       type = lines;
       plot = ea.plot.fitnessPlotMatrix(
+        xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 250; s = "%.0f");
         yFunction = ea.nf.hypervolume2D(
           collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.firsts());
           reference = [1; 1]
@@ -60,6 +63,7 @@ ea.experiment(
       saveCsvData = true;
       type = lines;
       plot = ea.plot.fitnessPlotMatrix(
+        xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 250; s = "%.0f");
         yFunction = ea.nf.min(collection = ea.nf.each(map = ea.nf.fitness(f = ea.nf.nth(n = 0)); collection = ea.nf.all()))
       )
     );
@@ -69,12 +73,13 @@ ea.experiment(
       saveCsvData = true;
       type = lines;
       plot = ea.plot.fitnessPlotMatrix(
+        xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 250; s = "%.0f");
         yFunction = ea.nf.min(collection = ea.nf.each(map = ea.nf.fitness(f = ea.nf.nth(n = 1)); collection = ea.nf.all()))
       )
     );
     ea.l.runPlotSaver(
       w = 1000; h = 700;
-      filePathTemplate = "../{problem:%#s}-grids-{solver.name}-{randomGenerator.seed}.png";
+      filePathTemplate = "../{problem.name}-grids-{solver.name}-{randomGenerator.seed}.png";
       type = univariate_grid;
       saveCsvData = true;
       plot = ea.plot.gridPopulation(
@@ -100,7 +105,7 @@ ea.experiment(
     );
     ea.l.runPlotSaver(
       w = 1000; h = 300;
-      filePathTemplate = "../{problem:%#s}-fronts-{solver.name}-{randomGenerator.seed}.png";
+      filePathTemplate = "../{problem.name}-fronts-{solver.name}-{randomGenerator.seed}.png";
       saveCsvData = true;
       type = points;
       plot = ea.plot.biObjectivePopulation(
@@ -120,7 +125,7 @@ ea.experiment(
     );
     ea.l.runPlotSaver(
       w = 1000; h = 350;
-      filePathTemplate = "../{problem:%#s}-me-{solver.name}-{randomGenerator.seed}.png";
+      filePathTemplate = "../{problem.name}-me-{solver.name}-{randomGenerator.seed}.png";
       type = univariate_grid;
       saveCsvData = true;
       plot = ea.plot.mapElitesPopulation(
