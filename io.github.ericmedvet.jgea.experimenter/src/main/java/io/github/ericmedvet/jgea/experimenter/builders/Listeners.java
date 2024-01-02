@@ -225,12 +225,12 @@ public class Listeners {
             "%"
                 .concat(""
                     + experiment.runs().stream()
-                        .map(r -> Utils.interpolate(k.getValue(), r.map()))
+                        .map(r -> Utils.interpolate(k.getValue(), r))
                         .mapToInt(String::length)
                         .max()
                         .orElse(10))
                 .concat("s"),
-            (Run<?, G, S, Q> run) -> Utils.interpolate(k.getValue(), run.map())))
+            (Run<?, G, S, Q> run) -> Utils.interpolate(k.getValue(), run)))
         .forEach(functions::add);
     return Collections.unmodifiableList(functions);
   }

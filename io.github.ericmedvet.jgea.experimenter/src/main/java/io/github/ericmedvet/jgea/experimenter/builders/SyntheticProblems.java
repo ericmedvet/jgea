@@ -34,7 +34,8 @@ public class SyntheticProblems {
   private SyntheticProblems() {}
 
   @SuppressWarnings("unused")
-  public static Ackley ackley(@Param(value = "p", dI = 100) int p) {
+  public static Ackley ackley(
+      @Param(value = "name", iS = "ackley-{p}") String name, @Param(value = "p", dI = 100) int p) {
     return new Ackley(p);
   }
 
@@ -54,7 +55,7 @@ public class SyntheticProblems {
 
   @SuppressWarnings("unused")
   public static CircularPointsAiming circularPointsAiming(
-      @Param(value = "name", dS = "circularPointsAiming") String name,
+      @Param(value = "name", iS = "circularPointsAiming-{p}") String name,
       @Param(value = "p", dI = 100) int p,
       @Param(value = "n", dI = 5) int n,
       @Param(value = "radius", dD = 0.5d) double radius,
@@ -65,7 +66,7 @@ public class SyntheticProblems {
 
   @SuppressWarnings("unused")
   public static IntOneMax intOneMax(
-      @Param(value = "name", dS = "iOneMax") String name,
+      @Param(value = "name", iS = "iOneMax-{p}") String name,
       @Param(value = "p", dI = 100) int p,
       @Param(value = "upperBound", dI = 100) int upperBound) {
     return new IntOneMax(p, upperBound);
@@ -73,13 +74,13 @@ public class SyntheticProblems {
 
   @SuppressWarnings("unused")
   public static LinearPoints linearPoints(
-      @Param(value = "name", dS = "lPoints") String name, @Param(value = "p", dI = 100) int p) {
+      @Param(value = "name", iS = "lPoints-{p}") String name, @Param(value = "p", dI = 100) int p) {
     return new LinearPoints(p);
   }
 
   @SuppressWarnings("unused")
   public static MultiModalIntOneMax multiModalIntOneMax(
-      @Param(value = "name", dS = "mmIOneMax") String name,
+      @Param(value = "name", iS = "mmIOneMax-{p}") String name,
       @Param(value = "p", dI = 100) int p,
       @Param(value = "upperBound", dI = 10) int upperBound,
       @Param(value = "nOfTargets", dI = 3) int nOfTargets) {
@@ -88,7 +89,7 @@ public class SyntheticProblems {
 
   @SuppressWarnings("unused")
   public static MultiObjectiveIntOneMax multiObjectiveIntOneMax(
-      @Param(value = "name", dS = "moIOneMax") String name,
+      @Param(value = "name", iS = "moIOneMax-{p}") String name,
       @Param(value = "p", dI = 100) int p,
       @Param(value = "upperBound", dI = 3) int upperBound) {
     return new MultiObjectiveIntOneMax(p, upperBound);
@@ -96,13 +97,13 @@ public class SyntheticProblems {
 
   @SuppressWarnings("unused")
   public static OneMax oneMax(
-      @Param(value = "name", dS = "oneMax") String name, @Param(value = "p", dI = 100) int p) {
+      @Param(value = "name", iS = "oneMax-{p}") String name, @Param(value = "p", dI = 100) int p) {
     return new OneMax(p);
   }
 
   @SuppressWarnings("unused")
   public static PointsAiming pointAiming(
-      @Param(value = "name", dS = "pointAiming") String name,
+      @Param(value = "name", iS = "pointAiming-{p}") String name,
       @Param(value = "p", dI = 100) int p,
       @Param(value = "target", dD = 1d) double target) {
     return new PointsAiming(List.of(Collections.nCopies(p, target)));
@@ -110,13 +111,13 @@ public class SyntheticProblems {
 
   @SuppressWarnings("unused")
   public static Rastrigin rastrigin(
-      @Param(value = "name", dS = "rastrigin") String name, @Param(value = "p", dI = 100) int p) {
+      @Param(value = "name", iS = "rastrigin-{p}") String name, @Param(value = "p", dI = 100) int p) {
     return new Rastrigin(p);
   }
 
   @SuppressWarnings("unused")
   public static Sphere sphere(
-      @Param(value = "name", dS = "sphere") String name, @Param(value = "p", dI = 100) int p) {
+      @Param(value = "name", iS = "sphere-{p}") String name, @Param(value = "p", dI = 100) int p) {
     return new Sphere(p);
   }
 }
