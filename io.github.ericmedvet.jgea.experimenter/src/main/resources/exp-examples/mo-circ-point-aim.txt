@@ -47,7 +47,6 @@ ea.experiment(
     ea.l.expPlotSaver(
       filePath = "../monum-hv-vs-evals.png";
       w = 600; h = 700;
-      freeScales = true;
       saveCsvData = true;
       type = lines;
       plot = ea.plot.fitnessPlotMatrix(
@@ -61,7 +60,6 @@ ea.experiment(
     ea.l.expPlotSaver(
       filePath = "../monum-obj0-vs-evals.png";
       w = 600; h = 700;
-      freeScales = true;
       saveCsvData = true;
       type = lines;
       plot = ea.plot.fitnessPlotMatrix(
@@ -72,7 +70,6 @@ ea.experiment(
     ea.l.expPlotSaver(
       w = 600; h = 700;
       filePath = "../monum-obj1-vs-evals.png";
-      freeScales = true;
       saveCsvData = true;
       type = lines;
       plot = ea.plot.fitnessPlotMatrix(
