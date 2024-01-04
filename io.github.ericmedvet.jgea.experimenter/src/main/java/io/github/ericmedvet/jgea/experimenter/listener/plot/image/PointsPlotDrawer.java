@@ -49,13 +49,13 @@ public class PointsPlotDrawer extends AbstractXYDataSeriesPlotDrawer {
         c.marker(),
         color,
         c.alpha(),
-        c.dataStrokeSizeRate() * ip.refL());
+        c.strokeSizeRate() * ip.refL());
   }
 
   @Override
   protected void drawData(Graphics2D g, Rectangle2D r, Axis xA, Axis yA, XYDataSeries ds, Color color) {
     double l = c.markerSizeRate() * ip.refL();
-    double strokeSize = c.dataStrokeSizeRate() * ip.refL();
+    double strokeSize = c.strokeSizeRate() * ip.refL();
     ds.points()
         .forEach(p -> ip.drawMarker(
             g,

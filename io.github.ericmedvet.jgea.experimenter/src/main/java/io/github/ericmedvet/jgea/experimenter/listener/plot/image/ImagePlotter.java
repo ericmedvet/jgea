@@ -127,7 +127,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     List<Double> lineLs = new ArrayList<>();
     for (String s : items.keySet()) {
       double localL = legendImageW
-          + 2d * c.layout().legendInnerMarginWRate() * w
+          + c.layout().legendInnerMarginWRate() * w
+          + c.layout().legendItemsGapWRate() * w
           + computeStringW(g, s, Configuration.Text.Use.LEGEND_LABEL);
       if (lineL + localL > w) {
         lineLs.add(lineL);
@@ -237,12 +238,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     return l;
   }
 
-  protected SortedMap<String, Color> computeSeriesDataColors(List<XYDataSeries> dataSeries, List<Color> colors) {
-    List<String> names = dataSeries.stream()
-        .map(XYDataSeries::name)
-        .distinct()
-        .sorted(String::compareTo)
-        .toList();
+  protected SortedMap<String, Color> computeSeriesDataColors(List<String> names, List<Color> colors) {
+    names = names.stream().distinct().sorted(String::compareTo).toList();
     return new TreeMap<>(IntStream.range(0, names.size())
         .boxed()
         .collect(Collectors.toMap(names::get, i -> colors.get(i % colors.size()))));
@@ -272,6 +269,39 @@ public class ImagePlotter implements Plotter<BufferedImage> {
       nOfDigits = nOfDigits + 1;
     }
     return "%." + nOfDigits + "f";
+  }
+
+  protected void drawBoxAndWhiskers(
+      Graphics2D g,
+      Rectangle2D r,
+      Color color,
+      double innerBottom,
+      double center,
+      double innerTop,
+      double alpha,
+      double whiskersWRate,
+      double strokeSizeRate) {
+    markRectangle(g, r);
+    // fill box
+    g.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), (int) (color.getAlpha() * alpha)));
+    g.fill(new Rectangle2D.Double(r.getX(), innerBottom, r.getWidth(), innerTop - innerBottom));
+    // draw
+    g.setColor(color);
+    g.setStroke(new BasicStroke((float) (strokeSizeRate * refL)));
+    g.draw(new Rectangle2D.Double(r.getX(), innerBottom, r.getWidth(), innerTop - innerBottom));
+    g.draw(new Line2D.Double(r.getX(), center, r.getMaxX(), center));
+    g.draw(new Line2D.Double(r.getCenterX(), innerBottom, r.getCenterX(), r.getY()));
+    g.draw(new Line2D.Double(r.getCenterX(), innerTop, r.getCenterX(), r.getMaxY()));
+    g.draw(new Line2D.Double(
+        r.getCenterX() - r.getWidth() * whiskersWRate / 2d,
+        r.getY(),
+        r.getCenterX() + r.getWidth() * whiskersWRate / 2d,
+        r.getY()));
+    g.draw(new Line2D.Double(
+        r.getCenterX() - r.getWidth() * whiskersWRate / 2d,
+        r.getMaxY(),
+        r.getCenterX() + r.getWidth() * whiskersWRate / 2d,
+        r.getMaxY()));
   }
 
   protected void drawColorBar(
@@ -348,7 +378,8 @@ public class ImagePlotter implements Plotter<BufferedImage> {
     double y = 0;
     for (Map.Entry<String, Color> e : items.entrySet()) {
       double localL = legendImageW
-          + 2d * c.layout().legendInnerMarginWRate() * w
+          + c.layout().legendInnerMarginWRate() * w
+          + c.layout().legendItemsGapWRate() * w
           + computeStringW(g, e.getKey(), Configuration.Text.Use.LEGEND_LABEL);
       if (x + localL > r.getWidth()) {
         y = y + c.layout().legendInnerMarginHRate() * h + lineH;
@@ -362,10 +393,10 @@ public class ImagePlotter implements Plotter<BufferedImage> {
           g,
           new Point2D.Double(
               r.getX() + x + legendImageR.getWidth() + c.layout().legendInnerMarginWRate() * w,
-              r.getY() + y),
+              r.getY() + y + lineH / 2d),
           e.getKey(),
           ImagePlotter.AnchorH.L,
-          ImagePlotter.AnchorV.B,
+          ImagePlotter.AnchorV.C,
           Configuration.Text.Use.LEGEND_LABEL,
           Configuration.Text.Direction.H,
           c.colors().legendLabelColor());
@@ -494,6 +525,11 @@ public class ImagePlotter implements Plotter<BufferedImage> {
 
   protected double h() {
     return h;
+  }
+
+  @Override
+  public BufferedImage boxplot(DistributionPlot plot) {
+    return plot(plot, new BoxPlotDrawer(this, plot, c.boxPlot()));
   }
 
   @Override

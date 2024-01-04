@@ -56,6 +56,48 @@ public class CsvPlotter implements Plotter<File> {
   }
 
   @Override
+  public File boxplot(DistributionPlot p) {
+    File actualFile = Misc.checkExistenceAndChangeName(file);
+    try (CSVPrinter csvPrinter = new CSVPrinter(
+        new PrintStream(actualFile),
+        CSVFormat.Builder.create().setDelimiter(";").build())) {
+      csvPrinter.printRecord(List.of(
+          p.xTitleName(),
+          p.yTitleName(),
+          "series",
+          p.yName(),
+          p.xName() + "[min]",
+          p.xName() + "[q1minus15IQR]",
+          p.xName() + "[q1]",
+          p.xName() + "[mean]",
+          p.xName() + "[median]",
+          p.xName() + "[q3]",
+          p.xName() + "[q3plus15IQR]",
+          p.xName() + "[max]"));
+      for (XYPlot.TitledData<List<DistributionPlot.Data>> td :
+          p.dataGrid().values()) {
+        for (DistributionPlot.Data ds : td.data()) {
+          csvPrinter.printRecord(List.of(
+              td.xTitle(),
+              td.yTitle(),
+              ds.name(),
+              ds.stats().min(),
+              ds.stats().q1minus15IQR(),
+              ds.stats().q1(),
+              ds.stats().mean(),
+              ds.stats().median(),
+              ds.stats().q3(),
+              ds.stats().q3plus15IQR(),
+              ds.stats().max()));
+        }
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return actualFile;
+  }
+
+  @Override
   public File lines(XYDataSeriesPlot plot) {
     return xyDataSeries(plot);
   }

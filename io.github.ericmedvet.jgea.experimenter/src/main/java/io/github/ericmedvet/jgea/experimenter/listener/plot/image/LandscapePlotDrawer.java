@@ -20,13 +20,13 @@
 package io.github.ericmedvet.jgea.experimenter.listener.plot.image;
 
 import io.github.ericmedvet.jgea.experimenter.listener.plot.LandscapePlot;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeries;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
-import java.util.Objects;
 import java.util.SortedMap;
 import java.util.function.DoubleBinaryOperator;
 
@@ -55,10 +55,9 @@ public class LandscapePlotDrawer extends AbstractPlotDrawer<LandscapePlot, Lands
     }
     dataColors = ip.computeSeriesDataColors(
         plot.dataGrid().values().stream()
-            .filter(Objects::nonNull)
             .map(td -> td.data().xyDataSeries())
             .flatMap(List::stream)
-            .distinct()
+            .map(XYDataSeries::name)
             .toList(),
         c.colors());
   }

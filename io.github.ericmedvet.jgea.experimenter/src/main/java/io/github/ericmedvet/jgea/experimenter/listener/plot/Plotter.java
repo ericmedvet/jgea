@@ -23,6 +23,7 @@ import io.github.ericmedvet.jgea.experimenter.listener.plot.image.ImagePlotter;
 import io.github.ericmedvet.jgea.problem.synthetic.Ackley;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
+import java.io.File;
 import java.util.List;
 import java.util.Random;
 import java.util.random.RandomGenerator;
@@ -38,16 +39,19 @@ public interface Plotter<O> {
     LINES,
     UNIVARIATE_GRID,
     POINTS,
-    LANDSCAPE_PLOT
+    LANDSCAPE,
+    BOXPLOT
   }
+
+  O boxplot(DistributionPlot plot);
+
+  O landscape(LandscapePlot plot);
 
   O lines(XYDataSeriesPlot plot);
 
   O points(XYDataSeriesPlot plot);
 
   O univariateGrid(UnivariateGridPlot plot);
-
-  O landscape(LandscapePlot plot);
 
   static void main(String[] args) {
     RandomGenerator rg = new Random(1);
@@ -197,6 +201,53 @@ public interface Plotter<O> {
                                         Value.of(rg.nextGaussian())))
                                 .toList()))))));
     ImagePlotter.showImage(ip.landscape(lp));
+    DistributionPlot dp = new DistributionPlot(
+        "boxplots",
+        "tx",
+        "ty",
+        "method",
+        "value",
+        DoubleRange.UNBOUNDED,
+        Grid.create(
+            2,
+            3,
+            (x, y) -> new XYPlot.TitledData<>(
+                "x" + x,
+                "y" + y,
+                List.of(
+                        new DistributionPlot.Data(
+                            "g1(0,1)",
+                            IntStream.range(0, 100)
+                                .mapToObj(i -> rg.nextGaussian())
+                                .toList()),
+                        new DistributionPlot.Data(
+                            "g2(0,1)",
+                            IntStream.range(0, 30)
+                                .mapToObj(i -> rg.nextGaussian())
+                                .toList()),
+                        new DistributionPlot.Data(
+                            "g3(0,1)",
+                            IntStream.range(0, 120)
+                                .mapToObj(i -> rg.nextGaussian())
+                                .toList()),
+                        new DistributionPlot.Data(
+                            "g4(0,1)",
+                            IntStream.range(0, 140)
+                                .mapToObj(i -> rg.nextGaussian())
+                                .toList()),
+                        new DistributionPlot.Data(
+                            "g5(1,3)",
+                            IntStream.range(0, 10)
+                                .mapToObj(i -> rg.nextGaussian() * 3d + 1d)
+                                .toList()),
+                        new DistributionPlot.Data(
+                            "g6(4,2)",
+                            IntStream.range(0, 200)
+                                .mapToObj(i -> rg.nextGaussian() * 2d + 4d)
+                                .toList()))
+                    .subList(y, 6))));
+    ImagePlotter.showImage(ip.boxplot(dp));
+    new CsvPlotter(new File("../boxplot.txt")).boxplot(dp);
   }
 
   default O plot(XYPlot<?> plot, Type type) {
@@ -209,8 +260,11 @@ public interface Plotter<O> {
     if (plot instanceof UnivariateGridPlot univariateGridPlot && type.equals(Type.UNIVARIATE_GRID)) {
       return univariateGrid(univariateGridPlot);
     }
-    if (plot instanceof LandscapePlot landscapePlot && type.equals(Type.LANDSCAPE_PLOT)) {
+    if (plot instanceof LandscapePlot landscapePlot && type.equals(Type.LANDSCAPE)) {
       return landscape(landscapePlot);
+    }
+    if (plot instanceof DistributionPlot distributionPlot && type.equals(Type.BOXPLOT)) {
+      return boxplot(distributionPlot);
     }
     throw new UnsupportedOperationException("Unknown plot type %s with data %s"
         .formatted(type, plot.getClass().getSimpleName()));

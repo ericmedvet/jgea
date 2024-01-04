@@ -47,9 +47,16 @@ public class LinesPlotDrawer extends AbstractXYDataSeriesPlotDrawer {
 
   @Override
   protected void drawLegendImage(Graphics2D g, Rectangle2D r, Color color) {
+    g.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), (int) (color.getAlpha() * c.alpha())));
+    g.fill(new Rectangle2D.Double(
+        r.getX() + r.getWidth() * 0.1,
+        r.getCenterY() - r.getHeight() * 0.25,
+        r.getWidth() * 0.8,
+        r.getHeight() * 0.5));
     g.setColor(color);
-    g.setStroke(new BasicStroke((float) (c.dataStrokeSizeRate() * ip.refL())));
-    g.draw(new Line2D.Double(r.getX(), r.getCenterY(), r.getMaxX(), r.getCenterY()));
+    g.setStroke(new BasicStroke((float) (c.strokeSizeRate() * ip.refL())));
+    g.draw(new Line2D.Double(
+        r.getX() + r.getWidth() * 0.1, r.getCenterY(), r.getMaxX() - r.getWidth() * 0.1, r.getCenterY()));
   }
 
   protected void drawData(Graphics2D g, Rectangle2D r, Axis xA, Axis yA, XYDataSeries ds, Color color) {
@@ -80,7 +87,7 @@ public class LinesPlotDrawer extends AbstractXYDataSeriesPlotDrawer {
     }
     // draw line
     g.setColor(color);
-    g.setStroke(new BasicStroke((float) (c.dataStrokeSizeRate() * ip.refL())));
+    g.setStroke(new BasicStroke((float) (c.strokeSizeRate() * ip.refL())));
     Path2D path = new Path2D.Double();
     path.moveTo(
         xA.xIn(ds.points().get(0).x().v(), r),

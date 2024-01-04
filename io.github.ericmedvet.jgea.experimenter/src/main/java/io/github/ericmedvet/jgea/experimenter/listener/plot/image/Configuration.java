@@ -34,6 +34,7 @@ public record Configuration(
     PointsPlot pointsPlot,
     UnivariateGridPlot univariateGridPlot,
     LandscapePlot landscapePlot,
+    BoxPlot boxPlot,
     boolean debug) {
 
   public static final Configuration DEFAULT = new Configuration(
@@ -46,6 +47,7 @@ public record Configuration(
       PointsPlot.DEFAULT,
       UnivariateGridPlot.DEFAULT,
       LandscapePlot.DEFAULT,
+      BoxPlot.DEFAULT,
       false);
 
   public static final Configuration FREE_SCALES = new Configuration(
@@ -61,6 +63,7 @@ public record Configuration(
       PointsPlot.DEFAULT,
       UnivariateGridPlot.DEFAULT,
       LandscapePlot.DEFAULT,
+      BoxPlot.DEFAULT,
       false);
 
   public record Colors(
@@ -148,7 +151,7 @@ public record Configuration(
       ColorRange colorRange) {
     public static LandscapePlot DEFAULT = new LandscapePlot(
         0.2,
-        PointsPlot.DEFAULT.dataStrokeSizeRate(),
+        PointsPlot.DEFAULT.strokeSizeRate(),
         PointsPlot.DEFAULT.markerSizeRate(),
         PointsPlot.DEFAULT.alpha(),
         PointsPlot.DEFAULT.legendImageSizeRate(),
@@ -169,6 +172,7 @@ public record Configuration(
       double legendMarginWRate,
       double legendInnerMarginHRate,
       double legendInnerMarginWRate,
+      double legendItemsGapWRate,
       double yAxisMarginWRate,
       double yAxisInnerMarginWRate,
       double xAxisMarginHRate,
@@ -177,16 +181,12 @@ public record Configuration(
       double plotMarginHRate,
       double noteMarginHRate) {
     public static final Layout DEFAULT = new Layout(
-        0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.001, 0.001, 0.001, 0.001, 0.005, 0.005,
+        0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.025, 0.001, 0.001, 0.001, 0.001, 0.005, 0.005,
         0.001);
   }
 
   public record LinesPlot(
-      double dataStrokeSizeRate,
-      double alpha,
-      double legendImageWRate,
-      double legendImageHRate,
-      List<Color> colors) {
+      double strokeSizeRate, double alpha, double legendImageWRate, double legendImageHRate, List<Color> colors) {
     public static final LinesPlot DEFAULT = new LinesPlot(0.0025, 0.3, 0.04, 0.025, Colors.DEFAULT.dataColors);
   }
 
@@ -208,7 +208,7 @@ public record Configuration(
   }
 
   public record PointsPlot(
-      double dataStrokeSizeRate,
+      double strokeSizeRate,
       double markerSizeRate,
       double alpha,
       double legendImageSizeRate,
@@ -216,6 +216,38 @@ public record Configuration(
       List<Color> colors) {
     public static final PointsPlot DEFAULT =
         new PointsPlot(0.0015, 0.005, 0.35, 0.02, ImagePlotter.Marker.CIRCLE, Colors.DEFAULT.dataColors());
+  }
+
+  public record BoxPlot(
+      double strokeSizeRate,
+      double boxWRate,
+      double whiskersWRate,
+      double legendImageWRate,
+      double legendImageHRate,
+      ExtremeType extremeType,
+      MidType midType,
+      double alpha,
+      List<Color> colors) {
+    public enum ExtremeType {
+      MIN_MAX,
+      IQR_1_5
+    }
+
+    public enum MidType {
+      MEAN,
+      MEDIAN
+    }
+
+    public static final BoxPlot DEFAULT = new BoxPlot(
+        LinesPlot.DEFAULT.strokeSizeRate,
+        0.9,
+        0.75,
+        0.02,
+        0.05,
+        ExtremeType.IQR_1_5,
+        MidType.MEDIAN,
+        0.5,
+        Colors.DEFAULT.dataColors());
   }
 
   public record Text(double fontSizeRate, Map<Use, Double> sizeRates, String fontName) {

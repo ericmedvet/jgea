@@ -29,7 +29,6 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
-import java.util.Objects;
 import java.util.SortedMap;
 
 public abstract class AbstractXYDataSeriesPlotDrawer extends AbstractPlotDrawer<XYDataSeriesPlot, List<XYDataSeries>> {
@@ -40,21 +39,12 @@ public abstract class AbstractXYDataSeriesPlotDrawer extends AbstractPlotDrawer<
     super(ip, plot);
     dataColors = ip.computeSeriesDataColors(
         plot.dataGrid().values().stream()
-            .filter(Objects::nonNull)
             .map(XYPlot.TitledData::data)
             .flatMap(List::stream)
-            .distinct()
+            .map(XYDataSeries::name)
             .toList(),
         colors);
   }
-
-  @Override
-  public double computeNoteH(Graphics2D g, Grid.Key k) {
-    return 0;
-  }
-
-  @Override
-  public void drawNote(Graphics2D g, Rectangle2D r, Grid.Key k) {}
 
   protected abstract Point2D computeLegendImageSize();
 
@@ -64,20 +54,14 @@ public abstract class AbstractXYDataSeriesPlotDrawer extends AbstractPlotDrawer<
 
   @Override
   public double computeLegendH(Graphics2D g) {
-    return ip.computeItemsLegendSize(
-            g,
-            dataColors,
-            ip.c().layout().legendInnerMarginWRate() * ip.w(),
-            ip.c().layout().legendInnerMarginHRate() * ip.h())
+    Point2D legendImageSize = computeLegendImageSize();
+    return ip.computeItemsLegendSize(g, dataColors, legendImageSize.getX(), legendImageSize.getY())
         .getY();
   }
 
   @Override
-  protected DoubleRange computeRange(List<XYDataSeries> data, boolean isXAxis) {
-    return data.stream()
-        .map(d -> isXAxis ? d.xRange() : d.yRange())
-        .reduce(DoubleRange::largest)
-        .orElseThrow();
+  public double computeNoteH(Graphics2D g, Grid.Key k) {
+    return 0;
   }
 
   @Override
@@ -94,6 +78,7 @@ public abstract class AbstractXYDataSeriesPlotDrawer extends AbstractPlotDrawer<
   @Override
   public void drawPlot(Graphics2D g, Rectangle2D r, Grid.Key k, Axis xA, Axis yA) {
     g.setColor(ip.c().colors().gridColor());
+    g.setStroke(new BasicStroke((float) (ip.c().general().gridStrokeSizeRate() * ip.refL())));
     xA.ticks()
         .forEach(x -> g.draw(new Line2D.Double(
             xA.xIn(x, r), yA.yIn(yA.range().min(), r),
@@ -102,12 +87,18 @@ public abstract class AbstractXYDataSeriesPlotDrawer extends AbstractPlotDrawer<
         .forEach(y -> g.draw(new Line2D.Double(
             xA.xIn(xA.range().min(), r), yA.yIn(y, r),
             xA.xIn(xA.range().max(), r), yA.yIn(y, r))));
-    if (ip.c().debug()) {
-      g.setStroke(new BasicStroke(1));
-      g.setColor(Color.MAGENTA);
-      g.draw(r);
-    }
     // draw data
     plot.dataGrid().get(k).data().forEach(ds -> drawData(g, r, xA, yA, ds, dataColors.get(ds.name())));
+  }
+
+  @Override
+  public void drawNote(Graphics2D g, Rectangle2D r, Grid.Key k) {}
+
+  @Override
+  protected DoubleRange computeRange(List<XYDataSeries> data, boolean isXAxis) {
+    return data.stream()
+        .map(d -> isXAxis ? d.xRange() : d.yRange())
+        .reduce(DoubleRange::largest)
+        .orElseThrow();
   }
 }
