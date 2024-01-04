@@ -1,8 +1,9 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:5]) * [ea.rg.defaultRG()]) *
     (problem = (p = [2; 10]) * [
-      ea.p.s.ackley();
-      ea.p.s.sphere()
+      ea.p.s.ackley(name = "ackley");
+      ea.p.s.sphere(name = "sphere");
+      ea.p.s.circularPointsAiming(name = "cpa")
     ]) *
     (solver = (nEval = [2500]) * [
       ea.s.ga(representation = ea.r.doubleString());
