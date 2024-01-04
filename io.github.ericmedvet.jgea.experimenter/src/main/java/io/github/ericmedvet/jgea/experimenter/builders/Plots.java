@@ -27,10 +27,7 @@ import io.github.ericmedvet.jgea.core.solver.mapelites.MEPopulationState;
 import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.Utils;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.RangedGrid;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator.AggregatedXYDataSeriesMRPAF;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator.UnivariateGridSEPAF;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator.XYDataSeriesSEPAF;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator.XYDataSeriesSRPAF;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator.*;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
@@ -178,6 +175,31 @@ public class Plots {
   }
 
   @SuppressWarnings("unused")
+  public static <G, S, Q, X>
+  DistributionMRPAF<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>, String, X> fitnessBoxplotMatrix(
+          @Param(value = "xSubplotRunKey", dNPM = "ea.misc.sEntry(key=none;value=\"_\")")
+              Map.Entry<String, String> xSubplotRunKey,
+          @Param(value = "ySubplotRunKey", dNPM = "ea.misc.sEntry(key=problem;value=\"{problem.name}\")")
+              Map.Entry<String, String> ySubplotRunKey,
+          @Param(value = "lineRunKey", dNPM = "ea.misc.sEntry(key=solver;value=\"{solver.name}\")")
+              Map.Entry<String, String> lineRunKey,
+          @Param(value = "yFunction", dNPM = "ea.nf.bestFitness()")
+              NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> yFunction,
+      @Param(value = "predicateValue", dNPM = "ea.nf.progress()")
+      NamedFunction<POCPopulationState<?, G, S, Q>, X> predicateValueFunction,
+      @Param(value = "condition", dNPM = "ea.predicate.gtEq(t=1)") Predicate<X> condition,
+          @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
+    return new DistributionMRPAF<>(
+        buildRunNamedFunction(xSubplotRunKey),
+        buildRunNamedFunction(ySubplotRunKey),
+        buildRunNamedFunction(lineRunKey),
+        yFunction,
+        predicateValueFunction,
+        condition,
+        yRange);
+  }
+
+  @SuppressWarnings("unused")
   public static <G, S, Q>
       AggregatedXYDataSeriesMRPAF<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>, String> fitnessPlotMatrix(
           @Param(value = "xSubplotRunKey", dNPM = "ea.misc.sEntry(key=none;value=\"_\")")
@@ -198,7 +220,6 @@ public class Plots {
               NamedFunction<List<Number>, Number> maxAggregator,
           @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
           @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
-
     return new AggregatedXYDataSeriesMRPAF<>(
         buildRunNamedFunction(xSubplotRunKey),
         buildRunNamedFunction(ySubplotRunKey),
