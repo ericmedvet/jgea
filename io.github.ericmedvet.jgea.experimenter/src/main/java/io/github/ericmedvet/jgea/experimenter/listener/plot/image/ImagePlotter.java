@@ -508,7 +508,7 @@ public class ImagePlotter implements Plotter<BufferedImage> {
 
   @Override
   public BufferedImage univariateGrid(UnivariateGridPlot plot) {
-    return plot(plot, new UnivariateGridPlotDrawer(this, plot, c.gridPlot()));
+    return plot(plot, new UnivariateGridPlotDrawer(this, plot, c.univariateGridPlot()));
   }
 
   @Override

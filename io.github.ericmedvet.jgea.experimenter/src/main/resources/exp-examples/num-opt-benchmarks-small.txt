@@ -1,5 +1,5 @@
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:5]) * [ea.rg.defaultRG()]) *
+  runs = (randomGenerator = (seed = [1:1:10]) * [ea.rg.defaultRG()]) *
     (problem = (p = [2; 10]) * [
       ea.p.s.ackley(name = "ackley");
       ea.p.s.sphere(name = "sphere");
@@ -28,7 +28,7 @@ ea.experiment(
       ]
     );
     ea.l.expPlotSaver(
-      filePath = "../plot-num-opt.png";
+      filePath = "../numopt-bestf-vs-evals.png";
       freeScales = true;
       type = lines;
       plot = ea.plot.fitnessPlotMatrix(

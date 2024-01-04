@@ -33,12 +33,12 @@ import java.util.stream.IntStream;
 
 public class UnivariateGridPlotDrawer extends AbstractPlotDrawer<UnivariateGridPlot, Grid<Double>> {
 
-  private final Configuration.GridPlot c;
+  private final Configuration.UnivariateGridPlot c;
 
   protected final Grid<DoubleRange> valueRanges;
   protected final DoubleRange valueRange;
 
-  public UnivariateGridPlotDrawer(ImagePlotter ip, UnivariateGridPlot plot, Configuration.GridPlot c) {
+  public UnivariateGridPlotDrawer(ImagePlotter ip, UnivariateGridPlot plot, Configuration.UnivariateGridPlot c) {
     super(ip, plot);
     this.c = c;
     valueRanges = plot.dataGrid().map(td -> computeValueRange(td.data()));

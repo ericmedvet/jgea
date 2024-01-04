@@ -32,7 +32,7 @@ public record Configuration(
     PlotMatrix plotMatrix,
     LinesPlot linesPlot,
     PointsPlot pointsPlot,
-    GridPlot gridPlot,
+    UnivariateGridPlot univariateGridPlot,
     LandscapePlot landscapePlot,
     boolean debug) {
 
@@ -44,7 +44,7 @@ public record Configuration(
       PlotMatrix.DEFAULT,
       LinesPlot.DEFAULT,
       PointsPlot.DEFAULT,
-      GridPlot.DEFAULT,
+      UnivariateGridPlot.DEFAULT,
       LandscapePlot.DEFAULT,
       false);
 
@@ -59,7 +59,7 @@ public record Configuration(
           Set.of(Configuration.PlotMatrix.Independence.ALL)),
       LinesPlot.DEFAULT,
       PointsPlot.DEFAULT,
-      Configuration.GridPlot.DEFAULT,
+      UnivariateGridPlot.DEFAULT,
       LandscapePlot.DEFAULT,
       false);
 
@@ -117,14 +117,14 @@ public record Configuration(
     public static final General DEFAULT = new General(1.25, 0.9, 0.0005, 0.001, 5);
   }
 
-  public record GridPlot(
+  public record UnivariateGridPlot(
       double cellSideRate,
       int legendSteps,
       double legendImageWRate,
       double legendImageHRate,
       boolean showRanges,
       ColorRange colorRange) {
-    public static final GridPlot DEFAULT = new GridPlot(
+    public static final UnivariateGridPlot DEFAULT = new UnivariateGridPlot(
         0.9,
         20,
         0.2,
@@ -153,10 +153,10 @@ public record Configuration(
         PointsPlot.DEFAULT.alpha(),
         PointsPlot.DEFAULT.legendImageSizeRate(),
         PointsPlot.DEFAULT.marker(),
-        GridPlot.DEFAULT.legendSteps(),
-        GridPlot.DEFAULT.legendImageWRate(),
-        GridPlot.DEFAULT.legendImageHRate(),
-        GridPlot.DEFAULT.showRanges(),
+        UnivariateGridPlot.DEFAULT.legendSteps(),
+        UnivariateGridPlot.DEFAULT.legendImageWRate(),
+        UnivariateGridPlot.DEFAULT.legendImageHRate(),
+        UnivariateGridPlot.DEFAULT.showRanges(),
         Colors.DEFAULT.dataColors(),
         Colors.DEFAULT.continuousDataColorRanges().get(0));
   }
