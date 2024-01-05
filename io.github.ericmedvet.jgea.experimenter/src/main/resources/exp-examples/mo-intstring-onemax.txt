@@ -62,6 +62,19 @@ ea.experiment(
       )
     );
     ea.l.expPlotSaver(
+      filePath = "../mo-hv-boxplot.png";
+      w = 600; h = 1200;
+      saveCsvData = true;
+      freeScales = true;
+      type = boxplot;
+      plot = ea.plot.fitnessPlotMatrix(
+        yFunction = ea.nf.hypervolume2D(
+          collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.firsts());
+          reference = [1; 1]
+        )
+      )
+    );
+    ea.l.expPlotSaver(
       filePath = "../mo-obj0-vs-evals.png";
       w = 600; h = 1200;
       saveCsvData = true;

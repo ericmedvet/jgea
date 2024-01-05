@@ -41,7 +41,6 @@ ea.experiment(
     ea.l.expPlotSaver(
       filePath = "../mmnum-fitness-vs-evals.png";
       w = 900; h = 600;
-      freeScales = true;
       saveCsvData = true;
       type = lines;
       plot = ea.plot.fitnessPlotMatrix(xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 250; s = "%.0f"))
@@ -49,11 +48,23 @@ ea.experiment(
     ea.l.expPlotSaver(
       filePath = "../mmnum-otd-vs-evals.png";
       w = 900; h = 600;
-      freeScales = true;
       type = lines;
       saveCsvData = true;
       plot = ea.plot.fitnessPlotMatrix(
         xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 250; s = "%.0f");
+        yFunction = ea.nf.overallTargetDistance(
+          collection = ea.nf.each(map = ea.nf.solution(); collection = ea.nf.all());
+          problem = ea.p.s.circularPointsAiming(name = "cpa-3-2"; n = 3; p = 2)
+        )
+      )
+    );
+    ea.l.expPlotSaver(
+      filePath = "../mmnum-otd-boxplot.png";
+      w = 900; h = 600;
+      freeScales = true;
+      type = boxplot;
+      saveCsvData = true;
+      plot = ea.plot.fitnessPlotMatrix(
         yFunction = ea.nf.overallTargetDistance(
           collection = ea.nf.each(map = ea.nf.solution(); collection = ea.nf.all());
           problem = ea.p.s.circularPointsAiming(name = "cpa-3-2"; n = 3; p = 2)

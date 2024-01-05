@@ -42,7 +42,6 @@ ea.experiment(
     ea.l.expPlotSaver(
       filePath = "../mm-fitness-vs-evals.png";
       w = 600; h = 700;
-      freeScales = true;
       saveCsvData = true;
       type = lines;
       plot = ea.plot.fitnessPlotMatrix(xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 250; s = "%.0f"))
@@ -50,11 +49,23 @@ ea.experiment(
     ea.l.expPlotSaver(
       filePath = "../mm-otd-vs-evals.png";
       w = 600; h = 700;
-      freeScales = true;
       type = lines;
       saveCsvData = true;
       plot = ea.plot.fitnessPlotMatrix(
         xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 250; s = "%.0f");
+        yFunction = ea.nf.overallTargetDistance(
+          collection = ea.nf.each(map = ea.nf.solution(); collection = ea.nf.all());
+          problem = ea.p.s.multiModalIntOneMax(name = "mt-25"; nOfTargets = 3; p = 25)
+        )
+      )
+    );
+    ea.l.expPlotSaver(
+      filePath = "../mm-otd-boxplot.png";
+      w = 600; h = 700;
+      freeScales = true;
+      type = boxplot;
+      saveCsvData = true;
+      plot = ea.plot.fitnessPlotMatrix(
         yFunction = ea.nf.overallTargetDistance(
           collection = ea.nf.each(map = ea.nf.solution(); collection = ea.nf.all());
           problem = ea.p.s.multiModalIntOneMax(name = "mt-25"; nOfTargets = 3; p = 25)
