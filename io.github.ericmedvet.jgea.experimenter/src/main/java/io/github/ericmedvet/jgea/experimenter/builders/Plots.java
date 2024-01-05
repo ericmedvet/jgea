@@ -176,7 +176,7 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <G, S, Q, X>
-  DistributionMRPAF<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>, String, X> fitnessBoxplotMatrix(
+      DistributionMRPAF<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>, String, X> fitnessBoxplotMatrix(
           @Param(value = "xSubplotRunKey", dNPM = "ea.misc.sEntry(key=none;value=\"_\")")
               Map.Entry<String, String> xSubplotRunKey,
           @Param(value = "ySubplotRunKey", dNPM = "ea.misc.sEntry(key=problem;value=\"{problem.name}\")")
@@ -185,9 +185,9 @@ public class Plots {
               Map.Entry<String, String> lineRunKey,
           @Param(value = "yFunction", dNPM = "ea.nf.bestFitness()")
               NamedFunction<? super POCPopulationState<?, G, S, Q>, ? extends Number> yFunction,
-      @Param(value = "predicateValue", dNPM = "ea.nf.progress()")
-      NamedFunction<POCPopulationState<?, G, S, Q>, X> predicateValueFunction,
-      @Param(value = "condition", dNPM = "ea.predicate.gtEq(t=1)") Predicate<X> condition,
+          @Param(value = "predicateValue", dNPM = "ea.nf.progress()")
+              NamedFunction<POCPopulationState<?, G, S, Q>, X> predicateValueFunction,
+          @Param(value = "condition", dNPM = "ea.predicate.gtEq(t=1)") Predicate<X> condition,
           @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
     return new DistributionMRPAF<>(
         buildRunNamedFunction(xSubplotRunKey),

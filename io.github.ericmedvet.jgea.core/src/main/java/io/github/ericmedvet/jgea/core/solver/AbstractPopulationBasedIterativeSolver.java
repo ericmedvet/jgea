@@ -24,7 +24,6 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
-import io.github.ericmedvet.jgea.core.util.Progress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -124,14 +123,6 @@ public abstract class AbstractPopulationBasedIterativeSolver<
         .toList();
   }
 
-  protected Progress progress(T state) {
-    if (stopCondition instanceof ProgressBasedStopCondition<?> progressBasedStopCondition) {
-      //noinspection unchecked
-      return ((ProgressBasedStopCondition<T>) progressBasedStopCondition).progress(state);
-    }
-    return Progress.NA;
-  }
-
   private Collection<Future<I>> remap(Collection<I> individuals, T state, P problem, ExecutorService executor)
       throws SolverException {
     try {
@@ -141,5 +132,10 @@ public abstract class AbstractPopulationBasedIterativeSolver<
     } catch (InterruptedException e) {
       throw new SolverException(e);
     }
+  }
+
+  protected Predicate<State> stopCondition() {
+    //noinspection unchecked
+    return (Predicate<State>) stopCondition;
   }
 }

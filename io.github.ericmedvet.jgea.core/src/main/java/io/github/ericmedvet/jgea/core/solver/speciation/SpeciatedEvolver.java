@@ -29,7 +29,6 @@ import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSol
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.util.Misc;
-import io.github.ericmedvet.jgea.core.util.Progress;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -80,15 +79,15 @@ public class SpeciatedEvolver<G, S, Q>
       LocalDateTime startingDateTime,
       long elapsedMillis,
       long nOfIterations,
-      Progress progress,
+      Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition,
       long nOfBirths,
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<Individual<G, S, Q>> pocPopulation,
       Collection<Species<Individual<G, S, Q>>> parentSpecies)
-      implements SpeciatedPOCPopulationState<G, S, Q> {
+      implements SpeciatedPOCPopulationState<G, S, Q>,
+          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress {
     public static <G, S, Q> State<G, S, Q> from(
         State<G, S, Q> state,
-        Progress progress,
         int nOfBirths,
         int nOfFitnessEvaluations,
         PartiallyOrderedCollection<Individual<G, S, Q>> population,
@@ -97,19 +96,21 @@ public class SpeciatedEvolver<G, S, Q>
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations() + 1,
-          progress,
+          state.stopCondition,
           state.nOfBirths() + nOfBirths,
           state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
           population,
           parentSpecies);
     }
 
-    public static <G, S, Q> State<G, S, Q> from(PartiallyOrderedCollection<Individual<G, S, Q>> population) {
+    public static <G, S, Q> State<G, S, Q> from(
+        PartiallyOrderedCollection<Individual<G, S, Q>> population,
+        Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition) {
       return new State<>(
           LocalDateTime.now(),
           0,
           0,
-          Progress.NA,
+          stopCondition,
           population.size(),
           population.size(),
           population,
@@ -121,9 +122,11 @@ public class SpeciatedEvolver<G, S, Q>
   public SpeciatedPOCPopulationState<G, S, Q> init(
       QualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
       throws SolverException {
-    return State.from(PartiallyOrderedCollection.from(
-        map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor),
-        partialComparator(problem)));
+    return State.from(
+        PartiallyOrderedCollection.from(
+            map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor),
+            partialComparator(problem)),
+        stopCondition());
   }
 
   @Override
@@ -206,7 +209,6 @@ public class SpeciatedEvolver<G, S, Q>
     L.fine(String.format("Offspring and elites merged: %d individuals", newPopulation.size()));
     return State.from(
         (State<G, S, Q>) state,
-        progress(state),
         nOfNewBirths,
         nOfNewBirths + (remap ? elites.size() : 0),
         PartiallyOrderedCollection.from(newPopulation, partialComparator(problem)),

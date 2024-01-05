@@ -26,7 +26,6 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.sequence.FixedLengthListFactory;
-import io.github.ericmedvet.jgea.core.util.Progress;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -73,7 +72,7 @@ public class OpenAIEvolutionaryStrategy<S, Q>
       LocalDateTime startingDateTime,
       long elapsedMillis,
       long nOfIterations,
-      Progress progress,
+      Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition,
       long nOfBirths,
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<Individual<List<Double>, S, Q>> pocPopulation,
@@ -86,16 +85,18 @@ public class OpenAIEvolutionaryStrategy<S, Q>
       double[] center,
       double[] m,
       double[] v)
-      implements ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> {
+      implements ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>,
+          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress {
     public static <S, Q> State<S, Q> from(
         Collection<Individual<List<Double>, S, Q>> individuals,
-        Comparator<? super Individual<List<Double>, S, Q>> comparator) {
+        Comparator<? super Individual<List<Double>, S, Q>> comparator,
+        Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition) {
       int n = individuals.iterator().next().genotype().size();
       return new State<>(
           LocalDateTime.now(),
           0,
           0,
-          Progress.NA,
+          stopCondition,
           0,
           0,
           PartiallyOrderedCollection.from(individuals, comparator),
@@ -113,7 +114,6 @@ public class OpenAIEvolutionaryStrategy<S, Q>
 
     public static <S, Q> State<S, Q> from(
         State<S, Q> state,
-        Progress progress,
         Collection<Individual<List<Double>, S, Q>> individuals,
         Comparator<? super Individual<List<Double>, S, Q>> comparator,
         double[] center,
@@ -123,7 +123,7 @@ public class OpenAIEvolutionaryStrategy<S, Q>
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations() + 1,
-          progress,
+          state.stopCondition,
           state.nOfBirths + individuals.size(),
           state.nOfFitnessEvaluations + individuals.size(),
           PartiallyOrderedCollection.from(individuals, comparator),
@@ -167,7 +167,7 @@ public class OpenAIEvolutionaryStrategy<S, Q>
       throws SolverException {
     Collection<Individual<List<Double>, S, Q>> individuals =
         map(genotypeFactory.build(2 * batchSize, random), List.of(), null, problem, executor);
-    return State.from(individuals, comparator(problem));
+    return State.from(individuals, comparator(problem), stopCondition());
   }
 
   @Override
@@ -220,6 +220,6 @@ public class OpenAIEvolutionaryStrategy<S, Q>
         / (1d - Math.pow(esState.beta1, esState.nOfIterations() + 1));
     double[] dCenter = mult(div(hatM, sum(sqrt(hatV), esState.epsilon)), -a);
     double[] center = sum(esState.center, dCenter);
-    return State.from(esState, progress(state), newIndividuals, comparator(problem), center, m, v);
+    return State.from(esState, newIndividuals, comparator(problem), center, m, v);
   }
 }

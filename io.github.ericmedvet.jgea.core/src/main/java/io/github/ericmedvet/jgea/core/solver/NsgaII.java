@@ -138,7 +138,7 @@ public class NsgaII<G, S>
         map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor);
     //noinspection rawtypes,unchecked
     return AbstractStandardEvolver.POCState.from(
-        PartiallyOrderedCollection.from((List) individuals, partialComparator(problem)));
+        PartiallyOrderedCollection.from((List) individuals, partialComparator(problem)), stopCondition());
   }
 
   @Override
@@ -189,7 +189,6 @@ public class NsgaII<G, S>
     int nOfNewBirths = offspringGenotypes.size();
     return AbstractStandardEvolver.POCState.from(
         (AbstractStandardEvolver.POCState<Individual<G, S, List<Double>>, G, S, List<Double>>) state,
-        progress(state),
         nOfNewBirths,
         nOfNewBirths + (remap ? populationSize : 0),
         PartiallyOrderedCollection.from(newIndividuals, partialComparator(problem)));

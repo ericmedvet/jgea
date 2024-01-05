@@ -20,6 +20,7 @@
 package io.github.ericmedvet.jgea.core.solver;
 
 import io.github.ericmedvet.jgea.core.util.Progress;
+import java.util.function.Predicate;
 
 /**
  * @author "Eric Medvet" on 2023/10/21 for jgea
@@ -30,4 +31,22 @@ public interface State {
   long nOfIterations();
 
   Progress progress();
+
+  interface WithComputedProgress extends State {
+    Predicate<State> stopCondition();
+
+    @Override
+    default Progress progress() {
+      //noinspection rawtypes
+      if (stopCondition() instanceof ProgressBasedStopCondition condition) {
+        try {
+          //noinspection unchecked
+          return condition.progress(this);
+        } catch (ClassCastException ex) {
+          return Progress.NA;
+        }
+      }
+      return Progress.NA;
+    }
+  }
 }

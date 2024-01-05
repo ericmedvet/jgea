@@ -29,7 +29,6 @@ import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSol
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.util.Misc;
-import io.github.ericmedvet.jgea.core.util.Progress;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -64,22 +63,23 @@ public class MapElites<G, S, Q>
       LocalDateTime startingDateTime,
       long elapsedMillis,
       long nOfIterations,
-      Progress progress,
+      Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition,
       long nOfBirths,
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<Individual<G, S, Q>> pocPopulation,
       Map<List<Integer>, Individual<G, S, Q>> mapOfElites,
       List<Descriptor<G, S, Q>> descriptors)
-      implements MEPopulationState<G, S, Q> {
+      implements MEPopulationState<G, S, Q>, io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress {
     public static <G, S, Q> State<G, S, Q> from(
         Map<List<Integer>, Individual<G, S, Q>> mapOfElites,
         PartialComparator<? super Individual<G, S, Q>> partialComparator,
-        List<Descriptor<G, S, Q>> descriptors) {
+        List<Descriptor<G, S, Q>> descriptors,
+        Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition) {
       return new State<>(
           LocalDateTime.now(),
           0,
           0,
-          Progress.NA,
+          stopCondition,
           mapOfElites.size(),
           mapOfElites.size(),
           PartiallyOrderedCollection.from(mapOfElites.values(), partialComparator),
@@ -89,7 +89,6 @@ public class MapElites<G, S, Q>
 
     public static <G, S, Q> State<G, S, Q> from(
         State<G, S, Q> state,
-        Progress progress,
         long nOfBirths,
         long nOfFitnessEvaluations,
         Map<List<Integer>, Individual<G, S, Q>> mapOfElites,
@@ -98,7 +97,7 @@ public class MapElites<G, S, Q>
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations + 1,
-          progress,
+          state.stopCondition,
           state.nOfBirths + nOfBirths,
           state.nOfFitnessEvaluations + nOfFitnessEvaluations,
           PartiallyOrderedCollection.from(mapOfElites.values(), partialComparator),
@@ -179,7 +178,8 @@ public class MapElites<G, S, Q>
             map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor),
             partialComparator(problem)),
         partialComparator(problem),
-        descriptors);
+        descriptors,
+        stopCondition());
   }
 
   @Override
@@ -197,7 +197,6 @@ public class MapElites<G, S, Q>
         .toList();
     return State.from(
         (State<G, S, Q>) state,
-        progress(state),
         populationSize,
         populationSize,
         mapOfElites(

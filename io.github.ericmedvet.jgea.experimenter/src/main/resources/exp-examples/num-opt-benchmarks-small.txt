@@ -1,6 +1,6 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:5]) * [ea.rg.defaultRG()]) *
-    (problem = (p = [2; 10]) * [
+    (problem = (p = [2]) * [
       ea.p.s.ackley(name = "ackley");
       ea.p.s.sphere(name = "sphere");
       ea.p.s.circularPointsAiming(name = "cpa")

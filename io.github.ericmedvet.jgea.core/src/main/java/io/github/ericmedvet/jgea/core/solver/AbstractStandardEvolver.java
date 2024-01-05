@@ -26,7 +26,6 @@ import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.selector.Selector;
 import io.github.ericmedvet.jgea.core.util.Misc;
-import io.github.ericmedvet.jgea.core.util.Progress;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -58,14 +57,13 @@ public abstract class AbstractStandardEvolver<
       LocalDateTime startingDateTime,
       long elapsedMillis,
       long nOfIterations,
-      Progress progress,
+      Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition,
       long nOfBirths,
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<I> pocPopulation)
-      implements POCPopulationState<I, G, S, Q> {
+      implements POCPopulationState<I, G, S, Q>, State.WithComputedProgress {
     public static <I extends Individual<G, S, Q>, G, S, Q> POCState<I, G, S, Q> from(
         POCState<I, G, S, Q> state,
-        Progress progress,
         long nOfBirths,
         long nOfFitnessEvaluations,
         PartiallyOrderedCollection<I> population) {
@@ -73,16 +71,17 @@ public abstract class AbstractStandardEvolver<
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations() + 1,
-          progress,
+          state.stopCondition,
           state.nOfBirths() + nOfBirths,
           state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
           population);
     }
 
     public static <I extends Individual<G, S, Q>, G, S, Q> POCState<I, G, S, Q> from(
-        PartiallyOrderedCollection<I> population) {
+        PartiallyOrderedCollection<I> population,
+        Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition) {
       return new POCState<>(
-          LocalDateTime.now(), 0, 0, Progress.NA, population.size(), population.size(), population);
+          LocalDateTime.now(), 0, 0, stopCondition, population.size(), population.size(), population);
     }
   }
 
@@ -90,15 +89,14 @@ public abstract class AbstractStandardEvolver<
       LocalDateTime startingDateTime,
       long elapsedMillis,
       long nOfIterations,
-      Progress progress,
+      Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition,
       long nOfBirths,
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<I> pocPopulation,
       List<I> listPopulation)
-      implements ListPopulationState<I, G, S, Q> {
+      implements ListPopulationState<I, G, S, Q>, State.WithComputedProgress {
     public static <I extends Individual<G, S, Q>, G, S, Q> ListState<I, G, S, Q> from(
         ListState<I, G, S, Q> state,
-        Progress progress,
         long nOfBirths,
         long nOfFitnessEvaluations,
         Collection<I> listPopulation,
@@ -107,7 +105,7 @@ public abstract class AbstractStandardEvolver<
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations() + 1,
-          progress,
+          state.stopCondition,
           state.nOfBirths() + nOfBirths,
           state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
           PartiallyOrderedCollection.from(listPopulation, comparator),
@@ -115,12 +113,14 @@ public abstract class AbstractStandardEvolver<
     }
 
     public static <I extends Individual<G, S, Q>, G, S, Q> ListState<I, G, S, Q> from(
-        Collection<I> listPopulation, Comparator<? super I> comparator) {
+        Collection<I> listPopulation,
+        Comparator<? super I> comparator,
+        Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition) {
       return new ListState<>(
           LocalDateTime.now(),
           0,
           0,
-          Progress.NA,
+          stopCondition,
           listPopulation.size(),
           listPopulation.size(),
           PartiallyOrderedCollection.from(listPopulation, comparator),

@@ -30,7 +30,6 @@ import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSol
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.util.Misc;
-import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jsdynsym.grid.ArrayGrid;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 import java.time.LocalDateTime;
@@ -96,15 +95,14 @@ public class CellularAutomataBasedSolver<G, S, Q>
       LocalDateTime startingDateTime,
       long elapsedMillis,
       long nOfIterations,
-      Progress progress,
+      Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition,
       long nOfBirths,
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<Individual<G, S, Q>> pocPopulation,
       Grid<Individual<G, S, Q>> gridPopulation)
-      implements GridPopulationState<G, S, Q> {
-    public static <G, S, Q> GridPopulationState<G, S, Q> from(
+      implements GridPopulationState<G, S, Q>, io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress {
+    public static <G, S, Q> State<G, S, Q> from(
         State<G, S, Q> state,
-        Progress progress,
         long nOfBirths,
         long nOfFitnessEvaluations,
         Grid<Individual<G, S, Q>> gridPopulation,
@@ -113,7 +111,7 @@ public class CellularAutomataBasedSolver<G, S, Q>
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations() + 1,
-          progress,
+          state.stopCondition,
           state.nOfBirths() + nOfBirths,
           state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
           PartiallyOrderedCollection.from(
@@ -125,14 +123,16 @@ public class CellularAutomataBasedSolver<G, S, Q>
     }
 
     public static <G, S, Q> State<G, S, Q> from(
-        Grid<Individual<G, S, Q>> gridPopulation, PartialComparator<? super Individual<G, S, Q>> comparator) {
+        Grid<Individual<G, S, Q>> gridPopulation,
+        PartialComparator<? super Individual<G, S, Q>> comparator,
+        Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition) {
       List<Individual<G, S, Q>> individuals =
           gridPopulation.values().stream().filter(Objects::nonNull).toList();
       return new State<>(
           LocalDateTime.now(),
           0,
           0,
-          Progress.NA,
+          stopCondition,
           individuals.size(),
           individuals.size(),
           PartiallyOrderedCollection.from(individuals, comparator),
@@ -153,7 +153,7 @@ public class CellularAutomataBasedSolver<G, S, Q>
     for (int i = 0; i < freeCells.size(); i = i + 1) {
       grid.set(freeCells.get(i), individuals.get(i));
     }
-    return State.from(grid, partialComparator(problem));
+    return State.from(grid, partialComparator(problem), stopCondition());
   }
 
   @Override
@@ -177,13 +177,7 @@ public class CellularAutomataBasedSolver<G, S, Q>
     Grid<Individual<G, S, Q>> newGrid = new ArrayGrid<>(substrate.w(), substrate.h());
     newEntries.forEach(e -> newGrid.set(e.entry.key(), e.entry().value()));
     int updatedCells = (int) newEntries.stream().filter(cpo -> cpo.updated).count();
-    return State.from(
-        (State<G, S, Q>) state,
-        progress(state),
-        updatedCells,
-        updatedCells,
-        newGrid,
-        partialComparator(problem));
+    return State.from((State<G, S, Q>) state, updatedCells, updatedCells, newGrid, partialComparator(problem));
   }
 
   @Override

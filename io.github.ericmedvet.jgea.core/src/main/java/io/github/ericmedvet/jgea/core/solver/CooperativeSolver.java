@@ -24,7 +24,6 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
-import io.github.ericmedvet.jgea.core.util.Progress;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -107,13 +106,14 @@ public class CooperativeSolver<
       LocalDateTime startingDateTime,
       long elapsedMillis,
       long nOfIterations,
-      Progress progress,
+      Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition,
       long nOfBirths,
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<Individual<Void, S, Q>> pocPopulation,
       T1 state1,
       T2 state2)
-      implements POCPopulationState<Individual<Void, S, Q>, Void, S, Q> {
+      implements POCPopulationState<Individual<Void, S, Q>, Void, S, Q>,
+          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress {
     public static <
             T1 extends POCPopulationState<Individual<G1, S1, Q>, G1, S1, Q>,
             T2 extends POCPopulationState<Individual<G2, S2, Q>, G2, S2, Q>,
@@ -127,12 +127,13 @@ public class CooperativeSolver<
             T1 state1,
             T2 state2,
             Collection<Individual<Void, S, Q>> individuals,
-            PartialComparator<? super Individual<Void, S, Q>> partialComparator) {
+            PartialComparator<? super Individual<Void, S, Q>> partialComparator,
+            Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition) {
       return new State<>(
           LocalDateTime.now(),
           0,
           0,
-          Progress.NA,
+          stopCondition,
           individuals.size(),
           individuals.size(),
           PartiallyOrderedCollection.from(individuals, partialComparator),
@@ -151,7 +152,6 @@ public class CooperativeSolver<
             Q>
         State<T1, T2, G1, G2, S1, S2, S, Q> from(
             State<T1, T2, G1, G2, S1, S2, S, Q> state,
-            Progress progress,
             T1 state1,
             T2 state2,
             Collection<Individual<Void, S, Q>> individuals,
@@ -160,7 +160,7 @@ public class CooperativeSolver<
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations() + 1,
-          progress,
+          state.stopCondition,
           state.nOfBirths + individuals.size(),
           state.nOfFitnessEvaluations + individuals.size(),
           PartiallyOrderedCollection.from(individuals, partialComparator),
@@ -212,7 +212,7 @@ public class CooperativeSolver<
         problem.qualityComparator());
     T1 state1 = solver1.init(problem1, random, executor);
     T2 state2 = solver2.init(problem2, random, executor);
-    return State.from(state1, state2, evaluatedIndividuals, partialComparator(problem));
+    return State.from(state1, state2, evaluatedIndividuals, partialComparator(problem), stopCondition());
   }
 
   @Override
@@ -256,7 +256,7 @@ public class CooperativeSolver<
         problem.qualityComparator());
     T1 state1 = solver1.update(problem1, random, executor, coState.state1);
     T2 state2 = solver2.update(problem2, random, executor, coState.state2);
-    return State.from(coState, progress(state), state1, state2, evaluatedIndividuals, partialComparator(problem));
+    return State.from(coState, state1, state2, evaluatedIndividuals, partialComparator(problem));
   }
 
   @Override

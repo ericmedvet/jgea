@@ -25,7 +25,6 @@ import static io.github.ericmedvet.jgea.core.util.VectorUtils.*;
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
-import io.github.ericmedvet.jgea.core.util.Progress;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -73,16 +72,16 @@ public class SimpleEvolutionaryStrategy<S, Q>
       LocalDateTime startingDateTime,
       long elapsedMillis,
       long nOfIterations,
-      Progress progress,
+      Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition,
       long nOfBirths,
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<Individual<List<Double>, S, Q>> pocPopulation,
       List<Individual<List<Double>, S, Q>> listPopulation,
       List<Double> means)
-      implements ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> {
+      implements ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>,
+          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress {
     public static <S, Q> State<S, Q> from(
         State<S, Q> state,
-        Progress progress,
         int nOfBirths,
         int nOfFitnessEvaluations,
         Collection<Individual<List<Double>, S, Q>> listPopulation,
@@ -92,7 +91,7 @@ public class SimpleEvolutionaryStrategy<S, Q>
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations() + 1,
-          progress,
+          state.stopCondition,
           state.nOfBirths() + nOfBirths,
           state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
           PartiallyOrderedCollection.from(listPopulation, comparator),
@@ -102,12 +101,13 @@ public class SimpleEvolutionaryStrategy<S, Q>
 
     public static <S, Q> State<S, Q> from(
         Collection<Individual<List<Double>, S, Q>> listPopulation,
-        Comparator<? super Individual<List<Double>, S, Q>> comparator) {
+        Comparator<? super Individual<List<Double>, S, Q>> comparator,
+        Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition) {
       return new State<>(
           LocalDateTime.now(),
           0,
           0,
-          Progress.NA,
+          stopCondition,
           listPopulation.size(),
           listPopulation.size(),
           PartiallyOrderedCollection.from(listPopulation, comparator),
@@ -121,7 +121,10 @@ public class SimpleEvolutionaryStrategy<S, Q>
       TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
       throws SolverException {
     Comparator<? super Individual<?, ?, Q>> c1 = comparator(problem);
-    return State.from(map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor), c1);
+    return State.from(
+        map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor),
+        c1,
+        stopCondition());
   }
 
   @Override
@@ -151,7 +154,6 @@ public class SimpleEvolutionaryStrategy<S, Q>
     L.fine(String.format("Offspring and elite merged: %d individuals", newPopulation.size()));
     return State.from(
         (State<S, Q>) state,
-        progress(state),
         nOfBirths,
         nOfBirths + (remap ? elites.size() : 0),
         newPopulation,

@@ -24,7 +24,6 @@ import static io.github.ericmedvet.jgea.core.util.VectorUtils.*;
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
-import io.github.ericmedvet.jgea.core.util.Progress;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -96,16 +95,16 @@ public class ParticleSwarmOptimization<S, Q>
       LocalDateTime startingDateTime,
       long elapsedMillis,
       long nOfIterations,
-      Progress progress,
+      Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition,
       long nOfBirths,
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<PSOIndividual<S, Q>> pocPopulation,
       List<PSOIndividual<S, Q>> listPopulation,
       PSOIndividual<S, Q> knownBest)
-      implements ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q> {
+      implements ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q>,
+          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress {
     public static <S, Q> State<S, Q> from(
         State<S, Q> state,
-        Progress progress,
         int nOfBirths,
         int nOfFitnessEvaluations,
         Collection<PSOIndividual<S, Q>> listPopulation,
@@ -115,7 +114,7 @@ public class ParticleSwarmOptimization<S, Q>
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations() + 1,
-          progress,
+          state.stopCondition,
           state.nOfBirths() + nOfBirths,
           state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
           PartiallyOrderedCollection.from(listPopulation, comparator),
@@ -124,14 +123,16 @@ public class ParticleSwarmOptimization<S, Q>
     }
 
     public static <S, Q> State<S, Q> from(
-        Collection<PSOIndividual<S, Q>> listPopulation, Comparator<? super PSOIndividual<S, Q>> comparator) {
+        Collection<PSOIndividual<S, Q>> listPopulation,
+        Comparator<? super PSOIndividual<S, Q>> comparator,
+        Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition) {
       List<PSOIndividual<S, Q>> list =
           listPopulation.stream().sorted(comparator).toList();
       return new State<>(
           LocalDateTime.now(),
           0,
           0,
-          Progress.NA,
+          stopCondition,
           listPopulation.size(),
           listPopulation.size(),
           PartiallyOrderedCollection.from(listPopulation, comparator),
@@ -203,7 +204,7 @@ public class ParticleSwarmOptimization<S, Q>
                 0);
           })
           .toList()));
-      return State.from(individuals, comparator(problem));
+      return State.from(individuals, comparator(problem), stopCondition());
     } catch (InterruptedException e) {
       throw new SolverException(e);
     }
@@ -229,8 +230,7 @@ public class ParticleSwarmOptimization<S, Q>
                     mult(diff(i.bestKnownPosition(), i.position()), rParticle * phiParticle);
                 List<Double> vGlobal =
                     mult(diff(globalBestPosition, i.position()), rGlobal * phiGlobal);
-                List<Double> newVelocity = sum(
-                    vVel, sum(vParticle, vGlobal)); // TODO maybe make a sum version with varargs
+                List<Double> newVelocity = sum(vVel, vParticle, vGlobal);
                 List<Double> newPosition = sum(i.position(), newVelocity);
                 S newSolution = solutionMapper.apply(newPosition);
                 Q newQuality = problem.qualityFunction().apply(newSolution);
@@ -259,7 +259,6 @@ public class ParticleSwarmOptimization<S, Q>
       }
       return State.from(
           (State<S, Q>) state,
-          progress(state),
           populationSize,
           populationSize,
           sortedIndividuals,

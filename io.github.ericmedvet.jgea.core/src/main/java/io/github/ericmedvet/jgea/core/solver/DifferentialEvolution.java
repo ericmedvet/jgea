@@ -25,7 +25,6 @@ import io.github.ericmedvet.jgea.core.selector.Last;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
@@ -40,7 +39,6 @@ public class DifferentialEvolution<S, Q>
         S,
         Q> {
 
-  private final int populationSize;
   protected final double differentialWeight;
   protected final double crossoverProb;
 
@@ -64,7 +62,6 @@ public class DifferentialEvolution<S, Q>
         true,
         0,
         remap);
-    this.populationSize = populationSize;
     this.differentialWeight = differentialWeight;
     this.crossoverProb = crossoverProb;
   }
@@ -105,7 +102,6 @@ public class DifferentialEvolution<S, Q>
       long nOfNewFitnessEvaluations) {
     return ListState.from(
         (AbstractStandardEvolver.ListState<Individual<List<Double>, S, Q>, List<Double>, S, Q>) state,
-        progress(state),
         nOfNewBirths,
         nOfNewFitnessEvaluations,
         individuals.stream().sorted(comparator(problem)).toList(),
@@ -115,16 +111,8 @@ public class DifferentialEvolution<S, Q>
   @Override
   protected ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> init(
       TotalOrderQualityBasedProblem<S, Q> problem, Collection<Individual<List<Double>, S, Q>> individuals) {
-    return ListState.from(individuals.stream().sorted(comparator(problem)).toList(), comparator(problem));
-  }
-
-  @Override
-  public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> init(
-      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
-      throws SolverException {
     return ListState.from(
-        map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor),
-        comparator(problem));
+        individuals.stream().sorted(comparator(problem)).toList(), comparator(problem), stopCondition());
   }
 
   @Override

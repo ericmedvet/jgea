@@ -25,7 +25,6 @@ import static io.github.ericmedvet.jgea.core.util.VectorUtils.*;
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
-import io.github.ericmedvet.jgea.core.util.Progress;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -117,7 +116,7 @@ public class CMAEvolutionaryStrategy<S, Q>
       LocalDateTime startingDateTime,
       long elapsedMillis,
       long nOfIterations,
-      Progress progress,
+      Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition,
       long nOfBirths,
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<Individual<List<Double>, S, Q>> pocPopulation,
@@ -130,14 +129,16 @@ public class CMAEvolutionaryStrategy<S, Q>
       RealMatrix B,
       RealMatrix D,
       long lastEigenUpdateIteration)
-      implements ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> {
-    public static <S, Q> State<S, Q> empty(double[] means) {
+      implements ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>,
+          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress {
+    public static <S, Q> State<S, Q> empty(
+        double[] means, Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition) {
       int n = means.length;
       return new State<>(
           LocalDateTime.now(),
           0,
           0,
-          Progress.NA,
+          stopCondition,
           0,
           0,
           null,
@@ -163,7 +164,7 @@ public class CMAEvolutionaryStrategy<S, Q>
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations,
-          state.progress,
+          state.stopCondition,
           state.nOfBirths,
           state.nOfFitnessEvaluations,
           state.pocPopulation,
@@ -183,7 +184,7 @@ public class CMAEvolutionaryStrategy<S, Q>
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations,
-          state.progress,
+          state.stopCondition,
           state.nOfBirths,
           state.nOfFitnessEvaluations,
           state.pocPopulation,
@@ -200,7 +201,6 @@ public class CMAEvolutionaryStrategy<S, Q>
 
     public static <S, Q> State<S, Q> from(
         State<S, Q> state,
-        Progress progress,
         Collection<DecoratedIndividual<S, Q>> individuals,
         Comparator<? super Individual<List<Double>, S, Q>> comparator) {
       //noinspection unchecked,rawtypes
@@ -208,7 +208,7 @@ public class CMAEvolutionaryStrategy<S, Q>
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations + 1,
-          progress,
+          state.stopCondition,
           state.nOfBirths + individuals.size(),
           state.nOfFitnessEvaluations + individuals.size(),
           PartiallyOrderedCollection.from((Collection) individuals, comparator),
@@ -247,7 +247,7 @@ public class CMAEvolutionaryStrategy<S, Q>
   public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> init(
       TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
       throws SolverException {
-    State<S, Q> state = State.empty(unboxed(genotypeFactory.build(1, random).get(0)));
+    State<S, Q> state = State.empty(unboxed(genotypeFactory.build(1, random).get(0)), stopCondition());
     Collection<DecoratedIndividual<S, Q>> newDecoratedIndividuals;
     try {
       newDecoratedIndividuals = getAll(executor.invokeAll(IntStream.range(0, populationSize)
@@ -256,7 +256,7 @@ public class CMAEvolutionaryStrategy<S, Q>
     } catch (InterruptedException e) {
       throw new SolverException(e);
     }
-    return State.from(state, progress(state), newDecoratedIndividuals, comparator(problem));
+    return State.from(state, newDecoratedIndividuals, comparator(problem));
   }
 
   @Override
@@ -284,7 +284,7 @@ public class CMAEvolutionaryStrategy<S, Q>
       throw new SolverException(e);
     }
     // return
-    return State.from(finalCmaState, progress(state), newDecoratedIndividuals, comparator(problem));
+    return State.from(finalCmaState, newDecoratedIndividuals, comparator(problem));
   }
 
   private Callable<DecoratedIndividual<S, Q>> newIndividualCallable(
