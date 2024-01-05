@@ -41,7 +41,7 @@ public class LandscapePlotDrawer extends AbstractPlotDrawer<LandscapePlot, Lands
   private final Configuration.LandscapePlot c;
 
   public LandscapePlotDrawer(ImagePlotter ip, LandscapePlot plot, Configuration.LandscapePlot c) {
-    super(ip, plot);
+    super(ip, plot, c.xExtensionRate(), c.yExtensionRate());
     this.c = c;
     valueRanges = plot.dataGrid()
         .map((k, td) -> computeValueRange(

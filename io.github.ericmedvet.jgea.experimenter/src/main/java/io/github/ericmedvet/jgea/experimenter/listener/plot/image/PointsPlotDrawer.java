@@ -30,7 +30,7 @@ public class PointsPlotDrawer extends AbstractXYDataSeriesPlotDrawer {
   private final Configuration.PointsPlot c;
 
   public PointsPlotDrawer(ImagePlotter ip, XYDataSeriesPlot plot, Configuration.PointsPlot c) {
-    super(ip, plot, c.colors());
+    super(ip, plot, c.colors(), c.xExtensionRate(), c.yExtensionRate());
     this.c = c;
   }
 

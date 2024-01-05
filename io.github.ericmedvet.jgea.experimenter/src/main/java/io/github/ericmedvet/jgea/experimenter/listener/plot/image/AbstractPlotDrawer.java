@@ -38,11 +38,11 @@ public abstract class AbstractPlotDrawer<P extends XYPlot<D>, D> implements Plot
   protected final Grid<DoubleRange> xRanges;
   protected final Grid<DoubleRange> yRanges;
 
-  public AbstractPlotDrawer(ImagePlotter ip, P plot) {
+  public AbstractPlotDrawer(ImagePlotter ip, P plot, double xExtensionRate, double yExtensionRate) {
     this.ip = ip;
     this.plot = plot;
-    xRanges = computeRanges(true);
-    yRanges = computeRanges(false);
+    xRanges = computeRanges(true, xExtensionRate);
+    yRanges = computeRanges(false, yExtensionRate);
   }
 
   @Override
@@ -55,11 +55,11 @@ public abstract class AbstractPlotDrawer<P extends XYPlot<D>, D> implements Plot
     return computeAxes(g, l, false);
   }
 
-  protected Grid<DoubleRange> computeRanges(boolean isXAxis) {
+  protected Grid<DoubleRange> computeRanges(boolean isXAxis, double extensionRate) {
     Grid<DoubleRange> grid = plot.dataGrid().map((k, td) -> {
       DoubleRange extRange = isXAxis ? plot.xRange() : plot.yRange();
       if (extRange.equals(DoubleRange.UNBOUNDED)) {
-        return computeRange(td.data(), isXAxis);
+        return computeRange(td.data(), isXAxis).extend(extensionRate);
       }
       return extRange;
     });

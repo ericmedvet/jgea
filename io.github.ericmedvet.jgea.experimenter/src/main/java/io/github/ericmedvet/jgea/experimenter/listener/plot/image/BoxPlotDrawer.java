@@ -40,7 +40,7 @@ public class BoxPlotDrawer extends AbstractPlotDrawer<DistributionPlot, List<Dis
   protected final SortedMap<String, Color> dataColors;
 
   public BoxPlotDrawer(ImagePlotter ip, DistributionPlot plot, Configuration.BoxPlot c) {
-    super(ip, plot);
+    super(ip, plot, 1, c.yExtensionRate());
     this.c = c;
     dataColors = ip.computeSeriesDataColors(
         plot.dataGrid().values().stream()

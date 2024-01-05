@@ -36,7 +36,7 @@ public class LinesPlotDrawer extends AbstractXYDataSeriesPlotDrawer {
   private final Configuration.LinesPlot c;
 
   public LinesPlotDrawer(ImagePlotter ip, XYDataSeriesPlot plot, Configuration.LinesPlot c) {
-    super(ip, plot, c.colors());
+    super(ip, plot, c.colors(), c.xExtensionRate(), c.yExtensionRate());
     this.c = c;
   }
 

@@ -247,7 +247,6 @@ public interface Plotter<O> {
                                 .toList()))
                     .subList(y, 6))));
     ImagePlotter.showImage(ip.boxplot(dp));
-    new CsvPlotter(new File("../boxplot.txt")).boxplot(dp);
   }
 
   default O plot(XYPlot<?> plot, Type type) {

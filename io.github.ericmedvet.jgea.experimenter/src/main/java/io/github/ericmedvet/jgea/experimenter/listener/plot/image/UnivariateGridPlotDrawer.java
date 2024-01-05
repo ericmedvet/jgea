@@ -39,7 +39,7 @@ public class UnivariateGridPlotDrawer extends AbstractPlotDrawer<UnivariateGridP
   protected final DoubleRange valueRange;
 
   public UnivariateGridPlotDrawer(ImagePlotter ip, UnivariateGridPlot plot, Configuration.UnivariateGridPlot c) {
-    super(ip, plot);
+    super(ip, plot, 1, 1);
     this.c = c;
     valueRanges = plot.dataGrid().map(td -> computeValueRange(td.data()));
     if (plot.valueRange().equals(DoubleRange.UNBOUNDED)) {
