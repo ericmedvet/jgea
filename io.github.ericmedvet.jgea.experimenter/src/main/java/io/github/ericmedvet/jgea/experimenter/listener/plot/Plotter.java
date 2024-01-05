@@ -23,7 +23,6 @@ import io.github.ericmedvet.jgea.experimenter.listener.plot.image.ImagePlotter;
 import io.github.ericmedvet.jgea.problem.synthetic.Ackley;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
-import java.io.File;
 import java.util.List;
 import java.util.Random;
 import java.util.random.RandomGenerator;

@@ -35,7 +35,8 @@ public abstract class AbstractXYDataSeriesPlotDrawer extends AbstractPlotDrawer<
 
   protected final SortedMap<String, Color> dataColors;
 
-  public AbstractXYDataSeriesPlotDrawer(ImagePlotter ip, XYDataSeriesPlot plot, List<Color> colors, double xExtensionRate, double yExtensionRate) {
+  public AbstractXYDataSeriesPlotDrawer(
+      ImagePlotter ip, XYDataSeriesPlot plot, List<Color> colors, double xExtensionRate, double yExtensionRate) {
     super(ip, plot, xExtensionRate, yExtensionRate);
     dataColors = ip.computeSeriesDataColors(
         plot.dataGrid().values().stream()
