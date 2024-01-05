@@ -65,15 +65,15 @@ public class CsvPlotter implements Plotter<File> {
           p.xTitleName(),
           p.yTitleName(),
           "series",
-          p.yName(),
-          p.xName() + "[min]",
-          p.xName() + "[q1minus15IQR]",
-          p.xName() + "[q1]",
-          p.xName() + "[mean]",
-          p.xName() + "[median]",
-          p.xName() + "[q3]",
-          p.xName() + "[q3plus15IQR]",
-          p.xName() + "[max]"));
+          p.xName(),
+          p.yName() + "[min]",
+          p.yName() + "[q1minus15IQR]",
+          p.yName() + "[q1]",
+          p.yName() + "[mean]",
+          p.yName() + "[median]",
+          p.yName() + "[q3]",
+          p.yName() + "[q3plus15IQR]",
+          p.yName() + "[max]"));
       for (XYPlot.TitledData<List<DistributionPlot.Data>> td :
           p.dataGrid().values()) {
         for (DistributionPlot.Data ds : td.data()) {
