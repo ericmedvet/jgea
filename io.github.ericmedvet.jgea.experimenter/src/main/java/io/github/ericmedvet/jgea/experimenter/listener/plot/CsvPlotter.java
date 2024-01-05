@@ -64,7 +64,6 @@ public class CsvPlotter implements Plotter<File> {
       csvPrinter.printRecord(List.of(
           p.xTitleName(),
           p.yTitleName(),
-          "series",
           p.xName(),
           p.yName() + "[min]",
           p.yName() + "[q1minus15IQR]",
