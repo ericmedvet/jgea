@@ -41,7 +41,7 @@ ea.experiment(
     ea.l.expPlotSaver(
       filePath = "../mmnum-fitness-vs-evals.png";
       w = 900; h = 600;
-      saveCsvData = true;
+      saveCsvDataMode = paper_friendly;
       type = lines;
       plot = ea.plot.fitnessPlotMatrix(xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 250; s = "%.0f"))
     );
@@ -49,7 +49,7 @@ ea.experiment(
       filePath = "../mmnum-otd-vs-evals.png";
       w = 900; h = 600;
       type = lines;
-      saveCsvData = true;
+      saveCsvDataMode = paper_friendly;
       plot = ea.plot.fitnessPlotMatrix(
         xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 250; s = "%.0f");
         yFunction = ea.nf.overallTargetDistance(
@@ -61,7 +61,7 @@ ea.experiment(
     ea.l.expPlotSaver(
       filePath = "../mmnum-otd-boxplot.png";
       w = 900; h = 600;
-      freeScales = true;
+      saveCsvDataMode = paper_friendly;
       type = boxplot;
       saveCsvData = true;
       plot = ea.plot.fitnessPlotMatrix(
@@ -74,7 +74,7 @@ ea.experiment(
     ea.l.runPlotSaver(
       w = 1000; h = 700;
       filePathTemplate = "../grids-{problem.name}-{solver.name}-{randomGenerator.seed}.png";
-      saveCsvData = true;
+      saveCsvDataMode = paper_friendly;
       type = univariate_grid;
       plot = ea.plot.gridPopulation(
         individualFunctions = [
@@ -103,7 +103,7 @@ ea.experiment(
       w = 1000; h = 350;
       filePathTemplate = "../me-{problem.name}-{solver.name}-{randomGenerator.seed}.png";
       type = univariate_grid;
-      saveCsvData = true;
+      saveCsvDataMode = paper_friendly;
       plot = ea.plot.mapElitesPopulation(
         predicateValue = ea.nf.quantized(f = ea.nf.evals(); r = 1000; s = "%.0f");
         condition = ea.predicate.inD(

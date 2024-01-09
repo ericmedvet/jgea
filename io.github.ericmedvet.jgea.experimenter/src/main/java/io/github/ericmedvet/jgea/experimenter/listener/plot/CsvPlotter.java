@@ -39,54 +39,72 @@ import io.github.ericmedvet.jgea.core.util.HashMapTable;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 
-public class CsvPlotter implements Plotter<File> {
+public class CsvPlotter implements Plotter<List<File>> {
 
   private static final Logger L = Logger.getLogger(CsvPlotter.class.getName());
-  private static final String COL_NAME_SEP = ".";
   private final File file;
   private final Mode mode;
+  private final Configuration c;
 
-  public CsvPlotter(File file, Mode mode) {
-    this.file = file;
-    this.mode = mode;
+  public record Configuration(String columnNameJoiner, String doubleFormat, String delimiter) {
+    public static final Map<Mode, Configuration> DEFAULTS = Map.ofEntries(
+        Map.entry(Mode.NORMAL, new Configuration(".", "%.5f", ";")),
+        Map.entry(Mode.PAPER_FRIENDLY, new Configuration(".", "%.5f", "\t")));
+
+    public CSVFormat getCSVFormat() {
+      return CSVFormat.DEFAULT.builder().setDelimiter(delimiter).build();
+    }
   }
 
-  public enum Mode {NONE, NORMAL, PAPER_FRIENDLY}
+  public CsvPlotter(File file, Mode mode, Configuration configuration) {
+    this.file = file;
+    this.mode = mode;
+    this.c = configuration;
+  }
+
+  public CsvPlotter(File file, Mode mode) {
+    this(file, mode, Configuration.DEFAULTS.get(mode));
+  }
+
+  public enum Mode {
+    NONE,
+    NORMAL,
+    PAPER_FRIENDLY
+  }
 
   @Override
-  public File boxplot(DistributionPlot p) {
+  public List<File> boxplot(DistributionPlot p) {
+    if (mode.equals(Mode.NONE)) {
+      return List.of();
+    }
     File actualFile = Misc.checkExistenceAndChangeName(file);
-    try (CSVPrinter csvPrinter = new CSVPrinter(
-        new PrintStream(actualFile),
-        CSVFormat.Builder.create().setDelimiter(";").build()
-    )) {
+    try (CSVPrinter csvPrinter = new CSVPrinter(new PrintStream(actualFile), c.getCSVFormat())) {
       if (mode.equals(Mode.NORMAL)) {
         csvPrinter.printRecord(List.of(
             p.xTitleName(),
             p.yTitleName(),
             p.xName(),
-            p.yName() + "[min]",
-            p.yName() + "[q1minus15IQR]",
-            p.yName() + "[q1]",
-            p.yName() + "[mean]",
-            p.yName() + "[median]",
-            p.yName() + "[q3]",
-            p.yName() + "[q3plus15IQR]",
-            p.yName() + "[max]"
-        ));
+            String.join(c.columnNameJoiner, p.yName(), "min"),
+            String.join(c.columnNameJoiner, p.yName(), "q1minus15IQR"),
+            String.join(c.columnNameJoiner, p.yName(), "q1"),
+            String.join(c.columnNameJoiner, p.yName(), "mean"),
+            String.join(c.columnNameJoiner, p.yName(), "median"),
+            String.join(c.columnNameJoiner, p.yName(), "q3"),
+            String.join(c.columnNameJoiner, p.yName(), "q3plus15IQR"),
+            String.join(c.columnNameJoiner, p.yName(), "max")));
         for (XYPlot.TitledData<List<DistributionPlot.Data>> td :
             p.dataGrid().values()) {
           for (DistributionPlot.Data ds : td.data()) {
-            csvPrinter.printRecord(List.of(
+            csvPrinter.printRecord(processRecord(List.of(
                 td.xTitle(),
                 td.yTitle(),
                 ds.name(),
@@ -97,109 +115,177 @@ public class CsvPlotter implements Plotter<File> {
                 ds.stats().median(),
                 ds.stats().q3(),
                 ds.stats().q3plus15IQR(),
-                ds.stats().max()
-            ));
+                ds.stats().max())));
           }
         }
+        return List.of(actualFile);
       }
       if (mode.equals(Mode.PAPER_FRIENDLY)) {
         Table<Integer, String, Number> t = new HashMapTable<>();
         for (XYPlot.TitledData<List<DistributionPlot.Data>> td :
             p.dataGrid().values()) {
           for (DistributionPlot.Data ds : td.data()) {
-            for (int i = 0; i<ds.yValues().size(); i++) {
-              t.set(i, String.join(COL_NAME_SEP, List.of(td.xTitle(), td.yTitle(), ds.name())), ds.yValues().get(i));
+            for (int i = 0; i < ds.yValues().size(); i++) {
+              t.set(
+                  i,
+                  String.join(c.columnNameJoiner, List.of(td.xTitle(), td.yTitle(), ds.name())),
+                  ds.yValues().get(i));
             }
           }
         }
         csvPrinter.printRecord(t.colIndexes());
         for (int i : t.rowIndexes()) {
-          csvPrinter.printRecord(t.rowValues(i));
+          csvPrinter.printRecord(processRecord(t.rowValues(i)));
         }
+        return List.of(actualFile);
       }
     } catch (IOException e) {
       L.warning("Cannot save csv to '%s': %s".formatted(file, e));
       throw new RuntimeException(e);
     }
-    return actualFile;
+    return List.of();
   }
 
   @Override
-  public File landscape(LandscapePlot plot) {
+  public List<File> landscape(LandscapePlot plot) {
     return points(plot.toXYDataSeriesPlot());
   }
 
   @Override
-  public File lines(XYDataSeriesPlot plot) {
+  public List<File> lines(XYDataSeriesPlot plot) {
     return xyDataSeries(plot);
   }
 
   @Override
-  public File points(XYDataSeriesPlot plot) {
+  public List<File> points(XYDataSeriesPlot plot) {
     return xyDataSeries(plot);
   }
 
   @Override
-  public File univariateGrid(UnivariateGridPlot p) {
+  public List<File> univariateGrid(UnivariateGridPlot p) {
+    if (mode.equals(Mode.NONE)) {
+      return List.of();
+    }
     File actualFile = Misc.checkExistenceAndChangeName(file);
-    try (CSVPrinter csvPrinter = new CSVPrinter(
-        new PrintStream(actualFile),
-        CSVFormat.Builder.create().setDelimiter(";").build()
-    )) {
-      csvPrinter.printRecord(List.of(p.xTitleName(), p.yTitleName(), "x", "y", "v"));
-      for (XYPlot.TitledData<Grid<Double>> td : p.dataGrid().values()) {
-        for (Grid.Entry<Double> e : td.data()) {
-          if (e.value() != null) {
-            csvPrinter.printRecord(List.of(
-                td.xTitle(), td.yTitle(), e.key().x(), e.key().y(), e.value()));
+    try (CSVPrinter csvPrinter = new CSVPrinter(new PrintStream(actualFile), c.getCSVFormat())) {
+      if (mode.equals(Mode.NORMAL)) {
+        csvPrinter.printRecord(List.of(p.xTitleName(), p.yTitleName(), "x", "y", "v"));
+        for (XYPlot.TitledData<Grid<Double>> td : p.dataGrid().values()) {
+          for (Grid.Entry<Double> e : td.data()) {
+            if (e.value() != null) {
+              csvPrinter.printRecord(processRecord(List.of(
+                  td.xTitle(),
+                  td.yTitle(),
+                  e.key().x(),
+                  e.key().y(),
+                  e.value())));
+            }
           }
         }
+        return List.of(actualFile);
+      }
+      if (mode.equals(Mode.PAPER_FRIENDLY)) {
+        Table<Grid.Key, String, Number> t = new HashMapTable<>();
+        for (XYPlot.TitledData<Grid<Double>> td : p.dataGrid().values()) {
+          for (Grid.Entry<Double> e : td.data()) {
+            t.set(e.key(), String.join(c.columnNameJoiner, List.of(td.xTitle(), td.yTitle())), e.value());
+          }
+        }
+        csvPrinter.printRecord(Misc.concat(List.of(List.of("x", "y"), t.colIndexes())));
+        for (Grid.Key k : t.rowIndexes()) {
+          csvPrinter.printRecord(processRecord(Misc.concat(List.of(List.of(k.x(), k.y()), t.rowValues(k)))));
+        }
+        return List.of(actualFile);
       }
     } catch (IOException e) {
       L.warning("Cannot save csv to '%s': %s".formatted(file, e));
       throw new RuntimeException(e);
     }
-    return actualFile;
+    return List.of();
   }
 
-  private File xyDataSeries(XYDataSeriesPlot p) {
+  private List<File> xyDataSeries(XYDataSeriesPlot p) {
+    if (mode.equals(Mode.NONE)) {
+      return List.of();
+    }
     File actualFile = Misc.checkExistenceAndChangeName(file);
-    try (CSVPrinter csvPrinter = new CSVPrinter(
-        new PrintStream(actualFile),
-        CSVFormat.Builder.create().setDelimiter(";").build()
-    )) {
-      csvPrinter.printRecord(List.of(
-          p.xTitleName(),
-          p.yTitleName(),
-          "series",
-          p.xName() + "[min]",
-          p.xName(),
-          p.xName() + "[max]",
-          p.yName() + "[min]",
-          p.yName(),
-          p.yName() + "[max]"
-      ));
-      for (XYPlot.TitledData<List<XYDataSeries>> td : p.dataGrid().values()) {
-        for (XYDataSeries ds : td.data()) {
-          for (XYDataSeries.Point point : ds.points()) {
-            csvPrinter.printRecord(List.of(
-                td.xTitle(),
-                td.yTitle(),
-                ds.name(),
-                RangedValue.range(point.x()).min(),
-                point.x().v(),
-                RangedValue.range(point.x()).max(),
-                RangedValue.range(point.y()).min(),
-                point.y().v(),
-                RangedValue.range(point.y()).max()
-            ));
+    try (CSVPrinter csvPrinter = new CSVPrinter(new PrintStream(actualFile), c.getCSVFormat())) {
+      if (mode.equals(Mode.NORMAL)) {
+        csvPrinter.printRecord(List.of(
+            p.xTitleName(),
+            p.yTitleName(),
+            "series",
+            String.join(c.columnNameJoiner, p.xName(), "min"),
+            p.xName(),
+            String.join(c.columnNameJoiner, p.xName(), "max"),
+            String.join(c.columnNameJoiner, p.yName(), "min"),
+            p.yName(),
+            String.join(c.columnNameJoiner, p.yName(), "max")));
+        for (XYPlot.TitledData<List<XYDataSeries>> td : p.dataGrid().values()) {
+          for (XYDataSeries ds : td.data()) {
+            for (XYDataSeries.Point point : ds.points()) {
+              csvPrinter.printRecord(processRecord(List.of(
+                  td.xTitle(),
+                  td.yTitle(),
+                  ds.name(),
+                  RangedValue.range(point.x()).min(),
+                  point.x().v(),
+                  RangedValue.range(point.x()).max(),
+                  RangedValue.range(point.y()).min(),
+                  point.y().v(),
+                  RangedValue.range(point.y()).max())));
+            }
           }
         }
+        return List.of(actualFile);
+      }
+      if (mode.equals(Mode.PAPER_FRIENDLY)) {
+        Table<Number, String, Number> t = new HashMapTable<>();
+        for (XYPlot.TitledData<List<XYDataSeries>> td : p.dataGrid().values()) {
+          for (XYDataSeries ds : td.data()) {
+            for (XYDataSeries.Point point : ds.points()) {
+              t.set(
+                  point.x().v(),
+                  String.join(
+                      c.columnNameJoiner,
+                      List.of(td.xTitle(), td.yTitle(), ds.name(), p.yName())),
+                  point.y().v());
+              t.set(
+                  point.x().v(),
+                  String.join(
+                      c.columnNameJoiner,
+                      List.of(td.xTitle(), td.yTitle(), ds.name(), p.yName(), "[min]")),
+                  RangedValue.range(point.y()).min());
+              t.set(
+                  point.x().v(),
+                  String.join(
+                      c.columnNameJoiner,
+                      List.of(td.xTitle(), td.yTitle(), ds.name(), p.yName(), "[max]")),
+                  RangedValue.range(point.y()).max());
+            }
+          }
+        }
+        csvPrinter.printRecord(Misc.concat(List.of(List.of(p.xName()), t.colIndexes())));
+        for (Number x : t.rowIndexes()) {
+          csvPrinter.printRecord(processRecord(Misc.concat(List.of(List.of(x), t.rowValues(x)))));
+        }
+        return List.of(actualFile);
       }
     } catch (IOException e) {
       L.warning("Cannot save csv to '%s': %s".formatted(file, e));
       throw new RuntimeException(e);
     }
-    return actualFile;
+    return List.of();
+  }
+
+  private List<Object> processRecord(List<? extends Object> record) {
+    return record.stream()
+        .map(o -> {
+          if (o instanceof Double d) {
+            return c.doubleFormat.formatted(d);
+          }
+          return o;
+        })
+        .toList();
   }
 }

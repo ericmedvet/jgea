@@ -73,7 +73,7 @@ ea.experiment(
     ea.l.expPlotSaver(
       filePath = "../monum-obj0-vs-evals.png";
       w = 600; h = 700;
-      saveCsvData = true;
+      saveCsvDataMode = paper_friendly;
       type = lines;
       plot = ea.plot.fitnessPlotMatrix(
         xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 250; s = "%.0f");
@@ -83,7 +83,7 @@ ea.experiment(
     ea.l.expPlotSaver(
       w = 600; h = 700;
       filePath = "../monum-obj1-vs-evals.png";
-      saveCsvData = true;
+      saveCsvDataMode = paper_friendly;
       type = lines;
       plot = ea.plot.fitnessPlotMatrix(
         xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 250; s = "%.0f");
@@ -94,7 +94,7 @@ ea.experiment(
       w = 1000; h = 700;
       filePathTemplate = "../grids-{problem.name}-{solver.name}-{randomGenerator.seed}.png";
       type = univariate_grid;
-      saveCsvData = true;
+      saveCsvDataMode = paper_friendly;
       plot = ea.plot.gridPopulation(
         individualFunctions = [
           ea.nf.fitness(f = ea.nf.nth(n = 0));
@@ -119,7 +119,7 @@ ea.experiment(
     ea.l.runPlotSaver(
       w = 1000; h = 300;
       filePathTemplate = "../fronts-{problem.name}-{solver.name}-{randomGenerator.seed}.png";
-      saveCsvData = true;
+      saveCsvDataMode = paper_friendly;
       type = points;
       plot = ea.plot.biObjectivePopulation(
         predicateValue = ea.nf.quantized(f = ea.nf.evals(); r = 1000; s = "%.0f");
@@ -140,7 +140,7 @@ ea.experiment(
       w = 1000; h = 350;
       filePathTemplate = "../me-{problem.name}-{solver.name}-{randomGenerator.seed}.png";
       type = univariate_grid;
-      saveCsvData = true;
+      saveCsvDataMode = paper_friendly;
       plot = ea.plot.mapElitesPopulation(
         predicateValue = ea.nf.quantized(f = ea.nf.evals(); r = 1000; s = "%.0f");
         individualFunctions = [
