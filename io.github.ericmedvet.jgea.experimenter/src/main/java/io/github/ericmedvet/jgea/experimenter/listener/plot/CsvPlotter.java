@@ -35,65 +35,98 @@
 
 package io.github.ericmedvet.jgea.experimenter.listener.plot;
 
+import io.github.ericmedvet.jgea.core.util.HashMapTable;
 import io.github.ericmedvet.jgea.core.util.Misc;
+import io.github.ericmedvet.jgea.core.util.Table;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.logging.Logger;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 
 public class CsvPlotter implements Plotter<File> {
 
   private static final Logger L = Logger.getLogger(CsvPlotter.class.getName());
-
+  private static final String COL_NAME_SEP = ".";
   private final File file;
+  private final Mode mode;
 
-  public CsvPlotter(File file) {
+  public CsvPlotter(File file, Mode mode) {
     this.file = file;
+    this.mode = mode;
   }
+
+  public enum Mode {NONE, NORMAL, PAPER_FRIENDLY}
 
   @Override
   public File boxplot(DistributionPlot p) {
     File actualFile = Misc.checkExistenceAndChangeName(file);
     try (CSVPrinter csvPrinter = new CSVPrinter(
         new PrintStream(actualFile),
-        CSVFormat.Builder.create().setDelimiter(";").build())) {
-      csvPrinter.printRecord(List.of(
-          p.xTitleName(),
-          p.yTitleName(),
-          p.xName(),
-          p.yName() + "[min]",
-          p.yName() + "[q1minus15IQR]",
-          p.yName() + "[q1]",
-          p.yName() + "[mean]",
-          p.yName() + "[median]",
-          p.yName() + "[q3]",
-          p.yName() + "[q3plus15IQR]",
-          p.yName() + "[max]"));
-      for (XYPlot.TitledData<List<DistributionPlot.Data>> td :
-          p.dataGrid().values()) {
-        for (DistributionPlot.Data ds : td.data()) {
-          csvPrinter.printRecord(List.of(
-              td.xTitle(),
-              td.yTitle(),
-              ds.name(),
-              ds.stats().min(),
-              ds.stats().q1minus15IQR(),
-              ds.stats().q1(),
-              ds.stats().mean(),
-              ds.stats().median(),
-              ds.stats().q3(),
-              ds.stats().q3plus15IQR(),
-              ds.stats().max()));
+        CSVFormat.Builder.create().setDelimiter(";").build()
+    )) {
+      if (mode.equals(Mode.NORMAL)) {
+        csvPrinter.printRecord(List.of(
+            p.xTitleName(),
+            p.yTitleName(),
+            p.xName(),
+            p.yName() + "[min]",
+            p.yName() + "[q1minus15IQR]",
+            p.yName() + "[q1]",
+            p.yName() + "[mean]",
+            p.yName() + "[median]",
+            p.yName() + "[q3]",
+            p.yName() + "[q3plus15IQR]",
+            p.yName() + "[max]"
+        ));
+        for (XYPlot.TitledData<List<DistributionPlot.Data>> td :
+            p.dataGrid().values()) {
+          for (DistributionPlot.Data ds : td.data()) {
+            csvPrinter.printRecord(List.of(
+                td.xTitle(),
+                td.yTitle(),
+                ds.name(),
+                ds.stats().min(),
+                ds.stats().q1minus15IQR(),
+                ds.stats().q1(),
+                ds.stats().mean(),
+                ds.stats().median(),
+                ds.stats().q3(),
+                ds.stats().q3plus15IQR(),
+                ds.stats().max()
+            ));
+          }
+        }
+      }
+      if (mode.equals(Mode.PAPER_FRIENDLY)) {
+        Table<Integer, String, Number> t = new HashMapTable<>();
+        for (XYPlot.TitledData<List<DistributionPlot.Data>> td :
+            p.dataGrid().values()) {
+          for (DistributionPlot.Data ds : td.data()) {
+            for (int i = 0; i<ds.yValues().size(); i++) {
+              t.set(i, String.join(COL_NAME_SEP, List.of(td.xTitle(), td.yTitle(), ds.name())), ds.yValues().get(i));
+            }
+          }
+        }
+        csvPrinter.printRecord(t.colIndexes());
+        for (int i : t.rowIndexes()) {
+          csvPrinter.printRecord(t.rowValues(i));
         }
       }
     } catch (IOException e) {
+      L.warning("Cannot save csv to '%s': %s".formatted(file, e));
       throw new RuntimeException(e);
     }
     return actualFile;
+  }
+
+  @Override
+  public File landscape(LandscapePlot plot) {
+    return points(plot.toXYDataSeriesPlot());
   }
 
   @Override
@@ -111,7 +144,8 @@ public class CsvPlotter implements Plotter<File> {
     File actualFile = Misc.checkExistenceAndChangeName(file);
     try (CSVPrinter csvPrinter = new CSVPrinter(
         new PrintStream(actualFile),
-        CSVFormat.Builder.create().setDelimiter(";").build())) {
+        CSVFormat.Builder.create().setDelimiter(";").build()
+    )) {
       csvPrinter.printRecord(List.of(p.xTitleName(), p.yTitleName(), "x", "y", "v"));
       for (XYPlot.TitledData<Grid<Double>> td : p.dataGrid().values()) {
         for (Grid.Entry<Double> e : td.data()) {
@@ -122,21 +156,18 @@ public class CsvPlotter implements Plotter<File> {
         }
       }
     } catch (IOException e) {
+      L.warning("Cannot save csv to '%s': %s".formatted(file, e));
       throw new RuntimeException(e);
     }
     return actualFile;
-  }
-
-  @Override
-  public File landscape(LandscapePlot plot) {
-    return points(plot.toXYDataSeriesPlot());
   }
 
   private File xyDataSeries(XYDataSeriesPlot p) {
     File actualFile = Misc.checkExistenceAndChangeName(file);
     try (CSVPrinter csvPrinter = new CSVPrinter(
         new PrintStream(actualFile),
-        CSVFormat.Builder.create().setDelimiter(";").build())) {
+        CSVFormat.Builder.create().setDelimiter(";").build()
+    )) {
       csvPrinter.printRecord(List.of(
           p.xTitleName(),
           p.yTitleName(),
@@ -146,7 +177,8 @@ public class CsvPlotter implements Plotter<File> {
           p.xName() + "[max]",
           p.yName() + "[min]",
           p.yName(),
-          p.yName() + "[max]"));
+          p.yName() + "[max]"
+      ));
       for (XYPlot.TitledData<List<XYDataSeries>> td : p.dataGrid().values()) {
         for (XYDataSeries ds : td.data()) {
           for (XYDataSeries.Point point : ds.points()) {
@@ -159,11 +191,13 @@ public class CsvPlotter implements Plotter<File> {
                 RangedValue.range(point.x()).max(),
                 RangedValue.range(point.y()).min(),
                 point.y().v(),
-                RangedValue.range(point.y()).max()));
+                RangedValue.range(point.y()).max()
+            ));
           }
         }
       }
     } catch (IOException e) {
+      L.warning("Cannot save csv to '%s': %s".formatted(file, e));
       throw new RuntimeException(e);
     }
     return actualFile;
