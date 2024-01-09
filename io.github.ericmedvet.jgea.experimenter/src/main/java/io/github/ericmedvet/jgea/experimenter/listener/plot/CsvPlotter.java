@@ -55,16 +55,6 @@ public class CsvPlotter implements Plotter<List<File>> {
   private final Mode mode;
   private final Configuration c;
 
-  public record Configuration(String columnNameJoiner, String doubleFormat, String delimiter) {
-    public static final Map<Mode, Configuration> DEFAULTS = Map.ofEntries(
-        Map.entry(Mode.NORMAL, new Configuration(".", "%.5f", ";")),
-        Map.entry(Mode.PAPER_FRIENDLY, new Configuration(".", "%.5f", "\t")));
-
-    public CSVFormat getCSVFormat() {
-      return CSVFormat.DEFAULT.builder().setDelimiter(delimiter).build();
-    }
-  }
-
   public CsvPlotter(File file, Mode mode, Configuration configuration) {
     this.file = file;
     this.mode = mode;
@@ -81,6 +71,28 @@ public class CsvPlotter implements Plotter<List<File>> {
     PAPER_FRIENDLY
   }
 
+  public record Configuration(
+      String columnNameJoiner, String doubleFormat, String delimiter, List<Replacement> replacements) {
+    public static final Map<Mode, Configuration> DEFAULTS = Map.ofEntries(
+        Map.entry(Mode.NORMAL, new Configuration(".", "%f", ";", List.of())),
+        Map.entry(
+            Mode.PAPER_FRIENDLY,
+            new Configuration(".", "%.3e", "\t", List.of(new Replacement("\\W+", ".")))));
+
+    public record Replacement(String regex, String replacement) {}
+
+    public CSVFormat getCSVFormat() {
+      return CSVFormat.DEFAULT.builder().setDelimiter(delimiter).build();
+    }
+  }
+
+  public static void main(String[] args) {
+    double v1 = Math.PI / 10000d;
+    double v2 = 1.5d;
+    System.out.printf("%.3f %.3f%n", v1, v2);
+    System.out.printf("%.3e %.3e%n", v1, v2);
+  }
+
   @Override
   public List<File> boxplot(DistributionPlot p) {
     if (mode.equals(Mode.NONE)) {
@@ -89,7 +101,7 @@ public class CsvPlotter implements Plotter<List<File>> {
     File actualFile = Misc.checkExistenceAndChangeName(file);
     try (CSVPrinter csvPrinter = new CSVPrinter(new PrintStream(actualFile), c.getCSVFormat())) {
       if (mode.equals(Mode.NORMAL)) {
-        csvPrinter.printRecord(List.of(
+        csvPrinter.printRecord(processRecord(List.of(
             p.xTitleName(),
             p.yTitleName(),
             p.xName(),
@@ -100,7 +112,7 @@ public class CsvPlotter implements Plotter<List<File>> {
             String.join(c.columnNameJoiner, p.yName(), "median"),
             String.join(c.columnNameJoiner, p.yName(), "q3"),
             String.join(c.columnNameJoiner, p.yName(), "q3plus15IQR"),
-            String.join(c.columnNameJoiner, p.yName(), "max")));
+            String.join(c.columnNameJoiner, p.yName(), "max"))));
         for (XYPlot.TitledData<List<DistributionPlot.Data>> td :
             p.dataGrid().values()) {
           for (DistributionPlot.Data ds : td.data()) {
@@ -133,7 +145,7 @@ public class CsvPlotter implements Plotter<List<File>> {
             }
           }
         }
-        csvPrinter.printRecord(t.colIndexes());
+        csvPrinter.printRecord(processRecord(t.colIndexes()));
         for (int i : t.rowIndexes()) {
           csvPrinter.printRecord(processRecord(t.rowValues(i)));
         }
@@ -169,16 +181,16 @@ public class CsvPlotter implements Plotter<List<File>> {
     File actualFile = Misc.checkExistenceAndChangeName(file);
     try (CSVPrinter csvPrinter = new CSVPrinter(new PrintStream(actualFile), c.getCSVFormat())) {
       if (mode.equals(Mode.NORMAL)) {
-        csvPrinter.printRecord(List.of(p.xTitleName(), p.yTitleName(), "x", "y", "v"));
+        csvPrinter.printRecord(processRecord(List.of(p.xTitleName(), p.yTitleName(), "x", "y", "v")));
         for (XYPlot.TitledData<Grid<Double>> td : p.dataGrid().values()) {
           for (Grid.Entry<Double> e : td.data()) {
             if (e.value() != null) {
-              csvPrinter.printRecord(processRecord(List.of(
+              csvPrinter.printRecord(processRecord(processRecord(List.of(
                   td.xTitle(),
                   td.yTitle(),
                   e.key().x(),
                   e.key().y(),
-                  e.value())));
+                  e.value()))));
             }
           }
         }
@@ -191,7 +203,7 @@ public class CsvPlotter implements Plotter<List<File>> {
             t.set(e.key(), String.join(c.columnNameJoiner, List.of(td.xTitle(), td.yTitle())), e.value());
           }
         }
-        csvPrinter.printRecord(Misc.concat(List.of(List.of("x", "y"), t.colIndexes())));
+        csvPrinter.printRecord(processRecord(Misc.concat(List.of(List.of("x", "y"), t.colIndexes()))));
         for (Grid.Key k : t.rowIndexes()) {
           csvPrinter.printRecord(processRecord(Misc.concat(List.of(List.of(k.x(), k.y()), t.rowValues(k)))));
         }
@@ -204,6 +216,23 @@ public class CsvPlotter implements Plotter<List<File>> {
     return List.of();
   }
 
+  private List<Object> processRecord(List<? extends Object> record) {
+    return record.stream()
+        .map(o -> {
+          if (o instanceof Double d) {
+            return c.doubleFormat.formatted(d);
+          }
+          if (o instanceof String s) {
+            for (Configuration.Replacement replacement : c.replacements) {
+              s = s.replaceAll(replacement.regex, replacement.replacement);
+            }
+            return s;
+          }
+          return o;
+        })
+        .toList();
+  }
+
   private List<File> xyDataSeries(XYDataSeriesPlot p) {
     if (mode.equals(Mode.NONE)) {
       return List.of();
@@ -211,7 +240,7 @@ public class CsvPlotter implements Plotter<List<File>> {
     File actualFile = Misc.checkExistenceAndChangeName(file);
     try (CSVPrinter csvPrinter = new CSVPrinter(new PrintStream(actualFile), c.getCSVFormat())) {
       if (mode.equals(Mode.NORMAL)) {
-        csvPrinter.printRecord(List.of(
+        csvPrinter.printRecord(processRecord(List.of(
             p.xTitleName(),
             p.yTitleName(),
             "series",
@@ -220,7 +249,7 @@ public class CsvPlotter implements Plotter<List<File>> {
             String.join(c.columnNameJoiner, p.xName(), "max"),
             String.join(c.columnNameJoiner, p.yName(), "min"),
             p.yName(),
-            String.join(c.columnNameJoiner, p.yName(), "max")));
+            String.join(c.columnNameJoiner, p.yName(), "max"))));
         for (XYPlot.TitledData<List<XYDataSeries>> td : p.dataGrid().values()) {
           for (XYDataSeries ds : td.data()) {
             for (XYDataSeries.Point point : ds.points()) {
@@ -254,18 +283,18 @@ public class CsvPlotter implements Plotter<List<File>> {
                   point.x().v(),
                   String.join(
                       c.columnNameJoiner,
-                      List.of(td.xTitle(), td.yTitle(), ds.name(), p.yName(), "[min]")),
+                      List.of(td.xTitle(), td.yTitle(), ds.name(), p.yName(), "min")),
                   RangedValue.range(point.y()).min());
               t.set(
                   point.x().v(),
                   String.join(
                       c.columnNameJoiner,
-                      List.of(td.xTitle(), td.yTitle(), ds.name(), p.yName(), "[max]")),
+                      List.of(td.xTitle(), td.yTitle(), ds.name(), p.yName(), "max")),
                   RangedValue.range(point.y()).max());
             }
           }
         }
-        csvPrinter.printRecord(Misc.concat(List.of(List.of(p.xName()), t.colIndexes())));
+        csvPrinter.printRecord(processRecord(Misc.concat(List.of(List.of(p.xName()), t.colIndexes()))));
         for (Number x : t.rowIndexes()) {
           csvPrinter.printRecord(processRecord(Misc.concat(List.of(List.of(x), t.rowValues(x)))));
         }
@@ -276,16 +305,5 @@ public class CsvPlotter implements Plotter<List<File>> {
       throw new RuntimeException(e);
     }
     return List.of();
-  }
-
-  private List<Object> processRecord(List<? extends Object> record) {
-    return record.stream()
-        .map(o -> {
-          if (o instanceof Double d) {
-            return c.doubleFormat.formatted(d);
-          }
-          return o;
-        })
-        .toList();
   }
 }
