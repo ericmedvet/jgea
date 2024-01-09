@@ -29,6 +29,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
@@ -44,16 +45,32 @@ public class ParticleSwarmOptimization<S, Q>
         S,
         Q> {
 
-  public interface PSOIndividual<S, Q> extends Individual<List<Double>, S, Q> {
-    List<Double> velocity();
+  private final int populationSize;
+  private final double w; // dumping coefficient
+  private final double phiParticle;
+  private final double phiGlobal;
 
+  public ParticleSwarmOptimization(
+      Function<? super List<Double>, ? extends S> solutionMapper,
+      Factory<? extends List<Double>> genotypeFactory,
+      Predicate<? super ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q>> stopCondition,
+      int populationSize,
+      double w,
+      double phiParticle,
+      double phiGlobal) {
+    super(solutionMapper, genotypeFactory, stopCondition, false);
+    this.populationSize = populationSize;
+    this.w = w;
+    this.phiParticle = phiParticle;
+    this.phiGlobal = phiGlobal;
+  }
+
+  public interface PSOIndividual<S, Q> extends Individual<List<Double>, S, Q> {
     List<Double> bestKnownPosition();
 
     Q bestKnownQuality();
 
-    default List<Double> position() {
-      return genotype();
-    }
+    List<Double> velocity();
 
     static <S1, Q1> PSOIndividual<S1, Q1> of(
         List<Double> genotype,
@@ -84,12 +101,11 @@ public class ParticleSwarmOptimization<S, Q>
           genotypeBirthIteration,
           qualityMappingIteration);
     }
-  }
 
-  private final int populationSize;
-  private final double w; // dumping coefficient
-  private final double phiParticle;
-  private final double phiGlobal;
+    default List<Double> position() {
+      return genotype();
+    }
+  }
 
   protected record State<S, Q>(
       LocalDateTime startingDateTime,
@@ -141,37 +157,6 @@ public class ParticleSwarmOptimization<S, Q>
     }
   }
 
-  public ParticleSwarmOptimization(
-      Function<? super List<Double>, ? extends S> solutionMapper,
-      Factory<? extends List<Double>> genotypeFactory,
-      Predicate<? super ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q>> stopCondition,
-      int populationSize,
-      double w,
-      double phiParticle,
-      double phiGlobal) {
-    super(solutionMapper, genotypeFactory, stopCondition, false);
-    this.populationSize = populationSize;
-    this.w = w;
-    this.phiParticle = phiParticle;
-    this.phiGlobal = phiGlobal;
-  }
-
-  @Override
-  protected PSOIndividual<S, Q> newIndividual(
-      List<Double> genotype,
-      ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q> state,
-      TotalOrderQualityBasedProblem<S, Q> problem) {
-    throw new UnsupportedOperationException("This method should not be called");
-  }
-
-  @Override
-  protected PSOIndividual<S, Q> updateIndividual(
-      PSOIndividual<S, Q> individual,
-      ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q> state,
-      TotalOrderQualityBasedProblem<S, Q> problem) {
-    throw new UnsupportedOperationException("This method should not be called");
-  }
-
   @Override
   public ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q> init(
       TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
@@ -190,18 +175,22 @@ public class ParticleSwarmOptimization<S, Q>
         .orElseThrow();
     try {
       Collection<PSOIndividual<S, Q>> individuals = getAll(executor.invokeAll(positions.stream()
-          .map(p -> (Callable<PSOIndividual<S, Q>>) () -> {
-            S s = solutionMapper.apply(p);
-            Q q = problem.qualityFunction().apply(s);
-            return PSOIndividual.of(
-                p,
-                buildList(p.size(), () -> random.nextDouble(-(max - min), max - min)),
-                p,
-                q,
-                s,
-                q,
-                0,
-                0);
+          .map(p -> {
+            RandomGenerator localRandomGenerator = new Random(random.nextLong());
+            localRandomGenerator.nextDouble(); // because the first double is always around 0.7
+            return (Callable<PSOIndividual<S, Q>>) () -> {
+              S s = solutionMapper.apply(p);
+              Q q = problem.qualityFunction().apply(s);
+              return PSOIndividual.of(
+                  p,
+                  buildList(p.size(), () -> localRandomGenerator.nextDouble(-(max - min), max - min)),
+                  p,
+                  q,
+                  s,
+                  q,
+                  0,
+                  0);
+            };
           })
           .toList()));
       return State.from(individuals, comparator(problem), stopCondition());
@@ -222,33 +211,37 @@ public class ParticleSwarmOptimization<S, Q>
     try {
       Collection<PSOIndividual<S, Q>> individuals = getAll(executor.invokeAll(((State<S, Q>) state)
           .listPopulation.stream()
-              .map(i -> (Callable<PSOIndividual<S, Q>>) () -> {
-                double rParticle = random.nextDouble();
-                double rGlobal = random.nextDouble();
-                List<Double> vVel = mult(i.velocity(), w);
-                List<Double> vParticle =
-                    mult(diff(i.bestKnownPosition(), i.position()), rParticle * phiParticle);
-                List<Double> vGlobal =
-                    mult(diff(globalBestPosition, i.position()), rGlobal * phiGlobal);
-                List<Double> newVelocity = sum(vVel, vParticle, vGlobal);
-                List<Double> newPosition = sum(i.position(), newVelocity);
-                S newSolution = solutionMapper.apply(newPosition);
-                Q newQuality = problem.qualityFunction().apply(newSolution);
-                List<Double> newBestKnownPosition = i.bestKnownPosition();
-                Q newBestKnownQuality = i.bestKnownQuality();
-                if (problem.totalOrderComparator().compare(newQuality, i.quality()) < 0) {
-                  newBestKnownPosition = newPosition;
-                  newBestKnownQuality = newQuality;
-                }
-                return PSOIndividual.of(
-                    newPosition,
-                    newVelocity,
-                    newBestKnownPosition,
-                    newBestKnownQuality,
-                    newSolution,
-                    newQuality,
-                    state.nOfIterations(),
-                    state.nOfIterations());
+              .map(i -> {
+                RandomGenerator localRandomGenerator = new Random(random.nextLong());
+                localRandomGenerator.nextDouble(); // because the first double is always around 0.73
+                return (Callable<PSOIndividual<S, Q>>) () -> {
+                  double rParticle = localRandomGenerator.nextDouble();
+                  double rGlobal = localRandomGenerator.nextDouble();
+                  List<Double> vVel = mult(i.velocity(), w);
+                  List<Double> vParticle =
+                      mult(diff(i.bestKnownPosition(), i.position()), rParticle * phiParticle);
+                  List<Double> vGlobal =
+                      mult(diff(globalBestPosition, i.position()), rGlobal * phiGlobal);
+                  List<Double> newVelocity = sum(vVel, vParticle, vGlobal);
+                  List<Double> newPosition = sum(i.position(), newVelocity);
+                  S newSolution = solutionMapper.apply(newPosition);
+                  Q newQuality = problem.qualityFunction().apply(newSolution);
+                  List<Double> newBestKnownPosition = i.bestKnownPosition();
+                  Q newBestKnownQuality = i.bestKnownQuality();
+                  if (problem.totalOrderComparator().compare(newQuality, i.quality()) < 0) {
+                    newBestKnownPosition = newPosition;
+                    newBestKnownQuality = newQuality;
+                  }
+                  return PSOIndividual.of(
+                      newPosition,
+                      newVelocity,
+                      newBestKnownPosition,
+                      newBestKnownQuality,
+                      newSolution,
+                      newQuality,
+                      state.nOfIterations(),
+                      state.nOfIterations());
+                };
               })
               .toList()));
       List<PSOIndividual<S, Q>> sortedIndividuals =
@@ -267,5 +260,21 @@ public class ParticleSwarmOptimization<S, Q>
     } catch (InterruptedException e) {
       throw new SolverException(e);
     }
+  }
+
+  @Override
+  protected PSOIndividual<S, Q> newIndividual(
+      List<Double> genotype,
+      ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q> state,
+      TotalOrderQualityBasedProblem<S, Q> problem) {
+    throw new UnsupportedOperationException("This method should not be called");
+  }
+
+  @Override
+  protected PSOIndividual<S, Q> updateIndividual(
+      PSOIndividual<S, Q> individual,
+      ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q> state,
+      TotalOrderQualityBasedProblem<S, Q> problem) {
+    throw new UnsupportedOperationException("This method should not be called");
   }
 }
