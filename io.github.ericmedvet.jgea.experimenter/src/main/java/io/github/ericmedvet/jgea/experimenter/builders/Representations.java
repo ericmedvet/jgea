@@ -39,7 +39,6 @@ import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import io.github.ericmedvet.jgea.experimenter.Representation;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
-
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.IntStream;
@@ -53,11 +52,12 @@ public class Representations {
 
   @SuppressWarnings("unused")
   public static Function<BitString, Representation<BitString>> bitString(
-      @Param(value = "crossoverP", dD = 0.8d) double crossoverP, @Param(value = "pMutRate", dD = 1d) double pMutRate) {
+      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
+      @Param(value = "pMutRate", dD = 1d) double pMutRate) {
     return g -> new Representation<>(
         new BitStringFactory(g.size()),
-        new BitStringFlipMutation(pMutRate/(double) g.size()),
-        new BitStringUniformCrossover().andThen(new BitStringFlipMutation(pMutRate/(double) g.size())));
+        new BitStringFlipMutation(pMutRate / (double) g.size()),
+        new BitStringUniformCrossover().andThen(new BitStringFlipMutation(pMutRate / (double) g.size())));
   }
 
   @SuppressWarnings("unused")
@@ -74,11 +74,12 @@ public class Representations {
 
   @SuppressWarnings("unused")
   public static Function<IntString, Representation<IntString>> intString(
-      @Param(value = "crossoverP", dD = 0.8d) double crossoverP, @Param(value = "pMutRate", dD = 1d) double pMutRate) {
+      @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
+      @Param(value = "pMutRate", dD = 1d) double pMutRate) {
     return g -> new Representation<>(
         new UniformIntStringFactory(g.lowerBound(), g.upperBound(), g.size()),
-        new IntStringFlipMutation(pMutRate/(double) g.size()),
-        new IntStringUniformCrossover().andThen(new IntStringFlipMutation(pMutRate/(double) g.size())));
+        new IntStringFlipMutation(pMutRate / (double) g.size()),
+        new IntStringUniformCrossover().andThen(new IntStringFlipMutation(pMutRate / (double) g.size())));
   }
 
   @SuppressWarnings("unused")
