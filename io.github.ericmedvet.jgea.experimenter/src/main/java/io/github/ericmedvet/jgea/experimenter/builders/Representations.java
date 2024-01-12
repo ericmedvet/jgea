@@ -39,6 +39,7 @@ import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import io.github.ericmedvet.jgea.experimenter.Representation;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
+
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.IntStream;
@@ -52,11 +53,11 @@ public class Representations {
 
   @SuppressWarnings("unused")
   public static Function<BitString, Representation<BitString>> bitString(
-      @Param(value = "crossoverP", dD = 0.8d) double crossoverP, @Param(value = "pMut", dD = 0.01d) double pMut) {
+      @Param(value = "crossoverP", dD = 0.8d) double crossoverP, @Param(value = "pMutRate", dD = 1d) double pMutRate) {
     return g -> new Representation<>(
         new BitStringFactory(g.size()),
-        new BitStringFlipMutation(pMut),
-        new BitStringUniformCrossover().andThen(new BitStringFlipMutation(pMut)));
+        new BitStringFlipMutation(pMutRate/(double) g.size()),
+        new BitStringUniformCrossover().andThen(new BitStringFlipMutation(pMutRate/(double) g.size())));
   }
 
   @SuppressWarnings("unused")
@@ -73,45 +74,11 @@ public class Representations {
 
   @SuppressWarnings("unused")
   public static Function<IntString, Representation<IntString>> intString(
-      @Param(value = "crossoverP", dD = 0.8d) double crossoverP, @Param(value = "pMut", dD = 0.01d) double pMut) {
+      @Param(value = "crossoverP", dD = 0.8d) double crossoverP, @Param(value = "pMutRate", dD = 1d) double pMutRate) {
     return g -> new Representation<>(
         new UniformIntStringFactory(g.lowerBound(), g.upperBound(), g.size()),
-        new IntStringFlipMutation(pMut),
-        new IntStringUniformCrossover().andThen(new IntStringFlipMutation(pMut)));
-  }
-
-  @SuppressWarnings("unused")
-  public static Function<Tree<Element>, Representation<Tree<Element>>> srTree(
-      @Param(
-              value = "constants",
-              dDs = {0.1, 1, 10})
-          List<Double> constants,
-      @Param(
-              value = "operators",
-              dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
-          List<Element.Operator> operators,
-      @Param(value = "minTreeH", dI = 4) int minTreeH,
-      @Param(value = "maxTreeH", dI = 10) int maxTreeH,
-      @Param(value = "crossoverP", dD = 0.8d) double crossoverP) {
-    return g -> {
-      List<Element.Variable> variables = g.visitDepth().stream()
-          .filter(e -> e instanceof Element.Variable)
-          .map(e -> ((Element.Variable) e).name())
-          .distinct()
-          .map(Element.Variable::new)
-          .toList();
-      List<Element.Constant> constantElements =
-          constants.stream().map(Element.Constant::new).toList();
-      IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
-          IndependentFactory.picker(variables), IndependentFactory.picker(constantElements));
-      IndependentFactory<Element> nonTerminalFactory = IndependentFactory.picker(operators);
-      // single tree factory
-      TreeBuilder<Element> treeBuilder = new GrowTreeBuilder<>(x -> 2, nonTerminalFactory, terminalFactory);
-      return new Representation<>(
-          new RampedHalfAndHalf<>(minTreeH, maxTreeH, x -> 2, nonTerminalFactory, terminalFactory),
-          new SubtreeMutation<>(maxTreeH, treeBuilder),
-          new SubtreeCrossover<>(maxTreeH));
-    };
+        new IntStringFlipMutation(pMutRate/(double) g.size()),
+        new IntStringUniformCrossover().andThen(new IntStringFlipMutation(pMutRate/(double) g.size())));
   }
 
   @SuppressWarnings("unused")
@@ -163,6 +130,40 @@ public class Representations {
           list.stream().map(t -> subtreeMutation.mutate(t, rnd)).toList();
       return new Representation<>(
           treeListFactory, List.of(allSubtreeMutations), List.of(pairWiseSubtreeCrossover, uniformCrossover));
+    };
+  }
+
+  @SuppressWarnings("unused")
+  public static Function<Tree<Element>, Representation<Tree<Element>>> srTree(
+      @Param(
+              value = "constants",
+              dDs = {0.1, 1, 10})
+          List<Double> constants,
+      @Param(
+              value = "operators",
+              dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
+          List<Element.Operator> operators,
+      @Param(value = "minTreeH", dI = 4) int minTreeH,
+      @Param(value = "maxTreeH", dI = 10) int maxTreeH,
+      @Param(value = "crossoverP", dD = 0.8d) double crossoverP) {
+    return g -> {
+      List<Element.Variable> variables = g.visitDepth().stream()
+          .filter(e -> e instanceof Element.Variable)
+          .map(e -> ((Element.Variable) e).name())
+          .distinct()
+          .map(Element.Variable::new)
+          .toList();
+      List<Element.Constant> constantElements =
+          constants.stream().map(Element.Constant::new).toList();
+      IndependentFactory<Element> terminalFactory = IndependentFactory.oneOf(
+          IndependentFactory.picker(variables), IndependentFactory.picker(constantElements));
+      IndependentFactory<Element> nonTerminalFactory = IndependentFactory.picker(operators);
+      // single tree factory
+      TreeBuilder<Element> treeBuilder = new GrowTreeBuilder<>(x -> 2, nonTerminalFactory, terminalFactory);
+      return new Representation<>(
+          new RampedHalfAndHalf<>(minTreeH, maxTreeH, x -> 2, nonTerminalFactory, terminalFactory),
+          new SubtreeMutation<>(maxTreeH, treeBuilder),
+          new SubtreeCrossover<>(maxTreeH));
     };
   }
 }
