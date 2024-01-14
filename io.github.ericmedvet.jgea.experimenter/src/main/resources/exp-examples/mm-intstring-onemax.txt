@@ -1,7 +1,7 @@
 ea.experiment(
   runs =
-    (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
-    (solver = (nEval = [25000]) *
+    (randomGenerator = (seed = [1:1:5]) * [ea.rg.defaultRG()]) *
+    (solver = (nEval = [2500]) *
     (representation = [ea.r.intString()]) * [
       ea.s.ga(maxUniquenessAttempts = 0);
       ea.s.mapElites(name = "me-3"; descriptors = [
@@ -12,13 +12,12 @@ ea.experiment(
         ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 2; k = 0; list = ea.nf.asDoubleString())));
         ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 2; k = 1; list = ea.nf.asDoubleString())))
       ]);
-      ea.s.pso(mapper = ea.m.doubleStringToIntString());
       ea.s.cabea(name = "cabea-e-11"; keepProbability = 0; substrate = empty; gridSize = 11);
       ea.s.cabea(name = "cabea-cc-11"; keepProbability = 0; substrate = contour_cross; gridSize = 11);
       ea.s.cabea(name = "cabea-e-21"; keepProbability = 0; substrate = empty; gridSize = 21);
       ea.s.cabea(name = "cabea-cc-21"; keepProbability = 0; substrate = contour_cross; gridSize = 21)
     ]) * (problem = [
-      ea.p.s.multiModalIntOneMax(name = "mt-25"; nOfTargets = 3; p = 25)
+      ea.p.s.multiModalIntOneMax(name = "mt-25-3"; nOfTargets = 3; p = 25)
     ]) * [
     ea.run()
   ];
@@ -40,14 +39,21 @@ ea.experiment(
       ]
     );
     ea.l.expPlotSaver(
-      filePath = "../mm-fitness-vs-evals.png";
+      filePath = "../mm-d-25-3-fitness-vs-evals.png";
       w = 600; h = 700;
       saveCsvDataMode = paper_friendly;
       type = lines;
       plot = ea.plot.fitnessPlotMatrix(xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 250; s = "%.0f"))
     );
     ea.l.expPlotSaver(
-      filePath = "../mm-otd-vs-evals.png";
+      filePath = "../mm-d-25-3-fitness-boxplot.png";
+      w = 600; h = 700;
+      saveCsvDataMode = paper_friendly;
+      type = boxplot;
+      plot = ea.plot.fitnessBoxplotMatrix(xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 250; s = "%.0f"))
+    );
+    ea.l.expPlotSaver(
+      filePath = "../mm-d-25-3-otd-vs-evals.png";
       w = 600; h = 700;
       type = lines;
       saveCsvDataMode = paper_friendly;
@@ -60,12 +66,12 @@ ea.experiment(
       )
     );
     ea.l.expPlotSaver(
-      filePath = "../mm-otd-boxplot.png";
+      filePath = "../mm-d-25-3-otd-boxplot.png";
       w = 600; h = 700;
       freeScales = true;
       type = boxplot;
       saveCsvDataMode = paper_friendly;
-      plot = ea.plot.fitnessPlotMatrix(
+      plot = ea.plot.fitnessBoxplotMatrix(
         yFunction = ea.nf.overallTargetDistance(
           collection = ea.nf.each(map = ea.nf.solution(); collection = ea.nf.all());
           problem = ea.p.s.multiModalIntOneMax(name = "mt-25"; nOfTargets = 3; p = 25)
@@ -80,9 +86,9 @@ ea.experiment(
       plot = ea.plot.gridPopulation(
         individualFunctions = [
           ea.nf.fitness();
-          ea.nf.nth(n = 0; list = ea.nf.targetDistances(problem = ea.p.s.multiModalIntOneMax(name = "mt-25"; nOfTargets = 3; p = 25)));
-          ea.nf.nth(n = 1; list = ea.nf.targetDistances(problem = ea.p.s.multiModalIntOneMax(name = "mt-25"; nOfTargets = 3; p = 25)));
-          ea.nf.nth(n = 2; list = ea.nf.targetDistances(problem = ea.p.s.multiModalIntOneMax(name = "mt-25"; nOfTargets = 3; p = 25)))
+          ea.nf.nth(n = 0; list = ea.nf.targetDistances(problem = ea.p.s.multiModalIntOneMax(nOfTargets = 3; p = 25)));
+          ea.nf.nth(n = 1; list = ea.nf.targetDistances(problem = ea.p.s.multiModalIntOneMax(nOfTargets = 3; p = 25)));
+          ea.nf.nth(n = 2; list = ea.nf.targetDistances(problem = ea.p.s.multiModalIntOneMax(nOfTargets = 3; p = 25)))
         ];
         predicateValue = ea.nf.quantized(f = ea.nf.evals(); r = 1000; s = "%.0f");
         condition = ea.predicate.inD(

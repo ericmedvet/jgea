@@ -1,7 +1,7 @@
 ea.experiment(
   runs =
-    (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
-    (solver = (nEval = [25000]) *
+    (randomGenerator = (seed = [1:1:5]) * [ea.rg.defaultRG()]) *
+    (solver = (nEval = [2500]) *
     (representation = [ea.r.doubleString()]) * [
       ea.s.ga(maxUniquenessAttempts = 0);
       ea.s.mapElites(name = "me-3"; descriptors = [
@@ -13,12 +13,13 @@ ea.experiment(
         ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 2; k = 1)); min = -1; max = 1)
       ]);
       ea.s.pso();
+      ea.s.de();
       ea.s.cabea(name = "cabea-e-11"; keepProbability = 0; substrate = empty; gridSize = 11);
       ea.s.cabea(name = "cabea-cc-11"; keepProbability = 0; substrate = contour_cross; gridSize = 11);
       ea.s.cabea(name = "cabea-e-21"; keepProbability = 0; substrate = empty; gridSize = 21);
       ea.s.cabea(name = "cabea-cc-21"; keepProbability = 0; substrate = contour_cross; gridSize = 21)
     ]) * (problem = [
-      ea.p.s.circularPointsAiming(name = "cpa-3-2"; n = 3; p = 2)
+      ea.p.s.circularPointsAiming(name = "mm-c-10-3"; n = 3; p = 10)
     ]) * [
     ea.run()
   ];
@@ -39,14 +40,21 @@ ea.experiment(
       ]
     );
     ea.l.expPlotSaver(
-      filePath = "../mmnum-fitness-vs-evals.png";
+      filePath = "../mm-c-10-3-fitness-vs-evals.png";
       w = 900; h = 600;
       saveCsvDataMode = paper_friendly;
       type = lines;
       plot = ea.plot.fitnessPlotMatrix(xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 250; s = "%.0f"))
     );
     ea.l.expPlotSaver(
-      filePath = "../mmnum-otd-vs-evals.png";
+      filePath = "../mm-c-10-3-fitness-boxplot.png";
+      w = 900; h = 600;
+      saveCsvDataMode = paper_friendly;
+      type = lines;
+      plot = ea.plot.fitnessBoxplotMatrix(xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 250; s = "%.0f"))
+    );
+    ea.l.expPlotSaver(
+      filePath = "../mm-c-10-3-otd-vs-evals.png";
       w = 900; h = 600;
       type = lines;
       saveCsvDataMode = paper_friendly;
@@ -59,12 +67,12 @@ ea.experiment(
       )
     );
     ea.l.expPlotSaver(
-      filePath = "../mmnum-otd-boxplot.png";
+      filePath = "../mm-c-10-3-otd-boxplot.png";
       w = 900; h = 600;
       saveCsvDataMode = paper_friendly;
       type = boxplot;
       saveCsvData = true;
-      plot = ea.plot.fitnessPlotMatrix(
+      plot = ea.plot.fitnessBoxplotMatrix(
         yFunction = ea.nf.overallTargetDistance(
           collection = ea.nf.each(map = ea.nf.solution(); collection = ea.nf.all());
           problem = ea.p.s.circularPointsAiming(name = "cpa-3-2"; n = 3; p = 2)
@@ -79,9 +87,9 @@ ea.experiment(
       plot = ea.plot.gridPopulation(
         individualFunctions = [
           ea.nf.fitness();
-          ea.nf.nth(n = 0; list = ea.nf.targetDistances(problem = ea.p.s.circularPointsAiming(name = "cpa-3-2"; n = 3; p = 2)));
-          ea.nf.nth(n = 1; list = ea.nf.targetDistances(problem = ea.p.s.circularPointsAiming(name = "cpa-3-2"; n = 3; p = 2)));
-          ea.nf.nth(n = 2; list = ea.nf.targetDistances(problem = ea.p.s.circularPointsAiming(name = "cpa-3-2"; n = 3; p = 2)))
+          ea.nf.nth(n = 0; list = ea.nf.targetDistances(problem = ea.p.s.circularPointsAiming(n = 3; p = 2)));
+          ea.nf.nth(n = 1; list = ea.nf.targetDistances(problem = ea.p.s.circularPointsAiming(n = 3; p = 2)));
+          ea.nf.nth(n = 2; list = ea.nf.targetDistances(problem = ea.p.s.circularPointsAiming(n = 3; p = 2)))
         ];
         predicateValue = ea.nf.quantized(f = ea.nf.evals(); r = 1000; s = "%.0f");
         condition = ea.predicate.inD(
