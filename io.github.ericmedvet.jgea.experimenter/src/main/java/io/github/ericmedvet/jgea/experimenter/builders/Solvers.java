@@ -44,6 +44,7 @@ import io.github.ericmedvet.jgea.experimenter.Representation;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
+
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -61,7 +62,7 @@ public class Solvers {
       @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<G, S> mapper,
       @Param(value = "keepProbability", dD = 0.00d) double keepProbability,
       @Param(value = "crossoverP", dD = 0.8d) double crossoverP,
-      @Param(value = "nTour", dI = 3) int nTour,
+      @Param(value = "nTour", dI = 1) int nTour,
       @Param(value = "nEval", dI = 1000) int nEval,
       @Param(value = "toroidal", dB = true) boolean toroidal,
       @Param(value = "mooreRadius", dI = 1) int mooreRadius,
