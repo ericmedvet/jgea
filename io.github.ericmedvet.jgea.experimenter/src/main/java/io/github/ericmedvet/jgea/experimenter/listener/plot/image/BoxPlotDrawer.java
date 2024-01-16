@@ -86,9 +86,9 @@ public class BoxPlotDrawer extends AbstractPlotDrawer<DistributionPlot, List<Dis
             new Rectangle2D.Double(
                 ir.getX() + ir.getWidth() * 0.2, ir.getY(), ir.getWidth() * 0.6, ir.getHeight()),
             color,
-            r.getY() + r.getHeight() * 0.2,
-            r.getCenterY(),
-            r.getMaxY() - r.getHeight() * 0.2,
+            ir.getY() + ir.getHeight() * 0.2,
+            ir.getCenterY(),
+            ir.getMaxY() - ir.getHeight() * 0.2,
             c.alpha(),
             c.whiskersWRate(),
             c.strokeSizeRate()));
