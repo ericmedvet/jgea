@@ -75,13 +75,6 @@ public class CsvPlotter implements Plotter<List<File>> {
     }
   }
 
-  public static void main(String[] args) {
-    double v1 = Math.PI / 10000d;
-    double v2 = 1.5d;
-    System.out.printf("%.3f %.3f%n", v1, v2);
-    System.out.printf("%.3e %.3e%n", v1, v2);
-  }
-
   @Override
   public List<File> boxplot(DistributionPlot p) {
     if (mode.equals(Mode.NONE)) {

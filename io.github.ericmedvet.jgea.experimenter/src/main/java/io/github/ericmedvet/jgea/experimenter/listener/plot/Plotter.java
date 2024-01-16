@@ -215,32 +215,32 @@ public interface Plotter<O> {
                 "y" + y,
                 List.of(
                         new DistributionPlot.Data(
-                            "g1(0,1)",
+                            "long-title-g1(0,1)",
                             IntStream.range(0, 100)
                                 .mapToObj(i -> rg.nextGaussian())
                                 .toList()),
                         new DistributionPlot.Data(
-                            "g2(0,1)",
+                            "long-title-g2(0,1)",
                             IntStream.range(0, 30)
                                 .mapToObj(i -> rg.nextGaussian())
                                 .toList()),
                         new DistributionPlot.Data(
-                            "g3(0,1)",
+                            "long-title-g3(0,1)",
                             IntStream.range(0, 120)
                                 .mapToObj(i -> rg.nextGaussian())
                                 .toList()),
                         new DistributionPlot.Data(
-                            "g4(0,1)",
+                            "long-title-g4(0,1)",
                             IntStream.range(0, 140)
                                 .mapToObj(i -> rg.nextGaussian())
                                 .toList()),
                         new DistributionPlot.Data(
-                            "g5(1,3)",
+                            "long-title-g5(1,3)",
                             IntStream.range(0, 10)
                                 .mapToObj(i -> rg.nextGaussian() * 3d + 1d)
                                 .toList()),
                         new DistributionPlot.Data(
-                            "g6(4,2)",
+                            "long-title-g6(4,2)",
                             IntStream.range(0, 200)
                                 .mapToObj(i -> rg.nextGaussian() * 2d + 4d)
                                 .toList()))

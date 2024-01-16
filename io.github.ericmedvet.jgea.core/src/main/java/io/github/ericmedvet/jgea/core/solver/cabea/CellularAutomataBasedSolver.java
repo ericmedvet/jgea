@@ -165,7 +165,7 @@ public class CellularAutomataBasedSolver<G, S, Q>
       throws SolverException {
     List<Callable<CellProcessOutcome<Individual<G, S, Q>>>> callables = state.gridPopulation().entries().stream()
         .filter(e -> e.value() != null)
-        .map(e -> processCell(e, state, problem, random))
+        .map(e -> processCell(e, state, problem, new Random(random.nextLong())))
         // this new random is needed for determinism, because process is done concurrently
         .toList();
     Collection<CellProcessOutcome<Individual<G, S, Q>>> newEntries;
@@ -209,7 +209,7 @@ public class CellularAutomataBasedSolver<G, S, Q>
       QualityBasedProblem<S, Q> problem,
       RandomGenerator random) {
     return () -> {
-      //random.nextDouble(); // because the first double is always around 0.73
+      random.nextDouble(); // because the first double is always around 0.73
       // decide if to keep
       if (random.nextDouble() < keepProbability) {
         return new CellProcessOutcome<>(false, entry);
