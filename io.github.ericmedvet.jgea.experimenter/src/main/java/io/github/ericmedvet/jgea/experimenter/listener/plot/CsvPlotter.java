@@ -72,12 +72,16 @@ public class CsvPlotter implements Plotter<List<File>> {
   }
 
   public record Configuration(
-      String columnNameJoiner, String doubleFormat, String delimiter, List<Replacement> replacements) {
+      String columnNameJoiner,
+      String doubleFormat,
+      String delimiter,
+      List<Replacement> replacements,
+      String missingDataString) {
     public static final Map<Mode, Configuration> DEFAULTS = Map.ofEntries(
-        Map.entry(Mode.NORMAL, new Configuration(".", "%f", ";", List.of())),
+        Map.entry(Mode.NORMAL, new Configuration(".", "%f", ";", List.of(), "")),
         Map.entry(
             Mode.PAPER_FRIENDLY,
-            new Configuration(".", "%.3e", "\t", List.of(new Replacement("\\W+", ".")))));
+            new Configuration(".", "%.3e", "\t", List.of(new Replacement("\\W+", ".")), "nan")));
 
     public record Replacement(String regex, String replacement) {}
 
@@ -219,6 +223,9 @@ public class CsvPlotter implements Plotter<List<File>> {
   private List<Object> processRecord(List<? extends Object> record) {
     return record.stream()
         .map(o -> {
+          if (o == null) {
+            return c.missingDataString;
+          }
           if (o instanceof Double d) {
             return c.doubleFormat.formatted(d);
           }
