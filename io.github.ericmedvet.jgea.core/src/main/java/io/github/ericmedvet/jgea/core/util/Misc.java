@@ -126,10 +126,7 @@ public class Misc {
   }
 
   public static <T> T pickRandomly(Map<T, Double> options, RandomGenerator random) {
-    double sum = 0;
-    for (Double rate : options.values()) {
-      sum = sum + rate;
-    }
+    double sum = options.values().stream().mapToDouble(v -> v).sum();
     double d = random.nextDouble() * sum;
     for (Map.Entry<T, Double> option : options.entrySet()) {
       if (d < option.getValue()) {
