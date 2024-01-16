@@ -209,7 +209,7 @@ public class CellularAutomataBasedSolver<G, S, Q>
       QualityBasedProblem<S, Q> problem,
       RandomGenerator random) {
     return () -> {
-      random.nextDouble(); // because the first double is always around 0.73
+      //random.nextDouble(); // because the first double is always around 0.73
       // decide if to keep
       if (random.nextDouble() < keepProbability) {
         return new CellProcessOutcome<>(false, entry);
