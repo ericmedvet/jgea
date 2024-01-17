@@ -41,7 +41,7 @@ public class SyntheticProblems {
 
   @SuppressWarnings("unused")
   public static CharShapeApproximation charShapeApproximation(
-      @Param(value = "name", dS = "shape") String name,
+      @Param(value = "name", dS = "shape-{target}") String name,
       @Param("target") String syntheticTargetName,
       @Param(value = "translation", dB = true) boolean translation,
       @Param(value = "smoothed", dB = true) boolean smoothed,
@@ -55,7 +55,7 @@ public class SyntheticProblems {
 
   @SuppressWarnings("unused")
   public static CircularPointsAiming circularPointsAiming(
-      @Param(value = "name", iS = "circularPointsAiming-{p}") String name,
+      @Param(value = "name", iS = "circularPointsAiming-{p}-{n}") String name,
       @Param(value = "p", dI = 100) int p,
       @Param(value = "n", dI = 5) int n,
       @Param(value = "radius", dD = 0.5d) double radius,
@@ -80,7 +80,7 @@ public class SyntheticProblems {
 
   @SuppressWarnings("unused")
   public static MultiModalIntOneMax multiModalIntOneMax(
-      @Param(value = "name", iS = "mmIOneMax-{p}") String name,
+      @Param(value = "name", iS = "mmIOneMax-{p}-{nOfTargets}") String name,
       @Param(value = "p", dI = 100) int p,
       @Param(value = "upperBound", dI = 10) int upperBound,
       @Param(value = "nOfTargets", dI = 3) int nOfTargets) {
