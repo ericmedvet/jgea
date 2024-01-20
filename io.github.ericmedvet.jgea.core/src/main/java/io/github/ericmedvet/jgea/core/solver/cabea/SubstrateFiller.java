@@ -30,7 +30,8 @@ public interface SubstrateFiller extends Function<Grid<Boolean>, Grid<Boolean>> 
     H_HALVED(new HorizontalSections(2)),
     V_HALVED(new VerticalSections(2)),
     CROSS(new HorizontalSections(2).andThen(new VerticalSections(2))),
-    CONTOUR_CROSS(new Contour().andThen(new HorizontalSections(2).andThen(new VerticalSections(2))));
+    CONTOUR_CROSS(new Contour().andThen(new HorizontalSections(2).andThen(new VerticalSections(2)))),
+    TIC_TAC_TOE(new HorizontalSections(3).andThen(new VerticalSections(3)));
     private final Function<Grid<Boolean>, Grid<Boolean>> inner;
 
     Predefined(Function<Grid<Boolean>, Grid<Boolean>> inner) {
