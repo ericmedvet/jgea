@@ -25,6 +25,7 @@ import io.github.ericmedvet.jsdynsym.grid.Grid;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
@@ -32,6 +33,8 @@ import java.util.stream.Stream;
  * @author "Eric Medvet" on 2023/12/28 for jgea
  */
 public abstract class AbstractPlotDrawer<P extends XYPlot<D>, D> implements PlotDrawer {
+
+  private static final Logger L = Logger.getLogger(AbstractPlotDrawer.class.getName());
 
   protected final ImagePlotter ip;
   protected final P plot;
@@ -56,13 +59,21 @@ public abstract class AbstractPlotDrawer<P extends XYPlot<D>, D> implements Plot
   }
 
   protected Grid<DoubleRange> computeRanges(boolean isXAxis, double extensionRate) {
-    Grid<DoubleRange> grid = plot.dataGrid().map((k, td) -> {
-      DoubleRange extRange = isXAxis ? plot.xRange() : plot.yRange();
-      if (extRange.equals(DoubleRange.UNBOUNDED)) {
-        return computeRange(td.data(), isXAxis).extend(extensionRate);
-      }
-      return extRange;
-    });
+    Grid<DoubleRange> grid = plot.dataGrid()
+        .map((k, td) -> {
+          DoubleRange extRange = isXAxis ? plot.xRange() : plot.yRange();
+          if (extRange.equals(DoubleRange.UNBOUNDED)) {
+            return computeRange(td.data(), isXAxis).extend(extensionRate);
+          }
+          return extRange;
+        })
+        .map(r -> {
+          if (r.extent() == 0) {
+            L.warning("Computed axis has 0 extent: enlarging it to unit extent");
+            return new DoubleRange(r.min(), r.max() + 1);
+          }
+          return r;
+        });
     List<DoubleRange> colLargestRanges =
         grid.columns().stream().map(DoubleRange::largest).toList();
     List<DoubleRange> rowLargestRanges =
