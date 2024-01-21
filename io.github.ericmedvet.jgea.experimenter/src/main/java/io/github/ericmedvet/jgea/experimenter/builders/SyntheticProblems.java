@@ -22,6 +22,7 @@ package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jgea.problem.grid.CharShapeApproximation;
 import io.github.ericmedvet.jgea.problem.synthetic.*;
+import io.github.ericmedvet.jgea.problem.synthetic.numerical.*;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import java.io.IOException;
@@ -37,6 +38,12 @@ public class SyntheticProblems {
   public static Ackley ackley(
       @Param(value = "name", iS = "ackley-{p}") String name, @Param(value = "p", dI = 100) int p) {
     return new Ackley(p);
+  }
+
+  @SuppressWarnings("unused")
+  public static BentCigar bentCigar(
+      @Param(value = "name", iS = "bentCigar-{p}") String name, @Param(value = "p", dI = 100) int p) {
+    return new BentCigar(p);
   }
 
   @SuppressWarnings("unused")
@@ -62,6 +69,19 @@ public class SyntheticProblems {
       @Param(value = "center", dD = 1d) double center,
       @Param(value = "seed", dI = 1) int seed) {
     return new CircularPointsAiming(p, n, radius, center, seed);
+  }
+
+  @SuppressWarnings("unused")
+  public static Discus discus(
+      @Param(value = "name", iS = "discus-{p}") String name, @Param(value = "p", dI = 100) int p) {
+    return new Discus(p);
+  }
+
+  @SuppressWarnings("unused")
+  public static HighConditionedElliptic highConditionedElliptic(
+      @Param(value = "name", iS = "highConditionedElliptic-{p}") String name,
+      @Param(value = "p", dI = 100) int p) {
+    return new HighConditionedElliptic(p);
   }
 
   @SuppressWarnings("unused")
@@ -113,6 +133,12 @@ public class SyntheticProblems {
   public static Rastrigin rastrigin(
       @Param(value = "name", iS = "rastrigin-{p}") String name, @Param(value = "p", dI = 100) int p) {
     return new Rastrigin(p);
+  }
+
+  @SuppressWarnings("unused")
+  public static Rosenbrock rosenbrock(
+      @Param(value = "name", iS = "rosenbrock-{p}") String name, @Param(value = "p", dI = 100) int p) {
+    return new Rosenbrock(p);
   }
 
   @SuppressWarnings("unused")

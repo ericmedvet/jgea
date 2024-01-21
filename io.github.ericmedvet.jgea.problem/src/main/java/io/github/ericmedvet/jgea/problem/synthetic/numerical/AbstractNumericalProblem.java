@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * jgea-problem
  * %%
- * Copyright (C) 2018 - 2023 Eric Medvet
+ * Copyright (C) 2018 - 2024 Eric Medvet
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,39 +17,40 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
+package io.github.ericmedvet.jgea.problem.synthetic.numerical;
 
-package io.github.ericmedvet.jgea.problem.synthetic;
-
-import io.github.ericmedvet.jgea.core.problem.MultiHomogeneousObjectiveProblem;
+import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.problem.ProblemWithExampleSolution;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
 
-public class Cones
-    implements MultiHomogeneousObjectiveProblem<List<Double>, Double>, ProblemWithExampleSolution<List<Double>> {
+/**
+ * @author "Eric Medvet" on 2024/01/21 for jgea
+ */
+public abstract class AbstractNumericalProblem
+    implements ComparableQualityBasedProblem<List<Double>, Double>, ProblemWithExampleSolution<List<Double>> {
+  private final int p;
+  private final ToDoubleFunction<List<Double>> f;
 
-  @Override
-  public List<Comparator<Double>> comparators() {
-    Comparator<Double> comparator = Double::compareTo;
-    return List.of(comparator, comparator, comparator.reversed());
+  public AbstractNumericalProblem(int p, ToDoubleFunction<List<Double>> f) {
+    this.p = p;
+    this.f = f;
   }
 
   @Override
   public List<Double> example() {
-    return List.of(0d, 0d);
+    return Collections.nCopies(p, 0d);
   }
 
   @Override
-  public Function<List<Double>, List<Double>> qualityFunction() {
-    return list -> {
-      double r = list.get(0);
-      double h = list.get(1);
-      double s = Math.sqrt(r * r + h * h);
-      double lateralSurface = Math.PI * r * s;
-      double totalSurface = Math.PI * r * (r + s);
-      double volume = Math.PI * r * r * h / 3;
-      return List.of(lateralSurface, totalSurface, volume);
+  public Function<List<Double>, Double> qualityFunction() {
+    return vs -> {
+      if (vs.size() != p) {
+        throw new IllegalArgumentException("Wrong input size: %d expected, %d found".formatted(p, vs.size()));
+      }
+      return f.applyAsDouble(vs);
     };
   }
 }

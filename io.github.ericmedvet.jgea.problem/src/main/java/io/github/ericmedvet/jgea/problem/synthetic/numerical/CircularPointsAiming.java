@@ -17,7 +17,7 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jgea.problem.synthetic;
+package io.github.ericmedvet.jgea.problem.synthetic.numerical;
 
 import static io.github.ericmedvet.jgea.core.util.VectorUtils.*;
 
