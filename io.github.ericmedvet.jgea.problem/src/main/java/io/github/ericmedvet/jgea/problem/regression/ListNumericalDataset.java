@@ -21,10 +21,6 @@
 package io.github.ericmedvet.jgea.problem.regression;
 
 import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -33,6 +29,9 @@ import java.util.function.IntFunction;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 
 public record ListNumericalDataset(List<Example> examples, List<String> xVarNames, List<String> yVarNames)
     implements NumericalDataset {
@@ -70,27 +69,24 @@ public record ListNumericalDataset(List<Example> examples, List<String> xVarName
     this(
         examples,
         MultivariateRealFunction.varNames("x", examples.get(0).xs().length),
-        MultivariateRealFunction.varNames("y", examples.get(0).ys().length)
-    );
+        MultivariateRealFunction.varNames("y", examples.get(0).ys().length));
   }
 
   private static NumericalDataset buildDataset(
-      List<Map<String, String>> data, List<String> xVarNames, List<String> yVarNames
-  ) {
+      List<Map<String, String>> data, List<String> xVarNames, List<String> yVarNames) {
     return new ListNumericalDataset(
-        data.stream()
-            .map(dp -> new Example(
-                xVarNames.stream()
-                    .mapToDouble(n -> Double.parseDouble(dp.get(n)))
-                    .toArray(),
-                yVarNames.stream()
-                    .mapToDouble(n -> Double.parseDouble(dp.get(n)))
-                    .toArray()
-            ))
-            .toList(),
-        xVarNames,
-        yVarNames
-    ).shuffled(1);
+            data.stream()
+                .map(dp -> new Example(
+                    xVarNames.stream()
+                        .mapToDouble(n -> Double.parseDouble(dp.get(n)))
+                        .toArray(),
+                    yVarNames.stream()
+                        .mapToDouble(n -> Double.parseDouble(dp.get(n)))
+                        .toArray()))
+                .toList(),
+            xVarNames,
+            yVarNames)
+        .shuffled(1);
   }
 
   public static NumericalDataset loadFromCSV(InputStream inputStream, List<String> xVarNames, List<String> yVarNames)
@@ -116,8 +112,7 @@ public record ListNumericalDataset(List<Example> examples, List<String> xVarName
     return buildDataset(
         data,
         varNames.stream().filter(n -> n.matches(xVarNamePattern)).toList(),
-        varNames.stream().filter(n -> n.matches(yVarNamePattern)).toList()
-    );
+        varNames.stream().filter(n -> n.matches(yVarNamePattern)).toList());
   }
 
   public static NumericalDataset loadFromCSV(InputStream inputStream, String yVarName) throws IOException {
@@ -156,7 +151,8 @@ public record ListNumericalDataset(List<Example> examples, List<String> xVarName
           } else {
             Map<String, String> map = IntStream.range(0, varNames.size())
                 .mapToObj(i -> Map.entry(varNames.get(i), record.get(i)))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (s1, s2) -> s1, LinkedHashMap::new));
+                .collect(Collectors.toMap(
+                    Map.Entry::getKey, Map.Entry::getValue, (s1, s2) -> s1, LinkedHashMap::new));
             maps.add(map);
           }
         }

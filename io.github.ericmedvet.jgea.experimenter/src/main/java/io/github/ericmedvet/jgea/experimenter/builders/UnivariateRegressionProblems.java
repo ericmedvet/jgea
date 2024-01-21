@@ -27,42 +27,34 @@ import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegress
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.*;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Supplier;
 
 @Discoverable(prefixTemplate = "ea.problem|p.univariateRegression|ur")
 public class UnivariateRegressionProblems {
-  private UnivariateRegressionProblems() {
-  }
+  private UnivariateRegressionProblems() {}
 
   @SuppressWarnings("unused")
   public static UnivariateRegressionProblem<UnivariateRegressionFitness> bundled(
       @Param("name") String name,
-      @Param(value = "metric", dS = "mse") UnivariateRegressionFitness.Metric metric
-  ) {
+      @Param(value = "metric", dS = "mse") UnivariateRegressionFitness.Metric metric) {
     NumericalDataset dataset;
     try {
       dataset = switch (name) {
         case "concrete" -> ListNumericalDataset.loadFromCSVResource(
             "/datasets/regression/concrete.csv", "strength");
         case "energy-efficiency" -> ListNumericalDataset.loadFromCSVResource(
-            "/datasets/regression/energy-efficiency.csv",
-            "x[0-9]+",
-            "y1"
-        );
+            "/datasets/regression/energy-efficiency.csv", "x[0-9]+", "y1");
         case "xor" -> ListNumericalDataset.loadFromCSVResource("/datasets/regression/xor.csv", "y");
-        default -> throw new IllegalArgumentException("Unknown bundled dataset: %s".formatted(name));
-      };
+        default -> throw new IllegalArgumentException("Unknown bundled dataset: %s".formatted(name));};
     } catch (IOException e) {
       throw new IllegalArgumentException("Cannot load bundled dataset: %s".formatted(name));
     }
     return switch (name) {
       case "concrete", "energy-efficiency" -> new UnivariateRegressionProblem<>(
           new UnivariateRegressionFitness(dataset.folds(List.of(0, 1, 2, 3), 5), metric),
-          new UnivariateRegressionFitness(dataset.folds(List.of(4), 5), metric)
-      );
+          new UnivariateRegressionFitness(dataset.folds(List.of(4), 5), metric));
       case "xor" -> new UnivariateRegressionProblem<>(
           new UnivariateRegressionFitness(dataset, metric), new UnivariateRegressionFitness(dataset, metric));
       default -> throw new IllegalArgumentException("Unknown bundled dataset: %s".formatted(name));
@@ -74,20 +66,17 @@ public class UnivariateRegressionProblems {
       @Param(value = "name", dS = "dataset") String name,
       @Param("trainingDataset") Supplier<NumericalDataset> trainingDataset,
       @Param(value = "testDataset", dNPM = "ea.d.num.empty()") Supplier<NumericalDataset> testDataset,
-      @Param(value = "metric", dS = "mse") UnivariateRegressionFitness.Metric metric
-  ) {
+      @Param(value = "metric", dS = "mse") UnivariateRegressionFitness.Metric metric) {
     return new UnivariateRegressionProblem<>(
         new UnivariateRegressionFitness(trainingDataset.get(), metric),
-        testDataset != null ? new UnivariateRegressionFitness(testDataset.get(), metric) : null
-    );
+        testDataset != null ? new UnivariateRegressionFitness(testDataset.get(), metric) : null);
   }
 
   @SuppressWarnings("unused")
   public static SyntheticUnivariateRegressionProblem synthetic(
       @Param("name") String name,
       @Param(value = "metric", dS = "mse") UnivariateRegressionFitness.Metric metric,
-      @Param(value = "seed", dI = 1) int seed
-  ) {
+      @Param(value = "seed", dI = 1) int seed) {
     return switch (name) {
       case "keijzer6" -> new Keijzer6(metric);
       case "nguyen7" -> new Nguyen7(metric, seed);
