@@ -23,6 +23,7 @@ ea.experiment(
         ea.nf.bestFitness(s = "%6.2f");
         ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()))
       ];
+      onlyLast = true;
       runKeys = [
         ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
         ea.misc.sEntry(key = "problem.p"; value = "{problem.p}");

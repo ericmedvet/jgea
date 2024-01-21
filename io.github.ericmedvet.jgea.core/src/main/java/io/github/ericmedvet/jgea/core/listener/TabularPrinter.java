@@ -42,6 +42,7 @@ public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
   private final List<Pair<? extends NamedFunction<? super K, ?>, Integer>> kPairs;
   private final PrintStream ps;
   private final int headerInterval;
+  private final int legendInterval;
   private final boolean showLegend;
   private final boolean showVariation;
   private final boolean useColors;
@@ -49,10 +50,12 @@ public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
   private final String header;
   private final String legend;
 
+  private int lineCounter = 0;
+
   public TabularPrinter(
       List<? extends NamedFunction<? super E, ?>> eFunctions,
       List<? extends NamedFunction<? super K, ?>> kFunctions) {
-    this(eFunctions, kFunctions, System.out, 10, true, true, true, true);
+    this(eFunctions, kFunctions, System.out, 25, 100, true, true, true, true);
   }
 
   public TabularPrinter(
@@ -60,6 +63,7 @@ public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
       List<? extends NamedFunction<? super K, ?>> kFunctions,
       PrintStream ps,
       int headerInterval,
+      int legendInterval,
       boolean showLegend,
       boolean showVariation,
       boolean useColors,
@@ -76,6 +80,7 @@ public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
         .collect(Collectors.toList());
     this.ps = ps;
     this.headerInterval = headerInterval;
+    this.legendInterval = legendInterval;
     this.showLegend = showLegend;
     this.showVariation = showVariation;
     this.useColors = useColors;
@@ -103,7 +108,7 @@ public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
 
   @Override
   public Listener<E> build(K k) {
-    if (showLegend) {
+    if (showLegend && legendInterval > 1 && (lineCounter % legendInterval == 0)) {
       ps.println(legend);
     }
     List<?> fixedValues = kPairs.stream().map(p -> p.first().apply(k)).toList();
@@ -116,7 +121,6 @@ public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
     return new Listener<>() {
       final Object[] lastValues = new Object[ePairs.size()];
       final Object[] secondLastValues = new Object[ePairs.size()];
-      int lineCounter = 0;
 
       @Override
       public void listen(E e) {
