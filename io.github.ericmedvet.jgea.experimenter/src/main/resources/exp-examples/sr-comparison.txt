@@ -3,7 +3,8 @@ ea.experiment(
     (problem = [
       ea.p.ur.synthetic(name = "keijzer6");
       ea.p.ur.synthetic(name = "nguyen7");
-      ea.p.ur.bundled(name = "concrete")
+      ea.p.ur.bundled(name = "concrete");
+      ea.p.ur.bundled(name = "energy-efficiency")
     ]) *
     (solver = (nEval = [1000]) * [
       ea.s.oGraphea(
