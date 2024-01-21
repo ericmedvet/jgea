@@ -108,9 +108,6 @@ public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
 
   @Override
   public Listener<E> build(K k) {
-    if (showLegend && legendInterval > 1 && (lineCounter % legendInterval == 0)) {
-      ps.println(legend);
-    }
     List<?> fixedValues = kPairs.stream().map(p -> p.first().apply(k)).toList();
     final String fixedS = IntStream.range(0, kPairs.size())
         .mapToObj(i -> format(
@@ -141,6 +138,9 @@ public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
           return;
         }
         synchronized (ps) {
+          if (showLegend && legendInterval > 1 && (lineCounter % legendInterval == 0)) {
+            ps.println(legend);
+          }
           if (headerInterval > 1 && (lineCounter % headerInterval == 0)) {
             ps.println(header);
           }

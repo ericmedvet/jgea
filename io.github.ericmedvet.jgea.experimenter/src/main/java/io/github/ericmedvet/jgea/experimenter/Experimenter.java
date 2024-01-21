@@ -128,7 +128,7 @@ public class Experimenter {
           String msg = String.format(
               "Run %d of %d done in %.2fs, found %d solutions",
               run.index() + 1, experiment.runs().size(), elapsedT, solutions.size());
-          L.info(msg);
+          L.fine(msg);
           progressMonitor.notify(run.index() + 1, experiment.runs().size(), msg);
           return solutions;
         })))
