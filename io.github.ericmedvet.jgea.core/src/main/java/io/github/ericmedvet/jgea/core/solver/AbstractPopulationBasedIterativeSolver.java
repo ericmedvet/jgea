@@ -38,7 +38,7 @@ import java.util.random.RandomGenerator;
 import java.util.stream.Stream;
 
 public abstract class AbstractPopulationBasedIterativeSolver<
-        T extends POCPopulationState<I, G, S, Q>,
+        T extends POCPopulationState<I, G, S, Q, P>,
         P extends QualityBasedProblem<S, Q>,
         I extends Individual<G, S, Q>,
         G,
@@ -134,8 +134,8 @@ public abstract class AbstractPopulationBasedIterativeSolver<
     }
   }
 
-  protected Predicate<State> stopCondition() {
+  protected Predicate<State<?, ?>> stopCondition() {
     //noinspection unchecked
-    return (Predicate<State>) stopCondition;
+    return (Predicate<State<?, ?>>) stopCondition;
   }
 }

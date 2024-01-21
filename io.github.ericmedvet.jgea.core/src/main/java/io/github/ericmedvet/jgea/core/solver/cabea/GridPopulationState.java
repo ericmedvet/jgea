@@ -19,6 +19,7 @@
  */
 package io.github.ericmedvet.jgea.core.solver.cabea;
 
+import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
@@ -26,6 +27,7 @@ import io.github.ericmedvet.jsdynsym.grid.Grid;
 /**
  * @author "Eric Medvet" on 2023/10/28 for jgea
  */
-public interface GridPopulationState<G, S, Q> extends POCPopulationState<Individual<G, S, Q>, G, S, Q> {
+public interface GridPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q>>
+    extends POCPopulationState<Individual<G, S, Q>, G, S, Q, P> {
   Grid<Individual<G, S, Q>> gridPopulation();
 }

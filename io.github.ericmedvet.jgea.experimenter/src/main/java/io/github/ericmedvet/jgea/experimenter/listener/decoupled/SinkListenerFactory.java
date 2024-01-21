@@ -35,8 +35,9 @@ import java.util.stream.Stream;
 /**
  * @author "Eric Medvet" on 2023/11/03 for jgea
  */
-public class SinkListenerFactory<G, S, Q> implements ListenerFactory<POCPopulationState<?, G, S, Q>, Run<?, G, S, Q>> {
-  private final List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions;
+public class SinkListenerFactory<G, S, Q>
+    implements ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>> {
+  private final List<NamedFunction<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions;
   private final List<NamedFunction<? super Run<?, G, S, Q>, ?>> runFunctions;
   private final Experiment experiment;
   private final Sink<MachineKey, MachineInfo> machineSink;
@@ -52,7 +53,7 @@ public class SinkListenerFactory<G, S, Q> implements ListenerFactory<POCPopulati
   private final LogCapturer logCapturer;
 
   public SinkListenerFactory(
-      List<NamedFunction<? super POCPopulationState<?, G, S, Q>, ?>> stateFunctions,
+      List<NamedFunction<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
       List<NamedFunction<? super Run<?, G, S, Q>, ?>> runFunctions,
       Experiment experiment,
       Sink<MachineKey, MachineInfo> machineSink,
@@ -97,7 +98,7 @@ public class SinkListenerFactory<G, S, Q> implements ListenerFactory<POCPopulati
   }
 
   @Override
-  public Listener<POCPopulationState<?, G, S, Q>> build(Run<?, G, S, Q> run) {
+  public Listener<POCPopulationState<?, G, S, Q, ?>> build(Run<?, G, S, Q> run) {
     RunKey runKey = runKey(run);
     LocalDateTime startDateTime = LocalDateTime.now();
     runSink.push(runKey, new RunInfo(run.index(), startDateTime, Progress.NA, false));
@@ -105,7 +106,7 @@ public class SinkListenerFactory<G, S, Q> implements ListenerFactory<POCPopulati
         f -> dataItemSink.push(new DataItemKey(runKey, f.getName()), new DataItemInfo(f.apply(run))));
     return new Listener<>() {
       @Override
-      public void listen(POCPopulationState<?, G, S, Q> state) {
+      public void listen(POCPopulationState<?, G, S, Q, ?> state) {
         synchronized (runSink) {
           LocalDateTime now = LocalDateTime.now();
           runSink.push(now, runKey, new RunInfo(run.index(), startDateTime, state.progress(), false));

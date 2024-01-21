@@ -22,6 +22,7 @@ package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.problem.MultiTargetProblem;
+import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
 import io.github.ericmedvet.jgea.core.solver.Individual;
@@ -67,7 +68,7 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static <G, S, Q>
-      NamedFunction<POCPopulationState<?, G, S, Q>, Collection<? extends Individual<G, S, Q>>> all() {
+      NamedFunction<POCPopulationState<?, G, S, Q, ?>, Collection<? extends Individual<G, S, Q>>> all() {
     return NamedFunction.build("all", s -> s.pocPopulation().all());
   }
 
@@ -125,12 +126,12 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> NamedFunction<POCPopulationState<?, G, S, Q>, Individual<G, S, Q>> best() {
+  public static <G, S, Q> NamedFunction<POCPopulationState<?, G, S, Q, ?>, Individual<G, S, Q>> best() {
     return NamedFunction.build("best", s -> Misc.first(s.pocPopulation().firsts()));
   }
 
   @SuppressWarnings("unused")
-  public static <Q, T> NamedFunction<POCPopulationState<?, ?, ?, Q>, T> bestFitness(
+  public static <Q, T> NamedFunction<POCPopulationState<?, ?, ?, Q, ?>, T> bestFitness(
       @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<Q, T> function,
       @Param(value = "s", dS = "%s") String s) {
     return NamedFunction.build(
@@ -142,7 +143,7 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static NamedFunction<POCPopulationState<?, ?, ?, ?>, Long> births() {
+  public static NamedFunction<POCPopulationState<?, ?, ?, ?, ?>, Long> births() {
     return NamedFunction.build("births", "%6d", POCPopulationState::nOfBirths);
   }
 
@@ -162,12 +163,12 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static NamedFunction<POCPopulationState<?, ?, ?, ?>, Double> elapsed() {
+  public static NamedFunction<POCPopulationState<?, ?, ?, ?, ?>, Double> elapsed() {
     return NamedFunction.build("elapsed.seconds", "%5.1f", s -> s.elapsedMillis() / 1000d);
   }
 
   @SuppressWarnings("unused")
-  public static NamedFunction<POCPopulationState<?, ?, ?, ?>, Long> evals() {
+  public static NamedFunction<POCPopulationState<?, ?, ?, ?, ?>, Long> evals() {
     return NamedFunction.build("evals", "%6d", POCPopulationState::nOfFitnessEvaluations);
   }
 
@@ -198,8 +199,8 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <I extends Individual<G, S, Q>, G, S, Q>
-      NamedFunction<POCPopulationState<I, G, S, Q>, Collection<I>> firsts() {
+  public static <I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
+      NamedFunction<POCPopulationState<I, G, S, Q, P>, Collection<I>> firsts() {
     return io.github.ericmedvet.jgea.core.listener.NamedFunctions.firsts();
   }
 
@@ -215,7 +216,7 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <Q> NamedFunction<POCPopulationState<?, ?, ?, Q>, TextPlotter.Miniplot> fitnessHist(
+  public static <Q> NamedFunction<POCPopulationState<?, ?, ?, Q, ?>, TextPlotter.Miniplot> fitnessHist(
       @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<Q, Number> function,
       @Param(value = "nBins", dI = 8) int nBins) {
     return NamedFunction.build(
@@ -310,13 +311,13 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static NamedFunction<POCPopulationState<?, ?, ?, ?>, Long> iterations() {
+  public static NamedFunction<POCPopulationState<?, ?, ?, ?, ?>, Long> iterations() {
     return NamedFunction.build("iterations", "%3d", State::nOfIterations);
   }
 
   @SuppressWarnings("unused")
-  public static <I extends Individual<G, S, Q>, G, S, Q>
-      NamedFunction<POCPopulationState<I, G, S, Q>, Collection<I>> lasts() {
+  public static <I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
+      NamedFunction<POCPopulationState<I, G, S, Q, P>, Collection<I>> lasts() {
     return io.github.ericmedvet.jgea.core.listener.NamedFunctions.lasts();
   }
 
@@ -338,8 +339,8 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <I extends Individual<G, S, Q>, G, S, Q>
-      NamedFunction<POCPopulationState<I, G, S, Q>, Collection<I>> mids() {
+  public static <I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
+      NamedFunction<POCPopulationState<I, G, S, Q, P>, Collection<I>> mids() {
     return io.github.ericmedvet.jgea.core.listener.NamedFunctions.mids();
   }
 
@@ -399,7 +400,7 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static NamedFunction<POCPopulationState<?, ?, ?, ?>, Double> progress() {
+  public static NamedFunction<POCPopulationState<?, ?, ?, ?, ?>, Double> progress() {
     return NamedFunction.build("progress", "%4.2f", s -> s.progress().rate());
   }
 

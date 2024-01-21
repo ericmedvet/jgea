@@ -44,15 +44,16 @@ public record Run<P extends QualityBasedProblem<S, Q>, G, S, Q>(
                 S,
                 ? extends
                     AbstractPopulationBasedIterativeSolver<
-                        ? extends POCPopulationState<?, G, S, Q>, P, ?, G, S, Q>>
+                        ? extends POCPopulationState<?, G, S, Q, P>, P, ?, G, S, Q>>
             solver,
     @Param("problem") P problem,
     @Param("randomGenerator") RandomGenerator randomGenerator,
     @Param(value = "", injection = Param.Injection.MAP_WITH_DEFAULTS) ParamMap map) {
 
-  public Collection<S> run(ExecutorService executorService, Listener<? super POCPopulationState<?, G, S, Q>> listener)
+  public Collection<S> run(
+      ExecutorService executorService, Listener<? super POCPopulationState<?, G, S, Q, P>> listener)
       throws SolverException {
-    IterativeSolver<? extends POCPopulationState<?, G, S, Q>, P, S> iterativeSolver;
+    IterativeSolver<? extends POCPopulationState<?, G, S, Q, P>, P, S> iterativeSolver;
     if (problem instanceof ProblemWithExampleSolution<?> pwes) {
       //noinspection unchecked
       iterativeSolver = solver.apply((S) pwes.example());

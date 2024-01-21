@@ -20,11 +20,13 @@
 package io.github.ericmedvet.jgea.core.solver;
 
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
+import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 
 /**
  * @author "Eric Medvet" on 2023/10/21 for jgea
  */
-public interface POCPopulationState<I extends Individual<G, S, Q>, G, S, Q> extends State {
+public interface POCPopulationState<I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
+    extends State<P, S> {
   long nOfBirths();
 
   long nOfFitnessEvaluations();

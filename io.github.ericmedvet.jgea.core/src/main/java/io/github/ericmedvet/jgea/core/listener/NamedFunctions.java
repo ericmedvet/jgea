@@ -21,6 +21,8 @@
 package io.github.ericmedvet.jgea.core.listener;
 
 import io.github.ericmedvet.jgea.core.problem.MultiTargetProblem;
+import io.github.ericmedvet.jgea.core.problem.Problem;
+import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.State;
@@ -37,8 +39,8 @@ public class NamedFunctions {
 
   private NamedFunctions() {}
 
-  public static <I extends Individual<G, S, Q>, G, S, Q>
-      NamedFunction<POCPopulationState<I, G, S, Q>, Collection<I>> all() {
+  public static <I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
+      NamedFunction<POCPopulationState<I, G, S, Q, P>, Collection<I>> all() {
     return f("all", e -> e.pocPopulation().all());
   }
 
@@ -64,15 +66,17 @@ public class NamedFunctions {
     return f("bar", NamedFunction.format(l), value -> TextPlotter.horizontalBar(value.doubleValue(), 0, 1, l));
   }
 
-  public static <I extends Individual<G, S, Q>, G, S, Q> NamedFunction<POCPopulationState<I, G, S, Q>, I> best() {
+  public static <I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
+      NamedFunction<POCPopulationState<I, G, S, Q, P>, I> best() {
     return f("best", e -> Misc.first(e.pocPopulation().firsts()));
   }
 
-  public static <T> NamedFunction<State, T> constant(String name, String format, T value) {
+  public static <T, P extends Problem<S>, S> NamedFunction<State<P, S>, T> constant(
+      String name, String format, T value) {
     return f(name, format, e -> value);
   }
 
-  public static <T> NamedFunction<State, T> constant(String name, T value) {
+  public static <T, P extends Problem<S>, S> NamedFunction<State<P, S>, T> constant(String name, T value) {
     return constant(name, NamedFunction.format(value.toString().length()), value);
   }
 
@@ -82,7 +86,7 @@ public class NamedFunctions {
         individuals -> individuals.stream().map(mapper).collect(java.util.stream.Collectors.toList()));
   }
 
-  public static NamedFunction<State, Float> elapsedSeconds() {
+  public static <P extends Problem<S>, S> NamedFunction<State<P, S>, Float> elapsedSeconds() {
     return f("elapsed.seconds", "%5.1f", e -> e.elapsedMillis() / 1000f);
   }
 
@@ -94,13 +98,13 @@ public class NamedFunctions {
     return NamedFunction.build(name, format, function);
   }
 
-  public static <I extends Individual<G, S, Q>, G, S, Q>
-      NamedFunction<POCPopulationState<I, G, S, Q>, Collection<I>> firsts() {
+  public static <I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
+      NamedFunction<POCPopulationState<I, G, S, Q, P>, Collection<I>> firsts() {
     return f("firsts", e -> e.pocPopulation().firsts());
   }
 
-  public static <I extends Individual<G, S, Q>, G, S, Q>
-      NamedFunction<POCPopulationState<I, G, S, Q>, Long> fitnessEvaluations() {
+  public static <I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
+      NamedFunction<POCPopulationState<I, G, S, Q, P>, Long> fitnessEvaluations() {
     return f("fitness.evaluations", "%5d", POCPopulationState::nOfFitnessEvaluations);
   }
 
@@ -128,8 +132,8 @@ public class NamedFunctions {
     return f("hypervolume", "%5.3f", ps -> Misc.hypervolume2D(ps, reference));
   }
 
-  public static <I extends Individual<G, S, Q>, G, S, Q>
-      NamedFunction<POCPopulationState<I, G, S, Q>, Collection<I>> lasts() {
+  public static <I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
+      NamedFunction<POCPopulationState<I, G, S, Q, P>, Collection<I>> lasts() {
     return f("lasts", e -> e.pocPopulation().lasts());
   }
 
@@ -142,8 +146,8 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <I extends Individual<G, S, Q>, G, S, Q>
-      NamedFunction<POCPopulationState<I, G, S, Q>, Collection<I>> mids() {
+  public static <I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
+      NamedFunction<POCPopulationState<I, G, S, Q, P>, Collection<I>> mids() {
     return f("mids", e -> {
       Collection<I> all = new ArrayList<>(e.pocPopulation().all());
       all.removeAll(e.pocPopulation().firsts());
@@ -156,12 +160,12 @@ public class NamedFunctions {
     return f("min", ts -> ts.stream().min(comparator).orElse(null));
   }
 
-  public static <I extends Individual<G, S, Q>, G, S, Q>
-      NamedFunction<POCPopulationState<I, G, S, Q>, Long> nOfBirths() {
+  public static <I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
+      NamedFunction<POCPopulationState<I, G, S, Q, P>, Long> nOfBirths() {
     return f("births", "%5d", POCPopulationState::nOfBirths);
   }
 
-  public static NamedFunction<State, Long> nOfIterations() {
+  public static <P extends Problem<S>, S> NamedFunction<State<P, S>, Long> nOfIterations() {
     return f("iterations", "%4d", State::nOfIterations);
   }
 
@@ -183,7 +187,7 @@ public class NamedFunctions {
         .orElseThrow());
   }
 
-  public static NamedFunction<State, Double> progress() {
+  public static <P extends Problem<S>, S> NamedFunction<State<P, S>, Double> progress() {
     return f("progress", "%4.2f", s -> s.progress().rate());
   }
 

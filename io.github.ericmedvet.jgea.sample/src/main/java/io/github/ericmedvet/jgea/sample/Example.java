@@ -28,6 +28,7 @@ import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.listener.NamedFunctions;
 import io.github.ericmedvet.jgea.core.listener.TabularPrinter;
 import io.github.ericmedvet.jgea.core.operator.GeneticOperator;
+import io.github.ericmedvet.jgea.core.problem.Problem;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.NamedUnivariateRealFunction;
@@ -63,15 +64,23 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public class Example {
 
-  public static final List<NamedFunction<State, ?>> PLAIN_STATE_FUNCTIONS =
+  public static final List<NamedFunction<State<Problem<Object>, Object>, ?>> PLAIN_STATE_FUNCTIONS =
       List.of(nOfIterations(), elapsedSeconds());
 
   public static final List<
-          NamedFunction<POCPopulationState<Individual<Object, Object, Object>, Object, Object, Object>, ?>>
+          NamedFunction<
+              POCPopulationState<
+                  Individual<Object, Object, Object>,
+                  Object,
+                  Object,
+                  Object,
+                  QualityBasedProblem<Object, Object>>,
+              ?>>
       BASIC_FUNCTIONS = List.of(
           nOfBirths(),
           all().then(size()),
@@ -85,15 +94,31 @@ public class Example {
           best().then(fitnessMappingIteration()));
 
   public static final List<
-          NamedFunction<POCPopulationState<Individual<Object, Object, Double>, Object, Object, Double>, ?>>
+          NamedFunction<
+              POCPopulationState<
+                  Individual<Object, Object, Double>,
+                  Object,
+                  Object,
+                  Double,
+                  QualityBasedProblem<Object, Double>>,
+              ?>>
       DOUBLE_FUNCTIONS = List.of(
-          NamedFunctions.<Individual<Object, Object, Double>, Object, Object, Double>best()
+          NamedFunctions
+              .<Individual<Object, Object, Double>, Object, Object, Double,
+                  QualityBasedProblem<Object, Double>>
+                  best()
               .then(quality())
               .reformat("%5.3f"),
-          NamedFunctions.<Individual<Object, Object, Double>, Object, Object, Double>all()
+          NamedFunctions
+              .<Individual<Object, Object, Double>, Object, Object, Double,
+                  QualityBasedProblem<Object, Double>>
+                  all()
               .then(each(quality()))
               .then(hist(8)),
-          NamedFunctions.<Individual<Object, Object, Double>, Object, Object, Double>all()
+          NamedFunctions
+              .<Individual<Object, Object, Double>, Object, Object, Double,
+                  QualityBasedProblem<Object, Double>>
+                  all()
               .then(each(quality()))
               .then(max(Double::compare))
               .reformat("%5.3f"));
@@ -117,31 +142,32 @@ public class Example {
     Random r = new Random(1);
     TotalOrderQualityBasedProblem<List<Double>, Double> p = new Ackley(10);
     @SuppressWarnings({"unchecked", "rawtypes"})
-    ListenerFactory<POCPopulationState<?, ?, List<Double>, Double>, Map<String, Object>> listenerFactory =
+    ListenerFactory<POCPopulationState<?, ?, List<Double>, Double, ?>, Map<String, Object>> listenerFactory =
         new TabularPrinter<>(
             Misc.concat(
                 List.of((List) PLAIN_STATE_FUNCTIONS, (List) BASIC_FUNCTIONS, (List) DOUBLE_FUNCTIONS)),
             List.of(attribute("solver")));
     List<
             IterativeSolver<
-                ? extends POCPopulationState<?, List<Double>, List<Double>, Double>,
+                ? extends POCPopulationState<?, List<Double>, List<Double>, Double, ?>,
                 ? super TotalOrderQualityBasedProblem<List<Double>, Double>,
                 List<Double>>>
         solvers = new ArrayList<>();
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    Predicate<POCPopulationState<?, ?, ?, Double, ?>> stopCondition =
+        (Predicate) StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100));
     solvers.add(new RandomSearch<>(
-        Function.identity(),
-        new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
-        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100))));
+        Function.identity(), new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)), stopCondition));
     solvers.add(new RandomWalk<>(
         Function.identity(),
         new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
-        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
+        stopCondition,
         new GaussianMutation(0.01d)));
     solvers.add(new StandardEvolver<>(
         Function.identity(),
         new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
         100,
-        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
+        stopCondition,
         Map.of(
             new HypercubeGeometricCrossover(new DoubleRange(-1d, 2d)).andThen(new GaussianMutation(0.01)),
             1d),
@@ -155,13 +181,13 @@ public class Example {
         Function.identity(),
         new FixedLengthListFactory<>(10, new UniformDoubleFactory(0, 1)),
         100,
-        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
+        stopCondition,
         25,
         1,
         0.1,
         false));
     for (IterativeSolver<
-            ? extends POCPopulationState<?, List<Double>, List<Double>, Double>,
+            ? extends POCPopulationState<?, List<Double>, List<Double>, Double, ?>,
             ? super TotalOrderQualityBasedProblem<List<Double>, Double>,
             List<Double>>
         solver : solvers) {
@@ -188,31 +214,29 @@ public class Example {
     Random r = new Random(1);
     QualityBasedProblem<BitString, Double> p = new OneMax(size);
     @SuppressWarnings({"unchecked", "rawtypes"})
-    ListenerFactory<POCPopulationState<?, ?, BitString, Double>, Map<String, Object>> listenerFactory =
+    ListenerFactory<POCPopulationState<?, ?, BitString, Double, ?>, Map<String, Object>> listenerFactory =
         new TabularPrinter<>(
             Misc.concat(
                 List.of((List) PLAIN_STATE_FUNCTIONS, (List) BASIC_FUNCTIONS, (List) DOUBLE_FUNCTIONS)),
             List.of(attribute("solver")));
     List<
             IterativeSolver<
-                ? extends POCPopulationState<?, ?, BitString, Double>,
+                ? extends POCPopulationState<?, ?, BitString, Double, ?>,
                 QualityBasedProblem<BitString, Double>,
                 BitString>>
         solvers = new ArrayList<>();
-    solvers.add(new RandomSearch<>(
-        Function.identity(),
-        new BitStringFactory(size),
-        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100))));
+    //noinspection unchecked
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    Predicate<POCPopulationState<?, ?, ?, Double, ?>> stopCondition =
+        (Predicate) StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100));
+    solvers.add(new RandomSearch<>(Function.identity(), new BitStringFactory(size), stopCondition));
     solvers.add(new RandomWalk<>(
-        Function.identity(),
-        new BitStringFactory(size),
-        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
-        new BitStringFlipMutation(0.01d)));
+        Function.identity(), new BitStringFactory(size), stopCondition, new BitStringFlipMutation(0.01d)));
     solvers.add(new StandardEvolver<>(
         Function.identity(),
         new BitStringFactory(size),
         100,
-        StopConditions.targetFitness(0d).or(StopConditions.nOfIterations(100)),
+        stopCondition,
         Map.of(new BitStringUniformCrossover(), 0.8d, new BitStringFlipMutation(0.01d), 0.2d),
         new Tournament(5),
         new Last(),
@@ -221,7 +245,7 @@ public class Example {
         0,
         false));
     for (IterativeSolver<
-            ? extends POCPopulationState<?, ?, BitString, Double>,
+            ? extends POCPopulationState<?, ?, BitString, Double, ?>,
             QualityBasedProblem<BitString, Double>,
             BitString>
         solver : solvers) {
@@ -244,7 +268,7 @@ public class Example {
     ExecutorService executor =
         Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
     @SuppressWarnings({"unchecked", "rawtypes"})
-    ListenerFactory<POCPopulationState<?, ?, NamedUnivariateRealFunction, Double>, Map<String, Object>>
+    ListenerFactory<POCPopulationState<?, ?, NamedUnivariateRealFunction, Double, ?>, Map<String, Object>>
         listenerFactory = new TabularPrinter<>(
             Misc.concat(
                 List.of((List) PLAIN_STATE_FUNCTIONS, (List) BASIC_FUNCTIONS, (List) DOUBLE_FUNCTIONS)),
@@ -261,7 +285,7 @@ public class Example {
         List.of(0.1, 1d, 5d));
     List<
             IterativeSolver<
-                ? extends POCPopulationState<?, ?, NamedUnivariateRealFunction, Double>,
+                ? extends POCPopulationState<?, ?, NamedUnivariateRealFunction, Double, ?>,
                 ? super SyntheticUnivariateRegressionProblem,
                 NamedUnivariateRealFunction>>
         solvers = new ArrayList<>();
@@ -307,7 +331,7 @@ public class Example {
         0,
         false));
     for (IterativeSolver<
-            ? extends POCPopulationState<?, ?, NamedUnivariateRealFunction, Double>,
+            ? extends POCPopulationState<?, ?, NamedUnivariateRealFunction, Double, ?>,
             ? super SyntheticUnivariateRegressionProblem,
             NamedUnivariateRealFunction>
         solver : solvers) {
@@ -331,7 +355,7 @@ public class Example {
     ExecutorService executor =
         Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
     @SuppressWarnings({"unchecked", "rawtypes"})
-    ListenerFactory<POCPopulationState<?, ?, NamedUnivariateRealFunction, Double>, Void> listenerFactory =
+    ListenerFactory<POCPopulationState<?, ?, NamedUnivariateRealFunction, Double, ?>, Void> listenerFactory =
         new TabularPrinter<>(
             (List) List.of(
                 nOfIterations(),
@@ -346,10 +370,16 @@ public class Example {
                 best().then(genotype()).then(size()),
                 best().then(solution()).then(size()),
                 best().then(fitnessMappingIteration()),
-                NamedFunctions.<Individual<Object, Object, Double>, Object, Object, Double>best()
+                NamedFunctions
+                    .<Individual<Object, Object, Double>, Object, Object, Double,
+                        QualityBasedProblem<Object, Double>>
+                        best()
                     .then(quality())
                     .reformat("%5.3f"),
-                NamedFunctions.<Individual<Object, Object, Double>, Object, Object, Double>all()
+                NamedFunctions
+                    .<Individual<Object, Object, Double>, Object, Object, Double,
+                        QualityBasedProblem<Object, Double>>
+                        all()
                     .then(each(quality()))
                     .then(hist(8)),
                 best().then(solution()).reformat("%20.20s")),

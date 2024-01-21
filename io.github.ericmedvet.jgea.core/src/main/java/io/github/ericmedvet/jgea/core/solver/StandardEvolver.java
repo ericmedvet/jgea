@@ -34,7 +34,7 @@ import java.util.function.Predicate;
  */
 public class StandardEvolver<G, S, Q>
     extends AbstractStandardEvolver<
-        POCPopulationState<Individual<G, S, Q>, G, S, Q>,
+        POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>>,
         QualityBasedProblem<S, Q>,
         Individual<G, S, Q>,
         G,
@@ -44,7 +44,8 @@ public class StandardEvolver<G, S, Q>
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       int populationSize,
-      Predicate<? super POCPopulationState<Individual<G, S, Q>, G, S, Q>> stopCondition,
+      Predicate<? super POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>>>
+          stopCondition,
       Map<GeneticOperator<G>, Double> operators,
       Selector<? super Individual<G, S, Q>> parentSelector,
       Selector<? super Individual<G, S, Q>> unsurvivalSelector,
@@ -67,28 +68,31 @@ public class StandardEvolver<G, S, Q>
   }
 
   @Override
-  protected POCPopulationState<Individual<G, S, Q>, G, S, Q> update(
-      POCPopulationState<Individual<G, S, Q>, G, S, Q> state,
+  protected POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>> update(
+      POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>> state,
       QualityBasedProblem<S, Q> problem,
       Collection<Individual<G, S, Q>> individuals,
       long nOfBirths,
       long nOfFitnessEvaluations) {
     return POCState.from(
-        (POCState<Individual<G, S, Q>, G, S, Q>) state,
+        (POCState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>>) state,
         nOfBirths,
         nOfFitnessEvaluations,
         PartiallyOrderedCollection.from(individuals, partialComparator(problem)));
   }
 
   @Override
-  protected POCPopulationState<Individual<G, S, Q>, G, S, Q> init(
+  protected POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>> init(
       QualityBasedProblem<S, Q> problem, Collection<Individual<G, S, Q>> individuals) {
-    return POCState.from(PartiallyOrderedCollection.from(individuals, partialComparator(problem)), stopCondition());
+    return POCState.from(
+        problem, PartiallyOrderedCollection.from(individuals, partialComparator(problem)), stopCondition());
   }
 
   @Override
   protected Individual<G, S, Q> newIndividual(
-      G genotype, POCPopulationState<Individual<G, S, Q>, G, S, Q> state, QualityBasedProblem<S, Q> problem) {
+      G genotype,
+      POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>> state,
+      QualityBasedProblem<S, Q> problem) {
     S solution = solutionMapper.apply(genotype);
     return Individual.of(
         genotype,
@@ -101,7 +105,7 @@ public class StandardEvolver<G, S, Q>
   @Override
   protected Individual<G, S, Q> updateIndividual(
       Individual<G, S, Q> individual,
-      POCPopulationState<Individual<G, S, Q>, G, S, Q> state,
+      POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>> state,
       QualityBasedProblem<S, Q> problem) {
     return Individual.of(
         individual.genotype(),

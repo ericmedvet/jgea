@@ -19,21 +19,24 @@
  */
 package io.github.ericmedvet.jgea.core.solver;
 
+import io.github.ericmedvet.jgea.core.problem.Problem;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import java.util.function.Predicate;
 
 /**
  * @author "Eric Medvet" on 2023/10/21 for jgea
  */
-public interface State {
+public interface State<P extends Problem<S>, S> {
   long elapsedMillis();
 
   long nOfIterations();
 
   Progress progress();
 
-  interface WithComputedProgress extends State {
-    Predicate<State> stopCondition();
+  P problem();
+
+  interface WithComputedProgress<P extends Problem<S>, S> extends State<P, S> {
+    Predicate<State<?, ?>> stopCondition();
 
     @Override
     default Progress progress() {

@@ -35,7 +35,12 @@ import java.util.stream.IntStream;
 
 public class NsgaII<G, S>
     extends AbstractPopulationBasedIterativeSolver<
-        POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>>,
+        POCPopulationState<
+            Individual<G, S, List<Double>>,
+            G,
+            S,
+            List<Double>,
+            MultiHomogeneousObjectiveProblem<S, Double>>,
         MultiHomogeneousObjectiveProblem<S, Double>,
         Individual<G, S, List<Double>>,
         G,
@@ -50,7 +55,15 @@ public class NsgaII<G, S>
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       int populationSize,
-      Predicate<? super POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>>> stopCondition,
+      Predicate<
+              ? super
+                  POCPopulationState<
+                      Individual<G, S, List<Double>>,
+                      G,
+                      S,
+                      List<Double>,
+                      MultiHomogeneousObjectiveProblem<S, Double>>>
+          stopCondition,
       Map<GeneticOperator<G>, Double> operators,
       int maxUniquenessAttempts,
       boolean remap) {
@@ -131,23 +144,34 @@ public class NsgaII<G, S>
   }
 
   @Override
-  public POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>> init(
-      MultiHomogeneousObjectiveProblem<S, Double> problem, RandomGenerator random, ExecutorService executor)
-      throws SolverException {
+  public POCPopulationState<
+          Individual<G, S, List<Double>>, G, S, List<Double>, MultiHomogeneousObjectiveProblem<S, Double>>
+      init(MultiHomogeneousObjectiveProblem<S, Double> problem, RandomGenerator random, ExecutorService executor)
+          throws SolverException {
     Collection<? extends Individual<G, S, List<Double>>> individuals =
         map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor);
     //noinspection rawtypes,unchecked
     return AbstractStandardEvolver.POCState.from(
-        PartiallyOrderedCollection.from((List) individuals, partialComparator(problem)), stopCondition());
+        problem,
+        PartiallyOrderedCollection.from((List) individuals, partialComparator(problem)),
+        stopCondition());
   }
 
   @Override
-  public POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>> update(
-      MultiHomogeneousObjectiveProblem<S, Double> problem,
-      RandomGenerator random,
-      ExecutorService executor,
-      POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>> state)
-      throws SolverException {
+  public POCPopulationState<
+          Individual<G, S, List<Double>>, G, S, List<Double>, MultiHomogeneousObjectiveProblem<S, Double>>
+      update(
+          MultiHomogeneousObjectiveProblem<S, Double> problem,
+          RandomGenerator random,
+          ExecutorService executor,
+          POCPopulationState<
+                  Individual<G, S, List<Double>>,
+                  G,
+                  S,
+                  List<Double>,
+                  MultiHomogeneousObjectiveProblem<S, Double>>
+              state)
+          throws SolverException {
     // build offspring
     Collection<G> offspringGenotypes = new ArrayList<>();
     Set<G> uniqueOffspringGenotypes = new HashSet<>();
@@ -188,7 +212,13 @@ public class NsgaII<G, S>
     List<Individual<G, S, List<Double>>> newIndividuals = (List) rankedIndividuals;
     int nOfNewBirths = offspringGenotypes.size();
     return AbstractStandardEvolver.POCState.from(
-        (AbstractStandardEvolver.POCState<Individual<G, S, List<Double>>, G, S, List<Double>>) state,
+        (AbstractStandardEvolver.POCState<
+                Individual<G, S, List<Double>>,
+                G,
+                S,
+                List<Double>,
+                MultiHomogeneousObjectiveProblem<S, Double>>)
+            state,
         nOfNewBirths,
         nOfNewBirths + (remap ? populationSize : 0),
         PartiallyOrderedCollection.from(newIndividuals, partialComparator(problem)));
@@ -197,7 +227,13 @@ public class NsgaII<G, S>
   @Override
   protected Individual<G, S, List<Double>> newIndividual(
       G genotype,
-      POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>> state,
+      POCPopulationState<
+              Individual<G, S, List<Double>>,
+              G,
+              S,
+              List<Double>,
+              MultiHomogeneousObjectiveProblem<S, Double>>
+          state,
       MultiHomogeneousObjectiveProblem<S, Double> problem) {
     S solution = solutionMapper.apply(genotype);
     return new RankedIndividual<>(
@@ -213,7 +249,13 @@ public class NsgaII<G, S>
   @Override
   protected Individual<G, S, List<Double>> updateIndividual(
       Individual<G, S, List<Double>> individual,
-      POCPopulationState<Individual<G, S, List<Double>>, G, S, List<Double>> state,
+      POCPopulationState<
+              Individual<G, S, List<Double>>,
+              G,
+              S,
+              List<Double>,
+              MultiHomogeneousObjectiveProblem<S, Double>>
+          state,
       MultiHomogeneousObjectiveProblem<S, Double> problem) {
     return new RankedIndividual<>(
         individual.genotype(),

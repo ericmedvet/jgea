@@ -43,7 +43,8 @@ import org.apache.commons.math3.linear.RealMatrix;
 
 public class CMAEvolutionaryStrategy<S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>,
+        ListPopulationState<
+            Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>,
         TotalOrderQualityBasedProblem<S, Q>,
         Individual<List<Double>, S, Q>,
         List<Double>,
@@ -66,7 +67,15 @@ public class CMAEvolutionaryStrategy<S, Q>
   public CMAEvolutionaryStrategy(
       Function<? super List<Double>, ? extends S> solutionMapper,
       Factory<? extends List<Double>> genotypeFactory,
-      Predicate<? super ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>> stopCondition) {
+      Predicate<
+              ? super
+                  ListPopulationState<
+                      Individual<List<Double>, S, Q>,
+                      List<Double>,
+                      S,
+                      Q,
+                      TotalOrderQualityBasedProblem<S, Q>>>
+          stopCondition) {
     this(
         solutionMapper,
         genotypeFactory,
@@ -77,7 +86,15 @@ public class CMAEvolutionaryStrategy<S, Q>
   private CMAEvolutionaryStrategy(
       Function<? super List<Double>, ? extends S> solutionMapper,
       Factory<? extends List<Double>> genotypeFactory,
-      Predicate<? super ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>> stopCondition,
+      Predicate<
+              ? super
+                  ListPopulationState<
+                      Individual<List<Double>, S, Q>,
+                      List<Double>,
+                      S,
+                      Q,
+                      TotalOrderQualityBasedProblem<S, Q>>>
+          stopCondition,
       int p) {
     super(solutionMapper, genotypeFactory, stopCondition, false);
     populationSize = 4 + (int) Math.floor(3 * Math.log(p));
@@ -116,7 +133,8 @@ public class CMAEvolutionaryStrategy<S, Q>
       LocalDateTime startingDateTime,
       long elapsedMillis,
       long nOfIterations,
-      Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition,
+      TotalOrderQualityBasedProblem<S, Q> problem,
+      Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
       long nOfBirths,
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<Individual<List<Double>, S, Q>> pocPopulation,
@@ -129,15 +147,20 @@ public class CMAEvolutionaryStrategy<S, Q>
       RealMatrix B,
       RealMatrix D,
       long lastEigenUpdateIteration)
-      implements ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>,
-          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress {
+      implements ListPopulationState<
+              Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>,
+          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress<
+              TotalOrderQualityBasedProblem<S, Q>, S> {
     public static <S, Q> State<S, Q> empty(
-        double[] means, Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition) {
+        TotalOrderQualityBasedProblem<S, Q> problem,
+        double[] means,
+        Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition) {
       int n = means.length;
       return new State<>(
           LocalDateTime.now(),
           0,
           0,
+          problem,
           stopCondition,
           0,
           0,
@@ -164,6 +187,7 @@ public class CMAEvolutionaryStrategy<S, Q>
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations,
+          state.problem,
           state.stopCondition,
           state.nOfBirths,
           state.nOfFitnessEvaluations,
@@ -184,6 +208,7 @@ public class CMAEvolutionaryStrategy<S, Q>
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations,
+          state.problem,
           state.stopCondition,
           state.nOfBirths,
           state.nOfFitnessEvaluations,
@@ -208,6 +233,7 @@ public class CMAEvolutionaryStrategy<S, Q>
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations + 1,
+          state.problem,
           state.stopCondition,
           state.nOfBirths + individuals.size(),
           state.nOfFitnessEvaluations + individuals.size(),
@@ -230,7 +256,8 @@ public class CMAEvolutionaryStrategy<S, Q>
   @Override
   protected Individual<List<Double>, S, Q> newIndividual(
       List<Double> genotype,
-      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state,
+      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
+          state,
       TotalOrderQualityBasedProblem<S, Q> problem) {
     throw new UnsupportedOperationException("This method should not be called");
   }
@@ -238,16 +265,18 @@ public class CMAEvolutionaryStrategy<S, Q>
   @Override
   protected Individual<List<Double>, S, Q> updateIndividual(
       Individual<List<Double>, S, Q> individual,
-      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state,
+      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
+          state,
       TotalOrderQualityBasedProblem<S, Q> problem) {
     throw new UnsupportedOperationException("This method should not be called");
   }
 
   @Override
-  public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> init(
-      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
-      throws SolverException {
-    State<S, Q> state = State.empty(unboxed(genotypeFactory.build(1, random).get(0)), stopCondition());
+  public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
+      init(TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
+          throws SolverException {
+    State<S, Q> state =
+        State.empty(problem, unboxed(genotypeFactory.build(1, random).get(0)), stopCondition());
     Collection<DecoratedIndividual<S, Q>> newDecoratedIndividuals;
     try {
       newDecoratedIndividuals = getAll(executor.invokeAll(IntStream.range(0, populationSize)
@@ -260,12 +289,19 @@ public class CMAEvolutionaryStrategy<S, Q>
   }
 
   @Override
-  public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> update(
-      TotalOrderQualityBasedProblem<S, Q> problem,
-      RandomGenerator random,
-      ExecutorService executor,
-      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state)
-      throws SolverException {
+  public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
+      update(
+          TotalOrderQualityBasedProblem<S, Q> problem,
+          RandomGenerator random,
+          ExecutorService executor,
+          ListPopulationState<
+                  Individual<List<Double>, S, Q>,
+                  List<Double>,
+                  S,
+                  Q,
+                  TotalOrderQualityBasedProblem<S, Q>>
+              state)
+          throws SolverException {
     State<S, Q> cmaState = (State<S, Q>) state;
     // update distribution
     cmaState = updateDistribution(cmaState, problem);

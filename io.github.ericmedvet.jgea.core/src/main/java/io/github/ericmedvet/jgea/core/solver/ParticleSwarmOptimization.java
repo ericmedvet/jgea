@@ -38,7 +38,12 @@ import java.util.random.RandomGenerator;
 
 public class ParticleSwarmOptimization<S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        ListPopulationState<ParticleSwarmOptimization.PSOIndividual<S, Q>, List<Double>, S, Q>,
+        ListPopulationState<
+            ParticleSwarmOptimization.PSOIndividual<S, Q>,
+            List<Double>,
+            S,
+            Q,
+            TotalOrderQualityBasedProblem<S, Q>>,
         TotalOrderQualityBasedProblem<S, Q>,
         ParticleSwarmOptimization.PSOIndividual<S, Q>,
         List<Double>,
@@ -53,7 +58,15 @@ public class ParticleSwarmOptimization<S, Q>
   public ParticleSwarmOptimization(
       Function<? super List<Double>, ? extends S> solutionMapper,
       Factory<? extends List<Double>> genotypeFactory,
-      Predicate<? super ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q>> stopCondition,
+      Predicate<
+              ? super
+                  ListPopulationState<
+                      PSOIndividual<S, Q>,
+                      List<Double>,
+                      S,
+                      Q,
+                      TotalOrderQualityBasedProblem<S, Q>>>
+          stopCondition,
       int populationSize,
       double w,
       double phiParticle,
@@ -111,14 +124,17 @@ public class ParticleSwarmOptimization<S, Q>
       LocalDateTime startingDateTime,
       long elapsedMillis,
       long nOfIterations,
-      Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition,
+      TotalOrderQualityBasedProblem<S, Q> problem,
+      Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
       long nOfBirths,
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<PSOIndividual<S, Q>> pocPopulation,
       List<PSOIndividual<S, Q>> listPopulation,
       PSOIndividual<S, Q> knownBest)
-      implements ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q>,
-          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress {
+      implements ListPopulationState<
+              PSOIndividual<S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>,
+          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress<
+              TotalOrderQualityBasedProblem<S, Q>, S> {
     public static <S, Q> State<S, Q> from(
         State<S, Q> state,
         int nOfBirths,
@@ -130,6 +146,7 @@ public class ParticleSwarmOptimization<S, Q>
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations() + 1,
+          state.problem,
           state.stopCondition,
           state.nOfBirths() + nOfBirths,
           state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
@@ -139,15 +156,17 @@ public class ParticleSwarmOptimization<S, Q>
     }
 
     public static <S, Q> State<S, Q> from(
+        TotalOrderQualityBasedProblem<S, Q> problem,
         Collection<PSOIndividual<S, Q>> listPopulation,
         Comparator<? super PSOIndividual<S, Q>> comparator,
-        Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition) {
+        Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition) {
       List<PSOIndividual<S, Q>> list =
           listPopulation.stream().sorted(comparator).toList();
       return new State<>(
           LocalDateTime.now(),
           0,
           0,
+          problem,
           stopCondition,
           listPopulation.size(),
           listPopulation.size(),
@@ -158,7 +177,7 @@ public class ParticleSwarmOptimization<S, Q>
   }
 
   @Override
-  public ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q> init(
+  public ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>> init(
       TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
       throws SolverException {
     // init positions
@@ -193,18 +212,18 @@ public class ParticleSwarmOptimization<S, Q>
             };
           })
           .toList()));
-      return State.from(individuals, comparator(problem), stopCondition());
+      return State.from(problem, individuals, comparator(problem), stopCondition());
     } catch (InterruptedException e) {
       throw new SolverException(e);
     }
   }
 
   @Override
-  public ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q> update(
+  public ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>> update(
       TotalOrderQualityBasedProblem<S, Q> problem,
       RandomGenerator random,
       ExecutorService executor,
-      ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q> state)
+      ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>> state)
       throws SolverException {
     PSOIndividual<S, Q> knownBest = ((State<S, Q>) state).knownBest();
     List<Double> globalBestPosition = knownBest.position();
@@ -265,7 +284,7 @@ public class ParticleSwarmOptimization<S, Q>
   @Override
   protected PSOIndividual<S, Q> newIndividual(
       List<Double> genotype,
-      ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q> state,
+      ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>> state,
       TotalOrderQualityBasedProblem<S, Q> problem) {
     throw new UnsupportedOperationException("This method should not be called");
   }
@@ -273,7 +292,7 @@ public class ParticleSwarmOptimization<S, Q>
   @Override
   protected PSOIndividual<S, Q> updateIndividual(
       PSOIndividual<S, Q> individual,
-      ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q> state,
+      ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>> state,
       TotalOrderQualityBasedProblem<S, Q> problem) {
     throw new UnsupportedOperationException("This method should not be called");
   }

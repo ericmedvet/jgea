@@ -39,7 +39,8 @@ import java.util.stream.IntStream;
 
 public class SimpleEvolutionaryStrategy<S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>,
+        ListPopulationState<
+            Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>,
         TotalOrderQualityBasedProblem<S, Q>,
         Individual<List<Double>, S, Q>,
         List<Double>,
@@ -56,7 +57,15 @@ public class SimpleEvolutionaryStrategy<S, Q>
       Function<? super List<Double>, ? extends S> solutionMapper,
       Factory<? extends List<Double>> genotypeFactory,
       int populationSize,
-      Predicate<? super ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>> stopCondition,
+      Predicate<
+              ? super
+                  ListPopulationState<
+                      Individual<List<Double>, S, Q>,
+                      List<Double>,
+                      S,
+                      Q,
+                      TotalOrderQualityBasedProblem<S, Q>>>
+          stopCondition,
       int nOfParents,
       int nOfElites,
       double sigma,
@@ -72,14 +81,17 @@ public class SimpleEvolutionaryStrategy<S, Q>
       LocalDateTime startingDateTime,
       long elapsedMillis,
       long nOfIterations,
-      Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition,
+      TotalOrderQualityBasedProblem<S, Q> problem,
+      Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
       long nOfBirths,
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<Individual<List<Double>, S, Q>> pocPopulation,
       List<Individual<List<Double>, S, Q>> listPopulation,
       List<Double> means)
-      implements ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>,
-          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress {
+      implements ListPopulationState<
+              Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>,
+          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress<
+              TotalOrderQualityBasedProblem<S, Q>, S> {
     public static <S, Q> State<S, Q> from(
         State<S, Q> state,
         int nOfBirths,
@@ -91,6 +103,7 @@ public class SimpleEvolutionaryStrategy<S, Q>
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations() + 1,
+          state.problem,
           state.stopCondition,
           state.nOfBirths() + nOfBirths,
           state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
@@ -100,13 +113,15 @@ public class SimpleEvolutionaryStrategy<S, Q>
     }
 
     public static <S, Q> State<S, Q> from(
+        TotalOrderQualityBasedProblem<S, Q> problem,
         Collection<Individual<List<Double>, S, Q>> listPopulation,
         Comparator<? super Individual<List<Double>, S, Q>> comparator,
-        Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition) {
+        Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition) {
       return new State<>(
           LocalDateTime.now(),
           0,
           0,
+          problem,
           stopCondition,
           listPopulation.size(),
           listPopulation.size(),
@@ -117,23 +132,31 @@ public class SimpleEvolutionaryStrategy<S, Q>
   }
 
   @Override
-  public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> init(
-      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
-      throws SolverException {
+  public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
+      init(TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
+          throws SolverException {
     Comparator<? super Individual<?, ?, Q>> c1 = comparator(problem);
     return State.from(
+        problem,
         map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor),
         c1,
         stopCondition());
   }
 
   @Override
-  public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> update(
-      TotalOrderQualityBasedProblem<S, Q> problem,
-      RandomGenerator random,
-      ExecutorService executor,
-      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state)
-      throws SolverException {
+  public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
+      update(
+          TotalOrderQualityBasedProblem<S, Q> problem,
+          RandomGenerator random,
+          ExecutorService executor,
+          ListPopulationState<
+                  Individual<List<Double>, S, Q>,
+                  List<Double>,
+                  S,
+                  Q,
+                  TotalOrderQualityBasedProblem<S, Q>>
+              state)
+          throws SolverException {
     // select elites
     List<Individual<List<Double>, S, Q>> elites =
         state.listPopulation().stream().limit(nOfElites).toList();
@@ -164,7 +187,8 @@ public class SimpleEvolutionaryStrategy<S, Q>
   @Override
   protected Individual<List<Double>, S, Q> newIndividual(
       List<Double> genotype,
-      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state,
+      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
+          state,
       TotalOrderQualityBasedProblem<S, Q> problem) {
     S solution = solutionMapper.apply(genotype);
     return Individual.of(
@@ -178,7 +202,8 @@ public class SimpleEvolutionaryStrategy<S, Q>
   @Override
   protected Individual<List<Double>, S, Q> updateIndividual(
       Individual<List<Double>, S, Q> individual,
-      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state,
+      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
+          state,
       TotalOrderQualityBasedProblem<S, Q> problem) {
     return Individual.of(
         individual.genotype(),

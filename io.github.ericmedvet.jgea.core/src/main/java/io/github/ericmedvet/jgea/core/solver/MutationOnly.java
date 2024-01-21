@@ -22,6 +22,7 @@ package io.github.ericmedvet.jgea.core.solver;
 
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
+import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.selector.Selector;
 import java.util.Collection;
 import java.util.Map;
@@ -37,7 +38,8 @@ public class MutationOnly<G, S, Q> extends StandardEvolver<G, S, Q> {
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
       int populationSize,
-      Predicate<? super POCPopulationState<Individual<G, S, Q>, G, S, Q>> stopCondition,
+      Predicate<? super POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>>>
+          stopCondition,
       Selector<? super Individual<? super G, ? super S, ? super Q>> unsurvivalSelector,
       Mutation<G> mutation) {
     super(
@@ -57,7 +59,7 @@ public class MutationOnly<G, S, Q> extends StandardEvolver<G, S, Q> {
 
   @Override
   protected Collection<G> buildOffspringGenotypes(
-      POCPopulationState<Individual<G, S, Q>, G, S, Q> state, RandomGenerator random) {
+      POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>> state, RandomGenerator random) {
     return state.pocPopulation().all().stream()
         .map(i -> mutation.mutate(i.genotype(), random))
         .toList();

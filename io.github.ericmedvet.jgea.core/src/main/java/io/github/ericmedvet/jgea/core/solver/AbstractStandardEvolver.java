@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 import java.util.random.RandomGenerator;
 
 public abstract class AbstractStandardEvolver<
-        T extends POCPopulationState<I, G, S, Q>,
+        T extends POCPopulationState<I, G, S, Q, P>,
         P extends QualityBasedProblem<S, Q>,
         I extends Individual<G, S, Q>,
         G,
@@ -53,58 +53,73 @@ public abstract class AbstractStandardEvolver<
   protected final boolean overlapping;
   protected final int maxUniquenessAttempts;
 
-  protected record POCState<I extends Individual<G, S, Q>, G, S, Q>(
+  protected record POCState<I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>(
       LocalDateTime startingDateTime,
       long elapsedMillis,
       long nOfIterations,
-      Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition,
+      P problem,
+      Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
       long nOfBirths,
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<I> pocPopulation)
-      implements POCPopulationState<I, G, S, Q>, State.WithComputedProgress {
-    public static <I extends Individual<G, S, Q>, G, S, Q> POCState<I, G, S, Q> from(
-        POCState<I, G, S, Q> state,
-        long nOfBirths,
-        long nOfFitnessEvaluations,
-        PartiallyOrderedCollection<I> population) {
+      implements POCPopulationState<I, G, S, Q, P>, State.WithComputedProgress<P, S> {
+    public static <I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
+        POCState<I, G, S, Q, P> from(
+            POCState<I, G, S, Q, P> state,
+            long nOfBirths,
+            long nOfFitnessEvaluations,
+            PartiallyOrderedCollection<I> population) {
       return new POCState<>(
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations() + 1,
+          state.problem,
           state.stopCondition,
           state.nOfBirths() + nOfBirths,
           state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
           population);
     }
 
-    public static <I extends Individual<G, S, Q>, G, S, Q> POCState<I, G, S, Q> from(
-        PartiallyOrderedCollection<I> population,
-        Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition) {
+    public static <I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
+        POCState<I, G, S, Q, P> from(
+            P problem,
+            PartiallyOrderedCollection<I> population,
+            Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition) {
       return new POCState<>(
-          LocalDateTime.now(), 0, 0, stopCondition, population.size(), population.size(), population);
+          LocalDateTime.now(),
+          0,
+          0,
+          problem,
+          stopCondition,
+          population.size(),
+          population.size(),
+          population);
     }
   }
 
-  protected record ListState<I extends Individual<G, S, Q>, G, S, Q>(
+  protected record ListState<I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>(
       LocalDateTime startingDateTime,
       long elapsedMillis,
       long nOfIterations,
-      Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition,
+      P problem,
+      Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
       long nOfBirths,
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<I> pocPopulation,
       List<I> listPopulation)
-      implements ListPopulationState<I, G, S, Q>, State.WithComputedProgress {
-    public static <I extends Individual<G, S, Q>, G, S, Q> ListState<I, G, S, Q> from(
-        ListState<I, G, S, Q> state,
-        long nOfBirths,
-        long nOfFitnessEvaluations,
-        Collection<I> listPopulation,
-        Comparator<? super I> comparator) {
+      implements ListPopulationState<I, G, S, Q, P>, State.WithComputedProgress<P, S> {
+    public static <I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
+        ListState<I, G, S, Q, P> from(
+            ListState<I, G, S, Q, P> state,
+            long nOfBirths,
+            long nOfFitnessEvaluations,
+            Collection<I> listPopulation,
+            Comparator<? super I> comparator) {
       return new ListState<>(
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations() + 1,
+          state.problem,
           state.stopCondition,
           state.nOfBirths() + nOfBirths,
           state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
@@ -112,14 +127,17 @@ public abstract class AbstractStandardEvolver<
           listPopulation.stream().sorted(comparator).toList());
     }
 
-    public static <I extends Individual<G, S, Q>, G, S, Q> ListState<I, G, S, Q> from(
-        Collection<I> listPopulation,
-        Comparator<? super I> comparator,
-        Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition) {
+    public static <I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
+        ListState<I, G, S, Q, P> from(
+            P problem,
+            Collection<I> listPopulation,
+            Comparator<? super I> comparator,
+            Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition) {
       return new ListState<>(
           LocalDateTime.now(),
           0,
           0,
+          problem,
           stopCondition,
           listPopulation.size(),
           listPopulation.size(),

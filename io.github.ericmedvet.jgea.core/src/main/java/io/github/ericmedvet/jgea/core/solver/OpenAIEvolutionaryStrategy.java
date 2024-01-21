@@ -45,7 +45,8 @@ import java.util.stream.Stream;
 
 public class OpenAIEvolutionaryStrategy<S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>,
+        ListPopulationState<
+            Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>,
         TotalOrderQualityBasedProblem<S, Q>,
         Individual<List<Double>, S, Q>,
         List<Double>,
@@ -59,7 +60,15 @@ public class OpenAIEvolutionaryStrategy<S, Q>
   public OpenAIEvolutionaryStrategy(
       Function<? super List<Double>, ? extends S> solutionMapper,
       Factory<? extends List<Double>> genotypeFactory,
-      Predicate<? super ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>> stopCondition,
+      Predicate<
+              ? super
+                  ListPopulationState<
+                      Individual<List<Double>, S, Q>,
+                      List<Double>,
+                      S,
+                      Q,
+                      TotalOrderQualityBasedProblem<S, Q>>>
+          stopCondition,
       int batchSize,
       double sigma) {
     super(solutionMapper, genotypeFactory, stopCondition, false);
@@ -72,7 +81,8 @@ public class OpenAIEvolutionaryStrategy<S, Q>
       LocalDateTime startingDateTime,
       long elapsedMillis,
       long nOfIterations,
-      Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition,
+      TotalOrderQualityBasedProblem<S, Q> problem,
+      Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
       long nOfBirths,
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<Individual<List<Double>, S, Q>> pocPopulation,
@@ -85,17 +95,21 @@ public class OpenAIEvolutionaryStrategy<S, Q>
       double[] center,
       double[] m,
       double[] v)
-      implements ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q>,
-          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress {
+      implements ListPopulationState<
+              Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>,
+          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress<
+              TotalOrderQualityBasedProblem<S, Q>, S> {
     public static <S, Q> State<S, Q> from(
+        TotalOrderQualityBasedProblem<S, Q> problem,
         Collection<Individual<List<Double>, S, Q>> individuals,
         Comparator<? super Individual<List<Double>, S, Q>> comparator,
-        Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition) {
+        Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition) {
       int n = individuals.iterator().next().genotype().size();
       return new State<>(
           LocalDateTime.now(),
           0,
           0,
+          problem,
           stopCondition,
           0,
           0,
@@ -123,6 +137,7 @@ public class OpenAIEvolutionaryStrategy<S, Q>
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations() + 1,
+          state.problem,
           state.stopCondition,
           state.nOfBirths + individuals.size(),
           state.nOfFitnessEvaluations + individuals.size(),
@@ -142,7 +157,8 @@ public class OpenAIEvolutionaryStrategy<S, Q>
   @Override
   protected Individual<List<Double>, S, Q> newIndividual(
       List<Double> genotype,
-      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state,
+      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
+          state,
       TotalOrderQualityBasedProblem<S, Q> problem) {
     S solution = solutionMapper.apply(genotype);
     return Individual.of(
@@ -156,27 +172,35 @@ public class OpenAIEvolutionaryStrategy<S, Q>
   @Override
   protected Individual<List<Double>, S, Q> updateIndividual(
       Individual<List<Double>, S, Q> individual,
-      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state,
+      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
+          state,
       TotalOrderQualityBasedProblem<S, Q> problem) {
     throw new UnsupportedOperationException("This method should not be called");
   }
 
   @Override
-  public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> init(
-      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
-      throws SolverException {
+  public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
+      init(TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
+          throws SolverException {
     Collection<Individual<List<Double>, S, Q>> individuals =
         map(genotypeFactory.build(2 * batchSize, random), List.of(), null, problem, executor);
-    return State.from(individuals, comparator(problem), stopCondition());
+    return State.from(problem, individuals, comparator(problem), stopCondition());
   }
 
   @Override
-  public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> update(
-      TotalOrderQualityBasedProblem<S, Q> problem,
-      RandomGenerator random,
-      ExecutorService executor,
-      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q> state)
-      throws SolverException {
+  public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
+      update(
+          TotalOrderQualityBasedProblem<S, Q> problem,
+          RandomGenerator random,
+          ExecutorService executor,
+          ListPopulationState<
+                  Individual<List<Double>, S, Q>,
+                  List<Double>,
+                  S,
+                  Q,
+                  TotalOrderQualityBasedProblem<S, Q>>
+              state)
+          throws SolverException {
     // see https://bacrobotics.com/ section 6.2.2
     State<S, Q> esState = (State<S, Q>) state;
     // produce noise vectors

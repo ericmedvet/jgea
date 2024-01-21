@@ -19,11 +19,13 @@
  */
 package io.github.ericmedvet.jgea.core.solver;
 
+import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import java.util.List;
 
 /**
  * @author "Eric Medvet" on 2023/10/23 for jgea
  */
-public interface ListPopulationState<I extends Individual<G, S, Q>, G, S, Q> extends POCPopulationState<I, G, S, Q> {
+public interface ListPopulationState<I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
+    extends POCPopulationState<I, G, S, Q, P> {
   List<I> listPopulation();
 }

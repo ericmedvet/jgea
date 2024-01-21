@@ -19,6 +19,7 @@
  */
 package io.github.ericmedvet.jgea.core.solver.speciation;
 
+import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import java.util.Collection;
@@ -26,6 +27,7 @@ import java.util.Collection;
 /**
  * @author "Eric Medvet" on 2023/10/21 for jgea
  */
-public interface SpeciatedPOCPopulationState<G, S, Q> extends POCPopulationState<Individual<G, S, Q>, G, S, Q> {
+public interface SpeciatedPOCPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q>>
+    extends POCPopulationState<Individual<G, S, Q>, G, S, Q, P> {
   Collection<SpeciatedEvolver.Species<Individual<G, S, Q>>> parentSpecies();
 }

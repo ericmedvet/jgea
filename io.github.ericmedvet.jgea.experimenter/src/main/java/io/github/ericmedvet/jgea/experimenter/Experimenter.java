@@ -101,11 +101,11 @@ public class Experimenter {
   public void run(Experiment experiment, boolean verbose) {
     ProjectInfoProvider.of(getClass()).ifPresent(pi -> L.info("Starting %s".formatted(pi)));
     // preapare factories
-    List<? extends ListenerFactory<? super POCPopulationState<?, ?, ?, ?>, Run<?, ?, ?, ?>>> factories =
+    List<? extends ListenerFactory<? super POCPopulationState<?, ?, ?, ?, ?>, Run<?, ?, ?, ?>>> factories =
         experiment.listeners().stream()
             .map(l -> l.apply(experiment, listenerExecutorService))
             .toList();
-    ListenerFactory<? super POCPopulationState<?, ?, ?, ?>, Run<?, ?, ?, ?>> factory =
+    ListenerFactory<? super POCPopulationState<?, ?, ?, ?, ?>, Run<?, ?, ?, ?>> factory =
         ListenerFactory.all(factories);
     List<ProgressMonitor> progressMonitors = factories.stream()
         .filter(f -> f instanceof ProgressMonitor)

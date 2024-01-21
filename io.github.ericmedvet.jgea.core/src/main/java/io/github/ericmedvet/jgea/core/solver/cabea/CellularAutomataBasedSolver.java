@@ -44,7 +44,12 @@ import java.util.stream.IntStream;
 
 public class CellularAutomataBasedSolver<G, S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        GridPopulationState<G, S, Q>, QualityBasedProblem<S, Q>, Individual<G, S, Q>, G, S, Q> {
+        GridPopulationState<G, S, Q, QualityBasedProblem<S, Q>>,
+        QualityBasedProblem<S, Q>,
+        Individual<G, S, Q>,
+        G,
+        S,
+        Q> {
 
   protected final Map<GeneticOperator<G>, Double> operators;
   protected final Selector<? super Individual<G, S, Q>> parentSelector;
@@ -55,7 +60,7 @@ public class CellularAutomataBasedSolver<G, S, Q>
   public CellularAutomataBasedSolver(
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
-      Predicate<? super GridPopulationState<G, S, Q>> stopCondition,
+      Predicate<? super GridPopulationState<G, S, Q, QualityBasedProblem<S, Q>>> stopCondition,
       Grid<Boolean> substrate,
       Neighborhood neighborhood,
       double keepProbability,
@@ -95,12 +100,14 @@ public class CellularAutomataBasedSolver<G, S, Q>
       LocalDateTime startingDateTime,
       long elapsedMillis,
       long nOfIterations,
-      Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition,
+      QualityBasedProblem<S, Q> problem,
+      Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
       long nOfBirths,
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<Individual<G, S, Q>> pocPopulation,
       Grid<Individual<G, S, Q>> gridPopulation)
-      implements GridPopulationState<G, S, Q>, io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress {
+      implements GridPopulationState<G, S, Q, QualityBasedProblem<S, Q>>,
+          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress<QualityBasedProblem<S, Q>, S> {
     public static <G, S, Q> State<G, S, Q> from(
         State<G, S, Q> state,
         long nOfBirths,
@@ -111,6 +118,7 @@ public class CellularAutomataBasedSolver<G, S, Q>
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations() + 1,
+          state.problem,
           state.stopCondition,
           state.nOfBirths() + nOfBirths,
           state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
@@ -123,15 +131,17 @@ public class CellularAutomataBasedSolver<G, S, Q>
     }
 
     public static <G, S, Q> State<G, S, Q> from(
+        QualityBasedProblem<S, Q> problem,
         Grid<Individual<G, S, Q>> gridPopulation,
         PartialComparator<? super Individual<G, S, Q>> comparator,
-        Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition) {
+        Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition) {
       List<Individual<G, S, Q>> individuals =
           gridPopulation.values().stream().filter(Objects::nonNull).toList();
       return new State<>(
           LocalDateTime.now(),
           0,
           0,
+          problem,
           stopCondition,
           individuals.size(),
           individuals.size(),
@@ -141,7 +151,7 @@ public class CellularAutomataBasedSolver<G, S, Q>
   }
 
   @Override
-  public GridPopulationState<G, S, Q> init(
+  public GridPopulationState<G, S, Q, QualityBasedProblem<S, Q>> init(
       QualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
       throws SolverException {
     List<Grid.Key> freeCells =
@@ -153,15 +163,15 @@ public class CellularAutomataBasedSolver<G, S, Q>
     for (int i = 0; i < freeCells.size(); i = i + 1) {
       grid.set(freeCells.get(i), individuals.get(i));
     }
-    return State.from(grid, partialComparator(problem), stopCondition());
+    return State.from(problem, grid, partialComparator(problem), stopCondition());
   }
 
   @Override
-  public GridPopulationState<G, S, Q> update(
+  public GridPopulationState<G, S, Q, QualityBasedProblem<S, Q>> update(
       QualityBasedProblem<S, Q> problem,
       RandomGenerator random,
       ExecutorService executor,
-      GridPopulationState<G, S, Q> state)
+      GridPopulationState<G, S, Q, QualityBasedProblem<S, Q>> state)
       throws SolverException {
     List<Callable<CellProcessOutcome<Individual<G, S, Q>>>> callables = state.gridPopulation().entries().stream()
         .filter(e -> e.value() != null)
@@ -182,7 +192,9 @@ public class CellularAutomataBasedSolver<G, S, Q>
 
   @Override
   protected Individual<G, S, Q> newIndividual(
-      G genotype, GridPopulationState<G, S, Q> state, QualityBasedProblem<S, Q> problem) {
+      G genotype,
+      GridPopulationState<G, S, Q, QualityBasedProblem<S, Q>> state,
+      QualityBasedProblem<S, Q> problem) {
     S solution = solutionMapper.apply(genotype);
     return Individual.of(
         genotype,
@@ -194,7 +206,9 @@ public class CellularAutomataBasedSolver<G, S, Q>
 
   @Override
   protected Individual<G, S, Q> updateIndividual(
-      Individual<G, S, Q> individual, GridPopulationState<G, S, Q> state, QualityBasedProblem<S, Q> problem) {
+      Individual<G, S, Q> individual,
+      GridPopulationState<G, S, Q, QualityBasedProblem<S, Q>> state,
+      QualityBasedProblem<S, Q> problem) {
     return Individual.of(
         individual.genotype(),
         individual.solution(),
@@ -205,7 +219,7 @@ public class CellularAutomataBasedSolver<G, S, Q>
 
   private Callable<CellProcessOutcome<Individual<G, S, Q>>> processCell(
       Grid.Entry<Individual<G, S, Q>> entry,
-      GridPopulationState<G, S, Q> state,
+      GridPopulationState<G, S, Q, QualityBasedProblem<S, Q>> state,
       QualityBasedProblem<S, Q> problem,
       RandomGenerator random) {
     return () -> {

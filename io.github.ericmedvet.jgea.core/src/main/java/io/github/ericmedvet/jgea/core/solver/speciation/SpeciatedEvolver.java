@@ -43,7 +43,12 @@ import java.util.random.RandomGenerator;
 
 public class SpeciatedEvolver<G, S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        SpeciatedPOCPopulationState<G, S, Q>, QualityBasedProblem<S, Q>, Individual<G, S, Q>, G, S, Q> {
+        SpeciatedPOCPopulationState<G, S, Q, QualityBasedProblem<S, Q>>,
+        QualityBasedProblem<S, Q>,
+        Individual<G, S, Q>,
+        G,
+        S,
+        Q> {
   private static final Logger L = Logger.getLogger(SpeciatedEvolver.class.getName());
   protected final Map<GeneticOperator<G>, Double> operators;
   protected final int populationSize;
@@ -54,7 +59,7 @@ public class SpeciatedEvolver<G, S, Q>
   public SpeciatedEvolver(
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
-      Predicate<? super SpeciatedPOCPopulationState<G, S, Q>> stopCondition,
+      Predicate<? super SpeciatedPOCPopulationState<G, S, Q, QualityBasedProblem<S, Q>>> stopCondition,
       Map<GeneticOperator<G>, Double> operators,
       int populationSize,
       boolean remap,
@@ -79,13 +84,14 @@ public class SpeciatedEvolver<G, S, Q>
       LocalDateTime startingDateTime,
       long elapsedMillis,
       long nOfIterations,
-      Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition,
+      QualityBasedProblem<S, Q> problem,
+      Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
       long nOfBirths,
       long nOfFitnessEvaluations,
       PartiallyOrderedCollection<Individual<G, S, Q>> pocPopulation,
       Collection<Species<Individual<G, S, Q>>> parentSpecies)
-      implements SpeciatedPOCPopulationState<G, S, Q>,
-          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress {
+      implements SpeciatedPOCPopulationState<G, S, Q, QualityBasedProblem<S, Q>>,
+          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress<QualityBasedProblem<S, Q>, S> {
     public static <G, S, Q> State<G, S, Q> from(
         State<G, S, Q> state,
         int nOfBirths,
@@ -96,6 +102,7 @@ public class SpeciatedEvolver<G, S, Q>
           state.startingDateTime,
           ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
           state.nOfIterations() + 1,
+          state.problem,
           state.stopCondition,
           state.nOfBirths() + nOfBirths,
           state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
@@ -104,12 +111,14 @@ public class SpeciatedEvolver<G, S, Q>
     }
 
     public static <G, S, Q> State<G, S, Q> from(
+        QualityBasedProblem<S, Q> problem,
         PartiallyOrderedCollection<Individual<G, S, Q>> population,
-        Predicate<io.github.ericmedvet.jgea.core.solver.State> stopCondition) {
+        Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition) {
       return new State<>(
           LocalDateTime.now(),
           0,
           0,
+          problem,
           stopCondition,
           population.size(),
           population.size(),
@@ -119,10 +128,11 @@ public class SpeciatedEvolver<G, S, Q>
   }
 
   @Override
-  public SpeciatedPOCPopulationState<G, S, Q> init(
+  public SpeciatedPOCPopulationState<G, S, Q, QualityBasedProblem<S, Q>> init(
       QualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
       throws SolverException {
     return State.from(
+        problem,
         PartiallyOrderedCollection.from(
             map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor),
             partialComparator(problem)),
@@ -130,11 +140,11 @@ public class SpeciatedEvolver<G, S, Q>
   }
 
   @Override
-  public SpeciatedPOCPopulationState<G, S, Q> update(
+  public SpeciatedPOCPopulationState<G, S, Q, QualityBasedProblem<S, Q>> update(
       QualityBasedProblem<S, Q> problem,
       RandomGenerator random,
       ExecutorService executor,
-      SpeciatedPOCPopulationState<G, S, Q> state)
+      SpeciatedPOCPopulationState<G, S, Q, QualityBasedProblem<S, Q>> state)
       throws SolverException {
     Collection<Individual<G, S, Q>> parents = state.pocPopulation().all();
     // partition in species
@@ -217,7 +227,9 @@ public class SpeciatedEvolver<G, S, Q>
 
   @Override
   protected Individual<G, S, Q> newIndividual(
-      G genotype, SpeciatedPOCPopulationState<G, S, Q> state, QualityBasedProblem<S, Q> problem) {
+      G genotype,
+      SpeciatedPOCPopulationState<G, S, Q, QualityBasedProblem<S, Q>> state,
+      QualityBasedProblem<S, Q> problem) {
     S solution = solutionMapper.apply(genotype);
     return Individual.of(
         genotype,
@@ -230,7 +242,7 @@ public class SpeciatedEvolver<G, S, Q>
   @Override
   protected Individual<G, S, Q> updateIndividual(
       Individual<G, S, Q> individual,
-      SpeciatedPOCPopulationState<G, S, Q> state,
+      SpeciatedPOCPopulationState<G, S, Q, QualityBasedProblem<S, Q>> state,
       QualityBasedProblem<S, Q> problem) {
     return Individual.of(
         individual.genotype(),
