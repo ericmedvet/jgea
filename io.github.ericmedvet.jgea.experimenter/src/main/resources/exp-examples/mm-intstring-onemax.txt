@@ -1,7 +1,7 @@
 ea.experiment(
   runs =
     (randomGenerator = (seed = [1:1:5]) * [ea.rg.defaultRG()]) *
-    (solver = (nEval = [2500]) *
+    (solver = (nEval = [15000]) *
     (representation = [ea.r.intString()]) * [
       ea.s.ga(maxUniquenessAttempts = 0);
       ea.s.mapElites(name = "me-3"; descriptors = [

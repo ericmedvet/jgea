@@ -177,10 +177,11 @@ public class NamedFunctions {
     return f("one", Misc::first);
   }
 
-  public static <S> NamedFunction<Collection<S>, Double> overallTargetDistance(MultiTargetProblem<S> problem) {
-    return f("overall.target.distance", "%5.3f", ss -> problem.targets().stream()
-        .mapToDouble(ts -> ss.stream()
-            .mapToDouble(s -> problem.distance().apply(s, ts))
+  public static <I extends Individual<G, S, Double>, G, S, P extends MultiTargetProblem<S>>
+      NamedFunction<POCPopulationState<I, G, S, Double, P>, Double> overallTargetDistance() {
+    return f("overall.target.distance", "%5.3f", state -> state.problem().targets().stream()
+        .mapToDouble(ts -> state.pocPopulation().all().stream()
+            .mapToDouble(s -> state.problem().distance().apply(s.solution(), ts))
             .min()
             .orElseThrow())
         .average()

@@ -22,6 +22,7 @@ package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.problem.MultiTargetProblem;
+import io.github.ericmedvet.jgea.core.problem.ProblemWithValidation;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
@@ -381,11 +382,9 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <X, S> NamedFunction<X, Double> overallTargetDistance(
-      @Param(value = "collection", dNPM = "ea.nf.identity()") NamedFunction<X, Collection<S>> collectionF,
-      @Param("problem") MultiTargetProblem<S> problem) {
-    return io.github.ericmedvet.jgea.core.listener.NamedFunctions.overallTargetDistance(problem)
-        .of(collectionF);
+  public static <I extends Individual<G, S, Double>, G, S, P extends MultiTargetProblem<S>>
+      NamedFunction<POCPopulationState<I, G, S, Double, P>, Double> overallTargetDistance() {
+    return io.github.ericmedvet.jgea.core.listener.NamedFunctions.overallTargetDistance();
   }
 
   @SuppressWarnings("unused")
@@ -468,5 +467,16 @@ public class NamedFunctions {
       Collection<T> collection = collectionF.apply(x);
       return ((double) (new HashSet<>(collection).size())) / ((double) collection.size());
     });
+  }
+
+  @SuppressWarnings("unused")
+  public static <I extends Individual<G, S, Q>, G, S, Q, P extends ProblemWithValidation<S, Q>>
+      NamedFunction<POCPopulationState<I, G, S, Q, P>, Q> validationFitness(
+          @Param(value = "individual", dNPM = "ea.nf.best()")
+              NamedFunction<POCPopulationState<I, G, S, Q, P>, Individual<?, S, ?>> individualF,
+          @Param(value = "s", dS = "%s") String s) {
+    return NamedFunction.build(c("validation", individualF.getName()), s, state -> state.problem()
+        .validationQualityFunction()
+        .apply(individualF.apply(state).solution()));
   }
 }
