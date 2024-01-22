@@ -27,6 +27,7 @@ import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegress
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.*;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Supplier;
@@ -44,6 +45,7 @@ public class UnivariateRegressionProblems {
       dataset = switch (name) {
         case "concrete" -> ListNumericalDataset.loadFromCSVResource(
             "/datasets/regression/concrete.csv", "strength");
+        case "wine" -> ListNumericalDataset.loadFromCSVResource("/datasets/regression/wine.csv", "quality");
         case "energy-efficiency" -> ListNumericalDataset.loadFromCSVResource(
             "/datasets/regression/energy-efficiency.csv", "x[0-9]+", "y1");
         case "xor" -> ListNumericalDataset.loadFromCSVResource("/datasets/regression/xor.csv", "y");
@@ -52,7 +54,7 @@ public class UnivariateRegressionProblems {
       throw new IllegalArgumentException("Cannot load bundled dataset: %s".formatted(name));
     }
     return switch (name) {
-      case "concrete", "energy-efficiency" -> new UnivariateRegressionProblem<>(
+      case "concrete", "energy-efficiency", "wine" -> new UnivariateRegressionProblem<>(
           new UnivariateRegressionFitness(dataset.folds(List.of(0, 1, 2, 3), 5), metric),
           new UnivariateRegressionFitness(dataset.folds(List.of(4), 5), metric));
       case "xor" -> new UnivariateRegressionProblem<>(
@@ -83,6 +85,7 @@ public class UnivariateRegressionProblems {
       case "pagie1" -> new Pagie1(metric);
       case "polynomial4" -> new Polynomial4(metric);
       case "vladislavleva4" -> new Vladislavleva4(metric, seed);
+      case "korns12" -> new Korns12(metric, seed);
       case "xor" -> new Xor(metric);
       default -> throw new IllegalArgumentException("Unknown synthetic function: %s".formatted(name));
     };

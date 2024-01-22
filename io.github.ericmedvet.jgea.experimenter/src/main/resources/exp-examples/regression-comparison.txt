@@ -2,7 +2,8 @@ ea.experiment(
   runs = (randomGenerator = (seed = [1:1:10]) * [ea.rg.defaultRG()]) *
     (problem = [
       ea.p.ur.bundled(name = "concrete");
-      ea.p.ur.bundled(name = "energy-efficiency")
+      ea.p.ur.bundled(name = "energy-efficiency");
+      ea.p.ur.bundled(name = "wine")
     ]) *
     (solver = (nEval = [5000]) * [
       ea.s.ga(

@@ -3,16 +3,10 @@ ea.experiment(
     (problem = [
       ea.p.ur.synthetic(name = "keijzer6");
       ea.p.ur.synthetic(name = "nguyen7");
-      ea.p.ur.bundled(name = "concrete");
-      ea.p.ur.bundled(name = "energy-efficiency")
+      ea.p.ur.synthetic(name = "korns12");
+      ea.p.ur.synthetic(name = "vladislavleva4")
     ]) *
     (solver = (nEval = [1000]) * [
-      ea.s.oGraphea(
-        mapper = ea.m.compose(
-          first = ea.m.oGraphToMrf();
-          second = ea.m.mrfToUrf()
-        )
-      );
       ea.s.ga(
         name = "gp";
         representation = ea.r.srTree();
