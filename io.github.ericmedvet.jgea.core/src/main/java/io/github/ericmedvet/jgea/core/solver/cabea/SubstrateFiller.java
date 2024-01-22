@@ -31,7 +31,8 @@ public interface SubstrateFiller extends Function<Grid<Boolean>, Grid<Boolean>> 
     V_HALVED(new VerticalSections(2)),
     CROSS(new HorizontalSections(2).andThen(new VerticalSections(2))),
     CONTOUR_CROSS(new Contour().andThen(new HorizontalSections(2).andThen(new VerticalSections(2)))),
-    TIC_TAC_TOE(new HorizontalSections(3).andThen(new VerticalSections(3)));
+    TIC_TAC_TOE(new HorizontalSections(3).andThen(new VerticalSections(3))),
+    V_SERPENTINE(new VerticalSerpentine(4));
     private final Function<Grid<Boolean>, Grid<Boolean>> inner;
 
     Predefined(Function<Grid<Boolean>, Grid<Boolean>> inner) {
@@ -63,6 +64,22 @@ public interface SubstrateFiller extends Function<Grid<Boolean>, Grid<Boolean>> 
     @Override
     public Grid<Boolean> apply(Grid<Boolean> grid) {
       return grid.map((k, b) -> ((k.x() + 1) % Math.ceil((double) grid.w() / (double) n)) == 0 ? !b : b);
+    }
+  }
+
+  record VerticalSerpentine(int n) implements SubstrateFiller {
+    @Override
+    public Grid<Boolean> apply(Grid<Boolean> grid) {
+      return grid.map((k, b) -> {
+        int l = (int) Math.ceil((double) grid.w() / (double) n);
+        if (((k.x() + 1) % l) == 0) {
+          if ((k.y() == 1 && (k.x() / l) % 2 == 0) || (k.y() == grid.h() - 2 && (k.x() / l) % 2 == 1)) {
+            return b;
+          }
+          return !b;
+        }
+        return b;
+      });
     }
   }
 }
