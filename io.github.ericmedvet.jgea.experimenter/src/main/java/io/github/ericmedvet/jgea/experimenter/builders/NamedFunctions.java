@@ -301,9 +301,12 @@ public class NamedFunctions {
   public static <X> NamedFunction<X, Double> hypervolume2D(
       @Param(value = "collection", dNPM = "ea.nf.identity()")
           NamedFunction<X, Collection<List<Double>>> collectionF,
-      @Param("reference") List<Double> reference) {
-    return io.github.ericmedvet.jgea.core.listener.NamedFunctions.hypervolume2D(reference)
-        .of(collectionF);
+      @Param("minReference") List<Double> minReference,
+      @Param("maxReference") List<Double> maxReference,
+      @Param(value = "s", dS = "%s") String s) {
+    return io.github.ericmedvet.jgea.core.listener.NamedFunctions.hypervolume2D(minReference, maxReference)
+        .of(collectionF)
+        .reformat(s);
   }
 
   @SuppressWarnings("unused")

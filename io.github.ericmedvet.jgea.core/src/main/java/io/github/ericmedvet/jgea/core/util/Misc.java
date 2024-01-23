@@ -95,6 +95,18 @@ public class Misc {
         .sum();
   }
 
+  public static double hypervolume2D(
+      Collection<List<Double>> points, List<Double> minReference, List<Double> maxReference) {
+    return hypervolume2D(
+        Stream.concat(
+                Stream.of(
+                    List.of(minReference.get(0), maxReference.get(1)),
+                    List.of(minReference.get(1), maxReference.get(0))),
+                points.stream())
+            .toList(),
+        maxReference);
+  }
+
   public static <T> Set<T> intersection(Set<T> set1, Set<T> set2) {
     return union(set1, set2).stream()
         .filter(t -> set1.contains(t) && set2.contains(t))

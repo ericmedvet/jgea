@@ -132,6 +132,11 @@ public class NamedFunctions {
     return f("hypervolume", "%5.3f", ps -> Misc.hypervolume2D(ps, reference));
   }
 
+  public static NamedFunction<Collection<List<Double>>, Double> hypervolume2D(
+      List<Double> minReference, List<Double> maxReference) {
+    return f("hypervolume", "%5.3f", ps -> Misc.hypervolume2D(ps, minReference, maxReference));
+  }
+
   public static <I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
       NamedFunction<POCPopulationState<I, G, S, Q, P>, Collection<I>> lasts() {
     return f("lasts", e -> e.pocPopulation().lasts());
