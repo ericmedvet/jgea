@@ -1,9 +1,9 @@
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:10]) * [ea.rg.defaultRG()]) *
+  runs = (randomGenerator = (seed = [1:1:3]) * [ea.rg.defaultRG()]) *
     (problem = [
-      ea.p.ur.bundled(name = "concrete");
-      ea.p.ur.bundled(name = "energy-efficiency");
-      ea.p.ur.bundled(name = "wine")
+      ea.p.ur.bundled(name = "concrete"; xScaling = standardization; yScaling = symmetric_min_max);
+      ea.p.ur.bundled(name = "energy-efficiency"; xScaling = standardization; yScaling = symmetric_min_max);
+      ea.p.ur.bundled(name = "wine"; xScaling = standardization; yScaling = symmetric_min_max)
     ]) *
     (solver = (nEval = [5000]) * [
       ea.s.ga(
@@ -12,10 +12,18 @@ ea.experiment(
         mapper = ea.m.srTreeToUrf()
       );
       ea.s.ga(
-        name = "ga+mlp";
+        name = "ga+mlp(1)";
         representation = ea.r.doubleString();
         mapper = ea.m.compose(
-          first = ea.m.mlpToMrf(activationFunction = relu);
+          first = ea.m.mlpToMrf(innerLayerRatio = 1);
+          second = ea.m.mrfToUrf()
+        )
+      );
+      ea.s.ga(
+        name = "ga+mlp(2)";
+        representation = ea.r.doubleString();
+        mapper = ea.m.compose(
+          first = ea.m.mlpToMrf(innerLayerRatio = 1; nOfInnerLayers = 2);
           second = ea.m.mrfToUrf()
         )
       )

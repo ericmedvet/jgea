@@ -38,7 +38,9 @@ public class UnivariateRegressionProblems {
   @SuppressWarnings("unused")
   public static UnivariateRegressionProblem<UnivariateRegressionFitness> bundled(
       @Param("name") String name,
-      @Param(value = "metric", dS = "mse") UnivariateRegressionFitness.Metric metric) {
+      @Param(value = "metric", dS = "mse") UnivariateRegressionFitness.Metric metric,
+      @Param(value = "xScaling", dS = "none") NumericalDataset.Scaling xScaling,
+      @Param(value = "yScaling", dS = "none") NumericalDataset.Scaling yScaling) {
     NumericalDataset dataset;
     try {
       dataset = switch (name) {
@@ -52,6 +54,7 @@ public class UnivariateRegressionProblems {
     } catch (IOException e) {
       throw new IllegalArgumentException("Cannot load bundled dataset: %s".formatted(name));
     }
+    dataset = dataset.xScaled(xScaling).yScaled(yScaling);
     return switch (name) {
       case "concrete", "energy-efficiency", "wine" -> new UnivariateRegressionProblem<>(
           new UnivariateRegressionFitness(dataset.folds(List.of(0, 1, 2, 3), 5), metric),
@@ -67,9 +70,12 @@ public class UnivariateRegressionProblems {
       @Param(value = "name", dS = "dataset") String name,
       @Param("trainingDataset") Supplier<NumericalDataset> trainingDataset,
       @Param(value = "testDataset", dNPM = "ea.d.num.empty()") Supplier<NumericalDataset> testDataset,
-      @Param(value = "metric", dS = "mse") UnivariateRegressionFitness.Metric metric) {
+      @Param(value = "metric", dS = "mse") UnivariateRegressionFitness.Metric metric,
+      @Param(value = "xScaling", dS = "none") NumericalDataset.Scaling xScaling,
+      @Param(value = "yScaling", dS = "none") NumericalDataset.Scaling yScaling) {
     return new UnivariateRegressionProblem<>(
-        new UnivariateRegressionFitness(trainingDataset.get(), metric),
+        new UnivariateRegressionFitness(
+            trainingDataset.get().xScaled(xScaling).yScaled(yScaling), metric),
         testDataset != null ? new UnivariateRegressionFitness(testDataset.get(), metric) : null);
   }
 

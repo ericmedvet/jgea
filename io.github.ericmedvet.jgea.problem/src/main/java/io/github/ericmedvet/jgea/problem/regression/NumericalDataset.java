@@ -31,6 +31,7 @@ import java.util.stream.IntStream;
 public interface NumericalDataset {
 
   enum Scaling {
+    NONE,
     MIN_MAX,
     SYMMETRIC_MIN_MAX,
     STANDARDIZATION
@@ -166,6 +167,9 @@ public interface NumericalDataset {
   }
 
   default NumericalDataset xScaled(Scaling scaling) {
+    if (scaling.equals(Scaling.NONE)) {
+      return this;
+    }
     List<VariableInfo> varInfos =
         xVarNames().stream().map(n -> VariableInfo.of(xValues(n))).toList();
     return processed(originalE -> new Example(
@@ -175,6 +179,7 @@ public interface NumericalDataset {
               case SYMMETRIC_MIN_MAX -> DoubleRange.SYMMETRIC_UNIT.denormalize(
                   varInfos.get(j).range.normalize(originalE.xs[j]));
               case STANDARDIZATION -> (originalE.xs[j] - varInfos.get(j).mean) / varInfos.get(j).sd;
+              default -> throw new IllegalStateException("Unexpected scaling: " + scaling);
             })
             .toArray(),
         originalE.ys));
@@ -189,6 +194,9 @@ public interface NumericalDataset {
   }
 
   default NumericalDataset yScaled(Scaling scaling) {
+    if (scaling.equals(Scaling.NONE)) {
+      return this;
+    }
     List<VariableInfo> varInfos =
         yVarNames().stream().map(n -> VariableInfo.of(yValues(n))).toList();
     return processed(originalE -> new Example(
@@ -199,6 +207,7 @@ public interface NumericalDataset {
               case SYMMETRIC_MIN_MAX -> DoubleRange.SYMMETRIC_UNIT.denormalize(
                   varInfos.get(j).range.normalize(originalE.ys[j]));
               case STANDARDIZATION -> (originalE.ys[j] - varInfos.get(j).mean) / varInfos.get(j).sd;
+              default -> throw new IllegalStateException("Unexpected scaling: " + scaling);
             })
             .toArray()));
   }
