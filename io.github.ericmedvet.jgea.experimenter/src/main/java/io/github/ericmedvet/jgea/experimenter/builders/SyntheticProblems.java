@@ -78,6 +78,11 @@ public class SyntheticProblems {
   }
 
   @SuppressWarnings("unused")
+  public static GaussianMixture2D gaussianMixture2D() {
+    return new GaussianMixture2D();
+  }
+
+  @SuppressWarnings("unused")
   public static HighConditionedElliptic highConditionedElliptic(
       @Param(value = "name", iS = "highConditionedElliptic-{p}") String name,
       @Param(value = "p", dI = 100) int p) {
