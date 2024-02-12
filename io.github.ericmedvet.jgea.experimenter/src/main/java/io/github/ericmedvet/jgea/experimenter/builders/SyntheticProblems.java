@@ -21,7 +21,10 @@
 package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jgea.problem.grid.CharShapeApproximation;
-import io.github.ericmedvet.jgea.problem.synthetic.*;
+import io.github.ericmedvet.jgea.problem.synthetic.IntOneMax;
+import io.github.ericmedvet.jgea.problem.synthetic.MultiModalIntOneMax;
+import io.github.ericmedvet.jgea.problem.synthetic.MultiObjectiveIntOneMax;
+import io.github.ericmedvet.jgea.problem.synthetic.OneMax;
 import io.github.ericmedvet.jgea.problem.synthetic.numerical.*;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
@@ -78,8 +81,14 @@ public class SyntheticProblems {
   }
 
   @SuppressWarnings("unused")
-  public static GaussianMixture2D gaussianMixture2D() {
-    return new GaussianMixture2D();
+  public static GaussianMixture2D gaussianMixture2D(
+      @Param(value = "name", dS = "gm2D") String name,
+      @Param(
+              value = "distances",
+              dDs = {2d, 4d})
+          List<Double> distances,
+      @Param(value = "c", dD = 1d) double c) {
+    return new GaussianMixture2D(distances, c);
   }
 
   @SuppressWarnings("unused")

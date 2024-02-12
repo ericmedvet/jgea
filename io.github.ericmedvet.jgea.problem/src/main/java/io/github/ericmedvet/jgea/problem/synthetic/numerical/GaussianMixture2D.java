@@ -19,19 +19,21 @@
  */
 package io.github.ericmedvet.jgea.problem.synthetic.numerical;
 
+import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.problem.ProblemWithExampleSolution;
-import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.util.VectorUtils;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author "Eric Medvet" on 2024/02/11 for jgea
  */
 public class GaussianMixture2D
-    implements ProblemWithExampleSolution<List<Double>>, TotalOrderQualityBasedProblem<List<Double>, Double> {
+    implements ProblemWithExampleSolution<List<Double>>, ComparableQualityBasedProblem<List<Double>, Double> {
 
   private final List<Double> example;
   private final Function<List<Double>, Double> qualityFunction;
@@ -43,8 +45,11 @@ public class GaussianMixture2D
         .sum();
   }
 
-  public GaussianMixture2D() {
-    this(Map.ofEntries(Map.entry(List.of(-2d, 1d), 2d), Map.entry(List.of(1d, 1.5d), 1d)), 1);
+  public GaussianMixture2D(List<Double> distances, double c) {
+    this(
+        IntStream.range(0, distances.size()).boxed().collect(Collectors.toMap(i -> List.of((double) i, 0d), i ->
+            (double) i)),
+        c);
   }
 
   @Override

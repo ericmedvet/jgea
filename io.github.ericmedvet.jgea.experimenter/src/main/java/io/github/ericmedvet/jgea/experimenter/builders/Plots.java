@@ -267,6 +267,59 @@ public class Plots {
         valueRange);
   }
 
+  public static <X, P extends QualityBasedProblem<List<Double>, Double>>
+      LandscapeSEPAF<
+              POCPopulationState<
+                  Individual<List<Double>, List<Double>, Double>,
+                  List<Double>,
+                  List<Double>,
+                  Double,
+                  P>,
+              Run<?, List<Double>, List<Double>, Double>,
+              X,
+              Individual<List<Double>, List<Double>, Double>>
+          landscape(
+              @Param(
+                      value = "titleRunKey",
+                      dNPM =
+                          "ea.misc.sEntry(key=title;value=\"Landscape of {solver.name} on {problem.name} (seed={randomGenerator"
+                              + ".seed})\")")
+                  Map.Entry<String, String> titleRunKey,
+              @Param(value = "predicateValue", dNPM = "ea.nf.iterations()")
+                  NamedFunction<
+                          POCPopulationState<
+                              Individual<List<Double>, List<Double>, Double>,
+                              List<Double>,
+                              List<Double>,
+                              Double,
+                              ?>,
+                          X>
+                      predicateValueFunction,
+              @Param(value = "condition", dNPM = "ea.predicate.always()") Predicate<X> condition,
+              @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
+              @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange,
+              @Param(value = "valueRange", dNPM = "ds.range(min=-Infinity;max=Infinity)")
+                  DoubleRange valueRange,
+              @Param(value = "unique", dB = true) boolean unique) {
+    NamedFunction<
+            POCPopulationState<
+                Individual<List<Double>, List<Double>, Double>, List<Double>, List<Double>, Double, P>,
+            Collection<Individual<List<Double>, List<Double>, Double>>>
+        all = io.github.ericmedvet.jgea.core.listener.NamedFunctions.all();
+    return new LandscapeSEPAF<>(
+        buildRunNamedFunction(titleRunKey),
+        predicateValueFunction,
+        condition,
+        unique,
+        List.of(all),
+        NamedFunction.build("g0", i -> i.genotype().get(0)),
+        NamedFunction.build("g1", i -> i.genotype().get(1)),
+        s -> (x, y) -> s.problem().qualityFunction().apply(List.of(x, y)),
+        xRange,
+        yRange,
+        valueRange);
+  }
+
   @SuppressWarnings("unused")
   public static <G, S, Q, X>
       UnivariateGridSEPAF<MEPopulationState<G, S, Q, ?>, Run<?, G, S, Q>, X, Individual<G, S, Q>>
