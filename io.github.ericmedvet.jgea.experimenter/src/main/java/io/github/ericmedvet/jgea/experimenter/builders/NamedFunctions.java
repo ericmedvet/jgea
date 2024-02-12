@@ -33,6 +33,7 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
 import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.Utils;
+import io.github.ericmedvet.jgea.problem.control.ControlProblem;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.NamedParamMap;
 import io.github.ericmedvet.jnb.core.Param;
@@ -54,18 +55,6 @@ public class NamedFunctions {
   private static final Logger L = Logger.getLogger(NamedFunctions.class.getName());
 
   private NamedFunctions() {}
-
-  public enum Op {
-    PLUS("+"),
-    MINUS("-"),
-    PROD("*"),
-    DIV("/");
-    private final String rendered;
-
-    Op(String rendered) {
-      this.rendered = rendered;
-    }
-  }
 
   @SuppressWarnings("unused")
   public static <G, S, Q>
@@ -203,6 +192,18 @@ public class NamedFunctions {
   public static <I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
       NamedFunction<POCPopulationState<I, G, S, Q, P>, Collection<I>> firsts() {
     return io.github.ericmedvet.jgea.core.listener.NamedFunctions.firsts();
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, Q, T> NamedFunction<X, T> controlQuality(
+      @Param(value = "individual", dNPM = "ea.nf.identity()")
+          NamedFunction<X, Individual<?, ?, ControlProblem.Outcome<?, Q>>> individualF,
+      @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<Q, T> function,
+      @Param(value = "s", dS = "%s") String s) {
+    return NamedFunction.build(
+        c(function.getName(), "control.quality", individualF.getName()),
+        s.equals("%s") ? function.getFormat() : s,
+        x -> function.apply(individualF.apply(x).quality().quality()));
   }
 
   @SuppressWarnings("unused")
@@ -481,5 +482,17 @@ public class NamedFunctions {
     return NamedFunction.build(c("validation", individualF.getName()), s, state -> state.problem()
         .validationQualityFunction()
         .apply(individualF.apply(state).solution()));
+  }
+
+  public enum Op {
+    PLUS("+"),
+    MINUS("-"),
+    PROD("*"),
+    DIV("/");
+    private final String rendered;
+
+    Op(String rendered) {
+      this.rendered = rendered;
+    }
   }
 }

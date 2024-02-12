@@ -27,7 +27,7 @@ import java.util.function.Function;
 public interface ControlProblem<C extends DynamicalSystem<I, O, ?>, I, O, S, Q>
     extends QualityBasedProblem<C, ControlProblem.Outcome<S, Q>> {
 
-  record Outcome<S, Q>(SortedMap<Double, S> behavior, Q q) {}
+  record Outcome<S, Q>(SortedMap<Double, S> behavior, Q quality) {}
 
   SortedMap<Double, S> simulate(C controller);
 
