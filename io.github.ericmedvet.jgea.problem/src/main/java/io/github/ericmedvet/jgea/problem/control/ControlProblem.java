@@ -24,14 +24,20 @@ import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
 import java.util.SortedMap;
 import java.util.function.Function;
 
-public interface ControlProblem<C extends DynamicalSystem<I, O, ?>, I, O, S, Q> extends QualityBasedProblem<C, Q> {
+public interface ControlProblem<C extends DynamicalSystem<I, O, ?>, I, O, S, Q>
+    extends QualityBasedProblem<C, ControlProblem.Outcome<S, Q>> {
+
+  record Outcome<S, Q>(SortedMap<Double, S> behavior, Q q) {}
 
   SortedMap<Double, S> simulate(C controller);
 
   Function<SortedMap<Double, S>, Q> behaviorToQualityFunction();
 
   @Override
-  default Function<C, Q> qualityFunction() {
-    return c -> behaviorToQualityFunction().apply(simulate(c));
+  default Function<C, ControlProblem.Outcome<S, Q>> qualityFunction() {
+    return c -> {
+      SortedMap<Double, S> behavior = simulate(c);
+      return new Outcome<>(behavior, behaviorToQualityFunction().apply(behavior));
+    };
   }
 }
