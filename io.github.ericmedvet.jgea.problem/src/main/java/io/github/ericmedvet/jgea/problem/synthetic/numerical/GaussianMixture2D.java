@@ -45,10 +45,10 @@ public class GaussianMixture2D
         .sum();
   }
 
-  public GaussianMixture2D(List<Double> distances, double c) {
+  public GaussianMixture2D(List<Double> xs, double c) {
     this(
-        IntStream.range(0, distances.size()).boxed().collect(Collectors.toMap(i -> List.of((double) i, 0d), i ->
-            (double) i)),
+        IntStream.range(0, xs.size()).boxed().collect(Collectors.toMap(i -> List.of(xs.get(i), 0d), i ->
+            (double) (i + 1))),
         c);
   }
 

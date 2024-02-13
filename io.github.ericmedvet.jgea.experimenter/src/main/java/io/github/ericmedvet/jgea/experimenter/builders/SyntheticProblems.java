@@ -84,11 +84,11 @@ public class SyntheticProblems {
   public static GaussianMixture2D gaussianMixture2D(
       @Param(value = "name", dS = "gm2D") String name,
       @Param(
-              value = "distances",
-              dDs = {2d, 4d})
-          List<Double> distances,
+              value = "xs",
+              dDs = {-2d, 4d})
+          List<Double> xs,
       @Param(value = "c", dD = 1d) double c) {
-    return new GaussianMixture2D(distances, c);
+    return new GaussianMixture2D(xs, c);
   }
 
   @SuppressWarnings("unused")
