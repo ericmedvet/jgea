@@ -25,6 +25,7 @@ import io.github.ericmedvet.jsdynsym.grid.Grid;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Logger;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
@@ -63,14 +64,14 @@ public abstract class AbstractPlotDrawer<P extends XYPlot<D>, D> implements Plot
         .map((k, td) -> {
           DoubleRange extRange = isXAxis ? plot.xRange() : plot.yRange();
           if (extRange.equals(DoubleRange.UNBOUNDED)) {
-            return computeRange(td.data(), isXAxis).extend(extensionRate);
+            extRange = computeRange(td.data(), isXAxis).extend(extensionRate);
           }
           return extRange;
         })
         .map(r -> {
-          if (r.extent() == 0) {
+          if (r == null || r.extent() == 0) {
             L.warning("Computed axis has 0 extent: enlarging it to unit extent");
-            return new DoubleRange(r.min(), r.max() + 1);
+            return Objects.isNull(r) ? DoubleRange.UNIT : DoubleRange.UNIT.delta(r.min() - 0.5);
           }
           return r;
         });

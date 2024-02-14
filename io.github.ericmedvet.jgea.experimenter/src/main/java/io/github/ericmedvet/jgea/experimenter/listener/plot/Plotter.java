@@ -249,6 +249,9 @@ public interface Plotter<O> {
   }
 
   default O plot(XYPlot<?> plot, Type type) {
+    if (plot.dataGrid().values().isEmpty()) {
+      throw new IllegalArgumentException("Empty data in plot (0x0 grid)!");
+    }
     if (plot instanceof XYDataSeriesPlot xyDataSeriesPlot && type.equals(Type.LINES)) {
       return lines(xyDataSeriesPlot);
     }
