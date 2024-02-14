@@ -48,6 +48,11 @@
       <artifactId>java-telegram-bot-api</artifactId>
       <version>6.5.0</version>
     </dependency>
+    <dependency>
+      <groupId>org.jcodec</groupId>
+      <artifactId>jcodec</artifactId>
+      <version>0.2.5</version>
+    </dependency>
   </dependencies>
 
   <build>

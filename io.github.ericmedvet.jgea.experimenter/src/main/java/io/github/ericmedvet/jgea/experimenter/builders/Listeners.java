@@ -36,6 +36,8 @@ import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlot;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator.PlotAccumulatorFactory;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.image.Configuration;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.image.ImagePlotter;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.video.VideoPlotter;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.video.VideoUtils;
 import io.github.ericmedvet.jgea.experimenter.listener.telegram.TelegramUpdater;
 import io.github.ericmedvet.jnb.core.*;
 import java.io.*;
@@ -445,6 +447,37 @@ public class Listeners {
           } catch (IOException e) {
             L.severe("Cannot save plot at `%s`: %s".formatted(file, e));
           }
+        }),
+        predicate,
+        executorService,
+        false);
+  }
+
+  public static <G, S, Q>
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
+          runPlotVideoSaver(
+              @Param("plot")
+                  AccumulatorFactory<POCPopulationState<?, G, S, Q, ?>, XYPlot<?>, Run<?, G, S, Q>>
+                      plot,
+              @Param("type") Plotter.Type type,
+              @Param(value = "w", dI = 800) int w,
+              @Param(value = "h", dI = 800) int h,
+              @Param(value = "freeScales") boolean freeScales,
+              @Param(value = "splitType", dS = "columns") VideoPlotter.SplitType splitType,
+              @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder,
+              @Param(value = "frameRate", dD = 20) double frameRate,
+              @Param(value = "filePathTemplate", dS = "run-{index:%04d}.mp4") String filePathTemplate,
+              @Param(value = "condition", dNPM = "ea.predicate.always()")
+                  Predicate<Run<?, G, S, Q>> predicate) {
+    ImagePlotter imagePlotter =
+        new ImagePlotter(w, h, freeScales ? Configuration.FREE_SCALES : Configuration.DEFAULT);
+    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
+        plot.thenOnDone((run, p) -> {
+          VideoPlotter plotter = new VideoPlotter(
+              new File(Utils.interpolate(filePathTemplate, run)),
+              imagePlotter,
+              new VideoPlotter.Configuration(splitType, encoder, frameRate));
+          plotter.plot(p, type);
         }),
         predicate,
         executorService,
