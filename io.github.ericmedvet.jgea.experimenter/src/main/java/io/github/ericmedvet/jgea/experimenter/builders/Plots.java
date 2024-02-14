@@ -25,6 +25,7 @@ import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.cabea.GridPopulationState;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MEPopulationState;
+import io.github.ericmedvet.jgea.experimenter.InvertibleMapper;
 import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.Utils;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.RangedGrid;
@@ -267,17 +268,12 @@ public class Plots {
         valueRange);
   }
 
-  public static <X, P extends QualityBasedProblem<List<Double>, Double>>
+  public static <X, P extends QualityBasedProblem<S, Double>, S>
       LandscapeSEPAF<
-              POCPopulationState<
-                  Individual<List<Double>, List<Double>, Double>,
-                  List<Double>,
-                  List<Double>,
-                  Double,
-                  P>,
-              Run<?, List<Double>, List<Double>, Double>,
+              POCPopulationState<Individual<List<Double>, S, Double>, List<Double>, S, Double, P>,
+              Run<?, List<Double>, S, Double>,
               X,
-              Individual<List<Double>, List<Double>, Double>>
+              Individual<List<Double>, S, Double>>
           landscape(
               @Param(
                       value = "titleRunKey",
@@ -288,13 +284,14 @@ public class Plots {
               @Param(value = "predicateValue", dNPM = "ea.nf.iterations()")
                   NamedFunction<
                           POCPopulationState<
-                              Individual<List<Double>, List<Double>, Double>,
+                              Individual<List<Double>, S, Double>,
                               List<Double>,
-                              List<Double>,
+                              S,
                               Double,
                               ?>,
                           X>
                       predicateValueFunction,
+              @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<List<Double>, S> mapper,
               @Param(value = "condition", dNPM = "ea.predicate.always()") Predicate<X> condition,
               @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
               @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange,
@@ -302,9 +299,8 @@ public class Plots {
                   DoubleRange valueRange,
               @Param(value = "unique", dB = true) boolean unique) {
     NamedFunction<
-            POCPopulationState<
-                Individual<List<Double>, List<Double>, Double>, List<Double>, List<Double>, Double, P>,
-            Collection<Individual<List<Double>, List<Double>, Double>>>
+            POCPopulationState<Individual<List<Double>, S, Double>, List<Double>, S, Double, P>,
+            Collection<Individual<List<Double>, S, Double>>>
         all = io.github.ericmedvet.jgea.core.listener.NamedFunctions.all();
     return new LandscapeSEPAF<>(
         buildRunNamedFunction(titleRunKey),
@@ -314,7 +310,14 @@ public class Plots {
         List.of(all),
         NamedFunction.build("g0", i -> i.genotype().get(0)),
         NamedFunction.build("g1", i -> i.genotype().get(1)),
-        s -> (x, y) -> s.problem().qualityFunction().apply(List.of(x, y)),
+        s -> (x, y) -> s.problem()
+            .qualityFunction()
+            .apply(mapper.mapperFor(s.pocPopulation()
+                    .all()
+                    .iterator()
+                    .next()
+                    .solution())
+                .apply(List.of(x, y))),
         xRange,
         yRange,
         valueRange);
