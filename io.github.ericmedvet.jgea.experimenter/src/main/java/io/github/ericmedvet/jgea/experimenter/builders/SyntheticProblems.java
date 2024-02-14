@@ -31,6 +31,9 @@ import io.github.ericmedvet.jnb.core.Param;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Discoverable(prefixTemplate = "ea.problem|p.synthetic|s")
 public class SyntheticProblems {
@@ -84,11 +87,19 @@ public class SyntheticProblems {
   public static GaussianMixture2D gaussianMixture2D(
       @Param(value = "name", dS = "gm2D") String name,
       @Param(
-              value = "xs",
-              dDs = {-2d, 4d})
-          List<Double> xs,
+              value = "targets",
+              dDs = {-3, -2, 2, 2, 2, 1})
+          List<Double> targets,
       @Param(value = "c", dD = 1d) double c) {
-    return new GaussianMixture2D(xs, c);
+    if (targets.size() % 3 != 0) {
+      throw new IllegalArgumentException(
+          "targets should be a list of triplets of numbers; wrong size is %d".formatted(targets.size()));
+    }
+    return new GaussianMixture2D(
+        IntStream.range(0, targets.size() / 3)
+            .mapToObj(i -> Map.entry(targets.subList(i * 3, i * 3 + 2), targets.get(i * 3 + 2)))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)),
+        c);
   }
 
   @SuppressWarnings("unused")
