@@ -29,9 +29,7 @@ import java.util.function.Function;
 import java.util.random.RandomGenerator;
 
 public class CartAndPole
-    implements ControlProblem<NumericalDynamicalSystem<?>, double[], double[], CartAndPole.Snapshot, Double>,
-        TotalOrderQualityBasedProblem<
-            NumericalDynamicalSystem<?>, ControlProblem.Outcome<CartAndPole.Snapshot, Double>> {
+    implements ComparableQualityControlProblem<NumericalDynamicalSystem<?>, double[], double[], CartAndPole.Snapshot, Double> {
 
   private final double dT;
   private final double finalT;
@@ -62,11 +60,6 @@ public class CartAndPole
   }
 
   public record Snapshot(double a, double da, double x, double dx) {}
-
-  @Override
-  public Comparator<Outcome<Snapshot, Double>> totalOrderComparator() {
-    return Comparator.comparingDouble(Outcome::quality);
-  }
 
   @Override
   public Function<SortedMap<Double, Snapshot>, Double> behaviorToQualityFunction() {
