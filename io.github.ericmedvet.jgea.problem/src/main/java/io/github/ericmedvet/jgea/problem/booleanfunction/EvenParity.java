@@ -43,7 +43,7 @@ public class EvenParity
     grammar = StringGrammar.load(StringGrammar.class.getResourceAsStream("/grammars/1d/boolean-parity-var.bnf"));
     List<List<String>> vars = new ArrayList<>();
     for (int i = 0; i < size; i++) {
-      vars.add(Collections.singletonList("b" + i));
+      vars.add(Collections.singletonList("c" + i));
     }
     grammar.rules().put("<v>", vars);
     solutionMapper = new FormulaMapper();
@@ -59,7 +59,7 @@ public class EvenParity
     public TargetFunction(int size) {
       varNames = new String[size];
       for (int i = 0; i < size; i++) {
-        varNames[i] = "b" + i;
+        varNames[i] = "c" + i;
       }
     }
 

@@ -44,7 +44,7 @@ public class MultipleOutputParallelMultiplier
     List<List<String>> vars = new ArrayList<>();
     for (int j = 0; j < 2; j++) {
       for (int i = 0; i < size; i++) {
-        vars.add(Collections.singletonList("b" + j + "." + i));
+        vars.add(Collections.singletonList("c" + j + "." + i));
       }
     }
     grammar.rules().put("<v>", vars);
@@ -70,7 +70,7 @@ public class MultipleOutputParallelMultiplier
       varNames = new String[2 * size];
       for (int j = 0; j < 2; j++) {
         for (int i = 0; i < size; i++) {
-          varNames[(size * j) + i] = "b" + j + "." + i;
+          varNames[(size * j) + i] = "c" + j + "." + i;
         }
       }
     }

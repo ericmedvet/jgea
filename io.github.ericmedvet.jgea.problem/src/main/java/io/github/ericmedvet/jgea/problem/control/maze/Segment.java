@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * jgea-problem
+ * mrsim2d-core
  * %%
- * Copyright (C) 2018 - 2024 Eric Medvet
+ * Copyright (C) 2020 - 2023 Eric Medvet
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,16 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jgea.problem.control;
 
-import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
-import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
-import java.util.Comparator;
+package io.github.ericmedvet.jgea.problem.control.maze;
 
-public interface ComparableQualityControlProblem<C extends DynamicalSystem<I, O, ?>, I, O, S, Q extends Comparable<Q>>
-    extends ControlProblem<C, I, O, S, Q>, TotalOrderQualityBasedProblem<C, ControlProblem.Outcome<S, Q>> {
-  @Override
-  default Comparator<Outcome<S, Q>> totalOrderComparator() {
-    return Comparator.comparing(Outcome::quality);
+public record Segment(Point p1, Point p2) {
+
+  public double direction() {
+    return p2.diff(p1).direction();
+  }
+
+  public double length() {
+    return p1.distance(p2);
   }
 }

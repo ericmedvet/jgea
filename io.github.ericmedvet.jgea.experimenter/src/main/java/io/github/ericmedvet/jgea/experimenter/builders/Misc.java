@@ -42,7 +42,7 @@ public class Misc {
   }
 
   @SuppressWarnings("unused")
-  public static Color colorByRGB(@Param("r") double r, @Param("g") double g, @Param("b") double b) {
+  public static Color colorByRGB(@Param("r") double r, @Param("g") double g, @Param("c") double b) {
     return new Color((float) r, (float) g, (float) b);
   }
 

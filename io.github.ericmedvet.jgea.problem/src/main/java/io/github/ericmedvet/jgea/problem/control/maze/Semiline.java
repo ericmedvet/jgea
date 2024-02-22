@@ -17,16 +17,21 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jgea.problem.control;
+package io.github.ericmedvet.jgea.problem.control.maze;
 
-import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
-import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
-import java.util.Comparator;
+import java.util.Optional;
 
-public interface ComparableQualityControlProblem<C extends DynamicalSystem<I, O, ?>, I, O, S, Q extends Comparable<Q>>
-    extends ControlProblem<C, I, O, S, Q>, TotalOrderQualityBasedProblem<C, ControlProblem.Outcome<S, Q>> {
-  @Override
-  default Comparator<Outcome<S, Q>> totalOrderComparator() {
-    return Comparator.comparing(Outcome::quality);
+public record Semiline(Point p, double a) {
+  public Optional<Point> interception(Segment s) {
+    Line l = Line.from(p, a);
+    Optional<Point> oIP = l.interception(s);
+    if (oIP.isEmpty()) {
+      return oIP;
+    }
+    Point iP = oIP.orElseThrow();
+    if (Math.abs(iP.diff(p).direction() - a) > Math.PI / 2d) {
+      return Optional.empty();
+    }
+    return oIP;
   }
 }

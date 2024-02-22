@@ -19,17 +19,16 @@
  */
 package io.github.ericmedvet.jgea.problem.control;
 
-import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
-import java.util.Comparator;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
 
 public class CartAndPole
-    implements ComparableQualityControlProblem<NumericalDynamicalSystem<?>, double[], double[], CartAndPole.Snapshot, Double> {
+    implements ComparableQualityControlProblem<
+        NumericalDynamicalSystem<?>, double[], double[], CartAndPole.Snapshot, Double> {
 
   private final double dT;
   private final double finalT;
