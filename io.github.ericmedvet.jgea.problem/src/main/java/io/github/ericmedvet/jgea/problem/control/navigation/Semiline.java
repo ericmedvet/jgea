@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * mrsim2d-core
+ * jgea-problem
  * %%
- * Copyright (C) 2020 - 2023 Eric Medvet
+ * Copyright (C) 2018 - 2024 Eric Medvet
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,21 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
+package io.github.ericmedvet.jgea.problem.control.navigation;
 
-package io.github.ericmedvet.jgea.problem.control.maze;
+import java.util.Optional;
 
-public record Segment(Point p1, Point p2) {
-
-  public double direction() {
-    return p2.diff(p1).direction();
-  }
-
-  public double length() {
-    return p1.distance(p2);
+public record Semiline(Point p, double a) {
+  public Optional<Point> interception(Segment s) {
+    Line l = Line.from(p, a);
+    Optional<Point> oIP = l.interception(s);
+    if (oIP.isEmpty()) {
+      return oIP;
+    }
+    Point iP = oIP.orElseThrow();
+    if (Math.abs(iP.diff(p).direction() - a) > Math.PI / 2d) {
+      return Optional.empty();
+    }
+    return oIP;
   }
 }

@@ -17,7 +17,7 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jgea.problem.control.maze;
+package io.github.ericmedvet.jgea.problem.control.navigation;
 
 import io.github.ericmedvet.jgea.core.listener.Drawer;
 import io.github.ericmedvet.jgea.problem.control.ControlProblem;

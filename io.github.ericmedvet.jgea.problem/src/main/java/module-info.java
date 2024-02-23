@@ -21,7 +21,7 @@ module io.github.ericmedvet.jgea.problem {
   exports io.github.ericmedvet.jgea.problem.booleanfunction;
   exports io.github.ericmedvet.jgea.problem.classification;
   exports io.github.ericmedvet.jgea.problem.control;
-  exports io.github.ericmedvet.jgea.problem.control.maze;
+  exports io.github.ericmedvet.jgea.problem.control.navigation;
   exports io.github.ericmedvet.jgea.problem.extraction;
   exports io.github.ericmedvet.jgea.problem.extraction.string;
   exports io.github.ericmedvet.jgea.problem.image;

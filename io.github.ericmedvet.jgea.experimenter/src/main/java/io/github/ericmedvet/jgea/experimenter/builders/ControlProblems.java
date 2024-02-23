@@ -19,8 +19,8 @@
  */
 package io.github.ericmedvet.jgea.experimenter.builders;
 
-import io.github.ericmedvet.jgea.problem.control.maze.Arena;
-import io.github.ericmedvet.jgea.problem.control.maze.Navigation;
+import io.github.ericmedvet.jgea.problem.control.navigation.Arena;
+import io.github.ericmedvet.jgea.problem.control.navigation.Navigation;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;

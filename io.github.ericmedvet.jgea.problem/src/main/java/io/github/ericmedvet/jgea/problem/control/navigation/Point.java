@@ -18,7 +18,7 @@
  * =========================LICENSE_END==================================
  */
 
-package io.github.ericmedvet.jgea.problem.control.maze;
+package io.github.ericmedvet.jgea.problem.control.navigation;
 
 import java.util.stream.DoubleStream;
 

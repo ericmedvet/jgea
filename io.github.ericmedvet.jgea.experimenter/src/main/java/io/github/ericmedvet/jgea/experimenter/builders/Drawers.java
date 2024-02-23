@@ -19,7 +19,7 @@
  */
 package io.github.ericmedvet.jgea.experimenter.builders;
 
-import io.github.ericmedvet.jgea.problem.control.maze.OutcomeDrawer;
+import io.github.ericmedvet.jgea.problem.control.navigation.OutcomeDrawer;
 import io.github.ericmedvet.jnb.core.Discoverable;
 
 /**
