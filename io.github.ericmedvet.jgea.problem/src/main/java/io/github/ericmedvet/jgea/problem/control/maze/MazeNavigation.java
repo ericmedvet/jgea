@@ -27,7 +27,6 @@ import io.github.ericmedvet.jsdynsym.core.numerical.NumericalStatelessSystem;
 import java.util.*;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
-import java.util.stream.Stream;
 
 public class MazeNavigation<SC>
     implements ComparableQualityControlProblem<
@@ -113,15 +112,7 @@ public class MazeNavigation<SC>
     double t = 0;
     // prepare map and segments
     Map<Double, Snapshot> snapshots = new HashMap<>();
-    List<Segment> segments = Stream.concat(
-            Stream.of(
-                new Segment(new Point(0, 0), new Point(arena.xExtent(), 0)),
-                new Segment(new Point(0, 0), new Point(0, arena.yExtent())),
-                new Segment(new Point(arena.xExtent(), arena.yExtent()), new Point(arena.xExtent(), 0)),
-                new Segment(
-                    new Point(arena.xExtent(), arena.yExtent()), new Point(arena.xExtent(), 0))),
-            arena.obstacles().stream())
-        .toList();
+    List<Segment> segments = arena.segments();
     // iterate
     while (t < finalT) {
       final Point finalRobotP = robotP;

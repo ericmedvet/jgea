@@ -17,21 +17,8 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jgea.problem.control.maze;
+package io.github.ericmedvet.jgea.problem.control;
 
-import java.util.List;
-import java.util.stream.Stream;
+import java.util.function.Function;
 
-public record Arena(double xExtent, double yExtent, List<Segment> obstacles) {
-  public List<Segment> boundaries() {
-    return List.of(
-        new Segment(new Point(0, 0), new Point(xExtent, 0)),
-        new Segment(new Point(0, 0), new Point(0, yExtent)),
-        new Segment(new Point(xExtent, yExtent), new Point(xExtent, 0)),
-        new Segment(new Point(xExtent, yExtent), new Point(0, yExtent)));
-  }
-
-  public List<Segment> segments() {
-    return Stream.concat(boundaries().stream(), obstacles.stream()).toList();
-  }
-}
+public interface OutcomeViewer<S, V> extends Function<ControlProblem.Outcome<S, ?>, V> {}
