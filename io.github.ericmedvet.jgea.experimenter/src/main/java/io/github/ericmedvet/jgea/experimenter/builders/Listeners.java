@@ -422,6 +422,41 @@ public class Listeners {
   }
 
   @SuppressWarnings("unused")
+  public static <G, S, Q, K>
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
+          runImageVideoSaver(
+              @Param(value = "function", dNPM = "ea.nf.best()")
+                  NamedFunction<POCPopulationState<?, G, S, Q, ?>, K> function,
+              @Param("drawer") Drawer<K> drawer,
+              @Param(value = "w", dI = 500) int w,
+              @Param(value = "h", dI = 500) int h,
+              @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder,
+              @Param(value = "frameRate", dD = 20) double frameRate,
+              @Param(value = "filePathTemplate", dS = "run-{index:%04d}.mp4") String filePathTemplate,
+              @Param(value = "condition", dNPM = "ea.predicate.always()")
+                  Predicate<Run<?, G, S, Q>> predicate) {
+    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
+        AccumulatorFactory.<POCPopulationState<?, G, S, Q, ?>, K, Run<?, G, S, Q>>collector(function)
+            .thenOnDone((run, ks) -> {
+              try {
+                VideoUtils.encodeAndSave(
+                    ks.stream()
+                        .map(i -> drawer.draw(w, h, i))
+                        .toList(),
+                    frameRate,
+                    Misc.checkExistenceAndChangeName(
+                        new File(Utils.interpolate(filePathTemplate, run))),
+                    encoder);
+              } catch (IOException e) {
+                throw new RuntimeException(e);
+              }
+            }),
+        predicate,
+        executorService,
+        false);
+  }
+
+  @SuppressWarnings("unused")
   public static <G, S, Q>
       BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
           runPlotSaver(
@@ -453,6 +488,7 @@ public class Listeners {
         false);
   }
 
+  @SuppressWarnings("unused")
   public static <G, S, Q>
       BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
           runPlotVideoSaver(
@@ -474,7 +510,7 @@ public class Listeners {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         plot.thenOnDone((run, p) -> {
           VideoPlotter plotter = new VideoPlotter(
-              new File(Utils.interpolate(filePathTemplate, run)),
+              Misc.checkExistenceAndChangeName(new File(Utils.interpolate(filePathTemplate, run))),
               imagePlotter,
               new VideoPlotter.Configuration(splitType, encoder, frameRate));
           plotter.plot(p, type);

@@ -1,0 +1,47 @@
+ea.experiment(
+  runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
+    (problem = [
+      ea.p.c.navigation(arena = small_barrier);
+      ea.p.c.navigation(arena = large_barrier);
+      ea.p.c.navigation(arena = easy_maze)
+    ]) *
+    (solver = (nEval = [10000]) * (mapper = [ea.m.compose(
+      first = ea.m.mlpToMrf(innerLayerRatio = 5);
+      second = ea.m.mrfToNds()
+    )]) * [
+      ea.s.ga(representation = ea.r.doubleString());
+      ea.s.cmaEs()
+    ]) * [
+    ea.run()
+  ];
+  listeners = [
+    ea.l.console(
+      functions = [
+        ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
+        ea.nf.controlQuality(s = "%6.2f"; individual = ea.nf.best());
+        ea.nf.hist(collection = ea.nf.each(map = ea.nf.controlQuality(); collection = ea.nf.all()));
+        ea.nf.percentile(collection = ea.nf.each(map = ea.nf.controlQuality(); collection = ea.nf.all()); p = 0.75; s = "%6.2f")
+      ];
+      runKeys = [
+        ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
+        ea.misc.sEntry(key = "solver"; value = "{solver.name}");
+        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
+      ]
+    );
+    ea.l.expPlotSaver(
+      filePath = "../control-fitness.png";
+      freeScales = true;
+      w = 600; h = 1000;
+      type = lines;
+      plot = ea.plot.fitnessPlotMatrix(
+        xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 50);
+        yFunction = ea.nf.controlQuality(individual = ea.nf.best())
+      )
+    );
+    ea.l.runImageVideoSaver(
+      drawer = ea.d.navigationOutcome();
+      function = ea.nf.bestFitness();
+      filePathTemplate = "../bests-{problem.name}-{solver.name}-{randomGenerator.seed:%04d}.mp4"
+    )
+  ]
+)

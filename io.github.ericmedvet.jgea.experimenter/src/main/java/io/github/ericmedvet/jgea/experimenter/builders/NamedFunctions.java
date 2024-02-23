@@ -116,8 +116,11 @@ public class NamedFunctions {
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> NamedFunction<POCPopulationState<?, G, S, Q, ?>, Individual<G, S, Q>> best() {
-    return NamedFunction.build("best", s -> Misc.first(s.pocPopulation().firsts()));
+  public static <G, S, Q, T> NamedFunction<POCPopulationState<?, G, S, Q, ?>, T> best(
+      @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<Individual<G, S, Q>, T> function) {
+    return NamedFunction.build(
+        c(function.getName(), "best"),
+        s -> function.apply(Misc.first(s.pocPopulation().firsts())));
   }
 
   @SuppressWarnings("unused")

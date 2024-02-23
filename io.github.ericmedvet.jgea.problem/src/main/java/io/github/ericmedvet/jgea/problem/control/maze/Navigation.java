@@ -19,16 +19,19 @@
  */
 package io.github.ericmedvet.jgea.problem.control.maze;
 
+import io.github.ericmedvet.jgea.core.problem.ProblemWithExampleSolution;
 import io.github.ericmedvet.jgea.problem.control.ComparableQualityControlProblem;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
+import io.github.ericmedvet.jsdynsym.core.numerical.NumericalStatelessSystem;
 import java.util.*;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
 
-public class MazeNavigation<SC>
+public class Navigation<SC>
     implements ComparableQualityControlProblem<
-        NumericalDynamicalSystem<SC>, double[], double[], MazeNavigation.Snapshot, Double> {
+            NumericalDynamicalSystem<SC>, double[], double[], Navigation.Snapshot, Double>,
+        ProblemWithExampleSolution<NumericalDynamicalSystem<SC>> {
 
   private final DoubleRange initialRobotXRange;
   private final DoubleRange initialRobotYRange;
@@ -47,21 +50,7 @@ public class MazeNavigation<SC>
   private final Metric metric;
   private final RandomGenerator randomGenerator;
 
-  public enum Metric {
-    FINAL_DISTANCE,
-    MIN_DISTANCE,
-    AVG_DISTANCE
-  }
-
-  public record Snapshot(
-      Arena arena,
-      Point targetPosition,
-      Point robotPosition,
-      double robotDirection,
-      double robotRadius,
-      int nOfCollisions) {}
-
-  public MazeNavigation(
+  public Navigation(
       DoubleRange initialRobotXRange,
       DoubleRange initialRobotYRange,
       DoubleRange initialRobotDirection,
@@ -94,6 +83,27 @@ public class MazeNavigation<SC>
     this.arena = arena;
     this.metric = metric;
     this.randomGenerator = randomGenerator;
+  }
+
+  public enum Metric {
+    FINAL_DISTANCE,
+    MIN_DISTANCE,
+    AVG_DISTANCE
+  }
+
+  public record Snapshot(
+      Arena arena,
+      Point targetPosition,
+      Point robotPosition,
+      double robotDirection,
+      double robotRadius,
+      int nOfCollisions) {}
+
+  @Override
+  public NumericalDynamicalSystem<SC> example() {
+    //noinspection unchecked
+    return (NumericalDynamicalSystem<SC>)
+        NumericalStatelessSystem.from(nOfSensors + (senseTarget ? 2 : 0), 2, (t, in) -> new double[2]);
   }
 
   @Override

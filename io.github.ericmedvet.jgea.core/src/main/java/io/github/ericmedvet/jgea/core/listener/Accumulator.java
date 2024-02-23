@@ -19,12 +19,31 @@
  */
 package io.github.ericmedvet.jgea.core.listener;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public interface Accumulator<E, O> extends Listener<E> {
 
   O get();
+
+  static <E, O> Accumulator<E, List<O>> collector(Function<E, O> function) {
+    return new Accumulator<>() {
+      private final List<O> os = new ArrayList<>();
+
+      @Override
+      public List<O> get() {
+        return Collections.unmodifiableList(os);
+      }
+
+      @Override
+      public void listen(E e) {
+        os.add(function.apply(e));
+      }
+    };
+  }
 
   static <E> Accumulator<E, E> last() {
     return new Accumulator<>() {
@@ -66,13 +85,13 @@ public interface Accumulator<E, O> extends Listener<E> {
     Accumulator<E, O> thisAccumulator = this;
     return new Accumulator<>() {
       @Override
-      public void listen(E e) {
-        thisAccumulator.listen(e);
+      public O get() {
+        return thisAccumulator.get();
       }
 
       @Override
-      public O get() {
-        return thisAccumulator.get();
+      public void listen(E e) {
+        thisAccumulator.listen(e);
       }
 
       @Override

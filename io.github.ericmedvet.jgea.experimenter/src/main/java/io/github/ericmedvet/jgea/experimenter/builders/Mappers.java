@@ -43,6 +43,7 @@ import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.core.NumericalParametrized;
 import io.github.ericmedvet.jsdynsym.core.StatelessSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
+import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
 import java.util.Arrays;
@@ -53,31 +54,6 @@ import java.util.function.Function;
 @Discoverable(prefixTemplate = "ea.mapper|m")
 public class Mappers {
   private Mappers() {}
-
-  @SuppressWarnings("unused")
-  public static InvertibleMapper<List<Double>, BitString> doubleStringToBitString(
-      @Param(value = "t", dD = 0d) double t) {
-    return InvertibleMapper.from(
-        (eBs, ds) -> new BitString(ds.stream().map(v -> v < t).toList()),
-        eBs -> Collections.nCopies(eBs.size(), 0d));
-  }
-
-  @SuppressWarnings("unused")
-  public static InvertibleMapper<List<Double>, IntString> doubleStringToIntString(
-      @Param(value = "range", dNPM = "ds.range(min=-1;max=1)") DoubleRange range) {
-    return InvertibleMapper.from(
-        (eIs, ds) -> {
-          DoubleRange isRange = new DoubleRange(eIs.lowerBound(), eIs.upperBound());
-          return new IntString(
-              ds.stream()
-                  .map(v -> (int) Math.floor(isRange.denormalize(range.normalize(v))))
-                  .map(i -> Math.max(Math.min(i, eIs.upperBound() - 1), eIs.lowerBound()))
-                  .toList(),
-              eIs.lowerBound(),
-              eIs.upperBound());
-        },
-        eIs -> Collections.nCopies(eIs.size(), 0d));
-  }
 
   @SuppressWarnings("unused")
   public static <T> InvertibleMapper<BitString, Grid<T>> bitStringToGrammarGrid(
@@ -106,6 +82,14 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  public static InvertibleMapper<List<Double>, BitString> doubleStringToBitString(
+      @Param(value = "t", dD = 0d) double t) {
+    return InvertibleMapper.from(
+        (eBs, ds) -> new BitString(ds.stream().map(v -> v < t).toList()),
+        eBs -> Collections.nCopies(eBs.size(), 0d));
+  }
+
+  @SuppressWarnings("unused")
   public static <T> InvertibleMapper<List<Double>, Grid<T>> doubleStringToGrammarGrid(
       @Param("grammar") GridGrammar<T> grammar,
       @Param(value = "l", dI = 256) int l,
@@ -122,6 +106,23 @@ public class Mappers {
           return gridDeveloper.develop(chooser).orElse(eGrid);
         },
         eGrid -> Collections.nCopies(l, 0d));
+  }
+
+  @SuppressWarnings("unused")
+  public static InvertibleMapper<List<Double>, IntString> doubleStringToIntString(
+      @Param(value = "range", dNPM = "ds.range(min=-1;max=1)") DoubleRange range) {
+    return InvertibleMapper.from(
+        (eIs, ds) -> {
+          DoubleRange isRange = new DoubleRange(eIs.lowerBound(), eIs.upperBound());
+          return new IntString(
+              ds.stream()
+                  .map(v -> (int) Math.floor(isRange.denormalize(range.normalize(v))))
+                  .map(i -> Math.max(Math.min(i, eIs.upperBound() - 1), eIs.lowerBound()))
+                  .toList(),
+              eIs.lowerBound(),
+              eIs.upperBound());
+        },
+        eIs -> Collections.nCopies(eIs.size(), 0d));
   }
 
   @SuppressWarnings("unused")
@@ -201,6 +202,19 @@ public class Mappers {
                 .getParams()
                 .length,
             0d));
+  }
+
+  @SuppressWarnings("unused")
+  public static InvertibleMapper<NamedMultivariateRealFunction, NumericalDynamicalSystem<?>> mrfToNds() {
+    return InvertibleMapper.from(
+        (exampleNds, nmrf) -> nmrf,
+        exampleNds -> NamedMultivariateRealFunction.from(
+            MultivariateRealFunction.from(
+                in -> new double[exampleNds.nOfOutputs()],
+                exampleNds.nOfInputs(),
+                exampleNds.nOfOutputs()),
+            MultivariateRealFunction.varNames("x", exampleNds.nOfInputs()),
+            MultivariateRealFunction.varNames("y", exampleNds.nOfOutputs())));
   }
 
   @SuppressWarnings("unused")

@@ -26,10 +26,6 @@ import java.util.function.*;
 public interface AccumulatorFactory<E, O, K> extends ListenerFactory<E, K> {
   Accumulator<E, O> build(K k);
 
-  static <E, O, K> AccumulatorFactory<E, O, K> last(BiFunction<E, K, O> function) {
-    return k -> Accumulator.<E>last().then(e -> function.apply(e, k));
-  }
-
   @Override
   default AccumulatorFactory<E, O, K> conditional(Predicate<K> predicate) {
     AccumulatorFactory<E, O, K> inner = this;
@@ -55,6 +51,14 @@ public interface AccumulatorFactory<E, O, K> extends ListenerFactory<E, K> {
         inner.shutdown();
       }
     };
+  }
+
+  static <E, O, K> AccumulatorFactory<E, List<O>, K> collector(Function<E, O> function) {
+    return k -> Accumulator.collector(function);
+  }
+
+  static <E, O, K> AccumulatorFactory<E, O, K> last(BiFunction<E, K, O> function) {
+    return k -> Accumulator.<E>last().then(e -> function.apply(e, k));
   }
 
   default <Q> AccumulatorFactory<E, Q, K> then(Function<O, Q> function) {

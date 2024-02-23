@@ -23,18 +23,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public record Arena(double xExtent, double yExtent, List<Segment> obstacles) {
-  public List<Segment> boundaries() {
-    return List.of(
-        new Segment(new Point(0, 0), new Point(xExtent, 0)),
-        new Segment(new Point(0, 0), new Point(0, yExtent)),
-        new Segment(new Point(xExtent, yExtent), new Point(xExtent, 0)),
-        new Segment(new Point(xExtent, yExtent), new Point(0, yExtent)));
-  }
-
-  public List<Segment> segments() {
-    return Stream.concat(boundaries().stream(), obstacles.stream()).toList();
-  }
-
   public enum Prepared {
     EMPTY(new Arena(1, 1, List.of())),
     SMALL_BARRIER(new Arena(1, 1, List.of(new Segment(new Point(0.4, 0.3), new Point(0.6, 0.3))))),
@@ -65,14 +53,26 @@ public record Arena(double xExtent, double yExtent, List<Segment> obstacles) {
             new Segment(new Point(0, 0.3), new Point(0.7, 0.4)),
             new Segment(new Point(1, 0.6), new Point(0.3, 0.7)))));
 
+    private final Arena arena;
+
     Prepared(Arena arena) {
       this.arena = arena;
     }
 
-    private final Arena arena;
-
     public Arena arena() {
       return arena;
     }
+  }
+
+  public List<Segment> boundaries() {
+    return List.of(
+        new Segment(new Point(0, 0), new Point(xExtent, 0)),
+        new Segment(new Point(0, 0), new Point(0, yExtent)),
+        new Segment(new Point(xExtent, yExtent), new Point(xExtent, 0)),
+        new Segment(new Point(xExtent, yExtent), new Point(0, yExtent)));
+  }
+
+  public List<Segment> segments() {
+    return Stream.concat(boundaries().stream(), obstacles.stream()).toList();
   }
 }
