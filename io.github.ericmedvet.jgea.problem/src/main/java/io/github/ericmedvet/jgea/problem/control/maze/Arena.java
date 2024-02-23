@@ -34,4 +34,45 @@ public record Arena(double xExtent, double yExtent, List<Segment> obstacles) {
   public List<Segment> segments() {
     return Stream.concat(boundaries().stream(), obstacles.stream()).toList();
   }
+
+  public enum Prepared {
+    EMPTY(new Arena(1, 1, List.of())),
+    SMALL_BARRIER(new Arena(1, 1, List.of(new Segment(new Point(0.4, 0.3), new Point(0.6, 0.3))))),
+    LARGE_BARRIER(new Arena(1, 1, List.of(new Segment(new Point(0.2, 0.3), new Point(0.8, 0.3))))),
+    U_BARRIER(new Arena(
+        1,
+        1,
+        List.of(
+            new Segment(new Point(0.3, 0.3), new Point(0.7, 0.3)),
+            new Segment(new Point(0.3, 0.3), new Point(0.3, 0.5)),
+            new Segment(new Point(0.7, 0.3), new Point(0.7, 0.5))))),
+    EASY_MAZE(new Arena(
+        1,
+        1,
+        List.of(
+            new Segment(new Point(0, 0.4), new Point(0.7, 0.3)),
+            new Segment(new Point(1, 0.7), new Point(0.3, 0.6))))),
+    FLAT_MAZE(new Arena(
+        1,
+        1,
+        List.of(
+            new Segment(new Point(0, 0.35), new Point(0.7, 0.35)),
+            new Segment(new Point(1, 0.65), new Point(0.3, 0.65))))),
+    DECEPTIVE_MAZE(new Arena(
+        1,
+        1,
+        List.of(
+            new Segment(new Point(0, 0.3), new Point(0.7, 0.4)),
+            new Segment(new Point(1, 0.6), new Point(0.3, 0.7)))));
+
+    Prepared(Arena arena) {
+      this.arena = arena;
+    }
+
+    private final Arena arena;
+
+    public Arena arena() {
+      return arena;
+    }
+  }
 }

@@ -21,9 +21,7 @@ package io.github.ericmedvet.jgea.problem.control.maze;
 
 import io.github.ericmedvet.jgea.problem.control.ComparableQualityControlProblem;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
-import io.github.ericmedvet.jsdynsym.core.StatelessSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
-import io.github.ericmedvet.jsdynsym.core.numerical.NumericalStatelessSystem;
 import java.util.*;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
@@ -46,7 +44,14 @@ public class MazeNavigation<SC>
   private final double dT;
   private final double finalT;
   private final Arena arena;
+  private final Metric metric;
   private final RandomGenerator randomGenerator;
+
+  public enum Metric {
+    FINAL_DISTANCE,
+    MIN_DISTANCE,
+    AVG_DISTANCE
+  }
 
   public record Snapshot(
       Arena arena,
@@ -71,6 +76,7 @@ public class MazeNavigation<SC>
       double dT,
       double finalT,
       Arena arena,
+      Metric metric,
       RandomGenerator randomGenerator) {
     this.initialRobotXRange = initialRobotXRange;
     this.initialRobotYRange = initialRobotYRange;
@@ -86,6 +92,7 @@ public class MazeNavigation<SC>
     this.dT = dT;
     this.finalT = finalT;
     this.arena = arena;
+    this.metric = metric;
     this.randomGenerator = randomGenerator;
   }
 
@@ -113,6 +120,7 @@ public class MazeNavigation<SC>
     // prepare map and segments
     Map<Double, Snapshot> snapshots = new HashMap<>();
     List<Segment> segments = arena.segments();
+    DoubleRange sensorsRange = new DoubleRange(robotRadius, sensorRange);
     // iterate
     while (t < finalT) {
       final Point finalRobotP = robotP;
@@ -128,13 +136,13 @@ public class MazeNavigation<SC>
                 .mapToDouble(op -> op.orElseThrow().distance(finalRobotP))
                 .min()
                 .orElse(Double.POSITIVE_INFINITY);
-            return Math.min(d, sensorRange) / sensorRange;
+            return sensorsRange.normalize(d);
           })
           .toArray();
       double[] inputs = senseTarget ? new double[nOfSensors + 2] : sInputs;
       if (senseTarget) {
         System.arraycopy(sInputs, 0, inputs, 2, sInputs.length);
-        inputs[0] = Math.min(robotP.distance(targetP), sensorRange) / sensorRange;
+        inputs[0] = sensorsRange.normalize(robotP.distance(targetP));
         inputs[1] = targetP.diff(robotP).direction() - robotA;
         if (inputs[1] > Math.PI) {
           inputs[1] = inputs[1] - Math.PI;
@@ -162,7 +170,6 @@ public class MazeNavigation<SC>
       robotA = robotA + deltaA;
       // add snapshot
       snapshots.put(t, new Snapshot(arena, targetP, robotP, robotA, robotRadius, nOfCollisions));
-      System.out.printf("%4.1fs: %s (%3.0f) (%d)%n", t, robotP, Math.toDegrees(robotA), nOfCollisions);
       t = t + dT;
     }
     // return
@@ -171,31 +178,19 @@ public class MazeNavigation<SC>
 
   @Override
   public Function<SortedMap<Double, Snapshot>, Double> behaviorToQualityFunction() {
-    return snapshots -> {
-      Snapshot lastSnapshot = snapshots.get(snapshots.lastKey());
-      return lastSnapshot.robotPosition.distance(lastSnapshot.targetPosition);
+    return snapshots -> switch (metric) {
+      case FINAL_DISTANCE -> snapshots
+          .get(snapshots.lastKey())
+          .robotPosition()
+          .distance(snapshots.get(snapshots.lastKey()).targetPosition());
+      case MIN_DISTANCE -> snapshots.values().stream()
+          .mapToDouble(s -> s.robotPosition().distance(s.targetPosition()))
+          .min()
+          .orElseThrow();
+      case AVG_DISTANCE -> snapshots.values().stream()
+          .mapToDouble(s -> s.robotPosition().distance(s.targetPosition()))
+          .average()
+          .orElseThrow();
     };
-  }
-
-  public static void main(String[] args) {
-    Arena arena = new Arena(1, 1, List.of());
-    MazeNavigation<StatelessSystem.State> mn = new MazeNavigation<>(
-        new DoubleRange(0.5, 0.5),
-        new DoubleRange(0.5, 0.5),
-        new DoubleRange(0, 0),
-        new DoubleRange(0.5, 0.5),
-        new DoubleRange(0.5, 0.5),
-        0.05,
-        0.01,
-        new DoubleRange(-Math.PI / 2d, Math.PI / 2d),
-        5,
-        0.25,
-        true,
-        0.1,
-        20,
-        arena,
-        new Random(1));
-    NumericalStatelessSystem c = NumericalStatelessSystem.from(7, 2, (t, inputs) -> new double[] {1d, 1d});
-    mn.simulate(c);
   }
 }

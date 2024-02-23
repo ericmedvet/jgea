@@ -20,16 +20,14 @@
 
 package io.github.ericmedvet.jgea.problem.control.maze;
 
+import java.util.stream.DoubleStream;
+
 public record Point(double x, double y) {
 
   public static Point ORIGIN = new Point(0, 0);
 
   public Point(double direction) {
     this(Math.cos(direction), Math.sin(direction));
-  }
-
-  public double angle(Point p) {
-    return Math.acos((x * p.x() + y * p.y()) / magnitude() / p.magnitude());
   }
 
   public Point diff(Point p) {
@@ -45,18 +43,15 @@ public record Point(double x, double y) {
   }
 
   public double distance(Segment s) {
-    Point p1 = s.p1();
-    Point p2 = s.p2().diff(p1);
-    Point p = diff(p1);
-    double a = p.angle(p2);
-    double l = p.magnitude();
-    if (a < Math.PI / 2d && a > -Math.PI / 2d) {
-      if (Math.cos(a) * l < p2.magnitude()) {
-        return Math.sin(a) * l;
-      }
-      return p2.sum(p1).distance(p);
-    }
-    return l;
+    return DoubleStream.of(
+            Line.from(this, s.direction() + Math.PI / 2d)
+                .interception(s)
+                .map(p -> p.distance(this))
+                .orElse(Double.POSITIVE_INFINITY),
+            distance(s.p1()),
+            distance(s.p2()))
+        .min()
+        .orElseThrow();
   }
 
   public double distance(Line l) {
@@ -77,6 +72,6 @@ public record Point(double x, double y) {
 
   @Override
   public String toString() {
-    return String.format("(%.1f;%.1f)", x, y);
+    return String.format("(%.3f;%.3f)", x, y);
   }
 }
