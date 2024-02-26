@@ -21,7 +21,7 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator;
 
 import io.github.ericmedvet.jgea.core.listener.Accumulator;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlot;
+import io.github.ericmedvet.jviz.core.plot.XYPlot;
 import java.util.ArrayList;
 import java.util.List;
 

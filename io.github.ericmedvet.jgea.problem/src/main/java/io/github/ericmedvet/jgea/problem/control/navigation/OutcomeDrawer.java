@@ -19,8 +19,8 @@
  */
 package io.github.ericmedvet.jgea.problem.control.navigation;
 
-import io.github.ericmedvet.jgea.core.listener.Drawer;
 import io.github.ericmedvet.jgea.problem.control.ControlProblem;
+import io.github.ericmedvet.jviz.core.drawer.Drawer;
 import java.awt.*;
 import java.awt.geom.*;
 import java.util.List;

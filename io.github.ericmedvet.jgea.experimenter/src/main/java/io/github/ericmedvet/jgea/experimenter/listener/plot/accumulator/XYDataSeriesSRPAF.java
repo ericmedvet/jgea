@@ -20,12 +20,12 @@
 package io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator;
 
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.Value;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeries;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeriesPlot;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlot;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
+import io.github.ericmedvet.jviz.core.plot.Value;
+import io.github.ericmedvet.jviz.core.plot.XYDataSeries;
+import io.github.ericmedvet.jviz.core.plot.XYDataSeriesPlot;
+import io.github.ericmedvet.jviz.core.plot.XYPlot;
 import java.util.List;
 
 public class XYDataSeriesSRPAF<E, R> extends AbstractSingleRPAF<E, XYDataSeriesPlot, R, List<XYDataSeries>> {

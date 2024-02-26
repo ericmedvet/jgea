@@ -36,13 +36,13 @@
 package io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator;
 
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
-import io.github.ericmedvet.jgea.core.util.Table;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.LandscapePlot;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.Value;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeries;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlot;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
+import io.github.ericmedvet.jviz.core.plot.LandscapePlot;
+import io.github.ericmedvet.jviz.core.plot.Value;
+import io.github.ericmedvet.jviz.core.plot.XYDataSeries;
+import io.github.ericmedvet.jviz.core.plot.XYPlot;
+import io.github.ericmedvet.jviz.core.util.Table;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;

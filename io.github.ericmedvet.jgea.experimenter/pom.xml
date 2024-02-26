@@ -34,6 +34,11 @@
       <version>${jsdynsym.version}</version>
     </dependency>
     <dependency>
+      <groupId>io.github.ericmedvet</groupId>
+      <artifactId>jviz.core</artifactId>
+      <version>${jviz.version}</version>
+    </dependency>
+    <dependency>
       <groupId>com.beust</groupId>
       <artifactId>jcommander</artifactId>
       <version>1.82</version>

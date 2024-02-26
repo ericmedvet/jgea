@@ -29,6 +29,8 @@ import io.github.ericmedvet.jgea.core.util.*;
 import io.github.ericmedvet.jgea.experimenter.listener.net.NetUtils;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.table.*;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
+import io.github.ericmedvet.jviz.core.util.HashMapTable;
+import io.github.ericmedvet.jviz.core.util.Table;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;

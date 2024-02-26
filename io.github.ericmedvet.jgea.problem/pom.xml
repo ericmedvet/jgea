@@ -24,6 +24,11 @@
       <version>${jsdynsym.version}</version>
     </dependency>
     <dependency>
+      <groupId>io.github.ericmedvet</groupId>
+      <artifactId>jviz.core</artifactId>
+      <version>${jviz.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-csv</artifactId>
       <version>1.10.0</version>

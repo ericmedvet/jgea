@@ -20,12 +20,12 @@
 package io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator;
 
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
-import io.github.ericmedvet.jgea.core.util.Table;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.RangedGrid;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.UnivariateGridPlot;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlot;
 import io.github.ericmedvet.jsdynsym.core.DoubleRange;
 import io.github.ericmedvet.jsdynsym.grid.Grid;
+import io.github.ericmedvet.jviz.core.plot.RangedGrid;
+import io.github.ericmedvet.jviz.core.plot.UnivariateGridPlot;
+import io.github.ericmedvet.jviz.core.plot.XYPlot;
+import io.github.ericmedvet.jviz.core.util.Table;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;

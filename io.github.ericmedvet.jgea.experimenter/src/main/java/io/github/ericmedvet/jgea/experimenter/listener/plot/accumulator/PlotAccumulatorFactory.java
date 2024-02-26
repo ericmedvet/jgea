@@ -20,6 +20,6 @@
 package io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator;
 
 import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.XYPlot;
+import io.github.ericmedvet.jviz.core.plot.XYPlot;
 
 public interface PlotAccumulatorFactory<E, P extends XYPlot<D>, R, D> extends AccumulatorFactory<E, P, R> {}
