@@ -45,7 +45,7 @@ public class OperatorGraph
     implements NamedMultivariateRealFunction,
         Sized,
         Serializable,
-    Parametrized<Graph<Node, OperatorGraph.NonValuedArc>> {
+        Parametrized<Graph<Node, OperatorGraph.NonValuedArc>> {
 
   public static final NonValuedArc NON_VALUED_ARC = new NonValuedArc();
   private final List<String> xVarNames;
