@@ -22,7 +22,7 @@ package io.github.ericmedvet.jgea.core.representation.grammar.grid;
 
 import io.github.ericmedvet.jgea.core.representation.grammar.Chooser;
 import io.github.ericmedvet.jgea.core.representation.grammar.Developer;
-import io.github.ericmedvet.jsdynsym.grid.Grid;
+import io.github.ericmedvet.jnb.datastructure.Grid;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;

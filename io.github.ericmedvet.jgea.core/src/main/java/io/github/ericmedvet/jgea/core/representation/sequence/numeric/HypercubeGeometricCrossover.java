@@ -21,7 +21,7 @@
 package io.github.ericmedvet.jgea.core.representation.sequence.numeric;
 
 import io.github.ericmedvet.jgea.core.representation.sequence.ElementWiseCrossover;
-import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 
 public class HypercubeGeometricCrossover extends ElementWiseCrossover<Double> {
 

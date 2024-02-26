@@ -19,7 +19,7 @@
  */
 package io.github.ericmedvet.jgea.core.solver.cabea;
 
-import io.github.ericmedvet.jsdynsym.grid.Grid;
+import io.github.ericmedvet.jnb.datastructure.Grid;
 import java.util.function.Function;
 
 public interface SubstrateFiller extends Function<Grid<Boolean>, Grid<Boolean>> {

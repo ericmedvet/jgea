@@ -25,7 +25,7 @@ import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBased
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.util.Pair;
-import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import java.util.*;
 import java.util.function.Function;
 

@@ -58,7 +58,7 @@ import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.Nguyen7
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.SyntheticUnivariateRegressionProblem;
 import io.github.ericmedvet.jgea.problem.synthetic.OneMax;
 import io.github.ericmedvet.jgea.problem.synthetic.numerical.Ackley;
-import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;

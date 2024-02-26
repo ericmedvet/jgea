@@ -21,7 +21,7 @@ package io.github.ericmedvet.jgea.problem.control.navigation;
 
 import io.github.ericmedvet.jgea.core.problem.ProblemWithExampleSolution;
 import io.github.ericmedvet.jgea.problem.control.ComparableQualityControlProblem;
-import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalStatelessSystem;
 import java.util.*;

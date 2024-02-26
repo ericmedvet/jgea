@@ -29,8 +29,8 @@ import io.github.ericmedvet.jgea.core.representation.sequence.FixedLengthListFac
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.UniformIntStringFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.numeric.UniformDoubleFactory;
-import io.github.ericmedvet.jsdynsym.grid.Grid;
-import io.github.ericmedvet.jsdynsym.grid.GridUtils;
+import io.github.ericmedvet.jnb.datastructure.Grid;
+import io.github.ericmedvet.jnb.datastructure.GridUtils;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.*;

@@ -19,14 +19,14 @@
       <version>3.6.1</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-csv</artifactId>
-      <version>1.10.0</version>
-    </dependency>
-    <dependency>
       <groupId>io.github.ericmedvet</groupId>
       <artifactId>jsdynsym.core</artifactId>
       <version>${jsdynsym.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.github.ericmedvet</groupId>
+      <artifactId>jnb.datastructure</artifactId>
+      <version>${jnb.version}</version>
     </dependency>
   </dependencies>
 

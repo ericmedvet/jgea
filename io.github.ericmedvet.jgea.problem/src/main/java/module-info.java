@@ -36,6 +36,7 @@ module io.github.ericmedvet.jgea.problem {
   exports io.github.ericmedvet.jgea.problem.synthetic.numerical;
 
   requires io.github.ericmedvet.jgea.core;
+  requires io.github.ericmedvet.jnb.datastructure;
   requires io.github.ericmedvet.jsdynsym.core;
   requires io.github.ericmedvet.jviz.core;
   requires commons.math3;

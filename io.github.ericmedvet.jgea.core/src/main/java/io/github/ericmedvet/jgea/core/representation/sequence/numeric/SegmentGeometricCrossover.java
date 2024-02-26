@@ -20,7 +20,7 @@
 package io.github.ericmedvet.jgea.core.representation.sequence.numeric;
 
 import io.github.ericmedvet.jgea.core.operator.Crossover;
-import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import java.util.List;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;

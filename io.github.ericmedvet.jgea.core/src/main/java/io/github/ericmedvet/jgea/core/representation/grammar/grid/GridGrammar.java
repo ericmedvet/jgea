@@ -21,7 +21,7 @@
 package io.github.ericmedvet.jgea.core.representation.grammar.grid;
 
 import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
-import io.github.ericmedvet.jsdynsym.grid.Grid;
+import io.github.ericmedvet.jnb.datastructure.Grid;
 import java.io.*;
 import java.util.*;
 import java.util.function.Function;

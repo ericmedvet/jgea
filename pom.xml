@@ -54,9 +54,9 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jdk.version>17</jdk.version>
     <revision>2.5.2-SNAPSHOT</revision>
-    <jnb.version>1.2.2</jnb.version>
-    <jsdynsym.version>0.10.7</jsdynsym.version>
-    <jviz.version>0.0.1-SNAPSHOT</jviz.version>
+    <jnb.version>1.2.3-SNAPSHOT</jnb.version>
+    <jsdynsym.version>0.10.8-SNAPSHOT</jsdynsym.version>
+    <jviz.version>0.0.2-SNAPSHOT</jviz.version>
   </properties>
   <dependencies/>
 

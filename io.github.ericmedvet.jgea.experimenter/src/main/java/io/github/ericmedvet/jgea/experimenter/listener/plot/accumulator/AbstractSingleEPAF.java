@@ -21,9 +21,9 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator;
 
 import io.github.ericmedvet.jgea.core.listener.Accumulator;
 import io.github.ericmedvet.jgea.core.listener.NamedFunction;
+import io.github.ericmedvet.jnb.datastructure.HashMapTable;
+import io.github.ericmedvet.jnb.datastructure.Table;
 import io.github.ericmedvet.jviz.core.plot.XYPlot;
-import io.github.ericmedvet.jviz.core.util.HashMapTable;
-import io.github.ericmedvet.jviz.core.util.Table;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;

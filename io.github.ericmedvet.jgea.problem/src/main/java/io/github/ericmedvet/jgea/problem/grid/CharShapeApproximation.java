@@ -22,8 +22,8 @@ package io.github.ericmedvet.jgea.problem.grid;
 
 import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.problem.ProblemWithExampleSolution;
-import io.github.ericmedvet.jsdynsym.grid.Grid;
-import io.github.ericmedvet.jsdynsym.grid.GridUtils;
+import io.github.ericmedvet.jnb.datastructure.Grid;
+import io.github.ericmedvet.jnb.datastructure.GridUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

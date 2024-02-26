@@ -23,7 +23,7 @@ package io.github.ericmedvet.jgea.core.representation.grammar.grid;
 import io.github.ericmedvet.jgea.core.representation.grammar.Chooser;
 import io.github.ericmedvet.jgea.core.representation.grammar.Developer;
 import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
-import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;

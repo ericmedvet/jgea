@@ -23,7 +23,7 @@ import io.github.ericmedvet.jgea.problem.control.navigation.Arena;
 import io.github.ericmedvet.jgea.problem.control.navigation.Navigation;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
-import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import java.util.Random;
 
 /**

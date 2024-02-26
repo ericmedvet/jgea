@@ -19,7 +19,7 @@
  */
 package io.github.ericmedvet.jgea.problem.control;
 
-import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import java.util.SortedMap;
 import java.util.TreeMap;

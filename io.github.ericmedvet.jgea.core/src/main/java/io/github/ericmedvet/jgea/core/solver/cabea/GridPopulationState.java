@@ -22,7 +22,7 @@ package io.github.ericmedvet.jgea.core.solver.cabea;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
-import io.github.ericmedvet.jsdynsym.grid.Grid;
+import io.github.ericmedvet.jnb.datastructure.Grid;
 
 /**
  * @author "Eric Medvet" on 2023/10/28 for jgea

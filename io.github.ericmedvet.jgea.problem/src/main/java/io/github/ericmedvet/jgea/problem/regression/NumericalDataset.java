@@ -20,7 +20,7 @@
 package io.github.ericmedvet.jgea.problem.regression;
 
 import io.github.ericmedvet.jgea.core.util.Misc;
-import io.github.ericmedvet.jsdynsym.core.DoubleRange;
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import java.util.List;
 import java.util.Map;
 import java.util.function.IntFunction;

@@ -30,8 +30,8 @@ import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSol
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.util.Misc;
-import io.github.ericmedvet.jsdynsym.grid.ArrayGrid;
-import io.github.ericmedvet.jsdynsym.grid.Grid;
+import io.github.ericmedvet.jnb.datastructure.ArrayGrid;
+import io.github.ericmedvet.jnb.datastructure.Grid;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
