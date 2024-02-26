@@ -23,7 +23,7 @@ package io.github.ericmedvet.jgea.core.representation.tree.numeric;
 import io.github.ericmedvet.jgea.core.representation.NamedUnivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.util.Sized;
-import io.github.ericmedvet.jsdynsym.core.Parametrized;
+import io.github.ericmedvet.jnb.datastructure.Parametrized;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;

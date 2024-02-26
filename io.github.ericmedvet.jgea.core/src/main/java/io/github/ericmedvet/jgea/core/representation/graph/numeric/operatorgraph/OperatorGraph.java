@@ -29,7 +29,7 @@ import io.github.ericmedvet.jgea.core.representation.graph.numeric.Input;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.Output;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Sized;
-import io.github.ericmedvet.jsdynsym.core.Parametrized;
+import io.github.ericmedvet.jnb.datastructure.Parametrized;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
@@ -45,7 +45,7 @@ public class OperatorGraph
     implements NamedMultivariateRealFunction,
         Sized,
         Serializable,
-        Parametrized<Graph<Node, OperatorGraph.NonValuedArc>> {
+    Parametrized<Graph<Node, OperatorGraph.NonValuedArc>> {
 
   public static final NonValuedArc NON_VALUED_ARC = new NonValuedArc();
   private final List<String> xVarNames;
