@@ -18,8 +18,11 @@
  * =========================LICENSE_END==================================
  */
 
-package io.github.ericmedvet.jgea.core.listener;
+package io.github.ericmedvet.jgea.experimenter.listener;
 
+import io.github.ericmedvet.jgea.core.listener.Listener;
+import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
+import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import java.io.File;
 import java.io.IOException;

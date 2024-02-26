@@ -18,18 +18,23 @@
  * =========================LICENSE_END==================================
  */
 
-package io.github.ericmedvet.jgea.core.listener;
+package io.github.ericmedvet.jgea.experimenter.listener;
 
+import io.github.ericmedvet.jgea.core.listener.ProgressMonitor;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
-import java.util.logging.Logger;
+import java.io.PrintStream;
 
-public class LoggerProgressMonitor implements ProgressMonitor {
+public class ScreenProgressMonitor implements ProgressMonitor {
 
-  private static final Logger L = Logger.getLogger(LoggerProgressMonitor.class.getName());
+  private final PrintStream ps;
+
+  public ScreenProgressMonitor(PrintStream ps) {
+    this.ps = ps;
+  }
 
   @Override
   public void notify(Progress progress, String message) {
-    L.info(String.format("Progress: %s %s%n", TextPlotter.horizontalBar(progress.rate(), 0, 1, 8), message));
+    ps.printf("Progress: %s %s%n", TextPlotter.horizontalBar(progress.rate(), 0, 1, 8), message);
   }
 }
