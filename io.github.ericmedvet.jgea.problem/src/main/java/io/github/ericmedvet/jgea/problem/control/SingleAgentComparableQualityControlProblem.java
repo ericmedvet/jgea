@@ -40,24 +40,22 @@ import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jsdynsym.control.Environment;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
 import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
-
 import java.util.Comparator;
 import java.util.SortedMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public interface SingleAgentComparableQualityControlProblem<
-    C extends DynamicalSystem<O, A, ?>, O, A, S, Q extends Comparable<Q>>
+        C extends DynamicalSystem<O, A, ?>, O, A, S, Q extends Comparable<Q>>
     extends SingleAgentControlProblem<C, O, A, S, Q>,
-    TotalOrderQualityBasedProblem<C, SingleAgentControlProblem.Outcome<O, A, S, Q>> {
+        TotalOrderQualityBasedProblem<C, SingleAgentControlProblem.Outcome<O, A, S, Q>> {
   static <C extends DynamicalSystem<O, A, ?>, O, A, S, Q extends Comparable<Q>>
-  SingleAgentComparableQualityControlProblem<C, O, A, S, Q> fromEnvironment(
-      Supplier<Environment<O, A, S>> environment,
-      C example,
-      Function<SortedMap<Double, SingleAgentTask.Step<O, A, S>>, Q> behaviorQualityFunction,
-      DoubleRange tRange,
-      double dT
-  ) {
+      SingleAgentComparableQualityControlProblem<C, O, A, S, Q> fromEnvironment(
+          Supplier<Environment<O, A, S>> environment,
+          C example,
+          Function<SortedMap<Double, SingleAgentTask.Step<O, A, S>>, Q> behaviorQualityFunction,
+          DoubleRange tRange,
+          double dT) {
     SingleAgentTask<C, O, A, S> singleAgentTask = SingleAgentTask.fromEnvironment(environment, tRange, dT);
     return new SingleAgentComparableQualityControlProblem<>() {
       @Override

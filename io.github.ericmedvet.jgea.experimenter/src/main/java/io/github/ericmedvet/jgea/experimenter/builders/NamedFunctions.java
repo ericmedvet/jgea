@@ -41,7 +41,6 @@ import io.github.ericmedvet.jnb.core.ParamMap;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.GridUtils;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
-
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -162,13 +161,15 @@ public class NamedFunctions {
   public static <X, O, A, S, T> NamedFunction<X, T> controlBehavior(
       @Param(value = "individual", dNPM = "ea.nf.identity()")
           NamedFunction<X, Individual<?, ?, SingleAgentControlProblem.Outcome<O, A, S, ?>>> individualF,
-      @Param(value = "f", dNPM = "ea.nf.identity()") NamedFunction<SortedMap<Double, SingleAgentTask.Step<O, A, S>>, T> function,
+      @Param(value = "f", dNPM = "ea.nf.identity()")
+          NamedFunction<SortedMap<Double, SingleAgentTask.Step<O, A, S>>, T> function,
       @Param(value = "s", dS = "%s") String s) {
     return NamedFunction.build(
         c(function.getName(), "control.behavior", individualF.getName()),
         s.equals("%s") ? function.getFormat() : s,
         x -> function.apply(individualF.apply(x).quality().behavior()));
   }
+
   @SuppressWarnings("unused")
   public static <X, Q, T> NamedFunction<X, T> controlQuality(
       @Param(value = "individual", dNPM = "ea.nf.identity()")
