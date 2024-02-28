@@ -19,11 +19,11 @@ ea.experiment(
       ea.s.cabea(name = "cabea-cc-21"; keepProbability = 0; substrate = contour_cross; gridSize = 21)
     ]) * (problem = [
       ea.p.s.multiObjectiveIntOneMax(name = "mo-25"; p = 25);
-      ea.p.mhoProblem(name = "mt2mo-25"; mtProblem = ea.p.s.multiModalIntOneMax(nOfTargets = 2; p = 25));
+      ea.p.toMho(name = "mt2mo-25"; mtProblem = ea.p.s.multiModalIntOneMax(nOfTargets = 2; p = 25));
       ea.p.s.multiObjectiveIntOneMax(name = "mo-100"; p = 100);
-      ea.p.mhoProblem(name = "mt2mo-100"; mtProblem = ea.p.s.multiModalIntOneMax(nOfTargets = 2; p = 100));
+      ea.p.toMho(name = "mt2mo-100"; mtProblem = ea.p.s.multiModalIntOneMax(nOfTargets = 2; p = 100));
       ea.p.s.multiObjectiveIntOneMax(name = "mo-500"; p = 500);
-      ea.p.mhoProblem(name = "mt2mo-500"; mtProblem = ea.p.s.multiModalIntOneMax(nOfTargets = 2; p = 500))
+      ea.p.toMho(name = "mt2mo-500"; mtProblem = ea.p.s.multiModalIntOneMax(nOfTargets = 2; p = 500))
     ]) * [
     ea.run()
   ];

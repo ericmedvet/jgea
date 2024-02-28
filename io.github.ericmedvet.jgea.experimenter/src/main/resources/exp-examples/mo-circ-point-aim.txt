@@ -18,9 +18,9 @@ ea.experiment(
       ea.s.cabea(name = "cabea-e-21"; keepProbability = 0; substrate = empty; gridSize = 21);
       ea.s.cabea(name = "cabea-cc-21"; keepProbability = 0; substrate = contour_cross; gridSize = 21)
     ]) * (problem = [
-      ea.p.mhoProblem(name = "mt2mo-cpa-2-2"; mtProblem = ea.p.s.circularPointsAiming(n = 2; p = 2));
-      ea.p.mhoProblem(name = "mt2mo-cpa-2-10"; mtProblem = ea.p.s.circularPointsAiming(n = 2; p = 10));
-      ea.p.mhoProblem(name = "mt2mo-cpa-2-50"; mtProblem = ea.p.s.circularPointsAiming(n = 2; p = 50))
+      ea.p.toMho(name = "mt2mo-cpa-2-2"; mtProblem = ea.p.s.circularPointsAiming(n = 2; p = 2));
+      ea.p.toMho(name = "mt2mo-cpa-2-10"; mtProblem = ea.p.s.circularPointsAiming(n = 2; p = 10));
+      ea.p.toMho(name = "mt2mo-cpa-2-50"; mtProblem = ea.p.s.circularPointsAiming(n = 2; p = 50))
     ]) * [
     ea.run()
   ];

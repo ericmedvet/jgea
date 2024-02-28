@@ -33,9 +33,8 @@ import io.github.ericmedvet.jgea.experimenter.listener.decoupled.*;
 import io.github.ericmedvet.jgea.experimenter.listener.net.NetMultiSink;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator.PlotAccumulatorFactory;
 import io.github.ericmedvet.jgea.experimenter.listener.telegram.TelegramUpdater;
-import io.github.ericmedvet.jgea.problem.control.SingleAgentControlProblem;
+import io.github.ericmedvet.jgea.problem.simulation.SimulationBasedProblem;
 import io.github.ericmedvet.jnb.core.*;
-import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
 import io.github.ericmedvet.jviz.core.drawer.Drawer;
 import io.github.ericmedvet.jviz.core.drawer.TimedSequenceDrawer;
 import io.github.ericmedvet.jviz.core.plot.CsvPlotter;
@@ -462,15 +461,15 @@ public class Listeners {
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, O, A, CS, Q, K>
+  public static <G, S, B, Q, K>
       BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, K, ?>, Run<?, G, S, K>>>
-          runLastControlVideoSaver(
+          runLastSimulationVideoSaver(
               @Param(value = "function", dNPM = "ea.nf.bestFitness()")
                   NamedFunction<
                           POCPopulationState<?, G, S, K, ?>,
-                          SingleAgentControlProblem.Outcome<O, A, CS, Q>>
+                          SimulationBasedProblem.Outcome<B, Q>>
                       function,
-              @Param("drawer") TimedSequenceDrawer<SingleAgentTask.Step<O, A, CS>> drawer,
+              @Param("drawer") TimedSequenceDrawer<B> drawer,
               @Param(value = "w", dI = 500) int w,
               @Param(value = "h", dI = 500) int h,
               @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder,
