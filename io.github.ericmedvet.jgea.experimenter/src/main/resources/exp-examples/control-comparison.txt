@@ -9,7 +9,10 @@ ea.experiment(
       second = ea.m.mrfToNds()
     )]) * [
       ea.s.ga(representation = ea.r.doubleString());
-      ea.s.pso()
+      ea.s.mapElites(representation = ea.r.doubleString(); descriptors = [
+        ea.s.me.d.ofFitness(f = ea.nf.simulationBehavior(postF = ea.nf.composeU(preF = ds.e.n.closestRobotPosition(); postF = ds.e.n.x())); min = 0; max = 1; nOfBins = 10);
+        ea.s.me.d.ofFitness(f = ea.nf.simulationBehavior(postF = ea.nf.composeU(preF = ds.e.n.closestRobotPosition(); postF = ds.e.n.y())); min = 0; max = 1; nOfBins = 10)
+      ])
     ]) * [
     ea.run()
   ];
@@ -17,9 +20,10 @@ ea.experiment(
     ea.l.console(
       functions = [
         ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
-        ea.nf.simulationQuality(s = "%6.2f"; individual = ea.nf.best());
-        ea.nf.hist(collection = ea.nf.each(map = ea.nf.simulationQuality(); collection = ea.nf.all()));
-        ea.nf.percentile(collection = ea.nf.each(map = ea.nf.simulationQuality(); collection = ea.nf.all()); p = 0.75; s = "%6.2f")
+        ea.nf.simulationQuality(s = "%6.2f"; preF = ea.nf.bestFitness());
+        ea.nf.hist(collection = ea.nf.each(map = ea.nf.simulationQuality(preF = ea.nf.fitness()); collection = ea.nf.all()));
+        ea.nf.percentile(collection = ea.nf.each(map = ea.nf.simulationQuality(preF = ea.nf.fitness()); collection = ea.nf.all()); p = 0.75; s = "%6.2f");
+        ea.nf.simulationBehavior(preF = ea.nf.bestFitness(); postF = ea.nf.composeU(preF = ds.e.n.closestRobotPosition(); postF = ds.e.n.x()))
       ];
       runKeys = [
         ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
@@ -34,17 +38,41 @@ ea.experiment(
       type = lines;
       plot = ea.plot.fitnessPlotMatrix(
         xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 50);
-        yFunction = ea.nf.simulationQuality(individual = ea.nf.best())
+        yFunction = ea.nf.simulationQuality(preF = ea.nf.bestFitness())
       )
     );
     ea.l.runImageVideoSaver(
       drawer = ds.d.navigation();
-      function = ea.nf.simulationBehavior(individual = ea.nf.best());
+      function = ea.nf.simulationBehavior(preF = ea.nf.bestFitness());
       filePathTemplate = "../bests-{problem.name}-{solver.name}-{randomGenerator.seed:%04d}.mp4"
     );
     ea.l.runLastSimulationVideoSaver(
       drawer = ds.d.navigation();
       filePathTemplate = "../finalBest-{problem.name}-{solver.name}-{randomGenerator.seed:%04d}.mp4"
+    );
+    ea.l.runPlotSaver(
+      w = 1000; h = 350;
+      filePathTemplate = "../me-{problem.name}-{solver.name}-{randomGenerator.seed}.png";
+      type = univariate_grid;
+      plot = ea.plot.mapElitesPopulation(
+        predicateValue = ea.nf.quantized(f = ea.nf.evals(); r = 1000; s = "%.0f");
+        condition = ea.predicate.inD(
+          values = [0; 500; 1000; 1500; 2000; 2500]
+        );
+        individualFunctions = [
+          ea.nf.simulationQuality(preF = ea.nf.fitness())
+        ]
+      );
+      condition = ea.predicate.all(conditions = [
+        ea.predicate.matches(
+          f = ea.nf.runKey(runKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}"));
+          regex = "me.*"
+        );
+        ea.predicate.inS(
+          f = ea.nf.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
+          values = ["1"]
+        )
+      ])
     )
   ]
 )
