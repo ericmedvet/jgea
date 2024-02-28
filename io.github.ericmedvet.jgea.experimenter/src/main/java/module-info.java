@@ -33,6 +33,7 @@ module io.github.ericmedvet.jgea.experimenter {
   requires io.github.ericmedvet.jgea.core;
   requires io.github.ericmedvet.jgea.problem;
   requires io.github.ericmedvet.jsdynsym.core;
+  requires io.github.ericmedvet.jsdynsym.control;
   requires io.github.ericmedvet.jsdynsym.buildable;
   requires io.github.ericmedvet.jviz.core;
   requires java.desktop;

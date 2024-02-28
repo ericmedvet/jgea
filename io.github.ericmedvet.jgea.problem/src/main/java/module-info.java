@@ -21,7 +21,6 @@ module io.github.ericmedvet.jgea.problem {
   exports io.github.ericmedvet.jgea.problem.booleanfunction;
   exports io.github.ericmedvet.jgea.problem.classification;
   exports io.github.ericmedvet.jgea.problem.control;
-  exports io.github.ericmedvet.jgea.problem.control.navigation;
   exports io.github.ericmedvet.jgea.problem.extraction;
   exports io.github.ericmedvet.jgea.problem.extraction.string;
   exports io.github.ericmedvet.jgea.problem.image;
@@ -38,6 +37,7 @@ module io.github.ericmedvet.jgea.problem {
   requires io.github.ericmedvet.jgea.core;
   requires io.github.ericmedvet.jnb.datastructure;
   requires io.github.ericmedvet.jsdynsym.core;
+  requires io.github.ericmedvet.jsdynsym.control;
   requires io.github.ericmedvet.jviz.core;
   requires commons.math3;
   requires java.desktop;

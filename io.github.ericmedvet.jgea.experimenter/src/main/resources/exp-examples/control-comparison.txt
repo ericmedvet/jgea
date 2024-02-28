@@ -1,16 +1,15 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
     (problem = [
-      ea.p.c.navigation(arena = small_barrier);
-      ea.p.c.navigation(arena = large_barrier);
-      ea.p.c.navigation(arena = easy_maze)
+      ea.p.c.numericalTotalOrder(environment = ds.e.navigation(arena = large_barrier); f = ds.e.n.avgD(); finalT = 50);
+      ea.p.c.numericalTotalOrder(environment = ds.e.navigation(arena = easy_maze); f = ds.e.n.avgD(); finalT = 50)
     ]) *
-    (solver = (nEval = [10000]) * (mapper = [ea.m.compose(
+    (solver = (nEval = [2500]) * (mapper = [ea.m.compose(
       first = ea.m.mlpToMrf(innerLayerRatio = 5);
       second = ea.m.mrfToNds()
     )]) * [
       ea.s.ga(representation = ea.r.doubleString());
-      ea.s.cmaEs()
+      ea.s.pso()
     ]) * [
     ea.run()
   ];
@@ -39,9 +38,13 @@ ea.experiment(
       )
     );
     ea.l.runImageVideoSaver(
-      drawer = ea.d.navigationOutcome();
-      function = ea.nf.bestFitness();
+      drawer = ds.d.navigation();
+      function = ea.nf.controlBehavior(individual = ea.nf.best());
       filePathTemplate = "../bests-{problem.name}-{solver.name}-{randomGenerator.seed:%04d}.mp4"
+    );
+    ea.l.runLastControlVideoSaver(
+      drawer = ds.d.navigation();
+      filePathTemplate = "../finalBest-{problem.name}-{solver.name}-{randomGenerator.seed:%04d}.mp4"
     )
   ]
 )
