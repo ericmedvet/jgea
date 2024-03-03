@@ -35,7 +35,6 @@
 
 package io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator;
 
-import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.Table;

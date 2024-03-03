@@ -24,8 +24,6 @@ import static io.github.ericmedvet.jgea.core.listener.NamedFunctions.*;
 
 import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
-import io.github.ericmedvet.jgea.core.listener.NamedFunction;
-import io.github.ericmedvet.jgea.core.listener.NamedFunctions;
 import io.github.ericmedvet.jgea.core.listener.TabularPrinter;
 import io.github.ericmedvet.jgea.core.operator.GeneticOperator;
 import io.github.ericmedvet.jgea.core.problem.Problem;

@@ -21,7 +21,6 @@ package io.github.ericmedvet.jgea.experimenter.listener.decoupled;
 
 import io.github.ericmedvet.jgea.core.listener.Listener;
 import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
-import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.core.util.Progress;

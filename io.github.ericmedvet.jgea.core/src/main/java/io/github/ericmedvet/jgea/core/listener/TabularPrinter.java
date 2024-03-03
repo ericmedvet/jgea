@@ -23,8 +23,10 @@ package io.github.ericmedvet.jgea.core.listener;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.core.util.StringUtils;
+import io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction;
 import java.io.PrintStream;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -38,8 +40,8 @@ public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
 
   private static final String SEP = " ";
 
-  private final List<Pair<? extends NamedFunction<? super E, ?>, Integer>> ePairs;
-  private final List<Pair<? extends NamedFunction<? super K, ?>, Integer>> kPairs;
+  private final List<Pair<? extends FormattedNamedFunction<? super E, ?>, Integer>> ePairs;
+  private final List<Pair<? extends FormattedNamedFunction<? super K, ?>, Integer>> kPairs;
   private final PrintStream ps;
   private final int headerInterval;
   private final int legendInterval;
@@ -53,30 +55,28 @@ public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
   private int lineCounter = 0;
 
   public TabularPrinter(
-      List<? extends NamedFunction<? super E, ?>> eFunctions,
-      List<? extends NamedFunction<? super K, ?>> kFunctions) {
-    this(eFunctions, kFunctions, System.out, 25, 100, true, true, true, true);
+      List<? extends Function<? super E, ?>> eFunctions, List<? extends Function<? super K, ?>> kFunctions) {
+    this(eFunctions, kFunctions, System.out, 25, 100, true, true, true);
   }
 
   public TabularPrinter(
-      List<? extends NamedFunction<? super E, ?>> eFunctions,
-      List<? extends NamedFunction<? super K, ?>> kFunctions,
+      List<? extends Function<? super E, ?>> eFunctions,
+      List<? extends Function<? super K, ?>> kFunctions,
       PrintStream ps,
       int headerInterval,
       int legendInterval,
       boolean showLegend,
       boolean showVariation,
-      boolean useColors,
-      boolean robust) {
-    eFunctions = robust ? eFunctions.stream().map(NamedFunction::robust).toList() : eFunctions;
-    kFunctions = robust ? kFunctions.stream().map(NamedFunction::robust).toList() : kFunctions;
+      boolean useColors) {
     ePairs = eFunctions.stream()
+        .map(FormattedNamedFunction::from)
         .map(f -> Pair.of(
-            f, Math.max(StringUtils.collapse(f.getName()).length(), StringUtils.formatSize(f.getFormat()))))
+            f, Math.max(StringUtils.collapse(f.name()).length(), StringUtils.formatSize(f.format()))))
         .collect(Collectors.toList());
     kPairs = kFunctions.stream()
+        .map(FormattedNamedFunction::from)
         .map(f -> Pair.of(
-            f, Math.max(StringUtils.collapse(f.getName()).length(), StringUtils.formatSize(f.getFormat()))))
+            f, Math.max(StringUtils.collapse(f.name()).length(), StringUtils.formatSize(f.format()))))
         .collect(Collectors.toList());
     this.ps = ps;
     this.headerInterval = headerInterval;
@@ -85,24 +85,24 @@ public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
     this.showVariation = showVariation;
     this.useColors = useColors;
     List<String> kHeaders = kPairs.stream()
-        .map(p -> StringUtils.justify(StringUtils.collapse(p.first().getName()), p.second()))
+        .map(p -> StringUtils.justify(StringUtils.collapse(p.first().name()), p.second()))
         .toList();
     List<String> eHeaders = ePairs.stream()
-        .map(p -> StringUtils.justify(StringUtils.collapse(p.first().getName()), p.second())
+        .map(p -> StringUtils.justify(StringUtils.collapse(p.first().name()), p.second())
             + (showVariation ? " " : ""))
         .toList();
     header = String.join(SEP, Misc.concat(List.of(kHeaders, eHeaders)));
     int w = ePairs.stream()
-        .mapToInt(p -> StringUtils.collapse(p.first().getName()).length())
+        .mapToInt(p -> StringUtils.collapse(p.first().name()).length())
         .max()
         .orElse(1);
     legend = "Legend:\n"
         + Misc.concat(List.of(kPairs, ePairs)).stream()
             .map(p -> String.format(
                 "%" + w + "." + w + "s → %s [%s]",
-                StringUtils.collapse(p.first().getName()),
-                p.first().getName(),
-                p.first().getFormat()))
+                StringUtils.collapse(p.first().name()),
+                p.first().name(),
+                p.first().format()))
             .collect(Collectors.joining("\n"));
   }
 
@@ -112,7 +112,7 @@ public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
     final String fixedS = IntStream.range(0, kPairs.size())
         .mapToObj(i -> format(
             fixedValues.get(i),
-            kPairs.get(i).first().getFormat(),
+            kPairs.get(i).first().format(),
             kPairs.get(i).second()))
         .collect(Collectors.joining(SEP));
     return new Listener<>() {
@@ -127,7 +127,7 @@ public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
                 values.get(i),
                 lastValues[i],
                 secondLastValues[i],
-                ePairs.get(i).first().getFormat(),
+                ePairs.get(i).first().format(),
                 ePairs.get(i).second()))
             .collect(Collectors.joining(SEP));
         IntStream.range(0, ePairs.size()).forEach(i -> {

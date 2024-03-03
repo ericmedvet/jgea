@@ -20,7 +20,6 @@
 
 package io.github.ericmedvet.jgea.experimenter.builders;
 
-import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jgea.core.problem.MultiTargetProblem;
 import io.github.ericmedvet.jgea.core.problem.ProblemWithValidation;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
@@ -40,16 +39,14 @@ import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.core.ParamMap;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.GridUtils;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@Discoverable(prefixTemplate = "ea.namedFunctions|nf")
+@Discoverable(prefixTemplate = "ea.function|f")
 public class NamedFunctions {
 
   private static final Logger L = Logger.getLogger(NamedFunctions.class.getName());
@@ -524,5 +521,18 @@ public class NamedFunctions {
     return NamedFunction.build(c("validation", individualF.getName()), s, state -> state.problem()
         .validationQualityFunction()
         .apply(individualF.apply(state).solution()));
+  }
+
+  public static Function<String, Object> fromBase64() {
+    return s -> {
+      try (ByteArrayInputStream bais =
+              new ByteArrayInputStream(Base64.getDecoder().decode(s));
+          ObjectInputStream ois = new ObjectInputStream(bais)) {
+        return ois.readObject();
+      } catch (Throwable t) {
+        L.warning("Cannot deserialize: %s".formatted(t));
+        return null;
+      }
+    };
   }
 }

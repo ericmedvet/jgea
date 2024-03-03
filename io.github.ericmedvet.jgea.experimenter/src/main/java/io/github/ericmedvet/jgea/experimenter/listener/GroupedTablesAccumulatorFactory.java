@@ -21,7 +21,6 @@ package io.github.ericmedvet.jgea.experimenter.listener;
 
 import io.github.ericmedvet.jgea.core.listener.Accumulator;
 import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
-import io.github.ericmedvet.jgea.core.listener.NamedFunction;
 import io.github.ericmedvet.jnb.datastructure.HashMapTable;
 import io.github.ericmedvet.jnb.datastructure.Table;
 import java.util.LinkedHashMap;
