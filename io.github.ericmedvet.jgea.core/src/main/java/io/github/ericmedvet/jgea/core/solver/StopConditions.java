@@ -43,7 +43,7 @@ public class StopConditions {
   @SuppressWarnings("unused")
   public static <I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
       ProgressBasedStopCondition<POCPopulationState<I, G, S, Q, P>> nOfFitnessEvaluations(final long n) {
-    return s -> new Progress(0, n, s.nOfFitnessEvaluations());
+    return s -> new Progress(0, n, s.nOfQualityEvaluations());
   }
 
   @SuppressWarnings("unused")

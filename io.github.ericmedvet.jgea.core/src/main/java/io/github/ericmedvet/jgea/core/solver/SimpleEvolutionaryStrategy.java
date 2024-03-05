@@ -106,7 +106,7 @@ public class SimpleEvolutionaryStrategy<S, Q>
           state.problem,
           state.stopCondition,
           state.nOfBirths() + nOfBirths,
-          state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
+          state.nOfQualityEvaluations() + nOfFitnessEvaluations,
           PartiallyOrderedCollection.from(listPopulation, comparator),
           listPopulation.stream().sorted(comparator).toList(),
           means);

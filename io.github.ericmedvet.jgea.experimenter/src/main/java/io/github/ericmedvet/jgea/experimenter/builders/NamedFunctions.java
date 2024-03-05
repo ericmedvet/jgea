@@ -186,7 +186,7 @@ public class NamedFunctions {
 
   @SuppressWarnings("unused")
   public static NamedFunction<POCPopulationState<?, ?, ?, ?, ?>, Long> evals() {
-    return NamedFunction.build("evals", "%6d", POCPopulationState::nOfFitnessEvaluations);
+    return NamedFunction.build("evals", "%6d", POCPopulationState::nOfQualityEvaluations);
   }
 
   @SuppressWarnings("unused")

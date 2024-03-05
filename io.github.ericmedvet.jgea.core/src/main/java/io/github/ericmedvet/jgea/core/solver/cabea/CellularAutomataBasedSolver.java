@@ -121,7 +121,7 @@ public class CellularAutomataBasedSolver<G, S, Q>
           state.problem,
           state.stopCondition,
           state.nOfBirths() + nOfBirths,
-          state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
+          state.nOfQualityEvaluations() + nOfFitnessEvaluations,
           PartiallyOrderedCollection.from(
               gridPopulation.values().stream()
                   .filter(Objects::nonNull)

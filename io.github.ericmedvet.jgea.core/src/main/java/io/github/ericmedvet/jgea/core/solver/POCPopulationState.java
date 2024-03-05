@@ -29,7 +29,7 @@ public interface POCPopulationState<I extends Individual<G, S, Q>, G, S, Q, P ex
     extends State<P, S> {
   long nOfBirths();
 
-  long nOfFitnessEvaluations();
+  long nOfQualityEvaluations();
 
   PartiallyOrderedCollection<I> pocPopulation();
 }

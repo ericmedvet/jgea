@@ -105,7 +105,7 @@ public class SpeciatedEvolver<G, S, Q>
           state.problem,
           state.stopCondition,
           state.nOfBirths() + nOfBirths,
-          state.nOfFitnessEvaluations() + nOfFitnessEvaluations,
+          state.nOfQualityEvaluations() + nOfFitnessEvaluations,
           population,
           parentSpecies);
     }
