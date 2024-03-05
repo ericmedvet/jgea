@@ -21,6 +21,7 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator;
 
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
+import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jnb.datastructure.Table;
 import io.github.ericmedvet.jviz.core.plot.Value;
 import io.github.ericmedvet.jviz.core.plot.XYDataSeries;
@@ -29,23 +30,24 @@ import io.github.ericmedvet.jviz.core.plot.XYPlot;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class XYDataSeriesSEPAF<E, R, X, P> extends AbstractSingleEPAF<E, XYDataSeriesPlot, R, List<XYDataSeries>, X> {
-  private final List<NamedFunction<? super E, Collection<P>>> pointFunctions;
-  private final NamedFunction<? super P, ? extends Number> xFunction;
-  private final NamedFunction<? super P, ? extends Number> yFunction;
+  private final List<Function<? super E, Collection<P>>> pointFunctions;
+  private final Function<? super P, ? extends Number> xFunction;
+  private final Function<? super P, ? extends Number> yFunction;
   private final DoubleRange xRange;
   private final DoubleRange yRange;
 
   public XYDataSeriesSEPAF(
-      NamedFunction<? super R, String> titleFunction,
-      NamedFunction<? super E, X> predicateValueFunction,
+      Function<? super R, String> titleFunction,
+      Function<? super E, X> predicateValueFunction,
       Predicate<? super X> predicate,
       boolean unique,
-      List<NamedFunction<? super E, Collection<P>>> pointFunctions,
-      NamedFunction<? super P, ? extends Number> xFunction,
-      NamedFunction<? super P, ? extends Number> yFunction,
+      List<Function<? super E, Collection<P>>> pointFunctions,
+      Function<? super P, ? extends Number> xFunction,
+      Function<? super P, ? extends Number> yFunction,
       DoubleRange xRange,
       DoubleRange yRange) {
     super(titleFunction, predicateValueFunction, predicate, unique);
@@ -62,7 +64,7 @@ public class XYDataSeriesSEPAF<E, R, X, P> extends AbstractSingleEPAF<E, XYDataS
         "",
         pointFunctions.stream()
             .map(pf -> XYDataSeries.of(
-                    pf.getName(),
+                    NamedFunction.name(pf),
                     pf.apply(e).stream()
                         .map(p -> new XYDataSeries.Point(
                             Value.of(xFunction
@@ -80,10 +82,10 @@ public class XYDataSeriesSEPAF<E, R, X, P> extends AbstractSingleEPAF<E, XYDataS
   protected XYDataSeriesPlot buildPlot(Table<String, String, List<XYDataSeries>> data, R r) {
     return new XYDataSeriesPlot(
         titleFunction.apply(r),
-        predicateValueFunction.getName(),
+        NamedFunction.name(predicateValueFunction),
         "",
-        xFunction.getName(),
-        yFunction.getName(),
+        NamedFunction.name(xFunction),
+        NamedFunction.name(yFunction),
         xRange,
         yRange,
         Grid.create(

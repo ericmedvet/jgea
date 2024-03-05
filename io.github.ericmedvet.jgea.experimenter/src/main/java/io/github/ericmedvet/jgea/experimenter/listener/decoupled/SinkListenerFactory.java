@@ -26,9 +26,12 @@ import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
+import io.github.ericmedvet.jnb.datastructure.FormattedFunction;
+import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -36,8 +39,8 @@ import java.util.stream.Stream;
  */
 public class SinkListenerFactory<G, S, Q>
     implements ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>> {
-  private final List<NamedFunction<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions;
-  private final List<NamedFunction<? super Run<?, G, S, Q>, ?>> runFunctions;
+  private final List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions;
+  private final List<Function<? super Run<?, G, S, Q>, ?>> runFunctions;
   private final Experiment experiment;
   private final Sink<MachineKey, MachineInfo> machineSink;
   private final Sink<ProcessKey, ProcessInfo> processSink;
@@ -52,8 +55,8 @@ public class SinkListenerFactory<G, S, Q>
   private final LogCapturer logCapturer;
 
   public SinkListenerFactory(
-      List<NamedFunction<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
-      List<NamedFunction<? super Run<?, G, S, Q>, ?>> runFunctions,
+      List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
+      List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
       Experiment experiment,
       Sink<MachineKey, MachineInfo> machineSink,
       Sink<ProcessKey, ProcessInfo> processSink,
@@ -84,7 +87,7 @@ public class SinkListenerFactory<G, S, Q>
                 experiment.runs().size(),
                 Stream.of(runFunctions, stateFunctions)
                     .flatMap(List::stream)
-                    .map(f -> new Pair<>(f.getName(), f.getFormat()))
+                    .map(f -> new Pair<>(NamedFunction.name(f), FormattedFunction.format(f)))
                     .toList(),
                 now)),
         experimentSink);
@@ -102,7 +105,7 @@ public class SinkListenerFactory<G, S, Q>
     LocalDateTime startDateTime = LocalDateTime.now();
     runSink.push(runKey, new RunInfo(run.index(), startDateTime, Progress.NA, false));
     runFunctions.forEach(
-        f -> dataItemSink.push(new DataItemKey(runKey, f.getName()), new DataItemInfo(f.apply(run))));
+        f -> dataItemSink.push(new DataItemKey(runKey, NamedFunction.name(f)), new DataItemInfo(f.apply(run))));
     return new Listener<>() {
       @Override
       public void listen(POCPopulationState<?, G, S, Q, ?> state) {
@@ -110,7 +113,7 @@ public class SinkListenerFactory<G, S, Q>
           LocalDateTime now = LocalDateTime.now();
           runSink.push(now, runKey, new RunInfo(run.index(), startDateTime, state.progress(), false));
           stateFunctions.forEach(f -> dataItemSink.push(
-              now, new DataItemKey(runKey, f.getName()), new DataItemInfo(f.apply(state))));
+              now, new DataItemKey(runKey, NamedFunction.name(f)), new DataItemInfo(f.apply(state))));
         }
       }
 

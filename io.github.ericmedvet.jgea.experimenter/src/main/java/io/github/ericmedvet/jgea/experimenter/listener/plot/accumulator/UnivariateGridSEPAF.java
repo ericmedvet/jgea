@@ -21,6 +21,7 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator;
 
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
+import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jnb.datastructure.Table;
 import io.github.ericmedvet.jviz.core.plot.RangedGrid;
 import io.github.ericmedvet.jviz.core.plot.UnivariateGridPlot;
@@ -28,20 +29,21 @@ import io.github.ericmedvet.jviz.core.plot.XYPlot;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class UnivariateGridSEPAF<E, R, X, G> extends AbstractSingleEPAF<E, UnivariateGridPlot, R, Grid<Double>, X> {
-  private final NamedFunction<? super E, Grid<G>> gridFunction;
-  private final List<NamedFunction<? super G, ? extends Number>> gridValueFunctions;
+  private final Function<? super E, Grid<G>> gridFunction;
+  private final List<Function<? super G, ? extends Number>> gridValueFunctions;
   private final DoubleRange valueRange;
 
   public UnivariateGridSEPAF(
-      NamedFunction<? super R, String> titleFunction,
-      NamedFunction<? super E, X> predicateValueFunction,
+      Function<? super R, String> titleFunction,
+      Function<? super E, X> predicateValueFunction,
       Predicate<? super X> predicate,
       boolean unique,
-      NamedFunction<? super E, Grid<G>> gridFunction,
-      List<NamedFunction<? super G, ? extends Number>> gridValueFunctions,
+      Function<? super E, Grid<G>> gridFunction,
+      List<Function<? super G, ? extends Number>> gridValueFunctions,
       DoubleRange valueRange) {
     super(titleFunction, predicateValueFunction, predicate, unique);
     this.gridFunction = gridFunction;
@@ -54,7 +56,7 @@ public class UnivariateGridSEPAF<E, R, X, G> extends AbstractSingleEPAF<E, Univa
     Grid<G> grid = gridFunction.apply(e);
     return gridValueFunctions.stream()
         .map(f -> Map.entry(
-            f.getName(),
+            NamedFunction.name(f),
             grid.map(g -> Objects.isNull(g) ? null : f.apply(g).doubleValue())))
         .toList();
   }
@@ -63,7 +65,7 @@ public class UnivariateGridSEPAF<E, R, X, G> extends AbstractSingleEPAF<E, Univa
   protected UnivariateGridPlot buildPlot(Table<String, String, Grid<Double>> data, R r) {
     return new UnivariateGridPlot(
         titleFunction.apply(r),
-        predicateValueFunction.getName(),
+        NamedFunction.name(predicateValueFunction),
         "value",
         data.get(0, 0) instanceof RangedGrid<?> rg ? rg.xName() : "x",
         data.get(0, 0) instanceof RangedGrid<?> rg ? rg.yName() : "y",

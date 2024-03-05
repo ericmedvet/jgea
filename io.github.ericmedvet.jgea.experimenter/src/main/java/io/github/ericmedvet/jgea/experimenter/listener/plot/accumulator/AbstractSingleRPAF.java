@@ -23,12 +23,13 @@ import io.github.ericmedvet.jgea.core.listener.Accumulator;
 import io.github.ericmedvet.jviz.core.plot.XYPlot;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public abstract class AbstractSingleRPAF<E, P extends XYPlot<D>, R, D> implements PlotAccumulatorFactory<E, P, R, D> {
 
-  protected final NamedFunction<? super R, String> titleFunction;
+  protected final Function<? super R, String> titleFunction;
 
-  public AbstractSingleRPAF(NamedFunction<? super R, String> titleFunction) {
+  public AbstractSingleRPAF(Function<? super R, String> titleFunction) {
     this.titleFunction = titleFunction;
   }
 

@@ -21,25 +21,27 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator;
 
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
+import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jviz.core.plot.Value;
 import io.github.ericmedvet.jviz.core.plot.XYDataSeries;
 import io.github.ericmedvet.jviz.core.plot.XYDataSeriesPlot;
 import io.github.ericmedvet.jviz.core.plot.XYPlot;
 import java.util.List;
+import java.util.function.Function;
 
 public class XYDataSeriesSRPAF<E, R> extends AbstractSingleRPAF<E, XYDataSeriesPlot, R, List<XYDataSeries>> {
 
-  private final NamedFunction<? super E, ? extends Number> xFunction;
-  private final List<NamedFunction<? super E, ? extends Number>> yFunctions;
+  private final Function<? super E, ? extends Number> xFunction;
+  private final List<Function<? super E, ? extends Number>> yFunctions;
   private final DoubleRange xRange;
   private final DoubleRange yRange;
   private final boolean sorted;
   private final boolean firstDifference;
 
   public XYDataSeriesSRPAF(
-      NamedFunction<? super R, String> titleFunction,
-      NamedFunction<? super E, ? extends Number> xFunction,
-      List<NamedFunction<? super E, ? extends Number>> yFunctions,
+      Function<? super R, String> titleFunction,
+      Function<? super E, ? extends Number> xFunction,
+      List<Function<? super E, ? extends Number>> yFunctions,
       DoubleRange xRange,
       DoubleRange yRange,
       boolean sorted,
@@ -57,7 +59,7 @@ public class XYDataSeriesSRPAF<E, R> extends AbstractSingleRPAF<E, XYDataSeriesP
   protected List<XYDataSeries> buildData(List<E> es, R r) {
     return yFunctions.stream()
         .map(yf -> XYDataSeries.of(
-            yf.getName(),
+            NamedFunction.name(yf),
             es.stream()
                 .map(e -> new XYDataSeries.Point(
                     Value.of(xFunction.apply(e).doubleValue()),
@@ -78,7 +80,7 @@ public class XYDataSeriesSRPAF<E, R> extends AbstractSingleRPAF<E, XYDataSeriesP
         titleFunction.apply(r),
         "",
         "",
-        xFunction.getName(),
+        NamedFunction.name(xFunction),
         "value",
         xRange,
         yRange,

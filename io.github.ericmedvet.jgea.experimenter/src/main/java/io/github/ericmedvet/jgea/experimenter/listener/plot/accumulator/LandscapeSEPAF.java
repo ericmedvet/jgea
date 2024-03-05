@@ -37,6 +37,7 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator;
 
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
+import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jnb.datastructure.Table;
 import io.github.ericmedvet.jviz.core.plot.LandscapePlot;
 import io.github.ericmedvet.jviz.core.plot.Value;
@@ -46,26 +47,27 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.DoubleBinaryOperator;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class LandscapeSEPAF<E, R, X, P> extends AbstractSingleEPAF<E, LandscapePlot, R, LandscapePlot.Data, X> {
-  private final List<NamedFunction<? super E, Collection<P>>> pointFunctions;
-  private final NamedFunction<? super P, ? extends Number> xFunction;
-  private final NamedFunction<? super P, ? extends Number> yFunction;
-  private final NamedFunction<E, DoubleBinaryOperator> valueFunction;
+  private final List<Function<? super E, Collection<P>>> pointFunctions;
+  private final Function<? super P, ? extends Number> xFunction;
+  private final Function<? super P, ? extends Number> yFunction;
+  private final Function<E, DoubleBinaryOperator> valueFunction;
   private final DoubleRange xRange;
   private final DoubleRange yRange;
   private final DoubleRange valueRange;
 
   public LandscapeSEPAF(
-      NamedFunction<? super R, String> titleFunction,
-      NamedFunction<? super E, X> predicateValueFunction,
+      Function<? super R, String> titleFunction,
+      Function<? super E, X> predicateValueFunction,
       Predicate<? super X> predicate,
       boolean unique,
-      List<NamedFunction<? super E, Collection<P>>> pointFunctions,
-      NamedFunction<? super P, ? extends Number> xFunction,
-      NamedFunction<? super P, ? extends Number> yFunction,
-      NamedFunction<E, DoubleBinaryOperator> valueFunction,
+      List<Function<? super E, Collection<P>>> pointFunctions,
+      Function<? super P, ? extends Number> xFunction,
+      Function<? super P, ? extends Number> yFunction,
+      Function<E, DoubleBinaryOperator> valueFunction,
       DoubleRange xRange,
       DoubleRange yRange,
       DoubleRange valueRange) {
@@ -87,7 +89,7 @@ public class LandscapeSEPAF<E, R, X, P> extends AbstractSingleEPAF<E, LandscapeP
             valueFunction.apply(e),
             pointFunctions.stream()
                 .map(pf -> XYDataSeries.of(
-                        pf.getName(),
+                        NamedFunction.name(pf),
                         pf.apply(e).stream()
                             .map(p -> new XYDataSeries.Point(
                                 Value.of(
@@ -107,10 +109,10 @@ public class LandscapeSEPAF<E, R, X, P> extends AbstractSingleEPAF<E, LandscapeP
   protected LandscapePlot buildPlot(Table<String, String, LandscapePlot.Data> data, R r) {
     return new LandscapePlot(
         titleFunction.apply(r),
-        predicateValueFunction.getName(),
+        NamedFunction.name(predicateValueFunction),
         "",
-        xFunction.getName(),
-        yFunction.getName(),
+        NamedFunction.name(xFunction),
+        NamedFunction.name(yFunction),
         xRange,
         yRange,
         valueRange,

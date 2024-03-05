@@ -110,7 +110,7 @@ public class CooperativeSolver<
       QualityBasedProblem<S, Q> problem,
       Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
       long nOfBirths,
-      long nOfFitnessEvaluations,
+      long nOfQualityEvaluations,
       PartiallyOrderedCollection<Individual<Void, S, Q>> pocPopulation,
       T1 state1,
       T2 state2)
@@ -167,7 +167,7 @@ public class CooperativeSolver<
           state.problem,
           state.stopCondition,
           state.nOfBirths + individuals.size(),
-          state.nOfFitnessEvaluations + individuals.size(),
+          state.nOfQualityEvaluations + individuals.size(),
           PartiallyOrderedCollection.from(individuals, partialComparator),
           state1,
           state2);

@@ -127,7 +127,7 @@ public class ParticleSwarmOptimization<S, Q>
       TotalOrderQualityBasedProblem<S, Q> problem,
       Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
       long nOfBirths,
-      long nOfFitnessEvaluations,
+      long nOfQualityEvaluations,
       PartiallyOrderedCollection<PSOIndividual<S, Q>> pocPopulation,
       List<PSOIndividual<S, Q>> listPopulation,
       PSOIndividual<S, Q> knownBest)

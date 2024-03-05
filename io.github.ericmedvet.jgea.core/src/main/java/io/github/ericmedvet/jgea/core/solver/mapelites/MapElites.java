@@ -71,7 +71,7 @@ public class MapElites<G, S, Q>
       QualityBasedProblem<S, Q> problem,
       Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
       long nOfBirths,
-      long nOfFitnessEvaluations,
+      long nOfQualityEvaluations,
       PartiallyOrderedCollection<Individual<G, S, Q>> pocPopulation,
       Map<List<Integer>, Individual<G, S, Q>> mapOfElites,
       List<Descriptor<G, S, Q>> descriptors)
@@ -109,7 +109,7 @@ public class MapElites<G, S, Q>
           state.problem,
           state.stopCondition,
           state.nOfBirths + nOfBirths,
-          state.nOfFitnessEvaluations + nOfFitnessEvaluations,
+          state.nOfQualityEvaluations + nOfFitnessEvaluations,
           PartiallyOrderedCollection.from(mapOfElites.values(), partialComparator),
           mapOfElites,
           state.descriptors);

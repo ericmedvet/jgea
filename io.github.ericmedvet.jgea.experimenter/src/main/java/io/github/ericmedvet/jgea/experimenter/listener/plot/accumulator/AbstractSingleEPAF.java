@@ -20,6 +20,7 @@
 package io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator;
 
 import io.github.ericmedvet.jgea.core.listener.Accumulator;
+import io.github.ericmedvet.jnb.datastructure.FormattedFunction;
 import io.github.ericmedvet.jnb.datastructure.HashMapTable;
 import io.github.ericmedvet.jnb.datastructure.Table;
 import io.github.ericmedvet.jviz.core.plot.XYPlot;
@@ -27,19 +28,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public abstract class AbstractSingleEPAF<E, P extends XYPlot<D>, R, D, X>
     implements PlotAccumulatorFactory<E, P, R, D> {
 
-  protected final NamedFunction<? super R, String> titleFunction;
-  protected final NamedFunction<? super E, X> predicateValueFunction;
+  protected final Function<? super R, String> titleFunction;
+  protected final Function<? super E, X> predicateValueFunction;
   private final Predicate<? super X> predicate;
   private final boolean unique;
 
   public AbstractSingleEPAF(
-      NamedFunction<? super R, String> titleFunction,
-      NamedFunction<? super E, X> predicateValueFunction,
+      Function<? super R, String> titleFunction,
+      Function<? super E, X> predicateValueFunction,
       Predicate<? super X> predicate,
       boolean unique) {
     this.titleFunction = titleFunction;
@@ -75,7 +77,7 @@ public abstract class AbstractSingleEPAF<E, P extends XYPlot<D>, R, D, X>
           synchronized (table) {
             newEntries.forEach(me -> table.set(
                 me.getKey(),
-                predicateValueFunction.getFormat().formatted(predicateValue),
+                FormattedFunction.format(predicateValueFunction).formatted(predicateValue),
                 me.getValue()));
           }
         }

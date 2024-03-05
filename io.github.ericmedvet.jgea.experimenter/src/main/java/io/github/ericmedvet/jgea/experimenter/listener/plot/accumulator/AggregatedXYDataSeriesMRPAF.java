@@ -19,35 +19,33 @@
  */
 package io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator;
 
-import io.github.ericmedvet.jnb.datastructure.DoubleRange;
-import io.github.ericmedvet.jnb.datastructure.Grid;
-import io.github.ericmedvet.jnb.datastructure.HashMapTable;
-import io.github.ericmedvet.jnb.datastructure.Table;
+import io.github.ericmedvet.jnb.datastructure.*;
 import io.github.ericmedvet.jviz.core.plot.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public class AggregatedXYDataSeriesMRPAF<E, R, K>
     extends AbstractMultipleRPAF<E, XYDataSeriesPlot, R, List<XYDataSeries>, K, Table<Number, K, List<Number>>> {
 
-  private final NamedFunction<? super R, ? extends K> lineFunction;
-  private final NamedFunction<? super E, ? extends Number> xFunction;
-  private final NamedFunction<? super E, ? extends Number> yFunction;
-  private final NamedFunction<List<Number>, Number> valueAggregator;
-  private final NamedFunction<List<Number>, Number> minAggregator;
-  private final NamedFunction<List<Number>, Number> maxAggregator;
+  private final Function<? super R, ? extends K> lineFunction;
+  private final Function<? super E, ? extends Number> xFunction;
+  private final Function<? super E, ? extends Number> yFunction;
+  private final Function<List<Number>, Number> valueAggregator;
+  private final Function<List<Number>, Number> minAggregator;
+  private final Function<List<Number>, Number> maxAggregator;
   private final DoubleRange xRange;
   private final DoubleRange yRange;
 
   public AggregatedXYDataSeriesMRPAF(
-      NamedFunction<? super R, ? extends K> xSubplotFunction,
-      NamedFunction<? super R, ? extends K> ySubplotFunction,
-      NamedFunction<? super R, ? extends K> lineFunction,
-      NamedFunction<? super E, ? extends Number> xFunction,
-      NamedFunction<? super E, ? extends Number> yFunction,
-      NamedFunction<List<Number>, Number> valueAggregator,
-      NamedFunction<List<Number>, Number> minAggregator,
-      NamedFunction<List<Number>, Number> maxAggregator,
+      Function<? super R, ? extends K> xSubplotFunction,
+      Function<? super R, ? extends K> ySubplotFunction,
+      Function<? super R, ? extends K> lineFunction,
+      Function<? super E, ? extends Number> xFunction,
+      Function<? super E, ? extends Number> yFunction,
+      Function<List<Number>, Number> valueAggregator,
+      Function<List<Number>, Number> minAggregator,
+      Function<List<Number>, Number> maxAggregator,
       DoubleRange xRange,
       DoubleRange yRange) {
     super(xSubplotFunction, ySubplotFunction);
@@ -83,7 +81,7 @@ public class AggregatedXYDataSeriesMRPAF<E, R, K>
   protected List<XYDataSeries> buildData(K xK, K yK, Table<Number, K, List<Number>> table) {
     return table.colIndexes().stream()
         .map(lineK -> XYDataSeries.of(
-                lineFunction.getFormat().formatted(lineK),
+                FormattedFunction.format(lineFunction).formatted(lineK),
                 table.column(lineK).entrySet().stream()
                     .filter(e -> e.getValue() != null)
                     .map(e -> new XYDataSeries.Point(
@@ -109,27 +107,30 @@ public class AggregatedXYDataSeriesMRPAF<E, R, K>
         data.nColumns(),
         data.nRows(),
         (x, y) -> new XYPlot.TitledData<>(
-            xSubplotFunction.getFormat().formatted(data.colIndexes().get(x)),
-            ySubplotFunction.getFormat().formatted(data.rowIndexes().get(y)),
+            FormattedFunction.format(xSubplotFunction)
+                .formatted(data.colIndexes().get(x)),
+            FormattedFunction.format(ySubplotFunction)
+                .formatted(data.rowIndexes().get(y)),
             data.get(x, y)));
     String subtitle = "";
     if (grid.w() > 1 && grid.h() == 1) {
-      subtitle = "→ %s".formatted(xSubplotFunction.getName());
+      subtitle = "→ %s".formatted(NamedFunction.name(xSubplotFunction));
     } else if (grid.w() == 1 && grid.h() > 1) {
-      subtitle = "↓ %s".formatted(ySubplotFunction.getName());
+      subtitle = "↓ %s".formatted(NamedFunction.name(ySubplotFunction));
     } else if (grid.w() > 1 && grid.h() > 1) {
-      subtitle = "→ %s, ↓ %s".formatted(xSubplotFunction.getName(), ySubplotFunction.getName());
+      subtitle =
+          "→ %s, ↓ %s".formatted(NamedFunction.name(xSubplotFunction), NamedFunction.name(ySubplotFunction));
     }
     return new XYDataSeriesPlot(
         "%s vs. %s%s"
             .formatted(
-                yFunction.getName(),
-                xFunction.getName(),
+                NamedFunction.name(yFunction),
+                NamedFunction.name(xFunction),
                 subtitle.isEmpty() ? subtitle : (" (%s)".formatted(subtitle))),
-        xSubplotFunction.getName(),
-        ySubplotFunction.getName(),
-        xFunction.getName(),
-        yFunction.getName(),
+        NamedFunction.name(xSubplotFunction),
+        NamedFunction.name(ySubplotFunction),
+        NamedFunction.name(xFunction),
+        NamedFunction.name(yFunction),
         xRange,
         yRange,
         grid);

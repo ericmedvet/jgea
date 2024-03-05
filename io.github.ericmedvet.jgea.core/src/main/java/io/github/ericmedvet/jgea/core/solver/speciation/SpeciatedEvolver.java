@@ -87,7 +87,7 @@ public class SpeciatedEvolver<G, S, Q>
       QualityBasedProblem<S, Q> problem,
       Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
       long nOfBirths,
-      long nOfFitnessEvaluations,
+      long nOfQualityEvaluations,
       PartiallyOrderedCollection<Individual<G, S, Q>> pocPopulation,
       Collection<Species<Individual<G, S, Q>>> parentSpecies)
       implements SpeciatedPOCPopulationState<G, S, Q, QualityBasedProblem<S, Q>>,

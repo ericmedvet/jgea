@@ -19,21 +19,25 @@
  */
 package io.github.ericmedvet.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jgea.core.problem.MultiTargetProblem;
 import io.github.ericmedvet.jgea.core.problem.Problem;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.State;
+import io.github.ericmedvet.jgea.core.util.*;
 import io.github.ericmedvet.jgea.core.util.Misc;
-import io.github.ericmedvet.jgea.core.util.Progress;
-import io.github.ericmedvet.jgea.core.util.TextPlotter;
+import io.github.ericmedvet.jgea.experimenter.Run;
+import io.github.ericmedvet.jgea.experimenter.Utils;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
@@ -59,10 +63,9 @@ public class Functions {
     return NamedFunction.from(beforeF, f, afterF, "best");
   }
 
-  public static <X, Z, Y> NamedFunction<X, Y> doubleString(
+  public static <X, Z, Y> NamedFunction<X, Y> toDoubleString(
       @Param(value = "beforeF", dNPM = "f.identity()") Function<X, Z> beforeF,
-      @Param(value = "afterF", dNPM = "f.identity()") Function<List<Double>, Y> afterF,
-      @Param(value = "format", dS = DEFAULT_FORMAT) String format) {
+      @Param(value = "afterF", dNPM = "f.identity()") Function<List<Double>, Y> afterF) {
     Function<Z, List<Double>> f = z -> {
       if (z instanceof IntString is) {
         return is.asDoubleString();
@@ -84,16 +87,7 @@ public class Functions {
       throw new IllegalArgumentException(
           "Cannot convert %s to double string".formatted(z.getClass().getSimpleName()));
     };
-    return NamedFunction.from(beforeF, f, afterF, "toDoubleString");
-  }
-
-  public static <X, T, R, Y> NamedFunction<X, Y> each(
-      @Param("mapF") Function<T, R> mapF,
-      @Param(value = "beforeF", dNPM = "f.identity()") Function<X, Collection<T>> beforeF,
-      @Param(value = "afterF", dNPM = "f.identity()") Function<Collection<R>, Y> afterF,
-      @Param(value = "format", dS = DEFAULT_FORMAT) String format) {
-    Function<Collection<T>, Collection<R>> f = ts -> ts.stream().map(mapF).toList();
-    return NamedFunction.from(beforeF, f, afterF, "each[%s]".formatted(NamedFunction.name(mapF)));
+    return NamedFunction.from(beforeF, f, afterF, "to.double.string");
   }
 
   public static <X, Y> FormattedNamedFunction<X, Y> elapsedSecs(
@@ -110,6 +104,18 @@ public class Functions {
     Function<POCPopulationState<I, G, S, Q, ?>, Collection<I>> f =
         state -> state.pocPopulation().firsts();
     return NamedFunction.from(beforeF, f, afterF, "firsts");
+  }
+
+  public static <X, I extends Individual<G, S, Q>, G, S, Q, Y> NamedFunction<X, Y> mids(
+      @Param(value = "beforeF", dNPM = "f.identity()") Function<X, POCPopulationState<I, G, S, Q, ?>> beforeF,
+      @Param(value = "afterF", dNPM = "f.identity()") Function<Collection<I>, Y> afterF) {
+    Function<POCPopulationState<I, G, S, Q, ?>, Collection<I>> f = state -> {
+      Collection<I> all = new ArrayList<>(state.pocPopulation().all());
+      all.removeAll(state.pocPopulation().firsts());
+      all.removeAll(state.pocPopulation().lasts());
+      return all;
+    };
+    return NamedFunction.from(beforeF, f, afterF, "mids");
   }
 
   public static <X, G, Y> FormattedNamedFunction<X, Y> genotype(
@@ -191,5 +197,60 @@ public class Functions {
       @Param(value = "format", dS = "%.2f") String format) {
     Function<Collection<List<Double>>, Double> f = ps -> Misc.hypervolume2D(ps, minReference, maxReference);
     return FormattedNamedFunction.from(beforeF, f, afterF, format, "hv");
+  }
+
+  public static <X, P extends MultiTargetProblem<S>, S, Y> FormattedNamedFunction<X, Y> overallTargetDistance(
+      @Param(value = "beforeF", dNPM = "f.identity()") Function<X, POCPopulationState<?, ?, S, ?, P>> beforeF,
+      @Param(value = "afterF", dNPM = "f.identity()") Function<Double, Y> afterF,
+      @Param(value = "format", dS = "%.2f") String format) {
+    Function<POCPopulationState<?, ?, S, ?, P>, Double> f = state -> state.problem().targets().stream()
+        .mapToDouble(ts -> state.pocPopulation().all().stream()
+            .mapToDouble(s -> state.problem().distance().apply(s.solution(), ts))
+            .min()
+            .orElseThrow())
+        .average()
+        .orElseThrow();
+    return FormattedNamedFunction.from(beforeF, f, afterF, format, "overall.target.distance");
+  }
+
+  public static <X, Y> FormattedNamedFunction<X, Y> size(
+      @Param(value = "beforeF", dNPM = "f.identity()") Function<X, Object> beforeF,
+      @Param(value = "afterF", dNPM = "f.identity()") Function<Integer, Y> afterF,
+      @Param(value = "format", dS = "%d") String format) {
+    Function<Object, Integer> f = o -> {
+      if (o instanceof Sized s) {
+        return s.size();
+      }
+      if (o instanceof Collection<?> c) {
+        if (Misc.first(c) instanceof Sized s) {
+          return c.stream().mapToInt(i -> s.size()).sum();
+        }
+        return c.size();
+      }
+      if (o instanceof String s) {
+        return s.length();
+      }
+      throw new IllegalArgumentException(
+          "Cannot compute size of %s".formatted(o.getClass().getSimpleName()));
+    };
+    return FormattedNamedFunction.from(beforeF, f, afterF, format, "size");
+  }
+
+  public static <X, Y> FormattedNamedFunction<X, Y> uniqueness(
+      @Param(value = "beforeF", dNPM = "f.identity()") Function<X, Collection<?>> beforeF,
+      @Param(value = "afterF", dNPM = "f.identity()") Function<Double, Y> afterF,
+      @Param(value = "format", dS = "%5.3f") String format) {
+    Function<Collection<?>, Double> f =
+        ts -> (double) ts.stream().distinct().count() / (double) ts.size();
+    return FormattedNamedFunction.from(beforeF, f, afterF, format, "uniqueness");
+  }
+
+  public static <X, Y> FormattedNamedFunction<X, Y> runKey(
+      @Param("runKey") Map.Entry<String, String> runKey,
+      @Param(value = "beforeF", dNPM = "f.identity()") Function<X, Run<?, ?, ?, ?>> beforeF,
+      @Param(value = "afterF", dNPM = "f.identity()") Function<String, Y> afterF,
+      @Param(value = "format", dS = DEFAULT_FORMAT) String format) {
+    Function<Run<?, ?, ?, ?>, String> f = run -> Utils.interpolate(runKey.getValue(), run);
+    return FormattedNamedFunction.from(beforeF, f, afterF, format, runKey.getValue());
   }
 }

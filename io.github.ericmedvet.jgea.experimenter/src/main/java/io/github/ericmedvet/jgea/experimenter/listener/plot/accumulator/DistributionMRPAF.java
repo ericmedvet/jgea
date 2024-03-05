@@ -19,15 +19,14 @@
  */
 package io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator;
 
-import io.github.ericmedvet.jnb.datastructure.DoubleRange;
-import io.github.ericmedvet.jnb.datastructure.Grid;
-import io.github.ericmedvet.jnb.datastructure.Table;
+import io.github.ericmedvet.jnb.datastructure.*;
 import io.github.ericmedvet.jviz.core.plot.DistributionPlot;
 import io.github.ericmedvet.jviz.core.plot.XYPlot;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -35,18 +34,18 @@ import java.util.function.Predicate;
  */
 public class DistributionMRPAF<E, R, K, X>
     extends AbstractMultipleRPAF<E, DistributionPlot, R, List<DistributionPlot.Data>, K, Map<K, List<Number>>> {
-  private final NamedFunction<? super R, ? extends K> lineFunction;
-  private final NamedFunction<? super E, ? extends Number> yFunction;
-  protected final NamedFunction<? super E, X> predicateValueFunction;
+  private final Function<? super R, ? extends K> lineFunction;
+  private final Function<? super E, ? extends Number> yFunction;
+  protected final Function<? super E, X> predicateValueFunction;
   private final Predicate<? super X> predicate;
   private final DoubleRange yRange;
 
   public DistributionMRPAF(
-      NamedFunction<? super R, ? extends K> xSubplotFunction,
-      NamedFunction<? super R, ? extends K> ySubplotFunction,
-      NamedFunction<? super R, ? extends K> lineFunction,
-      NamedFunction<? super E, ? extends Number> yFunction,
-      NamedFunction<? super E, X> predicateValueFunction,
+      Function<? super R, ? extends K> xSubplotFunction,
+      Function<? super R, ? extends K> ySubplotFunction,
+      Function<? super R, ? extends K> lineFunction,
+      Function<? super E, ? extends Number> yFunction,
+      Function<? super E, X> predicateValueFunction,
       Predicate<? super X> predicate,
       DoubleRange yRange) {
     super(xSubplotFunction, ySubplotFunction);
@@ -77,7 +76,7 @@ public class DistributionMRPAF<E, R, K, X>
   protected List<DistributionPlot.Data> buildData(K xK, K yK, Map<K, List<Number>> map) {
     return map.entrySet().stream()
         .map(e -> new DistributionPlot.Data(
-            lineFunction.getFormat().formatted(e.getKey()),
+            FormattedFunction.format(lineFunction).formatted(e.getKey()),
             e.getValue().stream().map(Number::doubleValue).toList()))
         .toList();
   }
@@ -88,24 +87,29 @@ public class DistributionMRPAF<E, R, K, X>
         data.nColumns(),
         data.nRows(),
         (x, y) -> new XYPlot.TitledData<>(
-            xSubplotFunction.getFormat().formatted(data.colIndexes().get(x)),
-            ySubplotFunction.getFormat().formatted(data.rowIndexes().get(y)),
+            FormattedFunction.format(xSubplotFunction)
+                .formatted(data.colIndexes().get(x)),
+            FormattedFunction.format(ySubplotFunction)
+                .formatted(data.rowIndexes().get(y)),
             data.get(x, y)));
     String subtitle = "";
     if (grid.w() > 1 && grid.h() == 1) {
-      subtitle = "→ %s".formatted(xSubplotFunction.getName());
+      subtitle = "→ %s".formatted(NamedFunction.name(xSubplotFunction));
     } else if (grid.w() == 1 && grid.h() > 1) {
-      subtitle = "↓ %s".formatted(ySubplotFunction.getName());
+      subtitle = "↓ %s".formatted(NamedFunction.name(ySubplotFunction));
     } else if (grid.w() > 1 && grid.h() > 1) {
-      subtitle = "→ %s, ↓ %s".formatted(xSubplotFunction.getName(), ySubplotFunction.getName());
+      subtitle =
+          "→ %s, ↓ %s".formatted(NamedFunction.name(xSubplotFunction), NamedFunction.name(ySubplotFunction));
     }
     return new DistributionPlot(
         "%s distribution%s"
-            .formatted(yFunction.getName(), subtitle.isEmpty() ? subtitle : (" (%s)".formatted(subtitle))),
-        xSubplotFunction.getName(),
-        ySubplotFunction.getName(),
-        lineFunction.getName(),
-        yFunction.getName(),
+            .formatted(
+                NamedFunction.name(yFunction),
+                subtitle.isEmpty() ? subtitle : (" (%s)".formatted(subtitle))),
+        NamedFunction.name(xSubplotFunction),
+        NamedFunction.name(ySubplotFunction),
+        NamedFunction.name(lineFunction),
+        NamedFunction.name(yFunction),
         yRange,
         grid);
   }

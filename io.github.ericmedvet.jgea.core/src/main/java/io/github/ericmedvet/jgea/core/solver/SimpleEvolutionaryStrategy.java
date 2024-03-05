@@ -84,7 +84,7 @@ public class SimpleEvolutionaryStrategy<S, Q>
       TotalOrderQualityBasedProblem<S, Q> problem,
       Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
       long nOfBirths,
-      long nOfFitnessEvaluations,
+      long nOfQualityEvaluations,
       PartiallyOrderedCollection<Individual<List<Double>, S, Q>> pocPopulation,
       List<Individual<List<Double>, S, Q>> listPopulation,
       List<Double> means)

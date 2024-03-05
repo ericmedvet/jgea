@@ -103,7 +103,7 @@ public class CellularAutomataBasedSolver<G, S, Q>
       QualityBasedProblem<S, Q> problem,
       Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
       long nOfBirths,
-      long nOfFitnessEvaluations,
+      long nOfQualityEvaluations,
       PartiallyOrderedCollection<Individual<G, S, Q>> pocPopulation,
       Grid<Individual<G, S, Q>> gridPopulation)
       implements GridPopulationState<G, S, Q, QualityBasedProblem<S, Q>>,

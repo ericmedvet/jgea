@@ -36,6 +36,7 @@ import io.github.ericmedvet.jviz.core.plot.RangedGrid;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 @Discoverable(prefixTemplate = "ea.plot")
@@ -63,7 +64,7 @@ public class Plots {
                               + ".seed})\")")
                   Map.Entry<String, String> titleRunKey,
               @Param(value = "predicateValue", dNPM = "ea.nf.iterations()")
-                  NamedFunction<
+                  Function<
                           POCPopulationState<
                               Individual<G, S, List<Double>>, G, S, List<Double>, ?>,
                           X>

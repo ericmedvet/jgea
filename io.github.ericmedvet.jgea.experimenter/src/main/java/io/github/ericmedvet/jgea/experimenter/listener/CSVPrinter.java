@@ -23,10 +23,12 @@ package io.github.ericmedvet.jgea.experimenter.listener;
 import io.github.ericmedvet.jgea.core.listener.Listener;
 import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
 import io.github.ericmedvet.jgea.core.util.Misc;
+import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import org.apache.commons.csv.CSVFormat;
 
@@ -42,15 +44,9 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
   private org.apache.commons.csv.CSVPrinter printer;
   private int lineCounter;
 
-  public CSVPrinter(
-      List<NamedFunction<? super E, ?>> eFunctions,
-      List<NamedFunction<? super K, ?>> kFunctions,
-      File file,
-      boolean robust) {
-    this.eFunctions =
-        robust ? eFunctions.stream().map(NamedFunction::robust).toList() : eFunctions;
-    this.kFunctions =
-        robust ? kFunctions.stream().map(NamedFunction::robust).toList() : kFunctions;
+  public CSVPrinter(List<Function<? super E, ?>> eFunctions, List<Function<? super K, ?>> kFunctions, File file) {
+    this.eFunctions = eFunctions.stream().map(NamedFunction::from).toList();
+    this.kFunctions = kFunctions.stream().map(NamedFunction::from).toList();
     this.file = file;
     lineCounter = 0;
   }
@@ -59,7 +55,7 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
   public Listener<E> build(K k) {
     List<?> kValues = kFunctions.stream().map(f -> f.apply(k)).toList();
     List<String> headers = Misc.concat(List.of(kFunctions, eFunctions)).stream()
-        .map(NamedFunction::getName)
+        .map(f -> f.name())
         .toList();
     return e -> {
       List<?> eValues = eFunctions.stream().map(f -> f.apply(e)).toList();

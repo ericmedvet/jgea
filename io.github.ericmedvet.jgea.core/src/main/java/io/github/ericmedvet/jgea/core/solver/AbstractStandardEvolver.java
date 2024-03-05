@@ -60,7 +60,7 @@ public abstract class AbstractStandardEvolver<
       P problem,
       Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
       long nOfBirths,
-      long nOfFitnessEvaluations,
+      long nOfQualityEvaluations,
       PartiallyOrderedCollection<I> pocPopulation)
       implements POCPopulationState<I, G, S, Q, P>, State.WithComputedProgress<P, S> {
     public static <I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
@@ -104,7 +104,7 @@ public abstract class AbstractStandardEvolver<
       P problem,
       Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
       long nOfBirths,
-      long nOfFitnessEvaluations,
+      long nOfQualityEvaluations,
       PartiallyOrderedCollection<I> pocPopulation,
       List<I> listPopulation)
       implements ListPopulationState<I, G, S, Q, P>, State.WithComputedProgress<P, S> {
