@@ -70,8 +70,8 @@ public class Plots {
                           X>
                       predicateValueFunction,
               @Param(value = "condition", dNPM = "ea.predicate.always()") Predicate<X> condition,
-              @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
-              @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange,
+              @Param(value = "xRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
+              @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange,
               @Param(value = "xF", dNPM = "f.nTh(of=ea.f.quality();n=0)")
                   Function<Individual<G, S, List<Double>>, Double> xF,
               @Param(value = "yF", dNPM = "f.nTh(of=ea.f.quality();n=1)")
@@ -102,8 +102,8 @@ public class Plots {
       @Param(value = "x", dNPM = "ea.nf.iterations()")
           Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> xFunction,
       @Param("y") Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> yFunction,
-      @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
-      @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
+      @Param(value = "xRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
+      @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
     return new XYDataSeriesSRPAF<>(
         Functions.runKey(titleRunKey, r -> r, "%s"), xFunction, List.of(yFunction), xRange, yRange, true, true);
   }
@@ -119,8 +119,8 @@ public class Plots {
           Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> xFunction,
       @Param(value = "y", dNPM = "ea.f.elapsedSecs()")
           Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> yFunction,
-      @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
-      @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
+      @Param(value = "xRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
+      @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
     return new XYDataSeriesSRPAF<>(
         Functions.runKey(titleRunKey, r -> r, "%s"), xFunction, List.of(yFunction), xRange, yRange, true, true);
   }
@@ -141,8 +141,8 @@ public class Plots {
       @Param(value = "minF", dNPM = "f.percentile(p=25)") Function<Collection<Q>, Double> minFunction,
       @Param(value = "midF", dNPM = "f.median()") Function<Collection<Q>, Double> midFunction,
       @Param(value = "maxF", dNPM = "f.percentile(p=75)") Function<Collection<Q>, Double> maxFunction,
-      @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
-      @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange,
+      @Param(value = "xRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
+      @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange,
       @Param(value = "sort", dS = "min") Sorting sorting,
       @Param(value = "s", dS = "%.2f") String s) {
     List<Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number>> yFunctions =
@@ -174,7 +174,7 @@ public class Plots {
           @Param(value = "predicateValue", dNPM = "ea.f.rate(of=ea.f.progress())")
               Function<POCPopulationState<?, G, S, Q, ?>, X> predicateValueFunction,
           @Param(value = "condition", dNPM = "ea.predicate.gtEq(t=1)") Predicate<X> condition,
-          @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
+          @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
     return new DistributionMRPAF<>(
         Functions.runKey(xSubplotRunKey, r -> r, "%s"),
         Functions.runKey(ySubplotRunKey, r -> r, "%s"),
@@ -204,8 +204,8 @@ public class Plots {
               Function<List<Number>, Number> minAggregator,
           @Param(value = "maxAggregator", dNPM = "f.percentile(p=75)")
               Function<List<Number>, Number> maxAggregator,
-          @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
-          @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
+          @Param(value = "xRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
+          @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
     return new AggregatedXYDataSeriesMRPAF<>(
         Functions.runKey(xSubplotRunKey, r -> r, "%s"),
         Functions.runKey(ySubplotRunKey, r -> r, "%s"),
@@ -236,7 +236,7 @@ public class Plots {
               @Param(value = "predicateValue", dNPM = "ea.f.nOfIterations()")
                   Function<GridPopulationState<G, S, Q, ?>, X> predicateValueFunction,
               @Param(value = "condition", dNPM = "ea.predicate.always()") Predicate<X> condition,
-              @Param(value = "valueRange", dNPM = "ds.range(min=-Infinity;max=Infinity)")
+              @Param(value = "valueRange", dNPM = "m.range(min=-Infinity;max=Infinity)")
                   DoubleRange valueRange,
               @Param(value = "unique", dB = true) boolean unique) {
     return new UnivariateGridSEPAF<>(
@@ -274,13 +274,13 @@ public class Plots {
                       predicateValueFunction,
               @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<List<Double>, S> mapper,
               @Param(value = "condition", dNPM = "ea.predicate.always()") Predicate<X> condition,
-              @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
-              @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange,
+              @Param(value = "xRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
+              @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange,
               @Param(value = "xF", dNPM = "f.nTh(of=ea.f.genotype();n=0)")
                   Function<Individual<List<Double>, S, Double>, Double> xF,
               @Param(value = "yF", dNPM = "f.nTh(of=ea.f.genotype();n=1)")
                   Function<Individual<List<Double>, S, Double>, Double> yF,
-              @Param(value = "valueRange", dNPM = "ds.range(min=-Infinity;max=Infinity)")
+              @Param(value = "valueRange", dNPM = "m.range(min=-Infinity;max=Infinity)")
                   DoubleRange valueRange,
               @Param(value = "unique", dB = true) boolean unique) {
     return new LandscapeSEPAF<>(
@@ -321,7 +321,7 @@ public class Plots {
               @Param(value = "predicateValue", dNPM = "ea.f.nOfIterations()")
                   Function<MEPopulationState<G, S, Q, ?>, X> predicateValueFunction,
               @Param(value = "condition", dNPM = "ea.predicate.always()") Predicate<X> condition,
-              @Param(value = "valueRange", dNPM = "ds.range(min=-Infinity;max=Infinity)")
+              @Param(value = "valueRange", dNPM = "m.range(min=-Infinity;max=Infinity)")
                   DoubleRange valueRange,
               @Param(value = "unique", dB = true) boolean unique) {
     return new UnivariateGridSEPAF<>(
@@ -371,8 +371,8 @@ public class Plots {
                 "f.uniqueness(of=f.each(mapF=ea.nf.quality();of=ea.f.all()))"
               })
           List<Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number>> yFunctions,
-      @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
-      @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
+      @Param(value = "xRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
+      @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
     return new XYDataSeriesSRPAF<>(
         Functions.runKey(titleRunKey, r -> r, "%s"), xFunction, yFunctions, xRange, yRange, true, false);
   }
@@ -386,8 +386,8 @@ public class Plots {
           Map.Entry<String, String> titleRunKey,
       @Param("x") Function<? super E, ? extends Number> xFunction,
       @Param("y") Function<? super E, ? extends Number> yFunction,
-      @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
-      @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
+      @Param(value = "xRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
+      @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
     return new XYDataSeriesSRPAF<>(
         Functions.runKey(titleRunKey, r -> r, "%s"),
         xFunction,
@@ -415,8 +415,8 @@ public class Plots {
               Function<List<Number>, Number> minAggregator,
           @Param(value = "maxAggregator", dNPM = "f.percentile(p=75)")
               Function<List<Number>, Number> maxAggregator,
-          @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
-          @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
+          @Param(value = "xRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
+          @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
     return new AggregatedXYDataSeriesMRPAF<>(
         Functions.runKey(xSubplotRunKey, r -> r, "%s"),
         Functions.runKey(ySubplotRunKey, r -> r, "%s"),
@@ -439,8 +439,8 @@ public class Plots {
           Map.Entry<String, String> titleRunKey,
       @Param("x") Function<? super E, ? extends Number> xFunction,
       @Param("ys") List<Function<? super E, ? extends Number>> yFunctions,
-      @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
-      @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
+      @Param(value = "xRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
+      @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
     return new XYDataSeriesSRPAF<>(
         Functions.runKey(titleRunKey, r -> r, "%s"), xFunction, yFunctions, xRange, yRange, true, false);
   }
@@ -455,8 +455,8 @@ public class Plots {
       @Param(value = "x", dNPM = "ea.f.nOfIterations()")
           Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> xFunction,
       @Param("y") Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> yFunction,
-      @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
-      @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
+      @Param(value = "xRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
+      @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
     return new XYDataSeriesSRPAF<>(
         Functions.runKey(titleRunKey, r -> r, "%s"),
         xFunction,
@@ -477,8 +477,8 @@ public class Plots {
       @Param(value = "x", dNPM = "ea.f.nOfIterations()")
           Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> xFunction,
       @Param("ys") List<Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number>> yFunctions,
-      @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
-      @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
+      @Param(value = "xRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
+      @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
     return new XYDataSeriesSRPAF<>(
         Functions.runKey(titleRunKey, r -> r, "%s"), xFunction, yFunctions, xRange, yRange, true, false);
   }
