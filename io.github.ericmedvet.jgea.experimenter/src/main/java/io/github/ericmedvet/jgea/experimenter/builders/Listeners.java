@@ -193,12 +193,12 @@ public class Listeners {
                         "ea.f.nOfEvals()",
                         "ea.f.nOfBirths()",
                         "ea.f.elapsedSecs()",
-                        "f.size(beforeF=ea.f.all())",
-                        "f.size(beforeF=ea.f.firsts())",
-                        "f.size(beforeF=ea.f.lasts())",
-                        "f.uniqueness(beforeF=f.each(mapF=ea.f.genotype();beforeF=ea.f.all()))",
-                        "f.uniqueness(beforeF=f.each(mapF=ea.f.solution();beforeF=ea.f.all()))",
-                        "f.uniqueness(beforeF=f.each(mapF=ea.f.quality();beforeF=ea.f.all()))"
+                        "f.size(of=ea.f.all())",
+                        "f.size(of=ea.f.firsts())",
+                        "f.size(of=ea.f.lasts())",
+                        "f.uniqueness(of=f.each(mapF=ea.f.genotype();of=ea.f.all()))",
+                        "f.uniqueness(of=f.each(mapF=ea.f.solution();of=ea.f.all()))",
+                        "f.uniqueness(of=f.each(mapF=ea.f.quality();of=ea.f.all()))"
                       })
                   List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> defaultStateFunctions,
               @Param(value = "functions")
@@ -250,12 +250,12 @@ public class Listeners {
                         "ea.f.nOfEvals()",
                         "ea.f.nOfBirths()",
                         "ea.f.elapsedSecs()",
-                        "f.size(beforeF=ea.f.all())",
-                        "f.size(beforeF=ea.f.firsts())",
-                        "f.size(beforeF=ea.f.lasts())",
-                        "f.uniqueness(beforeF=f.each(mapF=ea.f.genotype();beforeF=ea.f.all()))",
-                        "f.uniqueness(beforeF=f.each(mapF=ea.f.solution();beforeF=ea.f.all()))",
-                        "f.uniqueness(beforeF=f.each(mapF=ea.f.quality();beforeF=ea.f.all()))"
+                        "f.size(of=ea.f.all())",
+                        "f.size(of=ea.f.firsts())",
+                        "f.size(of=ea.f.lasts())",
+                        "f.uniqueness(of=f.each(mapF=ea.f.genotype();of=ea.f.all()))",
+                        "f.uniqueness(of=f.each(mapF=ea.f.solution();of=ea.f.all()))",
+                        "f.uniqueness(of=f.each(mapF=ea.f.quality();of=ea.f.all()))"
                       })
                   List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> defaultStateFunctions,
               @Param(value = "functions")
@@ -339,12 +339,12 @@ public class Listeners {
                         "ea.f.nOfEvals()",
                         "ea.f.nOfBirths()",
                         "ea.f.elapsedSecs()",
-                        "f.size(beforeF=ea.f.all())",
-                        "f.size(beforeF=ea.f.firsts())",
-                        "f.size(beforeF=ea.f.lasts())",
-                        "f.uniqueness(beforeF=f.each(mapF=ea.f.genotype();beforeF=ea.f.all()))",
-                        "f.uniqueness(beforeF=f.each(mapF=ea.f.solution();beforeF=ea.f.all()))",
-                        "f.uniqueness(beforeF=f.each(mapF=ea.f.quality();beforeF=ea.f.all()))"
+                        "f.size(of=ea.f.all())",
+                        "f.size(of=ea.f.firsts())",
+                        "f.size(of=ea.f.lasts())",
+                        "f.uniqueness(of=f.each(mapF=ea.f.genotype();of=ea.f.all()))",
+                        "f.uniqueness(of=f.each(mapF=ea.f.solution();of=ea.f.all()))",
+                        "f.uniqueness(of=f.each(mapF=ea.f.quality();of=ea.f.all()))"
                       })
                   List<NamedFunction<? super POCPopulationState<?, G, S, Q, ?>, ?>>
                       defaultStateFunctions,
@@ -457,7 +457,7 @@ public class Listeners {
   public static <G, S, B, Q, K>
       BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, K, ?>, Run<?, G, S, K>>>
           runLastSimulationVideoSaver(
-              @Param(value = "function", dNPM = "ea.f.quality(beforeF=ea.f.best())")
+              @Param(value = "function", dNPM = "ea.f.quality(of=ea.f.best())")
                   Function<POCPopulationState<?, G, S, K, ?>, SimulationBasedProblem.Outcome<B, Q>>
                       function,
               @Param("drawer") TimedSequenceDrawer<B> drawer,
@@ -619,12 +619,12 @@ public class Listeners {
                         "ea.f.nOfEvals()",
                         "ea.f.nOfBirths()",
                         "ea.f.elapsedSecs()",
-                        "f.size(beforeF=ea.f.all())",
-                        "f.size(beforeF=ea.f.firsts())",
-                        "f.size(beforeF=ea.f.lasts())",
-                        "f.uniqueness(beforeF=f.each(mapF=ea.f.genotype();beforeF=ea.f.all()))",
-                        "f.uniqueness(beforeF=f.each(mapF=ea.f.solution();beforeF=ea.f.all()))",
-                        "f.uniqueness(beforeF=f.each(mapF=ea.f.quality();beforeF=ea.f.all()))"
+                        "f.size(of=ea.f.all())",
+                        "f.size(of=ea.f.firsts())",
+                        "f.size(of=ea.f.lasts())",
+                        "f.uniqueness(of=f.each(mapF=ea.f.genotype();of=ea.f.all()))",
+                        "f.uniqueness(of=f.each(mapF=ea.f.solution();of=ea.f.all()))",
+                        "f.uniqueness(of=f.each(mapF=ea.f.quality();of=ea.f.all()))"
                       })
                   List<NamedFunction<? super POCPopulationState<?, G, S, Q, ?>, ?>>
                       defaultStateFunctions,

@@ -72,9 +72,9 @@ public class Plots {
               @Param(value = "condition", dNPM = "ea.predicate.always()") Predicate<X> condition,
               @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
               @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange,
-              @Param(value = "xF", dNPM = "f.nTh(beforeF=ea.f.quality();n=0)")
+              @Param(value = "xF", dNPM = "f.nTh(of=ea.f.quality();n=0)")
                   Function<Individual<G, S, List<Double>>, Double> xF,
-              @Param(value = "yF", dNPM = "f.nTh(beforeF=ea.f.quality();n=1)")
+              @Param(value = "yF", dNPM = "f.nTh(of=ea.f.quality();n=1)")
                   Function<Individual<G, S, List<Double>>, Double> yF,
               @Param(value = "unique", dB = true) boolean unique) {
     return new XYDataSeriesSEPAF<>(
@@ -169,9 +169,9 @@ public class Plots {
               Map.Entry<String, String> ySubplotRunKey,
           @Param(value = "lineRunKey", dNPM = "ea.misc.sEntry(key=solver;value=\"{solver.name}\")")
               Map.Entry<String, String> lineRunKey,
-          @Param(value = "yFunction", dNPM = "ea.f.quality(beforeF=ea.f.best())")
+          @Param(value = "yFunction", dNPM = "ea.f.quality(of=ea.f.best())")
               Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> yFunction,
-          @Param(value = "predicateValue", dNPM = "ea.f.rate(beforeF=ea.f.progress())")
+          @Param(value = "predicateValue", dNPM = "ea.f.rate(of=ea.f.progress())")
               Function<POCPopulationState<?, G, S, Q, ?>, X> predicateValueFunction,
           @Param(value = "condition", dNPM = "ea.predicate.gtEq(t=1)") Predicate<X> condition,
           @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
@@ -196,7 +196,7 @@ public class Plots {
               Map.Entry<String, String> lineRunKey,
           @Param(value = "xFunction", dNPM = "ea.f.nOfEvals()")
               Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> xFunction,
-          @Param(value = "yFunction", dNPM = "ea.f.quality(beforeF=ea.f.best())")
+          @Param(value = "yFunction", dNPM = "ea.f.quality(of=ea.f.best())")
               Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> yFunction,
           @Param(value = "valueAggregator", dNPM = "f.median()")
               Function<List<Number>, Number> valueAggregator,
@@ -276,9 +276,9 @@ public class Plots {
               @Param(value = "condition", dNPM = "ea.predicate.always()") Predicate<X> condition,
               @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
               @Param(value = "yRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange yRange,
-              @Param(value = "xF", dNPM = "f.nTh(beforeF=ea.f.genotype();n=0)")
+              @Param(value = "xF", dNPM = "f.nTh(of=ea.f.genotype();n=0)")
                   Function<Individual<List<Double>, S, Double>, Double> xF,
-              @Param(value = "yF", dNPM = "f.nTh(beforeF=ea.f.genotype();n=1)")
+              @Param(value = "yF", dNPM = "f.nTh(of=ea.f.genotype();n=1)")
                   Function<Individual<List<Double>, S, Double>, Double> yF,
               @Param(value = "valueRange", dNPM = "ds.range(min=-Infinity;max=Infinity)")
                   DoubleRange valueRange,
@@ -366,9 +366,9 @@ public class Plots {
       @Param(
               value = "ys",
               dNPMs = {
-                "f.uniqueness(beforeF=f.each(mapF=ea.nf.genotype();beforeF=ea.f.all()))",
-                "f.uniqueness(beforeF=f.each(mapF=ea.nf.solution();beforeF=ea.f.all()))",
-                "f.uniqueness(beforeF=f.each(mapF=ea.nf.quality();beforeF=ea.f.all()))"
+                "f.uniqueness(of=f.each(mapF=ea.nf.genotype();of=ea.f.all()))",
+                "f.uniqueness(of=f.each(mapF=ea.nf.solution();of=ea.f.all()))",
+                "f.uniqueness(of=f.each(mapF=ea.nf.quality();of=ea.f.all()))"
               })
           List<Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number>> yFunctions,
       @Param(value = "xRange", dNPM = "ds.range(min=-Infinity;max=Infinity)") DoubleRange xRange,

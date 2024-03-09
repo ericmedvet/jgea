@@ -13,9 +13,9 @@ ea.experiment(
   listeners = [
     ea.l.console(
       functions = [
-        ea.f.size(beforeF = ea.f.genotype(beforeF = ea.f.best()); format = "%3d");
-        ea.f.quality(beforeF = ea.f.best(); format = "%6.2f");
-        ea.f.hist(beforeF = f.each(beforeF = ea.f.all(); mapF = ea.f.quality()))
+        ea.f.size(of = ea.f.genotype(of = ea.f.best()); format = "%3d");
+        ea.f.quality(of = ea.f.best(); format = "%6.2f");
+        ea.f.hist(of = f.each(of = ea.f.all(); mapF = ea.f.quality()))
       ];
       runKeys = [
         ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
@@ -30,7 +30,7 @@ ea.experiment(
       freeScales = true;
       type = lines;
       plot = ea.plot.qualityPlotMatrix(
-        xFunction = f.quantized(beforeF = ea.f.nOfEvals(); q = 50);
+        xFunction = f.quantized(of = ea.f.nOfEvals(); q = 50);
         xSubplotRunKey = ea.misc.sEntry(key = p; value = "{problem.p}");
         ySubplotRunKey = ea.misc.sEntry(key = problem; value = "{problem.name}")
       )
