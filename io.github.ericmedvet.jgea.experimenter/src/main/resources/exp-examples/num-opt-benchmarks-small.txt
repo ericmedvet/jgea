@@ -1,13 +1,11 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:5]) * [ea.rg.defaultRG()]) *
-    (problem = (p = [2; 10; 50]) * [
+    (problem = (p = [2; 10]) * [
       ea.p.s.ackley(name = "ackley");
       ea.p.s.circularPointsAiming(name = "cpa")
     ]) *
-    (solver = (nEval = [2500]) * [
+    (solver = (nEval = [1000]) * [
       ea.s.ga(representation = ea.r.doubleString());
-      ea.s.simpleEs();
-      ea.s.pso();
       ea.s.differentialEvolution()
     ]) * [
     ea.run()
@@ -15,24 +13,24 @@ ea.experiment(
   listeners = [
     ea.l.console(
       functions = [
-        ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
-        ea.nf.bestFitness(s = "%6.2f");
-        ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()))
+        ea.f.size(beforeF = ea.f.genotype(beforeF = ea.f.best()); format = "%3d");
+        ea.f.quality(beforeF = ea.f.best(); format = "%6.2f");
+        ea.f.hist(beforeF = f.each(beforeF = ea.f.all(); mapF = ea.f.quality()))
       ];
       runKeys = [
         ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
         ea.misc.sEntry(key = "problem.p"; value = "{problem.p}");
         ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
-      ]
+      ];
+      onlyLast = true
     );
     ea.l.expPlotSaver(
       filePath = "../numopt-bestf-vs-evals.png";
       freeScales = true;
-      saveCsvDataMode = paper_friendly;
       type = lines;
-      plot = ea.plot.fitnessPlotMatrix(
-        xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 100; s = "%.0f");
+      plot = ea.plot.qualityPlotMatrix(
+        xFunction = f.quantized(beforeF = ea.f.nOfEvals(); q = 50);
         xSubplotRunKey = ea.misc.sEntry(key = p; value = "{problem.p}");
         ySubplotRunKey = ea.misc.sEntry(key = problem; value = "{problem.name}")
       )
@@ -40,9 +38,8 @@ ea.experiment(
     ea.l.expPlotSaver(
       filePath = "../numopt-bestf-boxplot.png";
       freeScales = true;
-      saveCsvDataMode = paper_friendly;
       type = boxplot;
-      plot = ea.plot.fitnessBoxplotMatrix(
+      plot = ea.plot.qualityBoxplotMatrix(
         xSubplotRunKey = ea.misc.sEntry(key = p; value = "{problem.p}");
         ySubplotRunKey = ea.misc.sEntry(key = problem; value = "{problem.name}")
       )

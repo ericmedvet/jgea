@@ -154,8 +154,8 @@ public class Problems {
   @SuppressWarnings("unused")
   public static <S, Q, C extends Comparable<C>> TotalOrderQualityBasedProblem<S, Q> totalOrder(
       @Param(value = "name", dS = "to") String name,
-      @Param("qFunction") NamedFunction<S, Q> qualityFunction,
-      @Param(value = "cFunction", dNPM = "ea.f.identity()") NamedFunction<Q, C> comparableFunction,
+      @Param("qFunction") Function<S, Q> qualityFunction,
+      @Param(value = "cFunction", dNPM = "f.identity()") Function<Q, C> comparableFunction,
       @Param(value = "type", dS = "minimize") OptimizationType type) {
     return new TotalOrderQualityBasedProblem<>() {
       @Override

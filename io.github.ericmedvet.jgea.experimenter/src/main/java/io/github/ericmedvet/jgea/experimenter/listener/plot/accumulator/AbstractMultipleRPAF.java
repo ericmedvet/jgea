@@ -23,6 +23,7 @@ import io.github.ericmedvet.jgea.core.listener.Accumulator;
 import io.github.ericmedvet.jnb.datastructure.HashMapTable;
 import io.github.ericmedvet.jnb.datastructure.Table;
 import io.github.ericmedvet.jviz.core.plot.XYPlot;
+
 import java.util.function.Function;
 
 public abstract class AbstractMultipleRPAF<E, P extends XYPlot<D>, R, D, K, V>
@@ -34,7 +35,8 @@ public abstract class AbstractMultipleRPAF<E, P extends XYPlot<D>, R, D, K, V>
   private final Table<K, K, V> table;
 
   public AbstractMultipleRPAF(
-      Function<? super R, ? extends K> xSubplotFunction, Function<? super R, ? extends K> ySubplotFunction) {
+      Function<? super R, ? extends K> xSubplotFunction, Function<? super R, ? extends K> ySubplotFunction
+  ) {
     this.xSubplotFunction = xSubplotFunction;
     this.ySubplotFunction = ySubplotFunction;
     table = new HashMapTable<>();
@@ -56,7 +58,7 @@ public abstract class AbstractMultipleRPAF<E, P extends XYPlot<D>, R, D, K, V>
       @Override
       public P get() {
         synchronized (table) {
-          return buildPlot(table.map((xK, yK, v) -> buildData(xK, yK, v)));
+          return buildPlot(table.map((xK, yK, v) -> buildData(xK, yK, v == null ? init(xK, yK) : v)));
         }
       }
 

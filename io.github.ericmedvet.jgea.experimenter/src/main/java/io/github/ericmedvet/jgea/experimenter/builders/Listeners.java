@@ -56,6 +56,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 
 @Discoverable(prefixTemplate = "ea.listener|l")
@@ -195,9 +196,9 @@ public class Listeners {
                         "f.size(beforeF=ea.f.all())",
                         "f.size(beforeF=ea.f.firsts())",
                         "f.size(beforeF=ea.f.lasts())",
-                        "ea.f.uniqueness(beforeF=f.each(mapF=ea.f.genotype();beforeF=ea.f.all()))",
-                        "ea.f.uniqueness(beforeF=f.each(mapF=ea.f.solution();beforeF=ea.f.all()))",
-                        "ea.f.uniqueness(beforeF=f.each(mapF=ea.f.fitness();beforeF=ea.f.all()))"
+                        "f.uniqueness(beforeF=f.each(mapF=ea.f.genotype();beforeF=ea.f.all()))",
+                        "f.uniqueness(beforeF=f.each(mapF=ea.f.solution();beforeF=ea.f.all()))",
+                        "f.uniqueness(beforeF=f.each(mapF=ea.f.quality();beforeF=ea.f.all()))"
                       })
                   List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> defaultStateFunctions,
               @Param(value = "functions")
@@ -209,7 +210,9 @@ public class Listeners {
                   Predicate<Run<?, G, S, Q>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         new CSVPrinter<>(
-            Misc.concat(List.of(defaultStateFunctions, stateFunctions)),
+            Stream.of(defaultStateFunctions, stateFunctions)
+                .flatMap(List::stream)
+                .toList(),
             buildRunNamedFunctions(runKeys, experiment),
             new File(filePath)),
         predicate,
@@ -250,9 +253,9 @@ public class Listeners {
                         "f.size(beforeF=ea.f.all())",
                         "f.size(beforeF=ea.f.firsts())",
                         "f.size(beforeF=ea.f.lasts())",
-                        "ea.f.uniqueness(beforeF=f.each(mapF=ea.f.genotype();beforeF=ea.f.all()))",
-                        "ea.f.uniqueness(beforeF=f.each(mapF=ea.f.solution();beforeF=ea.f.all()))",
-                        "ea.f.uniqueness(beforeF=f.each(mapF=ea.f.fitness();beforeF=ea.f.all()))"
+                        "f.uniqueness(beforeF=f.each(mapF=ea.f.genotype();beforeF=ea.f.all()))",
+                        "f.uniqueness(beforeF=f.each(mapF=ea.f.solution();beforeF=ea.f.all()))",
+                        "f.uniqueness(beforeF=f.each(mapF=ea.f.quality();beforeF=ea.f.all()))"
                       })
                   List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> defaultStateFunctions,
               @Param(value = "functions")
@@ -264,7 +267,9 @@ public class Listeners {
                   Predicate<Run<?, G, S, Q>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         new TabularPrinter<>(
-            Misc.concat(List.of(defaultStateFunctions, stateFunctions)),
+            Stream.of(defaultStateFunctions, stateFunctions)
+                .flatMap(List::stream)
+                .toList(),
             buildRunNamedFunctions(runKeys, experiment)),
         predicate,
         deferred ? executorService : null,
@@ -337,9 +342,9 @@ public class Listeners {
                         "f.size(beforeF=ea.f.all())",
                         "f.size(beforeF=ea.f.firsts())",
                         "f.size(beforeF=ea.f.lasts())",
-                        "ea.f.uniqueness(beforeF=f.each(mapF=ea.f.genotype();beforeF=ea.f.all()))",
-                        "ea.f.uniqueness(beforeF=f.each(mapF=ea.f.solution();beforeF=ea.f.all()))",
-                        "ea.f.uniqueness(beforeF=f.each(mapF=ea.f.fitness();beforeF=ea.f.all()))"
+                        "f.uniqueness(beforeF=f.each(mapF=ea.f.genotype();beforeF=ea.f.all()))",
+                        "f.uniqueness(beforeF=f.each(mapF=ea.f.solution();beforeF=ea.f.all()))",
+                        "f.uniqueness(beforeF=f.each(mapF=ea.f.quality();beforeF=ea.f.all()))"
                       })
                   List<NamedFunction<? super POCPopulationState<?, G, S, Q, ?>, ?>>
                       defaultStateFunctions,
@@ -617,9 +622,9 @@ public class Listeners {
                         "f.size(beforeF=ea.f.all())",
                         "f.size(beforeF=ea.f.firsts())",
                         "f.size(beforeF=ea.f.lasts())",
-                        "ea.f.uniqueness(beforeF=f.each(mapF=ea.f.genotype();beforeF=ea.f.all()))",
-                        "ea.f.uniqueness(beforeF=f.each(mapF=ea.f.solution();beforeF=ea.f.all()))",
-                        "ea.f.uniqueness(beforeF=f.each(mapF=ea.f.fitness();beforeF=ea.f.all()))"
+                        "f.uniqueness(beforeF=f.each(mapF=ea.f.genotype();beforeF=ea.f.all()))",
+                        "f.uniqueness(beforeF=f.each(mapF=ea.f.solution();beforeF=ea.f.all()))",
+                        "f.uniqueness(beforeF=f.each(mapF=ea.f.quality();beforeF=ea.f.all()))"
                       })
                   List<NamedFunction<? super POCPopulationState<?, G, S, Q, ?>, ?>>
                       defaultStateFunctions,

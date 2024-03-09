@@ -91,6 +91,8 @@ public interface Listener<E> {
             L.warning(String.format(
                 "Listener %s cannot done() event: %s",
                 thisListener.getClass().getSimpleName(), ex));
+            ex.printStackTrace();  // TODO remove
+            System.exit(-1);
           }
         });
       }

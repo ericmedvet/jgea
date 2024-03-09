@@ -20,6 +20,11 @@
     </dependency>
     <dependency>
       <groupId>io.github.ericmedvet</groupId>
+      <artifactId>jnb.buildable</artifactId>
+      <version>${jnb.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.github.ericmedvet</groupId>
       <artifactId>jgea.core</artifactId>
       <version>${revision}</version>
     </dependency>

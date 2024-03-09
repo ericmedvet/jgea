@@ -22,22 +22,23 @@ package io.github.ericmedvet.jgea.experimenter.listener;
 import io.github.ericmedvet.jgea.core.listener.Accumulator;
 import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
 import io.github.ericmedvet.jnb.datastructure.HashMapTable;
+import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jnb.datastructure.Table;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class GroupedTablesAccumulatorFactory<K, V, E, R>
     implements AccumulatorFactory<E, Map<List<K>, Table<Integer, String, V>>, R> {
 
   protected final Map<List<K>, Table<Integer, String, V>> data;
-  private final List<NamedFunction<? super R, ? extends K>> rFunctions;
-  private final List<NamedFunction<? super E, ? extends V>> eFunctions;
+  private final List<Function<? super R, ? extends K>> rFunctions;
+  private final List<Function<? super E, ? extends V>> eFunctions;
 
   public GroupedTablesAccumulatorFactory(
-      List<NamedFunction<? super R, ? extends K>> rFunctions,
-      List<NamedFunction<? super E, ? extends V>> eFunctions) {
+      List<Function<? super R, ? extends K>> rFunctions, List<Function<? super E, ? extends V>> eFunctions) {
     this.rFunctions = rFunctions;
     this.eFunctions = eFunctions;
     data = new LinkedHashMap<>();
@@ -62,7 +63,7 @@ public class GroupedTablesAccumulatorFactory<K, V, E, R>
         synchronized (data) {
           table.addRow(
               table.nRows(),
-              eFunctions.stream().collect(Collectors.toMap(NamedFunction::getName, nf -> nf.apply(e))));
+              eFunctions.stream().collect(Collectors.toMap(NamedFunction::name, f -> f.apply(e))));
         }
       }
     };

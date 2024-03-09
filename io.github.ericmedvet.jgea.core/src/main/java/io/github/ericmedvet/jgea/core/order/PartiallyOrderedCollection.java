@@ -39,7 +39,9 @@ public interface PartiallyOrderedCollection<T> extends Sized {
   default Collection<T> mids() {
     Collection<T> firsts = firsts();
     Collection<T> lasts = lasts();
-    return all().stream().filter(t -> !firsts.contains(t) && !lasts.contains(t)).toList();
+    return all().stream()
+        .filter(t -> !firsts.contains(t) && !lasts.contains(t))
+        .toList();
   }
 
   default List<Collection<T>> fronts() {
