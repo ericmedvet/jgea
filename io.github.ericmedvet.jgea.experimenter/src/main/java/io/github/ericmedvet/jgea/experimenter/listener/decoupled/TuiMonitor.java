@@ -250,7 +250,6 @@ public class TuiMonitor implements Runnable {
           try {
             updateUI();
           } catch (Throwable e) {
-            e.printStackTrace();
             L.warning("Unexpected exception: %s".formatted(e));
           }
         },
