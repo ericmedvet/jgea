@@ -123,15 +123,12 @@ public class SinkListenerFactory<G, S, Q>
           runSink.push(runKey, new RunInfo(run.index(), startDateTime, Progress.DONE, true));
         }
       }
+
+      @Override
+      public String toString() {
+        return "sink(state:%d;run=%d)".formatted(stateFunctions.size(), runFunctions.size());
+      }
     };
-  }
-
-  private ExperimentKey experimentKey() {
-    return new ExperimentKey(ProcessKey.local(), experiment.name());
-  }
-
-  private RunKey runKey(Run<?, ?, ?, ?> run) {
-    return new RunKey(experimentKey(), "r%04d".formatted(run.index()));
   }
 
   @Override
@@ -146,5 +143,13 @@ public class SinkListenerFactory<G, S, Q>
     runSink.close();
     logSink.close();
     dataItemSink.close();
+  }
+
+  private ExperimentKey experimentKey() {
+    return new ExperimentKey(ProcessKey.local(), experiment.name());
+  }
+
+  private RunKey runKey(Run<?, ?, ?, ?> run) {
+    return new RunKey(experimentKey(), "r%04d".formatted(run.index()));
   }
 }

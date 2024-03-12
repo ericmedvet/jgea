@@ -27,6 +27,7 @@ import io.github.ericmedvet.jgea.core.util.TextPlotter;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TelegramUpdater<E, K> extends TelegramClient implements ListenerFactory<E, K>, ProgressMonitor {
 
@@ -84,6 +85,12 @@ public class TelegramUpdater<E, K> extends TelegramClient implements ListenerFac
                 accumulators.get(i).getClass().getSimpleName(), e));
           }
         }
+      }
+
+      @Override
+      public String toString() {
+        return "telegram(%s)"
+            .formatted(accumulators.stream().map(Object::toString).collect(Collectors.joining(";")));
       }
     };
   }

@@ -20,13 +20,14 @@
 package io.github.ericmedvet.jgea.problem.simulation;
 
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
+import io.github.ericmedvet.jsdynsym.control.Simulation;
 import java.util.Comparator;
 
-public interface SimulationBasedTotalOrderProblem<S, B, Q extends Comparable<Q>>
-    extends SimulationBasedProblem<S, B, Q>,
-        TotalOrderQualityBasedProblem<S, SimulationBasedProblem.Outcome<B, Q>> {
+public interface SimulationBasedTotalOrderProblem<S, B, O extends Simulation.Outcome<B>, Q extends Comparable<Q>>
+    extends SimulationBasedProblem<S, B, O, Q>,
+        TotalOrderQualityBasedProblem<S, SimulationBasedProblem.QualityOutcome<B, O, Q>> {
   @Override
-  default Comparator<Outcome<B, Q>> totalOrderComparator() {
-    return Comparator.comparing(Outcome::quality);
+  default Comparator<QualityOutcome<B, O, Q>> totalOrderComparator() {
+    return Comparator.comparing(QualityOutcome::quality);
   }
 }

@@ -42,6 +42,11 @@ public interface Accumulator<E, O> extends Listener<E> {
       public void listen(E e) {
         os.add(function.apply(e));
       }
+
+      @Override
+      public String toString() {
+        return "collectorAccumulator[%s]".formatted(function);
+      }
     };
   }
 
@@ -57,6 +62,28 @@ public interface Accumulator<E, O> extends Listener<E> {
       @Override
       public void listen(E e) {
         last = e;
+      }
+
+      @Override
+      public String toString() {
+        return "lastAccumulator";
+      }
+    };
+  }
+
+  static <E, O> Accumulator<E, O> nullAccumulator() {
+    return new Accumulator<>() {
+      @Override
+      public O get() {
+        return null;
+      }
+
+      @Override
+      public void listen(E e) {}
+
+      @Override
+      public String toString() {
+        return "nullAccumulator";
       }
     };
   }
@@ -78,6 +105,11 @@ public interface Accumulator<E, O> extends Listener<E> {
       public void done() {
         thisAccumulator.done();
       }
+
+      @Override
+      public String toString() {
+        return thisAccumulator + "[then:%s]".formatted(function);
+      }
     };
   }
 
@@ -98,6 +130,11 @@ public interface Accumulator<E, O> extends Listener<E> {
       public void done() {
         thisAccumulator.done();
         consumer.accept(thisAccumulator.get());
+      }
+
+      @Override
+      public String toString() {
+        return thisAccumulator + "[thenOnDone:%s]".formatted(consumer);
       }
     };
   }

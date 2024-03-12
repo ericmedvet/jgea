@@ -165,6 +165,11 @@ public class Listeners {
                 public void done() {
                   innerListener.done();
                 }
+
+                @Override
+                public String toString() {
+                  return innerListener + "[all→individuals]";
+                }
               };
             }
 
@@ -387,32 +392,38 @@ public class Listeners {
               @Param(value = "condition", dNPM = "ea.predicate.always()")
                   Predicate<Run<?, G, S, Q>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        run -> (Listener<POCPopulationState<?, G, S, Q, ?>>) state -> {
-          // obtain and serialize solutions
-          List<String> serializedGenotypes = state.pocPopulation().firsts().stream()
-              .map(i -> serializer.apply(i.genotype()))
-              .toList();
-          // prepare map
-          NamedParamMap map = new MapNamedParamMap(
-              "ea.runOutcome",
-              Map.ofEntries(
-                  Map.entry(new MapNamedParamMap.TypedKey("index", ParamMap.Type.INT), run.index()),
-                  Map.entry(
-                      new MapNamedParamMap.TypedKey("run", ParamMap.Type.NAMED_PARAM_MAP),
-                      run.map()),
-                  Map.entry(
-                      new MapNamedParamMap.TypedKey("serializedGenotypes", ParamMap.Type.STRINGS),
-                      serializedGenotypes)));
-          // write on file
-          File file = Misc.checkExistenceAndChangeName(new File(Utils.interpolate(filePathTemplate, run)));
-          try (BufferedWriter w = new BufferedWriter(new FileWriter(file))) {
-            String prettyMap = MapNamedParamMap.prettyToString(map);
-            w.append(prettyMap);
-            w.flush();
-          } catch (IOException e) {
-            L.warning("Cannot save outcome file %s due to: %s".formatted(file.getPath(), e));
-          }
-        },
+        run -> Listener.<POCPopulationState<?, G, S, Q, ?>>named(
+            state -> {
+              // obtain and serialize solutions
+              List<String> serializedGenotypes = state.pocPopulation().firsts().stream()
+                  .map(i -> serializer.apply(i.genotype()))
+                  .toList();
+              // prepare map
+              NamedParamMap map = new MapNamedParamMap(
+                  "ea.runOutcome",
+                  Map.ofEntries(
+                      Map.entry(
+                          new MapNamedParamMap.TypedKey("index", ParamMap.Type.INT),
+                          run.index()),
+                      Map.entry(
+                          new MapNamedParamMap.TypedKey("run", ParamMap.Type.NAMED_PARAM_MAP),
+                          run.map()),
+                      Map.entry(
+                          new MapNamedParamMap.TypedKey(
+                              "serializedGenotypes", ParamMap.Type.STRINGS),
+                          serializedGenotypes)));
+              // write on file
+              File file = Misc.checkExistenceAndChangeName(
+                  new File(Utils.interpolate(filePathTemplate, run)));
+              try (BufferedWriter w = new BufferedWriter(new FileWriter(file))) {
+                String prettyMap = MapNamedParamMap.prettyToString(map);
+                w.append(prettyMap);
+                w.flush();
+              } catch (IOException e) {
+                L.warning("Cannot save outcome file %s due to: %s".formatted(file.getPath(), e));
+              }
+            },
+            "outcomeSaver"),
         predicate,
         deferred ? executorService : null,
         true);
@@ -458,7 +469,9 @@ public class Listeners {
       BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, K, ?>, Run<?, G, S, K>>>
           runLastSimulationVideoSaver(
               @Param(value = "function", dNPM = "ea.f.quality(of=ea.f.best())")
-                  Function<POCPopulationState<?, G, S, K, ?>, SimulationBasedProblem.Outcome<B, Q>>
+                  Function<
+                          POCPopulationState<?, G, S, K, ?>,
+                          SimulationBasedProblem.QualityOutcome<B, ?, Q>>
                       function,
               @Param("drawer") TimedSequenceDrawer<B> drawer,
               @Param(value = "w", dI = 500) int w,
@@ -469,20 +482,23 @@ public class Listeners {
               @Param(value = "condition", dNPM = "ea.predicate.always()")
                   Predicate<Run<?, G, S, K>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        (ListenerFactory<POCPopulationState<?, G, S, K, ?>, Run<?, G, S, K>>) run -> state -> {
-          File file = Misc.checkExistenceAndChangeName(new File(Utils.interpolate(filePathTemplate, run)));
-          try {
-            drawer.saveVideo(
-                w,
-                h,
-                file,
-                frameRate,
-                encoder,
-                function.apply(state).behavior());
-          } catch (IOException e) {
-            L.severe("Cannot save plot at '%s': %s".formatted(file.getPath(), e));
-          }
-        },
+        run -> Listener.<POCPopulationState<?, G, S, K, ?>>named(
+            state -> {
+              File file = Misc.checkExistenceAndChangeName(
+                  new File(Utils.interpolate(filePathTemplate, run)));
+              try {
+                drawer.saveVideo(
+                    w,
+                    h,
+                    file,
+                    frameRate,
+                    encoder,
+                    function.apply(state).outcome().snapshots());
+              } catch (IOException e) {
+                L.severe("Cannot save plot at '%s': %s".formatted(file.getPath(), e));
+              }
+            },
+            "lastSimulationVideoSaver"),
         predicate,
         executorService,
         true);

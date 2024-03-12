@@ -26,14 +26,18 @@ import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.State;
-import io.github.ericmedvet.jgea.core.util.*;
 import io.github.ericmedvet.jgea.core.util.Misc;
+import io.github.ericmedvet.jgea.core.util.Progress;
+import io.github.ericmedvet.jgea.core.util.Sized;
+import io.github.ericmedvet.jgea.core.util.TextPlotter;
 import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.Utils;
+import io.github.ericmedvet.jgea.problem.simulation.SimulationBasedProblem;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
+import io.github.ericmedvet.jsdynsym.control.Simulation;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -41,8 +45,6 @@ import java.util.function.Function;
 
 @Discoverable(prefixTemplate = "ea.function|f")
 public class Functions {
-
-  private static final String DEFAULT_FORMAT = "%.0s";
 
   private Functions() {}
 
@@ -81,7 +83,7 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X, G> FormattedNamedFunction<X, G> genotype(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Individual<G, ?, ?>> beforeF,
-      @Param(value = "format", dS = DEFAULT_FORMAT) String format) {
+      @Param(value = "format", dS = "%s") String format) {
     Function<Individual<G, ?, ?>, G> f = Individual::genotype;
     return FormattedNamedFunction.from(f, format, "genotype").compose(beforeF);
   }
@@ -176,7 +178,7 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X, Q> FormattedNamedFunction<X, Q> quality(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Individual<?, ?, Q>> beforeF,
-      @Param(value = "format", dS = DEFAULT_FORMAT) String format) {
+      @Param(value = "format", dS = "%s") String format) {
     Function<Individual<?, ?, Q>, Q> f = Individual::quality;
     return FormattedNamedFunction.from(f, format, "quality").compose(beforeF);
   }
@@ -192,9 +194,27 @@ public class Functions {
   public static <X> FormattedNamedFunction<X, String> runKey(
       @Param("runKey") Map.Entry<String, String> runKey,
       @Param(value = "of", dNPM = "f.identity()") Function<X, Run<?, ?, ?, ?>> beforeF,
-      @Param(value = "format", dS = DEFAULT_FORMAT) String format) {
+      @Param(value = "format", dS = "%s") String format) {
     Function<Run<?, ?, ?, ?>, String> f = run -> Utils.interpolate(runKey.getValue(), run);
     return FormattedNamedFunction.from(f, format, runKey.getKey()).compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, B, O extends Simulation.Outcome<B>> FormattedNamedFunction<X, O> simOutcome(
+      @Param(value = "of", dNPM = "f.identity()")
+          Function<X, SimulationBasedProblem.QualityOutcome<B, O, ?>> beforeF,
+      @Param(value = "format", dS = "%s") String format) {
+    Function<SimulationBasedProblem.QualityOutcome<B, O, ?>, O> f = SimulationBasedProblem.QualityOutcome::outcome;
+    return FormattedNamedFunction.from(f, format, "sim.outcome").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, Q> FormattedNamedFunction<X, Q> simQuality(
+      @Param(value = "of", dNPM = "f.identity()")
+          Function<X, SimulationBasedProblem.QualityOutcome<?, ?, Q>> beforeF,
+      @Param(value = "format", dS = "%s") String format) {
+    Function<SimulationBasedProblem.QualityOutcome<?, ?, Q>, Q> f = SimulationBasedProblem.QualityOutcome::quality;
+    return FormattedNamedFunction.from(f, format, "sim.quality").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
@@ -223,7 +243,7 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X, S> FormattedNamedFunction<X, S> solution(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Individual<?, S, ?>> beforeF,
-      @Param(value = "format", dS = DEFAULT_FORMAT) String format) {
+      @Param(value = "format", dS = "%s") String format) {
     Function<Individual<?, S, ?>, S> f = Individual::solution;
     return FormattedNamedFunction.from(f, format, "solution").compose(beforeF);
   }

@@ -54,6 +54,11 @@ public abstract class AbstractSingleRPAF<E, P extends XYPlot<D>, R, D> implement
           es.add(e);
         }
       }
+
+      @Override
+      public String toString() {
+        return "plotSingleRPAF(title=%s)".formatted(titleFunction);
+      }
     };
   }
 }

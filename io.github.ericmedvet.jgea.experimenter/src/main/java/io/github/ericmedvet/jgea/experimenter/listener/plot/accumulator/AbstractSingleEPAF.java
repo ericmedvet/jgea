@@ -82,6 +82,11 @@ public abstract class AbstractSingleEPAF<E, P extends XYPlot<D>, R, D, X>
           }
         }
       }
+
+      @Override
+      public String toString() {
+        return "plotSingleEPAF(title=%s)".formatted(titleFunction);
+      }
     };
   }
 }

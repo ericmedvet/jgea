@@ -35,15 +35,7 @@ public interface AccumulatorFactory<E, O, K> extends ListenerFactory<E, K> {
         if (predicate.test(k)) {
           return inner.build(k);
         }
-        return new Accumulator<>() {
-          @Override
-          public O get() {
-            return null; // TODO maybe find smth better
-          }
-
-          @Override
-          public void listen(E e) {}
-        };
+        return Accumulator.nullAccumulator();
       }
 
       @Override
@@ -112,6 +104,11 @@ public interface AccumulatorFactory<E, O, K> extends ListenerFactory<E, K> {
           @Override
           public void done() {
             os.add(accumulator.get());
+          }
+
+          @Override
+          public String toString() {
+            return accumulator + "[thenOnShutDown:%s]".formatted(consumer);
           }
         };
       }

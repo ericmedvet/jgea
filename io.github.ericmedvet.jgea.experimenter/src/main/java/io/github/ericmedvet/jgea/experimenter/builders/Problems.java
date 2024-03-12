@@ -35,8 +35,8 @@ import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalStatelessSystem;
 import java.util.Comparator;
-import java.util.SortedMap;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Discoverable(prefixTemplate = "ea.problem|p")
 public class Problems {
@@ -49,64 +49,66 @@ public class Problems {
     MAXIMIZE
   }
 
-  private interface SimulationBasedProblemWithExample<S, B, Q>
-      extends SimulationBasedProblem<S, B, Q>, ProblemWithExampleSolution<S> {
-    static <S, B, Q> SimulationBasedProblemWithExample<S, B, Q> from(
-        Function<SortedMap<Double, B>, Q> behaviorQualityFunction,
-        Simulation<S, B> simulation,
-        PartialComparator<Outcome<B, Q>> qualityComparator,
+  private interface SimulationBasedProblemWithExample<S, B, O extends Simulation.Outcome<B>, Q>
+      extends SimulationBasedProblem<S, B, O, Q>, ProblemWithExampleSolution<S> {
+    static <S, B, O extends Simulation.Outcome<B>, Q> SimulationBasedProblemWithExample<S, B, O, Q> from(
+        Function<O, Q> behaviorQualityFunction,
+        Simulation<S, B, O> simulation,
+        PartialComparator<QualityOutcome<B, O, Q>> qualityComparator,
         S example) {
       return new SimulationBasedProblemWithExample<>() {
-        @Override
-        public Function<SortedMap<Double, B>, Q> behaviorQualityFunction() {
-          return behaviorQualityFunction;
-        }
-
-        @Override
-        public Simulation<S, B> simulation() {
-          return simulation;
-        }
-
         @Override
         public S example() {
           return example;
         }
 
         @Override
-        public PartialComparator<Outcome<B, Q>> qualityComparator() {
+        public Function<O, Q> outcomeQualityFunction() {
+          return behaviorQualityFunction;
+        }
+
+        @Override
+        public Simulation<S, B, O> simulation() {
+          return simulation;
+        }
+
+        @Override
+        public PartialComparator<QualityOutcome<B, O, Q>> qualityComparator() {
           return qualityComparator;
         }
       };
     }
   }
 
-  private interface SimulationBasedTotalOrderProblemWithExample<S, B, Q extends Comparable<Q>>
-      extends SimulationBasedTotalOrderProblem<S, B, Q>, ProblemWithExampleSolution<S> {
-    static <S, B, Q extends Comparable<Q>> SimulationBasedTotalOrderProblemWithExample<S, B, Q> from(
-        Function<SortedMap<Double, B>, Q> behaviorQualityFunction,
-        Simulation<S, B> simulation,
-        S example,
-        OptimizationType type) {
+  private interface SimulationBasedTotalOrderProblemWithExample<
+          S, B, O extends Simulation.Outcome<B>, Q extends Comparable<Q>>
+      extends SimulationBasedTotalOrderProblem<S, B, O, Q>, ProblemWithExampleSolution<S> {
+    static <S, B, O extends Simulation.Outcome<B>, Q extends Comparable<Q>>
+        SimulationBasedTotalOrderProblemWithExample<S, B, O, Q> from(
+            Function<O, Q> behaviorQualityFunction,
+            Simulation<S, B, O> simulation,
+            S example,
+            OptimizationType type) {
       return new SimulationBasedTotalOrderProblemWithExample<>() {
-        @Override
-        public Function<SortedMap<Double, B>, Q> behaviorQualityFunction() {
-          return behaviorQualityFunction;
-        }
-
-        @Override
-        public Simulation<S, B> simulation() {
-          return simulation;
-        }
-
         @Override
         public S example() {
           return example;
         }
 
         @Override
-        public Comparator<Outcome<B, Q>> totalOrderComparator() {
+        public Function<O, Q> outcomeQualityFunction() {
+          return behaviorQualityFunction;
+        }
+
+        @Override
+        public Simulation<S, B, O> simulation() {
+          return simulation;
+        }
+
+        @Override
+        public Comparator<QualityOutcome<B, O, Q>> totalOrderComparator() {
           return switch (type) {
-            case MINIMIZE -> Comparator.comparing(Outcome::quality);
+            case MINIMIZE -> Comparator.comparing(QualityOutcome::quality);
             case MAXIMIZE -> ((o1, o2) -> o2.quality().compareTo(o1.quality()));
           };
         }
@@ -115,16 +117,12 @@ public class Problems {
   }
 
   @SuppressWarnings("unused")
-  public static <S> MultiHomogeneousObjectiveProblem<S, Double> toMho(
-      @Param(value = "name", iS = "mt2mo({mtProblem.name})") String name,
-      @Param("mtProblem") MultiTargetProblem<S> mtProblem) {
-    return mtProblem.toMHOProblem();
-  }
-
-  @SuppressWarnings("unused")
   public static <B, Q extends Comparable<Q>>
       SimulationBasedTotalOrderProblem<
-              NumericalDynamicalSystem<?>, SingleAgentTask.Step<double[], double[], B>, Q>
+              NumericalDynamicalSystem<?>,
+              SingleAgentTask.Step<double[], double[], B>,
+              Simulation.Outcome<SingleAgentTask.Step<double[], double[], B>>,
+              Q>
           numEnvTo(
               @Param(value = "name", iS = "{environment.name}") String name,
               @Param(value = "dT", dD = 0.1) double dT,
@@ -132,23 +130,28 @@ public class Problems {
               @Param(value = "finalT", dD = 100) double finalT,
               @Param("environment") Environment<double[], double[], B> environment,
               @Param("f")
-                  Function<SortedMap<Double, SingleAgentTask.Step<double[], double[], B>>, Q>
-                      behaviorQualityFunction,
+                  Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], B>>, Q>
+                      outcomeQualityFunction,
               @Param(value = "type", dS = "minimize") OptimizationType type,
               @Param(value = "", injection = Param.Injection.BUILDER) NamedBuilder<?> nb,
               @Param(value = "", injection = Param.Injection.MAP) ParamMap map) {
     int nOfOutputs = environment.defaultAgentAction().length;
     int nOfInputs = environment.step(0, environment.defaultAgentAction()).length;
-    //noinspection unchecked
+    @SuppressWarnings("unchecked")
+    Supplier<Environment<double[], double[], B>> envSupplier = () -> (Environment<double[], double[], B>)
+        nb.build((NamedParamMap) map.value("environment", ParamMap.Type.NAMED_PARAM_MAP));
     return SimulationBasedTotalOrderProblemWithExample.from(
-        behaviorQualityFunction,
-        SingleAgentTask.fromEnvironment(
-            () -> (Environment<double[], double[], B>)
-                nb.build((NamedParamMap) map.value("environment", ParamMap.Type.NAMED_PARAM_MAP)),
-            new DoubleRange(initialT, finalT),
-            dT),
+        outcomeQualityFunction,
+        SingleAgentTask.fromEnvironment(envSupplier, new DoubleRange(initialT, finalT), dT),
         NumericalStatelessSystem.from(nOfInputs, nOfOutputs, (t, in) -> new double[nOfOutputs]),
         type);
+  }
+
+  @SuppressWarnings("unused")
+  public static <S> MultiHomogeneousObjectiveProblem<S, Double> toMho(
+      @Param(value = "name", iS = "mt2mo({mtProblem.name})") String name,
+      @Param("mtProblem") MultiTargetProblem<S> mtProblem) {
+    return mtProblem.toMHOProblem();
   }
 
   @SuppressWarnings("unused")

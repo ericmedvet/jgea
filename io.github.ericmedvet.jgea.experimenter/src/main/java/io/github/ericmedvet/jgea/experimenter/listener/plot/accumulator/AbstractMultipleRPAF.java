@@ -40,13 +40,13 @@ public abstract class AbstractMultipleRPAF<E, P extends XYPlot<D>, R, D, K, V>
     table = new HashMapTable<>();
   }
 
-  protected abstract V init(K xK, K yK);
-
-  protected abstract V update(K xK, K yK, V v, E e, R r);
-
   protected abstract D buildData(K xK, K yK, V v);
 
   protected abstract P buildPlot(Table<K, K, D> data);
+
+  protected abstract V init(K xK, K yK);
+
+  protected abstract V update(K xK, K yK, V v, E e, R r);
 
   @Override
   public Accumulator<E, P> build(R r) {
@@ -69,6 +69,11 @@ public abstract class AbstractMultipleRPAF<E, P extends XYPlot<D>, R, D, K, V>
           }
           table.set(yK, xK, update(xK, yK, v, e, r));
         }
+      }
+
+      @Override
+      public String toString() {
+        return "plotMultiRPAF(x=%s;y=%s)".formatted(xSubplotFunction, ySubplotFunction);
       }
     };
   }

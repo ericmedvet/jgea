@@ -46,24 +46,6 @@ public interface ListenerFactory<E, K> {
     };
   }
 
-  default ListenerFactory<E, K> conditional(Predicate<K> predicate) {
-    ListenerFactory<E, K> inner = this;
-    return new ListenerFactory<>() {
-      @Override
-      public Listener<E> build(K k) {
-        if (predicate.test(k)) {
-          return inner.build(k);
-        }
-        return Listener.deaf();
-      }
-
-      @Override
-      public void shutdown() {
-        inner.shutdown();
-      }
-    };
-  }
-
   static <E, K> ListenerFactory<E, K> deaf() {
     return k -> Listener.deaf();
   }
@@ -80,6 +62,24 @@ public interface ListenerFactory<E, K> {
       public void shutdown() {
         inner.shutdown();
         other.shutdown();
+      }
+    };
+  }
+
+  default ListenerFactory<E, K> conditional(Predicate<K> predicate) {
+    ListenerFactory<E, K> inner = this;
+    return new ListenerFactory<>() {
+      @Override
+      public Listener<E> build(K k) {
+        if (predicate.test(k)) {
+          return inner.build(k);
+        }
+        return Listener.deaf();
+      }
+
+      @Override
+      public void shutdown() {
+        inner.shutdown();
       }
     };
   }
@@ -233,6 +233,11 @@ public interface ListenerFactory<E, K> {
                 counter.notifyAll();
               }
             }
+          }
+
+          @Override
+          public String toString() {
+            return innerListener + "[robust]";
           }
         };
       }

@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
 
@@ -106,6 +107,10 @@ public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
             .collect(Collectors.joining("\n"));
   }
 
+  private static String format(Object currentValue, String format, int l) {
+    return StringUtils.justify(String.format(format, currentValue), l);
+  }
+
   @Override
   public Listener<E> build(K k) {
     List<?> fixedValues = kPairs.stream().map(p -> p.first().apply(k)).toList();
@@ -148,11 +153,16 @@ public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
           lineCounter = lineCounter + 1;
         }
       }
-    };
-  }
 
-  private static String format(Object currentValue, String format, int l) {
-    return StringUtils.justify(String.format(format, currentValue), l);
+      @Override
+      public String toString() {
+        return "tabular(%s)"
+            .formatted(Stream.concat(
+                    ePairs.stream().map(p -> p.first().name()),
+                    kPairs.stream().map(p -> p.first().name()))
+                .collect(Collectors.joining(";")));
+      }
+    };
   }
 
   private String format(Object currentValue, Object lastValue, Object secondLastValue, String format, int l) {

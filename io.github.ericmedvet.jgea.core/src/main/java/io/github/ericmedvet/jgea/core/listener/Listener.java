@@ -22,6 +22,7 @@ package io.github.ericmedvet.jgea.core.listener;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
@@ -41,28 +42,42 @@ public interface Listener<E> {
       public void done() {
         listeners.forEach(Listener::done);
       }
+
+      @Override
+      public String toString() {
+        return listeners.stream().map(Object::toString).toList().toString();
+      }
     };
   }
 
   static <E> Listener<E> deaf() {
-    return e -> {};
+    return new Listener<E>() {
+      @Override
+      public void listen(E e) {}
+
+      @Override
+      public String toString() {
+        return "deaf";
+      }
+    };
   }
 
-  default Listener<E> and(Listener<? super E> other) {
-    Listener<E> inner = this;
+  static <E> Listener<E> named(Consumer<E> consumer, String name) {
     return new Listener<>() {
       @Override
       public void listen(E e) {
-        inner.listen(e);
-        other.listen(e);
+        consumer.accept(e);
       }
 
       @Override
-      public void done() {
-        inner.done();
-        other.done();
+      public String toString() {
+        return name;
       }
     };
+  }
+
+  default Listener<E> and(Listener<? super E> other) {
+    return all(List.of(this, other));
   }
 
   default Listener<E> deferred(ExecutorService executorService) {
@@ -75,9 +90,7 @@ public interface Listener<E> {
           try {
             thisListener.listen(e);
           } catch (RuntimeException ex) {
-            L.warning(String.format(
-                "Listener %s cannot listen() event: %s",
-                thisListener.getClass().getSimpleName(), ex));
+            L.warning(String.format("Listener %s cannot listen() event: %s", thisListener, ex));
           }
         });
       }
@@ -88,11 +101,14 @@ public interface Listener<E> {
           try {
             thisListener.done();
           } catch (RuntimeException ex) {
-            L.warning(String.format(
-                "Listener %s cannot done() event: %s",
-                thisListener.getClass().getSimpleName(), ex));
+            L.warning(String.format("Listener %s cannot done() event: %s", thisListener, ex));
           }
         });
+      }
+
+      @Override
+      public String toString() {
+        return thisListener + "[deferred]";
       }
     };
   }
@@ -111,20 +127,30 @@ public interface Listener<E> {
       public void done() {
         thisListener.done();
       }
+
+      @Override
+      public String toString() {
+        return thisListener + "[forEach:%s]".formatted(splitter);
+      }
     };
   }
 
   default <F> Listener<F> on(Function<F, E> function) {
-    Listener<E> inner = this;
+    Listener<E> thisListener = this;
     return new Listener<>() {
       @Override
       public void listen(F f) {
-        inner.listen(function.apply(f));
+        thisListener.listen(function.apply(f));
       }
 
       @Override
       public void done() {
-        inner.done();
+        thisListener.done();
+      }
+
+      @Override
+      public String toString() {
+        return thisListener + "[on:%s]".formatted(function);
       }
     };
   }
@@ -143,6 +169,11 @@ public interface Listener<E> {
       public void done() {
         thisListener.listen(lastE);
         thisListener.done();
+      }
+
+      @Override
+      public String toString() {
+        return thisListener + "[last]";
       }
     };
   }

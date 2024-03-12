@@ -21,21 +21,21 @@ package io.github.ericmedvet.jgea.problem.simulation;
 
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
-import java.util.SortedMap;
 import java.util.function.Function;
 
-public interface SimulationBasedProblem<S, B, Q> extends QualityBasedProblem<S, SimulationBasedProblem.Outcome<B, Q>> {
-  record Outcome<B, Q>(SortedMap<Double, B> behavior, Q quality) {}
+public interface SimulationBasedProblem<S, B, O extends Simulation.Outcome<B>, Q>
+    extends QualityBasedProblem<S, SimulationBasedProblem.QualityOutcome<B, O, Q>> {
+  record QualityOutcome<B, O extends Simulation.Outcome<B>, Q>(O outcome, Q quality) {}
 
-  Function<SortedMap<Double, B>, Q> behaviorQualityFunction();
+  Function<O, Q> outcomeQualityFunction();
 
-  Simulation<S, B> simulation();
+  Simulation<S, B, O> simulation();
 
   @Override
-  default Function<S, Outcome<B, Q>> qualityFunction() {
+  default Function<S, QualityOutcome<B, O, Q>> qualityFunction() {
     return s -> {
-      SortedMap<Double, B> behavior = simulation().simulate(s);
-      return new Outcome<>(behavior, behaviorQualityFunction().apply(behavior));
+      O outcome = simulation().simulate(s);
+      return new QualityOutcome<>(outcome, outcomeQualityFunction().apply(outcome));
     };
   }
 }
