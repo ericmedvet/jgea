@@ -18,7 +18,7 @@
  * =========================LICENSE_END==================================
  */
 
-package io.github.ericmedvet.jgea.experimenter;
+package io.github.ericmedvet.jgea.core;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
