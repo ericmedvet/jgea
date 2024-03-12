@@ -31,7 +31,7 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 
 public class TreeBasedUnivariateRealFunction
-    implements NamedUnivariateRealFunction, Sized, Parametrized<Tree<Element>> {
+    implements NamedUnivariateRealFunction, Sized, Parametrized<TreeBasedUnivariateRealFunction, Tree<Element>> {
 
   private final List<String> xVarNames;
   private final String yVarName;

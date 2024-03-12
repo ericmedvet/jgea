@@ -21,8 +21,11 @@
 package io.github.ericmedvet.jgea.core.representation;
 
 import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.function.DoubleUnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -58,5 +61,37 @@ public interface NamedMultivariateRealFunction extends MultivariateRealFunction 
   @Override
   default int nOfOutputs() {
     return yVarNames().size();
+  }
+
+  default NamedMultivariateRealFunction andThen(NamedMultivariateRealFunction other) {
+    if (!new HashSet<>(yVarNames()).containsAll(other.xVarNames())) {
+      throw new IllegalArgumentException("Vars mismatch: required as input=%s; produced as output=%s"
+          .formatted(other.xVarNames(), yVarNames()));
+    }
+    NamedMultivariateRealFunction thisNmrf = this;
+    return new NamedMultivariateRealFunction() {
+      @Override
+      public Map<String, Double> compute(Map<String, Double> input) {
+        return other.compute(thisNmrf.compute(input));
+      }
+
+      @Override
+      public List<String> xVarNames() {
+        return thisNmrf.xVarNames();
+      }
+
+      @Override
+      public List<String> yVarNames() {
+        return other.yVarNames();
+      }
+    };
+  }
+
+  @Override
+  default NamedMultivariateRealFunction andThen(DoubleUnaryOperator f) {
+    return andThen(NamedMultivariateRealFunction.from(
+        MultivariateRealFunction.from(vs -> Arrays.stream(vs).map(f).toArray(), nOfInputs(), nOfOutputs()),
+        yVarNames(),
+        yVarNames()));
   }
 }

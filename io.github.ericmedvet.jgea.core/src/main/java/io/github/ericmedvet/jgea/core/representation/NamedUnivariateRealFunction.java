@@ -23,6 +23,7 @@ package io.github.ericmedvet.jgea.core.representation;
 import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 import java.util.List;
 import java.util.Map;
+import java.util.function.DoubleUnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -90,5 +91,13 @@ public interface NamedUnivariateRealFunction extends NamedMultivariateRealFuncti
   @Override
   default int nOfOutputs() {
     return 1;
+  }
+
+  @Override
+  default NamedUnivariateRealFunction andThen(DoubleUnaryOperator f) {
+    return NamedUnivariateRealFunction.from(
+        UnivariateRealFunction.from(vs -> f.applyAsDouble(applyAsDouble(vs)), nOfInputs()),
+        xVarNames(),
+        yVarName());
   }
 }

@@ -45,7 +45,7 @@ public class OperatorGraph
     implements NamedMultivariateRealFunction,
         Sized,
         Serializable,
-        Parametrized<Graph<Node, OperatorGraph.NonValuedArc>> {
+        Parametrized<OperatorGraph, Graph<Node, OperatorGraph.NonValuedArc>> {
 
   public static final NonValuedArc NON_VALUED_ARC = new NonValuedArc();
   private final List<String> xVarNames;
@@ -125,12 +125,12 @@ public class OperatorGraph
             ((OperatorNode) n).getOperator().maxArity()));
       }
       if ((n instanceof Constant || n instanceof Input)
-          && graph.predecessors(n).size() > 0) {
+          && !graph.predecessors(n).isEmpty()) {
         throw new IllegalArgumentException(String.format(
             "Invalid graph: constant/input node %s has more than 0 predecessors (%d)",
             n, graph.predecessors(n).size()));
       }
-      if ((n instanceof Output) && graph.successors(n).size() > 0) {
+      if ((n instanceof Output) && !graph.successors(n).isEmpty()) {
         throw new IllegalArgumentException(String.format(
             "Invalid graph: output node %s has more than 0 successors " + "(%d)",
             n, graph.predecessors(n).size()));

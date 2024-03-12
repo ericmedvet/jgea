@@ -4,10 +4,7 @@ ea.experiment(
       ea.p.numEnvTo(environment = ds.e.navigation(arena = large_barrier); f = ds.e.n.finalD(); finalT = 50);
       ea.p.numEnvTo(environment = ds.e.navigation(arena = easy_maze); f = ds.e.n.finalD(); finalT = 50)
     ]) *
-    (solver = (nEval = [5000]) * (mapper = [ea.m.compose(
-      first = ea.m.mlpToMrf(innerLayerRatio = 5);
-      second = ea.m.mrfToNds()
-    )]) * [
+    (solver = (nEval = [5000]) * (mapper = ea.m.dsToNpnds(npnds = ds.num.mlp())) * [
       ea.s.ga(representation = ea.r.doubleString());
       ea.s.mapElites(
         name = "me-closest";

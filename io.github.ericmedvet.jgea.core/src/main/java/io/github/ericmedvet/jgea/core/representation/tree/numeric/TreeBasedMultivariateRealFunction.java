@@ -33,7 +33,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class TreeBasedMultivariateRealFunction
-    implements NamedMultivariateRealFunction, Sized, Parametrized<List<Tree<Element>>> {
+    implements NamedMultivariateRealFunction,
+        Sized,
+        Parametrized<TreeBasedMultivariateRealFunction, List<Tree<Element>>> {
 
   private final List<String> xVarNames;
   private final List<String> yVarNames;

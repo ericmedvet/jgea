@@ -42,11 +42,9 @@ import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.NumericalParametrized;
 import io.github.ericmedvet.jsdynsym.buildable.builders.NumericalDynamicalSystems;
-import io.github.ericmedvet.jsdynsym.core.StatelessSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
-import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
-import java.util.Arrays;
+import io.github.ericmedvet.jsdynsym.core.numerical.NumericalTimeInvariantStatelessSystem;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -56,7 +54,8 @@ public class Mappers {
   private Mappers() {}
 
   @SuppressWarnings("unused")
-  public static <T> InvertibleMapper<BitString, Grid<T>> bitStringToGrammarGrid(
+  public static <X, T> InvertibleMapper<X, Grid<T>> bsToGrammarGrid(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, BitString> beforeM,
       @Param("grammar") GridGrammar<T> grammar,
       @Param(value = "l", dI = 256) int l,
       @Param(value = "overwrite") boolean overwrite,
@@ -66,31 +65,28 @@ public class Mappers {
           List<StandardGridDeveloper.SortingCriterion> criteria) {
     Developer<T, Grid<T>, GridGrammar.ReferencedGrid<T>> gridDeveloper =
         new StandardGridDeveloper<>(grammar, overwrite, criteria);
-    return InvertibleMapper.from(
+    return beforeM.andThen(InvertibleMapper.from(
         (eGrid, bs) -> {
           Chooser<T, GridGrammar.ReferencedGrid<T>> chooser = new BitStringChooser<>(bs, grammar);
           return gridDeveloper.develop(chooser).orElse(eGrid);
         },
-        eGrid -> new BitString(l));
+        eGrid -> new BitString(l),
+        "bsToGrammarGrid[l=%d;o=%s;c=%s]".formatted(l, overwrite, criteria)));
   }
 
   @SuppressWarnings("unused")
-  public static <A, B, C> InvertibleMapper<A, C> compose(
-      @Param(value = "first") InvertibleMapper<A, B> first,
-      @Param(value = "second") InvertibleMapper<B, C> second) {
-    return first.andThen(second);
-  }
-
-  @SuppressWarnings("unused")
-  public static InvertibleMapper<List<Double>, BitString> doubleStringToBitString(
+  public static <X> InvertibleMapper<X, BitString> dsToBitString(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM,
       @Param(value = "t", dD = 0d) double t) {
-    return InvertibleMapper.from(
+    return beforeM.andThen(InvertibleMapper.from(
         (eBs, ds) -> new BitString(ds.stream().map(v -> v < t).toList()),
-        eBs -> Collections.nCopies(eBs.size(), 0d));
+        eBs -> Collections.nCopies(eBs.size(), 0d),
+        "dsToBs[t=%.1f]".formatted(t)));
   }
 
   @SuppressWarnings("unused")
-  public static <T> InvertibleMapper<List<Double>, Grid<T>> doubleStringToGrammarGrid(
+  public static <X, T> InvertibleMapper<X, Grid<T>> dsToGrammarGrid(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM,
       @Param("grammar") GridGrammar<T> grammar,
       @Param(value = "l", dI = 256) int l,
       @Param(value = "overwrite") boolean overwrite,
@@ -100,18 +96,20 @@ public class Mappers {
           List<StandardGridDeveloper.SortingCriterion> criteria) {
     Developer<T, Grid<T>, GridGrammar.ReferencedGrid<T>> gridDeveloper =
         new StandardGridDeveloper<>(grammar, overwrite, criteria);
-    return InvertibleMapper.from(
+    return beforeM.andThen(InvertibleMapper.from(
         (eGrid, vs) -> {
           Chooser<T, GridGrammar.ReferencedGrid<T>> chooser = new DoublesChooser<>(vs, grammar);
           return gridDeveloper.develop(chooser).orElse(eGrid);
         },
-        eGrid -> Collections.nCopies(l, 0d));
+        eGrid -> Collections.nCopies(l, 0d),
+        "dsToGrammarGrid[l=%d;o=%s;c=%s]".formatted(l, overwrite, criteria)));
   }
 
   @SuppressWarnings("unused")
-  public static InvertibleMapper<List<Double>, IntString> doubleStringToIntString(
+  public static <X> InvertibleMapper<X, IntString> dsToIs(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM,
       @Param(value = "range", dNPM = "ds.range(min=-1;max=1)") DoubleRange range) {
-    return InvertibleMapper.from(
+    return beforeM.andThen(InvertibleMapper.from(
         (eIs, ds) -> {
           DoubleRange isRange = new DoubleRange(eIs.lowerBound(), eIs.upperBound());
           return new IntString(
@@ -122,15 +120,36 @@ public class Mappers {
               eIs.lowerBound(),
               eIs.upperBound());
         },
-        eIs -> Collections.nCopies(eIs.size(), 0d));
+        eIs -> Collections.nCopies(eIs.size(), 0d),
+        "dsToIs[min=%.0f;max=%.0f]".formatted(range.min(), range.max())));
   }
 
   @SuppressWarnings("unused")
-  public static InvertibleMapper<Graph<Node, Double>, NamedMultivariateRealFunction> fGraphToMrf(
-      @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator) {
-    return InvertibleMapper.from(
-        (nmrf, g) -> new FunctionGraph(g, nmrf.xVarNames(), nmrf.yVarNames()),
-        nmrf -> FunctionGraph.sampleFor(nmrf.xVarNames(), nmrf.yVarNames()));
+  public static <X, P extends NumericalDynamicalSystem<S> & NumericalParametrized<P>, S>
+      InvertibleMapper<X, P> dsToNpnds(
+          @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM,
+          @Param("npnds") NumericalDynamicalSystems.Builder<P, S> builder) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (p, params) -> builder.apply(p.nOfInputs(), p.nOfOutputs())
+            .withParams(params.stream().mapToDouble(v -> v).toArray()),
+        p -> Collections.nCopies(
+            builder.apply(p.nOfInputs(), p.nOfOutputs()).getParams().length, 0d),
+        "dsToNpnds[npnds=%s]".formatted(builder)));
+  }
+
+  @SuppressWarnings("unused")
+  public static <X> InvertibleMapper<X, NamedMultivariateRealFunction> fGraphToNmrf(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Graph<Node, Double>> beforeM,
+      @Param(value = "postOperator", dS = "ds.f.doubleOp(activationF=identity)")
+          Function<Double, Double> postOperator) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (nmrf, g) -> NamedMultivariateRealFunction.from(
+                new FunctionGraph(g, nmrf.xVarNames(), nmrf.yVarNames()),
+                nmrf.xVarNames(),
+                nmrf.yVarNames())
+            .andThen(postOperator::apply),
+        nmrf -> FunctionGraph.sampleFor(nmrf.xVarNames(), nmrf.yVarNames()),
+        "fGraphToNmrf[po=%s]".formatted(postOperator)));
   }
 
   @SuppressWarnings("unused")
@@ -139,7 +158,8 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
-  public static <T> InvertibleMapper<IntString, Grid<T>> intStringToGrammarGrid(
+  public static <X, T> InvertibleMapper<X, Grid<T>> isToGrammarGrid(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, IntString> beforeM,
       @Param("grammar") GridGrammar<T> grammar,
       @Param(value = "upperBound", dI = 16) int upperBound,
       @Param(value = "l", dI = 256) int l,
@@ -150,121 +170,69 @@ public class Mappers {
           List<StandardGridDeveloper.SortingCriterion> criteria) {
     Developer<T, Grid<T>, GridGrammar.ReferencedGrid<T>> gridDeveloper =
         new StandardGridDeveloper<>(grammar, overwrite, criteria);
-    return InvertibleMapper.from(
+    return beforeM.andThen(InvertibleMapper.from(
         (eGrid, is) -> {
           Chooser<T, GridGrammar.ReferencedGrid<T>> chooser = new IntStringChooser<>(is, grammar);
           return gridDeveloper.develop(chooser).orElse(eGrid);
         },
-        eGrid -> new IntString(Collections.nCopies(l, 0), 0, upperBound));
+        eGrid -> new IntString(Collections.nCopies(l, 0), 0, upperBound),
+        "isToGrammarGrid[l=%d;o=%s;c=%s]".formatted(l, overwrite, criteria)));
   }
 
   @SuppressWarnings("unused")
-  public static InvertibleMapper<List<Double>, NamedMultivariateRealFunction> mlpToMrf(
-      @Param(value = "innerLayerRatio", dD = 0.65) double innerLayerRatio,
-      @Param(value = "nOfInnerLayers", dI = 1) int nOfInnerLayers,
-      @Param(value = "activationFunction", dS = "tanh")
-          MultiLayerPerceptron.ActivationFunction activationFunction) {
-    Function<NamedMultivariateRealFunction, int[]> innerNeuronsFunction = nmrf -> {
-      int[] innerNeurons = new int[nOfInnerLayers];
-      int centerSize = (int) Math.max(2, Math.round(nmrf.xVarNames().size() * innerLayerRatio));
-      if (nOfInnerLayers > 1) {
-        for (int i = 0; i < nOfInnerLayers / 2; i++) {
-          innerNeurons[i] = nmrf.xVarNames().size()
-              + (centerSize - nmrf.xVarNames().size()) / (nOfInnerLayers / 2 + 1) * (i + 1);
-        }
-        for (int i = nOfInnerLayers / 2; i < nOfInnerLayers; i++) {
-          innerNeurons[i] = centerSize
-              + (nmrf.yVarNames().size() - centerSize)
-                  / (nOfInnerLayers / 2 + 1)
-                  * (i - nOfInnerLayers / 2);
-        }
-      } else if (nOfInnerLayers > 0) {
-        innerNeurons[0] = centerSize;
-      }
-      return innerNeurons;
-    };
-    return InvertibleMapper.from(
-        (nmrf, params) -> NamedMultivariateRealFunction.from(
-            new MultiLayerPerceptron(
-                activationFunction,
-                nmrf.xVarNames().size(),
-                innerNeuronsFunction.apply(nmrf),
-                nmrf.yVarNames().size(),
-                params.stream().mapToDouble(v -> v).toArray()),
+  public static <X> InvertibleMapper<X, NamedUnivariateRealFunction> nmrfToNurf(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NamedMultivariateRealFunction> beforeM) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (nurf, nmrf) -> NamedUnivariateRealFunction.from(nmrf), nurf -> nurf, "nmrfToNurf"));
+  }
+
+  @SuppressWarnings("unused")
+  public static <X> InvertibleMapper<X, NamedMultivariateRealFunction> multiSrTreeToNmrf(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Tree<Element>>> beforeM,
+      @Param(value = "postOperator", dS = "ds.f.doubleOp(activationF=identity)")
+          Function<Double, Double> postOperator) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (nmrf, ts) -> new TreeBasedMultivariateRealFunction(ts, nmrf.xVarNames(), nmrf.yVarNames())
+            .andThen(postOperator::apply),
+        nmrf -> TreeBasedMultivariateRealFunction.sampleFor(nmrf.xVarNames(), nmrf.yVarNames()),
+        "multiSrTreeToNmrf[po=%s]".formatted(postOperator)));
+  }
+
+  @SuppressWarnings("unused")
+  public static <X> InvertibleMapper<X, NamedMultivariateRealFunction> ntissToNmrf(
+      @Param(value = "of", dNPM = "ea.m.identity()")
+          InvertibleMapper<X, NumericalTimeInvariantStatelessSystem> beforeM) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (nmrf, ntiss) -> NamedMultivariateRealFunction.from(
+            MultivariateRealFunction.from(ntiss, nmrf.nOfInputs(), nmrf.nOfOutputs()),
             nmrf.xVarNames(),
             nmrf.yVarNames()),
-        nmrf -> Collections.nCopies(
-            new MultiLayerPerceptron(
-                    activationFunction,
-                    nmrf.xVarNames().size(),
-                    innerNeuronsFunction.apply(nmrf),
-                    nmrf.yVarNames().size())
-                .getParams()
-                .length,
-            0d));
+        nmrf -> MultivariateRealFunction.from(
+            v -> new double[nmrf.nOfOutputs()], nmrf.nOfInputs(), nmrf.nOfOutputs()),
+        "ntissToNmrf"));
   }
 
   @SuppressWarnings("unused")
-  public static InvertibleMapper<NamedMultivariateRealFunction, NumericalDynamicalSystem<?>> mrfToNds() {
-    return InvertibleMapper.from(
-        (exampleNds, nmrf) -> nmrf,
-        exampleNds -> NamedMultivariateRealFunction.from(
-            MultivariateRealFunction.from(
-                in -> new double[exampleNds.nOfOutputs()],
-                exampleNds.nOfInputs(),
-                exampleNds.nOfOutputs()),
-            MultivariateRealFunction.varNames("x", exampleNds.nOfInputs()),
-            MultivariateRealFunction.varNames("y", exampleNds.nOfOutputs())));
+  public static <X> InvertibleMapper<X, NamedMultivariateRealFunction> oGraphToNmrf(
+      @Param(value = "of", dNPM = "ea.m.identity()")
+          InvertibleMapper<X, Graph<Node, OperatorGraph.NonValuedArc>> beforeM,
+      @Param(value = "postOperator", dS = "ds.f.doubleOp(activationF=identity)")
+          Function<Double, Double> postOperator) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (nmrf, g) -> new OperatorGraph(g, nmrf.xVarNames(), nmrf.yVarNames()).andThen(postOperator::apply),
+        nmrf -> OperatorGraph.sampleFor(nmrf.xVarNames(), nmrf.yVarNames()),
+        "oGraphToNmrf[po=%s]".formatted(postOperator)));
   }
 
   @SuppressWarnings("unused")
-  public static <T> InvertibleMapper<NamedMultivariateRealFunction, NamedUnivariateRealFunction> mrfToUrf() {
-    return InvertibleMapper.from((nurf, nmrf) -> NamedUnivariateRealFunction.from(nmrf), nurf -> nurf);
-  }
-
-  @SuppressWarnings("unused")
-  public static InvertibleMapper<List<Tree<Element>>, NamedMultivariateRealFunction> multiSrTreeToMrf(
-      @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator) {
-    return InvertibleMapper.from(
-        (nmrf, ts) -> new TreeBasedMultivariateRealFunction(ts, nmrf.xVarNames(), nmrf.yVarNames()),
-        nmrf -> TreeBasedMultivariateRealFunction.sampleFor(nmrf.xVarNames(), nmrf.yVarNames()));
-  }
-
-  @SuppressWarnings("unused")
-  public static InvertibleMapper<List<Double>, NamedMultivariateRealFunction> numericalParametrizedToMrf(
-      @Param("function")
-          NumericalDynamicalSystems.Builder<MultivariateRealFunction, StatelessSystem.State> function) {
-    return InvertibleMapper.from(
-        (nmrf, params) -> {
-          if (nmrf instanceof NumericalParametrized) {
-            MultivariateRealFunction np = function.apply(nmrf.xVarNames(), nmrf.yVarNames());
-            ((NumericalParametrized) np)
-                .setParams(params.stream().mapToDouble(v -> v).toArray());
-            return NamedMultivariateRealFunction.from(np, nmrf.xVarNames(), nmrf.yVarNames());
-          }
-          throw new IllegalArgumentException("The provided function is not numerical parametrized.");
-        },
-        nmrf -> {
-          if (nmrf instanceof NumericalParametrized parametrized) {
-            return Arrays.stream(parametrized.getParams()).boxed().toList();
-          }
-          throw new IllegalArgumentException("The provided function is not numerical parametrized.");
-        });
-  }
-
-  @SuppressWarnings("unused")
-  public static InvertibleMapper<Graph<Node, OperatorGraph.NonValuedArc>, NamedMultivariateRealFunction> oGraphToMrf(
-      @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator) {
-    return InvertibleMapper.from(
-        (nmrf, g) -> new OperatorGraph(g, nmrf.xVarNames(), nmrf.yVarNames()),
-        nmrf -> OperatorGraph.sampleFor(nmrf.xVarNames(), nmrf.yVarNames()));
-  }
-
-  @SuppressWarnings("unused")
-  public static InvertibleMapper<Tree<Element>, NamedUnivariateRealFunction> srTreeToUrf(
-      @Param(value = "postOperator", dS = "identity") MultiLayerPerceptron.ActivationFunction postOperator) {
-    return InvertibleMapper.from(
-        (nurf, t) -> new TreeBasedUnivariateRealFunction(t, nurf.xVarNames(), nurf.yVarName()),
-        nurf -> TreeBasedUnivariateRealFunction.sampleFor(nurf.xVarNames(), nurf.yVarName()));
+  public static <X> InvertibleMapper<X, NamedUnivariateRealFunction> srTreeToNurf(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Tree<Element>> beforeM,
+      @Param(value = "postOperator", dS = "ds.f.doubleOp(activationF=identity)")
+          Function<Double, Double> postOperator) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (nurf, t) -> new TreeBasedUnivariateRealFunction(t, nurf.xVarNames(), nurf.yVarName())
+            .andThen(postOperator::apply),
+        nurf -> TreeBasedUnivariateRealFunction.sampleFor(nurf.xVarNames(), nurf.yVarName()),
+        "srTreeToNurf[po=%s]".formatted(postOperator)));
   }
 }
