@@ -1,5 +1,5 @@
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) * [
+  runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) * [
     ea.run(
       solver = ea.s.ga(representation = ea.r.intString(); nEval = 10000);
       problem = ea.p.s.intOneMax()
@@ -8,11 +8,11 @@ ea.experiment(
   listeners = [
     ea.l.console(
       functions = [
-        ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
-        ea.nf.bestFitness(s = "%6.4f");
-        ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
-        ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.4f");
-        ea.nf.solution(individual = ea.nf.best(); s = "%60.60s")
+        ea.f.size(of = ea.f.genotype(of = ea.f.best()); format = "%3d");
+        ea.f.quality(of = ea.f.best(); format = "%6.4f");
+        ea.f.hist(of = f.each(of = ea.f.all(); mapF = ea.f.quality()));
+        f.percentile(of = f.each(of = ea.f.all(); mapF = ea.f.quality()); p = 75; format = "%6.4f");
+        ea.f.solution(of = ea.f.best(); format = "%60.60s")
       ];
       runKeys = [
         ea.misc.sEntry(key = "problem.p"; value = "{problem.p}");

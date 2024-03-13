@@ -1,22 +1,22 @@
 ea.experiment(
   runs =
-    (randomGenerator = (seed = [1:1:1]) * [ea.rg.defaultRG()]) *
+    (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
     (solver = (nEval = [20000]) *
     (representation = [ea.r.bitString()]) * [
       ea.s.mapElites(descriptors = [
-        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 3; k = 0; list = ea.nf.asDoubleString())));
-        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 3; k = 1; list = ea.nf.asDoubleString())))
+        ea.s.me.d.descriptor(f = f.avg(of = f.nkTh(of = ea.f.toDoubleString(of = ea.f.genotype()); n = 3; k = 0)));
+        ea.s.me.d.descriptor(f = f.avg(of = f.nkTh(of = ea.f.toDoubleString(of = ea.f.genotype()); n = 3; k = 1)))
       ]);
       ea.s.ga()
     ]) * (problem = (p = [100]) * [ea.p.s.oneMax()]) * [ea.run()];
   listeners = [
     ea.l.console(
       functions = [
-        ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
-        ea.nf.bestFitness(s = "%6.4f");
-        ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
-        ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.4f");
-        ea.nf.solution(individual = ea.nf.best(); s = "%60.60s")
+        ea.f.size(of = ea.f.genotype(of = ea.f.best()); format = "%3d");
+        ea.f.quality(of = ea.f.best(); format = "%6.4f");
+        ea.f.hist(of = f.each(of = ea.f.all(); mapF = ea.f.quality()));
+        f.percentile(of = f.each(of = ea.f.all(); mapF = ea.f.quality()); p = 75; format = "%6.4f");
+        ea.f.solution(of = ea.f.best(); format = "%60.60s")
       ];
       runKeys = [
         ea.misc.sEntry(key = "problem.p"; value = "{problem.p}");

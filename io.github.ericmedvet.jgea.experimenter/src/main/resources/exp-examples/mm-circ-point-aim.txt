@@ -1,19 +1,19 @@
 ea.experiment(
   runs =
-    (randomGenerator = (seed = [1:1:5]) * [ea.rg.defaultRG()]) *
+    (randomGenerator = (seed = [1:1:5]) * [m.defaultRG()]) *
     (solver = (nEval = [2500]) *
     (representation = [ea.r.doubleString()]) * [
       ea.s.ga(maxUniquenessAttempts = 0);
       ea.s.mapElites(name = "me-3"; descriptors = [
-        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 3; k = 0)); min = -1; max = 1);
-        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 3; k = 1)); min = -1; max = 1)
+        ea.s.me.d.descriptor(f = f.avg(of = f.nkTh(of = ea.f.genotype(); n = 3; k = 0)); min = -1; max = 1);
+        ea.s.me.d.descriptor(f = f.avg(of = f.nkTh(of = ea.f.genotype(); n = 3; k = 1)); min = -1; max = 1)
       ]);
       ea.s.mapElites(name = "me-2"; descriptors = [
-        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 2; k = 0)); min = -1; max = 1);
-        ea.s.me.d.ofSolution(f = ea.nf.avg(collection = ea.nf.nthItems(n = 2; k = 1)); min = -1; max = 1)
+        ea.s.me.d.descriptor(f = f.avg(of = f.nkTh(of = ea.f.genotype(); n = 2; k = 0)); min = -1; max = 1);
+        ea.s.me.d.descriptor(f = f.avg(of = f.nkTh(of = ea.f.genotype(); n = 2; k = 1)); min = -1; max = 1)
       ]);
       ea.s.pso();
-      ea.s.de();
+      ea.s.differentialEvolution();
       ea.s.cabea(name = "cabea-e-11"; keepProbability = 0; substrate = empty; gridSize = 11);
       ea.s.cabea(name = "cabea-cc-11"; keepProbability = 0; substrate = contour_cross; gridSize = 11);
       ea.s.cabea(name = "cabea-e-21"; keepProbability = 0; substrate = empty; gridSize = 21);
@@ -26,83 +26,70 @@ ea.experiment(
   listeners = [
     ea.l.console(
       functions = [
-        ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
-        ea.nf.bestFitness(s = "%5.3f");
-        ea.nf.overallTargetDistance(
-          collection = ea.nf.each(map = ea.nf.solution(); collection = ea.nf.all());
-          problem = ea.p.s.circularPointsAiming(name = "cpa-3-2"; n = 3; p = 2)
-        )
+        ea.f.size(of = ea.f.genotype(of = ea.f.best()); format = "%3d");
+        ea.f.quality(of = ea.f.best(); format = "%6.4f");
+        ea.f.hist(of = f.each(of = ea.f.all(); mapF = ea.f.quality()));
+        f.percentile(of = f.each(of = ea.f.all(); mapF = ea.f.quality()); p = 75; format = "%6.4f");
+        ea.f.overallTargetDistance()
       ];
       runKeys = [
         ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         ea.misc.sEntry(key = "problem"; value = "{problem.name}");
         ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
-      ]
+      ];
+      onlyLast = true
     );
     ea.l.expPlotSaver(
       filePath = "../mm-c-10-3-fitness-vs-evals.png";
       w = 900; h = 600;
-      saveCsvDataMode = paper_friendly;
       type = lines;
-      plot = ea.plot.fitnessPlotMatrix(xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 250; s = "%.0f"))
+      plot = ea.plot.qualityPlotMatrix(xFunction = f.quantized(of = ea.f.nOfEvals(); q = 250))
     );
     ea.l.expPlotSaver(
       filePath = "../mm-c-10-3-fitness-boxplot.png";
       w = 900; h = 600;
-      saveCsvDataMode = paper_friendly;
       type = lines;
-      plot = ea.plot.fitnessBoxplotMatrix(xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 250; s = "%.0f"))
+      plot = ea.plot.qualityBoxplotMatrix(xFunction = ea.f.quantized(of = ea.f.nOfEvals(); q = 250))
     );
     ea.l.expPlotSaver(
       filePath = "../mm-c-10-3-otd-vs-evals.png";
       w = 900; h = 600;
       type = lines;
-      saveCsvDataMode = paper_friendly;
-      plot = ea.plot.fitnessPlotMatrix(
-        xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 250; s = "%.0f");
-        yFunction = ea.nf.overallTargetDistance(
-          collection = ea.nf.each(map = ea.nf.solution(); collection = ea.nf.all());
-          problem = ea.p.s.circularPointsAiming(name = "cpa-3-2"; n = 3; p = 2)
-        )
+      plot = ea.plot.qualityPlotMatrix(
+        xFunction = f.quantized(of = ea.f.nOfEvals(); q = 250);
+        yFunction = ea.f.overallTargetDistance()
       )
     );
     ea.l.expPlotSaver(
       filePath = "../mm-c-10-3-otd-boxplot.png";
       w = 900; h = 600;
-      saveCsvDataMode = paper_friendly;
       type = boxplot;
       saveCsvData = true;
-      plot = ea.plot.fitnessBoxplotMatrix(
-        yFunction = ea.nf.overallTargetDistance(
-          collection = ea.nf.each(map = ea.nf.solution(); collection = ea.nf.all());
-          problem = ea.p.s.circularPointsAiming(name = "cpa-3-2"; n = 3; p = 2)
-        )
-      )
+      plot = ea.plot.qualityBoxplotMatrix(yFunction = ea.f.overallTargetDistance())
     );
     ea.l.runPlotSaver(
       w = 1000; h = 700;
       filePathTemplate = "../grids-{problem.name}-{solver.name}-{randomGenerator.seed}.png";
-      saveCsvDataMode = paper_friendly;
       type = univariate_grid;
       plot = ea.plot.gridPopulation(
         individualFunctions = [
-          ea.nf.fitness();
+          ea.f.quality();
           ea.nf.nth(n = 0; list = ea.nf.targetDistances(problem = ea.p.s.circularPointsAiming(n = 3; p = 2)));
           ea.nf.nth(n = 1; list = ea.nf.targetDistances(problem = ea.p.s.circularPointsAiming(n = 3; p = 2)));
           ea.nf.nth(n = 2; list = ea.nf.targetDistances(problem = ea.p.s.circularPointsAiming(n = 3; p = 2)))
         ];
-        predicateValue = ea.nf.quantized(f = ea.nf.evals(); r = 1000; s = "%.0f");
+        predicateValue = f.quantized(of = ea.f.nOfEvals(); q = 1000);
         condition = ea.predicate.inD(
           values = [0; 5000; 10000; 15000; 20000; 25000]
         )
       );
       condition = ea.predicate.all(conditions = [
         ea.predicate.matches(
-          f = ea.nf.runKey(runKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}"));
+          f = ea.f.runKey(runKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}"));
           regex = "cabea.*"
         );
         ea.predicate.inS(
-          f = ea.nf.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
+          f = ea.f.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
           values = ["1"]
         )
       ])
@@ -111,20 +98,19 @@ ea.experiment(
       w = 1000; h = 350;
       filePathTemplate = "../me-{problem.name}-{solver.name}-{randomGenerator.seed}.png";
       type = univariate_grid;
-      saveCsvDataMode = paper_friendly;
       plot = ea.plot.mapElitesPopulation(
-        predicateValue = ea.nf.quantized(f = ea.nf.evals(); r = 1000; s = "%.0f");
+        predicateValue = f.quantized(f = ea.f.nOfEvals(); q = 1000);
         condition = ea.predicate.inD(
           values = [0; 5000; 10000; 15000; 20000; 25000]
         )
       );
       condition = ea.predicate.all(conditions = [
         ea.predicate.matches(
-          f = ea.nf.runKey(runKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}"));
+          f = ea.f.runKey(runKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}"));
           regex = "me.*"
         );
         ea.predicate.inS(
-          f = ea.nf.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
+          f = ea.f.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
           values = ["1"]
         )
       ])
