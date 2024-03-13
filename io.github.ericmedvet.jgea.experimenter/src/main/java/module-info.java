@@ -37,7 +37,7 @@ module io.github.ericmedvet.jgea.experimenter {
   requires io.github.ericmedvet.jsdynsym.buildable;
   requires io.github.ericmedvet.jviz.core;
   requires java.desktop;
-  requires java.telegram.bot.api;
+  requires telegram.bot.api;
   requires java.logging;
   requires jdk.management;
   requires com.googlecode.lanterna;
