@@ -48,8 +48,8 @@ ea.experiment(
     ea.l.expPlotSaver(
       filePath = "../mm-c-10-3-fitness-boxplot.png";
       w = 900; h = 600;
-      type = lines;
-      plot = ea.plot.qualityBoxplotMatrix(xFunction = ea.f.quantized(of = ea.f.nOfEvals(); q = 250))
+      type = boxplot;
+      plot = ea.plot.qualityBoxplotMatrix()
     );
     ea.l.expPlotSaver(
       filePath = "../mm-c-10-3-otd-vs-evals.png";
@@ -64,7 +64,6 @@ ea.experiment(
       filePath = "../mm-c-10-3-otd-boxplot.png";
       w = 900; h = 600;
       type = boxplot;
-      saveCsvData = true;
       plot = ea.plot.qualityBoxplotMatrix(yFunction = ea.f.overallTargetDistance())
     );
     ea.l.runPlotSaver(
@@ -74,9 +73,9 @@ ea.experiment(
       plot = ea.plot.gridPopulation(
         individualFunctions = [
           ea.f.quality();
-          ea.nf.nth(n = 0; list = ea.nf.targetDistances(problem = ea.p.s.circularPointsAiming(n = 3; p = 2)));
-          ea.nf.nth(n = 1; list = ea.nf.targetDistances(problem = ea.p.s.circularPointsAiming(n = 3; p = 2)));
-          ea.nf.nth(n = 2; list = ea.nf.targetDistances(problem = ea.p.s.circularPointsAiming(n = 3; p = 2)))
+          f.nTh(of = ea.f.targetDistances(problem = ea.p.s.circularPointsAiming(n = 3; p = 2)); n = 0);
+          f.nTh(of = ea.f.targetDistances(problem = ea.p.s.circularPointsAiming(n = 3; p = 2)); n = 1);
+          f.nTh(of = ea.f.targetDistances(problem = ea.p.s.circularPointsAiming(n = 3; p = 2)); n = 2)
         ];
         predicateValue = f.quantized(of = ea.f.nOfEvals(); q = 1000);
         condition = ea.predicate.inD(

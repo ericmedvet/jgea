@@ -249,6 +249,31 @@ public class Functions {
   }
 
   @SuppressWarnings("unused")
+  public static <X, P extends MultiTargetProblem<S>, S> FormattedNamedFunction<X, List<Double>> popTargetDistances(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<?, ?, S, ?, P>> beforeF,
+      @Param(value = "format", dS = "%.2f") String format) {
+    Function<POCPopulationState<?, ?, S, ?, P>, List<Double>> f = state -> state.problem().targets().stream()
+        .mapToDouble(ts -> state.pocPopulation().all().stream()
+            .mapToDouble(s -> state.problem().distance().apply(s.solution(), ts))
+            .min()
+            .orElseThrow())
+        .boxed()
+        .toList();
+    return FormattedNamedFunction.from(f, format, "pop.target.distances").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, P extends MultiTargetProblem<S>, S> FormattedNamedFunction<X, List<Double>> targetDistances(
+      @Param("problem") P problem,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Individual<?, S, ?>> beforeF,
+      @Param(value = "format", dS = "%.2f") String format) {
+    Function<Individual<?, S, ?>, List<Double>> f = i -> problem.targets().stream()
+        .map(t -> problem.distance().apply(i.solution(), t))
+        .toList();
+    return FormattedNamedFunction.from(f, format, "target.distances").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
   public static <X, Z> NamedFunction<X, List<Double>> toDoubleString(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Z> beforeF) {
     Function<Z, List<Double>> f = z -> {
