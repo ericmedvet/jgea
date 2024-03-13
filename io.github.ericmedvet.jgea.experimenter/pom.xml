@@ -15,21 +15,6 @@
   <dependencies>
     <dependency>
       <groupId>io.github.ericmedvet</groupId>
-      <artifactId>jnb.core</artifactId>
-      <version>${jnb.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.github.ericmedvet</groupId>
-      <artifactId>jnb.buildable</artifactId>
-      <version>${jnb.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.github.ericmedvet</groupId>
-      <artifactId>jgea.core</artifactId>
-      <version>${revision}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.github.ericmedvet</groupId>
       <artifactId>jgea.problem</artifactId>
       <version>${revision}</version>
     </dependency>
@@ -37,11 +22,6 @@
       <groupId>io.github.ericmedvet</groupId>
       <artifactId>jsdynsym.buildable</artifactId>
       <version>${jsdynsym.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.github.ericmedvet</groupId>
-      <artifactId>jviz.core</artifactId>
-      <version>${jviz.version}</version>
     </dependency>
     <dependency>
       <groupId>com.beust</groupId>

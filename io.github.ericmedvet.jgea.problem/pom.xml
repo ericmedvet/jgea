@@ -20,18 +20,8 @@
     </dependency>
     <dependency>
       <groupId>io.github.ericmedvet</groupId>
-      <artifactId>jsdynsym.core</artifactId>
-      <version>${jsdynsym.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.github.ericmedvet</groupId>
       <artifactId>jsdynsym.control</artifactId>
       <version>${jsdynsym.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.github.ericmedvet</groupId>
-      <artifactId>jviz.core</artifactId>
-      <version>${jviz.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
