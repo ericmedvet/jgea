@@ -60,24 +60,6 @@ public class AggregatedXYDataSeriesMRPAF<E, R, K>
   }
 
   @Override
-  protected Table<Number, K, List<Number>> init(K xK, K yK) {
-    return new HashMapTable<>();
-  }
-
-  @Override
-  protected Table<Number, K, List<Number>> update(K xK, K yK, Table<Number, K, List<Number>> table, E e, R r) {
-    Number x = xFunction.apply(e);
-    K lineK = lineFunction.apply(r);
-    List<Number> values = table.get(x, lineK);
-    if (values == null) {
-      values = new ArrayList<>();
-      table.set(x, lineK, values);
-    }
-    values.add(yFunction.apply(e));
-    return table;
-  }
-
-  @Override
   protected List<XYDataSeries> buildData(K xK, K yK, Table<Number, K, List<Number>> table) {
     return table.colIndexes().stream()
         .map(lineK -> XYDataSeries.of(
@@ -134,5 +116,28 @@ public class AggregatedXYDataSeriesMRPAF<E, R, K>
         xRange,
         yRange,
         grid);
+  }
+
+  @Override
+  protected Table<Number, K, List<Number>> init(K xK, K yK) {
+    return new HashMapTable<>();
+  }
+
+  @Override
+  protected Table<Number, K, List<Number>> update(K xK, K yK, Table<Number, K, List<Number>> table, E e, R r) {
+    Number x = xFunction.apply(e);
+    K lineK = lineFunction.apply(r);
+    List<Number> values = table.get(x, lineK);
+    if (values == null) {
+      values = new ArrayList<>();
+      table.set(x, lineK, values);
+    }
+    values.add(yFunction.apply(e));
+    return table;
+  }
+
+  @Override
+  public String toString() {
+    return "xyMRPAF(" + "xFunction=" + xFunction + ", yFunction=" + yFunction + ')';
   }
 }

@@ -122,4 +122,9 @@ public class LandscapeSEPAF<E, R, X, P> extends AbstractSingleEPAF<E, LandscapeP
             (x, y) -> new XYPlot.TitledData<>(
                 data.colIndexes().get(x), data.rowIndexes().get(y), data.get(x, y))));
   }
+
+  @Override
+  public String toString() {
+    return "landscapeSEPAF(" + "xFunction=" + xFunction + ", yFunction=" + yFunction + ')';
+  }
 }

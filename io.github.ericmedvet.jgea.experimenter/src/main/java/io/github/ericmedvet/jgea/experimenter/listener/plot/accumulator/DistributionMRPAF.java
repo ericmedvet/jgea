@@ -34,9 +34,9 @@ import java.util.function.Predicate;
  */
 public class DistributionMRPAF<E, R, K, X>
     extends AbstractMultipleRPAF<E, DistributionPlot, R, List<DistributionPlot.Data>, K, Map<K, List<Number>>> {
+  protected final Function<? super E, X> predicateValueFunction;
   private final Function<? super R, ? extends K> lineFunction;
   private final Function<? super E, ? extends Number> yFunction;
-  protected final Function<? super E, X> predicateValueFunction;
   private final Predicate<? super X> predicate;
   private final DoubleRange yRange;
 
@@ -54,22 +54,6 @@ public class DistributionMRPAF<E, R, K, X>
     this.predicateValueFunction = predicateValueFunction;
     this.predicate = predicate;
     this.yRange = yRange;
-  }
-
-  @Override
-  protected Map<K, List<Number>> init(K xK, K yK) {
-    return new HashMap<>();
-  }
-
-  @Override
-  protected Map<K, List<Number>> update(K xK, K yK, Map<K, List<Number>> map, E e, R r) {
-    X predicateValue = predicateValueFunction.apply(e);
-    if (predicate.test(predicateValue)) {
-      K lineK = lineFunction.apply(r);
-      List<Number> values = map.computeIfAbsent(lineK, k -> new ArrayList<>());
-      values.add(yFunction.apply(e));
-    }
-    return map;
   }
 
   @Override
@@ -112,5 +96,26 @@ public class DistributionMRPAF<E, R, K, X>
         NamedFunction.name(yFunction),
         yRange,
         grid);
+  }
+
+  @Override
+  protected Map<K, List<Number>> init(K xK, K yK) {
+    return new HashMap<>();
+  }
+
+  @Override
+  protected Map<K, List<Number>> update(K xK, K yK, Map<K, List<Number>> map, E e, R r) {
+    X predicateValue = predicateValueFunction.apply(e);
+    if (predicate.test(predicateValue)) {
+      K lineK = lineFunction.apply(r);
+      List<Number> values = map.computeIfAbsent(lineK, k -> new ArrayList<>());
+      values.add(yFunction.apply(e));
+    }
+    return map;
+  }
+
+  @Override
+  public String toString() {
+    return "distributionMRPAF(" + "yFunction=" + yFunction + ')';
   }
 }
