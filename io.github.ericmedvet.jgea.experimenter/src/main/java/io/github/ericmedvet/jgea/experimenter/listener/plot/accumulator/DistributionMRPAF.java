@@ -116,6 +116,6 @@ public class DistributionMRPAF<E, R, K, X>
 
   @Override
   public String toString() {
-    return "distributionMRPAF(" + "yFunction=" + yFunction + ')';
+    return "distributionMRPAF(yFunction=" + yFunction + ')';
   }
 }

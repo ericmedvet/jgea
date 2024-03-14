@@ -89,6 +89,6 @@ public class XYDataSeriesSRPAF<E, R> extends AbstractSingleRPAF<E, XYDataSeriesP
 
   @Override
   public String toString() {
-    return "xySRPAF(" + "xFunction=" + xFunction + ", yFunctions=" + yFunctions + ')';
+    return "xySRPAF(xFunction=" + xFunction + ";yFunctions=" + yFunctions + ')';
   }
 }

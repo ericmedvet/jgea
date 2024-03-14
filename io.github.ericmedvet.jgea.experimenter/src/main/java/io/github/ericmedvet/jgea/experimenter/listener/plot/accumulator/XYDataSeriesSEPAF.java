@@ -97,6 +97,6 @@ public class XYDataSeriesSEPAF<E, R, X, P> extends AbstractSingleEPAF<E, XYDataS
 
   @Override
   public String toString() {
-    return "xySEPAF(" + "xFunction=" + xFunction + ", yFunction=" + yFunction + ')';
+    return "xySEPAF(xFunction=" + xFunction + ";yFunction=" + yFunction + ')';
   }
 }

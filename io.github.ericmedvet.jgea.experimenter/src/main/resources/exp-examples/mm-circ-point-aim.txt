@@ -73,9 +73,9 @@ ea.experiment(
       plot = ea.plot.gridPopulation(
         individualFunctions = [
           ea.f.quality();
-          f.nTh(of = ea.f.targetDistances(problem = ea.p.s.circularPointsAiming(n = 3; p = 2)); n = 0);
-          f.nTh(of = ea.f.targetDistances(problem = ea.p.s.circularPointsAiming(n = 3; p = 2)); n = 1);
-          f.nTh(of = ea.f.targetDistances(problem = ea.p.s.circularPointsAiming(n = 3; p = 2)); n = 2)
+          f.nTh(of = ea.f.targetDistances(problem = ea.p.s.circularPointsAiming(n = 3; p = 10)); n = 0);
+          f.nTh(of = ea.f.targetDistances(problem = ea.p.s.circularPointsAiming(n = 3; p = 10)); n = 1);
+          f.nTh(of = ea.f.targetDistances(problem = ea.p.s.circularPointsAiming(n = 3; p = 10)); n = 2)
         ];
         predicateValue = f.quantized(of = ea.f.nOfEvals(); q = 1000);
         condition = ea.predicate.inD(
@@ -98,7 +98,7 @@ ea.experiment(
       filePathTemplate = "../me-{problem.name}-{solver.name}-{randomGenerator.seed}.png";
       type = univariate_grid;
       plot = ea.plot.mapElitesPopulation(
-        predicateValue = f.quantized(f = ea.f.nOfEvals(); q = 1000);
+        predicateValue = f.quantized(of = ea.f.nOfEvals(); q = 1000);
         condition = ea.predicate.inD(
           values = [0; 5000; 10000; 15000; 20000; 25000]
         )

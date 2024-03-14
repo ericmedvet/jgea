@@ -57,8 +57,12 @@ public abstract class AbstractSingleRPAF<E, P extends XYPlot<D>, R, D> implement
 
       @Override
       public String toString() {
-        return "plotSingleRPAF(title=%s)".formatted(titleFunction);
+        return name();
       }
     };
+  }
+
+  private String name() {
+    return toString();
   }
 }

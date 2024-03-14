@@ -138,6 +138,6 @@ public class AggregatedXYDataSeriesMRPAF<E, R, K>
 
   @Override
   public String toString() {
-    return "xyMRPAF(" + "xFunction=" + xFunction + ", yFunction=" + yFunction + ')';
+    return "xyMRPAF(xFunction=" + xFunction + ";yFunction=" + yFunction + ')';
   }
 }

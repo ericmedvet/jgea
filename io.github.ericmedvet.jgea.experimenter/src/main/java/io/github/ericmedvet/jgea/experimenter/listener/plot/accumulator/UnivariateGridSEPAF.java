@@ -81,6 +81,6 @@ public class UnivariateGridSEPAF<E, R, X, G> extends AbstractSingleEPAF<E, Univa
 
   @Override
   public String toString() {
-    return "gridSEPAF(" + "gridValueFunctions=" + gridValueFunctions + ')';
+    return "gridSEPAF(gridValueFunctions=" + gridValueFunctions + ')';
   }
 }

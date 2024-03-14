@@ -73,8 +73,12 @@ public abstract class AbstractMultipleRPAF<E, P extends XYPlot<D>, R, D, K, V>
 
       @Override
       public String toString() {
-        return "plotMultiRPAF(x=%s;y=%s)".formatted(xSubplotFunction, ySubplotFunction);
+        return name();
       }
     };
+  }
+
+  private String name() {
+    return toString();
   }
 }

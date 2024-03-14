@@ -125,6 +125,6 @@ public class LandscapeSEPAF<E, R, X, P> extends AbstractSingleEPAF<E, LandscapeP
 
   @Override
   public String toString() {
-    return "landscapeSEPAF(" + "xFunction=" + xFunction + ", yFunction=" + yFunction + ')';
+    return "landscapeSEPAF(xFunction=" + xFunction + ";yFunction=" + yFunction + ')';
   }
 }
