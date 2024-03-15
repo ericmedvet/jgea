@@ -21,6 +21,7 @@ package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
+
 import java.awt.*;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -28,9 +29,9 @@ import java.util.List;
 import java.util.Map;
 
 @Discoverable(prefixTemplate = "ea.misc")
-public class Misc {
+public class Miscs {
 
-  private Misc() {}
+  private Miscs() {}
 
   @SuppressWarnings("unused")
   public static Color colorByName(@Param("name") String name) {
@@ -52,14 +53,14 @@ public class Misc {
   }
 
   @SuppressWarnings("unused")
-  public static Map.Entry<String, String> sEntry(@Param("key") String key, @Param("value") String value) {
-    return Map.entry(key, value);
-  }
-
-  @SuppressWarnings("unused")
   public static <K, V> Map<K, V> map(@Param("entries") List<Map.Entry<K, V>> entries) {
     Map<K, V> map = new LinkedHashMap<>();
     entries.forEach(e -> map.put(e.getKey(), e.getValue()));
     return Collections.unmodifiableMap(map);
+  }
+
+  @SuppressWarnings("unused")
+  public static Map.Entry<String, String> sEntry(@Param("key") String key, @Param("value") String value) {
+    return Map.entry(key, value);
   }
 }
