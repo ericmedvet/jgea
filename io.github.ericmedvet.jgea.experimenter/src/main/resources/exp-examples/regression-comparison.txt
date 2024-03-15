@@ -40,14 +40,14 @@ ea.experiment(
       onlyLast = true
     );
     ea.l.expPlotSaver(
-      filePath = "../sr-train-fitness.png";
+      filePath = "../regr-train-fitness.png";
       freeScales = true;
       w = 600; h = 1000;
       type = lines;
       plot = ea.plot.qualityPlotMatrix()
     );
     ea.l.expPlotSaver(
-      filePath = "../sr-test-fitness.png";
+      filePath = "../regr-test-fitness.png";
       freeScales = true;
       w = 600; h = 1000;
       type = lines;

@@ -45,7 +45,6 @@ import io.github.ericmedvet.jsdynsym.buildable.builders.NumericalDynamicalSystem
 import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalTimeInvariantStatelessSystem;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;

@@ -24,6 +24,7 @@ import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 import java.util.List;
 import java.util.Map;
 import java.util.function.DoubleUnaryOperator;
+import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -95,8 +96,21 @@ public interface NamedUnivariateRealFunction extends NamedMultivariateRealFuncti
 
   @Override
   default NamedUnivariateRealFunction andThen(DoubleUnaryOperator f) {
+    NamedUnivariateRealFunction thisNurf = this;
     return NamedUnivariateRealFunction.from(
-        UnivariateRealFunction.from(vs -> f.applyAsDouble(applyAsDouble(vs)), nOfInputs()),
+        UnivariateRealFunction.from(
+            new ToDoubleFunction<>() {
+              @Override
+              public double applyAsDouble(double[] vs) {
+                return f.applyAsDouble(thisNurf.applyAsDouble(vs));
+              }
+
+              @Override
+              public String toString() {
+                return thisNurf + "[then:%s]".formatted(f);
+              }
+            },
+            nOfInputs()),
         xVarNames(),
         yVarName());
   }

@@ -130,6 +130,9 @@ public class Experimenter {
               run.index() + 1, experiment.runs().size(), elapsedT, solutions.size());
           L.fine(msg);
           progressMonitor.notify(run.index() + 1, experiment.runs().size(), msg);
+
+          System.out.println(solutions.iterator().next().toString());
+
           return solutions;
         })))
         .toList();

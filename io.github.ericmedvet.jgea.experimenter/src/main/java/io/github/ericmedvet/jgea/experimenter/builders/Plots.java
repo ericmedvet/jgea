@@ -33,7 +33,6 @@ import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jviz.core.plot.RangedGrid;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
