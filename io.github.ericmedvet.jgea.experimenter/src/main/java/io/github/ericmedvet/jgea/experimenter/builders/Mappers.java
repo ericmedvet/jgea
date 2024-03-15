@@ -45,6 +45,7 @@ import io.github.ericmedvet.jsdynsym.buildable.builders.NumericalDynamicalSystem
 import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalTimeInvariantStatelessSystem;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -140,7 +141,7 @@ public class Mappers {
   @SuppressWarnings("unused")
   public static <X> InvertibleMapper<X, NamedMultivariateRealFunction> fGraphToNmrf(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Graph<Node, Double>> beforeM,
-      @Param(value = "postOperator", dS = "ds.f.doubleOp(activationF=identity)")
+      @Param(value = "postOperator", dNPM = "ds.f.doubleOp(activationF=identity)")
           Function<Double, Double> postOperator) {
     return beforeM.andThen(InvertibleMapper.from(
         (nmrf, g) -> NamedMultivariateRealFunction.from(
@@ -180,22 +181,22 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
-  public static <X> InvertibleMapper<X, NamedUnivariateRealFunction> nmrfToNurf(
-      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NamedMultivariateRealFunction> beforeM) {
-    return beforeM.andThen(InvertibleMapper.from(
-        (nurf, nmrf) -> NamedUnivariateRealFunction.from(nmrf), nurf -> nurf, "nmrfToNurf"));
-  }
-
-  @SuppressWarnings("unused")
   public static <X> InvertibleMapper<X, NamedMultivariateRealFunction> multiSrTreeToNmrf(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Tree<Element>>> beforeM,
-      @Param(value = "postOperator", dS = "ds.f.doubleOp(activationF=identity)")
+      @Param(value = "postOperator", dNPM = "ds.f.doubleOp(activationF=identity)")
           Function<Double, Double> postOperator) {
     return beforeM.andThen(InvertibleMapper.from(
         (nmrf, ts) -> new TreeBasedMultivariateRealFunction(ts, nmrf.xVarNames(), nmrf.yVarNames())
             .andThen(postOperator::apply),
         nmrf -> TreeBasedMultivariateRealFunction.sampleFor(nmrf.xVarNames(), nmrf.yVarNames()),
         "multiSrTreeToNmrf[po=%s]".formatted(postOperator)));
+  }
+
+  @SuppressWarnings("unused")
+  public static <X> InvertibleMapper<X, NamedUnivariateRealFunction> nmrfToNurf(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NamedMultivariateRealFunction> beforeM) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (nurf, nmrf) -> NamedUnivariateRealFunction.from(nmrf), nurf -> nurf, "nmrfToNurf"));
   }
 
   @SuppressWarnings("unused")
@@ -216,7 +217,7 @@ public class Mappers {
   public static <X> InvertibleMapper<X, NamedMultivariateRealFunction> oGraphToNmrf(
       @Param(value = "of", dNPM = "ea.m.identity()")
           InvertibleMapper<X, Graph<Node, OperatorGraph.NonValuedArc>> beforeM,
-      @Param(value = "postOperator", dS = "ds.f.doubleOp(activationF=identity)")
+      @Param(value = "postOperator", dNPM = "ds.f.doubleOp(activationF=identity)")
           Function<Double, Double> postOperator) {
     return beforeM.andThen(InvertibleMapper.from(
         (nmrf, g) -> new OperatorGraph(g, nmrf.xVarNames(), nmrf.yVarNames()).andThen(postOperator::apply),
@@ -227,7 +228,7 @@ public class Mappers {
   @SuppressWarnings("unused")
   public static <X> InvertibleMapper<X, NamedUnivariateRealFunction> srTreeToNurf(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Tree<Element>> beforeM,
-      @Param(value = "postOperator", dS = "ds.f.doubleOp(activationF=identity)")
+      @Param(value = "postOperator", dNPM = "ds.f.doubleOp(activationF=identity)")
           Function<Double, Double> postOperator) {
     return beforeM.andThen(InvertibleMapper.from(
         (nurf, t) -> new TreeBasedUnivariateRealFunction(t, nurf.xVarNames(), nurf.yVarName())

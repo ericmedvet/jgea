@@ -1,5 +1,5 @@
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:3]) * [ea.rg.defaultRG()]) *
+  runs = (randomGenerator = (seed = [1:1:3]) * [m.defaultRG()]) *
     (problem = [
       ea.p.ur.bundled(name = "concrete"; xScaling = standardization; yScaling = symmetric_min_max);
       ea.p.ur.bundled(name = "energy-efficiency"; xScaling = standardization; yScaling = symmetric_min_max);
@@ -9,23 +9,17 @@ ea.experiment(
       ea.s.ga(
         name = "gp";
         representation = ea.r.srTree();
-        mapper = ea.m.srTreeToUrf()
+        mapper = ea.m.srTreeToNurf()
       );
       ea.s.ga(
         name = "ga+mlp(1)";
         representation = ea.r.doubleString();
-        mapper = ea.m.compose(
-          first = ea.m.mlpToMrf(innerLayerRatio = 1);
-          second = ea.m.mrfToUrf()
-        )
+        mapper = ea.m.nmrfToNurf(of = ea.m.ntissToNmrf(of = ea.m.dsToNpnds(npnds = ds.num.mlp(innerLayerRatio = 1; nOfInnerLayers = 1))))
       );
       ea.s.ga(
         name = "ga+mlp(2)";
         representation = ea.r.doubleString();
-        mapper = ea.m.compose(
-          first = ea.m.mlpToMrf(innerLayerRatio = 1; nOfInnerLayers = 2);
-          second = ea.m.mrfToUrf()
-        )
+        mapper = ea.m.nmrfToNurf(of = ea.m.ntissToNmrf(of = ea.m.dsToNpnds(npnds = ds.num.mlp(innerLayerRatio = 1; nOfInnerLayers = 2))))
       )
     ]) * [
     ea.run()
@@ -33,36 +27,31 @@ ea.experiment(
   listeners = [
     ea.l.console(
       functions = [
-        ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
-        ea.nf.bestFitness(s = "%6.2f");
-        ea.nf.validationFitness(s = "%6.2f");
-        ea.nf.hist(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()));
-        ea.nf.percentile(collection = ea.nf.each(map = ea.nf.fitness(); collection = ea.nf.all()); p = 0.75; s = "%6.2f")
+        ea.f.size(of = ea.f.genotype(of = ea.f.best()); format = "%3d");
+        ea.f.quality(of = ea.f.best(); format = "%6.2f");
+        ea.f.hist(of = f.each(of = ea.f.all(); mapF = ea.f.quality()));
+        ea.f.validationQuality(format = "%6.2f")
       ];
       runKeys = [
         ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
         ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
-      ]
+      ];
+      onlyLast = true
     );
     ea.l.expPlotSaver(
       filePath = "../sr-train-fitness.png";
       freeScales = true;
       w = 600; h = 1000;
       type = lines;
-      plot = ea.plot.fitnessPlotMatrix(
-        xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 50; s = "%.0f")
-      )
+      plot = ea.plot.qualityPlotMatrix()
     );
     ea.l.expPlotSaver(
       filePath = "../sr-test-fitness.png";
       freeScales = true;
       w = 600; h = 1000;
       type = lines;
-      plot = ea.plot.fitnessPlotMatrix(
-        xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 50; s = "%.0f");
-        yFunction = ea.nf.validationFitness()
-      )
+      plot = ea.plot.qualityPlotMatrix(yFunction = ea.f.validationQuality())
     )
   ]
 )
