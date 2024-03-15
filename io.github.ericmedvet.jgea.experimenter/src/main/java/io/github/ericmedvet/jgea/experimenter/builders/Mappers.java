@@ -47,6 +47,7 @@ import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalTimeInvariantStatelessSystem;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 
 @Discoverable(prefixTemplate = "ea.mapper|m")
@@ -147,7 +148,7 @@ public class Mappers {
                 new FunctionGraph(g, nmrf.xVarNames(), nmrf.yVarNames()),
                 nmrf.xVarNames(),
                 nmrf.yVarNames())
-            .andThen(postOperator::apply),
+            .andThen(toOperator(postOperator)),
         nmrf -> FunctionGraph.sampleFor(nmrf.xVarNames(), nmrf.yVarNames()),
         "fGraphToNmrf[po=%s]".formatted(postOperator)));
   }
@@ -186,7 +187,7 @@ public class Mappers {
           Function<Double, Double> postOperator) {
     return beforeM.andThen(InvertibleMapper.from(
         (nmrf, ts) -> new TreeBasedMultivariateRealFunction(ts, nmrf.xVarNames(), nmrf.yVarNames())
-            .andThen(postOperator::apply),
+            .andThen(toOperator(postOperator)),
         nmrf -> TreeBasedMultivariateRealFunction.sampleFor(nmrf.xVarNames(), nmrf.yVarNames()),
         "multiSrTreeToNmrf[po=%s]".formatted(postOperator)));
   }
@@ -219,7 +220,7 @@ public class Mappers {
       @Param(value = "postOperator", dNPM = "ds.f.doubleOp(activationF=identity)")
           Function<Double, Double> postOperator) {
     return beforeM.andThen(InvertibleMapper.from(
-        (nmrf, g) -> new OperatorGraph(g, nmrf.xVarNames(), nmrf.yVarNames()).andThen(postOperator::apply),
+        (nmrf, g) -> new OperatorGraph(g, nmrf.xVarNames(), nmrf.yVarNames()).andThen(toOperator(postOperator)),
         nmrf -> OperatorGraph.sampleFor(nmrf.xVarNames(), nmrf.yVarNames()),
         "oGraphToNmrf[po=%s]".formatted(postOperator)));
   }
@@ -231,8 +232,22 @@ public class Mappers {
           Function<Double, Double> postOperator) {
     return beforeM.andThen(InvertibleMapper.from(
         (nurf, t) -> new TreeBasedUnivariateRealFunction(t, nurf.xVarNames(), nurf.yVarName())
-            .andThen(postOperator::apply),
+            .andThen(toOperator(postOperator)),
         nurf -> TreeBasedUnivariateRealFunction.sampleFor(nurf.xVarNames(), nurf.yVarName()),
         "srTreeToNurf[po=%s]".formatted(postOperator)));
+  }
+
+  private static DoubleUnaryOperator toOperator(Function<Double, Double> f) {
+    return new DoubleUnaryOperator() {
+      @Override
+      public double applyAsDouble(double v) {
+        return f.apply(v);
+      }
+
+      @Override
+      public String toString() {
+        return f.toString();
+      }
+    };
   }
 }
