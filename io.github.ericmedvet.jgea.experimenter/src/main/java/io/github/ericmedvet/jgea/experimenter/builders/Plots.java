@@ -156,6 +156,7 @@ public class Plots {
         valueRange);
   }
 
+  @SuppressWarnings("unused")
   public static <X, P extends QualityBasedProblem<S, Double>, S>
       LandscapeSEPAF<
               POCPopulationState<Individual<List<Double>, S, Double>, List<Double>, S, Double, P>,
@@ -455,8 +456,7 @@ public class Plots {
               Map.Entry<String, String> ySubplotRunKey,
           @Param(value = "lineRunKey", dNPM = "ea.misc.sEntry(key=solver;value=\"{solver.name}\")")
               Map.Entry<String, String> lineRunKey,
-          @Param("yFunction")
-              Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> yFunction,
+          @Param("yFunction") Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> yFunction,
           @Param(value = "predicateValue", dNPM = "ea.f.rate(of=ea.f.progress())")
               Function<POCPopulationState<?, G, S, Q, ?>, X> predicateValueFunction,
           @Param(value = "condition", dNPM = "ea.predicate.gtEq(t=1)") Predicate<X> condition,

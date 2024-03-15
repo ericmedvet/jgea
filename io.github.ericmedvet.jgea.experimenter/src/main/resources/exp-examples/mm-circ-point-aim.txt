@@ -55,7 +55,7 @@ ea.experiment(
       filePath = "../mm-c-10-3-otd-vs-evals.png";
       w = 900; h = 600;
       type = lines;
-      plot = ea.plot.qualityPlotMatrix(
+      plot = ea.plot.xyyPlotMatrix(
         xFunction = f.quantized(of = ea.f.nOfEvals(); q = 250);
         yFunction = ea.f.overallTargetDistance()
       )
@@ -64,7 +64,7 @@ ea.experiment(
       filePath = "../mm-c-10-3-otd-boxplot.png";
       w = 900; h = 600;
       type = boxplot;
-      plot = ea.plot.qualityBoxplotMatrix(yFunction = ea.f.overallTargetDistance())
+      plot = ea.plot.yBoxplotMatrix(yFunction = ea.f.overallTargetDistance())
     );
     ea.l.runPlotSaver(
       w = 1000; h = 700;

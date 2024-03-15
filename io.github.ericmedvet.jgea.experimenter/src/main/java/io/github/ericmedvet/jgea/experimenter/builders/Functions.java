@@ -162,6 +162,20 @@ public class Functions {
   }
 
   @SuppressWarnings("unused")
+  public static <X, P extends MultiTargetProblem<S>, S> FormattedNamedFunction<X, List<Double>> popTargetDistances(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<?, ?, S, ?, P>> beforeF,
+      @Param(value = "format", dS = "%.2f") String format) {
+    Function<POCPopulationState<?, ?, S, ?, P>, List<Double>> f = state -> state.problem().targets().stream()
+        .mapToDouble(ts -> state.pocPopulation().all().stream()
+            .mapToDouble(s -> state.problem().distance().apply(s.solution(), ts))
+            .min()
+            .orElseThrow())
+        .boxed()
+        .toList();
+    return FormattedNamedFunction.from(f, format, "pop.target.distances").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
   public static <X, P extends Problem<S>, S> NamedFunction<X, P> problem(
       @Param(value = "of", dNPM = "f.identity()") Function<X, State<P, S>> beforeF) {
     Function<State<P, S>, P> f = State::problem;
@@ -246,20 +260,6 @@ public class Functions {
       @Param(value = "format", dS = "%s") String format) {
     Function<Individual<?, S, ?>, S> f = Individual::solution;
     return FormattedNamedFunction.from(f, format, "solution").compose(beforeF);
-  }
-
-  @SuppressWarnings("unused")
-  public static <X, P extends MultiTargetProblem<S>, S> FormattedNamedFunction<X, List<Double>> popTargetDistances(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<?, ?, S, ?, P>> beforeF,
-      @Param(value = "format", dS = "%.2f") String format) {
-    Function<POCPopulationState<?, ?, S, ?, P>, List<Double>> f = state -> state.problem().targets().stream()
-        .mapToDouble(ts -> state.pocPopulation().all().stream()
-            .mapToDouble(s -> state.problem().distance().apply(s.solution(), ts))
-            .min()
-            .orElseThrow())
-        .boxed()
-        .toList();
-    return FormattedNamedFunction.from(f, format, "pop.target.distances").compose(beforeF);
   }
 
   @SuppressWarnings("unused")

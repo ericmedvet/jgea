@@ -21,7 +21,6 @@ package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
-
 import java.awt.*;
 import java.util.Collections;
 import java.util.LinkedHashMap;
