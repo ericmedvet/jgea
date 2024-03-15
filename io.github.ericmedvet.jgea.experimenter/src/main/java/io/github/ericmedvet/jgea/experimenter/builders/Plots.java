@@ -33,6 +33,7 @@ import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jviz.core.plot.RangedGrid;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -123,100 +124,6 @@ public class Plots {
       @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
     return new XYDataSeriesSRPAF<>(
         Functions.runKey(titleRunKey, r -> r, "%s"), xFunction, List.of(yFunction), xRange, yRange, true, true);
-  }
-
-  @SuppressWarnings("unused")
-  public static <G, S, Q> XYDataSeriesSRPAF<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>> quality(
-      @Param(
-              value = "titleRunKey",
-              dNPM = "ea.misc.sEntry(key=title;value=\"Best quality of {solver.name} on {problem.name} "
-                  + "(seed={randomGenerator.seed})\")")
-          Map.Entry<String, String> titleRunKey,
-      @Param(value = "x", dNPM = "ea.nf.iterations()")
-          Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> xFunction,
-      @Param(value = "collection", dNPM = "ea.f.all()")
-          Function<POCPopulationState<?, G, S, Q, ?>, Collection<Individual<G, S, Q>>> collectionFunction,
-      @Param(value = "qF", dNPM = "f.each(mapF = ea.f.quality())")
-          Function<Collection<Individual<G, S, Q>>, Collection<Q>> qFunction,
-      @Param(value = "minF", dNPM = "f.percentile(p=25)") Function<Collection<Q>, Double> minFunction,
-      @Param(value = "midF", dNPM = "f.median()") Function<Collection<Q>, Double> midFunction,
-      @Param(value = "maxF", dNPM = "f.percentile(p=75)") Function<Collection<Q>, Double> maxFunction,
-      @Param(value = "xRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
-      @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange,
-      @Param(value = "sort", dS = "min") Sorting sorting,
-      @Param(value = "s", dS = "%.2f") String s) {
-    List<Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number>> yFunctions =
-        switch (sorting) {
-          case MIN -> List.of(
-              collectionFunction.andThen(qFunction).andThen(minFunction),
-              collectionFunction.andThen(qFunction).andThen(midFunction),
-              collectionFunction.andThen(qFunction).andThen(maxFunction));
-          case MAX -> List.of(
-              collectionFunction.andThen(qFunction).andThen(maxFunction),
-              collectionFunction.andThen(qFunction).andThen(midFunction),
-              collectionFunction.andThen(qFunction).andThen(minFunction));
-        };
-    return new XYDataSeriesSRPAF<>(
-        Functions.runKey(titleRunKey, r -> r, "%s"), xFunction, yFunctions, xRange, yRange, true, false);
-  }
-
-  @SuppressWarnings("unused")
-  public static <G, S, Q, X>
-      DistributionMRPAF<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>, String, X> qualityBoxplotMatrix(
-          @Param(value = "xSubplotRunKey", dNPM = "ea.misc.sEntry(key=none;value=\"_\")")
-              Map.Entry<String, String> xSubplotRunKey,
-          @Param(value = "ySubplotRunKey", dNPM = "ea.misc.sEntry(key=problem;value=\"{problem.name}\")")
-              Map.Entry<String, String> ySubplotRunKey,
-          @Param(value = "lineRunKey", dNPM = "ea.misc.sEntry(key=solver;value=\"{solver.name}\")")
-              Map.Entry<String, String> lineRunKey,
-          @Param(value = "yFunction", dNPM = "ea.f.quality(of=ea.f.best())")
-              Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> yFunction,
-          @Param(value = "predicateValue", dNPM = "ea.f.rate(of=ea.f.progress())")
-              Function<POCPopulationState<?, G, S, Q, ?>, X> predicateValueFunction,
-          @Param(value = "condition", dNPM = "ea.predicate.gtEq(t=1)") Predicate<X> condition,
-          @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
-    return new DistributionMRPAF<>(
-        Functions.runKey(xSubplotRunKey, r -> r, "%s"),
-        Functions.runKey(ySubplotRunKey, r -> r, "%s"),
-        Functions.runKey(lineRunKey, r -> r, "%s"),
-        yFunction,
-        predicateValueFunction,
-        condition,
-        yRange);
-  }
-
-  @SuppressWarnings("unused")
-  public static <G, S, Q>
-      AggregatedXYDataSeriesMRPAF<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>, String> qualityPlotMatrix(
-          @Param(value = "xSubplotRunKey", dNPM = "ea.misc.sEntry(key=none;value=\"_\")")
-              Map.Entry<String, String> xSubplotRunKey,
-          @Param(value = "ySubplotRunKey", dNPM = "ea.misc.sEntry(key=problem;value=\"{problem.name}\")")
-              Map.Entry<String, String> ySubplotRunKey,
-          @Param(value = "lineRunKey", dNPM = "ea.misc.sEntry(key=solver;value=\"{solver.name}\")")
-              Map.Entry<String, String> lineRunKey,
-          @Param(value = "xFunction", dNPM = "ea.f.nOfEvals()")
-              Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> xFunction,
-          @Param(value = "yFunction", dNPM = "ea.f.quality(of=ea.f.best())")
-              Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> yFunction,
-          @Param(value = "valueAggregator", dNPM = "f.median()")
-              Function<List<Number>, Number> valueAggregator,
-          @Param(value = "minAggregator", dNPM = "f.percentile(p=25)")
-              Function<List<Number>, Number> minAggregator,
-          @Param(value = "maxAggregator", dNPM = "f.percentile(p=75)")
-              Function<List<Number>, Number> maxAggregator,
-          @Param(value = "xRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
-          @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
-    return new AggregatedXYDataSeriesMRPAF<>(
-        Functions.runKey(xSubplotRunKey, r -> r, "%s"),
-        Functions.runKey(ySubplotRunKey, r -> r, "%s"),
-        Functions.runKey(lineRunKey, r -> r, "%s"),
-        xFunction,
-        yFunction,
-        valueAggregator,
-        minAggregator,
-        maxAggregator,
-        xRange,
-        yRange);
   }
 
   @SuppressWarnings("unused")
@@ -354,6 +261,100 @@ public class Plots {
   }
 
   @SuppressWarnings("unused")
+  public static <G, S, Q> XYDataSeriesSRPAF<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>> quality(
+      @Param(
+              value = "titleRunKey",
+              dNPM = "ea.misc.sEntry(key=title;value=\"Best quality of {solver.name} on {problem.name} "
+                  + "(seed={randomGenerator.seed})\")")
+          Map.Entry<String, String> titleRunKey,
+      @Param(value = "x", dNPM = "ea.nf.iterations()")
+          Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> xFunction,
+      @Param(value = "collection", dNPM = "ea.f.all()")
+          Function<POCPopulationState<?, G, S, Q, ?>, Collection<Individual<G, S, Q>>> collectionFunction,
+      @Param(value = "qF", dNPM = "f.each(mapF = ea.f.quality())")
+          Function<Collection<Individual<G, S, Q>>, Collection<Q>> qFunction,
+      @Param(value = "minF", dNPM = "f.percentile(p=25)") Function<Collection<Q>, Double> minFunction,
+      @Param(value = "midF", dNPM = "f.median()") Function<Collection<Q>, Double> midFunction,
+      @Param(value = "maxF", dNPM = "f.percentile(p=75)") Function<Collection<Q>, Double> maxFunction,
+      @Param(value = "xRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
+      @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange,
+      @Param(value = "sort", dS = "min") Sorting sorting,
+      @Param(value = "s", dS = "%.2f") String s) {
+    List<Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number>> yFunctions =
+        switch (sorting) {
+          case MIN -> List.of(
+              collectionFunction.andThen(qFunction).andThen(minFunction),
+              collectionFunction.andThen(qFunction).andThen(midFunction),
+              collectionFunction.andThen(qFunction).andThen(maxFunction));
+          case MAX -> List.of(
+              collectionFunction.andThen(qFunction).andThen(maxFunction),
+              collectionFunction.andThen(qFunction).andThen(midFunction),
+              collectionFunction.andThen(qFunction).andThen(minFunction));
+        };
+    return new XYDataSeriesSRPAF<>(
+        Functions.runKey(titleRunKey, r -> r, "%s"), xFunction, yFunctions, xRange, yRange, true, false);
+  }
+
+  @SuppressWarnings("unused")
+  public static <G, S, Q, X>
+      DistributionMRPAF<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>, String, X> qualityBoxplotMatrix(
+          @Param(value = "xSubplotRunKey", dNPM = "ea.misc.sEntry(key=none;value=\"_\")")
+              Map.Entry<String, String> xSubplotRunKey,
+          @Param(value = "ySubplotRunKey", dNPM = "ea.misc.sEntry(key=problem;value=\"{problem.name}\")")
+              Map.Entry<String, String> ySubplotRunKey,
+          @Param(value = "lineRunKey", dNPM = "ea.misc.sEntry(key=solver;value=\"{solver.name}\")")
+              Map.Entry<String, String> lineRunKey,
+          @Param(value = "yFunction", dNPM = "ea.f.quality(of=ea.f.best())")
+              Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> yFunction,
+          @Param(value = "predicateValue", dNPM = "ea.f.rate(of=ea.f.progress())")
+              Function<POCPopulationState<?, G, S, Q, ?>, X> predicateValueFunction,
+          @Param(value = "condition", dNPM = "ea.predicate.gtEq(t=1)") Predicate<X> condition,
+          @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
+    return new DistributionMRPAF<>(
+        Functions.runKey(xSubplotRunKey, r -> r, "%s"),
+        Functions.runKey(ySubplotRunKey, r -> r, "%s"),
+        Functions.runKey(lineRunKey, r -> r, "%s"),
+        yFunction,
+        predicateValueFunction,
+        condition,
+        yRange);
+  }
+
+  @SuppressWarnings("unused")
+  public static <G, S, Q>
+      AggregatedXYDataSeriesMRPAF<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>, String> qualityPlotMatrix(
+          @Param(value = "xSubplotRunKey", dNPM = "ea.misc.sEntry(key=none;value=\"_\")")
+              Map.Entry<String, String> xSubplotRunKey,
+          @Param(value = "ySubplotRunKey", dNPM = "ea.misc.sEntry(key=problem;value=\"{problem.name}\")")
+              Map.Entry<String, String> ySubplotRunKey,
+          @Param(value = "lineRunKey", dNPM = "ea.misc.sEntry(key=solver;value=\"{solver.name}\")")
+              Map.Entry<String, String> lineRunKey,
+          @Param(value = "xFunction", dNPM = "ea.f.nOfEvals()")
+              Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> xFunction,
+          @Param(value = "yFunction", dNPM = "ea.f.quality(of=ea.f.best())")
+              Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> yFunction,
+          @Param(value = "valueAggregator", dNPM = "f.median()")
+              Function<List<Number>, Number> valueAggregator,
+          @Param(value = "minAggregator", dNPM = "f.percentile(p=25)")
+              Function<List<Number>, Number> minAggregator,
+          @Param(value = "maxAggregator", dNPM = "f.percentile(p=75)")
+              Function<List<Number>, Number> maxAggregator,
+          @Param(value = "xRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
+          @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
+    return new AggregatedXYDataSeriesMRPAF<>(
+        Functions.runKey(xSubplotRunKey, r -> r, "%s"),
+        Functions.runKey(ySubplotRunKey, r -> r, "%s"),
+        Functions.runKey(lineRunKey, r -> r, "%s"),
+        xFunction,
+        yFunction,
+        valueAggregator,
+        minAggregator,
+        maxAggregator,
+        xRange,
+        yRange);
+  }
+
+  @SuppressWarnings("unused")
   public static <G, S, Q> XYDataSeriesSRPAF<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>> uniqueness(
       @Param(
               value = "titleRunKey",
@@ -403,7 +404,7 @@ public class Plots {
       AggregatedXYDataSeriesMRPAF<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>, String> xyPlotMatrix(
           @Param(value = "xSubplotRunKey", dNPM = "ea.misc.sEntry(key=none;value=\"_\")")
               Map.Entry<String, String> xSubplotRunKey,
-          @Param(value = "ySubplotRunKey", dNPM = "ea.misc.sEntry(key=problem;value=\"{problem}\")")
+          @Param(value = "ySubplotRunKey", dNPM = "ea.misc.sEntry(key=problem;value=\"{problem.name}\")")
               Map.Entry<String, String> ySubplotRunKey,
           @Param(value = "lineRunKey", dNPM = "ea.misc.sEntry(key=solver;value=\"{solver.name}\")")
               Map.Entry<String, String> lineRunKey,
@@ -443,6 +444,31 @@ public class Plots {
       @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
     return new XYDataSeriesSRPAF<>(
         Functions.runKey(titleRunKey, r -> r, "%s"), xFunction, yFunctions, xRange, yRange, true, false);
+  }
+
+  @SuppressWarnings("unused")
+  public static <G, S, Q, X>
+      DistributionMRPAF<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>, String, X> yBoxplotMatrix(
+          @Param(value = "xSubplotRunKey", dNPM = "ea.misc.sEntry(key=none;value=\"_\")")
+              Map.Entry<String, String> xSubplotRunKey,
+          @Param(value = "ySubplotRunKey", dNPM = "ea.misc.sEntry(key=problem;value=\"{problem.name}\")")
+              Map.Entry<String, String> ySubplotRunKey,
+          @Param(value = "lineRunKey", dNPM = "ea.misc.sEntry(key=solver;value=\"{solver.name}\")")
+              Map.Entry<String, String> lineRunKey,
+          @Param("yFunction")
+              Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> yFunction,
+          @Param(value = "predicateValue", dNPM = "ea.f.rate(of=ea.f.progress())")
+              Function<POCPopulationState<?, G, S, Q, ?>, X> predicateValueFunction,
+          @Param(value = "condition", dNPM = "ea.predicate.gtEq(t=1)") Predicate<X> condition,
+          @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
+    return new DistributionMRPAF<>(
+        Functions.runKey(xSubplotRunKey, r -> r, "%s"),
+        Functions.runKey(ySubplotRunKey, r -> r, "%s"),
+        Functions.runKey(lineRunKey, r -> r, "%s"),
+        yFunction,
+        predicateValueFunction,
+        condition,
+        yRange);
   }
 
   @SuppressWarnings("unused")
