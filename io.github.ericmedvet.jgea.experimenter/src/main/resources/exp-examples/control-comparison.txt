@@ -48,9 +48,9 @@ ea.experiment(
         yFunction = ea.f.simQuality(of = ea.f.quality(of = ea.f.best()))
       )
     );
-    ea.l.runImageVideoSaver(
-      drawer = ds.d.navigation();
-      function = ds.f.simOutcome(of = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best())));
+    ea.l.runAllIterationsVideoSaver(
+      image = ds.d.navigation();
+      function = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best()));
       filePathTemplate = "../bests-{problem.name}-{solver.name}-{randomGenerator.seed:%04d}.mp4";
       condition = ea.predicate.all(conditions = [
         ea.predicate.inS(
@@ -59,8 +59,9 @@ ea.experiment(
         )
       ])
     );
-    ea.l.runLastSimulationVideoSaver(
-      drawer = ds.d.navigation();
+    ea.l.runLastIterationVideoSaver(
+      video = ds.d.navigation();
+      function = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best()));
       filePathTemplate = "../finalBest-{problem.name}-{solver.name}-{randomGenerator.seed:%04d}.mp4";
       condition = ea.predicate.all(conditions = [
         ea.predicate.inS(

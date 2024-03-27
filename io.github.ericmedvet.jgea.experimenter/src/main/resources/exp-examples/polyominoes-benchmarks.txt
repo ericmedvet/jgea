@@ -34,8 +34,8 @@ ea.experiment(
       ];
       onlyLast = true
     );
-    ea.l.runImageVideoSaver(
-      drawer = ea.d.polyomino(maxW = 12; maxH = 12);
+    ea.l.runAllIterationsVideoSaver(
+      image = ea.d.polyomino(maxW = 12; maxH = 12);
       function = ea.f.solution(of = ea.f.best());
       filePathTemplate = "../bests-{problem.target}-{solver.mapper.grammar.name}-{randomGenerator.seed:%04d}.mp4";
       condition = ea.predicate.all(conditions = [
@@ -50,8 +50,8 @@ ea.experiment(
       ]);
       w = 500; h = 500
     );
-    ea.l.runImageVideoSaver(
-      drawer = ea.d.polyomino(
+    ea.l.runAllIterationsVideoSaver(
+      image = ea.d.polyomino(
         maxW = 16;
         maxH = 16;
         colors = ea.misc.map(entries = [

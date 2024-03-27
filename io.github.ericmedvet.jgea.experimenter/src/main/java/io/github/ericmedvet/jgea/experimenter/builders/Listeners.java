@@ -33,12 +33,11 @@ import io.github.ericmedvet.jgea.experimenter.listener.decoupled.*;
 import io.github.ericmedvet.jgea.experimenter.listener.net.NetMultiSink;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.PlotAccumulatorFactory;
 import io.github.ericmedvet.jgea.experimenter.listener.telegram.TelegramUpdater;
-import io.github.ericmedvet.jgea.problem.simulation.SimulationBasedProblem;
 import io.github.ericmedvet.jnb.core.*;
 import io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
-import io.github.ericmedvet.jviz.core.drawer.Drawer;
-import io.github.ericmedvet.jviz.core.drawer.TimedSequenceDrawer;
+import io.github.ericmedvet.jviz.core.drawer.ImageBuilder;
+import io.github.ericmedvet.jviz.core.drawer.VideoBuilder;
 import io.github.ericmedvet.jviz.core.plot.CsvPlotter;
 import io.github.ericmedvet.jviz.core.plot.Plotter;
 import io.github.ericmedvet.jviz.core.plot.XYPlot;
@@ -432,10 +431,10 @@ public class Listeners {
   @SuppressWarnings("unused")
   public static <G, S, Q, K>
       BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
-          runImageVideoSaver(
+          runAllIterationsVideoSaver(
               @Param(value = "function", dNPM = "ea.f.best()")
                   Function<POCPopulationState<?, G, S, Q, ?>, K> function,
-              @Param("drawer") Drawer<K> drawer,
+              @Param("image") ImageBuilder<K> imageBuilder,
               @Param(value = "w", dI = 500) int w,
               @Param(value = "h", dI = 500) int h,
               @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder,
@@ -443,20 +442,16 @@ public class Listeners {
               @Param(value = "filePathTemplate", dS = "run-{index:%04d}.mp4") String filePathTemplate,
               @Param(value = "condition", dNPM = "ea.predicate.always()")
                   Predicate<Run<?, G, S, Q>> predicate) {
+    VideoBuilder<List<K>> videoBuilder = VideoBuilder.from(imageBuilder, ks -> ks, frameRate);
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         AccumulatorFactory.<POCPopulationState<?, G, S, Q, ?>, K, Run<?, G, S, Q>>collector(function)
             .thenOnDone((run, ks) -> {
+              File file = Misc.checkExistenceAndChangeName(
+                  new File(Utils.interpolate(filePathTemplate, run)));
               try {
-                VideoUtils.encodeAndSave(
-                    ks.stream()
-                        .map(i -> drawer.draw(w, h, i))
-                        .toList(),
-                    frameRate,
-                    Misc.checkExistenceAndChangeName(
-                        new File(Utils.interpolate(filePathTemplate, run))),
-                    encoder);
+                videoBuilder.save(new VideoBuilder.VideoInfo(w, h, encoder), file, ks);
               } catch (IOException e) {
-                throw new RuntimeException(e);
+                L.severe("Cannot save video at '%s': %s".formatted(file.getPath(), e));
               }
             }),
         predicate,
@@ -465,40 +460,60 @@ public class Listeners {
   }
 
   @SuppressWarnings("unused")
-  public static <G, S, B, Q, K>
-      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, K, ?>, Run<?, G, S, K>>>
-          runLastSimulationVideoSaver(
-              @Param(value = "function", dNPM = "ea.f.quality(of=ea.f.best())")
-                  Function<
-                          POCPopulationState<?, G, S, K, ?>,
-                          SimulationBasedProblem.QualityOutcome<B, ?, Q>>
-                      function,
-              @Param("drawer") TimedSequenceDrawer<B> drawer,
+  public static <G, S, Q, K>
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
+          runLastIterationImageSaver(
+              @Param(value = "function", dNPM = "ea.f.best()")
+                  Function<POCPopulationState<?, G, S, Q, ?>, K> function,
+              @Param("image") ImageBuilder<K> imagerBuilder,
               @Param(value = "w", dI = 500) int w,
               @Param(value = "h", dI = 500) int h,
-              @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder,
-              @Param(value = "frameRate", dD = 20) double frameRate,
-              @Param(value = "filePathTemplate", dS = "run-{index:%04d}.mp4") String filePathTemplate,
+              @Param(value = "filePathTemplate", dS = "run-{index:%04d}.png") String filePathTemplate,
               @Param(value = "condition", dNPM = "ea.predicate.always()")
-                  Predicate<Run<?, G, S, K>> predicate) {
+                  Predicate<Run<?, G, S, Q>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        run -> Listener.<POCPopulationState<?, G, S, K, ?>>named(
+        run -> Listener.<POCPopulationState<?, G, S, Q, ?>>named(
             state -> {
               File file = Misc.checkExistenceAndChangeName(
                   new File(Utils.interpolate(filePathTemplate, run)));
               try {
-                drawer.saveVideo(
-                    w,
-                    h,
-                    file,
-                    frameRate,
-                    encoder,
-                    function.apply(state).outcome().snapshots());
+                imagerBuilder.save(new ImageBuilder.ImageInfo(w, h), file, function.apply(state));
               } catch (IOException e) {
-                L.severe("Cannot save plot at '%s': %s".formatted(file.getPath(), e));
+                L.severe("Cannot save image at '%s': %s".formatted(file.getPath(), e));
               }
             },
-            "lastSimulationVideoSaver"),
+            "runLastIterationImageSaver"),
+        predicate,
+        executorService,
+        true);
+  }
+
+  @SuppressWarnings("unused")
+  public static <G, S, Q, K>
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
+          runLastIterationVideoSaver(
+              @Param(value = "function", dNPM = "ea.f.best()")
+                  Function<POCPopulationState<?, G, S, Q, ?>, K> function,
+              @Param("video") VideoBuilder<K> videoBuilder,
+              @Param(value = "w", dI = 500) int w,
+              @Param(value = "h", dI = 500) int h,
+              @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder,
+              @Param(value = "filePathTemplate", dS = "run-{index:%04d}.mp4") String filePathTemplate,
+              @Param(value = "condition", dNPM = "ea.predicate.always()")
+                  Predicate<Run<?, G, S, Q>> predicate) {
+    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
+        run -> Listener.<POCPopulationState<?, G, S, Q, ?>>named(
+            state -> {
+              File file = Misc.checkExistenceAndChangeName(
+                  new File(Utils.interpolate(filePathTemplate, run)));
+              try {
+                videoBuilder.save(
+                    new VideoBuilder.VideoInfo(w, h, encoder), file, function.apply(state));
+              } catch (IOException e) {
+                L.severe("Cannot save video at '%s': %s".formatted(file.getPath(), e));
+              }
+            },
+            "runLastIterationVideoSaver"),
         predicate,
         executorService,
         true);
