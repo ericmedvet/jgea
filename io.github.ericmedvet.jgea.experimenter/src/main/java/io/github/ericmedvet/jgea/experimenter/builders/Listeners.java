@@ -46,8 +46,6 @@ import io.github.ericmedvet.jviz.core.plot.image.Configuration;
 import io.github.ericmedvet.jviz.core.plot.image.ImagePlotter;
 import io.github.ericmedvet.jviz.core.plot.video.VideoPlotter;
 import io.github.ericmedvet.jviz.core.util.VideoUtils;
-
-import javax.imageio.ImageIO;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,6 +57,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+import javax.imageio.ImageIO;
 
 @Discoverable(prefixTemplate = "ea.listener|l")
 public class Listeners {

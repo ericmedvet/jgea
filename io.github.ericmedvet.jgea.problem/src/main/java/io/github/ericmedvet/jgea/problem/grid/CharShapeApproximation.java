@@ -85,6 +85,10 @@ public class CharShapeApproximation
             .orElseThrow(() -> new IllegalArgumentException("Empty target grid")));
   }
 
+  public Grid<Character> getTarget() {
+    return target;
+  }
+
   @Override
   public Function<Grid<Character>, Double> qualityFunction() {
     return grid -> {
