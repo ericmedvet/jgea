@@ -37,7 +37,6 @@ package io.github.ericmedvet.jgea.experimenter.drawer;
 
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jviz.core.drawer.Drawer;
-
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.Map;

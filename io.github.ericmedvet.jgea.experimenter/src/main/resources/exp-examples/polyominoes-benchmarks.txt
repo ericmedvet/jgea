@@ -35,7 +35,7 @@ ea.experiment(
       onlyLast = true
     );
     ea.l.runImageVideoSaver(
-      drawer = ea.d.polyomino(maxW = 16; maxH = 16);
+      drawer = ea.d.polyomino(maxW = 12; maxH = 12);
       function = ea.f.solution(of = ea.f.best());
       filePathTemplate = "../bests-{problem.target}-{solver.mapper.grammar.name}-{randomGenerator.seed:%04d}.mp4";
       condition = ea.predicate.all(conditions = [
@@ -45,7 +45,31 @@ ea.experiment(
         );
         ea.predicate.inS(
           f = ea.f.runKey(runKey = ea.misc.sEntry(key = "target"; value = "{problem.target}"));
-          values = ["dog"]
+          values = ["dog"; "circle"]
+        )
+      ]);
+      w = 500; h = 500
+    );
+    ea.l.runImageVideoSaver(
+      drawer = ea.d.polyomino(
+        maxW = 16;
+        maxH = 16;
+        colors = ea.misc.map(entries = [
+          ea.misc.entry(key = ea.misc.ch(s = "s"); value = ea.misc.colorByRgb(r = 209; g = 35; b = 42));
+          ea.misc.entry(key = ea.misc.ch(s = "a"); value = ea.misc.colorByRgb(r = 48; g = 111; b = 28));
+          ea.misc.entry(key = ea.misc.ch(s = "h"); value = ea.misc.colorByRgb(r = 50; g = 116; b = 181))
+        ])
+      );
+      function = ea.f.solution(of = ea.f.best());
+      filePathTemplate = "../bests-dogcolors-{problem.target}-{solver.mapper.grammar.name}-{randomGenerator.seed:%04d}.mp4";
+      condition = ea.predicate.all(conditions = [
+        ea.predicate.inS(
+          f = ea.f.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
+          values = ["1"]
+        );
+        ea.predicate.inS(
+          f = ea.f.runKey(runKey = ea.misc.sEntry(key = "grammar"; value = "{solver.mapper.grammar.name}"));
+          values = ["dog-shape"]
         )
       ]);
       w = 500; h = 500

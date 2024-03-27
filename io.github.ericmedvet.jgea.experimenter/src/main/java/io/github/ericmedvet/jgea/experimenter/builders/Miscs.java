@@ -33,6 +33,11 @@ public class Miscs {
   private Miscs() {}
 
   @SuppressWarnings("unused")
+  public static Character ch(@Param("s") String s) {
+    return s.charAt(0);
+  }
+
+  @SuppressWarnings("unused")
   public static Color colorByName(@Param("name") String name) {
     try {
       return (Color) Color.class.getField(name.toUpperCase()).get(null);
@@ -42,8 +47,8 @@ public class Miscs {
   }
 
   @SuppressWarnings("unused")
-  public static Color colorByRGB(@Param("r") double r, @Param("g") double g, @Param("c") double b) {
-    return new Color((float) r, (float) g, (float) b);
+  public static Color colorByRgb(@Param("r") int r, @Param("g") int g, @Param("b") int b) {
+    return new Color(r, g, b);
   }
 
   @SuppressWarnings("unused")
