@@ -35,12 +35,11 @@
 
 package io.github.ericmedvet.jgea.experimenter.drawer;
 
-import io.github.ericmedvet.jgea.problem.grid.CharShapeApproximation;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jviz.core.drawer.Drawer;
+
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.io.IOException;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -72,11 +71,6 @@ public class PolyominoDrawer implements Drawer<Grid<Character>> {
                             .size()))),
         Color.BLACK,
         0.05);
-  }
-
-  public static void main(String[] args) throws IOException {
-    PolyominoDrawer d = new PolyominoDrawer(Configuration.DEFAULT);
-    d.showImage(500, 500, new CharShapeApproximation("dog", true, true, true).getTarget());
   }
 
   @Override
