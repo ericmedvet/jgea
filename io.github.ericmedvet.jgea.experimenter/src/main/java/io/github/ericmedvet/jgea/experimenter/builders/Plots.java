@@ -26,13 +26,14 @@ import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.cabea.GridPopulationState;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MEPopulationState;
 import io.github.ericmedvet.jgea.experimenter.Run;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.accumulator.*;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.*;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jviz.core.plot.RangedGrid;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -127,7 +128,7 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <G, S, Q, X>
-      UnivariateGridSEPAF<GridPopulationState<G, S, Q, ?>, Run<?, G, S, Q>, X, Individual<G, S, Q>>
+  UnivariateGridSEPAF<GridPopulationState<G, S, Q, ?>, Run<?, G, S, Q>, X, Individual<G, S, Q>>
           gridPopulation(
               @Param(
                       value = "titleRunKey",
@@ -157,11 +158,11 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <X, P extends QualityBasedProblem<S, Double>, S>
-      LandscapeSEPAF<
-              POCPopulationState<Individual<List<Double>, S, Double>, List<Double>, S, Double, P>,
-              Run<?, List<Double>, S, Double>,
-              X,
-              Individual<List<Double>, S, Double>>
+  LandscapeSEPAF<
+                POCPopulationState<Individual<List<Double>, S, Double>, List<Double>, S, Double, P>,
+                Run<?, List<Double>, S, Double>,
+                X,
+                Individual<List<Double>, S, Double>>
           landscape(
               @Param(
                       value = "titleRunKey",
@@ -297,7 +298,7 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <G, S, Q, X>
-      DistributionMRPAF<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>, String, X> qualityBoxplotMatrix(
+  DistributionMRPAF<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>, String, X> qualityBoxplotMatrix(
           @Param(value = "xSubplotRunKey", dNPM = "ea.misc.sEntry(key=none;value=\"_\")")
               Map.Entry<String, String> xSubplotRunKey,
           @Param(value = "ySubplotRunKey", dNPM = "ea.misc.sEntry(key=problem;value=\"{problem.name}\")")
@@ -322,7 +323,7 @@ public class Plots {
 
   @SuppressWarnings("unused")
   public static <G, S, Q>
-      AggregatedXYDataSeriesMRPAF<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>, String> qualityPlotMatrix(
+  AggregatedXYDataSeriesMRPAF<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>, String> qualityPlotMatrix(
           @Param(value = "xSubplotRunKey", dNPM = "ea.misc.sEntry(key=none;value=\"_\")")
               Map.Entry<String, String> xSubplotRunKey,
           @Param(value = "ySubplotRunKey", dNPM = "ea.misc.sEntry(key=problem;value=\"{problem.name}\")")
