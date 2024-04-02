@@ -148,6 +148,36 @@ public class Problems {
   }
 
   @SuppressWarnings("unused")
+  public static <S, B, O extends Simulation.Outcome<B>, Q extends Comparable<Q>>
+      SimulationBasedTotalOrderProblem<S, B, O, Q> simTo(
+          @Param("simulation") Simulation<S, B, O> simulation,
+          @Param("f") Function<O, Q> outcomeQualityFunction,
+          @Param(value = "type", dS = "minimize") OptimizationType type) {
+    Comparator<SimulationBasedProblem.QualityOutcome<B, O, Q>> comparator =
+        switch (type) {
+          case MINIMIZE -> Comparator.comparing(
+              (SimulationBasedProblem.QualityOutcome<B, O, Q> qo) -> qo.quality());
+          case MAXIMIZE -> (qo1, qo2) -> qo2.quality().compareTo(qo1.quality());
+        };
+    return new SimulationBasedTotalOrderProblem<>() {
+      @Override
+      public Function<O, Q> outcomeQualityFunction() {
+        return outcomeQualityFunction;
+      }
+
+      @Override
+      public Simulation<S, B, O> simulation() {
+        return simulation;
+      }
+
+      @Override
+      public Comparator<QualityOutcome<B, O, Q>> totalOrderComparator() {
+        return comparator;
+      }
+    };
+  }
+
+  @SuppressWarnings("unused")
   public static <S> MultiHomogeneousObjectiveProblem<S, Double> toMho(
       @Param(value = "name", iS = "mt2mo({mtProblem.name})") String name,
       @Param("mtProblem") MultiTargetProblem<S> mtProblem) {
