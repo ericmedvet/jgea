@@ -64,19 +64,15 @@ public class MapElites<G, S, Q>
   protected final int populationSize;
   private final List<Descriptor<G, S, Q>> descriptors;
 
-  private record State<G, S, Q>(
-      LocalDateTime startingDateTime,
-      long elapsedMillis,
-      long nOfIterations,
-      QualityBasedProblem<S, Q> problem,
-      Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
-      long nOfBirths,
-      long nOfQualityEvaluations,
-      PartiallyOrderedCollection<Individual<G, S, Q>> pocPopulation,
-      Map<List<Integer>, Individual<G, S, Q>> mapOfElites,
-      List<Descriptor<G, S, Q>> descriptors)
-      implements MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>>,
-          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress<QualityBasedProblem<S, Q>, S> {
+  private record State<G, S, Q>(LocalDateTime startingDateTime, long elapsedMillis, long nOfIterations,
+                                QualityBasedProblem<S, Q> problem,
+                                Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
+                                long nOfBirths, long nOfQualityEvaluations,
+                                PartiallyOrderedCollection<Individual<G, S, Q>> pocPopulation,
+                                Map<List<Integer>, Individual<G, S, Q>> mapOfElites,
+                                List<Descriptor<G, S, Q>> descriptors) implements MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>>, io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress<QualityBasedProblem<S, Q>, S> {
+
+    // initialization
     public static <G, S, Q> State<G, S, Q> from(
         QualityBasedProblem<S, Q> problem,
         Map<List<Integer>, Individual<G, S, Q>> mapOfElites,
@@ -96,6 +92,7 @@ public class MapElites<G, S, Q>
           descriptors);
     }
 
+    // update
     public static <G, S, Q> State<G, S, Q> from(
         State<G, S, Q> state,
         long nOfBirths,
