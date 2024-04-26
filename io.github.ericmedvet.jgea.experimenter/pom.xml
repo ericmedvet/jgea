@@ -79,14 +79,16 @@
           <mainClass>io.github.ericmedvet.jgea.experimenter.Starter</mainClass>
           <arguments>
             <argument>-m</argument>
-            <argument>../assets/builder-help.md</argument>
+            <argument>${project.basedir}/../assets/builder-help.md</argument>
           </arguments>
         </configuration>
         <executions>
           <execution>
+            <id>builder-help-saving</id>
             <goals>
               <goal>java</goal>
             </goals>
+            <phase>package</phase>
           </execution>
         </executions>
       </plugin>
