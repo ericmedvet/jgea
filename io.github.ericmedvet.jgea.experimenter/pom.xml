@@ -76,7 +76,7 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.2.0</version>
         <configuration>
-          <mainClass>io.github.ericmedvet.jgea.experimenter.Starter</mainClass>
+          <mainClass>io.github.ericmedvet.jnb.core.InfoPrinter</mainClass>
           <arguments>
             <argument>-m</argument>
             <argument>${project.basedir}/../assets/builder-help.md</argument>
