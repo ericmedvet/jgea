@@ -74,8 +74,9 @@ public class Starter {
 
     @Parameter(
         names = {"--showExpFileHelpMarkdown", "-m"},
-        description = "Show a description of available constructs for the experiment file in Markdown format.")
-    public boolean showExpFileHelpMarkdown = false;
+        description =
+            "Save to file a description (in Markdown format) of available constructs for the experiment file.")
+    public String expFileHelpMarkdownFile = "";
 
     @Parameter(
         names = {"--checkExpFile", "-c"},
@@ -121,10 +122,14 @@ public class Starter {
       System.out.println(NamedBuilder.prettyToString(nb, true));
       System.exit(0);
     }
-    if (configuration.showExpFileHelpMarkdown) {
-      InfoPrinter infoPrinter = new InfoPrinter();
-      infoPrinter.print(nb, System.out);
-      System.exit(0);
+    if (!configuration.expFileHelpMarkdownFile.isEmpty()) {
+      try (PrintStream ps = new PrintStream(configuration.expFileHelpMarkdownFile)) {
+        new InfoPrinter().print(nb, ps);
+        System.exit(0);
+      } catch (FileNotFoundException e) {
+        L.severe("Cannot save help file description: %s".formatted(e));
+        System.exit(-1);
+      }
     }
     // read experiment description
     String expDescription = null;
