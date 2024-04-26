@@ -24,7 +24,6 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import io.github.ericmedvet.jnb.core.BuilderException;
-import io.github.ericmedvet.jnb.core.InfoPrinter;
 import io.github.ericmedvet.jnb.core.NamedBuilder;
 import java.io.*;
 import java.util.Locale;
