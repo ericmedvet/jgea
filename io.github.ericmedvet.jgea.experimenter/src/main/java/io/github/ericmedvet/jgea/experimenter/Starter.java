@@ -24,6 +24,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import io.github.ericmedvet.jnb.core.BuilderException;
+import io.github.ericmedvet.jnb.core.InfoPrinter;
 import io.github.ericmedvet.jnb.core.NamedBuilder;
 import java.io.*;
 import java.util.Locale;
@@ -72,6 +73,11 @@ public class Starter {
     public boolean showExpFileHelp = false;
 
     @Parameter(
+        names = {"--showExpFileHelpMarkdown", "-m"},
+        description = "Show a description of available constructs for the experiment file in Markdown format.")
+    public boolean showExpFileHelpMarkdown = false;
+
+    @Parameter(
         names = {"--checkExpFile", "-c"},
         description = "Just check the correctness of the experiment description.")
     public boolean check = false;
@@ -113,6 +119,11 @@ public class Starter {
     // check if it's just a help invocation
     if (configuration.showExpFileHelp) {
       System.out.println(NamedBuilder.prettyToString(nb, true));
+      System.exit(0);
+    }
+    if (configuration.showExpFileHelpMarkdown) {
+      InfoPrinter infoPrinter = new InfoPrinter();
+      infoPrinter.print(nb, System.out);
       System.exit(0);
     }
     // read experiment description
@@ -171,6 +182,7 @@ public class Starter {
     } catch (BuilderException e) {
       L.severe("Cannot run experiment: %s%n".formatted(e));
       if (configuration.verbose) {
+        //noinspection CallToPrintStackTrace
         e.printStackTrace();
       }
       System.exit(-1);
