@@ -113,19 +113,19 @@ public class Starter {
     // check help
     if (configuration.help) {
       jc.usage();
-      System.exit(0);
+      return;
     }
     // prepare local named builder
     NamedBuilder<Object> nb = NamedBuilder.fromDiscovery();
     // check if it's just a help invocation
     if (configuration.showExpFileHelp) {
       System.out.println(NamedBuilder.prettyToString(nb, true));
-      System.exit(0);
+      return;
     }
     if (!configuration.expFileHelpMarkdownFile.isEmpty()) {
       try (PrintStream ps = new PrintStream(configuration.expFileHelpMarkdownFile)) {
         new InfoPrinter().print(nb, ps);
-        System.exit(0);
+        return;
       } catch (FileNotFoundException e) {
         L.severe("Cannot save help file description: %s".formatted(e));
         System.exit(-1);
@@ -170,7 +170,7 @@ public class Starter {
         System.out.println("Experiment description is valid");
         System.out.printf("\t%d runs%n", experiment.runs().size());
         System.out.printf("\t%d listeners%n", experiment.listeners().size());
-        System.exit(0);
+        return;
       } catch (BuilderException e) {
         L.severe("Cannot build experiment: %s%n".formatted(e));
         if (configuration.verbose) {
