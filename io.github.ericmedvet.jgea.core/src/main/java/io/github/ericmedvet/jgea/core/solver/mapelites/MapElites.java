@@ -153,8 +153,9 @@ public class MapElites<G, S, Q>
         state == null ? individual.qualityMappingIteration() : state.nOfIterations());
   }
 
-  private Map<List<Integer>, Individual<G, S, Q>> mapOfElites(
+  protected static <G,S,Q> Map<List<Integer>, Individual<G, S, Q>> mapOfElites(
       Collection<Individual<G, S, Q>> individuals,
+      List<Descriptor<G, S, Q>> descriptors,
       PartialComparator<? super Individual<G, S, Q>> partialComparator) {
     return individuals.stream()
         .map(i -> Map.entry(descriptors.stream().map(d -> d.binOf(i)).toList(), i))
@@ -165,7 +166,7 @@ public class MapElites<G, S, Q>
             LinkedHashMap::new));
   }
 
-  private Individual<G, S, Q> chooseBest(
+  private static <G,S,Q> Individual<G, S, Q> chooseBest(
       Individual<G, S, Q> newIndividual,
       Individual<G, S, Q> existingIndividual,
       PartialComparator<? super Individual<G, S, Q>> partialComparator) {
@@ -188,6 +189,7 @@ public class MapElites<G, S, Q>
         problem,
         mapOfElites(
             map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor),
+            descriptors,
             partialComparator(problem)),
         partialComparator(problem),
         descriptors,
@@ -215,6 +217,7 @@ public class MapElites<G, S, Q>
             Stream.of(map(offspringGenotypes, List.of(), state, problem, executor), parents)
                 .flatMap(Collection::stream)
                 .toList(),
+            descriptors,
             partialComparator(problem)),
         partialComparator(problem));
   }
