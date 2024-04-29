@@ -64,17 +64,24 @@ public class MapElites<G, S, Q>
   protected final int populationSize;
   private final List<Descriptor<G, S, Q>> descriptors;
 
-  private record State<G, S, Q>(LocalDateTime startingDateTime, long elapsedMillis, long nOfIterations,
-                                QualityBasedProblem<S, Q> problem,
-                                Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
-                                long nOfBirths, long nOfQualityEvaluations,
-                                PartiallyOrderedCollection<Individual<G, S, Q>> pocPopulation,
-                                Map<List<Integer>, Individual<G, S, Q>> mapOfElites,
-                                List<Descriptor<G, S, Q>> descriptors) implements MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>>, io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress<QualityBasedProblem<S, Q>, S> {
+  private record State<G, S, Q>(
+      LocalDateTime startingDateTime,
+      long elapsedMillis,
+      long nOfIterations,
+      QualityBasedProblem<S, Q> problem,
+      Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
+      long nOfBirths,
+      long nOfQualityEvaluations,
+      PartiallyOrderedCollection<Individual<G, S, Q>> pocPopulation,
+      Map<List<Integer>, Individual<G, S, Q>> mapOfElites,
+      List<Descriptor<G, S, Q>> descriptors)
+      implements MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>>,
+          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress<QualityBasedProblem<S, Q>, S> {
 
     // initialization
     public static <G, S, Q> State<G, S, Q> from(
         QualityBasedProblem<S, Q> problem,
+        long nOfBirths,
         Map<List<Integer>, Individual<G, S, Q>> mapOfElites,
         PartialComparator<? super Individual<G, S, Q>> partialComparator,
         List<Descriptor<G, S, Q>> descriptors,
@@ -153,7 +160,7 @@ public class MapElites<G, S, Q>
         state == null ? individual.qualityMappingIteration() : state.nOfIterations());
   }
 
-  protected static <G,S,Q> Map<List<Integer>, Individual<G, S, Q>> mapOfElites(
+  protected static <G, S, Q> Map<List<Integer>, Individual<G, S, Q>> mapOfElites(
       Collection<Individual<G, S, Q>> individuals,
       List<Descriptor<G, S, Q>> descriptors,
       PartialComparator<? super Individual<G, S, Q>> partialComparator) {
@@ -166,7 +173,7 @@ public class MapElites<G, S, Q>
             LinkedHashMap::new));
   }
 
-  private static <G,S,Q> Individual<G, S, Q> chooseBest(
+  private static <G, S, Q> Individual<G, S, Q> chooseBest(
       Individual<G, S, Q> newIndividual,
       Individual<G, S, Q> existingIndividual,
       PartialComparator<? super Individual<G, S, Q>> partialComparator) {
@@ -187,6 +194,7 @@ public class MapElites<G, S, Q>
       throws SolverException {
     return State.from(
         problem,
+        populationSize,
         mapOfElites(
             map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor),
             descriptors,
