@@ -24,21 +24,14 @@ import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.util.Pair;
 
 public interface TwoPopCollaborativeCoevolution<
-    T1 extends POCPopulationState<Individual<G1, S1, Q>, G1, S1, Q, QualityBasedProblem<S1, Q>>,
-    T2 extends POCPopulationState<Individual<G2, S2, Q>, G2, S2, Q, QualityBasedProblem<S2, Q>>,
-    G1,
-    G2,
-    S1,
-    S2,
-    T extends TwoCoCoevolutionPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>>,
-    S,
-    Q>
+        T1 extends POCPopulationState<Individual<G1, S1, Q>, G1, S1, Q, QualityBasedProblem<S1, Q>>,
+        T2 extends POCPopulationState<Individual<G2, S2, Q>, G2, S2, Q, QualityBasedProblem<S2, Q>>,
+        G1,
+        G2,
+        S1,
+        S2,
+        T extends TwoCoCoevolutionPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>>,
+        S,
+        Q>
     extends AbstractPopulationBasedIterativeSolver<
-    T,
-    QualityBasedProblem<S, Q>,
-    Individual<Pair<G1, G2>, S, Q>,
-    Pair<G1, G2>,
-    S,
-    Q
-    > {
-}
+        T, QualityBasedProblem<S, Q>, Individual<Pair<G1, G2>, S, Q>, Pair<G1, G2>, S, Q> {}
