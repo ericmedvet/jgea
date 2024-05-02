@@ -95,7 +95,7 @@ public class Functions {
       @Param(value = "of", dNPM = "f.identity()") Function<X, Collection<Number>> beforeF) {
     Function<Collection<Number>, TextPlotter.Miniplot> f =
         vs -> TextPlotter.histogram(vs.stream().toList(), nOfBins);
-    return FormattedNamedFunction.from(f, "%" + nOfBins + "s", "hits").compose(beforeF);
+    return FormattedNamedFunction.from(f, "%" + nOfBins + "s", "hist").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
