@@ -42,13 +42,14 @@ import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.NumericalParametrized;
 import io.github.ericmedvet.jsdynsym.buildable.builders.NumericalDynamicalSystems;
-import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
-import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
-import io.github.ericmedvet.jsdynsym.core.numerical.NumericalTimeInvariantStatelessSystem;
+import io.github.ericmedvet.jsdynsym.core.composed.Stepped;
+import io.github.ericmedvet.jsdynsym.core.numerical.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
+import java.util.random.RandomGenerator;
+import java.util.stream.Collectors;
 
 @Discoverable(prefixTemplate = "ea.mapper|m")
 public class Mappers {
@@ -139,6 +140,21 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  public static <X> InvertibleMapper<X, NumericalDynamicalSystem<?>> enhancedNds(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NumericalDynamicalSystem<?>> beforeM,
+      @Param("windowT") double windowT,
+      @Param(
+              value = "types",
+              dSs = {"current", "trend", "avg"})
+          List<EnhancedInput.Type> types) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (eNds, nds) -> new EnhancedInput<>(nds, windowT, types),
+        eNds -> eNds,
+        "enhanced[wT=%.2f;%s]"
+            .formatted(windowT, types.stream().map(Enum::toString).collect(Collectors.joining(";")))));
+  }
+
+  @SuppressWarnings("unused")
   public static <X> InvertibleMapper<X, NamedMultivariateRealFunction> fGraphToNmrf(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Graph<Node, Double>> beforeM,
       @Param(value = "postOperator", dNPM = "ds.f.doubleOp(activationF=identity)")
@@ -200,6 +216,18 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  public static <X> InvertibleMapper<X, NumericalDynamicalSystem<?>> noisedNds(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NumericalDynamicalSystem<?>> beforeM,
+      @Param(value = "inputSigma", dD = 0) double inputSigma,
+      @Param(value = "outputSigma", dD = 0) double outputSigma,
+      @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (eNds, nds) -> new Noised<>(nds, inputSigma, outputSigma, randomGenerator),
+        eNds -> eNds,
+        "noised[in=%.2f;out=%.2f]".formatted(inputSigma, outputSigma)));
+  }
+
+  @SuppressWarnings("unused")
   public static <X> InvertibleMapper<X, NamedMultivariateRealFunction> ntissToNmrf(
       @Param(value = "of", dNPM = "ea.m.identity()")
           InvertibleMapper<X, NumericalTimeInvariantStatelessSystem> beforeM) {
@@ -235,6 +263,17 @@ public class Mappers {
             .andThen(toOperator(postOperator)),
         nurf -> TreeBasedUnivariateRealFunction.sampleFor(nurf.xVarNames(), nurf.yVarName()),
         "srTreeToNurf[po=%s]".formatted(postOperator)));
+  }
+
+  @SuppressWarnings("unused")
+  public static <X> InvertibleMapper<X, NumericalDynamicalSystem<?>> steppedNds(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NumericalDynamicalSystem<?>> beforeM,
+      @Param(value = "stepT", dD = 1) double interval) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (eNds, nds) ->
+            NumericalDynamicalSystem.from(new Stepped<>(nds, interval), nds.nOfInputs(), nds.nOfOutputs()),
+        eNds -> eNds,
+        "stepped[%.2f]".formatted(interval)));
   }
 
   private static DoubleUnaryOperator toOperator(Function<Double, Double> f) {
