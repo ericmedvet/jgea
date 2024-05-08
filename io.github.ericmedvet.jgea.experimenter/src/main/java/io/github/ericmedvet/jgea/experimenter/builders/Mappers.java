@@ -110,6 +110,18 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  public static <X, T> InvertibleMapper<X, Grid<T>> dsToFixedGrid(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM,
+      @Param(value = "w", dI = 256) int w,
+      @Param(value = "h", dI = 256) int h,
+      @Param(value = "rate", dD = 0.25) int rate,
+      @Param("negItem") T negItem,
+      @Param("posItem") T positem) {
+    // TODO
+    throw new UnsupportedOperationException();
+  }
+
+  @SuppressWarnings("unused")
   public static <X, T> InvertibleMapper<X, Grid<T>> dsToGrammarGrid(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM,
       @Param("grammar") GridGrammar<T> grammar,
@@ -160,6 +172,18 @@ public class Mappers {
         p -> Collections.nCopies(
             builder.apply(p.nOfInputs(), p.nOfOutputs()).getParams().length, 0d),
         "dsToNpnds[npnds=%s]".formatted(builder)));
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, T> InvertibleMapper<X, Grid<T>> dsToThresholdedGrid(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM,
+      @Param(value = "w", dI = 256) int w,
+      @Param(value = "h", dI = 256) int h,
+      @Param(value = "t", dD = 0) int t,
+      @Param("negItem") T negItem,
+      @Param("posItem") T positem) {
+    // TODO
+    throw new UnsupportedOperationException();
   }
 
   @SuppressWarnings("unused")
@@ -217,6 +241,25 @@ public class Mappers {
         },
         eGrid -> new IntString(Collections.nCopies(l, 0), 0, upperBound),
         "isToGrammarGrid[l=%d;o=%s;c=%s]".formatted(l, overwrite, criteria)));
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, T> InvertibleMapper<X, Grid<T>> isToGrid(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, IntString> beforeM,
+      @Param(value = "w", dI = 256) int w,
+      @Param(value = "h", dI = 256) int h,
+      @Param("items") List<T> items) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (g, is) -> {
+          if (is.size() != w * h) {
+            throw new IllegalArgumentException(
+                "Wrong size for the integer string: %dx%d=%d expected, %d found"
+                    .formatted(w, h, w * h, is.size()));
+          }
+          return Grid.create(w, h, is.genes().stream().map(items::get).toList());
+        },
+        g -> new IntString(Collections.nCopies(w * h, 0), 0, items.size()),
+        "isToGrid[nOfItems=%d]".formatted(items.size())));
   }
 
   @SuppressWarnings("unused")
