@@ -36,6 +36,7 @@ import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedMultivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedUnivariateRealFunction;
+import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
@@ -50,6 +51,7 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Discoverable(prefixTemplate = "ea.mapper|m")
 public class Mappers {
@@ -74,6 +76,27 @@ public class Mappers {
         },
         eGrid -> new BitString(l),
         "bsToGrammarGrid[l=%d;o=%s;c=%s]".formatted(l, overwrite, criteria)));
+  }
+
+  @SuppressWarnings("unused")
+  public static <X> InvertibleMapper<X, Pair<List<Double>, List<Double>>> dsSplit(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (p, ds) -> {
+          if (p.first().size() + p.second().size() != ds.size()) {
+            throw new IllegalArgumentException(
+                "Cannot split a double string with size %d in two double strings of sizes %d and %d"
+                    .formatted(
+                        ds.size(),
+                        p.first().size(),
+                        p.second().size()));
+          }
+          return Pair.of(
+              ds.subList(0, p.first().size()),
+              ds.subList(p.first().size(), ds.size()));
+        },
+        p -> Stream.concat(p.first().stream(), p.second().stream()).toList(),
+        "dsSplit"));
   }
 
   @SuppressWarnings("unused")
@@ -254,6 +277,19 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  public static <X, F1, S1, F2, S2> InvertibleMapper<X, Pair<F2, S2>> pair(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Pair<F1, S1>> beforeM,
+      @Param(value = "ofFirst", dNPM = "ea.m.identity()") InvertibleMapper<F1, F2> firstM,
+      @Param(value = "ofSecond", dNPM = "ea.m.identity()") InvertibleMapper<S1, S2> secondM) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (p2, p1) -> Pair.of(
+            firstM.mapperFor(p2.first()).apply(p1.first()),
+            secondM.mapperFor(p2.second()).apply(p1.second())),
+        p2 -> Pair.of(firstM.exampleFor(p2.first()), secondM.exampleFor(p2.second())),
+        "pair[first=%s;second=%s]".formatted(firstM, secondM)));
+  }
+
+  @SuppressWarnings("unused")
   public static <X> InvertibleMapper<X, NamedUnivariateRealFunction> srTreeToNurf(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Tree<Element>> beforeM,
       @Param(value = "postOperator", dNPM = "ds.f.doubleOp(activationF=identity)")
@@ -273,7 +309,7 @@ public class Mappers {
         (eNds, nds) ->
             NumericalDynamicalSystem.from(new Stepped<>(nds, interval), nds.nOfInputs(), nds.nOfOutputs()),
         eNds -> eNds,
-        "stepped[%.2f]".formatted(interval)));
+        "stepped[t=%.2f]".formatted(interval)));
   }
 
   private static DoubleUnaryOperator toOperator(Function<Double, Double> f) {
