@@ -24,7 +24,7 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarUtils;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
-import io.github.ericmedvet.jgea.core.util.Pair;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -126,6 +126,6 @@ public class GrowGrammarTreeFactory<T> implements Factory<Tree<T>> {
       min = Math.max(min, nonTerminalDepths.get(symbol).first());
       max = Math.max(max, nonTerminalDepths.get(symbol).second());
     }
-    return Pair.of(min, max);
+    return new Pair<>(min, max);
   }
 }

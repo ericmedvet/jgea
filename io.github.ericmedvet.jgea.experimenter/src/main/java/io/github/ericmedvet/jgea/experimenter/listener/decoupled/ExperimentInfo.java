@@ -19,7 +19,7 @@
  */
 package io.github.ericmedvet.jgea.experimenter.listener.decoupled;
 
-import io.github.ericmedvet.jgea.core.util.Pair;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;

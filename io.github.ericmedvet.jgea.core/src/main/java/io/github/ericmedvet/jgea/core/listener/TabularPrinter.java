@@ -21,9 +21,9 @@
 package io.github.ericmedvet.jgea.core.listener;
 
 import io.github.ericmedvet.jgea.core.util.Misc;
-import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.core.util.StringUtils;
 import io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.function.Function;
@@ -71,12 +71,12 @@ public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
       boolean useColors) {
     ePairs = eFunctions.stream()
         .map(FormattedNamedFunction::from)
-        .map(f -> Pair.of(
+        .map(f -> new Pair<>(
             f, Math.max(StringUtils.collapse(f.name()).length(), StringUtils.formatSize(f.format()))))
         .collect(Collectors.toList());
     kPairs = kFunctions.stream()
         .map(FormattedNamedFunction::from)
-        .map(f -> Pair.of(
+        .map(f -> new Pair<>(
             f, Math.max(StringUtils.collapse(f.name()).length(), StringUtils.formatSize(f.format()))))
         .collect(Collectors.toList());
     this.ps = ps;

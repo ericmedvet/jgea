@@ -20,7 +20,7 @@
 
 package io.github.ericmedvet.jgea.core.representation.grammar.string;
 
-import io.github.ericmedvet.jgea.core.util.Pair;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.util.*;
 
 public class GrammarUtils {
@@ -148,14 +148,14 @@ public class GrammarUtils {
 
   private static <T> Map<T, Pair<Integer, Boolean>> computeSymbolsMinDepths(StringGrammar<T> g) {
     Map<T, Pair<Integer, Boolean>> map = new HashMap<>();
-    map.put(g.startingSymbol(), Pair.of(Integer.MAX_VALUE, false));
+    map.put(g.startingSymbol(), new Pair<>(Integer.MAX_VALUE, false));
     for (List<List<T>> options : g.rules().values()) {
       for (List<T> option : options) {
         for (T symbol : option) {
           if (!g.rules().containsKey(symbol)) {
-            map.put(symbol, Pair.of(1, true));
+            map.put(symbol, new Pair<>(1, true));
           } else {
-            map.put(symbol, Pair.of(Integer.MAX_VALUE, false));
+            map.put(symbol, new Pair<>(Integer.MAX_VALUE, false));
           }
         }
       }
@@ -182,7 +182,7 @@ public class GrammarUtils {
           allResolved = allResolved && optionAllResolved;
           minDepth = Math.min(minDepth, optionMaxDepth + 1);
         }
-        Pair<Integer, Boolean> newPair = Pair.of(minDepth, allResolved);
+        Pair<Integer, Boolean> newPair = new Pair<>(minDepth, allResolved);
         if (!newPair.equals(pair)) {
           map.put(nonTerminal, newPair);
           changed = true;
@@ -202,7 +202,8 @@ public class GrammarUtils {
     for (T t : minDepths.keySet()) {
       map.put(
           t,
-          Pair.of((double) minDepths.get(t).first(), maxDepths.get(t).first()));
+          new Pair<>(
+              (double) minDepths.get(t).first(), maxDepths.get(t).first()));
     }
     return map;
   }

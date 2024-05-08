@@ -22,7 +22,7 @@ package io.github.ericmedvet.jgea.problem.classification;
 import io.github.ericmedvet.jgea.core.fitness.ListCaseBasedFitness;
 import io.github.ericmedvet.jgea.core.util.LinkedHashMultiset;
 import io.github.ericmedvet.jgea.core.util.Multiset;
-import io.github.ericmedvet.jgea.core.util.Pair;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -82,7 +82,7 @@ public class ClassificationFitness<O, L extends Enum<L>>
       }
       List<Pair<Integer, Integer>> pairs = new ArrayList<>(allLabels.length);
       for (E currentLabel : allLabels) {
-        pairs.add(Pair.of(errors.count(currentLabel), counts.count(currentLabel)));
+        pairs.add(new Pair<>(errors.count(currentLabel), counts.count(currentLabel)));
       }
       return pairs;
     }

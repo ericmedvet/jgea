@@ -36,12 +36,12 @@ import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedMultivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedUnivariateRealFunction;
-import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.NumericalParametrized;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import io.github.ericmedvet.jsdynsym.buildable.builders.NumericalDynamicalSystems;
 import io.github.ericmedvet.jsdynsym.core.composed.Stepped;
 import io.github.ericmedvet.jsdynsym.core.numerical.*;
@@ -93,7 +93,7 @@ public class Mappers {
                         p.first().size(),
                         p.second().size()));
           }
-          return Pair.of(
+          return new Pair<>(
               ds.subList(0, p.first().size()),
               ds.subList(p.first().size(), ds.size()));
         },
@@ -201,7 +201,7 @@ public class Mappers {
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM,
       @Param(value = "w", dI = 10) int w,
       @Param(value = "h", dI = 10) int h,
-      @Param(value = "t", dD = 0) int t,
+      @Param(value = "t", dD = 0) double t,
       @Param("negItem") T negItem,
       @Param("posItem") T posItem) {
     return beforeM.andThen(InvertibleMapper.from(
@@ -392,10 +392,10 @@ public class Mappers {
       @Param(value = "ofFirst", dNPM = "ea.m.identity()") InvertibleMapper<F1, F2> firstM,
       @Param(value = "ofSecond", dNPM = "ea.m.identity()") InvertibleMapper<S1, S2> secondM) {
     return beforeM.andThen(InvertibleMapper.from(
-        (p2, p1) -> Pair.of(
+        (p2, p1) -> new Pair<>(
             firstM.mapperFor(p2.first()).apply(p1.first()),
             secondM.mapperFor(p2.second()).apply(p1.second())),
-        p2 -> Pair.of(firstM.exampleFor(p2.first()), secondM.exampleFor(p2.second())),
+        p2 -> new Pair<>(firstM.exampleFor(p2.first()), secondM.exampleFor(p2.second())),
         "pair[first=%s;second=%s]".formatted(firstM, secondM)));
   }
 

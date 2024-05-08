@@ -24,8 +24,8 @@ import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
-import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.util.*;
 import java.util.function.Function;
 
@@ -121,7 +121,7 @@ public class KLandscapes
     }
     double sum = v.get(tree.content());
     for (Tree<String> child : tree) {
-      final double weight = w.get(Pair.of(tree.content(), child.content()));
+      final double weight = w.get(new Pair<>(tree.content(), child.content()));
       final double innerFK = fK(child, k - 1, v, w);
       sum = sum + (1 + weight) * innerFK;
     }
@@ -210,10 +210,10 @@ public class KLandscapes
     // fill w map
     for (int j = 0; j < nNonTerminals; j++) {
       for (int i = 0; i < nTerminals; i++) {
-        w.put(Pair.of("n" + j, "t" + i), wRange.denormalize(random.nextDouble()));
+        w.put(new Pair<>("n" + j, "t" + i), wRange.denormalize(random.nextDouble()));
       }
       for (int i = 0; i < nNonTerminals; i++) {
-        w.put(Pair.of("n" + j, "n" + i), wRange.denormalize(random.nextDouble()));
+        w.put(new Pair<>("n" + j, "n" + i), wRange.denormalize(random.nextDouble()));
       }
     }
     // prepare fitness

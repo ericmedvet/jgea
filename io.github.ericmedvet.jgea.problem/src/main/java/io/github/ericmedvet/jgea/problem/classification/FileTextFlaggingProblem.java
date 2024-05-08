@@ -20,8 +20,8 @@
 
 package io.github.ericmedvet.jgea.problem.classification;
 
-import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.problem.extraction.string.RegexGrammar;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -55,10 +55,10 @@ public class FileTextFlaggingProblem extends GrammarBasedTextFlaggingProblem {
       throws IOException {
     List<Pair<String, Label>> data = new ArrayList<>();
     data.addAll(Files.lines(Paths.get(positiveFileName))
-        .map(s -> Pair.of(s, Label.FOUND))
+        .map(s -> new Pair<>(s, Label.FOUND))
         .toList());
     data.addAll(Files.lines(Paths.get(negativeFileName))
-        .map(s -> Pair.of(s, Label.NOT_FOUND))
+        .map(s -> new Pair<>(s, Label.NOT_FOUND))
         .toList());
     return data;
   }

@@ -25,7 +25,7 @@ import io.github.ericmedvet.jgea.core.problem.ProblemWithValidation;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
-import io.github.ericmedvet.jgea.core.util.Pair;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
@@ -76,7 +76,7 @@ public class MapperGeneration
     return (Tree<String> rawMappingTree) -> {
       Tree<Element> optionChooser = MapperUtils.transform(rawMappingTree.child(0));
       Tree<Element> genoAssigner = MapperUtils.transform(rawMappingTree.child(1));
-      return Pair.of(optionChooser, genoAssigner);
+      return new Pair<>(optionChooser, genoAssigner);
     };
   }
 
