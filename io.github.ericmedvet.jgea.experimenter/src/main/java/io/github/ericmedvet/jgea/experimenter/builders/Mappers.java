@@ -114,17 +114,15 @@ public class Mappers {
   @SuppressWarnings("unused")
   public static <X, T> InvertibleMapper<X, Grid<T>> dsToFixedGrid(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM,
-      @Param(value = "w", dI = 256) int w,
-      @Param(value = "h", dI = 256) int h,
       @Param(value = "rate", dD = 0.25) double rate,
       @Param("negItem") T negItem,
       @Param("posItem") T posItem) {
     return beforeM.andThen(InvertibleMapper.from(
         (g, ds) -> {
-          if (ds.size() != w * h) {
+          if (ds.size() != g.w() * g.h()) {
             throw new IllegalArgumentException(
                 "Wrong size for the double string: %dx%d=%d expected, %d found"
-                    .formatted(w, h, w * h, ds.size()));
+                    .formatted(g.w(), g.h(), g.w() * g.h(), ds.size()));
           }
           List<Integer> indexes = IntStream.range(0, ds.size())
               .boxed()
@@ -132,15 +130,15 @@ public class Mappers {
               .limit((long) (ds.size() * rate))
               .toList();
           return Grid.create(
-              w,
-              h,
+              g.w(),
+              g.h(),
               IntStream.range(0, ds.size())
                   .boxed()
                   .map(i -> indexes.contains(i) ? posItem : negItem)
                   .toList());
         },
-        g -> Collections.nCopies(w * h, 0d),
-        "dsToThresholdedGrid[%dx%d;rate=%.2f]".formatted(w, h, rate)));
+        g -> Collections.nCopies(g.w() * g.h(), 0d),
+        "dsToThresholdedGrid[rate=%.2f]".formatted(rate)));
   }
 
   @SuppressWarnings("unused")
@@ -199,25 +197,23 @@ public class Mappers {
   @SuppressWarnings("unused")
   public static <X, T> InvertibleMapper<X, Grid<T>> dsToThresholdedGrid(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM,
-      @Param(value = "w", dI = 10) int w,
-      @Param(value = "h", dI = 10) int h,
       @Param(value = "t", dD = 0) double t,
       @Param("negItem") T negItem,
       @Param("posItem") T posItem) {
     return beforeM.andThen(InvertibleMapper.from(
         (g, ds) -> {
-          if (ds.size() != w * h) {
+          if (ds.size() != g.w() * g.h()) {
             throw new IllegalArgumentException(
                 "Wrong size for the double string: %dx%d=%d expected, %d found"
-                    .formatted(w, h, w * h, ds.size()));
+                    .formatted(g.w(), g.h(), g.w() * g.h(), ds.size()));
           }
           return Grid.create(
-              w,
-              h,
+              g.w(),
+              g.h(),
               ds.stream().map(d -> d > t ? posItem : negItem).toList());
         },
-        g -> Collections.nCopies(w * h, 0d),
-        "dsToThresholdedGrid[%dx%d;t=%.2f]".formatted(w, h, t)));
+        g -> Collections.nCopies(g.w() * g.h(), 0d),
+        "dsToThresholdedGrid[t=%.2f]".formatted(t)));
   }
 
   @SuppressWarnings("unused")
@@ -280,20 +276,19 @@ public class Mappers {
   @SuppressWarnings("unused")
   public static <X, T> InvertibleMapper<X, Grid<T>> isToGrid(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, IntString> beforeM,
-      @Param(value = "w", dI = 10) int w,
-      @Param(value = "h", dI = 10) int h,
       @Param("items") List<T> items) {
     return beforeM.andThen(InvertibleMapper.from(
         (g, is) -> {
-          if (is.size() != w * h) {
+          if (is.size() != g.w() * g.h()) {
             throw new IllegalArgumentException(
                 "Wrong size for the integer string: %dx%d=%d expected, %d found"
-                    .formatted(w, h, w * h, is.size()));
+                    .formatted(g.w(), g.h(), g.w() * g.h(), is.size()));
           }
-          return Grid.create(w, h, is.genes().stream().map(items::get).toList());
+          return Grid.create(
+              g.w(), g.h(), is.genes().stream().map(items::get).toList());
         },
-        g -> new IntString(Collections.nCopies(w * h, 0), 0, items.size()),
-        "isToGrid[%dx%d;nOfItems=%d]".formatted(w, h, items.size())));
+        g -> new IntString(Collections.nCopies(g.w() * g.h(), 0), 0, items.size()),
+        "isToGrid[nOfItems=%d]".formatted(items.size())));
   }
 
   @SuppressWarnings("unused")
@@ -311,8 +306,6 @@ public class Mappers {
   @SuppressWarnings("unused")
   public static <X, T> InvertibleMapper<X, Grid<T>> nmrfToGrid(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NamedMultivariateRealFunction> beforeM,
-      @Param(value = "w", dI = 10) int w,
-      @Param(value = "h", dI = 10) int h,
       @Param("items") List<T> items) {
     return beforeM.andThen(InvertibleMapper.from(
         (g, nmrf) -> {
@@ -324,8 +317,9 @@ public class Mappers {
             throw new IllegalArgumentException("Wrong output size for the NMRF: %d expected, %d found"
                 .formatted(items.size(), nmrf.nOfOutputs()));
           }
-          return Grid.create(w, h, (x, y) -> {
-            double[] values = nmrf.apply(new double[] {(double) x / (double) w, (double) y / (double) h});
+          return Grid.create(g.w(), g.h(), (x, y) -> {
+            double[] values =
+                nmrf.apply(new double[] {(double) x / (double) g.w(), (double) y / (double) g.h()});
             return items.get(IntStream.range(0, values.length)
                 .boxed()
                 .min(Comparator.comparingDouble(i -> values[i]))
@@ -338,7 +332,7 @@ public class Mappers {
             IntStream.range(0, items.size())
                 .mapToObj("item%02d"::formatted)
                 .toList()),
-        "nmrfToGrid[%dx%d;nOfItems=%d]".formatted(w, h, items.size())));
+        "nmrfToGrid[nOfItems=%d]".formatted(items.size())));
   }
 
   @SuppressWarnings("unused")

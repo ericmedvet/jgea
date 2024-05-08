@@ -869,13 +869,11 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">Inv
 
 ### Builder `ea.mapper.dsToFixedGrid()`
 
-`ea.m.dsToFixedGrid(of; w; h; rate; negItem; posItem)`
+`ea.m.dsToFixedGrid(of; rate; negItem; posItem)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
 | `of` | npm | `ea.m.identity()` | <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="java.util.List">List</abbr>&lt;<abbr title="java.lang.Double">Double</abbr>&gt;&gt;</code> |
-| `w` | i | `256` | <code>int</code> |
-| `h` | i | `256` | <code>int</code> |
 | `rate` | d | `0.25` | <code>double</code> |
 | `negItem` | npm |  | <code>T</code> |
 | `posItem` | npm |  | <code>T</code> |
@@ -920,13 +918,11 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">Inv
 
 ### Builder `ea.mapper.dsToThresholdedGrid()`
 
-`ea.m.dsToThresholdedGrid(of; w; h; t; negItem; posItem)`
+`ea.m.dsToThresholdedGrid(of; t; negItem; posItem)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
 | `of` | npm | `ea.m.identity()` | <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="java.util.List">List</abbr>&lt;<abbr title="java.lang.Double">Double</abbr>&gt;&gt;</code> |
-| `w` | i | `10` | <code>int</code> |
-| `h` | i | `10` | <code>int</code> |
 | `t` | d | `0.0` | <code>double</code> |
 | `negItem` | npm |  | <code>T</code> |
 | `posItem` | npm |  | <code>T</code> |
@@ -979,13 +975,11 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">Inv
 
 ### Builder `ea.mapper.isToGrid()`
 
-`ea.m.isToGrid(of; w; h; items)`
+`ea.m.isToGrid(of; items)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
 | `of` | npm | `ea.m.identity()` | <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString">IntString</abbr>&gt;</code> |
-| `w` | i | `10` | <code>int</code> |
-| `h` | i | `10` | <code>int</code> |
 | `items` | npm[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;T&gt;</code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jnb.datastructure.Grid">Grid</abbr>&lt;T&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Mappers.isToGrid()` by jgea-experimenter:2.6.2-SNAPSHOT
@@ -1003,13 +997,11 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">Inv
 
 ### Builder `ea.mapper.nmrfToGrid()`
 
-`ea.m.nmrfToGrid(of; w; h; items)`
+`ea.m.nmrfToGrid(of; items)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
 | `of` | npm | `ea.m.identity()` | <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jgea.core.representation.NamedMultivariateRealFunction">NamedMultivariateRealFunction</abbr>&gt;</code> |
-| `w` | i | `10` | <code>int</code> |
-| `h` | i | `10` | <code>int</code> |
 | `items` | npm[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;T&gt;</code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jnb.datastructure.Grid">Grid</abbr>&lt;T&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Mappers.nmrfToGrid()` by jgea-experimenter:2.6.2-SNAPSHOT
