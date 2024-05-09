@@ -43,6 +43,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Discoverable(prefixTemplate = "ea.function|f")
 public class Functions {
@@ -261,6 +262,13 @@ public class Functions {
       @Param(value = "format", dS = "%s") String format) {
     Function<Individual<?, S, ?>, S> f = Individual::solution;
     return FormattedNamedFunction.from(f, format, "solution").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, Z> NamedFunction<X, Z> supplied(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Supplier<Z>> beforeF) {
+    Function<Supplier<Z>, Z> f = Supplier::get;
+    return NamedFunction.from(f, "supplied").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
