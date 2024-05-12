@@ -23,6 +23,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
+import static io.github.ericmedvet.jgea.core.solver.mapelites.MapElites.chooseBest;
+
 public class CoMapElites<G1, G2, S1, S2, S, Q>
     extends AbstractPopulationBasedIterativeSolver<
     CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>>,
@@ -218,6 +220,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
           .map(d -> d.binOf(Individual.of(g1, s1, null, 0, 0)))
           .toList();
       List<Integer> coords2 = getCoords2(coords1, state.mapOfElites2());
+      List<Integer> closest_coords2 = getClosestCoordinate2(coords2, state.mapOfElites2());
       /*
       1. take the closest to coords2
       2. take the neighborhood
@@ -244,18 +247,97 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
     return null;
   }
 
+  private List<Integer> getClosestCoordinate2(List<Integer> given_coords, Map<List<Integer>, Individual<G2, S2, Q>> mapOfElites) {
+    List<Integer> closestCoord = null;
+    double minDistance = Double.MAX_VALUE;
+
+    for (List<Integer> coords : mapOfElites.keySet()) {
+      double distance = euclideanDistance(given_coords, coords);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestCoord = coords;
+      }
+    }
+    return closestCoord;
+  }
+
+  private List<Integer> getClosestCoordinate1(List<Integer> given_coords, Map<List<Integer>, Individual<G1, S1, Q>> mapOfElites) {
+    List<Integer> closestCoord = null;
+    double minDistance = Double.MAX_VALUE;
+
+    for (List<Integer> coords : mapOfElites.keySet()) {
+      double distance = euclideanDistance(given_coords, coords);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestCoord = coords;
+      }
+    }
+    return closestCoord;
+  }
+
+  private double euclideanDistance(List<Integer> coords1, List<Integer> coords2) {
+    if (coords1.size() != coords2.size()) {
+      throw new IllegalArgumentException("Coordinates must have the same dimensions.");
+    }
+
+    double sum = 0.0;
+    for (int i = 0; i < coords1.size(); i++) {
+      double diff = coords1.get(i) - coords2.get(i);
+      sum += diff * diff;
+    }
+    return Math.sqrt(sum);
+  }
+
+
   private List<Integer> getCoords2(List<Integer> coords1, Map<List<Integer>, Individual<G2, S2, Q>> mapOfElites2) {
     return switch (strategy) { // TODO fix
-      case BEST -> List.of(0, 0);
-      case CENTRAL -> List.of(1, 1);
+      case BEST -> {
+        List<Integer> bestCoords = null;
+        Q bestQuality = null;
+
+        for (Map.Entry<List<Integer>, Individual<G2, S2, Q>> entry : mapOfElites2.entrySet()) {
+          Individual<G2, S2, Q> individual = entry.getValue();
+          Q currentQuality = individual.quality();
+
+          if (bestQuality == null) { // || and i have to put a quality comparator
+            bestQuality = currentQuality;
+            bestCoords = entry.getKey();
+          }
+        }
+        yield bestCoords;
+      }
+
+      case CENTRAL -> {
+        int mapSize = mapOfElites2.size();
+        int middlePosition = (int) Math.round(Math.sqrt(mapSize) / 2);
+        yield List.of(middlePosition, middlePosition);
+      }
       case IDENTITY -> coords1;
     };
   }
 
-  private List<Integer> getCoords1(List<Integer> coords2, Map<List<Integer>, Individual<G2, S2, Q>> mapOfElites1) {
+  private List<Integer> getCoords1(List<Integer> coords2, Map<List<Integer>, Individual<G1, S1, Q>> mapOfElites1) {
     return switch (strategy) { // TODO fix
-      case BEST -> List.of(0, 0);
-      case CENTRAL -> List.of(1, 1);
+      case BEST -> {
+        List<Integer> bestCoords = null;
+        Q bestQuality = null;
+
+        for (Map.Entry<List<Integer>, Individual<G1, S1, Q>> entry : mapOfElites1.entrySet()) {
+          Individual<G1, S1, Q> individual = entry.getValue();
+          Q currentQuality = individual.quality();
+
+          if (bestQuality == null) { // || and i have to put a quality comparator
+            bestQuality = currentQuality;
+            bestCoords = entry.getKey();
+          }
+        }
+        yield bestCoords;
+      }
+      case CENTRAL -> {
+        int mapSize = mapOfElites1.size();
+        int middlePosition = (int) Math.round(Math.sqrt(mapSize) / 2);
+        yield List.of(middlePosition, middlePosition);
+      }
       case IDENTITY -> coords2;
     };
   }
