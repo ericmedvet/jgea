@@ -173,7 +173,7 @@ public class MapElites<G, S, Q>
             LinkedHashMap::new));
   }
 
-  private static <G, S, Q> Individual<G, S, Q> chooseBest(
+  protected static <G, S, Q> Individual<G, S, Q> chooseBest(
       Individual<G, S, Q> newIndividual,
       Individual<G, S, Q> existingIndividual,
       PartialComparator<? super Individual<G, S, Q>> partialComparator) {
