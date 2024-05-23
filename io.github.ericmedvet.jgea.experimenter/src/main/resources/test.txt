@@ -1,0 +1,44 @@
+ea.experiment(
+  runs = (randomGenerator = (seed = [1:1:5]) * [m.defaultRG()]) *
+    (problem = [
+      ea.p.s.pointAiming(p = 200);
+      ea.p.s.circularPointsAiming(p = 200);
+      ea.p.s.ackley(p = 20);
+      ea.p.s.rastrigin(p = 20);
+      ea.p.s.sphere(p = 20)
+    ]) *
+    (solver = (nEval = [5000]) * [
+      ea.s.ga(representation = ea.r.doubleString());
+      ea.s.simpleEs();
+      ea.s.openAiEs();
+      ea.s.pso();
+      ea.s.cmaEs()
+    ]) * [
+    ea.run()
+  ];
+  listeners = [
+    ea.l.console(
+      functions = [
+        ea.f.size(of = ea.f.genotype(of = ea.f.best()); format = "%3d");
+        ea.f.quality(of = ea.f.best(); format = "%6.2f");
+        ea.f.hist(of = f.each(of = ea.f.all(); mapF = ea.f.quality()))
+      ];
+      onlyLast = true;
+      runKeys = [
+        ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
+        ea.misc.sEntry(key = "problem.p"; value = "{problem.p}");
+        ea.misc.sEntry(key = "solver"; value = "{solver.name}");
+        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
+      ]
+    );
+    ea.l.expPlotSaver(
+      filePath = "../num-bench-fitness.png";
+      freeScales = true;
+      w = 600; h = 1000;
+      type = lines;
+      plot = ea.plot.qualityPlotMatrix(
+        xFunction = f.quantized(of = ea.f.nOfEvals(); q = 200)
+      )
+    )
+  ]
+)
