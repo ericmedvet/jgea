@@ -1,21 +1,20 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:5]) * [m.defaultRG()]) *
-    (problem = [
-      ea.p.s.pointAiming(p = 200);
-      ea.p.s.circularPointsAiming(p = 200);
-      ea.p.s.ackley(p = 20);
-      ea.p.s.rastrigin(p = 20);
-      ea.p.s.sphere(p = 20)
-    ]) *
-    (solver = (nEval = [5000]) * [
-      ea.s.ga(representation = ea.r.doubleString());
-      ea.s.simpleEs();
-      ea.s.openAiEs();
-      ea.s.pso();
-      ea.s.cmaEs()
-    ]) * [
-    ea.run()
+    [
+    ea.run(
+    problem = ea.p.totalOrder(
+            qFunction = ds.f.simOutcome();
+            cFunction = ds.e.n.finalD();
+            type = MAXIMIZE
+        );
+    solver = ea.s.ga(
+        representation = ea.r.doubleString(crossoverP = 0.0);
+        nPop = 108;
+        nEval = 10000
+        );
+    )
   ];
+  TODO TODO TODO
   listeners = [
     ea.l.console(
       functions = [
