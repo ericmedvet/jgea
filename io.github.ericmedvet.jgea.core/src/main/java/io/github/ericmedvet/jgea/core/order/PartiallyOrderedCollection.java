@@ -28,37 +28,46 @@ public interface PartiallyOrderedCollection<T> extends Sized {
 
   Collection<T> all();
 
+  PartialComparator<? super T> comparator();
+
   Collection<T> firsts();
 
   Collection<T> lasts();
 
   boolean remove(T t);
 
-  PartialComparator<? super T> comparator();
+  static <T> PartiallyOrderedCollection<T> from() {
+    return new PartiallyOrderedCollection<T>() {
+      @Override
+      public void add(T t) {
+        throw new UnsupportedOperationException();
+      }
 
-  default Collection<T> mids() {
-    Collection<T> firsts = firsts();
-    Collection<T> lasts = lasts();
-    return all().stream()
-        .filter(t -> !firsts.contains(t) && !lasts.contains(t))
-        .toList();
-  }
+      @Override
+      public Collection<T> all() {
+        return List.of();
+      }
 
-  default List<Collection<T>> fronts() {
-    DAGPartiallyOrderedCollection<T> poc = new DAGPartiallyOrderedCollection<>(all(), comparator());
-    Collection<T> firsts = poc.firsts();
-    List<Collection<T>> fronts = new ArrayList<>();
-    while (!firsts.isEmpty()) {
-      fronts.add(Collections.unmodifiableCollection(firsts));
-      firsts.forEach(poc::remove);
-      firsts = poc.firsts();
-    }
-    return Collections.unmodifiableList(fronts);
-  }
+      @Override
+      public Collection<T> firsts() {
+        return List.of();
+      }
 
-  @Override
-  default int size() {
-    return all().size();
+      @Override
+      public Collection<T> lasts() {
+        return List.of();
+      }
+
+      @Override
+      public boolean remove(T t) {
+        return false;
+      }
+
+      @Override
+      public PartialComparator<? super T> comparator() {
+        return (i1,i2) -> PartialComparator.PartialComparatorOutcome.NOT_COMPARABLE;
+      }
+    };
   }
 
   static <T> PartiallyOrderedCollection<T> from(Collection<T> ts, PartialComparator<? super T> comparator) {
@@ -172,5 +181,30 @@ public interface PartiallyOrderedCollection<T> extends Sized {
         return PartialComparator.from(comparator);
       }
     };
+  }
+
+  default List<Collection<T>> fronts() {
+    DAGPartiallyOrderedCollection<T> poc = new DAGPartiallyOrderedCollection<>(all(), comparator());
+    Collection<T> firsts = poc.firsts();
+    List<Collection<T>> fronts = new ArrayList<>();
+    while (!firsts.isEmpty()) {
+      fronts.add(Collections.unmodifiableCollection(firsts));
+      firsts.forEach(poc::remove);
+      firsts = poc.firsts();
+    }
+    return Collections.unmodifiableList(fronts);
+  }
+
+  default Collection<T> mids() {
+    Collection<T> firsts = firsts();
+    Collection<T> lasts = lasts();
+    return all().stream()
+        .filter(t -> !firsts.contains(t) && !lasts.contains(t))
+        .toList();
+  }
+
+  @Override
+  default int size() {
+    return all().size();
   }
 }
