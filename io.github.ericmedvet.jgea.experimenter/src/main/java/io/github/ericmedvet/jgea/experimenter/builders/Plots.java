@@ -69,7 +69,7 @@ public class Plots {
                               Individual<G, S, List<Double>>, G, S, List<Double>, ?>,
                           X>
                       predicateValueFunction,
-              @Param(value = "condition", dNPM = "ea.predicate.always()") Predicate<X> condition,
+              @Param(value = "condition", dNPM = "predicate.always()") Predicate<X> condition,
               @Param(value = "xRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
               @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange,
               @Param(value = "xF", dNPM = "f.nTh(of=ea.f.quality();n=0)")
@@ -141,7 +141,7 @@ public class Plots {
                   List<Function<? super Individual<G, S, Q>, ? extends Number>> individualFunctions,
               @Param(value = "predicateValue", dNPM = "ea.f.nOfIterations()")
                   Function<GridPopulationState<G, S, Q, ?>, X> predicateValueFunction,
-              @Param(value = "condition", dNPM = "ea.predicate.always()") Predicate<X> condition,
+              @Param(value = "condition", dNPM = "predicate.always()") Predicate<X> condition,
               @Param(value = "valueRange", dNPM = "m.range(min=-Infinity;max=Infinity)")
                   DoubleRange valueRange,
               @Param(value = "unique", dB = true) boolean unique) {
@@ -180,7 +180,7 @@ public class Plots {
                           X>
                       predicateValueFunction,
               @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<List<Double>, S> mapper,
-              @Param(value = "condition", dNPM = "ea.predicate.always()") Predicate<X> condition,
+              @Param(value = "condition", dNPM = "predicate.always()") Predicate<X> condition,
               @Param(value = "xRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
               @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange,
               @Param(value = "xF", dNPM = "f.nTh(of=ea.f.genotype();n=0)")
@@ -227,7 +227,7 @@ public class Plots {
                   List<Function<? super Individual<G, S, Q>, ? extends Number>> individualFunctions,
               @Param(value = "predicateValue", dNPM = "ea.f.nOfIterations()")
                   Function<MEPopulationState<G, S, Q, ?>, X> predicateValueFunction,
-              @Param(value = "condition", dNPM = "ea.predicate.always()") Predicate<X> condition,
+              @Param(value = "condition", dNPM = "predicate.always()") Predicate<X> condition,
               @Param(value = "valueRange", dNPM = "m.range(min=-Infinity;max=Infinity)")
                   DoubleRange valueRange,
               @Param(value = "unique", dB = true) boolean unique) {
@@ -308,7 +308,7 @@ public class Plots {
               Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> yFunction,
           @Param(value = "predicateValue", dNPM = "ea.f.rate(of=ea.f.progress())")
               Function<POCPopulationState<?, G, S, Q, ?>, X> predicateValueFunction,
-          @Param(value = "condition", dNPM = "ea.predicate.gtEq(t=1)") Predicate<X> condition,
+          @Param(value = "condition", dNPM = "predicate.gtEq(t=1)") Predicate<X> condition,
           @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
     return new DistributionMRPAF<>(
         Functions.runKey(xSubplotRunKey, r -> r, "%s"),
@@ -458,7 +458,7 @@ public class Plots {
           @Param("yFunction") Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> yFunction,
           @Param(value = "predicateValue", dNPM = "ea.f.rate(of=ea.f.progress())")
               Function<POCPopulationState<?, G, S, Q, ?>, X> predicateValueFunction,
-          @Param(value = "condition", dNPM = "ea.predicate.gtEq(t=1)") Predicate<X> condition,
+          @Param(value = "condition", dNPM = "predicate.gtEq(t=1)") Predicate<X> condition,
           @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
     return new DistributionMRPAF<>(
         Functions.runKey(xSubplotRunKey, r -> r, "%s"),
