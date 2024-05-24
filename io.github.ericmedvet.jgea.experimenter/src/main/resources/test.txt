@@ -9,7 +9,7 @@ ea.experiment(
                 initialRobotYRange = m.range(min = 0.5; max = 0.5)
             );
             f = ds.e.n.pointFinalD();
-            type = MAXIMIZE
+            type = MINIMIZE
         );
         solver = ea.s.ga(
             representation = ea.r.doubleString(crossoverP = 0.0);
@@ -19,5 +19,4 @@ ea.experiment(
             nEval = 10000
         )
     )]
-    TODO LISTENERS
 )
