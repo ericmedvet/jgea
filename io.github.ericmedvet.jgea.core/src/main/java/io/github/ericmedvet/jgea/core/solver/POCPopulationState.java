@@ -21,15 +21,48 @@ package io.github.ericmedvet.jgea.core.solver;
 
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
+import java.time.LocalDateTime;
+import java.util.function.Predicate;
 
 /**
  * @author "Eric Medvet" on 2023/10/21 for jgea
  */
 public interface POCPopulationState<I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
     extends State<P, S> {
+
+  record HardPOCPopulationState<I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>(
+      LocalDateTime startingDateTime,
+      long elapsedMillis,
+      long nOfIterations,
+      P problem,
+      Predicate<State<?, ?>> stopCondition,
+      long nOfBirths,
+      long nOfQualityEvaluations,
+      PartiallyOrderedCollection<I> pocPopulation)
+      implements POCPopulationState<I, G, S, Q, P> {}
+
   long nOfBirths();
 
   long nOfQualityEvaluations();
 
   PartiallyOrderedCollection<I> pocPopulation();
+
+  static <I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
+      POCPopulationState<I, G, S, Q, P> empty(P problem, Predicate<State<?, ?>> stopCondition) {
+    return new HardPOCPopulationState<>(
+        LocalDateTime.now(), 0, 0, problem, stopCondition, 0, 0, PartiallyOrderedCollection.from());
+  }
+
+  default POCPopulationState<I, G, S, Q, P> updated(
+      long nOfNewBirths, long nOfNewQualityEvaluations, PartiallyOrderedCollection<I> pocPopulation) {
+    return new HardPOCPopulationState<>(
+        startingDateTime(),
+        elapsedMillisFromStartingDateTime(),
+        nOfIterations() + 1,
+        problem(),
+        stopCondition(),
+        nOfBirths() + nOfNewBirths,
+        nOfQualityEvaluations() + nOfNewQualityEvaluations,
+        pocPopulation);
+  }
 }

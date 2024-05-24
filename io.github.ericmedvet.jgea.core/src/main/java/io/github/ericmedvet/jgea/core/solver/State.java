@@ -21,35 +21,59 @@ package io.github.ericmedvet.jgea.core.solver;
 
 import io.github.ericmedvet.jgea.core.problem.Problem;
 import io.github.ericmedvet.jgea.core.util.Progress;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.function.Predicate;
 
 /**
  * @author "Eric Medvet" on 2023/10/21 for jgea
  */
 public interface State<P extends Problem<S>, S> {
+  record HardState<P extends Problem<S>, S>(
+      LocalDateTime startingDateTime,
+      long elapsedMillis,
+      long nOfIterations,
+      P problem,
+      Predicate<State<?, ?>> stopCondition)
+      implements State<P, S> {}
+
   long elapsedMillis();
+
+  default long elapsedMillisFromStartingDateTime() {
+    return ChronoUnit.MILLIS.between(LocalDateTime.now(), startingDateTime());
+  }
 
   long nOfIterations();
 
-  Progress progress();
-
   P problem();
 
-  interface WithComputedProgress<P extends Problem<S>, S> extends State<P, S> {
-    Predicate<State<?, ?>> stopCondition();
+  LocalDateTime startingDateTime();
 
-    @Override
-    default Progress progress() {
-      //noinspection rawtypes
-      if (stopCondition() instanceof ProgressBasedStopCondition condition) {
-        try {
-          //noinspection unchecked
-          return condition.progress(this);
-        } catch (ClassCastException ex) {
-          return Progress.NA;
-        }
+  Predicate<State<?, ?>> stopCondition();
+
+  static <P extends Problem<S>, S> State<P, S> empty(P problem, Predicate<State<?, ?>> stopCondition) {
+    return new HardState<>(LocalDateTime.now(), 0, 0, problem, stopCondition);
+  }
+
+  default Progress progress() {
+    //noinspection rawtypes
+    if (stopCondition() instanceof ProgressBasedStopCondition condition) {
+      try {
+        //noinspection unchecked
+        return condition.progress(this);
+      } catch (ClassCastException ex) {
+        return Progress.NA;
       }
-      return Progress.NA;
     }
+    return Progress.NA;
+  }
+
+  default State<P, S> updated() {
+    return new HardState<>(
+        startingDateTime(),
+        elapsedMillisFromStartingDateTime(),
+        nOfIterations() + 1,
+        problem(),
+        stopCondition());
   }
 }

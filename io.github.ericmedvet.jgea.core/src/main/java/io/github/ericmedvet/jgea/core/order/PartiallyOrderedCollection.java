@@ -37,8 +37,8 @@ public interface PartiallyOrderedCollection<T> extends Sized {
   boolean remove(T t);
 
   static <T> PartiallyOrderedCollection<T> from() {
-    return from(List.of(),
-        (PartialComparator<? super T>) (i1,i2) -> PartialComparator.PartialComparatorOutcome.NOT_COMPARABLE);
+    return from(List.of(), (PartialComparator<? super T>)
+        (i1, i2) -> PartialComparator.PartialComparatorOutcome.NOT_COMPARABLE);
   }
 
   static <T> PartiallyOrderedCollection<T> from(Collection<T> ts, PartialComparator<? super T> comparator) {
