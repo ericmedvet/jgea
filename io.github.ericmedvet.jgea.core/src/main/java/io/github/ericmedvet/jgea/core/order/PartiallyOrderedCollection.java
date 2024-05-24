@@ -37,37 +37,8 @@ public interface PartiallyOrderedCollection<T> extends Sized {
   boolean remove(T t);
 
   static <T> PartiallyOrderedCollection<T> from() {
-    return new PartiallyOrderedCollection<T>() {
-      @Override
-      public void add(T t) {
-        throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public Collection<T> all() {
-        return List.of();
-      }
-
-      @Override
-      public Collection<T> firsts() {
-        return List.of();
-      }
-
-      @Override
-      public Collection<T> lasts() {
-        return List.of();
-      }
-
-      @Override
-      public boolean remove(T t) {
-        return false;
-      }
-
-      @Override
-      public PartialComparator<? super T> comparator() {
-        return (i1,i2) -> PartialComparator.PartialComparatorOutcome.NOT_COMPARABLE;
-      }
-    };
+    return from(List.of(),
+        (PartialComparator<? super T>) (i1,i2) -> PartialComparator.PartialComparatorOutcome.NOT_COMPARABLE);
   }
 
   static <T> PartiallyOrderedCollection<T> from(Collection<T> ts, PartialComparator<? super T> comparator) {
