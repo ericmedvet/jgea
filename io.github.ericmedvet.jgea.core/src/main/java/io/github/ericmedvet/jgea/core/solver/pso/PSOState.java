@@ -4,6 +4,7 @@ import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.ListPopulationState;
 import io.github.ericmedvet.jgea.core.solver.State;
+
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -17,9 +18,9 @@ public interface PSOState<S, Q>
 
   static <S, Q> PSOState<S, Q> empty(
       TotalOrderQualityBasedProblem<S, Q> problem,
-      Predicate<State<?, ?>> stopCondition,
-      Comparator<? super PSOIndividual<S, Q>> comparator) {
-    return of(LocalDateTime.now(), 0, 0, problem, stopCondition, 0, 0, List.of(), comparator, null);
+      Predicate<State<?, ?>> stopCondition
+  ) {
+    return of(LocalDateTime.now(), 0, 0, problem, stopCondition, 0, 0, List.of(), null);
   }
 
   static <S, Q> PSOState<S, Q> of(
@@ -31,8 +32,8 @@ public interface PSOState<S, Q>
       long nOfBirths,
       long nOfQualityEvaluations,
       Collection<PSOIndividual<S, Q>> listPopulation,
-      Comparator<? super PSOIndividual<S, Q>> comparator,
-      PSOIndividual<S, Q> knownBest) {
+      PSOIndividual<S, Q> knownBest
+  ) {
     record HardState<S, Q>(
         LocalDateTime startingDateTime,
         long elapsedMillis,
@@ -43,9 +44,13 @@ public interface PSOState<S, Q>
         long nOfQualityEvaluations,
         PartiallyOrderedCollection<PSOIndividual<S, Q>> pocPopulation,
         List<PSOIndividual<S, Q>> listPopulation,
-        Comparator<? super PSOIndividual<S, Q>> comparator,
-        PSOIndividual<S, Q> knownBest)
+        PSOIndividual<S, Q> knownBest
+    )
         implements PSOState<S, Q> {}
+    Comparator<PSOIndividual<S, Q>> comparator = (i1, i2) -> problem.totalOrderComparator().compare(
+        i1.quality(),
+        i2.quality()
+    );
     List<PSOIndividual<S, Q>> sortedListPopulation =
         listPopulation.stream().sorted(comparator).toList();
     return new HardState<>(
@@ -58,15 +63,16 @@ public interface PSOState<S, Q>
         nOfQualityEvaluations,
         PartiallyOrderedCollection.from(sortedListPopulation, comparator),
         sortedListPopulation,
-        comparator,
-        knownBest);
+        knownBest
+    );
   }
 
   default PSOState<S, Q> updated(
       long nOfNewBirths,
       long nOfNewQualityEvaluations,
       Collection<PSOIndividual<S, Q>> listPopulation,
-      PSOIndividual<S, Q> knownBest) {
+      PSOIndividual<S, Q> knownBest
+  ) {
     return of(
         startingDateTime(),
         ChronoUnit.MILLIS.between(LocalDateTime.now(), startingDateTime()),
@@ -76,7 +82,7 @@ public interface PSOState<S, Q>
         nOfBirths() + nOfNewBirths,
         nOfQualityEvaluations() + nOfNewQualityEvaluations,
         listPopulation,
-        comparator(),
-        knownBest);
+        knownBest
+    );
   }
 }
