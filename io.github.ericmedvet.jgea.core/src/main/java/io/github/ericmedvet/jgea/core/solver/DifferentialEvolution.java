@@ -22,7 +22,6 @@ package io.github.ericmedvet.jgea.core.solver;
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.selector.Last;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -34,13 +33,13 @@ import java.util.stream.IntStream;
 
 public class DifferentialEvolution<S, Q>
     extends AbstractStandardEvolver<
-    ListPopulationState<
-        Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>,
-    TotalOrderQualityBasedProblem<S, Q>,
-    Individual<List<Double>, S, Q>,
-    List<Double>,
-    S,
-    Q> {
+        ListPopulationState<
+            Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>,
+        TotalOrderQualityBasedProblem<S, Q>,
+        Individual<List<Double>, S, Q>,
+        List<Double>,
+        S,
+        Q> {
 
   protected final double differentialWeight;
   protected final double crossoverProb;
@@ -50,18 +49,17 @@ public class DifferentialEvolution<S, Q>
       Factory<? extends List<Double>> genotypeFactory,
       int populationSize,
       Predicate<
-          ? super
-              ListPopulationState<
-                  Individual<List<Double>, S, Q>,
-                  List<Double>,
-                  S,
-                  Q,
-                  TotalOrderQualityBasedProblem<S, Q>>>
+              ? super
+                  ListPopulationState<
+                      Individual<List<Double>, S, Q>,
+                      List<Double>,
+                      S,
+                      Q,
+                      TotalOrderQualityBasedProblem<S, Q>>>
           stopCondition,
       double differentialWeight,
       double crossoverProb,
-      boolean remap
-  ) {
+      boolean remap) {
     super(
         solutionMapper,
         genotypeFactory,
@@ -73,57 +71,61 @@ public class DifferentialEvolution<S, Q>
         populationSize,
         true,
         0,
-        remap
-    );
+        remap);
     this.differentialWeight = differentialWeight;
     this.crossoverProb = crossoverProb;
   }
 
   @Override
-  protected ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S,
-      Q>> init(
-      TotalOrderQualityBasedProblem<S, Q> problem
-  ) {
+  protected ListPopulationState<
+          Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
+      init(TotalOrderQualityBasedProblem<S, Q> problem) {
     return ListPopulationState.empty(problem, stopCondition());
   }
 
   @Override
   protected Individual<List<Double>, S, Q> mapChildGenotype(
       ChildGenotype<List<Double>> childGenotype,
-      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>> state
-  ) {
+      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
+          state) {
     return Individual.from(childGenotype, solutionMapper, state.problem().qualityFunction(), state.nOfIterations());
   }
 
   @Override
   protected Individual<List<Double>, S, Q> remapIndividual(
       Individual<List<Double>, S, Q> individual,
-      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>> state
-  ) {
+      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
+          state) {
     return individual.updatedWithQuality(state);
   }
 
   @Override
-  protected ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S,
-      Q>> update(
-      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>> state,
-      Collection<Individual<List<Double>, S, Q>> individuals,
-      long nOfNewBirths,
-      long nOfNewFitnessEvaluations
-  ) {
+  protected ListPopulationState<
+          Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
+      update(
+          ListPopulationState<
+                  Individual<List<Double>, S, Q>,
+                  List<Double>,
+                  S,
+                  Q,
+                  TotalOrderQualityBasedProblem<S, Q>>
+              state,
+          Collection<Individual<List<Double>, S, Q>> individuals,
+          long nOfNewBirths,
+          long nOfNewFitnessEvaluations) {
     return state.updated(nOfNewBirths, nOfNewFitnessEvaluations, individuals);
   }
 
-
   @Override
   protected Collection<ChildGenotype<List<Double>>> buildOffspringToMapGenotypes(
-      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>> state,
-      RandomGenerator random
-  ) {
+      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
+          state,
+      RandomGenerator random) {
     AtomicLong counter = new AtomicLong(state.nOfBirths());
     return IntStream.range(0, state.listPopulation().size())
         .mapToObj(i -> {
-          Individual<List<Double>, S, Q> parent = state.listPopulation().get(i);
+          Individual<List<Double>, S, Q> parent =
+              state.listPopulation().get(i);
           List<Integer> indexes = new ArrayList<>();
           while (indexes.size() < 3) {
             int index = random.nextInt(state.listPopulation().size());
@@ -138,14 +140,16 @@ public class DifferentialEvolution<S, Q>
               counter.getAndIncrement(),
               IntStream.range(0, parent.genotype().size())
                   .mapToDouble(j -> random.nextDouble() < crossoverProb
-                      ? (a.genotype().get(j) + differentialWeight * (b.genotype().get(j) - c.genotype().get(j)))
+                      ? (a.genotype().get(j)
+                          + differentialWeight
+                              * (b.genotype().get(j)
+                                  - c.genotype()
+                                      .get(j)))
                       : parent.genotype().get(j))
                   .boxed()
                   .toList(),
-              List.of(parent.id(), a.id(), b.id(), c.id())
-          );
+              List.of(parent.id(), a.id(), b.id(), c.id()));
         })
         .toList();
   }
-
 }

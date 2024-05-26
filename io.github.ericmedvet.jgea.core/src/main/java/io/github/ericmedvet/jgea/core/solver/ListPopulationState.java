@@ -20,9 +20,7 @@
 package io.github.ericmedvet.jgea.core.solver;
 
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
-import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
-
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -33,23 +31,22 @@ import java.util.function.Predicate;
 /**
  * @author "Eric Medvet" on 2023/10/23 for jgea
  */
-public interface ListPopulationState<I extends Individual<G, S, Q>, G, S, Q,
-    P extends TotalOrderQualityBasedProblem<S, Q>>
+public interface ListPopulationState<
+        I extends Individual<G, S, Q>, G, S, Q, P extends TotalOrderQualityBasedProblem<S, Q>>
     extends POCPopulationState<I, G, S, Q, P> {
 
   List<I> listPopulation();
 
   static <I extends Individual<G, S, Q>, G, S, Q, P extends TotalOrderQualityBasedProblem<S, Q>>
-  ListPopulationState<I, G, S, Q, P> of(
-      LocalDateTime startingDateTime,
-      long elapsedMillis,
-      long nOfIterations,
-      P problem,
-      Predicate<State<?, ?>> stopCondition,
-      long nOfBirths,
-      long nOfQualityEvaluations,
-      Collection<I> listPopulation
-  ) {
+      ListPopulationState<I, G, S, Q, P> of(
+          LocalDateTime startingDateTime,
+          long elapsedMillis,
+          long nOfIterations,
+          P problem,
+          Predicate<State<?, ?>> stopCondition,
+          long nOfBirths,
+          long nOfQualityEvaluations,
+          Collection<I> listPopulation) {
     record HardState<I extends Individual<G, S, Q>, G, S, Q, P extends TotalOrderQualityBasedProblem<S, Q>>(
         LocalDateTime startingDateTime,
         long elapsedMillis,
@@ -59,8 +56,7 @@ public interface ListPopulationState<I extends Individual<G, S, Q>, G, S, Q,
         long nOfBirths,
         long nOfQualityEvaluations,
         PartiallyOrderedCollection<I> pocPopulation,
-        List<I> listPopulation
-    )
+        List<I> listPopulation)
         implements ListPopulationState<I, G, S, Q, P> {}
     Comparator<I> comparator = (i1, i2) -> problem.totalOrderComparator().compare(i1.quality(), i2.quality());
     List<I> sortedListPopulation =
@@ -74,20 +70,16 @@ public interface ListPopulationState<I extends Individual<G, S, Q>, G, S, Q,
         nOfBirths,
         nOfQualityEvaluations,
         PartiallyOrderedCollection.from(sortedListPopulation, comparator),
-        sortedListPopulation
-    );
+        sortedListPopulation);
   }
 
   static <I extends Individual<G, S, Q>, G, S, Q, P extends TotalOrderQualityBasedProblem<S, Q>>
-  ListPopulationState<I, G, S, Q, P> empty(
-      P problem, Predicate<State<?, ?>> stopCondition
-  ) {
+      ListPopulationState<I, G, S, Q, P> empty(P problem, Predicate<State<?, ?>> stopCondition) {
     return of(LocalDateTime.now(), 0, 0, problem, stopCondition, 0, 0, List.of());
   }
 
   default ListPopulationState<I, G, S, Q, P> updated(
-      long nOfNewBirths, long nOfNewQualityEvaluations, Collection<I> listPopulation
-  ) {
+      long nOfNewBirths, long nOfNewQualityEvaluations, Collection<I> listPopulation) {
     return of(
         startingDateTime(),
         ChronoUnit.MILLIS.between(LocalDateTime.now(), startingDateTime()),
@@ -96,7 +88,6 @@ public interface ListPopulationState<I extends Individual<G, S, Q>, G, S, Q,
         stopCondition(),
         nOfBirths() + nOfNewBirths,
         nOfQualityEvaluations() + nOfNewQualityEvaluations,
-        listPopulation
-    );
+        listPopulation);
   }
 }
