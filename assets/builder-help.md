@@ -1993,7 +1993,7 @@ Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;S, <
 | `phiParticle` | d | `1.5` | <code>double</code> |
 | `phiGlobal` | d | `1.5` | <code>double</code> |
 
-Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;S, <abbr title="io.github.ericmedvet.jgea.core.solver.ParticleSwarmOptimization">ParticleSwarmOptimization</abbr>&lt;S, Q&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Solvers.pso()` by jgea-experimenter:2.6.2-SNAPSHOT
+Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;S, <abbr title="io.github.ericmedvet.jgea.core.solver.pso.ParticleSwarmOptimization">ParticleSwarmOptimization</abbr>&lt;S, Q&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Solvers.pso()` by jgea-experimenter:2.6.2-SNAPSHOT
 
 ### Builder `ea.solver.randomSearch()`
 
@@ -2368,4 +2368,152 @@ Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">
 | `of` | npm |  | <code>T</code> |
 
 Produces <code><abbr title="java.util.function.Supplier">Supplier</abbr>&lt;T&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Miscs.supplier()` by jgea-experimenter:2.6.2-SNAPSHOT
+
+## Package `predicate`
+
+### Builder `predicate.all()`
+
+`predicate.all(conditions)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `conditions` | npm[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;&gt;</code> |
+
+Produces <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Predicates.all()` by jgea-experimenter:2.6.2-SNAPSHOT
+
+### Builder `predicate.always()`
+
+`predicate.always()`
+
+Produces <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;?&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Predicates.always()` by jgea-experimenter:2.6.2-SNAPSHOT
+
+### Builder `predicate.any()`
+
+`predicate.any(conditions)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `conditions` | npm[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;&gt;</code> |
+
+Produces <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Predicates.any()` by jgea-experimenter:2.6.2-SNAPSHOT
+
+### Builder `predicate.eq()`
+
+`predicate.eq(f; v)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `f` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, T&gt;</code> |
+| `v` | npm |  | <code>T</code> |
+
+Produces <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Predicates.eq()` by jgea-experimenter:2.6.2-SNAPSHOT
+
+### Builder `predicate.gt()`
+
+`predicate.gt(f; t)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `f` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, ? extends <abbr title="java.lang.Number">Number</abbr>&gt;</code> |
+| `t` | d |  | <code>double</code> |
+
+Produces <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Predicates.gt()` by jgea-experimenter:2.6.2-SNAPSHOT
+
+### Builder `predicate.gtEq()`
+
+`predicate.gtEq(f; t)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `f` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, ? extends <abbr title="java.lang.Number">Number</abbr>&gt;</code> |
+| `t` | d |  | <code>double</code> |
+
+Produces <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Predicates.gtEq()` by jgea-experimenter:2.6.2-SNAPSHOT
+
+### Builder `predicate.inD()`
+
+`predicate.inD(f; values)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `f` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, <abbr title="java.lang.Double">Double</abbr>&gt;</code> |
+| `values` | d[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.lang.Double">Double</abbr>&gt;</code> |
+
+Produces <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Predicates.inD()` by jgea-experimenter:2.6.2-SNAPSHOT
+
+### Builder `predicate.inI()`
+
+`predicate.inI(f; values)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `f` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, <abbr title="java.lang.Integer">Integer</abbr>&gt;</code> |
+| `values` | i[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.lang.Integer">Integer</abbr>&gt;</code> |
+
+Produces <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Predicates.inI()` by jgea-experimenter:2.6.2-SNAPSHOT
+
+### Builder `predicate.inL()`
+
+`predicate.inL(f; values)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `f` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, <abbr title="java.lang.Long">Long</abbr>&gt;</code> |
+| `values` | i[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.lang.Integer">Integer</abbr>&gt;</code> |
+
+Produces <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Predicates.inL()` by jgea-experimenter:2.6.2-SNAPSHOT
+
+### Builder `predicate.inS()`
+
+`predicate.inS(f; values)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `f` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, <abbr title="java.lang.String">String</abbr>&gt;</code> |
+| `values` | s[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.lang.String">String</abbr>&gt;</code> |
+
+Produces <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Predicates.inS()` by jgea-experimenter:2.6.2-SNAPSHOT
+
+### Builder `predicate.lt()`
+
+`predicate.lt(f; t)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `f` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, ? extends <abbr title="java.lang.Number">Number</abbr>&gt;</code> |
+| `t` | d |  | <code>double</code> |
+
+Produces <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Predicates.lt()` by jgea-experimenter:2.6.2-SNAPSHOT
+
+### Builder `predicate.ltEq()`
+
+`predicate.ltEq(f; t)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `f` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, ? extends <abbr title="java.lang.Number">Number</abbr>&gt;</code> |
+| `t` | d |  | <code>double</code> |
+
+Produces <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Predicates.ltEq()` by jgea-experimenter:2.6.2-SNAPSHOT
+
+### Builder `predicate.matches()`
+
+`predicate.matches(f; regex)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `f` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, <abbr title="java.lang.String">String</abbr>&gt;</code> |
+| `regex` | s |  | <code><abbr title="java.lang.String">String</abbr></code> |
+
+Produces <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Predicates.matches()` by jgea-experimenter:2.6.2-SNAPSHOT
+
+### Builder `predicate.not()`
+
+`predicate.not(condition)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `condition` | npm |  | <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code> |
+
+Produces <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Predicates.not()` by jgea-experimenter:2.6.2-SNAPSHOT
 

@@ -38,6 +38,7 @@ import io.github.ericmedvet.jgea.core.solver.*;
 import io.github.ericmedvet.jgea.core.solver.cabea.CellularAutomataBasedSolver;
 import io.github.ericmedvet.jgea.core.solver.cabea.SubstrateFiller;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MapElites;
+import io.github.ericmedvet.jgea.core.solver.pso.ParticleSwarmOptimization;
 import io.github.ericmedvet.jgea.core.solver.speciation.LazySpeciator;
 import io.github.ericmedvet.jgea.core.solver.speciation.SpeciatedEvolver;
 import io.github.ericmedvet.jgea.experimenter.Representation;

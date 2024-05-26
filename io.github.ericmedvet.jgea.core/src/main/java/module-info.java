@@ -49,6 +49,7 @@ module io.github.ericmedvet.jgea.core {
   exports io.github.ericmedvet.jgea.core.representation.sequence.integer;
   exports io.github.ericmedvet.jgea.core.problem;
   exports io.github.ericmedvet.jgea.core.representation.grammar.string;
+  exports io.github.ericmedvet.jgea.core.solver.pso;
 
   requires io.github.ericmedvet.jsdynsym.core;
   requires io.github.ericmedvet.jnb.datastructure;

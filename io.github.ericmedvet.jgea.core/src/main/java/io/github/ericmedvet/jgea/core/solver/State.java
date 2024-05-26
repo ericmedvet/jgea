@@ -29,19 +29,8 @@ import java.util.function.Predicate;
  * @author "Eric Medvet" on 2023/10/21 for jgea
  */
 public interface State<P extends Problem<S>, S> {
-  record HardState<P extends Problem<S>, S>(
-      LocalDateTime startingDateTime,
-      long elapsedMillis,
-      long nOfIterations,
-      P problem,
-      Predicate<State<?, ?>> stopCondition)
-      implements State<P, S> {}
 
   long elapsedMillis();
-
-  default long elapsedMillisFromStartingDateTime() {
-    return ChronoUnit.MILLIS.between(LocalDateTime.now(), startingDateTime());
-  }
 
   long nOfIterations();
 
@@ -51,8 +40,24 @@ public interface State<P extends Problem<S>, S> {
 
   Predicate<State<?, ?>> stopCondition();
 
+  static <P extends Problem<S>, S> State<P, S> of(
+      LocalDateTime startingDateTime,
+      long elapsedMillis,
+      long nOfIterations,
+      P problem,
+      Predicate<State<?, ?>> stopCondition) {
+    record HardState<P extends Problem<S>, S>(
+        LocalDateTime startingDateTime,
+        long elapsedMillis,
+        long nOfIterations,
+        P problem,
+        Predicate<State<?, ?>> stopCondition)
+        implements State<P, S> {}
+    return new HardState<>(startingDateTime, elapsedMillis, nOfIterations, problem, stopCondition);
+  }
+
   static <P extends Problem<S>, S> State<P, S> empty(P problem, Predicate<State<?, ?>> stopCondition) {
-    return new HardState<>(LocalDateTime.now(), 0, 0, problem, stopCondition);
+    return of(LocalDateTime.now(), 0, 0, problem, stopCondition);
   }
 
   default Progress progress() {
@@ -69,9 +74,9 @@ public interface State<P extends Problem<S>, S> {
   }
 
   default State<P, S> updated() {
-    return new HardState<>(
+    return of(
         startingDateTime(),
-        elapsedMillisFromStartingDateTime(),
+        ChronoUnit.MILLIS.between(LocalDateTime.now(), startingDateTime()),
         nOfIterations() + 1,
         problem(),
         stopCondition());

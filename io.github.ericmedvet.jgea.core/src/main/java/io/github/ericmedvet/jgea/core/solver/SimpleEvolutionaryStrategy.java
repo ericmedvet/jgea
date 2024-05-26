@@ -133,7 +133,7 @@ public class SimpleEvolutionaryStrategy<S, Q>
         (cg, s) ->
             Individual.from(cg, solutionMapper, state.problem().qualityFunction(), state.nOfIterations()),
         elites,
-        (i, s) -> i.withUpdatedQuality(state),
+        (i, s) -> i.updatedWithQuality(state),
         state,
         executor);
     L.fine(String.format("Offspring and elite merged: %d individuals", newPopulation.size()));

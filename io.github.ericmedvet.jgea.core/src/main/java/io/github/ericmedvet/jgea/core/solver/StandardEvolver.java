@@ -84,7 +84,7 @@ public class StandardEvolver<G, S, Q>
   protected Individual<G, S, Q> remapIndividual(
       Individual<G, S, Q> individual,
       POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>> state) {
-    return individual.withUpdatedQuality(state);
+    return individual.updatedWithQuality(state);
   }
 
   @Override
