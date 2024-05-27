@@ -113,7 +113,7 @@ public class DifferentialEvolution<S, Q>
           Collection<Individual<List<Double>, S, Q>> individuals,
           long nOfNewBirths,
           long nOfNewFitnessEvaluations) {
-    return state.updated(nOfNewBirths, nOfNewFitnessEvaluations, individuals);
+    return state.updatedWithIteration(nOfNewBirths, nOfNewFitnessEvaluations, individuals);
   }
 
   @Override

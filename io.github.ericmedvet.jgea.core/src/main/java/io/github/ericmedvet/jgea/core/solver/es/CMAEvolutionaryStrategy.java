@@ -18,13 +18,14 @@
  * =========================LICENSE_END==================================
  */
 
-package io.github.ericmedvet.jgea.core.solver;
+package io.github.ericmedvet.jgea.core.solver.es;
 
 import static io.github.ericmedvet.jgea.core.util.VectorUtils.*;
 
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
+
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -35,6 +36,11 @@ import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
+
+import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSolver;
+import io.github.ericmedvet.jgea.core.solver.Individual;
+import io.github.ericmedvet.jgea.core.solver.ListPopulationState;
+import io.github.ericmedvet.jgea.core.solver.SolverException;
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -43,13 +49,10 @@ import org.apache.commons.math3.linear.RealMatrix;
 
 public class CMAEvolutionaryStrategy<S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        ListPopulationState<
-            Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>,
-        TotalOrderQualityBasedProblem<S, Q>,
-        Individual<List<Double>, S, Q>,
-        List<Double>,
-        S,
-        Q> {
+    CMAESState<S, Q>,
+    TotalOrderQualityBasedProblem<S,Q>,
+    CMAESIndividual<S,Q>,
+    List<Double>, S, Q> {
 
   private static final Logger L = Logger.getLogger(CMAEvolutionaryStrategy.class.getName());
   private final int mu;
@@ -67,35 +70,22 @@ public class CMAEvolutionaryStrategy<S, Q>
   public CMAEvolutionaryStrategy(
       Function<? super List<Double>, ? extends S> solutionMapper,
       Factory<? extends List<Double>> genotypeFactory,
-      Predicate<
-              ? super
-                  ListPopulationState<
-                      Individual<List<Double>, S, Q>,
-                      List<Double>,
-                      S,
-                      Q,
-                      TotalOrderQualityBasedProblem<S, Q>>>
-          stopCondition) {
+      Predicate<? super CMAESState<S, Q>> stopCondition
+  ) {
     this(
         solutionMapper,
         genotypeFactory,
         stopCondition,
-        genotypeFactory.build(1, new Random(0)).get(0).size());
+        genotypeFactory.build(1, new Random(0)).get(0).size()
+    );
   }
 
   private CMAEvolutionaryStrategy(
       Function<? super List<Double>, ? extends S> solutionMapper,
       Factory<? extends List<Double>> genotypeFactory,
-      Predicate<
-              ? super
-                  ListPopulationState<
-                      Individual<List<Double>, S, Q>,
-                      List<Double>,
-                      S,
-                      Q,
-                      TotalOrderQualityBasedProblem<S, Q>>>
-          stopCondition,
-      int p) {
+      Predicate<? super CMAESState<S, Q>> stopCondition,
+      int p
+  ) {
     super(solutionMapper, genotypeFactory, stopCondition, false);
     populationSize = 4 + (int) Math.floor(3 * Math.log(p));
     // see table 1 of the linked paper for parameters values
@@ -118,163 +108,12 @@ public class CMAEvolutionaryStrategy<S, Q>
     cMu = Math.min(1 - c1, 2 * (muEff - 2 + 1 / muEff) / (Math.pow((p + 2), 2) + 2 * muEff / 2d));
   }
 
-  private record DecoratedIndividual<S, Q>(
-      List<Double> genotype,
-      S solution,
-      Q quality,
-      long qualityMappingIteration,
-      long genotypeBirthIteration,
-      double[] z,
-      double[] y,
-      double[] x)
-      implements Individual<List<Double>, S, Q> {}
 
-  private record State<S, Q>(
-      LocalDateTime startingDateTime,
-      long elapsedMillis,
-      long nOfIterations,
-      TotalOrderQualityBasedProblem<S, Q> problem,
-      Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
-      long nOfBirths,
-      long nOfQualityEvaluations,
-      PartiallyOrderedCollection<Individual<List<Double>, S, Q>> pocPopulation,
-      List<Individual<List<Double>, S, Q>> listPopulation,
-      double[] means,
-      RealMatrix C,
-      double sigma,
-      double[] sEvolutionPath,
-      double[] cEvolutionPath,
-      RealMatrix B,
-      RealMatrix D,
-      long lastEigenUpdateIteration)
-      implements ListPopulationState<
-              Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>,
-          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress<
-              TotalOrderQualityBasedProblem<S, Q>, S> {
-    public static <S, Q> State<S, Q> empty(
-        TotalOrderQualityBasedProblem<S, Q> problem,
-        double[] means,
-        Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition) {
-      int n = means.length;
-      return new State<>(
-          LocalDateTime.now(),
-          0,
-          0,
-          problem,
-          stopCondition,
-          0,
-          0,
-          null,
-          null,
-          means,
-          MatrixUtils.createRealIdentityMatrix(n),
-          0.5,
-          new double[n],
-          new double[n],
-          MatrixUtils.createRealIdentityMatrix(n),
-          MatrixUtils.createRealIdentityMatrix(n),
-          0);
-    }
-
-    public static <S, Q> State<S, Q> from(
-        State<S, Q> state,
-        double[] means,
-        RealMatrix C,
-        double sigma,
-        double[] sEvolutionPath,
-        double[] cEvolutionPath) {
-      return new State<>(
-          state.startingDateTime,
-          ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
-          state.nOfIterations,
-          state.problem,
-          state.stopCondition,
-          state.nOfBirths,
-          state.nOfQualityEvaluations,
-          state.pocPopulation,
-          state.listPopulation,
-          means,
-          C,
-          sigma,
-          sEvolutionPath,
-          cEvolutionPath,
-          state.B,
-          state.D,
-          state.lastEigenUpdateIteration);
-    }
-
-    public static <S, Q> State<S, Q> from(State<S, Q> state, RealMatrix B, RealMatrix D) {
-      return new State<>(
-          state.startingDateTime,
-          ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
-          state.nOfIterations,
-          state.problem,
-          state.stopCondition,
-          state.nOfBirths,
-          state.nOfQualityEvaluations,
-          state.pocPopulation,
-          state.listPopulation,
-          state.means,
-          state.C,
-          state.sigma,
-          state.sEvolutionPath,
-          state.cEvolutionPath,
-          B,
-          D,
-          state.nOfIterations);
-    }
-
-    public static <S, Q> State<S, Q> from(
-        State<S, Q> state,
-        Collection<DecoratedIndividual<S, Q>> individuals,
-        Comparator<? super Individual<List<Double>, S, Q>> comparator) {
-      //noinspection unchecked,rawtypes
-      return new State<>(
-          state.startingDateTime,
-          ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
-          state.nOfIterations + 1,
-          state.problem,
-          state.stopCondition,
-          state.nOfBirths + individuals.size(),
-          state.nOfQualityEvaluations + individuals.size(),
-          PartiallyOrderedCollection.from((Collection) individuals, comparator),
-          individuals.stream()
-              .map(i -> (Individual<List<Double>, S, Q>) i)
-              .sorted(comparator)
-              .toList(),
-          state.means,
-          state.C,
-          state.sigma,
-          state.sEvolutionPath,
-          state.cEvolutionPath,
-          state.B,
-          state.D,
-          state.lastEigenUpdateIteration);
-    }
-  }
-
-  @Override
-  protected Individual<List<Double>, S, Q> newIndividual(
-      List<Double> genotype,
-      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
-          state,
-      TotalOrderQualityBasedProblem<S, Q> problem) {
-    throw new UnsupportedOperationException("This method should not be called");
-  }
-
-  @Override
-  protected Individual<List<Double>, S, Q> updateIndividual(
-      Individual<List<Double>, S, Q> individual,
-      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
-          state,
-      TotalOrderQualityBasedProblem<S, Q> problem) {
-    throw new UnsupportedOperationException("This method should not be called");
-  }
 
   @Override
   public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
-      init(TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
-          throws SolverException {
+  init(TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
+      throws SolverException {
     State<S, Q> state =
         State.empty(problem, unboxed(genotypeFactory.build(1, random).get(0)), stopCondition());
     Collection<DecoratedIndividual<S, Q>> newDecoratedIndividuals;
@@ -290,18 +129,19 @@ public class CMAEvolutionaryStrategy<S, Q>
 
   @Override
   public ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
-      update(
-          TotalOrderQualityBasedProblem<S, Q> problem,
-          RandomGenerator random,
-          ExecutorService executor,
-          ListPopulationState<
-                  Individual<List<Double>, S, Q>,
-                  List<Double>,
-                  S,
-                  Q,
-                  TotalOrderQualityBasedProblem<S, Q>>
-              state)
-          throws SolverException {
+  update(
+      TotalOrderQualityBasedProblem<S, Q> problem,
+      RandomGenerator random,
+      ExecutorService executor,
+      ListPopulationState<
+          Individual<List<Double>, S, Q>,
+          List<Double>,
+          S,
+          Q,
+          TotalOrderQualityBasedProblem<S, Q>>
+          state
+  )
+      throws SolverException {
     State<S, Q> cmaState = (State<S, Q>) state;
     // update distribution
     cmaState = updateDistribution(cmaState, problem);
@@ -324,7 +164,8 @@ public class CMAEvolutionaryStrategy<S, Q>
   }
 
   private Callable<DecoratedIndividual<S, Q>> newIndividualCallable(
-      State<S, Q> state, TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random) {
+      State<S, Q> state, TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random
+  ) {
     return () -> {
       double[] zK = buildArray(p, random::nextGaussian);
       double[] yK = state.B.preMultiply(state.D.preMultiply(zK));
@@ -340,7 +181,7 @@ public class CMAEvolutionaryStrategy<S, Q>
           zK,
           yK,
           xK // "useless", it's just the genotype
-          );
+      );
     };
   }
 
@@ -401,9 +242,9 @@ public class CMAEvolutionaryStrategy<S, Q>
       double cij = (1 + c1 * deltaH - c1 - cMu) * state.C.getEntry(i, j)
           + c1 * cEvolutionPath[i] * cEvolutionPath[j]
           + cMu
-              * IntStream.range(0, mu)
-                  .mapToDouble(k -> weights[k] * yMu[k][i] * yMu[k][j])
-                  .sum();
+          * IntStream.range(0, mu)
+          .mapToDouble(k -> weights[k] * yMu[k][i] * yMu[k][j])
+          .sum();
       state.C.setEntry(i, j, cij);
       state.C.setEntry(j, i, cij);
     }));

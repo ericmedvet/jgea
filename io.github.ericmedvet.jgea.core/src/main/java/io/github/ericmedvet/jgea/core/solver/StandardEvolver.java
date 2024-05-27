@@ -93,7 +93,7 @@ public class StandardEvolver<G, S, Q>
       Collection<Individual<G, S, Q>> individuals,
       long nOfNewBirths,
       long nOfNewFitnessEvaluations) {
-    return state.updated(
+    return state.updatedWithIteration(
         nOfNewBirths,
         nOfNewFitnessEvaluations,
         PartiallyOrderedCollection.from(individuals, partialComparator(state.problem())));

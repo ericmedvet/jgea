@@ -24,8 +24,8 @@ import static io.github.ericmedvet.jgea.core.util.VectorUtils.*;
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSolver;
-import io.github.ericmedvet.jgea.core.solver.ListPopulationState;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
@@ -38,7 +38,7 @@ import java.util.random.RandomGenerator;
 
 public class ParticleSwarmOptimization<S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        PSOState<S, Q>, TotalOrderQualityBasedProblem<S, Q>, PSOIndividual<S, Q>, List<Double>, S, Q> {
+    PSOState<S, Q>, TotalOrderQualityBasedProblem<S, Q>, PSOIndividual<S, Q>, List<Double>, S, Q> {
 
   private final int populationSize;
   private final double w; // dumping coefficient
@@ -48,19 +48,12 @@ public class ParticleSwarmOptimization<S, Q>
   public ParticleSwarmOptimization(
       Function<? super List<Double>, ? extends S> solutionMapper,
       Factory<? extends List<Double>> genotypeFactory,
-      Predicate<
-              ? super
-                  ListPopulationState<
-                      PSOIndividual<S, Q>,
-                      List<Double>,
-                      S,
-                      Q,
-                      TotalOrderQualityBasedProblem<S, Q>>>
-          stopCondition,
+      Predicate<? super PSOState<S, Q>> stopCondition,
       int populationSize,
       double w,
       double phiParticle,
-      double phiGlobal) {
+      double phiGlobal
+  ) {
     super(solutionMapper, genotypeFactory, stopCondition, false);
     this.populationSize = populationSize;
     this.w = w;
@@ -70,9 +63,10 @@ public class ParticleSwarmOptimization<S, Q>
 
   @Override
   public PSOState<S, Q> init(
-      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
+      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor
+  )
       throws SolverException {
-    PSOState<S, Q> newState = PSOState.empty(problem, stopCondition(), comparator(problem));
+    PSOState<S, Q> newState = PSOState.empty(problem, stopCondition());
     // init positions
     AtomicLong counter = new AtomicLong();
     List<? extends List<Double>> positions = genotypeFactory.build(populationSize, random);
@@ -104,15 +98,17 @@ public class ParticleSwarmOptimization<S, Q>
                   q,
                   0,
                   0,
-                  List.of());
+                  List.of()
+              );
             };
           })
           .toList()));
-      return newState.updated(
+      return newState.updatedWithIteration(
           populationSize,
           populationSize,
           individuals,
-          individuals.stream().min(comparator(problem)).orElseThrow());
+          individuals.stream().min(comparator(problem)).orElseThrow()
+      );
     } catch (InterruptedException e) {
       throw new SolverException(e);
     }
@@ -156,7 +152,8 @@ public class ParticleSwarmOptimization<S, Q>
                   newQuality,
                   state.nOfIterations(),
                   state.nOfIterations(),
-                  List.of(i.id()));
+                  List.of(i.id())
+              );
             };
           })
           .toList()));
@@ -166,7 +163,7 @@ public class ParticleSwarmOptimization<S, Q>
       if (comparator(state.problem()).compare(sortedIndividuals.get(0), knownBest) < 0) {
         knownBest = sortedIndividuals.get(0);
       }
-      return state.updated(populationSize, populationSize, sortedIndividuals, knownBest);
+      return state.updatedWithIteration(populationSize, populationSize, sortedIndividuals, knownBest);
     } catch (InterruptedException e) {
       throw new SolverException(e);
     }

@@ -59,7 +59,7 @@ public interface PSOState<S, Q>
         knownBest);
   }
 
-  default PSOState<S, Q> updated(
+  default PSOState<S, Q> updatedWithIteration(
       long nOfNewBirths,
       long nOfNewQualityEvaluations,
       Collection<PSOIndividual<S, Q>> listPopulation,

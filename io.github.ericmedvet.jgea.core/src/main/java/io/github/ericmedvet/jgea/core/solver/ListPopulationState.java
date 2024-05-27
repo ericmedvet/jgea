@@ -78,7 +78,7 @@ public interface ListPopulationState<
     return of(LocalDateTime.now(), 0, 0, problem, stopCondition, 0, 0, List.of());
   }
 
-  default ListPopulationState<I, G, S, Q, P> updated(
+  default ListPopulationState<I, G, S, Q, P> updatedWithIteration(
       long nOfNewBirths, long nOfNewQualityEvaluations, Collection<I> listPopulation) {
     return of(
         startingDateTime(),

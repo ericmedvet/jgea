@@ -73,7 +73,7 @@ public interface POCPopulationState<I extends Individual<G, S, Q>, G, S, Q, P ex
     return of(LocalDateTime.now(), 0, 0, problem, stopCondition, 0, 0, PartiallyOrderedCollection.from());
   }
 
-  default POCPopulationState<I, G, S, Q, P> updated(
+  default POCPopulationState<I, G, S, Q, P> updatedWithIteration(
       long nOfNewBirths, long nOfNewQualityEvaluations, PartiallyOrderedCollection<I> pocPopulation) {
     return of(
         startingDateTime(),

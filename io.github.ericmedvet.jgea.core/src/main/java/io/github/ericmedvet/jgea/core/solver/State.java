@@ -73,7 +73,7 @@ public interface State<P extends Problem<S>, S> {
     return Progress.NA;
   }
 
-  default State<P, S> updated() {
+  default State<P, S> updatedWithIteration() {
     return of(
         startingDateTime(),
         ChronoUnit.MILLIS.between(LocalDateTime.now(), startingDateTime()),

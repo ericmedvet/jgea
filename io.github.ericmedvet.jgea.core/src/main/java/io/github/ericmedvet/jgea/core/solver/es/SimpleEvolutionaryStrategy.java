@@ -18,12 +18,17 @@
  * =========================LICENSE_END==================================
  */
 
-package io.github.ericmedvet.jgea.core.solver;
+package io.github.ericmedvet.jgea.core.solver.es;
 
 import static io.github.ericmedvet.jgea.core.util.VectorUtils.*;
 
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
+import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSolver;
+import io.github.ericmedvet.jgea.core.solver.Individual;
+import io.github.ericmedvet.jgea.core.solver.ListPopulationState;
+import io.github.ericmedvet.jgea.core.solver.SolverException;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -36,13 +41,13 @@ import java.util.stream.IntStream;
 
 public class SimpleEvolutionaryStrategy<S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        ListPopulationState<
-            Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>,
-        TotalOrderQualityBasedProblem<S, Q>,
-        Individual<List<Double>, S, Q>,
-        List<Double>,
-        S,
-        Q> {
+    ListPopulationState<
+        Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>,
+            TotalOrderQualityBasedProblem<S, Q>,
+            Individual<List<Double>, S, Q>,
+            List<Double>,
+            S,
+            Q> {
 
   private static final Logger L = Logger.getLogger(SimpleEvolutionaryStrategy.class.getName());
   protected final int populationSize;
@@ -89,7 +94,7 @@ public class SimpleEvolutionaryStrategy<S, Q>
         (cg, s) -> Individual.from(cg, solutionMapper, problem.qualityFunction(), s.nOfIterations()),
         newState,
         executor));
-    return newState.updated(
+    return newState.updatedWithIteration(
         newIndividuals.size(),
         newIndividuals.size(),
         newIndividuals.stream().toList());
@@ -135,6 +140,6 @@ public class SimpleEvolutionaryStrategy<S, Q>
         state,
         executor);
     L.fine(String.format("Offspring and elite merged: %d individuals", newPopulation.size()));
-    return state.updated(nOfNewBirths, nOfNewBirths + (remap ? elites.size() : 0), newPopulation);
+    return state.updatedWithIteration(nOfNewBirths, nOfNewBirths + (remap ? elites.size() : 0), newPopulation);
   }
 }

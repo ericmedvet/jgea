@@ -18,7 +18,7 @@
  * =========================LICENSE_END==================================
  */
 
-package io.github.ericmedvet.jgea.core.solver;
+package io.github.ericmedvet.jgea.core.solver.es;
 
 import static io.github.ericmedvet.jgea.core.util.VectorUtils.*;
 
@@ -26,6 +26,11 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.sequence.FixedLengthListFactory;
+import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSolver;
+import io.github.ericmedvet.jgea.core.solver.Individual;
+import io.github.ericmedvet.jgea.core.solver.ListPopulationState;
+import io.github.ericmedvet.jgea.core.solver.SolverException;
+
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -45,13 +50,13 @@ import java.util.stream.Stream;
 
 public class OpenAIEvolutionaryStrategy<S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        ListPopulationState<
-            Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>,
-        TotalOrderQualityBasedProblem<S, Q>,
-        Individual<List<Double>, S, Q>,
-        List<Double>,
-        S,
-        Q> {
+    ListPopulationState<
+        Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>,
+            TotalOrderQualityBasedProblem<S, Q>,
+            Individual<List<Double>, S, Q>,
+            List<Double>,
+            S,
+            Q> {
 
   private final int batchSize;
 

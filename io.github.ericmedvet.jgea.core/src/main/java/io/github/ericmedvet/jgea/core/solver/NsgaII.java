@@ -179,7 +179,7 @@ public class NsgaII<G, S>
             Individual.from(cg, solutionMapper, s.problem().qualityFunction(), s.nOfIterations())),
         newState,
         executor));
-    return newState.updated(
+    return newState.updatedWithIteration(
         genotypes.size(),
         genotypes.size(),
         PartiallyOrderedCollection.from(individuals, partialComparator(problem)));
@@ -245,7 +245,7 @@ public class NsgaII<G, S>
         .toList();
     @SuppressWarnings({"unchecked", "rawtypes"})
     List<Individual<G, S, List<Double>>> newIndividuals = (List) rankedIndividuals;
-    return state.updated(
+    return state.updatedWithIteration(
         offspringChildGenotypes.size(),
         remap ? populationSize : 0,
         PartiallyOrderedCollection.from(newIndividuals, partialComparator(state.problem())));
