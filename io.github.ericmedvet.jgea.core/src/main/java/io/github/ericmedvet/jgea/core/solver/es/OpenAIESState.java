@@ -101,4 +101,20 @@ public interface OpenAIESState<S, Q>
         m,
         v);
   }
+
+  @Override
+  default OpenAIESState<S, Q> updatedWithProblem(TotalOrderQualityBasedProblem<S, Q> problem) {
+    return of(
+        startingDateTime(),
+        elapsedMillis(),
+        nOfIterations(),
+        problem,
+        stopCondition(),
+        nOfBirths(),
+        nOfQualityEvaluations(),
+        listPopulation(),
+        center(),
+        m(),
+        v());
+  }
 }

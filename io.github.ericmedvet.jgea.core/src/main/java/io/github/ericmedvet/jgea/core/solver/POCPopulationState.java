@@ -85,4 +85,17 @@ public interface POCPopulationState<I extends Individual<G, S, Q>, G, S, Q, P ex
         nOfQualityEvaluations() + nOfNewQualityEvaluations,
         pocPopulation);
   }
+
+  @Override
+  default POCPopulationState<I, G, S, Q, P> updatedWithProblem(P problem) {
+    return of(
+        startingDateTime(),
+        elapsedMillis(),
+        nOfIterations(),
+        problem,
+        stopCondition(),
+        nOfBirths(),
+        nOfQualityEvaluations(),
+        pocPopulation());
+  }
 }

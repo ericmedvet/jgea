@@ -81,4 +81,8 @@ public interface State<P extends Problem<S>, S> {
         problem(),
         stopCondition());
   }
+
+  default State<P, S> updatedWithProblem(P problem) {
+    return of(startingDateTime(), elapsedMillis(), nOfIterations(), problem, stopCondition());
+  }
 }

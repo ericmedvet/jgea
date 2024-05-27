@@ -18,19 +18,22 @@
  * =========================LICENSE_END==================================
  */
 
-package io.github.ericmedvet.jgea.core.solver;
+package io.github.ericmedvet.jgea.core.solver.cooperative;
 
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
+import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSolver;
+import io.github.ericmedvet.jgea.core.solver.Individual;
+import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
+import io.github.ericmedvet.jgea.core.solver.SolverException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -49,7 +52,18 @@ public class CooperativeSolver<
         S,
         Q>
     extends AbstractPopulationBasedIterativeSolver<
-        POCPopulationState<Individual<Void, S, Q>, Void, S, Q, QualityBasedProblem<S, Q>>,
+        CooperativeState<
+            T1,
+            T2,
+            G1,
+            G2,
+            S1,
+            S2,
+            S,
+            Q,
+            QualityBasedProblem<S1, Q>,
+            QualityBasedProblem<S2, Q>,
+            QualityBasedProblem<S, Q>>,
         QualityBasedProblem<S, Q>,
         Individual<Void, S, Q>,
         Void,
@@ -75,7 +89,20 @@ public class CooperativeSolver<
   public CooperativeSolver(
       Function<? super Void, ? extends S> solutionMapper,
       Factory<? extends Void> genotypeFactory,
-      Predicate<? super POCPopulationState<Individual<Void, S, Q>, Void, S, Q, QualityBasedProblem<S, Q>>>
+      Predicate<
+              ? super
+                  CooperativeState<
+                      T1,
+                      T2,
+                      G1,
+                      G2,
+                      S1,
+                      S2,
+                      S,
+                      Q,
+                      QualityBasedProblem<S1, Q>,
+                      QualityBasedProblem<S2, Q>,
+                      QualityBasedProblem<S, Q>>>
           stopCondition,
       boolean remap,
       AbstractPopulationBasedIterativeSolver<T1, QualityBasedProblem<S1, Q>, Individual<G1, S1, Q>, G1, S1, Q>
@@ -95,89 +122,21 @@ public class CooperativeSolver<
     this.qualityAggregator = qualityAggregator;
   }
 
-  public record State<
-          T1 extends POCPopulationState<Individual<G1, S1, Q>, G1, S1, Q, QualityBasedProblem<S1, Q>>,
-          T2 extends POCPopulationState<Individual<G2, S2, Q>, G2, S2, Q, QualityBasedProblem<S2, Q>>,
+  @Override
+  public CooperativeState<
+          T1,
+          T2,
           G1,
           G2,
           S1,
           S2,
           S,
-          Q>(
-      LocalDateTime startingDateTime,
-      long elapsedMillis,
-      long nOfIterations,
-      QualityBasedProblem<S, Q> problem,
-      Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
-      long nOfBirths,
-      long nOfQualityEvaluations,
-      PartiallyOrderedCollection<Individual<Void, S, Q>> pocPopulation,
-      T1 state1,
-      T2 state2)
-      implements POCPopulationState<Individual<Void, S, Q>, Void, S, Q, QualityBasedProblem<S, Q>>,
-          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress<QualityBasedProblem<S, Q>, S> {
-    public static <
-            T1 extends POCPopulationState<Individual<G1, S1, Q>, G1, S1, Q, QualityBasedProblem<S1, Q>>,
-            T2 extends POCPopulationState<Individual<G2, S2, Q>, G2, S2, Q, QualityBasedProblem<S2, Q>>,
-            G1,
-            G2,
-            S1,
-            S2,
-            S,
-            Q>
-        State<T1, T2, G1, G2, S1, S2, S, Q> from(
-            QualityBasedProblem<S, Q> problem,
-            T1 state1,
-            T2 state2,
-            Collection<Individual<Void, S, Q>> individuals,
-            PartialComparator<? super Individual<Void, S, Q>> partialComparator,
-            Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition) {
-      return new State<>(
-          LocalDateTime.now(),
-          0,
-          0,
-          problem,
-          stopCondition,
-          individuals.size(),
-          individuals.size(),
-          PartiallyOrderedCollection.from(individuals, partialComparator),
-          state1,
-          state2);
-    }
-
-    public static <
-            T1 extends POCPopulationState<Individual<G1, S1, Q>, G1, S1, Q, QualityBasedProblem<S1, Q>>,
-            T2 extends POCPopulationState<Individual<G2, S2, Q>, G2, S2, Q, QualityBasedProblem<S2, Q>>,
-            G1,
-            G2,
-            S1,
-            S2,
-            S,
-            Q>
-        State<T1, T2, G1, G2, S1, S2, S, Q> from(
-            State<T1, T2, G1, G2, S1, S2, S, Q> state,
-            T1 state1,
-            T2 state2,
-            Collection<Individual<Void, S, Q>> individuals,
-            PartialComparator<? super Individual<Void, S, Q>> partialComparator) {
-      return new State<>(
-          state.startingDateTime,
-          ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
-          state.nOfIterations() + 1,
-          state.problem,
-          state.stopCondition,
-          state.nOfBirths + individuals.size(),
-          state.nOfQualityEvaluations + individuals.size(),
-          PartiallyOrderedCollection.from(individuals, partialComparator),
-          state1,
-          state2);
-    }
-  }
-
-  @Override
-  public POCPopulationState<Individual<Void, S, Q>, Void, S, Q, QualityBasedProblem<S, Q>> init(
-      QualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
-      throws SolverException {
+          Q,
+          QualityBasedProblem<S1, Q>,
+          QualityBasedProblem<S2, Q>,
+          QualityBasedProblem<S, Q>>
+      init(QualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
+          throws SolverException {
     QualityBasedProblem<S1, Q> dummyProblem1 =
         QualityBasedProblem.create(s1 -> null, (q1, q2) -> PartialComparator.PartialComparatorOutcome.SAME);
     QualityBasedProblem<S2, Q> dummyProblem2 =
@@ -186,6 +145,7 @@ public class CooperativeSolver<
         extractor1.select(solver1.init(dummyProblem1, random, executor).pocPopulation(), random);
     Collection<Individual<G2, S2, Q>> representatives2 =
         extractor2.select(solver2.init(dummyProblem2, random, executor).pocPopulation(), random);
+    AtomicLong counter = new AtomicLong(0);
     Collection<Individual<Void, S, Q>> evaluatedIndividuals = Collections.synchronizedCollection(new ArrayList<>());
     QualityBasedProblem<S1, Q> problem1 = QualityBasedProblem.create(
         s1 -> {
@@ -196,8 +156,14 @@ public class CooperativeSolver<
               .map(s -> problem.qualityFunction().apply(s))
               .toList();
           IntStream.range(0, solutions.size())
-              .forEach(i -> evaluatedIndividuals.add(
-                  Individual.of(null, solutions.get(i), qualities.get(i), 0, 0)));
+              .forEach(i -> evaluatedIndividuals.add(Individual.of(
+                  counter.getAndIncrement(),
+                  null,
+                  solutions.get(i),
+                  qualities.get(i),
+                  0,
+                  0,
+                  List.of())));
           return qualityAggregator.apply(qualities);
         },
         problem.qualityComparator());
@@ -210,73 +176,119 @@ public class CooperativeSolver<
               .map(s -> problem.qualityFunction().apply(s))
               .toList();
           IntStream.range(0, solutions.size())
-              .forEach(i -> evaluatedIndividuals.add(
-                  Individual.of(null, solutions.get(i), qualities.get(i), 0, 0)));
+              .forEach(i -> evaluatedIndividuals.add(Individual.of(
+                  counter.getAndIncrement(),
+                  null,
+                  solutions.get(i),
+                  qualities.get(i),
+                  0,
+                  0,
+                  List.of())));
           return qualityAggregator.apply(qualities);
         },
         problem.qualityComparator());
     T1 state1 = solver1.init(problem1, random, executor);
     T2 state2 = solver2.init(problem2, random, executor);
-    return State.from(problem, state1, state2, evaluatedIndividuals, partialComparator(problem), stopCondition());
+    CooperativeState<
+            T1,
+            T2,
+            G1,
+            G2,
+            S1,
+            S2,
+            S,
+            Q,
+            QualityBasedProblem<S1, Q>,
+            QualityBasedProblem<S2, Q>,
+            QualityBasedProblem<S, Q>>
+        newState = CooperativeState.empty(problem, stopCondition());
+    return newState.updatedWithIteration(
+        evaluatedIndividuals.size(), evaluatedIndividuals.size(), state1, state2, evaluatedIndividuals);
   }
 
   @Override
-  public POCPopulationState<Individual<Void, S, Q>, Void, S, Q, QualityBasedProblem<S, Q>> update(
-      QualityBasedProblem<S, Q> problem,
-      RandomGenerator random,
-      ExecutorService executor,
-      POCPopulationState<Individual<Void, S, Q>, Void, S, Q, QualityBasedProblem<S, Q>> state)
-      throws SolverException {
-    State<T1, T2, G1, G2, S1, S2, S, Q> coState = (State<T1, T2, G1, G2, S1, S2, S, Q>) state;
-    Collection<Individual<G1, S1, Q>> representatives1 = extractor1.select(coState.state1.pocPopulation(), random);
-    Collection<Individual<G2, S2, Q>> representatives2 = extractor2.select(coState.state2.pocPopulation(), random);
+  public CooperativeState<
+          T1,
+          T2,
+          G1,
+          G2,
+          S1,
+          S2,
+          S,
+          Q,
+          QualityBasedProblem<S1, Q>,
+          QualityBasedProblem<S2, Q>,
+          QualityBasedProblem<S, Q>>
+      update(
+          RandomGenerator random,
+          ExecutorService executor,
+          CooperativeState<
+                  T1,
+                  T2,
+                  G1,
+                  G2,
+                  S1,
+                  S2,
+                  S,
+                  Q,
+                  QualityBasedProblem<S1, Q>,
+                  QualityBasedProblem<S2, Q>,
+                  QualityBasedProblem<S, Q>>
+              coState)
+          throws SolverException {
+    Collection<Individual<G1, S1, Q>> representatives1 =
+        extractor1.select(coState.state1().pocPopulation(), random);
+    Collection<Individual<G2, S2, Q>> representatives2 =
+        extractor2.select(coState.state2().pocPopulation(), random);
     Collection<Individual<Void, S, Q>> evaluatedIndividuals = Collections.synchronizedCollection(new ArrayList<>());
+    AtomicLong counter = new AtomicLong(0);
     QualityBasedProblem<S1, Q> problem1 = QualityBasedProblem.create(
         s1 -> {
           List<S> solutions = representatives2.stream()
               .map(s2 -> solutionAggregator.apply(s1, s2.solution()))
               .toList();
           List<Q> qualities = solutions.stream()
-              .map(s -> problem.qualityFunction().apply(s))
+              .map(s -> coState.problem().qualityFunction().apply(s))
               .toList();
           IntStream.range(0, solutions.size())
-              .forEach(i -> evaluatedIndividuals.add(
-                  Individual.of(null, solutions.get(i), qualities.get(i), 0, 0)));
+              .forEach(i -> evaluatedIndividuals.add(Individual.of(
+                  counter.getAndIncrement(),
+                  null,
+                  solutions.get(i),
+                  qualities.get(i),
+                  0,
+                  0,
+                  List.of())));
           return qualityAggregator.apply(qualities);
         },
-        problem.qualityComparator());
+        coState.problem().qualityComparator());
     QualityBasedProblem<S2, Q> problem2 = QualityBasedProblem.create(
         s2 -> {
           List<S> solutions = representatives1.stream()
               .map(s1 -> solutionAggregator.apply(s1.solution(), s2))
               .toList();
           List<Q> qualities = solutions.stream()
-              .map(s -> problem.qualityFunction().apply(s))
+              .map(s -> coState.problem().qualityFunction().apply(s))
               .toList();
           IntStream.range(0, solutions.size())
-              .forEach(i -> evaluatedIndividuals.add(
-                  Individual.of(null, solutions.get(i), qualities.get(i), 0, 0)));
+              .forEach(i -> evaluatedIndividuals.add(Individual.of(
+                  counter.getAndIncrement(),
+                  null,
+                  solutions.get(i),
+                  qualities.get(i),
+                  0,
+                  0,
+                  List.of())));
           return qualityAggregator.apply(qualities);
         },
-        problem.qualityComparator());
-    T1 state1 = solver1.update(problem1, random, executor, coState.state1);
-    T2 state2 = solver2.update(problem2, random, executor, coState.state2);
-    return State.from(coState, state1, state2, evaluatedIndividuals, partialComparator(problem));
-  }
-
-  @Override
-  protected Individual<Void, S, Q> newIndividual(
-      Void genotype,
-      POCPopulationState<Individual<Void, S, Q>, Void, S, Q, QualityBasedProblem<S, Q>> state,
-      QualityBasedProblem<S, Q> problem) {
-    throw new UnsupportedOperationException("This method should not be called");
-  }
-
-  @Override
-  protected Individual<Void, S, Q> updateIndividual(
-      Individual<Void, S, Q> individual,
-      POCPopulationState<Individual<Void, S, Q>, Void, S, Q, QualityBasedProblem<S, Q>> state,
-      QualityBasedProblem<S, Q> problem) {
-    throw new UnsupportedOperationException("This method should not be called");
+        coState.problem().qualityComparator());
+    @SuppressWarnings("unchecked")
+    T1 state1 = (T1) coState.state1().updatedWithProblem(problem1);
+    @SuppressWarnings("unchecked")
+    T2 state2 = (T2) coState.state2().updatedWithProblem(problem2);
+    state1 = solver1.update(random, executor, state1);
+    state2 = solver2.update(random, executor, state2);
+    return coState.updatedWithIteration(
+        evaluatedIndividuals.size(), evaluatedIndividuals.size(), state1, state2, evaluatedIndividuals);
   }
 }

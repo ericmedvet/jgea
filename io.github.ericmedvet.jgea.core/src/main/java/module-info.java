@@ -51,6 +51,7 @@ module io.github.ericmedvet.jgea.core {
   exports io.github.ericmedvet.jgea.core.representation.grammar.string;
   exports io.github.ericmedvet.jgea.core.solver.pso;
   exports io.github.ericmedvet.jgea.core.solver.es;
+  exports io.github.ericmedvet.jgea.core.solver.cooperative;
 
   requires io.github.ericmedvet.jsdynsym.core;
   requires io.github.ericmedvet.jnb.datastructure;

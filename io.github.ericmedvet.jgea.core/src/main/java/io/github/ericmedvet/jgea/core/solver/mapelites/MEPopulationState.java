@@ -95,4 +95,18 @@ public interface MEPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q>>
         descriptors(),
         mapOfElites);
   }
+
+  @Override
+  default MEPopulationState<G, S, Q, P> updatedWithProblem(P problem) {
+    return of(
+        startingDateTime(),
+        elapsedMillis(),
+        nOfIterations(),
+        problem,
+        stopCondition(),
+        nOfBirths(),
+        nOfQualityEvaluations(),
+        descriptors(),
+        mapOfElites());
+  }
 }

@@ -93,4 +93,17 @@ public interface GridPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q
         nOfQualityEvaluations() + nOfNewQualityEvaluations,
         gridPopulation);
   }
+
+  @Override
+  default GridPopulationState<G, S, Q, P> updatedWithProblem(P problem) {
+    return of(
+        startingDateTime(),
+        elapsedMillis(),
+        nOfIterations(),
+        problem,
+        stopCondition(),
+        nOfBirths(),
+        nOfQualityEvaluations(),
+        gridPopulation());
+  }
 }

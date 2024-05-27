@@ -90,4 +90,17 @@ public interface ListPopulationState<
         nOfQualityEvaluations() + nOfNewQualityEvaluations,
         listPopulation);
   }
+
+  @Override
+  default ListPopulationState<I, G, S, Q, P> updatedWithProblem(P problem) {
+    return of(
+        startingDateTime(),
+        elapsedMillis(),
+        nOfIterations(),
+        problem,
+        stopCondition(),
+        nOfBirths(),
+        nOfQualityEvaluations(),
+        listPopulation());
+  }
 }

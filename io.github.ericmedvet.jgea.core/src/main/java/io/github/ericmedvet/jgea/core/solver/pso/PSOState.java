@@ -75,4 +75,18 @@ public interface PSOState<S, Q>
         listPopulation,
         knownBest);
   }
+
+  @Override
+  default PSOState<S, Q> updatedWithProblem(TotalOrderQualityBasedProblem<S, Q> problem) {
+    return of(
+        startingDateTime(),
+        elapsedMillis(),
+        nOfIterations(),
+        problem,
+        stopCondition(),
+        nOfBirths(),
+        nOfQualityEvaluations(),
+        listPopulation(),
+        knownBest());
+  }
 }

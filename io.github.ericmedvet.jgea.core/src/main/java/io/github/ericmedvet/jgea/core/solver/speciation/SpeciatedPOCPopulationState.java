@@ -92,4 +92,18 @@ public interface SpeciatedPOCPopulationState<G, S, Q, P extends QualityBasedProb
         pocPopulation,
         parentSpecies);
   }
+
+  @Override
+  default SpeciatedPOCPopulationState<G, S, Q, P> updatedWithProblem(P problem) {
+    return of(
+        startingDateTime(),
+        elapsedMillis(),
+        nOfIterations(),
+        problem,
+        stopCondition(),
+        nOfBirths(),
+        nOfQualityEvaluations(),
+        pocPopulation(),
+        parentSpecies());
+  }
 }

@@ -173,4 +173,25 @@ public interface CMAESState<S, Q>
         D(),
         lastEigenUpdateIteration());
   }
+
+  @Override
+  default CMAESState<S, Q> updatedWithProblem(TotalOrderQualityBasedProblem<S, Q> problem) {
+    return of(
+        startingDateTime(),
+        elapsedMillis(),
+        nOfIterations(),
+        problem,
+        stopCondition(),
+        nOfBirths(),
+        nOfQualityEvaluations(),
+        listPopulation(),
+        means(),
+        sigma(),
+        sEvolutionPath(),
+        cEvolutionPath(),
+        B(),
+        C(),
+        D(),
+        lastEigenUpdateIteration());
+  }
 }
