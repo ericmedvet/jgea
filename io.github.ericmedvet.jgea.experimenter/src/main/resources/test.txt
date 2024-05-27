@@ -8,7 +8,8 @@ ea.experiment(
                 initialRobotXRange = m.range(min = 0.5; max = 0.5);
                 initialRobotYRange = m.range(min = 0.5; max = 0.5)
             );
-            f = ds.e.n.pointFinalD();
+            stopCondition = ds.e.n.distanceFromTarget();
+            f = ds.e.n.finalTimePlusD();
             type = MINIMIZE
         );
         solver = ea.s.ga(
