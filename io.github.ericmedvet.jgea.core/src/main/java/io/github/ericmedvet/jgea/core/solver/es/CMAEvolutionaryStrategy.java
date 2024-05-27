@@ -100,13 +100,14 @@ public class CMAEvolutionaryStrategy<S, Q>
 
   private CMAESIndividual<S, Q> buildNewIndividual(
       ChildGenotype<List<Double>> childGenotype, CMAESState<S, Q> state, RandomGenerator random) {
-    S solution = solutionMapper.apply(childGenotype.genotype());
     double[] zK = buildArray(p, random::nextGaussian);
     double[] yK = state.B().preMultiply(state.D().preMultiply(zK));
     double[] xK = sum(state.means(), mult(yK, state.sigma()));
+    List<Double> g = boxed(xK);
+    S solution = solutionMapper.apply(g);
     return CMAESIndividual.of(
         childGenotype.id(),
-        boxed(xK),
+        g,
         solution,
         state.problem().qualityFunction().apply(solution),
         state.nOfIterations(),
