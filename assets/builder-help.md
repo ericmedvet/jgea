@@ -1963,7 +1963,7 @@ Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;S, <
 
 ### Builder `ea.solver.openAiEs()`
 
-`ea.s.openAiEs(name; mapper; initialMinV; initialMaxV; sigma; batchSize; nEval)`
+`ea.s.openAiEs(name; mapper; initialMinV; initialMaxV; sigma; batchSize; stepSize; beta1; beta2; epsilon; nEval)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
@@ -1973,6 +1973,10 @@ Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;S, <
 | `initialMaxV` | d | `1.0` | <code>double</code> |
 | `sigma` | d | `0.02` | <code>double</code> |
 | `batchSize` | i | `30` | <code>int</code> |
+| `stepSize` | d | `0.02` | <code>double</code> |
+| `beta1` | d | `0.9` | <code>double</code> |
+| `beta2` | d | `0.999` | <code>double</code> |
+| `epsilon` | d | `1.0E-8` | <code>double</code> |
 | `nEval` | i | `1000` | <code>int</code> |
 
 Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;S, <abbr title="io.github.ericmedvet.jgea.core.solver.es.OpenAIEvolutionaryStrategy">OpenAIEvolutionaryStrategy</abbr>&lt;S, Q&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Solvers.openAiEs()` by jgea-experimenter:2.6.2-SNAPSHOT
