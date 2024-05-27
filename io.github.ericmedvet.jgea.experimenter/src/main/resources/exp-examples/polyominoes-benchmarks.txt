@@ -38,12 +38,12 @@ ea.experiment(
       image = ea.d.polyomino(maxW = 12; maxH = 12);
       function = ea.f.solution(of = ea.f.best());
       filePathTemplate = "../bests-{problem.target}-{solver.mapper.grammar.name}-{randomGenerator.seed:%04d}.mp4";
-      condition = ea.predicate.all(conditions = [
-        ea.predicate.inS(
+      condition = predicate.all(conditions = [
+        predicate.inS(
           f = ea.f.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
           values = ["1"]
         );
-        ea.predicate.inS(
+        predicate.inS(
           f = ea.f.runKey(runKey = ea.misc.sEntry(key = "target"; value = "{problem.target}"));
           values = ["dog"; "circle"]
         )
@@ -62,12 +62,12 @@ ea.experiment(
       );
       function = ea.f.solution(of = ea.f.best());
       filePathTemplate = "../bests-dogcolors-{problem.target}-{solver.mapper.grammar.name}-{randomGenerator.seed:%04d}.mp4";
-      condition = ea.predicate.all(conditions = [
-        ea.predicate.inS(
+      condition = predicate.all(conditions = [
+        predicate.inS(
           f = ea.f.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
           values = ["1"]
         );
-        ea.predicate.inS(
+        predicate.inS(
           f = ea.f.runKey(runKey = ea.misc.sEntry(key = "grammar"; value = "{solver.mapper.grammar.name}"));
           values = ["dog-shape"]
         )
