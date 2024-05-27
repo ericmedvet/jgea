@@ -119,7 +119,7 @@ public abstract class AbstractStandardEvolver<
   @Override
   public T init(P problem, RandomGenerator random, ExecutorService executor) throws SolverException {
     T newState = init(problem);
-    AtomicLong counter = new AtomicLong(newState.nOfBirths());
+    AtomicLong counter = new AtomicLong(0);
     List<? extends G> genotypes = genotypeFactory.build(populationSize, random);
     return update(
         newState,

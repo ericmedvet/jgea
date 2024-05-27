@@ -107,7 +107,7 @@ public class OpenAIEvolutionaryStrategy<S, Q>
   }
 
   @Override
-  public OpenAIESState<S, Q> update(RandomGenerator random, ExecutorService executor, OpenAIESState<S, Q> esState)
+  public OpenAIESState<S, Q> update(RandomGenerator random, ExecutorService executor, OpenAIESState<S, Q> state)
       throws SolverException {
     // produce noise vectors
     List<List<Double>> samples = IntStream.range(0, batchSize)
@@ -115,25 +115,25 @@ public class OpenAIEvolutionaryStrategy<S, Q>
         .toList();
     // evaluates scores (ie., map genotypes to individuals)
     List<List<Double>> plusGenotypes =
-        samples.stream().map(s -> sum(s, esState.center())).toList();
+        samples.stream().map(s -> sum(s, state.center())).toList();
     List<List<Double>> minusGenotypes =
-        samples.stream().map(s -> sum(mult(s, -1), esState.center())).toList();
-    AtomicLong counter = new AtomicLong(esState.nOfBirths());
+        samples.stream().map(s -> sum(mult(s, -1), state.center())).toList();
+    AtomicLong counter = new AtomicLong(state.nOfBirths());
     List<Long> parentIds =
-        esState.listPopulation().stream().map(Individual::id).toList();
+        state.listPopulation().stream().map(Individual::id).toList();
     List<Individual<List<Double>, S, Q>> newIndividuals = getAll(map(
             Stream.of(plusGenotypes, minusGenotypes).flatMap(List::stream).toList().stream()
                 .map(g -> new ChildGenotype<>(counter.getAndIncrement(), g, parentIds))
                 .toList(),
             (cg, s, r) ->
                 Individual.from(cg, solutionMapper, s.problem().qualityFunction(), s.nOfIterations()),
-            esState,
+            state,
             random,
             executor))
         .stream()
         .toList();
     // compute normalized ranks
-    Comparator<Integer> integerComparator = partialComparator(esState.problem())
+    Comparator<Integer> integerComparator = partialComparator(state.problem())
         .comparing(newIndividuals::get)
         .comparator();
     List<Double> normalizedRanks = IntStream.range(0, newIndividuals.size())
@@ -143,18 +143,18 @@ public class OpenAIEvolutionaryStrategy<S, Q>
         .toList();
     // compute estimated gradient
     double[] g = unboxed(meanList(IntStream.range(0, normalizedRanks.size())
-        .mapToObj(i -> mult(diff(newIndividuals.get(i).genotype(), esState.center()), normalizedRanks.get(i)))
+        .mapToObj(i -> mult(diff(newIndividuals.get(i).genotype(), state.center()), normalizedRanks.get(i)))
         .toList()));
     // optimize with adam (see https://en.wikipedia.org/wiki/Stochastic_gradient_descent#Adam)
-    double[] m = sum(mult(esState.m(), beta1), mult(g, 1 - beta1));
-    double[] v = sum(mult(esState.v(), beta2), mult(mult(g, g), 1d - beta2));
+    double[] m = sum(mult(state.m(), beta1), mult(g, 1 - beta1));
+    double[] v = sum(mult(state.v(), beta2), mult(mult(g, g), 1d - beta2));
     double[] hatM = mult(m, 1d / (1d - beta1));
     double[] hatV = mult(v, 1d / (1d - beta2));
     double a = stepSize
-        * Math.sqrt(1d - Math.pow(beta2, esState.nOfIterations() + 1))
-        / (1d - Math.pow(beta1, esState.nOfIterations() + 1));
+        * Math.sqrt(1d - Math.pow(beta2, state.nOfIterations() + 1))
+        / (1d - Math.pow(beta1, state.nOfIterations() + 1));
     double[] dCenter = mult(div(hatM, sum(sqrt(hatV), epsilon)), -a);
-    double[] center = sum(esState.center(), dCenter);
-    return esState.updatedWithIteration(newIndividuals, center, m, v);
+    double[] center = sum(state.center(), dCenter);
+    return state.updatedWithIteration(newIndividuals, center, m, v);
   }
 }

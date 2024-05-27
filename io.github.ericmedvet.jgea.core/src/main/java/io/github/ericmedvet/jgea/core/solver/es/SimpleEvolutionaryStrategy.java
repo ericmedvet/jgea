@@ -84,7 +84,7 @@ public class SimpleEvolutionaryStrategy<S, Q>
           throws SolverException {
     ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
         newState = ListPopulationState.empty(problem, stopCondition());
-    AtomicLong counter = new AtomicLong(newState.nOfBirths());
+    AtomicLong counter = new AtomicLong(0);
     List<? extends List<Double>> genotypes = genotypeFactory.build(populationSize, random);
     Collection<Individual<List<Double>, S, Q>> newIndividuals = getAll(map(
         genotypes.stream()

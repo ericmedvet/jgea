@@ -41,9 +41,14 @@ import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
-public class CellularAutomataBasedSolver<G, S, Q, P extends QualityBasedProblem<S, Q>>
+public class CellularAutomataBasedSolver<G, S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        GridPopulationState<G, S, Q, P>, P, Individual<G, S, Q>, G, S, Q> {
+        GridPopulationState<G, S, Q, QualityBasedProblem<S, Q>>,
+        QualityBasedProblem<S, Q>,
+        Individual<G, S, Q>,
+        G,
+        S,
+        Q> {
 
   protected final Map<GeneticOperator<G>, Double> operators;
   protected final Selector<? super Individual<G, S, Q>> parentSelector;
@@ -54,7 +59,7 @@ public class CellularAutomataBasedSolver<G, S, Q, P extends QualityBasedProblem<
   public CellularAutomataBasedSolver(
       Function<? super G, ? extends S> solutionMapper,
       Factory<? extends G> genotypeFactory,
-      Predicate<? super GridPopulationState<G, S, Q, P>> stopCondition,
+      Predicate<? super GridPopulationState<G, S, Q, QualityBasedProblem<S, Q>>> stopCondition,
       Grid<Boolean> substrate,
       Neighborhood neighborhood,
       double keepProbability,
@@ -91,9 +96,11 @@ public class CellularAutomataBasedSolver<G, S, Q, P extends QualityBasedProblem<
   }
 
   @Override
-  public GridPopulationState<G, S, Q, P> init(P problem, RandomGenerator random, ExecutorService executor)
+  public GridPopulationState<G, S, Q, QualityBasedProblem<S, Q>> init(
+      QualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
       throws SolverException {
-    GridPopulationState<G, S, Q, P> newState = GridPopulationState.empty(problem, stopCondition());
+    GridPopulationState<G, S, Q, QualityBasedProblem<S, Q>> newState =
+        GridPopulationState.empty(problem, stopCondition());
     List<Grid.Key> freeCells =
         substrate.keys().stream().filter(substrate::get).toList();
     AtomicLong counter = new AtomicLong(0);
@@ -117,8 +124,10 @@ public class CellularAutomataBasedSolver<G, S, Q, P extends QualityBasedProblem<
   }
 
   @Override
-  public GridPopulationState<G, S, Q, P> update(
-      RandomGenerator random, ExecutorService executor, GridPopulationState<G, S, Q, P> state)
+  public GridPopulationState<G, S, Q, QualityBasedProblem<S, Q>> update(
+      RandomGenerator random,
+      ExecutorService executor,
+      GridPopulationState<G, S, Q, QualityBasedProblem<S, Q>> state)
       throws SolverException {
     AtomicLong counter = new AtomicLong(state.nOfBirths());
     List<Callable<CellProcessOutcome<Individual<G, S, Q>>>> callables = state.gridPopulation().entries().stream()
@@ -140,7 +149,7 @@ public class CellularAutomataBasedSolver<G, S, Q, P extends QualityBasedProblem<
 
   private Callable<CellProcessOutcome<Individual<G, S, Q>>> processCell(
       Grid.Entry<Individual<G, S, Q>> entry,
-      GridPopulationState<G, S, Q, P> state,
+      GridPopulationState<G, S, Q, QualityBasedProblem<S, Q>> state,
       RandomGenerator random,
       AtomicLong counter) {
     return () -> {

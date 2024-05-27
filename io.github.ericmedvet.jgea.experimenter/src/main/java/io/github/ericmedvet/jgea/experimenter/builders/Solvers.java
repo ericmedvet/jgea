@@ -24,7 +24,6 @@ import io.github.ericmedvet.jgea.core.InvertibleMapper;
 import io.github.ericmedvet.jgea.core.distance.Jaccard;
 import io.github.ericmedvet.jgea.core.operator.GeneticOperator;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
-import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.graph.*;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.Constant;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.Input;
@@ -60,7 +59,7 @@ public class Solvers {
   private Solvers() {}
 
   @SuppressWarnings("unused")
-  public static <G, S, Q> Function<S, CellularAutomataBasedSolver<G, S, Q, QualityBasedProblem<S, Q>>> cabea(
+  public static <G, S, Q> Function<S, CellularAutomataBasedSolver<G, S, Q>> cabea(
       @Param(value = "name", dS = "cabea") String name,
       @Param("representation") Function<G, Representation<G>> representation,
       @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<G, S> mapper,
