@@ -4,18 +4,17 @@ import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.ListPopulationState;
 import io.github.ericmedvet.jgea.core.solver.State;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
-
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
 
-public interface CMAESState<S, Q> extends ListPopulationState<
-    CMAESIndividual<S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>> {
+public interface CMAESState<S, Q>
+    extends ListPopulationState<CMAESIndividual<S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>> {
 
   RealMatrix B();
 
@@ -34,12 +33,16 @@ public interface CMAESState<S, Q> extends ListPopulationState<
   double sigma();
 
   static <S, Q> CMAESState<S, Q> empty(
-      TotalOrderQualityBasedProblem<S, Q> problem,
-      Predicate<State<?, ?>> stopCondition,
-      double[] means
-  ) {
+      TotalOrderQualityBasedProblem<S, Q> problem, Predicate<State<?, ?>> stopCondition, double[] means) {
     return of(
-        LocalDateTime.now(), 0, 0, problem, stopCondition, 0, 0, List.of(),
+        LocalDateTime.now(),
+        0,
+        0,
+        problem,
+        stopCondition,
+        0,
+        0,
+        List.of(),
         means,
         0.5,
         new double[means.length],
@@ -47,8 +50,7 @@ public interface CMAESState<S, Q> extends ListPopulationState<
         MatrixUtils.createRealIdentityMatrix(means.length),
         MatrixUtils.createRealIdentityMatrix(means.length),
         MatrixUtils.createRealIdentityMatrix(means.length),
-        0
-    );
+        0);
   }
 
   static <S, Q> CMAESState<S, Q> of(
@@ -67,8 +69,7 @@ public interface CMAESState<S, Q> extends ListPopulationState<
       RealMatrix B,
       RealMatrix C,
       RealMatrix D,
-      long lastEigenUpdateIteration
-  ) {
+      long lastEigenUpdateIteration) {
     record HardState<S, Q>(
         LocalDateTime startingDateTime,
         long elapsedMillis,
@@ -86,12 +87,10 @@ public interface CMAESState<S, Q> extends ListPopulationState<
         RealMatrix B,
         RealMatrix C,
         RealMatrix D,
-        long lastEigenUpdateIteration
-    ) implements CMAESState<S, Q> {}
-    Comparator<CMAESIndividual<S, Q>> comparator = (i1, i2) -> problem.totalOrderComparator().compare(
-        i1.quality(),
-        i2.quality()
-    );
+        long lastEigenUpdateIteration)
+        implements CMAESState<S, Q> {}
+    Comparator<CMAESIndividual<S, Q>> comparator =
+        (i1, i2) -> problem.totalOrderComparator().compare(i1.quality(), i2.quality());
     List<CMAESIndividual<S, Q>> sortedListPopulation =
         listPopulation.stream().sorted(comparator).toList();
     return new HardState<>(
@@ -102,7 +101,7 @@ public interface CMAESState<S, Q> extends ListPopulationState<
         stopCondition,
         nOfBirths,
         nOfQualityEvaluations,
-        PartiallyOrderedCollection.from(listPopulation, comparator),
+        PartiallyOrderedCollection.from(sortedListPopulation, comparator),
         sortedListPopulation,
         means,
         sigma,
@@ -111,21 +110,18 @@ public interface CMAESState<S, Q> extends ListPopulationState<
         B,
         C,
         D,
-        lastEigenUpdateIteration
-    );
+        lastEigenUpdateIteration);
   }
 
-  default CMAESState<S,Q> updatedWithIteration(
-      Collection<CMAESIndividual<S, Q>> listPopulation
-  ) {
+  default CMAESState<S, Q> updatedWithIteration(Collection<CMAESIndividual<S, Q>> listPopulation) {
     return of(
         startingDateTime(),
         ChronoUnit.MILLIS.between(LocalDateTime.now(), startingDateTime()),
-        nOfIterations()+1,
+        nOfIterations() + 1,
         problem(),
         stopCondition(),
-        nOfBirths()+listPopulation.size(),
-        nOfQualityEvaluations()+listPopulation.size(),
+        nOfBirths() + listPopulation.size(),
+        nOfQualityEvaluations() + listPopulation.size(),
         listPopulation,
         means(),
         sigma(),
@@ -134,13 +130,10 @@ public interface CMAESState<S, Q> extends ListPopulationState<
         B(),
         C(),
         D(),
-        lastEigenUpdateIteration()
-    );
+        lastEigenUpdateIteration());
   }
 
-  default CMAESState<S, Q> updatedWithMatrices(
-      RealMatrix B, RealMatrix D
-  ) {
+  default CMAESState<S, Q> updatedWithMatrices(RealMatrix B, RealMatrix D) {
     return of(
         startingDateTime(),
         elapsedMillis(),
@@ -157,17 +150,11 @@ public interface CMAESState<S, Q> extends ListPopulationState<
         B,
         C(),
         D,
-        nOfIterations()
-    );
+        nOfIterations());
   }
 
   default CMAESState<S, Q> updatedWithPaths(
-      double[] means,
-      double sigma,
-      double[] sEvolutionPath,
-      double[] cEvolutionPath,
-      RealMatrix C
-  ) {
+      double[] means, double sigma, double[] sEvolutionPath, double[] cEvolutionPath, RealMatrix C) {
     return of(
         startingDateTime(),
         elapsedMillis(),
@@ -184,7 +171,6 @@ public interface CMAESState<S, Q> extends ListPopulationState<
         B(),
         C,
         D(),
-        lastEigenUpdateIteration()
-    );
+        lastEigenUpdateIteration());
   }
 }

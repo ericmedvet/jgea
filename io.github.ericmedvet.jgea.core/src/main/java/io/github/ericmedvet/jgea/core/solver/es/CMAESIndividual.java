@@ -1,17 +1,15 @@
 package io.github.ericmedvet.jgea.core.solver.es;
 
 import io.github.ericmedvet.jgea.core.solver.Individual;
-import io.github.ericmedvet.jgea.core.solver.pso.PSOIndividual;
-
 import java.util.Collection;
 import java.util.List;
 
 public interface CMAESIndividual<S, Q> extends Individual<List<Double>, S, Q> {
-  List<Double> z();
+  double[] x();
 
-  List<Double> y();
+  double[] y();
 
-  List<Double> x();
+  double[] z();
 
   static <S, Q> CMAESIndividual<S, Q> of(
       long id,
@@ -21,10 +19,9 @@ public interface CMAESIndividual<S, Q> extends Individual<List<Double>, S, Q> {
       long genotypeBirthIteration,
       long qualityMappingIteration,
       Collection<Long> parentIds,
-      List<Double> x,
-      List<Double> y,
-      List<Double> z
-  ) {
+      double[] x,
+      double[] y,
+      double[] z) {
     record HardIndividual<S, Q>(
         long id,
         List<Double> genotype,
@@ -33,13 +30,11 @@ public interface CMAESIndividual<S, Q> extends Individual<List<Double>, S, Q> {
         long genotypeBirthIteration,
         long qualityMappingIteration,
         Collection<Long> parentIds,
-        List<Double> x,
-        List<Double> y,
-        List<Double> z
-    ) implements CMAESIndividual<S, Q> {}
+        double[] x,
+        double[] y,
+        double[] z)
+        implements CMAESIndividual<S, Q> {}
     return new HardIndividual<>(
-        id, genotype, solution, quality, genotypeBirthIteration, qualityMappingIteration, parentIds, x, y, z
-    );
+        id, genotype, solution, quality, genotypeBirthIteration, qualityMappingIteration, parentIds, x, y, z);
   }
-
 }

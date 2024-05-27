@@ -25,7 +25,6 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSolver;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
@@ -38,7 +37,7 @@ import java.util.random.RandomGenerator;
 
 public class ParticleSwarmOptimization<S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-    PSOState<S, Q>, TotalOrderQualityBasedProblem<S, Q>, PSOIndividual<S, Q>, List<Double>, S, Q> {
+        PSOState<S, Q>, TotalOrderQualityBasedProblem<S, Q>, PSOIndividual<S, Q>, List<Double>, S, Q> {
 
   private final int populationSize;
   private final double w; // dumping coefficient
@@ -52,8 +51,7 @@ public class ParticleSwarmOptimization<S, Q>
       int populationSize,
       double w,
       double phiParticle,
-      double phiGlobal
-  ) {
+      double phiGlobal) {
     super(solutionMapper, genotypeFactory, stopCondition, false);
     this.populationSize = populationSize;
     this.w = w;
@@ -63,8 +61,7 @@ public class ParticleSwarmOptimization<S, Q>
 
   @Override
   public PSOState<S, Q> init(
-      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor
-  )
+      TotalOrderQualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
       throws SolverException {
     PSOState<S, Q> newState = PSOState.empty(problem, stopCondition());
     // init positions
@@ -98,8 +95,7 @@ public class ParticleSwarmOptimization<S, Q>
                   q,
                   0,
                   0,
-                  List.of()
-              );
+                  List.of());
             };
           })
           .toList()));
@@ -107,8 +103,7 @@ public class ParticleSwarmOptimization<S, Q>
           populationSize,
           populationSize,
           individuals,
-          individuals.stream().min(comparator(problem)).orElseThrow()
-      );
+          individuals.stream().min(comparator(problem)).orElseThrow());
     } catch (InterruptedException e) {
       throw new SolverException(e);
     }
@@ -152,8 +147,7 @@ public class ParticleSwarmOptimization<S, Q>
                   newQuality,
                   state.nOfIterations(),
                   state.nOfIterations(),
-                  List.of(i.id())
-              );
+                  List.of(i.id()));
             };
           })
           .toList()));

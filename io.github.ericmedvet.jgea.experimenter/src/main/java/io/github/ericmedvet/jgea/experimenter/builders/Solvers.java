@@ -273,6 +273,10 @@ public class Solvers {
       @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
       @Param(value = "sigma", dD = 0.02d) double sigma,
       @Param(value = "batchSize", dI = 30) int batchSize,
+      @Param(value = "stepSize", dD = 0.02d) double stepSize,
+      @Param(value = "beta1", dD = 0.9d) double beta1,
+      @Param(value = "beta2", dD = 0.999d) double beta2,
+      @Param(value = "epsilon", dD = 1e-8) double epsilon,
       @Param(value = "nEval", dI = 1000) int nEval) {
     return exampleS -> new OpenAIEvolutionaryStrategy<>(
         mapper.mapperFor(exampleS),
@@ -281,7 +285,11 @@ public class Solvers {
             .factory(),
         StopConditions.nOfFitnessEvaluations(nEval),
         batchSize,
-        sigma);
+        sigma,
+        stepSize,
+        beta1,
+        beta2,
+        epsilon);
   }
 
   @SuppressWarnings("unused")

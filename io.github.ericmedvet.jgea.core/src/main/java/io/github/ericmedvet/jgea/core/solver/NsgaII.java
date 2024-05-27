@@ -175,9 +175,10 @@ public class NsgaII<G, S>
         genotypes.stream()
             .map(g -> new ChildGenotype<G>(counter.getAndIncrement(), g, List.of()))
             .toList(),
-        (cg, s) -> RankedIndividual.from(
+        (cg, s, r) -> RankedIndividual.from(
             Individual.from(cg, solutionMapper, s.problem().qualityFunction(), s.nOfIterations())),
         newState,
+        random,
         executor));
     return newState.updatedWithIteration(
         genotypes.size(),
@@ -233,11 +234,12 @@ public class NsgaII<G, S>
     // map and decorate and trim
     Collection<Individual<G, S, List<Double>>> newPopulation = mapAll(
         offspringChildGenotypes,
-        (cg, s) -> RankedIndividual.from(
+        (cg, s, r) -> RankedIndividual.from(
             Individual.from(cg, solutionMapper, s.problem().qualityFunction(), s.nOfIterations())),
         state.pocPopulation().all(),
-        (i, s) -> RankedIndividual.from(i.updatedWithQuality(s)),
+        (i, s, r) -> RankedIndividual.from(i.updatedWithQuality(s)),
         state,
+        random,
         executor);
     List<RankedIndividual<G, S>> rankedIndividuals = decorate(newPopulation, state.problem()).stream()
         .sorted(rankedComparator())

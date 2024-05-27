@@ -28,7 +28,6 @@ import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSol
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.ListPopulationState;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -41,13 +40,13 @@ import java.util.stream.IntStream;
 
 public class SimpleEvolutionaryStrategy<S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-    ListPopulationState<
-        Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>,
-            TotalOrderQualityBasedProblem<S, Q>,
-            Individual<List<Double>, S, Q>,
-            List<Double>,
-            S,
-            Q> {
+        ListPopulationState<
+            Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>,
+        TotalOrderQualityBasedProblem<S, Q>,
+        Individual<List<Double>, S, Q>,
+        List<Double>,
+        S,
+        Q> {
 
   private static final Logger L = Logger.getLogger(SimpleEvolutionaryStrategy.class.getName());
   protected final int populationSize;
@@ -91,8 +90,9 @@ public class SimpleEvolutionaryStrategy<S, Q>
         genotypes.stream()
             .map(g -> new ChildGenotype<List<Double>>(counter.getAndIncrement(), g, List.of()))
             .toList(),
-        (cg, s) -> Individual.from(cg, solutionMapper, problem.qualityFunction(), s.nOfIterations()),
+        (cg, s, r) -> Individual.from(cg, solutionMapper, problem.qualityFunction(), s.nOfIterations()),
         newState,
+        random,
         executor));
     return newState.updatedWithIteration(
         newIndividuals.size(),
@@ -133,11 +133,12 @@ public class SimpleEvolutionaryStrategy<S, Q>
     L.fine(String.format("%d offspring genotypes built", nOfNewBirths));
     Collection<Individual<List<Double>, S, Q>> newPopulation = mapAll(
         offspringChildGenotypes,
-        (cg, s) ->
+        (cg, s, r) ->
             Individual.from(cg, solutionMapper, state.problem().qualityFunction(), state.nOfIterations()),
         elites,
-        (i, s) -> i.updatedWithQuality(state),
+        (i, s, r) -> i.updatedWithQuality(state),
         state,
+        random,
         executor);
     L.fine(String.format("Offspring and elite merged: %d individuals", newPopulation.size()));
     return state.updatedWithIteration(nOfNewBirths, nOfNewBirths + (remap ? elites.size() : 0), newPopulation);

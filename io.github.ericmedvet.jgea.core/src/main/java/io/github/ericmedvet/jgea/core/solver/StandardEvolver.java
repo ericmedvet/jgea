@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.random.RandomGenerator;
 
 /**
  * @author "Eric Medvet" on 2023/10/23 for jgea
@@ -76,14 +77,16 @@ public class StandardEvolver<G, S, Q>
   @Override
   protected Individual<G, S, Q> mapChildGenotype(
       ChildGenotype<G> childGenotype,
-      POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>> state) {
+      POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>> state,
+      RandomGenerator random) {
     return Individual.from(childGenotype, solutionMapper, state.problem().qualityFunction(), state.nOfIterations());
   }
 
   @Override
   protected Individual<G, S, Q> remapIndividual(
       Individual<G, S, Q> individual,
-      POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>> state) {
+      POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>> state,
+      RandomGenerator random) {
     return individual.updatedWithQuality(state);
   }
 

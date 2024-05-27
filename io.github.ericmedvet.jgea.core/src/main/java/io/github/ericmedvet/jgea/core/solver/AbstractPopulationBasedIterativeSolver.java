@@ -24,6 +24,7 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
+import io.github.ericmedvet.jnb.datastructure.TriFunction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -32,7 +33,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
@@ -91,13 +91,14 @@ public abstract class AbstractPopulationBasedIterativeSolver<
           Q>
       Collection<Future<I>> map(
           Collection<ChildGenotype<G>> childGenotypes,
-          BiFunction<ChildGenotype<G>, T, I> mapper,
+          TriFunction<ChildGenotype<G>, T, RandomGenerator, I> mapper,
           T state,
+          RandomGenerator random,
           ExecutorService executor)
           throws SolverException {
     try {
       return executor.invokeAll(childGenotypes.stream()
-          .map(tmg -> (Callable<I>) () -> mapper.apply(tmg, state))
+          .map(tmg -> (Callable<I>) () -> mapper.apply(tmg, state, random))
           .toList());
     } catch (InterruptedException e) {
       throw new SolverException(e);
@@ -106,19 +107,21 @@ public abstract class AbstractPopulationBasedIterativeSolver<
 
   protected Collection<I> mapAll(
       Collection<ChildGenotype<G>> childGenotypes,
-      BiFunction<ChildGenotype<G>, T, I> mapper,
+      TriFunction<ChildGenotype<G>, T, RandomGenerator, I> mapper,
       Collection<I> individuals,
-      BiFunction<I, T, I> remapper,
+      TriFunction<I, T, RandomGenerator, I> remapper,
       T state,
+      RandomGenerator random,
       ExecutorService executor)
       throws SolverException {
     if (!remap) {
-      return Stream.concat(getAll(map(childGenotypes, mapper, state, executor)).stream(), individuals.stream())
+      return Stream.concat(
+              getAll(map(childGenotypes, mapper, state, random, executor)).stream(), individuals.stream())
           .toList();
     }
     return getAll(Stream.concat(
-            map(childGenotypes, mapper, state, executor).stream(),
-            remap(individuals, remapper, state, executor).stream())
+            map(childGenotypes, mapper, state, random, executor).stream(),
+            remap(individuals, remapper, state, random, executor).stream())
         .toList());
   }
 
@@ -135,11 +138,15 @@ public abstract class AbstractPopulationBasedIterativeSolver<
           S,
           Q>
       Collection<Future<I>> remap(
-          Collection<I> individuals, BiFunction<I, T, I> mapper, T state, ExecutorService executor)
+          Collection<I> individuals,
+          TriFunction<I, T, RandomGenerator, I> mapper,
+          T state,
+          RandomGenerator random,
+          ExecutorService executor)
           throws SolverException {
     try {
       return executor.invokeAll(individuals.stream()
-          .map(i -> (Callable<I>) () -> mapper.apply(i, state))
+          .map(i -> (Callable<I>) () -> mapper.apply(i, state, random))
           .toList());
     } catch (InterruptedException e) {
       throw new SolverException(e);

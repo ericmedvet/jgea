@@ -87,7 +87,8 @@ public class DifferentialEvolution<S, Q>
   protected Individual<List<Double>, S, Q> mapChildGenotype(
       ChildGenotype<List<Double>> childGenotype,
       ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
-          state) {
+          state,
+      RandomGenerator random) {
     return Individual.from(childGenotype, solutionMapper, state.problem().qualityFunction(), state.nOfIterations());
   }
 
@@ -95,7 +96,8 @@ public class DifferentialEvolution<S, Q>
   protected Individual<List<Double>, S, Q> remapIndividual(
       Individual<List<Double>, S, Q> individual,
       ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
-          state) {
+          state,
+      RandomGenerator random) {
     return individual.updatedWithQuality(state);
   }
 

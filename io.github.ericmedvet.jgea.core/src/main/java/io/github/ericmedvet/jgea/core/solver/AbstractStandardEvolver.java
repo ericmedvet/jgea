@@ -76,9 +76,9 @@ public abstract class AbstractStandardEvolver<
 
   protected abstract T init(P problem);
 
-  protected abstract I mapChildGenotype(ChildGenotype<G> childGenotype, T state);
+  protected abstract I mapChildGenotype(ChildGenotype<G> childGenotype, T state, RandomGenerator random);
 
-  protected abstract I remapIndividual(I individual, T state);
+  protected abstract I remapIndividual(I individual, T state, RandomGenerator random);
 
   protected abstract T update(T state, Collection<I> individuals, long nOfNewBirths, long nOfNewFitnessEvaluations);
 
@@ -129,6 +129,7 @@ public abstract class AbstractStandardEvolver<
                 .toList(),
             this::mapChildGenotype,
             newState,
+            random,
             executor)),
         genotypes.size(),
         genotypes.size());
@@ -145,6 +146,7 @@ public abstract class AbstractStandardEvolver<
         state.pocPopulation().all(),
         this::remapIndividual,
         state,
+        random,
         executor);
     L.fine(String.format("Offspring merged with parents: %d individuals", newPopulation.size()));
     newPopulation = trimPopulation(newPopulation, state, random);
