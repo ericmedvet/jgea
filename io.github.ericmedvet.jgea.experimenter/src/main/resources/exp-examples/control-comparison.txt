@@ -1,7 +1,7 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:3]) * [m.defaultRG()]) *
     (problem = [
-      ea.p.numEnvTo(environment = ds.e.navigation(arena = large_barrier); f = ds.e.n.finalD(); finalT = 50);
+      ea.p.numEnvTo(environment = ds.e.navigation(arena = a_barrier); f = ds.e.n.finalD(); finalT = 50);
       ea.p.numEnvTo(environment = ds.e.navigation(arena = easy_maze); f = ds.e.n.finalD(); finalT = 50)
     ]) *
     (solver = (nEval = [5000]) * (mapper = ea.m.dsToNpnds(npnds = ds.num.mlp())) * [
@@ -30,7 +30,33 @@ ea.experiment(
       functions = [
         ea.f.size(of = ea.f.genotype(of = ea.f.best()); format = "%3d");
         ea.f.simQuality(of = ea.f.quality(of = ea.f.best()); format = "%5.2f");
-        ea.f.hist(of = f.each(of = ea.f.all(); mapF = ea.f.simQuality(of = ea.f.quality())))
+        ea.f.hist(of = f.each(of = ea.f.all(); mapF = ea.f.simQuality(of = ea.f.quality())));
+        ea.f.meBin(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 0));
+        ea.f.meBin(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 1));
+        ea.f.meValue(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 0));
+        ea.f.meValue(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 1));
+        ea.f.id(of = ea.f.best());
+        f.nTh(of = ea.f.parentIds(of = ea.f.best()); n = 0);
+        f.nTh(of = ea.f.parentIds(of = ea.f.best()); n = 1)
+      ];
+      runKeys = [
+        ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
+        ea.misc.sEntry(key = "solver"; value = "{solver.name}");
+        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
+      ]
+    );
+    ea.l.bestCsv(
+      filePath = "../best.csv";
+      functions = [
+        ea.f.size(of = ea.f.genotype(of = ea.f.best()); format = "%3d");
+        ea.f.simQuality(of = ea.f.quality(of = ea.f.best()); format = "%5.2f");
+        ea.f.meBin(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 0));
+        ea.f.meBin(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 1));
+        ea.f.meValue(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 0));
+        ea.f.meValue(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 1));
+        ea.f.id(of = ea.f.best());
+        f.nTh(of = ea.f.parentIds(of = ea.f.best()); n = 0);
+        f.nTh(of = ea.f.parentIds(of = ea.f.best()); n = 1)
       ];
       runKeys = [
         ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
