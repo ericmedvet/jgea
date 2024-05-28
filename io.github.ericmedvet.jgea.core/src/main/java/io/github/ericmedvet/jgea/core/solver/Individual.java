@@ -40,13 +40,13 @@ public interface Individual<G, S, Q> extends Serializable {
 
   S solution();
 
-  static <G1, S1, Q1> Individual<G1, S1, Q1> from(
-      AbstractPopulationBasedIterativeSolver.ChildGenotype<G1> childGenotype,
-      Function<? super G1, ? extends S1> solutionMapper,
-      Function<? super S1, ? extends Q1> qualityFunction,
+  static <G, S, Q> Individual<G, S, Q> from(
+      AbstractPopulationBasedIterativeSolver.ChildGenotype<G> childGenotype,
+      Function<? super G, ? extends S> solutionMapper,
+      Function<? super S, ? extends Q> qualityFunction,
       long iteration) {
-    S1 solution = solutionMapper.apply(childGenotype.genotype());
-    Q1 quality = qualityFunction.apply(solution);
+    S solution = solutionMapper.apply(childGenotype.genotype());
+    Q quality = qualityFunction.apply(solution);
     return of(
         childGenotype.id(),
         childGenotype.genotype(),
@@ -57,23 +57,23 @@ public interface Individual<G, S, Q> extends Serializable {
         childGenotype.parentIds());
   }
 
-  static <G1, S1, Q1> Individual<G1, S1, Q1> of(
+  static <G, S, Q> Individual<G, S, Q> of(
       long id,
-      G1 genotype,
-      S1 solution,
-      Q1 quality,
+      G genotype,
+      S solution,
+      Q quality,
       long genotypeBirthIteration,
       long qualityMappingIteration,
       Collection<Long> parentIds) {
-    record HardIndividual<G1, S1, Q1>(
+    record HardIndividual<G, S, Q>(
         long id,
-        G1 genotype,
-        S1 solution,
-        Q1 quality,
+        G genotype,
+        S solution,
+        Q quality,
         long genotypeBirthIteration,
         long qualityMappingIteration,
         Collection<Long> parentIds)
-        implements Individual<G1, S1, Q1> {}
+        implements Individual<G, S, Q> {}
     return new HardIndividual<>(
         id, genotype, solution, quality, genotypeBirthIteration, qualityMappingIteration, parentIds);
   }
