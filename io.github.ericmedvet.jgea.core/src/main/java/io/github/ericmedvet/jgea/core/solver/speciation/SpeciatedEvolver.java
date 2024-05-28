@@ -29,13 +29,12 @@ import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSol
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.util.Misc;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -80,73 +79,35 @@ public class SpeciatedEvolver<G, S, Q>
 
   public record Species<T>(Collection<T> elements, T representative) {}
 
-  private record State<G, S, Q>(
-      LocalDateTime startingDateTime,
-      long elapsedMillis,
-      long nOfIterations,
-      QualityBasedProblem<S, Q> problem,
-      Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
-      long nOfBirths,
-      long nOfQualityEvaluations,
-      PartiallyOrderedCollection<Individual<G, S, Q>> pocPopulation,
-      Collection<Species<Individual<G, S, Q>>> parentSpecies)
-      implements SpeciatedPOCPopulationState<G, S, Q, QualityBasedProblem<S, Q>>,
-          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress<QualityBasedProblem<S, Q>, S> {
-    public static <G, S, Q> State<G, S, Q> from(
-        State<G, S, Q> state,
-        int nOfBirths,
-        int nOfFitnessEvaluations,
-        PartiallyOrderedCollection<Individual<G, S, Q>> population,
-        Collection<Species<Individual<G, S, Q>>> parentSpecies) {
-      return new State<>(
-          state.startingDateTime,
-          ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
-          state.nOfIterations() + 1,
-          state.problem,
-          state.stopCondition,
-          state.nOfBirths() + nOfBirths,
-          state.nOfQualityEvaluations() + nOfFitnessEvaluations,
-          population,
-          parentSpecies);
-    }
-
-    public static <G, S, Q> State<G, S, Q> from(
-        QualityBasedProblem<S, Q> problem,
-        PartiallyOrderedCollection<Individual<G, S, Q>> population,
-        Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition) {
-      return new State<>(
-          LocalDateTime.now(),
-          0,
-          0,
-          problem,
-          stopCondition,
-          population.size(),
-          population.size(),
-          population,
-          List.of());
-    }
-  }
-
   @Override
   public SpeciatedPOCPopulationState<G, S, Q, QualityBasedProblem<S, Q>> init(
       QualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
       throws SolverException {
-    return State.from(
-        problem,
-        PartiallyOrderedCollection.from(
-            map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor),
-            partialComparator(problem)),
-        stopCondition());
+    SpeciatedPOCPopulationState<G, S, Q, QualityBasedProblem<S, Q>> newState =
+        SpeciatedPOCPopulationState.empty(problem, stopCondition());
+    AtomicLong counter = new AtomicLong(0);
+    Collection<Individual<G, S, Q>> newIndividuals = getAll(map(
+        genotypeFactory.build(populationSize, random).stream()
+            .map(g -> new ChildGenotype<G>(counter.getAndIncrement(), g, List.of()))
+            .toList(),
+        (cg, s, r) -> Individual.from(cg, solutionMapper, s.problem().qualityFunction(), s.nOfIterations()),
+        newState,
+        random,
+        executor));
+    return newState.updatedWithIteration(
+        populationSize,
+        populationSize,
+        PartiallyOrderedCollection.from(newIndividuals, partialComparator(problem)),
+        List.of());
   }
 
   @Override
   public SpeciatedPOCPopulationState<G, S, Q, QualityBasedProblem<S, Q>> update(
-      QualityBasedProblem<S, Q> problem,
       RandomGenerator random,
       ExecutorService executor,
       SpeciatedPOCPopulationState<G, S, Q, QualityBasedProblem<S, Q>> state)
       throws SolverException {
-    Collection<Individual<G, S, Q>> parents = state.pocPopulation().all();
+    Collection<Individual<G, S, Q>> individuals = state.pocPopulation().all();
     // partition in species
     List<Species<Individual<G, S, Q>>> allSpecies = new ArrayList<>(speciator.speciate(state.pocPopulation()));
     L.fine(String.format(
@@ -155,8 +116,8 @@ public class SpeciatedEvolver<G, S, Q>
         allSpecies.stream().map(s -> s.elements().size()).toList()));
     // put elites
     Collection<Individual<G, S, Q>> elites = new ArrayList<>();
-    parents.stream()
-        .reduce((i1, i2) -> partialComparator(problem)
+    individuals.stream()
+        .reduce((i1, i2) -> partialComparator(state.problem())
                 .compare(i1, i2)
                 .equals(PartialComparator.PartialComparatorOutcome.BEFORE)
             ? i1
@@ -165,7 +126,7 @@ public class SpeciatedEvolver<G, S, Q>
     for (Species<Individual<G, S, Q>> species : allSpecies) {
       if (species.elements().size() >= minSpeciesSizeForElitism) {
         species.elements().stream()
-            .reduce((i1, i2) -> partialComparator(problem)
+            .reduce((i1, i2) -> partialComparator(state.problem())
                     .compare(i1, i2)
                     .equals(PartialComparator.PartialComparatorOutcome.BEFORE)
                 ? i1
@@ -182,7 +143,7 @@ public class SpeciatedEvolver<G, S, Q>
         allSpecies.size(),
         representers.stream().map(i -> String.format("%s", i.quality())).toList()));
     List<Individual<G, S, Q>> sortedRepresenters = new ArrayList<>(representers);
-    sortedRepresenters.sort(partialComparator(problem).comparator());
+    sortedRepresenters.sort(partialComparator(state.problem()).comparator());
     List<Double> weights = representers.stream()
         .map(r -> Math.pow(rankBase, sortedRepresenters.indexOf(r)))
         .toList();
@@ -194,61 +155,42 @@ public class SpeciatedEvolver<G, S, Q>
     sizes.set(0, sizes.get(0) + remaining - sizeSum);
     L.fine(String.format("Offspring sizes assigned to %d species: %s", allSpecies.size(), sizes));
     // reproduce species
-    List<G> offspringGenotypes = new ArrayList<>(remaining);
+    List<ChildGenotype<G>> offspringChildGenotypes = new ArrayList<>(remaining);
+    AtomicLong counter = new AtomicLong(state.nOfBirths());
     for (int i = 0; i < allSpecies.size(); i++) {
       int size = sizes.get(i);
       List<Individual<G, S, Q>> species =
           new ArrayList<>(allSpecies.get(i).elements());
-      species.sort(partialComparator(problem).comparator());
-      List<G> speciesOffspringGenotypes = new ArrayList<>();
-      int counter = 0;
-      while (speciesOffspringGenotypes.size() < size) {
+      species.sort(partialComparator(state.problem()).comparator());
+      List<ChildGenotype<G>> speciesOffspringChildGenotypes = new ArrayList<>();
+      int speciesCounter = 0;
+      while (speciesOffspringChildGenotypes.size() < size) {
         GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
-        List<G> parentGenotypes = new ArrayList<>(operator.arity());
-        while (parentGenotypes.size() < operator.arity()) {
-          parentGenotypes.add(species.get(counter % species.size()).genotype());
-          counter = counter + 1;
+        List<Individual<G, S, Q>> parents = new ArrayList<>(operator.arity());
+        while (parents.size() < operator.arity()) {
+          parents.add(species.get(speciesCounter % species.size()));
+          speciesCounter = speciesCounter + 1;
         }
-        speciesOffspringGenotypes.addAll(operator.apply(parentGenotypes, random));
+        List<Long> parentIds = parents.stream().map(Individual::id).toList();
+        operator.apply(parents.stream().map(Individual::genotype).toList(), random).stream()
+            .map(g -> new ChildGenotype<G>(counter.getAndIncrement(), g, parentIds))
+            .forEach(speciesOffspringChildGenotypes::add);
       }
-      offspringGenotypes.addAll(speciesOffspringGenotypes);
+      offspringChildGenotypes.addAll(speciesOffspringChildGenotypes);
     }
-    int nOfNewBirths = offspringGenotypes.size();
-    L.fine(String.format("%d offspring genotypes built", nOfNewBirths));
-    Collection<Individual<G, S, Q>> newPopulation = map(offspringGenotypes, elites, state, problem, executor);
-    L.fine(String.format("Offspring and elites merged: %d individuals", newPopulation.size()));
-    return State.from(
-        (State<G, S, Q>) state,
-        nOfNewBirths,
-        nOfNewBirths + (remap ? elites.size() : 0),
-        PartiallyOrderedCollection.from(newPopulation, partialComparator(problem)),
+    // map new genotypes
+    Collection<Individual<G, S, Q>> newIndividuals = mapAll(
+        offspringChildGenotypes,
+        (cg, s, r) -> Individual.from(cg, solutionMapper, s.problem().qualityFunction(), s.nOfIterations()),
+        elites,
+        (i, s, r) -> i.updatedWithQuality(s),
+        state,
+        random,
+        executor);
+    return state.updatedWithIteration(
+        newIndividuals.size(),
+        newIndividuals.size() + (remap ? elites.size() : 0),
+        PartiallyOrderedCollection.from(newIndividuals, partialComparator(state.problem())),
         allSpecies);
-  }
-
-  @Override
-  protected Individual<G, S, Q> newIndividual(
-      G genotype,
-      SpeciatedPOCPopulationState<G, S, Q, QualityBasedProblem<S, Q>> state,
-      QualityBasedProblem<S, Q> problem) {
-    S solution = solutionMapper.apply(genotype);
-    return Individual.of(
-        genotype,
-        solution,
-        problem.qualityFunction().apply(solution),
-        state == null ? 0 : state.nOfIterations(),
-        state == null ? 0 : state.nOfIterations());
-  }
-
-  @Override
-  protected Individual<G, S, Q> updateIndividual(
-      Individual<G, S, Q> individual,
-      SpeciatedPOCPopulationState<G, S, Q, QualityBasedProblem<S, Q>> state,
-      QualityBasedProblem<S, Q> problem) {
-    return Individual.of(
-        individual.genotype(),
-        individual.solution(),
-        problem.qualityFunction().apply(individual.solution()),
-        individual.genotypeBirthIteration(),
-        state == null ? individual.qualityMappingIteration() : state.nOfIterations());
   }
 }

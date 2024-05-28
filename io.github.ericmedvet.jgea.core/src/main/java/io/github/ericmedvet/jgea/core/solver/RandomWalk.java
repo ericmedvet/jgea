@@ -23,13 +23,11 @@ package io.github.ericmedvet.jgea.core.solver;
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
-import io.github.ericmedvet.jgea.core.selector.First;
 import io.github.ericmedvet.jgea.core.selector.Last;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class RandomWalk<G, S, Q> extends StandardEvolver<G, S, Q> {
+public class RandomWalk<G, S, Q> extends MutationOnly<G, S, Q> {
 
   public RandomWalk(
       Function<? super G, ? extends S> solutionMapper,
@@ -37,17 +35,6 @@ public class RandomWalk<G, S, Q> extends StandardEvolver<G, S, Q> {
       Predicate<? super POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>>>
           stopCondition,
       Mutation<G> mutation) {
-    super(
-        solutionMapper,
-        genotypeFactory,
-        1,
-        stopCondition,
-        Map.of(mutation, 1d),
-        new First(),
-        new Last(),
-        1,
-        true,
-        0,
-        false);
+    super(solutionMapper, genotypeFactory, 1, stopCondition, new Last(), mutation);
   }
 }

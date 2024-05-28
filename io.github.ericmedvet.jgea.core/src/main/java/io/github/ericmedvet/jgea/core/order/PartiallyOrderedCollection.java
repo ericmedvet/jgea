@@ -28,37 +28,17 @@ public interface PartiallyOrderedCollection<T> extends Sized {
 
   Collection<T> all();
 
+  PartialComparator<? super T> comparator();
+
   Collection<T> firsts();
 
   Collection<T> lasts();
 
   boolean remove(T t);
 
-  PartialComparator<? super T> comparator();
-
-  default Collection<T> mids() {
-    Collection<T> firsts = firsts();
-    Collection<T> lasts = lasts();
-    return all().stream()
-        .filter(t -> !firsts.contains(t) && !lasts.contains(t))
-        .toList();
-  }
-
-  default List<Collection<T>> fronts() {
-    DAGPartiallyOrderedCollection<T> poc = new DAGPartiallyOrderedCollection<>(all(), comparator());
-    Collection<T> firsts = poc.firsts();
-    List<Collection<T>> fronts = new ArrayList<>();
-    while (!firsts.isEmpty()) {
-      fronts.add(Collections.unmodifiableCollection(firsts));
-      firsts.forEach(poc::remove);
-      firsts = poc.firsts();
-    }
-    return Collections.unmodifiableList(fronts);
-  }
-
-  @Override
-  default int size() {
-    return all().size();
+  static <T> PartiallyOrderedCollection<T> from() {
+    return from(List.of(), (PartialComparator<? super T>)
+        (i1, i2) -> PartialComparator.PartialComparatorOutcome.NOT_COMPARABLE);
   }
 
   static <T> PartiallyOrderedCollection<T> from(Collection<T> ts, PartialComparator<? super T> comparator) {
@@ -172,5 +152,30 @@ public interface PartiallyOrderedCollection<T> extends Sized {
         return PartialComparator.from(comparator);
       }
     };
+  }
+
+  default List<Collection<T>> fronts() {
+    DAGPartiallyOrderedCollection<T> poc = new DAGPartiallyOrderedCollection<>(all(), comparator());
+    Collection<T> firsts = poc.firsts();
+    List<Collection<T>> fronts = new ArrayList<>();
+    while (!firsts.isEmpty()) {
+      fronts.add(Collections.unmodifiableCollection(firsts));
+      firsts.forEach(poc::remove);
+      firsts = poc.firsts();
+    }
+    return Collections.unmodifiableList(fronts);
+  }
+
+  default Collection<T> mids() {
+    Collection<T> firsts = firsts();
+    Collection<T> lasts = lasts();
+    return all().stream()
+        .filter(t -> !firsts.contains(t) && !lasts.contains(t))
+        .toList();
+  }
+
+  @Override
+  default int size() {
+    return all().size();
   }
 }

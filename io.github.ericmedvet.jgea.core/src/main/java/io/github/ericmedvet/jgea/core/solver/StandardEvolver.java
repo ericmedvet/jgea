@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.random.RandomGenerator;
 
 /**
  * @author "Eric Medvet" on 2023/10/23 for jgea
@@ -68,50 +69,36 @@ public class StandardEvolver<G, S, Q>
   }
 
   @Override
-  protected POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>> update(
-      POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>> state,
-      QualityBasedProblem<S, Q> problem,
-      Collection<Individual<G, S, Q>> individuals,
-      long nOfBirths,
-      long nOfFitnessEvaluations) {
-    return POCState.from(
-        (POCState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>>) state,
-        nOfBirths,
-        nOfFitnessEvaluations,
-        PartiallyOrderedCollection.from(individuals, partialComparator(problem)));
-  }
-
-  @Override
   protected POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>> init(
-      QualityBasedProblem<S, Q> problem, Collection<Individual<G, S, Q>> individuals) {
-    return POCState.from(
-        problem, PartiallyOrderedCollection.from(individuals, partialComparator(problem)), stopCondition());
-  }
-
-  @Override
-  protected Individual<G, S, Q> newIndividual(
-      G genotype,
-      POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>> state,
       QualityBasedProblem<S, Q> problem) {
-    S solution = solutionMapper.apply(genotype);
-    return Individual.of(
-        genotype,
-        solution,
-        problem.qualityFunction().apply(solution),
-        state == null ? 0 : state.nOfIterations(),
-        state == null ? 0 : state.nOfIterations());
+    return POCPopulationState.empty(problem, stopCondition());
   }
 
   @Override
-  protected Individual<G, S, Q> updateIndividual(
+  protected Individual<G, S, Q> mapChildGenotype(
+      ChildGenotype<G> childGenotype,
+      POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>> state,
+      RandomGenerator random) {
+    return Individual.from(childGenotype, solutionMapper, state.problem().qualityFunction(), state.nOfIterations());
+  }
+
+  @Override
+  protected Individual<G, S, Q> remapIndividual(
       Individual<G, S, Q> individual,
       POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>> state,
-      QualityBasedProblem<S, Q> problem) {
-    return Individual.of(
-        individual.genotype(),
-        individual.solution(),
-        problem.qualityFunction().apply(individual.solution()),
-        individual.genotypeBirthIteration(),
-        state == null ? individual.qualityMappingIteration() : state.nOfIterations());
+      RandomGenerator random) {
+    return individual.updatedWithQuality(state);
+  }
+
+  @Override
+  protected POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>> update(
+      POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>> state,
+      Collection<Individual<G, S, Q>> individuals,
+      long nOfNewBirths,
+      long nOfNewFitnessEvaluations) {
+    return state.updatedWithIteration(
+        nOfNewBirths,
+        nOfNewFitnessEvaluations,
+        PartiallyOrderedCollection.from(individuals, partialComparator(state.problem())));
   }
 }

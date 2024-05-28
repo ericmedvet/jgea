@@ -19,24 +19,78 @@
  */
 package io.github.ericmedvet.jgea.core.solver;
 
+import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.function.Function;
 
 public interface Individual<G, S, Q> extends Serializable {
+
   G genotype();
 
-  S solution();
+  long genotypeBirthIteration();
+
+  long id();
+
+  Collection<Long> parentIds();
 
   Q quality();
 
   long qualityMappingIteration();
 
-  long genotypeBirthIteration();
+  S solution();
 
-  static <G1, S1, Q1> Individual<G1, S1, Q1> of(
-      G1 genotype, S1 solution, Q1 quality, long genotypeBirthIteration, long qualityMappingIteration) {
-    record HardIndividual<G1, S1, Q1>(
-        G1 genotype, S1 solution, Q1 quality, long genotypeBirthIteration, long qualityMappingIteration)
-        implements Individual<G1, S1, Q1> {}
-    return new HardIndividual<>(genotype, solution, quality, genotypeBirthIteration, qualityMappingIteration);
+  static <G, S, Q> Individual<G, S, Q> from(
+      AbstractPopulationBasedIterativeSolver.ChildGenotype<G> childGenotype,
+      Function<? super G, ? extends S> solutionMapper,
+      Function<? super S, ? extends Q> qualityFunction,
+      long iteration) {
+    S solution = solutionMapper.apply(childGenotype.genotype());
+    Q quality = qualityFunction.apply(solution);
+    return of(
+        childGenotype.id(),
+        childGenotype.genotype(),
+        solution,
+        quality,
+        iteration,
+        iteration,
+        childGenotype.parentIds());
+  }
+
+  static <G, S, Q> Individual<G, S, Q> of(
+      long id,
+      G genotype,
+      S solution,
+      Q quality,
+      long genotypeBirthIteration,
+      long qualityMappingIteration,
+      Collection<Long> parentIds) {
+    record HardIndividual<G, S, Q>(
+        long id,
+        G genotype,
+        S solution,
+        Q quality,
+        long genotypeBirthIteration,
+        long qualityMappingIteration,
+        Collection<Long> parentIds)
+        implements Individual<G, S, Q> {}
+    return new HardIndividual<>(
+        id, genotype, solution, quality, genotypeBirthIteration, qualityMappingIteration, parentIds);
+  }
+
+  default Individual<G, S, Q> updatedWithQuality(
+      Function<? super S, ? extends Q> qualityFunction, long qualityMappingIteration) {
+    return of(
+        id(),
+        genotype(),
+        solution(),
+        qualityFunction.apply(solution()),
+        genotypeBirthIteration(),
+        qualityMappingIteration,
+        parentIds());
+  }
+
+  default <P extends QualityBasedProblem<S, Q>> Individual<G, S, Q> updatedWithQuality(State<P, S> state) {
+    return updatedWithQuality(state.problem().qualityFunction(), state.nOfIterations());
   }
 }

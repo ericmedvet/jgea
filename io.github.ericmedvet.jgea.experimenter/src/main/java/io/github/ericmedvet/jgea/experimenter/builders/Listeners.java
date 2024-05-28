@@ -120,6 +120,9 @@ public class Listeners {
               ListenerFactory<? super POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
           allCsv(
               @Param("filePath") String filePath,
+              @Param(value = "errorString", dS = "NA") String errorString,
+              @Param(value = "intFormat", dS = "%d") String intFormat,
+              @Param(value = "doubleFormat", dS = "%.5e") String doubleFormat,
               @Param(
                       value = "defaultFunctions",
                       dNPMs = {"ea.f.nOfIterations()"})
@@ -144,8 +147,13 @@ public class Listeners {
       individualFunctions.stream()
           .map(f -> (Function<PopIndividualPair<G, S, Q>, Object>) pair -> f.apply(pair.individual))
           .forEach(pairFunctions::add);
-      ListenerFactory<PopIndividualPair<G, S, Q>, Run<?, G, S, Q>> innerListenerFactory =
-          new CSVPrinter<>(pairFunctions, buildRunNamedFunctions(runKeys, experiment), new File(filePath));
+      ListenerFactory<PopIndividualPair<G, S, Q>, Run<?, G, S, Q>> innerListenerFactory = new CSVPrinter<>(
+          pairFunctions,
+          buildRunNamedFunctions(runKeys, experiment),
+          new File(filePath),
+          errorString,
+          intFormat,
+          doubleFormat);
       ListenerFactory<? super POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>> allListenerFactory =
           new ListenerFactory<>() {
             @Override
@@ -190,6 +198,9 @@ public class Listeners {
               ListenerFactory<? super POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
           bestCsv(
               @Param("filePath") String filePath,
+              @Param(value = "errorString", dS = "NA") String errorString,
+              @Param(value = "intFormat", dS = "%d") String intFormat,
+              @Param(value = "doubleFormat", dS = "%.5e") String doubleFormat,
               @Param(
                       value = "defaultFunctions",
                       dNPMs = {
@@ -218,7 +229,10 @@ public class Listeners {
                 .flatMap(List::stream)
                 .toList(),
             buildRunNamedFunctions(runKeys, experiment),
-            new File(filePath)),
+            new File(filePath),
+            errorString,
+            intFormat,
+            doubleFormat),
         predicate,
         deferred ? executorService : null,
         onlyLast);

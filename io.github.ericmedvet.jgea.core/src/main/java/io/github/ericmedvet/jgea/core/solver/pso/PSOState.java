@@ -17,10 +17,12 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jgea.core.solver;
+package io.github.ericmedvet.jgea.core.solver.pso;
 
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem;
+import io.github.ericmedvet.jgea.core.solver.ListPopulationState;
+import io.github.ericmedvet.jgea.core.solver.State;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -28,38 +30,40 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 
-/**
- * @author "Eric Medvet" on 2023/10/23 for jgea
- */
-public interface ListPopulationState<
-        I extends Individual<G, S, Q>, G, S, Q, P extends TotalOrderQualityBasedProblem<S, Q>>
-    extends POCPopulationState<I, G, S, Q, P> {
+public interface PSOState<S, Q>
+    extends ListPopulationState<PSOIndividual<S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>> {
+  PSOIndividual<S, Q> knownBest();
 
-  List<I> listPopulation();
+  static <S, Q> PSOState<S, Q> empty(
+      TotalOrderQualityBasedProblem<S, Q> problem, Predicate<State<?, ?>> stopCondition) {
+    return of(LocalDateTime.now(), 0, 0, problem, stopCondition, 0, 0, List.of(), null);
+  }
 
-  static <I extends Individual<G, S, Q>, G, S, Q, P extends TotalOrderQualityBasedProblem<S, Q>>
-      ListPopulationState<I, G, S, Q, P> of(
-          LocalDateTime startingDateTime,
-          long elapsedMillis,
-          long nOfIterations,
-          P problem,
-          Predicate<State<?, ?>> stopCondition,
-          long nOfBirths,
-          long nOfQualityEvaluations,
-          Collection<I> listPopulation) {
-    record HardState<I extends Individual<G, S, Q>, G, S, Q, P extends TotalOrderQualityBasedProblem<S, Q>>(
+  static <S, Q> PSOState<S, Q> of(
+      LocalDateTime startingDateTime,
+      long elapsedMillis,
+      long nOfIterations,
+      TotalOrderQualityBasedProblem<S, Q> problem,
+      Predicate<State<?, ?>> stopCondition,
+      long nOfBirths,
+      long nOfQualityEvaluations,
+      Collection<PSOIndividual<S, Q>> listPopulation,
+      PSOIndividual<S, Q> knownBest) {
+    record HardState<S, Q>(
         LocalDateTime startingDateTime,
         long elapsedMillis,
         long nOfIterations,
-        P problem,
+        TotalOrderQualityBasedProblem<S, Q> problem,
         Predicate<State<?, ?>> stopCondition,
         long nOfBirths,
         long nOfQualityEvaluations,
-        PartiallyOrderedCollection<I> pocPopulation,
-        List<I> listPopulation)
-        implements ListPopulationState<I, G, S, Q, P> {}
-    Comparator<I> comparator = (i1, i2) -> problem.totalOrderComparator().compare(i1.quality(), i2.quality());
-    List<I> sortedListPopulation =
+        PartiallyOrderedCollection<PSOIndividual<S, Q>> pocPopulation,
+        List<PSOIndividual<S, Q>> listPopulation,
+        PSOIndividual<S, Q> knownBest)
+        implements PSOState<S, Q> {}
+    Comparator<PSOIndividual<S, Q>> comparator =
+        (i1, i2) -> problem.totalOrderComparator().compare(i1.quality(), i2.quality());
+    List<PSOIndividual<S, Q>> sortedListPopulation =
         listPopulation.stream().sorted(comparator).toList();
     return new HardState<>(
         startingDateTime,
@@ -70,16 +74,15 @@ public interface ListPopulationState<
         nOfBirths,
         nOfQualityEvaluations,
         PartiallyOrderedCollection.from(sortedListPopulation, comparator),
-        sortedListPopulation);
+        sortedListPopulation,
+        knownBest);
   }
 
-  static <I extends Individual<G, S, Q>, G, S, Q, P extends TotalOrderQualityBasedProblem<S, Q>>
-      ListPopulationState<I, G, S, Q, P> empty(P problem, Predicate<State<?, ?>> stopCondition) {
-    return of(LocalDateTime.now(), 0, 0, problem, stopCondition, 0, 0, List.of());
-  }
-
-  default ListPopulationState<I, G, S, Q, P> updatedWithIteration(
-      long nOfNewBirths, long nOfNewQualityEvaluations, Collection<I> listPopulation) {
+  default PSOState<S, Q> updatedWithIteration(
+      long nOfNewBirths,
+      long nOfNewQualityEvaluations,
+      Collection<PSOIndividual<S, Q>> listPopulation,
+      PSOIndividual<S, Q> knownBest) {
     return of(
         startingDateTime(),
         ChronoUnit.MILLIS.between(LocalDateTime.now(), startingDateTime()),
@@ -88,11 +91,12 @@ public interface ListPopulationState<
         stopCondition(),
         nOfBirths() + nOfNewBirths,
         nOfQualityEvaluations() + nOfNewQualityEvaluations,
-        listPopulation);
+        listPopulation,
+        knownBest);
   }
 
   @Override
-  default ListPopulationState<I, G, S, Q, P> updatedWithProblem(P problem) {
+  default PSOState<S, Q> updatedWithProblem(TotalOrderQualityBasedProblem<S, Q> problem) {
     return of(
         startingDateTime(),
         elapsedMillis(),
@@ -101,6 +105,7 @@ public interface ListPopulationState<
         stopCondition(),
         nOfBirths(),
         nOfQualityEvaluations(),
-        listPopulation());
+        listPopulation(),
+        knownBest());
   }
 }

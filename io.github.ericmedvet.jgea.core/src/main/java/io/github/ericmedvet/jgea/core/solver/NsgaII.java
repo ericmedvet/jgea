@@ -26,6 +26,7 @@ import io.github.ericmedvet.jgea.core.problem.MultiHomogeneousObjectiveProblem;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
@@ -74,14 +75,29 @@ public class NsgaII<G, S>
   }
 
   private record RankedIndividual<G, S>(
+      long id,
       G genotype,
       S solution,
       List<Double> quality,
       long qualityMappingIteration,
       long genotypeBirthIteration,
       int rank,
-      double crowdingDistance)
-      implements Individual<G, S, List<Double>> {}
+      double crowdingDistance,
+      Collection<Long> parentIds)
+      implements Individual<G, S, List<Double>> {
+    static <G, S> RankedIndividual<G, S> from(Individual<G, S, List<Double>> individual) {
+      return new RankedIndividual<>(
+          individual.id(),
+          individual.genotype(),
+          individual.solution(),
+          individual.quality(),
+          individual.qualityMappingIteration(),
+          individual.genotypeBirthIteration(),
+          0,
+          0,
+          individual.parentIds());
+    }
+  }
 
   private static <G, S> Comparator<RankedIndividual<G, S>> rankedComparator() {
     return Comparator.comparingInt((RankedIndividual<G, S> i) -> i.rank)
@@ -129,13 +145,15 @@ public class NsgaII<G, S>
               .mapToObj(ii -> {
                 Individual<G, S, List<Double>> individual = is.get(ii);
                 return new RankedIndividual<>(
+                    individual.id(),
                     individual.genotype(),
                     individual.solution(),
                     individual.quality(),
                     individual.qualityMappingIteration(),
                     individual.genotypeBirthIteration(),
                     fi,
-                    distances.get(ii));
+                    distances.get(ii),
+                    individual.parentIds());
               })
               .toList();
         })
@@ -148,20 +166,30 @@ public class NsgaII<G, S>
           Individual<G, S, List<Double>>, G, S, List<Double>, MultiHomogeneousObjectiveProblem<S, Double>>
       init(MultiHomogeneousObjectiveProblem<S, Double> problem, RandomGenerator random, ExecutorService executor)
           throws SolverException {
-    Collection<? extends Individual<G, S, List<Double>>> individuals =
-        map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor);
-    //noinspection rawtypes,unchecked
-    return AbstractStandardEvolver.POCState.from(
-        problem,
-        PartiallyOrderedCollection.from((List) individuals, partialComparator(problem)),
-        stopCondition());
+    POCPopulationState<
+            Individual<G, S, List<Double>>, G, S, List<Double>, MultiHomogeneousObjectiveProblem<S, Double>>
+        newState = POCPopulationState.empty(problem, stopCondition());
+    AtomicLong counter = new AtomicLong(0);
+    List<? extends G> genotypes = genotypeFactory.build(populationSize, random);
+    Collection<Individual<G, S, List<Double>>> individuals = getAll(map(
+        genotypes.stream()
+            .map(g -> new ChildGenotype<G>(counter.getAndIncrement(), g, List.of()))
+            .toList(),
+        (cg, s, r) -> RankedIndividual.from(
+            Individual.from(cg, solutionMapper, s.problem().qualityFunction(), s.nOfIterations())),
+        newState,
+        random,
+        executor));
+    return newState.updatedWithIteration(
+        genotypes.size(),
+        genotypes.size(),
+        PartiallyOrderedCollection.from(individuals, partialComparator(problem)));
   }
 
   @Override
   public POCPopulationState<
           Individual<G, S, List<Double>>, G, S, List<Double>, MultiHomogeneousObjectiveProblem<S, Double>>
       update(
-          MultiHomogeneousObjectiveProblem<S, Double> problem,
           RandomGenerator random,
           ExecutorService executor,
           POCPopulationState<
@@ -173,7 +201,7 @@ public class NsgaII<G, S>
               state)
           throws SolverException {
     // build offspring
-    Collection<G> offspringGenotypes = new ArrayList<>();
+    Collection<ChildGenotype<G>> offspringChildGenotypes = new ArrayList<>();
     Set<G> uniqueOffspringGenotypes = new HashSet<>();
     if (maxUniquenessAttempts > 0) {
       uniqueOffspringGenotypes.addAll(state.pocPopulation().all().stream()
@@ -184,86 +212,44 @@ public class NsgaII<G, S>
     List<Individual<G, S, List<Double>>> individuals =
         state.pocPopulation().all().stream().toList();
     int size = individuals.size();
-    while (offspringGenotypes.size() < populationSize) {
+    AtomicLong counter = new AtomicLong(state.nOfBirths());
+    while (offspringChildGenotypes.size() < populationSize) {
       GeneticOperator<G> operator = Misc.pickRandomly(operators, random);
-      List<G> parentGenotypes = IntStream.range(0, operator.arity())
-          .mapToObj(n -> individuals
-              .get(Math.min(random.nextInt(size), random.nextInt(size)))
-              .genotype())
+      List<Individual<G, S, List<Double>>> parents = IntStream.range(0, operator.arity())
+          .mapToObj(n -> individuals.get(Math.min(random.nextInt(size), random.nextInt(size))))
           .toList();
-      List<? extends G> childGenotype = operator.apply(parentGenotypes, random);
+      List<? extends G> newGenotypes =
+          operator.apply(parents.stream().map(Individual::genotype).toList(), random);
       if (attempts >= maxUniquenessAttempts
-          || childGenotype.stream().noneMatch(uniqueOffspringGenotypes::contains)) {
+          || newGenotypes.stream().noneMatch(uniqueOffspringGenotypes::contains)) {
         attempts = 0;
-        offspringGenotypes.addAll(childGenotype);
-        uniqueOffspringGenotypes.addAll(childGenotype);
+        List<Long> parentIds = parents.stream().map(Individual::id).toList();
+        newGenotypes.forEach(
+            g -> offspringChildGenotypes.add(new ChildGenotype<>(counter.getAndIncrement(), g, parentIds)));
+        uniqueOffspringGenotypes.addAll(newGenotypes);
       } else {
         attempts = attempts + 1;
       }
     }
     // map and decorate and trim
-    List<RankedIndividual<G, S>> rankedIndividuals =
-        decorate(map(offspringGenotypes, state.pocPopulation().all(), state, problem, executor), problem)
-            .stream()
-            .sorted(rankedComparator())
-            .limit(populationSize)
-            .toList();
+    Collection<Individual<G, S, List<Double>>> newPopulation = mapAll(
+        offspringChildGenotypes,
+        (cg, s, r) -> RankedIndividual.from(
+            Individual.from(cg, solutionMapper, s.problem().qualityFunction(), s.nOfIterations())),
+        state.pocPopulation().all(),
+        (i, s, r) -> RankedIndividual.from(i.updatedWithQuality(s)),
+        state,
+        random,
+        executor);
+    List<RankedIndividual<G, S>> rankedIndividuals = decorate(newPopulation, state.problem()).stream()
+        .sorted(rankedComparator())
+        .limit(populationSize)
+        .toList();
     @SuppressWarnings({"unchecked", "rawtypes"})
     List<Individual<G, S, List<Double>>> newIndividuals = (List) rankedIndividuals;
-    int nOfNewBirths = offspringGenotypes.size();
-    return AbstractStandardEvolver.POCState.from(
-        (AbstractStandardEvolver.POCState<
-                Individual<G, S, List<Double>>,
-                G,
-                S,
-                List<Double>,
-                MultiHomogeneousObjectiveProblem<S, Double>>)
-            state,
-        nOfNewBirths,
-        nOfNewBirths + (remap ? populationSize : 0),
-        PartiallyOrderedCollection.from(newIndividuals, partialComparator(problem)));
-  }
-
-  @Override
-  protected Individual<G, S, List<Double>> newIndividual(
-      G genotype,
-      POCPopulationState<
-              Individual<G, S, List<Double>>,
-              G,
-              S,
-              List<Double>,
-              MultiHomogeneousObjectiveProblem<S, Double>>
-          state,
-      MultiHomogeneousObjectiveProblem<S, Double> problem) {
-    S solution = solutionMapper.apply(genotype);
-    return new RankedIndividual<>(
-        genotype,
-        solution,
-        problem.qualityFunction().apply(solution),
-        state == null ? 0 : state.nOfIterations(),
-        state == null ? 0 : state.nOfIterations(),
-        0,
-        0d);
-  }
-
-  @Override
-  protected Individual<G, S, List<Double>> updateIndividual(
-      Individual<G, S, List<Double>> individual,
-      POCPopulationState<
-              Individual<G, S, List<Double>>,
-              G,
-              S,
-              List<Double>,
-              MultiHomogeneousObjectiveProblem<S, Double>>
-          state,
-      MultiHomogeneousObjectiveProblem<S, Double> problem) {
-    return new RankedIndividual<>(
-        individual.genotype(),
-        individual.solution(),
-        problem.qualityFunction().apply(individual.solution()),
-        individual.genotypeBirthIteration(),
-        state.nOfIterations(),
-        0,
-        0d);
+    return state.updatedWithIteration(
+        offspringChildGenotypes.size(),
+        remap ? populationSize : 0,
+        PartiallyOrderedCollection.from(newIndividuals, partialComparator(state.problem())));
   }
 }

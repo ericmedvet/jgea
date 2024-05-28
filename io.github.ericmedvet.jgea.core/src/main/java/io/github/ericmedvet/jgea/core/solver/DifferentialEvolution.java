@@ -25,6 +25,7 @@ import io.github.ericmedvet.jgea.core.selector.Last;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
@@ -76,32 +77,28 @@ public class DifferentialEvolution<S, Q>
   }
 
   @Override
-  protected Individual<List<Double>, S, Q> newIndividual(
-      List<Double> genotype,
-      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
-          state,
-      TotalOrderQualityBasedProblem<S, Q> problem) {
-    S solution = solutionMapper.apply(genotype);
-    return Individual.of(
-        genotype,
-        solution,
-        problem.qualityFunction().apply(solution),
-        state == null ? 0 : state.nOfIterations(),
-        state == null ? 0 : state.nOfIterations());
+  protected ListPopulationState<
+          Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
+      init(TotalOrderQualityBasedProblem<S, Q> problem) {
+    return ListPopulationState.empty(problem, stopCondition());
   }
 
   @Override
-  protected Individual<List<Double>, S, Q> updateIndividual(
+  protected Individual<List<Double>, S, Q> mapChildGenotype(
+      ChildGenotype<List<Double>> childGenotype,
+      ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
+          state,
+      RandomGenerator random) {
+    return Individual.from(childGenotype, solutionMapper, state.problem().qualityFunction(), state.nOfIterations());
+  }
+
+  @Override
+  protected Individual<List<Double>, S, Q> remapIndividual(
       Individual<List<Double>, S, Q> individual,
       ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
           state,
-      TotalOrderQualityBasedProblem<S, Q> problem) {
-    return Individual.of(
-        individual.genotype(),
-        individual.solution(),
-        problem.qualityFunction().apply(individual.solution()),
-        individual.genotypeBirthIteration(),
-        state == null ? individual.qualityMappingIteration() : state.nOfIterations());
+      RandomGenerator random) {
+    return individual.updatedWithQuality(state);
   }
 
   @Override
@@ -115,43 +112,22 @@ public class DifferentialEvolution<S, Q>
                   Q,
                   TotalOrderQualityBasedProblem<S, Q>>
               state,
-          TotalOrderQualityBasedProblem<S, Q> problem,
           Collection<Individual<List<Double>, S, Q>> individuals,
           long nOfNewBirths,
           long nOfNewFitnessEvaluations) {
-    return ListState.from(
-        (AbstractStandardEvolver.ListState<
-                Individual<List<Double>, S, Q>,
-                List<Double>,
-                S,
-                Q,
-                TotalOrderQualityBasedProblem<S, Q>>)
-            state,
-        nOfNewBirths,
-        nOfNewFitnessEvaluations,
-        individuals.stream().sorted(comparator(problem)).toList(),
-        comparator(problem));
+    return state.updatedWithIteration(nOfNewBirths, nOfNewFitnessEvaluations, individuals);
   }
 
   @Override
-  protected ListPopulationState<
-          Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
-      init(TotalOrderQualityBasedProblem<S, Q> problem, Collection<Individual<List<Double>, S, Q>> individuals) {
-    return ListState.from(
-        problem,
-        individuals.stream().sorted(comparator(problem)).toList(),
-        comparator(problem),
-        stopCondition());
-  }
-
-  @Override
-  protected Collection<List<Double>> buildOffspringGenotypes(
+  protected Collection<ChildGenotype<List<Double>>> buildOffspringToMapGenotypes(
       ListPopulationState<Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>>
           state,
       RandomGenerator random) {
+    AtomicLong counter = new AtomicLong(state.nOfBirths());
     return IntStream.range(0, state.listPopulation().size())
         .mapToObj(i -> {
-          List<Double> parent = state.listPopulation().get(i).genotype();
+          Individual<List<Double>, S, Q> parent =
+              state.listPopulation().get(i);
           List<Integer> indexes = new ArrayList<>();
           while (indexes.size() < 3) {
             int index = random.nextInt(state.listPopulation().size());
@@ -159,15 +135,22 @@ public class DifferentialEvolution<S, Q>
               indexes.add(index);
             }
           }
-          List<Double> a = state.listPopulation().get(indexes.get(0)).genotype();
-          List<Double> b = state.listPopulation().get(indexes.get(1)).genotype();
-          List<Double> c = state.listPopulation().get(indexes.get(2)).genotype();
-          return IntStream.range(0, parent.size())
-              .mapToDouble(j -> random.nextDouble() < crossoverProb
-                  ? (a.get(j) + differentialWeight * (b.get(j) - c.get(j)))
-                  : parent.get(j))
-              .boxed()
-              .toList();
+          Individual<List<Double>, S, Q> a = state.listPopulation().get(indexes.get(0));
+          Individual<List<Double>, S, Q> b = state.listPopulation().get(indexes.get(1));
+          Individual<List<Double>, S, Q> c = state.listPopulation().get(indexes.get(2));
+          return new ChildGenotype<>(
+              counter.getAndIncrement(),
+              IntStream.range(0, parent.genotype().size())
+                  .mapToDouble(j -> random.nextDouble() < crossoverProb
+                      ? (a.genotype().get(j)
+                          + differentialWeight
+                              * (b.genotype().get(j)
+                                  - c.genotype()
+                                      .get(j)))
+                      : parent.genotype().get(j))
+                  .boxed()
+                  .toList(),
+              List.of(parent.id(), a.id(), b.id(), c.id()));
         })
         .toList();
   }

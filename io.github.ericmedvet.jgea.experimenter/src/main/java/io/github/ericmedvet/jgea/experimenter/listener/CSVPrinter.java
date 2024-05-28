@@ -42,14 +42,26 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
   private final List<? extends NamedFunction<? super E, ?>> eFunctions;
   private final List<? extends NamedFunction<? super K, ?>> kFunctions;
   private final File file;
+  private final String errorString;
+  private final String intFormat;
+  private final String doubleFormat;
 
   private org.apache.commons.csv.CSVPrinter printer;
   private int lineCounter;
 
-  public CSVPrinter(List<Function<? super E, ?>> eFunctions, List<Function<? super K, ?>> kFunctions, File file) {
+  public CSVPrinter(
+      List<Function<? super E, ?>> eFunctions,
+      List<Function<? super K, ?>> kFunctions,
+      File file,
+      String errorString,
+      String intFormat,
+      String doubleFormat) {
     this.eFunctions = eFunctions.stream().map(NamedFunction::from).toList();
     this.kFunctions = kFunctions.stream().map(NamedFunction::from).toList();
     this.file = file;
+    this.errorString = errorString;
+    this.intFormat = intFormat;
+    this.doubleFormat = doubleFormat;
     lineCounter = 0;
   }
 
@@ -61,7 +73,28 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
         .toList();
     return Listener.named(
         e -> {
-          List<?> eValues = eFunctions.stream().map(f -> f.apply(e)).toList();
+          List<?> eValues = eFunctions.stream()
+              .map(f -> {
+                try {
+                  Object v = f.apply(e);
+                  if (v instanceof Double d) {
+                    return doubleFormat.formatted(v);
+                  }
+                  if (v instanceof Float d) {
+                    return doubleFormat.formatted(d);
+                  }
+                  if (v instanceof Integer n) {
+                    return intFormat.formatted(n);
+                  }
+                  if (v instanceof Long n) {
+                    return intFormat.formatted(n);
+                  }
+                  return v;
+                } catch (Exception ex) {
+                  return errorString;
+                }
+              })
+              .toList();
           synchronized (file) {
             if (printer == null) {
               File actualFile = Misc.checkExistenceAndChangeName(file);

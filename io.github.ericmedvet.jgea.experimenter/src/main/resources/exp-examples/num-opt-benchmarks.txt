@@ -8,11 +8,11 @@ ea.experiment(
       ea.p.s.sphere(p = 20)
     ]) *
     (solver = (nEval = [5000]) * [
+      ea.s.cmaEs();
       ea.s.ga(representation = ea.r.doubleString());
       ea.s.simpleEs();
       ea.s.openAiEs();
-      ea.s.pso();
-      ea.s.cmaEs()
+      ea.s.pso()
     ]) * [
     ea.run()
   ];
@@ -21,7 +21,9 @@ ea.experiment(
       functions = [
         ea.f.size(of = ea.f.genotype(of = ea.f.best()); format = "%3d");
         ea.f.quality(of = ea.f.best(); format = "%6.2f");
-        ea.f.hist(of = f.each(of = ea.f.all(); mapF = ea.f.quality()))
+        ea.f.hist(of = f.each(of = ea.f.all(); mapF = ea.f.quality()));
+        ea.f.id(of = ea.f.best());
+        ea.f.parentIds(of = ea.f.best(); format = "%20.20s")
       ];
       onlyLast = true;
       runKeys = [

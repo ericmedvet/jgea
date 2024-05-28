@@ -27,6 +27,8 @@ import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.State;
+import io.github.ericmedvet.jgea.core.solver.mapelites.MEIndividual;
+import io.github.ericmedvet.jgea.core.solver.mapelites.MapElites;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.core.util.Sized;
@@ -110,11 +112,43 @@ public class Functions {
   }
 
   @SuppressWarnings("unused")
+  public static <X> FormattedNamedFunction<X, Long> id(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Individual<?, ?, ?>> beforeF,
+      @Param(value = "format", dS = "%6d") String format) {
+    Function<Individual<?, ?, ?>, Long> f = Individual::id;
+    return FormattedNamedFunction.from(f, format, "id").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
   public static <X, I extends Individual<G, S, Q>, G, S, Q> NamedFunction<X, Collection<I>> lasts(
       @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<I, G, S, Q, ?>> beforeF) {
     Function<POCPopulationState<I, G, S, Q, ?>, Collection<I>> f =
         state -> state.pocPopulation().lasts();
     return NamedFunction.from(f, "lasts").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X> FormattedNamedFunction<X, Integer> meBin(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, MapElites.Descriptor.Coordinate> beforeF,
+      @Param(value = "format", dS = "%3d") String format) {
+    Function<MapElites.Descriptor.Coordinate, Integer> f = MapElites.Descriptor.Coordinate::bin;
+    return FormattedNamedFunction.from(f, format, "bin").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X> FormattedNamedFunction<X, List<MapElites.Descriptor.Coordinate>> meCoordinates(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, MEIndividual<?, ?, ?>> beforeF,
+      @Param(value = "format", dS = "%s") String format) {
+    Function<MEIndividual<?, ?, ?>, List<MapElites.Descriptor.Coordinate>> f = MEIndividual::coordinates;
+    return FormattedNamedFunction.from(f, format, "coords").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X> FormattedNamedFunction<X, Double> meValue(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, MapElites.Descriptor.Coordinate> beforeF,
+      @Param(value = "format", dS = "%.2f") String format) {
+    Function<MapElites.Descriptor.Coordinate, Double> f = MapElites.Descriptor.Coordinate::value;
+    return FormattedNamedFunction.from(f, format, "value").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
@@ -161,6 +195,14 @@ public class Functions {
         .average()
         .orElseThrow();
     return FormattedNamedFunction.from(f, format, "overall.target.distance").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X> FormattedNamedFunction<X, Collection<Long>> parentIds(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Individual<?, ?, ?>> beforeF,
+      @Param(value = "format", dS = "%s") String format) {
+    Function<Individual<?, ?, ?>, Collection<Long>> f = Individual::parentIds;
+    return FormattedNamedFunction.from(f, format, "parent.ids").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
