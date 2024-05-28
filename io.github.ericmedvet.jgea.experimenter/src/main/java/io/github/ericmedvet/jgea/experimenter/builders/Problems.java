@@ -130,7 +130,8 @@ public class Problems {
               @Param(value = "initialT", dD = 0) double initialT,
               @Param(value = "finalT", dD = 100) double finalT,
               @Param("environment") Environment<double[], double[], B> environment,
-              @Param(value = "stopCondition", dNPM = "predicate.not(condition = predicate.always())") Predicate<B> stopCondition,
+              @Param(value = "stopCondition", dNPM = "predicate.not(condition = predicate.always())")
+                  Predicate<B> stopCondition,
               @Param("f")
                   Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], B>>, Q>
                       outcomeQualityFunction,

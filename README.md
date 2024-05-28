@@ -31,7 +31,7 @@ Add (at least) this to your `pom.xml`:
 <dependency>
     <groupId>io.github.ericmedvet</groupId>
     <artifactId>jgea.core</artifactId>
-    <version>2.6.2-PN</version>
+    <version>2.6.2-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -46,7 +46,7 @@ mvn clean package
 
 Then run an example experiment
 ```shell
-java -jar io.github.ericmedvet.jgea.experimenter/target/jgea.experimenter-2.6.2-PN-jar-with-dependencies.jar -e sr-comparison
+java -jar io.github.ericmedvet.jgea.experimenter/target/jgea.experimenter-2.6.2-SNAPSHOT-jar-with-dependencies.jar -e sr-comparison
 ```
 
 ## Main components
