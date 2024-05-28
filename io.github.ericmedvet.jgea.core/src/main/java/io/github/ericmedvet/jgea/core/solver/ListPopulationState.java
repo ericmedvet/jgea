@@ -28,9 +28,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 
-/**
- * @author "Eric Medvet" on 2023/10/23 for jgea
- */
 public interface ListPopulationState<
         I extends Individual<G, S, Q>, G, S, Q, P extends TotalOrderQualityBasedProblem<S, Q>>
     extends POCPopulationState<I, G, S, Q, P> {

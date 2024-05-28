@@ -25,9 +25,6 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.function.Predicate;
 
-/**
- * @author "Eric Medvet" on 2023/10/21 for jgea
- */
 public interface State<P extends Problem<S>, S> {
 
   long elapsedMillis();

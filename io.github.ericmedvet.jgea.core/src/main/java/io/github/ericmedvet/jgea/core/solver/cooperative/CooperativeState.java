@@ -31,9 +31,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
-/**
- * @author "Eric Medvet" on 2024/05/27 for jgea
- */
 public interface CooperativeState<
         T1 extends POCPopulationState<Individual<G1, S1, Q>, G1, S1, Q, P1>,
         T2 extends POCPopulationState<Individual<G2, S2, Q>, G2, S2, Q, P2>,

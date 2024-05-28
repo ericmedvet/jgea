@@ -31,9 +31,6 @@ import java.util.Map;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
-/**
- * @author "Eric Medvet" on 2023/11/07 for jgea
- */
 public class TuiDrawer {
 
   private static final Configuration DEFAULT_CONFIGURATION = new Configuration(

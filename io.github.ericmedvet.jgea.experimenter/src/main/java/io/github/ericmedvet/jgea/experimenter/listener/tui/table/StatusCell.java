@@ -24,9 +24,6 @@ import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
-/**
- * @author "Eric Medvet" on 2023/11/09 for jgea
- */
 public record StatusCell(LocalDateTime localDateTime) implements Cell {
 
   private enum TimeStatus {

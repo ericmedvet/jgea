@@ -33,9 +33,6 @@ import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 import java.util.random.RandomGenerator;
 
-/**
- * @author "Eric Medvet" on 2023/11/12 for jgea
- */
 public class NetMultiSource {
 
   private static final Logger L = Logger.getLogger(NetMultiSource.class.getName());

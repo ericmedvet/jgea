@@ -30,9 +30,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
-/**
- * @author "Eric Medvet" on 2023/10/23 for jgea
- */
 public class StandardEvolver<G, S, Q>
     extends AbstractStandardEvolver<
         POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>>,

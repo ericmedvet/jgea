@@ -27,9 +27,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * @author "Eric Medvet" on 2023/12/28 for jgea
- */
 public record Representation<G>(Factory<G> factory, List<Mutation<G>> mutations, List<Crossover<G>> crossovers) {
 
   public Representation(Factory<G> factory, Mutation<G> mutation, GeneticOperator<G> crossover) {

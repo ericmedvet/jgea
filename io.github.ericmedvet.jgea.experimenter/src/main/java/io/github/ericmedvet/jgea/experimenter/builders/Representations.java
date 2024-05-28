@@ -43,9 +43,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
-/**
- * @author "Eric Medvet" on 2023/12/28 for jgea
- */
 @Discoverable(prefixTemplate = "ea.representation|r")
 public class Representations {
   private Representations() {}

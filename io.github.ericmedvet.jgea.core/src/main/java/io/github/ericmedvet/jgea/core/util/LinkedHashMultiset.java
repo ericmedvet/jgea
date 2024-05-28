@@ -21,9 +21,6 @@ package io.github.ericmedvet.jgea.core.util;
 
 import java.util.*;
 
-/**
- * @author "Eric Medvet" on 2023/11/02 for jgea
- */
 public class LinkedHashMultiset<E> implements Multiset<E> {
 
   private final LinkedHashMap<E, Integer> map;

@@ -31,9 +31,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 
-/**
- * @author "Eric Medvet" on 2024/05/27 for jgea
- */
 public interface OpenAIESState<S, Q>
     extends ListPopulationState<
         Individual<List<Double>, S, Q>, List<Double>, S, Q, TotalOrderQualityBasedProblem<S, Q>> {

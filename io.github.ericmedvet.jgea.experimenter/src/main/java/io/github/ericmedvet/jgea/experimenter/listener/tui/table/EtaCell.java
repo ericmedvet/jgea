@@ -26,9 +26,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
-/**
- * @author "Eric Medvet" on 2023/11/09 for jgea
- */
 public record EtaCell(LocalDateTime startlocalDateTime, Progress progress) implements Cell {
 
   private static final DateTimeFormatter SAME_DAY_DATETIME_FORMAT =

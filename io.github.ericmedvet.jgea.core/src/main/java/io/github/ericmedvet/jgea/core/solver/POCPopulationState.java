@@ -25,9 +25,6 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.function.Predicate;
 
-/**
- * @author "Eric Medvet" on 2023/10/21 for jgea
- */
 public interface POCPopulationState<I extends Individual<G, S, Q>, G, S, Q, P extends QualityBasedProblem<S, Q>>
     extends State<P, S> {
 

@@ -27,9 +27,6 @@ import java.util.function.IntToDoubleFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-/**
- * @author "Eric Medvet" on 2023/11/02 for jgea
- */
 public class VectorUtils {
 
   private VectorUtils() {}

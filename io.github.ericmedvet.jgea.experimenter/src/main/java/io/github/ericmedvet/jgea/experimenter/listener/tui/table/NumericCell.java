@@ -21,9 +21,6 @@ package io.github.ericmedvet.jgea.experimenter.listener.tui.table;
 
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
 
-/**
- * @author "Eric Medvet" on 2023/11/07 for jgea
- */
 public record NumericCell(Number value, String format, String suffix) implements Cell {
 
   public NumericCell(Number value, String format) {

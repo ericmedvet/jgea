@@ -31,9 +31,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-/**
- * @author "Eric Medvet" on 2023/10/28 for jgea
- */
 public interface GridPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q>>
     extends POCPopulationState<Individual<G, S, Q>, G, S, Q, P> {
   Grid<Individual<G, S, Q>> gridPopulation();

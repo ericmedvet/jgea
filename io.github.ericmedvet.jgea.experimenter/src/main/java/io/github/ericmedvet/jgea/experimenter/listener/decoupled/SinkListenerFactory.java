@@ -34,9 +34,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-/**
- * @author "Eric Medvet" on 2023/11/03 for jgea
- */
 public class SinkListenerFactory<G, S, Q>
     implements ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>> {
   private final List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions;

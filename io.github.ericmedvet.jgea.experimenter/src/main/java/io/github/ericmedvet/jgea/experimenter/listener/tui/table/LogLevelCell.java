@@ -24,9 +24,6 @@ import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
 import java.util.Map;
 import java.util.logging.Level;
 
-/**
- * @author "Eric Medvet" on 2023/11/10 for jgea
- */
 public record LogLevelCell(Level level) implements Cell {
   private static final String LEVEL_FORMAT = "%4.4s";
   private static final Map<Level, TextColor> LEVEL_COLORS = Map.ofEntries(

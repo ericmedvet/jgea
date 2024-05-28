@@ -30,9 +30,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
-/**
- * @author "Eric Medvet" on 2023/10/21 for jgea
- */
 public interface SpeciatedPOCPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q>>
     extends POCPopulationState<Individual<G, S, Q>, G, S, Q, P> {
   Collection<SpeciatedEvolver.Species<Individual<G, S, Q>>> parentSpecies();

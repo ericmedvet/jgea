@@ -26,9 +26,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 
-/**
- * @author "Eric Medvet" on 2024/01/21 for jgea
- */
 public abstract class AbstractNumericalProblem
     implements ComparableQualityBasedProblem<List<Double>, Double>, ProblemWithExampleSolution<List<Double>> {
   private final int p;

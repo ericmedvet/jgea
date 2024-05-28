@@ -29,9 +29,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-/**
- * @author "Eric Medvet" on 2024/02/11 for jgea
- */
 public class GaussianMixture2D
     implements ProblemWithExampleSolution<List<Double>>, ComparableQualityBasedProblem<List<Double>, Double> {
 

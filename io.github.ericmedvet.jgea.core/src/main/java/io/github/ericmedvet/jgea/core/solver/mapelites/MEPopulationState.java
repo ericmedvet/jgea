@@ -30,9 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
-/**
- * @author "Eric Medvet" on 2023/10/28 for jgea
- */
 public interface MEPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q>>
     extends POCPopulationState<MEIndividual<G, S, Q>, G, S, Q, P> {
   List<MapElites.Descriptor<G, S, Q>> descriptors();

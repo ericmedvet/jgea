@@ -24,9 +24,6 @@ import io.github.ericmedvet.jgea.experimenter.listener.tui.util.Rectangle;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
 import java.util.Arrays;
 
-/**
- * @author "Eric Medvet" on 2023/11/09 for jgea
- */
 public record CompositeCell(String sep, Cell... cells) implements Cell {
   @Override
   public void draw(TuiDrawer td, int width) {
