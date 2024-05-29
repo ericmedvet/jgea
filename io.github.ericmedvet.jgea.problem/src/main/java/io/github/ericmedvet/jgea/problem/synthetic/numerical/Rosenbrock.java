@@ -21,9 +21,6 @@ package io.github.ericmedvet.jgea.problem.synthetic.numerical;
 
 import java.util.stream.IntStream;
 
-/**
- * @author "Eric Medvet" on 2024/01/21 for jgea
- */
 public class Rosenbrock extends AbstractNumericalProblem {
   public Rosenbrock(int p) {
     super(p, vs -> IntStream.range(0, p - 1)

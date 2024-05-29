@@ -21,35 +21,65 @@ package io.github.ericmedvet.jgea.core.solver;
 
 import io.github.ericmedvet.jgea.core.problem.Problem;
 import io.github.ericmedvet.jgea.core.util.Progress;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.function.Predicate;
 
-/**
- * @author "Eric Medvet" on 2023/10/21 for jgea
- */
 public interface State<P extends Problem<S>, S> {
+
   long elapsedMillis();
 
   long nOfIterations();
 
-  Progress progress();
-
   P problem();
 
-  interface WithComputedProgress<P extends Problem<S>, S> extends State<P, S> {
-    Predicate<State<?, ?>> stopCondition();
+  LocalDateTime startingDateTime();
 
-    @Override
-    default Progress progress() {
-      //noinspection rawtypes
-      if (stopCondition() instanceof ProgressBasedStopCondition condition) {
-        try {
-          //noinspection unchecked
-          return condition.progress(this);
-        } catch (ClassCastException ex) {
-          return Progress.NA;
-        }
+  Predicate<State<?, ?>> stopCondition();
+
+  static <P extends Problem<S>, S> State<P, S> of(
+      LocalDateTime startingDateTime,
+      long elapsedMillis,
+      long nOfIterations,
+      P problem,
+      Predicate<State<?, ?>> stopCondition) {
+    record HardState<P extends Problem<S>, S>(
+        LocalDateTime startingDateTime,
+        long elapsedMillis,
+        long nOfIterations,
+        P problem,
+        Predicate<State<?, ?>> stopCondition)
+        implements State<P, S> {}
+    return new HardState<>(startingDateTime, elapsedMillis, nOfIterations, problem, stopCondition);
+  }
+
+  static <P extends Problem<S>, S> State<P, S> empty(P problem, Predicate<State<?, ?>> stopCondition) {
+    return of(LocalDateTime.now(), 0, 0, problem, stopCondition);
+  }
+
+  default Progress progress() {
+    //noinspection rawtypes
+    if (stopCondition() instanceof ProgressBasedStopCondition condition) {
+      try {
+        //noinspection unchecked
+        return condition.progress(this);
+      } catch (ClassCastException ex) {
+        return Progress.NA;
       }
-      return Progress.NA;
     }
+    return Progress.NA;
+  }
+
+  default State<P, S> updatedWithIteration() {
+    return of(
+        startingDateTime(),
+        ChronoUnit.MILLIS.between(LocalDateTime.now(), startingDateTime()),
+        nOfIterations() + 1,
+        problem(),
+        stopCondition());
+  }
+
+  default State<P, S> updatedWithProblem(P problem) {
+    return of(startingDateTime(), elapsedMillis(), nOfIterations(), problem, stopCondition());
   }
 }

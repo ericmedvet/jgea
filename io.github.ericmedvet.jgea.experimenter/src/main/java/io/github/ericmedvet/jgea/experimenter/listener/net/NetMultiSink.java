@@ -40,9 +40,6 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
-/**
- * @author "Eric Medvet" on 2023/11/12 for jgea
- */
 public class NetMultiSink {
 
   private static final Logger L = Logger.getLogger(NetMultiSink.class.getName());

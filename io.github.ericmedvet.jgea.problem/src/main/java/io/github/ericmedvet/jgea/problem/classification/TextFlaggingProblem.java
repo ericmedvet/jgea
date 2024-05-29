@@ -20,7 +20,7 @@
 
 package io.github.ericmedvet.jgea.problem.classification;
 
-import io.github.ericmedvet.jgea.core.util.Pair;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.util.List;
 
 public class TextFlaggingProblem extends ClassificationProblem<String, TextFlaggingProblem.Label> {

@@ -24,7 +24,7 @@ import io.github.ericmedvet.jgea.core.problem.MultiHomogeneousObjectiveProblem;
 import io.github.ericmedvet.jgea.core.representation.graph.finiteautomata.Extractor;
 import io.github.ericmedvet.jgea.core.util.IntRange;
 import io.github.ericmedvet.jgea.core.util.Misc;
-import io.github.ericmedvet.jgea.core.util.Pair;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.util.*;
 
 public class ExtractionProblem<S> implements MultiHomogeneousObjectiveProblem<Extractor<S>, Double> {
@@ -60,7 +60,7 @@ public class ExtractionProblem<S> implements MultiHomogeneousObjectiveProblem<Ex
         .map(e -> e.extractNonOverlapping(builtSequence))
         .reduce(Misc::union)
         .orElse(Set.of());
-    return Pair.of(builtSequence, desiredExtractions);
+    return new Pair<>(builtSequence, desiredExtractions);
   }
 
   @Override

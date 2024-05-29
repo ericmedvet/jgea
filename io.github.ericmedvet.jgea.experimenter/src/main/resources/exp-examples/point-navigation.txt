@@ -1,0 +1,64 @@
+ea.experiment(
+  runs = (randomGenerator = (seed = [-5:1:-1]) * [m.defaultRG()]) *
+    [ea.run(
+        problem = ea.p.numEnvTo(
+            dT = 0.1;
+            environment = ds.e.pointNavigation(
+                arena = E_MAZE;
+                initialRobotXRange = m.range(min = 0.5; max = 0.5);
+                initialRobotYRange = m.range(min = 0.5; max = 0.5);
+                robotMaxV = 0.05
+            );
+            stopCondition = predicate.lt(f = ds.e.n.distanceFromTarget(); t = 0.01);
+            f = ds.e.n.finalTimePlusD();
+            type = MINIMIZE
+        );
+        solver = ea.s.ga(
+            representation = ea.r.doubleString(crossoverP = 0.0);
+            mapper = ea.m.dsToNpnds(npnds = ds.num.mlp(innerLayerRatio = 2.0));
+            nPop = 108;
+            nEval = 10000
+        )
+    )];
+  listeners = [
+      ea.l.console(
+        functions = [
+          ea.f.size(of = ea.f.genotype(of = ea.f.best()); format = "%3d");
+          ea.f.simQuality(of = ea.f.quality(of = ea.f.best()); format = "%9.5f");
+          ea.f.hist(of = f.each(of = ea.f.all(); mapF = ea.f.simQuality(of = ea.f.quality())));
+          ea.f.meBin(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 0));
+          ea.f.meBin(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 1));
+          ea.f.meValue(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 0));
+          ea.f.meValue(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 1));
+          ea.f.id(of = ea.f.best());
+          f.nTh(of = ea.f.parentIds(of = ea.f.best()); n = 0);
+          f.nTh(of = ea.f.parentIds(of = ea.f.best()); n = 1)
+        ];
+        runKeys = [
+          ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
+          ea.misc.sEntry(key = "solver"; value = "{solver.name}");
+          ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
+        ]
+      );
+      ea.l.bestCsv(
+        filePath = "../best.csv";
+        functions = [
+          ea.f.size(of = ea.f.genotype(of = ea.f.best()); format = "%3d");
+          ea.f.simQuality(of = ea.f.quality(of = ea.f.best()); format = "%5.2f");
+          ea.f.meBin(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 0));
+          ea.f.meBin(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 1));
+          ea.f.meValue(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 0));
+          ea.f.meValue(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 1));
+          ea.f.id(of = ea.f.best());
+          f.nTh(of = ea.f.parentIds(of = ea.f.best()); n = 0);
+          f.nTh(of = ea.f.parentIds(of = ea.f.best()); n = 1);
+          f.toBase64(of = ea.function.genotype(of = ea.f.best()))
+        ];
+        runKeys = [
+          ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
+          ea.misc.sEntry(key = "solver"; value = "{solver.name}");
+          ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
+        ]
+      )
+  ]
+)

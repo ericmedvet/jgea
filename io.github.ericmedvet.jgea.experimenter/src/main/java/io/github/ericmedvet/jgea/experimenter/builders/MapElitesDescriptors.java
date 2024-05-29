@@ -25,9 +25,6 @@ import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import java.util.function.Function;
 
-/**
- * @author "Eric Medvet" on 2023/12/27 for jgea
- */
 @Discoverable(prefixTemplate = "ea.solver|s.mapelites|me.descriptor|d")
 public class MapElitesDescriptors {
   private MapElitesDescriptors() {}

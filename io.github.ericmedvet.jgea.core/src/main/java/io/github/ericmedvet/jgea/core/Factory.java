@@ -20,7 +20,7 @@
 
 package io.github.ericmedvet.jgea.core;
 
-import io.github.ericmedvet.jgea.core.util.Pair;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -43,7 +43,7 @@ public interface Factory<T> {
       }
       List<Pair<T1, T2>> pairs = new ArrayList<>(n);
       for (int i = 0; i < n; i++) {
-        pairs.add(Pair.of(t1s.get(i), t2s.get(i)));
+        pairs.add(new Pair<>(t1s.get(i), t2s.get(i)));
       }
       return pairs;
     };

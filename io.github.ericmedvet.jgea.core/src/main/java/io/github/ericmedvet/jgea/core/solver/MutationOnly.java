@@ -25,7 +25,9 @@ import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.selector.Selector;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
@@ -58,10 +60,12 @@ public class MutationOnly<G, S, Q> extends StandardEvolver<G, S, Q> {
   }
 
   @Override
-  protected Collection<G> buildOffspringGenotypes(
+  protected Collection<ChildGenotype<G>> buildOffspringToMapGenotypes(
       POCPopulationState<Individual<G, S, Q>, G, S, Q, QualityBasedProblem<S, Q>> state, RandomGenerator random) {
+    AtomicLong counter = new AtomicLong(state.nOfBirths());
     return state.pocPopulation().all().stream()
-        .map(i -> mutation.mutate(i.genotype(), random))
+        .map(i -> new ChildGenotype<>(
+            counter.getAndIncrement(), mutation.mutate(i.genotype(), random), List.of(i.id())))
         .toList();
   }
 }

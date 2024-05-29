@@ -21,7 +21,7 @@
 package io.github.ericmedvet.jgea.core.operator;
 
 import io.github.ericmedvet.jgea.core.util.Misc;
-import io.github.ericmedvet.jgea.core.util.Pair;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +42,7 @@ public interface Mutation<G> extends GeneticOperator<G> {
   }
 
   static <G1, G2> Mutation<Pair<G1, G2>> pair(Mutation<G1> mutation1, Mutation<G2> mutation2) {
-    return (p, random) -> Pair.of(mutation1.mutate(p.first(), random), mutation2.mutate(p.second(), random));
+    return (p, random) -> new Pair<>(mutation1.mutate(p.first(), random), mutation2.mutate(p.second(), random));
   }
 
   @Override

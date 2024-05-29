@@ -37,7 +37,11 @@ import io.github.ericmedvet.jgea.core.selector.Tournament;
 import io.github.ericmedvet.jgea.core.solver.*;
 import io.github.ericmedvet.jgea.core.solver.cabea.CellularAutomataBasedSolver;
 import io.github.ericmedvet.jgea.core.solver.cabea.SubstrateFiller;
+import io.github.ericmedvet.jgea.core.solver.es.CMAEvolutionaryStrategy;
+import io.github.ericmedvet.jgea.core.solver.es.OpenAIEvolutionaryStrategy;
+import io.github.ericmedvet.jgea.core.solver.es.SimpleEvolutionaryStrategy;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MapElites;
+import io.github.ericmedvet.jgea.core.solver.pso.ParticleSwarmOptimization;
 import io.github.ericmedvet.jgea.core.solver.speciation.LazySpeciator;
 import io.github.ericmedvet.jgea.core.solver.speciation.SpeciatedEvolver;
 import io.github.ericmedvet.jgea.experimenter.Representation;
@@ -269,6 +273,10 @@ public class Solvers {
       @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
       @Param(value = "sigma", dD = 0.02d) double sigma,
       @Param(value = "batchSize", dI = 30) int batchSize,
+      @Param(value = "stepSize", dD = 0.02d) double stepSize,
+      @Param(value = "beta1", dD = 0.9d) double beta1,
+      @Param(value = "beta2", dD = 0.999d) double beta2,
+      @Param(value = "epsilon", dD = 1e-8) double epsilon,
       @Param(value = "nEval", dI = 1000) int nEval) {
     return exampleS -> new OpenAIEvolutionaryStrategy<>(
         mapper.mapperFor(exampleS),
@@ -277,7 +285,11 @@ public class Solvers {
             .factory(),
         StopConditions.nOfFitnessEvaluations(nEval),
         batchSize,
-        sigma);
+        sigma,
+        stepSize,
+        beta1,
+        beta2,
+        epsilon);
   }
 
   @SuppressWarnings("unused")

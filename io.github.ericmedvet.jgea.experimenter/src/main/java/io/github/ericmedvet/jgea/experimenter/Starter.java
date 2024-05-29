@@ -106,14 +106,14 @@ public class Starter {
     // check help
     if (configuration.help) {
       jc.usage();
-      System.exit(0);
+      return;
     }
     // prepare local named builder
     NamedBuilder<Object> nb = NamedBuilder.fromDiscovery();
     // check if it's just a help invocation
     if (configuration.showExpFileHelp) {
       System.out.println(NamedBuilder.prettyToString(nb, true));
-      System.exit(0);
+      return;
     }
     // read experiment description
     String expDescription = null;
@@ -154,7 +154,7 @@ public class Starter {
         System.out.println("Experiment description is valid");
         System.out.printf("\t%d runs%n", experiment.runs().size());
         System.out.printf("\t%d listeners%n", experiment.listeners().size());
-        System.exit(0);
+        return;
       } catch (BuilderException e) {
         L.severe("Cannot build experiment: %s%n".formatted(e));
         if (configuration.verbose) {
@@ -171,6 +171,7 @@ public class Starter {
     } catch (BuilderException e) {
       L.severe("Cannot run experiment: %s%n".formatted(e));
       if (configuration.verbose) {
+        //noinspection CallToPrintStackTrace
         e.printStackTrace();
       }
       System.exit(-1);

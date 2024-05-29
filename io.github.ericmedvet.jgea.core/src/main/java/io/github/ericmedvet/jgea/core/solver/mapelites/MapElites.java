@@ -23,102 +23,35 @@ package io.github.ericmedvet.jgea.core.solver.mapelites;
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
-import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSolver;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.util.Misc;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class MapElites<G, S, Q>
     extends AbstractPopulationBasedIterativeSolver<
         MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>>,
         QualityBasedProblem<S, Q>,
-        Individual<G, S, Q>,
+        MEIndividual<G, S, Q>,
         G,
         S,
         Q> {
 
-  public record Descriptor<G, S, Q>(
-      Function<Individual<G, S, Q>, Double> function, double min, double max, int nOfBins) {
-    public int binOf(Individual<G, S, Q> individual) {
-      double value = function.apply(individual);
-      return Math.min(Math.max(0, (int) Math.ceil((value - min) / (max - min) * (double) nOfBins)), nOfBins - 1);
-    }
-  }
-
-  private final Mutation<G> mutation;
   protected final int populationSize;
+  private final Mutation<G> mutation;
   private final List<Descriptor<G, S, Q>> descriptors;
-
-  private record State<G, S, Q>(
-      LocalDateTime startingDateTime,
-      long elapsedMillis,
-      long nOfIterations,
-      QualityBasedProblem<S, Q> problem,
-      Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
-      long nOfBirths,
-      long nOfQualityEvaluations,
-      PartiallyOrderedCollection<Individual<G, S, Q>> pocPopulation,
-      Map<List<Integer>, Individual<G, S, Q>> mapOfElites,
-      List<Descriptor<G, S, Q>> descriptors)
-      implements MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>>,
-          io.github.ericmedvet.jgea.core.solver.State.WithComputedProgress<QualityBasedProblem<S, Q>, S> {
-
-    // initialization
-    public static <G, S, Q> State<G, S, Q> from(
-        QualityBasedProblem<S, Q> problem,
-        long nOfBirths,
-        Map<List<Integer>, Individual<G, S, Q>> mapOfElites,
-        PartialComparator<? super Individual<G, S, Q>> partialComparator,
-        List<Descriptor<G, S, Q>> descriptors,
-        Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition) {
-      return new State<>(
-          LocalDateTime.now(),
-          0,
-          0,
-          problem,
-          stopCondition,
-          mapOfElites.size(),
-          mapOfElites.size(),
-          PartiallyOrderedCollection.from(mapOfElites.values(), partialComparator),
-          mapOfElites,
-          descriptors);
-    }
-
-    // update
-    public static <G, S, Q> State<G, S, Q> from(
-        State<G, S, Q> state,
-        long nOfBirths,
-        long nOfFitnessEvaluations,
-        Map<List<Integer>, Individual<G, S, Q>> mapOfElites,
-        PartialComparator<? super Individual<G, S, Q>> partialComparator) {
-      return new State<>(
-          state.startingDateTime,
-          ChronoUnit.MILLIS.between(state.startingDateTime, LocalDateTime.now()),
-          state.nOfIterations + 1,
-          state.problem,
-          state.stopCondition,
-          state.nOfBirths + nOfBirths,
-          state.nOfQualityEvaluations + nOfFitnessEvaluations,
-          PartiallyOrderedCollection.from(mapOfElites.values(), partialComparator),
-          mapOfElites,
-          state.descriptors);
-    }
-  }
 
   public MapElites(
       Function<? super G, ? extends S> solutionMapper,
@@ -133,50 +66,20 @@ public class MapElites<G, S, Q>
     this.descriptors = descriptors;
   }
 
-  @Override
-  protected Individual<G, S, Q> newIndividual(
-      G genotype,
-      MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>> state,
-      QualityBasedProblem<S, Q> problem) {
-    S solution = solutionMapper.apply(genotype);
-    return Individual.of(
-        genotype,
-        solution,
-        problem.qualityFunction().apply(solution),
-        state == null ? 0 : state.nOfIterations(),
-        state == null ? 0 : state.nOfIterations());
+  public record Descriptor<G, S, Q>(
+      Function<Individual<G, S, Q>, Double> function, double min, double max, int nOfBins) {
+    public record Coordinate(int bin, double value) {}
+
+    public Coordinate coordinate(Individual<G, S, Q> individual) {
+      double value = function.apply(individual);
+      return new Coordinate(
+          Math.min(Math.max(0, (int) Math.ceil((value - min) / (max - min) * (double) nOfBins)), nOfBins - 1),
+          value);
+    }
   }
 
-  @Override
-  protected Individual<G, S, Q> updateIndividual(
-      Individual<G, S, Q> individual,
-      MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>> state,
-      QualityBasedProblem<S, Q> problem) {
-    return Individual.of(
-        individual.genotype(),
-        individual.solution(),
-        problem.qualityFunction().apply(individual.solution()),
-        individual.genotypeBirthIteration(),
-        state == null ? individual.qualityMappingIteration() : state.nOfIterations());
-  }
-
-  protected static <G, S, Q> Map<List<Integer>, Individual<G, S, Q>> mapOfElites(
-      Collection<Individual<G, S, Q>> individuals,
-      List<Descriptor<G, S, Q>> descriptors,
-      PartialComparator<? super Individual<G, S, Q>> partialComparator) {
-    return individuals.stream()
-        .map(i -> Map.entry(descriptors.stream().map(d -> d.binOf(i)).toList(), i))
-        .collect(Collectors.toMap(
-            Map.Entry::getKey,
-            Map.Entry::getValue,
-            (i1, i2) -> chooseBest(i1, i2, partialComparator),
-            LinkedHashMap::new));
-  }
-
-  protected static <G, S, Q> Individual<G, S, Q> chooseBest(
-      Individual<G, S, Q> newIndividual,
-      Individual<G, S, Q> existingIndividual,
-      PartialComparator<? super Individual<G, S, Q>> partialComparator) {
+  private static <I extends Individual<G, S, Q>, G, S, Q> I chooseBest(
+      I newIndividual, I existingIndividual, PartialComparator<? super I> partialComparator) {
     if (existingIndividual == null) {
       return newIndividual;
     }
@@ -192,41 +95,56 @@ public class MapElites<G, S, Q>
   public MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>> init(
       QualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
       throws SolverException {
-    return State.from(
-        problem,
-        populationSize,
-        mapOfElites(
-            map(genotypeFactory.build(populationSize, random), List.of(), null, problem, executor),
-            descriptors,
-            partialComparator(problem)),
-        partialComparator(problem),
-        descriptors,
-        stopCondition());
+    MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>> newState =
+        MEPopulationState.empty(problem, stopCondition(), descriptors);
+    AtomicLong counter = new AtomicLong(0);
+    Collection<MEIndividual<G, S, Q>> newIndividuals = getAll(map(
+        genotypeFactory.build(populationSize, random).stream()
+            .map(g -> new ChildGenotype<G>(counter.getAndIncrement(), g, List.of()))
+            .toList(),
+        (cg, s, r) -> MEIndividual.from(
+            Individual.from(cg, solutionMapper, s.problem().qualityFunction(), s.nOfIterations()), s),
+        newState,
+        random,
+        executor));
+    return newState.updatedWithIteration(
+        populationSize, populationSize, mapOfElites(newIndividuals, partialComparator(problem)));
   }
 
   @Override
   public MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>> update(
-      QualityBasedProblem<S, Q> problem,
       RandomGenerator random,
       ExecutorService executor,
       MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>> state)
       throws SolverException {
-    Collection<Individual<G, S, Q>> parents = ((State<G, S, Q>) state).mapOfElites.values();
+    Collection<MEIndividual<G, S, Q>> individuals = state.mapOfElites().values();
     // build new genotypes
-    List<G> offspringGenotypes = IntStream.range(0, populationSize)
-        .mapToObj(
-            j -> mutation.mutate(Misc.pickRandomly(parents, random).genotype(), random))
-        .toList();
-    return State.from(
-        (State<G, S, Q>) state,
-        populationSize,
-        populationSize,
-        mapOfElites(
-            Stream.of(map(offspringGenotypes, List.of(), state, problem, executor), parents)
-                .flatMap(Collection::stream)
-                .toList(),
-            descriptors,
-            partialComparator(problem)),
-        partialComparator(problem));
+    AtomicLong counter = new AtomicLong(state.nOfBirths());
+    Collection<MEIndividual<G, S, Q>> newIndividuals = getAll(map(
+        IntStream.range(0, populationSize)
+            .mapToObj(j -> Misc.pickRandomly(individuals, random))
+            .map(p -> new ChildGenotype<>(
+                counter.getAndIncrement(), mutation.mutate(p.genotype(), random), List.of(p.id())))
+            .toList(),
+        (cg, s, r) -> MEIndividual.from(
+            Individual.from(cg, solutionMapper, s.problem().qualityFunction(), s.nOfIterations()), s),
+        state,
+        random,
+        executor));
+    return state.updatedWithIteration(
+        populationSize, populationSize, mapOfElites(newIndividuals, partialComparator(state.problem())));
+  }
+
+  private Map<List<Integer>, MEIndividual<G, S, Q>> mapOfElites(
+      Collection<MEIndividual<G, S, Q>> individuals,
+      PartialComparator<? super Individual<G, S, Q>> partialComparator) {
+    return individuals.stream()
+        .map(i -> Map.entry(
+            i.coordinates().stream().map(Descriptor.Coordinate::bin).toList(), i))
+        .collect(Collectors.toMap(
+            Map.Entry::getKey,
+            Map.Entry::getValue,
+            (i1, i2) -> chooseBest(i1, i2, partialComparator),
+            LinkedHashMap::new));
   }
 }

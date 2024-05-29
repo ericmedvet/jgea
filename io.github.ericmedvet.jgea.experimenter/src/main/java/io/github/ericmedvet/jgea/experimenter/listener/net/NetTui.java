@@ -25,9 +25,6 @@ import com.beust.jcommander.ParameterException;
 import io.github.ericmedvet.jgea.experimenter.listener.decoupled.TuiMonitor;
 import java.util.logging.Logger;
 
-/**
- * @author "Eric Medvet" on 2023/11/12 for jgea
- */
 public class NetTui {
 
   private static final int DEFAULT_PORT = 10979;

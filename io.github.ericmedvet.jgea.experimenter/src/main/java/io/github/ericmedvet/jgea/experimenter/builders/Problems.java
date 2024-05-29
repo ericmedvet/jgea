@@ -36,6 +36,7 @@ import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalStatelessSystem;
 import java.util.Comparator;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 @Discoverable(prefixTemplate = "ea.problem|p")
@@ -129,6 +130,8 @@ public class Problems {
               @Param(value = "initialT", dD = 0) double initialT,
               @Param(value = "finalT", dD = 100) double finalT,
               @Param("environment") Environment<double[], double[], B> environment,
+              @Param(value = "stopCondition", dNPM = "predicate.not(condition = predicate.always())")
+                  Predicate<B> stopCondition,
               @Param("f")
                   Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], B>>, Q>
                       outcomeQualityFunction,
@@ -142,7 +145,7 @@ public class Problems {
         nb.build((NamedParamMap) map.value("environment", ParamMap.Type.NAMED_PARAM_MAP));
     return SimulationBasedTotalOrderProblemWithExample.from(
         outcomeQualityFunction,
-        SingleAgentTask.fromEnvironment(envSupplier, new DoubleRange(initialT, finalT), dT),
+        SingleAgentTask.fromEnvironment(envSupplier, stopCondition, new DoubleRange(initialT, finalT), dT),
         NumericalStatelessSystem.from(nOfInputs, nOfOutputs, (t, in) -> new double[nOfOutputs]),
         type);
   }

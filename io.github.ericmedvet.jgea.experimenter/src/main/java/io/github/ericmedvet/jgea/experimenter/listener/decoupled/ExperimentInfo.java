@@ -19,14 +19,11 @@
  */
 package io.github.ericmedvet.jgea.experimenter.listener.decoupled;
 
-import io.github.ericmedvet.jgea.core.util.Pair;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * @author "Eric Medvet" on 2023/11/03 for jgea
- */
 public record ExperimentInfo(
     String map, int nOfRuns, List<Pair<String, String>> formats, LocalDateTime startLocalDateTime)
     implements Serializable {}

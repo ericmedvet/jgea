@@ -21,9 +21,9 @@
 package io.github.ericmedvet.jgea.core.listener;
 
 import io.github.ericmedvet.jgea.core.util.Misc;
-import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.core.util.StringUtils;
 import io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.function.Function;
@@ -38,8 +38,11 @@ public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
   private static final String COLOR_UP = "\u001B[32m";
   private static final String COLOR_SAME = "\u001B[33m";
   private static final String COLOR_NOT_RELEVANT = "\033[0;90m";
+  private static final String COLOR_ERR = "\u001B[31m";
 
   private static final String SEP = " ";
+  private static final String COMPUTE_ERROR_STRING = "cErr";
+  private static final String FORMAT_ERROR_STRING = "fErr";
 
   private final List<Pair<? extends FormattedNamedFunction<? super E, ?>, Integer>> ePairs;
   private final List<Pair<? extends FormattedNamedFunction<? super K, ?>, Integer>> kPairs;
@@ -71,12 +74,12 @@ public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
       boolean useColors) {
     ePairs = eFunctions.stream()
         .map(FormattedNamedFunction::from)
-        .map(f -> Pair.of(
+        .map(f -> new Pair<>(
             f, Math.max(StringUtils.collapse(f.name()).length(), StringUtils.formatSize(f.format()))))
         .collect(Collectors.toList());
     kPairs = kFunctions.stream()
         .map(FormattedNamedFunction::from)
-        .map(f -> Pair.of(
+        .map(f -> new Pair<>(
             f, Math.max(StringUtils.collapse(f.name()).length(), StringUtils.formatSize(f.format()))))
         .collect(Collectors.toList());
     this.ps = ps;
@@ -126,7 +129,15 @@ public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
 
       @Override
       public void listen(E e) {
-        List<?> values = ePairs.stream().map(p -> p.first().apply(e)).toList();
+        List<?> values = ePairs.stream()
+            .map(p -> {
+              try {
+                return p.first().apply(e);
+              } catch (Exception ex) {
+                return ex;
+              }
+            })
+            .toList();
         String s = IntStream.range(0, ePairs.size())
             .mapToObj(i -> format(
                 values.get(i),
@@ -166,27 +177,40 @@ public class TabularPrinter<E, K> implements ListenerFactory<E, K> {
   }
 
   private String format(Object currentValue, Object lastValue, Object secondLastValue, String format, int l) {
+    if (currentValue instanceof Exception) {
+      if (useColors) {
+        return COLOR_ERR + StringUtils.justify(COMPUTE_ERROR_STRING, l + (showVariation ? 1 : 0)) + COLOR_RESET;
+      }
+      return StringUtils.justify(COMPUTE_ERROR_STRING, l + (showVariation ? 1 : 0));
+    }
     char currentVariation = showVariation ? StringUtils.variation(currentValue, lastValue) : ' ';
     char lastVariation = showVariation ? StringUtils.variation(lastValue, secondLastValue) : ' ';
-    String s = StringUtils.justify(String.format(format, currentValue), l);
-    if (showVariation) {
-      if (useColors) {
-        String color;
-        if (currentVariation != lastVariation) {
-          if (currentVariation == StringUtils.VARIATION_DOWN) {
-            color = COLOR_DOWN;
-          } else if (currentVariation == StringUtils.VARIATION_UP) {
-            color = COLOR_UP;
+    try {
+      String s = StringUtils.justify(String.format(format, currentValue), l);
+      if (showVariation) {
+        if (useColors) {
+          String color;
+          if (currentVariation != lastVariation) {
+            if (currentVariation == StringUtils.VARIATION_DOWN) {
+              color = COLOR_DOWN;
+            } else if (currentVariation == StringUtils.VARIATION_UP) {
+              color = COLOR_UP;
+            } else {
+              color = COLOR_SAME;
+            }
           } else {
-            color = COLOR_SAME;
+            color = COLOR_NOT_RELEVANT;
           }
-        } else {
-          color = COLOR_NOT_RELEVANT;
+          return s + color + currentVariation + COLOR_RESET;
         }
-        return s + color + currentVariation + COLOR_RESET;
+        return s + currentVariation;
       }
-      return s + currentVariation;
+      return s;
+    } catch (Exception ex) {
+      if (useColors) {
+        return COLOR_ERR + StringUtils.justify(FORMAT_ERROR_STRING, l + (showVariation ? 1 : 0)) + COLOR_RESET;
+      }
+      return StringUtils.justify(FORMAT_ERROR_STRING, l + (showVariation ? 1 : 0));
     }
-    return s;
   }
 }

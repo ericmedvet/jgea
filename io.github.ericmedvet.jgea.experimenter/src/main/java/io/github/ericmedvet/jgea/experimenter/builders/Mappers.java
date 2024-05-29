@@ -41,14 +41,19 @@ import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.NumericalParametrized;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import io.github.ericmedvet.jsdynsym.buildable.builders.NumericalDynamicalSystems;
-import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
-import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
-import io.github.ericmedvet.jsdynsym.core.numerical.NumericalTimeInvariantStatelessSystem;
+import io.github.ericmedvet.jsdynsym.core.composed.Stepped;
+import io.github.ericmedvet.jsdynsym.core.numerical.*;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
+import java.util.random.RandomGenerator;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @Discoverable(prefixTemplate = "ea.mapper|m")
 public class Mappers {
@@ -76,6 +81,27 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  public static <X> InvertibleMapper<X, Pair<List<Double>, List<Double>>> dsSplit(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (p, ds) -> {
+          if (p.first().size() + p.second().size() != ds.size()) {
+            throw new IllegalArgumentException(
+                "Cannot split a double string with size %d in two double strings of sizes %d and %d"
+                    .formatted(
+                        ds.size(),
+                        p.first().size(),
+                        p.second().size()));
+          }
+          return new Pair<>(
+              ds.subList(0, p.first().size()),
+              ds.subList(p.first().size(), ds.size()));
+        },
+        p -> Stream.concat(p.first().stream(), p.second().stream()).toList(),
+        "dsSplit"));
+  }
+
+  @SuppressWarnings("unused")
   public static <X> InvertibleMapper<X, BitString> dsToBitString(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM,
       @Param(value = "t", dD = 0d) double t) {
@@ -83,6 +109,36 @@ public class Mappers {
         (eBs, ds) -> new BitString(ds.stream().map(v -> v < t).toList()),
         eBs -> Collections.nCopies(eBs.size(), 0d),
         "dsToBs[t=%.1f]".formatted(t)));
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, T> InvertibleMapper<X, Grid<T>> dsToFixedGrid(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM,
+      @Param(value = "rate", dD = 0.25) double rate,
+      @Param("negItem") T negItem,
+      @Param("posItem") T posItem) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (g, ds) -> {
+          if (ds.size() != g.w() * g.h()) {
+            throw new IllegalArgumentException(
+                "Wrong size for the double string: %dx%d=%d expected, %d found"
+                    .formatted(g.w(), g.h(), g.w() * g.h(), ds.size()));
+          }
+          List<Integer> indexes = IntStream.range(0, ds.size())
+              .boxed()
+              .sorted(Comparator.comparingDouble(ds::get))
+              .limit((long) (ds.size() * rate))
+              .toList();
+          return Grid.create(
+              g.w(),
+              g.h(),
+              IntStream.range(0, ds.size())
+                  .boxed()
+                  .map(i -> indexes.contains(i) ? posItem : negItem)
+                  .toList());
+        },
+        g -> Collections.nCopies(g.w() * g.h(), 0d),
+        "dsToThresholdedGrid[rate=%.2f]".formatted(rate)));
   }
 
   @SuppressWarnings("unused")
@@ -139,6 +195,43 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  public static <X, T> InvertibleMapper<X, Grid<T>> dsToThresholdedGrid(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM,
+      @Param(value = "t", dD = 0) double t,
+      @Param("negItem") T negItem,
+      @Param("posItem") T posItem) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (g, ds) -> {
+          if (ds.size() != g.w() * g.h()) {
+            throw new IllegalArgumentException(
+                "Wrong size for the double string: %dx%d=%d expected, %d found"
+                    .formatted(g.w(), g.h(), g.w() * g.h(), ds.size()));
+          }
+          return Grid.create(
+              g.w(),
+              g.h(),
+              ds.stream().map(d -> d > t ? posItem : negItem).toList());
+        },
+        g -> Collections.nCopies(g.w() * g.h(), 0d),
+        "dsToThresholdedGrid[t=%.2f]".formatted(t)));
+  }
+
+  @SuppressWarnings("unused")
+  public static <X> InvertibleMapper<X, NumericalDynamicalSystem<?>> enhancedNds(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NumericalDynamicalSystem<?>> beforeM,
+      @Param("windowT") double windowT,
+      @Param(
+              value = "types",
+              dSs = {"current", "trend", "avg"})
+          List<EnhancedInput.Type> types) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (eNds, nds) -> new EnhancedInput<>(nds, windowT, types),
+        eNds -> eNds,
+        "enhanced[wT=%.2f;%s]"
+            .formatted(windowT, types.stream().map(Enum::toString).collect(Collectors.joining(";")))));
+  }
+
+  @SuppressWarnings("unused")
   public static <X> InvertibleMapper<X, NamedMultivariateRealFunction> fGraphToNmrf(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Graph<Node, Double>> beforeM,
       @Param(value = "postOperator", dNPM = "ds.f.doubleOp(activationF=identity)")
@@ -181,6 +274,24 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  public static <X, T> InvertibleMapper<X, Grid<T>> isToGrid(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, IntString> beforeM,
+      @Param("items") List<T> items) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (g, is) -> {
+          if (is.size() != g.w() * g.h()) {
+            throw new IllegalArgumentException(
+                "Wrong size for the integer string: %dx%d=%d expected, %d found"
+                    .formatted(g.w(), g.h(), g.w() * g.h(), is.size()));
+          }
+          return Grid.create(
+              g.w(), g.h(), is.genes().stream().map(items::get).toList());
+        },
+        g -> new IntString(Collections.nCopies(g.w() * g.h(), 0), 0, items.size()),
+        "isToGrid[nOfItems=%d]".formatted(items.size())));
+  }
+
+  @SuppressWarnings("unused")
   public static <X> InvertibleMapper<X, NamedMultivariateRealFunction> multiSrTreeToNmrf(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Tree<Element>>> beforeM,
       @Param(value = "postOperator", dNPM = "ds.f.doubleOp(activationF=identity)")
@@ -193,10 +304,54 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  public static <X, T> InvertibleMapper<X, Grid<T>> nmrfToGrid(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NamedMultivariateRealFunction> beforeM,
+      @Param("items") List<T> items) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (g, nmrf) -> {
+          if (nmrf.nOfInputs() != 2) {
+            throw new IllegalArgumentException(
+                "Wrong input size for the NMRF: 2 expected, %d found".formatted(nmrf.nOfInputs()));
+          }
+          if (nmrf.nOfOutputs() != items.size()) {
+            throw new IllegalArgumentException("Wrong output size for the NMRF: %d expected, %d found"
+                .formatted(items.size(), nmrf.nOfOutputs()));
+          }
+          return Grid.create(g.w(), g.h(), (x, y) -> {
+            double[] values =
+                nmrf.apply(new double[] {(double) x / (double) g.w(), (double) y / (double) g.h()});
+            return items.get(IntStream.range(0, values.length)
+                .boxed()
+                .min(Comparator.comparingDouble(i -> values[i]))
+                .orElse(0));
+          });
+        },
+        g -> NamedMultivariateRealFunction.from(
+            MultivariateRealFunction.from(vs -> new double[items.size()], 2, items.size()),
+            List.of("x", "y"),
+            IntStream.range(0, items.size())
+                .mapToObj("item%02d"::formatted)
+                .toList()),
+        "nmrfToGrid[nOfItems=%d]".formatted(items.size())));
+  }
+
+  @SuppressWarnings("unused")
   public static <X> InvertibleMapper<X, NamedUnivariateRealFunction> nmrfToNurf(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NamedMultivariateRealFunction> beforeM) {
     return beforeM.andThen(InvertibleMapper.from(
         (nurf, nmrf) -> NamedUnivariateRealFunction.from(nmrf), nurf -> nurf, "nmrfToNurf"));
+  }
+
+  @SuppressWarnings("unused")
+  public static <X> InvertibleMapper<X, NumericalDynamicalSystem<?>> noisedNds(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NumericalDynamicalSystem<?>> beforeM,
+      @Param(value = "inputSigma", dD = 0) double inputSigma,
+      @Param(value = "outputSigma", dD = 0) double outputSigma,
+      @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (eNds, nds) -> new Noised<>(nds, inputSigma, outputSigma, randomGenerator),
+        eNds -> eNds,
+        "noised[in=%.2f;out=%.2f]".formatted(inputSigma, outputSigma)));
   }
 
   @SuppressWarnings("unused")
@@ -226,6 +381,19 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  public static <X, F1, S1, F2, S2> InvertibleMapper<X, Pair<F2, S2>> pair(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Pair<F1, S1>> beforeM,
+      @Param(value = "ofFirst", dNPM = "ea.m.identity()") InvertibleMapper<F1, F2> firstM,
+      @Param(value = "ofSecond", dNPM = "ea.m.identity()") InvertibleMapper<S1, S2> secondM) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (p2, p1) -> new Pair<>(
+            firstM.mapperFor(p2.first()).apply(p1.first()),
+            secondM.mapperFor(p2.second()).apply(p1.second())),
+        p2 -> new Pair<>(firstM.exampleFor(p2.first()), secondM.exampleFor(p2.second())),
+        "pair[first=%s;second=%s]".formatted(firstM, secondM)));
+  }
+
+  @SuppressWarnings("unused")
   public static <X> InvertibleMapper<X, NamedUnivariateRealFunction> srTreeToNurf(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Tree<Element>> beforeM,
       @Param(value = "postOperator", dNPM = "ds.f.doubleOp(activationF=identity)")
@@ -235,6 +403,17 @@ public class Mappers {
             .andThen(toOperator(postOperator)),
         nurf -> TreeBasedUnivariateRealFunction.sampleFor(nurf.xVarNames(), nurf.yVarName()),
         "srTreeToNurf[po=%s]".formatted(postOperator)));
+  }
+
+  @SuppressWarnings("unused")
+  public static <X> InvertibleMapper<X, NumericalDynamicalSystem<?>> steppedNds(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NumericalDynamicalSystem<?>> beforeM,
+      @Param(value = "stepT", dD = 1) double interval) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (eNds, nds) ->
+            NumericalDynamicalSystem.from(new Stepped<>(nds, interval), nds.nOfInputs(), nds.nOfOutputs()),
+        eNds -> eNds,
+        "stepped[t=%.2f]".formatted(interval)));
   }
 
   private static DoubleUnaryOperator toOperator(Function<Double, Double> f) {

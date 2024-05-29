@@ -30,6 +30,7 @@ import io.github.ericmedvet.jgea.experimenter.listener.net.NetUtils;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.table.*;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
 import io.github.ericmedvet.jnb.datastructure.HashMapTable;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import io.github.ericmedvet.jnb.datastructure.Table;
 import java.io.IOException;
 import java.time.LocalDateTime;

@@ -22,21 +22,18 @@ package io.github.ericmedvet.jgea.experimenter.listener.decoupled;
 import io.github.ericmedvet.jgea.core.listener.Listener;
 import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
-import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jnb.datastructure.FormattedFunction;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-/**
- * @author "Eric Medvet" on 2023/11/03 for jgea
- */
 public class SinkListenerFactory<G, S, Q>
     implements ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>> {
   private final List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions;

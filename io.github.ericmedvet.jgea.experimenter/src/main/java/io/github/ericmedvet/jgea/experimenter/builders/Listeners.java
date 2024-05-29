@@ -120,6 +120,9 @@ public class Listeners {
               ListenerFactory<? super POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
           allCsv(
               @Param("filePath") String filePath,
+              @Param(value = "errorString", dS = "NA") String errorString,
+              @Param(value = "intFormat", dS = "%d") String intFormat,
+              @Param(value = "doubleFormat", dS = "%.5e") String doubleFormat,
               @Param(
                       value = "defaultFunctions",
                       dNPMs = {"ea.f.nOfIterations()"})
@@ -131,7 +134,7 @@ public class Listeners {
               @Param("runKeys") List<Map.Entry<String, String>> runKeys,
               @Param(value = "deferred") boolean deferred,
               @Param(value = "onlyLast") boolean onlyLast,
-              @Param(value = "condition", dNPM = "ea.predicate.always()")
+              @Param(value = "condition", dNPM = "predicate.always()")
                   Predicate<Run<?, G, S, Q>> predicate) {
     record PopIndividualPair<G, S, Q>(POCPopulationState<?, G, S, Q, ?> pop, Individual<G, S, Q> individual) {}
     return (experiment, executorService) -> {
@@ -144,8 +147,13 @@ public class Listeners {
       individualFunctions.stream()
           .map(f -> (Function<PopIndividualPair<G, S, Q>, Object>) pair -> f.apply(pair.individual))
           .forEach(pairFunctions::add);
-      ListenerFactory<PopIndividualPair<G, S, Q>, Run<?, G, S, Q>> innerListenerFactory =
-          new CSVPrinter<>(pairFunctions, buildRunNamedFunctions(runKeys, experiment), new File(filePath));
+      ListenerFactory<PopIndividualPair<G, S, Q>, Run<?, G, S, Q>> innerListenerFactory = new CSVPrinter<>(
+          pairFunctions,
+          buildRunNamedFunctions(runKeys, experiment),
+          new File(filePath),
+          errorString,
+          intFormat,
+          doubleFormat);
       ListenerFactory<? super POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>> allListenerFactory =
           new ListenerFactory<>() {
             @Override
@@ -190,6 +198,9 @@ public class Listeners {
               ListenerFactory<? super POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
           bestCsv(
               @Param("filePath") String filePath,
+              @Param(value = "errorString", dS = "NA") String errorString,
+              @Param(value = "intFormat", dS = "%d") String intFormat,
+              @Param(value = "doubleFormat", dS = "%.5e") String doubleFormat,
               @Param(
                       value = "defaultFunctions",
                       dNPMs = {
@@ -210,7 +221,7 @@ public class Listeners {
               @Param("runKeys") List<Map.Entry<String, String>> runKeys,
               @Param(value = "deferred") boolean deferred,
               @Param(value = "onlyLast") boolean onlyLast,
-              @Param(value = "condition", dNPM = "ea.predicate.always()")
+              @Param(value = "condition", dNPM = "predicate.always()")
                   Predicate<Run<?, G, S, Q>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         new CSVPrinter<>(
@@ -218,7 +229,10 @@ public class Listeners {
                 .flatMap(List::stream)
                 .toList(),
             buildRunNamedFunctions(runKeys, experiment),
-            new File(filePath)),
+            new File(filePath),
+            errorString,
+            intFormat,
+            doubleFormat),
         predicate,
         deferred ? executorService : null,
         onlyLast);
@@ -267,7 +281,7 @@ public class Listeners {
               @Param("runKeys") List<Map.Entry<String, String>> runKeys,
               @Param(value = "deferred") boolean deferred,
               @Param(value = "onlyLast") boolean onlyLast,
-              @Param(value = "condition", dNPM = "ea.predicate.always()")
+              @Param(value = "condition", dNPM = "predicate.always()")
                   Predicate<Run<?, G, S, Q>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         new TabularPrinter<>(
@@ -293,7 +307,7 @@ public class Listeners {
               @Param(value = "freeScales") boolean freeScales,
               @Param("filePath") String filePath,
               @Param(value = "saveCsvDataMode", dS = "none") CsvPlotter.Mode saveCsvDataMode,
-              @Param(value = "condition", dNPM = "ea.predicate.always()")
+              @Param(value = "condition", dNPM = "predicate.always()")
                   Predicate<Run<?, G, S, Q>> predicate) {
     ImagePlotter imagePlotter =
         new ImagePlotter(w, h, freeScales ? Configuration.FREE_SCALES : Configuration.DEFAULT);
@@ -359,7 +373,7 @@ public class Listeners {
               @Param(value = "serverPort", dI = 10979) int serverPort,
               @Param(value = "serverKeyFilePath") String serverKeyFilePath,
               @Param(value = "pollInterval", dD = 1) double pollInterval,
-              @Param(value = "condition", dNPM = "ea.predicate.always()")
+              @Param(value = "condition", dNPM = "predicate.always()")
                   Predicate<Run<?, G, S, Q>> predicate) {
 
     NetMultiSink netMultiSink =
@@ -388,7 +402,7 @@ public class Listeners {
                   String filePathTemplate,
               @Param(value = "serializerF", dNPM = "f.toBase64()") Function<Object, String> serializer,
               @Param(value = "deferred", dB = true) boolean deferred,
-              @Param(value = "condition", dNPM = "ea.predicate.always()")
+              @Param(value = "condition", dNPM = "predicate.always()")
                   Predicate<Run<?, G, S, Q>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         run -> Listener.<POCPopulationState<?, G, S, Q, ?>>named(
@@ -440,7 +454,7 @@ public class Listeners {
               @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder,
               @Param(value = "frameRate", dD = 20) double frameRate,
               @Param(value = "filePathTemplate", dS = "run-{index:%04d}.mp4") String filePathTemplate,
-              @Param(value = "condition", dNPM = "ea.predicate.always()")
+              @Param(value = "condition", dNPM = "predicate.always()")
                   Predicate<Run<?, G, S, Q>> predicate) {
     VideoBuilder<List<K>> videoBuilder = VideoBuilder.from(imageBuilder, ks -> ks, frameRate);
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
@@ -469,7 +483,7 @@ public class Listeners {
               @Param(value = "w", dI = 500) int w,
               @Param(value = "h", dI = 500) int h,
               @Param(value = "filePathTemplate", dS = "run-{index:%04d}.png") String filePathTemplate,
-              @Param(value = "condition", dNPM = "ea.predicate.always()")
+              @Param(value = "condition", dNPM = "predicate.always()")
                   Predicate<Run<?, G, S, Q>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         run -> Listener.<POCPopulationState<?, G, S, Q, ?>>named(
@@ -499,7 +513,7 @@ public class Listeners {
               @Param(value = "h", dI = 500) int h,
               @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder,
               @Param(value = "filePathTemplate", dS = "run-{index:%04d}.mp4") String filePathTemplate,
-              @Param(value = "condition", dNPM = "ea.predicate.always()")
+              @Param(value = "condition", dNPM = "predicate.always()")
                   Predicate<Run<?, G, S, Q>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         run -> Listener.<POCPopulationState<?, G, S, Q, ?>>named(
@@ -532,7 +546,7 @@ public class Listeners {
               @Param(value = "freeScales") boolean freeScales,
               @Param(value = "filePathTemplate", dS = "run-{index:%04d}.png") String filePathTemplate,
               @Param(value = "saveCsvDataMode", dS = "none") CsvPlotter.Mode saveCsvDataMode,
-              @Param(value = "condition", dNPM = "ea.predicate.always()")
+              @Param(value = "condition", dNPM = "predicate.always()")
                   Predicate<Run<?, G, S, Q>> predicate) {
     ImagePlotter imagePlotter =
         new ImagePlotter(w, h, freeScales ? Configuration.FREE_SCALES : Configuration.DEFAULT);
@@ -566,7 +580,7 @@ public class Listeners {
               @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder,
               @Param(value = "frameRate", dD = 20) double frameRate,
               @Param(value = "filePathTemplate", dS = "run-{index:%04d}.mp4") String filePathTemplate,
-              @Param(value = "condition", dNPM = "ea.predicate.always()")
+              @Param(value = "condition", dNPM = "predicate.always()")
                   Predicate<Run<?, G, S, Q>> predicate) {
     ImagePlotter imagePlotter =
         new ImagePlotter(w, h, freeScales ? Configuration.FREE_SCALES : Configuration.DEFAULT);
@@ -618,7 +632,7 @@ public class Listeners {
                   List<Map.Entry<String, String>> runKeys, // TODO: these are currently ignored
               @Param(value = "deferred", dB = true) boolean deferred,
               @Param(value = "onlyLast") boolean onlyLast,
-              @Param(value = "condition", dNPM = "ea.predicate.always()")
+              @Param(value = "condition", dNPM = "predicate.always()")
                   Predicate<Run<?, G, S, Q>> predicate) {
 
     // read credential files
@@ -662,7 +676,7 @@ public class Listeners {
               @Param(value = "functions")
                   List<NamedFunction<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
               @Param("runKeys") List<Map.Entry<String, String>> runKeys,
-              @Param(value = "condition", dNPM = "ea.predicate.always()")
+              @Param(value = "condition", dNPM = "predicate.always()")
                   Predicate<Run<?, G, S, Q>> predicate) {
     DirectSinkSource<MachineKey, MachineInfo> machineSinkSource = new DirectSinkSource<>();
     DirectSinkSource<ProcessKey, ProcessInfo> processSinkSource = new DirectSinkSource<>();

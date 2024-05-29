@@ -26,9 +26,6 @@ import java.util.Random;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
-/**
- * @author "Eric Medvet" on 2023/11/02 for jgea
- */
 public class CircularPointsAiming extends PointsAiming {
   public CircularPointsAiming(int p, int n, double radius, double center, int seed) {
     super(targets(p, n, radius, center, seed));

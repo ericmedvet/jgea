@@ -103,16 +103,16 @@ ea.experiment(
           f.nTh(of = ea.f.quality(); n = 1)
         ];
         predicateValue = f.quantized(of = ea.f.nOfEvals(); q = 1000);
-        condition = ea.predicate.inD(
+        condition = predicate.inD(
           values = [0; 5000; 10000; 15000; 20000; 25000]
         )
       );
-      condition = ea.predicate.all(conditions = [
-        ea.predicate.matches(
+      condition = predicate.all(conditions = [
+        predicate.matches(
           f = ea.f.runKey(runKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}"));
           regex = "cabea.*"
         );
-        ea.predicate.inS(
+        predicate.inS(
           f = ea.f.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
           values = ["1"]
         )
@@ -124,14 +124,14 @@ ea.experiment(
       type = points;
       plot = ea.plot.biObjectivePopulation(
         predicateValue = f.quantized(of = ea.f.nOfEvals(); q = 1000);
-        condition = ea.predicate.inD(
+        condition = predicate.inD(
           values = [0; 5000; 10000; 15000; 20000; 25000]
         );
         xRange = m.range(min = 0; max = 1);
         yRange = m.range(min = 0; max = 1)
       );
-      condition = ea.predicate.all(conditions = [
-        ea.predicate.inS(
+      condition = predicate.all(conditions = [
+        predicate.inS(
           f = ea.f.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
           values = ["1"]
         )
@@ -147,16 +147,16 @@ ea.experiment(
           f.nTh(of = ea.f.quality(); n = 0);
           f.nTh(of = ea.f.quality(); n = 1)
         ];
-        condition = ea.predicate.inD(
+        condition = predicate.inD(
           values = [0; 5000; 10000; 15000; 20000; 25000]
         )
       );
-      condition = ea.predicate.all(conditions = [
-        ea.predicate.matches(
+      condition = predicate.all(conditions = [
+        predicate.matches(
           f = ea.f.runKey(runKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}"));
           regex = "me.*"
         );
-        ea.predicate.inS(
+        predicate.inS(
           f = ea.f.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
           values = ["1"]
         )

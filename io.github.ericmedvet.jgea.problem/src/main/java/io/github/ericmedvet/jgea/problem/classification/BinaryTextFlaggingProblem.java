@@ -20,8 +20,8 @@
 
 package io.github.ericmedvet.jgea.problem.classification;
 
-import io.github.ericmedvet.jgea.core.util.Pair;
 import io.github.ericmedvet.jgea.problem.extraction.string.RegexGrammar;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -73,8 +73,8 @@ public class BinaryTextFlaggingProblem extends GrammarBasedTextFlaggingProblem {
     }
     // return
     List<Pair<String, Label>> data = new ArrayList<>();
-    data.addAll(positives.stream().map(s -> Pair.of(s, Label.FOUND)).toList());
-    data.addAll(negatives.stream().map(s -> Pair.of(s, Label.NOT_FOUND)).toList());
+    data.addAll(positives.stream().map(s -> new Pair<>(s, Label.FOUND)).toList());
+    data.addAll(negatives.stream().map(s -> new Pair<>(s, Label.NOT_FOUND)).toList());
     return data;
   }
 }

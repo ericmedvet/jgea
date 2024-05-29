@@ -21,9 +21,6 @@ package io.github.ericmedvet.jgea.problem.synthetic.numerical;
 
 import java.util.stream.IntStream;
 
-/**
- * @author "Eric Medvet" on 2024/01/21 for jgea
- */
 public class BentCigar extends AbstractNumericalProblem {
   public BentCigar(int p) {
     super(

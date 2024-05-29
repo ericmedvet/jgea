@@ -21,9 +21,6 @@ package io.github.ericmedvet.jgea.experimenter.listener.tui.table;
 
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
 
-/**
- * @author "Eric Medvet" on 2023/11/12 for jgea
- */
 public record EmptyCell() implements Cell {
 
   @Override

@@ -1,6 +1,6 @@
 /*-
  * ========================LICENSE_START=================================
- * jgea-experimenter
+ * jgea-core
  * %%
  * Copyright (C) 2018 - 2024 Eric Medvet
  * %%

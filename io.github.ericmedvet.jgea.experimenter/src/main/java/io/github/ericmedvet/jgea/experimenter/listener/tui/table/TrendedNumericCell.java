@@ -22,9 +22,6 @@ package io.github.ericmedvet.jgea.experimenter.listener.tui.table;
 import io.github.ericmedvet.jgea.experimenter.listener.tui.util.TuiDrawer;
 import java.util.List;
 
-/**
- * @author "Eric Medvet" on 2023/11/07 for jgea
- */
 public record TrendedNumericCell<C extends Comparable<C>>(List<C> values, String format) implements Cell {
 
   private static final char INCREASING_CHAR = '↑';
