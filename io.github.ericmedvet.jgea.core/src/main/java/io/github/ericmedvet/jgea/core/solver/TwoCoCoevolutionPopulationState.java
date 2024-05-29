@@ -20,7 +20,8 @@
 package io.github.ericmedvet.jgea.core.solver;
 
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
-import io.github.ericmedvet.jgea.core.util.Pair;
+import io.github.ericmedvet.jnb.datastructure.Pair;
+
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +41,7 @@ public interface TwoCoCoevolutionPopulationState<G1, G2, S1, S2, S, Q, P extends
       implements Individual<Pair<G1, G2>, S, Q> {
     @Override
     public Pair<G1, G2> genotype() {
-      return Pair.of(genotype1, genotype2);
+      return new Pair(genotype1, genotype2);
     }
   } // end CompositeIndividual
 
