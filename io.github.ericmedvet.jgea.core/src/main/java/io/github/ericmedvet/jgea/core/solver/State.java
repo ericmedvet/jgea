@@ -73,7 +73,7 @@ public interface State<P extends Problem<S>, S> {
   default State<P, S> updatedWithIteration() {
     return of(
         startingDateTime(),
-        ChronoUnit.MILLIS.between(LocalDateTime.now(), startingDateTime()),
+        ChronoUnit.MILLIS.between(startingDateTime(), LocalDateTime.now()),
         nOfIterations() + 1,
         problem(),
         stopCondition());

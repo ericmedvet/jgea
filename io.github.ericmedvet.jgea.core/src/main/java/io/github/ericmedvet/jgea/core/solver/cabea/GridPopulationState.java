@@ -82,7 +82,7 @@ public interface GridPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q
       long nOfNewBirths, long nOfNewQualityEvaluations, Grid<Individual<G, S, Q>> gridPopulation) {
     return of(
         startingDateTime(),
-        ChronoUnit.MILLIS.between(LocalDateTime.now(), startingDateTime()),
+        ChronoUnit.MILLIS.between(startingDateTime(), LocalDateTime.now()),
         nOfIterations() + 1,
         problem(),
         stopCondition(),

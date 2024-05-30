@@ -80,7 +80,7 @@ public interface SpeciatedPOCPopulationState<G, S, Q, P extends QualityBasedProb
       Collection<SpeciatedEvolver.Species<Individual<G, S, Q>>> parentSpecies) {
     return of(
         startingDateTime(),
-        ChronoUnit.MILLIS.between(LocalDateTime.now(), startingDateTime()),
+        ChronoUnit.MILLIS.between(startingDateTime(), LocalDateTime.now()),
         nOfIterations() + 1,
         problem(),
         stopCondition(),

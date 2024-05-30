@@ -106,7 +106,7 @@ public interface OpenAIESState<S, Q>
       Collection<Individual<List<Double>, S, Q>> listPopulation, double[] center, double[] m, double[] v) {
     return of(
         startingDateTime(),
-        ChronoUnit.MILLIS.between(LocalDateTime.now(), startingDateTime()),
+        ChronoUnit.MILLIS.between(startingDateTime(), LocalDateTime.now()),
         nOfIterations() + 1,
         problem(),
         stopCondition(),

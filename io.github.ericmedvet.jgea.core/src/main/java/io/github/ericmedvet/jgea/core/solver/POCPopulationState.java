@@ -74,7 +74,7 @@ public interface POCPopulationState<I extends Individual<G, S, Q>, G, S, Q, P ex
       long nOfNewBirths, long nOfNewQualityEvaluations, PartiallyOrderedCollection<I> pocPopulation) {
     return of(
         startingDateTime(),
-        ChronoUnit.MILLIS.between(LocalDateTime.now(), startingDateTime()),
+        ChronoUnit.MILLIS.between(startingDateTime(), LocalDateTime.now()),
         nOfIterations() + 1,
         problem(),
         stopCondition(),

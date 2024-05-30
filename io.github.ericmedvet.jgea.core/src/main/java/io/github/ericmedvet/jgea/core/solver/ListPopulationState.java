@@ -79,7 +79,7 @@ public interface ListPopulationState<
       long nOfNewBirths, long nOfNewQualityEvaluations, Collection<I> listPopulation) {
     return of(
         startingDateTime(),
-        ChronoUnit.MILLIS.between(LocalDateTime.now(), startingDateTime()),
+        ChronoUnit.MILLIS.between(startingDateTime(), LocalDateTime.now()),
         nOfIterations() + 1,
         problem(),
         stopCondition(),

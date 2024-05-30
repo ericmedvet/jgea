@@ -135,7 +135,7 @@ public interface CMAESState<S, Q>
   default CMAESState<S, Q> updatedWithIteration(Collection<CMAESIndividual<S, Q>> listPopulation) {
     return of(
         startingDateTime(),
-        ChronoUnit.MILLIS.between(LocalDateTime.now(), startingDateTime()),
+        ChronoUnit.MILLIS.between(startingDateTime(), LocalDateTime.now()),
         nOfIterations() + 1,
         problem(),
         stopCondition(),

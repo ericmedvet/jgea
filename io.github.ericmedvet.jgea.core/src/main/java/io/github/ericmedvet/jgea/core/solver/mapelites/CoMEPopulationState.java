@@ -25,16 +25,15 @@ import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.State;
 import io.github.ericmedvet.jnb.datastructure.Pair;
-
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
 public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBasedProblem<S, Q>>
-    extends POCPopulationState<
-    CoMEIndividual<G1, G2, S1, S2, S, Q>, Pair<G1, G2>, S, Q, P> {
+    extends POCPopulationState<CoMEIndividual<G1, G2, S1, S2, S, Q>, Pair<G1, G2>, S, Q, P> {
 
   List<MapElites.Descriptor<G1, S1, Q>> descriptors1();
 
@@ -43,6 +42,27 @@ public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBase
   Map<List<Integer>, MEIndividual<G1, S1, Q>> mapOfElites1();
 
   Map<List<Integer>, MEIndividual<G2, S2, Q>> mapOfElites2();
+
+  static <G1, G2, S1, S2, S, Q, P extends QualityBasedProblem<S, Q>>
+      CoMEPopulationState<G1, G2, S1, S2, S, Q, P> empty(
+          P problem,
+          Predicate<State<?, ?>> stopCondition,
+          List<MapElites.Descriptor<G1, S1, Q>> descriptors1,
+          List<MapElites.Descriptor<G2, S2, Q>> descriptors2) {
+    return of(
+        LocalDateTime.now(),
+        0,
+        0,
+        problem,
+        stopCondition,
+        0,
+        0,
+        List.of(),
+        descriptors1,
+        descriptors2,
+        Map.of(),
+        Map.of());
+  }
 
   static <G1, G2, S1, S2, S, Q, P extends QualityBasedProblem<S, Q>> CoMEPopulationState<G1, G2, S1, S2, S, Q, P> of(
       LocalDateTime startingDateTime,
@@ -56,8 +76,7 @@ public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBase
       List<MapElites.Descriptor<G1, S1, Q>> descriptors1,
       List<MapElites.Descriptor<G2, S2, Q>> descriptors2,
       Map<List<Integer>, MEIndividual<G1, S1, Q>> mapOfElites1,
-      Map<List<Integer>, MEIndividual<G2, S2, Q>> mapOfElites2
-  ) {
+      Map<List<Integer>, MEIndividual<G2, S2, Q>> mapOfElites2) {
     PartialComparator<? super CoMEIndividual<G1, G2, S1, S2, S, Q>> comparator =
         (i1, i2) -> problem.qualityComparator().compare(i1.quality(), i2.quality());
     record HardState<G1, G2, S1, S2, S, Q, P extends QualityBasedProblem<S, Q>>(
@@ -72,16 +91,58 @@ public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBase
         List<MapElites.Descriptor<G1, S1, Q>> descriptors1,
         List<MapElites.Descriptor<G2, S2, Q>> descriptors2,
         Map<List<Integer>, MEIndividual<G1, S1, Q>> mapOfElites1,
-        Map<List<Integer>, MEIndividual<G2, S2, Q>> mapOfElites2
-    ) implements CoMEPopulationState<G1, G2, S1, S2, S, Q, P> {}
+        Map<List<Integer>, MEIndividual<G2, S2, Q>> mapOfElites2)
+        implements CoMEPopulationState<G1, G2, S1, S2, S, Q, P> {}
     return new HardState<>(
-        startingDateTime, elapsedMillis, nOfIterations,
-        problem, stopCondition,
-        nOfBirths, nOfQualityEvaluations,
-        PartiallyOrderedCollection.from(
-            individuals,
-            comparator
-        ), descriptors1, descriptors2, mapOfElites1, mapOfElites2
-    );
+        startingDateTime,
+        elapsedMillis,
+        nOfIterations,
+        problem,
+        stopCondition,
+        nOfBirths,
+        nOfQualityEvaluations,
+        PartiallyOrderedCollection.from(individuals, comparator),
+        descriptors1,
+        descriptors2,
+        mapOfElites1,
+        mapOfElites2);
+  }
+
+  default CoMEPopulationState<G1, G2, S1, S2, S, Q, P> updatedWithIteration(
+      long nOfNewBirths,
+      long nOfNewQualityEvaluations,
+      Collection<CoMEIndividual<G1, G2, S1, S2, S, Q>> individuals,
+      Map<List<Integer>, MEIndividual<G1, S1, Q>> mapOfElites1,
+      Map<List<Integer>, MEIndividual<G2, S2, Q>> mapOfElites2) {
+    return of(
+        startingDateTime(),
+        ChronoUnit.MILLIS.between(startingDateTime(), LocalDateTime.now()),
+        nOfIterations() + 1,
+        problem(),
+        stopCondition(),
+        nOfBirths() + nOfNewBirths,
+        nOfQualityEvaluations() + nOfNewQualityEvaluations,
+        individuals,
+        descriptors1(),
+        descriptors2(),
+        mapOfElites1,
+        mapOfElites2);
+  }
+
+  @Override
+  default CoMEPopulationState<G1, G2, S1, S2, S, Q, P> updatedWithProblem(P problem) {
+    return of(
+        startingDateTime(),
+        elapsedMillis(),
+        nOfIterations(),
+        problem,
+        stopCondition(),
+        nOfBirths(),
+        nOfQualityEvaluations(),
+        pocPopulation().all(),
+        descriptors1(),
+        descriptors2(),
+        mapOfElites1(),
+        mapOfElites2());
   }
 }

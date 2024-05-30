@@ -28,7 +28,8 @@ public interface MEIndividual<G, S, Q> extends Individual<G, S, Q> {
 
   List<MapElites.Descriptor.Coordinate> coordinates();
 
-  static <G, S, Q> MEIndividual<G, S, Q> from(Individual<G, S, Q> individual, MEPopulationState<G, S, Q, ?> state) {
+  static <G, S, Q> MEIndividual<G, S, Q> from(
+      Individual<G, S, Q> individual, List<MapElites.Descriptor<G, S, Q>> descriptors) {
     return of(
         individual.id(),
         individual.genotype(),
@@ -37,7 +38,7 @@ public interface MEIndividual<G, S, Q> extends Individual<G, S, Q> {
         individual.genotypeBirthIteration(),
         individual.qualityMappingIteration(),
         individual.parentIds(),
-        state.descriptors().stream().map(d -> d.coordinate(individual)).toList());
+        descriptors.stream().map(d -> d.coordinate(individual)).toList());
   }
 
   static <G, S, Q> MEIndividual<G, S, Q> of(
@@ -68,5 +69,17 @@ public interface MEIndividual<G, S, Q> extends Individual<G, S, Q> {
         qualityMappingIteration,
         parentIds,
         coordinates);
+  }
+
+  default MEIndividual<G, S, Q> updatedWithQuality(Q q) {
+    return of(
+        id(),
+        genotype(),
+        solution(),
+        q,
+        genotypeBirthIteration(),
+        qualityMappingIteration(),
+        parentIds(),
+        coordinates());
   }
 }
