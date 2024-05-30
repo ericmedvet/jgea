@@ -49,17 +49,6 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
         S,
         Q> {
 
-  private static final Distance<List<Integer>> COORD_DISTANCE = (c1, c2) -> {
-    if (c1.size() != c2.size()) {
-      throw new IllegalArgumentException("Lists have different sizes: %d vs. %d".formatted(c1.size(), c2.size()));
-    }
-    double sum = 0;
-    for (int i = 0; i < c1.size(); i++) {
-      sum = sum + (c1.get(i) - c2.get(i)) * (c1.get(i) * c2.get(i));
-    }
-    return Math.sqrt(sum);
-  };
-
   private final Factory<? extends G1> genotypeFactory1;
   private final Factory<? extends G2> genotypeFactory2;
   private final Mutation<G1> mutation1;
@@ -72,12 +61,6 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
   private final int populationSize;
   private final int nOfOffspring;
   private final Strategy strategy;
-
-  public enum Strategy {
-    IDENTITY,
-    BEST,
-    CENTRAL
-  }
 
   public CoMapElites(
       Predicate<? super CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>>> stopCondition,
@@ -108,195 +91,22 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
     this.strategy = strategy;
   }
 
-  @Override
-  public CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>> init(
-      QualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
-      throws SolverException {
-    CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>> newState =
-        CoMEPopulationState.empty(problem, stopCondition(), descriptors1, descriptors2);
-    AtomicLong counter = new AtomicLong(0);
-    List<ChildGenotype<G1>> childGenotypes1 = genotypeFactory1.build(populationSize, random).stream()
-        .map(g -> new ChildGenotype<G1>(counter.getAndIncrement(), g, List.of()))
-        .toList();
-    List<ChildGenotype<G2>> childGenotypes2 = genotypeFactory2.build(populationSize, random).stream()
-        .map(g -> new ChildGenotype<G2>(counter.getAndIncrement(), g, List.of()))
-        .toList();
-    Collection<CoMEIndividual<G1, G2, S1, S2, S, Q>> coMEIndividuals = getAll(
-        IntStream.range(0, populationSize)
-            .mapToObj(i -> coMapCallable(childGenotypes1.get(i), childGenotypes2.get(i), newState, counter))
-            .toList(),
-        executor);
-    return newState.updatedWithIteration(
-        populationSize,
-        populationSize,
-        coMEIndividuals,
-        MapElites.mapOfElites(
-            coMEIndividuals.stream()
-                .map(CoMEIndividual::individual1)
-                .toList(),
-            partialComparator(problem)),
-        MapElites.mapOfElites(
-            coMEIndividuals.stream()
-                .map(CoMEIndividual::individual2)
-                .toList(),
-            partialComparator(problem)));
+  public enum Strategy {
+    IDENTITY,
+    BEST,
+    CENTRAL
   }
 
-  private Callable<CoMEIndividual<G1, G2, S1, S2, S, Q>> coMapCallable(
-      ChildGenotype<G1> cg1,
-      ChildGenotype<G2> cg2,
-      CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>> state,
-      AtomicLong counter) {
-    S1 s1 = solutionMapper1.apply(cg1.genotype());
-    S2 s2 = solutionMapper2.apply(cg2.genotype());
-    S s = solutionMerger.apply(s1, s2);
-    Q q = state.problem().qualityFunction().apply(s);
-    return () -> CoMEIndividual.of(
-        counter.getAndIncrement(),
-        s,
-        q,
-        state.nOfIterations(),
-        state.nOfIterations(),
-        List.of(),
-        MEIndividual.from(Individual.from(cg1, solutionMapper1, ss1 -> q, state.nOfIterations()), descriptors1),
-        MEIndividual.from(
-            Individual.from(cg2, solutionMapper2, ss2 -> q, state.nOfIterations()), descriptors2));
-  }
-
-  private static <GT, GO, ST, SO, S, Q>
-      Pair<Map<List<Integer>, MEIndividual<GT, ST, Q>>, List<CoMEIndividual<GT, GO, ST, SO, S, Q>>> reproduce(
-          Map<List<Integer>, MEIndividual<GT, ST, Q>> thisArchive,
-          Map<List<Integer>, MEIndividual<GO, SO, Q>> otherArchive,
-          Mutation<GT> mutation,
-          Function<? super GT, ? extends ST> solutionMapper,
-          BiFunction<? super ST, ? super SO, ? extends S> solutionMerger,
-          List<MapElites.Descriptor<GT, ST, Q>> thisDescriptors,
-          List<MapElites.Descriptor<GO, SO, Q>> otherDescriptors,
-          Strategy strategy,
-          int nOfOffspring,
-          QualityBasedProblem<S, Q> problem,
-          RandomGenerator random,
-          long iteration,
-          AtomicLong counter) {
-    Pair<Map<List<Integer>, MEIndividual<GT, ST, Q>>, List<CoMEIndividual<GT, GO, ST, SO, S, Q>>> result =
-        new Pair<>(new LinkedHashMap<>(), new ArrayList<>());
-    for (int i = 0; i < nOfOffspring; i++) {
-      MEIndividual<GT, ST, Q> parentT = Misc.pickRandomly(thisArchive.values(), random);
-      ChildGenotype<GT> childGenotypeT = new ChildGenotype<>(
-          counter.getAndIncrement(), mutation.mutate(parentT.genotype(), random), List.of(parentT.id()));
-      MEIndividual<GT, ST, Q> iT = MEIndividual.from(
-          Individual.from(childGenotypeT, solutionMapper, sT -> null, iteration), thisDescriptors);
-      List<Integer> thisCoords = iT.coordinates().stream()
-          .map(MapElites.Descriptor.Coordinate::bin)
-          .toList();
-      List<Integer> otherCoords = getClosestCoordinate(
-          getOtherCoords(thisCoords, otherArchive, problem, thisDescriptors, otherDescriptors, strategy),
-          otherArchive); // collaborator choice
-      Collection<MEIndividual<GO, SO, Q>> neighbors =
-          findNeighbors(otherCoords, otherArchive, CoMapElites::euclideanDistance, 2);
-      List<CoMEIndividual<GT, GO, ST, SO, S, Q>> localCompositeIndividuals = neighbors.stream()
-          .map(iO -> {
-            S s = solutionMerger.apply(iT.solution(), iO.solution());
-            return CoMEIndividual.of(
-                counter.getAndIncrement(),
-                s,
-                problem.qualityFunction().apply(s),
-                iteration,
-                iteration,
-                List.of(),
-                iT,
-                iO);
-          })
-          .toList();
-      Q q = PartiallyOrderedCollection.from(
-              localCompositeIndividuals,
-              problem.qualityComparator().comparing(CoMEIndividual::quality))
-          .firsts()
-          .stream()
-          .findAny()
-          .map(CoMEIndividual::quality)
-          .orElseThrow();
-      result.first()
-          .put(
-              thisCoords,
-              MapElites.chooseBest(
-                  iT.updatedWithQuality(q),
-                  result.first().get(thisCoords),
-                  problem.qualityComparator().comparing(Individual::quality)));
-      result.second().addAll(localCompositeIndividuals);
+  private static double euclideanDistance(List<Integer> coords1, List<Integer> coords2) {
+    if (coords1.size() != coords2.size()) {
+      throw new IllegalArgumentException("Coordinates must have the same dimensions.");
     }
-    return result;
-  }
-
-  @Override
-  public CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>> update(
-      RandomGenerator random,
-      ExecutorService executor,
-      CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>> state)
-      throws SolverException {
-    List<Individual<G2, S2, Q>> individualList2 = new ArrayList<>();
-    List<CoMEIndividual<G1, G2, S1, S2, S, Q>> compositeIndividuals = new ArrayList<>();
-    AtomicLong counter = new AtomicLong(state.nOfBirths());
-    // reproduction
-    Pair<Map<List<Integer>, MEIndividual<G1, S1, Q>>, List<CoMEIndividual<G1, G2, S1, S2, S, Q>>> reproduction1 =
-        reproduce(
-            state.mapOfElites1(),
-            state.mapOfElites2(),
-            mutation1,
-            solutionMapper1,
-            solutionMerger,
-            descriptors1,
-            descriptors2,
-            strategy,
-            nOfOffspring,
-            state.problem(),
-            random,
-            state.nOfIterations(),
-            counter);
-    Pair<Map<List<Integer>, MEIndividual<G2, S2, Q>>, List<CoMEIndividual<G2, G1, S2, S1, S, Q>>> reproduction2 =
-        reproduce(
-            state.mapOfElites2(),
-            state.mapOfElites1(),
-            mutation2,
-            solutionMapper2,
-            (s2, s1) -> solutionMerger.apply(s1, s2),
-            descriptors2,
-            descriptors1,
-            strategy,
-            nOfOffspring,
-            state.problem(),
-            random,
-            state.nOfIterations(),
-            counter);
-    // replace
-    Map<List<Integer>, MEIndividual<G1, S1, Q>> newArchive1 = new LinkedHashMap<>(state.mapOfElites1());
-    reproduction1
-        .first()
-        .forEach((coords, i1) -> newArchive1.put(
-            coords,
-            MapElites.chooseBest(
-                i1,
-                newArchive1.get(coords),
-                state.problem().qualityComparator().comparing(Individual::quality))));
-    Map<List<Integer>, MEIndividual<G2, S2, Q>> newArchive2 = new LinkedHashMap<>(state.mapOfElites2());
-    reproduction2
-        .first()
-        .forEach((coords, i2) -> newArchive2.put(
-            coords,
-            MapElites.chooseBest(
-                i2,
-                newArchive2.get(coords),
-                state.problem().qualityComparator().comparing(Individual::quality))));
-    List<CoMEIndividual<G1, G2, S1, S2, S, Q>> swappedCompositeIndividuals2 =
-        reproduction2.second().stream().map(CoMEIndividual::swapped).toList();
-    // return state
-    return state.updatedWithIteration(
-        nOfOffspring * 2L,
-        reproduction1.second().size() + reproduction2.second().size(),
-        Stream.concat(reproduction1.second().stream(), swappedCompositeIndividuals2.stream())
-            .toList(),
-        newArchive1,
-        newArchive2);
+    double sum = 0.0;
+    for (int i = 0; i < coords1.size(); i++) {
+      double diff = coords1.get(i) - coords2.get(i);
+      sum += diff * diff;
+    }
+    return Math.sqrt(sum);
   }
 
   public static <X> Collection<X> findNeighbors(
@@ -314,18 +124,6 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
     return mapOfElites.keySet().stream()
         .min(Comparator.comparingDouble(c -> euclideanDistance(c, coords)))
         .orElseThrow();
-  }
-
-  private static double euclideanDistance(List<Integer> coords1, List<Integer> coords2) {
-    if (coords1.size() != coords2.size()) {
-      throw new IllegalArgumentException("Coordinates must have the same dimensions.");
-    }
-    double sum = 0.0;
-    for (int i = 0; i < coords1.size(); i++) {
-      double diff = coords1.get(i) - coords2.get(i);
-      sum += diff * diff;
-    }
-    return Math.sqrt(sum);
   }
 
   private static <GT, GO, ST, SO, S, Q> List<Integer> getOtherCoords(
@@ -362,5 +160,179 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
         yield thisCoords;
       }
     };
+  }
+
+  private static <GT, GO, ST, SO, S, Q>
+      Callable<Pair<MEIndividual<GT, ST, Q>, List<CoMEIndividual<GT, GO, ST, SO, S, Q>>>> reproduceCallable(
+          Map<List<Integer>, MEIndividual<GT, ST, Q>> thisArchive,
+          Map<List<Integer>, MEIndividual<GO, SO, Q>> otherArchive,
+          Mutation<GT> mutation,
+          Function<? super GT, ? extends ST> solutionMapper,
+          BiFunction<? super ST, ? super SO, ? extends S> solutionMerger,
+          List<MapElites.Descriptor<GT, ST, Q>> thisDescriptors,
+          List<MapElites.Descriptor<GO, SO, Q>> otherDescriptors,
+          Strategy strategy,
+          QualityBasedProblem<S, Q> problem,
+          RandomGenerator random,
+          long iteration,
+          AtomicLong counter) {
+    return () -> {
+      MEIndividual<GT, ST, Q> parentT = Misc.pickRandomly(thisArchive.values(), random);
+      ChildGenotype<GT> childGenotypeT = new ChildGenotype<>(
+          counter.getAndIncrement(), mutation.mutate(parentT.genotype(), random), List.of(parentT.id()));
+      MEIndividual<GT, ST, Q> iT = MEIndividual.from(
+          Individual.from(childGenotypeT, solutionMapper, sT -> null, iteration), thisDescriptors);
+      List<Integer> thisCoords = iT.coordinates().stream()
+          .map(MapElites.Descriptor.Coordinate::bin)
+          .toList();
+      List<Integer> otherCoords = getClosestCoordinate(
+          getOtherCoords(thisCoords, otherArchive, problem, thisDescriptors, otherDescriptors, strategy),
+          otherArchive); // collaborator choice
+      Collection<MEIndividual<GO, SO, Q>> neighbors =
+          findNeighbors(otherCoords, otherArchive, CoMapElites::euclideanDistance, 2);
+      List<CoMEIndividual<GT, GO, ST, SO, S, Q>> localCompositeIndividuals = neighbors.stream()
+          .map(iO -> {
+            S s = solutionMerger.apply(iT.solution(), iO.solution());
+            return CoMEIndividual.of(
+                counter.getAndIncrement(),
+                s,
+                problem.qualityFunction().apply(s),
+                iteration,
+                iteration,
+                List.of(),
+                iT,
+                iO);
+          })
+          .toList();
+      Q q = PartiallyOrderedCollection.from(
+              localCompositeIndividuals,
+              problem.qualityComparator().comparing(CoMEIndividual::quality))
+          .firsts()
+          .stream()
+          .findAny()
+          .map(CoMEIndividual::quality)
+          .orElseThrow();
+      return new Pair<>(iT.updatedWithQuality(q), localCompositeIndividuals);
+    };
+  }
+
+  private Callable<CoMEIndividual<G1, G2, S1, S2, S, Q>> coMapCallable(
+      ChildGenotype<G1> cg1,
+      ChildGenotype<G2> cg2,
+      CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>> state,
+      AtomicLong counter) {
+    S1 s1 = solutionMapper1.apply(cg1.genotype());
+    S2 s2 = solutionMapper2.apply(cg2.genotype());
+    S s = solutionMerger.apply(s1, s2);
+    Q q = state.problem().qualityFunction().apply(s);
+    return () -> CoMEIndividual.of(
+        counter.getAndIncrement(),
+        s,
+        q,
+        state.nOfIterations(),
+        state.nOfIterations(),
+        List.of(),
+        MEIndividual.from(Individual.from(cg1, solutionMapper1, ss1 -> q, state.nOfIterations()), descriptors1),
+        MEIndividual.from(
+            Individual.from(cg2, solutionMapper2, ss2 -> q, state.nOfIterations()), descriptors2));
+  }
+
+  @Override
+  public CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>> init(
+      QualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
+      throws SolverException {
+    CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>> newState =
+        CoMEPopulationState.empty(problem, stopCondition(), descriptors1, descriptors2);
+    AtomicLong counter = new AtomicLong(0);
+    List<ChildGenotype<G1>> childGenotypes1 = genotypeFactory1.build(populationSize, random).stream()
+        .map(g -> new ChildGenotype<G1>(counter.getAndIncrement(), g, List.of()))
+        .toList();
+    List<ChildGenotype<G2>> childGenotypes2 = genotypeFactory2.build(populationSize, random).stream()
+        .map(g -> new ChildGenotype<G2>(counter.getAndIncrement(), g, List.of()))
+        .toList();
+    Collection<CoMEIndividual<G1, G2, S1, S2, S, Q>> coMEIndividuals = getAll(
+        IntStream.range(0, populationSize)
+            .mapToObj(i -> coMapCallable(childGenotypes1.get(i), childGenotypes2.get(i), newState, counter))
+            .toList(),
+        executor);
+    return newState.updatedWithIteration(
+        populationSize,
+        populationSize,
+        coMEIndividuals,
+        MapElites.mapOfElites(
+            coMEIndividuals.stream()
+                .map(CoMEIndividual::individual1)
+                .toList(),
+            Map.of(),
+            partialComparator(problem)),
+        MapElites.mapOfElites(
+            coMEIndividuals.stream()
+                .map(CoMEIndividual::individual2)
+                .toList(),
+            Map.of(),
+            partialComparator(problem)));
+  }
+
+  @Override
+  public CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>> update(
+      RandomGenerator random,
+      ExecutorService executor,
+      CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>> state)
+      throws SolverException {
+    AtomicLong counter = new AtomicLong(state.nOfBirths());
+    // reproduction
+    Collection<Pair<MEIndividual<G1, S1, Q>, List<CoMEIndividual<G1, G2, S1, S2, S, Q>>>> reproduction1 = getAll(
+        IntStream.range(0, populationSize)
+            .mapToObj(i -> reproduceCallable(
+                state.mapOfElites1(),
+                state.mapOfElites2(),
+                mutation1,
+                solutionMapper1,
+                solutionMerger,
+                descriptors1,
+                descriptors2,
+                strategy,
+                state.problem(),
+                random,
+                state.nOfIterations(),
+                counter))
+            .toList(),
+        executor);
+    Collection<Pair<MEIndividual<G2, S2, Q>, List<CoMEIndividual<G2, G1, S2, S1, S, Q>>>> reproduction2 = getAll(
+        IntStream.range(0, populationSize)
+            .mapToObj(i -> reproduceCallable(
+                state.mapOfElites2(),
+                state.mapOfElites1(),
+                mutation2,
+                solutionMapper2,
+                (s2, s1) -> solutionMerger.apply(s1, s2),
+                descriptors2,
+                descriptors1,
+                strategy,
+                state.problem(),
+                random,
+                state.nOfIterations(),
+                counter))
+            .toList(),
+        executor);
+    List<CoMEIndividual<G1, G2, S1, S2, S, Q>> coMEIndividuals1 =
+        reproduction1.stream().flatMap(p1 -> p1.second().stream()).toList();
+    List<CoMEIndividual<G1, G2, S1, S2, S, Q>> coMEIndividuals2 = reproduction2.stream()
+        .flatMap(p2 -> p2.second().stream().map(CoMEIndividual::swapped))
+        .toList();
+    // return state
+    return state.updatedWithIteration(
+        nOfOffspring * 2L,
+        coMEIndividuals1.size() + coMEIndividuals2.size(),
+        Stream.concat(coMEIndividuals1.stream(), coMEIndividuals2.stream())
+            .toList(),
+        MapElites.mapOfElites(
+            reproduction1.stream().map(Pair::first).toList(),
+            state.mapOfElites1(),
+            partialComparator(state.problem())),
+        MapElites.mapOfElites(
+            reproduction2.stream().map(Pair::first).toList(),
+            state.mapOfElites2(),
+            partialComparator(state.problem())));
   }
 }

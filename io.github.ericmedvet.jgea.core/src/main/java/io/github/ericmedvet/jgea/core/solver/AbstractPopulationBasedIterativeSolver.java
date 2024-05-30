@@ -82,10 +82,10 @@ public abstract class AbstractPopulationBasedIterativeSolver<
     return results;
   }
 
-  protected static <T> Collection<T> getAll(Collection<Callable<T>> callables, ExecutorService executorService)
+  protected static <T> Collection<T> getAll(Collection<Callable<T>> callables, ExecutorService executor)
       throws SolverException {
     try {
-      return getAll(executorService.invokeAll(callables));
+      return getAll(executor.invokeAll(callables));
     } catch (SolverException | InterruptedException e) {
       throw new SolverException(e);
     }

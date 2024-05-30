@@ -39,6 +39,7 @@ import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class MapElites<G, S, Q>
     extends AbstractPopulationBasedIterativeSolver<
@@ -109,7 +110,7 @@ public class MapElites<G, S, Q>
         random,
         executor));
     return newState.updatedWithIteration(
-        populationSize, populationSize, mapOfElites(newIndividuals, partialComparator(problem)));
+        populationSize, populationSize, mapOfElites(newIndividuals, Map.of(), partialComparator(problem)));
   }
 
   @Override
@@ -134,13 +135,16 @@ public class MapElites<G, S, Q>
         random,
         executor));
     return state.updatedWithIteration(
-        populationSize, populationSize, mapOfElites(newIndividuals, partialComparator(state.problem())));
+        populationSize,
+        populationSize,
+        mapOfElites(newIndividuals, state.mapOfElites(), partialComparator(state.problem())));
   }
 
   protected static <G, S, Q> Map<List<Integer>, MEIndividual<G, S, Q>> mapOfElites(
       Collection<MEIndividual<G, S, Q>> individuals,
+      Map<List<Integer>, MEIndividual<G, S, Q>> map,
       PartialComparator<? super Individual<G, S, Q>> partialComparator) {
-    return individuals.stream()
+    return Stream.concat(individuals.stream(), map.values().stream())
         .map(i -> Map.entry(
             i.coordinates().stream().map(Descriptor.Coordinate::bin).toList(), i))
         .collect(Collectors.toMap(
