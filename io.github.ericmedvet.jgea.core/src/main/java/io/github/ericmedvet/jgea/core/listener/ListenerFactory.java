@@ -19,6 +19,7 @@
  */
 package io.github.ericmedvet.jgea.core.listener;
 
+import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -97,6 +98,11 @@ public interface ListenerFactory<E, K> {
       public void shutdown() {
         thisFactory.shutdown();
       }
+
+      @Override
+      public String toString() {
+        return thisFactory + "[deferred]";
+      }
     };
   }
 
@@ -116,16 +122,21 @@ public interface ListenerFactory<E, K> {
   }
 
   default <F> ListenerFactory<F, K> on(Function<F, E> function) {
-    ListenerFactory<E, K> inner = this;
+    ListenerFactory<E, K> thisFactory = this;
     return new ListenerFactory<>() {
       @Override
       public Listener<F> build(K k) {
-        return inner.build(k).on(function);
+        return thisFactory.build(k).on(function);
       }
 
       @Override
       public void shutdown() {
-        inner.shutdown();
+        thisFactory.shutdown();
+      }
+
+      @Override
+      public String toString() {
+        return thisFactory + "[on:%s]".formatted(NamedFunction.name(function));
       }
     };
   }
@@ -141,6 +152,11 @@ public interface ListenerFactory<E, K> {
       @Override
       public void shutdown() {
         thisFactory.shutdown();
+      }
+
+      @Override
+      public String toString() {
+        return thisFactory + "[onLast]";
       }
     };
   }
@@ -255,6 +271,11 @@ public interface ListenerFactory<E, K> {
         }
         counter.set(-1);
         thisFactory.shutdown();
+      }
+
+      @Override
+      public String toString() {
+        return thisFactory + "[robust]";
       }
     };
   }

@@ -88,6 +88,32 @@ public interface Accumulator<E, O> extends Listener<E> {
     };
   }
 
+  @Override
+  default <X> Accumulator<X, O> on(Function<X, E> function) {
+    Accumulator<E, O> thisAccumulator = this;
+    return new Accumulator<>() {
+      @Override
+      public O get() {
+        return thisAccumulator.get();
+      }
+
+      @Override
+      public void listen(X x) {
+        thisAccumulator.listen(function.apply(x));
+      }
+
+      @Override
+      public void done() {
+        thisAccumulator.done();
+      }
+
+      @Override
+      public String toString() {
+        return thisAccumulator + "[on:%s]".formatted(function);
+      }
+    };
+  }
+
   default <Q> Accumulator<E, Q> then(Function<O, Q> function) {
     Accumulator<E, O> thisAccumulator = this;
     return new Accumulator<>() {

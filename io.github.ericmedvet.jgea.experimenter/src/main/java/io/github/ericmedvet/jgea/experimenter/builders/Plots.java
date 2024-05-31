@@ -24,6 +24,7 @@ import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.cabea.GridPopulationState;
+import io.github.ericmedvet.jgea.core.solver.mapelites.Archive;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MEPopulationState;
 import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.*;
@@ -255,6 +256,47 @@ public class Plots {
                   s.descriptors().get(1).max()),
               NamedFunction.name(s.descriptors().get(0).function()),
               NamedFunction.name(s.descriptors().get(1).function()));
+        },
+        individualFunctions,
+        valueRange);
+  }
+
+  @SuppressWarnings("unused")
+  public static <E, G, P> UnivariateGridSEPAF<E, Run<?, ?, ?, ?>, P, G> archivePlot(
+      @Param(
+              value = "titleRunKey",
+              dNPM = "ea.misc.sEntry(key=title;value=\"Map of elites of {solver.name} on {problem.name} "
+                  + "(seed={randomGenerator.seed})\")")
+          Map.Entry<String, String> titleRunKey,
+      @Param(value = "archiveFunction", dNPM = "f.identity()") Function<E, Archive<G>> archiveFunction,
+      @Param(
+              value = "individualFunctions",
+              dNPMs = {"ea.f.quality()"})
+          List<Function<? super G, ? extends Number>> individualFunctions,
+      @Param(value = "predicateValue", dNPM = "ea.f.nOfIterations()") Function<E, P> predicateValueFunction,
+      @Param(value = "condition", dNPM = "predicate.always()") Predicate<? super P> condition,
+      @Param(value = "valueRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange valueRange,
+      @Param(value = "unique", dB = true) boolean unique) {
+    return new UnivariateGridSEPAF<>(
+        Functions.runKey(titleRunKey, r -> r, "%s"),
+        predicateValueFunction,
+        condition,
+        unique,
+        e -> {
+          Archive<G> a = archiveFunction.apply(e);
+          int w = a.binUpperBounds().get(0);
+          int h = a.binUpperBounds().get(1);
+          Grid<G> individualsGrid = Grid.create(w, h, (x, y) -> a.asMap().keySet().stream()
+              .filter(k -> List.of(x, y).equals(k.subList(0, 2)))
+              .map(k -> a.asMap().get(k))
+              .findFirst()
+              .orElse(null));
+          return RangedGrid.from(
+              individualsGrid,
+              new DoubleRange(0, a.binUpperBounds().get(0)),
+              new DoubleRange(0, a.binUpperBounds().get(1)),
+              "dx",
+              "dy");
         },
         individualFunctions,
         valueRange);

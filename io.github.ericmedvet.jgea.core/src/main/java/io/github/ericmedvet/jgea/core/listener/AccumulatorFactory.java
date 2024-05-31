@@ -28,19 +28,19 @@ public interface AccumulatorFactory<E, O, K> extends ListenerFactory<E, K> {
 
   @Override
   default AccumulatorFactory<E, O, K> conditional(Predicate<K> predicate) {
-    AccumulatorFactory<E, O, K> inner = this;
+    AccumulatorFactory<E, O, K> thisAccumulatorFactory = this;
     return new AccumulatorFactory<>() {
       @Override
       public Accumulator<E, O> build(K k) {
         if (predicate.test(k)) {
-          return inner.build(k);
+          return thisAccumulatorFactory.build(k);
         }
         return Accumulator.nullAccumulator();
       }
 
       @Override
       public void shutdown() {
-        inner.shutdown();
+        thisAccumulatorFactory.shutdown();
       }
     };
   }
@@ -53,17 +53,33 @@ public interface AccumulatorFactory<E, O, K> extends ListenerFactory<E, K> {
     return k -> Accumulator.<E>last().then(e -> function.apply(e, k));
   }
 
-  default <Q> AccumulatorFactory<E, Q, K> then(Function<O, Q> function) {
-    AccumulatorFactory<E, O, K> inner = this;
+  @Override
+  default <X> AccumulatorFactory<X, O, K> on(Function<X, E> function) {
+    AccumulatorFactory<E, O, K> thisAccumulatorFactory = this;
     return new AccumulatorFactory<>() {
       @Override
-      public Accumulator<E, Q> build(K k) {
-        return inner.build(k).then(function);
+      public Accumulator<X, O> build(K k) {
+        return thisAccumulatorFactory.build(k).on(function);
       }
 
       @Override
       public void shutdown() {
-        inner.shutdown();
+        thisAccumulatorFactory.shutdown();
+      }
+    };
+  }
+
+  default <Q> AccumulatorFactory<E, Q, K> then(Function<O, Q> function) {
+    AccumulatorFactory<E, O, K> thisAccumulatorFactory = this;
+    return new AccumulatorFactory<>() {
+      @Override
+      public Accumulator<E, Q> build(K k) {
+        return thisAccumulatorFactory.build(k).then(function);
+      }
+
+      @Override
+      public void shutdown() {
+        thisAccumulatorFactory.shutdown();
       }
     };
   }
@@ -84,12 +100,12 @@ public interface AccumulatorFactory<E, O, K> extends ListenerFactory<E, K> {
   }
 
   default AccumulatorFactory<E, O, K> thenOnShutdown(Consumer<List<O>> consumer) {
-    AccumulatorFactory<E, O, K> thisFactory = this;
+    AccumulatorFactory<E, O, K> thisAccumulatorFactory = this;
     List<O> os = new ArrayList<>();
     return new AccumulatorFactory<>() {
       @Override
       public Accumulator<E, O> build(K k) {
-        Accumulator<E, O> accumulator = thisFactory.build(k);
+        Accumulator<E, O> accumulator = thisAccumulatorFactory.build(k);
         return new Accumulator<E, O>() {
           @Override
           public O get() {
@@ -116,7 +132,7 @@ public interface AccumulatorFactory<E, O, K> extends ListenerFactory<E, K> {
       @Override
       public void shutdown() {
         consumer.accept(os);
-        thisFactory.shutdown();
+        thisAccumulatorFactory.shutdown();
       }
     };
   }
