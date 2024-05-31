@@ -22,24 +22,19 @@ package io.github.ericmedvet.jgea.core.solver.mapelites;
 
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
-import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSolver;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class MapElites<G, S, Q>
     extends AbstractPopulationBasedIterativeSolver<
@@ -79,19 +74,6 @@ public class MapElites<G, S, Q>
     }
   }
 
-  protected static <I extends Individual<G, S, Q>, G, S, Q> I chooseBest(
-      I newIndividual, I existingIndividual, PartialComparator<? super I> partialComparator) {
-    if (existingIndividual == null) {
-      return newIndividual;
-    }
-    if (partialComparator
-        .compare(newIndividual, existingIndividual)
-        .equals(PartialComparator.PartialComparatorOutcome.BEFORE)) {
-      return newIndividual;
-    }
-    return existingIndividual;
-  }
-
   @Override
   public MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>> init(
       QualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
@@ -110,7 +92,9 @@ public class MapElites<G, S, Q>
         random,
         executor));
     return newState.updatedWithIteration(
-        populationSize, populationSize, mapOfElites(newIndividuals, Map.of(), partialComparator(problem)));
+        populationSize,
+        populationSize,
+        newState.mapOfElites().updated(newIndividuals, MEIndividual::bins, partialComparator(problem)));
   }
 
   @Override
@@ -119,7 +103,8 @@ public class MapElites<G, S, Q>
       ExecutorService executor,
       MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>> state)
       throws SolverException {
-    Collection<MEIndividual<G, S, Q>> individuals = state.mapOfElites().values();
+    Collection<MEIndividual<G, S, Q>> individuals =
+        state.mapOfElites().asMap().values();
     // build new genotypes
     AtomicLong counter = new AtomicLong(state.nOfBirths());
     Collection<MEIndividual<G, S, Q>> newIndividuals = getAll(map(
@@ -137,20 +122,6 @@ public class MapElites<G, S, Q>
     return state.updatedWithIteration(
         populationSize,
         populationSize,
-        mapOfElites(newIndividuals, state.mapOfElites(), partialComparator(state.problem())));
-  }
-
-  protected static <G, S, Q> Map<List<Integer>, MEIndividual<G, S, Q>> mapOfElites(
-      Collection<MEIndividual<G, S, Q>> individuals,
-      Map<List<Integer>, MEIndividual<G, S, Q>> map,
-      PartialComparator<? super Individual<G, S, Q>> partialComparator) {
-    return Stream.concat(individuals.stream(), map.values().stream())
-        .map(i -> Map.entry(
-            i.coordinates().stream().map(Descriptor.Coordinate::bin).toList(), i))
-        .collect(Collectors.toMap(
-            Map.Entry::getKey,
-            Map.Entry::getValue,
-            (i1, i2) -> chooseBest(i1, i2, partialComparator),
-            LinkedHashMap::new));
+        state.mapOfElites().updated(newIndividuals, MEIndividual::bins, partialComparator(state.problem())));
   }
 }

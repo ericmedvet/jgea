@@ -240,7 +240,7 @@ public class Plots {
           int w = s.descriptors().get(0).nOfBins();
           int h = s.descriptors().get(1).nOfBins();
           Grid<Individual<G, S, Q>> individualsGrid =
-              Grid.create(w, h, (x, y) -> s.mapOfElites().keySet().stream()
+              Grid.create(w, h, (x, y) -> s.mapOfElites().asMap().keySet().stream()
                   .filter(k -> List.of(x, y).equals(k.subList(0, 2)))
                   .map(k -> s.mapOfElites().get(k))
                   .findFirst()

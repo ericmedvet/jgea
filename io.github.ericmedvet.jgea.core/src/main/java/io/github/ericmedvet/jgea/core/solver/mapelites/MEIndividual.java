@@ -28,6 +28,10 @@ public interface MEIndividual<G, S, Q> extends Individual<G, S, Q> {
 
   List<MapElites.Descriptor.Coordinate> coordinates();
 
+  default List<Integer> bins() {
+    return coordinates().stream().map(MapElites.Descriptor.Coordinate::bin).toList();
+  }
+
   static <G, S, Q> MEIndividual<G, S, Q> from(
       Individual<G, S, Q> individual, List<MapElites.Descriptor<G, S, Q>> descriptors) {
     return of(

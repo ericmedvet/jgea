@@ -29,7 +29,10 @@ import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.Pair;
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
@@ -109,7 +112,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
     return Math.sqrt(sum);
   }
 
-  public static <X> Collection<X> findNeighbors(
+  private static <X> Collection<X> findNeighbors(
       List<Integer> coords,
       Map<List<Integer>, X> mapOfElites,
       Distance<List<Integer>> distance,
@@ -164,8 +167,8 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
 
   private static <GT, GO, ST, SO, S, Q>
       Callable<Pair<MEIndividual<GT, ST, Q>, List<CoMEIndividual<GT, GO, ST, SO, S, Q>>>> reproduceCallable(
-          Map<List<Integer>, MEIndividual<GT, ST, Q>> thisArchive,
-          Map<List<Integer>, MEIndividual<GO, SO, Q>> otherArchive,
+          Archive<MEIndividual<GT, ST, Q>> thisArchive,
+          Archive<MEIndividual<GO, SO, Q>> otherArchive,
           Mutation<GT> mutation,
           Function<? super GT, ? extends ST> solutionMapper,
           BiFunction<? super ST, ? super SO, ? extends S> solutionMerger,
@@ -177,7 +180,8 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
           long iteration,
           AtomicLong counter) {
     return () -> {
-      MEIndividual<GT, ST, Q> parentT = Misc.pickRandomly(thisArchive.values(), random);
+      MEIndividual<GT, ST, Q> parentT =
+          Misc.pickRandomly(thisArchive.asMap().values(), random);
       ChildGenotype<GT> childGenotypeT = new ChildGenotype<>(
           counter.getAndIncrement(), mutation.mutate(parentT.genotype(), random), List.of(parentT.id()));
       MEIndividual<GT, ST, Q> iT = MEIndividual.from(
@@ -186,10 +190,11 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
           .map(MapElites.Descriptor.Coordinate::bin)
           .toList();
       List<Integer> otherCoords = getClosestCoordinate(
-          getOtherCoords(thisCoords, otherArchive, problem, thisDescriptors, otherDescriptors, strategy),
-          otherArchive); // collaborator choice
+          getOtherCoords(
+              thisCoords, otherArchive.asMap(), problem, thisDescriptors, otherDescriptors, strategy),
+          otherArchive.asMap()); // collaborator choice
       Collection<MEIndividual<GO, SO, Q>> neighbors =
-          findNeighbors(otherCoords, otherArchive, CoMapElites::euclideanDistance, 2);
+          findNeighbors(otherCoords, otherArchive.asMap(), CoMapElites::euclideanDistance, 2);
       List<CoMEIndividual<GT, GO, ST, SO, S, Q>> localCompositeIndividuals = neighbors.stream()
           .map(iO -> {
             S s = solutionMerger.apply(iT.solution(), iO.solution());
@@ -259,18 +264,20 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
         populationSize,
         populationSize,
         coMEIndividuals,
-        MapElites.mapOfElites(
-            coMEIndividuals.stream()
-                .map(CoMEIndividual::individual1)
-                .toList(),
-            Map.of(),
-            partialComparator(problem)),
-        MapElites.mapOfElites(
-            coMEIndividuals.stream()
-                .map(CoMEIndividual::individual2)
-                .toList(),
-            Map.of(),
-            partialComparator(problem)));
+        newState.mapOfElites1()
+            .updated(
+                coMEIndividuals.stream()
+                    .map(CoMEIndividual::individual1)
+                    .toList(),
+                MEIndividual::bins,
+                partialComparator(problem)),
+        newState.mapOfElites2()
+            .updated(
+                coMEIndividuals.stream()
+                    .map(CoMEIndividual::individual2)
+                    .toList(),
+                MEIndividual::bins,
+                partialComparator(problem)));
   }
 
   @Override
@@ -326,13 +333,15 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
         coMEIndividuals1.size() + coMEIndividuals2.size(),
         Stream.concat(coMEIndividuals1.stream(), coMEIndividuals2.stream())
             .toList(),
-        MapElites.mapOfElites(
-            reproduction1.stream().map(Pair::first).toList(),
-            state.mapOfElites1(),
-            partialComparator(state.problem())),
-        MapElites.mapOfElites(
-            reproduction2.stream().map(Pair::first).toList(),
-            state.mapOfElites2(),
-            partialComparator(state.problem())));
+        state.mapOfElites1()
+            .updated(
+                reproduction1.stream().map(Pair::first).toList(),
+                MEIndividual::bins,
+                partialComparator(state.problem())),
+        state.mapOfElites2()
+            .updated(
+                reproduction2.stream().map(Pair::first).toList(),
+                MEIndividual::bins,
+                partialComparator(state.problem())));
   }
 }

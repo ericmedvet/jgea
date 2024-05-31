@@ -29,7 +29,6 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Predicate;
 
 public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBasedProblem<S, Q>>
@@ -39,9 +38,9 @@ public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBase
 
   List<MapElites.Descriptor<G2, S2, Q>> descriptors2();
 
-  Map<List<Integer>, MEIndividual<G1, S1, Q>> mapOfElites1();
+  Archive<MEIndividual<G1, S1, Q>> mapOfElites1();
 
-  Map<List<Integer>, MEIndividual<G2, S2, Q>> mapOfElites2();
+  Archive<MEIndividual<G2, S2, Q>> mapOfElites2();
 
   static <G1, G2, S1, S2, S, Q, P extends QualityBasedProblem<S, Q>>
       CoMEPopulationState<G1, G2, S1, S2, S, Q, P> empty(
@@ -60,8 +59,10 @@ public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBase
         List.of(),
         descriptors1,
         descriptors2,
-        Map.of(),
-        Map.of());
+        new Archive<>(
+            descriptors1.stream().map(MapElites.Descriptor::nOfBins).toList()),
+        new Archive<>(
+            descriptors2.stream().map(MapElites.Descriptor::nOfBins).toList()));
   }
 
   static <G1, G2, S1, S2, S, Q, P extends QualityBasedProblem<S, Q>> CoMEPopulationState<G1, G2, S1, S2, S, Q, P> of(
@@ -75,8 +76,8 @@ public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBase
       Collection<CoMEIndividual<G1, G2, S1, S2, S, Q>> individuals,
       List<MapElites.Descriptor<G1, S1, Q>> descriptors1,
       List<MapElites.Descriptor<G2, S2, Q>> descriptors2,
-      Map<List<Integer>, MEIndividual<G1, S1, Q>> mapOfElites1,
-      Map<List<Integer>, MEIndividual<G2, S2, Q>> mapOfElites2) {
+      Archive<MEIndividual<G1, S1, Q>> mapOfElites1,
+      Archive<MEIndividual<G2, S2, Q>> mapOfElites2) {
     PartialComparator<? super CoMEIndividual<G1, G2, S1, S2, S, Q>> comparator =
         (i1, i2) -> problem.qualityComparator().compare(i1.quality(), i2.quality());
     record HardState<G1, G2, S1, S2, S, Q, P extends QualityBasedProblem<S, Q>>(
@@ -90,8 +91,8 @@ public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBase
         PartiallyOrderedCollection<CoMEIndividual<G1, G2, S1, S2, S, Q>> pocPopulation,
         List<MapElites.Descriptor<G1, S1, Q>> descriptors1,
         List<MapElites.Descriptor<G2, S2, Q>> descriptors2,
-        Map<List<Integer>, MEIndividual<G1, S1, Q>> mapOfElites1,
-        Map<List<Integer>, MEIndividual<G2, S2, Q>> mapOfElites2)
+        Archive<MEIndividual<G1, S1, Q>> mapOfElites1,
+        Archive<MEIndividual<G2, S2, Q>> mapOfElites2)
         implements CoMEPopulationState<G1, G2, S1, S2, S, Q, P> {}
     return new HardState<>(
         startingDateTime,
@@ -112,8 +113,8 @@ public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBase
       long nOfNewBirths,
       long nOfNewQualityEvaluations,
       Collection<CoMEIndividual<G1, G2, S1, S2, S, Q>> individuals,
-      Map<List<Integer>, MEIndividual<G1, S1, Q>> mapOfElites1,
-      Map<List<Integer>, MEIndividual<G2, S2, Q>> mapOfElites2) {
+      Archive<MEIndividual<G1, S1, Q>> mapOfElites1,
+      Archive<MEIndividual<G2, S2, Q>> mapOfElites2) {
     return of(
         startingDateTime(),
         ChronoUnit.MILLIS.between(startingDateTime(), LocalDateTime.now()),
