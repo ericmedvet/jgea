@@ -100,7 +100,7 @@ public class Plots {
               dNPM =
                   "ea.misc.sEntry(key=title;value=\"{solver.name} on {problem.name} (seed={randomGenerator.seed})\")")
           Map.Entry<String, String> titleRunKey,
-      @Param(value = "x", dNPM = "ea.nf.iterations()")
+      @Param(value = "x", dNPM = "ea.nf.nOfIterations()")
           Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> xFunction,
       @Param("y") Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> yFunction,
       @Param(value = "xRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
@@ -116,7 +116,7 @@ public class Plots {
               dNPM = "ea.misc.sEntry(key=title;value=\"Elapsed time of {solver.name} on {problem.name} "
                   + "(seed={randomGenerator.seed})\")")
           Map.Entry<String, String> titleRunKey,
-      @Param(value = "x", dNPM = "ea.f.iterations()")
+      @Param(value = "x", dNPM = "ea.f.nOfIterations()")
           Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> xFunction,
       @Param(value = "y", dNPM = "ea.f.elapsedSecs()")
           Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> yFunction,
@@ -309,7 +309,7 @@ public class Plots {
               dNPM = "ea.misc.sEntry(key=title;value=\"Best quality of {solver.name} on {problem.name} "
                   + "(seed={randomGenerator.seed})\")")
           Map.Entry<String, String> titleRunKey,
-      @Param(value = "x", dNPM = "ea.nf.iterations()")
+      @Param(value = "x", dNPM = "ea.f.nOfIterations()")
           Function<? super POCPopulationState<?, G, S, Q, ?>, ? extends Number> xFunction,
       @Param(value = "collection", dNPM = "ea.f.all()")
           Function<POCPopulationState<?, G, S, Q, ?>, Collection<Individual<G, S, Q>>> collectionFunction,
