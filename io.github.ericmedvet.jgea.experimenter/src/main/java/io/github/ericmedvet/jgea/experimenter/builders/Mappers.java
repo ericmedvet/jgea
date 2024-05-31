@@ -336,6 +336,19 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  public static <X> InvertibleMapper<X, NumericalDynamicalSystem<?>> nmrfToNds(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NamedMultivariateRealFunction> beforeM) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (nds, nmrf) -> nmrf,
+        nds -> NamedMultivariateRealFunction.from(
+            MultivariateRealFunction.from(
+                in -> new double[nds.nOfOutputs()], nds.nOfInputs(), nds.nOfOutputs()),
+            MultivariateRealFunction.varNames("i", nds.nOfInputs()),
+            MultivariateRealFunction.varNames("o", nds.nOfOutputs())),
+        "nmrfToNds"));
+  }
+
+  @SuppressWarnings("unused")
   public static <X> InvertibleMapper<X, NamedUnivariateRealFunction> nmrfToNurf(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NamedMultivariateRealFunction> beforeM) {
     return beforeM.andThen(InvertibleMapper.from(

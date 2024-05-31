@@ -1,32 +1,42 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1]) * [m.defaultRG()]) *
-    [ea.run(
-      problem = ea.p.numEnvTo(
-        environment = ds.e.pointNavigation(arena = E_MAZE; robotMaxV = 0.05);
-        f = ds.e.n.avgD();
-        type = MINIMIZE
-      );
-      solver = ea.s.mapElites(
-        representation = ea.r.doubleString();
-        mapper = ea.m.dsToNpnds(npnds = ds.num.mlp(innerLayerRatio = 2.0));
-        nPop = 100;
-        nEval = 5000;
-        descriptors = [
-          ea.s.me.d.descriptor(
-            f = ds.e.n.x(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality())));
-            min = 0;
-            max = 1;
-            nOfBins = 10
-          );
-          ea.s.me.d.descriptor(
-            f = ds.e.n.y(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality())));
-            min = 0;
-            max = 1;
-            nOfBins = 10
-          )
-        ]
-      )
-    )];
+    (problem = [
+        ea.p.numEnvTo(environment = ds.e.pointNavigation(arena = E_MAZE; robotMaxV = 0.05); f = ds.e.n.minD(); finalT = 30)
+      ]) *
+      (solver = (nEval = [10000]) * [
+        ea.s.mapElites(
+          name = "me-ne-10-4";
+          representation = ea.r.doubleString();
+          mapper = ea.m.dsToNpnds(npnds = ds.num.mlp(innerLayerRatio = 10; nOfInnerLayers = 4));
+          nPop = 50;
+          descriptors = [
+            ea.s.me.d.descriptor(f = ds.e.n.x(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality()))));
+            ea.s.me.d.descriptor(f = ds.e.n.y(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality()))))
+          ]
+        );
+        ea.s.mapElites(
+          name = "me-ne-2-2";
+          representation = ea.r.doubleString();
+          mapper = ea.m.dsToNpnds(npnds = ds.num.mlp(innerLayerRatio = 2; nOfInnerLayers = 2));
+          nPop = 50;
+          descriptors = [
+            ea.s.me.d.descriptor(f = ds.e.n.x(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality()))));
+            ea.s.me.d.descriptor(f = ds.e.n.y(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality()))))
+          ]
+        );
+        ea.s.mapElites(
+          name = "me-mtgp";
+          representation = ea.representation.multiSRTree();
+          mapper = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf());
+          nPop = 50;
+          descriptors = [
+            ea.s.me.d.descriptor(f = ds.e.n.x(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality()))));
+            ea.s.me.d.descriptor(f = ds.e.n.y(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality()))))
+          ]
+        )
+      ]) * [
+      ea.run()
+  ];
   listeners = [
     ea.l.console(
       functions = [
@@ -45,27 +55,42 @@ ea.experiment(
         ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
       ]
     );
-    ea.l.allCsv(
-      filePath = "../point-nav-all.csv";
-      individualFunctions = [
-        ea.f.simQuality(of = ea.f.quality());
-        ea.f.meBin(of = f.nTh(of = ea.f.meCoordinates(); n = 0));
-        ea.f.meBin(of = f.nTh(of = ea.f.meCoordinates(); n = 1));
-        ea.f.meValue(of = f.nTh(of = ea.f.meCoordinates(); n = 0));
-        ea.f.meValue(of = f.nTh(of = ea.f.meCoordinates(); n = 1));
-        ea.f.id();
-        f.nTh(of = ea.f.parentIds(); n = 0)
-      ];
-      runKeys = [
-        ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
-        ea.misc.sEntry(key = "solver"; value = "{solver.name}");
-        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
-      ]
-    );
     ea.l.runLastIterationImageSaver(
       function = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best()));
       image = ds.d.pointNavigation();
-      filePathTemplate = "../traj-point-nav-me-{randomGenerator.seed:%04d}.png"
+      filePathTemplate = "../traj-point-nav-{solver.name}-{randomGenerator.seed:%04d}.png"
+    );
+    ea.l.runLastIterationImageSaver(
+      function = ea.f.solution(of = ea.f.best());
+      image = ds.d.vectorField(arena = E_MAZE);
+      filePathTemplate = "../field-point-nav-{solver.name}-{randomGenerator.seed:%04d}.png"
+    );
+    ea.l.runPlotSaver(
+      w = 1500; h = 350;
+      filePathTemplate = "../archives-point-nav-{solver.name}-{randomGenerator.seed:%04d}.png";
+      type = univariate_grid;
+      plot = ea.plot.mapElitesPopulation(
+        predicateValue = f.quantized(of = ea.f.nOfEvals(); q = 500);
+        condition = predicate.inD(
+          values = [0:2000:10000]
+        );
+        individualFunctions = [
+          ea.f.simQuality(of = ea.f.quality())
+        ]
+      );
+      condition = predicate.all(conditions = [
+        predicate.inS(
+          f = ea.f.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
+          values = ["1"]
+        )
+      ])
+    );
+    ea.l.expPlotSaver(
+      filePath = "../point-nav-fitness.png";
+      freeScales = true;
+      w = 600; h = 1000;
+      type = lines;
+      plot = ea.plot.qualityPlotMatrix(yFunction = ea.f.simQuality(of = ea.f.quality(of = ea.f.best())))
     )
   ]
 )
