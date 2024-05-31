@@ -1,0 +1,71 @@
+ea.experiment(
+  runs = (randomGenerator = (seed = [1]) * [m.defaultRG()]) *
+    [ea.run(
+      problem = ea.p.numEnvTo(
+        environment = ds.e.pointNavigation(arena = E_MAZE; robotMaxV = 0.05);
+        f = ds.e.n.avgD();
+        type = MINIMIZE
+      );
+      solver = ea.s.mapElites(
+        representation = ea.r.doubleString();
+        mapper = ea.m.dsToNpnds(npnds = ds.num.mlp(innerLayerRatio = 2.0));
+        nPop = 100;
+        nEval = 5000;
+        descriptors = [
+          ea.s.me.d.descriptor(
+            f = ds.e.n.x(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality())));
+            min = 0;
+            max = 1;
+            nOfBins = 10
+          );
+          ea.s.me.d.descriptor(
+            f = ds.e.n.y(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality())));
+            min = 0;
+            max = 1;
+            nOfBins = 10
+          )
+        ]
+      )
+    )];
+  listeners = [
+    ea.l.console(
+      functions = [
+        ea.f.size(of = ea.f.genotype(of = ea.f.best()); format = "%3d");
+        ea.f.simQuality(of = ea.f.quality(of = ea.f.best()); format = "%9.5f");
+        ea.f.meBin(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 0));
+        ea.f.meBin(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 1));
+        ea.f.meValue(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 0));
+        ea.f.meValue(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 1));
+        ea.f.id(of = ea.f.best());
+        f.nTh(of = ea.f.parentIds(of = ea.f.best()); n = 0)
+      ];
+      runKeys = [
+        ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
+        ea.misc.sEntry(key = "solver"; value = "{solver.name}");
+        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
+      ]
+    );
+    ea.l.allCsv(
+      filePath = "../point-nav-all.csv";
+      individualFunctions = [
+        ea.f.simQuality(of = ea.f.quality());
+        ea.f.meBin(of = f.nTh(of = ea.f.meCoordinates(); n = 0));
+        ea.f.meBin(of = f.nTh(of = ea.f.meCoordinates(); n = 1));
+        ea.f.meValue(of = f.nTh(of = ea.f.meCoordinates(); n = 0));
+        ea.f.meValue(of = f.nTh(of = ea.f.meCoordinates(); n = 1));
+        ea.f.id();
+        f.nTh(of = ea.f.parentIds(); n = 0)
+      ];
+      runKeys = [
+        ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
+        ea.misc.sEntry(key = "solver"; value = "{solver.name}");
+        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
+      ]
+    );
+    ea.l.runLastIterationImageSaver(
+      function = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best()));
+      image = ds.d.pointNavigation();
+      filePathTemplate = "../traj-point-nav-me-{randomGenerator.seed:%04d}.png"
+    )
+  ]
+)

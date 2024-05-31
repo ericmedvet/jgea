@@ -137,15 +137,18 @@ public class Listeners {
               @Param(value = "condition", dNPM = "predicate.always()")
                   Predicate<Run<?, G, S, Q>> predicate) {
     record PopIndividualPair<G, S, Q>(POCPopulationState<?, G, S, Q, ?> pop, Individual<G, S, Q> individual) {}
+    Function<? super PopIndividualPair<G, S, Q>, POCPopulationState<?, G, S, Q, ?>> pairPopF =
+        NamedFunction.from(PopIndividualPair::pop, "state");
+    Function<? super PopIndividualPair<G, S, Q>, Individual<G, S, Q>> pairIndividualF =
+        NamedFunction.from(PopIndividualPair::individual, "individual");
     return (experiment, executorService) -> {
-      List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> popFunctions =
-          Misc.concat(List.of(defaultStateFunctions, stateFunctions));
       List<Function<? super PopIndividualPair<G, S, Q>, ?>> pairFunctions = new ArrayList<>();
-      popFunctions.stream()
-          .map(f -> (Function<PopIndividualPair<G, S, Q>, Object>) pair -> f.apply(pair.pop))
+      Stream.concat(defaultStateFunctions.stream(), stateFunctions.stream())
+          .map(f -> (Function<? super PopIndividualPair<G, S, Q>, ?>)
+              FormattedNamedFunction.from(f).compose(pairPopF))
           .forEach(pairFunctions::add);
       individualFunctions.stream()
-          .map(f -> (Function<PopIndividualPair<G, S, Q>, Object>) pair -> f.apply(pair.individual))
+          .map(f -> FormattedNamedFunction.from(f).compose(pairIndividualF))
           .forEach(pairFunctions::add);
       ListenerFactory<PopIndividualPair<G, S, Q>, Run<?, G, S, Q>> innerListenerFactory = new CSVPrinter<>(
           pairFunctions,
