@@ -24,12 +24,6 @@ ea.experiment(
         ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
       ]
     );
-    ea.l.runPlotSaver(
-      w = 600; h = 400;
-      filePathTemplate = "../om-fitness-{solver.name}.png";
-      type = lines;
-      plot = ea.plot.s.quality()
-    );
     ea.l.expPlotSaver(
       w = 600; h = 400;
       filePath = "../om-fitness.png";
