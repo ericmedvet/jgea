@@ -1,14 +1,14 @@
 ea.experiment(
   runs =
-    (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
-    (solver = (nEval = [20000]) *
+    (randomGenerator = (seed = [1:1:5]) * [m.defaultRG()]) *
+    (solver = (nEval = [5000]) *
     (representation = [ea.r.bitString()]) * [
       ea.s.mapElites(descriptors = [
         ea.s.me.d.descriptor(f = f.avg(of = f.nkTh(of = ea.f.toDoubleString(of = ea.f.genotype()); n = 3; k = 0)));
         ea.s.me.d.descriptor(f = f.avg(of = f.nkTh(of = ea.f.toDoubleString(of = ea.f.genotype()); n = 3; k = 1)))
       ]);
       ea.s.ga()
-    ]) * (problem = (p = [100]) * [ea.p.s.oneMax()]) * [ea.run()];
+    ]) * (problem = (p = [10; 50]) * [ea.p.s.oneMax()]) * [ea.run()];
   listeners = [
     ea.l.console(
       functions = [
@@ -23,6 +23,24 @@ ea.experiment(
         ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
       ]
+    );
+    ea.l.runPlotSaver(
+      w = 600; h = 400;
+      filePathTemplate = "../om-fitness-{solver.name}.png";
+      type = lines;
+      plot = ea.plot.s.quality()
+    );
+    ea.l.expPlotSaver(
+      w = 600; h = 400;
+      filePath = "../om-fitness.png";
+      type = lines;
+      plot = ea.plot.m.quality()
+    );
+    ea.l.expPlotSaver(
+      w = 600; h = 400;
+      filePath = "../om-fitness-bp.png";
+      type = boxplot;
+      plot = ea.plot.m.qualityBoxplot()
     )
   ]
 )
