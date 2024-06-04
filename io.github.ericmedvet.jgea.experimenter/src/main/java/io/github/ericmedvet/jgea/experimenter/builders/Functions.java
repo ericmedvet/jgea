@@ -27,7 +27,9 @@ import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.State;
+import io.github.ericmedvet.jgea.core.solver.mapelites.Archive;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MEIndividual;
+import io.github.ericmedvet.jgea.core.solver.mapelites.MEPopulationState;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MapElites;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
@@ -39,6 +41,7 @@ import io.github.ericmedvet.jgea.problem.simulation.SimulationBasedProblem;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction;
+import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import java.util.Collection;
@@ -58,6 +61,14 @@ public class Functions {
     Function<POCPopulationState<I, G, S, Q, ?>, Collection<I>> f =
         state -> state.pocPopulation().all();
     return NamedFunction.from(f, "all").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, G> NamedFunction<X, Grid<G>> archiveToGrid(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Archive<G>> beforeF) {
+    Function<Archive<G>, Grid<G>> f =
+        a -> Grid.create(a.binUpperBounds().get(0), a.binUpperBounds().get(1), (x, y) -> a.get(List.of(x, y)));
+    return NamedFunction.from(f, "meGrid").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
@@ -125,6 +136,13 @@ public class Functions {
     Function<POCPopulationState<I, G, S, Q, ?>, Collection<I>> f =
         state -> state.pocPopulation().lasts();
     return NamedFunction.from(f, "lasts").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, G, S, Q> NamedFunction<X, Archive<MEIndividual<G, S, Q>>> meArchive(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, MEPopulationState<G, S, Q, ?>> beforeF) {
+    Function<MEPopulationState<G, S, Q, ?>, Archive<MEIndividual<G, S, Q>>> f = MEPopulationState::mapOfElites;
+    return NamedFunction.from(f, "meGrid").compose(beforeF);
   }
 
   @SuppressWarnings("unused")

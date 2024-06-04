@@ -87,11 +87,11 @@ public class MultiPlots {
       value = // spotless:off
           """
               yBoxplot(
-              xSubplot = ea.f.runString(name = none; s = "_");
-              ySubplot = ea.f.runString(name = problem; s = "{problem.name}");
-              box = ea.f.runString(name = solver; s = "{solver.name}");
-              predicateValue = ea.f.rate(of = ea.f.progress());
-              condition = predicate.gtEq(t = 1)
+                xSubplot = ea.f.runString(name = none; s = "_");
+                ySubplot = ea.f.runString(name = problem; s = "{problem.name}");
+                box = ea.f.runString(name = solver; s = "{solver.name}");
+                predicateValue = ea.f.rate(of = ea.f.progress());
+                condition = predicate.gtEq(t = 1)
               )
               """) // spotless:on
   @Alias(

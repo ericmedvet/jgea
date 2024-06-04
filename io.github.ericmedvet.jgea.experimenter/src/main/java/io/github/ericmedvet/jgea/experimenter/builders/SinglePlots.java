@@ -19,13 +19,16 @@
  */
 package io.github.ericmedvet.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jgea.experimenter.listener.plot.UnivariateGridSEPAF;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeriesSRPAF;
 import io.github.ericmedvet.jnb.core.Alias;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
+import io.github.ericmedvet.jnb.datastructure.Grid;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 @Discoverable(prefixTemplate = "ea.plot.single|s")
 public class SinglePlots {
@@ -33,11 +36,41 @@ public class SinglePlots {
 
   @SuppressWarnings("unused")
   @Alias(
+      name = "gridRun",
+      value = // spotless:off
+          """
+              grid(
+                title = ea.f.runString(name = title; s = "{solver.name} on {problem.name} (seed={randomGenerator.seed})")
+              )
+              """) // spotless:on
+  @Alias(
+      name = "me",
+      value = // spotless:off
+          """
+              gridRun(
+                values = [ea.f.quality()];
+                grid = ea.f.archiveToGrid(of = ea.f.meArchive())
+              )
+              """) // spotless:on
+  public static <E, R, X, G> UnivariateGridSEPAF<E, R, X, G> grid(
+      @Param("title") Function<? super R, String> titleFunction,
+      @Param("values") List<Function<? super G, ? extends Number>> valueFunctions,
+      @Param("grid") Function<? super E, Grid<G>> gridFunction,
+      @Param("predicateValue") Function<E, X> predicateValueFunction,
+      @Param(value = "condition", dNPM = "predicate.gtEq(t=1)") Predicate<X> condition,
+      @Param(value = "valueRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange valueRange,
+      @Param(value = "unique", dB = true) boolean unique) {
+    return new UnivariateGridSEPAF<>(
+        titleFunction, predicateValueFunction, condition, unique, gridFunction, valueFunctions, valueRange);
+  }
+
+  @SuppressWarnings("unused")
+  @Alias(
       name = "xysRun",
       value = // spotless:off
           """
               xys(
-                title = ea.<f.runString(name = title; s = "{solver.name} on {problem.name} (seed={randomGenerator.seed})");
+                title = ea.f.runString(name = title; s = "{solver.name} on {problem.name} (seed={randomGenerator.seed})");
                 x = ea.f.nOfEvals()
               )
               """) // spotless:on

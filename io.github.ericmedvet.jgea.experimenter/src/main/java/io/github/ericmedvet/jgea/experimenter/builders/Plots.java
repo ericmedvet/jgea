@@ -24,15 +24,12 @@ import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.cabea.GridPopulationState;
-import io.github.ericmedvet.jgea.core.solver.mapelites.MEPopulationState;
 import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.*;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
-import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
-import io.github.ericmedvet.jviz.core.plot.RangedGrid;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -174,55 +171,6 @@ public class Plots {
                 .apply(List.of(x, y))),
         xRange,
         yRange,
-        valueRange);
-  }
-
-  @SuppressWarnings("unused")
-  public static <G, S, Q, X>
-      UnivariateGridSEPAF<MEPopulationState<G, S, Q, ?>, Run<?, G, S, Q>, X, Individual<G, S, Q>>
-          mapElitesPopulation(
-              @Param(
-                      value = "titleRunKey",
-                      dNPM =
-                          "ea.misc.sEntry(key=title;value=\"Map of elites of {solver.name} on {problem.name} "
-                              + "(seed={randomGenerator.seed})\")")
-                  Map.Entry<String, String> titleRunKey,
-              @Param(
-                      value = "individualFunctions",
-                      dNPMs = {"ea.f.quality()"})
-                  List<Function<? super Individual<G, S, Q>, ? extends Number>> individualFunctions,
-              @Param(value = "predicateValue", dNPM = "ea.f.nOfIterations()")
-                  Function<MEPopulationState<G, S, Q, ?>, X> predicateValueFunction,
-              @Param(value = "condition", dNPM = "predicate.always()") Predicate<X> condition,
-              @Param(value = "valueRange", dNPM = "m.range(min=-Infinity;max=Infinity)")
-                  DoubleRange valueRange,
-              @Param(value = "unique", dB = true) boolean unique) {
-    return new UnivariateGridSEPAF<>(
-        Functions.runKey(titleRunKey, r -> r, "%s"),
-        predicateValueFunction,
-        condition,
-        unique,
-        s -> {
-          int w = s.descriptors().get(0).nOfBins();
-          int h = s.descriptors().get(1).nOfBins();
-          Grid<Individual<G, S, Q>> individualsGrid =
-              Grid.create(w, h, (x, y) -> s.mapOfElites().asMap().keySet().stream()
-                  .filter(k -> List.of(x, y).equals(k.subList(0, 2)))
-                  .map(k -> s.mapOfElites().get(k))
-                  .findFirst()
-                  .orElse(null));
-          return RangedGrid.from(
-              individualsGrid,
-              new DoubleRange(
-                  s.descriptors().get(0).min(),
-                  s.descriptors().get(0).max()),
-              new DoubleRange(
-                  s.descriptors().get(1).min(),
-                  s.descriptors().get(1).max()),
-              NamedFunction.name(s.descriptors().get(0).function()),
-              NamedFunction.name(s.descriptors().get(1).function()));
-        },
-        individualFunctions,
         valueRange);
   }
 }
