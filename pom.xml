@@ -176,6 +176,7 @@
         <version>2.40.0</version>
         <configuration>
           <java>
+            <toggleOffOn/>
             <importOrder/>
             <trimTrailingWhitespace/>
             <removeUnusedImports/>

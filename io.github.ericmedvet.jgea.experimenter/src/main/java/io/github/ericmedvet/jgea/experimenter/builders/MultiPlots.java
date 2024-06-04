@@ -36,23 +36,27 @@ public class MultiPlots {
   @SuppressWarnings("unused")
   @Alias(
       name = "xyExp",
-      value =
+      value = // spotless:off
           """
-xy(
-xSubplot = ea.f.runString(name = none; s = "_");
-ySubplot = ea.f.runString(name = problem; s = "{problem.name}");
-line = ea.f.runString(name = solver; s = "{solver.name}");
-x = f.quantized(of = ea.f.nOfEvals(); q = 500)
-)
-""")
-  @Alias(name = "quality", value = """
-xyExp(y = ea.f.quality(of = ea.f.best()))
-""")
+              xy(
+                xSubplot = ea.f.runString(name = none; s = "_");
+                ySubplot = ea.f.runString(name = problem; s = "{problem.name}");
+                line = ea.f.runString(name = solver; s = "{solver.name}");
+                x = f.quantized(of = ea.f.nOfEvals(); q = 500)
+              )
+              """) // spotless:on
+  @Alias(
+      name = "quality",
+      value = // spotless:off
+      """
+          xyExp(y = ea.f.quality(of = ea.f.best()))
+          """) // spotless:on
   @Alias(
       name = "uniqueness",
-      value = """
-xyExp(y = f.uniqueness(of = f.each(mapF = ea.f.genotype(); of = ea.f.all())))
-""")
+      value = // spotless:off
+          """
+              xyExp(y = f.uniqueness(of = f.each(mapF = ea.f.genotype(); of = ea.f.all())))
+              """) // spotless:on
   public static <E, R> AggregatedXYDataSeriesMRPAF<E, R, String> xy(
       @Param("xSubplot") Function<? super R, String> xSubplotFunction,
       @Param("ySubplot") Function<? super R, String> ySubplotFunction,
@@ -80,24 +84,28 @@ xyExp(y = f.uniqueness(of = f.each(mapF = ea.f.genotype(); of = ea.f.all())))
   @SuppressWarnings("unused")
   @Alias(
       name = "yBoxplotExp",
-      value =
+      value = // spotless:off
           """
-yBoxplot(
-xSubplot = ea.f.runString(name = none; s = "_");
-ySubplot = ea.f.runString(name = problem; s = "{problem.name}");
-box = ea.f.runString(name = solver; s = "{solver.name}");
-predicateValue = ea.f.rate(of = ea.f.progress());
-condition = predicate.gtEq(t = 1)
-)
-""")
-  @Alias(name = "qualityBoxplot", value = """
-yBoxplotExp(y = ea.f.quality(of = ea.f.best()))
-""")
+              yBoxplot(
+              xSubplot = ea.f.runString(name = none; s = "_");
+              ySubplot = ea.f.runString(name = problem; s = "{problem.name}");
+              box = ea.f.runString(name = solver; s = "{solver.name}");
+              predicateValue = ea.f.rate(of = ea.f.progress());
+              condition = predicate.gtEq(t = 1)
+              )
+              """) // spotless:on
+  @Alias(
+      name = "qualityBoxplot",
+      value = // spotless:off
+      """
+          yBoxplotExp(y = ea.f.quality(of = ea.f.best()))
+          """) // spotless:on
   @Alias(
       name = "uniquenessBoxplot",
-      value = """
-yBoxplotExp(y = f.uniqueness(of = f.each(mapF = ea.f.genotype(); of = ea.f.all())))
-""")
+      value = // spotless:off
+          """
+              yBoxplotExp(y = f.uniqueness(of = f.each(mapF = ea.f.genotype(); of = ea.f.all())))
+              """) // spotless:on
   public static <E, R, X> DistributionMRPAF<E, R, String, X> yBoxplot(
       @Param("xSubplot") Function<? super R, String> xSubplotFunction,
       @Param("ySubplot") Function<? super R, String> ySubplotFunction,

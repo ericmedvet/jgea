@@ -34,28 +34,31 @@ public class SinglePlots {
   @SuppressWarnings("unused")
   @Alias(
       name = "xysRun",
-      value =
+      value = // spotless:off
           """
-xys(
-title = ea.f.runString(name = title; s = "{solver.name} on {problem.name} (seed={randomGenerator.seed})");
-x = ea.f.nOfEvals()
-)
-""")
-  @Alias(name = "quality", value = """
-xysRun(ys = [ea.f.quality(of = ea.f.best())])
-""")
+              xys(
+                title = ea.<f.runString(name = title; s = "{solver.name} on {problem.name} (seed={randomGenerator.seed})");
+                x = ea.f.nOfEvals()
+              )
+              """) // spotless:on
+  @Alias(
+      name = "quality",
+      value = // spotless:off
+          """
+              xysRun(ys = [ea.f.quality(of = ea.f.best())])
+              """) // spotless:on
   @Alias(
       name = "uniqueness",
-      value =
+      value = // spotless:off
           """
-xysRun(
-ys = [
-f.uniqueness(of = f.each(mapF = ea.f.genotype(); of = ea.f.all()));
-f.uniqueness(of = f.each(mapF = ea.f.solution(); of = ea.f.all()));
-f.uniqueness(of = f.each(mapF = ea.f.quality(); of = ea.f.all()))
-]
-)
-""")
+              xysRun(
+                ys = [
+                  f.uniqueness(of = f.each(mapF = ea.f.genotype(); of = ea.f.all()));
+                  f.uniqueness(of = f.each(mapF = ea.f.solution(); of = ea.f.all()));
+                  f.uniqueness(of = f.each(mapF = ea.f.quality(); of = ea.f.all()))
+                ]
+              )
+              """) // spotless:on
   public static <E, R> XYDataSeriesSRPAF<E, R> xys(
       @Param("title") Function<? super R, String> titleFunction,
       @Param("x") Function<? super E, ? extends Number> xFunction,
