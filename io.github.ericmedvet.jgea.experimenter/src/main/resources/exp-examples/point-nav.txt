@@ -69,11 +69,7 @@ ea.experiment(
       w = 1500; h = 350;
       filePathTemplate = "../archives-point-nav-{solver.name}-{randomGenerator.seed:%04d}.png";
       type = univariate_grid;
-      plot = ea.plot.single.me(
-        predicateValue = f.quantized(of = ea.f.nOfEvals(); q = 500);
-        condition = predicate.inD(values = [0:2000:10000]);
-        values = [ea.f.simQuality(of = ea.f.quality())]
-      );
+      plot = ea.plot.single.me(values = [ea.f.simQuality(of = ea.f.quality())]);
       condition = predicate.all(conditions = [
         predicate.inS(f = ea.f.runString(s = "{randomGenerator.seed}"); values = ["1"])
       ])

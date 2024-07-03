@@ -40,7 +40,9 @@ public class SinglePlots {
       value = // spotless:off
           """
               grid(
-                title = ea.f.runString(name = title; s = "{solver.name} on {problem.name} (seed={randomGenerator.seed})")
+                title = ea.f.runString(name = title; s = "{solver.name} on {problem.name} (seed={randomGenerator.seed})");
+                predicateValue = f.quantized(of = ea.f.rate(of = ea.f.progress()); q = 0.05);
+                condition = predicate.inD(values = [0; 0.1; 0.25; 0.50; 1])
               )
               """) // spotless:on
   @Alias(

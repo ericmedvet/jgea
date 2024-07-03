@@ -1561,8 +1561,8 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.experimenter.listener.plot
 | `title` | npm | `ea.f.runString(s = "{solver.name} on {problem.name} (seed={randomGenerator.seed})"; name = title)` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;? super R, <abbr title="java.lang.String">String</abbr>&gt;</code> |
 | `values` | npm[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.util.function.Function">Function</abbr>&lt;? super G, ? extends <abbr title="java.lang.Number">Number</abbr>&gt;&gt;</code> |
 | `grid` | npm |  | <code><abbr title="java.util.function.Function">Function</abbr>&lt;? super E, <abbr title="io.github.ericmedvet.jnb.datastructure.Grid">Grid</abbr>&lt;G&gt;&gt;</code> |
-| `predicateValue` | npm |  | <code><abbr title="java.util.function.Function">Function</abbr>&lt;E, X&gt;</code> |
-| `condition` | npm | `predicate.gtEq(t = 1)` | <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code> |
+| `predicateValue` | npm | `f.quantized(q = 0.05; of = ea.f.rate(of = ea.f.progress()))` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;E, X&gt;</code> |
+| `condition` | npm | `predicate.inD(values = [0.0; 0.1; 0.25; 0.5; 1.0])` | <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code> |
 | `valueRange` | npm | `m.range(min = -Infinity; max = Infinity)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `unique` | b | `true` | <code>boolean</code> |
 
@@ -1577,8 +1577,8 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.experimenter.listener.plot
 | `title` | npm | `ea.f.runString(s = "{solver.name} on {problem.name} (seed={randomGenerator.seed})"; name = title)` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;? super R, <abbr title="java.lang.String">String</abbr>&gt;</code> |
 | `values` | npm[] | `[ea.f.quality()]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.util.function.Function">Function</abbr>&lt;? super G, ? extends <abbr title="java.lang.Number">Number</abbr>&gt;&gt;</code> |
 | `grid` | npm | `ea.f.archiveToGrid(of = ea.f.meArchive())` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;? super E, <abbr title="io.github.ericmedvet.jnb.datastructure.Grid">Grid</abbr>&lt;G&gt;&gt;</code> |
-| `predicateValue` | npm |  | <code><abbr title="java.util.function.Function">Function</abbr>&lt;E, X&gt;</code> |
-| `condition` | npm | `predicate.gtEq(t = 1)` | <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code> |
+| `predicateValue` | npm | `f.quantized(q = 0.05; of = ea.f.rate(of = ea.f.progress()))` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;E, X&gt;</code> |
+| `condition` | npm | `predicate.inD(values = [0.0; 0.1; 0.25; 0.5; 1.0])` | <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code> |
 | `valueRange` | npm | `m.range(min = -Infinity; max = Infinity)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `unique` | b | `true` | <code>boolean</code> |
 
