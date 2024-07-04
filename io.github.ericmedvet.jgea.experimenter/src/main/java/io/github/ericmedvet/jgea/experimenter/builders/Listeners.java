@@ -45,6 +45,8 @@ import io.github.ericmedvet.jviz.core.plot.image.Configuration;
 import io.github.ericmedvet.jviz.core.plot.image.ImagePlotter;
 import io.github.ericmedvet.jviz.core.plot.video.VideoPlotter;
 import io.github.ericmedvet.jviz.core.util.VideoUtils;
+
+import javax.imageio.ImageIO;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,7 +58,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import javax.imageio.ImageIO;
 
 @Discoverable(prefixTemplate = "ea.listener|l")
 public class Listeners {
@@ -282,6 +283,7 @@ public class Listeners {
               @Param(value = "functions")
                   List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
               @Param("runKeys") List<Map.Entry<String, String>> runKeys,
+              @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
               @Param(value = "deferred") boolean deferred,
               @Param(value = "onlyLast") boolean onlyLast,
               @Param(value = "condition", dNPM = "predicate.always()")
@@ -291,7 +293,7 @@ public class Listeners {
             Stream.of(defaultStateFunctions, stateFunctions)
                 .flatMap(List::stream)
                 .toList(),
-            buildRunNamedFunctions(runKeys, experiment)),
+            runFunctions),
         predicate,
         deferred ? executorService : null,
         onlyLast);

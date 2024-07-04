@@ -53,6 +53,11 @@ ea.experiment(
         ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
         ea.misc.sEntry(key = "solver"; value = "{solver.name}");
         ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
+      ];
+      runFunctions = [
+        ea.f.runString(s = "{problem.name}");
+        ea.f.runString(s = "{solver.name}");
+        ea.f.runString(s = "{randomGenerator.seed}")
       ]
     );
     ea.l.runLastIterationImageSaver(
