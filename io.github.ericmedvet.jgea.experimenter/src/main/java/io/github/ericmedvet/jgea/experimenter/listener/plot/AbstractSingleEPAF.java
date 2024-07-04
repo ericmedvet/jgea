@@ -22,6 +22,7 @@ package io.github.ericmedvet.jgea.experimenter.listener.plot;
 import io.github.ericmedvet.jgea.core.listener.Accumulator;
 import io.github.ericmedvet.jnb.datastructure.FormattedFunction;
 import io.github.ericmedvet.jnb.datastructure.HashMapTable;
+import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jnb.datastructure.Table;
 import io.github.ericmedvet.jviz.core.plot.XYPlot;
 import java.util.HashSet;
@@ -77,7 +78,11 @@ public abstract class AbstractSingleEPAF<E, P extends XYPlot<D>, R, D, X>
           synchronized (table) {
             newEntries.forEach(me -> table.set(
                 me.getKey(),
-                FormattedFunction.format(predicateValueFunction).formatted(predicateValue),
+                "%s = %s"
+                    .formatted(
+                        NamedFunction.name(predicateValueFunction),
+                        FormattedFunction.format(predicateValueFunction)
+                            .formatted(predicateValue)),
                 me.getValue()));
           }
         }
