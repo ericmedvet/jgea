@@ -31,12 +31,7 @@ ea.experiment(
         ea.f.hist(of = f.each(of = ea.f.all(); mapF = ea.f.quality()));
         f.percentile(of = f.each(of = ea.f.all(); mapF = ea.f.quality()); p = 75; format = "%6.4f");
         ea.f.overallTargetDistance()
-      ];
-      runKeys = [
-        ea.misc.sEntry(key = "solver"; value = "{solver.name}");
-        ea.misc.sEntry(key = "problem"; value = "{problem.name}");
-        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
-      ];
+      ]
       onlyLast = true
     );
     ea.l.expPlotSaver(

@@ -38,11 +38,6 @@ ea.experiment(
           maxReference = [5; 5];
           format = "%5.2f"
         )
-      ];
-      runKeys = [
-        ea.misc.sEntry(key = "solver"; value = "{solver.name}");
-        ea.misc.sEntry(key = "problem"; value = "{problem.name}");
-        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
       ]
     );
     ea.l.expPlotSaver(

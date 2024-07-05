@@ -42,11 +42,6 @@ ea.experiment(
           format = "%5.2f"
         );
         ea.f.solution(of = ea.f.best(); format = "%40.40s")
-      ];
-      runKeys = [
-        ea.misc.sEntry(key = "solver"; value = "{solver.name}");
-        ea.misc.sEntry(key = "problem"; value = "{problem.name}");
-        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
       ]
     );
     ea.l.expPlotSaver(

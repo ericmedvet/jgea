@@ -46,7 +46,6 @@ import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -268,11 +267,12 @@ public class Functions {
 
   @SuppressWarnings("unused")
   public static <X> FormattedNamedFunction<X, String> runKey(
-      @Param("runKey") Map.Entry<String, String> runKey,
+      @Param(value = "name", iS = "{key}") String name,
+      @Param("key") String key,
       @Param(value = "of", dNPM = "f.identity()") Function<X, Run<?, ?, ?, ?>> beforeF,
       @Param(value = "format", dS = "%s") String format) {
-    Function<Run<?, ?, ?, ?>, String> f = run -> Utils.interpolate(runKey.getValue(), run);
-    return FormattedNamedFunction.from(f, format, runKey.getKey()).compose(beforeF);
+    Function<Run<?, ?, ?, ?>, String> f = run -> Utils.interpolate("{%s}".formatted(key), run);
+    return FormattedNamedFunction.from(f, format, name).compose(beforeF);
   }
 
   @SuppressWarnings("unused")

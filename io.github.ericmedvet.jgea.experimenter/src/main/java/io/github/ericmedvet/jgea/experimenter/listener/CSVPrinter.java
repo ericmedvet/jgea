@@ -50,8 +50,8 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
   private int lineCounter;
 
   public CSVPrinter(
-      List<Function<? super E, ?>> eFunctions,
-      List<Function<? super K, ?>> kFunctions,
+      List<? extends Function<? super E, ?>> eFunctions,
+      List<? extends Function<? super K, ?>> kFunctions,
       File file,
       String errorString,
       String intFormat,
@@ -78,7 +78,7 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
                 try {
                   Object v = f.apply(e);
                   if (v instanceof Double d) {
-                    return doubleFormat.formatted(v);
+                    return doubleFormat.formatted(d);
                   }
                   if (v instanceof Float d) {
                     return doubleFormat.formatted(d);

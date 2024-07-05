@@ -36,8 +36,8 @@ import java.util.stream.Stream;
 
 public class SinkListenerFactory<G, S, Q>
     implements ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>> {
-  private final List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions;
-  private final List<Function<? super Run<?, G, S, Q>, ?>> runFunctions;
+  private final List<? extends Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions;
+  private final List<? extends Function<? super Run<?, G, S, Q>, ?>> runFunctions;
   private final Experiment experiment;
   private final Sink<MachineKey, MachineInfo> machineSink;
   private final Sink<ProcessKey, ProcessInfo> processSink;
@@ -52,8 +52,8 @@ public class SinkListenerFactory<G, S, Q>
   private final LogCapturer logCapturer;
 
   public SinkListenerFactory(
-      List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
-      List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
+      List<? extends Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
+      List<? extends Function<? super Run<?, G, S, Q>, ?>> runFunctions,
       Experiment experiment,
       Sink<MachineKey, MachineInfo> machineSink,
       Sink<ProcessKey, ProcessInfo> processSink,

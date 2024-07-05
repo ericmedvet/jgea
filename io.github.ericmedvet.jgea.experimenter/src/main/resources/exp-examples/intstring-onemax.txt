@@ -13,11 +13,6 @@ ea.experiment(
         ea.f.hist(of = f.each(of = ea.f.all(); mapF = ea.f.quality()));
         f.percentile(of = f.each(of = ea.f.all(); mapF = ea.f.quality()); p = 75; format = "%6.4f");
         ea.f.solution(of = ea.f.best(); format = "%60.60s")
-      ];
-      runKeys = [
-        ea.misc.sEntry(key = "problem.p"; value = "{problem.p}");
-        ea.misc.sEntry(key = "solver"; value = "{solver.name}");
-        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
       ]
     )
   ]

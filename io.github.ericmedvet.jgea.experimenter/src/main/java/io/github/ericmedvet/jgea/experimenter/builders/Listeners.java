@@ -34,6 +34,7 @@ import io.github.ericmedvet.jgea.experimenter.listener.net.NetMultiSink;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.PlotAccumulatorFactory;
 import io.github.ericmedvet.jgea.experimenter.listener.telegram.TelegramUpdater;
 import io.github.ericmedvet.jnb.core.*;
+import io.github.ericmedvet.jnb.datastructure.FormattedFunction;
 import io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jviz.core.drawer.ImageBuilder;
@@ -45,11 +46,9 @@ import io.github.ericmedvet.jviz.core.plot.image.Configuration;
 import io.github.ericmedvet.jviz.core.plot.image.ImagePlotter;
 import io.github.ericmedvet.jviz.core.plot.video.VideoPlotter;
 import io.github.ericmedvet.jviz.core.util.VideoUtils;
-
-import javax.imageio.ImageIO;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -58,6 +57,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+import javax.imageio.ImageIO;
 
 @Discoverable(prefixTemplate = "ea.listener|l")
 public class Listeners {
@@ -115,10 +115,7 @@ public class Listeners {
 
   @SuppressWarnings("unused")
   public static <G, S, Q>
-      BiFunction<
-              Experiment,
-              ExecutorService,
-              ListenerFactory<? super POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
           allCsv(
               @Param("filePath") String filePath,
               @Param(value = "errorString", dS = "NA") String errorString,
@@ -132,7 +129,15 @@ public class Listeners {
                   List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
               @Param("individualFunctions")
                   List<Function<? super Individual<G, S, Q>, ?>> individualFunctions,
-              @Param("runKeys") List<Map.Entry<String, String>> runKeys,
+              @Param(
+                      value = "defaultRunFunctions",
+                      dNPMs = {
+                        "ea.f.runKey(key = \"problem.name\")",
+                        "ea.f.runKey(key = \"solver.name\")",
+                        "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
+                      })
+                  List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
+              @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
               @Param(value = "deferred") boolean deferred,
               @Param(value = "onlyLast") boolean onlyLast,
               @Param(value = "condition", dNPM = "predicate.always()")
@@ -153,12 +158,14 @@ public class Listeners {
           .forEach(pairFunctions::add);
       ListenerFactory<PopIndividualPair<G, S, Q>, Run<?, G, S, Q>> innerListenerFactory = new CSVPrinter<>(
           pairFunctions,
-          buildRunNamedFunctions(runKeys, experiment),
+          Stream.concat(defaultRunFunctions.stream(), runFunctions.stream())
+              .map(f -> reformatToFit(f, experiment.runs()))
+              .toList(),
           new File(filePath),
           errorString,
           intFormat,
           doubleFormat);
-      ListenerFactory<? super POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>> allListenerFactory =
+      ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>> allListenerFactory =
           new ListenerFactory<>() {
             @Override
             public Listener<POCPopulationState<?, G, S, Q, ?>> build(Run<?, G, S, Q> run) {
@@ -196,10 +203,7 @@ public class Listeners {
 
   @SuppressWarnings("unused")
   public static <G, S, Q>
-      BiFunction<
-              Experiment,
-              ExecutorService,
-              ListenerFactory<? super POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
           bestCsv(
               @Param("filePath") String filePath,
               @Param(value = "errorString", dS = "NA") String errorString,
@@ -222,7 +226,15 @@ public class Listeners {
                   List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> defaultStateFunctions,
               @Param(value = "functions")
                   List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
-              @Param("runKeys") List<Map.Entry<String, String>> runKeys,
+              @Param(
+                      value = "defaultRunFunctions",
+                      dNPMs = {
+                        "ea.f.runKey(key = \"problem.name\")",
+                        "ea.f.runKey(key = \"solver.name\")",
+                        "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
+                      })
+                  List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
+              @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
               @Param(value = "deferred") boolean deferred,
               @Param(value = "onlyLast") boolean onlyLast,
               @Param(value = "condition", dNPM = "predicate.always()")
@@ -232,7 +244,9 @@ public class Listeners {
             Stream.of(defaultStateFunctions, stateFunctions)
                 .flatMap(List::stream)
                 .toList(),
-            buildRunNamedFunctions(runKeys, experiment),
+            Stream.concat(defaultRunFunctions.stream(), runFunctions.stream())
+                .map(f -> reformatToFit(f, experiment.runs()))
+                .toList(),
             new File(filePath),
             errorString,
             intFormat,
@@ -240,25 +254,6 @@ public class Listeners {
         predicate,
         deferred ? executorService : null,
         onlyLast);
-  }
-
-  private static <G, S, Q> List<Function<? super Run<?, G, S, Q>, ?>> buildRunNamedFunctions(
-      List<Map.Entry<String, String>> runKeys, Experiment experiment) {
-    List<Function<? super Run<?, G, S, Q>, ?>> functions = new ArrayList<>();
-    runKeys.stream()
-        .map(k -> FormattedNamedFunction.from(
-            (Run<?, G, S, Q> run) -> Utils.interpolate(k.getValue(), run),
-            "%"
-                .concat(""
-                    + experiment.runs().stream()
-                        .map(r -> Utils.interpolate(k.getValue(), r))
-                        .mapToInt(String::length)
-                        .max()
-                        .orElse(10))
-                .concat("s"),
-            k.getKey()))
-        .forEach(functions::add);
-    return Collections.unmodifiableList(functions);
   }
 
   @SuppressWarnings("unused")
@@ -282,7 +277,14 @@ public class Listeners {
                   List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> defaultStateFunctions,
               @Param(value = "functions")
                   List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
-              @Param("runKeys") List<Map.Entry<String, String>> runKeys,
+              @Param(
+                      value = "defaultRunFunctions",
+                      dNPMs = {
+                        "ea.f.runKey(key = \"problem.name\")",
+                        "ea.f.runKey(key = \"solver.name\")",
+                        "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
+                      })
+                  List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
               @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
               @Param(value = "deferred") boolean deferred,
               @Param(value = "onlyLast") boolean onlyLast,
@@ -293,7 +295,9 @@ public class Listeners {
             Stream.of(defaultStateFunctions, stateFunctions)
                 .flatMap(List::stream)
                 .toList(),
-            runFunctions),
+            Stream.concat(defaultRunFunctions.stream(), runFunctions.stream())
+                .map(f -> reformatToFit(f, experiment.runs()))
+                .toList()),
         predicate,
         deferred ? executorService : null,
         onlyLast);
@@ -373,7 +377,15 @@ public class Listeners {
                       defaultStateFunctions,
               @Param(value = "functions")
                   List<NamedFunction<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
-              @Param("runKeys") List<Map.Entry<String, String>> runKeys,
+              @Param(
+                      value = "defaultRunFunctions",
+                      dNPMs = {
+                        "ea.f.runKey(key = \"problem.name\")",
+                        "ea.f.runKey(key = \"solver.name\")",
+                        "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
+                      })
+                  List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
+              @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
               @Param(value = "serverAddress", dS = "127.0.0.1") String serverAddress,
               @Param(value = "serverPort", dI = 10979) int serverPort,
               @Param(value = "serverKeyFilePath") String serverKeyFilePath,
@@ -386,7 +398,9 @@ public class Listeners {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         new SinkListenerFactory<>(
             Misc.concat(List.of(defaultStateFunctions, stateFunctions)),
-            buildRunNamedFunctions(runKeys, experiment),
+            Stream.concat(defaultRunFunctions.stream(), runFunctions.stream())
+                .map(f -> reformatToFit(f, experiment.runs()))
+                .toList(),
             experiment,
             netMultiSink.getMachineSink(),
             netMultiSink.getProcessSink(),
@@ -445,6 +459,12 @@ public class Listeners {
         predicate,
         deferred ? executorService : null,
         true);
+  }
+
+  private static <T, R> Function<T, R> reformatToFit(Function<T, R> f, Collection<?> ts) {
+    //noinspection unchecked
+    return FormattedFunction.from(f)
+        .reformattedToFit(ts.stream().map(t -> (T) t).toList());
   }
 
   @SuppressWarnings("unused")
@@ -633,8 +653,6 @@ public class Listeners {
                               ?,
                               Run<?, G, S, Q>>>
                       accumulators,
-              @Param("runKeys")
-                  List<Map.Entry<String, String>> runKeys, // TODO: these are currently ignored
               @Param(value = "deferred", dB = true) boolean deferred,
               @Param(value = "onlyLast") boolean onlyLast,
               @Param(value = "condition", dNPM = "predicate.always()")
@@ -680,7 +698,15 @@ public class Listeners {
                       defaultStateFunctions,
               @Param(value = "functions")
                   List<NamedFunction<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
-              @Param("runKeys") List<Map.Entry<String, String>> runKeys,
+              @Param(
+                      value = "defaultRunFunctions",
+                      dNPMs = {
+                        "ea.f.runKey(key = \"problem.name\")",
+                        "ea.f.runKey(key = \"solver.name\")",
+                        "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
+                      })
+                  List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
+              @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
               @Param(value = "condition", dNPM = "predicate.always()")
                   Predicate<Run<?, G, S, Q>> predicate) {
     DirectSinkSource<MachineKey, MachineInfo> machineSinkSource = new DirectSinkSource<>();
@@ -701,7 +727,9 @@ public class Listeners {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         new SinkListenerFactory<>(
             Misc.concat(List.of(defaultStateFunctions, stateFunctions)),
-            buildRunNamedFunctions(runKeys, experiment),
+            Stream.concat(defaultRunFunctions.stream(), runFunctions.stream())
+                .map(f -> reformatToFit(f, experiment.runs()))
+                .toList(),
             experiment,
             machineSinkSource,
             processSinkSource,

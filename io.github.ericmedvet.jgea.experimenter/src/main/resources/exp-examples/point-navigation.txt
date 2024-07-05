@@ -33,11 +33,6 @@ ea.experiment(
           ea.f.id(of = ea.f.best());
           f.nTh(of = ea.f.parentIds(of = ea.f.best()); n = 0);
           f.nTh(of = ea.f.parentIds(of = ea.f.best()); n = 1)
-        ];
-        runKeys = [
-          ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
-          ea.misc.sEntry(key = "solver"; value = "{solver.name}");
-          ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
         ]
       );
       ea.l.bestCsv(
@@ -53,11 +48,6 @@ ea.experiment(
           f.nTh(of = ea.f.parentIds(of = ea.f.best()); n = 0);
           f.nTh(of = ea.f.parentIds(of = ea.f.best()); n = 1);
           f.toBase64(of = ea.function.genotype(of = ea.f.best()))
-        ];
-        runKeys = [
-          ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
-          ea.misc.sEntry(key = "solver"; value = "{solver.name}");
-          ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
         ]
       )
   ]

@@ -30,11 +30,6 @@ ea.experiment(
         f.percentile(of = f.each(of = ea.f.all(); mapF = ea.f.quality()); p = 75; format = "%6.4f");
         ea.f.overallTargetDistance();
         ea.f.solution(of = ea.f.best(); format = "%40.40s")
-      ];
-      runKeys = [
-        ea.misc.sEntry(key = "solver"; value = "{solver.name}");
-        ea.misc.sEntry(key = "problem"; value = "{problem.name}");
-        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
       ]
     );
     ea.l.expPlotSaver(

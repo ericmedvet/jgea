@@ -27,11 +27,10 @@ ea.experiment(
         f.gridW(of = ea.f.solution(of = ea.f.best()));
         f.gridH(of = ea.f.solution(of = ea.f.best()))
       ];
-      runKeys = [
-        ea.misc.sEntry(key = "target"; value = "{problem.target}");
-        ea.misc.sEntry(key = "grammar"; value = "{solver.mapper.grammar.name}");
-        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
-      ];
+      runFunctions = [
+        ea.f.runKey(key = "problem.target");
+        ea.f.runKey(key = "solver.mapper.grammar.name");
+      ]
       onlyLast = true
     );
     ea.l.runAllIterationsVideoSaver(

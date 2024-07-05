@@ -48,16 +48,6 @@ ea.experiment(
         ea.f.meValue(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 1));
         ea.f.id(of = ea.f.best());
         f.nTh(of = ea.f.parentIds(of = ea.f.best()); n = 0)
-      ];
-      runKeys = [
-        ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
-        ea.misc.sEntry(key = "solver"; value = "{solver.name}");
-        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
-      ];
-      runFunctions = [
-        ea.f.runString(s = "{problem.name}");
-        ea.f.runString(s = "{solver.name}");
-        ea.f.runString(s = "{randomGenerator.seed}")
       ]
     );
     ea.l.runLastIterationImageSaver(

@@ -30,11 +30,6 @@ ea.experiment(
         ea.f.validationQuality(format = "%6.2f");
         ea.f.solution(of = ea.f.best(); format = "%60.60s")
       ];
-      runKeys = [
-        ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
-        ea.misc.sEntry(key = "solver"; value = "{solver.name}");
-        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
-      ];
       onlyLast = true
     );
     ea.l.expPlotSaver(

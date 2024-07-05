@@ -26,12 +26,7 @@ ea.experiment(
         ea.f.parentIds(of = ea.f.best(); format = "%20.20s")
       ];
       onlyLast = true;
-      runKeys = [
-        ea.misc.sEntry(key = "problem.name"; value = "{problem.name}");
-        ea.misc.sEntry(key = "problem.p"; value = "{problem.p}");
-        ea.misc.sEntry(key = "solver"; value = "{solver.name}");
-        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
-      ]
+      runFunctions = [ea.f.runKey(key = "problem.p")]
     );
     ea.l.expPlotSaver(
       filePath = "../num-bench-fitness.png";
