@@ -94,7 +94,7 @@ public class Solvers {
       @Param(value = "nEval", dI = 1000) int nEval) {
     return exampleS -> new CMAEvolutionaryStrategy<>(
         mapper.mapperFor(exampleS),
-        Representations.doubleString(initialMinV, initialMaxV, 0, 0)
+        Representations.doubleString(initialMinV, initialMaxV, 0)
             .apply(mapper.exampleFor(exampleS))
             .factory(),
         StopConditions.nOfFitnessEvaluations(nEval));
@@ -113,7 +113,7 @@ public class Solvers {
       @Param(value = "remap") boolean remap) {
     return exampleS -> new DifferentialEvolution<>(
         mapper.mapperFor(exampleS),
-        Representations.doubleString(initialMinV, initialMaxV, 0, 0)
+        Representations.doubleString(initialMinV, initialMaxV, 0)
             .apply(mapper.exampleFor(exampleS))
             .factory(),
         populationSize,
@@ -280,7 +280,7 @@ public class Solvers {
       @Param(value = "nEval", dI = 1000) int nEval) {
     return exampleS -> new OpenAIEvolutionaryStrategy<>(
         mapper.mapperFor(exampleS),
-        Representations.doubleString(initialMinV, initialMaxV, 0, 0)
+        Representations.doubleString(initialMinV, initialMaxV, 0)
             .apply(mapper.exampleFor(exampleS))
             .factory(),
         StopConditions.nOfFitnessEvaluations(nEval),
@@ -305,7 +305,7 @@ public class Solvers {
       @Param(value = "phiGlobal", dD = 1.5d) double phiGlobal) {
     return exampleS -> new ParticleSwarmOptimization<>(
         mapper.mapperFor(exampleS),
-        Representations.doubleString(initialMinV, initialMaxV, 0, 0)
+        Representations.doubleString(initialMinV, initialMaxV, 0)
             .apply(mapper.exampleFor(exampleS))
             .factory(),
         StopConditions.nOfFitnessEvaluations(nEval),
@@ -358,7 +358,7 @@ public class Solvers {
       @Param(value = "remap") boolean remap) {
     return exampleS -> new SimpleEvolutionaryStrategy<>(
         mapper.mapperFor(exampleS),
-        Representations.doubleString(initialMinV, initialMaxV, 0, 0)
+        Representations.doubleString(initialMinV, initialMaxV, 0)
             .apply(mapper.exampleFor(exampleS))
             .factory(),
         nPop,
