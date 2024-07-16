@@ -39,13 +39,10 @@ import io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jviz.core.drawer.ImageBuilder;
 import io.github.ericmedvet.jviz.core.drawer.VideoBuilder;
-import io.github.ericmedvet.jviz.core.plot.CsvPlotter;
-import io.github.ericmedvet.jviz.core.plot.Plotter;
 import io.github.ericmedvet.jviz.core.plot.XYPlot;
 import io.github.ericmedvet.jviz.core.plot.image.Configuration;
-import io.github.ericmedvet.jviz.core.plot.image.ImagePlotter;
-import io.github.ericmedvet.jviz.core.plot.video.VideoPlotter;
 import io.github.ericmedvet.jviz.core.util.VideoUtils;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -301,6 +298,40 @@ public class Listeners {
         predicate,
         deferred ? executorService : null,
         onlyLast);
+  }
+
+  public static <E, O, R> BiFunction<Experiment, ExecutorService, ListenerFactory<E, R>> expSaver(
+      @Param("of") AccumulatorFactory<E, O, R> accumulatorFactory,
+      @Param("with") List<Function<? super O, ?>> functions,
+      @Param("filePath") String filePath,
+      @Param(value = "condition", dNPM = "predicate.always()") Predicate<R> predicate) {
+    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
+        accumulatorFactory.thenOnShutdown(
+            os -> functions.forEach(f -> save(f.apply(os.get(os.size() - 1)), filePath))),
+        predicate,
+        executorService,
+        false);
+  }
+
+  private static void save(Object o, String filePath) {
+    File file = null;
+    try {
+      if (o instanceof BufferedImage image) {
+        file = Misc.checkExistenceAndChangeName(new File(filePath + ".png"));
+        ImageIO.write(image, "png", file);
+      } else if (o instanceof String s) {
+        file = Misc.checkExistenceAndChangeName(new File(filePath + ".txt"));
+        // TODO save string
+      } else if (o instanceof VideoBuilder.Video video) {
+        file = Misc.checkExistenceAndChangeName(new File(filePath + ".mp4"));
+        // TODO save video
+      } else {
+        throw new IllegalArgumentException(
+            "Cannot save data of type %s".formatted(o.getClass().getSimpleName()));
+      }
+    } catch (IOException e) {
+      throw new RuntimeException("Cannot save '%s'".formatted(file == null ? "" : file.getPath()), e);
+    }
   }
 
   @SuppressWarnings("unused")
