@@ -44,19 +44,28 @@ import io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
+import io.github.ericmedvet.jviz.core.drawer.ImageBuilder;
+import io.github.ericmedvet.jviz.core.plot.*;
+import io.github.ericmedvet.jviz.core.plot.image.*;
+
+import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 @Discoverable(prefixTemplate = "ea.function|f")
 public class Functions {
 
-  private Functions() {}
+  private Functions() {
+  }
 
   @SuppressWarnings("unused")
   public static <X, I extends Individual<G, S, Q>, G, S, Q> NamedFunction<X, Collection<I>> all(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<I, G, S, Q, ?>> beforeF) {
+      @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<I, G, S, Q, ?>> beforeF
+  ) {
     Function<POCPopulationState<I, G, S, Q, ?>, Collection<I>> f =
         state -> state.pocPopulation().all();
     return NamedFunction.from(f, "all").compose(beforeF);
@@ -64,7 +73,8 @@ public class Functions {
 
   @SuppressWarnings("unused")
   public static <X, G> NamedFunction<X, Grid<G>> archiveToGrid(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, Archive<G>> beforeF) {
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Archive<G>> beforeF
+  ) {
     Function<Archive<G>, Grid<G>> f =
         a -> Grid.create(a.binUpperBounds().get(0), a.binUpperBounds().get(1), (x, y) -> a.get(List.of(x, y)));
     return NamedFunction.from(f, "meGrid").compose(beforeF);
@@ -72,7 +82,8 @@ public class Functions {
 
   @SuppressWarnings("unused")
   public static <X, I extends Individual<G, S, Q>, G, S, Q> NamedFunction<X, I> best(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<I, G, S, Q, ?>> beforeF) {
+      @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<I, G, S, Q, ?>> beforeF
+  ) {
     Function<POCPopulationState<I, G, S, Q, ?>, I> f =
         state -> state.pocPopulation().firsts().iterator().next();
     return NamedFunction.from(f, "best").compose(beforeF);
@@ -81,14 +92,16 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X> FormattedNamedFunction<X, Double> elapsedSecs(
       @Param(value = "of", dNPM = "f.identity()") Function<X, State<?, ?>> beforeF,
-      @Param(value = "format", dS = "%6.1f") String format) {
+      @Param(value = "format", dS = "%6.1f") String format
+  ) {
     Function<State<?, ?>, Double> f = s -> s.elapsedMillis() / 1000d;
     return FormattedNamedFunction.from(f, format, "elapsed.secs").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
   public static <X, I extends Individual<G, S, Q>, G, S, Q> NamedFunction<X, Collection<I>> firsts(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<I, G, S, Q, ?>> beforeF) {
+      @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<I, G, S, Q, ?>> beforeF
+  ) {
     Function<POCPopulationState<I, G, S, Q, ?>, Collection<I>> f =
         state -> state.pocPopulation().firsts();
     return NamedFunction.from(f, "firsts").compose(beforeF);
@@ -97,7 +110,8 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X, G> FormattedNamedFunction<X, G> genotype(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Individual<G, ?, ?>> beforeF,
-      @Param(value = "format", dS = "%s") String format) {
+      @Param(value = "format", dS = "%s") String format
+  ) {
     Function<Individual<G, ?, ?>, G> f = Individual::genotype;
     return FormattedNamedFunction.from(f, format, "genotype").compose(beforeF);
   }
@@ -105,7 +119,8 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X> FormattedNamedFunction<X, TextPlotter.Miniplot> hist(
       @Param(value = "nOfBins", dI = 8) int nOfBins,
-      @Param(value = "of", dNPM = "f.identity()") Function<X, Collection<Number>> beforeF) {
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Collection<Number>> beforeF
+  ) {
     Function<Collection<Number>, TextPlotter.Miniplot> f =
         vs -> TextPlotter.histogram(vs.stream().toList(), nOfBins);
     return FormattedNamedFunction.from(f, "%" + nOfBins + "s", "hist").compose(beforeF);
@@ -116,7 +131,8 @@ public class Functions {
       @Param("minReference") List<Double> minReference,
       @Param("maxReference") List<Double> maxReference,
       @Param(value = "of", dNPM = "f.identity()") Function<X, Collection<List<Double>>> beforeF,
-      @Param(value = "format", dS = "%.2f") String format) {
+      @Param(value = "format", dS = "%.2f") String format
+  ) {
     Function<Collection<List<Double>>, Double> f = ps -> Misc.hypervolume2D(ps, minReference, maxReference);
     return FormattedNamedFunction.from(f, format, "hv").compose(beforeF);
   }
@@ -124,14 +140,16 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X> FormattedNamedFunction<X, Long> id(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Individual<?, ?, ?>> beforeF,
-      @Param(value = "format", dS = "%6d") String format) {
+      @Param(value = "format", dS = "%6d") String format
+  ) {
     Function<Individual<?, ?, ?>, Long> f = Individual::id;
     return FormattedNamedFunction.from(f, format, "id").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
   public static <X, I extends Individual<G, S, Q>, G, S, Q> NamedFunction<X, Collection<I>> lasts(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<I, G, S, Q, ?>> beforeF) {
+      @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<I, G, S, Q, ?>> beforeF
+  ) {
     Function<POCPopulationState<I, G, S, Q, ?>, Collection<I>> f =
         state -> state.pocPopulation().lasts();
     return NamedFunction.from(f, "lasts").compose(beforeF);
@@ -139,7 +157,8 @@ public class Functions {
 
   @SuppressWarnings("unused")
   public static <X, G, S, Q> NamedFunction<X, Archive<MEIndividual<G, S, Q>>> meArchive(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, MEPopulationState<G, S, Q, ?>> beforeF) {
+      @Param(value = "of", dNPM = "f.identity()") Function<X, MEPopulationState<G, S, Q, ?>> beforeF
+  ) {
     Function<MEPopulationState<G, S, Q, ?>, Archive<MEIndividual<G, S, Q>>> f = MEPopulationState::mapOfElites;
     return NamedFunction.from(f, "meGrid").compose(beforeF);
   }
@@ -147,7 +166,8 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X> FormattedNamedFunction<X, Integer> meBin(
       @Param(value = "of", dNPM = "f.identity()") Function<X, MapElites.Descriptor.Coordinate> beforeF,
-      @Param(value = "format", dS = "%3d") String format) {
+      @Param(value = "format", dS = "%3d") String format
+  ) {
     Function<MapElites.Descriptor.Coordinate, Integer> f = MapElites.Descriptor.Coordinate::bin;
     return FormattedNamedFunction.from(f, format, "bin").compose(beforeF);
   }
@@ -155,7 +175,8 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X> FormattedNamedFunction<X, List<MapElites.Descriptor.Coordinate>> meCoordinates(
       @Param(value = "of", dNPM = "f.identity()") Function<X, MEIndividual<?, ?, ?>> beforeF,
-      @Param(value = "format", dS = "%s") String format) {
+      @Param(value = "format", dS = "%s") String format
+  ) {
     Function<MEIndividual<?, ?, ?>, List<MapElites.Descriptor.Coordinate>> f = MEIndividual::coordinates;
     return FormattedNamedFunction.from(f, format, "coords").compose(beforeF);
   }
@@ -163,14 +184,16 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X> FormattedNamedFunction<X, Double> meValue(
       @Param(value = "of", dNPM = "f.identity()") Function<X, MapElites.Descriptor.Coordinate> beforeF,
-      @Param(value = "format", dS = "%.2f") String format) {
+      @Param(value = "format", dS = "%.2f") String format
+  ) {
     Function<MapElites.Descriptor.Coordinate, Double> f = MapElites.Descriptor.Coordinate::value;
     return FormattedNamedFunction.from(f, format, "value").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
   public static <X, I extends Individual<G, S, Q>, G, S, Q> NamedFunction<X, Collection<I>> mids(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<I, G, S, Q, ?>> beforeF) {
+      @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<I, G, S, Q, ?>> beforeF
+  ) {
     Function<POCPopulationState<I, G, S, Q, ?>, Collection<I>> f =
         state -> state.pocPopulation().mids();
     return NamedFunction.from(f, "mids").compose(beforeF);
@@ -179,7 +202,8 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X> FormattedNamedFunction<X, Long> nOfBirths(
       @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<?, ?, ?, ?, ?>> beforeF,
-      @Param(value = "format", dS = "%5d") String format) {
+      @Param(value = "format", dS = "%5d") String format
+  ) {
     Function<POCPopulationState<?, ?, ?, ?, ?>, Long> f = POCPopulationState::nOfBirths;
     return FormattedNamedFunction.from(f, format, "n.births").compose(beforeF);
   }
@@ -187,7 +211,8 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X> FormattedNamedFunction<X, Long> nOfEvals(
       @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<?, ?, ?, ?, ?>> beforeF,
-      @Param(value = "format", dS = "%5d") String format) {
+      @Param(value = "format", dS = "%5d") String format
+  ) {
     Function<POCPopulationState<?, ?, ?, ?, ?>, Long> f = POCPopulationState::nOfQualityEvaluations;
     return FormattedNamedFunction.from(f, format, "n.evals").compose(beforeF);
   }
@@ -195,7 +220,8 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X> FormattedNamedFunction<X, Long> nOfIterations(
       @Param(value = "of", dNPM = "f.identity()") Function<X, State<?, ?>> beforeF,
-      @Param(value = "format", dS = "%4d") String format) {
+      @Param(value = "format", dS = "%4d") String format
+  ) {
     Function<State<?, ?>, Long> f = State::nOfIterations;
     return FormattedNamedFunction.from(f, format, "n.iterations").compose(beforeF);
   }
@@ -203,7 +229,8 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X, P extends MultiTargetProblem<S>, S> FormattedNamedFunction<X, Double> overallTargetDistance(
       @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<?, ?, S, ?, P>> beforeF,
-      @Param(value = "format", dS = "%.2f") String format) {
+      @Param(value = "format", dS = "%.2f") String format
+  ) {
     Function<POCPopulationState<?, ?, S, ?, P>, Double> f = state -> state.problem().targets().stream()
         .mapToDouble(ts -> state.pocPopulation().all().stream()
             .mapToDouble(s -> state.problem().distance().apply(s.solution(), ts))
@@ -217,7 +244,8 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X> FormattedNamedFunction<X, Collection<Long>> parentIds(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Individual<?, ?, ?>> beforeF,
-      @Param(value = "format", dS = "%s") String format) {
+      @Param(value = "format", dS = "%s") String format
+  ) {
     Function<Individual<?, ?, ?>, Collection<Long>> f = Individual::parentIds;
     return FormattedNamedFunction.from(f, format, "parent.ids").compose(beforeF);
   }
@@ -225,7 +253,8 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X, P extends MultiTargetProblem<S>, S> FormattedNamedFunction<X, List<Double>> popTargetDistances(
       @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<?, ?, S, ?, P>> beforeF,
-      @Param(value = "format", dS = "%.2f") String format) {
+      @Param(value = "format", dS = "%.2f") String format
+  ) {
     Function<POCPopulationState<?, ?, S, ?, P>, List<Double>> f = state -> state.problem().targets().stream()
         .mapToDouble(ts -> state.pocPopulation().all().stream()
             .mapToDouble(s -> state.problem().distance().apply(s.solution(), ts))
@@ -238,14 +267,16 @@ public class Functions {
 
   @SuppressWarnings("unused")
   public static <X, P extends Problem<S>, S> NamedFunction<X, P> problem(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, State<P, S>> beforeF) {
+      @Param(value = "of", dNPM = "f.identity()") Function<X, State<P, S>> beforeF
+  ) {
     Function<State<P, S>, P> f = State::problem;
     return NamedFunction.from(f, "problem").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
   public static <X> NamedFunction<X, Progress> progress(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, State<?, ?>> beforeF) {
+      @Param(value = "of", dNPM = "f.identity()") Function<X, State<?, ?>> beforeF
+  ) {
     Function<State<?, ?>, Progress> f = State::progress;
     return NamedFunction.from(f, "progress").compose(beforeF);
   }
@@ -253,14 +284,16 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X, Q> FormattedNamedFunction<X, Q> quality(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Individual<?, ?, Q>> beforeF,
-      @Param(value = "format", dS = "%s") String format) {
+      @Param(value = "format", dS = "%s") String format
+  ) {
     Function<Individual<?, ?, Q>, Q> f = Individual::quality;
     return FormattedNamedFunction.from(f, format, "quality").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
   public static <X> NamedFunction<X, Double> rate(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, Progress> beforeF) {
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Progress> beforeF
+  ) {
     Function<Progress, Double> f = Progress::rate;
     return NamedFunction.from(f, "rate").compose(beforeF);
   }
@@ -270,7 +303,8 @@ public class Functions {
       @Param(value = "name", iS = "{key}") String name,
       @Param("key") String key,
       @Param(value = "of", dNPM = "f.identity()") Function<X, Run<?, ?, ?, ?>> beforeF,
-      @Param(value = "format", dS = "%s") String format) {
+      @Param(value = "format", dS = "%s") String format
+  ) {
     Function<Run<?, ?, ?, ?>, String> f = run -> Utils.interpolate("{%s}".formatted(key), run);
     return FormattedNamedFunction.from(f, format, name).compose(beforeF);
   }
@@ -280,7 +314,8 @@ public class Functions {
       @Param(value = "name", iS = "{s}") String name,
       @Param("s") String s,
       @Param(value = "of", dNPM = "f.identity()") Function<X, Run<?, ?, ?, ?>> beforeF,
-      @Param(value = "format", dS = "%s") String format) {
+      @Param(value = "format", dS = "%s") String format
+  ) {
     Function<Run<?, ?, ?, ?>, String> f = run -> Utils.interpolate(s, run);
     return FormattedNamedFunction.from(f, format, name).compose(beforeF);
   }
@@ -288,8 +323,9 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X, B, O extends Simulation.Outcome<B>> FormattedNamedFunction<X, O> simOutcome(
       @Param(value = "of", dNPM = "f.identity()")
-          Function<X, SimulationBasedProblem.QualityOutcome<B, O, ?>> beforeF,
-      @Param(value = "format", dS = "%s") String format) {
+      Function<X, SimulationBasedProblem.QualityOutcome<B, O, ?>> beforeF,
+      @Param(value = "format", dS = "%s") String format
+  ) {
     Function<SimulationBasedProblem.QualityOutcome<B, O, ?>, O> f = SimulationBasedProblem.QualityOutcome::outcome;
     return FormattedNamedFunction.from(f, format, "sim.outcome").compose(beforeF);
   }
@@ -297,8 +333,9 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X, Q> FormattedNamedFunction<X, Q> simQuality(
       @Param(value = "of", dNPM = "f.identity()")
-          Function<X, SimulationBasedProblem.QualityOutcome<?, ?, Q>> beforeF,
-      @Param(value = "format", dS = "%s") String format) {
+      Function<X, SimulationBasedProblem.QualityOutcome<?, ?, Q>> beforeF,
+      @Param(value = "format", dS = "%s") String format
+  ) {
     Function<SimulationBasedProblem.QualityOutcome<?, ?, Q>, Q> f = SimulationBasedProblem.QualityOutcome::quality;
     return FormattedNamedFunction.from(f, format, "sim.quality").compose(beforeF);
   }
@@ -306,7 +343,8 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X> FormattedNamedFunction<X, Integer> size(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Object> beforeF,
-      @Param(value = "format", dS = "%d") String format) {
+      @Param(value = "format", dS = "%d") String format
+  ) {
     Function<Object, Integer> f = o -> {
       if (o instanceof Sized s) {
         return s.size();
@@ -329,14 +367,16 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X, S> FormattedNamedFunction<X, S> solution(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Individual<?, S, ?>> beforeF,
-      @Param(value = "format", dS = "%s") String format) {
+      @Param(value = "format", dS = "%s") String format
+  ) {
     Function<Individual<?, S, ?>, S> f = Individual::solution;
     return FormattedNamedFunction.from(f, format, "solution").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
   public static <X, Z> NamedFunction<X, Z> supplied(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, Supplier<Z>> beforeF) {
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Supplier<Z>> beforeF
+  ) {
     Function<Supplier<Z>, Z> f = Supplier::get;
     return NamedFunction.from(f, "supplied").compose(beforeF);
   }
@@ -345,7 +385,8 @@ public class Functions {
   public static <X, P extends MultiTargetProblem<S>, S> FormattedNamedFunction<X, List<Double>> targetDistances(
       @Param("problem") P problem,
       @Param(value = "of", dNPM = "f.identity()") Function<X, Individual<?, S, ?>> beforeF,
-      @Param(value = "format", dS = "%.2f") String format) {
+      @Param(value = "format", dS = "%.2f") String format
+  ) {
     Function<Individual<?, S, ?>, List<Double>> f = i -> problem.targets().stream()
         .map(t -> problem.distance().apply(i.solution(), t))
         .toList();
@@ -354,7 +395,8 @@ public class Functions {
 
   @SuppressWarnings("unused")
   public static <X, Z> NamedFunction<X, List<Double>> toDoubleString(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, Z> beforeF) {
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Z> beforeF
+  ) {
     Function<Z, List<Double>> f = z -> {
       if (z instanceof IntString is) {
         return is.asDoubleString();
@@ -381,16 +423,65 @@ public class Functions {
 
   @SuppressWarnings("unused")
   public static <X, I extends Individual<?, S, Q>, S, Q, P extends ProblemWithValidation<S, Q>>
-      FormattedNamedFunction<X, Q> validationQuality(
-          @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<?, ?, S, Q, P>> beforeF,
-          @Param(value = "individual", dNPM = "ea.f.best()")
-              Function<POCPopulationState<?, ?, S, Q, P>, Individual<?, S, Q>> individualF,
-          @Param(value = "format", dS = "%s") String format) {
+  FormattedNamedFunction<X, Q> validationQuality(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<?, ?, S, Q, P>> beforeF,
+      @Param(value = "individual", dNPM = "ea.f.best()")
+      Function<POCPopulationState<?, ?, S, Q, P>, Individual<?, S, Q>> individualF,
+      @Param(value = "format", dS = "%s") String format
+  ) {
     Function<POCPopulationState<?, ?, S, Q, P>, Q> f = state -> state.problem()
         .validationQualityFunction()
         .apply(individualF.apply(state).solution());
     return FormattedNamedFunction.from(
             f, format, "validation.quality[%s]".formatted(NamedFunction.name(individualF)))
         .compose(beforeF);
+  }
+
+  public static <X, P extends XYPlot<D>, D> NamedFunction<X, BufferedImage> imagePlotter(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, P> beforeF,
+      @Param(value = "w", dI = -1) int w,
+      @Param(value = "h", dI = -1) int h,
+      @Param(value = "freeScales") boolean freeScales
+  ) {
+    UnaryOperator<ImageBuilder.ImageInfo> iiAdapter = ii -> new ImageBuilder.ImageInfo(
+        w == -1 ? ii.w() : w, h == -1 ? ii.h() : h
+    );
+    Configuration configuration = freeScales ? Configuration.FREE_SCALES : Configuration.DEFAULT;
+    Function<P, BufferedImage> f = p -> {
+      if (p instanceof DistributionPlot dp) {
+        BoxPlotDrawer d = new BoxPlotDrawer(
+            configuration,
+            Configuration.BoxPlot.DEFAULT,
+            Configuration.Colors.DEFAULT.dataColors()
+        );
+        return d.build(iiAdapter.apply(d.imageInfo(dp)), dp);
+      }
+      if (p instanceof LandscapePlot lsp) {
+        LandscapePlotDrawer d = new LandscapePlotDrawer(
+            configuration,
+            Configuration.LandscapePlot.DEFAULT,
+            Configuration.Colors.DEFAULT.dataColors()
+        );
+        return d.build(iiAdapter.apply(d.imageInfo(lsp)), lsp);
+      }
+      if (p instanceof XYDataSeriesPlot xyp) {
+        // TODO add here a secondary option for points plot
+        LinesPlotDrawer d = new LinesPlotDrawer(
+            configuration,
+            Configuration.LinesPlot.DEFAULT,
+            Configuration.Colors.DEFAULT.dataColors()
+        );
+        return d.build(iiAdapter.apply(d.imageInfo(xyp)), xyp);
+      }
+      if (p instanceof UnivariateGridPlot ugp) {
+        UnivariateGridPlotDrawer d = new UnivariateGridPlotDrawer(
+            configuration,
+            Configuration.UnivariateGridPlot.DEFAULT
+        );
+        return d.build(iiAdapter.apply(d.imageInfo(ugp)), ugp);
+      }
+      throw new IllegalArgumentException("Unsupported type of plot %s".formatted(p.getClass().getSimpleName()));
+    };
+    return NamedFunction.from(f, "image.plotter").compose(beforeF);
   }
 }
