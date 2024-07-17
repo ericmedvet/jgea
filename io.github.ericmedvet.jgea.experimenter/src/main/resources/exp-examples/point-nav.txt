@@ -61,20 +61,15 @@ ea.experiment(
       filePathTemplate = "../field-point-nav-{solver.name}-{randomGenerator.seed:%04d}.png"
     );
     ea.l.runPlotSaver(
-      w = 1500; h = 350;
-      filePathTemplate = "../archives-point-nav-{solver.name}-{randomGenerator.seed:%04d}.png";
-      type = univariate_grid;
-      plot = ea.plot.single.me(values = [ea.f.simQuality(of = ea.f.quality())]);
+      filePathTemplate = "../archives-point-nav-{solver.name}-{randomGenerator.seed:%04d}";
+      of = ea.plot.single.me(values = [ea.f.simQuality(of = ea.f.quality())]);
       condition = predicate.all(conditions = [
         predicate.inS(f = ea.f.runString(s = "{randomGenerator.seed}"); values = ["1"])
       ])
     );
     ea.l.expPlotSaver(
-      filePath = "../point-nav-fitness.png";
-      freeScales = true;
-      w = 500; h = 500;
-      type = lines;
-      plot = ea.plot.multi.quality(y = ea.f.simQuality(of = ea.f.quality(of = ea.f.best())))
+      filePath = "../point-nav-fitness";
+      of = ea.plot.multi.quality(y = ea.f.simQuality(of = ea.f.quality(of = ea.f.best())))
     )
   ]
 )

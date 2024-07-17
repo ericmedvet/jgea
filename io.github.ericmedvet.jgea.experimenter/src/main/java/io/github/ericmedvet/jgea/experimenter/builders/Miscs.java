@@ -19,12 +19,10 @@
  */
 package io.github.ericmedvet.jgea.experimenter.builders;
 
-import io.github.ericmedvet.jgea.core.listener.Accumulator;
 import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jnb.core.*;
-
 import java.awt.*;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -35,8 +33,7 @@ import java.util.function.Function;
 @Discoverable(prefixTemplate = "ea.misc")
 public class Miscs {
 
-  private Miscs() {
-  }
+  private Miscs() {}
 
   @SuppressWarnings("unused")
   public static Character ch(@Param("s") String s) {
@@ -63,22 +60,19 @@ public class Miscs {
   }
 
   @SuppressWarnings("unused")
-  public static <G> AccumulatorFactory<POCPopulationState<?, G, ?, ?, ?>, NamedParamMap, Run<?, G, ?, ?>> lastPopulation(
-      @Param(value = "serializerF", dNPM = "f.toBase64()") Function<Object, String> serializer
-  ) {
-    return AccumulatorFactory.last((s,run) -> new MapNamedParamMap(
+  public static <G>
+      AccumulatorFactory<POCPopulationState<?, G, ?, ?, ?>, NamedParamMap, Run<?, G, ?, ?>> lastPopulation(
+          @Param(value = "serializerF", dNPM = "f.toBase64()") Function<Object, String> serializer) {
+    return AccumulatorFactory.last((s, run) -> new MapNamedParamMap(
         "ea.runOutcome",
         Map.ofEntries(
+            Map.entry(new MapNamedParamMap.TypedKey("index", ParamMap.Type.INT), run.index()),
+            Map.entry(new MapNamedParamMap.TypedKey("run", ParamMap.Type.NAMED_PARAM_MAP), run.map()),
             Map.entry(
-                new MapNamedParamMap.TypedKey("index", ParamMap.Type.INT),
-                run.index()),
-            Map.entry(
-                new MapNamedParamMap.TypedKey("run", ParamMap.Type.NAMED_PARAM_MAP),
-                run.map()),
-            Map.entry(
-                new MapNamedParamMap.TypedKey(
-                    "serializedGenotypes", ParamMap.Type.STRINGS),
-                s.pocPopulation().all().stream().map(i -> serializer.apply(i.genotype())).toList()))));
+                new MapNamedParamMap.TypedKey("serializedGenotypes", ParamMap.Type.STRINGS),
+                s.pocPopulation().all().stream()
+                    .map(i -> serializer.apply(i.genotype()))
+                    .toList()))));
   }
 
   @SuppressWarnings("unused")

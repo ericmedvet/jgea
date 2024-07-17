@@ -40,7 +40,6 @@ import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jviz.core.drawer.ImageBuilder;
 import io.github.ericmedvet.jviz.core.drawer.VideoBuilder;
 import io.github.ericmedvet.jviz.core.util.VideoUtils;
-
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
@@ -59,8 +58,7 @@ public class Listeners {
 
   private static final Logger L = Logger.getLogger(Listeners.class.getName());
 
-  private Listeners() {
-  }
+  private Listeners() {}
 
   private static class ListenerFactoryAndMonitor<E, K> implements ListenerFactory<E, K>, ProgressMonitor {
     private final ListenerFactory<E, K> innerListenerFactory;
@@ -70,8 +68,7 @@ public class Listeners {
         ListenerFactory<E, K> innerListenerFactory,
         Predicate<K> predicate,
         ExecutorService executorService,
-        boolean onLast
-    ) {
+        boolean onLast) {
       this.innerListenerFactory = innerListenerFactory;
       if (onLast) {
         if (executorService != null) {
@@ -112,34 +109,33 @@ public class Listeners {
 
   @SuppressWarnings("unused")
   public static <G, S, Q>
-  BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
-  allCsv(
-      @Param("filePath") String filePath,
-      @Param(value = "errorString", dS = "NA") String errorString,
-      @Param(value = "intFormat", dS = "%d") String intFormat,
-      @Param(value = "doubleFormat", dS = "%.5e") String doubleFormat,
-      @Param(
-          value = "defaultFunctions",
-          dNPMs = {"ea.f.nOfIterations()"})
-      List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> defaultStateFunctions,
-      @Param(value = "functions")
-      List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
-      @Param("individualFunctions")
-      List<Function<? super Individual<G, S, Q>, ?>> individualFunctions,
-      @Param(
-          value = "defaultRunFunctions",
-          dNPMs = {
-              "ea.f.runKey(key = \"problem.name\")",
-              "ea.f.runKey(key = \"solver.name\")",
-              "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
-          })
-      List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
-      @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
-      @Param(value = "deferred") boolean deferred,
-      @Param(value = "onlyLast") boolean onlyLast,
-      @Param(value = "condition", dNPM = "predicate.always()")
-      Predicate<Run<?, G, S, Q>> predicate
-  ) {
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
+          allCsv(
+              @Param("filePath") String filePath,
+              @Param(value = "errorString", dS = "NA") String errorString,
+              @Param(value = "intFormat", dS = "%d") String intFormat,
+              @Param(value = "doubleFormat", dS = "%.5e") String doubleFormat,
+              @Param(
+                      value = "defaultFunctions",
+                      dNPMs = {"ea.f.nOfIterations()"})
+                  List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> defaultStateFunctions,
+              @Param(value = "functions")
+                  List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
+              @Param("individualFunctions")
+                  List<Function<? super Individual<G, S, Q>, ?>> individualFunctions,
+              @Param(
+                      value = "defaultRunFunctions",
+                      dNPMs = {
+                        "ea.f.runKey(key = \"problem.name\")",
+                        "ea.f.runKey(key = \"solver.name\")",
+                        "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
+                      })
+                  List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
+              @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
+              @Param(value = "deferred") boolean deferred,
+              @Param(value = "onlyLast") boolean onlyLast,
+              @Param(value = "condition", dNPM = "predicate.always()")
+                  Predicate<Run<?, G, S, Q>> predicate) {
     record PopIndividualPair<G, S, Q>(POCPopulationState<?, G, S, Q, ?> pop, Individual<G, S, Q> individual) {}
     Function<? super PopIndividualPair<G, S, Q>, POCPopulationState<?, G, S, Q, ?>> pairPopF =
         NamedFunction.from(PopIndividualPair::pop, "state");
@@ -162,8 +158,7 @@ public class Listeners {
           new File(filePath),
           errorString,
           intFormat,
-          doubleFormat
-      );
+          doubleFormat);
       ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>> allListenerFactory =
           new ListenerFactory<>() {
             @Override
@@ -202,43 +197,42 @@ public class Listeners {
 
   @SuppressWarnings("unused")
   public static <G, S, Q>
-  BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
-  bestCsv(
-      @Param("filePath") String filePath,
-      @Param(value = "errorString", dS = "NA") String errorString,
-      @Param(value = "intFormat", dS = "%d") String intFormat,
-      @Param(value = "doubleFormat", dS = "%.5e") String doubleFormat,
-      @Param(
-          value = "defaultFunctions",
-          dNPMs = {
-              "ea.f.nOfIterations()",
-              "ea.f.nOfEvals()",
-              "ea.f.nOfBirths()",
-              "ea.f.elapsedSecs()",
-              "f.size(of=ea.f.all())",
-              "f.size(of=ea.f.firsts())",
-              "f.size(of=ea.f.lasts())",
-              "f.uniqueness(of=f.each(mapF=ea.f.genotype();of=ea.f.all()))",
-              "f.uniqueness(of=f.each(mapF=ea.f.solution();of=ea.f.all()))",
-              "f.uniqueness(of=f.each(mapF=ea.f.quality();of=ea.f.all()))"
-          })
-      List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> defaultStateFunctions,
-      @Param(value = "functions")
-      List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
-      @Param(
-          value = "defaultRunFunctions",
-          dNPMs = {
-              "ea.f.runKey(key = \"problem.name\")",
-              "ea.f.runKey(key = \"solver.name\")",
-              "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
-          })
-      List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
-      @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
-      @Param(value = "deferred") boolean deferred,
-      @Param(value = "onlyLast") boolean onlyLast,
-      @Param(value = "condition", dNPM = "predicate.always()")
-      Predicate<Run<?, G, S, Q>> predicate
-  ) {
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
+          bestCsv(
+              @Param("filePath") String filePath,
+              @Param(value = "errorString", dS = "NA") String errorString,
+              @Param(value = "intFormat", dS = "%d") String intFormat,
+              @Param(value = "doubleFormat", dS = "%.5e") String doubleFormat,
+              @Param(
+                      value = "defaultFunctions",
+                      dNPMs = {
+                        "ea.f.nOfIterations()",
+                        "ea.f.nOfEvals()",
+                        "ea.f.nOfBirths()",
+                        "ea.f.elapsedSecs()",
+                        "f.size(of=ea.f.all())",
+                        "f.size(of=ea.f.firsts())",
+                        "f.size(of=ea.f.lasts())",
+                        "f.uniqueness(of=f.each(mapF=ea.f.genotype();of=ea.f.all()))",
+                        "f.uniqueness(of=f.each(mapF=ea.f.solution();of=ea.f.all()))",
+                        "f.uniqueness(of=f.each(mapF=ea.f.quality();of=ea.f.all()))"
+                      })
+                  List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> defaultStateFunctions,
+              @Param(value = "functions")
+                  List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
+              @Param(
+                      value = "defaultRunFunctions",
+                      dNPMs = {
+                        "ea.f.runKey(key = \"problem.name\")",
+                        "ea.f.runKey(key = \"solver.name\")",
+                        "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
+                      })
+                  List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
+              @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
+              @Param(value = "deferred") boolean deferred,
+              @Param(value = "onlyLast") boolean onlyLast,
+              @Param(value = "condition", dNPM = "predicate.always()")
+                  Predicate<Run<?, G, S, Q>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         new CSVPrinter<>(
             Stream.of(defaultStateFunctions, stateFunctions)
@@ -250,49 +244,46 @@ public class Listeners {
             new File(filePath),
             errorString,
             intFormat,
-            doubleFormat
-        ),
+            doubleFormat),
         predicate,
         deferred ? executorService : null,
-        onlyLast
-    );
+        onlyLast);
   }
 
   @SuppressWarnings("unused")
   public static <G, S, Q>
-  BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
-  console(
-      @Param(
-          value = "defaultFunctions",
-          dNPMs = {
-              "ea.f.nOfIterations()",
-              "ea.f.nOfEvals()",
-              "ea.f.nOfBirths()",
-              "ea.f.elapsedSecs()",
-              "f.size(of=ea.f.all())",
-              "f.size(of=ea.f.firsts())",
-              "f.size(of=ea.f.lasts())",
-              "f.uniqueness(of=f.each(mapF=ea.f.genotype();of=ea.f.all()))",
-              "f.uniqueness(of=f.each(mapF=ea.f.solution();of=ea.f.all()))",
-              "f.uniqueness(of=f.each(mapF=ea.f.quality();of=ea.f.all()))"
-          })
-      List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> defaultStateFunctions,
-      @Param(value = "functions")
-      List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
-      @Param(
-          value = "defaultRunFunctions",
-          dNPMs = {
-              "ea.f.runKey(key = \"problem.name\")",
-              "ea.f.runKey(key = \"solver.name\")",
-              "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
-          })
-      List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
-      @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
-      @Param(value = "deferred") boolean deferred,
-      @Param(value = "onlyLast") boolean onlyLast,
-      @Param(value = "condition", dNPM = "predicate.always()")
-      Predicate<Run<?, G, S, Q>> predicate
-  ) {
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
+          console(
+              @Param(
+                      value = "defaultFunctions",
+                      dNPMs = {
+                        "ea.f.nOfIterations()",
+                        "ea.f.nOfEvals()",
+                        "ea.f.nOfBirths()",
+                        "ea.f.elapsedSecs()",
+                        "f.size(of=ea.f.all())",
+                        "f.size(of=ea.f.firsts())",
+                        "f.size(of=ea.f.lasts())",
+                        "f.uniqueness(of=f.each(mapF=ea.f.genotype();of=ea.f.all()))",
+                        "f.uniqueness(of=f.each(mapF=ea.f.solution();of=ea.f.all()))",
+                        "f.uniqueness(of=f.each(mapF=ea.f.quality();of=ea.f.all()))"
+                      })
+                  List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> defaultStateFunctions,
+              @Param(value = "functions")
+                  List<Function<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
+              @Param(
+                      value = "defaultRunFunctions",
+                      dNPMs = {
+                        "ea.f.runKey(key = \"problem.name\")",
+                        "ea.f.runKey(key = \"solver.name\")",
+                        "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
+                      })
+                  List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
+              @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
+              @Param(value = "deferred") boolean deferred,
+              @Param(value = "onlyLast") boolean onlyLast,
+              @Param(value = "condition", dNPM = "predicate.always()")
+                  Predicate<Run<?, G, S, Q>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         new TabularPrinter<>(
             Stream.of(defaultStateFunctions, stateFunctions)
@@ -300,28 +291,35 @@ public class Listeners {
                 .toList(),
             Stream.concat(defaultRunFunctions.stream(), runFunctions.stream())
                 .map(f -> reformatToFit(f, experiment.runs()))
-                .toList()
-        ),
+                .toList()),
         predicate,
         deferred ? executorService : null,
-        onlyLast
-    );
+        onlyLast);
   }
 
   @SuppressWarnings("unused")
+  @Alias(
+      name = "expPlotSaver",
+      value = // spotless:off
+          """
+              expSaver(
+                processors = [ea.f.imagePlotter()]
+              )
+              """) // spotless:on
   public static <E, O, R> BiFunction<Experiment, ExecutorService, ListenerFactory<E, R>> expSaver(
       @Param("of") AccumulatorFactory<E, O, R> accumulatorFactory,
-      @Param(value = "processors", dNPMs = "[f.identity()]") List<Function<? super O, ?>> processors,
+      @Param(
+              value = "processors",
+              dNPMs = {"f.identity()"})
+          List<Function<? super O, ?>> processors,
       @Param(value = "filePath", dS = "exp") String filePath,
-      @Param(value = "condition", dNPM = "predicate.always()") Predicate<R> predicate
-  ) {
+      @Param(value = "condition", dNPM = "predicate.always()") Predicate<R> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         accumulatorFactory.thenOnShutdown(
             os -> processors.forEach(f -> save(f.apply(os.get(os.size() - 1)), filePath))),
         predicate,
         executorService,
-        false
-    );
+        false);
   }
 
   private static String getCredentialFromFile(String credentialFilePath) {
@@ -345,42 +343,41 @@ public class Listeners {
   }
 
   public static <G, S, Q>
-  BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
-  net(
-      @Param(
-          value = "defaultFunctions",
-          dNPMs = {
-              "ea.f.nOfIterations()",
-              "ea.f.nOfEvals()",
-              "ea.f.nOfBirths()",
-              "ea.f.elapsedSecs()",
-              "f.size(of=ea.f.all())",
-              "f.size(of=ea.f.firsts())",
-              "f.size(of=ea.f.lasts())",
-              "f.uniqueness(of=f.each(mapF=ea.f.genotype();of=ea.f.all()))",
-              "f.uniqueness(of=f.each(mapF=ea.f.solution();of=ea.f.all()))",
-              "f.uniqueness(of=f.each(mapF=ea.f.quality();of=ea.f.all()))"
-          })
-      List<NamedFunction<? super POCPopulationState<?, G, S, Q, ?>, ?>>
-          defaultStateFunctions,
-      @Param(value = "functions")
-      List<NamedFunction<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
-      @Param(
-          value = "defaultRunFunctions",
-          dNPMs = {
-              "ea.f.runKey(key = \"problem.name\")",
-              "ea.f.runKey(key = \"solver.name\")",
-              "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
-          })
-      List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
-      @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
-      @Param(value = "serverAddress", dS = "127.0.0.1") String serverAddress,
-      @Param(value = "serverPort", dI = 10979) int serverPort,
-      @Param(value = "serverKeyFilePath") String serverKeyFilePath,
-      @Param(value = "pollInterval", dD = 1) double pollInterval,
-      @Param(value = "condition", dNPM = "predicate.always()")
-      Predicate<Run<?, G, S, Q>> predicate
-  ) {
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
+          net(
+              @Param(
+                      value = "defaultFunctions",
+                      dNPMs = {
+                        "ea.f.nOfIterations()",
+                        "ea.f.nOfEvals()",
+                        "ea.f.nOfBirths()",
+                        "ea.f.elapsedSecs()",
+                        "f.size(of=ea.f.all())",
+                        "f.size(of=ea.f.firsts())",
+                        "f.size(of=ea.f.lasts())",
+                        "f.uniqueness(of=f.each(mapF=ea.f.genotype();of=ea.f.all()))",
+                        "f.uniqueness(of=f.each(mapF=ea.f.solution();of=ea.f.all()))",
+                        "f.uniqueness(of=f.each(mapF=ea.f.quality();of=ea.f.all()))"
+                      })
+                  List<NamedFunction<? super POCPopulationState<?, G, S, Q, ?>, ?>>
+                      defaultStateFunctions,
+              @Param(value = "functions")
+                  List<NamedFunction<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
+              @Param(
+                      value = "defaultRunFunctions",
+                      dNPMs = {
+                        "ea.f.runKey(key = \"problem.name\")",
+                        "ea.f.runKey(key = \"solver.name\")",
+                        "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
+                      })
+                  List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
+              @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
+              @Param(value = "serverAddress", dS = "127.0.0.1") String serverAddress,
+              @Param(value = "serverPort", dI = 10979) int serverPort,
+              @Param(value = "serverKeyFilePath") String serverKeyFilePath,
+              @Param(value = "pollInterval", dD = 1) double pollInterval,
+              @Param(value = "condition", dNPM = "predicate.always()")
+                  Predicate<Run<?, G, S, Q>> predicate) {
 
     NetMultiSink netMultiSink =
         new NetMultiSink(pollInterval, serverAddress, serverPort, getCredentialFromFile(serverKeyFilePath));
@@ -396,12 +393,10 @@ public class Listeners {
             netMultiSink.getLogSink(),
             netMultiSink.getExperimentSink(),
             netMultiSink.getRunSink(),
-            netMultiSink.getDatItemSink()
-        ),
+            netMultiSink.getDatItemSink()),
         predicate,
         executorService,
-        false
-    );
+        false);
   }
 
   private static <T, R> Function<T, R> reformatToFit(Function<T, R> f, Collection<?> ts) {
@@ -412,19 +407,18 @@ public class Listeners {
 
   @SuppressWarnings("unused")
   public static <G, S, Q, K>
-  BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
-  runAllIterationsVideoSaver(
-      @Param(value = "function", dNPM = "ea.f.best()")
-      Function<POCPopulationState<?, G, S, Q, ?>, K> function,
-      @Param("image") ImageBuilder<K> imageBuilder,
-      @Param(value = "w", dI = 500) int w,
-      @Param(value = "h", dI = 500) int h,
-      @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder,
-      @Param(value = "frameRate", dD = 20) double frameRate,
-      @Param(value = "filePathTemplate", dS = "run-{index:%04d}.mp4") String filePathTemplate,
-      @Param(value = "condition", dNPM = "predicate.always()")
-      Predicate<Run<?, G, S, Q>> predicate
-  ) {
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
+          runAllIterationsVideoSaver(
+              @Param(value = "function", dNPM = "ea.f.best()")
+                  Function<POCPopulationState<?, G, S, Q, ?>, K> function,
+              @Param("image") ImageBuilder<K> imageBuilder,
+              @Param(value = "w", dI = 500) int w,
+              @Param(value = "h", dI = 500) int h,
+              @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder,
+              @Param(value = "frameRate", dD = 20) double frameRate,
+              @Param(value = "filePathTemplate", dS = "run-{index:%04d}.mp4") String filePathTemplate,
+              @Param(value = "condition", dNPM = "predicate.always()")
+                  Predicate<Run<?, G, S, Q>> predicate) {
     VideoBuilder<List<K>> videoBuilder = VideoBuilder.from(imageBuilder, ks -> ks, frameRate);
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         AccumulatorFactory.<POCPopulationState<?, G, S, Q, ?>, K, Run<?, G, S, Q>>collector(function)
@@ -439,23 +433,21 @@ public class Listeners {
             }),
         predicate,
         executorService,
-        false
-    );
+        false);
   }
 
   @SuppressWarnings("unused")
   public static <G, S, Q, K>
-  BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
-  runLastIterationImageSaver(
-      @Param(value = "function", dNPM = "ea.f.best()")
-      Function<POCPopulationState<?, G, S, Q, ?>, K> function,
-      @Param("image") ImageBuilder<K> imagerBuilder,
-      @Param(value = "w", dI = 500) int w,
-      @Param(value = "h", dI = 500) int h,
-      @Param(value = "filePathTemplate", dS = "run-{index:%04d}.png") String filePathTemplate,
-      @Param(value = "condition", dNPM = "predicate.always()")
-      Predicate<Run<?, G, S, Q>> predicate
-  ) {
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
+          runLastIterationImageSaver(
+              @Param(value = "function", dNPM = "ea.f.best()")
+                  Function<POCPopulationState<?, G, S, Q, ?>, K> function,
+              @Param("image") ImageBuilder<K> imagerBuilder,
+              @Param(value = "w", dI = 500) int w,
+              @Param(value = "h", dI = 500) int h,
+              @Param(value = "filePathTemplate", dS = "run-{index:%04d}.png") String filePathTemplate,
+              @Param(value = "condition", dNPM = "predicate.always()")
+                  Predicate<Run<?, G, S, Q>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         run -> Listener.<POCPopulationState<?, G, S, Q, ?>>named(
             state -> {
@@ -467,28 +459,25 @@ public class Listeners {
                 L.severe("Cannot save image at '%s': %s".formatted(file.getPath(), e));
               }
             },
-            "runLastIterationImageSaver"
-        ),
+            "runLastIterationImageSaver"),
         predicate,
         executorService,
-        true
-    );
+        true);
   }
 
   @SuppressWarnings("unused")
   public static <G, S, Q, K>
-  BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
-  runLastIterationVideoSaver(
-      @Param(value = "function", dNPM = "ea.f.best()")
-      Function<POCPopulationState<?, G, S, Q, ?>, K> function,
-      @Param("video") VideoBuilder<K> videoBuilder,
-      @Param(value = "w", dI = 500) int w,
-      @Param(value = "h", dI = 500) int h,
-      @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder,
-      @Param(value = "filePathTemplate", dS = "run-{index:%04d}.mp4") String filePathTemplate,
-      @Param(value = "condition", dNPM = "predicate.always()")
-      Predicate<Run<?, G, S, Q>> predicate
-  ) {
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
+          runLastIterationVideoSaver(
+              @Param(value = "function", dNPM = "ea.f.best()")
+                  Function<POCPopulationState<?, G, S, Q, ?>, K> function,
+              @Param("video") VideoBuilder<K> videoBuilder,
+              @Param(value = "w", dI = 500) int w,
+              @Param(value = "h", dI = 500) int h,
+              @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder,
+              @Param(value = "filePathTemplate", dS = "run-{index:%04d}.mp4") String filePathTemplate,
+              @Param(value = "condition", dNPM = "predicate.always()")
+                  Predicate<Run<?, G, S, Q>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         run -> Listener.<POCPopulationState<?, G, S, Q, ?>>named(
             state -> {
@@ -501,28 +490,35 @@ public class Listeners {
                 L.severe("Cannot save video at '%s': %s".formatted(file.getPath(), e));
               }
             },
-            "runLastIterationVideoSaver"
-        ),
+            "runLastIterationVideoSaver"),
         predicate,
         executorService,
-        true
-    );
+        true);
   }
 
   @SuppressWarnings("unused")
+  @Alias(
+      name = "runPlotSaver",
+      value = // spotless:off
+          """
+              runSaver(
+                processors = [ea.f.imagePlotter()]
+              )
+              """) // spotless:on
   public static <E, O> BiFunction<Experiment, ExecutorService, ListenerFactory<E, Run<?, ?, ?, ?>>> runSaver(
       @Param("of") AccumulatorFactory<E, O, Run<?, ?, ?, ?>> accumulatorFactory,
-      @Param(value = "processors", dNPMs = "[f.identity()]") List<Function<? super O, ?>> processors,
+      @Param(
+              value = "processors",
+              dNPMs = {"f.identity()"})
+          List<Function<? super O, ?>> processors,
       @Param(value = "filePathTemplate", dS = "run-{index:%04d}") String filePathTemplate,
-      @Param(value = "condition", dNPM = "predicate.always()") Predicate<Run<?, ?, ?, ?>> predicate
-  ) {
+      @Param(value = "condition", dNPM = "predicate.always()") Predicate<Run<?, ?, ?, ?>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         accumulatorFactory.thenOnDone(
             (r, o) -> processors.forEach(f -> save(f.apply(o), Utils.interpolate(filePathTemplate, r)))),
         predicate,
         executorService,
-        false
-    );
+        false);
   }
 
   private static void save(Object o, String filePath) {
@@ -560,40 +556,39 @@ public class Listeners {
 
   @SuppressWarnings("unused")
   public static <G, S, Q>
-  BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
-  telegram(
-      @Param("chatId") String chatId,
-      @Param("botIdFilePath") String botIdFilePath,
-      @Param(
-          value = "defaultPlots",
-          dNPMs = {"ea.plot.elapsed()"})
-      List<
-          PlotAccumulatorFactory<
-              ? super POCPopulationState<?, G, S, Q, ?>,
-              ?,
-              Run<?, G, S, Q>,
-              ?>>
-          defaultPlotTableBuilders,
-      @Param("plots")
-      List<
-          PlotAccumulatorFactory<
-              ? super POCPopulationState<?, G, S, Q, ?>,
-              ?,
-              Run<?, G, S, Q>,
-              ?>>
-          plotTableBuilders,
-      @Param("accumulators")
-      List<
-          AccumulatorFactory<
-              ? super POCPopulationState<?, G, S, Q, ?>,
-              ?,
-              Run<?, G, S, Q>>>
-          accumulators,
-      @Param(value = "deferred", dB = true) boolean deferred,
-      @Param(value = "onlyLast") boolean onlyLast,
-      @Param(value = "condition", dNPM = "predicate.always()")
-      Predicate<Run<?, G, S, Q>> predicate
-  ) {
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
+          telegram(
+              @Param("chatId") String chatId,
+              @Param("botIdFilePath") String botIdFilePath,
+              @Param(
+                      value = "defaultPlots",
+                      dNPMs = {"ea.plot.elapsed()"})
+                  List<
+                          PlotAccumulatorFactory<
+                              ? super POCPopulationState<?, G, S, Q, ?>,
+                              ?,
+                              Run<?, G, S, Q>,
+                              ?>>
+                      defaultPlotTableBuilders,
+              @Param("plots")
+                  List<
+                          PlotAccumulatorFactory<
+                              ? super POCPopulationState<?, G, S, Q, ?>,
+                              ?,
+                              Run<?, G, S, Q>,
+                              ?>>
+                      plotTableBuilders,
+              @Param("accumulators")
+                  List<
+                          AccumulatorFactory<
+                              ? super POCPopulationState<?, G, S, Q, ?>,
+                              ?,
+                              Run<?, G, S, Q>>>
+                      accumulators,
+              @Param(value = "deferred", dB = true) boolean deferred,
+              @Param(value = "onlyLast") boolean onlyLast,
+              @Param(value = "condition", dNPM = "predicate.always()")
+                  Predicate<Run<?, G, S, Q>> predicate) {
 
     // read credential files
     long longChatId;
@@ -610,44 +605,42 @@ public class Listeners {
         new TelegramUpdater<>(accumulatorFactories, botId, longChatId),
         predicate,
         deferred ? executorService : null,
-        onlyLast
-    );
+        onlyLast);
   }
 
   @SuppressWarnings("unused")
   public static <G, S, Q>
-  BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
-  tui(
-      @Param(
-          value = "defaultFunctions",
-          dNPMs = {
-              "ea.f.nOfIterations()",
-              "ea.f.nOfEvals()",
-              "ea.f.nOfBirths()",
-              "ea.f.elapsedSecs()",
-              "f.size(of=ea.f.all())",
-              "f.size(of=ea.f.firsts())",
-              "f.size(of=ea.f.lasts())",
-              "f.uniqueness(of=f.each(mapF=ea.f.genotype();of=ea.f.all()))",
-              "f.uniqueness(of=f.each(mapF=ea.f.solution();of=ea.f.all()))",
-              "f.uniqueness(of=f.each(mapF=ea.f.quality();of=ea.f.all()))"
-          })
-      List<NamedFunction<? super POCPopulationState<?, G, S, Q, ?>, ?>>
-          defaultStateFunctions,
-      @Param(value = "functions")
-      List<NamedFunction<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
-      @Param(
-          value = "defaultRunFunctions",
-          dNPMs = {
-              "ea.f.runKey(key = \"problem.name\")",
-              "ea.f.runKey(key = \"solver.name\")",
-              "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
-          })
-      List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
-      @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
-      @Param(value = "condition", dNPM = "predicate.always()")
-      Predicate<Run<?, G, S, Q>> predicate
-  ) {
+      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
+          tui(
+              @Param(
+                      value = "defaultFunctions",
+                      dNPMs = {
+                        "ea.f.nOfIterations()",
+                        "ea.f.nOfEvals()",
+                        "ea.f.nOfBirths()",
+                        "ea.f.elapsedSecs()",
+                        "f.size(of=ea.f.all())",
+                        "f.size(of=ea.f.firsts())",
+                        "f.size(of=ea.f.lasts())",
+                        "f.uniqueness(of=f.each(mapF=ea.f.genotype();of=ea.f.all()))",
+                        "f.uniqueness(of=f.each(mapF=ea.f.solution();of=ea.f.all()))",
+                        "f.uniqueness(of=f.each(mapF=ea.f.quality();of=ea.f.all()))"
+                      })
+                  List<NamedFunction<? super POCPopulationState<?, G, S, Q, ?>, ?>>
+                      defaultStateFunctions,
+              @Param(value = "functions")
+                  List<NamedFunction<? super POCPopulationState<?, G, S, Q, ?>, ?>> stateFunctions,
+              @Param(
+                      value = "defaultRunFunctions",
+                      dNPMs = {
+                        "ea.f.runKey(key = \"problem.name\")",
+                        "ea.f.runKey(key = \"solver.name\")",
+                        "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
+                      })
+                  List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
+              @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
+              @Param(value = "condition", dNPM = "predicate.always()")
+                  Predicate<Run<?, G, S, Q>> predicate) {
     DirectSinkSource<MachineKey, MachineInfo> machineSinkSource = new DirectSinkSource<>();
     DirectSinkSource<ProcessKey, ProcessInfo> processSinkSource = new DirectSinkSource<>();
     DirectSinkSource<ProcessKey, LogInfo> logSinkSource = new DirectSinkSource<>();
@@ -655,14 +648,13 @@ public class Listeners {
     DirectSinkSource<RunKey, RunInfo> runSinkSource = new DirectSinkSource<>();
     DirectSinkSource<DataItemKey, DataItemInfo> dataItemSinkSource = new DirectSinkSource<>();
     new TuiMonitor(
-        () -> "Local",
-        machineSinkSource,
-        processSinkSource,
-        logSinkSource,
-        experimentSinkSource,
-        runSinkSource,
-        dataItemSinkSource
-    )
+            () -> "Local",
+            machineSinkSource,
+            processSinkSource,
+            logSinkSource,
+            experimentSinkSource,
+            runSinkSource,
+            dataItemSinkSource)
         .run();
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         new SinkListenerFactory<>(
@@ -676,11 +668,9 @@ public class Listeners {
             logSinkSource,
             experimentSinkSource,
             runSinkSource,
-            dataItemSinkSource
-        ),
+            dataItemSinkSource),
         predicate,
         executorService,
-        false
-    );
+        false);
   }
 }
