@@ -46,10 +46,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 
@@ -522,8 +524,17 @@ public class Listeners {
       @Param(value = "filePathTemplate", dS = "run-{index:%04d}") String filePathTemplate,
       @Param(value = "condition", dNPM = "predicate.always()") Predicate<Run<?, ?, ?, ?>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        accumulatorFactory.thenOnDone(
-            (r, o) -> processors.forEach(f -> save(f.apply(o), Utils.interpolate(filePathTemplate, r)))),
+        accumulatorFactory.thenOnDone(new BiConsumer<>() {
+          @Override
+          public void accept(Run<?, ?, ?, ?> r, O o) {
+            processors.forEach(f -> save(f.apply(o), Utils.interpolate(filePathTemplate, r)));
+          }
+
+          @Override
+          public String toString() {
+            return processors.stream().map(Object::toString).collect(Collectors.joining(";"));
+          }
+        }),
         predicate,
         executorService,
         false);

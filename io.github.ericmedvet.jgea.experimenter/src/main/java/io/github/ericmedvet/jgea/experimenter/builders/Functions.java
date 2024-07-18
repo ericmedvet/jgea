@@ -135,6 +135,43 @@ public class Functions {
   }
 
   @SuppressWarnings("unused")
+  public static <X, P extends XYPlot<D>, D> NamedFunction<X, BufferedImage> imagePlotter(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, P> beforeF,
+      @Param(value = "w", dI = -1) int w,
+      @Param(value = "h", dI = -1) int h,
+      @Param(value = "freeScales") boolean freeScales) {
+    UnaryOperator<ImageBuilder.ImageInfo> iiAdapter =
+        ii -> new ImageBuilder.ImageInfo(w == -1 ? ii.w() : w, h == -1 ? ii.h() : h);
+    Configuration configuration = freeScales ? Configuration.FREE_SCALES : Configuration.DEFAULT;
+    Function<P, BufferedImage> f = p -> {
+      if (p instanceof DistributionPlot dp) {
+        BoxPlotDrawer d = new BoxPlotDrawer(
+            configuration, Configuration.BoxPlot.DEFAULT, Configuration.Colors.DEFAULT.dataColors());
+        return d.build(iiAdapter.apply(d.imageInfo(dp)), dp);
+      }
+      if (p instanceof LandscapePlot lsp) {
+        LandscapePlotDrawer d = new LandscapePlotDrawer(
+            configuration, Configuration.LandscapePlot.DEFAULT, Configuration.Colors.DEFAULT.dataColors());
+        return d.build(iiAdapter.apply(d.imageInfo(lsp)), lsp);
+      }
+      if (p instanceof XYDataSeriesPlot xyp) {
+        // TODO add here a secondary option for points plot
+        LinesPlotDrawer d = new LinesPlotDrawer(
+            configuration, Configuration.LinesPlot.DEFAULT, Configuration.Colors.DEFAULT.dataColors());
+        return d.build(iiAdapter.apply(d.imageInfo(xyp)), xyp);
+      }
+      if (p instanceof UnivariateGridPlot ugp) {
+        UnivariateGridPlotDrawer d =
+            new UnivariateGridPlotDrawer(configuration, Configuration.UnivariateGridPlot.DEFAULT);
+        return d.build(iiAdapter.apply(d.imageInfo(ugp)), ugp);
+      }
+      throw new IllegalArgumentException(
+          "Unsupported type of plot %s".formatted(p.getClass().getSimpleName()));
+    };
+    return NamedFunction.from(f, "image.plotter").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
   public static <X, I extends Individual<G, S, Q>, G, S, Q> NamedFunction<X, Collection<I>> lasts(
       @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<I, G, S, Q, ?>> beforeF) {
     Function<POCPopulationState<I, G, S, Q, ?>, Collection<I>> f =
@@ -397,41 +434,5 @@ public class Functions {
     return FormattedNamedFunction.from(
             f, format, "validation.quality[%s]".formatted(NamedFunction.name(individualF)))
         .compose(beforeF);
-  }
-
-  public static <X, P extends XYPlot<D>, D> NamedFunction<X, BufferedImage> imagePlotter(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, P> beforeF,
-      @Param(value = "w", dI = -1) int w,
-      @Param(value = "h", dI = -1) int h,
-      @Param(value = "freeScales") boolean freeScales) {
-    UnaryOperator<ImageBuilder.ImageInfo> iiAdapter =
-        ii -> new ImageBuilder.ImageInfo(w == -1 ? ii.w() : w, h == -1 ? ii.h() : h);
-    Configuration configuration = freeScales ? Configuration.FREE_SCALES : Configuration.DEFAULT;
-    Function<P, BufferedImage> f = p -> {
-      if (p instanceof DistributionPlot dp) {
-        BoxPlotDrawer d = new BoxPlotDrawer(
-            configuration, Configuration.BoxPlot.DEFAULT, Configuration.Colors.DEFAULT.dataColors());
-        return d.build(iiAdapter.apply(d.imageInfo(dp)), dp);
-      }
-      if (p instanceof LandscapePlot lsp) {
-        LandscapePlotDrawer d = new LandscapePlotDrawer(
-            configuration, Configuration.LandscapePlot.DEFAULT, Configuration.Colors.DEFAULT.dataColors());
-        return d.build(iiAdapter.apply(d.imageInfo(lsp)), lsp);
-      }
-      if (p instanceof XYDataSeriesPlot xyp) {
-        // TODO add here a secondary option for points plot
-        LinesPlotDrawer d = new LinesPlotDrawer(
-            configuration, Configuration.LinesPlot.DEFAULT, Configuration.Colors.DEFAULT.dataColors());
-        return d.build(iiAdapter.apply(d.imageInfo(xyp)), xyp);
-      }
-      if (p instanceof UnivariateGridPlot ugp) {
-        UnivariateGridPlotDrawer d =
-            new UnivariateGridPlotDrawer(configuration, Configuration.UnivariateGridPlot.DEFAULT);
-        return d.build(iiAdapter.apply(d.imageInfo(ugp)), ugp);
-      }
-      throw new IllegalArgumentException(
-          "Unsupported type of plot %s".formatted(p.getClass().getSimpleName()));
-    };
-    return NamedFunction.from(f, "image.plotter").compose(beforeF);
   }
 }

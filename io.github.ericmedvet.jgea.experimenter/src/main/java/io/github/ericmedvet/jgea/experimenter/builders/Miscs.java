@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @Discoverable(prefixTemplate = "ea.misc")
@@ -57,6 +58,21 @@ public class Miscs {
   @SuppressWarnings("unused")
   public static <K, V> Map.Entry<K, V> entry(@Param("key") K key, @Param("value") V value) {
     return Map.entry(key, value);
+  }
+
+  @SuppressWarnings("unused")
+  public static <E, R> AccumulatorFactory<E, E, R> lastPopulation() {
+    return AccumulatorFactory.last(new BiFunction<>() {
+      @Override
+      public E apply(E e, R r) {
+        return e;
+      }
+
+      @Override
+      public String toString() {
+        return "identity";
+      }
+    });
   }
 
   @SuppressWarnings("unused")

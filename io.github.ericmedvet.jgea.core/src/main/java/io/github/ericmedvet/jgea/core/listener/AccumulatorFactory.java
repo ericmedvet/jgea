@@ -19,6 +19,7 @@
  */
 package io.github.ericmedvet.jgea.core.listener;
 
+import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.*;
@@ -50,7 +51,7 @@ public interface AccumulatorFactory<E, O, K> extends ListenerFactory<E, K> {
   }
 
   static <E, O, K> AccumulatorFactory<E, O, K> last(BiFunction<E, K, O> function) {
-    return k -> Accumulator.<E>last().then(e -> function.apply(e, k));
+    return k -> Accumulator.<E>last().then(NamedFunction.from(e -> function.apply(e, k), function.toString()));
   }
 
   @Override
@@ -89,7 +90,17 @@ public interface AccumulatorFactory<E, O, K> extends ListenerFactory<E, K> {
     return new AccumulatorFactory<>() {
       @Override
       public Accumulator<E, O> build(K k) {
-        return thisFactory.build(k).thenOnDone(o -> consumer.accept(k, o));
+        return thisFactory.build(k).thenOnDone(new Consumer<>() {
+          @Override
+          public void accept(O o) {
+            consumer.accept(k, o);
+          }
+
+          @Override
+          public String toString() {
+            return consumer.toString();
+          }
+        });
       }
 
       @Override

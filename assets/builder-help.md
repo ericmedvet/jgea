@@ -1332,6 +1332,12 @@ Produces <code><abbr title="java.awt.Color">Color</abbr></code>; built from `io.
 
 Produces <code><abbr title="java.util.Map$Entry">Map$Entry</abbr>&lt;K, V&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Miscs.entry()` by jgea-experimenter:2.6.2-SNAPSHOT
 
+### Builder `ea.misc.lastPopulation()`
+
+`ea.misc.lastPopulation()`
+
+Produces <code><abbr title="io.github.ericmedvet.jgea.core.listener.AccumulatorFactory">AccumulatorFactory</abbr>&lt;E, E, R&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Miscs.lastPopulation()` by jgea-experimenter:2.6.2-SNAPSHOT
+
 ### Builder `ea.misc.lastPopulationMap()`
 
 `ea.misc.lastPopulationMap(serializerF)`

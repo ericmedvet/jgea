@@ -63,6 +63,11 @@ ea.experiment(
     ea.l.lastPopulationSaver(
       filePathTemplate = "../last-pop-{solver.name}-{randomGenerator.seed:%04d}"
     );
+    ea.l.runSaver(
+      filePathTemplate = "../best-field-{solver.name}-{randomGenerator.seed:%04d}";
+      of = ea.misc.lastPopulation();
+      processors = [ea.f.solution(of = ea.f.best())]
+    );
     ea.l.runPlotSaver(
       filePathTemplate = "../archives-point-nav-{solver.name}-{randomGenerator.seed:%04d}";
       of = ea.plot.single.me(values = [ea.f.simQuality(of = ea.f.quality())]);
