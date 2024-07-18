@@ -505,6 +505,14 @@ public class Listeners {
                 processors = [ea.f.imagePlotter()]
               )
               """) // spotless:on
+  @Alias(
+      name = "lastPopulationSaver",
+      value = // spotless:off
+          """
+              runSaver(
+                of = ea.misc.lastPopulationMap()
+              )
+              """) // spotless:on
   public static <E, O> BiFunction<Experiment, ExecutorService, ListenerFactory<E, Run<?, ?, ?, ?>>> runSaver(
       @Param("of") AccumulatorFactory<E, O, Run<?, ?, ?, ?>> accumulatorFactory,
       @Param(

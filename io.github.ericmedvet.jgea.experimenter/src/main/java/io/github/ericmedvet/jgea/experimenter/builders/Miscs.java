@@ -61,7 +61,7 @@ public class Miscs {
 
   @SuppressWarnings("unused")
   public static <G>
-      AccumulatorFactory<POCPopulationState<?, G, ?, ?, ?>, NamedParamMap, Run<?, G, ?, ?>> lastPopulation(
+      AccumulatorFactory<POCPopulationState<?, G, ?, ?, ?>, NamedParamMap, Run<?, G, ?, ?>> lastPopulationMap(
           @Param(value = "serializerF", dNPM = "f.toBase64()") Function<Object, String> serializer) {
     return AccumulatorFactory.last((s, run) -> new MapNamedParamMap(
         "ea.runOutcome",
