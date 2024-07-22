@@ -441,35 +441,6 @@ public class Listeners {
   @SuppressWarnings("unused")
   public static <G, S, Q, K>
       BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
-          runLastIterationImageSaver(
-              @Param(value = "function", dNPM = "ea.f.best()")
-                  Function<POCPopulationState<?, G, S, Q, ?>, K> function,
-              @Param("image") ImageBuilder<K> imagerBuilder,
-              @Param(value = "w", dI = 500) int w,
-              @Param(value = "h", dI = 500) int h,
-              @Param(value = "filePathTemplate", dS = "run-{index:%04d}.png") String filePathTemplate,
-              @Param(value = "condition", dNPM = "predicate.always()")
-                  Predicate<Run<?, G, S, Q>> predicate) {
-    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        run -> Listener.<POCPopulationState<?, G, S, Q, ?>>named(
-            state -> {
-              File file = Misc.checkExistenceAndChangeName(
-                  new File(Utils.interpolate(filePathTemplate, run)));
-              try {
-                imagerBuilder.save(new ImageBuilder.ImageInfo(w, h), file, function.apply(state));
-              } catch (IOException e) {
-                L.severe("Cannot save image at '%s': %s".formatted(file.getPath(), e));
-              }
-            },
-            "runLastIterationImageSaver"),
-        predicate,
-        executorService,
-        true);
-  }
-
-  @SuppressWarnings("unused")
-  public static <G, S, Q, K>
-      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
           runLastIterationVideoSaver(
               @Param(value = "function", dNPM = "ea.f.best()")
                   Function<POCPopulationState<?, G, S, Q, ?>, K> function,

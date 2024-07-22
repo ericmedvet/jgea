@@ -461,6 +461,18 @@ public class Functions {
   }
 
   @SuppressWarnings("unused")
+  public static <X, D> NamedFunction<X, BufferedImage> toImage(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, D> beforeF,
+      @Param("image") ImageBuilder<D> imager,
+      @Param(value = "w", dI = -1) int w,
+      @Param(value = "h", dI = -1) int h) {
+    UnaryOperator<ImageBuilder.ImageInfo> iiAdapter =
+        ii -> new ImageBuilder.ImageInfo(w == -1 ? ii.w() : w, h == -1 ? ii.h() : h);
+    Function<D, BufferedImage> f = d -> imager.build(iiAdapter.apply(imager.imageInfo(d)), d);
+    return NamedFunction.from(f, "to.image[%s]".formatted(imager)).compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
   public static <X, I extends Individual<?, S, Q>, S, Q, P extends ProblemWithValidation<S, Q>>
       FormattedNamedFunction<X, Q> validationQuality(
           @Param(value = "of", dNPM = "f.identity()") Function<X, POCPopulationState<?, ?, S, Q, P>> beforeF,
