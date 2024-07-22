@@ -21,6 +21,7 @@ package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jnb.core.Discoverable;
 
+// TODO remove and replace with new builders in SinglePlots
 @Discoverable(prefixTemplate = "ea.plot")
 public class Plots {
 
