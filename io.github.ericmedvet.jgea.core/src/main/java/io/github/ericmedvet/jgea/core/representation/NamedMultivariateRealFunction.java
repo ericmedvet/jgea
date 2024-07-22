@@ -98,7 +98,7 @@ public interface NamedMultivariateRealFunction extends MultivariateRealFunction 
                 return "all:%s".formatted(f);
               }
             },
-            nOfInputs(),
+            nOfOutputs(),
             nOfOutputs()),
         yVarNames(),
         yVarNames()));

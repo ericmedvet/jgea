@@ -1,5 +1,5 @@
 ea.experiment(
-  runs = (randomGenerator = (seed = [-10:1:-1]) * [m.defaultRG()]) * [ea.run(
+  runs = (randomGenerator = (seed = [1]) * [m.defaultRG()]) * [ea.run(
       name = "robotnav_maze_tree";
       problem = ea.p.numEnvTo(
       dT = 0.1;
@@ -15,7 +15,7 @@ ea.experiment(
       type = minimize
     );
     solver = ea.s.mapElites(
-      representation = ea.representation.multiSRTree(crossoverP = 0.0);
+      representation = ea.representation.multiSRTree();
       mapper = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf());
       nPop = 100;
       nEval = 4000;
@@ -41,6 +41,11 @@ ea.experiment(
         ea.f.simQuality(of = ea.f.quality(of = ea.f.best()); format = "%9.5f")
       ];
       onlyLast = true
+    );
+    ea.l.runSaver(
+      filePathTemplate = "../best-traj-{solver.name}-{randomGenerator.seed:%04d}";
+      of = ea.misc.lastPopulation();
+      processors = [ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best())))]
     )
   ]
 )
