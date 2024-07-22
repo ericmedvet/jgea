@@ -1,9 +1,9 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1]) * [m.defaultRG()]) *
     (problem = [
-        ea.p.numEnvTo(environment = ds.e.pointNavigation(arena = E_MAZE; robotMaxV = 0.05); f = ds.e.n.minD(); finalT = 30)
+        ea.p.numEnvTo(environment = ds.e.pointNavigation(arena = E_MAZE; robotMaxV = 0.05); f = ds.e.n.minD(); finalT = 10)
       ]) *
-      (solver = (nEval = [10000]) * [
+      (solver = (nEval = [2000]) * [
         ea.s.mapElites(
           name = "me-ne-10-4";
           representation = ea.r.doubleString();
@@ -48,7 +48,8 @@ ea.experiment(
         ea.f.meValue(of = f.nTh(of = ea.f.meCoordinates(of = ea.f.best()); n = 1));
         ea.f.id(of = ea.f.best());
         f.nTh(of = ea.f.parentIds(of = ea.f.best()); n = 0)
-      ]
+      ];
+      onlyLast = true
     );
     ea.l.runLastIterationImageSaver(
       function = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best()));
@@ -77,6 +78,7 @@ ea.experiment(
     );
     ea.l.expPlotSaver(
       filePath = "../point-nav-fitness";
+      processors = [ea.f.imagePlotter(); ea.f.csvPlotter()];
       of = ea.plot.multi.quality(y = ea.f.simQuality(of = ea.f.quality(of = ea.f.best())))
     )
   ]

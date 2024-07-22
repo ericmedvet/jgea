@@ -46,6 +46,10 @@ import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jviz.core.drawer.ImageBuilder;
 import io.github.ericmedvet.jviz.core.plot.*;
+import io.github.ericmedvet.jviz.core.plot.csv.DistributionPlotCsvBuilder;
+import io.github.ericmedvet.jviz.core.plot.csv.LandscapePlotCsvBuilder;
+import io.github.ericmedvet.jviz.core.plot.csv.UnivariateGridPlotCsvBuilder;
+import io.github.ericmedvet.jviz.core.plot.csv.XYDataSeriesPlotCsvBuilder;
 import io.github.ericmedvet.jviz.core.plot.image.*;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
@@ -81,6 +85,41 @@ public class Functions {
     Function<POCPopulationState<I, G, S, Q, ?>, I> f =
         state -> state.pocPopulation().firsts().iterator().next();
     return NamedFunction.from(f, "best").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, P extends XYPlot<D>, D> NamedFunction<X, String> csvPlotter(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, P> beforeF,
+      @Param(value = "columnNameJoiner", dS = ".") String columnNameJoiner,
+      @Param(value = "doubleFormat", dS = "%.3e") String doubleFormat,
+      @Param(value = "delimiter", dS = "\t") String delimiter,
+      @Param(value = "missingDataString", dS = "nan") String missingDataString,
+      @Param(value = "mode", dS = "paper_friendly")
+          io.github.ericmedvet.jviz.core.plot.csv.Configuration.Mode mode) {
+    io.github.ericmedvet.jviz.core.plot.csv.Configuration configuration =
+        new io.github.ericmedvet.jviz.core.plot.csv.Configuration(
+            columnNameJoiner,
+            doubleFormat,
+            delimiter,
+            List.of(new io.github.ericmedvet.jviz.core.plot.csv.Configuration.Replacement("\\W+", ".")),
+            missingDataString);
+    Function<P, String> f = p -> {
+      if (p instanceof DistributionPlot dp) {
+        return new DistributionPlotCsvBuilder(configuration, mode).apply(dp);
+      }
+      if (p instanceof LandscapePlot lsp) {
+        return new LandscapePlotCsvBuilder(configuration, mode).apply(lsp);
+      }
+      if (p instanceof XYDataSeriesPlot xyp) {
+        return new XYDataSeriesPlotCsvBuilder(configuration, mode).apply(xyp);
+      }
+      if (p instanceof UnivariateGridPlot ugp) {
+        return new UnivariateGridPlotCsvBuilder(configuration, mode).apply(ugp);
+      }
+      throw new IllegalArgumentException(
+          "Unsupported type of plot %s".formatted(p.getClass().getSimpleName()));
+    };
+    return NamedFunction.from(f, "csv.plotter").compose(beforeF);
   }
 
   @SuppressWarnings("unused")

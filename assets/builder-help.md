@@ -422,6 +422,21 @@ Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.NamedFunction
 
 Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.NamedFunction">NamedFunction</abbr>&lt;X, I&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Functions.best()` by jgea-experimenter:2.6.2-SNAPSHOT
 
+### Builder `ea.function.csvPlotter()`
+
+`ea.f.csvPlotter(of; columnNameJoiner; doubleFormat; delimiter; missingDataString; mode)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `of` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, P&gt;</code> |
+| `columnNameJoiner` | s | `.` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `doubleFormat` | s | `%.3e` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `delimiter` | s | `	` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `missingDataString` | s | `nan` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `mode` | e | `PAPER_FRIENDLY` | <code><abbr title="io.github.ericmedvet.jviz.core.plot.csv.Configuration$Mode">Configuration$Mode</abbr></code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.NamedFunction">NamedFunction</abbr>&lt;X, <abbr title="java.lang.String">String</abbr>&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Functions.csvPlotter()` by jgea-experimenter:2.6.2-SNAPSHOT
+
 ### Builder `ea.function.elapsedSecs()`
 
 `ea.f.elapsedSecs(of; format)`
