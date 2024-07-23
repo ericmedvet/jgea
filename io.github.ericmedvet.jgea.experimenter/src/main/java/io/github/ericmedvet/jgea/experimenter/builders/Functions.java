@@ -178,7 +178,8 @@ public class Functions {
       @Param(value = "of", dNPM = "f.identity()") Function<X, P> beforeF,
       @Param(value = "w", dI = -1) int w,
       @Param(value = "h", dI = -1) int h,
-      @Param(value = "freeScales") boolean freeScales) {
+      @Param("freeScales") boolean freeScales,
+      @Param("secondary") boolean secondary) {
     UnaryOperator<ImageBuilder.ImageInfo> iiAdapter =
         ii -> new ImageBuilder.ImageInfo(w == -1 ? ii.w() : w, h == -1 ? ii.h() : h);
     Configuration configuration = freeScales ? Configuration.FREE_SCALES : Configuration.DEFAULT;
@@ -194,9 +195,15 @@ public class Functions {
         return d.build(iiAdapter.apply(d.imageInfo(lsp)), lsp);
       }
       if (p instanceof XYDataSeriesPlot xyp) {
-        // TODO add here a secondary option for points plot
-        LinesPlotDrawer d = new LinesPlotDrawer(
-            configuration, Configuration.LinesPlot.DEFAULT, Configuration.Colors.DEFAULT.dataColors());
+        AbstractXYDataSeriesPlotDrawer d = (!secondary)
+            ? new LinesPlotDrawer(
+                configuration,
+                Configuration.LinesPlot.DEFAULT,
+                Configuration.Colors.DEFAULT.dataColors())
+            : new PointsPlotDrawer(
+                configuration,
+                Configuration.PointsPlot.DEFAULT,
+                Configuration.Colors.DEFAULT.dataColors());
         return d.build(iiAdapter.apply(d.imageInfo(xyp)), xyp);
       }
       if (p instanceof UnivariateGridPlot ugp) {
