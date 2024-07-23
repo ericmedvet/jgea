@@ -56,12 +56,12 @@ ea.experiment(
     );
     ea.l.runSaver(
       filePathTemplate = "../best-traj-{solver.name}-{randomGenerator.seed:%04d}";
-      of = ea.misc.lastPopulation();
+      of = ea.acc.last();
       processors = [ea.f.toImage(image = ds.d.pointNavigation(); of = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best())))]
     );
     ea.l.runSaver(
       filePathTemplate = "../best-field-{solver.name}-{randomGenerator.seed:%04d}";
-      of = ea.misc.lastPopulation();
+      of = ea.acc.last();
       processors = [ea.f.toImage(image = ds.d.vectorField(arena = E_MAZE); of = ea.f.solution(of = ea.f.best()))]
     );
     ea.l.runPlotSaver(

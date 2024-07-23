@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @Discoverable(prefixTemplate = "ea.misc")
@@ -60,21 +59,7 @@ public class Miscs {
     return Map.entry(key, value);
   }
 
-  @SuppressWarnings("unused")
-  public static <E, R> AccumulatorFactory<E, E, R> lastPopulation() {
-    return AccumulatorFactory.last(new BiFunction<>() {
-      @Override
-      public E apply(E e, R r) {
-        return e;
-      }
-
-      @Override
-      public String toString() {
-        return "identity";
-      }
-    });
-  }
-
+  // TODO replace with some alias using last() accumulator and a function for mapping a pop to a map (to be built)
   @SuppressWarnings("unused")
   public static <G>
       AccumulatorFactory<POCPopulationState<?, G, ?, ?, ?>, NamedParamMap, Run<?, G, ?, ?>> lastPopulationMap(

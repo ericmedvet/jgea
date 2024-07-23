@@ -371,6 +371,46 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.experimenter.Run">Run</abb
 
 Produces <code><abbr title="io.github.ericmedvet.jgea.experimenter.RunOutcome">RunOutcome</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.RunOutcome()` by jgea-experimenter:2.6.2-SNAPSHOT
 
+## Package `ea.accumulator`
+
+Aliases: `ea.a`, `ea.acc`, `ea.accumulator`
+
+### Builder `ea.accumulator.all()`
+
+`ea.a.all(n; eFunction; listFunction)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `n` | i | `3` | <code>int</code> |
+| `eFunction` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;E, F&gt;</code> |
+| `listFunction` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;<abbr title="java.util.List">List</abbr>&lt;F&gt;, O&gt;</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jgea.core.listener.AccumulatorFactory">AccumulatorFactory</abbr>&lt;E, O, R&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Accumulators.all()` by jgea-experimenter:2.6.2-SNAPSHOT
+
+### Builder `ea.accumulator.first()`
+
+`ea.a.first(n; eFunction; listFunction)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `n` | i | `3` | <code>int</code> |
+| `eFunction` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;E, F&gt;</code> |
+| `listFunction` | npm | `f.nTh(n = 1)` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;<abbr title="java.util.List">List</abbr>&lt;F&gt;, O&gt;</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jgea.core.listener.AccumulatorFactory">AccumulatorFactory</abbr>&lt;E, O, R&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Accumulators.all()` by jgea-experimenter:2.6.2-SNAPSHOT
+
+### Builder `ea.accumulator.last()`
+
+`ea.a.last(n; eFunction; listFunction)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `n` | i | `3` | <code>int</code> |
+| `eFunction` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;E, F&gt;</code> |
+| `listFunction` | npm | `f.nTh(n = -1)` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;<abbr title="java.util.List">List</abbr>&lt;F&gt;, O&gt;</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jgea.core.listener.AccumulatorFactory">AccumulatorFactory</abbr>&lt;E, O, R&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Accumulators.all()` by jgea-experimenter:2.6.2-SNAPSHOT
+
 ## Package `ea.drawer`
 
 Aliases: `ea.d`, `ea.drawer`
@@ -1345,12 +1385,6 @@ Produces <code><abbr title="java.awt.Color">Color</abbr></code>; built from `io.
 | `value` | npm |  | <code>V</code> |
 
 Produces <code><abbr title="java.util.Map$Entry">Map$Entry</abbr>&lt;K, V&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Miscs.entry()` by jgea-experimenter:2.6.2-SNAPSHOT
-
-### Builder `ea.misc.lastPopulation()`
-
-`ea.misc.lastPopulation()`
-
-Produces <code><abbr title="io.github.ericmedvet.jgea.core.listener.AccumulatorFactory">AccumulatorFactory</abbr>&lt;E, E, R&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Miscs.lastPopulation()` by jgea-experimenter:2.6.2-SNAPSHOT
 
 ### Builder `ea.misc.lastPopulationMap()`
 
