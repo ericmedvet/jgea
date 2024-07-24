@@ -27,6 +27,7 @@ import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.State;
+import io.github.ericmedvet.jgea.core.solver.cabea.GridPopulationState;
 import io.github.ericmedvet.jgea.core.solver.mapelites.Archive;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MEIndividual;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MEPopulationState;
@@ -425,6 +426,13 @@ public class Functions {
       @Param(value = "format", dS = "%s") String format) {
     Function<Individual<?, S, ?>, S> f = Individual::solution;
     return FormattedNamedFunction.from(f, format, "solution").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, G, S, Q> NamedFunction<X, Grid<Individual<G, S, Q>>> stateGrid(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, GridPopulationState<G, S, Q, ?>> beforeF) {
+    Function<GridPopulationState<G, S, Q, ?>, Grid<Individual<G, S, Q>>> f = GridPopulationState::gridPopulation;
+    return NamedFunction.from(f, "grid").compose(beforeF);
   }
 
   @SuppressWarnings("unused")

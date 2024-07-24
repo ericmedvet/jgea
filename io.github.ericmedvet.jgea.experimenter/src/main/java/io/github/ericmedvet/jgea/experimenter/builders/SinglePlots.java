@@ -26,6 +26,7 @@ import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.LandscapeSEPAF;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.UnivariateGridSEPAF;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeriesSEPAF;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeriesSRPAF;
 import io.github.ericmedvet.jnb.core.Alias;
 import io.github.ericmedvet.jnb.core.Discoverable;
@@ -33,6 +34,7 @@ import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -57,8 +59,19 @@ public class SinglePlots {
       value = // spotless:off
           """
               gridRun(
+                title = ea.f.runString(name = title; s = "Archive of {solver.name} on {problem.name} (seed={randomGenerator.seed})");
                 values = [ea.f.quality()];
                 grid = ea.f.archiveToGrid(of = ea.f.meArchive())
+              )
+              """) // spotless:on
+  @Alias(
+      name = "gridState",
+      value = // spotless:off
+          """
+              gridRun(
+                title = ea.f.runString(name = title; s = "Grid population of {solver.name} on {problem.name} (seed={randomGenerator.seed})");
+                values = [ea.f.quality()];
+                grid = ea.f.stateGrid()
               )
               """) // spotless:on
   public static <E, R, X, G> UnivariateGridSEPAF<E, R, X, G> grid(
@@ -73,6 +86,7 @@ public class SinglePlots {
         titleFunction, predicateValueFunction, condition, unique, gridFunction, valueFunctions, valueRange);
   }
 
+  @SuppressWarnings("unused")
   public static <X, P extends QualityBasedProblem<S, Double>, S>
       LandscapeSEPAF<
               POCPopulationState<Individual<List<Double>, S, Double>, List<Double>, S, Double, P>,
@@ -131,12 +145,51 @@ public class SinglePlots {
         valueRange);
   }
 
-  @SuppressWarnings("unused")
   @Alias(
-      name = "xysRun",
+      name = "biObjectivePopulation",
       value = // spotless:off
           """
-              xys(
+              xyes(
+                title = ea.f.runString(name = title; s = "Fronts with {solver.name} on {problem.name} (seed={randomGenerator.seed})");
+                x = f.nTh(of = ea.f.quality(); n = 0);
+                y = f.nTh(of = ea.f.quality(); n = 1);
+                points = [
+                  ea.f.firsts();
+                  ea.f.mids();
+                  ea.f.lasts()
+                ];
+                predicateValue = f.quantized(of = ea.f.rate(of = ea.f.progress()); q = 0.05; format = "%.2f");
+                condition = predicate.inD(values = [0; 0.1; 0.25; 0.50; 1])
+              )
+              """) // spotless:on
+  public static <E, R, X, P> XYDataSeriesSEPAF<E, R, X, P> xyes(
+      @Param("title") Function<? super R, String> titleFunction,
+      @Param("points") List<Function<? super E, Collection<P>>> pointFunctions,
+      @Param("x") Function<? super P, ? extends Number> xFunction,
+      @Param("y") Function<? super P, ? extends Number> yFunction,
+      @Param("predicateValue") Function<E, X> predicateValueFunction,
+      @Param(value = "unique", dB = true) boolean unique,
+      @Param(value = "condition", dNPM = "predicate.ltEq(t=1)") Predicate<X> condition,
+      @Param(value = "xRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
+      @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange) {
+    return new XYDataSeriesSEPAF<>(
+        titleFunction,
+        predicateValueFunction,
+        condition,
+        unique,
+        pointFunctions,
+        xFunction,
+        yFunction,
+        xRange,
+        yRange);
+  }
+
+  @SuppressWarnings("unused")
+  @Alias(
+      name = "xyrsRun",
+      value = // spotless:off
+          """
+              xyrs(
                 title = ea.f.runString(name = title; s = "{solver.name} on {problem.name} (seed={randomGenerator.seed})");
                 x = ea.f.nOfEvals()
               )
@@ -145,13 +198,13 @@ public class SinglePlots {
       name = "quality",
       value = // spotless:off
           """
-              xysRun(ys = [ea.f.quality(of = ea.f.best())])
+              xyrsRun(ys = [ea.f.quality(of = ea.f.best())])
               """) // spotless:on
   @Alias(
       name = "uniqueness",
       value = // spotless:off
           """
-              xysRun(
+              xyrsRun(
                 ys = [
                   f.uniqueness(of = f.each(mapF = ea.f.genotype(); of = ea.f.all()));
                   f.uniqueness(of = f.each(mapF = ea.f.solution(); of = ea.f.all()));
@@ -159,7 +212,7 @@ public class SinglePlots {
                 ]
               )
               """) // spotless:on
-  public static <E, R> XYDataSeriesSRPAF<E, R> xys(
+  public static <E, R> XYDataSeriesSRPAF<E, R> xyrs(
       @Param("title") Function<? super R, String> titleFunction,
       @Param("x") Function<? super E, ? extends Number> xFunction,
       @Param("ys") List<Function<? super E, ? extends Number>> yFunctions,

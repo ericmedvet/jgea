@@ -1,10 +1,10 @@
 ea.experiment(
   runs =
     (randomGenerator = (seed = [1:1:5]) * [m.defaultRG()]) *
-    (solver = (nEval = [5000]) *
+    (solver = (nEval = [10000]) *
     (representation = [ea.r.doubleString()]) * [
-      ea.s.ga(maxUniquenessAttempts = 0);
       ea.s.nsga2(maxUniquenessAttempts = 0);
+      ea.s.ga(maxUniquenessAttempts = 0);
       ea.s.mapElites(name = "me-3"; descriptors = [
         ea.s.me.d.descriptor(f = f.avg(of = f.nkTh(of = ea.f.genotype(); n = 3; k = 0)); min = -1; max = 1);
         ea.s.me.d.descriptor(f = f.avg(of = f.nkTh(of = ea.f.genotype(); n = 3; k = 1)); min = -1; max = 1)
@@ -38,15 +38,13 @@ ea.experiment(
           maxReference = [5; 5];
           format = "%5.2f"
         )
-      ]
+      ];
+      onlyLast = false
     );
     ea.l.expPlotSaver(
-      filePath = "../monum-hv-vs-evals.png";
-      w = 600; h = 700;
-      type = lines;
-      plot = ea.plot.xyPlotMatrix(
-        xFunction = f.quantized(of = ea.f.nOfEvals(); q = 250);
-        yFunction = ea.f.hypervolume2D(
+      filePath = "../monum-hv-vs-evals";
+      of = ea.plot.multi.xyExp(
+        y = ea.f.hypervolume2D(
           of = f.each(of = ea.f.firsts(); mapF = ea.f.quality());
           minReference = [0; 0];
           maxReference = [5; 5]
@@ -54,12 +52,9 @@ ea.experiment(
       )
     );
     ea.l.expPlotSaver(
-      filePath = "../monum-hv-boxplot.png";
-      w = 600; h = 700;
-      freeScales = true;
-      type = boxplot;
-      plot = ea.plot.yBoxplotMatrix(
-        yFunction = ea.f.hypervolume2D(
+      filePath = "../monum-hv-boxplot";
+      of = ea.plot.multi.yBoxplotExp(
+        y = ea.f.hypervolume2D(
           of = f.each(of = ea.f.firsts(); mapF = ea.f.quality());
           minReference = [0; 0];
           maxReference = [5; 5]
@@ -67,90 +62,52 @@ ea.experiment(
       )
     );
     ea.l.expPlotSaver(
-      filePath = "../monum-obj0-vs-evals.png";
-      w = 600; h = 700;
-      type = lines;
-      plot = ea.plot.xyPlotMatrix(
-        xFunction = f.quantized(of = ea.f.nOfEvals(); q = 250);
-        yFunction = f.min(of = f.each(of = ea.f.all(); mapF = f.nTh(of = ea.f.quality(); n = 0)))
+      filePath = "../monum-obj0-vs-evals";
+      of = ea.plot.multi.xyExp(
+        y = f.min(of = f.each(of = ea.f.all(); mapF = f.nTh(of = ea.f.quality(); n = 0)))
       )
     );
     ea.l.expPlotSaver(
-      w = 600; h = 700;
-      filePath = "../monum-obj1-vs-evals.png";
-      type = lines;
-      plot = ea.plot.xyPlotMatrix(
-        xFunction = f.quantized(of = ea.f.nOfEvals(); q = 250);
-        yFunction = f.min(of = f.each(of = ea.f.all(); mapF = f.nTh(of = ea.f.quality(); n = 1)))
+      filePath = "../monum-obj1-vs-evals";
+      of = ea.plot.multi.xyExp(
+        y = f.min(of = f.each(of = ea.f.all(); mapF = f.nTh(of = ea.f.quality(); n = 1)))
       )
     );
     ea.l.runPlotSaver(
-      w = 1000; h = 700;
-      filePathTemplate = "../grids-{problem.name}-{solver.name}-{randomGenerator.seed}.png";
-      type = univariate_grid;
-      plot = ea.plot.gridPopulation(
-        individualFunctions = [
+      filePathTemplate = "../grids-{problem.name}-{solver.name}-{randomGenerator.seed}";
+      of = ea.plot.single.gridState(
+        values = [
           f.nTh(of = ea.f.quality(); n = 0);
           f.nTh(of = ea.f.quality(); n = 1)
-        ];
-        predicateValue = f.quantized(of = ea.f.nOfEvals(); q = 1000);
-        condition = predicate.inD(
-          values = [0; 5000; 10000; 15000; 20000; 25000]
-        )
+        ]
       );
       condition = predicate.all(conditions = [
-        predicate.matches(
-          f = ea.f.runKey(runKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}"));
-          regex = "cabea.*"
-        );
-        predicate.inS(
-          f = ea.f.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
-          values = ["1"]
-        )
+        predicate.matches(f = ea.f.runKey(key = "solver.name"); regex = "cabea.*");
+        predicate.inS(f = ea.f.runKey(key = "randomGenerator.seed"); values = ["1"])
       ])
     );
     ea.l.runPlotSaver(
-      w = 1000; h = 300;
-      filePathTemplate = "../fronts-{problem.name}-{solver.name}-{randomGenerator.seed}.png";
-      type = points;
-      plot = ea.plot.biObjectivePopulation(
-        predicateValue = f.quantized(of = ea.f.nOfEvals(); q = 1000);
-        condition = predicate.inD(
-          values = [0; 5000; 10000; 15000; 20000; 25000]
-        );
+      filePathTemplate = "../fronts-{problem.name}-{solver.name}-{randomGenerator.seed}";
+      of = ea.plot.single.biObjectivePopulation(
         xRange = m.range(min = 0; max = 1);
         yRange = m.range(min = 0; max = 1)
       );
       condition = predicate.all(conditions = [
-        predicate.inS(
-          f = ea.f.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
-          values = ["1"]
-        )
-      ])
+        predicate.inS(f = ea.f.runKey(key = "randomGenerator.seed"); values = ["1"])
+      ]);
+      processors = [ea.f.imagePlotter(secondary = true)]
     );
     ea.l.runPlotSaver(
-      w = 1000; h = 350;
-      filePathTemplate = "../me-{problem.name}-{solver.name}-{randomGenerator.seed}.png";
-      type = univariate_grid;
-      plot = ea.plot.mapElitesPopulation(
-        predicateValue = f.quantized(of = ea.f.nOfEvals(); q = 1000);
-        individualFunctions = [
+      filePathTemplate = "../me-{problem.name}-{solver.name}-{randomGenerator.seed}";
+      of = ea.plot.single.me(
+        values = [
           f.nTh(of = ea.f.quality(); n = 0);
           f.nTh(of = ea.f.quality(); n = 1)
-        ];
-        condition = predicate.inD(
-          values = [0; 5000; 10000; 15000; 20000; 25000]
-        )
+        ]
       );
       condition = predicate.all(conditions = [
-        predicate.matches(
-          f = ea.f.runKey(runKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}"));
-          regex = "me.*"
-        );
-        predicate.inS(
-          f = ea.f.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
-          values = ["1"]
-        )
+        predicate.matches(f = ea.f.runKey(key = "solver.name"); regex = "me.*");
+        predicate.inS(f = ea.f.runKey(key = "randomGenerator.seed"); values = ["1"])
       ])
     )
   ]
