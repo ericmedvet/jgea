@@ -39,7 +39,7 @@ ea.experiment(
           format = "%5.2f"
         )
       ];
-      onlyLast = false
+      onlyLast = true
     );
     ea.l.expPlotSaver(
       filePath = "../monum-hv-vs-evals";

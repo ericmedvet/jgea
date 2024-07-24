@@ -249,7 +249,7 @@ public class NsgaII<G, S>
     List<Individual<G, S, List<Double>>> newIndividuals = (List) rankedIndividuals;
     return state.updatedWithIteration(
         offspringChildGenotypes.size(),
-        remap ? populationSize : 0,
+        offspringChildGenotypes.size() + (remap ? populationSize : 0),
         PartiallyOrderedCollection.from(newIndividuals, partialComparator(state.problem())));
   }
 }
