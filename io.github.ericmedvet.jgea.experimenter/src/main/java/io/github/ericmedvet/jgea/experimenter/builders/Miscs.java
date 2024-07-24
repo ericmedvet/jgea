@@ -59,7 +59,6 @@ public class Miscs {
     return Map.entry(key, value);
   }
 
-  // TODO replace with some alias using last() accumulator and a function for mapping a pop to a map (to be built)
   @SuppressWarnings("unused")
   public static <G>
       AccumulatorFactory<POCPopulationState<?, G, ?, ?, ?>, NamedParamMap, Run<?, G, ?, ?>> lastPopulationMap(

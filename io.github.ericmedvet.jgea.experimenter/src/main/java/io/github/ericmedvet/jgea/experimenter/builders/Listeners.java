@@ -485,7 +485,7 @@ public class Listeners {
       value = // spotless:off
           """
               runSaver(
-                of = ea.misc.lastPopulationMap()
+                of = ea.acc.lastPopulationMap()
               )
               """) // spotless:on
   public static <E, O> BiFunction<Experiment, ExecutorService, ListenerFactory<E, Run<?, ?, ?, ?>>> runSaver(
