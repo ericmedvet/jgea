@@ -882,7 +882,7 @@ Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.NamedFunction
 | `image` | npm |  | <code><abbr title="io.github.ericmedvet.jviz.core.drawer.ImageBuilder">ImageBuilder</abbr>&lt;D&gt;</code> |
 | `w` | i | `-1` | <code>int</code> |
 | `h` | i | `-1` | <code>int</code> |
-| `frameRate` | d | `20.0` | <code>double</code> |
+| `frameRate` | d | `10.0` | <code>double</code> |
 | `encoder` | e | `JCODEC` | <code><abbr title="io.github.ericmedvet.jviz.core.util.VideoUtils$EncoderFacility">VideoUtils$EncoderFacility</abbr></code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.NamedFunction">NamedFunction</abbr>&lt;X, <abbr title="io.github.ericmedvet.jviz.core.drawer.VideoBuilder$Video">VideoBuilder$Video</abbr>&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Functions.toImagesVideo()` by jgea-experimenter:2.6.2-SNAPSHOT
@@ -912,6 +912,22 @@ Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.NamedFunction
 | `format` | s | `%s` | <code><abbr title="java.lang.String">String</abbr></code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction">FormattedNamedFunction</abbr>&lt;X, Q&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Functions.validationQuality()` by jgea-experimenter:2.6.2-SNAPSHOT
+
+### Builder `ea.function.videoPlotter()`
+
+`ea.f.videoPlotter(of; w; h; encoder; frameRate; freeScales; secondary)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `of` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, P&gt;</code> |
+| `w` | i | `-1` | <code>int</code> |
+| `h` | i | `-1` | <code>int</code> |
+| `encoder` | e | `JCODEC` | <code><abbr title="io.github.ericmedvet.jviz.core.util.VideoUtils$EncoderFacility">VideoUtils$EncoderFacility</abbr></code> |
+| `frameRate` | d | `10.0` | <code>double</code> |
+| `freeScales` | b | `false` | <code>boolean</code> |
+| `secondary` | b | `false` | <code>boolean</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.NamedFunction">NamedFunction</abbr>&lt;X, <abbr title="io.github.ericmedvet.jviz.core.drawer.VideoBuilder$Video">VideoBuilder$Video</abbr>&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Functions.videoPlotter()` by jgea-experimenter:2.6.2-SNAPSHOT
 
 ## Package `ea.grammar`
 
@@ -1600,7 +1616,7 @@ Aliases: `ea.plot.s`, `ea.plot.single`
 | `values` | npm[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.util.function.Function">Function</abbr>&lt;? super G, ? extends <abbr title="java.lang.Number">Number</abbr>&gt;&gt;</code> |
 | `grid` | npm |  | <code><abbr title="java.util.function.Function">Function</abbr>&lt;? super E, <abbr title="io.github.ericmedvet.jnb.datastructure.Grid">Grid</abbr>&lt;G&gt;&gt;</code> |
 | `predicateValue` | npm |  | <code><abbr title="java.util.function.Function">Function</abbr>&lt;E, X&gt;</code> |
-| `condition` | npm | `predicate.gtEq(t = 1)` | <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code> |
+| `condition` | npm | `predicate.ltEq(t = 1)` | <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code> |
 | `valueRange` | npm | `m.range(min = -Infinity; max = Infinity)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `unique` | b | `true` | <code>boolean</code> |
 

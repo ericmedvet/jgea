@@ -52,6 +52,8 @@ import io.github.ericmedvet.jviz.core.plot.csv.LandscapePlotCsvBuilder;
 import io.github.ericmedvet.jviz.core.plot.csv.UnivariateGridPlotCsvBuilder;
 import io.github.ericmedvet.jviz.core.plot.csv.XYDataSeriesPlotCsvBuilder;
 import io.github.ericmedvet.jviz.core.plot.image.*;
+import io.github.ericmedvet.jviz.core.plot.image.Configuration;
+import io.github.ericmedvet.jviz.core.plot.video.*;
 import io.github.ericmedvet.jviz.core.util.VideoUtils;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -488,7 +490,7 @@ public class Functions {
       @Param("image") ImageBuilder<D> imageBuilder,
       @Param(value = "w", dI = -1) int w,
       @Param(value = "h", dI = -1) int h,
-      @Param(value = "frameRate", dD = 20) double frameRate,
+      @Param(value = "frameRate", dD = 10) double frameRate,
       @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder) {
     UnaryOperator<VideoBuilder.VideoInfo> viAdapter =
         vi -> new VideoBuilder.VideoInfo(w == -1 ? vi.w() : w, h == -1 ? vi.h() : h, encoder);
@@ -536,5 +538,65 @@ public class Functions {
     return FormattedNamedFunction.from(
             f, format, "validation.quality[%s]".formatted(NamedFunction.name(individualF)))
         .compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, P extends XYPlot<D>, D> NamedFunction<X, VideoBuilder.Video> videoPlotter(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, P> beforeF,
+      @Param(value = "w", dI = -1) int w,
+      @Param(value = "h", dI = -1) int h,
+      @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder,
+      @Param(value = "frameRate", dD = 10) double frameRate,
+      @Param("freeScales") boolean freeScales,
+      @Param("secondary") boolean secondary) {
+    UnaryOperator<VideoBuilder.VideoInfo> viAdapter =
+        vi -> new VideoBuilder.VideoInfo(w == -1 ? vi.w() : w, h == -1 ? vi.h() : h, encoder);
+    Configuration iConfiguration = freeScales ? Configuration.FREE_SCALES : Configuration.DEFAULT;
+    io.github.ericmedvet.jviz.core.plot.video.Configuration vConfiguration =
+        io.github.ericmedvet.jviz.core.plot.video.Configuration.DEFAULT;
+    Function<P, VideoBuilder.Video> f = p -> {
+      try {
+        if (p instanceof DistributionPlot dp) {
+          BoxPlotVideoBuilder vb = new BoxPlotVideoBuilder(
+              vConfiguration,
+              iConfiguration,
+              Configuration.BoxPlot.DEFAULT,
+              Configuration.Colors.DEFAULT.dataColors());
+          return vb.build(viAdapter.apply(vb.videoInfo(dp)), dp);
+        }
+        if (p instanceof LandscapePlot lsp) {
+          LandscapePlotVideoBuilder vb = new LandscapePlotVideoBuilder(
+              vConfiguration,
+              iConfiguration,
+              Configuration.LandscapePlot.DEFAULT,
+              Configuration.Colors.DEFAULT.dataColors());
+          return vb.build(viAdapter.apply(vb.videoInfo(lsp)), lsp);
+        }
+        if (p instanceof XYDataSeriesPlot xyp) {
+          AbstractXYDataSeriesPlotVideoBuilder vb = (!secondary)
+              ? new LinesPlotVideoBuilder(
+                  vConfiguration,
+                  iConfiguration,
+                  Configuration.LinesPlot.DEFAULT,
+                  Configuration.Colors.DEFAULT.dataColors())
+              : new PointsPlotVideoBuilder(
+                  vConfiguration,
+                  iConfiguration,
+                  Configuration.PointsPlot.DEFAULT,
+                  Configuration.Colors.DEFAULT.dataColors());
+          return vb.build(viAdapter.apply(vb.videoInfo(xyp)), xyp);
+        }
+        if (p instanceof UnivariateGridPlot ugp) {
+          UnivariatePlotVideoBuilder vb = new UnivariatePlotVideoBuilder(
+              vConfiguration, iConfiguration, Configuration.UnivariateGridPlot.DEFAULT);
+          return vb.build(viAdapter.apply(vb.videoInfo(ugp)), ugp);
+        }
+        throw new IllegalArgumentException(
+            "Unsupported type of plot %s".formatted(p.getClass().getSimpleName()));
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    };
+    return NamedFunction.from(f, "video.plotter").compose(beforeF);
   }
 }

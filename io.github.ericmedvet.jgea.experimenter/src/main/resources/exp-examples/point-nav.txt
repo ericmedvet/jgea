@@ -81,6 +81,14 @@ ea.experiment(
         predicate.inS(f = ea.f.runString(s = "{randomGenerator.seed}"); values = ["1"])
       ])
     );
+    ea.l.runPlotSaver(
+      filePathTemplate = "../archives-point-nav-{solver.name}-{randomGenerator.seed:%04d}";
+      of = ea.plot.single.me(values = [ea.f.simQuality(of = ea.f.quality())]; condition = predicate.ltEq(t = 1));
+      processors = [ea.f.videoPlotter()];
+      condition = predicate.all(conditions = [
+        predicate.inS(f = ea.f.runString(s = "{randomGenerator.seed}"); values = ["1"])
+      ])
+    );
     ea.l.expPlotSaver(
       filePath = "../point-nav-fitness";
       processors = [ea.f.imagePlotter(); ea.f.csvPlotter()];

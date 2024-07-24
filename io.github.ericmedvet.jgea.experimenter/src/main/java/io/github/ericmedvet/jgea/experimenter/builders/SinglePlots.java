@@ -59,7 +59,7 @@ public class SinglePlots {
       @Param("values") List<Function<? super G, ? extends Number>> valueFunctions,
       @Param("grid") Function<? super E, Grid<G>> gridFunction,
       @Param("predicateValue") Function<E, X> predicateValueFunction,
-      @Param(value = "condition", dNPM = "predicate.gtEq(t=1)") Predicate<X> condition,
+      @Param(value = "condition", dNPM = "predicate.ltEq(t=1)") Predicate<X> condition,
       @Param(value = "valueRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange valueRange,
       @Param(value = "unique", dB = true) boolean unique) {
     return new UnivariateGridSEPAF<>(
