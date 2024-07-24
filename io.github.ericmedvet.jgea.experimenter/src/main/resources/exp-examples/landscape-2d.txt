@@ -1,0 +1,32 @@
+ea.experiment(
+  runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
+    (problem = [
+      ea.p.s.gaussianMixture2D(targets = [3; 1; 1])
+    ]) *
+    (solver = (nEval = [5000]) *
+      (nPop = [50]) *
+      (minNTournament = [1]) *
+      (representation = ea.r.doubleString()) * [
+      ea.s.ga(tournamentRate = 0.1)
+    ]) * [
+    ea.run()
+  ];
+  listeners = [
+    ea.l.console(
+      functions = [
+        ea.f.quality(of = ea.f.best(); format = "%6.2f");
+        ea.f.hist(of = f.each(mapF = ea.f.quality(); of = ea.f.all()))
+      ]
+    );
+    ea.l.runPlotSaver(
+      filePathTemplate = "../landscape-{solver.name}-{randomGenerator.seed:%04d}";
+      of = ea.plot.single.landscape(
+        xRange = m.range(min = -5; max = 5);
+        yRange = m.range(min = -5; max = 5)
+      );
+      condition = predicate.all(conditions = [
+        predicate.inS(f = ea.f.runString(s = "{randomGenerator.seed}"); values = ["1"])
+      ])
+    )
+  ]
+)

@@ -19,6 +19,12 @@
  */
 package io.github.ericmedvet.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jgea.core.InvertibleMapper;
+import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
+import io.github.ericmedvet.jgea.core.solver.Individual;
+import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
+import io.github.ericmedvet.jgea.experimenter.Run;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.LandscapeSEPAF;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.UnivariateGridSEPAF;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeriesSRPAF;
 import io.github.ericmedvet.jnb.core.Alias;
@@ -26,6 +32,7 @@ import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
+import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -64,6 +71,64 @@ public class SinglePlots {
       @Param(value = "unique", dB = true) boolean unique) {
     return new UnivariateGridSEPAF<>(
         titleFunction, predicateValueFunction, condition, unique, gridFunction, valueFunctions, valueRange);
+  }
+
+  public static <X, P extends QualityBasedProblem<S, Double>, S>
+      LandscapeSEPAF<
+              POCPopulationState<Individual<List<Double>, S, Double>, List<Double>, S, Double, P>,
+              Run<?, List<Double>, S, Double>,
+              X,
+              Individual<List<Double>, S, Double>>
+          landscape(
+              @Param(
+                      value = "title",
+                      dNPM =
+                          "ea.f.runString(name=title;s=\"{solver.name} on {problem.name} (seed={randomGenerator.seed})\")")
+                  Function<? super Run<?, List<Double>, S, Double>, String> titleFunction,
+              @Param(
+                      value = "predicateValue",
+                      dNPM =
+                          "f.quantized(of=ea.f.rate(of=ea.f.progress());q=0.05;format=\"%.2f\")")
+                  Function<
+                          POCPopulationState<
+                              Individual<List<Double>, S, Double>,
+                              List<Double>,
+                              S,
+                              Double,
+                              P>,
+                          X>
+                      predicateValueFunction,
+              @Param(value = "condition", dNPM = "predicate.inD(values=[0;0.1;0.25;0.50;1])")
+                  Predicate<X> condition,
+              @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<List<Double>, S> mapper,
+              @Param(value = "xRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange xRange,
+              @Param(value = "yRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange yRange,
+              @Param(value = "xF", dNPM = "f.nTh(of=ea.f.genotype();n=0)")
+                  Function<Individual<List<Double>, S, Double>, Double> xF,
+              @Param(value = "yF", dNPM = "f.nTh(of=ea.f.genotype();n=1)")
+                  Function<Individual<List<Double>, S, Double>, Double> yF,
+              @Param(value = "valueRange", dNPM = "m.range(min=-Infinity;max=Infinity)")
+                  DoubleRange valueRange,
+              @Param(value = "unique", dB = true) boolean unique) {
+    return new LandscapeSEPAF<>(
+        titleFunction,
+        predicateValueFunction,
+        condition,
+        unique,
+        List.of(NamedFunction.from(s -> s.pocPopulation().all(), "all")),
+        xF,
+        yF,
+        s -> (x, y) -> s.problem()
+            .qualityFunction()
+            .apply(mapper.mapperFor(s.pocPopulation()
+                    .all()
+                    .iterator()
+                    .next()
+                    .solution())
+                .apply(List.of(x, y))),
+        xRange,
+        yRange,
+        valueRange);
   }
 
   @SuppressWarnings("unused")
