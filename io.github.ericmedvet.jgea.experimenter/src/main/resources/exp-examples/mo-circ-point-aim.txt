@@ -1,6 +1,6 @@
 ea.experiment(
   runs =
-    (randomGenerator = (seed = [1:1:5]) * [m.defaultRG()]) *
+    (randomGenerator = (seed = [1:1:10]) * [m.defaultRG()]) *
     (solver = (nEval = [10000]) *
     (representation = [ea.r.doubleString()]) * [
       ea.s.nsga2(maxUniquenessAttempts = 0);
