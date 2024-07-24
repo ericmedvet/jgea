@@ -1,22 +1,18 @@
 ea.experiment(
   runs = (randomGenerator = (seed = [1]) * [m.defaultRG()]) * [ea.run(
-      name = "robotnav_maze_tree";
-        problem = ea.p.numEnvTo(
-        dT = 0.1;
-        finalT = 20;
-        environment = ds.e.navigation(
-          arena = e_maze;
-          initialRobotXRange = m.range(min = 0.5; max = 0.5);
-          initialRobotYRange = m.range(min = 0.75; max = 0.75);
-          robotMaxV = 0.05
-        );
-        stopCondition = predicate.lt(f = ds.e.n.distanceFromTarget(); t = 0.01);
-        f = ds.e.n.finalTimePlusD();
+      problem = ea.p.simTo(
+        simulation = ds.s.variableSensorPositionsNavigation(arena = e_maze);
+        f = ds.e.n.avgD();
         type = minimize
       );
       solver = ea.s.mapElites(
-        representation = ea.representation.multiSRTree();
-        mapper = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf());
+        representation = ea.representation.pair(
+          first = ea.representation.doubleString();
+          second = ea.representation.multiSRTree()
+        );
+        mapper = ea.mapper.pair(
+          second = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf())
+        );
         nPop = 100;
         nEval = 4000;
         descriptors = [
@@ -39,9 +35,13 @@ ea.experiment(
   listeners = [
     ea.l.console(
       functions = [
-        ea.f.simQuality(of = ea.f.quality(of = ea.f.best()); format = "%9.5f")
-      ];
-      onlyLast = true
+        ea.f.simQuality(of = ea.f.quality(of = ea.f.best()); format = "%9.5f");
+        f.nTh(of = f.pairFirst(of = ea.f.solution(of = ea.f.best())); n = 0; format = "%+4.2f");
+        f.nTh(of = f.pairFirst(of = ea.f.solution(of = ea.f.best())); n = 1; format = "%+4.2f");
+        f.nTh(of = f.pairFirst(of = ea.f.solution(of = ea.f.best())); n = 2; format = "%+4.2f");
+        f.nTh(of = f.pairFirst(of = ea.f.solution(of = ea.f.best())); n = 3; format = "%+4.2f");
+        f.nTh(of = f.pairFirst(of = ea.f.solution(of = ea.f.best())); n = 4; format = "%+4.2f")
+      ]
     );
     ea.l.runSaver(
       filePathTemplate = "../best-traj-{solver.name}-{randomGenerator.seed:%04d}";

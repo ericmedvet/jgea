@@ -31,6 +31,7 @@ import io.github.ericmedvet.jnb.core.*;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jsdynsym.control.Environment;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
+import io.github.ericmedvet.jsdynsym.control.SimulationWithExample;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalStatelessSystem;
@@ -128,7 +129,7 @@ public class Problems {
               @Param(value = "name", iS = "{environment.name}") String name,
               @Param(value = "dT", dD = 0.1) double dT,
               @Param(value = "initialT", dD = 0) double initialT,
-              @Param(value = "finalT", dD = 100) double finalT,
+              @Param(value = "finalT", dD = 60) double finalT,
               @Param("environment") Environment<double[], double[], B> environment,
               @Param(value = "stopCondition", dNPM = "predicate.not(condition = predicate.always())")
                   Predicate<B> stopCondition,
@@ -153,6 +154,7 @@ public class Problems {
   @SuppressWarnings("unused")
   public static <S, B, O extends Simulation.Outcome<B>, Q extends Comparable<Q>>
       SimulationBasedTotalOrderProblem<S, B, O, Q> simTo(
+          @Param(value = "name", iS = "{simulation.name}") String name,
           @Param("simulation") Simulation<S, B, O> simulation,
           @Param("f") Function<O, Q> outcomeQualityFunction,
           @Param(value = "type", dS = "minimize") OptimizationType type) {
@@ -162,6 +164,24 @@ public class Problems {
               (SimulationBasedProblem.QualityOutcome<B, O, Q> qo) -> qo.quality());
           case MAXIMIZE -> (qo1, qo2) -> qo2.quality().compareTo(qo1.quality());
         };
+    if (simulation instanceof SimulationWithExample<S, B, O> simulationWithExample) {
+      return new SimulationBasedTotalOrderProblemWithExample<>() {
+        @Override
+        public S example() {
+          return simulationWithExample.example();
+        }
+
+        @Override
+        public Function<O, Q> outcomeQualityFunction() {
+          return outcomeQualityFunction;
+        }
+
+        @Override
+        public Simulation<S, B, O> simulation() {
+          return simulation;
+        }
+      };
+    }
     return new SimulationBasedTotalOrderProblem<>() {
       @Override
       public Function<O, Q> outcomeQualityFunction() {
@@ -189,7 +209,7 @@ public class Problems {
 
   @SuppressWarnings("unused")
   public static <S, Q, C extends Comparable<C>> TotalOrderQualityBasedProblem<S, Q> totalOrder(
-      @Param(value = "name", dS = "to") String name,
+      @Param(value = "name", dS = "{qFunction}") String name,
       @Param("qFunction") Function<S, Q> qualityFunction,
       @Param(value = "cFunction", dNPM = "f.identity()") Function<Q, C> comparableFunction,
       @Param(value = "type", dS = "minimize") OptimizationType type) {

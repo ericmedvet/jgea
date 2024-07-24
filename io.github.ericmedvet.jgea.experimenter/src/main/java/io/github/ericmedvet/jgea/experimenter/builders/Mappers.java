@@ -396,8 +396,8 @@ public class Mappers {
   @SuppressWarnings("unused")
   public static <X, F1, S1, F2, S2> InvertibleMapper<X, Pair<F2, S2>> pair(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Pair<F1, S1>> beforeM,
-      @Param(value = "ofFirst", dNPM = "ea.m.identity()") InvertibleMapper<F1, F2> firstM,
-      @Param(value = "ofSecond", dNPM = "ea.m.identity()") InvertibleMapper<S1, S2> secondM) {
+      @Param(value = "first", dNPM = "ea.m.identity()") InvertibleMapper<F1, F2> firstM,
+      @Param(value = "second", dNPM = "ea.m.identity()") InvertibleMapper<S1, S2> secondM) {
     return beforeM.andThen(InvertibleMapper.from(
         (p2, p1) -> new Pair<>(
             firstM.mapperFor(p2.first()).apply(p1.first()),
