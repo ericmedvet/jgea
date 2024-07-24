@@ -56,13 +56,23 @@ ea.experiment(
     );
     ea.l.runSaver(
       filePathTemplate = "../best-traj-{solver.name}-{randomGenerator.seed:%04d}";
-      of = ea.acc.last();
-      processors = [ea.f.toImage(image = ds.d.pointNavigation(); of = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best())))]
+      of = ea.acc.lastBest();
+      processors = [ea.f.toImage(image = ds.d.pointNavigation(); of = ea.f.simOutcome(of = ea.f.quality()))]
+    );
+    ea.l.runSaver(
+      filePathTemplate = "../trajs-{solver.name}-{randomGenerator.seed:%04d}";
+      of = ea.acc.bests();
+      processors = [ea.f.toImagesVideo(image = ds.d.pointNavigation(); of = f.each(mapF = ea.f.simOutcome(of = ea.f.quality())))]
+    );
+    ea.l.runSaver(
+      filePathTemplate = "../best-video-{solver.name}-{randomGenerator.seed:%04d}";
+      of = ea.acc.lastBest();
+      processors = [ea.f.toVideo(video = ea.misc.toVideo(drawer = ds.d.pointNavigation()); of = ea.f.simOutcome(of = ea.f.quality()))]
     );
     ea.l.runSaver(
       filePathTemplate = "../best-field-{solver.name}-{randomGenerator.seed:%04d}";
-      of = ea.acc.last();
-      processors = [ea.f.toImage(image = ds.d.vectorField(arena = E_MAZE); of = ea.f.solution(of = ea.f.best()))]
+      of = ea.acc.lastBest();
+      processors = [ea.f.toImage(image = ds.d.vectorField(arena = E_MAZE); of = ea.f.solution())]
     );
     ea.l.runPlotSaver(
       filePathTemplate = "../archives-point-nav-{solver.name}-{randomGenerator.seed:%04d}";

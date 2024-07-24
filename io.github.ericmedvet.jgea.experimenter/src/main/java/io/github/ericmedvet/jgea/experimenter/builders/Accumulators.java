@@ -48,6 +48,14 @@ public class Accumulators {
   private Accumulators() {}
 
   @Alias(
+      name = "bests",
+      value = // spotless:off
+          """
+              all(
+                eFunction = ea.f.best()
+              )
+              """) // spotless:on
+  @Alias(
       name = "first",
       value = // spotless:off
           """
@@ -63,9 +71,16 @@ public class Accumulators {
                 listFunction = f.nTh(n = -1)
               )
               """) // spotless:on
+  @Alias(
+      name = "lastBest",
+      value = // spotless:off
+          """
+              last(
+                eFunction = ea.f.best()
+              )
+              """) // spotless:on
   @SuppressWarnings("unused")
   public static <E, F, O, R> AccumulatorFactory<E, O, R> all(
-      @Param(value = "n", dI = 3) int n,
       @Param(value = "eFunction", dNPM = "f.identity()") Function<E, F> eFunction,
       @Param(value = "listFunction", dNPM = "f.identity()") Function<List<F>, O> listFunction) {
     return AccumulatorFactory.<E, F, R>collector(eFunction).then(listFunction);

@@ -45,13 +45,16 @@ import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jviz.core.drawer.ImageBuilder;
+import io.github.ericmedvet.jviz.core.drawer.VideoBuilder;
 import io.github.ericmedvet.jviz.core.plot.*;
 import io.github.ericmedvet.jviz.core.plot.csv.DistributionPlotCsvBuilder;
 import io.github.ericmedvet.jviz.core.plot.csv.LandscapePlotCsvBuilder;
 import io.github.ericmedvet.jviz.core.plot.csv.UnivariateGridPlotCsvBuilder;
 import io.github.ericmedvet.jviz.core.plot.csv.XYDataSeriesPlotCsvBuilder;
 import io.github.ericmedvet.jviz.core.plot.image.*;
+import io.github.ericmedvet.jviz.core.util.VideoUtils;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
@@ -470,13 +473,54 @@ public class Functions {
   @SuppressWarnings("unused")
   public static <X, D> NamedFunction<X, BufferedImage> toImage(
       @Param(value = "of", dNPM = "f.identity()") Function<X, D> beforeF,
-      @Param("image") ImageBuilder<D> imager,
+      @Param("image") ImageBuilder<D> imageBuilder,
       @Param(value = "w", dI = -1) int w,
       @Param(value = "h", dI = -1) int h) {
     UnaryOperator<ImageBuilder.ImageInfo> iiAdapter =
         ii -> new ImageBuilder.ImageInfo(w == -1 ? ii.w() : w, h == -1 ? ii.h() : h);
-    Function<D, BufferedImage> f = d -> imager.build(iiAdapter.apply(imager.imageInfo(d)), d);
-    return NamedFunction.from(f, "to.image[%s]".formatted(imager)).compose(beforeF);
+    Function<D, BufferedImage> f = d -> imageBuilder.build(iiAdapter.apply(imageBuilder.imageInfo(d)), d);
+    return NamedFunction.from(f, "to.image[%s]".formatted(imageBuilder)).compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, D> NamedFunction<X, VideoBuilder.Video> toImagesVideo(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, List<D>> beforeF,
+      @Param("image") ImageBuilder<D> imageBuilder,
+      @Param(value = "w", dI = -1) int w,
+      @Param(value = "h", dI = -1) int h,
+      @Param(value = "frameRate", dD = 20) double frameRate,
+      @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder) {
+    UnaryOperator<VideoBuilder.VideoInfo> viAdapter =
+        vi -> new VideoBuilder.VideoInfo(w == -1 ? vi.w() : w, h == -1 ? vi.h() : h, encoder);
+    VideoBuilder<List<D>> videoBuilder = VideoBuilder.from(imageBuilder, Function.identity(), frameRate);
+    Function<List<D>, VideoBuilder.Video> f = ds -> {
+      try {
+        return videoBuilder.build(viAdapter.apply(videoBuilder.videoInfo(ds)), ds);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    };
+    return NamedFunction.from(f, "to.images.video[%s]".formatted(imageBuilder))
+        .compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, D> NamedFunction<X, VideoBuilder.Video> toVideo(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, D> beforeF,
+      @Param("video") VideoBuilder<D> videoBuilder,
+      @Param(value = "w", dI = -1) int w,
+      @Param(value = "h", dI = -1) int h,
+      @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder) {
+    UnaryOperator<VideoBuilder.VideoInfo> viAdapter =
+        vi -> new VideoBuilder.VideoInfo(w == -1 ? vi.w() : w, h == -1 ? vi.h() : h, encoder);
+    Function<D, VideoBuilder.Video> f = d -> {
+      try {
+        return videoBuilder.build(viAdapter.apply(videoBuilder.videoInfo(d)), d);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    };
+    return NamedFunction.from(f, "to.video[%s]".formatted(videoBuilder)).compose(beforeF);
   }
 
   @SuppressWarnings("unused")

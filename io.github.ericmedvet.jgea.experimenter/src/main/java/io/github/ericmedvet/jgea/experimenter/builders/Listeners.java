@@ -37,7 +37,6 @@ import io.github.ericmedvet.jnb.core.*;
 import io.github.ericmedvet.jnb.datastructure.FormattedFunction;
 import io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
-import io.github.ericmedvet.jviz.core.drawer.ImageBuilder;
 import io.github.ericmedvet.jviz.core.drawer.VideoBuilder;
 import io.github.ericmedvet.jviz.core.util.VideoUtils;
 import java.awt.image.BufferedImage;
@@ -405,70 +404,6 @@ public class Listeners {
     //noinspection unchecked
     return FormattedFunction.from(f)
         .reformattedToFit(ts.stream().map(t -> (T) t).toList());
-  }
-
-  // TODO remove and replace with runSaver usage
-  @SuppressWarnings("unused")
-  public static <G, S, Q, K>
-      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
-          runAllIterationsVideoSaver(
-              @Param(value = "function", dNPM = "ea.f.best()")
-                  Function<POCPopulationState<?, G, S, Q, ?>, K> function,
-              @Param("image") ImageBuilder<K> imageBuilder,
-              @Param(value = "w", dI = 500) int w,
-              @Param(value = "h", dI = 500) int h,
-              @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder,
-              @Param(value = "frameRate", dD = 20) double frameRate,
-              @Param(value = "filePathTemplate", dS = "run-{index:%04d}.mp4") String filePathTemplate,
-              @Param(value = "condition", dNPM = "predicate.always()")
-                  Predicate<Run<?, G, S, Q>> predicate) {
-    VideoBuilder<List<K>> videoBuilder = VideoBuilder.from(imageBuilder, ks -> ks, frameRate);
-    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        AccumulatorFactory.<POCPopulationState<?, G, S, Q, ?>, K, Run<?, G, S, Q>>collector(function)
-            .thenOnDone((run, ks) -> {
-              File file = Misc.checkExistenceAndChangeName(
-                  new File(Utils.interpolate(filePathTemplate, run)));
-              try {
-                videoBuilder.save(new VideoBuilder.VideoInfo(w, h, encoder), file, ks);
-              } catch (IOException e) {
-                L.severe("Cannot save video at '%s': %s".formatted(file.getPath(), e));
-              }
-            }),
-        predicate,
-        executorService,
-        false);
-  }
-
-  // TODO remove and replace with runSaver usage
-  @SuppressWarnings("unused")
-  public static <G, S, Q, K>
-      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
-          runLastIterationVideoSaver(
-              @Param(value = "function", dNPM = "ea.f.best()")
-                  Function<POCPopulationState<?, G, S, Q, ?>, K> function,
-              @Param("video") VideoBuilder<K> videoBuilder,
-              @Param(value = "w", dI = 500) int w,
-              @Param(value = "h", dI = 500) int h,
-              @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder,
-              @Param(value = "filePathTemplate", dS = "run-{index:%04d}.mp4") String filePathTemplate,
-              @Param(value = "condition", dNPM = "predicate.always()")
-                  Predicate<Run<?, G, S, Q>> predicate) {
-    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        run -> Listener.<POCPopulationState<?, G, S, Q, ?>>named(
-            state -> {
-              File file = Misc.checkExistenceAndChangeName(
-                  new File(Utils.interpolate(filePathTemplate, run)));
-              try {
-                videoBuilder.save(
-                    new VideoBuilder.VideoInfo(w, h, encoder), file, function.apply(state));
-              } catch (IOException e) {
-                L.severe("Cannot save video at '%s': %s".formatted(file.getPath(), e));
-              }
-            },
-            "runLastIterationVideoSaver"),
-        predicate,
-        executorService,
-        true);
   }
 
   @SuppressWarnings("unused")

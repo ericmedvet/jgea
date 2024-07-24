@@ -19,16 +19,16 @@
  */
 package io.github.ericmedvet.jgea.experimenter.builders;
 
-import io.github.ericmedvet.jgea.core.listener.AccumulatorFactory;
-import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
-import io.github.ericmedvet.jgea.experimenter.Run;
-import io.github.ericmedvet.jnb.core.*;
+import io.github.ericmedvet.jnb.core.Discoverable;
+import io.github.ericmedvet.jnb.core.Param;
+import io.github.ericmedvet.jsdynsym.control.Simulation;
+import io.github.ericmedvet.jsdynsym.control.SimulationOutcomeDrawer;
+import io.github.ericmedvet.jviz.core.drawer.VideoBuilder;
 import java.awt.*;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 @Discoverable(prefixTemplate = "ea.misc")
 public class Miscs {
@@ -60,22 +60,6 @@ public class Miscs {
   }
 
   @SuppressWarnings("unused")
-  public static <G>
-      AccumulatorFactory<POCPopulationState<?, G, ?, ?, ?>, NamedParamMap, Run<?, G, ?, ?>> lastPopulationMap(
-          @Param(value = "serializerF", dNPM = "f.toBase64()") Function<Object, String> serializer) {
-    return AccumulatorFactory.last((s, run) -> new MapNamedParamMap(
-        "ea.runOutcome",
-        Map.ofEntries(
-            Map.entry(new MapNamedParamMap.TypedKey("index", ParamMap.Type.INT), run.index()),
-            Map.entry(new MapNamedParamMap.TypedKey("run", ParamMap.Type.NAMED_PARAM_MAP), run.map()),
-            Map.entry(
-                new MapNamedParamMap.TypedKey("serializedGenotypes", ParamMap.Type.STRINGS),
-                s.pocPopulation().all().stream()
-                    .map(i -> serializer.apply(i.genotype()))
-                    .toList()))));
-  }
-
-  @SuppressWarnings("unused")
   public static <K, V> Map<K, V> map(@Param("entries") List<Map.Entry<K, V>> entries) {
     Map<K, V> map = new LinkedHashMap<>();
     entries.forEach(e -> map.put(e.getKey(), e.getValue()));
@@ -85,5 +69,10 @@ public class Miscs {
   @SuppressWarnings("unused")
   public static Map.Entry<String, String> sEntry(@Param("key") String key, @Param("value") String value) {
     return Map.entry(key, value);
+  }
+
+  @SuppressWarnings("unused")
+  public static <S> VideoBuilder<Simulation.Outcome<S>> toVideo(@Param("drawer") SimulationOutcomeDrawer<S> drawer) {
+    return drawer.videoBuilder();
   }
 }
