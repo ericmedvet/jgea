@@ -30,7 +30,6 @@ public interface MultiHomogeneousObjectiveProblem<S, O> extends QualityBasedProb
 
   @Override
   default PartialComparator<List<O>> qualityComparator() {
-    // TODO fix too many new
     return new ParetoDominance<>(comparators());
   }
 }
