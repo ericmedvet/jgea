@@ -24,6 +24,7 @@ import io.github.ericmedvet.jgea.core.problem.Problem;
 import io.github.ericmedvet.jgea.core.problem.ProblemWithValidation;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
+import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.State;
@@ -78,11 +79,19 @@ public class Functions {
   }
 
   @SuppressWarnings("unused")
+  public static <X, G> FormattedNamedFunction<X, Double> archiveCoverage(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Archive<G>> beforeF,
+      @Param(value = "format", dS = "%4.2f") String format) {
+    Function<Archive<G>, Double> f = a -> (double) a.asMap().size() / (double) a.capacity();
+    return FormattedNamedFunction.from(f, format, "archive.coverage").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
   public static <X, G> NamedFunction<X, Grid<G>> archiveToGrid(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Archive<G>> beforeF) {
     Function<Archive<G>, Grid<G>> f =
         a -> Grid.create(a.binUpperBounds().get(0), a.binUpperBounds().get(1), (x, y) -> a.get(List.of(x, y)));
-    return NamedFunction.from(f, "meGrid").compose(beforeF);
+    return NamedFunction.from(f, "archive.to.grid").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
@@ -531,6 +540,30 @@ public class Functions {
       }
     };
     return NamedFunction.from(f, "to.video[%s]".formatted(videoBuilder)).compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, C> FormattedNamedFunction<X, Integer> treeDepth(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Tree<C>> beforeF,
+      @Param(value = "format", dS = "%3d") String format) {
+    Function<Tree<C>, Integer> f = Tree::depth;
+    return FormattedNamedFunction.from(f, format, "tree.depth").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, C> FormattedNamedFunction<X, Collection<C>> treeLabels(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Tree<C>> beforeF,
+      @Param(value = "format", dS = "%s") String format) {
+    Function<Tree<C>, Collection<C>> f = Tree::visitDepth;
+    return FormattedNamedFunction.from(f, format, "tree.labels").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, C> FormattedNamedFunction<X, Integer> treeSize(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Tree<C>> beforeF,
+      @Param(value = "format", dS = "%3d") String format) {
+    Function<Tree<C>, Integer> f = Tree::size;
+    return FormattedNamedFunction.from(f, format, "tree.size").compose(beforeF);
   }
 
   @SuppressWarnings("unused")

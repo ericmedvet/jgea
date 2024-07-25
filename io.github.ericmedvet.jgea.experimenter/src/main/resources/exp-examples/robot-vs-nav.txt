@@ -1,0 +1,88 @@
+ea.experiment(
+  runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
+  (solver = (nEval = [1000]) *
+  (mapper = [ea.mapper.pair(second = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf()))])
+  * [
+    ea.s.ga(
+      representation = ea.representation.pair(first = ea.representation.doubleString(); second = ea.representation.multiSRTree())
+    );
+    ea.s.mapElites(
+      name = "me2-pos";
+      representation = ea.representation.pair(first = ea.representation.doubleString(); second = ea.representation.multiSRTree());
+      descriptors = [
+        ea.s.me.d.descriptor(f = ds.e.n.x(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality()))); min = 0; max = 1; nOfBins = 10);
+        ea.s.me.d.descriptor(f = ds.e.n.y(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality()))); min = 0; max = 1; nOfBins = 10)
+      ]
+    );
+    ea.s.mapElites(
+      name = "me2-body";
+      representation = ea.representation.pair(first = ea.representation.doubleString(); second = ea.representation.multiSRTree());
+      descriptors = [
+        ea.s.me.d.descriptor(f = f.avg(of = f.pairFirst(of = ea.f.genotype())); min = -1.57; max = 1.57; nOfBins = 10);
+        ea.s.me.d.descriptor(f = f.sd(of = f.pairFirst(of = ea.f.genotype())); min = 0; max = 3.14; nOfBins = 10)
+      ]
+    );
+    ea.s.mapElites(
+      name = "me2-brain";
+      representation = ea.representation.pair(first = ea.representation.doubleString(); second = ea.representation.multiSRTree());
+      descriptors = [
+        ea.s.me.d.descriptor(f = ea.f.treeSize(of = f.nTh(of = f.pairSecond(of = ea.f.genotype()); n = 0)); min = 10; max = 410; nOfBins = 10);
+        ea.s.me.d.descriptor(f = ea.f.treeSize(of = f.nTh(of = f.pairSecond(of = ea.f.genotype()); n = 1)); min = 10; max = 410; nOfBins = 10)
+      ]
+    );
+    ea.s.mapElites(
+      name = "me4-bodybrain";
+      representation = ea.representation.pair(first = ea.representation.doubleString(); second = ea.representation.multiSRTree());
+      descriptors = [
+        ea.s.me.d.descriptor(f = f.avg(of = f.pairFirst(of = ea.f.genotype())); min = -1.57; max = 1.57; nOfBins = 10);
+        ea.s.me.d.descriptor(f = f.sd(of = f.pairFirst(of = ea.f.genotype())); min = 0; max = 3.14; nOfBins = 10);
+        ea.s.me.d.descriptor(f = ea.f.treeSize(of = f.nTh(of = f.pairSecond(of = ea.f.genotype()); n = 0)); min = 10; max = 410; nOfBins = 10);
+        ea.s.me.d.descriptor(f = ea.f.treeSize(of = f.nTh(of = f.pairSecond(of = ea.f.genotype()); n = 1)); min = 10; max = 410; nOfBins = 10)
+      ]
+    )
+  ]) *
+  [ea.run(
+    problem = ea.p.simTo(
+      simulation = ds.s.variableSensorPositionsNavigation(arena = e_maze; nOfSensors = 9);
+      f = ds.e.n.avgD();
+      type = minimize
+    )
+  )];
+  listeners = [
+    ea.l.console(
+      functions = [
+        ea.f.simQuality(of = ea.f.quality(of = ea.f.best()); format = "%9.5f");
+        ea.f.archiveCoverage(of = ea.f.meArchive());
+        f.avg(of = f.pairFirst(of = ea.f.genotype(of = ea.f.best())));
+        f.sd(of = f.pairFirst(of = ea.f.genotype(of = ea.f.best())));
+        ea.f.treeSize(of = f.nTh(of = f.pairSecond(of = ea.f.genotype(of = ea.f.best())); n = 0));
+        ea.f.treeSize(of = f.nTh(of = f.pairSecond(of = ea.f.genotype(of = ea.f.best())); n = 1))
+      ]
+    );
+    ea.l.runSaver(
+      filePathTemplate = "../best-traj-{solver.name}-{randomGenerator.seed:%04d}";
+      of = ea.acc.lastBest();
+      processors = [ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = ea.f.quality()))]
+    );
+    ea.l.runSaver(
+      filePathTemplate = "../best-traj-{solver.name}-{randomGenerator.seed:%04d}";
+      of = ea.acc.lastBest();
+      processors = [ea.f.toVideo(video = ea.misc.toVideo(drawer = ds.d.navigation()); of = ea.f.simOutcome(of = ea.f.quality()))];
+      condition = predicate.inS(f = ea.f.runKey(key = "randomGenerator.seed"); values = ["0"])
+    );
+    ea.l.runPlotSaver(
+      filePathTemplate = "../me-{problem.name}-{solver.name}-{randomGenerator.seed}";
+      of = ea.plot.single.me(values = [ea.f.simQuality(of = ea.f.quality())]);
+      condition = predicate.matches(f = ea.f.runKey(key = "solver.name"); regex = "me2-.*")
+    );
+    ea.l.expPlotSaver(
+      filePath = "../fitness";
+      of = ea.plot.multi.quality(y = ea.f.simQuality(of = ea.f.quality(of = ea.f.best())))
+    );
+    ea.l.expPlotSaver(
+      filePath = "../coverage";
+      of = ea.plot.multi.xyExp(y = ea.f.archiveCoverage(of = ea.f.meArchive()));
+      condition = predicate.matches(f = ea.f.runKey(key = "solver.name"); regex = "me.-.*")
+    )
+  ]
+)
