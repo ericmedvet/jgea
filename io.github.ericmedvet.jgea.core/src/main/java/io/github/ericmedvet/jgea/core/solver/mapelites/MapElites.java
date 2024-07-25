@@ -63,11 +63,11 @@ public class MapElites<G, S, Q>
   }
 
   public record Descriptor<G, S, Q>(
-      Function<Individual<G, S, Q>, Double> function, double min, double max, int nOfBins) {
+      Function<Individual<G, S, Q>, Number> function, double min, double max, int nOfBins) {
     public record Coordinate(int bin, double value) {}
 
     public Coordinate coordinate(Individual<G, S, Q> individual) {
-      double value = function.apply(individual);
+      double value = function.apply(individual).doubleValue();
       return new Coordinate(
           Math.min(Math.max(0, (int) Math.ceil((value - min) / (max - min) * (double) nOfBins)), nOfBins - 1),
           value);
