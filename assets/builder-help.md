@@ -44,7 +44,7 @@ Aliases: `ds.e`, `ds.env`, `ds.environment`, `dynSys.e`, `dynSys.env`, `dynSys.e
 | `robotMaxV` | d | `0.01` | <code>double</code> |
 | `sensorsAngleRange` | npm | `m.range(min = -1.57; max = 1.57)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `nOfSensors` | i | `5` | <code>int</code> |
-| `sensorRange` | d | `1.0` | <code>double</code> |
+| `sensorRange` | d | `0.5` | <code>double</code> |
 | `senseTarget` | b | `true` | <code>boolean</code> |
 | `arena` | e | `EMPTY` | <code><abbr title="io.github.ericmedvet.jsdynsym.control.navigation.Arena$Prepared">Arena$Prepared</abbr></code> |
 | `rescaleInput` | b | `true` | <code>boolean</code> |
@@ -333,7 +333,7 @@ Aliases: `ds.s`, `ds.sim`, `ds.simulation`, `dynSys.s`, `dynSys.sim`, `dynSys.si
 | `robotRadius` | d | `0.05` | <code>double</code> |
 | `robotMaxV` | d | `0.01` | <code>double</code> |
 | `nOfSensors` | i | `5` | <code>int</code> |
-| `sensorRange` | d | `1.0` | <code>double</code> |
+| `sensorRange` | d | `0.5` | <code>double</code> |
 | `senseTarget` | b | `true` | <code>boolean</code> |
 | `arena` | e | `EMPTY` | <code><abbr title="io.github.ericmedvet.jsdynsym.control.navigation.Arena$Prepared">Arena$Prepared</abbr></code> |
 | `rescaleInput` | b | `true` | <code>boolean</code> |
