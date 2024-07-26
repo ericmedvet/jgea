@@ -559,6 +559,14 @@ public class Functions {
   }
 
   @SuppressWarnings("unused")
+  public static <X, C> FormattedNamedFunction<X, Collection<C>> treeLeaves(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Tree<C>> beforeF,
+      @Param(value = "format", dS = "%s") String format) {
+    Function<Tree<C>, Collection<C>> f = Tree::visitLeaves;
+    return FormattedNamedFunction.from(f, format, "tree.leaves").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
   public static <X, C> FormattedNamedFunction<X, Integer> treeSize(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Tree<C>> beforeF,
       @Param(value = "format", dS = "%3d") String format) {
