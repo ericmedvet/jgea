@@ -26,10 +26,11 @@ import com.beust.jcommander.ParameterException;
 import io.github.ericmedvet.jnb.core.BuilderException;
 import io.github.ericmedvet.jnb.core.NamedBuilder;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Locale;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public class Starter {
 
@@ -127,8 +128,8 @@ public class Starter {
         L.severe("Cannot find default experiment description: %s"
             .formatted(configuration.exampleExperimentDescriptionResourceName));
       } else {
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
-          expDescription = br.lines().collect(Collectors.joining());
+        try {
+          expDescription = new String(inputStream.readAllBytes());
         } catch (IOException e) {
           L.severe("Cannot read default experiment description: %s".formatted(e));
         }
@@ -136,8 +137,8 @@ public class Starter {
     } else if (!configuration.experimentDescriptionFilePath.isEmpty()) {
       L.config(String.format(
           "Using provided experiment description: %s", configuration.experimentDescriptionFilePath));
-      try (BufferedReader br = new BufferedReader(new FileReader(configuration.experimentDescriptionFilePath))) {
-        expDescription = br.lines().collect(Collectors.joining());
+      try {
+        expDescription = Files.readString(Path.of(configuration.experimentDescriptionFilePath));
       } catch (IOException e) {
         L.severe("Cannot read provided experiment description at %s: %s"
             .formatted(configuration.experimentDescriptionFilePath, e));
