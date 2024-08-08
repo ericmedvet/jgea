@@ -1,6 +1,21 @@
+$descBehav1 = ds.e.n.x(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality())))
+$descBehav2 = ds.e.n.y(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality())))
+$descBody1 = f.avg(of = f.pairFirst(of = ea.f.genotype()))
+$descBody2 = f.sd(of = f.pairFirst(of = ea.f.genotype()))
+$descBrainSize1 = ea.f.treeSize(of = f.nTh(of = f.pairSecond(of = ea.f.genotype()); n = 0))
+$descBrainSize2 = ea.f.treeSize(of = f.nTh(of = f.pairSecond(of = ea.f.genotype()); n = 1))
+$descBrainUsage1 = f.mathOp(of = f.pairSecond(of = ea.f.genotype()); op = add; args = [
+  ea.f.treeSize(of = f.nTh(n = 0));
+  ea.f.treeSize(of = f.nTh(n = 1))
+])
+$descBrainUsage2 = f.mathOp(of = f.pairSecond(of = ea.f.genotype()); op = add; args = [
+  f.size(of = f.filter(of = f.distinct(of = ea.f.treeLeaves(of = f.nTh(n = 0))); condition = predicate.matches(f = f.toString(); regex = "i[0-9]+")));
+  f.size(of = f.filter(of = f.distinct(of = ea.f.treeLeaves(of = f.nTh(n = 1))); condition = predicate.matches(f = f.toString(); regex = "i[0-9]+")))
+])
+
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
-  (solver = (nEval = [1000]) *
+  runs = (randomGenerator = (seed = [1:1:5]) * [m.defaultRG()]) *
+  (solver = (nEval = [10000]) *
   (mapper = [ea.mapper.pair(second = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf()))])
   * [
     ea.s.ga(
@@ -10,76 +25,52 @@ ea.experiment(
       name = "me2-pos";
       representation = ea.representation.pair(first = ea.representation.doubleString(); second = ea.representation.multiSRTree());
       descriptors = [
-        ea.s.me.d.descriptor(f = ds.e.n.x(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality()))); min = 0; max = 1; nOfBins = 10);
-        ea.s.me.d.descriptor(f = ds.e.n.y(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality()))); min = 0; max = 1; nOfBins = 10)
+        ea.s.me.d.descriptor(f = $descBehav1; min = 0; max = 1; nOfBins = 10);
+        ea.s.me.d.descriptor(f = $descBehav2; min = 0; max = 1; nOfBins = 10)
       ]
     );
     ea.s.mapElites(
       name = "me2-body";
       representation = ea.representation.pair(first = ea.representation.doubleString(); second = ea.representation.multiSRTree());
       descriptors = [
-        ea.s.me.d.descriptor(f = f.avg(of = f.pairFirst(of = ea.f.genotype())); min = -1.57; max = 1.57; nOfBins = 10);
-        ea.s.me.d.descriptor(f = f.sd(of = f.pairFirst(of = ea.f.genotype())); min = 0; max = 3.14; nOfBins = 10)
+        ea.s.me.d.descriptor(f = $descBody1; min = -1.57; max = 1.57; nOfBins = 10);
+        ea.s.me.d.descriptor(f = $descBody2; min = 0; max = 3.14; nOfBins = 10)
       ]
     );
     ea.s.mapElites(
       name = "me2-brain-sizes";
       representation = ea.representation.pair(first = ea.representation.doubleString(); second = ea.representation.multiSRTree());
       descriptors = [
-        ea.s.me.d.descriptor(f = ea.f.treeSize(of = f.nTh(of = f.pairSecond(of = ea.f.genotype()); n = 0)); min = 10; max = 410; nOfBins = 10);
-        ea.s.me.d.descriptor(f = ea.f.treeSize(of = f.nTh(of = f.pairSecond(of = ea.f.genotype()); n = 1)); min = 10; max = 410; nOfBins = 10)
+        ea.s.me.d.descriptor(f = $descBrainSize1; min = 10; max = 410; nOfBins = 10);
+        ea.s.me.d.descriptor(f = $descBrainSize2; min = 10; max = 410; nOfBins = 10)
       ]
     );
     ea.s.mapElites(
       name = "me2-brain-size-usage";
       representation = ea.representation.pair(first = ea.representation.doubleString(); second = ea.representation.multiSRTree());
       descriptors = [
-        ea.s.me.d.descriptor(
-          f = f.mathOp(of = f.pairSecond(of = ea.f.genotype()); op = add; args = [
-            ea.f.treeSize(of = f.nTh(n = 0));
-            ea.f.treeSize(of = f.nTh(n = 1))
-          ]);
-          min = 0; max = 500; nOfBins = 10
-        );
-        ea.s.me.d.descriptor(
-          f = f.mathOp(of = f.pairSecond(of = ea.f.genotype()); op = add; args = [
-          f.size(of = f.filter(of = f.distinct(of = ea.f.treeLeaves(of = f.nTh(n = 0))); condition = predicate.matches(f = f.toString(); regex = "i[0-9]+")));
-          f.size(of = f.filter(of = f.distinct(of = ea.f.treeLeaves(of = f.nTh(n = 1))); condition = predicate.matches(f = f.toString(); regex = "i[0-9]+")))
-          ]);
-          min = 0; max = 20; nOfBins = 10
-        )
+        ea.s.me.d.descriptor(f = $descBrainUsage1; min = 0; max = 500; nOfBins = 10);
+        ea.s.me.d.descriptor(f = $descBrainUsage2; min = 0; max = 20; nOfBins = 10)
       ]
     );
     ea.s.mapElites(
       name = "me4-body+brain-sizes";
       representation = ea.representation.pair(first = ea.representation.doubleString(); second = ea.representation.multiSRTree());
       descriptors = [
-        ea.s.me.d.descriptor(f = f.avg(of = f.pairFirst(of = ea.f.genotype())); min = -1.57; max = 1.57; nOfBins = 10);
-        ea.s.me.d.descriptor(f = f.sd(of = f.pairFirst(of = ea.f.genotype())); min = 0; max = 3.14; nOfBins = 10);
-        ea.s.me.d.descriptor(f = ea.f.treeSize(of = f.nTh(of = f.pairSecond(of = ea.f.genotype()); n = 0)); min = 10; max = 410; nOfBins = 10);
-        ea.s.me.d.descriptor(f = ea.f.treeSize(of = f.nTh(of = f.pairSecond(of = ea.f.genotype()); n = 1)); min = 10; max = 410; nOfBins = 10)
+        ea.s.me.d.descriptor(f = $descBody1; min = -1.57; max = 1.57; nOfBins = 10);
+        ea.s.me.d.descriptor(f = $descBody2; min = 0; max = 3.14; nOfBins = 10);
+        ea.s.me.d.descriptor(f = $descBrainSize1; min = 10; max = 410; nOfBins = 10);
+        ea.s.me.d.descriptor(f = $descBrainSize2; min = 10; max = 410; nOfBins = 10)
       ]
     );
     ea.s.mapElites(
       name = "me4-body+brain-size-usage";
       representation = ea.representation.pair(first = ea.representation.doubleString(); second = ea.representation.multiSRTree());
       descriptors = [
-        ea.s.me.d.descriptor(f = f.avg(of = f.pairFirst(of = ea.f.genotype())); min = -1.57; max = 1.57; nOfBins = 10);
-        ea.s.me.d.descriptor(f = f.sd(of = f.pairFirst(of = ea.f.genotype())); min = 0; max = 3.14; nOfBins = 10);
-        ea.s.me.d.descriptor(
-          f = f.mathOp(of = f.pairSecond(of = ea.f.genotype()); op = add; args = [
-            ea.f.treeSize(of = f.nTh(n = 0));
-            ea.f.treeSize(of = f.nTh(n = 1))
-          ]);
-          min = 0; max = 500; nOfBins = 10
-        );
-        ea.s.me.d.descriptor(
-          f = f.mathOp(of = f.pairSecond(of = ea.f.genotype()); op = add; args = [
-          f.size(of = f.filter(of = f.distinct(of = ea.f.treeLeaves(of = f.nTh(n = 0))); condition = predicate.matches(f = f.toString(); regex = "i[0-9]+")));
-          f.size(of = f.filter(of = f.distinct(of = ea.f.treeLeaves(of = f.nTh(n = 1))); condition = predicate.matches(f = f.toString(); regex = "i[0-9]+")))
-          ]);
-          min = 0; max = 20; nOfBins = 10
-        )
+        ea.s.me.d.descriptor(f = $descBody1; min = -1.57; max = 1.57; nOfBins = 10);
+        ea.s.me.d.descriptor(f = $descBody2; min = 0; max = 3.14; nOfBins = 10);
+        ea.s.me.d.descriptor(f = $descBrainUsage1; min = 0; max = 500; nOfBins = 10);
+        ea.s.me.d.descriptor(f = $descBrainUsage2; min = 0; max = 20; nOfBins = 10)
       ]
     )
   ]) *
@@ -94,20 +85,9 @@ ea.experiment(
     ea.l.console(
       functions = [
         ea.f.simQuality(of = ea.f.quality(of = ea.f.best()); format = "%9.5f");
-        ea.f.archiveCoverage(of = ea.f.meArchive());
-        f.avg(of = f.pairFirst(of = ea.f.genotype(of = ea.f.best())));
-        f.sd(of = f.pairFirst(of = ea.f.genotype(of = ea.f.best())));
-        ea.f.treeSize(of = f.nTh(of = f.pairSecond(of = ea.f.genotype(of = ea.f.best())); n = 0));
-        ea.f.treeSize(of = f.nTh(of = f.pairSecond(of = ea.f.genotype(of = ea.f.best())); n = 1));
-        f.mathOp(of = f.pairSecond(of = ea.f.genotype(of = ea.f.best())); op = add; args = [
-          ea.f.treeSize(of = f.nTh(n = 0));
-          ea.f.treeSize(of = f.nTh(n = 1))
-        ]);
-        f.mathOp(of = f.pairSecond(of = ea.f.genotype(of = ea.f.best())); op = add; args = [
-          f.size(of = f.filter(of = f.distinct(of = ea.f.treeLeaves(of = f.nTh(n = 0))); condition = predicate.matches(f = f.toString(); regex = "i[0-9]+")));
-          f.size(of = f.filter(of = f.distinct(of = ea.f.treeLeaves(of = f.nTh(n = 1))); condition = predicate.matches(f = f.toString(); regex = "i[0-9]+")))
-        ])
-      ]
+        ea.f.archiveCoverage(of = ea.f.meArchive())
+      ];
+      onlyLast = true
     );
     ea.l.runSaver(
       filePathTemplate = "../best-traj-{solver.name}-{randomGenerator.seed:%04d}";
