@@ -37,6 +37,7 @@ import io.github.ericmedvet.jnb.core.*;
 import io.github.ericmedvet.jnb.datastructure.FormattedFunction;
 import io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
+import io.github.ericmedvet.jnb.datastructure.TriConsumer;
 import io.github.ericmedvet.jviz.core.drawer.VideoBuilder;
 import io.github.ericmedvet.jviz.core.util.VideoUtils;
 import java.awt.image.BufferedImage;
@@ -395,6 +396,39 @@ public class Listeners {
             netMultiSink.getExperimentSink(),
             netMultiSink.getRunSink(),
             netMultiSink.getDatItemSink()),
+        predicate,
+        executorService,
+        false);
+  }
+
+  @SuppressWarnings("unused")
+  public static <E, O> BiFunction<Experiment, ExecutorService, ListenerFactory<E, Run<?, ?, ?, ?>>> onExpDone(
+      @Param("of") AccumulatorFactory<E, O, Run<?, ?, ?, ?>> accumulatorFactory,
+      @Param(
+              value = "consumers",
+              dNPMs = {"ea.consumer.deaf()"})
+          List<TriConsumer<? super O, Run<?, ?, ?, ?>, Experiment>> consumers,
+      @Param(value = "condition", dNPM = "predicate.always()") Predicate<Run<?, ?, ?, ?>> predicate) {
+
+    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
+        accumulatorFactory.thenOnShutdown(
+            os -> consumers.forEach(c -> c.accept(os.get(os.size() - 1), null, experiment))),
+        predicate,
+        executorService,
+        false);
+  }
+
+  @SuppressWarnings("unused")
+  public static <E, O> BiFunction<Experiment, ExecutorService, ListenerFactory<E, Run<?, ?, ?, ?>>> onRunDone(
+      @Param("of") AccumulatorFactory<E, O, Run<?, ?, ?, ?>> accumulatorFactory,
+      @Param(
+              value = "consumers",
+              dNPMs = {"ea.consumer.deaf()"})
+          List<TriConsumer<? super O, Run<?, ?, ?, ?>, Experiment>> consumers,
+      @Param(value = "condition", dNPM = "predicate.always()") Predicate<Run<?, ?, ?, ?>> predicate) {
+
+    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
+        accumulatorFactory.thenOnDone((run, o) -> consumers.forEach(c -> c.accept(o, run, experiment))),
         predicate,
         executorService,
         false);

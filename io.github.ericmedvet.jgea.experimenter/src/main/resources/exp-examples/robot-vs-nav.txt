@@ -14,8 +14,8 @@ $descBrainUsage2 = f.mathOp(of = f.pairSecond(of = ea.f.genotype()); op = add; a
 ])
 
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:5]) * [m.defaultRG()]) *
-  (solver = (nEval = [10000]) *
+  runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
+  (solver = (nEval = [1000]) *
   (mapper = [ea.mapper.pair(second = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf()))])
   * [
     ea.s.ga(
