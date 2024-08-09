@@ -78,6 +78,7 @@ public class Consumers {
   }
 
   private static ParamMap augment(ParamMap outer, String name, ParamMap.Type type, Object value) {
+    // TODO replace with usage of ParamMap.and()
     if (outer instanceof MapNamedParamMap mnpm) {
       SortedMap<MapNamedParamMap.TypedKey, Object> values = mnpm.getValues();
       values.put(new MapNamedParamMap.TypedKey(name, type), value);
