@@ -384,13 +384,13 @@ public class Solvers {
 
   @SuppressWarnings("unused")
   public static <G1, G2, S1, S2, S, Q> Function<S, CoMapElites<G1, G2, S1, S2, S, Q>> coMapElites(
-      @Param(value = "name", dS = "CoME") String name,
+      @Param(value = "name", dS = "CoMapElites") String name,
       @Param("representation1") Function<G1, Representation<G1>> representation1,
       @Param("representation2") Function<G2, Representation<G2>> representation2,
       @Param(value = "mapper1", dNPM = "ea.m.identity()") InvertibleMapper<G1, S1> mapper1,
       @Param(value = "mapper2", dNPM = "ea.m.identity()") InvertibleMapper<G2, S2> mapper2,
       @Param("merger") BiFunction<S1, S2, S> BiFunctionMerger, //attention here
-      @Param("Inverse merger") InvertibleMapper<Pair<S1, S2>, S> InvertibleMapperMerger, //attention here
+      @Param("inverseMerger") InvertibleMapper<Pair<S1, S2>, S> InvertibleMapperMerger, //attention here
       @Param(value = "descriptors1") List<MapElites.Descriptor<G1, S1, Q>> descriptors1,
       @Param(value = "descriptors2") List<MapElites.Descriptor<G2, S2, Q>> descriptors2,
       @Param(value = "nEval", dI = 1000) int nEval,
