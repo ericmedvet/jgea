@@ -40,6 +40,7 @@ import io.github.ericmedvet.jgea.core.solver.cabea.SubstrateFiller;
 import io.github.ericmedvet.jgea.core.solver.es.CMAEvolutionaryStrategy;
 import io.github.ericmedvet.jgea.core.solver.es.OpenAIEvolutionaryStrategy;
 import io.github.ericmedvet.jgea.core.solver.es.SimpleEvolutionaryStrategy;
+import io.github.ericmedvet.jgea.core.solver.mapelites.CoMapElites;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MapElites;
 import io.github.ericmedvet.jgea.core.solver.pso.ParticleSwarmOptimization;
 import io.github.ericmedvet.jgea.core.solver.speciation.LazySpeciator;
@@ -48,15 +49,19 @@ import io.github.ericmedvet.jgea.experimenter.Representation;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.Grid;
+import io.github.ericmedvet.jnb.datastructure.Pair;
+
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.DoubleStream;
 
 @Discoverable(prefixTemplate = "ea.solver|s")
 public class Solvers {
 
-  private Solvers() {}
+  private Solvers() {
+  }
 
   @SuppressWarnings("unused")
   public static <G, S, Q> Function<S, CellularAutomataBasedSolver<G, S, Q>> cabea(
@@ -199,14 +204,14 @@ public class Solvers {
   public static <S, Q> Function<S, SpeciatedEvolver<Graph<Node, OperatorGraph.NonValuedArc>, S, Q>> oGraphea(
       @Param(value = "name", dS = "oGraphea") String name,
       @Param(value = "mapper", dNPM = "ea.m.identity()")
-          InvertibleMapper<Graph<Node, OperatorGraph.NonValuedArc>, S> mapper,
+      InvertibleMapper<Graph<Node, OperatorGraph.NonValuedArc>, S> mapper,
       @Param(value = "minConst", dD = 0d) double minConst,
       @Param(value = "maxConst", dD = 5d) double maxConst,
       @Param(value = "nConst", dI = 10) int nConst,
       @Param(
-              value = "operators",
-              dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
-          List<BaseOperator> operators,
+          value = "operators",
+          dSs = {"addition", "subtraction", "multiplication", "prot_division", "prot_log"})
+      List<BaseOperator> operators,
       @Param(value = "nPop", dI = 100) int nPop,
       @Param(value = "nEval", dI = 1000) int nEval,
       @Param(value = "arcAdditionRate", dD = 3d) double arcAdditionRate,
@@ -219,9 +224,9 @@ public class Solvers {
       Map<GeneticOperator<Graph<Node, OperatorGraph.NonValuedArc>>, Double> geneticOperators = Map.ofEntries(
           Map.entry(
               new NodeAddition<Node, OperatorGraph.NonValuedArc>(
-                      OperatorNode.sequentialIndexFactory(operators.toArray(BaseOperator[]::new)),
-                      Mutation.copy(),
-                      Mutation.copy())
+                  OperatorNode.sequentialIndexFactory(operators.toArray(BaseOperator[]::new)),
+                  Mutation.copy(),
+                  Mutation.copy())
                   .withChecker(OperatorGraph.checker()),
               nodeAdditionRate),
           Map.entry(
@@ -230,8 +235,8 @@ public class Solvers {
               arcAdditionRate),
           Map.entry(
               new ArcRemoval<Node, OperatorGraph.NonValuedArc>(node -> (node instanceof Input)
-                      || (node instanceof Constant)
-                      || (node instanceof Output))
+                  || (node instanceof Constant)
+                  || (node instanceof Output))
                   .withChecker(OperatorGraph.checker()),
               arcRemovalRate));
       Graph<Node, OperatorGraph.NonValuedArc> graph = mapper.exampleFor(exampleS);
@@ -367,5 +372,49 @@ public class Solvers {
         (int) Math.round(nPop * parentsRate),
         sigma,
         remap);
+  }
+
+  // @SuppressWarnings("unused")
+  public static <G1, G2, S1, S2, S, Q> Function<S, CoMapElites<G1, G2, S1, S2, S, Q>> coMapElites(
+      @Param(value = "name", dS = "coMe") String name,
+      @Param("representation1") Function<G1, Representation<G1>> representation1,
+      @Param("representation2") Function<G2, Representation<G2>> representation2,
+      @Param(value = "mapper1", dNPM = "ea.m.identity()") InvertibleMapper<G1, S1> mapper1,
+      @Param(value = "mapper2", dNPM = "ea.m.identity()") InvertibleMapper<G2, S2> mapper2,
+      @Param("merger") InvertibleMapper<Pair<S1, S2>, S> invertibleMapperMerger,
+      @Param(value = "descriptors1") List<MapElites.Descriptor<G1, S1, Q>> descriptors1,
+      @Param(value = "descriptors2") List<MapElites.Descriptor<G2, S2, Q>> descriptors2,
+      @Param(value = "nEval", dI = 1000) int nEval,
+      @Param(value = "populationSize", dI = 100) int populationSize,
+      @Param(value = "nOfOffspring", dI = 50) int nOfOffspring,
+      @Param(value = "strategy", dS = "identity") CoMapElites.Strategy strategy) {
+
+    return exampleS -> {
+      // Create representations based on the inverse mapper and solution merger
+      Pair<S1, S2> splitExample = invertibleMapperMerger.exampleFor(exampleS); // attention here
+      Representation<G1> r1 = representation1.apply(mapper1.exampleFor(splitExample.first())); // attention here
+      Representation<G2> r2 = representation2.apply(mapper2.exampleFor(splitExample.second())); // attention here
+      BiFunction<S1, S2, S> merger =
+          (s1, s2) -> invertibleMapperMerger.mapperFor(exampleS).apply(new Pair<>(s1, s2));
+      if (descriptors1.isEmpty() || descriptors2.isEmpty()) {
+        throw new IllegalArgumentException("Descriptors for representations must be initialized.");
+      }
+
+      return new CoMapElites<>(
+          StopConditions.nOfFitnessEvaluations(nEval), // Stop condition
+          r1.factory(), // Factory for G1 (attention here)
+          r2.factory(), // Factory for G2 (attention here)
+          mapper1.mapperFor(splitExample.first()), // Solution mapper for G1 -> S1
+          mapper2.mapperFor(splitExample.second()), // Solution mapper for G2 -> S2
+          merger,
+          descriptors1, // Descriptors for G1
+          descriptors2, // Descriptors for G2
+          r1.mutations().get(0), // Mutation for G1
+          r2.mutations().get(0), // Mutation for G2
+          populationSize, // Population size
+          nOfOffspring, // Number of offspring
+          strategy // Strategy (it is an enum)
+      );
+    };
   }
 }
