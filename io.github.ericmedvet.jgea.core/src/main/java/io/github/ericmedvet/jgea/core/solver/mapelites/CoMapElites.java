@@ -154,10 +154,10 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
                   .formatted(thisDescriptors.size(), otherDescriptors.size()));
         }
         if (IntStream.range(0, thisDescriptors.size())
-                .filter(i -> thisDescriptors.get(i).nOfBins()
-                    != otherDescriptors.get(i).nOfBins())
-                .count() // problem here
-            > 0) {
+            .filter(i -> thisDescriptors.get(i).nOfBins()
+                != otherDescriptors.get(i).nOfBins())
+            .findAny()
+            .isPresent()) {
           throw new IllegalArgumentException("Descriptors are not compatible: different number of bins");
         }
         yield thisCoords;

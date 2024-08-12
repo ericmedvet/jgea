@@ -50,7 +50,6 @@ import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.Pair;
-
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
