@@ -94,7 +94,6 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
     this.strategy = strategy;
   }
 
-
   public enum Strategy {
     IDENTITY,
     BEST,
@@ -117,7 +116,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
       List<Integer> coords,
       Map<List<Integer>, X> mapOfElites,
       Distance<List<Integer>> distance,
-      double threshold) {  // problem here
+      double threshold) { // problem here
     return mapOfElites.entrySet().stream()
         .filter(e -> distance.apply(e.getKey(), coords) < threshold)
         .map(Map.Entry::getValue)
@@ -157,7 +156,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
         if (IntStream.range(0, thisDescriptors.size())
                 .filter(i -> thisDescriptors.get(i).nOfBins()
                     != otherDescriptors.get(i).nOfBins())
-                .count()   //problem here
+                .count() // problem here
             > 0) {
           throw new IllegalArgumentException("Descriptors are not compatible: different number of bins");
         }
