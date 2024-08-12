@@ -89,27 +89,21 @@ ea.experiment(
       ];
       onlyLast = true
     );
-    ea.l.onExpDone(
-      of = ea.plot.multi.quality(q = ea.f.simQuality());
-      % of = ea.plot.multi.quality(y = ea.f.simQuality(of = ea.f.quality(of = ea.f.best())));
-      consumers = [ea.c.saver(
-        path = "../fitness";
-        of = ea.f.imagePlotter()
-      )]
+    ea.l.savePlotForRun(
+      plot = ea.plot.multi.quality(q = ea.f.simQuality());
+      path = "../fitness-part"
     );
-    ea.l.onRunDone(
-      of = ea.plot.multi.quality(y = ea.f.simQuality(of = ea.f.quality(of = ea.f.best())));
-      consumers = [ea.c.saver(
-        path = "../fitness-part";
-        of = ea.f.imagePlotter()
-      )]
+    ea.l.savePlotForExp(
+      plot = ea.plot.multi.quality(q = ea.f.simQuality());
+      path = "../fitness"
     );
-    ea.l.onRunDone(
+    ea.l.saveForRun(
       of = ea.acc.lastBest();
-      consumers = [ea.c.saver(
-        path = "../run-{run.index:%04d}";
-        of = ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = ea.f.quality()))
-      )]
+      path = "../run-{run.index:%04d}";
+      processor = ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = ea.f.quality()))
+    );
+    ea.l.saveLastPopulationForRun(
+      path = "../run-{run.index:%04d}-last-pop"
     )
   ]
 )

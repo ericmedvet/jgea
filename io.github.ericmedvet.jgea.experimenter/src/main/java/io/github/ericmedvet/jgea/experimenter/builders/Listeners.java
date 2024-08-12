@@ -27,7 +27,6 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
-import io.github.ericmedvet.jgea.experimenter.Utils;
 import io.github.ericmedvet.jgea.experimenter.listener.CSVPrinter;
 import io.github.ericmedvet.jgea.experimenter.listener.decoupled.*;
 import io.github.ericmedvet.jgea.experimenter.listener.net.NetMultiSink;
@@ -38,22 +37,16 @@ import io.github.ericmedvet.jnb.datastructure.FormattedFunction;
 import io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jnb.datastructure.TriConsumer;
-import io.github.ericmedvet.jviz.core.drawer.VideoBuilder;
-import io.github.ericmedvet.jviz.core.util.VideoUtils;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.imageio.ImageIO;
 
 @Discoverable(prefixTemplate = "ea.listener|l")
 public class Listeners {
@@ -299,31 +292,6 @@ public class Listeners {
         onlyLast);
   }
 
-  @SuppressWarnings("unused")
-  @Alias(
-      name = "expPlotSaver",
-      value = // spotless:off
-          """
-              expSaver(
-                processors = [ea.f.imagePlotter()]
-              )
-              """) // spotless:on
-  public static <E, O, R> BiFunction<Experiment, ExecutorService, ListenerFactory<E, R>> expSaver(
-      @Param("of") AccumulatorFactory<E, O, R> accumulatorFactory,
-      @Param(
-              value = "processors",
-              dNPMs = {"f.identity()"})
-          List<Function<? super O, ?>> processors,
-      @Param(value = "filePath", dS = "exp") String filePath,
-      @Param(value = "condition", dNPM = "predicate.always()") Predicate<R> predicate) {
-    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        accumulatorFactory.thenOnShutdown(
-            os -> processors.forEach(f -> save(f.apply(os.get(os.size() - 1)), filePath))),
-        predicate,
-        executorService,
-        false);
-  }
-
   private static String getCredentialFromFile(String credentialFilePath) {
     if (credentialFilePath == null) {
       throw new IllegalArgumentException("Credential file path not provided");
@@ -401,6 +369,33 @@ public class Listeners {
         false);
   }
 
+  @Alias(
+      name = "saveForExp",
+      passThroughParams = {
+        @PassThroughParam(name = "path", type = ParamMap.Type.STRING, value = "../run-{run.index:%04d}"),
+        @PassThroughParam(name = "processor", type = ParamMap.Type.NAMED_PARAM_MAP)
+      },
+      value = // spotless:off
+          """
+              onExpDone(
+                consumers = [ea.c.saver(
+                  path = $path;
+                  of = $processor
+                )]
+              )
+              """ // spotless:on
+      )
+  @Alias(
+      name = "savePlotForExp",
+      passThroughParams = {@PassThroughParam(name = "plot", type = ParamMap.Type.NAMED_PARAM_MAP)},
+      value = // spotless:off
+          """
+              saveForExp(
+                of = $plot;
+                processor = ea.f.imagePlotter()
+              )
+              """ // spotless:on
+      )
   @SuppressWarnings("unused")
   public static <E, O> BiFunction<Experiment, ExecutorService, ListenerFactory<E, Run<?, ?, ?, ?>>> onExpDone(
       @Param("of") AccumulatorFactory<E, O, Run<?, ?, ?, ?>> accumulatorFactory,
@@ -418,6 +413,43 @@ public class Listeners {
         false);
   }
 
+  @Alias(
+      name = "saveForRun",
+      passThroughParams = {
+        @PassThroughParam(name = "path", type = ParamMap.Type.STRING, value = "run-{run.index:%04d}"),
+        @PassThroughParam(name = "processor", type = ParamMap.Type.NAMED_PARAM_MAP)
+      },
+      value = // spotless:off
+          """
+              onRunDone(
+                consumers = [ea.c.saver(
+                  path = $path;
+                  of = $processor
+                )]
+              )
+              """ // spotless:on
+      )
+  @Alias(
+      name = "savePlotForRun",
+      passThroughParams = {@PassThroughParam(name = "plot", type = ParamMap.Type.NAMED_PARAM_MAP)},
+      value = // spotless:off
+          """
+              saveForRun(
+                of = $plot;
+                processor = ea.f.imagePlotter()
+              )
+              """ // spotless:on
+      )
+  @Alias(
+      name = "saveLastPopulationForRun",
+      value = // spotless:off
+          """
+              saveForRun(
+                of = ea.acc.lastPopulationMap();
+                path = "run-{run.index:%04d}-last-pop";
+                processor = f.identity()
+              )
+              """) // spotless:on
   @SuppressWarnings("unused")
   public static <E, O> BiFunction<Experiment, ExecutorService, ListenerFactory<E, Run<?, ?, ?, ?>>> onRunDone(
       @Param("of") AccumulatorFactory<E, O, Run<?, ?, ?, ?>> accumulatorFactory,
@@ -426,7 +458,6 @@ public class Listeners {
               dNPMs = {"ea.consumer.deaf()"})
           List<TriConsumer<? super O, Run<?, ?, ?, ?>, Experiment>> consumers,
       @Param(value = "condition", dNPM = "predicate.always()") Predicate<Run<?, ?, ?, ?>> predicate) {
-
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         accumulatorFactory.thenOnDone((run, o) -> consumers.forEach(c -> c.accept(o, run, experiment))),
         predicate,
@@ -438,81 +469,6 @@ public class Listeners {
     //noinspection unchecked
     return FormattedFunction.from(f)
         .reformattedToFit(ts.stream().map(t -> (T) t).toList());
-  }
-
-  @SuppressWarnings("unused")
-  @Alias(
-      name = "runPlotSaver",
-      value = // spotless:off
-          """
-              runSaver(
-                processors = [ea.f.imagePlotter()]
-              )
-              """) // spotless:on
-  @Alias(
-      name = "lastPopulationSaver",
-      value = // spotless:off
-          """
-              runSaver(
-                of = ea.acc.lastPopulationMap()
-              )
-              """) // spotless:on
-  public static <E, O> BiFunction<Experiment, ExecutorService, ListenerFactory<E, Run<?, ?, ?, ?>>> runSaver(
-      @Param("of") AccumulatorFactory<E, O, Run<?, ?, ?, ?>> accumulatorFactory,
-      @Param(
-              value = "processors",
-              dNPMs = {"f.identity()"})
-          List<Function<? super O, ?>> processors,
-      @Param(value = "filePathTemplate", dS = "run-{index:%04d}") String filePathTemplate,
-      @Param(value = "condition", dNPM = "predicate.always()") Predicate<Run<?, ?, ?, ?>> predicate) {
-    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        accumulatorFactory.thenOnDone(new BiConsumer<>() {
-          @Override
-          public void accept(Run<?, ?, ?, ?> r, O o) {
-            processors.forEach(f -> save(f.apply(o), Utils.interpolate(filePathTemplate, r)));
-          }
-
-          @Override
-          public String toString() {
-            return processors.stream().map(Object::toString).collect(Collectors.joining(";"));
-          }
-        }),
-        predicate,
-        executorService,
-        false);
-  }
-
-  private static void save(Object o, String filePath) {
-    File file = null;
-    try {
-      if (o instanceof BufferedImage image) {
-        file = Misc.checkExistenceAndChangeName(new File(filePath + ".png"));
-        ImageIO.write(image, "png", file);
-      } else if (o instanceof String s) {
-        file = Misc.checkExistenceAndChangeName(new File(filePath + ".txt"));
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
-          for (String l : s.lines().toList()) {
-            bw.append(l);
-            bw.newLine();
-          }
-        }
-      } else if (o instanceof VideoBuilder.Video video) {
-        file = Misc.checkExistenceAndChangeName(new File(filePath + ".mp4"));
-        VideoUtils.encodeAndSave(video.images(), video.frameRate(), file);
-      } else if (o instanceof byte[] data) {
-        file = Misc.checkExistenceAndChangeName(new File(filePath + ".bin"));
-        try (OutputStream os = new FileOutputStream(file)) {
-          os.write(data);
-        }
-      } else if (o instanceof NamedParamMap npm) {
-        save(MapNamedParamMap.prettyToString(npm), filePath);
-      } else {
-        throw new IllegalArgumentException(
-            "Cannot save data of type %s".formatted(o.getClass().getSimpleName()));
-      }
-    } catch (IOException e) {
-      throw new RuntimeException("Cannot save '%s'".formatted(file.getPath()), e);
-    }
   }
 
   @SuppressWarnings("unused")
