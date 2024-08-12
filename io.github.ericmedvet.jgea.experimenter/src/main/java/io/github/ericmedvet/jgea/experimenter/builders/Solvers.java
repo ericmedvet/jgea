@@ -50,6 +50,7 @@ import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.Pair;
+
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -119,9 +120,9 @@ public class Solvers {
       @Param(value = "strategy", dS = "identity") CoMapElites.Strategy strategy) {
     return exampleS -> {
       // Create representations based on the inverse mapper and solution merger
-      Pair<S1, S2> splitExample = invertibleMapperMerger.exampleFor(exampleS); // attention here
-      Representation<G1> r1 = representation1.apply(mapper1.exampleFor(splitExample.first())); // attention here
-      Representation<G2> r2 = representation2.apply(mapper2.exampleFor(splitExample.second())); // attention here
+      Pair<S1, S2> splitExample = invertibleMapperMerger.exampleFor(exampleS);
+      Representation<G1> r1 = representation1.apply(mapper1.exampleFor(splitExample.first()));
+      Representation<G2> r2 = representation2.apply(mapper2.exampleFor(splitExample.second()));
       BiFunction<S1, S2, S> merger =
           (s1, s2) -> invertibleMapperMerger.mapperFor(exampleS).apply(new Pair<>(s1, s2));
       if (descriptors1.isEmpty() || descriptors2.isEmpty()) {
