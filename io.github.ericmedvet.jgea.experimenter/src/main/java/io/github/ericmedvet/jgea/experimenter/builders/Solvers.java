@@ -53,6 +53,13 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.DoubleStream;
 
+// import stuff for CoME
+import io.github.ericmedvet.jgea.core.solver.mapelites.CoMapElites;
+import java.util.function.BiFunction;
+import java.util.concurrent.ExecutorService;
+import java.util.random.RandomGenerator;
+import io.github.ericmedvet.jnb.datastructure.Pair;
+
 @Discoverable(prefixTemplate = "ea.solver|s")
 public class Solvers {
 
@@ -344,6 +351,9 @@ public class Solvers {
     };
   }
 
+
+
+
   @SuppressWarnings("unused")
   public static <S, Q> Function<S, SimpleEvolutionaryStrategy<S, Q>> simpleEs(
       @Param(value = "name", dS = "es") String name,
@@ -368,4 +378,61 @@ public class Solvers {
         sigma,
         remap);
   }
+
+
+
+
+  @SuppressWarnings("unused")
+  public static <G1, G2, S1, S2, S, Q> Function<S, CoMapElites<G1, G2, S1, S2, S, Q>> coMapElites(
+      @Param(value = "name", dS = "CoME") String name,
+      @Param("representation1") Function<G1, Representation<G1>> representation1,
+      @Param("representation2") Function<G2, Representation<G2>> representation2,
+      @Param(value = "mapper1", dNPM = "ea.m.identity()") InvertibleMapper<G1, S1> mapper1,
+      @Param(value = "mapper2", dNPM = "ea.m.identity()") InvertibleMapper<G2, S2> mapper2,
+      @Param("merger") BiFunction<S1, S2, S> BiFunctionMerger, //attention here
+      @Param("Inverse merger") InvertibleMapper<Pair<S1, S2>, S> InvertibleMapperMerger, //attention here
+      @Param(value = "descriptors1") List<MapElites.Descriptor<G1, S1, Q>> descriptors1,
+      @Param(value = "descriptors2") List<MapElites.Descriptor<G2, S2, Q>> descriptors2,
+      @Param(value = "nEval", dI = 1000) int nEval,
+      @Param(value = "populationSize", dI = 100) int populationSize,
+      @Param(value = "nOfOffspring", dI = 50) int nOfOffspring,
+      @Param(value = "strategy", dS = "IDENTITY") CoMapElites.Strategy strategy,
+      @Param("executor") ExecutorService executor,
+      @Param("randomGenerator") RandomGenerator random) {
+
+    return exampleS -> {
+      // Create representations based on the inverse mapper and solution merger
+      Pair<S1, S2> splitExample = InvertibleMapperMerger.exampleFor(exampleS); // attention here
+      Representation<G1> r1 = representation1.apply(mapper1.exampleFor(splitExample.first())); //attention here
+      Representation<G2> r2 = representation2.apply(mapper2.exampleFor(splitExample.second())); //attention here
+
+      if (descriptors1.isEmpty() || descriptors2.isEmpty()) {
+        throw new IllegalArgumentException("Descriptors for representations must be initialized.");
+      }
+
+      return new CoMapElites<>(
+          StopConditions.nOfFitnessEvaluations(nEval),  // Stop condition
+          r1.factory(),                                 // Factory for G1 (attention here)
+          r2.factory(),                                 // Factory for G2 (attention here)
+          mapper1.mapperFor(splitExample.first()),      // Solution mapper for G1 -> S1
+          mapper2.mapperFor(splitExample.second()),     // Solution mapper for G2 -> S2
+          BiFunctionMerger,
+          descriptors1,                                 // Descriptors for G1
+          descriptors2,                                 // Descriptors for G2
+          r1.mutations().get(0),                        // Mutation for G1
+          r2.mutations().get(0),                        // Mutation for G2
+          populationSize,                               // Population size
+          nOfOffspring,                                 // Number of offspring
+          strategy                                      // Strategy (it is an enum)
+      );
+    };
+  }
+
+
+
+
+
+
+
+
 }
