@@ -29,7 +29,6 @@ import io.github.ericmedvet.jviz.core.drawer.VideoBuilder;
 import io.github.ericmedvet.jviz.core.util.VideoUtils;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.SortedMap;
 import java.util.function.Function;
 import javax.imageio.ImageIO;
 
@@ -69,21 +68,13 @@ public class Consumers {
                 filePathTemplate,
                 run == null
                     ? experiment.map()
-                    : augment(
-                        experiment.map(),
-                        "run",
-                        ParamMap.Type.NAMED_PARAM_MAP,
-                        augment(run.map(), "index", ParamMap.Type.INT, run.index())),
+                    : experiment
+                        .map()
+                        .and(
+                            "run",
+                            ParamMap.Type.NAMED_PARAM_MAP,
+                            run.map().and("index", ParamMap.Type.INT, run.index())),
                 "_")));
-  }
-
-  private static ParamMap augment(ParamMap outer, String name, ParamMap.Type type, Object value) {
-    if (outer instanceof MapNamedParamMap mnpm) {
-      SortedMap<MapNamedParamMap.TypedKey, Object> values = mnpm.getValues();
-      values.put(new MapNamedParamMap.TypedKey(name, type), value);
-      outer = new MapNamedParamMap(mnpm.getName(), mnpm.getValues());
-    }
-    return outer;
   }
 
   private static void save(Object o, String filePath) {

@@ -90,7 +90,8 @@ ea.experiment(
       onlyLast = true
     );
     ea.l.onExpDone(
-      of = ea.plot.multi.quality(y = ea.f.simQuality(of = ea.f.quality(of = ea.f.best())));
+      of = ea.plot.multi.quality(q = ea.f.simQuality());
+      % of = ea.plot.multi.quality(y = ea.f.simQuality(of = ea.f.quality(of = ea.f.best())));
       consumers = [ea.c.saver(
         path = "../fitness";
         of = ea.f.imagePlotter()
