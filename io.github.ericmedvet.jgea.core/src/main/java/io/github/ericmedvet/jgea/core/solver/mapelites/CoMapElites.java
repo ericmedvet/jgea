@@ -226,20 +226,23 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
       ChildGenotype<G2> cg2,
       CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>> state,
       AtomicLong counter) {
-    S1 s1 = solutionMapper1.apply(cg1.genotype());
-    S2 s2 = solutionMapper2.apply(cg2.genotype());
-    S s = solutionMerger.apply(s1, s2);
-    Q q = state.problem().qualityFunction().apply(s);
-    return () -> CoMEIndividual.of(
-        counter.getAndIncrement(),
-        s,
-        q,
-        state.nOfIterations(),
-        state.nOfIterations(),
-        List.of(),
-        MEIndividual.from(Individual.from(cg1, solutionMapper1, ss1 -> q, state.nOfIterations()), descriptors1),
-        MEIndividual.from(
-            Individual.from(cg2, solutionMapper2, ss2 -> q, state.nOfIterations()), descriptors2));
+    return () -> {
+      S1 s1 = solutionMapper1.apply(cg1.genotype());
+      S2 s2 = solutionMapper2.apply(cg2.genotype());
+      S s = solutionMerger.apply(s1, s2);
+      Q q = state.problem().qualityFunction().apply(s);
+      return CoMEIndividual.of(
+          counter.getAndIncrement(),
+          s,
+          q,
+          state.nOfIterations(),
+          state.nOfIterations(),
+          List.of(),
+          MEIndividual.from(
+              Individual.from(cg1, solutionMapper1, ss1 -> q, state.nOfIterations()), descriptors1),
+          MEIndividual.from(
+              Individual.from(cg2, solutionMapper2, ss2 -> q, state.nOfIterations()), descriptors2));
+    };
   }
 
   @Override
