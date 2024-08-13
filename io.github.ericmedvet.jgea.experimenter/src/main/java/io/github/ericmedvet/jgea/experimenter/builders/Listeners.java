@@ -42,9 +42,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.function.*;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -406,8 +404,17 @@ public class Listeners {
       @Param(value = "condition", dNPM = "predicate.always()") Predicate<Run<?, ?, ?, ?>> predicate) {
 
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        accumulatorFactory.thenOnShutdown(
-            os -> consumers.forEach(c -> c.accept(os.get(os.size() - 1), null, experiment))),
+        accumulatorFactory.thenOnShutdown(new Consumer<>() {
+          @Override
+          public void accept(List<O> os) {
+            consumers.forEach(c -> c.accept(os.get(os.size() - 1), null, experiment));
+          }
+
+          @Override
+          public String toString() {
+            return consumers.toString();
+          }
+        }),
         predicate,
         executorService,
         false);
@@ -459,7 +466,17 @@ public class Listeners {
           List<TriConsumer<? super O, Run<?, ?, ?, ?>, Experiment>> consumers,
       @Param(value = "condition", dNPM = "predicate.always()") Predicate<Run<?, ?, ?, ?>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        accumulatorFactory.thenOnDone((run, o) -> consumers.forEach(c -> c.accept(o, run, experiment))),
+        accumulatorFactory.thenOnDone(new BiConsumer<>() {
+          @Override
+          public void accept(Run<?, ?, ?, ?> run, O o) {
+            consumers.forEach(c -> c.accept(o, run, experiment));
+          }
+
+          @Override
+          public String toString() {
+            return consumers.toString();
+          }
+        }),
         predicate,
         executorService,
         false);
