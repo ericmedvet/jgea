@@ -102,7 +102,7 @@ public class MultiPlots {
       },
       value = // spotless:off
       """
-          yBoxplotExp(y = f.compose(of = ea.f.quality(of = ea.f.best()); then = $q))
+          yBoxplotExp(y = f.composition(of = ea.f.quality(of = ea.f.best()); then = $q))
           """) // spotless:on
   @Alias(
       name = "uniquenessBoxplot",
