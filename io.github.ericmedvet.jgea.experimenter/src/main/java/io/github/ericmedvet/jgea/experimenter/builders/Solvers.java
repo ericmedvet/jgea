@@ -46,6 +46,7 @@ import io.github.ericmedvet.jgea.core.solver.pso.ParticleSwarmOptimization;
 import io.github.ericmedvet.jgea.core.solver.speciation.LazySpeciator;
 import io.github.ericmedvet.jgea.core.solver.speciation.SpeciatedEvolver;
 import io.github.ericmedvet.jgea.experimenter.Representation;
+import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.Grid;
@@ -62,6 +63,7 @@ public class Solvers {
   private Solvers() {}
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <G, S, Q> Function<S, CellularAutomataBasedSolver<G, S, Q>> cabea(
       @Param(value = "name", dS = "cabea") String name,
       @Param("representation") Function<G, Representation<G>> representation,
@@ -89,6 +91,7 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <S, Q> Function<S, CMAEvolutionaryStrategy<S, Q>> cmaEs(
       @Param(value = "name", dS = "cmaEs") String name,
       @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<List<Double>, S> mapper,
@@ -104,6 +107,7 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <G1, G2, S1, S2, S, Q> Function<S, CoMapElites<G1, G2, S1, S2, S, Q>> coMapElites(
       @Param(value = "name", dS = "coMe") String name,
       @Param("representation1") Function<G1, Representation<G1>> representation1,
@@ -145,6 +149,7 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <S, Q> Function<S, DifferentialEvolution<S, Q>> differentialEvolution(
       @Param(value = "name", dS = "de") String name,
       @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<List<Double>, S> mapper,
@@ -168,6 +173,7 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <G, S, Q> Function<S, StandardEvolver<G, S, Q>> ga(
       @Param(value = "name", dS = "ga") String name,
       @Param("representation") Function<G, Representation<G>> representation,
@@ -197,6 +203,7 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <G, S, Q> Function<S, MapElites<G, S, Q>> mapElites(
       @Param(value = "name", dS = "me") String name,
       @Param("representation") Function<G, Representation<G>> representation,
@@ -217,6 +224,7 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <G, S> Function<S, NsgaII<G, S>> nsga2(
       @Param(value = "name", dS = "nsga2") String name,
       @Param("representation") Function<G, Representation<G>> representation,
@@ -240,6 +248,7 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <S, Q> Function<S, SpeciatedEvolver<Graph<Node, OperatorGraph.NonValuedArc>, S, Q>> oGraphea(
       @Param(value = "name", dS = "oGraphea") String name,
       @Param(value = "mapper", dNPM = "ea.m.identity()")
@@ -310,6 +319,7 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <S, Q> Function<S, OpenAIEvolutionaryStrategy<S, Q>> openAiEs(
       @Param(value = "name", dS = "openAiEs") String name,
       @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<List<Double>, S> mapper,
@@ -337,6 +347,7 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <S, Q> Function<S, ParticleSwarmOptimization<S, Q>> pso(
       @Param(value = "name", dS = "pso") String name,
       @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<List<Double>, S> mapper,
@@ -360,6 +371,7 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <G, S, Q> Function<S, RandomSearch<G, S, Q>> randomSearch(
       @Param(value = "name", dS = "rs") String name,
       @Param("representation") Function<G, Representation<G>> representation,
@@ -373,6 +385,7 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <G, S, Q> Function<S, RandomWalk<G, S, Q>> randomWalk(
       @Param(value = "name", dS = "rw") String name,
       @Param("representation") Function<G, Representation<G>> representation,
@@ -389,6 +402,7 @@ public class Solvers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <S, Q> Function<S, SimpleEvolutionaryStrategy<S, Q>> simpleEs(
       @Param(value = "name", dS = "es") String name,
       @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<List<Double>, S> mapper,

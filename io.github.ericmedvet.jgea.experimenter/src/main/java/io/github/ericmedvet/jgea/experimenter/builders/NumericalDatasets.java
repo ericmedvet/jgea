@@ -24,6 +24,7 @@ import io.github.ericmedvet.jgea.problem.regression.ListNumericalDataset;
 import io.github.ericmedvet.jgea.problem.regression.NumericalDataset;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionProblem;
+import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import java.io.IOException;
@@ -35,12 +36,14 @@ public class NumericalDatasets {
   private NumericalDatasets() {}
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static Supplier<NumericalDataset> empty(
       @Param("xVars") List<String> xVarNames, @Param("yVars") List<String> yVarNames) {
     return () -> new ListNumericalDataset(List.of(), xVarNames, yVarNames);
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static Supplier<NumericalDataset> fromFile(
       @Param("filePath") String filePath,
       @Param(
@@ -60,6 +63,7 @@ public class NumericalDatasets {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static Supplier<NumericalDataset> fromProblem(
       @Param("problem") UnivariateRegressionProblem<UnivariateRegressionFitness> problem) {
     return () -> problem.qualityFunction().getDataset();

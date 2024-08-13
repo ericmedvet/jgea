@@ -52,11 +52,13 @@ public class Consumers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static TriConsumer<?, ?, ?> deaf() {
     return named("deaf", (i1, i2, i3) -> {});
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X, O> TriConsumer<X, Run<?, ?, ?, ?>, Experiment> saver(
       @Param(value = "of", dNPM = "f.identity()") Function<X, O> f,
       @Param(value = "path", dS = "run-{run.index:%04d}") String filePathTemplate) {

@@ -21,6 +21,7 @@
 package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jgea.experimenter.drawer.PolyominoDrawer;
+import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import java.awt.*;
@@ -32,6 +33,7 @@ public class Drawers {
   private Drawers() {}
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static PolyominoDrawer polyomino(
       @Param(value = "maxW", dI = 0) int maxW,
       @Param(value = "maxH", dI = 0) int maxH,

@@ -19,7 +19,7 @@ $descBrainUsage2 = f.mathOp(of = f.pairSecond(of = ea.f.genotype()); op = add; a
 
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
-  (solver = (nEval = [5000]) *
+  (solver = (nEval = [1500]) *
   (mapper = [ea.mapper.pair(second = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf()))])
   * [
     ea.s.coMapElites(

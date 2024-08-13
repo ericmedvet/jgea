@@ -37,6 +37,7 @@ import io.github.ericmedvet.jgea.core.representation.sequence.numeric.UniformDou
 import io.github.ericmedvet.jgea.core.representation.tree.*;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import io.github.ericmedvet.jgea.experimenter.Representation;
+import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.Pair;
@@ -49,6 +50,7 @@ public class Representations {
   private Representations() {}
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static Function<BitString, Representation<BitString>> bitString(
       @Param(value = "pMutRate", dD = 1d) double pMutRate) {
     return g -> new Representation<>(
@@ -59,6 +61,7 @@ public class Representations {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static Function<List<Double>, Representation<List<Double>>> doubleString(
       @Param(value = "initialMinV", dD = -1d) double initialMinV,
       @Param(value = "initialMaxV", dD = 1d) double initialMaxV,
@@ -70,6 +73,7 @@ public class Representations {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static Function<IntString, Representation<IntString>> intString(
       @Param(value = "pMutRate", dD = 1d) double pMutRate) {
     return g -> new Representation<>(
@@ -80,6 +84,7 @@ public class Representations {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static Function<List<Tree<Element>>, Representation<List<Tree<Element>>>> multiSRTree(
       @Param(
               value = "constants",
@@ -131,12 +136,14 @@ public class Representations {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <G1, G2> Function<Pair<G1, G2>, Representation<Pair<G1, G2>>> pair(
       @Param("first") Function<G1, Representation<G1>> r1, @Param("second") Function<G2, Representation<G2>> r2) {
     return p -> Representation.pair(r1.apply(p.first()), r2.apply(p.second()));
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static Function<Tree<Element>, Representation<Tree<Element>>> srTree(
       @Param(
               value = "constants",

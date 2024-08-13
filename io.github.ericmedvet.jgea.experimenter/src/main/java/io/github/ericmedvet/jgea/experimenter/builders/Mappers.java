@@ -36,6 +36,7 @@ import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedMultivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedUnivariateRealFunction;
+import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
@@ -60,6 +61,7 @@ public class Mappers {
   private Mappers() {}
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X, T> InvertibleMapper<X, Grid<T>> bsToGrammarGrid(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, BitString> beforeM,
       @Param("grammar") GridGrammar<T> grammar,
@@ -81,6 +83,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X> InvertibleMapper<X, Pair<List<Double>, List<Double>>> dsSplit(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM) {
     return beforeM.andThen(InvertibleMapper.from(
@@ -102,6 +105,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X> InvertibleMapper<X, BitString> dsToBitString(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM,
       @Param(value = "t", dD = 0d) double t) {
@@ -112,6 +116,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X, T> InvertibleMapper<X, Grid<T>> dsToFixedGrid(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM,
       @Param(value = "rate", dD = 0.25) double rate,
@@ -142,6 +147,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X, T> InvertibleMapper<X, Grid<T>> dsToGrammarGrid(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM,
       @Param("grammar") GridGrammar<T> grammar,
@@ -163,6 +169,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X> InvertibleMapper<X, IntString> dsToIs(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM,
       @Param(value = "range", dNPM = "ds.range(min=-1;max=1)") DoubleRange range) {
@@ -182,6 +189,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X, P extends NumericalDynamicalSystem<S> & NumericalParametrized<P>, S>
       InvertibleMapper<X, P> dsToNpnds(
           @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM,
@@ -195,6 +203,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X, T> InvertibleMapper<X, Grid<T>> dsToThresholdedGrid(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM,
       @Param(value = "t", dD = 0) double t,
@@ -217,6 +226,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X> InvertibleMapper<X, NumericalDynamicalSystem<?>> enhancedNds(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NumericalDynamicalSystem<?>> beforeM,
       @Param("windowT") double windowT,
@@ -232,6 +242,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X> InvertibleMapper<X, NamedMultivariateRealFunction> fGraphToNmrf(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Graph<Node, Double>> beforeM,
       @Param(value = "postOperator", dNPM = "ds.f.doubleOp(activationF=identity)")
@@ -247,11 +258,13 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X> InvertibleMapper<X, X> identity() {
     return InvertibleMapper.identity();
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X, T> InvertibleMapper<X, Grid<T>> isToGrammarGrid(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, IntString> beforeM,
       @Param("grammar") GridGrammar<T> grammar,
@@ -274,6 +287,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X, T> InvertibleMapper<X, Grid<T>> isToGrid(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, IntString> beforeM,
       @Param("items") List<T> items) {
@@ -292,6 +306,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X> InvertibleMapper<X, NamedMultivariateRealFunction> multiSrTreeToNmrf(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Tree<Element>>> beforeM,
       @Param(value = "postOperator", dNPM = "ds.f.doubleOp(activationF=identity)")
@@ -304,6 +319,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X, T> InvertibleMapper<X, Grid<T>> nmrfToGrid(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NamedMultivariateRealFunction> beforeM,
       @Param("items") List<T> items) {
@@ -336,6 +352,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X> InvertibleMapper<X, NumericalDynamicalSystem<?>> nmrfToNds(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NamedMultivariateRealFunction> beforeM) {
     return beforeM.andThen(InvertibleMapper.from(
@@ -349,6 +366,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X> InvertibleMapper<X, NamedUnivariateRealFunction> nmrfToNurf(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NamedMultivariateRealFunction> beforeM) {
     return beforeM.andThen(InvertibleMapper.from(
@@ -356,6 +374,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X> InvertibleMapper<X, NumericalDynamicalSystem<?>> noisedNds(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NumericalDynamicalSystem<?>> beforeM,
       @Param(value = "inputSigma", dD = 0) double inputSigma,
@@ -368,6 +387,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X> InvertibleMapper<X, NamedMultivariateRealFunction> ntissToNmrf(
       @Param(value = "of", dNPM = "ea.m.identity()")
           InvertibleMapper<X, NumericalTimeInvariantStatelessSystem> beforeM) {
@@ -382,6 +402,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X> InvertibleMapper<X, NamedMultivariateRealFunction> oGraphToNmrf(
       @Param(value = "of", dNPM = "ea.m.identity()")
           InvertibleMapper<X, Graph<Node, OperatorGraph.NonValuedArc>> beforeM,
@@ -394,6 +415,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X, F1, S1, F2, S2> InvertibleMapper<X, Pair<F2, S2>> pair(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Pair<F1, S1>> beforeM,
       @Param(value = "first", dNPM = "ea.m.identity()") InvertibleMapper<F1, F2> firstM,
@@ -407,6 +429,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X> InvertibleMapper<X, NamedUnivariateRealFunction> srTreeToNurf(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Tree<Element>> beforeM,
       @Param(value = "postOperator", dNPM = "ds.f.doubleOp(activationF=identity)")
@@ -419,6 +442,7 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static <X> InvertibleMapper<X, NumericalDynamicalSystem<?>> steppedNds(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NumericalDynamicalSystem<?>> beforeM,
       @Param(value = "stepT", dD = 1) double interval) {
