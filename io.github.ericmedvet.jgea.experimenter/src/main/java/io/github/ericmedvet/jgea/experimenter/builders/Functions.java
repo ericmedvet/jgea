@@ -29,10 +29,7 @@ import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.State;
 import io.github.ericmedvet.jgea.core.solver.cabea.GridPopulationState;
-import io.github.ericmedvet.jgea.core.solver.mapelites.Archive;
-import io.github.ericmedvet.jgea.core.solver.mapelites.MEIndividual;
-import io.github.ericmedvet.jgea.core.solver.mapelites.MEPopulationState;
-import io.github.ericmedvet.jgea.core.solver.mapelites.MapElites;
+import io.github.ericmedvet.jgea.core.solver.mapelites.*;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.core.util.Sized;
@@ -100,6 +97,22 @@ public class Functions {
     Function<POCPopulationState<I, G, S, Q, ?>, I> f =
         state -> state.pocPopulation().firsts().iterator().next();
     return NamedFunction.from(f, "best").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, G, S, Q> NamedFunction<X, Archive<MEIndividual<G, S, Q>>> coMeArchive1(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, CoMEPopulationState<G, ?, S, ?, ?, Q, ?>> beforeF) {
+    Function<CoMEPopulationState<G, ?, S, ?, ?, Q, ?>, Archive<MEIndividual<G, S, Q>>> f =
+        CoMEPopulationState::mapOfElites1;
+    return NamedFunction.from(f, "coMeArchive1").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, G, S, Q> NamedFunction<X, Archive<MEIndividual<G, S, Q>>> coMeArchive2(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, CoMEPopulationState<?, G, ?, S, ?, Q, ?>> beforeF) {
+    Function<CoMEPopulationState<?, G, ?, S, ?, Q, ?>, Archive<MEIndividual<G, S, Q>>> f =
+        CoMEPopulationState::mapOfElites2;
+    return NamedFunction.from(f, "coMeArchive2").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
@@ -244,7 +257,7 @@ public class Functions {
   public static <X, G, S, Q> NamedFunction<X, Archive<MEIndividual<G, S, Q>>> meArchive(
       @Param(value = "of", dNPM = "f.identity()") Function<X, MEPopulationState<G, S, Q, ?>> beforeF) {
     Function<MEPopulationState<G, S, Q, ?>, Archive<MEIndividual<G, S, Q>>> f = MEPopulationState::mapOfElites;
-    return NamedFunction.from(f, "meGrid").compose(beforeF);
+    return NamedFunction.from(f, "meArchive").compose(beforeF);
   }
 
   @SuppressWarnings("unused")

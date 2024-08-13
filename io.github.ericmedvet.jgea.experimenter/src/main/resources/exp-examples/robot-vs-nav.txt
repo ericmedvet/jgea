@@ -19,7 +19,7 @@ $descBrainUsage2 = f.mathOp(of = f.pairSecond(of = ea.f.genotype()); op = add; a
 
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
-  (solver = (nEval = [1000]) *
+  (solver = (nEval = [5000]) *
   (mapper = [ea.mapper.pair(second = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf()))])
   * [
     ea.s.coMapElites(
@@ -95,8 +95,8 @@ ea.experiment(
   ]) *
   [ea.run(
     problem = ea.p.simTo(
-      simulation = ds.s.variableSensorPositionsNavigation(arena = e_maze; nOfSensors = 9; finalT = 30);
-      f = ds.e.n.finalD();
+      simulation = ds.s.variableSensorPositionsNavigation(arena = e_maze; nOfSensors = 9; finalT = 20);
+      f = ds.e.n.avgD();
       type = minimize
     )
   )];
@@ -108,38 +108,44 @@ ea.experiment(
       ];
       onlyLast = true
     );
-    ea.l.runSaver(
-      filePathTemplate = "../best-traj-{solver.name}-{randomGenerator.seed:%04d}";
+    ea.l.saveForRun(
+      path = "../best-traj-{run.solver.name}-{run.randomGenerator.seed:%04d}";
       of = ea.acc.lastBest();
-      processors = [ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = ea.f.quality()))]
+      processor = ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = ea.f.quality()))
     );
-    ea.l.runSaver(
-      filePathTemplate = "../best-traj-{solver.name}-{randomGenerator.seed:%04d}";
+    ea.l.saveForRun(
+      path = "../best-traj-{run.solver.name}-{run.randomGenerator.seed:%04d}";
       of = ea.acc.lastBest();
-      processors = [ea.f.toVideo(video = ea.misc.toVideo(drawer = ds.d.navigation()); of = ea.f.simOutcome(of = ea.f.quality()))];
-      condition = predicate.inS(f = ea.f.runKey(key = "randomGenerator.seed"); values = ["1"])
+      processor = ea.f.toVideo(video = ea.misc.toVideo(drawer = ds.d.navigation()); of = ea.f.simOutcome(of = ea.f.quality()));
+      condition = predicate.inS(f = ea.f.runKey(key = "randomGenerator.seed"); values = ["0"])
     );
-    ea.l.runSaver(
-      filePathTemplate = "../trajs-{solver.name}-{randomGenerator.seed:%04d}";
+    ea.l.saveForRun(
+      path = "../trajs-{run.solver.name}-{run.randomGenerator.seed:%04d}";
       of = ea.acc.bests();
-      processors = [ea.f.toImagesVideo(image = ds.d.navigation(); of = f.each(mapF = ea.f.simOutcome(of = ea.f.quality())))]
+      processor = ea.f.toImagesVideo(image = ds.d.navigation(); of = f.each(mapF = ea.f.simOutcome(of = ea.f.quality())));
+      condition = predicate.inS(f = ea.f.runKey(key = "randomGenerator.seed"); values = ["0"])
     );
-    ea.l.runPlotSaver(
-      filePathTemplate = "../me-{problem.name}-{solver.name}-{randomGenerator.seed}";
-      of = ea.plot.single.me(values = [ea.f.simQuality(of = ea.f.quality())]);
+    ea.l.savePlotForRun(
+      path = "../me-{run.problem.name}-{run.solver.name}-{run.randomGenerator.seed}";
+      plot = ea.plot.single.me(q = ea.f.simQuality());
       condition = predicate.matches(f = ea.f.runKey(key = "solver.name"); regex = "me2-.*")
     );
-    ea.l.expPlotSaver(
-      filePath = "../fitness";
-      of = ea.plot.multi.quality(y = ea.f.simQuality(of = ea.f.quality(of = ea.f.best())))
+    ea.l.savePlotForRun(
+      path = "../come-{run.problem.name}-{run.solver.name}-{run.randomGenerator.seed}";
+      plot = ea.plot.single.coMe(q = ea.f.simQuality());
+      condition = predicate.matches(f = ea.f.runKey(key = "solver.name"); regex = "come-.*")
     );
-    ea.l.expPlotSaver(
-      filePath = "../final-fitness";
-      of = ea.plot.multi.qualityBoxplot(y = ea.f.simQuality(of = ea.f.quality(of = ea.f.best())))
+    ea.l.savePlotForExp(
+      path = "../fitness";
+      plot = ea.plot.multi.quality(y = ea.f.simQuality(of = ea.f.quality(of = ea.f.best())))
     );
-    ea.l.expPlotSaver(
-      filePath = "../coverage";
-      of = ea.plot.multi.xyExp(y = ea.f.archiveCoverage(of = ea.f.meArchive()));
+    ea.l.savePlotForExp(
+      path = "../final-fitness";
+      plot = ea.plot.multi.qualityBoxplot(q = ea.f.simQuality())
+    );
+    ea.l.savePlotForExp(
+      path = "../coverage";
+      plot = ea.plot.multi.xyExp(y = ea.f.archiveCoverage(of = ea.f.meArchive()));
       condition = predicate.matches(f = ea.f.runKey(key = "solver.name"); regex = "me.-.*")
     )
   ]
