@@ -27,22 +27,24 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
+import io.github.ericmedvet.jgea.experimenter.Utils;
 import io.github.ericmedvet.jgea.experimenter.listener.CSVPrinter;
 import io.github.ericmedvet.jgea.experimenter.listener.decoupled.*;
 import io.github.ericmedvet.jgea.experimenter.listener.net.NetMultiSink;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.PlotAccumulatorFactory;
-import io.github.ericmedvet.jgea.experimenter.listener.telegram.TelegramUpdater;
 import io.github.ericmedvet.jnb.core.*;
 import io.github.ericmedvet.jnb.datastructure.FormattedFunction;
 import io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jnb.datastructure.TriConsumer;
-import java.io.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.function.*;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -290,26 +292,6 @@ public class Listeners {
         onlyLast);
   }
 
-  private static String getCredentialFromFile(String credentialFilePath) {
-    if (credentialFilePath == null) {
-      throw new IllegalArgumentException("Credential file path not provided");
-    }
-    String credential;
-    try (BufferedReader br = new BufferedReader(new FileReader(credentialFilePath))) {
-      List<String> lines = br.lines().toList();
-      if (lines.isEmpty()) {
-        throw new IllegalArgumentException("Invalid credential file with 0 lines");
-      }
-      String[] pieces = lines.get(0).split("\\s");
-      credential = pieces[0];
-      L.config(String.format("Using provided credential: %s", credentialFilePath));
-    } catch (IOException e) {
-      throw new IllegalArgumentException(
-          String.format("Cannot read credentials at %s: %s", credentialFilePath, e));
-    }
-    return credential;
-  }
-
   public static <G, S, Q>
       BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
           net(
@@ -346,9 +328,8 @@ public class Listeners {
               @Param(value = "pollInterval", dD = 1) double pollInterval,
               @Param(value = "condition", dNPM = "predicate.always()")
                   Predicate<Run<?, G, S, Q>> predicate) {
-
     NetMultiSink netMultiSink =
-        new NetMultiSink(pollInterval, serverAddress, serverPort, getCredentialFromFile(serverKeyFilePath));
+        new NetMultiSink(pollInterval, serverAddress, serverPort, new File(serverKeyFilePath));
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         new SinkListenerFactory<>(
             Misc.concat(List.of(defaultStateFunctions, stateFunctions)),
@@ -376,10 +357,8 @@ public class Listeners {
       value = // spotless:off
           """
               onExpDone(
-                consumers = [ea.c.saver(
-                  path = $path;
-                  of = $processor
-                )]
+                preprocessor = $processor;
+                consumers = [ea.c.saver(path = $path)]
               )
               """ // spotless:on
       )
@@ -395,26 +374,20 @@ public class Listeners {
               """ // spotless:on
       )
   @SuppressWarnings("unused")
-  public static <E, O> BiFunction<Experiment, ExecutorService, ListenerFactory<E, Run<?, ?, ?, ?>>> onExpDone(
+  public static <E, O, P> BiFunction<Experiment, ExecutorService, ListenerFactory<E, Run<?, ?, ?, ?>>> onExpDone(
       @Param("of") AccumulatorFactory<E, O, Run<?, ?, ?, ?>> accumulatorFactory,
+      @Param(value = "preprocessor", dNPM = "f.identity()") Function<? super O, ? extends P> preprocessor,
       @Param(
               value = "consumers",
               dNPMs = {"ea.consumer.deaf()"})
-          List<TriConsumer<? super O, Run<?, ?, ?, ?>, Experiment>> consumers,
+          List<TriConsumer<? super P, Run<?, ?, ?, ?>, Experiment>> consumers,
       @Param(value = "condition", dNPM = "predicate.always()") Predicate<Run<?, ?, ?, ?>> predicate) {
 
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        accumulatorFactory.thenOnShutdown(new Consumer<>() {
-          @Override
-          public void accept(List<O> os) {
-            consumers.forEach(c -> c.accept(os.get(os.size() - 1), null, experiment));
-          }
-
-          @Override
-          public String toString() {
-            return consumers.toString();
-          }
-        }),
+        accumulatorFactory.thenOnShutdown(Utils.named(consumers.toString(), (Consumer<List<O>>) (os -> {
+          P p = preprocessor.apply(os.get(os.size() - 1));
+          consumers.forEach(c -> c.accept(p, null, experiment));
+        }))),
         predicate,
         executorService,
         false);
@@ -429,10 +402,8 @@ public class Listeners {
       value = // spotless:off
           """
               onRunDone(
-                consumers = [ea.c.saver(
-                  path = $path;
-                  of = $processor
-                )]
+                preprocessor = $processor;
+                consumers = [ea.c.saver(path = $path)]
               )
               """ // spotless:on
       )
@@ -458,25 +429,19 @@ public class Listeners {
               )
               """) // spotless:on
   @SuppressWarnings("unused")
-  public static <E, O> BiFunction<Experiment, ExecutorService, ListenerFactory<E, Run<?, ?, ?, ?>>> onRunDone(
+  public static <E, O, P> BiFunction<Experiment, ExecutorService, ListenerFactory<E, Run<?, ?, ?, ?>>> onRunDone(
       @Param("of") AccumulatorFactory<E, O, Run<?, ?, ?, ?>> accumulatorFactory,
+      @Param(value = "preprocessor", dNPM = "f.identity()") Function<? super O, ? extends P> preprocessor,
       @Param(
               value = "consumers",
               dNPMs = {"ea.consumer.deaf()"})
-          List<TriConsumer<? super O, Run<?, ?, ?, ?>, Experiment>> consumers,
+          List<TriConsumer<? super P, Run<?, ?, ?, ?>, Experiment>> consumers,
       @Param(value = "condition", dNPM = "predicate.always()") Predicate<Run<?, ?, ?, ?>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        accumulatorFactory.thenOnDone(new BiConsumer<>() {
-          @Override
-          public void accept(Run<?, ?, ?, ?> run, O o) {
-            consumers.forEach(c -> c.accept(o, run, experiment));
-          }
-
-          @Override
-          public String toString() {
-            return consumers.toString();
-          }
-        }),
+        accumulatorFactory.thenOnDone(Utils.named(consumers.toString(), (run, o) -> {
+          P p = preprocessor.apply(o);
+          consumers.forEach(c -> c.accept(p, run, experiment));
+        })),
         predicate,
         executorService,
         false);
@@ -486,60 +451,6 @@ public class Listeners {
     //noinspection unchecked
     return FormattedFunction.from(f)
         .reformattedToFit(ts.stream().map(t -> (T) t).toList());
-  }
-
-  @SuppressWarnings("unused")
-  public static <G, S, Q>
-      BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
-          telegram(
-              @Param("chatId") String chatId,
-              @Param("botIdFilePath") String botIdFilePath,
-              @Param(
-                      value = "defaultPlots",
-                      dNPMs = {"ea.plot.elapsed()"})
-                  List<
-                          PlotAccumulatorFactory<
-                              ? super POCPopulationState<?, G, S, Q, ?>,
-                              ?,
-                              Run<?, G, S, Q>,
-                              ?>>
-                      defaultPlotTableBuilders,
-              @Param("plots")
-                  List<
-                          PlotAccumulatorFactory<
-                              ? super POCPopulationState<?, G, S, Q, ?>,
-                              ?,
-                              Run<?, G, S, Q>,
-                              ?>>
-                      plotTableBuilders,
-              @Param("accumulators")
-                  List<
-                          AccumulatorFactory<
-                              ? super POCPopulationState<?, G, S, Q, ?>,
-                              ?,
-                              Run<?, G, S, Q>>>
-                      accumulators,
-              @Param(value = "deferred", dB = true) boolean deferred,
-              @Param(value = "onlyLast") boolean onlyLast,
-              @Param(value = "condition", dNPM = "predicate.always()")
-                  Predicate<Run<?, G, S, Q>> predicate) {
-
-    // read credential files
-    long longChatId;
-    String botId = getCredentialFromFile(botIdFilePath);
-    try {
-      longChatId = Long.parseLong(chatId);
-    } catch (NumberFormatException e) {
-      throw new IllegalArgumentException("Invalid chatId %s: not a number".formatted(chatId));
-    }
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    List<AccumulatorFactory<POCPopulationState<?, G, S, Q, ?>, ?, Run<?, G, S, Q>>> accumulatorFactories =
-        (List) Misc.concat(List.of(defaultPlotTableBuilders, plotTableBuilders, accumulators));
-    return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        new TelegramUpdater<>(accumulatorFactories, botId, longChatId),
-        predicate,
-        deferred ? executorService : null,
-        onlyLast);
   }
 
   @SuppressWarnings("unused")

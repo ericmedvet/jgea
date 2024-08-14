@@ -22,13 +22,19 @@ package io.github.ericmedvet.jgea.experimenter.builders;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
+import io.github.ericmedvet.jgea.experimenter.Utils;
+import io.github.ericmedvet.jgea.experimenter.listener.telegram.TelegramClient;
 import io.github.ericmedvet.jnb.core.*;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jnb.datastructure.TriConsumer;
-import io.github.ericmedvet.jviz.core.drawer.VideoBuilder;
-import io.github.ericmedvet.jviz.core.util.VideoUtils;
+import io.github.ericmedvet.jviz.core.drawer.Video;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.function.Function;
 import javax.imageio.ImageIO;
 
@@ -37,24 +43,10 @@ public class Consumers {
 
   private Consumers() {}
 
-  private static <I1, I2, I3> TriConsumer<I1, I2, I3> named(String name, TriConsumer<I1, I2, I3> consumer) {
-    return new TriConsumer<>() {
-      @Override
-      public void accept(I1 i1, I2 i2, I3 i3) {
-        consumer.accept(i1, i2, i3);
-      }
-
-      @Override
-      public String toString() {
-        return name;
-      }
-    };
-  }
-
   @SuppressWarnings("unused")
   @Cacheable
   public static TriConsumer<?, ?, ?> deaf() {
-    return named("deaf", (i1, i2, i3) -> {});
+    return Utils.named("deaf", (i1, i2, i3) -> {});
   }
 
   @SuppressWarnings("unused")
@@ -62,7 +54,7 @@ public class Consumers {
   public static <X, O> TriConsumer<X, Run<?, ?, ?, ?>, Experiment> saver(
       @Param(value = "of", dNPM = "f.identity()") Function<X, O> f,
       @Param(value = "path", dS = "run-{run.index:%04d}") String filePathTemplate) {
-    return named(
+    return Utils.named(
         "saver[%s]".formatted(NamedFunction.name(f)),
         (x, run, experiment) -> save(
             f.apply(x),
@@ -79,6 +71,43 @@ public class Consumers {
                 "_")));
   }
 
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X, O> TriConsumer<X, Run<?, ?, ?, ?>, Experiment> telegram(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, O> f,
+      @Param(
+              value = "title",
+              dS = // spotless:off
+              """
+                  Experiment:
+                  \t{name}
+                  Run {run.index}:
+                  \tSolver: {run.solver\
+                  .name}
+                  \tProblem: {run.problem.name}
+                  \tSeed: {run.randomGenerator.seed}""" // spotless:on
+              )
+          String titleTemplate,
+      @Param("chatId") String chatId,
+      @Param("botIdFilePath") String botIdFilePath) {
+    TelegramClient client = new TelegramClient(new File(botIdFilePath), Long.parseLong(chatId));
+    return Utils.named(
+        "telegram[%s→to:%s]".formatted(NamedFunction.name(f), chatId),
+        (x, run, experiment) -> client.send(
+            Interpolator.interpolate(
+                titleTemplate,
+                run == null
+                    ? experiment.map()
+                    : experiment
+                        .map()
+                        .and(
+                            "run",
+                            ParamMap.Type.NAMED_PARAM_MAP,
+                            run.map().and("index", ParamMap.Type.INT, run.index())),
+                "_"),
+            f.apply(x)));
+  }
+
   private static void save(Object o, String filePath) {
     File file = null;
     try {
@@ -87,15 +116,10 @@ public class Consumers {
         ImageIO.write(image, "png", file);
       } else if (o instanceof String s) {
         file = Misc.checkExistenceAndChangeName(new File(filePath + ".txt"));
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
-          for (String l : s.lines().toList()) {
-            bw.append(l);
-            bw.newLine();
-          }
-        }
-      } else if (o instanceof VideoBuilder.Video video) {
+        Files.writeString(file.toPath(), s, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+      } else if (o instanceof Video video) {
         file = Misc.checkExistenceAndChangeName(new File(filePath + ".mp4"));
-        VideoUtils.encodeAndSave(video.images(), video.frameRate(), file);
+        Files.write(file.toPath(), video.data(), StandardOpenOption.WRITE, StandardOpenOption.CREATE);
       } else if (o instanceof byte[] data) {
         file = Misc.checkExistenceAndChangeName(new File(filePath + ".bin"));
         try (OutputStream os = new FileOutputStream(file)) {

@@ -23,9 +23,10 @@ package io.github.ericmedvet.jgea.experimenter;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
-import io.github.ericmedvet.jnb.core.BuilderException;
-import io.github.ericmedvet.jnb.core.NamedBuilder;
-import java.io.*;
+import io.github.ericmedvet.jnb.core.*;
+import io.github.ericmedvet.jnb.core.parsing.StringParser;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
@@ -148,10 +149,21 @@ public class Starter {
       L.info("No experiment provided");
       System.exit(-1);
     }
+    // parse and add name
+    Experiment experiment = (Experiment) nb.build(expDescription);
+    if (experiment.name().isEmpty()) {
+      NamedParamMap expNPM = StringParser.parse(expDescription)
+          .and(
+              "name",
+              ParamMap.Type.STRING,
+              configuration.experimentDescriptionFilePath.isEmpty()
+                  ? configuration.exampleExperimentDescriptionResourceName
+                  : configuration.experimentDescriptionFilePath);
+      experiment = (Experiment) nb.build(expNPM);
+    }
     // check if just check
     if (configuration.check) {
       try {
-        Experiment experiment = (Experiment) nb.build(expDescription);
         System.out.println("Experiment description is valid");
         System.out.printf("\t%d runs%n", experiment.runs().size());
         System.out.printf("\t%d listeners%n", experiment.listeners().size());
@@ -167,8 +179,13 @@ public class Starter {
     }
     // prepare and run experimenter
     try {
-      Experimenter experimenter = new Experimenter(nb, configuration.nOfConcurrentRuns, configuration.nOfThreads);
-      experimenter.run(expDescription, configuration.verbose);
+      L.info("Running experiment '%s' with %d runs and %d listeners"
+          .formatted(
+              experiment.name(),
+              experiment.runs().size(),
+              experiment.listeners().size()));
+      Experimenter experimenter = new Experimenter(configuration.nOfConcurrentRuns, configuration.nOfThreads);
+      experimenter.run(experiment, configuration.verbose);
     } catch (BuilderException e) {
       L.severe("Cannot run experiment: %s%n".formatted(e));
       if (configuration.verbose) {

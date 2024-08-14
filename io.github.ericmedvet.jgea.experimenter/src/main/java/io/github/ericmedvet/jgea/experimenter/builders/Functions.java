@@ -45,6 +45,7 @@ import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jviz.core.drawer.ImageBuilder;
+import io.github.ericmedvet.jviz.core.drawer.Video;
 import io.github.ericmedvet.jviz.core.drawer.VideoBuilder;
 import io.github.ericmedvet.jviz.core.plot.*;
 import io.github.ericmedvet.jviz.core.plot.csv.DistributionPlotCsvBuilder;
@@ -56,7 +57,6 @@ import io.github.ericmedvet.jviz.core.plot.image.Configuration;
 import io.github.ericmedvet.jviz.core.plot.video.*;
 import io.github.ericmedvet.jviz.core.util.VideoUtils;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
@@ -558,44 +558,32 @@ public class Functions {
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X, D> NamedFunction<X, VideoBuilder.Video> toImagesVideo(
+  public static <X, D> NamedFunction<X, Video> toImagesVideo(
       @Param(value = "of", dNPM = "f.identity()") Function<X, List<D>> beforeF,
       @Param("image") ImageBuilder<D> imageBuilder,
       @Param(value = "w", dI = -1) int w,
       @Param(value = "h", dI = -1) int h,
       @Param(value = "frameRate", dD = 10) double frameRate,
-      @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder) {
+      @Param(value = "encoder", dS = "default") VideoUtils.EncoderFacility encoder) {
     UnaryOperator<VideoBuilder.VideoInfo> viAdapter =
         vi -> new VideoBuilder.VideoInfo(w == -1 ? vi.w() : w, h == -1 ? vi.h() : h, encoder);
     VideoBuilder<List<D>> videoBuilder = VideoBuilder.from(imageBuilder, Function.identity(), frameRate);
-    Function<List<D>, VideoBuilder.Video> f = ds -> {
-      try {
-        return videoBuilder.build(viAdapter.apply(videoBuilder.videoInfo(ds)), ds);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    };
+    Function<List<D>, Video> f = ds -> videoBuilder.build(viAdapter.apply(videoBuilder.videoInfo(ds)), ds);
     return NamedFunction.from(f, "to.images.video[%s]".formatted(imageBuilder))
         .compose(beforeF);
   }
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X, D> NamedFunction<X, VideoBuilder.Video> toVideo(
+  public static <X, D> NamedFunction<X, Video> toVideo(
       @Param(value = "of", dNPM = "f.identity()") Function<X, D> beforeF,
       @Param("video") VideoBuilder<D> videoBuilder,
       @Param(value = "w", dI = -1) int w,
       @Param(value = "h", dI = -1) int h,
-      @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder) {
+      @Param(value = "encoder", dS = "default") VideoUtils.EncoderFacility encoder) {
     UnaryOperator<VideoBuilder.VideoInfo> viAdapter =
         vi -> new VideoBuilder.VideoInfo(w == -1 ? vi.w() : w, h == -1 ? vi.h() : h, encoder);
-    Function<D, VideoBuilder.Video> f = d -> {
-      try {
-        return videoBuilder.build(viAdapter.apply(videoBuilder.videoInfo(d)), d);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    };
+    Function<D, Video> f = d -> videoBuilder.build(viAdapter.apply(videoBuilder.videoInfo(d)), d);
     return NamedFunction.from(f, "to.video[%s]".formatted(videoBuilder)).compose(beforeF);
   }
 
@@ -653,11 +641,11 @@ public class Functions {
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X, P extends XYPlot<D>, D> NamedFunction<X, VideoBuilder.Video> videoPlotter(
+  public static <X, P extends XYPlot<D>, D> NamedFunction<X, Video> videoPlotter(
       @Param(value = "of", dNPM = "f.identity()") Function<X, P> beforeF,
       @Param(value = "w", dI = -1) int w,
       @Param(value = "h", dI = -1) int h,
-      @Param(value = "encoder", dS = "jcodec") VideoUtils.EncoderFacility encoder,
+      @Param(value = "encoder", dS = "default") VideoUtils.EncoderFacility encoder,
       @Param(value = "frameRate", dD = 10) double frameRate,
       @Param("freeScales") boolean freeScales,
       @Param("secondary") boolean secondary) {
@@ -666,48 +654,44 @@ public class Functions {
     Configuration iConfiguration = freeScales ? Configuration.FREE_SCALES : Configuration.DEFAULT;
     io.github.ericmedvet.jviz.core.plot.video.Configuration vConfiguration =
         io.github.ericmedvet.jviz.core.plot.video.Configuration.DEFAULT;
-    Function<P, VideoBuilder.Video> f = p -> {
-      try {
-        if (p instanceof DistributionPlot dp) {
-          BoxPlotVideoBuilder vb = new BoxPlotVideoBuilder(
-              vConfiguration,
-              iConfiguration,
-              Configuration.BoxPlot.DEFAULT,
-              Configuration.Colors.DEFAULT.dataColors());
-          return vb.build(viAdapter.apply(vb.videoInfo(dp)), dp);
-        }
-        if (p instanceof LandscapePlot lsp) {
-          LandscapePlotVideoBuilder vb = new LandscapePlotVideoBuilder(
-              vConfiguration,
-              iConfiguration,
-              Configuration.LandscapePlot.DEFAULT,
-              Configuration.Colors.DEFAULT.dataColors());
-          return vb.build(viAdapter.apply(vb.videoInfo(lsp)), lsp);
-        }
-        if (p instanceof XYDataSeriesPlot xyp) {
-          AbstractXYDataSeriesPlotVideoBuilder vb = (!secondary)
-              ? new LinesPlotVideoBuilder(
-                  vConfiguration,
-                  iConfiguration,
-                  Configuration.LinesPlot.DEFAULT,
-                  Configuration.Colors.DEFAULT.dataColors())
-              : new PointsPlotVideoBuilder(
-                  vConfiguration,
-                  iConfiguration,
-                  Configuration.PointsPlot.DEFAULT,
-                  Configuration.Colors.DEFAULT.dataColors());
-          return vb.build(viAdapter.apply(vb.videoInfo(xyp)), xyp);
-        }
-        if (p instanceof UnivariateGridPlot ugp) {
-          UnivariatePlotVideoBuilder vb = new UnivariatePlotVideoBuilder(
-              vConfiguration, iConfiguration, Configuration.UnivariateGridPlot.DEFAULT);
-          return vb.build(viAdapter.apply(vb.videoInfo(ugp)), ugp);
-        }
-        throw new IllegalArgumentException(
-            "Unsupported type of plot %s".formatted(p.getClass().getSimpleName()));
-      } catch (IOException e) {
-        throw new RuntimeException(e);
+    Function<P, Video> f = p -> {
+      if (p instanceof DistributionPlot dp) {
+        BoxPlotVideoBuilder vb = new BoxPlotVideoBuilder(
+            vConfiguration,
+            iConfiguration,
+            Configuration.BoxPlot.DEFAULT,
+            Configuration.Colors.DEFAULT.dataColors());
+        return vb.build(viAdapter.apply(vb.videoInfo(dp)), dp);
       }
+      if (p instanceof LandscapePlot lsp) {
+        LandscapePlotVideoBuilder vb = new LandscapePlotVideoBuilder(
+            vConfiguration,
+            iConfiguration,
+            Configuration.LandscapePlot.DEFAULT,
+            Configuration.Colors.DEFAULT.dataColors());
+        return vb.build(viAdapter.apply(vb.videoInfo(lsp)), lsp);
+      }
+      if (p instanceof XYDataSeriesPlot xyp) {
+        AbstractXYDataSeriesPlotVideoBuilder vb = (!secondary)
+            ? new LinesPlotVideoBuilder(
+                vConfiguration,
+                iConfiguration,
+                Configuration.LinesPlot.DEFAULT,
+                Configuration.Colors.DEFAULT.dataColors())
+            : new PointsPlotVideoBuilder(
+                vConfiguration,
+                iConfiguration,
+                Configuration.PointsPlot.DEFAULT,
+                Configuration.Colors.DEFAULT.dataColors());
+        return vb.build(viAdapter.apply(vb.videoInfo(xyp)), xyp);
+      }
+      if (p instanceof UnivariateGridPlot ugp) {
+        UnivariatePlotVideoBuilder vb = new UnivariatePlotVideoBuilder(
+            vConfiguration, iConfiguration, Configuration.UnivariateGridPlot.DEFAULT);
+        return vb.build(viAdapter.apply(vb.videoInfo(ugp)), ugp);
+      }
+      throw new IllegalArgumentException(
+          "Unsupported type of plot %s".formatted(p.getClass().getSimpleName()));
     };
     return NamedFunction.from(f, "video.plotter").compose(beforeF);
   }
