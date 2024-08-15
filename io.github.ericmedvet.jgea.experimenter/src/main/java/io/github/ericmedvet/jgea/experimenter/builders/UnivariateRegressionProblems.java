@@ -25,6 +25,7 @@ import io.github.ericmedvet.jgea.problem.regression.NumericalDataset;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionFitness;
 import io.github.ericmedvet.jgea.problem.regression.univariate.UnivariateRegressionProblem;
 import io.github.ericmedvet.jgea.problem.regression.univariate.synthetic.*;
+import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import java.io.IOException;
@@ -36,6 +37,7 @@ public class UnivariateRegressionProblems {
   private UnivariateRegressionProblems() {}
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static UnivariateRegressionProblem<UnivariateRegressionFitness> bundled(
       @Param("name") String name,
       @Param(value = "metric", dS = "mse") UnivariateRegressionFitness.Metric metric,
@@ -66,6 +68,7 @@ public class UnivariateRegressionProblems {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static UnivariateRegressionProblem<UnivariateRegressionFitness> fromData(
       @Param(value = "name", dS = "dataset") String name,
       @Param("trainingDataset") Supplier<NumericalDataset> trainingDataset,
@@ -80,6 +83,7 @@ public class UnivariateRegressionProblems {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static SyntheticUnivariateRegressionProblem synthetic(
       @Param("name") String name,
       @Param(value = "metric", dS = "mse") UnivariateRegressionFitness.Metric metric,

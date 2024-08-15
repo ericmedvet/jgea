@@ -27,7 +27,6 @@ module io.github.ericmedvet.jgea.experimenter {
   exports io.github.ericmedvet.jgea.experimenter.listener;
   exports io.github.ericmedvet.jgea.experimenter.listener.plot;
 
-  requires jcodec;
   requires io.github.ericmedvet.jnb.core;
   requires io.github.ericmedvet.jnb.datastructure;
   requires io.github.ericmedvet.jgea.core;

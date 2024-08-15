@@ -26,6 +26,7 @@ import io.github.ericmedvet.jgea.problem.synthetic.MultiModalIntOneMax;
 import io.github.ericmedvet.jgea.problem.synthetic.MultiObjectiveIntOneMax;
 import io.github.ericmedvet.jgea.problem.synthetic.OneMax;
 import io.github.ericmedvet.jgea.problem.synthetic.numerical.*;
+import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import java.io.IOException;
@@ -41,18 +42,21 @@ public class SyntheticProblems {
   private SyntheticProblems() {}
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static Ackley ackley(
       @Param(value = "name", iS = "ackley-{p}") String name, @Param(value = "p", dI = 100) int p) {
     return new Ackley(p);
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static BentCigar bentCigar(
       @Param(value = "name", iS = "bentCigar-{p}") String name, @Param(value = "p", dI = 100) int p) {
     return new BentCigar(p);
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static CharShapeApproximation charShapeApproximation(
       @Param(value = "name", dS = "shape-{target}") String name,
       @Param("target") String syntheticTargetName,
@@ -67,6 +71,7 @@ public class SyntheticProblems {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static CircularPointsAiming circularPointsAiming(
       @Param(value = "name", iS = "circularPointsAiming-{p}-{n}") String name,
       @Param(value = "p", dI = 100) int p,
@@ -78,12 +83,14 @@ public class SyntheticProblems {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static Discus discus(
       @Param(value = "name", iS = "discus-{p}") String name, @Param(value = "p", dI = 100) int p) {
     return new Discus(p);
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static GaussianMixture2D gaussianMixture2D(
       @Param(value = "name", dS = "gm2D") String name,
       @Param(
@@ -103,6 +110,7 @@ public class SyntheticProblems {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static HighConditionedElliptic highConditionedElliptic(
       @Param(value = "name", iS = "highConditionedElliptic-{p}") String name,
       @Param(value = "p", dI = 100) int p) {
@@ -110,6 +118,7 @@ public class SyntheticProblems {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static IntOneMax intOneMax(
       @Param(value = "name", iS = "iOneMax-{p}") String name,
       @Param(value = "p", dI = 100) int p,
@@ -118,12 +127,14 @@ public class SyntheticProblems {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static LinearPoints linearPoints(
       @Param(value = "name", iS = "lPoints-{p}") String name, @Param(value = "p", dI = 100) int p) {
     return new LinearPoints(p);
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static MultiModalIntOneMax multiModalIntOneMax(
       @Param(value = "name", iS = "mmIOneMax-{p}-{nOfTargets}") String name,
       @Param(value = "p", dI = 100) int p,
@@ -133,6 +144,7 @@ public class SyntheticProblems {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static MultiObjectiveIntOneMax multiObjectiveIntOneMax(
       @Param(value = "name", iS = "moIOneMax-{p}") String name,
       @Param(value = "p", dI = 100) int p,
@@ -141,12 +153,14 @@ public class SyntheticProblems {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static OneMax oneMax(
       @Param(value = "name", iS = "oneMax-{p}") String name, @Param(value = "p", dI = 100) int p) {
     return new OneMax(p);
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static PointsAiming pointAiming(
       @Param(value = "name", iS = "pointAiming-{p}") String name,
       @Param(value = "p", dI = 100) int p,
@@ -155,18 +169,21 @@ public class SyntheticProblems {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static Rastrigin rastrigin(
       @Param(value = "name", iS = "rastrigin-{p}") String name, @Param(value = "p", dI = 100) int p) {
     return new Rastrigin(p);
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static Rosenbrock rosenbrock(
       @Param(value = "name", iS = "rosenbrock-{p}") String name, @Param(value = "p", dI = 100) int p) {
     return new Rosenbrock(p);
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
   public static Sphere sphere(
       @Param(value = "name", iS = "sphere-{p}") String name, @Param(value = "p", dI = 100) int p) {
     return new Sphere(p);

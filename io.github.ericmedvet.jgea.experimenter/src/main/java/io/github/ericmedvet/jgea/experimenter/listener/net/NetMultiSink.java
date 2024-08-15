@@ -19,11 +19,9 @@
  */
 package io.github.ericmedvet.jgea.experimenter.listener.net;
 
+import io.github.ericmedvet.jgea.experimenter.Utils;
 import io.github.ericmedvet.jgea.experimenter.listener.decoupled.*;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.net.Socket;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -55,6 +53,10 @@ public class NetMultiSink {
   private final ScheduledExecutorService executorService;
   private final List<Item<?, ?>> toSendItems;
   private ObjectOutputStream oos = null;
+
+  public NetMultiSink(double pollInterval, String serverAddress, int serverPort, File serverKeyFile) {
+    this(pollInterval, serverAddress, serverPort, Utils.getCredentialFromFile(serverKeyFile));
+  }
 
   public NetMultiSink(double pollInterval, String serverAddress, int serverPort, String serverKey) {
     this.serverAddress = serverAddress;

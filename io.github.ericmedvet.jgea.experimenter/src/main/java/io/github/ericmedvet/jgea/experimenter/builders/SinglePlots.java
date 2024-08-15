@@ -28,9 +28,7 @@ import io.github.ericmedvet.jgea.experimenter.listener.plot.LandscapeSEPAF;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.UnivariateGridSEPAF;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeriesSEPAF;
 import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeriesSRPAF;
-import io.github.ericmedvet.jnb.core.Alias;
-import io.github.ericmedvet.jnb.core.Discoverable;
-import io.github.ericmedvet.jnb.core.Param;
+import io.github.ericmedvet.jnb.core.*;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
@@ -56,34 +54,53 @@ public class SinglePlots {
               """) // spotless:on
   @Alias(
       name = "me",
+      passThroughParams = {
+        @PassThroughParam(name = "q", value = "f.identity()", type = ParamMap.Type.NAMED_PARAM_MAP)
+      },
       value = // spotless:off
           """
               gridRun(
                 title = ea.f.runString(name = title; s = "Archive of {solver.name} on {problem.name} (seed={randomGenerator.seed})");
-                values = [ea.f.quality()];
-                grid = ea.f.archiveToGrid(of = ea.f.meArchive())
+                values = [f.composition(of = ea.f.quality(); then = $q)];
+                grids = [ea.f.archiveToGrid(of = ea.f.meArchive())]
+              )
+              """) // spotless:on
+  @Alias(
+      name = "coMe",
+      passThroughParams = {
+        @PassThroughParam(name = "q", value = "f.identity()", type = ParamMap.Type.NAMED_PARAM_MAP)
+      },
+      value = // spotless:off
+          """
+              gridRun(
+                title = ea.f.runString(name = title; s = "Archives of {solver.name} on {problem.name} (seed={randomGenerator.seed})");
+                values = [f.composition(of = ea.f.quality(); then = $q)];
+                grids = [ea.f.archiveToGrid(of = ea.f.coMeArchive1()); ea.f.archiveToGrid(of = ea.f.coMeArchive2())]
               )
               """) // spotless:on
   @Alias(
       name = "gridState",
+      passThroughParams = {
+        @PassThroughParam(name = "q", value = "f.identity()", type = ParamMap.Type.NAMED_PARAM_MAP)
+      },
       value = // spotless:off
           """
               gridRun(
                 title = ea.f.runString(name = title; s = "Grid population of {solver.name} on {problem.name} (seed={randomGenerator.seed})");
-                values = [ea.f.quality()];
-                grid = ea.f.stateGrid()
+                values = [f.composition(of = ea.f.quality(); then = $q)];
+                grids = [ea.f.stateGrid()]
               )
               """) // spotless:on
   public static <E, R, X, G> UnivariateGridSEPAF<E, R, X, G> grid(
       @Param("title") Function<? super R, String> titleFunction,
       @Param("values") List<Function<? super G, ? extends Number>> valueFunctions,
-      @Param("grid") Function<? super E, Grid<G>> gridFunction,
+      @Param("grids") List<Function<? super E, Grid<G>>> gridFunctions,
       @Param("predicateValue") Function<E, X> predicateValueFunction,
       @Param(value = "condition", dNPM = "predicate.ltEq(t=1)") Predicate<X> condition,
       @Param(value = "valueRange", dNPM = "m.range(min=-Infinity;max=Infinity)") DoubleRange valueRange,
       @Param(value = "unique", dB = true) boolean unique) {
     return new UnivariateGridSEPAF<>(
-        titleFunction, predicateValueFunction, condition, unique, gridFunction, valueFunctions, valueRange);
+        titleFunction, predicateValueFunction, condition, unique, gridFunctions, valueFunctions, valueRange);
   }
 
   @SuppressWarnings("unused")
@@ -196,9 +213,12 @@ public class SinglePlots {
               """) // spotless:on
   @Alias(
       name = "quality",
+      passThroughParams = {
+        @PassThroughParam(name = "q", value = "f.identity()", type = ParamMap.Type.NAMED_PARAM_MAP)
+      },
       value = // spotless:off
           """
-              xyrsRun(ys = [ea.f.quality(of = ea.f.best())])
+              xyrsRun(ys = [f.composition(of = ea.f.quality(of = ea.f.best()); then = $q)])
               """) // spotless:on
   @Alias(
       name = "uniqueness",

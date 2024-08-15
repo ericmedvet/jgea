@@ -22,7 +22,6 @@ package io.github.ericmedvet.jgea.core.listener;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
@@ -58,20 +57,6 @@ public interface Listener<E> {
       @Override
       public String toString() {
         return "deaf";
-      }
-    };
-  }
-
-  static <E> Listener<E> named(Consumer<E> consumer, String name) {
-    return new Listener<>() {
-      @Override
-      public void listen(E e) {
-        consumer.accept(e);
-      }
-
-      @Override
-      public String toString() {
-        return name;
       }
     };
   }

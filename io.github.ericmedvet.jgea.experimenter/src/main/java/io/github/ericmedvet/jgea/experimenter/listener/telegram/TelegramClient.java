@@ -21,21 +21,24 @@
 package io.github.ericmedvet.jgea.experimenter.listener.telegram;
 
 import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.model.request.ParseMode;
 import com.pengrad.telegrambot.request.*;
 import com.pengrad.telegrambot.response.GetChatMemberCountResponse;
 import com.pengrad.telegrambot.response.GetChatResponse;
 import com.pengrad.telegrambot.response.SendResponse;
+import io.github.ericmedvet.jgea.core.util.StringUtils;
+import io.github.ericmedvet.jgea.experimenter.Utils;
+import io.github.ericmedvet.jnb.core.MapNamedParamMap;
+import io.github.ericmedvet.jnb.core.NamedParamMap;
+import io.github.ericmedvet.jviz.core.drawer.Video;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.util.Set;
+import java.io.*;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
 public class TelegramClient {
 
   protected static final Logger L = Logger.getLogger(TelegramClient.class.getName());
-  protected static final Set<String> VIDEO_FILE_EXTENSIONS = Set.of("mpg", "avi", "mp4");
   protected final long chatId;
   protected TelegramBot bot;
 
@@ -48,6 +51,10 @@ public class TelegramClient {
     }
   }
 
+  public TelegramClient(File credentialFile, long chatId) {
+    this(Utils.getCredentialFromFile(credentialFile), chatId);
+  }
+
   public String getChatInfo() {
     GetChatResponse chatResponse = bot.execute(new GetChat(chatId));
     GetChatMemberCountResponse chatMemberCountResponse = bot.execute(new GetChatMemberCount(chatId));
@@ -58,7 +65,7 @@ public class TelegramClient {
     return "%s (%d members)".formatted(title, chatMemberCountResponse.count());
   }
 
-  public void sendDocument(File file) {
+  public void sendFile(File file) {
     try {
       SendResponse response = bot.execute(new SendDocument(chatId, file));
       if (!response.isOk()) {
@@ -94,14 +101,48 @@ public class TelegramClient {
     }
   }
 
-  public void sendVideo(File file) {
+  public void sendMarkdownText(String string) {
     try {
-      SendResponse response = bot.execute(new SendVideo(chatId, file));
+      SendResponse response = bot.execute(new SendMessage(chatId, string).parseMode(ParseMode.Markdown));
+      if (!response.isOk()) {
+        L.warning(String.format("Response is not ok: %s", response));
+      }
+    } catch (Throwable t) {
+      L.warning(String.format("Cannot send text: %s", t));
+    }
+  }
+
+  public void sendVideo(Video video) throws IOException {
+    try {
+      SendResponse response = bot.execute(new SendVideo(chatId, video.data()));
       if (!response.isOk()) {
         L.warning(String.format("Response is not ok: %s", response));
       }
     } catch (Throwable t) {
       L.warning(String.format("Cannot send video: %s", t));
+    }
+  }
+
+  public void send(String title, Object o) {
+    try {
+      if (o instanceof BufferedImage image) {
+        sendMarkdownText("Image from: %s\n`%s`".formatted(StringUtils.getUserMachineName(), title));
+        sendImage(image);
+      } else if (o instanceof String s) {
+        sendMarkdownText("Text from: %s\n`%s`".formatted(StringUtils.getUserMachineName(), title));
+        sendText(s);
+      } else if (o instanceof Video video) {
+        sendMarkdownText("Video from: %s\n`%s`".formatted(StringUtils.getUserMachineName(), title));
+        sendVideo(video);
+      } else if (o instanceof NamedParamMap npm) {
+        sendMarkdownText("NamedParamMap from: %s\n`%s`".formatted(StringUtils.getUserMachineName(), title));
+        sendText(MapNamedParamMap.prettyToString(npm));
+      } else {
+        throw new IllegalArgumentException(
+            "Cannot send data of type %s".formatted(o.getClass().getSimpleName()));
+      }
+    } catch (IOException e) {
+      throw new RuntimeException("Cannot send '%s'".formatted(title), e);
     }
   }
 }

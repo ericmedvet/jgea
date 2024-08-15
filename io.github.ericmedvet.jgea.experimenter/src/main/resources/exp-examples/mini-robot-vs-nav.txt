@@ -99,7 +99,7 @@ ea.experiment(
     );
     ea.l.saveForRun(
       of = ea.acc.lastBest();
-      path = "../run-{run.index:%04d}";
+      path = "../best-traj-{run.index:%04d}";
       processor = ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = ea.f.quality()))
     );
     ea.l.saveLastPopulationForRun(
