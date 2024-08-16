@@ -20,17 +20,13 @@ ea.experiment(
       ];
       runFunctions = [ea.f.runKey(key = "problem.p")]
     );
-    ea.l.expPlotSaver(
-      w = 600; h = 400;
-      filePath = "../om-fitness.png";
-      type = lines;
-      plot = ea.plot.m.quality()
+    ea.l.savePlotForExp(
+      path = "../{name}-fitness";
+      plot = ea.plot.multi.quality()
     );
-    ea.l.expPlotSaver(
-      w = 600; h = 400;
-      filePath = "../om-fitness-bp.png";
-      type = boxplot;
-      plot = ea.plot.m.qualityBoxplot()
+    ea.l.savePlotForExp(
+      path = "../{name}-final-fitness";
+      plot = ea.plot.multi.qualityBoxplot()
     )
   ]
 )

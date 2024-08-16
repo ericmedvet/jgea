@@ -38,10 +38,11 @@ ea.experiment(
         ea.f.id(of = ea.f.best());
         f.nTh(of = ea.f.parentIds(of = ea.f.best()); n = 0);
         f.nTh(of = ea.f.parentIds(of = ea.f.best()); n = 1)
-      ]
+      ];
+      onlyLast = true
     );
     ea.l.bestCsv(
-      filePath = "../best.csv";
+      path = "../{name}-best.csv";
       functions = [
         ea.f.size(of = ea.f.genotype(of = ea.f.best()); format = "%3d");
         ea.f.simQuality(of = ea.f.quality(of = ea.f.best()); format = "%5.2f");
@@ -54,61 +55,9 @@ ea.experiment(
         f.nTh(of = ea.f.parentIds(of = ea.f.best()); n = 1)
       ]
     );
-    ea.l.expPlotSaver(
-      filePath = "../navigation-fitness.png";
-      freeScales = true;
-      w = 600; h = 1000;
-      type = lines;
-      plot = ea.plot.qualityPlotMatrix(
-        xFunction = f.quantized(of = ea.f.nOfEvals(); q = 200);
-        yFunction = ea.f.simQuality(of = ea.f.quality(of = ea.f.best()))
-      )
-    );
-    ea.l.runAllIterationsVideoSaver(
-      image = ds.d.navigation();
-      function = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best()));
-      filePathTemplate = "../bests-{problem.name}-{solver.name}-{randomGenerator.seed:%04d}.mp4";
-      condition = predicate.all(conditions = [
-        predicate.inS(
-          f = ea.f.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
-          values = ["1"]
-        )
-      ])
-    );
-    ea.l.runLastIterationVideoSaver(
-      video = ds.d.navigation();
-      function = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best()));
-      filePathTemplate = "../finalBest-{problem.name}-{solver.name}-{randomGenerator.seed:%04d}.mp4";
-      condition = predicate.all(conditions = [
-        predicate.inS(
-          f = ea.f.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
-          values = ["1"]
-        )
-      ])
-    );
-    ea.l.runPlotSaver(
-      w = 1500; h = 350;
-      filePathTemplate = "../me-{problem.name}-{solver.name}-{randomGenerator.seed}.png";
-      type = univariate_grid;
-      plot = ea.plot.mapElitesPopulation(
-        predicateValue = f.quantized(of = ea.f.nOfEvals(); q = 500);
-        condition = predicate.inD(
-          values = [0; 500; 1000; 1500; 2000; 2500; 3500; 5000]
-        );
-        individualFunctions = [
-          ea.f.simQuality(of = ea.f.quality())
-        ]
-      );
-      condition = predicate.all(conditions = [
-        predicate.matches(
-          f = ea.f.runKey(runKey = ea.misc.sEntry(key = "solver"; value = "{solver.name}"));
-          regex = "me.*"
-        );
-        predicate.inS(
-          f = ea.f.runKey(runKey = ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}"));
-          values = ["1"]
-        )
-      ])
+    ea.l.savePlotForExp(
+      path = "../{name}-fitness";
+      plot = ea.plot.multi.quality(q = ea.f.simQuality())
     )
   ]
 )

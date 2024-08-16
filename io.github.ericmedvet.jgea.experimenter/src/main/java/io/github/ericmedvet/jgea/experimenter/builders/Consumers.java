@@ -56,19 +56,7 @@ public class Consumers {
       @Param(value = "path", dS = "run-{run.index:%04d}") String filePathTemplate) {
     return Utils.named(
         "saver[%s]".formatted(NamedFunction.name(f)),
-        (x, run, experiment) -> save(
-            f.apply(x),
-            Interpolator.interpolate(
-                filePathTemplate,
-                run == null
-                    ? experiment.map()
-                    : experiment
-                        .map()
-                        .and(
-                            "run",
-                            ParamMap.Type.NAMED_PARAM_MAP,
-                            run.map().and("index", ParamMap.Type.INT, run.index())),
-                "_")));
+        (x, run, experiment) -> save(f.apply(x), Utils.interpolate(filePathTemplate, experiment, run)));
   }
 
   @SuppressWarnings("unused")
@@ -93,19 +81,7 @@ public class Consumers {
     TelegramClient client = new TelegramClient(new File(botIdFilePath), Long.parseLong(chatId));
     return Utils.named(
         "telegram[%s→to:%s]".formatted(NamedFunction.name(f), chatId),
-        (x, run, experiment) -> client.send(
-            Interpolator.interpolate(
-                titleTemplate,
-                run == null
-                    ? experiment.map()
-                    : experiment
-                        .map()
-                        .and(
-                            "run",
-                            ParamMap.Type.NAMED_PARAM_MAP,
-                            run.map().and("index", ParamMap.Type.INT, run.index())),
-                "_"),
-            f.apply(x)));
+        (x, run, experiment) -> client.send(Utils.interpolate(titleTemplate, experiment, run), f.apply(x)));
   }
 
   private static void save(Object o, String filePath) {

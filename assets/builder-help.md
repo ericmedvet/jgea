@@ -1101,11 +1101,11 @@ Aliases: `ea.l`, `ea.listener`
 
 ### Builder `ea.listener.allCsv()`
 
-`ea.l.allCsv(filePath; errorString; intFormat; doubleFormat; defaultFunctions; functions; individualFunctions; defaultRunFunctions; runFunctions; deferred; onlyLast; condition)`
+`ea.l.allCsv(path; errorString; intFormat; doubleFormat; defaultFunctions; functions; individualFunctions; defaultRunFunctions; runFunctions; deferred; onlyLast; condition)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
-| `filePath` | s |  | <code><abbr title="java.lang.String">String</abbr></code> |
+| `path` | s |  | <code><abbr title="java.lang.String">String</abbr></code> |
 | `errorString` | s | `NA` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `intFormat` | s | `%d` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `doubleFormat` | s | `%.5e` | <code><abbr title="java.lang.String">String</abbr></code> |
@@ -1122,11 +1122,11 @@ Produces <code><abbr title="java.util.function.BiFunction">BiFunction</abbr>&lt;
 
 ### Builder `ea.listener.bestCsv()`
 
-`ea.l.bestCsv(filePath; errorString; intFormat; doubleFormat; defaultFunctions; functions; defaultRunFunctions; runFunctions; deferred; onlyLast; condition)`
+`ea.l.bestCsv(path; errorString; intFormat; doubleFormat; defaultFunctions; functions; defaultRunFunctions; runFunctions; deferred; onlyLast; condition)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
-| `filePath` | s |  | <code><abbr title="java.lang.String">String</abbr></code> |
+| `path` | s |  | <code><abbr title="java.lang.String">String</abbr></code> |
 | `errorString` | s | `NA` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `intFormat` | s | `%d` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `doubleFormat` | s | `%.5e` | <code><abbr title="java.lang.String">String</abbr></code> |

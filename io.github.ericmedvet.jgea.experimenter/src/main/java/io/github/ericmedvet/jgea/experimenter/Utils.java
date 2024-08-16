@@ -28,7 +28,7 @@ import io.github.ericmedvet.jnb.datastructure.TriConsumer;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.SortedMap;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
@@ -39,28 +39,38 @@ public class Utils {
 
   private Utils() {}
 
-  public static String interpolate(String format, Run<?, ?, ?, ?> run) {
-    ParamMap map = run.map();
-    if (run.map() instanceof MapNamedParamMap mnpm) {
-      SortedMap<MapNamedParamMap.TypedKey, Object> values = mnpm.getValues();
-      values.put(new MapNamedParamMap.TypedKey("index", ParamMap.Type.INT), run.index());
-      map = new MapNamedParamMap(mnpm.getName(), mnpm.getValues());
+  public static String getCredentialFromFile(File credentialFile) {
+    if (credentialFile == null) {
+      throw new IllegalArgumentException("Credential file not provided");
     }
-    return Interpolator.interpolate(format, map, "_");
+    try {
+      String content = Files.readString(credentialFile.toPath());
+      if (content.isEmpty()) {
+        throw new IllegalArgumentException("Invalid credential file: empty");
+      }
+      if (content.lines().count() != 1) {
+        throw new IllegalArgumentException("Invalid credential file: %d lines"
+            .formatted(content.lines().count()));
+      }
+      String[] pieces = content.split("\\s");
+      String credential = pieces[0];
+      L.config(String.format("Using provided credential: %s", credentialFile));
+      return credential;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  public static <I1, I2, I3> TriConsumer<I1, I2, I3> named(String name, TriConsumer<I1, I2, I3> consumer) {
-    return new TriConsumer<>() {
-      @Override
-      public void accept(I1 i1, I2 i2, I3 i3) {
-        consumer.accept(i1, i2, i3);
+  public static String interpolate(String format, Experiment experiment, Run<?, ?, ?, ?> run) {
+    ParamMap map = new MapNamedParamMap("experiment", Map.of());
+    if (experiment != null) {
+      map = experiment.map();
+      if (run != null) {
+        map = map.and(
+            "run", ParamMap.Type.NAMED_PARAM_MAP, run.map().and("index", ParamMap.Type.INT, run.index()));
       }
-
-      @Override
-      public String toString() {
-        return name;
-      }
-    };
+    }
+    return Interpolator.interpolate(format, map, "_");
   }
 
   public static <I1, I2> BiConsumer<I1, I2> named(String name, BiConsumer<I1, I2> consumer) {
@@ -105,25 +115,17 @@ public class Utils {
     };
   }
 
-  public static String getCredentialFromFile(File credentialFile) {
-    if (credentialFile == null) {
-      throw new IllegalArgumentException("Credential file not provided");
-    }
-    try {
-      String content = Files.readString(credentialFile.toPath());
-      if (content.isEmpty()) {
-        throw new IllegalArgumentException("Invalid credential file: empty");
+  public static <I1, I2, I3> TriConsumer<I1, I2, I3> named(String name, TriConsumer<I1, I2, I3> consumer) {
+    return new TriConsumer<>() {
+      @Override
+      public void accept(I1 i1, I2 i2, I3 i3) {
+        consumer.accept(i1, i2, i3);
       }
-      if (content.lines().count() != 1) {
-        throw new IllegalArgumentException("Invalid credential file: %d lines"
-            .formatted(content.lines().count()));
+
+      @Override
+      public String toString() {
+        return name;
       }
-      String[] pieces = content.split("\\s");
-      String credential = pieces[0];
-      L.config(String.format("Using provided credential: %s", credentialFile));
-      return credential;
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    };
   }
 }

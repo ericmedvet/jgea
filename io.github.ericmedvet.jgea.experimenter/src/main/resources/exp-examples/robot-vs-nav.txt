@@ -113,7 +113,7 @@ ea.experiment(
       of = ea.acc.lastBest();
       preprocessor = ea.f.toVideo(video = ea.misc.toVideo(drawer = ds.d.navigation()); of = ea.f.simOutcome(of = ea.f.quality()));
       consumers = [
-        ea.c.saver(path = "../best-traj-{run.solver.name}-{run.randomGenerator.seed:%04d}");
+        ea.c.saver(path = "../{name}-best-traj-{run.solver.name}-{run.randomGenerator.seed:%04d}");
         $telegram
       ];
       condition = predicate.inS(f = ea.f.runKey(key = "randomGenerator.seed"); values = ["1"])
@@ -122,36 +122,36 @@ ea.experiment(
       of = ea.acc.lastBest();
       preprocessor = ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = ea.f.quality()));
       consumers = [
-        ea.c.saver(path = "../best-traj-e{name}-{run.solver.name}-{run.randomGenerator.seed:%04d}");
+        ea.c.saver(path = "../{name}-best-traj-e{name}-{run.solver.name}-{run.randomGenerator.seed:%04d}");
         $telegram
       ]
     );
     ea.l.saveForRun(
-      path = "../trajs-{run.solver.name}-{run.randomGenerator.seed:%04d}";
+      path = "../{name}-trajs-{run.solver.name}-{run.randomGenerator.seed:%04d}";
       of = ea.acc.bests();
       processor = ea.f.toImagesVideo(image = ds.d.navigation(); of = f.each(mapF = ea.f.simOutcome(of = ea.f.quality())));
       condition = predicate.inS(f = ea.f.runKey(key = "randomGenerator.seed"); values = ["0"])
     );
     ea.l.savePlotForRun(
-      path = "../me-{run.problem.name}-{run.solver.name}-{run.randomGenerator.seed}";
+      path = "../{name}-me-{run.problem.name}-{run.solver.name}-{run.randomGenerator.seed}";
       plot = ea.plot.single.me(q = ea.f.simQuality());
       condition = predicate.matches(f = ea.f.runKey(key = "solver.name"); regex = "me2-.*")
     );
     ea.l.savePlotForRun(
-      path = "../come-{run.problem.name}-{run.solver.name}-{run.randomGenerator.seed}";
+      path = "../{name}-come-{run.problem.name}-{run.solver.name}-{run.randomGenerator.seed}";
       plot = ea.plot.single.coMe(q = ea.f.simQuality());
       condition = predicate.matches(f = ea.f.runKey(key = "solver.name"); regex = "come-.*")
     );
     ea.l.savePlotForExp(
-      path = "../fitness";
-      plot = ea.plot.multi.quality(y = ea.f.simQuality(of = ea.f.quality(of = ea.f.best())))
+      path = "../{name}-fitness";
+      plot = ea.plot.multi.quality(q = ea.f.simQuality())
     );
     ea.l.savePlotForExp(
-      path = "../final-fitness";
+      path = "../{name}-final-fitness";
       plot = ea.plot.multi.qualityBoxplot(q = ea.f.simQuality())
     );
     ea.l.savePlotForExp(
-      path = "../coverage";
+      path = "../{name}-coverage";
       plot = ea.plot.multi.xyExp(y = ea.f.archiveCoverage(of = ea.f.meArchive()));
       condition = predicate.matches(f = ea.f.runKey(key = "solver.name"); regex = "me.-.*")
     )
