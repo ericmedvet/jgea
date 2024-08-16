@@ -18,7 +18,8 @@ ea.experiment(
         f.percentile(of = f.each(of = ea.f.all(); mapF = ea.f.quality()); p = 75; format = "%6.4f");
         ea.f.solution(of = ea.f.best(); format = "%60.60s")
       ];
-      runFunctions = [ea.f.runKey(key = "problem.p")]
+      runFunctions = [ea.f.runKey(key = "run.problem.p")];
+      onlyLast = true
     );
     ea.l.savePlotForExp(
       path = "../{name}-fitness";

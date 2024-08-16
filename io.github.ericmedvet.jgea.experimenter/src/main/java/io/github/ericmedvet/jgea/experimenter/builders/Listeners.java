@@ -121,9 +121,9 @@ public class Listeners {
               @Param(
                       value = "defaultRunFunctions",
                       dNPMs = {
-                        "ea.f.runKey(key = \"problem.name\")",
-                        "ea.f.runKey(key = \"solver.name\")",
-                        "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
+                        "ea.f.runKey(key = \"run.problem.name\")",
+                        "ea.f.runKey(key = \"run.solver.name\")",
+                        "ea.f.runKey(key = " + "\"run.randomGenerator.seed\")"
                       })
                   List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
               @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
@@ -218,9 +218,9 @@ public class Listeners {
               @Param(
                       value = "defaultRunFunctions",
                       dNPMs = {
-                        "ea.f.runKey(key = \"problem.name\")",
-                        "ea.f.runKey(key = \"solver.name\")",
-                        "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
+                        "ea.f.runKey(key = \"run.problem.name\")",
+                        "ea.f.runKey(key = \"run.solver.name\")",
+                        "ea.f.runKey(key = " + "\"run.randomGenerator.seed\")"
                       })
                   List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
               @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
@@ -269,9 +269,9 @@ public class Listeners {
               @Param(
                       value = "defaultRunFunctions",
                       dNPMs = {
-                        "ea.f.runKey(key = \"problem.name\")",
-                        "ea.f.runKey(key = \"solver.name\")",
-                        "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
+                        "ea.f.runKey(key = \"run.problem.name\")",
+                        "ea.f.runKey(key = \"run.solver.name\")",
+                        "ea.f.runKey(key = " + "\"run.randomGenerator.seed\")"
                       })
                   List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
               @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
@@ -316,9 +316,9 @@ public class Listeners {
               @Param(
                       value = "defaultRunFunctions",
                       dNPMs = {
-                        "ea.f.runKey(key = \"problem.name\")",
-                        "ea.f.runKey(key = \"solver.name\")",
-                        "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
+                        "ea.f.runKey(key = \"run.problem.name\")",
+                        "ea.f.runKey(key = \"run.solver.name\")",
+                        "ea.f.runKey(key = " + "\"run.randomGenerator.seed\")"
                       })
                   List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
               @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
@@ -478,9 +478,9 @@ public class Listeners {
               @Param(
                       value = "defaultRunFunctions",
                       dNPMs = {
-                        "ea.f.runKey(key = \"problem.name\")",
-                        "ea.f.runKey(key = \"solver.name\")",
-                        "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
+                        "ea.f.runKey(key = \"run.problem.name\")",
+                        "ea.f.runKey(key = \"run.solver.name\")",
+                        "ea.f.runKey(key = " + "\"run.randomGenerator.seed\")"
                       })
                   List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
               @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,

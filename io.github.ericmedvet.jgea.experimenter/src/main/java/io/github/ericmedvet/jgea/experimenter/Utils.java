@@ -65,10 +65,9 @@ public class Utils {
     ParamMap map = new MapNamedParamMap("experiment", Map.of());
     if (experiment != null) {
       map = experiment.map();
-      if (run != null) {
-        map = map.and(
-            "run", ParamMap.Type.NAMED_PARAM_MAP, run.map().and("index", ParamMap.Type.INT, run.index()));
-      }
+    }
+    if (run != null) {
+      map = map.and("run", ParamMap.Type.NAMED_PARAM_MAP, run.map().and("index", ParamMap.Type.INT, run.index()));
     }
     return Interpolator.interpolate(format, map, "_");
   }

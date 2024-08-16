@@ -38,8 +38,8 @@ public class MultiPlots {
           """
               xy(
                 xSubplot = ea.f.runString(name = none; s = "_");
-                ySubplot = ea.f.runString(name = problem; s = "{problem.name}");
-                line = ea.f.runString(name = solver; s = "{solver.name}");
+                ySubplot = ea.f.runString(name = problem; s = "{run.problem.name}");
+                line = ea.f.runString(name = solver; s = "{run.solver.name}");
                 x = f.quantized(of = ea.f.nOfEvals(); q = 500)
               )
               """) // spotless:on
@@ -89,8 +89,8 @@ public class MultiPlots {
           """
               yBoxplot(
                 xSubplot = ea.f.runString(name = none; s = "_");
-                ySubplot = ea.f.runString(name = problem; s = "{problem.name}");
-                box = ea.f.runString(name = solver; s = "{solver.name}");
+                ySubplot = ea.f.runString(name = problem; s = "{run.problem.name}");
+                box = ea.f.runString(name = solver; s = "{run.solver.name}");
                 predicateValue = ea.f.rate(of = ea.f.progress());
                 condition = predicate.gtEq(t = 1)
               )
