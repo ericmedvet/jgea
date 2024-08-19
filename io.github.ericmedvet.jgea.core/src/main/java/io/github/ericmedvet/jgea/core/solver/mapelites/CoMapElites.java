@@ -42,6 +42,10 @@ import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.*;
+import java.util.stream.Collectors;
+import io.github.ericmedvet.jgea.core.order.PartialComparator;
+import io.github.ericmedvet.jgea.core.order.DAGPartiallyOrderedCollection;
 
 public class CoMapElites<G1, G2, S1, S2, S, Q>
     extends AbstractPopulationBasedIterativeSolver<
@@ -330,12 +334,42 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
     List<CoMEIndividual<G1, G2, S1, S2, S, Q>> coMEIndividuals2 = reproduction2.stream()
         .flatMap(p2 -> p2.second().stream().map(CoMEIndividual::swapped))
         .toList();
+
+    // Print the size of the archives
+    //long fa = state.nOfQualityEvaluations();
+    //System.out.println("\nNumber of fitness assessment: " + fa);
+    //int length1 = state.mapOfElites1().asMap().size();
+    //System.out.println("Length of the Archive 1: " + length1);
+    //int length2 = state.mapOfElites2().asMap().size();
+    //System.out.println("Length of the Archive 2: " + length2);
+
+    // Accessing the 'individuals' field through the 'pocPopulation' method
+    Collection<CoMEIndividual<G1, G2, S1, S2, S, Q>> previousIndividuals = state.pocPopulation().all();
+
+    // Combine all individuals into a single collection
+    List<CoMEIndividual<G1, G2, S1, S2, S, Q>> combinedList = new ArrayList<>();
+    combinedList.addAll(previousIndividuals);
+    combinedList.addAll(coMEIndividuals1);
+    combinedList.addAll(coMEIndividuals2);
+
+    // Get the quality function and comparator from the problem
+    //Function<S, Q> qualityFunction = state.problem().qualityFunction();
+    //PartialComparator<Q> qualityComparator = state.problem().qualityComparator();
+
+    PartiallyOrderedCollection<CoMEIndividual<G1, G2, S1, S2, S, Q>> orderedPopulation =
+        new DAGPartiallyOrderedCollection<>(combinedList, partialComparator(state.problem()));
+    while (orderedPopulation.size() > populationSize) {
+      Collection<CoMEIndividual<G1, G2, S1, S2, S, Q>> toRemoveIndividuals = orderedPopulation.lasts();
+      orderedPopulation.remove(toRemoveIndividuals.stream().findFirst().orElseThrow());
+    }
+    Collection<CoMEIndividual<G1, G2, S1, S2, S, Q>> collectionPop = orderedPopulation.all();
+
+
     // return state
     return state.updatedWithIteration(
         nOfOffspring * 2L,
         coMEIndividuals1.size() + coMEIndividuals2.size(),
-        Stream.concat(coMEIndividuals1.stream(), coMEIndividuals2.stream())
-            .toList(),
+        collectionPop,
         state.mapOfElites1()
             .updated(
                 reproduction1.stream().map(Pair::first).toList(),
