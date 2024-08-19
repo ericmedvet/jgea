@@ -22,6 +22,7 @@ package io.github.ericmedvet.jgea.core.util;
 
 import java.io.File;
 import java.util.*;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.random.RandomGenerator;
@@ -210,5 +211,14 @@ public class Misc {
 
   public static <T> Set<T> union(Set<T> set1, Set<T> set2) {
     return Stream.of(set1, set2).flatMap(Set::stream).collect(Collectors.toSet());
+  }
+
+  public static void doOrLog(
+      Runnable runnable, Logger logger, Level level, Function<Throwable, String> messageFunction) {
+    try {
+      runnable.run();
+    } catch (Throwable t) {
+      logger.log(level, messageFunction.apply(t));
+    }
   }
 }

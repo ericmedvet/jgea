@@ -132,6 +132,14 @@ public class Experimenter {
         }
       }
     }
-    factory.shutdown();
+    try {
+      factory.shutdown();
+    } catch (Throwable e) {
+      L.warning(String.format("Listener %s cannot shutdown() event: %s", factory, e));
+      if (verbose) {
+        //noinspection CallToPrintStackTrace
+        e.printStackTrace();
+      }
+    }
   }
 }

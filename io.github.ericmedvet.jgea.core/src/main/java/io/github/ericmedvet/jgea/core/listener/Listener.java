@@ -19,11 +19,15 @@
  */
 package io.github.ericmedvet.jgea.core.listener;
 
+import io.github.ericmedvet.jgea.core.util.Misc;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @FunctionalInterface
 public interface Listener<E> {
@@ -31,32 +35,31 @@ public interface Listener<E> {
   void listen(E e);
 
   static <E> Listener<E> all(List<Listener<? super E>> listeners) {
-    return new Listener<>() {
+    return from(
+        "all[%s]".formatted(listeners.stream().map(Object::toString).collect(Collectors.joining(";"))),
+        e -> listeners.forEach(l -> l.listen(e)),
+        () -> listeners.forEach(Listener::done));
+  }
+
+  static <E> Listener<E> deaf() {
+    return from("deaf", e -> {}, () -> {});
+  }
+
+  static <E> Listener<E> from(String name, Consumer<E> consumer, Runnable doneRunnable) {
+    return new Listener<E>() {
       @Override
       public void listen(E e) {
-        listeners.forEach(l -> l.listen(e));
+        consumer.accept(e);
       }
 
       @Override
       public void done() {
-        listeners.forEach(Listener::done);
+        doneRunnable.run();
       }
 
       @Override
       public String toString() {
-        return listeners.stream().map(Object::toString).toList().toString();
-      }
-    };
-  }
-
-  static <E> Listener<E> deaf() {
-    return new Listener<E>() {
-      @Override
-      public void listen(E e) {}
-
-      @Override
-      public String toString() {
-        return "deaf";
+        return name;
       }
     };
   }
@@ -66,100 +69,35 @@ public interface Listener<E> {
   }
 
   default Listener<E> deferred(ExecutorService executorService) {
-    Listener<E> thisListener = this;
     final Logger L = Logger.getLogger(Listener.class.getName());
-    return new Listener<>() {
-      @Override
-      public void listen(E e) {
-        executorService.submit(() -> {
-          try {
-            thisListener.listen(e);
-          } catch (RuntimeException ex) {
-            L.warning(String.format("Listener %s cannot listen() event: %s", thisListener, ex));
-          }
-        });
-      }
-
-      @Override
-      public void done() {
-        executorService.submit(() -> {
-          try {
-            thisListener.done();
-          } catch (RuntimeException ex) {
-            L.warning(String.format("Listener %s cannot done() event: %s", thisListener, ex));
-          }
-        });
-      }
-
-      @Override
-      public String toString() {
-        return thisListener + "[deferred]";
-      }
-    };
+    return from(
+        "%s[deferered]".formatted(this),
+        e -> executorService.submit(() -> Misc.doOrLog(
+            () -> listen(e),
+            Logger.getLogger(Listener.class.getName()),
+            Level.WARNING,
+            t -> String.format("Listener %s cannot listen() event: %s", this, t))),
+        () -> executorService.submit(() -> Misc.doOrLog(
+            this::done,
+            Logger.getLogger(Listener.class.getName()),
+            Level.WARNING,
+            t -> String.format("Listener %s cannot done(): %s", this, t))));
   }
 
   default void done() {}
 
   default <F> Listener<F> forEach(Function<F, Collection<E>> splitter) {
-    Listener<E> thisListener = this;
-    return new Listener<>() {
-      @Override
-      public void listen(F f) {
-        splitter.apply(f).forEach(thisListener::listen);
-      }
-
-      @Override
-      public void done() {
-        thisListener.done();
-      }
-
-      @Override
-      public String toString() {
-        return thisListener + "[forEach:%s]".formatted(splitter);
-      }
-    };
+    return from(
+        "%s[forEach:%s]".formatted(this, splitter),
+        f -> splitter.apply(f).forEach(this::listen),
+        this::done);
   }
 
   default <F> Listener<F> on(Function<F, E> function) {
-    Listener<E> thisListener = this;
-    return new Listener<>() {
-      @Override
-      public void listen(F f) {
-        thisListener.listen(function.apply(f));
-      }
-
-      @Override
-      public void done() {
-        thisListener.done();
-      }
-
-      @Override
-      public String toString() {
-        return thisListener + "[on:%s]".formatted(function);
-      }
-    };
+    return from("%s[on:%s]".formatted(this, function), f -> listen(function.apply(f)), this::done);
   }
 
   default Listener<E> onLast() {
-    Listener<E> thisListener = this;
-    return new Listener<>() {
-      E lastE;
-
-      @Override
-      public void listen(E e) {
-        lastE = e;
-      }
-
-      @Override
-      public void done() {
-        thisListener.listen(lastE);
-        thisListener.done();
-      }
-
-      @Override
-      public String toString() {
-        return thisListener + "[last]";
-      }
-    };
+    return Accumulator.from("%s[last]".formatted(this), () -> null, (e, oldE) -> e, this::listen);
   }
 }

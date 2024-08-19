@@ -23,7 +23,7 @@ package io.github.ericmedvet.jgea.experimenter.listener;
 import io.github.ericmedvet.jgea.core.listener.Listener;
 import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
 import io.github.ericmedvet.jgea.core.util.Misc;
-import io.github.ericmedvet.jgea.experimenter.Utils;
+import io.github.ericmedvet.jgea.core.util.Naming;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import java.io.File;
 import java.io.IOException;
@@ -72,7 +72,7 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
     List<String> headers = Misc.concat(List.of(kFunctions, eFunctions)).stream()
         .map(f -> f.name())
         .toList();
-    return Utils.named(
+    return Naming.named(
         "csv(%s)"
             .formatted(Stream.concat(
                     eFunctions.stream().map(f -> f.name()),

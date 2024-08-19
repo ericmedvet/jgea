@@ -20,6 +20,7 @@
 package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jgea.core.util.Misc;
+import io.github.ericmedvet.jgea.core.util.Naming;
 import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
 import io.github.ericmedvet.jgea.experimenter.Utils;
@@ -46,7 +47,7 @@ public class Consumers {
   @SuppressWarnings("unused")
   @Cacheable
   public static TriConsumer<?, ?, ?> deaf() {
-    return Utils.named("deaf", (i1, i2, i3) -> {});
+    return Naming.named("deaf", (i1, i2, i3) -> {});
   }
 
   @SuppressWarnings("unused")
@@ -54,7 +55,7 @@ public class Consumers {
   public static <X, O> TriConsumer<X, Run<?, ?, ?, ?>, Experiment> saver(
       @Param(value = "of", dNPM = "f.identity()") Function<X, O> f,
       @Param(value = "path", dS = "run-{run.index:%04d}") String filePathTemplate) {
-    return Utils.named(
+    return Naming.named(
         "saver[%s]".formatted(NamedFunction.name(f)),
         (x, run, experiment) -> save(f.apply(x), Utils.interpolate(filePathTemplate, experiment, run)));
   }
@@ -79,7 +80,7 @@ public class Consumers {
       @Param("chatId") String chatId,
       @Param("botIdFilePath") String botIdFilePath) {
     TelegramClient client = new TelegramClient(new File(botIdFilePath), Long.parseLong(chatId));
-    return Utils.named(
+    return Naming.named(
         "telegram[%s→to:%s]".formatted(NamedFunction.name(f), chatId),
         (x, run, experiment) -> client.send(Utils.interpolate(titleTemplate, experiment, run), f.apply(x)));
   }

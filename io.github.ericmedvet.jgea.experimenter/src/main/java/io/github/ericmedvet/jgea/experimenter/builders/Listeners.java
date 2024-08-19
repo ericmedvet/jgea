@@ -24,6 +24,7 @@ import io.github.ericmedvet.jgea.core.listener.*;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.util.Misc;
+import io.github.ericmedvet.jgea.core.util.Naming;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
@@ -99,6 +100,11 @@ public class Listeners {
       if (innerListenerFactory instanceof ProgressMonitor progressMonitor) {
         progressMonitor.notify(progress, message);
       }
+    }
+
+    @Override
+    public String toString() {
+      return innerListenerFactory.toString();
     }
   }
 
@@ -382,11 +388,12 @@ public class Listeners {
               dNPMs = {"ea.consumer.deaf()"})
           List<TriConsumer<? super P, Run<?, ?, ?, ?>, Experiment>> consumers,
       @Param(value = "condition", dNPM = "predicate.always()") Predicate<Run<?, ?, ?, ?>> predicate) {
-
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        accumulatorFactory.thenOnShutdown(Utils.named(consumers.toString(), (Consumer<List<O>>) (os -> {
-          P p = preprocessor.apply(os.get(os.size() - 1));
-          consumers.forEach(c -> c.accept(p, null, experiment));
+        accumulatorFactory.thenOnShutdown(Naming.named(consumers.toString(), (Consumer<List<O>>) (os -> {
+          if (!os.isEmpty()) {
+            P p = preprocessor.apply(os.get(os.size() - 1));
+            consumers.forEach(c -> c.accept(p, null, experiment));
+          }
         }))),
         predicate,
         executorService,
@@ -438,7 +445,7 @@ public class Listeners {
           List<TriConsumer<? super P, Run<?, ?, ?, ?>, Experiment>> consumers,
       @Param(value = "condition", dNPM = "predicate.always()") Predicate<Run<?, ?, ?, ?>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
-        accumulatorFactory.thenOnDone(Utils.named(consumers.toString(), (run, o) -> {
+        accumulatorFactory.thenOnDone(Naming.named(consumers.toString(), (run, o) -> {
           P p = preprocessor.apply(o);
           consumers.forEach(c -> c.accept(p, run, experiment));
         })),

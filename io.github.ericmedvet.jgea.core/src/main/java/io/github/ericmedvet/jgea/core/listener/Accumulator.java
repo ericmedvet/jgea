@@ -20,148 +20,106 @@
 package io.github.ericmedvet.jgea.core.listener;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public interface Accumulator<E, O> extends Listener<E> {
 
   O get();
 
   static <E, O> Accumulator<E, List<O>> collector(Function<E, O> function) {
-    return new Accumulator<>() {
-      private final List<O> os = new ArrayList<>();
+    return from(
+        "collector[%s]".formatted(function),
+        ArrayList::new,
+        (e, os) -> {
+          os.add(function.apply(e));
+          return os;
+        },
+        os -> {});
+  }
 
+  static <OE, OO, IE, IO> Accumulator<OE, OO> from(
+      String name,
+      Accumulator<IE, IO> accumulator,
+      Function<OE, IE> eFunction,
+      Function<IO, OO> oGetterFunction,
+      Consumer<IO> ioConsumer) {
+    return new Accumulator<OE, OO>() {
       @Override
-      public List<O> get() {
-        return Collections.unmodifiableList(os);
+      public OO get() {
+        return oGetterFunction.apply(accumulator.get());
       }
 
       @Override
-      public void listen(E e) {
-        os.add(function.apply(e));
+      public void listen(OE oe) {
+        accumulator.listen(eFunction.apply(oe));
+      }
+
+      @Override
+      public void done() {
+        ioConsumer.accept(accumulator.get());
       }
 
       @Override
       public String toString() {
-        return "collectorAccumulator[%s]".formatted(function);
+        return name;
+      }
+    };
+  }
+
+  static <E, O> Accumulator<E, O> from(
+      String name, Supplier<O> oInitializer, BiFunction<E, O, O> oUpdater, Consumer<O> doneOConsumer) {
+    return new Accumulator<>() {
+      private O o = oInitializer.get();
+
+      @Override
+      public O get() {
+        return o;
+      }
+
+      @Override
+      public void listen(E e) {
+        o = oUpdater.apply(e, o);
+      }
+
+      @Override
+      public void done() {
+        doneOConsumer.accept(o);
+      }
+
+      @Override
+      public String toString() {
+        return name;
       }
     };
   }
 
   static <E> Accumulator<E, E> last() {
-    return new Accumulator<>() {
-      E last;
-
-      @Override
-      public E get() {
-        return last;
-      }
-
-      @Override
-      public void listen(E e) {
-        last = e;
-      }
-
-      @Override
-      public String toString() {
-        return "lastAccumulator";
-      }
-    };
+    return from("last", () -> null, (e, oldE) -> e, oldE -> {});
   }
 
   static <E, O> Accumulator<E, O> nullAccumulator() {
-    return new Accumulator<>() {
-      @Override
-      public O get() {
-        return null;
-      }
-
-      @Override
-      public void listen(E e) {}
-
-      @Override
-      public String toString() {
-        return "nullAccumulator";
-      }
-    };
+    return from("null", () -> null, (e, o) -> null, o -> {});
   }
 
   @Override
   default <X> Accumulator<X, O> on(Function<X, E> function) {
-    Accumulator<E, O> thisAccumulator = this;
-    return new Accumulator<>() {
-      @Override
-      public O get() {
-        return thisAccumulator.get();
-      }
-
-      @Override
-      public void listen(X x) {
-        thisAccumulator.listen(function.apply(x));
-      }
-
-      @Override
-      public void done() {
-        thisAccumulator.done();
-      }
-
-      @Override
-      public String toString() {
-        return thisAccumulator + "[on:%s]".formatted(function);
-      }
-    };
+    return from("%s[on:%s]".formatted(this, function), this, function, Function.identity(), o -> {});
   }
 
   default <Q> Accumulator<E, Q> then(Function<O, Q> function) {
-    Accumulator<E, O> thisAccumulator = this;
-    return new Accumulator<>() {
-      @Override
-      public Q get() {
-        return function.apply(thisAccumulator.get());
-      }
-
-      @Override
-      public void listen(E e) {
-        thisAccumulator.listen(e);
-      }
-
-      @Override
-      public void done() {
-        thisAccumulator.done();
-      }
-
-      @Override
-      public String toString() {
-        return thisAccumulator + "[then:%s]".formatted(function);
-      }
-    };
+    return from("%s[then:%s]".formatted(this, function), this, Function.identity(), function, o -> {});
   }
 
   default Accumulator<E, O> thenOnDone(Consumer<O> consumer) {
-    Accumulator<E, O> thisAccumulator = this;
-    return new Accumulator<>() {
-      @Override
-      public O get() {
-        return thisAccumulator.get();
-      }
-
-      @Override
-      public void listen(E e) {
-        thisAccumulator.listen(e);
-      }
-
-      @Override
-      public void done() {
-        thisAccumulator.done();
-        consumer.accept(thisAccumulator.get());
-      }
-
-      @Override
-      public String toString() {
-        return thisAccumulator + "[thenOnDone:%s]".formatted(consumer);
-      }
-    };
+    return from(
+        "%s[thenOnDone:%s]".formatted(this, consumer),
+        this,
+        Function.identity(),
+        Function.identity(),
+        consumer);
   }
 }
