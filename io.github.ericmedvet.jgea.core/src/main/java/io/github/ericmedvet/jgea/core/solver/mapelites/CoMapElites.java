@@ -22,6 +22,7 @@ package io.github.ericmedvet.jgea.core.solver.mapelites;
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.distance.Distance;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
+import io.github.ericmedvet.jgea.core.order.DAGPartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSolver;
@@ -29,6 +30,7 @@ import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.Pair;
+import java.util.*;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -42,10 +44,6 @@ import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import java.util.*;
-import java.util.stream.Collectors;
-import io.github.ericmedvet.jgea.core.order.PartialComparator;
-import io.github.ericmedvet.jgea.core.order.DAGPartiallyOrderedCollection;
 
 public class CoMapElites<G1, G2, S1, S2, S, Q>
     extends AbstractPopulationBasedIterativeSolver<
@@ -334,42 +332,23 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
     List<CoMEIndividual<G1, G2, S1, S2, S, Q>> coMEIndividuals2 = reproduction2.stream()
         .flatMap(p2 -> p2.second().stream().map(CoMEIndividual::swapped))
         .toList();
-
-    // Print the size of the archives
-    //long fa = state.nOfQualityEvaluations();
-    //System.out.println("\nNumber of fitness assessment: " + fa);
-    //int length1 = state.mapOfElites1().asMap().size();
-    //System.out.println("Length of the Archive 1: " + length1);
-    //int length2 = state.mapOfElites2().asMap().size();
-    //System.out.println("Length of the Archive 2: " + length2);
-
-    // Accessing the 'individuals' field through the 'pocPopulation' method
-    Collection<CoMEIndividual<G1, G2, S1, S2, S, Q>> previousIndividuals = state.pocPopulation().all();
-
-    // Combine all individuals into a single collection
-    List<CoMEIndividual<G1, G2, S1, S2, S, Q>> combinedList = new ArrayList<>();
-    combinedList.addAll(previousIndividuals);
-    combinedList.addAll(coMEIndividuals1);
-    combinedList.addAll(coMEIndividuals2);
-
-    // Get the quality function and comparator from the problem
-    //Function<S, Q> qualityFunction = state.problem().qualityFunction();
-    //PartialComparator<Q> qualityComparator = state.problem().qualityComparator();
-
+    // combine all individuals into a single collection
+    List<CoMEIndividual<G1, G2, S1, S2, S, Q>> allIndividuals = Stream.of(
+            state.pocPopulation().all(), coMEIndividuals1, coMEIndividuals2)
+        .flatMap(Collection::stream)
+        .toList();
+    // trim population
     PartiallyOrderedCollection<CoMEIndividual<G1, G2, S1, S2, S, Q>> orderedPopulation =
-        new DAGPartiallyOrderedCollection<>(combinedList, partialComparator(state.problem()));
+        new DAGPartiallyOrderedCollection<>(allIndividuals, partialComparator(state.problem()));
     while (orderedPopulation.size() > populationSize) {
-      Collection<CoMEIndividual<G1, G2, S1, S2, S, Q>> toRemoveIndividuals = orderedPopulation.lasts();
-      orderedPopulation.remove(toRemoveIndividuals.stream().findFirst().orElseThrow());
+      Collection<CoMEIndividual<G1, G2, S1, S2, S, Q>> lastIndividuals = orderedPopulation.lasts();
+      orderedPopulation.remove(lastIndividuals.stream().findFirst().orElseThrow());
     }
-    Collection<CoMEIndividual<G1, G2, S1, S2, S, Q>> collectionPop = orderedPopulation.all();
-
-
     // return state
     return state.updatedWithIteration(
         nOfOffspring * 2L,
         coMEIndividuals1.size() + coMEIndividuals2.size(),
-        collectionPop,
+        orderedPopulation.all(),
         state.mapOfElites1()
             .updated(
                 reproduction1.stream().map(Pair::first).toList(),
