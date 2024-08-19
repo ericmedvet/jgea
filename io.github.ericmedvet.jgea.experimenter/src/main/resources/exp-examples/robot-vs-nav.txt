@@ -8,6 +8,14 @@ $descBrainSize1 = ea.f.treeSize(of = f.nTh(of = f.pairSecond(of = ea.f.genotype(
 $descBrainSize2 = ea.f.treeSize(of = f.nTh(of = f.pairSecond(of = ea.f.genotype()); n = 1))
 $coDescBrainSize1 = ea.f.treeSize(of = f.nTh(of = ea.f.genotype(); n = 0))
 $coDescBrainSize2 = ea.f.treeSize(of = f.nTh(of = ea.f.genotype(); n = 1))
+$coDescBrainUsage1 = f.mathOp(of = ea.f.genotype(); op = add; args = [
+  ea.f.treeSize(of = f.nTh(n = 0));
+  ea.f.treeSize(of = f.nTh(n = 1))
+])
+$coDescBrainUsage2 = f.mathOp(of = ea.f.genotype(); op = add; args = [
+  f.size(of = f.filter(of = f.distinct(of = ea.f.treeLeaves(of = f.nTh(n = 0))); condition = predicate.matches(f = f.toString(); regex = "i[0-9]+")));
+  f.size(of = f.filter(of = f.distinct(of = ea.f.treeLeaves(of = f.nTh(n = 1))); condition = predicate.matches(f = f.toString(); regex = "i[0-9]+")))
+])
 $descBrainUsage1 = f.mathOp(of = f.pairSecond(of = ea.f.genotype()); op = add; args = [
   ea.f.treeSize(of = f.nTh(n = 0));
   ea.f.treeSize(of = f.nTh(n = 1))
