@@ -152,13 +152,12 @@ public class Starter {
     // parse and add name
     Experiment experiment = (Experiment) nb.build(expDescription);
     if (experiment.name().isEmpty()) {
+      Path path = Path.of(
+          configuration.experimentDescriptionFilePath.isEmpty()
+              ? configuration.exampleExperimentDescriptionResourceName
+              : configuration.experimentDescriptionFilePath);
       NamedParamMap expNPM = StringParser.parse(expDescription)
-          .and(
-              "name",
-              ParamMap.Type.STRING,
-              configuration.experimentDescriptionFilePath.isEmpty()
-                  ? configuration.exampleExperimentDescriptionResourceName
-                  : configuration.experimentDescriptionFilePath);
+          .and("name", ParamMap.Type.STRING, path.getFileName().toString());
       experiment = (Experiment) nb.build(expNPM);
     }
     // check if just check

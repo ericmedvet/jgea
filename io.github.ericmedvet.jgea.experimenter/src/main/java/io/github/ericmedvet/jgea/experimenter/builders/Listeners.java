@@ -106,7 +106,7 @@ public class Listeners {
   public static <G, S, Q>
       BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
           allCsv(
-              @Param("filePath") String filePath,
+              @Param("path") String path,
               @Param(value = "errorString", dS = "NA") String errorString,
               @Param(value = "intFormat", dS = "%d") String intFormat,
               @Param(value = "doubleFormat", dS = "%.5e") String doubleFormat,
@@ -121,9 +121,9 @@ public class Listeners {
               @Param(
                       value = "defaultRunFunctions",
                       dNPMs = {
-                        "ea.f.runKey(key = \"problem.name\")",
-                        "ea.f.runKey(key = \"solver.name\")",
-                        "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
+                        "ea.f.runKey(key = \"run.problem.name\")",
+                        "ea.f.runKey(key = \"run.solver.name\")",
+                        "ea.f.runKey(key = " + "\"run.randomGenerator.seed\")"
                       })
                   List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
               @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
@@ -150,7 +150,7 @@ public class Listeners {
           Stream.concat(defaultRunFunctions.stream(), runFunctions.stream())
               .map(f -> reformatToFit(f, experiment.runs()))
               .toList(),
-          new File(filePath),
+          new File(Utils.interpolate(path, experiment, null)),
           errorString,
           intFormat,
           doubleFormat);
@@ -194,7 +194,7 @@ public class Listeners {
   public static <G, S, Q>
       BiFunction<Experiment, ExecutorService, ListenerFactory<POCPopulationState<?, G, S, Q, ?>, Run<?, G, S, Q>>>
           bestCsv(
-              @Param("filePath") String filePath,
+              @Param("path") String path,
               @Param(value = "errorString", dS = "NA") String errorString,
               @Param(value = "intFormat", dS = "%d") String intFormat,
               @Param(value = "doubleFormat", dS = "%.5e") String doubleFormat,
@@ -218,9 +218,9 @@ public class Listeners {
               @Param(
                       value = "defaultRunFunctions",
                       dNPMs = {
-                        "ea.f.runKey(key = \"problem.name\")",
-                        "ea.f.runKey(key = \"solver.name\")",
-                        "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
+                        "ea.f.runKey(key = \"run.problem.name\")",
+                        "ea.f.runKey(key = \"run.solver.name\")",
+                        "ea.f.runKey(key = " + "\"run.randomGenerator.seed\")"
                       })
                   List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
               @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
@@ -236,7 +236,7 @@ public class Listeners {
             Stream.concat(defaultRunFunctions.stream(), runFunctions.stream())
                 .map(f -> reformatToFit(f, experiment.runs()))
                 .toList(),
-            new File(filePath),
+            new File(Utils.interpolate(path, experiment, null)),
             errorString,
             intFormat,
             doubleFormat),
@@ -269,9 +269,9 @@ public class Listeners {
               @Param(
                       value = "defaultRunFunctions",
                       dNPMs = {
-                        "ea.f.runKey(key = \"problem.name\")",
-                        "ea.f.runKey(key = \"solver.name\")",
-                        "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
+                        "ea.f.runKey(key = \"run.problem.name\")",
+                        "ea.f.runKey(key = \"run.solver.name\")",
+                        "ea.f.runKey(key = " + "\"run.randomGenerator.seed\")"
                       })
                   List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
               @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
@@ -316,9 +316,9 @@ public class Listeners {
               @Param(
                       value = "defaultRunFunctions",
                       dNPMs = {
-                        "ea.f.runKey(key = \"problem.name\")",
-                        "ea.f.runKey(key = \"solver.name\")",
-                        "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
+                        "ea.f.runKey(key = \"run.problem.name\")",
+                        "ea.f.runKey(key = \"run.solver.name\")",
+                        "ea.f.runKey(key = " + "\"run.randomGenerator.seed\")"
                       })
                   List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
               @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
@@ -478,9 +478,9 @@ public class Listeners {
               @Param(
                       value = "defaultRunFunctions",
                       dNPMs = {
-                        "ea.f.runKey(key = \"problem.name\")",
-                        "ea.f.runKey(key = \"solver.name\")",
-                        "ea.f.runKey(key = " + "\"randomGenerator.seed\")"
+                        "ea.f.runKey(key = \"run.problem.name\")",
+                        "ea.f.runKey(key = \"run.solver.name\")",
+                        "ea.f.runKey(key = " + "\"run.randomGenerator.seed\")"
                       })
                   List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
               @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,

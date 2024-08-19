@@ -419,7 +419,7 @@ public class Functions {
       @Param("key") String key,
       @Param(value = "of", dNPM = "f.identity()") Function<X, Run<?, ?, ?, ?>> beforeF,
       @Param(value = "format", dS = "%s") String format) {
-    Function<Run<?, ?, ?, ?>, String> f = run -> Utils.interpolate("{%s}".formatted(key), run);
+    Function<Run<?, ?, ?, ?>, String> f = run -> Utils.interpolate("{%s}".formatted(key), null, run);
     return FormattedNamedFunction.from(f, format, name).compose(beforeF);
   }
 
@@ -430,7 +430,7 @@ public class Functions {
       @Param("s") String s,
       @Param(value = "of", dNPM = "f.identity()") Function<X, Run<?, ?, ?, ?>> beforeF,
       @Param(value = "format", dS = "%s") String format) {
-    Function<Run<?, ?, ?, ?>, String> f = run -> Utils.interpolate(s, run);
+    Function<Run<?, ?, ?, ?>, String> f = run -> Utils.interpolate(s, null, run);
     return FormattedNamedFunction.from(f, format, name).compose(beforeF);
   }
 

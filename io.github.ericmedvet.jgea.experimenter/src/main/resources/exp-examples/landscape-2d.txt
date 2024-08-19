@@ -18,14 +18,14 @@ ea.experiment(
         ea.f.hist(of = f.each(mapF = ea.f.quality(); of = ea.f.all()))
       ]
     );
-    ea.l.runPlotSaver(
-      filePathTemplate = "../landscape-{solver.name}-{randomGenerator.seed:%04d}";
-      of = ea.plot.single.landscape(
+    ea.l.savePlotForRun(
+      path = "../{name}-landscape-{run.solver.name}-{run.randomGenerator.seed:%04d}";
+      plot = ea.plot.single.landscape(
         xRange = m.range(min = -5; max = 5);
         yRange = m.range(min = -5; max = 5)
       );
       condition = predicate.all(conditions = [
-        predicate.inS(f = ea.f.runString(s = "{randomGenerator.seed}"); values = ["1"])
+        predicate.inS(f = ea.f.runString(s = "{run.randomGenerator.seed}"); values = ["1"])
       ])
     )
   ]
