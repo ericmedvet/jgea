@@ -30,6 +30,7 @@ import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.Pair;
+
 import java.util.*;
 import java.util.Collection;
 import java.util.Comparator;
@@ -47,12 +48,12 @@ import java.util.stream.Stream;
 
 public class CoMapElites<G1, G2, S1, S2, S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-        CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>>,
-        QualityBasedProblem<S, Q>,
-        CoMEIndividual<G1, G2, S1, S2, S, Q>,
-        Pair<G1, G2>,
-        S,
-        Q> {
+    CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>>,
+    QualityBasedProblem<S, Q>,
+    CoMEIndividual<G1, G2, S1, S2, S, Q>,
+    Pair<G1, G2>,
+    S,
+    Q> {
 
   private final Factory<? extends G1> genotypeFactory1;
   private final Factory<? extends G2> genotypeFactory2;
@@ -148,7 +149,8 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
           .findFirst()
           .map(Map.Entry::getKey)
           .orElseThrow();
-      case CENTRAL -> otherDescriptors.stream().map(d -> d.nOfBins() / 2).toList();
+      case CENTRAL ->
+          otherDescriptors.stream().map(d -> d.nOfBins() / 2).toList();
       case IDENTITY -> {
         if (thisDescriptors.size() != otherDescriptors.size()) {
           throw new IllegalArgumentException(
@@ -168,19 +170,19 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
   }
 
   private static <GT, GO, ST, SO, S, Q>
-      Callable<Pair<MEIndividual<GT, ST, Q>, List<CoMEIndividual<GT, GO, ST, SO, S, Q>>>> reproduceCallable(
-          Archive<MEIndividual<GT, ST, Q>> thisArchive,
-          Archive<MEIndividual<GO, SO, Q>> otherArchive,
-          Mutation<GT> mutation,
-          Function<? super GT, ? extends ST> solutionMapper,
-          BiFunction<? super ST, ? super SO, ? extends S> solutionMerger,
-          List<MapElites.Descriptor<GT, ST, Q>> thisDescriptors,
-          List<MapElites.Descriptor<GO, SO, Q>> otherDescriptors,
-          Strategy strategy,
-          QualityBasedProblem<S, Q> problem,
-          RandomGenerator random,
-          long iteration,
-          AtomicLong counter) {
+  Callable<Pair<MEIndividual<GT, ST, Q>, List<CoMEIndividual<GT, GO, ST, SO, S, Q>>>> reproduceCallable(
+      Archive<MEIndividual<GT, ST, Q>> thisArchive,
+      Archive<MEIndividual<GO, SO, Q>> otherArchive,
+      Mutation<GT> mutation,
+      Function<? super GT, ? extends ST> solutionMapper,
+      BiFunction<? super ST, ? super SO, ? extends S> solutionMerger,
+      List<MapElites.Descriptor<GT, ST, Q>> thisDescriptors,
+      List<MapElites.Descriptor<GO, SO, Q>> otherDescriptors,
+      Strategy strategy,
+      QualityBasedProblem<S, Q> problem,
+      RandomGenerator random,
+      long iteration,
+      AtomicLong counter) {
     return () -> {
       MEIndividual<GT, ST, Q> parentT =
           Misc.pickRandomly(thisArchive.asMap().values(), random);
