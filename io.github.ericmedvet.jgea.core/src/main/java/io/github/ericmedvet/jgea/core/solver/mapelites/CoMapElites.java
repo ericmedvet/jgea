@@ -98,6 +98,78 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
     CoMEStrategy<Q> get();
   }
 
+  public static class IdentityStrategy<Q> implements CoMEStrategy<Q> {
+
+
+    public IdentityStrategy() {
+    }
+
+    @Override
+    public double[] getOtherCoords(double[] input) {
+      return input; // Identity: return the same coordinates
+    }
+
+    @Override
+    public void update(Map<Pair<double[], double[]>, Q> newQs) {
+      // None
+    }
+  }
+
+  public static class CentralStrategy<Q> implements CoMEStrategy<Q> {
+
+    private final List<MapElites.Descriptor<?, ?, Q>> otherDescriptors;
+
+    public CentralStrategy(List<MapElites.Descriptor<?, ?, Q>> otherDescriptors) {
+      this.otherDescriptors = otherDescriptors;
+    }
+
+    @Override
+    public double[] getOtherCoords(double[] input) {
+      return otherDescriptors.stream()
+          .mapToDouble(d -> d.nOfBins() / 2.0)
+          .toArray();
+    }
+
+    @Override
+    public void update(Map<Pair<double[], double[]>, Q> newQs) {
+      // None
+    }
+  }
+
+
+  public static class StrategySupplierImpl<Q> implements StrategySupplier<Q> {
+
+    private final String strategyType;
+    //private final Map<List<Integer>, MEIndividual<?, ?, Q>> otherMapOfElites;
+    //private final QualityBasedProblem<?, Q> problem;
+    private final List<MapElites.Descriptor<?, ?, Q>> thisDescriptors;
+    private final List<MapElites.Descriptor<?, ?, Q>> otherDescriptors;
+
+    public StrategySupplierImpl(
+        String strategyType,
+        Map<List<Integer>, MEIndividual<?, ?, Q>> otherMapOfElites,
+        QualityBasedProblem<?, Q> problem,
+        List<MapElites.Descriptor<?, ?, Q>> thisDescriptors,
+        List<MapElites.Descriptor<?, ?, Q>> otherDescriptors) {
+      this.strategyType = strategyType;
+      //this.otherMapOfElites = otherMapOfElites;
+      //this.problem = problem;
+      this.thisDescriptors = thisDescriptors;
+      this.otherDescriptors = otherDescriptors;
+    }
+
+    @Override
+    public CoMEStrategy<Q> get() {
+      return switch (strategyType) {
+        //case "BEST" -> new BestStrategy<>(otherMapOfElites, problem);
+        case "CENTRAL" -> new CentralStrategy<>(otherDescriptors);
+        case "IDENTITY" -> new IdentityStrategy<>();
+        default -> throw new IllegalArgumentException("Unknown strategy type: " + strategyType);
+      };
+    }
+  }
+
+
   public static List<Integer> getIntegerCoords(double[] coordinates, List<Integer> binUpperBounds) {
     if (coordinates.length != 2) {
       throw new IllegalArgumentException("The coordinates array must have exactly two elements.");
