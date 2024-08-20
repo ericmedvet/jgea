@@ -113,8 +113,8 @@ ea.experiment(
       of = ea.acc.lastBest();
       preprocessor = ea.f.toVideo(video = ea.misc.toVideo(drawer = ds.d.navigation()); of = ea.f.simOutcome(of = ea.f.quality()));
       consumers = [
-        ea.c.saver(path = "../{name}-best-traj-{run.solver.name}-{run.randomGenerator.seed:%04d}");
-        $telegram
+        % $telegram;
+        ea.c.saver(path = "../{name}-best-traj-{run.solver.name}-{run.randomGenerator.seed:%04d}")
       ];
       condition = predicate.inS(f = ea.f.runKey(key = "run.randomGenerator.seed"); values = ["1"])
     );
@@ -122,8 +122,8 @@ ea.experiment(
       of = ea.acc.lastBest();
       preprocessor = ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = ea.f.quality()));
       consumers = [
-        ea.c.saver(path = "../{name}-best-traj-{run.solver.name}-{run.randomGenerator.seed:%04d}");
-        $telegram
+        % $telegram;
+        ea.c.saver(path = "../{name}-best-traj-{run.solver.name}-{run.randomGenerator.seed:%04d}")
       ]
     );
     ea.l.saveForRun(
@@ -142,9 +142,13 @@ ea.experiment(
       plot = ea.plot.single.coMe(q = ea.f.simQuality());
       condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "come-.*")
     );
-    ea.l.savePlotForExp(
-      path = "../{name}-fitness";
-      plot = ea.plot.multi.quality(q = ea.f.simQuality())
+    ea.l.onExpDone(
+      of = ea.plot.multi.quality(q = ea.f.simQuality());
+      consumers = [
+        % $telegram;
+        ea.c.saver(path = "../{name}-fitness"; of = ea.f.imagePlotter());
+        ea.c.saver(path = "../{name}-fitness"; of = ea.f.csvPlotter())
+      ]
     );
     ea.l.savePlotForExp(
       path = "../{name}-final-fitness";
