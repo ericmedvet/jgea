@@ -120,7 +120,7 @@ public class Solvers {
       @Param(value = "nEval", dI = 1000) int nEval,
       @Param(value = "populationSize", dI = 100) int populationSize,
       @Param(value = "nOfOffspring", dI = 50) int nOfOffspring,
-      @Param(value = "strategy", dS = "identity") CoMapElites.Strategy strategy) {
+      @Param(value = "strategy", dS = "identity") CoMapElites.StrategySupplier<Q> strategySupplier) {
     return exampleS -> {
       // Create representations based on the inverse mapper and solution merger
       Pair<S1, S2> splitExample = invertibleMapperMerger.exampleFor(exampleS);
@@ -144,7 +144,7 @@ public class Solvers {
           r2.mutations().get(0),
           populationSize,
           nOfOffspring,
-          strategy);
+          strategySupplier);
     };
   }
 

@@ -11,3 +11,6 @@ public interface CoMEStrategy<Q> {
       Map<Pair<double[], double[]>, Q> newQs
   );
 }
+
+
+
