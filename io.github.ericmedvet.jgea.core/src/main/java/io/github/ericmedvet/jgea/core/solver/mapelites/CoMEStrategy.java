@@ -30,7 +30,7 @@ public interface CoMEStrategy {
   enum Prepared implements Supplier<CoMEStrategy> {
     IDENTITY(() -> tc -> tc),
     CENTRAL(() -> tc -> Collections.nCopies(tc.size(), 0.5d)),
-    BEST(null), // TODO fill
+    BEST(BestStrategy::new),
     M1(null); // TODO fill
     private final Supplier<CoMEStrategy> supplier;
 
