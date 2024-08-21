@@ -31,16 +31,13 @@ import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.util.*;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -65,7 +62,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
   private final List<MapElites.Descriptor<G2, S2, Q>> descriptors2;
   private final int populationSize;
   private final int nOfOffspring;
-  private final Strategy strategy;
+  private final Supplier<CoMEStrategy<Q>> strategySupplier;
 
   public CoMapElites(
       Predicate<? super CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>>> stopCondition,
@@ -80,7 +77,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
       Mutation<G2> mutation2,
       int populationSize,
       int nOfOffspring,
-      Strategy strategy) {
+      Supplier<CoMEStrategy<Q>> strategySupplier) {
     super(null, null, stopCondition, false);
     this.genotypeFactory1 = genotypeFactory1;
     this.genotypeFactory2 = genotypeFactory2;
@@ -93,14 +90,92 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
     this.mutation2 = mutation2;
     this.populationSize = populationSize;
     this.nOfOffspring = nOfOffspring;
-    this.strategy = strategy;
+    this.strategySupplier = strategySupplier;
   }
 
-  public enum Strategy {
-    IDENTITY,
-    BEST,
-    CENTRAL
+  public static class IdentityStrategy<Q> implements CoMEStrategy<Q> {
+
+    // TODO - fare un enum
+
+    public IdentityStrategy() {}
+
+    @Override
+    public double[] getOtherCoords(double[] input) {
+      return input; // Identity: return the same coordinates
+    }
   }
+
+  public static class CentralStrategy<Q> implements CoMEStrategy<Q> {
+
+    @Override
+    public double[] getOtherCoords(double[] input) {
+      return new double[] {0.5, 0.5}; // TODO
+    }
+  }
+
+  public static class StrategySupplierImpl<Q> implements Supplier<CoMEStrategy<Q>> {
+
+    private final String strategyType;
+    // private final Map<List<Integer>, MEIndividual<?, ?, Q>> otherMapOfElites;
+    // private final QualityBasedProblem<?, Q> problem;
+    private final List<MapElites.Descriptor<?, ?, Q>> thisDescriptors;
+    private final List<MapElites.Descriptor<?, ?, Q>> otherDescriptors;
+
+    public StrategySupplierImpl(
+        String strategyType,
+        Map<List<Integer>, MEIndividual<?, ?, Q>> otherMapOfElites,
+        QualityBasedProblem<?, Q> problem,
+        List<MapElites.Descriptor<?, ?, Q>> thisDescriptors,
+        List<MapElites.Descriptor<?, ?, Q>> otherDescriptors) {
+      this.strategyType = strategyType;
+      // this.otherMapOfElites = otherMapOfElites;
+      // this.problem = problem;
+      this.thisDescriptors = thisDescriptors;
+      this.otherDescriptors = otherDescriptors;
+    }
+
+    @Override
+    public CoMEStrategy<Q> get() {
+      return switch (strategyType) {
+          // case "BEST" -> new BestStrategy<>(otherMapOfElites, problem);
+        case "CENTRAL" -> new CentralStrategy<>();
+        case "IDENTITY" -> new IdentityStrategy<>();
+        default -> throw new IllegalArgumentException("Unknown strategy type: " + strategyType);
+      };
+    }
+  }
+
+  public static List<Integer> getIntegerCoords(double[] coordinates, List<Integer> binUpperBounds) {
+    if (coordinates.length != 2) {
+      throw new IllegalArgumentException("The coordinates array must have exactly two elements.");
+    }
+
+    int xIndex = (int) Math.floor(coordinates[0] * binUpperBounds.get(0));
+    int yIndex = (int) Math.floor(coordinates[1] * binUpperBounds.get(1));
+
+    // Ensure indices are within bounds
+    xIndex = Math.min(xIndex, binUpperBounds.get(0) - 1);
+    yIndex = Math.min(yIndex, binUpperBounds.get(1) - 1);
+
+    return List.of(xIndex, yIndex);
+  }
+
+  public static double[] getDoubleCoords(List<Integer> indices, List<Integer> binUpperBounds) {
+    if (indices.size() != 2) {
+      throw new IllegalArgumentException("The indices list must have exactly two elements.");
+    }
+
+    double x = indices.get(0) / (double) binUpperBounds.get(0);
+    double y = indices.get(1) / (double) binUpperBounds.get(1);
+
+    return new double[] {x, y};
+  }
+
+  // public enum Strategy {
+  //  IDENTITY,
+  //  BEST,
+  //  CENTRAL
+  // }
 
   private static double euclideanDistance(List<Integer> coords1, List<Integer> coords2) {
     if (coords1.size() != coords2.size()) {
@@ -131,41 +206,42 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
         .orElseThrow();
   }
 
-  private static <GT, GO, ST, SO, S, Q> List<Integer> getOtherCoords(
-      List<Integer> thisCoords,
-      Map<List<Integer>, MEIndividual<GO, SO, Q>> otherMapOfElites,
-      QualityBasedProblem<S, Q> problem,
-      List<MapElites.Descriptor<GT, ST, Q>> thisDescriptors,
-      List<MapElites.Descriptor<GO, SO, Q>> otherDescriptors,
-      Strategy strategy) {
-    return switch (strategy) {
-      case BEST -> PartiallyOrderedCollection.from(
-              otherMapOfElites.entrySet(),
-              problem.qualityComparator()
-                  .comparing(e -> e.getValue().quality()))
-          .firsts()
-          .stream()
-          .findFirst()
-          .map(Map.Entry::getKey)
-          .orElseThrow();
-      case CENTRAL -> otherDescriptors.stream().map(d -> d.nOfBins() / 2).toList();
-      case IDENTITY -> {
-        if (thisDescriptors.size() != otherDescriptors.size()) {
-          throw new IllegalArgumentException(
-              "Coordinates must have the same dimensions: %d in this archive, %d in other archive"
-                  .formatted(thisDescriptors.size(), otherDescriptors.size()));
-        }
-        if (IntStream.range(0, thisDescriptors.size())
-            .filter(i -> thisDescriptors.get(i).nOfBins()
-                != otherDescriptors.get(i).nOfBins())
-            .findAny()
-            .isPresent()) {
-          throw new IllegalArgumentException("Descriptors are not compatible: different number of bins");
-        }
-        yield thisCoords;
-      }
-    };
-  }
+  // private static <GT, GO, ST, SO, S, Q> List<Integer> getOtherCoords(
+  //    List<Integer> thisCoords,
+  //    Map<List<Integer>, MEIndividual<GO, SO, Q>> otherMapOfElites,
+  //    QualityBasedProblem<S, Q> problem,
+  //    List<MapElites.Descriptor<GT, ST, Q>> thisDescriptors,
+  //    List<MapElites.Descriptor<GO, SO, Q>> otherDescriptors,
+  //    Strategy strategy) {
+  //  return switch (strategy) {
+  //    case BEST -> PartiallyOrderedCollection.from(
+  //            otherMapOfElites.entrySet(),
+  //            problem.qualityComparator()
+  //                .comparing(e -> e.getValue().quality()))
+  //        .firsts()
+  //        .stream()
+  //        .findFirst()
+  //        .map(Map.Entry::getKey)
+  //        .orElseThrow();
+  //    case CENTRAL ->
+  //        otherDescriptors.stream().map(d -> d.nOfBins() / 2).toList();
+  //    case IDENTITY -> {
+  //      if (thisDescriptors.size() != otherDescriptors.size()) {
+  //        throw new IllegalArgumentException(
+  //            "Coordinates must have the same dimensions: %d in this archive, %d in other archive"
+  //                .formatted(thisDescriptors.size(), otherDescriptors.size()));
+  //      }
+  //      if (IntStream.range(0, thisDescriptors.size())
+  //          .filter(i -> thisDescriptors.get(i).nOfBins()
+  //              != otherDescriptors.get(i).nOfBins())
+  //          .findAny()
+  //          .isPresent()) {
+  //        throw new IllegalArgumentException("Descriptors are not compatible: different number of bins");
+  //      }
+  //      yield thisCoords;
+  //    }
+  //  };
+  // }
 
   private static <GT, GO, ST, SO, S, Q>
       Callable<Pair<MEIndividual<GT, ST, Q>, List<CoMEIndividual<GT, GO, ST, SO, S, Q>>>> reproduceCallable(
@@ -176,7 +252,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
           BiFunction<? super ST, ? super SO, ? extends S> solutionMerger,
           List<MapElites.Descriptor<GT, ST, Q>> thisDescriptors,
           List<MapElites.Descriptor<GO, SO, Q>> otherDescriptors,
-          Strategy strategy,
+          CoMEStrategy<Q> strategy,
           QualityBasedProblem<S, Q> problem,
           RandomGenerator random,
           long iteration,
@@ -192,8 +268,9 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
           .map(MapElites.Descriptor.Coordinate::bin)
           .toList();
       List<Integer> otherCoords = getClosestCoordinate(
-          getOtherCoords(
-              thisCoords, otherArchive.asMap(), problem, thisDescriptors, otherDescriptors, strategy),
+          getIntegerCoords(
+              strategy.getOtherCoords(getDoubleCoords(thisCoords, thisArchive.binUpperBounds())),
+              thisArchive.binUpperBounds()),
           otherArchive.asMap()); // collaborator choice
       Collection<MEIndividual<GO, SO, Q>> neighbors =
           findNeighbors(otherCoords, otherArchive.asMap(), CoMapElites::euclideanDistance, 2);
@@ -251,8 +328,9 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
   public CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>> init(
       QualityBasedProblem<S, Q> problem, RandomGenerator random, ExecutorService executor)
       throws SolverException {
+    CoMEStrategy<Q> strategy = strategySupplier.get();
     CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>> newState =
-        CoMEPopulationState.empty(problem, stopCondition(), descriptors1, descriptors2);
+        CoMEPopulationState.empty(problem, stopCondition(), descriptors1, descriptors2, strategy);
     AtomicLong counter = new AtomicLong(0);
     List<ChildGenotype<G1>> childGenotypes1 = genotypeFactory1.build(populationSize, random).stream()
         .map(g -> new ChildGenotype<G1>(counter.getAndIncrement(), g, List.of()))
@@ -265,6 +343,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
             .mapToObj(i -> coMapCallable(childGenotypes1.get(i), childGenotypes2.get(i), newState, counter))
             .toList(),
         executor);
+    // TODO - fare un primo update della strategy
     return newState.updatedWithIteration(
         populationSize,
         populationSize,
@@ -282,7 +361,8 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
                     .map(CoMEIndividual::individual2)
                     .toList(),
                 MEIndividual::bins,
-                partialComparator(problem)));
+                partialComparator(problem)),
+        newState.strategy());
   }
 
   @Override
@@ -292,7 +372,8 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
       CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>> state)
       throws SolverException {
     AtomicLong counter = new AtomicLong(state.nOfBirths());
-    // reproduction
+    CoMEStrategy<Q> strategy = state.strategy();
+    // reproduction 1
     Collection<Pair<MEIndividual<G1, S1, Q>, List<CoMEIndividual<G1, G2, S1, S2, S, Q>>>> reproduction1 = getAll(
         IntStream.range(0, populationSize)
             .mapToObj(i -> reproduceCallable(
@@ -310,6 +391,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
                 counter))
             .toList(),
         executor);
+    // reproduction 2
     Collection<Pair<MEIndividual<G2, S2, Q>, List<CoMEIndividual<G2, G1, S2, S1, S, Q>>>> reproduction2 = getAll(
         IntStream.range(0, populationSize)
             .mapToObj(i -> reproduceCallable(
@@ -332,6 +414,53 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
     List<CoMEIndividual<G1, G2, S1, S2, S, Q>> coMEIndividuals2 = reproduction2.stream()
         .flatMap(p2 -> p2.second().stream().map(CoMEIndividual::swapped))
         .toList();
+
+    // update strategy
+    Map<Pair<double[], double[]>, Q> newQs = new HashMap<>();
+    for (CoMEIndividual<G1, G2, S1, S2, S, Q> individual : coMEIndividuals1) {
+      // 1. Get G1 and G2 from the individual
+      Individual<G1, S1, Q> ind1 = individual.individual1();
+      Individual<G2, S2, Q> ind2 = individual.individual2();
+
+      // 2. Find descriptors for G1
+      double[] d1 = descriptors1.stream()
+          .mapToDouble(d -> d.function().apply(ind1).doubleValue())
+          .toArray();
+      double[] d2 = descriptors2.stream()
+          .mapToDouble(d -> d.function().apply(ind2).doubleValue())
+          .toArray();
+      // List<Double> d2 = descriptors2.stream().map(d -> d.function().apply(ind2).doubleValue()).toList();
+      // TODO - normalizzare coordinate
+
+      // 3. Store a variable as descriptors1, descriptors2, q
+      Q quality = individual.quality();
+
+      newQs.put(new Pair<>(d1, d2), quality);
+    }
+
+    for (CoMEIndividual<G1, G2, S1, S2, S, Q> individual : coMEIndividuals2) {
+      // 1. Get G1 and G2 from the individual
+      Individual<G1, S1, Q> ind1 = individual.individual1();
+      Individual<G2, S2, Q> ind2 = individual.individual2();
+
+      // 2. Find descriptors for G1
+      double[] d1 = descriptors1.stream()
+          .mapToDouble(d -> d.function().apply(ind1).doubleValue())
+          .toArray();
+      double[] d2 = descriptors2.stream()
+          .mapToDouble(d -> d.function().apply(ind2).doubleValue())
+          .toArray();
+      // List<Double> d2 = descriptors2.stream().map(d -> d.function().apply(ind2).doubleValue()).toList();
+      // TODO - normalizzare coordinate
+
+      // 3. Store a variable as descriptors1, descriptors2, q
+      Q quality = individual.quality();
+
+      newQs.put(new Pair<>(d1, d2), quality);
+    }
+
+    strategy.update(newQs, state.problem().qualityComparator());
+
     // combine all individuals into a single collection
     List<CoMEIndividual<G1, G2, S1, S2, S, Q>> allIndividuals = Stream.of(
             state.pocPopulation().all(), coMEIndividuals1, coMEIndividuals2)
@@ -358,6 +487,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
             .updated(
                 reproduction2.stream().map(Pair::first).toList(),
                 MEIndividual::bins,
-                partialComparator(state.problem())));
+                partialComparator(state.problem())),
+        state.strategy());
   }
 }
