@@ -43,7 +43,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -106,14 +105,14 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
   }
 
   private static List<Integer> denormalizeCoords(
-      double[] coordinates, List<? extends MapElites.Descriptor<?, ?, ?>> descriptors) {
-    if (coordinates.length != descriptors.size()) {
+      List<Double> coordinates, List<? extends MapElites.Descriptor<?, ?, ?>> descriptors) {
+    if (coordinates.size() != descriptors.size()) {
       throw new IllegalArgumentException("Unexpected different sizes of coords and descriptors: %d vs. %d"
-          .formatted(coordinates.length, descriptors.size()));
+          .formatted(coordinates.size(), descriptors.size()));
     }
-    return IntStream.range(0, coordinates.length)
-        .map(i -> (int)
-            Math.round(new DoubleRange(0, descriptors.get(i).nOfBins() - 1).denormalize(coordinates[i])))
+    return IntStream.range(0, coordinates.size())
+        .map(i -> (int) Math.round(
+            new DoubleRange(0, descriptors.get(i).nOfBins() - 1).denormalize(coordinates.get(i))))
         .boxed()
         .toList();
   }
@@ -147,15 +146,15 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
         .orElseThrow();
   }
 
-  private static double[] normalizeCoords(
+  private static List<Double> normalizeCoords(
       List<Integer> coordinates, List<? extends MapElites.Descriptor<?, ?, ?>> descriptors) {
     if (coordinates.size() != descriptors.size()) {
       throw new IllegalArgumentException("Unexpected different size of coords and descriptors: %d vs. %d"
           .formatted(coordinates.size(), descriptors.size()));
     }
     return IntStream.range(0, coordinates.size())
-        .mapToDouble(i -> new DoubleRange(0, descriptors.get(i).nOfBins() - 1).normalize(coordinates.get(i)))
-        .toArray();
+        .mapToObj(i -> new DoubleRange(0, descriptors.get(i).nOfBins() - 1).normalize(coordinates.get(i)))
+        .toList();
   }
 
   private static <GT, GO, ST, SO, S, Q>
@@ -374,36 +373,36 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
     state.strategy1()
         .update(
             newIndividuals.stream()
-                .collect(Collectors.toMap(
-                    ci -> new Pair<>(
-                        normalizeCoords(
-                            ci.individual1().coordinates().stream()
-                                .map(MapElites.Descriptor.Coordinate::bin)
-                                .toList(),
-                            descriptors1),
-                        normalizeCoords(
-                            ci.individual2().coordinates().stream()
-                                .map(MapElites.Descriptor.Coordinate::bin)
-                                .toList(),
-                            descriptors2)),
-                    Individual::quality)),
+                .map(ci -> new CoMEStrategy.Observation<>(
+                    normalizeCoords(
+                        ci.individual1().coordinates().stream()
+                            .map(MapElites.Descriptor.Coordinate::bin)
+                            .toList(),
+                        descriptors1),
+                    normalizeCoords(
+                        ci.individual2().coordinates().stream()
+                            .map(MapElites.Descriptor.Coordinate::bin)
+                            .toList(),
+                        descriptors2),
+                    ci.quality()))
+                .toList(),
             state.problem().qualityComparator());
     state.strategy2()
         .update(
             newIndividuals.stream()
-                .collect(Collectors.toMap(
-                    ci -> new Pair<>(
-                        normalizeCoords(
-                            ci.individual2().coordinates().stream()
-                                .map(MapElites.Descriptor.Coordinate::bin)
-                                .toList(),
-                            descriptors2),
-                        normalizeCoords(
-                            ci.individual1().coordinates().stream()
-                                .map(MapElites.Descriptor.Coordinate::bin)
-                                .toList(),
-                            descriptors1)),
-                    Individual::quality)),
+                .map(ci -> new CoMEStrategy.Observation<>(
+                    normalizeCoords(
+                        ci.individual2().coordinates().stream()
+                            .map(MapElites.Descriptor.Coordinate::bin)
+                            .toList(),
+                        descriptors2),
+                    normalizeCoords(
+                        ci.individual1().coordinates().stream()
+                            .map(MapElites.Descriptor.Coordinate::bin)
+                            .toList(),
+                        descriptors1),
+                    ci.quality()))
+                .toList(),
             state.problem().qualityComparator());
   }
 }

@@ -20,16 +20,16 @@
 package io.github.ericmedvet.jgea.core.solver.mapelites;
 
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
-import io.github.ericmedvet.jnb.datastructure.Pair;
-
-import java.util.Map;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.IntStream;
 
 public interface CoMEStrategy {
+
   enum Prepared implements Supplier<CoMEStrategy> {
     IDENTITY(() -> tc -> tc),
-    CENTRAL(() -> tc -> IntStream.range(0, tc.length).mapToDouble(i -> 0.5).toArray()),
+    CENTRAL(() -> tc -> Collections.nCopies(tc.size(), 0.5d)),
     BEST(null), // TODO fill
     M1(null); // TODO fill
     private final Supplier<CoMEStrategy> supplier;
@@ -44,7 +44,9 @@ public interface CoMEStrategy {
     }
   }
 
-  double[] getOtherCoords(double[] theseCoords);
+  record Observation<Q>(List<Double> theseCoords, List<Double> otherCoords, Q q) {}
 
-  default <Q> void update(Map<Pair<double[], double[]>, Q> newQs, PartialComparator<Q> qComparator) {}
+  List<Double> getOtherCoords(List<Double> theseCoords);
+
+  default <Q> void update(Collection<Observation<Q>> newObservations, PartialComparator<Q> qComparator) {}
 }
