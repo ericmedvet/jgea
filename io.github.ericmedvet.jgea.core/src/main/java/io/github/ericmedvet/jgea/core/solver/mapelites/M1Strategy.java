@@ -2,11 +2,9 @@ package io.github.ericmedvet.jgea.core.solver.mapelites;
 
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
-import io.github.ericmedvet.jnb.datastructure.Pair;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class M1Strategy implements CoMEStrategy {
 
@@ -14,16 +12,19 @@ public class M1Strategy implements CoMEStrategy {
   private List<Observation<Object>> bestObservations;
 
   public M1Strategy() {
+    bestObservations = new ArrayList<>();
   }
 
   @Override
   public List<Double> getOtherCoords(List<Double> theseCoords) {
+      if (bestObservations.isEmpty()) {
+        return Collections.nCopies(theseCoords.size(), 0.5d);
+      }
       Observation<Object> theseCoordsObservation = bestObservations.stream().
           filter(obs -> obs.theseCoords().equals(theseCoords)).
           findFirst().
           orElse(null);
-    assert theseCoordsObservation != null;
-    if (theseCoordsObservation.otherCoords() == null) {
+    if (theseCoordsObservation == null) {
         return Collections.nCopies(theseCoords.size(), 0.5d);
       }
     return theseCoordsObservation.otherCoords();
@@ -31,6 +32,30 @@ public class M1Strategy implements CoMEStrategy {
 
   @Override
   public <Q> void update(Collection<Observation<Q>> newObservations, PartialComparator<Q> qComparator) {
+
+      if (bestObservations.isEmpty()) {
+
+        Set<List<Double>> coordsAssessed = newObservations.stream()
+              .map(Observation::theseCoords)
+              .collect(Collectors.toSet());
+
+        for (List<Double> coords : coordsAssessed) {
+
+          List<Observation<Q>> newObservationsForCoords = (List<Observation<Q>>) newObservations.stream()
+              .filter(obs -> obs.theseCoords().equals(coords)).toList();
+
+          Optional<Observation<Q>> bestNewObservationForCoords =
+              PartiallyOrderedCollection.from(newObservationsForCoords, qComparator.comparing(Observation::q))
+                  .firsts()
+                  .stream()
+                  .findAny();
+
+          bestNewObservationForCoords.ifPresent(qObservation -> {
+            bestObservations.add((Observation<Object>) qObservation);
+          });
+
+        }
+      }
 
       Set<List<Double>> coordsToUpdate = newObservations.stream()
         .map(Observation::theseCoords)
@@ -53,7 +78,7 @@ public class M1Strategy implements CoMEStrategy {
         // if bestNewObservationForCoords is better then bestObservationForCoords
         // bestObservations.remove(obs s.t. theseCoords = coords)
         // bestObservations.add(bestNewObservationForCoords)
-          if ((bestNewObservationForCoords.isEmpty()) || (qComparator.compare((Q)bestObservationForCoords.get().q(), bestNewObservationForCoords.get().q()) == PartialComparator.PartialComparatorOutcome.BEFORE)) {
+          if ((bestObservationForCoords.isEmpty()) || (qComparator.compare((Q)bestObservationForCoords.get().q(), bestNewObservationForCoords.get().q()) == PartialComparator.PartialComparatorOutcome.BEFORE)) {
             bestObservations.removeIf(obs -> obs.theseCoords().equals(coords));
             bestObservations.add((Observation<Object>) bestNewObservationForCoords.get());
           }
