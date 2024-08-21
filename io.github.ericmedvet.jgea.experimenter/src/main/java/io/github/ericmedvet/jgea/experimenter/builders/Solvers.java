@@ -40,6 +40,7 @@ import io.github.ericmedvet.jgea.core.solver.cabea.SubstrateFiller;
 import io.github.ericmedvet.jgea.core.solver.es.CMAEvolutionaryStrategy;
 import io.github.ericmedvet.jgea.core.solver.es.OpenAIEvolutionaryStrategy;
 import io.github.ericmedvet.jgea.core.solver.es.SimpleEvolutionaryStrategy;
+import io.github.ericmedvet.jgea.core.solver.mapelites.CoMEStrategy;
 import io.github.ericmedvet.jgea.core.solver.mapelites.CoMapElites;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MapElites;
 import io.github.ericmedvet.jgea.core.solver.pso.ParticleSwarmOptimization;
@@ -55,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.DoubleStream;
 
 @Discoverable(prefixTemplate = "ea.solver|s")
@@ -120,7 +122,7 @@ public class Solvers {
       @Param(value = "nEval", dI = 1000) int nEval,
       @Param(value = "populationSize", dI = 100) int populationSize,
       @Param(value = "nOfOffspring", dI = 50) int nOfOffspring,
-      @Param(value = "strategy", dS = "identity") CoMapElites.StrategySupplier<Q> strategySupplier) {
+      @Param(value = "strategy", dS = "identity") Supplier<CoMEStrategy<Q>> strategySupplier) {
     return exampleS -> {
       // Create representations based on the inverse mapper and solution merger
       Pair<S1, S2> splitExample = invertibleMapperMerger.exampleFor(exampleS);

@@ -30,7 +30,6 @@ import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.Pair;
-
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -38,19 +37,19 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-
 public class CoMapElites<G1, G2, S1, S2, S, Q>
     extends AbstractPopulationBasedIterativeSolver<
-    CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>>,
-    QualityBasedProblem<S, Q>,
-    CoMEIndividual<G1, G2, S1, S2, S, Q>,
-    Pair<G1, G2>,
-    S,
-    Q> {
+        CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>>,
+        QualityBasedProblem<S, Q>,
+        CoMEIndividual<G1, G2, S1, S2, S, Q>,
+        Pair<G1, G2>,
+        S,
+        Q> {
 
   private final Factory<? extends G1> genotypeFactory1;
   private final Factory<? extends G2> genotypeFactory2;
@@ -63,7 +62,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
   private final List<MapElites.Descriptor<G2, S2, Q>> descriptors2;
   private final int populationSize;
   private final int nOfOffspring;
-  private final StrategySupplier<Q> strategySupplier;
+  private final Supplier<CoMEStrategy<Q>> strategySupplier;
 
   public CoMapElites(
       Predicate<? super CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>>> stopCondition,
@@ -78,7 +77,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
       Mutation<G2> mutation2,
       int populationSize,
       int nOfOffspring,
-      StrategySupplier<Q> strategySupplier) {
+      Supplier<CoMEStrategy<Q>> strategySupplier) {
     super(null, null, stopCondition, false);
     this.genotypeFactory1 = genotypeFactory1;
     this.genotypeFactory2 = genotypeFactory2;
@@ -94,54 +93,31 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
     this.strategySupplier = strategySupplier;
   }
 
-  public interface StrategySupplier<Q> {
-    CoMEStrategy<Q> get();
-  }
-
   public static class IdentityStrategy<Q> implements CoMEStrategy<Q> {
 
+    // TODO - fare un enum
 
-    public IdentityStrategy() {
-    }
+    public IdentityStrategy() {}
 
     @Override
     public double[] getOtherCoords(double[] input) {
       return input; // Identity: return the same coordinates
     }
-
-    @Override
-    public void update(Map<Pair<double[], double[]>, Q> newQs) {
-      // None
-    }
   }
 
   public static class CentralStrategy<Q> implements CoMEStrategy<Q> {
 
-    private final List<MapElites.Descriptor<?, ?, Q>> otherDescriptors;
-
-    public CentralStrategy(List<MapElites.Descriptor<?, ?, Q>> otherDescriptors) {
-      this.otherDescriptors = otherDescriptors;
-    }
-
     @Override
     public double[] getOtherCoords(double[] input) {
-      return otherDescriptors.stream()
-          .mapToDouble(d -> d.nOfBins() / 2.0)
-          .toArray();
-    }
-
-    @Override
-    public void update(Map<Pair<double[], double[]>, Q> newQs) {
-      // None
+      return new double[] {0.5, 0.5}; // TODO
     }
   }
 
-
-  public static class StrategySupplierImpl<Q> implements StrategySupplier<Q> {
+  public static class StrategySupplierImpl<Q> implements Supplier<CoMEStrategy<Q>> {
 
     private final String strategyType;
-    //private final Map<List<Integer>, MEIndividual<?, ?, Q>> otherMapOfElites;
-    //private final QualityBasedProblem<?, Q> problem;
+    // private final Map<List<Integer>, MEIndividual<?, ?, Q>> otherMapOfElites;
+    // private final QualityBasedProblem<?, Q> problem;
     private final List<MapElites.Descriptor<?, ?, Q>> thisDescriptors;
     private final List<MapElites.Descriptor<?, ?, Q>> otherDescriptors;
 
@@ -152,8 +128,8 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
         List<MapElites.Descriptor<?, ?, Q>> thisDescriptors,
         List<MapElites.Descriptor<?, ?, Q>> otherDescriptors) {
       this.strategyType = strategyType;
-      //this.otherMapOfElites = otherMapOfElites;
-      //this.problem = problem;
+      // this.otherMapOfElites = otherMapOfElites;
+      // this.problem = problem;
       this.thisDescriptors = thisDescriptors;
       this.otherDescriptors = otherDescriptors;
     }
@@ -161,14 +137,13 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
     @Override
     public CoMEStrategy<Q> get() {
       return switch (strategyType) {
-        //case "BEST" -> new BestStrategy<>(otherMapOfElites, problem);
-        case "CENTRAL" -> new CentralStrategy<>(otherDescriptors);
+          // case "BEST" -> new BestStrategy<>(otherMapOfElites, problem);
+        case "CENTRAL" -> new CentralStrategy<>();
         case "IDENTITY" -> new IdentityStrategy<>();
         default -> throw new IllegalArgumentException("Unknown strategy type: " + strategyType);
       };
     }
   }
-
 
   public static List<Integer> getIntegerCoords(double[] coordinates, List<Integer> binUpperBounds) {
     if (coordinates.length != 2) {
@@ -193,15 +168,14 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
     double x = indices.get(0) / (double) binUpperBounds.get(0);
     double y = indices.get(1) / (double) binUpperBounds.get(1);
 
-    return new double[]{x, y};
+    return new double[] {x, y};
   }
 
-
-  //public enum Strategy {
+  // public enum Strategy {
   //  IDENTITY,
   //  BEST,
   //  CENTRAL
-  //}
+  // }
 
   private static double euclideanDistance(List<Integer> coords1, List<Integer> coords2) {
     if (coords1.size() != coords2.size()) {
@@ -232,7 +206,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
         .orElseThrow();
   }
 
-  //private static <GT, GO, ST, SO, S, Q> List<Integer> getOtherCoords(
+  // private static <GT, GO, ST, SO, S, Q> List<Integer> getOtherCoords(
   //    List<Integer> thisCoords,
   //    Map<List<Integer>, MEIndividual<GO, SO, Q>> otherMapOfElites,
   //    QualityBasedProblem<S, Q> problem,
@@ -267,22 +241,22 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
   //      yield thisCoords;
   //    }
   //  };
-  //}
+  // }
 
   private static <GT, GO, ST, SO, S, Q>
-  Callable<Pair<MEIndividual<GT, ST, Q>, List<CoMEIndividual<GT, GO, ST, SO, S, Q>>>> reproduceCallable(
-      Archive<MEIndividual<GT, ST, Q>> thisArchive,
-      Archive<MEIndividual<GO, SO, Q>> otherArchive,
-      Mutation<GT> mutation,
-      Function<? super GT, ? extends ST> solutionMapper,
-      BiFunction<? super ST, ? super SO, ? extends S> solutionMerger,
-      List<MapElites.Descriptor<GT, ST, Q>> thisDescriptors,
-      List<MapElites.Descriptor<GO, SO, Q>> otherDescriptors,
-      CoMEStrategy<Q> strategy,
-      QualityBasedProblem<S, Q> problem,
-      RandomGenerator random,
-      long iteration,
-      AtomicLong counter) {
+      Callable<Pair<MEIndividual<GT, ST, Q>, List<CoMEIndividual<GT, GO, ST, SO, S, Q>>>> reproduceCallable(
+          Archive<MEIndividual<GT, ST, Q>> thisArchive,
+          Archive<MEIndividual<GO, SO, Q>> otherArchive,
+          Mutation<GT> mutation,
+          Function<? super GT, ? extends ST> solutionMapper,
+          BiFunction<? super ST, ? super SO, ? extends S> solutionMerger,
+          List<MapElites.Descriptor<GT, ST, Q>> thisDescriptors,
+          List<MapElites.Descriptor<GO, SO, Q>> otherDescriptors,
+          CoMEStrategy<Q> strategy,
+          QualityBasedProblem<S, Q> problem,
+          RandomGenerator random,
+          long iteration,
+          AtomicLong counter) {
     return () -> {
       MEIndividual<GT, ST, Q> parentT =
           Misc.pickRandomly(thisArchive.asMap().values(), random);
@@ -294,7 +268,9 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
           .map(MapElites.Descriptor.Coordinate::bin)
           .toList();
       List<Integer> otherCoords = getClosestCoordinate(
-          getIntegerCoords(strategy.getOtherCoords(getDoubleCoords(thisCoords, thisArchive.binUpperBounds())), thisArchive.binUpperBounds()),
+          getIntegerCoords(
+              strategy.getOtherCoords(getDoubleCoords(thisCoords, thisArchive.binUpperBounds())),
+              thisArchive.binUpperBounds()),
           otherArchive.asMap()); // collaborator choice
       Collection<MEIndividual<GO, SO, Q>> neighbors =
           findNeighbors(otherCoords, otherArchive.asMap(), CoMapElites::euclideanDistance, 2);
@@ -367,6 +343,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
             .mapToObj(i -> coMapCallable(childGenotypes1.get(i), childGenotypes2.get(i), newState, counter))
             .toList(),
         executor);
+    // TODO - fare un primo update della strategy
     return newState.updatedWithIteration(
         populationSize,
         populationSize,
@@ -385,8 +362,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
                     .toList(),
                 MEIndividual::bins,
                 partialComparator(problem)),
-        newState.strategy()
-    );
+        newState.strategy());
   }
 
   @Override
@@ -439,42 +415,51 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
         .flatMap(p2 -> p2.second().stream().map(CoMEIndividual::swapped))
         .toList();
 
-    //update strategy
+    // update strategy
     Map<Pair<double[], double[]>, Q> newQs = new HashMap<>();
     for (CoMEIndividual<G1, G2, S1, S2, S, Q> individual : coMEIndividuals1) {
       // 1. Get G1 and G2 from the individual
-      Individual<G1,S1,Q> ind1 = individual.individual1();
-      Individual<G2,S2,Q> ind2 = individual.individual2();
+      Individual<G1, S1, Q> ind1 = individual.individual1();
+      Individual<G2, S2, Q> ind2 = individual.individual2();
 
       // 2. Find descriptors for G1
-      double[] d1 = descriptors1.stream().mapToDouble(d -> d.function().apply(ind1).doubleValue()).toArray();
-      double[] d2 = descriptors2.stream().mapToDouble(d -> d.function().apply(ind2).doubleValue()).toArray();
-      //List<Double> d2 = descriptors2.stream().map(d -> d.function().apply(ind2).doubleValue()).toList();
+      double[] d1 = descriptors1.stream()
+          .mapToDouble(d -> d.function().apply(ind1).doubleValue())
+          .toArray();
+      double[] d2 = descriptors2.stream()
+          .mapToDouble(d -> d.function().apply(ind2).doubleValue())
+          .toArray();
+      // List<Double> d2 = descriptors2.stream().map(d -> d.function().apply(ind2).doubleValue()).toList();
+      // TODO - normalizzare coordinate
 
       // 3. Store a variable as descriptors1, descriptors2, q
       Q quality = individual.quality();
 
-      newQs.put(new Pair<> (d1,d2), quality);
+      newQs.put(new Pair<>(d1, d2), quality);
     }
 
     for (CoMEIndividual<G1, G2, S1, S2, S, Q> individual : coMEIndividuals2) {
       // 1. Get G1 and G2 from the individual
-      Individual<G1,S1,Q> ind1 = individual.individual1();
-      Individual<G2,S2,Q> ind2 = individual.individual2();
+      Individual<G1, S1, Q> ind1 = individual.individual1();
+      Individual<G2, S2, Q> ind2 = individual.individual2();
 
       // 2. Find descriptors for G1
-      double[] d1 = descriptors1.stream().mapToDouble(d -> d.function().apply(ind1).doubleValue()).toArray();
-      double[] d2 = descriptors2.stream().mapToDouble(d -> d.function().apply(ind2).doubleValue()).toArray();
-      //List<Double> d2 = descriptors2.stream().map(d -> d.function().apply(ind2).doubleValue()).toList();
+      double[] d1 = descriptors1.stream()
+          .mapToDouble(d -> d.function().apply(ind1).doubleValue())
+          .toArray();
+      double[] d2 = descriptors2.stream()
+          .mapToDouble(d -> d.function().apply(ind2).doubleValue())
+          .toArray();
+      // List<Double> d2 = descriptors2.stream().map(d -> d.function().apply(ind2).doubleValue()).toList();
+      // TODO - normalizzare coordinate
 
       // 3. Store a variable as descriptors1, descriptors2, q
       Q quality = individual.quality();
 
-      newQs.put(new Pair<> (d1,d2), quality);
+      newQs.put(new Pair<>(d1, d2), quality);
     }
 
-    strategy.update(newQs);
-
+    strategy.update(newQs, state.problem().qualityComparator());
 
     // combine all individuals into a single collection
     List<CoMEIndividual<G1, G2, S1, S2, S, Q>> allIndividuals = Stream.of(
