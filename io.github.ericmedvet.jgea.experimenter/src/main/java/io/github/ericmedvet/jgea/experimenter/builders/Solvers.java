@@ -56,7 +56,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.DoubleStream;
 
 @Discoverable(prefixTemplate = "ea.solver|s")
@@ -122,9 +121,9 @@ public class Solvers {
       @Param(value = "nEval", dI = 1000) int nEval,
       @Param(value = "populationSize", dI = 100) int populationSize,
       @Param(value = "nOfOffspring", dI = 50) int nOfOffspring,
-      @Param(value = "strategy", dS = "identity") Supplier<CoMEStrategy<Q>> strategySupplier) {
+      @Param(value = "strategy", dS = "identity") CoMEStrategy.Prepared strategy,
+      @Param(value = "neighborRadius", dD = 2) double neighborRadius) {
     return exampleS -> {
-      // Create representations based on the inverse mapper and solution merger
       Pair<S1, S2> splitExample = invertibleMapperMerger.exampleFor(exampleS);
       Representation<G1> r1 = representation1.apply(mapper1.exampleFor(splitExample.first()));
       Representation<G2> r2 = representation2.apply(mapper2.exampleFor(splitExample.second()));
@@ -146,7 +145,8 @@ public class Solvers {
           r2.mutations().get(0),
           populationSize,
           nOfOffspring,
-          strategySupplier);
+          strategy,
+          neighborRadius);
     };
   }
 

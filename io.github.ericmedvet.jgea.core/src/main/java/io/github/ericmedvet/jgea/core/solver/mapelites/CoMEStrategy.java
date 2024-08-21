@@ -21,10 +21,30 @@ package io.github.ericmedvet.jgea.core.solver.mapelites;
 
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jnb.datastructure.Pair;
+
 import java.util.Map;
+import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
-public interface CoMEStrategy<Q> {
-  double[] getOtherCoords(double[] input);
+public interface CoMEStrategy {
+  enum Prepared implements Supplier<CoMEStrategy> {
+    IDENTITY(() -> tc -> tc),
+    CENTRAL(() -> tc -> IntStream.range(0, tc.length).mapToDouble(i -> 0.5).toArray()),
+    BEST(null), // TODO fill
+    M1(null); // TODO fill
+    private final Supplier<CoMEStrategy> supplier;
 
-  default void update(Map<Pair<double[], double[]>, Q> newQs, PartialComparator<Q> qComparator) {}
+    Prepared(Supplier<CoMEStrategy> supplier) {
+      this.supplier = supplier;
+    }
+
+    @Override
+    public CoMEStrategy get() {
+      return supplier.get();
+    }
+  }
+
+  double[] getOtherCoords(double[] theseCoords);
+
+  default <Q> void update(Map<Pair<double[], double[]>, Q> newQs, PartialComparator<Q> qComparator) {}
 }
