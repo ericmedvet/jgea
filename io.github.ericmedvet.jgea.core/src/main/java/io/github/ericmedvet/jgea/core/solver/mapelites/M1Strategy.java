@@ -50,9 +50,13 @@ public class M1Strategy implements CoMEStrategy {
                 .stream()
                 .findAny();
 
-          // if bestNewObservationForCoords is better then bestObservationForCoords
-            // bestObservations.remove(obs s.t. theseCoords = coords)
-            // bestObservations.add(bestNewObservationForCoords)
+        // if bestNewObservationForCoords is better then bestObservationForCoords
+        // bestObservations.remove(obs s.t. theseCoords = coords)
+        // bestObservations.add(bestNewObservationForCoords)
+          if ((bestNewObservationForCoords.isEmpty()) || (qComparator.compare((Q)bestObservationForCoords.get().q(), bestNewObservationForCoords.get().q()) == PartialComparator.PartialComparatorOutcome.BEFORE)) {
+            bestObservations.removeIf(obs -> obs.theseCoords().equals(coords));
+            bestObservations.add((Observation<Object>) bestNewObservationForCoords.get());
+          }
       }
 
       /*
