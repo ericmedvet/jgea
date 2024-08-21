@@ -20,6 +20,7 @@
 package io.github.ericmedvet.jgea.core.solver.mapelites;
 
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -49,4 +50,11 @@ public interface CoMEStrategy {
   List<Double> getOtherCoords(List<Double> theseCoords);
 
   default <Q> void update(Collection<Observation<Q>> newObservations, PartialComparator<Q> qComparator) {}
+
+  default Collection<Pair<List<Double>, List<Double>>> asField(List<Integer> counts) {
+    // TODO fill
+    // compute cartesian product
+    // for each el, call getOtherCoords
+    return List.of();
+  }
 }

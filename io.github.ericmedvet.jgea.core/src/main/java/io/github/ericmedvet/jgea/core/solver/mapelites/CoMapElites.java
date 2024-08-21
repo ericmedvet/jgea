@@ -104,7 +104,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
     }
   }
 
-  private static List<Integer> denormalizeCoords(
+  public static List<Integer> denormalizeCoords(
       List<Double> coordinates, List<? extends MapElites.Descriptor<?, ?, ?>> descriptors) {
     if (coordinates.size() != descriptors.size()) {
       throw new IllegalArgumentException("Unexpected different sizes of coords and descriptors: %d vs. %d"
@@ -146,7 +146,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
         .orElseThrow();
   }
 
-  private static List<Double> normalizeCoords(
+  public static List<Double> normalizeCoords(
       List<Integer> coordinates, List<? extends MapElites.Descriptor<?, ?, ?>> descriptors) {
     if (coordinates.size() != descriptors.size()) {
       throw new IllegalArgumentException("Unexpected different size of coords and descriptors: %d vs. %d"
