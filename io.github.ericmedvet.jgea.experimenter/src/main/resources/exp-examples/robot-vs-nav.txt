@@ -20,7 +20,7 @@ $telegram = ea.c.telegram(botIdFilePath = "/home/eric/Documenti/experiments/tlg.
 
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
-  (solver = (nEval = [5000]) *
+  (solver = (nEval = [10000]) *
   (mapper = [ea.mapper.pair(second = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf()))])
   * [
     ea.s.coMapElites(
@@ -29,6 +29,8 @@ ea.experiment(
       representation2 = ea.representation.multiSRTree();
       mapper2 = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf());
       merger = ea.m.identity();
+      strategy = identity;
+      neighborRadius = 1.1;
       descriptors1 = [
         ea.s.me.d.descriptor(f = $coDescBody1; min = -1.57; max = 1.57; nOfBins = 10);
         ea.s.me.d.descriptor(f = $coDescBody2; min = 0; max = 3.14; nOfBins = 10)
@@ -45,6 +47,7 @@ ea.experiment(
       mapper2 = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf());
       merger = ea.m.identity();
       strategy = central;
+      neighborRadius = 1.1;
       descriptors1 = [
         ea.s.me.d.descriptor(f = $coDescBody1; min = -1.57; max = 1.57; nOfBins = 10);
         ea.s.me.d.descriptor(f = $coDescBody2; min = 0; max = 3.14; nOfBins = 10)
@@ -61,6 +64,7 @@ ea.experiment(
       mapper2 = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf());
       merger = ea.m.identity();
       strategy = best;
+      neighborRadius = 1.1;
       descriptors1 = [
         ea.s.me.d.descriptor(f = $coDescBody1; min = -1.57; max = 1.57; nOfBins = 10);
         ea.s.me.d.descriptor(f = $coDescBody2; min = 0; max = 3.14; nOfBins = 10)

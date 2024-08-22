@@ -31,6 +31,7 @@ import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Pair;
+
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -133,7 +134,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
       List<Integer> coords,
       Map<List<Integer>, X> mapOfElites,
       Distance<List<Integer>> distance,
-      double neighborRadius) { // problem here
+      double neighborRadius) {
     return mapOfElites.entrySet().stream()
         .filter(e -> distance.apply(e.getKey(), coords) < neighborRadius)
         .map(Map.Entry::getValue)
