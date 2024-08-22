@@ -52,9 +52,9 @@ public class BestStrategy implements CoMEStrategy {
       Observation<Q> bestObservation = oBestObservation.get();
       //noinspection unchecked
       if ((bestQ == null)
-          || (qComparator.compare((Q) bestQ, bestObservation.q())
+          || (qComparator.compare(bestObservation.q(), (Q) bestQ)
               == PartialComparator.PartialComparatorOutcome
-                  .BEFORE)) // TODO check - siamo sicuri sia il verso giusto il before?
+                  .BEFORE))
       {
         bestCoords = bestObservation.otherCoords();
         bestQ = bestObservation.q();
