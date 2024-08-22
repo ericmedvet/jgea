@@ -29,7 +29,6 @@ import io.github.ericmedvet.jnb.core.*;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
-import io.github.ericmedvet.jviz.core.plot.VectorialFieldDataSeries;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +38,39 @@ import java.util.function.Predicate;
 @Discoverable(prefixTemplate = "ea.plot.single|s")
 public class SinglePlots {
   private SinglePlots() {}
+
+  @SuppressWarnings("unused")
+  @Alias(
+      name = "fieldRun",
+      value = // spotless:off
+          """
+              field(
+                title = ea.f.runString(name = title; s = "{solver.name} on {problem.name} (seed={randomGenerator.seed})");
+                predicateValue = f.quantized(of = ea.f.rate(of = ea.f.progress()); q = 0.05; format = "%.2f");
+                condition = predicate.inD(values = [0; 0.1; 0.25; 0.50; 1])
+              )
+              """) // spotless:on
+  @Alias(
+      name = "coMeStrategies",
+      value = // spotless:off
+          """
+              fieldRun(
+                title = ea.f.runString(name = title; s = "Strategies (2D fields) of {solver.name} on {problem.name} (seed={randomGenerator.seed})");
+                fields = [ea.f.coMeStrategy1Field(); ea.f.coMeStrategy2Field()];
+                pointPairs = [f.identity()]
+              )
+              """) // spotless:on
+  public static <E, R, X, F> VectorialFieldSEPAF<E, R, X, F> field(
+      @Param("title") Function<? super R, String> titleFunction,
+      @Param("fields") List<Function<? super E, F>> fieldFunctions,
+      @Param("pointPairs")
+          List<Function<? super F, ? extends Map<List<Double>, List<Double>>>> pointPairsFunctions,
+      @Param("predicateValue") Function<E, X> predicateValueFunction,
+      @Param(value = "condition", dNPM = "predicate.ltEq(t=1)") Predicate<X> condition,
+      @Param(value = "unique", dB = true) boolean unique) {
+    return new VectorialFieldSEPAF<>(
+        titleFunction, predicateValueFunction, condition, unique, fieldFunctions, pointPairsFunctions);
+  }
 
   @SuppressWarnings("unused")
   @Alias(
@@ -100,46 +132,6 @@ public class SinglePlots {
       @Param(value = "unique", dB = true) boolean unique) {
     return new UnivariateGridSEPAF<>(
         titleFunction, predicateValueFunction, condition, unique, gridFunctions, valueFunctions, valueRange);
-  }
-
-  @SuppressWarnings("unused")
-  @Alias(
-      name = "fieldRun",
-      value = // spotless:off
-          """
-              field(
-                title = ea.f.runString(name = title; s = "{solver.name} on {problem.name} (seed={randomGenerator.seed})");
-                predicateValue = f.quantized(of = ea.f.rate(of = ea.f.progress()); q = 0.05; format = "%.2f");
-                condition = predicate.inD(values = [0; 0.1; 0.25; 0.50; 1])
-              )
-              """) // spotless:on
-  @Alias(
-      name = "coMeStrategies",
-      value = // spotless:off
-          """
-              fieldRun(
-                title = ea.f.runString(name = title; s = "Strategies (2D fields) of {solver.name} on {problem.name} (seed={randomGenerator.seed})");
-                fields = [ea.f.coMeStrategyField1(); ea.f.coMeStrategyField2()];
-                pointPairs = [f.identity()]
-              )
-              """) // spotless:on
-  public static <E, R, X, F> VectorialFieldSEPAF<E, R, X, F> field(
-      @Param("title") Function<? super R, String> titleFunction,
-      @Param("fields") List<Function<? super E, F>> fieldFunctions,
-      @Param("pointPairs")
-          List<
-                  Function<
-                      ? super F,
-                      ? extends
-                          Map<
-                              VectorialFieldDataSeries.Point,
-                              VectorialFieldDataSeries.Point>>>
-              pointPairsFunctions,
-      @Param("predicateValue") Function<E, X> predicateValueFunction,
-      @Param(value = "condition", dNPM = "predicate.ltEq(t=1)") Predicate<X> condition,
-      @Param(value = "unique", dB = true) boolean unique) {
-    return new VectorialFieldSEPAF<>(
-        titleFunction, predicateValueFunction, condition, unique, fieldFunctions, pointPairsFunctions);
   }
 
   @SuppressWarnings("unused")

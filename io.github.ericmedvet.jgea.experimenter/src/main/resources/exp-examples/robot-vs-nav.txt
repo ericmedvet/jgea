@@ -20,7 +20,7 @@ $telegram = ea.c.telegram(botIdFilePath = "/home/eric/Documenti/experiments/tlg.
 
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
-  (solver = (nEval = [1500]) *
+  (solver = (nEval = [5000]) *
   (mapper = [ea.mapper.pair(second = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf()))])
   * [
     ea.s.coMapElites(
@@ -29,6 +29,38 @@ ea.experiment(
       representation2 = ea.representation.multiSRTree();
       mapper2 = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf());
       merger = ea.m.identity();
+      descriptors1 = [
+        ea.s.me.d.descriptor(f = $coDescBody1; min = -1.57; max = 1.57; nOfBins = 10);
+        ea.s.me.d.descriptor(f = $coDescBody2; min = 0; max = 3.14; nOfBins = 10)
+      ];
+      descriptors2 = [
+        ea.s.me.d.descriptor(f = $coDescBrainSize1; min = 10; max = 410; nOfBins = 10);
+        ea.s.me.d.descriptor(f = $coDescBrainSize2; min = 10; max = 410; nOfBins = 10)
+      ]
+    );
+    ea.s.coMapElites(
+      name = "come-central-body+brain-sizes";
+      representation1 = ea.representation.doubleString();
+      representation2 = ea.representation.multiSRTree();
+      mapper2 = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf());
+      merger = ea.m.identity();
+      strategy = central;
+      descriptors1 = [
+        ea.s.me.d.descriptor(f = $coDescBody1; min = -1.57; max = 1.57; nOfBins = 10);
+        ea.s.me.d.descriptor(f = $coDescBody2; min = 0; max = 3.14; nOfBins = 10)
+      ];
+      descriptors2 = [
+        ea.s.me.d.descriptor(f = $coDescBrainSize1; min = 10; max = 410; nOfBins = 10);
+        ea.s.me.d.descriptor(f = $coDescBrainSize2; min = 10; max = 410; nOfBins = 10)
+      ]
+    );
+    ea.s.coMapElites(
+      name = "come-best-body+brain-sizes";
+      representation1 = ea.representation.doubleString();
+      representation2 = ea.representation.multiSRTree();
+      mapper2 = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf());
+      merger = ea.m.identity();
+      strategy = best;
       descriptors1 = [
         ea.s.me.d.descriptor(f = $coDescBody1; min = -1.57; max = 1.57; nOfBins = 10);
         ea.s.me.d.descriptor(f = $coDescBody2; min = 0; max = 3.14; nOfBins = 10)
@@ -140,6 +172,11 @@ ea.experiment(
     ea.l.savePlotForRun(
       path = "../{name}-come-{run.solver.name}-{run.randomGenerator.seed}";
       plot = ea.plot.single.coMe(q = ea.f.simQuality());
+      condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "come-.*")
+    );
+    ea.l.savePlotForRun(
+      path = "../{name}-come-strategy-{run.solver.name}-{run.randomGenerator.seed}";
+      plot = ea.plot.single.coMeStrategies();
       condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "come-.*")
     );
     ea.l.onExpDone(

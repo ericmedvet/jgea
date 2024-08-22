@@ -48,10 +48,7 @@ import io.github.ericmedvet.jviz.core.drawer.ImageBuilder;
 import io.github.ericmedvet.jviz.core.drawer.Video;
 import io.github.ericmedvet.jviz.core.drawer.VideoBuilder;
 import io.github.ericmedvet.jviz.core.plot.*;
-import io.github.ericmedvet.jviz.core.plot.csv.DistributionPlotCsvBuilder;
-import io.github.ericmedvet.jviz.core.plot.csv.LandscapePlotCsvBuilder;
-import io.github.ericmedvet.jviz.core.plot.csv.UnivariateGridPlotCsvBuilder;
-import io.github.ericmedvet.jviz.core.plot.csv.XYDataSeriesPlotCsvBuilder;
+import io.github.ericmedvet.jviz.core.plot.csv.*;
 import io.github.ericmedvet.jviz.core.plot.image.*;
 import io.github.ericmedvet.jviz.core.plot.image.Configuration;
 import io.github.ericmedvet.jviz.core.plot.video.*;
@@ -63,7 +60,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 @Discoverable(prefixTemplate = "ea.function|f")
 public class Functions {
@@ -108,70 +104,6 @@ public class Functions {
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X>
-      NamedFunction<X, Map<VectorialFieldDataSeries.Point, VectorialFieldDataSeries.Point>> coMeStrategyField1(
-          @Param(value = "of", dNPM = "f.identity()")
-              Function<X, CoMEPopulationState<?, ?, ?, ?, ?, ?, ?>> beforeF,
-          @Param(value = "relative", dB = true) boolean relative) {
-    Function<
-            CoMEPopulationState<?, ?, ?, ?, ?, ?, ?>,
-            Map<VectorialFieldDataSeries.Point, VectorialFieldDataSeries.Point>>
-        f =
-            state -> state
-                .strategy1()
-                .asField(state.descriptors1().stream()
-                    .map(MapElites.Descriptor::nOfBins)
-                    .toList())
-                .stream()
-                .collect(Collectors.toMap(
-                    p -> new VectorialFieldDataSeries.Point(
-                        p.first().get(0), p.first().get(1)),
-                    p -> new VectorialFieldDataSeries.Point(
-                        relative
-                            ? (p.second().get(0)
-                                - p.first().get(0))
-                            : p.second().get(0),
-                        relative
-                            ? (p.second().get(1)
-                                - p.first().get(1))
-                            : p.second().get(1))));
-    return NamedFunction.from(f, "coMe.strategy.field1").compose(beforeF);
-  }
-
-  @SuppressWarnings("unused")
-  @Cacheable
-  public static <X>
-      NamedFunction<X, Map<VectorialFieldDataSeries.Point, VectorialFieldDataSeries.Point>> coMeStrategyField2(
-          @Param(value = "of", dNPM = "f.identity()")
-              Function<X, CoMEPopulationState<?, ?, ?, ?, ?, ?, ?>> beforeF,
-          @Param(value = "relative", dB = true) boolean relative) {
-    Function<
-            CoMEPopulationState<?, ?, ?, ?, ?, ?, ?>,
-            Map<VectorialFieldDataSeries.Point, VectorialFieldDataSeries.Point>>
-        f =
-            state -> state
-                .strategy2()
-                .asField(state.descriptors1().stream()
-                    .map(MapElites.Descriptor::nOfBins)
-                    .toList())
-                .stream()
-                .collect(Collectors.toMap(
-                    p -> new VectorialFieldDataSeries.Point(
-                        p.first().get(0), p.first().get(1)),
-                    p -> new VectorialFieldDataSeries.Point(
-                        relative
-                            ? (p.second().get(0)
-                                - p.first().get(0))
-                            : p.second().get(0),
-                        relative
-                            ? (p.second().get(1)
-                                - p.first().get(1))
-                            : p.second().get(1))));
-    return NamedFunction.from(f, "coMe.strategy.field2").compose(beforeF);
-  }
-
-  @SuppressWarnings("unused")
-  @Cacheable
   public static <X, G, S, Q> NamedFunction<X, Archive<MEIndividual<G, S, Q>>> coMeArchive1(
       @Param(value = "of", dNPM = "f.identity()") Function<X, CoMEPopulationState<G, ?, S, ?, ?, Q, ?>> beforeF) {
     Function<CoMEPopulationState<G, ?, S, ?, ?, Q, ?>, Archive<MEIndividual<G, S, Q>>> f =
@@ -186,6 +118,36 @@ public class Functions {
     Function<CoMEPopulationState<?, G, ?, S, ?, Q, ?>, Archive<MEIndividual<G, S, Q>>> f =
         CoMEPopulationState::mapOfElites2;
     return NamedFunction.from(f, "coMe.archive2").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X> NamedFunction<X, Map<List<Double>, List<Double>>> coMeStrategy1Field(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, CoMEPopulationState<?, ?, ?, ?, ?, ?, ?>> beforeF,
+      @Param(value = "relative", dB = true) boolean relative) {
+    Function<CoMEPopulationState<?, ?, ?, ?, ?, ?, ?>, Map<List<Double>, List<Double>>> f =
+        state -> state.strategy1()
+            .asField(
+                state.descriptors1().stream()
+                    .map(MapElites.Descriptor::nOfBins)
+                    .toList(),
+                relative);
+    return NamedFunction.from(f, "coMe.strategy1.field").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X> NamedFunction<X, Map<List<Double>, List<Double>>> coMeStrategy2Field(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, CoMEPopulationState<?, ?, ?, ?, ?, ?, ?>> beforeF,
+      @Param(value = "relative", dB = true) boolean relative) {
+    Function<CoMEPopulationState<?, ?, ?, ?, ?, ?, ?>, Map<List<Double>, List<Double>>> f =
+        state -> state.strategy2()
+            .asField(
+                state.descriptors1().stream()
+                    .map(MapElites.Descriptor::nOfBins)
+                    .toList(),
+                relative);
+    return NamedFunction.from(f, "coMe.strategy2.field").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
@@ -217,6 +179,9 @@ public class Functions {
       }
       if (p instanceof UnivariateGridPlot ugp) {
         return new UnivariateGridPlotCsvBuilder(configuration, mode).apply(ugp);
+      }
+      if (p instanceof VectorialFieldPlot vfp) {
+        return new VectorialFieldPlotCsvBuilder(configuration, mode).apply(vfp);
       }
       throw new IllegalArgumentException(
           "Unsupported type of plot %s".formatted(p.getClass().getSimpleName()));

@@ -23,18 +23,19 @@ import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jnb.datastructure.Table;
-import io.github.ericmedvet.jviz.core.plot.*;
+import io.github.ericmedvet.jviz.core.plot.VectorialFieldDataSeries;
+import io.github.ericmedvet.jviz.core.plot.VectorialFieldPlot;
+import io.github.ericmedvet.jviz.core.plot.XYPlot;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class VectorialFieldSEPAF<E, R, X, F>
     extends AbstractSingleEPAF<E, VectorialFieldPlot, R, List<VectorialFieldDataSeries>, X> {
   private final List<Function<? super E, F>> fieldFunctions;
-  private final List<
-          Function<? super F, ? extends Map<VectorialFieldDataSeries.Point, VectorialFieldDataSeries.Point>>>
-      pointPairsFunctions;
+  private final List<Function<? super F, ? extends Map<List<Double>, List<Double>>>> pointPairsFunctions;
 
   public VectorialFieldSEPAF(
       Function<? super R, String> titleFunction,
@@ -42,8 +43,7 @@ public class VectorialFieldSEPAF<E, R, X, F>
       Predicate<? super X> predicate,
       boolean unique,
       List<Function<? super E, F>> fieldFunctions,
-      List<Function<? super F, ? extends Map<VectorialFieldDataSeries.Point, VectorialFieldDataSeries.Point>>>
-          pointPairsFunctions) {
+      List<Function<? super F, ? extends Map<List<Double>, List<Double>>>> pointPairsFunctions) {
     super(titleFunction, predicateValueFunction, predicate, unique);
     this.fieldFunctions = fieldFunctions;
     this.pointPairsFunctions = pointPairsFunctions;
@@ -57,7 +57,18 @@ public class VectorialFieldSEPAF<E, R, X, F>
           return Map.entry(
               NamedFunction.name(ff),
               pointPairsFunctions.stream()
-                  .map(ppf -> VectorialFieldDataSeries.of(NamedFunction.name(ppf), ppf.apply(field)))
+                  .map(ppf -> VectorialFieldDataSeries.of(
+                      NamedFunction.name(ppf),
+                      ppf.apply(field).entrySet().stream()
+                          .collect(Collectors.toMap(
+                              me -> new VectorialFieldDataSeries.Point(
+                                  me.getKey().get(0),
+                                  me.getKey().get(1)),
+                              me -> new VectorialFieldDataSeries.Point(
+                                  me.getValue()
+                                      .get(0),
+                                  me.getValue()
+                                      .get(1))))))
                   .toList());
         })
         .toList();
