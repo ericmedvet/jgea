@@ -20,43 +20,31 @@
 package io.github.ericmedvet.jgea.core.solver.mapelites;
 
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
-import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.util.*;
 
-public class BestStrategy implements CoMEStrategy {
+public class LocalBestStrategy implements CoMEStrategy {
 
-  private List<Double> bestCoords;
-  private Object bestQ;
+  private final Map<List<Double>, Pair<List<Double>, Object>> bests;
 
-  public BestStrategy() {
-    bestCoords = null;
-    bestQ = null;
+  public LocalBestStrategy() {
+    bests = new HashMap<>();
   }
 
   @Override
   public List<Double> getOtherCoords(List<Double> theseCoords) {
-    if (bestCoords == null) {
-      return Collections.nCopies(theseCoords.size(), 0.5d);
-    }
-    return bestCoords;
+    return bests.getOrDefault(theseCoords, new Pair<>(theseCoords, null)).first();
   }
 
   @Override
   public <Q> void update(Collection<Observation<Q>> newObservations, PartialComparator<Q> qComparator) {
-    Optional<Observation<Q>> oBestObservation =
-        PartiallyOrderedCollection.from(newObservations, qComparator.comparing(Observation::q))
-            .firsts()
-            .stream()
-            .findAny();
-    if (oBestObservation.isPresent()) {
-      Observation<Q> bestObservation = oBestObservation.get();
-      //noinspection unchecked
-      if ((bestQ == null)
-          || (qComparator.compare(bestObservation.q(), (Q) bestQ)
-              == PartialComparator.PartialComparatorOutcome.BEFORE)) {
-        bestCoords = bestObservation.otherCoords();
-        bestQ = bestObservation.q();
-      }
-    }
+    //noinspection unchecked
+    newObservations.forEach(o -> bests.merge(
+        o.theseCoords(),
+        new Pair<>(o.otherCoords(), o.q()),
+        (currentPair, newPair) -> (qComparator.compare((Q) newPair.second(), (Q) currentPair.second())
+                == PartialComparator.PartialComparatorOutcome.BEFORE)
+            ? newPair
+            : currentPair));
   }
 }

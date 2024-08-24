@@ -35,8 +35,8 @@ public interface CoMEStrategy {
   enum Prepared implements Supplier<CoMEStrategy> {
     IDENTITY(() -> tc -> tc),
     CENTRAL(() -> tc -> Collections.nCopies(tc.size(), 0.5d)),
-    BEST(BestStrategy::new),
-    M1(M1Strategy::new);
+    GLOBAL_BEST(GlobalBestStrategy::new),
+    LOCAL_BEST(LocalBestStrategy::new);
     private final Supplier<CoMEStrategy> supplier;
 
     Prepared(Supplier<CoMEStrategy> supplier) {
