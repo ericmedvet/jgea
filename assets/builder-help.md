@@ -2523,7 +2523,7 @@ Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;S, <
 | `nEval` | i | `1000` | <code>int</code> |
 | `populationSize` | i | `100` | <code>int</code> |
 | `nOfOffspring` | i | `50` | <code>int</code> |
-| `strategy` | e | `IDENTITY` | <code><abbr title="io.github.ericmedvet.jgea.core.solver.mapelites.CoMEStrategy$Prepared">CoMEStrategy$Prepared</abbr></code> |
+| `strategy` | e | `IDENTITY` | <code><abbr title="io.github.ericmedvet.jgea.core.solver.mapelites.strategy.CoMEStrategy$Prepared">CoMEStrategy$Prepared</abbr></code> |
 | `neighborRadius` | d | `2.0` | <code>double</code> |
 
 Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;S, <abbr title="io.github.ericmedvet.jgea.core.solver.mapelites.CoMapElites">CoMapElites</abbr>&lt;G1, G2, S1, S2, S, Q&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Solvers.coMapElites()` by jgea-experimenter:2.6.2-SNAPSHOT

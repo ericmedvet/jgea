@@ -17,7 +17,7 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jgea.core.solver.mapelites;
+package io.github.ericmedvet.jgea.core.solver.mapelites.strategy;
 
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.util.Misc;
@@ -35,8 +35,8 @@ public interface CoMEStrategy {
   enum Prepared implements Supplier<CoMEStrategy> {
     IDENTITY(() -> tc -> tc),
     CENTRAL(() -> tc -> Collections.nCopies(tc.size(), 0.5d)),
-    GLOBAL_BEST(GlobalBestStrategy::new),
-    LOCAL_BEST(LocalBestStrategy::new);
+    GLOBAL_BEST(GlobalBest::new),
+    LOCAL_BEST(LocalBest::new);
     private final Supplier<CoMEStrategy> supplier;
 
     Prepared(Supplier<CoMEStrategy> supplier) {

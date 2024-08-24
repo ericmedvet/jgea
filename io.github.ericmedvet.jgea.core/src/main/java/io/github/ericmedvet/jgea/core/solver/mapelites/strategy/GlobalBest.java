@@ -17,34 +17,46 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jgea.core.solver.mapelites;
+package io.github.ericmedvet.jgea.core.solver.mapelites.strategy;
 
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
-import io.github.ericmedvet.jnb.datastructure.Pair;
+import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import java.util.*;
 
-public class LocalBestStrategy implements CoMEStrategy {
+public class GlobalBest implements CoMEStrategy {
 
-  private final Map<List<Double>, Pair<List<Double>, Object>> bests;
+  private List<Double> bestCoords;
+  private Object bestQ;
 
-  public LocalBestStrategy() {
-    bests = new HashMap<>();
+  public GlobalBest() {
+    bestCoords = null;
+    bestQ = null;
   }
 
   @Override
   public List<Double> getOtherCoords(List<Double> theseCoords) {
-    return bests.getOrDefault(theseCoords, new Pair<>(theseCoords, null)).first();
+    if (bestCoords == null) {
+      return Collections.nCopies(theseCoords.size(), 0.5d);
+    }
+    return bestCoords;
   }
 
   @Override
   public <Q> void update(Collection<Observation<Q>> newObservations, PartialComparator<Q> qComparator) {
-    //noinspection unchecked
-    newObservations.forEach(o -> bests.merge(
-        o.theseCoords(),
-        new Pair<>(o.otherCoords(), o.q()),
-        (currentPair, newPair) -> (qComparator.compare((Q) newPair.second(), (Q) currentPair.second())
-                == PartialComparator.PartialComparatorOutcome.BEFORE)
-            ? newPair
-            : currentPair));
+    Optional<Observation<Q>> oBestObservation =
+        PartiallyOrderedCollection.from(newObservations, qComparator.comparing(Observation::q))
+            .firsts()
+            .stream()
+            .findAny();
+    if (oBestObservation.isPresent()) {
+      Observation<Q> bestObservation = oBestObservation.get();
+      //noinspection unchecked
+      if ((bestQ == null)
+          || (qComparator.compare(bestObservation.q(), (Q) bestQ)
+              == PartialComparator.PartialComparatorOutcome.BEFORE)) {
+        bestCoords = bestObservation.otherCoords();
+        bestQ = bestObservation.q();
+      }
+    }
   }
 }

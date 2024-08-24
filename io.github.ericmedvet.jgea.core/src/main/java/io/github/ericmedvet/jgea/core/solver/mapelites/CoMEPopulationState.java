@@ -24,6 +24,7 @@ import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.State;
+import io.github.ericmedvet.jgea.core.solver.mapelites.strategy.CoMEStrategy;
 import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
