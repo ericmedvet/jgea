@@ -19,4 +19,32 @@
  */
 package io.github.ericmedvet.jgea.core.solver.mapelites;
 
-public class M1Strategy {}
+import io.github.ericmedvet.jgea.core.order.PartialComparator;
+import io.github.ericmedvet.jnb.datastructure.Pair;
+import java.util.*;
+
+public class M1Strategy implements CoMEStrategy {
+
+  private Map<List<Double>, Pair<List<Double>, Object>> bests;
+
+  public M1Strategy() {
+    bests = new HashMap<>();
+  }
+
+  @Override
+  public List<Double> getOtherCoords(List<Double> theseCoords) {
+    return bests.getOrDefault(theseCoords, new Pair<>(theseCoords, null)).first();
+  }
+
+  @Override
+  public <Q> void update(Collection<Observation<Q>> newObservations, PartialComparator<Q> qComparator) {
+    //noinspection unchecked
+    newObservations.forEach(o -> bests.merge(
+        o.theseCoords(),
+        new Pair<>(o.otherCoords(), o.q()),
+        (currentPair, newPair) -> (qComparator.compare((Q) newPair.second(), (Q) currentPair.second())
+                == PartialComparator.PartialComparatorOutcome.BEFORE)
+            ? newPair
+            : currentPair));
+  }
+}

@@ -36,7 +36,7 @@ public interface CoMEStrategy {
     IDENTITY(() -> tc -> tc),
     CENTRAL(() -> tc -> Collections.nCopies(tc.size(), 0.5d)),
     BEST(BestStrategy::new),
-    M1(null); // TODO fill
+    M1(M1Strategy::new);
     private final Supplier<CoMEStrategy> supplier;
 
     Prepared(Supplier<CoMEStrategy> supplier) {
