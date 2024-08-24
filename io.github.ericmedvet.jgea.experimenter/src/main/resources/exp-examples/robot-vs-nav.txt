@@ -22,6 +22,23 @@ ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
   (solver = (nEval = [5000]) * + [
     ea.s.coMapElites(
+      name = "come-l_best-body+brain-sizes";
+      representation1 = ea.representation.doubleString();
+      representation2 = ea.representation.multiSRTree();
+      mapper2 = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf());
+      merger = ea.m.identity();
+      strategy = local_best;
+      neighborRadius = 1.1;
+      descriptors1 = [
+        ea.s.me.d.descriptor(f = $coDescBody1; min = -1.57; max = 1.57; nOfBins = 10);
+        ea.s.me.d.descriptor(f = $coDescBody2; min = 0; max = 3.14; nOfBins = 10)
+      ];
+      descriptors2 = [
+        ea.s.me.d.descriptor(f = $coDescBrainSize1; min = 10; max = 410; nOfBins = 10);
+        ea.s.me.d.descriptor(f = $coDescBrainSize2; min = 10; max = 410; nOfBins = 10)
+      ]
+    );
+    ea.s.coMapElites(
       name = "come-identity-body+brain-sizes";
       representation1 = ea.representation.doubleString();
       representation2 = ea.representation.multiSRTree();
@@ -57,23 +74,6 @@ ea.experiment(
     );
     ea.s.coMapElites(
       name = "come-g_best-body+brain-sizes";
-      representation1 = ea.representation.doubleString();
-      representation2 = ea.representation.multiSRTree();
-      mapper2 = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf());
-      merger = ea.m.identity();
-      strategy = global_best;
-      neighborRadius = 1.1;
-      descriptors1 = [
-        ea.s.me.d.descriptor(f = $coDescBody1; min = -1.57; max = 1.57; nOfBins = 10);
-        ea.s.me.d.descriptor(f = $coDescBody2; min = 0; max = 3.14; nOfBins = 10)
-      ];
-      descriptors2 = [
-        ea.s.me.d.descriptor(f = $coDescBrainSize1; min = 10; max = 410; nOfBins = 10);
-        ea.s.me.d.descriptor(f = $coDescBrainSize2; min = 10; max = 410; nOfBins = 10)
-      ]
-    );
-    ea.s.coMapElites(
-      name = "come-l_best-body+brain-sizes";
       representation1 = ea.representation.doubleString();
       representation2 = ea.representation.multiSRTree();
       mapper2 = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf());

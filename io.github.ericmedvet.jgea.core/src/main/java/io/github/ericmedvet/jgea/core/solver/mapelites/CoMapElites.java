@@ -183,10 +183,9 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
       List<Integer> thisCoords = iT.coordinates().stream()
           .map(MapElites.Descriptor.Coordinate::bin)
           .toList();
-      List<Integer> otherCoords = getClosestCoordinate(
-          denormalizeCoords(
-              strategy.getOtherCoords(normalizeCoords(thisCoords, thisDescriptors)), otherDescriptors),
-          otherArchive.asMap()); // collaborator choice
+      List<Integer> otherCoords = denormalizeCoords(
+          strategy.getOtherCoords(normalizeCoords(thisCoords, thisDescriptors)), otherDescriptors);
+      otherCoords = getClosestCoordinate(otherCoords, otherArchive.asMap());
       Collection<MEIndividual<GO, SO, Q>> neighbors =
           findNeighbors(otherCoords, otherArchive.asMap(), CoMapElites::euclideanDistance, neighborRadius);
       List<CoMEIndividual<GT, GO, ST, SO, S, Q>> localCompositeIndividuals = neighbors.stream()
