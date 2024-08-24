@@ -24,22 +24,53 @@ import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.experimenter.Run;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.LandscapeSEPAF;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.UnivariateGridSEPAF;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeriesSEPAF;
-import io.github.ericmedvet.jgea.experimenter.listener.plot.XYDataSeriesSRPAF;
+import io.github.ericmedvet.jgea.experimenter.listener.plot.*;
 import io.github.ericmedvet.jnb.core.*;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 @Discoverable(prefixTemplate = "ea.plot.single|s")
 public class SinglePlots {
   private SinglePlots() {}
+
+  @SuppressWarnings("unused")
+  @Alias(
+      name = "fieldRun",
+      value = // spotless:off
+          """
+              field(
+                title = ea.f.runString(name = title; s = "{solver.name} on {problem.name} (seed={randomGenerator.seed})");
+                predicateValue = f.quantized(of = ea.f.rate(of = ea.f.progress()); q = 0.05; format = "%.2f");
+                condition = predicate.inD(values = [0; 0.1; 0.25; 0.50; 1])
+              )
+              """) // spotless:on
+  @Alias(
+      name = "coMeStrategies",
+      value = // spotless:off
+          """
+              fieldRun(
+                title = ea.f.runString(name = title; s = "Strategies (2D fields) of {solver.name} on {problem.name} (seed={randomGenerator.seed})");
+                fields = [ea.f.coMeStrategy1Field(); ea.f.coMeStrategy2Field()];
+                pointPairs = [f.identity()]
+              )
+              """) // spotless:on
+  public static <E, R, X, F> VectorialFieldSEPAF<E, R, X, F> field(
+      @Param("title") Function<? super R, String> titleFunction,
+      @Param("fields") List<Function<? super E, F>> fieldFunctions,
+      @Param("pointPairs")
+          List<Function<? super F, ? extends Map<List<Double>, List<Double>>>> pointPairsFunctions,
+      @Param("predicateValue") Function<E, X> predicateValueFunction,
+      @Param(value = "condition", dNPM = "predicate.ltEq(t=1)") Predicate<X> condition,
+      @Param(value = "unique", dB = true) boolean unique) {
+    return new VectorialFieldSEPAF<>(
+        titleFunction, predicateValueFunction, condition, unique, fieldFunctions, pointPairsFunctions);
+  }
 
   @SuppressWarnings("unused")
   @Alias(

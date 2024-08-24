@@ -48,10 +48,7 @@ import io.github.ericmedvet.jviz.core.drawer.ImageBuilder;
 import io.github.ericmedvet.jviz.core.drawer.Video;
 import io.github.ericmedvet.jviz.core.drawer.VideoBuilder;
 import io.github.ericmedvet.jviz.core.plot.*;
-import io.github.ericmedvet.jviz.core.plot.csv.DistributionPlotCsvBuilder;
-import io.github.ericmedvet.jviz.core.plot.csv.LandscapePlotCsvBuilder;
-import io.github.ericmedvet.jviz.core.plot.csv.UnivariateGridPlotCsvBuilder;
-import io.github.ericmedvet.jviz.core.plot.csv.XYDataSeriesPlotCsvBuilder;
+import io.github.ericmedvet.jviz.core.plot.csv.*;
 import io.github.ericmedvet.jviz.core.plot.image.*;
 import io.github.ericmedvet.jviz.core.plot.image.Configuration;
 import io.github.ericmedvet.jviz.core.plot.video.*;
@@ -59,6 +56,7 @@ import io.github.ericmedvet.jviz.core.util.VideoUtils;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -110,7 +108,7 @@ public class Functions {
       @Param(value = "of", dNPM = "f.identity()") Function<X, CoMEPopulationState<G, ?, S, ?, ?, Q, ?>> beforeF) {
     Function<CoMEPopulationState<G, ?, S, ?, ?, Q, ?>, Archive<MEIndividual<G, S, Q>>> f =
         CoMEPopulationState::mapOfElites1;
-    return NamedFunction.from(f, "coMeArchive1").compose(beforeF);
+    return NamedFunction.from(f, "coMe.archive1").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
@@ -119,7 +117,37 @@ public class Functions {
       @Param(value = "of", dNPM = "f.identity()") Function<X, CoMEPopulationState<?, G, ?, S, ?, Q, ?>> beforeF) {
     Function<CoMEPopulationState<?, G, ?, S, ?, Q, ?>, Archive<MEIndividual<G, S, Q>>> f =
         CoMEPopulationState::mapOfElites2;
-    return NamedFunction.from(f, "coMeArchive2").compose(beforeF);
+    return NamedFunction.from(f, "coMe.archive2").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X> NamedFunction<X, Map<List<Double>, List<Double>>> coMeStrategy1Field(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, CoMEPopulationState<?, ?, ?, ?, ?, ?, ?>> beforeF,
+      @Param(value = "relative", dB = true) boolean relative) {
+    Function<CoMEPopulationState<?, ?, ?, ?, ?, ?, ?>, Map<List<Double>, List<Double>>> f =
+        state -> state.strategy1()
+            .asField(
+                state.descriptors1().stream()
+                    .map(MapElites.Descriptor::nOfBins)
+                    .toList(),
+                relative);
+    return NamedFunction.from(f, "coMe.strategy1.field").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X> NamedFunction<X, Map<List<Double>, List<Double>>> coMeStrategy2Field(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, CoMEPopulationState<?, ?, ?, ?, ?, ?, ?>> beforeF,
+      @Param(value = "relative", dB = true) boolean relative) {
+    Function<CoMEPopulationState<?, ?, ?, ?, ?, ?, ?>, Map<List<Double>, List<Double>>> f =
+        state -> state.strategy2()
+            .asField(
+                state.descriptors1().stream()
+                    .map(MapElites.Descriptor::nOfBins)
+                    .toList(),
+                relative);
+    return NamedFunction.from(f, "coMe.strategy2.field").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
@@ -151,6 +179,9 @@ public class Functions {
       }
       if (p instanceof UnivariateGridPlot ugp) {
         return new UnivariateGridPlotCsvBuilder(configuration, mode).apply(ugp);
+      }
+      if (p instanceof VectorialFieldPlot vfp) {
+        return new VectorialFieldPlotCsvBuilder(configuration, mode).apply(vfp);
       }
       throw new IllegalArgumentException(
           "Unsupported type of plot %s".formatted(p.getClass().getSimpleName()));
@@ -228,31 +259,28 @@ public class Functions {
     Configuration configuration = freeScales ? Configuration.FREE_SCALES : Configuration.DEFAULT;
     Function<P, BufferedImage> f = p -> {
       if (p instanceof DistributionPlot dp) {
-        BoxPlotDrawer d = new BoxPlotDrawer(
-            configuration, Configuration.BoxPlot.DEFAULT, Configuration.Colors.DEFAULT.dataColors());
+        BoxPlotDrawer d = new BoxPlotDrawer(configuration, Configuration.BoxPlot.DEFAULT);
         return d.build(iiAdapter.apply(d.imageInfo(dp)), dp);
       }
       if (p instanceof LandscapePlot lsp) {
-        LandscapePlotDrawer d = new LandscapePlotDrawer(
-            configuration, Configuration.LandscapePlot.DEFAULT, Configuration.Colors.DEFAULT.dataColors());
+        LandscapePlotDrawer d = new LandscapePlotDrawer(configuration, Configuration.LandscapePlot.DEFAULT);
         return d.build(iiAdapter.apply(d.imageInfo(lsp)), lsp);
       }
       if (p instanceof XYDataSeriesPlot xyp) {
         AbstractXYDataSeriesPlotDrawer d = (!secondary)
-            ? new LinesPlotDrawer(
-                configuration,
-                Configuration.LinesPlot.DEFAULT,
-                Configuration.Colors.DEFAULT.dataColors())
-            : new PointsPlotDrawer(
-                configuration,
-                Configuration.PointsPlot.DEFAULT,
-                Configuration.Colors.DEFAULT.dataColors());
+            ? new LinesPlotDrawer(configuration, Configuration.LinesPlot.DEFAULT)
+            : new PointsPlotDrawer(configuration, Configuration.PointsPlot.DEFAULT);
         return d.build(iiAdapter.apply(d.imageInfo(xyp)), xyp);
       }
       if (p instanceof UnivariateGridPlot ugp) {
         UnivariateGridPlotDrawer d =
             new UnivariateGridPlotDrawer(configuration, Configuration.UnivariateGridPlot.DEFAULT);
         return d.build(iiAdapter.apply(d.imageInfo(ugp)), ugp);
+      }
+      if (p instanceof VectorialFieldPlot vfp) {
+        VectorialFieldPlotDrawer d =
+            new VectorialFieldPlotDrawer(configuration, Configuration.VectorialFieldPlot.DEFAULT);
+        return d.build(iiAdapter.apply(d.imageInfo(vfp)), vfp);
       }
       throw new IllegalArgumentException(
           "Unsupported type of plot %s".formatted(p.getClass().getSimpleName()));
@@ -656,39 +684,30 @@ public class Functions {
         io.github.ericmedvet.jviz.core.plot.video.Configuration.DEFAULT;
     Function<P, Video> f = p -> {
       if (p instanceof DistributionPlot dp) {
-        BoxPlotVideoBuilder vb = new BoxPlotVideoBuilder(
-            vConfiguration,
-            iConfiguration,
-            Configuration.BoxPlot.DEFAULT,
-            Configuration.Colors.DEFAULT.dataColors());
+        BoxPlotVideoBuilder vb =
+            new BoxPlotVideoBuilder(vConfiguration, iConfiguration, Configuration.BoxPlot.DEFAULT);
         return vb.build(viAdapter.apply(vb.videoInfo(dp)), dp);
       }
       if (p instanceof LandscapePlot lsp) {
         LandscapePlotVideoBuilder vb = new LandscapePlotVideoBuilder(
-            vConfiguration,
-            iConfiguration,
-            Configuration.LandscapePlot.DEFAULT,
-            Configuration.Colors.DEFAULT.dataColors());
+            vConfiguration, iConfiguration, Configuration.LandscapePlot.DEFAULT);
         return vb.build(viAdapter.apply(vb.videoInfo(lsp)), lsp);
       }
       if (p instanceof XYDataSeriesPlot xyp) {
         AbstractXYDataSeriesPlotVideoBuilder vb = (!secondary)
-            ? new LinesPlotVideoBuilder(
-                vConfiguration,
-                iConfiguration,
-                Configuration.LinesPlot.DEFAULT,
-                Configuration.Colors.DEFAULT.dataColors())
-            : new PointsPlotVideoBuilder(
-                vConfiguration,
-                iConfiguration,
-                Configuration.PointsPlot.DEFAULT,
-                Configuration.Colors.DEFAULT.dataColors());
+            ? new LinesPlotVideoBuilder(vConfiguration, iConfiguration, Configuration.LinesPlot.DEFAULT)
+            : new PointsPlotVideoBuilder(vConfiguration, iConfiguration, Configuration.PointsPlot.DEFAULT);
         return vb.build(viAdapter.apply(vb.videoInfo(xyp)), xyp);
       }
       if (p instanceof UnivariateGridPlot ugp) {
         UnivariatePlotVideoBuilder vb = new UnivariatePlotVideoBuilder(
             vConfiguration, iConfiguration, Configuration.UnivariateGridPlot.DEFAULT);
         return vb.build(viAdapter.apply(vb.videoInfo(ugp)), ugp);
+      }
+      if (p instanceof VectorialFieldPlot vfp) {
+        VectorialFieldVideoBuilder vb = new VectorialFieldVideoBuilder(
+            vConfiguration, iConfiguration, Configuration.VectorialFieldPlot.DEFAULT);
+        return vb.build(viAdapter.apply(vb.videoInfo(vfp)), vfp);
       }
       throw new IllegalArgumentException(
           "Unsupported type of plot %s".formatted(p.getClass().getSimpleName()));

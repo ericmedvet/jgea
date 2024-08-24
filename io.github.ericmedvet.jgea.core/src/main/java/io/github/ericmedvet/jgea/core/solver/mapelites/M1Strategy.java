@@ -47,4 +47,4 @@ public class M1Strategy implements CoMEStrategy {
             ? newPair
             : currentPair));
   }
-} // end of the class
+}

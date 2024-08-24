@@ -44,6 +44,22 @@ public class Misc {
     return 0.5 * Math.abs(a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y));
   }
 
+  public static <T> List<List<T>> cartesian(List<List<T>> tss) {
+    return cartesian(tss, List.of(List.of()));
+  }
+
+  private static <T> List<List<T>> cartesian(List<List<T>> tss, List<List<T>> lists) {
+    if (tss.size() == 1) {
+      return tss.get(0).stream()
+          .map(t -> lists.stream()
+              .map(l -> Stream.concat(l.stream(), Stream.of(t)).toList())
+              .toList())
+          .flatMap(List::stream)
+          .toList();
+    }
+    return cartesian(tss.subList(1, tss.size()), cartesian(tss.subList(0, 1), lists));
+  }
+
   public static File checkExistenceAndChangeName(File file) {
     String originalFileName = file.getPath();
     while (file.exists()) {
@@ -76,6 +92,15 @@ public class Misc {
 
   public static <K> List<K> concat(List<List<? extends K>> lists) {
     return lists.stream().flatMap(List::stream).collect(Collectors.toList());
+  }
+
+  public static void doOrLog(
+      Runnable runnable, Logger logger, Level level, Function<Throwable, String> messageFunction) {
+    try {
+      runnable.run();
+    } catch (Throwable t) {
+      logger.log(level, messageFunction.apply(t));
+    }
   }
 
   public static <T> T first(Collection<T> ts) {
@@ -211,14 +236,5 @@ public class Misc {
 
   public static <T> Set<T> union(Set<T> set1, Set<T> set2) {
     return Stream.of(set1, set2).flatMap(Set::stream).collect(Collectors.toSet());
-  }
-
-  public static void doOrLog(
-      Runnable runnable, Logger logger, Level level, Function<Throwable, String> messageFunction) {
-    try {
-      runnable.run();
-    } catch (Throwable t) {
-      logger.log(level, messageFunction.apply(t));
-    }
   }
 }

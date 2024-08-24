@@ -20,10 +20,15 @@
 package io.github.ericmedvet.jgea.core.solver.mapelites;
 
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
+import io.github.ericmedvet.jgea.core.util.Misc;
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public interface CoMEStrategy {
 
@@ -47,6 +52,22 @@ public interface CoMEStrategy {
   record Observation<Q>(List<Double> theseCoords, List<Double> otherCoords, Q q) {}
 
   List<Double> getOtherCoords(List<Double> theseCoords);
+
+  default Map<List<Double>, List<Double>> asField(List<Integer> counts, boolean relative) {
+    return Misc.cartesian(counts.stream()
+            .map(c -> DoubleRange.UNIT.points(c).boxed().toList())
+            .toList())
+        .stream()
+        .collect(Collectors.toMap(tc -> tc, tc -> {
+          List<Double> oc = getOtherCoords(tc);
+          if (relative) {
+            return IntStream.range(0, tc.size())
+                .mapToObj(i -> oc.get(i) - tc.get(i))
+                .toList();
+          }
+          return oc;
+        }));
+  }
 
   default <Q> void update(Collection<Observation<Q>> newObservations, PartialComparator<Q> qComparator) {}
 }
