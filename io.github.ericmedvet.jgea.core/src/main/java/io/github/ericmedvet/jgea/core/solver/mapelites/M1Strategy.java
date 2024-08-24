@@ -25,7 +25,7 @@ import java.util.*;
 
 public class M1Strategy implements CoMEStrategy {
 
-  private Map<List<Double>, Pair<List<Double>, Object>> bests;
+  private final Map<List<Double>, Pair<List<Double>, Object>> bests;
 
   public M1Strategy() {
     bests = new HashMap<>();
