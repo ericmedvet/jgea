@@ -20,9 +20,7 @@ $telegram = ea.c.telegram(botIdFilePath = "/home/eric/Documenti/experiments/tlg.
 
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
-  (solver = (nEval = [10000]) *
-  (mapper = [ea.mapper.pair(second = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf()))])
-  * [
+  (solver = (nEval = [5000]) * + [
     ea.s.coMapElites(
       name = "come-identity-body+brain-sizes";
       representation1 = ea.representation.doubleString();
@@ -90,7 +88,8 @@ ea.experiment(
         ea.s.me.d.descriptor(f = $coDescBrainSize1; min = 10; max = 410; nOfBins = 10);
         ea.s.me.d.descriptor(f = $coDescBrainSize2; min = 10; max = 410; nOfBins = 10)
       ]
-    );
+    )] + 0 *
+    (mapper = [ea.mapper.pair(second = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf()))]) * [
     ea.s.ga(
       representation = ea.representation.pair(first = ea.representation.doubleString(); second = ea.representation.multiSRTree())
     );
