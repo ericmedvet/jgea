@@ -27,6 +27,7 @@ import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSol
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.util.Misc;
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -69,8 +70,7 @@ public class MapElites<G, S, Q>
     public Coordinate coordinate(Individual<G, S, Q> individual) {
       double value = function.apply(individual).doubleValue();
       return new Coordinate(
-          Math.min(Math.max(0, (int) Math.ceil((value - min) / (max - min) * (double) nOfBins)), nOfBins - 1),
-          value);
+          Math.min((int) (new DoubleRange(min, max).normalize(value) * nOfBins), nOfBins - 1), value);
     }
   }
 
