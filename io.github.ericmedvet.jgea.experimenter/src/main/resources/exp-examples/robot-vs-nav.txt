@@ -184,6 +184,12 @@ ea.experiment(
       processor = ea.f.toImagesVideo(image = ds.d.navigation(); of = f.each(mapF = ea.f.simOutcome(of = ea.f.quality())));
       condition = predicate.inS(f = ea.f.runKey(key = "run.randomGenerator.seed"); values = ["0"])
     );
+    ea.l.saveForRun(
+      path = "../{name}-me-{run.solver.name}-{run.randomGenerator.seed}";
+      of = ea.plot.single.me(q = ea.f.simQuality(); condition = predicate.always());
+      processor = ea.f.videoPlotter();
+      condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "me2-.*")
+    );
     ea.l.savePlotForRun(
       path = "../{name}-me-{run.solver.name}-{run.randomGenerator.seed}";
       plot = ea.plot.single.me(q = ea.f.simQuality());
