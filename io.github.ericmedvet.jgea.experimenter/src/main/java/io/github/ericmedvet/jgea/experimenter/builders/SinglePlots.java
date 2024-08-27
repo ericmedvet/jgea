@@ -45,7 +45,7 @@ public class SinglePlots {
       value = // spotless:off
           """
               field(
-                title = ea.f.runString(name = title; s = "{solver.name} on {problem.name} (seed={randomGenerator.seed})");
+                title = ea.f.runString(name = title; s = "{run.solver.name} on {run.problem.name} (seed={run.randomGenerator.seed})");
                 predicateValue = f.quantized(of = ea.f.rate(of = ea.f.progress()); q = 0.05; format = "%.2f");
                 condition = predicate.inD(values = [0; 0.1; 0.25; 0.50; 1])
               )
@@ -55,7 +55,7 @@ public class SinglePlots {
       value = // spotless:off
           """
               fieldRun(
-                title = ea.f.runString(name = title; s = "Strategies (2D fields) of {solver.name} on {problem.name} (seed={randomGenerator.seed})");
+                title = ea.f.runString(name = title; s = "Strategies (2D fields) of {run.solver.name} on {run.problem.name} (seed={runrandomGenerator.seed})");
                 fields = [ea.f.coMeStrategy1Field(); ea.f.coMeStrategy2Field()];
                 pointPairs = [f.identity()]
               )
@@ -78,7 +78,7 @@ public class SinglePlots {
       value = // spotless:off
           """
               grid(
-                title = ea.f.runString(name = title; s = "{solver.name} on {problem.name} (seed={randomGenerator.seed})");
+                title = ea.f.runString(name = title; s = "{run.solver.name} on {run.problem.name} (seed={run.randomGenerator.seed})");
                 predicateValue = f.quantized(of = ea.f.rate(of = ea.f.progress()); q = 0.05; format = "%.2f");
                 condition = predicate.inD(values = [0; 0.1; 0.25; 0.50; 1])
               )
@@ -91,7 +91,7 @@ public class SinglePlots {
       value = // spotless:off
           """
               gridRun(
-                title = ea.f.runString(name = title; s = "Archive of {solver.name} on {problem.name} (seed={randomGenerator.seed})");
+                title = ea.f.runString(name = title; s = "Archive of {run.solver.name} on {run.problem.name} (seed={run.randomGenerator.seed})");
                 values = [f.composition(of = ea.f.quality(); then = $q)];
                 grids = [ea.f.archiveToGrid(of = ea.f.meArchive())]
               )
@@ -104,7 +104,7 @@ public class SinglePlots {
       value = // spotless:off
           """
               gridRun(
-                title = ea.f.runString(name = title; s = "Archives of {solver.name} on {problem.name} (seed={randomGenerator.seed})");
+                title = ea.f.runString(name = title; s = "Archives of {run.solver.name} on {run.problem.name} (seed={run.randomGenerator.seed})");
                 values = [f.composition(of = ea.f.quality(); then = $q)];
                 grids = [ea.f.archiveToGrid(of = ea.f.coMeArchive1()); ea.f.archiveToGrid(of = ea.f.coMeArchive2())]
               )
@@ -117,7 +117,7 @@ public class SinglePlots {
       value = // spotless:off
           """
               gridRun(
-                title = ea.f.runString(name = title; s = "Grid population of {solver.name} on {problem.name} (seed={randomGenerator.seed})");
+                title = ea.f.runString(name = title; s = "Grid population of {run.solver.name} on {run.problem.name} (seed={run.randomGenerator.seed})");
                 values = [f.composition(of = ea.f.quality(); then = $q)];
                 grids = [ea.f.stateGrid()]
               )
@@ -145,7 +145,7 @@ public class SinglePlots {
               @Param(
                       value = "title",
                       dNPM =
-                          "ea.f.runString(name=title;s=\"{solver.name} on {problem.name} (seed={randomGenerator.seed})\")")
+                          "ea.f.runString(name=title;s=\"{run.solver.name} on {run.problem.name} (seed={run.randomGenerator.seed})\")")
                   Function<? super Run<?, List<Double>, S, Double>, String> titleFunction,
               @Param(
                       value = "predicateValue",
@@ -198,7 +198,7 @@ public class SinglePlots {
       value = // spotless:off
           """
               xyes(
-                title = ea.f.runString(name = title; s = "Fronts with {solver.name} on {problem.name} (seed={randomGenerator.seed})");
+                title = ea.f.runString(name = title; s = "Fronts with {run.solver.name} on {run.problem.name} (seed={run.randomGenerator.seed})");
                 x = f.nTh(of = ea.f.quality(); n = 0);
                 y = f.nTh(of = ea.f.quality(); n = 1);
                 points = [
@@ -238,7 +238,7 @@ public class SinglePlots {
       value = // spotless:off
           """
               xyrs(
-                title = ea.f.runString(name = title; s = "{solver.name} on {problem.name} (seed={randomGenerator.seed})");
+                title = ea.f.runString(name = title; s = "{run.solver.name} on {run.problem.name} (seed={run.randomGenerator.seed})");
                 x = ea.f.nOfEvals()
               )
               """) // spotless:on
