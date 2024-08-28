@@ -20,10 +20,15 @@
 
 package io.github.ericmedvet.jgea.problem.image;
 
+import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
+import io.github.ericmedvet.jviz.core.drawer.Drawer;
+import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 public class ImageUtils {
+
   private ImageUtils() {}
 
   public static BufferedImage render(UnivariateRealFunction f, int w, int h, boolean normalize) {
@@ -40,5 +45,42 @@ public class ImageUtils {
       }
     }
     return bi;
+  }
+
+  public static Grid<double[]> toRGBGrid(BufferedImage img) {
+    return Grid.create(img.getWidth(), img.getHeight(), (x, y) -> {
+      Color c = new Color(img.getRGB(x, y));
+      return new double[] {(double) c.getRed() / 255d, (double) c.getGreen() / 255d, (double) c.getBlue() / 255d};
+    });
+  }
+
+  public static Grid<double[]> toGrayGrid(BufferedImage img) {
+    return toRGBGrid(img).map(rgb -> new double[] {(rgb[0] + rgb[1] + rgb[2]) / 3d});
+  }
+
+  private static Rectangle2D bounds(String s, Font f, Graphics2D g) {
+    return f.createGlyphVector(g.getFontRenderContext(), s).getOutline().getBounds2D();
+  }
+
+  public static Drawer<String> stringDrawer(Color color) {
+    return (g, s) -> {
+      double w = g.getClipBounds().getWidth();
+      double h = g.getClipBounds().getHeight();
+      Font font = g.getFont();
+      float size = 1;
+      font = font.deriveFont(size);
+      Rectangle2D bounds = bounds(s, font, g);
+      while (bounds.getWidth() > 0 && bounds.getWidth() < w && bounds.getHeight() < h) {
+        size = size + 1;
+        font = font.deriveFont(size);
+        bounds = bounds(s, font, g);
+      }
+      font = font.deriveFont(size - 1);
+      bounds = bounds(s, font, g);
+      g.setColor(color);
+      g.setFont(font);
+      g.drawString(s, (float) (g.getClipBounds().getMinX() - bounds.getMinX()), (float)
+          (g.getClipBounds().getMinY() - bounds.getMinY()));
+    };
   }
 }
