@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
-public class GridCellularAutomata<S> implements TimeInvariantDynamicalSystem<Void, Void, Grid<S>> {
+public class GridCellularAutomaton<S> implements TimeInvariantDynamicalSystem<Void, Void, Grid<S>> {
 
   private final Grid<S> initialStates;
   private final int neighboroodRadius;
@@ -36,7 +36,7 @@ public class GridCellularAutomata<S> implements TimeInvariantDynamicalSystem<Voi
 
   private final Grid<S> states;
 
-  public GridCellularAutomata(
+  public GridCellularAutomaton(
       Grid<S> initialStates,
       int neighboroodRadius,
       Function<Grid<S>, S> updateRule,
