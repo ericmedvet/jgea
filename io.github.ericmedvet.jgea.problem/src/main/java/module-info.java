@@ -31,6 +31,7 @@ module io.github.ericmedvet.jgea.problem {
   exports io.github.ericmedvet.jgea.problem.regression.multivariate;
   exports io.github.ericmedvet.jgea.problem.regression.univariate.synthetic;
   exports io.github.ericmedvet.jgea.problem.grid;
+  exports io.github.ericmedvet.jgea.problem.ca;
   exports io.github.ericmedvet.jgea.problem;
   exports io.github.ericmedvet.jgea.problem.synthetic.numerical;
 

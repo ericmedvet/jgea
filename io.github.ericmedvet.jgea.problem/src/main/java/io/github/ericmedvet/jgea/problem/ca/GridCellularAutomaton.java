@@ -100,7 +100,7 @@ public class GridCellularAutomaton<S> implements TimeInvariantDynamicalSystem<Vo
           tK = new Grid.Key(tK.x(), tK.y() % g.h());
         }
       }
-      n.set(k, g.isValid(tK) ? g.get(tK) : emptyState);
+      n.set(lK, g.isValid(tK) ? g.get(tK) : emptyState);
     });
     return n;
   }
