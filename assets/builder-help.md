@@ -1624,6 +1624,19 @@ Produces <code><abbr title="java.awt.Color">Color</abbr></code>; built from `io.
 
 Produces <code><abbr title="java.util.Map$Entry">Map$Entry</abbr>&lt;K, V&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Miscs.entry()` by jgea-experimenter:2.6.2-SNAPSHOT
 
+### Builder `ea.misc.imgFromString()`
+
+`ea.misc.imgFromString(s; color; w; h)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `s` | s |  | <code><abbr title="java.lang.String">String</abbr></code> |
+| `color` | npm | `ea.misc.colorByName(name = black)` | <code><abbr title="java.awt.Color">Color</abbr></code> |
+| `w` | i | `32` | <code>int</code> |
+| `h` | i | `32` | <code>int</code> |
+
+Produces <code><abbr title="java.awt.image.BufferedImage">BufferedImage</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Miscs.imgFromString()` by jgea-experimenter:2.6.2-SNAPSHOT
+
 ### Builder `ea.misc.map()`
 
 `ea.misc.map(entries)`
@@ -2269,6 +2282,47 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.problem.synthetic.IntOneMa
 | `p` | i | `100` | <code>int</code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jgea.problem.synthetic.numerical.LinearPoints">LinearPoints</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.SyntheticProblems.linearPoints()` by jgea-experimenter:2.6.2-SNAPSHOT
+
+### Builder `ea.problem.synthetic.mrCaPatternConvergence()`
+
+`ea.p.s.mrCaPatternConvergence(name; target; minConvergenceStep; maxConvergenceStep; stateDistance; noiseSigma; randomGenerator; nOfChannels; kernel; toroidal)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `name` | s | interpolate `ca-{kernel}` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `target` | npm |  | <code><abbr title="java.awt.image.BufferedImage">BufferedImage</abbr></code> |
+| `minConvergenceStep` | i | `20` | <code>int</code> |
+| `maxConvergenceStep` | i | `21` | <code>int</code> |
+| `stateDistance` | e | `L1_1` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConvergence$StateDistance">MRCAPatternConvergence$StateDistance</abbr></code> |
+| `noiseSigma` | d | `0.0` | <code>double</code> |
+| `randomGenerator` | npm | `m.defaultRG()` | <code><abbr title="java.util.random.RandomGenerator">RandomGenerator</abbr></code> |
+| `nOfChannels` | i | `3` | <code>int</code> |
+| `kernel` | e | `SOBEL_EDGES` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConvergence$Kernel">MRCAPatternConvergence$Kernel</abbr></code> |
+| `toroidal` | b | `true` | <code>boolean</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConvergence">MRCAPatternConvergence</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.SyntheticProblems.mrCaPatternConvergence()` by jgea-experimenter:2.6.2-SNAPSHOT
+
+### Builder `ea.problem.synthetic.mrCaStringConvergence()`
+
+`ea.p.s.mrCaStringConvergence(name; target; minConvergenceStep; maxConvergenceStep; stateDistance; noiseSigma; randomGenerator; nOfChannels; kernel; toroidal; s; w; h)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `name` | s | `ca-string` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `target` | npm | `ea.misc.imgFromString(s = x; w = 32; h = 32)` | <code><abbr title="java.awt.image.BufferedImage">BufferedImage</abbr></code> |
+| `minConvergenceStep` | i | `20` | <code>int</code> |
+| `maxConvergenceStep` | i | `21` | <code>int</code> |
+| `stateDistance` | e | `L1_1` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConvergence$StateDistance">MRCAPatternConvergence$StateDistance</abbr></code> |
+| `noiseSigma` | d | `0.0` | <code>double</code> |
+| `randomGenerator` | npm | `m.defaultRG()` | <code><abbr title="java.util.random.RandomGenerator">RandomGenerator</abbr></code> |
+| `nOfChannels` | i | `3` | <code>int</code> |
+| `kernel` | e | `SOBEL_EDGES` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConvergence$Kernel">MRCAPatternConvergence$Kernel</abbr></code> |
+| `toroidal` | b | `true` | <code>boolean</code> |
+| `s` | s | `x` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `w` | i | `32` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `h` | i | `32` | <code><abbr title="java.lang.String">String</abbr></code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConvergence">MRCAPatternConvergence</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.SyntheticProblems.mrCaPatternConvergence()` by jgea-experimenter:2.6.2-SNAPSHOT
 
 ### Builder `ea.problem.synthetic.multiModalIntOneMax()`
 

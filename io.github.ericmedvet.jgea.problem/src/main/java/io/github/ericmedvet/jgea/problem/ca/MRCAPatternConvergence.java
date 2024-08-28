@@ -21,6 +21,7 @@ package io.github.ericmedvet.jgea.problem.ca;
 
 import io.github.ericmedvet.jgea.core.distance.Distance;
 import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
+import io.github.ericmedvet.jgea.core.problem.ProblemWithExampleSolution;
 import io.github.ericmedvet.jgea.core.util.IntRange;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
@@ -32,7 +33,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 
-public class MRCAPatternConvergence implements ComparableQualityBasedProblem<MultivariateRealFunction, Double> {
+public class MRCAPatternConvergence
+    implements ComparableQualityBasedProblem<MultivariateRealFunction, Double>,
+        ProblemWithExampleSolution<MultivariateRealFunction> {
 
   private static final DoubleRange STATE_RANGE = DoubleRange.SYMMETRIC_UNIT;
 
@@ -166,5 +169,12 @@ public class MRCAPatternConvergence implements ComparableQualityBasedProblem<Mul
           .average()
           .orElseThrow();
     };
+  }
+
+  @Override
+  public MultivariateRealFunction example() {
+    int nOfInputs = initialStates.get(0, 0).length * convolutionKernels.size();
+    int nOfOutputs = initialStates.get(0, 0).length;
+    return MultivariateRealFunction.from(v -> new double[nOfOutputs], nOfInputs, nOfOutputs);
   }
 }

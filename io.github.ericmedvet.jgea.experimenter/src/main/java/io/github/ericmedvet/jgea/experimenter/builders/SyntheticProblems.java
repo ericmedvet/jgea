@@ -20,19 +20,22 @@
 
 package io.github.ericmedvet.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jgea.core.util.IntRange;
+import io.github.ericmedvet.jgea.problem.ca.MRCAPatternConvergence;
 import io.github.ericmedvet.jgea.problem.grid.CharShapeApproximation;
+import io.github.ericmedvet.jgea.problem.image.ImageUtils;
 import io.github.ericmedvet.jgea.problem.synthetic.IntOneMax;
 import io.github.ericmedvet.jgea.problem.synthetic.MultiModalIntOneMax;
 import io.github.ericmedvet.jgea.problem.synthetic.MultiObjectiveIntOneMax;
 import io.github.ericmedvet.jgea.problem.synthetic.OneMax;
 import io.github.ericmedvet.jgea.problem.synthetic.numerical.*;
-import io.github.ericmedvet.jnb.core.Cacheable;
-import io.github.ericmedvet.jnb.core.Discoverable;
-import io.github.ericmedvet.jnb.core.Param;
+import io.github.ericmedvet.jnb.core.*;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -187,5 +190,42 @@ public class SyntheticProblems {
   public static Sphere sphere(
       @Param(value = "name", iS = "sphere-{p}") String name, @Param(value = "p", dI = 100) int p) {
     return new Sphere(p);
+  }
+
+  @Cacheable
+  @Alias(
+      name = "mrCaStringConvergence",
+      passThroughParams = {
+        @PassThroughParam(name = "s", value = "x", type = ParamMap.Type.STRING),
+        @PassThroughParam(name = "w", value = "32", type = ParamMap.Type.INT),
+        @PassThroughParam(name = "h", value = "32", type = ParamMap.Type.INT),
+      },
+      value = // spotless:off
+          """
+              mrCaPatternConvergence(
+                target = ea.misc.imgFromString(s = $s; w = $w; h = $h);
+                name = "ca-string"
+              )
+              """) // spotless:on
+  public static MRCAPatternConvergence mrCaPatternConvergence(
+      @Param(value = "name", iS = "ca-{kernel}") String name,
+      @Param("target") BufferedImage target,
+      @Param(value = "minConvergenceStep", dI = 20) int minConvergenceStep,
+      @Param(value = "maxConvergenceStep", dI = 21) int maxConvergenceStep,
+      @Param(value = "stateDistance", dS = "l1_1") MRCAPatternConvergence.StateDistance stateDistance,
+      @Param(value = "noiseSigma", dD = 0) double noiseSigma,
+      @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator,
+      @Param(value = "nOfChannels", dI = 3) int nOfChannels,
+      @Param(value = "kernel", dS = "sobel_edges") MRCAPatternConvergence.Kernel kernel,
+      @Param(value = "toroidal", dB = true) boolean toroidal) {
+    return new MRCAPatternConvergence(
+        ImageUtils.toGrayGrid(target),
+        new IntRange(minConvergenceStep, maxConvergenceStep),
+        stateDistance,
+        noiseSigma,
+        randomGenerator,
+        nOfChannels,
+        kernel,
+        toroidal);
   }
 }

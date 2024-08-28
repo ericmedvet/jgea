@@ -1,0 +1,26 @@
+ea.experiment(
+  runs =
+    (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
+    (solver = (nEval = [5000]) * [
+      ea.s.ga(
+        representation = ea.representation.doubleString();
+        mapper = ea.m.dsToNpnds(npnds = ds.num.mlp(innerLayerRatio = 1; nOfInnerLayers = 1))
+      )
+    ]) * (problem = [
+      ea.p.s.mrCaStringConvergence(s = "+"; w = 20; h = 20)
+    ]) * [ea.run()];
+  listeners = [
+    ea.l.console(
+      functions = [
+        ea.f.size(of = ea.f.genotype(of = ea.f.best()); format = "%3d");
+        ea.f.quality(of = ea.f.best(); format = "%6.4f");
+        ea.f.hist(of = f.each(of = ea.f.all(); mapF = ea.f.quality()))
+      ];
+      runFunctions = [ea.f.runKey(key = "run.problem.p")]
+    );
+    ea.l.savePlotForExp(
+      path = "../{name}-fitness";
+      plot = ea.plot.multi.quality()
+    )
+  ]
+)

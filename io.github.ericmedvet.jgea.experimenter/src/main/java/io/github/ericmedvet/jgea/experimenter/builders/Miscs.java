@@ -19,12 +19,16 @@
  */
 package io.github.ericmedvet.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jgea.problem.image.ImageUtils;
+import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.control.SimulationOutcomeDrawer;
+import io.github.ericmedvet.jviz.core.drawer.ImageBuilder;
 import io.github.ericmedvet.jviz.core.drawer.VideoBuilder;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -57,6 +61,16 @@ public class Miscs {
   @SuppressWarnings("unused")
   public static <K, V> Map.Entry<K, V> entry(@Param("key") K key, @Param("value") V value) {
     return Map.entry(key, value);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static BufferedImage imgFromString(
+      @Param("s") String s,
+      @Param(value = "color", dNPM = "ea.misc.colorByName(name = black)") Color color,
+      @Param(value = "w", dI = 32) int w,
+      @Param(value = "h", dI = 32) int h) {
+    return ImageUtils.stringDrawer(color).build(new ImageBuilder.ImageInfo(w, h), s);
   }
 
   @SuppressWarnings("unused")
