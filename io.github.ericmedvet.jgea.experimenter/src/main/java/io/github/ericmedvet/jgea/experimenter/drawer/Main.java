@@ -64,8 +64,8 @@ public class Main {
         kernels,
         mlp,
         true);
-    DoubleGridDrawer drawer = new DoubleGridDrawer(
-        new DoubleGridDrawer.Configuration(DoubleGridDrawer.Configuration.ColorType.RGB, DoubleRange.SYMMETRIC_UNIT, 20, 0));
+    DoubleGridDrawer drawer = new DoubleGridDrawer(new DoubleGridDrawer.Configuration(
+        DoubleGridDrawer.Configuration.ColorType.RGB, DoubleRange.SYMMETRIC_UNIT, 20, 0));
     VideoBuilder<List<Grid<double[]>>> vb = VideoBuilder.from(drawer, Function.identity(), 10);
     List<Grid<double[]>> caEvolution = ca.evolve(100);
     vb.save(new File("../ca.mp4"), caEvolution);

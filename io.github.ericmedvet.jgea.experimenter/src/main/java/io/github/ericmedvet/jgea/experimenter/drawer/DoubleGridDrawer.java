@@ -54,6 +54,11 @@ public class DoubleGridDrawer implements Drawer<Grid<double[]>> {
     double cH = g.getClipBounds().getHeight() * (1d - 2 * c.marginRate()) / h;
     double x0 = g.getClipBounds().getMinX() + g.getClipBounds().getWidth() * c.marginRate();
     double y0 = g.getClipBounds().getMinY() + g.getClipBounds().getHeight() * c.marginRate();
+    int size = grid.get(0, 0).length;
+    if (size < 3 && c.colorType.equals(Configuration.ColorType.RGB)) {
+      throw new IllegalArgumentException(
+          "Not enough channels: %d found, >=3 needed for %s image type".formatted(size, c.colorType));
+    }
     grid.entries().forEach(e -> {
       Color color =
           switch (c.colorType()) {

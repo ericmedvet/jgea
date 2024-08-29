@@ -19,10 +19,13 @@
  */
 package io.github.ericmedvet.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jgea.experimenter.drawer.DoubleGridDrawer;
+import io.github.ericmedvet.jgea.problem.ca.MultivariateRealGridCellularAutomaton;
 import io.github.ericmedvet.jgea.problem.image.ImageUtils;
 import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.control.SimulationOutcomeDrawer;
 import io.github.ericmedvet.jviz.core.drawer.ImageBuilder;
@@ -33,11 +36,29 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 @Discoverable(prefixTemplate = "ea.misc")
 public class Miscs {
 
   private Miscs() {}
+
+  @SuppressWarnings("unused")
+  public static VideoBuilder<MultivariateRealGridCellularAutomaton> caVideo(
+      @Param(value = "gray", dB = true) boolean gray,
+      @Param(value = "caStateRange", dNPM = "m.range(min=-1;max=1)") DoubleRange caStateRange,
+      @Param(value = "nOfSteps", dI = 100) int nOfSteps,
+      @Param(value = "sizeRate", dI = 20) int sizeRate,
+      @Param(value = "marginRate", dD = 0d) double marginRate,
+      @Param(value = "frameRate", dD = 10d) double frameRate) {
+    DoubleGridDrawer drawer = new DoubleGridDrawer(new DoubleGridDrawer.Configuration(
+        gray ? DoubleGridDrawer.Configuration.ColorType.GRAY : DoubleGridDrawer.Configuration.ColorType.RGB,
+        DoubleRange.SYMMETRIC_UNIT,
+        sizeRate,
+        marginRate));
+
+    return VideoBuilder.from(drawer, Function.identity(), frameRate).on(ca -> ca.evolve(nOfSteps));
+  }
 
   @SuppressWarnings("unused")
   public static Character ch(@Param("s") String s) {

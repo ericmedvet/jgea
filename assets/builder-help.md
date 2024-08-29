@@ -1597,6 +1597,21 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">Inv
 
 ## Package `ea.misc`
 
+### Builder `ea.misc.caVideo()`
+
+`ea.misc.caVideo(gray; caStateRange; nOfSteps; sizeRate; marginRate; frameRate)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `gray` | b | `true` | <code>boolean</code> |
+| `caStateRange` | npm | `m.range(min = -1; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
+| `nOfSteps` | i | `100` | <code>int</code> |
+| `sizeRate` | i | `20` | <code>int</code> |
+| `marginRate` | d | `0.0` | <code>double</code> |
+| `frameRate` | d | `10.0` | <code>double</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jviz.core.drawer.VideoBuilder">VideoBuilder</abbr>&lt;<abbr title="io.github.ericmedvet.jgea.problem.ca.MultivariateRealGridCellularAutomaton">MultivariateRealGridCellularAutomaton</abbr>&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Miscs.caVideo()` by jgea-experimenter:2.6.2-SNAPSHOT
+
 ### Builder `ea.misc.ch()`
 
 `ea.misc.ch(s)`

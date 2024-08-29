@@ -21,6 +21,11 @@ ea.experiment(
     ea.l.savePlotForExp(
       path = "../{name}-fitness";
       plot = ea.plot.multi.quality()
+    );
+    ea.l.saveForRun(
+      path = "../best-ca-{solver.name}-{randomGenerator.seed:%04d}";
+      of = ea.acc.lastBest();
+      processor = ea.f.toVideo(video = ea.misc.caVideo(); of = ea.f.solution())
     )
   ]
 )
