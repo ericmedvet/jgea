@@ -38,7 +38,7 @@ ea.experiment(
     ea.l.saveForRun(
       path = "../best-ca-{run.problem.name}-{run.solver.name}-{run.randomGenerator.seed:%04d}";
       of = ea.acc.lastBest();
-      processor = ea.f.toVideo(video = ea.misc.caVideo(); of = ea.f.solution())
+      processor = ea.f.toVideo(video = ea.misc.caVideo(sizeRate = 1); of = ea.f.solution())
     )
   ]
 )
