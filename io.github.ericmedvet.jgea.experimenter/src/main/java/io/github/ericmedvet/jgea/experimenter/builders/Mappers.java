@@ -36,6 +36,7 @@ import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedMultivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedUnivariateRealFunction;
+import io.github.ericmedvet.jgea.problem.ca.MultivariateRealGridCellularAutomaton;
 import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
@@ -303,6 +304,52 @@ public class Mappers {
         },
         g -> new IntString(Collections.nCopies(g.w() * g.h(), 0), 0, items.size()),
         "isToGrid[nOfItems=%d]".formatted(items.size())));
+  }
+
+  public static <X> InvertibleMapper<X, MultivariateRealGridCellularAutomaton> mrfToMrca(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, MultivariateRealFunction> beforeM,
+      @Param(value = "nOfAdditionalChannels", dI = 1) int nOfAdditionalChannels,
+      @Param(value = "kernel", dS = "sobel_edges") MultivariateRealGridCellularAutomaton.Kernel kernel,
+      @Param(value = "initializer", dS = "center_one")
+          MultivariateRealGridCellularAutomaton.Initializer initializer,
+      @Param(value = "range", dNPM = "m.range(min=-1;max=1)") DoubleRange range,
+      @Param(value = "toroidal", dB = true) boolean toroidal,
+      @Param(value = "clipping", dB = true) boolean clipping) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (mrca, mrf) -> {
+          int minStateSize = MultivariateRealGridCellularAutomaton.minStateSize(mrca.getInitialStates());
+          int nOfInputs = (minStateSize + nOfAdditionalChannels)
+              * kernel.get().size();
+          int nOfOutputs = minStateSize + nOfAdditionalChannels;
+          if (mrf.nOfInputs() != nOfInputs) {
+            throw new IllegalArgumentException("Wrong input size for the MRF: %d expected, %d found"
+                .formatted(nOfInputs, mrf.nOfInputs()));
+          }
+          if (mrf.nOfOutputs() != nOfOutputs) {
+            throw new IllegalArgumentException("Wrong output size for the MRF: %d expected, %d found"
+                .formatted(nOfOutputs, mrf.nOfOutputs()));
+          }
+          if (clipping) {
+            mrf = mrf.andThen(range::clip);
+          }
+          return new MultivariateRealGridCellularAutomaton(
+              initializer.initialize(
+                  mrca.getInitialStates().w(),
+                  mrca.getInitialStates().h(),
+                  minStateSize + nOfAdditionalChannels,
+                  range),
+              kernel.get(),
+              mrf,
+              toroidal);
+        },
+        mrca -> {
+          int minStateSize = MultivariateRealGridCellularAutomaton.minStateSize(mrca.getInitialStates());
+          int nOfInputs = (minStateSize + nOfAdditionalChannels)
+              * kernel.get().size();
+          int nOfOutputs = minStateSize + nOfAdditionalChannels;
+          return MultivariateRealFunction.from(vs -> new double[nOfOutputs], nOfInputs, nOfOutputs);
+        },
+        "mmrfToMrCA[addChannels=%d;kernel=%s]".formatted(nOfAdditionalChannels, kernel)));
   }
 
   @SuppressWarnings("unused")

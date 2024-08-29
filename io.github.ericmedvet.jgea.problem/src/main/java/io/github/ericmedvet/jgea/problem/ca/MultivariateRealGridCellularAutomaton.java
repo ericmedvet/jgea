@@ -19,14 +19,69 @@
  */
 package io.github.ericmedvet.jgea.problem.ca;
 
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class MultivariateRealGridCellularAutomaton extends GridCellularAutomaton<double[]> {
+
+  public enum Kernel implements Supplier<List<Grid<Double>>> {
+    SUM(List.of(Grid.create(3, 3, 1d))),
+    SOBEL_EDGES(List.of(
+        Grid.create(3, 3, List.of(-1d, 0d, +1d, -2d, 0d, +2d, -1d, 0d, +1d)),
+        Grid.create(3, 3, List.of(-1d, -2d, -1d, 0d, 0d, 0d, +1d, +2d, +1d)),
+        Grid.create(3, 3, List.of(0d, 0d, 0d, 0d, 1d, 0d, 0d, 0d, 0d))));
+    private final List<Grid<Double>> kernels;
+
+    Kernel(List<Grid<Double>> kernels) {
+      this.kernels = kernels;
+    }
+
+    @Override
+    public List<Grid<Double>> get() {
+      return kernels;
+    }
+  }
+
+  public enum Initializer implements StateInitializer {
+    CENTER_ONE(((w, h, nOfChannels, range) -> Grid.create(w, h, (x, y) -> {
+      double[] a = new double[nOfChannels];
+      Arrays.fill(a, range.min());
+      if ((x == w / 2) && (y == h / 2)) {
+        a[0] = range.max();
+      }
+      return a;
+    }))),
+    CENTER_ALL(((w, h, nOfChannels, range) -> Grid.create(w, h, (x, y) -> {
+      double[] a = new double[nOfChannels];
+      if ((x == w / 2) && (y == h / 2)) {
+        Arrays.fill(a, range.max());
+      } else {
+        Arrays.fill(a, range.min());
+      }
+      return a;
+    })));
+    private final StateInitializer initializer;
+
+    Initializer(StateInitializer initializer) {
+      this.initializer = initializer;
+    }
+
+    @Override
+    public Grid<double[]> initialize(int w, int h, int nOfChannels, DoubleRange range) {
+      return initializer.initialize(w, h, nOfChannels, range);
+    }
+  }
+
+  private interface StateInitializer {
+    Grid<double[]> initialize(int w, int h, int nOfChannels, DoubleRange range);
+  }
 
   public MultivariateRealGridCellularAutomaton(
       Grid<double[]> initialStates,
@@ -39,6 +94,41 @@ public class MultivariateRealGridCellularAutomaton extends GridCellularAutomaton
         convolutions(convolutionKernels).andThen(concatenator()).andThen(updateFunction),
         torodial,
         new double[initialStates.get(0, 0).length]);
+  }
+
+  private static Function<List<double[]>, double[]> concatenator() {
+    return as -> {
+      double[] out = new double[as.stream().mapToInt(a -> a.length).sum()];
+      int c = 0;
+      for (double[] a : as) {
+        System.arraycopy(a, 0, out, c, a.length);
+        c = c + a.length;
+      }
+      return out;
+    };
+  }
+
+  private static Function<Grid<double[]>, double[]> convolution(Grid<Double> kernel) {
+    return g -> {
+      if (g.w() != kernel.w() || g.h() != kernel.h()) {
+        throw new IllegalArgumentException("Kernel and input sizes do not match: (%dx%d) vs. (%dx%d)"
+            .formatted(kernel.w(), kernel.h(), g.w(), g.h()));
+      }
+      double[] out = new double[g.get(0, 0).length];
+      kernel.entries().forEach(e -> {
+        double[] in = g.get(e.key());
+        IntStream.range(0, out.length).forEach(i -> out[i] = out[i] + e.value() * in[i]);
+      });
+      return out;
+    };
+  }
+
+  private static Function<Grid<double[]>, List<double[]>> convolutions(List<Grid<Double>> kernels) {
+    return g -> kernels.stream().map(k -> convolution(k).apply(g)).toList();
+  }
+
+  public static int minStateSize(Grid<double[]> initialStates) {
+    return initialStates.get(0, 0).length;
   }
 
   private static int radiusFromKernels(List<Grid<Double>> kernels) {
@@ -61,34 +151,7 @@ public class MultivariateRealGridCellularAutomaton extends GridCellularAutomaton
     return (w - 1) / 2;
   }
 
-  private static Function<Grid<double[]>, double[]> convolution(Grid<Double> kernel) {
-    return g -> {
-      if (g.w() != kernel.w() || g.h() != kernel.h()) {
-        throw new IllegalArgumentException("Kernel and input sizes do not match: (%dx%d) vs. (%dx%d)"
-            .formatted(kernel.w(), kernel.h(), g.w(), g.h()));
-      }
-      double[] out = new double[g.get(0, 0).length];
-      kernel.entries().forEach(e -> {
-        double[] in = g.get(e.key());
-        IntStream.range(0, out.length).forEach(i -> out[i] = out[i] + e.value() * in[i]);
-      });
-      return out;
-    };
-  }
-
-  private static Function<List<double[]>, double[]> concatenator() {
-    return as -> {
-      double[] out = new double[as.stream().mapToInt(a -> a.length).sum()];
-      int c = 0;
-      for (double[] a : as) {
-        System.arraycopy(a, 0, out, c, a.length);
-        c = c + a.length;
-      }
-      return out;
-    };
-  }
-
-  private static Function<Grid<double[]>, List<double[]>> convolutions(List<Grid<Double>> kernels) {
-    return g -> kernels.stream().map(k -> convolution(k).apply(g)).toList();
+  public Grid<double[]> getInitialStates() {
+    return initialStates;
   }
 }

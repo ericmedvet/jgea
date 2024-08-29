@@ -4,7 +4,7 @@ ea.experiment(
     (solver = (nEval = [5000]) * [
       ea.s.ga(
         representation = ea.representation.doubleString();
-        mapper = ea.m.dsToNpnds(npnds = ds.num.mlp(innerLayerRatio = 1; nOfInnerLayers = 1))
+        mapper = ea.m.mrfToMrca(of = ea.m.dsToNpnds(npnds = ds.num.mlp(innerLayerRatio = 1; nOfInnerLayers = 1)))
       )
     ]) * (problem = [
       ea.p.s.mrCaStringConvergence(s = "+"; w = 20; h = 20)

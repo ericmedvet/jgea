@@ -1469,6 +1469,22 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">Inv
 
 Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jnb.datastructure.Grid">Grid</abbr>&lt;T&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Mappers.isToGrid()` by jgea-experimenter:2.6.2-SNAPSHOT
 
+### Builder `ea.mapper.mrfToMrca()`
+
+`ea.m.mrfToMrca(of; nOfAdditionalChannels; kernel; initializer; range; toroidal; clipping)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `of` | npm | `ea.m.identity()` | <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction">MultivariateRealFunction</abbr>&gt;</code> |
+| `nOfAdditionalChannels` | i | `1` | <code>int</code> |
+| `kernel` | e | `SOBEL_EDGES` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MultivariateRealGridCellularAutomaton$Kernel">MultivariateRealGridCellularAutomaton$Kernel</abbr></code> |
+| `initializer` | e | `CENTER_ONE` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MultivariateRealGridCellularAutomaton$Initializer">MultivariateRealGridCellularAutomaton$Initializer</abbr></code> |
+| `range` | npm | `m.range(min = -1; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
+| `toroidal` | b | `true` | <code>boolean</code> |
+| `clipping` | b | `true` | <code>boolean</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jgea.problem.ca.MultivariateRealGridCellularAutomaton">MultivariateRealGridCellularAutomaton</abbr>&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Mappers.mrfToMrca()` by jgea-experimenter:2.6.2-SNAPSHOT
+
 ### Builder `ea.mapper.multiSrTreeToNmrf()`
 
 `ea.m.multiSrTreeToNmrf(of; postOperator)`
@@ -2285,39 +2301,35 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.problem.synthetic.numerica
 
 ### Builder `ea.problem.synthetic.mrCaPatternConvergence()`
 
-`ea.p.s.mrCaPatternConvergence(name; target; minConvergenceStep; maxConvergenceStep; stateDistance; noiseSigma; randomGenerator; nOfChannels; kernel; toroidal)`
+`ea.p.s.mrCaPatternConvergence(name; target; gray; minConvergenceStep; maxConvergenceStep; stateDistance; caStateRange; targetRange)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
-| `name` | s | interpolate `ca-{kernel}` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `name` | s | interpolate `ca-target` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `target` | npm |  | <code><abbr title="java.awt.image.BufferedImage">BufferedImage</abbr></code> |
+| `gray` | b | `true` | <code>boolean</code> |
 | `minConvergenceStep` | i | `20` | <code>int</code> |
 | `maxConvergenceStep` | i | `21` | <code>int</code> |
 | `stateDistance` | e | `L1_1` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConvergence$StateDistance">MRCAPatternConvergence$StateDistance</abbr></code> |
-| `noiseSigma` | d | `0.0` | <code>double</code> |
-| `randomGenerator` | npm | `m.defaultRG()` | <code><abbr title="java.util.random.RandomGenerator">RandomGenerator</abbr></code> |
-| `nOfChannels` | i | `3` | <code>int</code> |
-| `kernel` | e | `SOBEL_EDGES` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConvergence$Kernel">MRCAPatternConvergence$Kernel</abbr></code> |
-| `toroidal` | b | `true` | <code>boolean</code> |
+| `caStateRange` | npm | `m.range(min = -1; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
+| `targetRange` | npm | `m.range(min = 0; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConvergence">MRCAPatternConvergence</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.SyntheticProblems.mrCaPatternConvergence()` by jgea-experimenter:2.6.2-SNAPSHOT
 
 ### Builder `ea.problem.synthetic.mrCaStringConvergence()`
 
-`ea.p.s.mrCaStringConvergence(name; target; minConvergenceStep; maxConvergenceStep; stateDistance; noiseSigma; randomGenerator; nOfChannels; kernel; toroidal; s; w; h)`
+`ea.p.s.mrCaStringConvergence(name; target; gray; minConvergenceStep; maxConvergenceStep; stateDistance; caStateRange; targetRange; s; w; h)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
 | `name` | s | `ca-string` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `target` | npm | `ea.misc.imgFromString(s = x; w = 32; h = 32)` | <code><abbr title="java.awt.image.BufferedImage">BufferedImage</abbr></code> |
+| `gray` | b | `true` | <code>boolean</code> |
 | `minConvergenceStep` | i | `20` | <code>int</code> |
 | `maxConvergenceStep` | i | `21` | <code>int</code> |
 | `stateDistance` | e | `L1_1` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConvergence$StateDistance">MRCAPatternConvergence$StateDistance</abbr></code> |
-| `noiseSigma` | d | `0.0` | <code>double</code> |
-| `randomGenerator` | npm | `m.defaultRG()` | <code><abbr title="java.util.random.RandomGenerator">RandomGenerator</abbr></code> |
-| `nOfChannels` | i | `3` | <code>int</code> |
-| `kernel` | e | `SOBEL_EDGES` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConvergence$Kernel">MRCAPatternConvergence$Kernel</abbr></code> |
-| `toroidal` | b | `true` | <code>boolean</code> |
+| `caStateRange` | npm | `m.range(min = -1; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
+| `targetRange` | npm | `m.range(min = 0; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `s` | s | `x` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `w` | i | `32` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `h` | i | `32` | <code><abbr title="java.lang.String">String</abbr></code> |

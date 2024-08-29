@@ -28,43 +28,19 @@ import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.random.RandomGenerator;
 
 public class MRCAPatternConvergence
-    implements ComparableQualityBasedProblem<MultivariateRealFunction, Double>,
-        ProblemWithExampleSolution<MultivariateRealFunction> {
+    implements ComparableQualityBasedProblem<MultivariateRealGridCellularAutomaton, Double>,
+        ProblemWithExampleSolution<MultivariateRealGridCellularAutomaton> {
 
   private static final DoubleRange STATE_RANGE = DoubleRange.SYMMETRIC_UNIT;
 
   private final Grid<double[]> targetGrid;
   private final IntRange convergenceRange;
   private final Distance<double[]> distance;
-  private final double noiseSigma;
-  private final RandomGenerator randomGenerator;
-  private final Grid<double[]> initialStates;
-  private final List<Grid<Double>> convolutionKernels;
-  private final boolean toroidal;
-
-  public enum Kernel implements Supplier<List<Grid<Double>>> {
-    SUM(List.of(Grid.create(3, 3, 1d))),
-    SOBEL_EDGES(List.of(
-        Grid.create(3, 3, List.of(-1d, 0d, +1d, -2d, 0d, +2d, -1d, 0d, +1d)),
-        Grid.create(3, 3, List.of(-1d, -2d, -1d, 0d, 0d, 0d, +1d, +2d, +1d)),
-        Grid.create(3, 3, List.of(0d, 0d, 0d, 0d, 1d, 0d, 0d, 0d, 0d))));
-    private final List<Grid<Double>> kernels;
-
-    Kernel(List<Grid<Double>> kernels) {
-      this.kernels = kernels;
-    }
-
-    @Override
-    public List<Grid<Double>> get() {
-      return kernels;
-    }
-  }
+  private final DoubleRange caStateRange;
 
   public enum StateDistance implements Supplier<Distance<double[]>> {
     L1_1((vs1, vs2) -> Math.abs(vs1[0] - vs2[0])),
@@ -88,67 +64,27 @@ public class MRCAPatternConvergence
       Grid<double[]> targetGrid,
       IntRange convergenceRange,
       Distance<double[]> distance,
-      double noiseSigma,
-      RandomGenerator randomGenerator,
-      Grid<double[]> initialStates,
-      List<Grid<Double>> convolutionKernels,
-      boolean toroidal) {
-    this.targetGrid = targetGrid;
+      DoubleRange caStateRange,
+      DoubleRange targetRange) {
+    this.targetGrid = targetGrid.map(
+        vs -> Arrays.stream(vs).map(targetRange::normalize).toArray());
     this.convergenceRange = convergenceRange;
     this.distance = distance;
-    this.noiseSigma = noiseSigma;
-    this.randomGenerator = randomGenerator;
-    this.initialStates = initialStates;
-    this.convolutionKernels = convolutionKernels;
-    this.toroidal = toroidal;
-    if (initialStates.w() != targetGrid.w() || initialStates.h() != targetGrid.h()) {
-      throw new IllegalArgumentException(
-          "Unexpected different sizes for the grid: initial is %dx%d, target is %dx%d"
-              .formatted(
-                  initialStates.w(), initialStates.h(),
-                  targetGrid.w(), targetGrid.h()));
-    }
+    this.caStateRange = caStateRange;
   }
 
   public MRCAPatternConvergence(
       Grid<double[]> targetGrid,
       IntRange convergenceRange,
       StateDistance stateDistance,
-      double noiseSigma,
-      RandomGenerator randomGenerator,
-      int nOfChannels,
-      Kernel kernel,
-      boolean toroidal) {
-    this(
-        targetGrid,
-        convergenceRange,
-        stateDistance.get(),
-        noiseSigma,
-        randomGenerator,
-        Grid.create(targetGrid.w(), targetGrid.h(), (x, y) -> {
-          double[] vs = new double[nOfChannels];
-          Arrays.fill(vs, STATE_RANGE.min());
-          if (x != targetGrid.w() / 2 && y != targetGrid.h() / 2) {
-            vs[0] = STATE_RANGE.max();
-          }
-          return vs;
-        }),
-        kernel.get(),
-        toroidal);
+      DoubleRange caStateRange,
+      DoubleRange targetRange) {
+    this(targetGrid, convergenceRange, stateDistance.get(), caStateRange, targetRange);
   }
 
   @Override
-  public Function<MultivariateRealFunction, Double> qualityFunction() {
-    final DoubleUnaryOperator postOp;
-    if (noiseSigma > 0) {
-      postOp = v -> STATE_RANGE.normalize(v) + randomGenerator.nextGaussian() * noiseSigma;
-    } else {
-      postOp = STATE_RANGE::normalize;
-    }
-    return mrf -> {
-      // create the CA
-      MultivariateRealGridCellularAutomaton ca = new MultivariateRealGridCellularAutomaton(
-          initialStates, convolutionKernels, mrf.andThen(postOp), toroidal);
+  public Function<MultivariateRealGridCellularAutomaton, Double> qualityFunction() {
+    return ca -> {
       // evolve the CA
       List<Grid<double[]>> states = ca.evolve(convergenceRange.max());
       // compute avg distance
@@ -162,7 +98,11 @@ public class MRCAPatternConvergence
                           targetGrid.w(), targetGrid.h()));
             }
             return g.entries().stream()
-                .mapToDouble(e -> distance.apply(e.value(), targetGrid.get(e.key())))
+                .mapToDouble(e -> distance.apply(
+                    Arrays.stream(e.value())
+                        .map(caStateRange::normalize)
+                        .toArray(),
+                    targetGrid.get(e.key())))
                 .average()
                 .orElseThrow();
           })
@@ -172,9 +112,12 @@ public class MRCAPatternConvergence
   }
 
   @Override
-  public MultivariateRealFunction example() {
-    int nOfInputs = initialStates.get(0, 0).length * convolutionKernels.size();
-    int nOfOutputs = initialStates.get(0, 0).length;
-    return MultivariateRealFunction.from(v -> new double[nOfOutputs], nOfInputs, nOfOutputs);
+  public MultivariateRealGridCellularAutomaton example() {
+    int stateSize = targetGrid.get(0, 0).length;
+    return new MultivariateRealGridCellularAutomaton(
+        Grid.create(targetGrid.w(), targetGrid.h(), new double[stateSize]),
+        MultivariateRealGridCellularAutomaton.Kernel.SUM.get(),
+        MultivariateRealFunction.from(vs -> new double[stateSize], stateSize, stateSize),
+        true);
   }
 }

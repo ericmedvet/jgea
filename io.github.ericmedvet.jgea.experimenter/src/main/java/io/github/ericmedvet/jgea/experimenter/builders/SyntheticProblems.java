@@ -30,12 +30,12 @@ import io.github.ericmedvet.jgea.problem.synthetic.MultiObjectiveIntOneMax;
 import io.github.ericmedvet.jgea.problem.synthetic.OneMax;
 import io.github.ericmedvet.jgea.problem.synthetic.numerical.*;
 import io.github.ericmedvet.jnb.core.*;
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -192,6 +192,7 @@ public class SyntheticProblems {
     return new Sphere(p);
   }
 
+  @SuppressWarnings("unused")
   @Cacheable
   @Alias(
       name = "mrCaStringConvergence",
@@ -208,24 +209,19 @@ public class SyntheticProblems {
               )
               """) // spotless:on
   public static MRCAPatternConvergence mrCaPatternConvergence(
-      @Param(value = "name", iS = "ca-{kernel}") String name,
+      @Param(value = "name", iS = "ca-target") String name,
       @Param("target") BufferedImage target,
+      @Param(value = "gray", dB = true) boolean gray,
       @Param(value = "minConvergenceStep", dI = 20) int minConvergenceStep,
       @Param(value = "maxConvergenceStep", dI = 21) int maxConvergenceStep,
       @Param(value = "stateDistance", dS = "l1_1") MRCAPatternConvergence.StateDistance stateDistance,
-      @Param(value = "noiseSigma", dD = 0) double noiseSigma,
-      @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator,
-      @Param(value = "nOfChannels", dI = 3) int nOfChannels,
-      @Param(value = "kernel", dS = "sobel_edges") MRCAPatternConvergence.Kernel kernel,
-      @Param(value = "toroidal", dB = true) boolean toroidal) {
+      @Param(value = "caStateRange", dNPM = "m.range(min=-1;max=1)") DoubleRange caStateRange,
+      @Param(value = "targetRange", dNPM = "m.range(min=0;max=1)") DoubleRange targetRange) {
     return new MRCAPatternConvergence(
-        ImageUtils.toGrayGrid(target),
+        gray ? ImageUtils.toGrayGrid(target) : ImageUtils.toRGBGrid(target),
         new IntRange(minConvergenceStep, maxConvergenceStep),
         stateDistance,
-        noiseSigma,
-        randomGenerator,
-        nOfChannels,
-        kernel,
-        toroidal);
+        caStateRange,
+        targetRange);
   }
 }

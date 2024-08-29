@@ -25,7 +25,7 @@ import io.github.ericmedvet.jviz.core.drawer.Drawer;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
-public class CADrawer implements Drawer<Grid<double[]>> {
+public class DoubleGridDrawer implements Drawer<Grid<double[]>> {
 
   public record Configuration(ColorType colorType, DoubleRange range, int sizeRate, double marginRate) {
     public enum ColorType {
@@ -38,11 +38,11 @@ public class CADrawer implements Drawer<Grid<double[]>> {
 
   private final Configuration c;
 
-  public CADrawer(Configuration configuration) {
+  public DoubleGridDrawer(Configuration configuration) {
     this.c = configuration;
   }
 
-  public CADrawer() {
+  public DoubleGridDrawer() {
     this(Configuration.DEFAULT);
   }
 

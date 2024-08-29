@@ -28,7 +28,7 @@ import java.util.stream.IntStream;
 
 public class GridCellularAutomaton<S> implements TimeInvariantDynamicalSystem<Void, Void, Grid<S>> {
 
-  private final Grid<S> initialStates;
+  protected final Grid<S> initialStates;
   private final int neighboroodRadius;
   private final Function<Grid<S>, S> updateRule;
   private final boolean torodial;
