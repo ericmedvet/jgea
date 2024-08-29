@@ -19,9 +19,11 @@
  */
 package io.github.ericmedvet.jgea.experimenter.drawer;
 
+import io.github.ericmedvet.jgea.core.representation.NamedMultivariateRealFunction;
 import io.github.ericmedvet.jgea.problem.ca.MultivariateRealGridCellularAutomaton;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
+import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jviz.core.drawer.VideoBuilder;
 import java.awt.*;
@@ -55,7 +57,10 @@ public class Main {
           return new double[stateSize];
         }),
         kernels,
-        mlp,
+        NamedMultivariateRealFunction.from(
+            mlp,
+            MultivariateRealFunction.varNames("c", mlp.nOfInputs()),
+            MultivariateRealFunction.varNames("c", mlp.nOfOutputs())),
         0.1,
         true);
     DoubleGridDrawer drawer = new DoubleGridDrawer(new DoubleGridDrawer.Configuration(

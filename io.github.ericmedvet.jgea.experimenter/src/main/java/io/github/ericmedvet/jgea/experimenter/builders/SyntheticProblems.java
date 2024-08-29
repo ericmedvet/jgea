@@ -212,14 +212,14 @@ public class SyntheticProblems {
       @Param(value = "name", iS = "ca-target-[{minConvergenceStep}-{maxConvergenceStep}]") String name,
       @Param("target") BufferedImage target,
       @Param(value = "gray", dB = true) boolean gray,
-      @Param(value = "minConvergenceStep", dI = 20) int minConvergenceStep,
-      @Param(value = "maxConvergenceStep", dI = 25) int maxConvergenceStep,
+      @Param(value = "fromStep", dI = 20) int fromStep,
+      @Param(value = "toStep", dI = 30) int toStep,
       @Param(value = "stateDistance", dS = "l1_1") MRCAPatternConvergence.StateDistance stateDistance,
       @Param(value = "caStateRange", dNPM = "m.range(min=-1;max=1)") DoubleRange caStateRange,
       @Param(value = "targetRange", dNPM = "m.range(min=0;max=1)") DoubleRange targetRange) {
     return new MRCAPatternConvergence(
         gray ? ImageUtils.toGrayGrid(target) : ImageUtils.toRGBGrid(target),
-        new IntRange(minConvergenceStep, maxConvergenceStep),
+        new IntRange(fromStep, toStep),
         stateDistance,
         caStateRange,
         targetRange);

@@ -62,10 +62,12 @@ public class ImageUtils {
     return f.createGlyphVector(g.getFontRenderContext(), s).getOutline().getBounds2D();
   }
 
-  public static Drawer<String> stringDrawer(Color color) {
+  public static Drawer<String> stringDrawer(Color fgColor, Color bgColor) {
     return (g, s) -> {
       double w = g.getClipBounds().getWidth();
       double h = g.getClipBounds().getHeight();
+      g.setColor(bgColor);
+      g.fill(g.getClipBounds());
       Font font = g.getFont();
       float size = 1;
       font = font.deriveFont(size);
@@ -77,7 +79,7 @@ public class ImageUtils {
       }
       font = font.deriveFont(size - 1);
       bounds = bounds(s, font, g);
-      g.setColor(color);
+      g.setColor(fgColor);
       g.setFont(font);
       g.drawString(s, (float) (g.getClipBounds().getMinX() - bounds.getMinX()), (float)
           (g.getClipBounds().getMinY() - bounds.getMinY()));

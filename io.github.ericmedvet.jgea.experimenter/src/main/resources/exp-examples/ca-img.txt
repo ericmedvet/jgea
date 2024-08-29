@@ -1,30 +1,21 @@
 ea.experiment(
   runs =
     (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
-    (solver = (nEval = [5000]) * [
+    (solver = (nEval = [1000]) * [
       ea.s.ga(
-        name = "ga-d=0.1-+c=1";
+        name = "ga-nn-d=0.1-+c=1";
         representation = ea.representation.doubleString();
-        mapper = ea.m.mrfToMrca(
+        mapper = ea.m.nmrfToMrca(
           additiveCoefficient = 0.1;
-          of = ea.m.dsToNpnds(npnds = ds.num.mlp(innerLayerRatio = 1; nOfInnerLayers = 1))
+          of = ea.m.ntissToNmrf(of = ea.m.dsToNpnds(npnds = ds.num.mlp(innerLayerRatio = 1; nOfInnerLayers = 1)))
         )
       );
       ea.s.ga(
-        name = "ga-d=1-+c=1";
-        representation = ea.representation.doubleString();
-        mapper = ea.m.mrfToMrca(
-          additiveCoefficient = 1;
-          of = ea.m.dsToNpnds(npnds = ds.num.mlp(innerLayerRatio = 1; nOfInnerLayers = 1))
-        )
-      );
-      ea.s.ga(
-        name = "ga-d=1-+c=5";
-        representation = ea.representation.doubleString();
-        mapper = ea.m.mrfToMrca(
-          additiveCoefficient = 1;
-          nOfAdditionalChannels = 5;
-          of = ea.m.dsToNpnds(npnds = ds.num.mlp(innerLayerRatio = 1; nOfInnerLayers = 1))
+        name = "ga-mgp-d=0.1-+c=1";
+        representation = ea.representation.multiSRTree();
+        mapper = ea.m.nmrfToMrca(
+          additiveCoefficient = 0.1;
+          of = ea.m.multiSrTreeToNmrf()
         )
       )
     ]) * (problem = [
@@ -38,8 +29,7 @@ ea.experiment(
         ea.f.size(of = ea.f.genotype(of = ea.f.best()); format = "%3d");
         ea.f.quality(of = ea.f.best(); format = "%6.4f");
         ea.f.hist(of = f.each(of = ea.f.all(); mapF = ea.f.quality()))
-      ];
-      runFunctions = [ea.f.runKey(key = "run.problem.p")]
+      ]
     );
     ea.l.savePlotForExp(
       path = "../{name}-fitness";

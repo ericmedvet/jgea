@@ -19,6 +19,7 @@
  */
 package io.github.ericmedvet.jgea.problem.ca;
 
+import io.github.ericmedvet.jgea.core.representation.NamedMultivariateRealFunction;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
@@ -34,7 +35,7 @@ public class MultivariateRealGridCellularAutomaton extends GridCellularAutomaton
   public MultivariateRealGridCellularAutomaton(
       Grid<double[]> initialStates,
       List<Grid<Double>> convolutionKernels,
-      MultivariateRealFunction updateFunction,
+      NamedMultivariateRealFunction updateFunction,
       double additiveCoefficient,
       boolean torodial) {
     super(

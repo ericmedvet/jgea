@@ -1469,23 +1469,6 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">Inv
 
 Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jnb.datastructure.Grid">Grid</abbr>&lt;T&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Mappers.isToGrid()` by jgea-experimenter:2.6.2-SNAPSHOT
 
-### Builder `ea.mapper.mrfToMrca()`
-
-`ea.m.mrfToMrca(of; nOfAdditionalChannels; kernel; initializer; range; additiveCoefficient; toroidal; clipping)`
-
-| Param | Type | Default | Java type |
-| --- | --- | --- | --- |
-| `of` | npm | `ea.m.identity()` | <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction">MultivariateRealFunction</abbr>&gt;</code> |
-| `nOfAdditionalChannels` | i | `1` | <code>int</code> |
-| `kernel` | e | `SOBEL_EDGES` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MultivariateRealGridCellularAutomaton$Kernel">MultivariateRealGridCellularAutomaton$Kernel</abbr></code> |
-| `initializer` | e | `CENTER_ONE` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MultivariateRealGridCellularAutomaton$Initializer">MultivariateRealGridCellularAutomaton$Initializer</abbr></code> |
-| `range` | npm | `m.range(min = -1; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
-| `additiveCoefficient` | d | `1.0` | <code>double</code> |
-| `toroidal` | b | `true` | <code>boolean</code> |
-| `clipping` | b | `true` | <code>boolean</code> |
-
-Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jgea.problem.ca.MultivariateRealGridCellularAutomaton">MultivariateRealGridCellularAutomaton</abbr>&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Mappers.mrfToMrca()` by jgea-experimenter:2.6.2-SNAPSHOT
-
 ### Builder `ea.mapper.multiSrTreeToNmrf()`
 
 `ea.m.multiSrTreeToNmrf(of; postOperator)`
@@ -1507,6 +1490,23 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">Inv
 | `items` | npm[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;T&gt;</code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jnb.datastructure.Grid">Grid</abbr>&lt;T&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Mappers.nmrfToGrid()` by jgea-experimenter:2.6.2-SNAPSHOT
+
+### Builder `ea.mapper.nmrfToMrca()`
+
+`ea.m.nmrfToMrca(of; nOfAdditionalChannels; kernel; initializer; range; additiveCoefficient; toroidal; clipping)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `of` | npm | `ea.m.identity()` | <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jgea.core.representation.NamedMultivariateRealFunction">NamedMultivariateRealFunction</abbr>&gt;</code> |
+| `nOfAdditionalChannels` | i | `1` | <code>int</code> |
+| `kernel` | e | `SOBEL_EDGES` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MultivariateRealGridCellularAutomaton$Kernel">MultivariateRealGridCellularAutomaton$Kernel</abbr></code> |
+| `initializer` | e | `CENTER_ONE` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MultivariateRealGridCellularAutomaton$Initializer">MultivariateRealGridCellularAutomaton$Initializer</abbr></code> |
+| `range` | npm | `m.range(min = -1; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
+| `additiveCoefficient` | d | `1.0` | <code>double</code> |
+| `toroidal` | b | `false` | <code>boolean</code> |
+| `clipping` | b | `true` | <code>boolean</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jgea.problem.ca.MultivariateRealGridCellularAutomaton">MultivariateRealGridCellularAutomaton</abbr>&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Mappers.nmrfToMrca()` by jgea-experimenter:2.6.2-SNAPSHOT
 
 ### Builder `ea.mapper.nmrfToNds()`
 
@@ -1600,16 +1600,17 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">Inv
 
 ### Builder `ea.misc.caVideo()`
 
-`ea.misc.caVideo(gray; caStateRange; nOfSteps; sizeRate; marginRate; frameRate)`
+`ea.misc.caVideo(gray; caStateRange; nOfSteps; sizeRate; marginRate; frameRate; fontSize)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
 | `gray` | b | `true` | <code>boolean</code> |
 | `caStateRange` | npm | `m.range(min = -1; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `nOfSteps` | i | `100` | <code>int</code> |
-| `sizeRate` | i | `20` | <code>int</code> |
+| `sizeRate` | i | `10` | <code>int</code> |
 | `marginRate` | d | `0.0` | <code>double</code> |
 | `frameRate` | d | `10.0` | <code>double</code> |
+| `fontSize` | d | `20.0` | <code>double</code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jviz.core.drawer.VideoBuilder">VideoBuilder</abbr>&lt;<abbr title="io.github.ericmedvet.jgea.problem.ca.MultivariateRealGridCellularAutomaton">MultivariateRealGridCellularAutomaton</abbr>&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Miscs.caVideo()` by jgea-experimenter:2.6.2-SNAPSHOT
 
@@ -1658,12 +1659,13 @@ Produces <code><abbr title="java.util.Map$Entry">Map$Entry</abbr>&lt;K, V&gt;</c
 
 ### Builder `ea.misc.imgFromString()`
 
-`ea.misc.imgFromString(s; color; w; h)`
+`ea.misc.imgFromString(s; fgColor; bgColor; w; h)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
 | `s` | s |  | <code><abbr title="java.lang.String">String</abbr></code> |
-| `color` | npm | `ea.misc.colorByName(name = black)` | <code><abbr title="java.awt.Color">Color</abbr></code> |
+| `fgColor` | npm | `ea.misc.colorByName(name = white)` | <code><abbr title="java.awt.Color">Color</abbr></code> |
+| `bgColor` | npm | `ea.misc.colorByName(name = black)` | <code><abbr title="java.awt.Color">Color</abbr></code> |
 | `w` | i | `32` | <code>int</code> |
 | `h` | i | `32` | <code>int</code> |
 
@@ -2317,15 +2319,15 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.problem.synthetic.numerica
 
 ### Builder `ea.problem.synthetic.mrCaPatternConvergence()`
 
-`ea.p.s.mrCaPatternConvergence(name; target; gray; minConvergenceStep; maxConvergenceStep; stateDistance; caStateRange; targetRange)`
+`ea.p.s.mrCaPatternConvergence(name; target; gray; fromStep; toStep; stateDistance; caStateRange; targetRange)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
 | `name` | s | interpolate `ca-target-[{minConvergenceStep}-{maxConvergenceStep}]` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `target` | npm |  | <code><abbr title="java.awt.image.BufferedImage">BufferedImage</abbr></code> |
 | `gray` | b | `true` | <code>boolean</code> |
-| `minConvergenceStep` | i | `20` | <code>int</code> |
-| `maxConvergenceStep` | i | `25` | <code>int</code> |
+| `fromStep` | i | `20` | <code>int</code> |
+| `toStep` | i | `30` | <code>int</code> |
 | `stateDistance` | e | `L1_1` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConvergence$StateDistance">MRCAPatternConvergence$StateDistance</abbr></code> |
 | `caStateRange` | npm | `m.range(min = -1; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `targetRange` | npm | `m.range(min = 0; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
@@ -2334,15 +2336,15 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConv
 
 ### Builder `ea.problem.synthetic.mrCaStringConvergence()`
 
-`ea.p.s.mrCaStringConvergence(name; target; gray; minConvergenceStep; maxConvergenceStep; stateDistance; caStateRange; targetRange; s; w; h)`
+`ea.p.s.mrCaStringConvergence(name; target; gray; fromStep; toStep; stateDistance; caStateRange; targetRange; s; w; h)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
 | `name` | s | `ca-string` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `target` | npm | `ea.misc.imgFromString(s = x; w = 32; h = 32)` | <code><abbr title="java.awt.image.BufferedImage">BufferedImage</abbr></code> |
 | `gray` | b | `true` | <code>boolean</code> |
-| `minConvergenceStep` | i | `20` | <code>int</code> |
-| `maxConvergenceStep` | i | `25` | <code>int</code> |
+| `fromStep` | i | `20` | <code>int</code> |
+| `toStep` | i | `30` | <code>int</code> |
 | `stateDistance` | e | `L1_1` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConvergence$StateDistance">MRCAPatternConvergence$StateDistance</abbr></code> |
 | `caStateRange` | npm | `m.range(min = -1; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `targetRange` | npm | `m.range(min = 0; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |

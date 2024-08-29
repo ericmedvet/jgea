@@ -26,8 +26,11 @@ import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
+import io.github.ericmedvet.jnb.datastructure.Grid;
+import io.github.ericmedvet.jnb.datastructure.Pair;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.control.SimulationOutcomeDrawer;
+import io.github.ericmedvet.jviz.core.drawer.Drawer;
 import io.github.ericmedvet.jviz.core.drawer.ImageBuilder;
 import io.github.ericmedvet.jviz.core.drawer.VideoBuilder;
 import java.awt.*;
@@ -37,6 +40,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 
 @Discoverable(prefixTemplate = "ea.misc")
 public class Miscs {
@@ -48,16 +52,26 @@ public class Miscs {
       @Param(value = "gray", dB = true) boolean gray,
       @Param(value = "caStateRange", dNPM = "m.range(min=-1;max=1)") DoubleRange caStateRange,
       @Param(value = "nOfSteps", dI = 100) int nOfSteps,
-      @Param(value = "sizeRate", dI = 20) int sizeRate,
+      @Param(value = "sizeRate", dI = 10) int sizeRate,
       @Param(value = "marginRate", dD = 0d) double marginRate,
-      @Param(value = "frameRate", dD = 10d) double frameRate) {
-    DoubleGridDrawer drawer = new DoubleGridDrawer(new DoubleGridDrawer.Configuration(
+      @Param(value = "frameRate", dD = 10d) double frameRate,
+      @Param(value = "fontSize", dD = 20d) double fontSize) {
+    DoubleGridDrawer gDrawer = new DoubleGridDrawer(new DoubleGridDrawer.Configuration(
         gray ? DoubleGridDrawer.Configuration.ColorType.GRAY : DoubleGridDrawer.Configuration.ColorType.RGB,
         DoubleRange.SYMMETRIC_UNIT,
         sizeRate,
         marginRate));
-
-    return VideoBuilder.from(drawer, Function.identity(), frameRate).on(ca -> ca.evolve(nOfSteps));
+    Drawer<Pair<Integer, Grid<double[]>>> pDrawer = (g, p) -> {
+      gDrawer.draw(g, p.second());
+      Drawer.stringWriter(Color.PINK, (float) fontSize, Function.identity())
+          .draw(g, "k=%3d".formatted(p.first()));
+    };
+    return VideoBuilder.from(pDrawer, Function.identity(), frameRate).on(ca -> {
+      List<Grid<double[]>> seq = ca.evolve(nOfSteps);
+      return IntStream.range(0, seq.size())
+          .mapToObj(i -> new Pair<>(i, seq.get(i)))
+          .toList();
+    });
   }
 
   @SuppressWarnings("unused")
@@ -88,10 +102,11 @@ public class Miscs {
   @Cacheable
   public static BufferedImage imgFromString(
       @Param("s") String s,
-      @Param(value = "color", dNPM = "ea.misc.colorByName(name = black)") Color color,
+      @Param(value = "fgColor", dNPM = "ea.misc.colorByName(name = white)") Color fgColor,
+      @Param(value = "bgColor", dNPM = "ea.misc.colorByName(name = black)") Color bgColor,
       @Param(value = "w", dI = 32) int w,
       @Param(value = "h", dI = 32) int h) {
-    return ImageUtils.stringDrawer(color).build(new ImageBuilder.ImageInfo(w, h), s);
+    return ImageUtils.stringDrawer(fgColor, bgColor).build(new ImageBuilder.ImageInfo(w, h), s);
   }
 
   @SuppressWarnings("unused")

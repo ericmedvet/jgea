@@ -22,6 +22,7 @@ package io.github.ericmedvet.jgea.problem.ca;
 import io.github.ericmedvet.jgea.core.distance.Distance;
 import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.problem.ProblemWithExampleSolution;
+import io.github.ericmedvet.jgea.core.representation.NamedMultivariateRealFunction;
 import io.github.ericmedvet.jgea.core.util.IntRange;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
@@ -117,7 +118,10 @@ public class MRCAPatternConvergence
     return new MultivariateRealGridCellularAutomaton(
         Grid.create(targetGrid.w(), targetGrid.h(), new double[stateSize]),
         MultivariateRealGridCellularAutomaton.Kernel.SUM.get(),
-        MultivariateRealFunction.from(vs -> new double[stateSize], stateSize, stateSize),
+        NamedMultivariateRealFunction.from(
+            MultivariateRealFunction.from(vs -> new double[stateSize], stateSize, stateSize),
+            MultivariateRealFunction.varNames("c", stateSize),
+            MultivariateRealFunction.varNames("c", stateSize)),
         1,
         true);
   }
