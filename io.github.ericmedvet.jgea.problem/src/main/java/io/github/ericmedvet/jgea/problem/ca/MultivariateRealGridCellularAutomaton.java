@@ -31,22 +31,31 @@ import java.util.stream.IntStream;
 
 public class MultivariateRealGridCellularAutomaton extends GridCellularAutomaton<double[]> {
 
-  public enum Kernel implements Supplier<List<Grid<Double>>> {
-    SUM(List.of(Grid.create(3, 3, 1d))),
-    SOBEL_EDGES(List.of(
-        Grid.create(3, 3, List.of(-1d, 0d, +1d, -2d, 0d, +2d, -1d, 0d, +1d)),
-        Grid.create(3, 3, List.of(-1d, -2d, -1d, 0d, 0d, 0d, +1d, +2d, +1d)),
-        Grid.create(3, 3, List.of(0d, 0d, 0d, 0d, 1d, 0d, 0d, 0d, 0d))));
-    private final List<Grid<Double>> kernels;
+  public MultivariateRealGridCellularAutomaton(
+      Grid<double[]> initialStates,
+      List<Grid<Double>> convolutionKernels,
+      MultivariateRealFunction updateFunction,
+      double additiveCoefficient,
+      boolean torodial) {
+    super(
+        initialStates,
+        radiusFromKernels(convolutionKernels),
+        updateFunction(additiveCoefficient, convolutionKernels, updateFunction),
+        torodial,
+        new double[initialStates.get(0, 0).length]);
+  }
 
-    Kernel(List<Grid<Double>> kernels) {
-      this.kernels = kernels;
-    }
-
-    @Override
-    public List<Grid<Double>> get() {
-      return kernels;
-    }
+  private static Function<Grid<double[]>, double[]> updateFunction(
+      double coefficient, List<Grid<Double>> kernels, MultivariateRealFunction updateFunction) {
+    Function<Grid<double[]>, double[]> preF = convolutions(kernels).andThen(concatenator());
+    return g -> {
+      double[] inVs = g.get(g.w() / 2, g.h() / 2);
+      double[] preVs = preF.apply(g);
+      double[] postVs = updateFunction.apply(preVs);
+      return IntStream.range(0, inVs.length)
+          .mapToDouble(i -> postVs[i] * coefficient + inVs[i] * (1d - coefficient))
+          .toArray();
+    };
   }
 
   public enum Initializer implements StateInitializer {
@@ -79,21 +88,26 @@ public class MultivariateRealGridCellularAutomaton extends GridCellularAutomaton
     }
   }
 
-  private interface StateInitializer {
-    Grid<double[]> initialize(int w, int h, int nOfChannels, DoubleRange range);
+  public enum Kernel implements Supplier<List<Grid<Double>>> {
+    SUM(List.of(Grid.create(3, 3, 1d))),
+    SOBEL_EDGES(List.of(
+        Grid.create(3, 3, List.of(-1d, 0d, +1d, -2d, 0d, +2d, -1d, 0d, +1d)),
+        Grid.create(3, 3, List.of(-1d, -2d, -1d, 0d, 0d, 0d, +1d, +2d, +1d)),
+        Grid.create(3, 3, List.of(0d, 0d, 0d, 0d, 1d, 0d, 0d, 0d, 0d))));
+    private final List<Grid<Double>> kernels;
+
+    Kernel(List<Grid<Double>> kernels) {
+      this.kernels = kernels;
+    }
+
+    @Override
+    public List<Grid<Double>> get() {
+      return kernels;
+    }
   }
 
-  public MultivariateRealGridCellularAutomaton(
-      Grid<double[]> initialStates,
-      List<Grid<Double>> convolutionKernels,
-      MultivariateRealFunction updateFunction,
-      boolean torodial) {
-    super(
-        initialStates,
-        radiusFromKernels(convolutionKernels),
-        convolutions(convolutionKernels).andThen(concatenator()).andThen(updateFunction),
-        torodial,
-        new double[initialStates.get(0, 0).length]);
+  private interface StateInitializer {
+    Grid<double[]> initialize(int w, int h, int nOfChannels, DoubleRange range);
   }
 
   private static Function<List<double[]>, double[]> concatenator() {

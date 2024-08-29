@@ -20,11 +20,9 @@
 package io.github.ericmedvet.jgea.experimenter.drawer;
 
 import io.github.ericmedvet.jgea.problem.ca.MultivariateRealGridCellularAutomaton;
-import io.github.ericmedvet.jgea.problem.image.ImageUtils;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
-import io.github.ericmedvet.jviz.core.drawer.ImageBuilder;
 import io.github.ericmedvet.jviz.core.drawer.VideoBuilder;
 import java.awt.*;
 import java.io.File;
@@ -36,11 +34,6 @@ import java.util.random.RandomGenerator;
 public class Main {
 
   public static void main(String[] args) {
-
-    ImageUtils.stringDrawer(Color.BLACK).show(new ImageBuilder.ImageInfo(32, 32), "a");
-    ImageUtils.stringDrawer(Color.BLACK).show(new ImageBuilder.ImageInfo(32, 32), "⋆");
-    // System.exit(0); ☺️
-
     int stateSize = 5;
     int l = 15;
     int nOfSteps = 100;
@@ -63,6 +56,7 @@ public class Main {
         }),
         kernels,
         mlp,
+        0.1,
         true);
     DoubleGridDrawer drawer = new DoubleGridDrawer(new DoubleGridDrawer.Configuration(
         DoubleGridDrawer.Configuration.ColorType.RGB, DoubleRange.SYMMETRIC_UNIT, 20, 0));

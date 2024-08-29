@@ -1471,7 +1471,7 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">Inv
 
 ### Builder `ea.mapper.mrfToMrca()`
 
-`ea.m.mrfToMrca(of; nOfAdditionalChannels; kernel; initializer; range; toroidal; clipping)`
+`ea.m.mrfToMrca(of; nOfAdditionalChannels; kernel; initializer; range; additiveCoefficient; toroidal; clipping)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
@@ -1480,6 +1480,7 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">Inv
 | `kernel` | e | `SOBEL_EDGES` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MultivariateRealGridCellularAutomaton$Kernel">MultivariateRealGridCellularAutomaton$Kernel</abbr></code> |
 | `initializer` | e | `CENTER_ONE` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MultivariateRealGridCellularAutomaton$Initializer">MultivariateRealGridCellularAutomaton$Initializer</abbr></code> |
 | `range` | npm | `m.range(min = -1; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
+| `additiveCoefficient` | d | `1.0` | <code>double</code> |
 | `toroidal` | b | `true` | <code>boolean</code> |
 | `clipping` | b | `true` | <code>boolean</code> |
 
@@ -2320,11 +2321,11 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.problem.synthetic.numerica
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
-| `name` | s | interpolate `ca-target` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `name` | s | interpolate `ca-target-[{minConvergenceStep}-{maxConvergenceStep}]` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `target` | npm |  | <code><abbr title="java.awt.image.BufferedImage">BufferedImage</abbr></code> |
 | `gray` | b | `true` | <code>boolean</code> |
 | `minConvergenceStep` | i | `20` | <code>int</code> |
-| `maxConvergenceStep` | i | `21` | <code>int</code> |
+| `maxConvergenceStep` | i | `25` | <code>int</code> |
 | `stateDistance` | e | `L1_1` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConvergence$StateDistance">MRCAPatternConvergence$StateDistance</abbr></code> |
 | `caStateRange` | npm | `m.range(min = -1; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `targetRange` | npm | `m.range(min = 0; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
@@ -2341,7 +2342,7 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConv
 | `target` | npm | `ea.misc.imgFromString(s = x; w = 32; h = 32)` | <code><abbr title="java.awt.image.BufferedImage">BufferedImage</abbr></code> |
 | `gray` | b | `true` | <code>boolean</code> |
 | `minConvergenceStep` | i | `20` | <code>int</code> |
-| `maxConvergenceStep` | i | `21` | <code>int</code> |
+| `maxConvergenceStep` | i | `25` | <code>int</code> |
 | `stateDistance` | e | `L1_1` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConvergence$StateDistance">MRCAPatternConvergence$StateDistance</abbr></code> |
 | `caStateRange` | npm | `m.range(min = -1; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `targetRange` | npm | `m.range(min = 0; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |

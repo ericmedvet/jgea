@@ -199,7 +199,7 @@ public class SyntheticProblems {
       passThroughParams = {
         @PassThroughParam(name = "s", value = "x", type = ParamMap.Type.STRING),
         @PassThroughParam(name = "w", value = "32", type = ParamMap.Type.INT),
-        @PassThroughParam(name = "h", value = "32", type = ParamMap.Type.INT),
+        @PassThroughParam(name = "h", value = "32", type = ParamMap.Type.INT)
       },
       value = // spotless:off
           """
@@ -209,11 +209,11 @@ public class SyntheticProblems {
               )
               """) // spotless:on
   public static MRCAPatternConvergence mrCaPatternConvergence(
-      @Param(value = "name", iS = "ca-target") String name,
+      @Param(value = "name", iS = "ca-target-[{minConvergenceStep}-{maxConvergenceStep}]") String name,
       @Param("target") BufferedImage target,
       @Param(value = "gray", dB = true) boolean gray,
       @Param(value = "minConvergenceStep", dI = 20) int minConvergenceStep,
-      @Param(value = "maxConvergenceStep", dI = 21) int maxConvergenceStep,
+      @Param(value = "maxConvergenceStep", dI = 25) int maxConvergenceStep,
       @Param(value = "stateDistance", dS = "l1_1") MRCAPatternConvergence.StateDistance stateDistance,
       @Param(value = "caStateRange", dNPM = "m.range(min=-1;max=1)") DoubleRange caStateRange,
       @Param(value = "targetRange", dNPM = "m.range(min=0;max=1)") DoubleRange targetRange) {

@@ -306,6 +306,7 @@ public class Mappers {
         "isToGrid[nOfItems=%d]".formatted(items.size())));
   }
 
+  @SuppressWarnings("unused")
   public static <X> InvertibleMapper<X, MultivariateRealGridCellularAutomaton> mrfToMrca(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, MultivariateRealFunction> beforeM,
       @Param(value = "nOfAdditionalChannels", dI = 1) int nOfAdditionalChannels,
@@ -313,6 +314,7 @@ public class Mappers {
       @Param(value = "initializer", dS = "center_one")
           MultivariateRealGridCellularAutomaton.Initializer initializer,
       @Param(value = "range", dNPM = "m.range(min=-1;max=1)") DoubleRange range,
+      @Param(value = "additiveCoefficient", dD = 1d) double additiveCoefficient,
       @Param(value = "toroidal", dB = true) boolean toroidal,
       @Param(value = "clipping", dB = true) boolean clipping) {
     return beforeM.andThen(InvertibleMapper.from(
@@ -340,6 +342,7 @@ public class Mappers {
                   range),
               kernel.get(),
               mrf,
+              additiveCoefficient,
               toroidal);
         },
         mrca -> {

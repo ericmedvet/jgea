@@ -118,6 +118,7 @@ public class MRCAPatternConvergence
         Grid.create(targetGrid.w(), targetGrid.h(), new double[stateSize]),
         MultivariateRealGridCellularAutomaton.Kernel.SUM.get(),
         MultivariateRealFunction.from(vs -> new double[stateSize], stateSize, stateSize),
+        1,
         true);
   }
 }
