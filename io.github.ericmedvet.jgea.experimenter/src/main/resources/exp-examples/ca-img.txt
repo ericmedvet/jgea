@@ -1,7 +1,7 @@
 ea.experiment(
   runs =
     (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
-    (solver = (nEval = [500]) * [
+    (solver = (nEval = [1000]) * [
       ea.s.ga(
         name = "ga-nn-d=0.1-c=1";
         representation = ea.representation.doubleString();

@@ -105,11 +105,12 @@ public class MultivariateRealGridCellularAutomaton extends GridCellularAutomaton
   }
 
   public enum Kernel implements Supplier<List<Grid<Double>>> {
-    SUM(List.of(Grid.create(3, 3, 1d))),
+    SUM(List.of(Grid.create(3, 3, 1d / 9d))),
+    IDENTITY(List.of(Grid.create(3, 3, List.of(0d, 0d, 0d, 0d, 1d, 0d, 0d, 0d, 0d)))),
+    LAPLACIAN(List.of(Grid.create(3, 3, List.of(0d, 1d, 0d, 1d, -4d, 1d, 0d, 1d, 0d)))),
     SOBEL_EDGES(List.of(
         Grid.create(3, 3, List.of(-1d, 0d, +1d, -2d, 0d, +2d, -1d, 0d, +1d)),
-        Grid.create(3, 3, List.of(-1d, -2d, -1d, 0d, 0d, 0d, +1d, +2d, +1d)),
-        Grid.create(3, 3, List.of(0d, 0d, 0d, 0d, 1d, 0d, 0d, 0d, 0d))));
+        Grid.create(3, 3, List.of(-1d, -2d, -1d, 0d, 0d, 0d, +1d, +2d, +1d))));
     private final List<Grid<Double>> kernels;
 
     Kernel(List<Grid<Double>> kernels) {

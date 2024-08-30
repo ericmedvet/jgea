@@ -357,19 +357,24 @@ public class Mappers {
   public static <X> InvertibleMapper<X, MultivariateRealGridCellularAutomaton> nmrfToMrca(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NamedMultivariateRealFunction> beforeM,
       @Param(value = "nOfAdditionalChannels", dI = 1) int nOfAdditionalChannels,
-      @Param(value = "kernel", dS = "sobel_edges") MultivariateRealGridCellularAutomaton.Kernel kernel,
-      @Param(value = "initializer", dS = "center_one")
+      @Param(
+              value = "kernels",
+              dSs = {"identity", "laplacian", "sobel_edges"})
+          List<MultivariateRealGridCellularAutomaton.Kernel> kernels,
+      @Param(value = "initializer", dS = "center_all")
           MultivariateRealGridCellularAutomaton.Initializer initializer,
       @Param(value = "range", dNPM = "m.range(min=-1;max=1)") DoubleRange range,
       @Param(value = "additiveCoefficient", dD = 1d) double additiveCoefficient,
       @Param(value = "alivenessThreshold", dD = 0d) double alivenessThreshold,
-      @Param(value = "toroidal") boolean toroidal,
-      @Param(value = "clipping", dB = true) boolean clipping) {
+      @Param(value = "toroidal") boolean toroidal) {
+    List<Grid<Double>> kernelGrids = kernels.stream()
+        .map(MultivariateRealGridCellularAutomaton.Kernel::get)
+        .flatMap(List::stream)
+        .toList();
     return beforeM.andThen(InvertibleMapper.from(
         (mrca, nmrf) -> {
           int minStateSize = MultivariateRealGridCellularAutomaton.minStateSize(mrca.getInitialStates());
-          int nOfInputs = (minStateSize + nOfAdditionalChannels)
-              * kernel.get().size();
+          int nOfInputs = (minStateSize + nOfAdditionalChannels) * kernelGrids.size();
           int nOfOutputs = minStateSize + nOfAdditionalChannels;
           if (nmrf.nOfInputs() != nOfInputs) {
             throw new IllegalArgumentException("Wrong input size for the MRF: %d expected, %d found"
@@ -379,9 +384,6 @@ public class Mappers {
             throw new IllegalArgumentException("Wrong output size for the MRF: %d expected, %d found"
                 .formatted(nOfOutputs, nmrf.nOfOutputs()));
           }
-          if (clipping) {
-            nmrf = nmrf.andThen(range::clip);
-          }
           return new MultivariateRealGridCellularAutomaton(
               initializer.initialize(
                   mrca.getInitialStates().w(),
@@ -389,7 +391,7 @@ public class Mappers {
                   minStateSize + nOfAdditionalChannels,
                   range),
               range,
-              kernel.get(),
+              kernelGrids,
               nmrf,
               additiveCoefficient,
               alivenessThreshold,
@@ -397,15 +399,14 @@ public class Mappers {
         },
         mrca -> {
           int minStateSize = MultivariateRealGridCellularAutomaton.minStateSize(mrca.getInitialStates());
-          int nOfInputs = (minStateSize + nOfAdditionalChannels)
-              * kernel.get().size();
+          int nOfInputs = (minStateSize + nOfAdditionalChannels) * kernelGrids.size();
           int nOfOutputs = minStateSize + nOfAdditionalChannels;
           return NamedMultivariateRealFunction.from(
               MultivariateRealFunction.from(vs -> new double[nOfOutputs], nOfInputs, nOfOutputs),
               MultivariateRealFunction.varNames("pc", nOfInputs),
               MultivariateRealFunction.varNames("c", nOfOutputs));
         },
-        "nmrfToMrCA[addChannels=%d;kernel=%s]".formatted(nOfAdditionalChannels, kernel)));
+        "nmrfToMrCA[addChannels=%d;kernel=%d]".formatted(nOfAdditionalChannels, kernelGrids.size())));
   }
 
   @SuppressWarnings("unused")
