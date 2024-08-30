@@ -56,12 +56,14 @@ public class Main {
           }
           return new double[stateSize];
         }),
+        DoubleRange.SYMMETRIC_UNIT,
         kernels,
         NamedMultivariateRealFunction.from(
             mlp,
             MultivariateRealFunction.varNames("c", mlp.nOfInputs()),
             MultivariateRealFunction.varNames("c", mlp.nOfOutputs())),
         0.1,
+        0d,
         true);
     DoubleGridDrawer drawer = new DoubleGridDrawer(new DoubleGridDrawer.Configuration(
         DoubleGridDrawer.Configuration.ColorType.RGB, DoubleRange.SYMMETRIC_UNIT, 20, 0));

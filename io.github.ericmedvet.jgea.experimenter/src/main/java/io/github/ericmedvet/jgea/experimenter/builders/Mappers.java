@@ -362,7 +362,8 @@ public class Mappers {
           MultivariateRealGridCellularAutomaton.Initializer initializer,
       @Param(value = "range", dNPM = "m.range(min=-1;max=1)") DoubleRange range,
       @Param(value = "additiveCoefficient", dD = 1d) double additiveCoefficient,
-      @Param(value = "toroidal", dB = false) boolean toroidal,
+      @Param(value = "alivenessThreshold", dD = 0d) double alivenessThreshold,
+      @Param(value = "toroidal") boolean toroidal,
       @Param(value = "clipping", dB = true) boolean clipping) {
     return beforeM.andThen(InvertibleMapper.from(
         (mrca, nmrf) -> {
@@ -387,9 +388,11 @@ public class Mappers {
                   mrca.getInitialStates().h(),
                   minStateSize + nOfAdditionalChannels,
                   range),
+              range,
               kernel.get(),
               nmrf,
               additiveCoefficient,
+              alivenessThreshold,
               toroidal);
         },
         mrca -> {

@@ -34,27 +34,42 @@ public class MultivariateRealGridCellularAutomaton extends GridCellularAutomaton
 
   public MultivariateRealGridCellularAutomaton(
       Grid<double[]> initialStates,
+      DoubleRange stateRange,
       List<Grid<Double>> convolutionKernels,
       NamedMultivariateRealFunction updateFunction,
       double additiveCoefficient,
+      double alivenessThreshold,
       boolean torodial) {
     super(
         initialStates,
         radiusFromKernels(convolutionKernels),
-        updateFunction(additiveCoefficient, convolutionKernels, updateFunction),
+        updateFunction(additiveCoefficient, alivenessThreshold, convolutionKernels, updateFunction, stateRange),
         torodial,
         new double[initialStates.get(0, 0).length]);
   }
 
   private static Function<Grid<double[]>, double[]> updateFunction(
-      double coefficient, List<Grid<Double>> kernels, MultivariateRealFunction updateFunction) {
+      double coefficient,
+      double alivenessThreshold,
+      List<Grid<Double>> kernels,
+      MultivariateRealFunction updateFunction,
+      DoubleRange stateRange) {
     Function<Grid<double[]>, double[]> preF = convolutions(kernels).andThen(concatenator());
     return g -> {
+      // check for aliveness
+      if (alivenessThreshold > 0) {
+        double t = stateRange.min() + stateRange.extent() * alivenessThreshold;
+        if (g.values().stream().mapToDouble(vs -> vs[vs.length - 1]).allMatch(v -> v < t)) {
+          double[] outVs = new double[updateFunction.nOfOutputs()];
+          Arrays.fill(outVs, stateRange.min());
+          return outVs;
+        }
+      }
       double[] inVs = g.get(g.w() / 2, g.h() / 2);
       double[] preVs = preF.apply(g);
       double[] postVs = updateFunction.apply(preVs);
       return IntStream.range(0, inVs.length)
-          .mapToDouble(i -> postVs[i] * coefficient + inVs[i] * (1d - coefficient))
+          .mapToDouble(i -> stateRange.clip(postVs[i] * coefficient + inVs[i] * (1d - coefficient)))
           .toArray();
     };
   }

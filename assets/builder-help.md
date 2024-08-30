@@ -1493,7 +1493,7 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">Inv
 
 ### Builder `ea.mapper.nmrfToMrca()`
 
-`ea.m.nmrfToMrca(of; nOfAdditionalChannels; kernel; initializer; range; additiveCoefficient; toroidal; clipping)`
+`ea.m.nmrfToMrca(of; nOfAdditionalChannels; kernel; initializer; range; additiveCoefficient; alivenessThreshold; toroidal; clipping)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
@@ -1503,6 +1503,7 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">Inv
 | `initializer` | e | `CENTER_ONE` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MultivariateRealGridCellularAutomaton$Initializer">MultivariateRealGridCellularAutomaton$Initializer</abbr></code> |
 | `range` | npm | `m.range(min = -1; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `additiveCoefficient` | d | `1.0` | <code>double</code> |
+| `alivenessThreshold` | d | `0.0` | <code>double</code> |
 | `toroidal` | b | `false` | <code>boolean</code> |
 | `clipping` | b | `true` | <code>boolean</code> |
 
