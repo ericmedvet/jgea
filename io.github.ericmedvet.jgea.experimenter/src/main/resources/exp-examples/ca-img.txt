@@ -1,7 +1,7 @@
 ea.experiment(
   runs =
     (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
-    (solver = (nEval = [1500]) * [
+    (solver = (nEval = [500]) * [
       ea.s.ga(
         name = "ga-nn-d=0.1-c=1";
         representation = ea.representation.doubleString();
@@ -48,6 +48,15 @@ ea.experiment(
     ea.l.savePlotForExp(
       path = "../{name}-fitness";
       plot = ea.plot.multi.quality()
+    );
+    ea.l.savePlotForExp(
+      path = "../{name}-fitness-bp";
+      plot = ea.plot.multi.qualityBoxplot()
+    );
+    ea.l.savePlotForExp(
+      path = "../{name}-size";
+      plot = ea.plot.multi.xyExp(y = ea.f.size(of = ea.f.genotype(of = ea.f.best())));
+      condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "ga-mgp-.*")
     );
     ea.l.saveForRun(
       path = "../best-ca-{run.problem.name}-{run.solver.name}-{run.randomGenerator.seed:%04d}";
