@@ -55,16 +55,24 @@ public class Miscs {
       @Param(value = "sizeRate", dI = 10) int sizeRate,
       @Param(value = "marginRate", dD = 0d) double marginRate,
       @Param(value = "frameRate", dD = 10d) double frameRate,
-      @Param(value = "fontSize", dD = 20d) double fontSize) {
+      @Param(value = "fontSize", dD = 10d) double fontSize) {
     DoubleGridDrawer gDrawer = new DoubleGridDrawer(new DoubleGridDrawer.Configuration(
         gray ? DoubleGridDrawer.Configuration.ColorType.GRAY : DoubleGridDrawer.Configuration.ColorType.RGB,
         DoubleRange.SYMMETRIC_UNIT,
         sizeRate,
         marginRate));
-    Drawer<Pair<Integer, Grid<double[]>>> pDrawer = (g, p) -> {
-      gDrawer.draw(g, p.second());
-      Drawer.stringWriter(Color.PINK, (float) fontSize, Function.identity())
-          .draw(g, "k=%3d".formatted(p.first()));
+    Drawer<Pair<Integer, Grid<double[]>>> pDrawer = new Drawer<Pair<Integer, Grid<double[]>>>() {
+      @Override
+      public void draw(Graphics2D g, Pair<Integer, Grid<double[]>> p) {
+        gDrawer.draw(g, p.second());
+        Drawer.stringWriter(Color.PINK, (float) fontSize, Function.identity())
+            .draw(g, "k=%3d".formatted(p.first()));
+      }
+
+      @Override
+      public ImageInfo imageInfo(Pair<Integer, Grid<double[]>> p) {
+        return gDrawer.imageInfo(p.second());
+      }
     };
     return VideoBuilder.from(pDrawer, Function.identity(), frameRate).on(ca -> {
       List<Grid<double[]>> seq = ca.evolve(nOfSteps);

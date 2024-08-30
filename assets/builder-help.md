@@ -1610,7 +1610,7 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">Inv
 | `sizeRate` | i | `10` | <code>int</code> |
 | `marginRate` | d | `0.0` | <code>double</code> |
 | `frameRate` | d | `10.0` | <code>double</code> |
-| `fontSize` | d | `20.0` | <code>double</code> |
+| `fontSize` | d | `10.0` | <code>double</code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jviz.core.drawer.VideoBuilder">VideoBuilder</abbr>&lt;<abbr title="io.github.ericmedvet.jgea.problem.ca.MultivariateRealGridCellularAutomaton">MultivariateRealGridCellularAutomaton</abbr>&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Miscs.caVideo()` by jgea-experimenter:2.6.2-SNAPSHOT
 

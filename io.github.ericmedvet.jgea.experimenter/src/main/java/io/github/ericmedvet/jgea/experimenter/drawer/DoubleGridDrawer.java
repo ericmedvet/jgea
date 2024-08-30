@@ -48,7 +48,6 @@ public class DoubleGridDrawer implements Drawer<Grid<double[]>> {
 
   @Override
   public void draw(Graphics2D g, Grid<double[]> grid) {
-    // TODO sizeRate does not work
     double w = grid.w();
     double h = grid.h();
     double cW = g.getClipBounds().getWidth() * (1d - 2 * c.marginRate()) / w;

@@ -596,7 +596,12 @@ public class Functions {
     UnaryOperator<VideoBuilder.VideoInfo> viAdapter =
         vi -> new VideoBuilder.VideoInfo(w == -1 ? vi.w() : w, h == -1 ? vi.h() : h, encoder);
     VideoBuilder<List<D>> videoBuilder = VideoBuilder.from(imageBuilder, Function.identity(), frameRate);
-    Function<List<D>, Video> f = ds -> videoBuilder.build(viAdapter.apply(videoBuilder.videoInfo(ds)), ds);
+    Function<List<D>, Video> f = ds -> {
+      if (w == -1 && h == -1) {
+        return videoBuilder.apply(ds);
+      }
+      return videoBuilder.build(viAdapter.apply(videoBuilder.videoInfo(ds)), ds);
+    };
     return NamedFunction.from(f, "to.images.video[%s]".formatted(imageBuilder))
         .compose(beforeF);
   }
@@ -611,7 +616,12 @@ public class Functions {
       @Param(value = "encoder", dS = "default") VideoUtils.EncoderFacility encoder) {
     UnaryOperator<VideoBuilder.VideoInfo> viAdapter =
         vi -> new VideoBuilder.VideoInfo(w == -1 ? vi.w() : w, h == -1 ? vi.h() : h, encoder);
-    Function<D, Video> f = d -> videoBuilder.build(viAdapter.apply(videoBuilder.videoInfo(d)), d);
+    Function<D, Video> f = d -> {
+      if (w == -1 && h == -1) {
+        return videoBuilder.apply(d);
+      }
+      return videoBuilder.build(viAdapter.apply(videoBuilder.videoInfo(d)), d);
+    };
     return NamedFunction.from(f, "to.video[%s]".formatted(videoBuilder)).compose(beforeF);
   }
 
