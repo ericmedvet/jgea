@@ -36,6 +36,7 @@ import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedMultivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedUnivariateRealFunction;
+import io.github.ericmedvet.jgea.core.util.Naming;
 import io.github.ericmedvet.jgea.problem.ca.MultivariateRealGridCellularAutomaton;
 import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
@@ -307,6 +308,52 @@ public class Mappers {
   }
 
   @SuppressWarnings("unused")
+  @Cacheable
+  public static <X> InvertibleMapper<X, NamedMultivariateRealFunction> multiSrTreeToNmrf(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Tree<Element>>> beforeM,
+      @Param(value = "postOperator", dNPM = "ds.f.doubleOp(activationF=identity)")
+          Function<Double, Double> postOperator) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (nmrf, ts) -> new TreeBasedMultivariateRealFunction(ts, nmrf.xVarNames(), nmrf.yVarNames())
+            .andThen(toOperator(postOperator)),
+        nmrf -> TreeBasedMultivariateRealFunction.sampleFor(nmrf.xVarNames(), nmrf.yVarNames()),
+        "multiSrTreeToNmrf[po=%s]".formatted(postOperator)));
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X, T> InvertibleMapper<X, Grid<T>> nmrfToGrid(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NamedMultivariateRealFunction> beforeM,
+      @Param("items") List<T> items) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (g, nmrf) -> {
+          if (nmrf.nOfInputs() != 2) {
+            throw new IllegalArgumentException(
+                "Wrong input size for the NMRF: 2 expected, %d found".formatted(nmrf.nOfInputs()));
+          }
+          if (nmrf.nOfOutputs() != items.size()) {
+            throw new IllegalArgumentException("Wrong output size for the NMRF: %d expected, %d found"
+                .formatted(items.size(), nmrf.nOfOutputs()));
+          }
+          return Grid.create(g.w(), g.h(), (x, y) -> {
+            double[] values =
+                nmrf.apply(new double[] {(double) x / (double) g.w(), (double) y / (double) g.h()});
+            return items.get(IntStream.range(0, values.length)
+                .boxed()
+                .min(Comparator.comparingDouble(i -> values[i]))
+                .orElse(0));
+          });
+        },
+        g -> NamedMultivariateRealFunction.from(
+            MultivariateRealFunction.from(vs -> new double[items.size()], 2, items.size()),
+            List.of("x", "y"),
+            IntStream.range(0, items.size())
+                .mapToObj("item%02d"::formatted)
+                .toList()),
+        "nmrfToGrid[nOfItems=%d]".formatted(items.size())));
+  }
+
+  @SuppressWarnings("unused")
   public static <X> InvertibleMapper<X, MultivariateRealGridCellularAutomaton> nmrfToMrca(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NamedMultivariateRealFunction> beforeM,
       @Param(value = "nOfAdditionalChannels", dI = 1) int nOfAdditionalChannels,
@@ -360,52 +407,6 @@ public class Mappers {
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X> InvertibleMapper<X, NamedMultivariateRealFunction> multiSrTreeToNmrf(
-      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Tree<Element>>> beforeM,
-      @Param(value = "postOperator", dNPM = "ds.f.doubleOp(activationF=identity)")
-          Function<Double, Double> postOperator) {
-    return beforeM.andThen(InvertibleMapper.from(
-        (nmrf, ts) -> new TreeBasedMultivariateRealFunction(ts, nmrf.xVarNames(), nmrf.yVarNames())
-            .andThen(toOperator(postOperator)),
-        nmrf -> TreeBasedMultivariateRealFunction.sampleFor(nmrf.xVarNames(), nmrf.yVarNames()),
-        "multiSrTreeToNmrf[po=%s]".formatted(postOperator)));
-  }
-
-  @SuppressWarnings("unused")
-  @Cacheable
-  public static <X, T> InvertibleMapper<X, Grid<T>> nmrfToGrid(
-      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NamedMultivariateRealFunction> beforeM,
-      @Param("items") List<T> items) {
-    return beforeM.andThen(InvertibleMapper.from(
-        (g, nmrf) -> {
-          if (nmrf.nOfInputs() != 2) {
-            throw new IllegalArgumentException(
-                "Wrong input size for the NMRF: 2 expected, %d found".formatted(nmrf.nOfInputs()));
-          }
-          if (nmrf.nOfOutputs() != items.size()) {
-            throw new IllegalArgumentException("Wrong output size for the NMRF: %d expected, %d found"
-                .formatted(items.size(), nmrf.nOfOutputs()));
-          }
-          return Grid.create(g.w(), g.h(), (x, y) -> {
-            double[] values =
-                nmrf.apply(new double[] {(double) x / (double) g.w(), (double) y / (double) g.h()});
-            return items.get(IntStream.range(0, values.length)
-                .boxed()
-                .min(Comparator.comparingDouble(i -> values[i]))
-                .orElse(0));
-          });
-        },
-        g -> NamedMultivariateRealFunction.from(
-            MultivariateRealFunction.from(vs -> new double[items.size()], 2, items.size()),
-            List.of("x", "y"),
-            IntStream.range(0, items.size())
-                .mapToObj("item%02d"::formatted)
-                .toList()),
-        "nmrfToGrid[nOfItems=%d]".formatted(items.size())));
-  }
-
-  @SuppressWarnings("unused")
-  @Cacheable
   public static <X> InvertibleMapper<X, NumericalDynamicalSystem<?>> nmrfToNds(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NamedMultivariateRealFunction> beforeM) {
     return beforeM.andThen(InvertibleMapper.from(
@@ -437,6 +438,19 @@ public class Mappers {
         (eNds, nds) -> new Noised<>(nds, inputSigma, outputSigma, randomGenerator),
         eNds -> eNds,
         "noised[in=%.2f;out=%.2f]".formatted(inputSigma, outputSigma)));
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X> InvertibleMapper<X, NamedMultivariateRealFunction> noisedNmrf(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NamedMultivariateRealFunction> beforeM,
+      @Param(value = "sigma", dD = 0) double sigma,
+      @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (eNmrf, nmrf) -> nmrf.andThen(Naming.named("noised[out=%.2f]".formatted(sigma), (DoubleUnaryOperator)
+            v -> v + randomGenerator.nextGaussian() * sigma)),
+        eNmrf -> eNmrf,
+        "noised[out=%.2f]".formatted(sigma)));
   }
 
   @SuppressWarnings("unused")

@@ -1,13 +1,13 @@
 ea.experiment(
   runs =
     (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
-    (solver = (nEval = [5000]) * [
+    (solver = (nEval = [2500]) * [
       ea.s.ga(
         name = "ga-nn-d=0.1-+c=1";
         representation = ea.representation.doubleString();
         mapper = ea.m.nmrfToMrca(
           additiveCoefficient = 0.1;
-          of = ea.m.ntissToNmrf(of = ea.m.dsToNpnds(npnds = ds.num.mlp(innerLayerRatio = 1; nOfInnerLayers = 1)))
+          of = ea.m.ntissToNmrf(of = ea.m.dsToNpnds(npnds = ds.num.mlp(innerLayerRatio = 2; nOfInnerLayers = 3)))
         )
       );
       ea.s.ga(
@@ -16,6 +16,14 @@ ea.experiment(
         mapper = ea.m.nmrfToMrca(
           additiveCoefficient = 0.1;
           of = ea.m.multiSrTreeToNmrf()
+        )
+      );
+      ea.s.ga(
+        name = "ga-mgp-d=0.1-+c=1-noised";
+        representation = ea.representation.multiSRTree();
+        mapper = ea.m.nmrfToMrca(
+          additiveCoefficient = 0.1;
+          of = ea.m.noisedNmrf(sigma = 0.1; of = ea.m.multiSrTreeToNmrf())
         )
       )
     ]) * (problem = [

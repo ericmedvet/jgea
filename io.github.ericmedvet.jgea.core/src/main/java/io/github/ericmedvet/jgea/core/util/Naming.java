@@ -26,6 +26,7 @@ import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
 import io.github.ericmedvet.jnb.datastructure.TriConsumer;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.DoubleUnaryOperator;
 
 public class Naming {
 
@@ -146,6 +147,20 @@ public class Naming {
       @Override
       public void accept(I1 i1, I2 i2, I3 i3) {
         consumer.accept(i1, i2, i3);
+      }
+
+      @Override
+      public String toString() {
+        return name;
+      }
+    };
+  }
+
+  public static DoubleUnaryOperator named(String name, DoubleUnaryOperator o) {
+    return new DoubleUnaryOperator() {
+      @Override
+      public double applyAsDouble(double operand) {
+        return o.applyAsDouble(operand);
       }
 
       @Override
