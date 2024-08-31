@@ -1,30 +1,30 @@
 ea.experiment(
   runs =
     (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
-    (solver = (nEval = [500]) * [
+    (solver = (nEval = [2500]) * [
       ea.s.ga(
-        name = "ga-nn-d=0.1-c=5";
+        name = "ga-nn-d=0.1-c=3";
         representation = ea.representation.doubleString();
         mapper = ea.m.nmrfToMrca(
           additiveCoefficient = 0.1;
-          nOfAdditionalChannels = 5;
+          nOfAdditionalChannels = 3;
           alivenessThreshold = 0.1;
           of = ea.m.ntissToNmrf(of = ea.m.dsToNpnds(npnds = ds.num.mlp(innerLayerRatio = 1; nOfInnerLayers = 1)))
         )
       );
       ea.s.ga(
-        name = "ga-mgp-d=0.1-c=5";
+        name = "ga-mgp-d=0.1-c=3";
         representation = ea.representation.multiSRTree();
         mapper = ea.m.nmrfToMrca(
           additiveCoefficient = 0.1;
-          nOfAdditionalChannels = 5;
+          nOfAdditionalChannels = 3;
           alivenessThreshold = 0.1;
           of = ea.m.multiSrTreeToNmrf()
         )
       )
     ]) * (problem = [
-      ea.p.s.mrCaNamedImageMorphogenesis(iName = "avocado.png"; name = "rgb-avocado"; w = 15; h = 15);
-      ea.p.s.mrCaStringMorphogenesis(s = "+"; name = "gs-+"; w = 15; h = 15)
+      ea.p.s.mrCaNamedImageMorphogenesis(iName = "avocado.png"; name = "rgb-avocado");
+      ea.p.s.mrCaStringMorphogenesis(s = "+"; name = "gs-+")
     ]) * [ea.run()];
   listeners = [
     ea.l.console(
@@ -36,7 +36,7 @@ ea.experiment(
     );
     ea.l.savePlotForExp(
       path = "../{name}-fitness";
-      plot = ea.plot.multi.quality()
+      plot = ea.plot.multi.quality(x = ea.f.nOfEvals())
     );
     ea.l.savePlotForExp(
       path = "../{name}-fitness-bp";
@@ -44,7 +44,10 @@ ea.experiment(
     );
     ea.l.savePlotForExp(
       path = "../{name}-size";
-      plot = ea.plot.multi.xyExp(y = ea.f.size(of = ea.f.genotype(of = ea.f.best())));
+      plot = ea.plot.multi.xyExp(
+        x = ea.f.nOfEvals();
+        y = ea.f.size(of = ea.f.genotype(of = ea.f.best()))
+      );
       condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "ga-mgp-.*")
     );
     ea.l.saveForRun(

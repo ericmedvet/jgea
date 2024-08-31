@@ -32,6 +32,7 @@ import io.github.ericmedvet.jviz.core.drawer.ImageBuilder;
 import io.github.ericmedvet.jviz.core.drawer.VideoBuilder;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
@@ -39,7 +40,7 @@ import java.util.random.RandomGenerator;
 
 public class Main {
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
 
     NamedBuilder<Object> nb = NamedBuilder.fromDiscovery();
     MRCAMorphogenesis prob = (MRCAMorphogenesis)
@@ -54,6 +55,23 @@ ea.p.s.mrCaStringMorphogenesis(s = "🌶"; w = 15; h = 15; name = "+"; fromStep 
         .show(new ImageBuilder.ImageInfo(100, 100), "\uD83D\uDC31");
     ImageUtils.imageDrawer(Color.BLACK, 0.1)
         .show(new ImageBuilder.ImageInfo(15, 15), ImageUtils.loadFromResource("grin.png"));
+
+    ImageUtils.stringDrawer(Color.WHITE, Color.BLACK, 0)
+        .save(new ImageBuilder.ImageInfo(15, 15), new File("../target-+.png"), "+");
+    ImageUtils.stringDrawer(Color.WHITE, Color.BLACK, 0)
+        .save(new ImageBuilder.ImageInfo(15, 15), new File("../target-x.png"), "x");
+    ImageUtils.imageDrawer(Color.BLACK, 0.1)
+        .save(
+            new ImageBuilder.ImageInfo(15, 15),
+            new File("../target-avocado.png"),
+            ImageUtils.loadFromResource("avocado.png"));
+    ImageUtils.imageDrawer(Color.BLACK, 0.1)
+        .save(
+            new ImageBuilder.ImageInfo(15, 15),
+            new File("../target-tongue.png"),
+            ImageUtils.loadFromResource("stuck_out_tongue_winking_eye.png"));
+
+    System.exit(0);
 
     int stateSize = 5;
     int l = 15;
