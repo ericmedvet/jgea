@@ -58,10 +58,10 @@ public class Miscs {
       @Param(value = "fontSize", dD = 10d) double fontSize) {
     DoubleGridDrawer gDrawer = new DoubleGridDrawer(new DoubleGridDrawer.Configuration(
         gray ? DoubleGridDrawer.Configuration.ColorType.GRAY : DoubleGridDrawer.Configuration.ColorType.RGB,
-        DoubleRange.SYMMETRIC_UNIT,
+        caStateRange,
         sizeRate,
         marginRate));
-    Drawer<Pair<Integer, Grid<double[]>>> pDrawer = new Drawer<Pair<Integer, Grid<double[]>>>() {
+    Drawer<Pair<Integer, Grid<double[]>>> pDrawer = new Drawer<>() {
       @Override
       public void draw(Graphics2D g, Pair<Integer, Grid<double[]>> p) {
         gDrawer.draw(g, p.second());

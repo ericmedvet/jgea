@@ -42,6 +42,7 @@ public class MRCAMorphogenesis
   private final IntRange convergenceRange;
   private final Distance<double[]> distance;
   private final DoubleRange caStateRange;
+  private final DoubleRange targetRange;
 
   public MRCAMorphogenesis(
       Grid<double[]> targetGrid,
@@ -54,6 +55,7 @@ public class MRCAMorphogenesis
     this.convergenceRange = convergenceRange;
     this.distance = distance;
     this.caStateRange = caStateRange;
+    this.targetRange = targetRange;
   }
 
   public MRCAMorphogenesis(
@@ -100,7 +102,8 @@ public class MRCAMorphogenesis
   }
 
   public Grid<double[]> getTargetGrid() {
-    return targetGrid;
+    return targetGrid.map(
+        vs -> Arrays.stream(vs).map(targetRange::denormalize).toArray());
   }
 
   @Override

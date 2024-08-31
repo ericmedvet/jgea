@@ -48,9 +48,10 @@ public class Main {
 ea.p.s.mrCaStringMorphogenesis(s = "🌶"; w = 15; h = 15; name = "+"; fromStep = 40; toStep = 60)
 """);
     DoubleGridDrawer drawer = new DoubleGridDrawer(new DoubleGridDrawer.Configuration(
-        DoubleGridDrawer.Configuration.ColorType.GRAY, DoubleRange.SYMMETRIC_UNIT, 20, 0));
+        DoubleGridDrawer.Configuration.ColorType.GRAY, DoubleRange.UNIT, 20, 0));
     drawer.show(prob.getTargetGrid());
-    ImageUtils.stringDrawer(Color.WHITE, Color.BLACK, 0.1).show(new ImageBuilder.ImageInfo(100, 100), "I");
+    ImageUtils.stringDrawer(Color.WHITE, Color.BLACK, 0.1)
+        .show(new ImageBuilder.ImageInfo(100, 100), "\uD83D\uDC31");
 
     int stateSize = 5;
     int l = 15;
