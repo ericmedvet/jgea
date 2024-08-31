@@ -62,7 +62,7 @@ public class ImageUtils {
     return f.createGlyphVector(g.getFontRenderContext(), s).getOutline().getBounds2D();
   }
 
-  public static Drawer<String> stringDrawer(Color fgColor, Color bgColor) {
+  public static Drawer<String> stringDrawer(Color fgColor, Color bgColor, double marginRate) {
     return (g, s) -> {
       double w = g.getClipBounds().getWidth();
       double h = g.getClipBounds().getHeight();
@@ -72,7 +72,9 @@ public class ImageUtils {
       float size = 1;
       font = font.deriveFont(size);
       Rectangle2D bounds = bounds(s, font, g);
-      while (bounds.getWidth() > 0 && bounds.getWidth() < w && bounds.getHeight() < h) {
+      while (bounds.getWidth() > 0
+          && bounds.getWidth() < w * (1d - 2d * marginRate)
+          && bounds.getHeight() < h * (1d - 2d * marginRate)) {
         size = size + 1;
         font = font.deriveFont(size);
         bounds = bounds(s, font, g);
@@ -81,8 +83,16 @@ public class ImageUtils {
       bounds = bounds(s, font, g);
       g.setColor(fgColor);
       g.setFont(font);
-      g.drawString(s, (float) (g.getClipBounds().getMinX() - bounds.getMinX()), (float)
-          (g.getClipBounds().getMinY() - bounds.getMinY()));
+      double gX0 = g.getClipBounds().getMinX();
+      double gY0 = g.getClipBounds().getMinY();
+      double sX0 = bounds.getMinX();
+      double sY0 = bounds.getMinY();
+      double gW = g.getClipBounds().getWidth();
+      double gH = g.getClipBounds().getHeight();
+      double sW = bounds.getWidth();
+      double sH = bounds.getHeight();
+      g.drawString(s, (float) (gX0 - sX0 + gW * marginRate + (gW * (1d - 2d * marginRate) - sW) / 2d), (float)
+          (gY0 - sY0 + gH * marginRate + (gH * (1d - 2d * marginRate) - sH) / 2d));
     };
   }
 }

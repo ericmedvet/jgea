@@ -21,7 +21,7 @@
 package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jgea.core.util.IntRange;
-import io.github.ericmedvet.jgea.problem.ca.MRCAPatternConvergence;
+import io.github.ericmedvet.jgea.problem.ca.MRCAMorphogenesis;
 import io.github.ericmedvet.jgea.problem.grid.CharShapeApproximation;
 import io.github.ericmedvet.jgea.problem.image.ImageUtils;
 import io.github.ericmedvet.jgea.problem.synthetic.IntOneMax;
@@ -195,7 +195,7 @@ public class SyntheticProblems {
   @SuppressWarnings("unused")
   @Cacheable
   @Alias(
-      name = "mrCaStringConvergence",
+      name = "mrCaStringMorphogenesis",
       passThroughParams = {
         @PassThroughParam(name = "s", value = "x", type = ParamMap.Type.STRING),
         @PassThroughParam(name = "w", value = "32", type = ParamMap.Type.INT),
@@ -203,21 +203,21 @@ public class SyntheticProblems {
       },
       value = // spotless:off
           """
-              mrCaPatternConvergence(
+              mrCaMorphogenesis(
                 target = ea.misc.imgFromString(s = $s; w = $w; h = $h);
                 name = "ca-string"
               )
               """) // spotless:on
-  public static MRCAPatternConvergence mrCaPatternConvergence(
+  public static MRCAMorphogenesis mrCaMorphogenesis(
       @Param(value = "name", iS = "ca-target-[{minConvergenceStep}-{maxConvergenceStep}]") String name,
       @Param("target") BufferedImage target,
       @Param(value = "gray", dB = true) boolean gray,
       @Param(value = "fromStep", dI = 20) int fromStep,
       @Param(value = "toStep", dI = 30) int toStep,
-      @Param(value = "stateDistance", dS = "l1_1") MRCAPatternConvergence.StateDistance stateDistance,
+      @Param(value = "stateDistance", dS = "l1_1") MRCAMorphogenesis.StateDistance stateDistance,
       @Param(value = "caStateRange", dNPM = "m.range(min=-1;max=1)") DoubleRange caStateRange,
       @Param(value = "targetRange", dNPM = "m.range(min=0;max=1)") DoubleRange targetRange) {
-    return new MRCAPatternConvergence(
+    return new MRCAMorphogenesis(
         gray ? ImageUtils.toGrayGrid(target) : ImageUtils.toRGBGrid(target),
         new IntRange(fromStep, toStep),
         stateDistance,

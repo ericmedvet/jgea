@@ -401,12 +401,16 @@ public class Mappers {
           int minStateSize = MultivariateRealGridCellularAutomaton.minStateSize(mrca.getInitialStates());
           int nOfInputs = (minStateSize + nOfAdditionalChannels) * kernelGrids.size();
           int nOfOutputs = minStateSize + nOfAdditionalChannels;
+          List<String> varNames = MultivariateRealFunction.varNames("c", nOfOutputs);
           return NamedMultivariateRealFunction.from(
               MultivariateRealFunction.from(vs -> new double[nOfOutputs], nOfInputs, nOfOutputs),
-              MultivariateRealFunction.varNames("pc", nOfInputs),
-              MultivariateRealFunction.varNames("c", nOfOutputs));
+              IntStream.range(0, kernelGrids.size())
+                  .mapToObj(i -> varNames.stream().map(n -> "%s_k%d".formatted(n, i)))
+                  .flatMap(Function.identity())
+                  .toList(),
+              varNames);
         },
-        "nmrfToMrCA[addChannels=%d;kernel=%d]".formatted(nOfAdditionalChannels, kernelGrids.size())));
+        "nmrfToMrCA[addChannels=%d;kernels=%d]".formatted(nOfAdditionalChannels, kernelGrids.size())));
   }
 
   @SuppressWarnings("unused")

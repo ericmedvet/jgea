@@ -113,8 +113,9 @@ public class Miscs {
       @Param(value = "fgColor", dNPM = "ea.misc.colorByName(name = white)") Color fgColor,
       @Param(value = "bgColor", dNPM = "ea.misc.colorByName(name = black)") Color bgColor,
       @Param(value = "w", dI = 32) int w,
-      @Param(value = "h", dI = 32) int h) {
-    return ImageUtils.stringDrawer(fgColor, bgColor).build(new ImageBuilder.ImageInfo(w, h), s);
+      @Param(value = "h", dI = 32) int h,
+      @Param(value = "marginRate", dD = 0.1) double marginRate) {
+    return ImageUtils.stringDrawer(fgColor, bgColor, marginRate).build(new ImageBuilder.ImageInfo(w, h), s);
   }
 
   @SuppressWarnings("unused")

@@ -1,7 +1,7 @@
 ea.experiment(
   runs =
     (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
-    (solver = (nEval = [1000]) * [
+    (solver = (nEval = [500]) * [
       ea.s.ga(
         name = "ga-nn-d=0.1-c=1";
         representation = ea.representation.doubleString();
@@ -33,9 +33,9 @@ ea.experiment(
         )
       )
     ]) * (problem = [
-      ea.p.s.mrCaStringConvergence(s = "+"; w = 15; h = 15; name = "+"; fromStep = 40; toStep = 60);
-      ea.p.s.mrCaStringConvergence(s = "x"; w = 15; h = 15; name = "x"; fromStep = 40; toStep = 60);
-      ea.p.s.mrCaStringConvergence(s = "o"; w = 15; h = 15; name = "o"; fromStep = 40; toStep = 60)
+      ea.p.s.mrCaStringMorphogenesis(s = "+"; w = 15; h = 15; name = "+"; fromStep = 40; toStep = 60);
+      ea.p.s.mrCaStringMorphogenesis(s = "x"; w = 15; h = 15; name = "x"; fromStep = 40; toStep = 60);
+      ea.p.s.mrCaStringMorphogenesis(s = "o"; w = 15; h = 15; name = "o"; fromStep = 40; toStep = 60)
     ]) * [ea.run()];
   listeners = [
     ea.l.console(

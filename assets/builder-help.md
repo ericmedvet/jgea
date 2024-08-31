@@ -1671,7 +1671,7 @@ Produces <code><abbr title="java.util.Map$Entry">Map$Entry</abbr>&lt;K, V&gt;</c
 
 ### Builder `ea.misc.imgFromString()`
 
-`ea.misc.imgFromString(s; fgColor; bgColor; w; h)`
+`ea.misc.imgFromString(s; fgColor; bgColor; w; h; marginRate)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
@@ -1680,6 +1680,7 @@ Produces <code><abbr title="java.util.Map$Entry">Map$Entry</abbr>&lt;K, V&gt;</c
 | `bgColor` | npm | `ea.misc.colorByName(name = black)` | <code><abbr title="java.awt.Color">Color</abbr></code> |
 | `w` | i | `32` | <code>int</code> |
 | `h` | i | `32` | <code>int</code> |
+| `marginRate` | d | `0.1` | <code>double</code> |
 
 Produces <code><abbr title="java.awt.image.BufferedImage">BufferedImage</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Miscs.imgFromString()` by jgea-experimenter:2.6.2-SNAPSHOT
 
@@ -2329,9 +2330,9 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.problem.synthetic.IntOneMa
 
 Produces <code><abbr title="io.github.ericmedvet.jgea.problem.synthetic.numerical.LinearPoints">LinearPoints</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.SyntheticProblems.linearPoints()` by jgea-experimenter:2.6.2-SNAPSHOT
 
-### Builder `ea.problem.synthetic.mrCaPatternConvergence()`
+### Builder `ea.problem.synthetic.mrCaMorphogenesis()`
 
-`ea.p.s.mrCaPatternConvergence(name; target; gray; fromStep; toStep; stateDistance; caStateRange; targetRange)`
+`ea.p.s.mrCaMorphogenesis(name; target; gray; fromStep; toStep; stateDistance; caStateRange; targetRange)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
@@ -2340,15 +2341,15 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.problem.synthetic.numerica
 | `gray` | b | `true` | <code>boolean</code> |
 | `fromStep` | i | `20` | <code>int</code> |
 | `toStep` | i | `30` | <code>int</code> |
-| `stateDistance` | e | `L1_1` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConvergence$StateDistance">MRCAPatternConvergence$StateDistance</abbr></code> |
+| `stateDistance` | e | `L1_1` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAMorphogenesis$StateDistance">MRCAMorphogenesis$StateDistance</abbr></code> |
 | `caStateRange` | npm | `m.range(min = -1; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `targetRange` | npm | `m.range(min = 0; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 
-Produces <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConvergence">MRCAPatternConvergence</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.SyntheticProblems.mrCaPatternConvergence()` by jgea-experimenter:2.6.2-SNAPSHOT
+Produces <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAMorphogenesis">MRCAMorphogenesis</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.SyntheticProblems.mrCaMorphogenesis()` by jgea-experimenter:2.6.2-SNAPSHOT
 
-### Builder `ea.problem.synthetic.mrCaStringConvergence()`
+### Builder `ea.problem.synthetic.mrCaStringMorphogenesis()`
 
-`ea.p.s.mrCaStringConvergence(name; target; gray; fromStep; toStep; stateDistance; caStateRange; targetRange; s; w; h)`
+`ea.p.s.mrCaStringMorphogenesis(name; target; gray; fromStep; toStep; stateDistance; caStateRange; targetRange; s; w; h)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
@@ -2357,14 +2358,14 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConv
 | `gray` | b | `true` | <code>boolean</code> |
 | `fromStep` | i | `20` | <code>int</code> |
 | `toStep` | i | `30` | <code>int</code> |
-| `stateDistance` | e | `L1_1` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConvergence$StateDistance">MRCAPatternConvergence$StateDistance</abbr></code> |
+| `stateDistance` | e | `L1_1` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAMorphogenesis$StateDistance">MRCAMorphogenesis$StateDistance</abbr></code> |
 | `caStateRange` | npm | `m.range(min = -1; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `targetRange` | npm | `m.range(min = 0; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `s` | s | `x` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `w` | i | `32` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `h` | i | `32` | <code><abbr title="java.lang.String">String</abbr></code> |
 
-Produces <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAPatternConvergence">MRCAPatternConvergence</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.SyntheticProblems.mrCaPatternConvergence()` by jgea-experimenter:2.6.2-SNAPSHOT
+Produces <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAMorphogenesis">MRCAMorphogenesis</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.SyntheticProblems.mrCaMorphogenesis()` by jgea-experimenter:2.6.2-SNAPSHOT
 
 ### Builder `ea.problem.synthetic.multiModalIntOneMax()`
 

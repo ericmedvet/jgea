@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class MRCAPatternConvergence
+public class MRCAMorphogenesis
     implements ComparableQualityBasedProblem<MultivariateRealGridCellularAutomaton, Double>,
         ProblemWithExampleSolution<MultivariateRealGridCellularAutomaton> {
 
@@ -42,6 +42,28 @@ public class MRCAPatternConvergence
   private final IntRange convergenceRange;
   private final Distance<double[]> distance;
   private final DoubleRange caStateRange;
+
+  public MRCAMorphogenesis(
+      Grid<double[]> targetGrid,
+      IntRange convergenceRange,
+      Distance<double[]> distance,
+      DoubleRange caStateRange,
+      DoubleRange targetRange) {
+    this.targetGrid = targetGrid.map(
+        vs -> Arrays.stream(vs).map(targetRange::normalize).toArray());
+    this.convergenceRange = convergenceRange;
+    this.distance = distance;
+    this.caStateRange = caStateRange;
+  }
+
+  public MRCAMorphogenesis(
+      Grid<double[]> targetGrid,
+      IntRange convergenceRange,
+      StateDistance stateDistance,
+      DoubleRange caStateRange,
+      DoubleRange targetRange) {
+    this(targetGrid, convergenceRange, stateDistance.get(), caStateRange, targetRange);
+  }
 
   public enum StateDistance implements Supplier<Distance<double[]>> {
     L1_1((vs1, vs2) -> Math.abs(vs1[0] - vs2[0])),
@@ -61,26 +83,24 @@ public class MRCAPatternConvergence
     }
   }
 
-  public MRCAPatternConvergence(
-      Grid<double[]> targetGrid,
-      IntRange convergenceRange,
-      Distance<double[]> distance,
-      DoubleRange caStateRange,
-      DoubleRange targetRange) {
-    this.targetGrid = targetGrid.map(
-        vs -> Arrays.stream(vs).map(targetRange::normalize).toArray());
-    this.convergenceRange = convergenceRange;
-    this.distance = distance;
-    this.caStateRange = caStateRange;
+  @Override
+  public MultivariateRealGridCellularAutomaton example() {
+    int stateSize = targetGrid.get(0, 0).length;
+    return new MultivariateRealGridCellularAutomaton(
+        Grid.create(targetGrid.w(), targetGrid.h(), new double[stateSize]),
+        DoubleRange.SYMMETRIC_UNIT,
+        MultivariateRealGridCellularAutomaton.Kernel.SUM.get(),
+        NamedMultivariateRealFunction.from(
+            MultivariateRealFunction.from(vs -> new double[stateSize], stateSize, stateSize),
+            MultivariateRealFunction.varNames("c", stateSize),
+            MultivariateRealFunction.varNames("c", stateSize)),
+        1,
+        0d,
+        true);
   }
 
-  public MRCAPatternConvergence(
-      Grid<double[]> targetGrid,
-      IntRange convergenceRange,
-      StateDistance stateDistance,
-      DoubleRange caStateRange,
-      DoubleRange targetRange) {
-    this(targetGrid, convergenceRange, stateDistance.get(), caStateRange, targetRange);
+  public Grid<double[]> getTargetGrid() {
+    return targetGrid;
   }
 
   @Override
@@ -110,21 +130,5 @@ public class MRCAPatternConvergence
           .average()
           .orElseThrow();
     };
-  }
-
-  @Override
-  public MultivariateRealGridCellularAutomaton example() {
-    int stateSize = targetGrid.get(0, 0).length;
-    return new MultivariateRealGridCellularAutomaton(
-        Grid.create(targetGrid.w(), targetGrid.h(), new double[stateSize]),
-        DoubleRange.SYMMETRIC_UNIT,
-        MultivariateRealGridCellularAutomaton.Kernel.SUM.get(),
-        NamedMultivariateRealFunction.from(
-            MultivariateRealFunction.from(vs -> new double[stateSize], stateSize, stateSize),
-            MultivariateRealFunction.varNames("c", stateSize),
-            MultivariateRealFunction.varNames("c", stateSize)),
-        1,
-        0d,
-        true);
   }
 }
