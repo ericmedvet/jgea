@@ -23,7 +23,9 @@ import io.github.ericmedvet.jgea.core.representation.NamedMultivariateRealFuncti
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
+
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -39,13 +41,15 @@ public class MultivariateRealGridCellularAutomaton extends GridCellularAutomaton
       NamedMultivariateRealFunction updateFunction,
       double additiveCoefficient,
       double alivenessThreshold,
-      boolean torodial) {
+      boolean torodial
+  ) {
     super(
         initialStates,
         radiusFromKernels(convolutionKernels),
         updateFunction(additiveCoefficient, alivenessThreshold, convolutionKernels, updateFunction, stateRange),
         torodial,
-        new double[initialStates.get(0, 0).length]);
+        Collections.nCopies(initialStates.get(0, 0).length, stateRange.min()).stream().mapToDouble(v -> v).toArray()
+    );
   }
 
   private static Function<Grid<double[]>, double[]> updateFunction(
@@ -53,7 +57,8 @@ public class MultivariateRealGridCellularAutomaton extends GridCellularAutomaton
       double alivenessThreshold,
       List<Grid<Double>> kernels,
       MultivariateRealFunction updateFunction,
-      DoubleRange stateRange) {
+      DoubleRange stateRange
+  ) {
     Function<Grid<double[]>, double[]> preF = convolutions(kernels).andThen(concatenator());
     return g -> {
       // check for aliveness
@@ -110,7 +115,8 @@ public class MultivariateRealGridCellularAutomaton extends GridCellularAutomaton
     LAPLACIAN(List.of(Grid.create(3, 3, List.of(0d, 1d, 0d, 1d, -4d, 1d, 0d, 1d, 0d)))),
     SOBEL_EDGES(List.of(
         Grid.create(3, 3, List.of(-1d, 0d, +1d, -2d, 0d, +2d, -1d, 0d, +1d)),
-        Grid.create(3, 3, List.of(-1d, -2d, -1d, 0d, 0d, 0d, +1d, +2d, +1d))));
+        Grid.create(3, 3, List.of(-1d, -2d, -1d, 0d, 0d, 0d, +1d, +2d, +1d))
+    ));
     private final List<Grid<Double>> kernels;
 
     Kernel(List<Grid<Double>> kernels) {
