@@ -108,12 +108,24 @@ public class Miscs {
 
   @SuppressWarnings("unused")
   @Cacheable
+  public static BufferedImage imgByName(
+      @Param("name") String name,
+      @Param(value = "bgColor", dNPM = "ea.misc.colorByName(name = black)") Color bgColor,
+      @Param(value = "w", dI = 15) int w,
+      @Param(value = "h", dI = 15) int h,
+      @Param(value = "marginRate", dD = 0.1) double marginRate) {
+    return ImageUtils.imageDrawer(bgColor, marginRate)
+        .build(new ImageBuilder.ImageInfo(w, h), ImageUtils.loadFromResource(name));
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
   public static BufferedImage imgFromString(
       @Param("s") String s,
       @Param(value = "fgColor", dNPM = "ea.misc.colorByName(name = white)") Color fgColor,
       @Param(value = "bgColor", dNPM = "ea.misc.colorByName(name = black)") Color bgColor,
-      @Param(value = "w", dI = 32) int w,
-      @Param(value = "h", dI = 32) int h,
+      @Param(value = "w", dI = 159) int w,
+      @Param(value = "h", dI = 15) int h,
       @Param(value = "marginRate", dD = 0.1) double marginRate) {
     return ImageUtils.stringDrawer(fgColor, bgColor, marginRate).build(new ImageBuilder.ImageInfo(w, h), s);
   }

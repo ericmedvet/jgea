@@ -1669,6 +1669,20 @@ Produces <code><abbr title="java.awt.Color">Color</abbr></code>; built from `io.
 
 Produces <code><abbr title="java.util.Map$Entry">Map$Entry</abbr>&lt;K, V&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Miscs.entry()` by jgea-experimenter:2.6.2-SNAPSHOT
 
+### Builder `ea.misc.imgByName()`
+
+`ea.misc.imgByName(name; bgColor; w; h; marginRate)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `name` | s |  | <code><abbr title="java.lang.String">String</abbr></code> |
+| `bgColor` | npm | `ea.misc.colorByName(name = black)` | <code><abbr title="java.awt.Color">Color</abbr></code> |
+| `w` | i | `15` | <code>int</code> |
+| `h` | i | `15` | <code>int</code> |
+| `marginRate` | d | `0.1` | <code>double</code> |
+
+Produces <code><abbr title="java.awt.image.BufferedImage">BufferedImage</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Miscs.imgByName()` by jgea-experimenter:2.6.2-SNAPSHOT
+
 ### Builder `ea.misc.imgFromString()`
 
 `ea.misc.imgFromString(s; fgColor; bgColor; w; h; marginRate)`
@@ -1678,8 +1692,8 @@ Produces <code><abbr title="java.util.Map$Entry">Map$Entry</abbr>&lt;K, V&gt;</c
 | `s` | s |  | <code><abbr title="java.lang.String">String</abbr></code> |
 | `fgColor` | npm | `ea.misc.colorByName(name = white)` | <code><abbr title="java.awt.Color">Color</abbr></code> |
 | `bgColor` | npm | `ea.misc.colorByName(name = black)` | <code><abbr title="java.awt.Color">Color</abbr></code> |
-| `w` | i | `32` | <code>int</code> |
-| `h` | i | `32` | <code>int</code> |
+| `w` | i | `159` | <code>int</code> |
+| `h` | i | `15` | <code>int</code> |
 | `marginRate` | d | `0.1` | <code>double</code> |
 
 Produces <code><abbr title="java.awt.image.BufferedImage">BufferedImage</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Miscs.imgFromString()` by jgea-experimenter:2.6.2-SNAPSHOT
@@ -2332,38 +2346,55 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.problem.synthetic.numerica
 
 ### Builder `ea.problem.synthetic.mrCaMorphogenesis()`
 
-`ea.p.s.mrCaMorphogenesis(name; target; gray; fromStep; toStep; stateDistance; caStateRange; targetRange)`
+`ea.p.s.mrCaMorphogenesis(name; target; gray; fromStep; toStep; caStateRange; targetRange)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
 | `name` | s | interpolate `ca-target-[{minConvergenceStep}-{maxConvergenceStep}]` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `target` | npm |  | <code><abbr title="java.awt.image.BufferedImage">BufferedImage</abbr></code> |
 | `gray` | b | `true` | <code>boolean</code> |
-| `fromStep` | i | `20` | <code>int</code> |
-| `toStep` | i | `30` | <code>int</code> |
-| `stateDistance` | e | `L1_1` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAMorphogenesis$StateDistance">MRCAMorphogenesis$StateDistance</abbr></code> |
+| `fromStep` | i | `40` | <code>int</code> |
+| `toStep` | i | `60` | <code>int</code> |
 | `caStateRange` | npm | `m.range(min = -1; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `targetRange` | npm | `m.range(min = 0; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAMorphogenesis">MRCAMorphogenesis</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.SyntheticProblems.mrCaMorphogenesis()` by jgea-experimenter:2.6.2-SNAPSHOT
 
+### Builder `ea.problem.synthetic.mrCaNamedImageMorphogenesis()`
+
+`ea.p.s.mrCaNamedImageMorphogenesis(name; target; gray; fromStep; toStep; caStateRange; targetRange; iName; w; h)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `name` | s | `ca-nImg` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `target` | npm | `ea.misc.imgByName(w = 15; h = 15; name = null)` | <code><abbr title="java.awt.image.BufferedImage">BufferedImage</abbr></code> |
+| `gray` | b | `false` | <code>boolean</code> |
+| `fromStep` | i | `40` | <code>int</code> |
+| `toStep` | i | `60` | <code>int</code> |
+| `caStateRange` | npm | `m.range(min = -1; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
+| `targetRange` | npm | `m.range(min = 0; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
+| `iName` | s | `` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `w` | i | `15` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `h` | i | `15` | <code><abbr title="java.lang.String">String</abbr></code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAMorphogenesis">MRCAMorphogenesis</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.SyntheticProblems.mrCaMorphogenesis()` by jgea-experimenter:2.6.2-SNAPSHOT
+
 ### Builder `ea.problem.synthetic.mrCaStringMorphogenesis()`
 
-`ea.p.s.mrCaStringMorphogenesis(name; target; gray; fromStep; toStep; stateDistance; caStateRange; targetRange; s; w; h)`
+`ea.p.s.mrCaStringMorphogenesis(name; target; gray; fromStep; toStep; caStateRange; targetRange; s; w; h)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
 | `name` | s | `ca-string` | <code><abbr title="java.lang.String">String</abbr></code> |
-| `target` | npm | `ea.misc.imgFromString(s = x; w = 32; h = 32)` | <code><abbr title="java.awt.image.BufferedImage">BufferedImage</abbr></code> |
+| `target` | npm | `ea.misc.imgFromString(s = x; w = 15; h = 15)` | <code><abbr title="java.awt.image.BufferedImage">BufferedImage</abbr></code> |
 | `gray` | b | `true` | <code>boolean</code> |
-| `fromStep` | i | `20` | <code>int</code> |
-| `toStep` | i | `30` | <code>int</code> |
-| `stateDistance` | e | `L1_1` | <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAMorphogenesis$StateDistance">MRCAMorphogenesis$StateDistance</abbr></code> |
+| `fromStep` | i | `40` | <code>int</code> |
+| `toStep` | i | `60` | <code>int</code> |
 | `caStateRange` | npm | `m.range(min = -1; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `targetRange` | npm | `m.range(min = 0; max = 1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `s` | s | `x` | <code><abbr title="java.lang.String">String</abbr></code> |
-| `w` | i | `32` | <code><abbr title="java.lang.String">String</abbr></code> |
-| `h` | i | `32` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `w` | i | `15` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `h` | i | `15` | <code><abbr title="java.lang.String">String</abbr></code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jgea.problem.ca.MRCAMorphogenesis">MRCAMorphogenesis</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.SyntheticProblems.mrCaMorphogenesis()` by jgea-experimenter:2.6.2-SNAPSHOT
 

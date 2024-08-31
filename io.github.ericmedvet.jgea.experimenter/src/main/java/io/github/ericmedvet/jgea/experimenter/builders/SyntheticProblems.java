@@ -198,8 +198,8 @@ public class SyntheticProblems {
       name = "mrCaStringMorphogenesis",
       passThroughParams = {
         @PassThroughParam(name = "s", value = "x", type = ParamMap.Type.STRING),
-        @PassThroughParam(name = "w", value = "32", type = ParamMap.Type.INT),
-        @PassThroughParam(name = "h", value = "32", type = ParamMap.Type.INT)
+        @PassThroughParam(name = "w", value = "15", type = ParamMap.Type.INT),
+        @PassThroughParam(name = "h", value = "15", type = ParamMap.Type.INT)
       },
       value = // spotless:off
           """
@@ -208,19 +208,33 @@ public class SyntheticProblems {
                 name = "ca-string"
               )
               """) // spotless:on
+  @Alias(
+      name = "mrCaNamedImageMorphogenesis",
+      passThroughParams = {
+        @PassThroughParam(name = "iName", type = ParamMap.Type.STRING),
+        @PassThroughParam(name = "w", value = "15", type = ParamMap.Type.INT),
+        @PassThroughParam(name = "h", value = "15", type = ParamMap.Type.INT)
+      },
+      value = // spotless:off
+          """
+              mrCaMorphogenesis(
+                target = ea.misc.imgByName(name = $iName; w = $w; h = $h);
+                name = "ca-nImg";
+                gray = false
+              )
+              """) // spotless:on
   public static MRCAMorphogenesis mrCaMorphogenesis(
       @Param(value = "name", iS = "ca-target-[{minConvergenceStep}-{maxConvergenceStep}]") String name,
       @Param("target") BufferedImage target,
       @Param(value = "gray", dB = true) boolean gray,
-      @Param(value = "fromStep", dI = 20) int fromStep,
-      @Param(value = "toStep", dI = 30) int toStep,
-      @Param(value = "stateDistance", dS = "l1_1") MRCAMorphogenesis.StateDistance stateDistance,
+      @Param(value = "fromStep", dI = 40) int fromStep,
+      @Param(value = "toStep", dI = 60) int toStep,
       @Param(value = "caStateRange", dNPM = "m.range(min=-1;max=1)") DoubleRange caStateRange,
       @Param(value = "targetRange", dNPM = "m.range(min=0;max=1)") DoubleRange targetRange) {
     return new MRCAMorphogenesis(
         gray ? ImageUtils.toGrayGrid(target) : ImageUtils.toRGBGrid(target),
         new IntRange(fromStep, toStep),
-        stateDistance,
+        gray ? MRCAMorphogenesis.StateDistance.L1_1 : MRCAMorphogenesis.StateDistance.L1_3,
         caStateRange,
         targetRange);
   }

@@ -3,39 +3,28 @@ ea.experiment(
     (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
     (solver = (nEval = [500]) * [
       ea.s.ga(
-        name = "ga-nn-d=0.1-c=1";
+        name = "ga-nn-d=0.1-c=5";
         representation = ea.representation.doubleString();
         mapper = ea.m.nmrfToMrca(
           additiveCoefficient = 0.1;
-          nOfAdditionalChannels = 1;
+          nOfAdditionalChannels = 5;
           alivenessThreshold = 0.1;
           of = ea.m.ntissToNmrf(of = ea.m.dsToNpnds(npnds = ds.num.mlp(innerLayerRatio = 1; nOfInnerLayers = 1)))
         )
       );
       ea.s.ga(
-        name = "ga-mgp-d=0.1-c=1";
+        name = "ga-mgp-d=0.1-c=5";
         representation = ea.representation.multiSRTree();
         mapper = ea.m.nmrfToMrca(
           additiveCoefficient = 0.1;
-          nOfAdditionalChannels = 1;
+          nOfAdditionalChannels = 5;
           alivenessThreshold = 0.1;
           of = ea.m.multiSrTreeToNmrf()
         )
-      );
-      ea.s.ga(
-        name = "ga-mgp-d=0.1-c=1-noised";
-        representation = ea.representation.multiSRTree();
-        mapper = ea.m.nmrfToMrca(
-          additiveCoefficient = 0.1;
-          nOfAdditionalChannels = 1;
-          alivenessThreshold = 0.1;
-          of = ea.m.noisedNmrf(sigma = 0.05; of = ea.m.multiSrTreeToNmrf())
-        )
       )
     ]) * (problem = [
-      ea.p.s.mrCaStringMorphogenesis(s = "+"; w = 15; h = 15; name = "+"; fromStep = 40; toStep = 60);
-      ea.p.s.mrCaStringMorphogenesis(s = "x"; w = 15; h = 15; name = "x"; fromStep = 40; toStep = 60);
-      ea.p.s.mrCaStringMorphogenesis(s = "o"; w = 15; h = 15; name = "o"; fromStep = 40; toStep = 60)
+      ea.p.s.mrCaNamedImageMorphogenesis(iName = "avocado.png"; name = "rgb-avocado"; w = 15; h = 15);
+      ea.p.s.mrCaStringMorphogenesis(s = "+"; name = "gs-+"; w = 15; h = 15)
     ]) * [ea.run()];
   listeners = [
     ea.l.console(
@@ -61,7 +50,14 @@ ea.experiment(
     ea.l.saveForRun(
       path = "../best-ca-{run.problem.name}-{run.solver.name}-{run.randomGenerator.seed:%04d}";
       of = ea.acc.lastBest();
-      processor = ea.f.toVideo(video = ea.misc.caVideo(sizeRate = 10); of = ea.f.solution())
+      processor = ea.f.toVideo(video = ea.misc.caVideo(sizeRate = 10); of = ea.f.solution());
+      condition = predicate.matches(f = ea.f.runKey(key = "run.problem.name"); regex = "gs-.*")
+    );
+    ea.l.saveForRun(
+      path = "../best-ca-{run.problem.name}-{run.solver.name}-{run.randomGenerator.seed:%04d}";
+      of = ea.acc.lastBest();
+      processor = ea.f.toVideo(video = ea.misc.caVideo(sizeRate = 10; gray = false); of = ea.f.solution());
+      condition = predicate.matches(f = ea.f.runKey(key = "run.problem.name"); regex = "rgb-.*")
     )
   ]
 )

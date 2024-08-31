@@ -52,6 +52,8 @@ ea.p.s.mrCaStringMorphogenesis(s = "🌶"; w = 15; h = 15; name = "+"; fromStep 
     drawer.show(prob.getTargetGrid());
     ImageUtils.stringDrawer(Color.WHITE, Color.BLACK, 0.1)
         .show(new ImageBuilder.ImageInfo(100, 100), "\uD83D\uDC31");
+    ImageUtils.imageDrawer(Color.BLACK, 0.1)
+        .show(new ImageBuilder.ImageInfo(15, 15), ImageUtils.loadFromResource("grin.png"));
 
     int stateSize = 5;
     int l = 15;
