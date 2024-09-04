@@ -63,7 +63,8 @@ public class Utils {
       map = experiment.map();
     }
     if (run != null) {
-      map = map.and("run", ParamMap.Type.NAMED_PARAM_MAP, run.map().and("index", ParamMap.Type.INT, run.index()));
+      map = map.with(
+          "run", ParamMap.Type.NAMED_PARAM_MAP, run.map().with("index", ParamMap.Type.INT, run.index()));
     }
     return Interpolator.interpolate(format, map, "_");
   }

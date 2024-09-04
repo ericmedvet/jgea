@@ -23,7 +23,10 @@ package io.github.ericmedvet.jgea.experimenter;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
-import io.github.ericmedvet.jnb.core.*;
+import io.github.ericmedvet.jnb.core.BuilderException;
+import io.github.ericmedvet.jnb.core.NamedBuilder;
+import io.github.ericmedvet.jnb.core.NamedParamMap;
+import io.github.ericmedvet.jnb.core.ParamMap;
 import io.github.ericmedvet.jnb.core.parsing.StringParser;
 import java.io.IOException;
 import java.io.InputStream;
@@ -157,7 +160,7 @@ public class Starter {
               ? configuration.exampleExperimentDescriptionResourceName
               : configuration.experimentDescriptionFilePath);
       NamedParamMap expNPM = StringParser.parse(expDescription)
-          .and("name", ParamMap.Type.STRING, path.getFileName().toString());
+          .with("name", ParamMap.Type.STRING, path.getFileName().toString());
       experiment = (Experiment) nb.build(expNPM);
     }
     // check if just check

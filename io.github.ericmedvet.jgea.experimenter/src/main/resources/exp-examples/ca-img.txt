@@ -1,7 +1,7 @@
 ea.experiment(
   runs =
     (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
-    (solver = (nEval = [2500]) * [
+    (solver = (nEval = [500]) * [
       ea.s.ga(
         name = "ga-nn-d=0.1-c=3";
         representation = ea.representation.doubleString();
@@ -51,7 +51,7 @@ ea.experiment(
       condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "ga-mgp-.*")
     );
     ea.l.saveForRun(
-      path = "../best-ca-{run.problem.name}-{run.solver.name}-{run.randomGenerator.seed:%04d}";
+      path = "../best-ca-{run.name}-{run.problem.name}-{run.solver.name}-{run.randomGenerator.seed:%04d}";
       of = ea.acc.lastBest();
       processor = ea.f.toVideo(video = ea.misc.caVideo(sizeRate = 10); of = ea.f.solution());
       condition = predicate.matches(f = ea.f.runKey(key = "run.problem.name"); regex = "gs-.*")
