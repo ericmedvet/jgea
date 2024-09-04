@@ -35,15 +35,15 @@ ea.experiment(
       ]
     );
     ea.l.savePlotForExp(
-      path = "../{name}-fitness";
+      path = "../{name}/{startTime}/fitness";
       plot = ea.plot.multi.quality(x = ea.f.nOfEvals())
     );
     ea.l.savePlotForExp(
-      path = "../{name}-fitness-bp";
+      path = "../{name}/{startTime}/fitness-bp";
       plot = ea.plot.multi.qualityBoxplot()
     );
     ea.l.savePlotForExp(
-      path = "../{name}-size";
+      path = "../{name}/{startTime}/size";
       plot = ea.plot.multi.xyExp(
         x = ea.f.nOfEvals();
         y = ea.f.size(of = ea.f.genotype(of = ea.f.best()))
@@ -51,13 +51,13 @@ ea.experiment(
       condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "ga-mgp-.*")
     );
     ea.l.saveForRun(
-      path = "../best-ca-{run.name}-{run.problem.name}-{run.solver.name}-{run.randomGenerator.seed:%04d}";
+      path = "../{name}/{startTime}/best-ca-{run.name}-{run.problem.name}-{run.solver.name}-{run.randomGenerator.seed:%04d}";
       of = ea.acc.lastBest();
       processor = ea.f.toVideo(video = ea.misc.caVideo(sizeRate = 10); of = ea.f.solution());
       condition = predicate.matches(f = ea.f.runKey(key = "run.problem.name"); regex = "gs-.*")
     );
     ea.l.saveForRun(
-      path = "../best-ca-{run.problem.name}-{run.solver.name}-{run.randomGenerator.seed:%04d}";
+      path = "../{name}/{startTime}/best-ca-{run.problem.name}-{run.solver.name}-{run.randomGenerator.seed:%04d}";
       of = ea.acc.lastBest();
       processor = ea.f.toVideo(video = ea.misc.caVideo(sizeRate = 10; gray = false); of = ea.f.solution());
       condition = predicate.matches(f = ea.f.runKey(key = "run.problem.name"); regex = "rgb-.*")

@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.Locale;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -160,7 +161,12 @@ public class Starter {
               ? configuration.exampleExperimentDescriptionResourceName
               : configuration.experimentDescriptionFilePath);
       NamedParamMap expNPM = StringParser.parse(expDescription)
-          .with("name", ParamMap.Type.STRING, path.getFileName().toString());
+          .with("name", ParamMap.Type.STRING, path.getFileName().toString())
+          .with(
+              "startTime",
+              ParamMap.Type.STRING,
+              "%1$tY-%1$tm-%1$td--%1$tH-%1$tM-%1$tS"
+                  .formatted(Instant.now().toEpochMilli()));
       experiment = (Experiment) nb.build(expNPM);
     }
     // check if just check

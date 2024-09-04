@@ -156,7 +156,7 @@ public class Listeners {
           Stream.concat(defaultRunFunctions.stream(), runFunctions.stream())
               .map(f -> reformatToFit(f, experiment.runs()))
               .toList(),
-          new File(Utils.interpolate(path, experiment, null)),
+          Utils.interpolate(path, experiment, null),
           errorString,
           intFormat,
           doubleFormat);
@@ -242,7 +242,7 @@ public class Listeners {
             Stream.concat(defaultRunFunctions.stream(), runFunctions.stream())
                 .map(f -> reformatToFit(f, experiment.runs()))
                 .toList(),
-            new File(Utils.interpolate(path, experiment, null)),
+            Utils.interpolate(path, experiment, null),
             errorString,
             intFormat,
             doubleFormat),

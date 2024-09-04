@@ -32,6 +32,7 @@ import java.util.function.BiFunction;
 @Discoverable(prefixTemplate = "ea")
 public record Experiment(
     @Param(value = "name", dS = "") String name,
+    @Param(value = "startTime", dS = "") String startTime,
     @Param("runs") List<Run<?, ?, ?, ?>> runs,
     @Param(value = "", injection = Param.Injection.MAP_WITH_DEFAULTS) ParamMap map,
     @Param(

@@ -21,6 +21,9 @@
 package io.github.ericmedvet.jgea.core.util;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -58,36 +61,6 @@ public class Misc {
           .toList();
     }
     return cartesian(tss.subList(1, tss.size()), cartesian(tss.subList(0, 1), lists));
-  }
-
-  public static File checkExistenceAndChangeName(File file) {
-    String originalFileName = file.getPath();
-    while (file.exists()) {
-      String newName = null;
-      Matcher mNum = Pattern.compile("\\((?<n>[0-9]+)\\)\\.\\w+$").matcher(file.getPath());
-      if (mNum.find()) {
-        int n = Integer.parseInt(mNum.group("n"));
-        newName = new StringBuilder(file.getPath())
-            .replace(mNum.start("n"), mNum.end("n"), Integer.toString(n + 1))
-            .toString();
-      }
-      Matcher mExtension = Pattern.compile("\\.\\w+$").matcher(file.getPath());
-      if (newName == null && mExtension.find()) {
-        newName = new StringBuilder(file.getPath())
-            .replace(mExtension.start(), mExtension.end(), ".(1)" + mExtension.group())
-            .toString();
-      }
-      if (newName == null) {
-        newName = file.getPath() + ".newer";
-      }
-      file = new File(newName);
-    }
-    if (!file.getPath().equals(originalFileName)) {
-      L.log(
-          Level.WARNING,
-          String.format("Given file name (%s) exists; will write on %s", originalFileName, file.getPath()));
-    }
-    return file;
   }
 
   public static <K> List<K> concat(List<List<? extends K>> lists) {
@@ -178,6 +151,47 @@ public class Misc {
   @SuppressWarnings("unchecked")
   public static <T> T pickRandomly(Collection<T> ts, RandomGenerator random) {
     return (T) ts.toArray()[random.nextInt(ts.size())];
+  }
+
+  public static File robustGetFile(String pathName) throws IOException {
+    // create directory
+    Path path = Path.of(pathName);
+    Path filePath = path.getFileName();
+    Path dirsPath;
+    if (path.getNameCount() > 1) {
+      // create directories
+      dirsPath = path.subpath(0, path.getNameCount() - 1);
+      Files.createDirectories(dirsPath);
+    } else {
+      dirsPath = Path.of(".");
+    }
+    // check file existence
+    while (dirsPath.resolve(filePath).toFile().exists()) {
+      String newName = null;
+      Matcher mNum = Pattern.compile("\\((?<n>[0-9]+)\\)\\.\\w+$").matcher(filePath.toString());
+      if (mNum.find()) {
+        int n = Integer.parseInt(mNum.group("n"));
+        newName = new StringBuilder(filePath.toString())
+            .replace(mNum.start("n"), mNum.end("n"), Integer.toString(n + 1))
+            .toString();
+      }
+      Matcher mExtension = Pattern.compile("\\.\\w+$").matcher(filePath.toString());
+      if (newName == null && mExtension.find()) {
+        newName = new StringBuilder(filePath.toString())
+            .replace(mExtension.start(), mExtension.end(), ".(1)" + mExtension.group())
+            .toString();
+      }
+      if (newName == null) {
+        newName = filePath.toString() + ".newer";
+      }
+      filePath = Path.of(newName);
+    }
+    if (!path.equals(dirsPath.resolve(filePath))) {
+      L.log(
+          Level.WARNING,
+          String.format("Given file path '%s' exists; will write on '%s'", path, dirsPath.resolve(filePath)));
+    }
+    return dirsPath.resolve(filePath).toFile();
   }
 
   public static <K> List<K> shuffle(List<K> list, RandomGenerator random) {

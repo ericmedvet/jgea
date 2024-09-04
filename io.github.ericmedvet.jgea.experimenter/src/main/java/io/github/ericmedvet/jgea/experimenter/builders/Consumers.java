@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.Objects;
 import java.util.function.Function;
 import javax.imageio.ImageIO;
 
@@ -48,6 +49,40 @@ public class Consumers {
   @Cacheable
   public static TriConsumer<?, ?, ?> deaf() {
     return Naming.named("deaf", (i1, i2, i3) -> {});
+  }
+
+  private static void save(Object o, String filePath) {
+    File file = null;
+    try {
+      if (o instanceof BufferedImage image) {
+        file = Misc.robustGetFile(filePath + ".png");
+        ImageIO.write(image, "png", file);
+      } else if (o instanceof String s) {
+        file = Misc.robustGetFile(filePath + ".txt");
+        Files.writeString(file.toPath(), s, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+      } else if (o instanceof Video video) {
+        file = Misc.robustGetFile(filePath + ".mp4");
+        Files.write(file.toPath(), video.data(), StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+      } else if (o instanceof byte[] data) {
+        file = Misc.robustGetFile(filePath + ".bin");
+        try (OutputStream os = new FileOutputStream(file)) {
+          os.write(data);
+        }
+      } else if (o instanceof NamedParamMap npm) {
+        file = Misc.robustGetFile(filePath + ".txt");
+        Files.writeString(
+            file.toPath(),
+            MapNamedParamMap.prettyToString(npm),
+            StandardOpenOption.WRITE,
+            StandardOpenOption.CREATE);
+      } else {
+        throw new IllegalArgumentException(
+            "Cannot save data of type %s".formatted(o.getClass().getSimpleName()));
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(
+          "Cannot save '%s'".formatted(Objects.isNull(file) ? filePath : file.getPath()), e);
+    }
   }
 
   @SuppressWarnings("unused")
@@ -83,33 +118,5 @@ public class Consumers {
     return Naming.named(
         "telegram[%s→to:%s]".formatted(NamedFunction.name(f), chatId),
         (x, run, experiment) -> client.send(Utils.interpolate(titleTemplate, experiment, run), f.apply(x)));
-  }
-
-  private static void save(Object o, String filePath) {
-    File file = null;
-    try {
-      if (o instanceof BufferedImage image) {
-        file = Misc.checkExistenceAndChangeName(new File(filePath + ".png"));
-        ImageIO.write(image, "png", file);
-      } else if (o instanceof String s) {
-        file = Misc.checkExistenceAndChangeName(new File(filePath + ".txt"));
-        Files.writeString(file.toPath(), s, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
-      } else if (o instanceof Video video) {
-        file = Misc.checkExistenceAndChangeName(new File(filePath + ".mp4"));
-        Files.write(file.toPath(), video.data(), StandardOpenOption.WRITE, StandardOpenOption.CREATE);
-      } else if (o instanceof byte[] data) {
-        file = Misc.checkExistenceAndChangeName(new File(filePath + ".bin"));
-        try (OutputStream os = new FileOutputStream(file)) {
-          os.write(data);
-        }
-      } else if (o instanceof NamedParamMap npm) {
-        save(MapNamedParamMap.prettyToString(npm), filePath);
-      } else {
-        throw new IllegalArgumentException(
-            "Cannot save data of type %s".formatted(o.getClass().getSimpleName()));
-      }
-    } catch (IOException e) {
-      throw new RuntimeException("Cannot save '%s'".formatted(file.getPath()), e);
-    }
   }
 }
