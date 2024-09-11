@@ -22,7 +22,7 @@ package io.github.ericmedvet.jgea.core.problem;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import java.util.function.Function;
 
-public interface QualityBasedProblem<S, Q> extends Problem<S> {
+public interface QualityBasedProblem<S, Q> extends Problem<S>, Function<S, Q> {
 
   PartialComparator<Q> qualityComparator();
 
@@ -41,6 +41,11 @@ public interface QualityBasedProblem<S, Q> extends Problem<S> {
         return qualityFunction;
       }
     };
+  }
+
+  @Override
+  default Q apply(S s) {
+    return qualityFunction().apply(s);
   }
 
   @Override
