@@ -189,11 +189,13 @@ ea.experiment(
       plot = ea.plot.s.xyes(
         title = ea.f.runString(name = title; s = "Validation with {run.solver.name} on {run.problem.name} (seed={run.randomGenerator.seed})");
         x = ea.f.simQuality(of = ea.f.quality());
-        y = ea.f.simQuality(of = ea.f.quality());
+        % y = ea.f.simQuality(of = f.composition(of = ea.f.solution(); then = $validationProblem));
+        y = ea.f.simQuality(of = ea.f.fromProblem(of = ea.f.solution(); problem = $validationProblem));
         points = [ea.f.all()];
         predicateValue = f.quantized(of = ea.f.rate(of = ea.f.progress()); q = 0.05; format = "%.2f");
         condition = predicate.inD(values = [0; 0.1; 0.25; 0.50; 1])
-      )
+      );
+      processor = ea.f.imagePlotter(secondary = true)
     );
     ea.l.saveForRun(
       path = "../RESULTS/{name}/{startTime}/{run.solver.name}/best-traj-validation-{run.randomGenerator.seed:%04d}";

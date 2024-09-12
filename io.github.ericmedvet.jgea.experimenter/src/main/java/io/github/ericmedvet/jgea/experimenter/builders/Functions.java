@@ -22,6 +22,7 @@ package io.github.ericmedvet.jgea.experimenter.builders;
 import io.github.ericmedvet.jgea.core.problem.MultiTargetProblem;
 import io.github.ericmedvet.jgea.core.problem.Problem;
 import io.github.ericmedvet.jgea.core.problem.ProblemWithValidation;
+import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
@@ -205,6 +206,15 @@ public class Functions {
     Function<POCPopulationState<I, G, S, Q, ?>, Collection<I>> f =
         state -> state.pocPopulation().firsts();
     return NamedFunction.from(f, "firsts").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  public static <X, S, Q> FormattedNamedFunction<X, Q> fromProblem(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, S> beforeF,
+      @Param("problem") QualityBasedProblem<S, Q> problem,
+      @Param(value = "name", iS = "{problem.name}") String name,
+      @Param(value = "format", dS = "%s") String format) {
+    return FormattedNamedFunction.from(problem, format, name).compose(beforeF);
   }
 
   @SuppressWarnings("unused")
