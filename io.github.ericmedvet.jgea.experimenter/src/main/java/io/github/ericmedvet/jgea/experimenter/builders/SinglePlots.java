@@ -145,7 +145,8 @@ public class SinglePlots {
               @Param(
                       value = "title",
                       dNPM =
-                          "ea.f.runString(name=title;s=\"{run.solver.name} on {run.problem.name} (seed={run.randomGenerator.seed})\")")
+                          "ea.f.runString(name=title;s=\"{run.solver.name} on {run.problem.name} (seed={run.randomGenerator"
+                              + ".seed})\")")
                   Function<? super Run<?, List<Double>, S, Double>, String> titleFunction,
               @Param(
                       value = "predicateValue",
@@ -206,6 +207,23 @@ public class SinglePlots {
                   ea.f.mids();
                   ea.f.lasts()
                 ];
+                predicateValue = f.quantized(of = ea.f.rate(of = ea.f.progress()); q = 0.05; format = "%.2f");
+                condition = predicate.inD(values = [0; 0.1; 0.25; 0.50; 1])
+              )
+              """) // spotless:on
+  @Alias(
+      name = "populationValidation",
+      passThroughParams = {
+        @PassThroughParam(name = "q", value = "f.identity()", type = ParamMap.Type.NAMED_PARAM_MAP),
+        @PassThroughParam(name = "v", type = ParamMap.Type.NAMED_PARAM_MAP)
+      },
+      value = // spotless:off
+          """
+              xyes(
+                title = ea.f.runString(name = title; s = "Population validation of {run.solver.name} on {run.problem.name} (seed={run.randomGenerator.seed})");
+                x = f.composition(of = ea.f.quality(); then = $q);
+                y = f.composition(of = f.composition(of = ea.f.solution(); then = $v); then = $q);
+                points = [ea.f.all()];
                 predicateValue = f.quantized(of = ea.f.rate(of = ea.f.progress()); q = 0.05; format = "%.2f");
                 condition = predicate.inD(values = [0; 0.1; 0.25; 0.50; 1])
               )

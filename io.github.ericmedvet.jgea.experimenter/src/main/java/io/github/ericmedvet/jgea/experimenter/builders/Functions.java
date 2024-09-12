@@ -56,6 +56,7 @@ import io.github.ericmedvet.jviz.core.plot.video.*;
 import io.github.ericmedvet.jviz.core.util.VideoUtils;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -262,11 +263,28 @@ public class Functions {
       @Param(value = "of", dNPM = "f.identity()") Function<X, P> beforeF,
       @Param(value = "w", dI = -1) int w,
       @Param(value = "h", dI = -1) int h,
+      @Param(value = "axesShow", dS = "border") Configuration.PlotMatrix.Show axesShow,
+      @Param(value = "titlesShow", dS = "border") Configuration.PlotMatrix.Show titlesShow,
+      @Param(
+              value = "independences",
+              dSs = {"rows", "cols"})
+          List<Configuration.PlotMatrix.Independence> independences,
       @Param("freeScales") boolean freeScales,
       @Param("secondary") boolean secondary) {
     UnaryOperator<ImageBuilder.ImageInfo> iiAdapter =
         ii -> new ImageBuilder.ImageInfo(w == -1 ? ii.w() : w, h == -1 ? ii.h() : h);
-    Configuration configuration = freeScales ? Configuration.FREE_SCALES : Configuration.DEFAULT;
+    Configuration configuration = new Configuration(
+        Configuration.General.DEFAULT,
+        Configuration.Layout.DEFAULT,
+        Configuration.Colors.DEFAULT,
+        Configuration.Text.DEFAULT,
+        new Configuration.PlotMatrix(axesShow, titlesShow, new HashSet<>(independences)),
+        Configuration.LinesPlot.DEFAULT,
+        Configuration.PointsPlot.DEFAULT,
+        Configuration.UnivariateGridPlot.DEFAULT,
+        Configuration.LandscapePlot.DEFAULT,
+        Configuration.BoxPlot.DEFAULT,
+        false);
     Function<P, BufferedImage> f = p -> {
       if (p instanceof DistributionPlot dp) {
         BoxPlotDrawer d = new BoxPlotDrawer(configuration, Configuration.BoxPlot.DEFAULT);

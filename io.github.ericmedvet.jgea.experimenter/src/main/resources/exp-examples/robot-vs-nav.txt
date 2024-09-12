@@ -18,15 +18,23 @@ $descBrainUsage2 = f.mathOp(of = f.pairSecond(of = ea.f.genotype()); op = add; a
 ])
 $telegram = ea.c.telegram(botIdFilePath = "/home/eric/Documenti/experiments/tlg.txt"; chatId = "207490209")
 $evolutionProblem = ea.p.simTo(
-  simulation = ds.s.variableSensorPositionsNavigation(arena = e_maze; nOfSensors = 9; finalT = 20);
-  f = ds.e.n.avgD();
+  simulation = ds.s.variableSensorPositionsNavigation(arena = b_barrier; nOfSensors = 9; finalT = 20);
+  f = ds.e.n.finalD();
   type = minimize
 )
 $validationProblem = ea.p.simTo(
-  simulation = ds.s.variableSensorPositionsNavigation(arena = deceptive_maze; nOfSensors = 9; finalT = 20);
-  f = ds.e.n.avgD();
+  simulation = ds.s.variableSensorPositionsNavigation(arena = a_barrier; nOfSensors = 9; finalT = 20);
+  f = ds.e.n.finalD();
   type = minimize
 )
+$popSuccessRate = f.size(of = f.filter(
+  of = f.each(
+    of = ea.f.all();
+    mapF = ea.f.simQuality(of = ea.f.quality())
+  );
+  condition = predicate.lt(t = 0.05);
+  format = "%3d"
+))
 
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
@@ -163,6 +171,7 @@ ea.experiment(
     ea.l.console(
       functions = [
         ea.f.simQuality(of = ea.f.quality(of = ea.f.best()); format = "%9.5f");
+        $popSuccessRate;
         ea.f.archiveCoverage(of = ea.f.meArchive())
       ];
       onlyLast = true
@@ -172,60 +181,53 @@ ea.experiment(
       preprocessor = ea.f.toVideo(video = ea.misc.toVideo(drawer = ds.d.navigation()); of = ea.f.simOutcome(of = ea.f.quality()));
       consumers = [
         % $telegram;
-        ea.c.saver(path = "../RESULTS/{name}/{startTime}/{run.solver.name}/best-traj-{run.randomGenerator.seed:%04d}")
-      ];
-      condition = predicate.inS(f = ea.f.runKey(key = "run.randomGenerator.seed"); values = ["1"])
+        ea.c.saver(path = "../RESULTS/{name}/{startTime}/{run.solver.name}/best-traj-{run.randomGenerator.seed:%03d}")
+      ]
     );
     ea.l.onRunDone(
       of = ea.acc.lastBest();
       preprocessor = ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = ea.f.quality()));
       consumers = [
         % $telegram;
-        ea.c.saver(path = "../RESULTS/{name}/{startTime}/{run.solver.name}/best-traj-{run.randomGenerator.seed:%04d}")
+        ea.c.saver(path = "../RESULTS/{name}/{startTime}/{run.solver.name}/best-traj-{run.randomGenerator.seed:%03d}")
       ]
     );
     ea.l.savePlotForRun(
-      path = "../RESULTS/{name}/{startTime}/{run.solver.name}/evo-vs-validation-{run.randomGenerator.seed}";
-      plot = ea.plot.s.xyes(
-        title = ea.f.runString(name = title; s = "Validation with {run.solver.name} on {run.problem.name} (seed={run.randomGenerator.seed})");
-        x = ea.f.simQuality(of = ea.f.quality());
-        % y = ea.f.simQuality(of = f.composition(of = ea.f.solution(); then = $validationProblem));
-        y = ea.f.simQuality(of = ea.f.fromProblem(of = ea.f.solution(); problem = $validationProblem));
-        points = [ea.f.all()];
-        predicateValue = f.quantized(of = ea.f.rate(of = ea.f.progress()); q = 0.05; format = "%.2f");
-        condition = predicate.inD(values = [0; 0.1; 0.25; 0.50; 1])
+      path = "../RESULTS/{name}/{startTime}/{run.solver.name}/evo-vs-validation-{run.randomGenerator.seed:%03d}";
+      plot = ea.plot.s.populationValidation(
+        q = ea.f.simQuality();
+        v = ea.f.fromProblem(problem = $validationProblem)
       );
-      processor = ea.f.imagePlotter(secondary = true)
+      processor = ea.f.imagePlotter(secondary = true; independences = [])
     );
     ea.l.saveForRun(
-      path = "../RESULTS/{name}/{startTime}/{run.solver.name}/best-traj-validation-{run.randomGenerator.seed:%04d}";
+      path = "../RESULTS/{name}/{startTime}/{run.solver.name}/best-validation-traj-{run.randomGenerator.seed:%03d}";
       of = ea.acc.last(eFunction = ea.f.solution(of = ea.f.best()));
       processor = ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = $validationProblem))
     );
     ea.l.saveForRun(
-      path = "../RESULTS/{name}/{startTime}/{run.solver.name}/trajs-{run.randomGenerator.seed:%04d}";
+      path = "../RESULTS/{name}/{startTime}/{run.solver.name}/trajs-{run.randomGenerator.seed:%03d}";
       of = ea.acc.bests();
-      processor = ea.f.toImagesVideo(image = ds.d.navigation(); of = f.each(mapF = ea.f.simOutcome(of = ea.f.quality())));
-      condition = predicate.inS(f = ea.f.runKey(key = "run.randomGenerator.seed"); values = ["0"])
+      processor = ea.f.toImagesVideo(image = ds.d.navigation(); of = f.each(mapF = ea.f.simOutcome(of = ea.f.quality())))
     );
     ea.l.saveForRun(
-      path = "../RESULTS/{name}/{startTime}/{run.solver.name}/me-{run.randomGenerator.seed}";
+      path = "../RESULTS/{name}/{startTime}/{run.solver.name}/archive-{run.randomGenerator.seed:%03d}";
       of = ea.plot.single.me(q = ea.f.simQuality(); condition = predicate.always());
       processor = ea.f.videoPlotter();
       condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "me2-.*")
     );
     ea.l.savePlotForRun(
-      path = "../RESULTS/{name}/{startTime}/{run.solver.name}/me-{run.randomGenerator.seed}";
+      path = "../RESULTS/{name}/{startTime}/{run.solver.name}/archive-{run.randomGenerator.seed:%03d}";
       plot = ea.plot.single.me(q = ea.f.simQuality());
       condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "me2-.*")
     );
     ea.l.savePlotForRun(
-      path = "../RESULTS/{name}/{startTime}/{run.solver.name}/come-{run.randomGenerator.seed}";
+      path = "../RESULTS/{name}/{startTime}/{run.solver.name}/archives-{run.randomGenerator.seed:%03d}";
       plot = ea.plot.single.coMe(q = ea.f.simQuality());
       condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "come-.*")
     );
     ea.l.savePlotForRun(
-      path = "../RESULTS/{name}/{startTime}/{run.solver.name}/come-strategy-{run.randomGenerator.seed}";
+      path = "../RESULTS/{name}/{startTime}/{run.solver.name}/come-strategy-{run.randomGenerator.seed:%03d}";
       plot = ea.plot.single.coMeStrategies();
       condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "come-.*")
     );
