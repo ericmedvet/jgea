@@ -31,6 +31,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBasedProblem<S, Q>>
     extends POCPopulationState<CoMEIndividual<G1, G2, S1, S2, S, Q>, Pair<G1, G2>, S, Q, P> {
@@ -39,9 +40,9 @@ public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBase
 
   List<MapElites.Descriptor<G2, S2, Q>> descriptors2();
 
-  Archive<MEIndividual<G1, S1, Q>> mapOfElites1();
+  Archive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> mapOfElites1();
 
-  Archive<MEIndividual<G2, S2, Q>> mapOfElites2();
+  Archive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> mapOfElites2();
 
   CoMEStrategy strategy1();
 
@@ -85,8 +86,8 @@ public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBase
       Collection<CoMEIndividual<G1, G2, S1, S2, S, Q>> individuals,
       List<MapElites.Descriptor<G1, S1, Q>> descriptors1,
       List<MapElites.Descriptor<G2, S2, Q>> descriptors2,
-      Archive<MEIndividual<G1, S1, Q>> mapOfElites1,
-      Archive<MEIndividual<G2, S2, Q>> mapOfElites2,
+      Archive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> mapOfElites1,
+      Archive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> mapOfElites2,
       CoMEStrategy strategy1,
       CoMEStrategy strategy2) {
     PartialComparator<? super CoMEIndividual<G1, G2, S1, S2, S, Q>> comparator =
@@ -102,8 +103,8 @@ public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBase
         PartiallyOrderedCollection<CoMEIndividual<G1, G2, S1, S2, S, Q>> pocPopulation,
         List<MapElites.Descriptor<G1, S1, Q>> descriptors1,
         List<MapElites.Descriptor<G2, S2, Q>> descriptors2,
-        Archive<MEIndividual<G1, S1, Q>> mapOfElites1,
-        Archive<MEIndividual<G2, S2, Q>> mapOfElites2,
+        Archive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> mapOfElites1,
+        Archive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> mapOfElites2,
         CoMEStrategy strategy1,
         CoMEStrategy strategy2)
         implements CoMEPopulationState<G1, G2, S1, S2, S, Q, P> {}
@@ -127,9 +128,8 @@ public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBase
   default CoMEPopulationState<G1, G2, S1, S2, S, Q, P> updatedWithIteration(
       long nOfNewBirths,
       long nOfNewQualityEvaluations,
-      Collection<CoMEIndividual<G1, G2, S1, S2, S, Q>> individuals,
-      Archive<MEIndividual<G1, S1, Q>> mapOfElites1,
-      Archive<MEIndividual<G2, S2, Q>> mapOfElites2,
+      Archive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> mapOfElites1,
+      Archive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> mapOfElites2,
       CoMEStrategy strategy1,
       CoMEStrategy strategy2) {
     return of(
@@ -140,7 +140,10 @@ public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBase
         stopCondition(),
         nOfBirths() + nOfNewBirths,
         nOfQualityEvaluations() + nOfNewQualityEvaluations,
-        individuals,
+        Stream.concat(
+                mapOfElites1.asMap().values().stream().map(CoMEPartialIndividual::completeIndividual),
+                mapOfElites2.asMap().values().stream().map(CoMEPartialIndividual::completeIndividual))
+            .toList(),
         descriptors1(),
         descriptors2(),
         mapOfElites1,

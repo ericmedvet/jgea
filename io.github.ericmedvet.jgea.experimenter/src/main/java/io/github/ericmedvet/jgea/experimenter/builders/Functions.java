@@ -106,18 +106,18 @@ public class Functions {
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X, G, S, Q> NamedFunction<X, Archive<MEIndividual<G, S, Q>>> coMeArchive1(
+  public static <X, G, S, Q> NamedFunction<X, Archive<? extends MEIndividual<G, S, Q>>> coMeArchive1(
       @Param(value = "of", dNPM = "f.identity()") Function<X, CoMEPopulationState<G, ?, S, ?, ?, Q, ?>> beforeF) {
-    Function<CoMEPopulationState<G, ?, S, ?, ?, Q, ?>, Archive<MEIndividual<G, S, Q>>> f =
+    Function<CoMEPopulationState<G, ?, S, ?, ?, Q, ?>, Archive<? extends MEIndividual<G, S, Q>>> f =
         CoMEPopulationState::mapOfElites1;
     return NamedFunction.from(f, "coMe.archive1").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X, G, S, Q> NamedFunction<X, Archive<MEIndividual<G, S, Q>>> coMeArchive2(
+  public static <X, G, S, Q> NamedFunction<X, Archive<? extends MEIndividual<G, S, Q>>> coMeArchive2(
       @Param(value = "of", dNPM = "f.identity()") Function<X, CoMEPopulationState<?, G, ?, S, ?, Q, ?>> beforeF) {
-    Function<CoMEPopulationState<?, G, ?, S, ?, Q, ?>, Archive<MEIndividual<G, S, Q>>> f =
+    Function<CoMEPopulationState<?, G, ?, S, ?, Q, ?>, Archive<? extends MEIndividual<G, S, Q>>> f =
         CoMEPopulationState::mapOfElites2;
     return NamedFunction.from(f, "coMe.archive2").compose(beforeF);
   }

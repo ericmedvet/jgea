@@ -27,7 +27,7 @@ $validationProblem = ea.p.simTo(
   f = ds.e.n.finalD();
   type = minimize
 )
-$popSuccessRate = f.size(of = f.filter(
+$popSuccess = f.size(of = f.filter(
   of = f.each(
     of = ea.f.all();
     mapF = ea.f.simQuality(of = ea.f.quality())
@@ -171,7 +171,7 @@ ea.experiment(
     ea.l.console(
       functions = [
         ea.f.simQuality(of = ea.f.quality(of = ea.f.best()); format = "%9.5f");
-        $popSuccessRate;
+        $popSuccess;
         ea.f.archiveCoverage(of = ea.f.meArchive())
       ];
       onlyLast = true
@@ -247,6 +247,10 @@ ea.experiment(
       path = "../RESULTS/{name}/{startTime}/coverage";
       plot = ea.plot.multi.xyExp(y = ea.f.archiveCoverage(of = ea.f.meArchive()));
       condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "me.-.*")
+    );
+    ea.l.savePlotForExp(
+      path = "../RESULTS/{name}/{startTime}/popSuccess";
+      plot = ea.plot.multi.xyExp(y = $popSuccess)
     )
   ]
 )
