@@ -249,8 +249,12 @@ ea.experiment(
       condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "me.-.*")
     );
     ea.l.savePlotForExp(
-      path = "../RESULTS/{name}/{startTime}/popSuccess";
+      path = "../RESULTS/{name}/{startTime}/pop-success";
       plot = ea.plot.multi.xyExp(y = $popSuccess)
+    )
+    ea.l.savePlotForExp(
+      path = "../RESULTS/{name}/{startTime}/pop-size";
+      plot = ea.plot.multi.xyExp(y = f.size(of = ea.f.all()))
     )
   ]
 )

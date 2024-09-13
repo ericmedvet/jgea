@@ -55,7 +55,9 @@ public interface CoMEStrategy {
 
   default Map<List<Double>, List<Double>> asField(List<Integer> counts, boolean relative) {
     return Misc.cartesian(counts.stream()
-            .map(c -> DoubleRange.UNIT.points(c).boxed().toList())
+            .map(c -> IntStream.range(0, c)
+                .mapToObj(i -> new DoubleRange(0, c - 1).normalize(i))
+                .toList())
             .toList())
         .stream()
         .collect(Collectors.toMap(tc -> tc, tc -> {
