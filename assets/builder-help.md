@@ -2677,7 +2677,7 @@ Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;S, <
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
-| `name` | s | `coMe` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `name` | s | interpolate `coMe-{strategy}` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `representation1` | npm |  | <code><abbr title="java.util.function.Function">Function</abbr>&lt;G1, <abbr title="io.github.ericmedvet.jgea.experimenter.Representation">Representation</abbr>&lt;G1&gt;&gt;</code> |
 | `representation2` | npm |  | <code><abbr title="java.util.function.Function">Function</abbr>&lt;G2, <abbr title="io.github.ericmedvet.jgea.experimenter.Representation">Representation</abbr>&lt;G2&gt;&gt;</code> |
 | `mapper1` | npm | `ea.m.identity()` | <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;G1, S1&gt;</code> |

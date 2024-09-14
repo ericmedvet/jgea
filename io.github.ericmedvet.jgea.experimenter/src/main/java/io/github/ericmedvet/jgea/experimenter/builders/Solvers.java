@@ -110,7 +110,7 @@ public class Solvers {
   @SuppressWarnings("unused")
   @Cacheable
   public static <G1, G2, S1, S2, S, Q> Function<S, CoMapElites<G1, G2, S1, S2, S, Q>> coMapElites(
-      @Param(value = "name", dS = "coMe") String name,
+      @Param(value = "name", iS = "coMe-{strategy}") String name,
       @Param("representation1") Function<G1, Representation<G1>> representation1,
       @Param("representation2") Function<G2, Representation<G2>> representation2,
       @Param(value = "mapper1", dNPM = "ea.m.identity()") InvertibleMapper<G1, S1> mapper1,
