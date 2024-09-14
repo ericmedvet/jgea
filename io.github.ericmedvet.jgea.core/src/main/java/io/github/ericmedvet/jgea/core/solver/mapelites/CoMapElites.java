@@ -347,13 +347,12 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
     // update archives
     Archive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> archive1 = state.mapOfElites1()
         .updated(
-            reproduction1.stream().map(Pair::first).toList(),
+            offspring.stream().map(CoMEPartialIndividual::from1).toList(),
             MEIndividual::bins,
             partialComparator(state.problem()));
-
     Archive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> archive2 = state.mapOfElites2()
         .updated(
-            reproduction2.stream().map(p -> p.first().swapped()).toList(),
+            offspring.stream().map(CoMEPartialIndividual::from2).toList(),
             MEIndividual::bins,
             partialComparator(state.problem()));
     // return state
