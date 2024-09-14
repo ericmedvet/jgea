@@ -20,8 +20,10 @@
 package io.github.ericmedvet.jgea.core.solver.mapelites.strategy;
 
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
+import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class LocalBest implements CoMEStrategy {
 
@@ -31,6 +33,8 @@ public class LocalBest implements CoMEStrategy {
     bests = new HashMap<>();
   }
 
+  protected record PartialObservation<Q>(List<Double> otherCoords, Q q) {}
+
   @Override
   public List<Double> getOtherCoords(List<Double> theseCoords) {
     return bests.getOrDefault(theseCoords, new Pair<>(theseCoords, null)).first();
@@ -38,13 +42,35 @@ public class LocalBest implements CoMEStrategy {
 
   @Override
   public <Q> void update(Collection<Observation<Q>> newObservations, PartialComparator<Q> qComparator) {
-    //noinspection unchecked
-    newObservations.forEach(o -> bests.merge(
-        o.theseCoords(),
-        new Pair<>(o.otherCoords(), o.q()),
-        (currentPair, newPair) -> (qComparator.compare((Q) newPair.second(), (Q) currentPair.second())
-                == PartialComparator.PartialComparatorOutcome.BEFORE)
-            ? newPair
-            : currentPair));
+    newObservations.stream()
+        .collect(Collectors.groupingBy(Observation::theseCoords))
+        .forEach((tc, os) -> {
+          PartialObservation<Q> newOtherCoords = computeNewOtherCoords(
+              tc,
+              os.stream()
+                  .map(o -> new PartialObservation<>(o.otherCoords(), o.q()))
+                  .toList(),
+              qComparator);
+          //noinspection unchecked
+          bests.merge(
+              tc,
+              new Pair<>(newOtherCoords.otherCoords(), newOtherCoords.q()),
+              (currentPair, newPair) ->
+                  (qComparator.compare((Q) newPair.second(), (Q) currentPair.second())
+                          == PartialComparator.PartialComparatorOutcome.BEFORE)
+                      ? newPair
+                      : currentPair);
+        });
+  }
+
+  protected <Q> PartialObservation<Q> computeNewOtherCoords(
+      List<Double> theseCoords,
+      Collection<PartialObservation<Q>> observations,
+      PartialComparator<Q> qComparator) {
+    Collection<PartialObservation<Q>> firsts = PartiallyOrderedCollection.from(
+            observations, (PartialComparator<? super PartialObservation<Q>>)
+                (po1, po2) -> qComparator.compare(po1.q(), po2.q()))
+        .firsts();
+    return firsts.stream().findFirst().orElseThrow();
   }
 }

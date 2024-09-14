@@ -36,7 +36,8 @@ public interface CoMEStrategy {
     IDENTITY(() -> tc -> tc),
     CENTRAL(() -> tc -> Collections.nCopies(tc.size(), 0.5d)),
     GLOBAL_BEST(GlobalBest::new),
-    LOCAL_BEST(LocalBest::new);
+    LOCAL_BEST(LocalBest::new),
+    SMOOTHED_LOCAL_BEST(() -> new SmoothedLocalBest(0.1));
     private final Supplier<CoMEStrategy> supplier;
 
     Prepared(Supplier<CoMEStrategy> supplier) {
