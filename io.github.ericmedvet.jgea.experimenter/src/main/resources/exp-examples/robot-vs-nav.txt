@@ -16,114 +16,61 @@ $descBrainUsage2 = f.mathOp(of = f.pairSecond(of = ea.f.genotype()); op = add; a
   f.size(of = f.filter(of = f.distinct(of = ea.f.treeLeaves(of = f.nTh(n = 0))); condition = predicate.matches(f = f.toString(); regex = "i[0-9]+")));
   f.size(of = f.filter(of = f.distinct(of = ea.f.treeLeaves(of = f.nTh(n = 1))); condition = predicate.matches(f = f.toString(); regex = "i[0-9]+")))
 ])
+$coDescBrainUsage1 = f.mathOp(of = ea.f.genotype(); op = add; args = [
+  ea.f.treeSize(of = f.nTh(n = 0));
+  ea.f.treeSize(of = f.nTh(n = 1))
+])
+$coDescBrainUsage2 = f.mathOp(of = ea.f.genotype(); op = add; args = [
+  f.size(of = f.filter(of = f.distinct(of = ea.f.treeLeaves(of = f.nTh(n = 0))); condition = predicate.matches(f = f.toString(); regex = "i[0-9]+")));
+  f.size(of = f.filter(of = f.distinct(of = ea.f.treeLeaves(of = f.nTh(n = 1))); condition = predicate.matches(f = f.toString(); regex = "i[0-9]+")))
+])
 $telegram = ea.c.telegram(botIdFilePath = "/home/eric/Documenti/experiments/tlg.txt"; chatId = "207490209")
 $evolutionProblem = ea.p.simTo(
-  simulation = ds.s.variableSensorPositionsNavigation(arena = b_barrier; nOfSensors = 9; finalT = 20);
-  f = ds.e.n.finalD();
+  simulation = ds.s.variableSensorPositionsNavigation(arena = b_maze; nOfSensors = 9; finalT = 20);
+  f = ds.e.n.avgD();
   type = minimize
 )
 $validationProblem = ea.p.simTo(
-  simulation = ds.s.variableSensorPositionsNavigation(arena = a_barrier; nOfSensors = 9; finalT = 20);
-  f = ds.e.n.finalD();
+  simulation = ds.s.variableSensorPositionsNavigation(arena = c_maze; nOfSensors = 9; finalT = 20);
+  f = ds.e.n.avgD();
   type = minimize
 )
 $popSuccess = f.size(of = f.filter(
   of = f.each(
     of = ea.f.all();
-    mapF = ea.f.simQuality(of = ea.f.quality())
+    mapF = ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality()))
   );
   condition = predicate.lt(t = 0.05);
   format = "%3d"
 ))
 
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
-  (solver = (nEval = [5000]) * + [
+  runs = (randomGenerator = (seed = [1:1:3]) * [m.defaultRG()]) *
+  (solver = (nEval = [5000]) * + (strategy = [
+    random;
+    smoothed_local_best;
+    local_best;
+    global_best;
+    central;
+    identity
+  ]) * [
     ea.s.coMapElites(
-      name = "come-s_l_best-body+brain-sizes";
       representation1 = ea.representation.doubleString();
       representation2 = ea.representation.multiSRTree();
+      mapper1 = ea.m.identity();
       mapper2 = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf());
       merger = ea.m.identity();
-      strategy = smoothed_local_best;
       neighborRadius = 1.1;
       descriptors1 = [
         ea.s.me.d.descriptor(f = $coDescBody1; min = -1.57; max = 1.57; nOfBins = 10);
         ea.s.me.d.descriptor(f = $coDescBody2; min = 0; max = 3.14; nOfBins = 10)
       ];
       descriptors2 = [
-        ea.s.me.d.descriptor(f = $coDescBrainSize1; min = 10; max = 410; nOfBins = 10);
-        ea.s.me.d.descriptor(f = $coDescBrainSize2; min = 10; max = 410; nOfBins = 10)
+        ea.s.me.d.descriptor(f = $coDescBrainUsage1; min = 0; max = 500; nOfBins = 10);
+        ea.s.me.d.descriptor(f = $coDescBrainUsage2; min = 0; max = 20; nOfBins = 10)
       ]
-    );
-    ea.s.coMapElites(
-      name = "come-l_best-body+brain-sizes";
-      representation1 = ea.representation.doubleString();
-      representation2 = ea.representation.multiSRTree();
-      mapper2 = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf());
-      merger = ea.m.identity();
-      strategy = local_best;
-      neighborRadius = 1.1;
-      descriptors1 = [
-        ea.s.me.d.descriptor(f = $coDescBody1; min = -1.57; max = 1.57; nOfBins = 10);
-        ea.s.me.d.descriptor(f = $coDescBody2; min = 0; max = 3.14; nOfBins = 10)
-      ];
-      descriptors2 = [
-        ea.s.me.d.descriptor(f = $coDescBrainSize1; min = 10; max = 410; nOfBins = 10);
-        ea.s.me.d.descriptor(f = $coDescBrainSize2; min = 10; max = 410; nOfBins = 10)
-      ]
-    );
-    ea.s.coMapElites(
-      name = "come-identity-body+brain-sizes";
-      representation1 = ea.representation.doubleString();
-      representation2 = ea.representation.multiSRTree();
-      mapper2 = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf());
-      merger = ea.m.identity();
-      strategy = identity;
-      neighborRadius = 1.1;
-      descriptors1 = [
-        ea.s.me.d.descriptor(f = $coDescBody1; min = -1.57; max = 1.57; nOfBins = 10);
-        ea.s.me.d.descriptor(f = $coDescBody2; min = 0; max = 3.14; nOfBins = 10)
-      ];
-      descriptors2 = [
-        ea.s.me.d.descriptor(f = $coDescBrainSize1; min = 10; max = 410; nOfBins = 10);
-        ea.s.me.d.descriptor(f = $coDescBrainSize2; min = 10; max = 410; nOfBins = 10)
-      ]
-    );
-    ea.s.coMapElites(
-      name = "come-central-body+brain-sizes";
-      representation1 = ea.representation.doubleString();
-      representation2 = ea.representation.multiSRTree();
-      mapper2 = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf());
-      merger = ea.m.identity();
-      strategy = central;
-      neighborRadius = 1.1;
-      descriptors1 = [
-        ea.s.me.d.descriptor(f = $coDescBody1; min = -1.57; max = 1.57; nOfBins = 10);
-        ea.s.me.d.descriptor(f = $coDescBody2; min = 0; max = 3.14; nOfBins = 10)
-      ];
-      descriptors2 = [
-        ea.s.me.d.descriptor(f = $coDescBrainSize1; min = 10; max = 410; nOfBins = 10);
-        ea.s.me.d.descriptor(f = $coDescBrainSize2; min = 10; max = 410; nOfBins = 10)
-      ]
-    );
-    ea.s.coMapElites(
-      name = "come-g_best-body+brain-sizes";
-      representation1 = ea.representation.doubleString();
-      representation2 = ea.representation.multiSRTree();
-      mapper2 = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf());
-      merger = ea.m.identity();
-      strategy = global_best;
-      neighborRadius = 1.1;
-      descriptors1 = [
-        ea.s.me.d.descriptor(f = $coDescBody1; min = -1.57; max = 1.57; nOfBins = 10);
-        ea.s.me.d.descriptor(f = $coDescBody2; min = 0; max = 3.14; nOfBins = 10)
-      ];
-      descriptors2 = [
-        ea.s.me.d.descriptor(f = $coDescBrainSize1; min = 10; max = 410; nOfBins = 10);
-        ea.s.me.d.descriptor(f = $coDescBrainSize2; min = 10; max = 410; nOfBins = 10)
-      ]
-    )] + 0 *
+    )
+  ] + 0 *
     (mapper = [ea.mapper.pair(second = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf()))]) * [
     ea.s.ga(
       representation = ea.representation.pair(first = ea.representation.doubleString(); second = ea.representation.multiSRTree())
@@ -187,9 +134,9 @@ ea.experiment(
   listeners = [
     ea.l.console(
       functions = [
-        ea.f.simQuality(of = ea.f.quality(of = ea.f.best()); format = "%9.5f");
-        $popSuccess;
-        ea.f.archiveCoverage(of = ea.f.meArchive())
+        ea.f.simQuality(of = ea.f.quality(of = ea.f.best()); format = "%7.5f");
+        ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best())); format = "%7.5f");
+        $popSuccess
       ];
       onlyLast = true
     );
@@ -241,12 +188,12 @@ ea.experiment(
     ea.l.savePlotForRun(
       path = "../RESULTS/{name}/{startTime}/{run.solver.name}/archives-{run.randomGenerator.seed:%03d}";
       plot = ea.plot.single.coMe(q = ea.f.simQuality());
-      condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "come-.*")
+      condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "coMe-.*")
     );
     ea.l.savePlotForRun(
       path = "../RESULTS/{name}/{startTime}/{run.solver.name}/come-strategy-{run.randomGenerator.seed:%03d}";
       plot = ea.plot.single.coMeStrategies();
-      condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "come-.*")
+      condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "coMe-.*")
     );
     ea.l.onExpDone(
       of = ea.plot.multi.quality(q = ea.f.simQuality());

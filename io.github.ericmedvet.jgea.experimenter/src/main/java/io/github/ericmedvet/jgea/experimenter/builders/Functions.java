@@ -106,6 +106,14 @@ public class Functions {
 
   @SuppressWarnings("unused")
   @Cacheable
+  public static <X> NamedFunction<X, String> classSimpleName(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Object> beforeF) {
+    Function<Object, String> f = o -> o.getClass().getSimpleName();
+    return NamedFunction.from(f, "class").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
   public static <X, G, S, Q> NamedFunction<X, Archive<? extends MEIndividual<G, S, Q>>> coMeArchive1(
       @Param(value = "of", dNPM = "f.identity()") Function<X, CoMEPopulationState<G, ?, S, ?, ?, Q, ?>> beforeF) {
     Function<CoMEPopulationState<G, ?, S, ?, ?, Q, ?>, Archive<? extends MEIndividual<G, S, Q>>> f =
