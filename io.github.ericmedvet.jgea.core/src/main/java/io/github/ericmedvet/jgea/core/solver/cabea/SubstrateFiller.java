@@ -49,21 +49,21 @@ public interface SubstrateFiller extends Function<Grid<Boolean>, Grid<Boolean>> 
     @Override
     public Grid<Boolean> apply(Grid<Boolean> grid) {
       return grid.map(
-          (k, b) -> (k.x() == 0 || k.x() == grid.w() - 1 || k.y() == 0 || k.y() == grid.h() - 1) ? !b : b);
+          (k, b) -> (k.x() == 0 || k.x() == grid.w() - 1 || k.y() == 0 || k.y() == grid.h() - 1) != b);
     }
   }
 
   record HorizontalSections(int n) implements SubstrateFiller {
     @Override
     public Grid<Boolean> apply(Grid<Boolean> grid) {
-      return grid.map((k, b) -> ((k.y() + 1) % Math.ceil((double) grid.h() / (double) n)) == 0 ? !b : b);
+      return grid.map((k, b) -> (((k.y() + 1) % Math.ceil((double) grid.h() / (double) n)) == 0) != b);
     }
   }
 
   record VerticalSections(int n) implements SubstrateFiller {
     @Override
     public Grid<Boolean> apply(Grid<Boolean> grid) {
-      return grid.map((k, b) -> ((k.x() + 1) % Math.ceil((double) grid.w() / (double) n)) == 0 ? !b : b);
+      return grid.map((k, b) -> (((k.x() + 1) % Math.ceil((double) grid.w() / (double) n)) == 0) != b);
     }
   }
 

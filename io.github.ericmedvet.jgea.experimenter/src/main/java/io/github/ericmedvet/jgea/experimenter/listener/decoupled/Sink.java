@@ -30,5 +30,4 @@ public interface Sink<K, V> {
   }
 
   default void close() {}
-  ;
 }

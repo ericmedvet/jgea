@@ -102,7 +102,7 @@ public interface ListenerFactory<E, K> {
 
   default ListenerFactory<E, K> robust() {
     final ListenerFactory<E, K> thisFactory = this;
-    final Logger L = Logger.getLogger(Listener.class.getName());
+    final Logger L = Logger.getLogger(ListenerFactory.class.getName());
     final AtomicInteger counter = new AtomicInteger(0);
     return new ListenerFactory<>() {
       @Override

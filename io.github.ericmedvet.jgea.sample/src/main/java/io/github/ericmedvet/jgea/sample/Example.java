@@ -20,7 +20,4 @@
 
 package io.github.ericmedvet.jgea.sample;
 
-import io.github.ericmedvet.jgea.core.solver.*;
-import java.util.*;
-
 public class Example {}

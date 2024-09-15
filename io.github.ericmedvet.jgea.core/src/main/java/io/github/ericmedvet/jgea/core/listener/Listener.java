@@ -46,7 +46,7 @@ public interface Listener<E> {
   }
 
   static <E> Listener<E> from(String name, Consumer<E> consumer, Runnable doneRunnable) {
-    return new Listener<E>() {
+    return new Listener<>() {
       @Override
       public void listen(E e) {
         consumer.accept(e);

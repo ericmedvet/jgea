@@ -47,7 +47,7 @@ public interface Accumulator<E, O> extends Listener<E> {
       Function<OE, IE> eFunction,
       Function<IO, OO> oGetterFunction,
       Consumer<IO> ioConsumer) {
-    return new Accumulator<OE, OO>() {
+    return new Accumulator<>() {
       @Override
       public OO get() {
         return oGetterFunction.apply(accumulator.get());

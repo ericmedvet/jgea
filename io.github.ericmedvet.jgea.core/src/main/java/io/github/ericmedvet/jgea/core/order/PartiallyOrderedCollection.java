@@ -46,7 +46,7 @@ public interface PartiallyOrderedCollection<T> extends Sized {
     Collection<T> firsts = poc.firsts();
     Collection<T> lasts = poc.lasts();
     Collection<T> all = poc.all();
-    return new PartiallyOrderedCollection<T>() {
+    return new PartiallyOrderedCollection<>() {
       @Override
       public void add(T t) {
         throw new UnsupportedOperationException();
@@ -121,7 +121,7 @@ public interface PartiallyOrderedCollection<T> extends Sized {
     List<T> lasts = all.stream()
         .filter(t -> comparator.compare(t, all.get(all.size() - 1)) == 0)
         .toList();
-    return new PartiallyOrderedCollection<T>() {
+    return new PartiallyOrderedCollection<>() {
       @Override
       public void add(T t) {
         throw new UnsupportedOperationException();

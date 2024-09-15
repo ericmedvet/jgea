@@ -66,121 +66,68 @@ public class MapperUtils {
       Tree<Element> tree, BitString g, List<Double> values, int depth, AtomicInteger globalCounter) {
     Object result = null;
     if (tree.content() instanceof Element.Variable) {
-      switch (((Element.Variable) tree.content())) {
-        case GENOTYPE:
-          result = g;
-          break;
-        case LIST_N:
-          result = values;
-          break;
-        case DEPTH:
-          result = (double) depth;
-          break;
-        case GL_COUNT_R:
-          result = (double) globalCounter.get();
-          break;
-        case GL_COUNT_RW:
-          result = (double) globalCounter.getAndIncrement();
-          break;
-      }
+      result = switch (((Element.Variable) tree.content())) {
+        case GENOTYPE -> g;
+        case LIST_N -> values;
+        case DEPTH -> (double) depth;
+        case GL_COUNT_R -> (double) globalCounter.get();
+        case GL_COUNT_RW -> (double) globalCounter.getAndIncrement();};
     } else if (tree.content() instanceof Element.MapperFunction) {
-      switch (((Element.MapperFunction) tree.content())) {
-        case SIZE:
-          result = (double) ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).size();
-          break;
-        case WEIGHT:
-          result = (double) ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).nOfOnes();
-          break;
-        case WEIGHT_R:
+      result = switch (((Element.MapperFunction) tree.content())) {
+        case SIZE -> (double) ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).size();
+        case WEIGHT -> (double) ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).nOfOnes();
+        case WEIGHT_R -> {
           BitString bitsGenotype = (BitString) compute(tree.child(0), g, values, depth, globalCounter);
-          result = (double) bitsGenotype.nOfOnes() / (double) bitsGenotype.size();
-          break;
-        case INT:
-          result = (double) ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).toInt();
-          break;
-        case ADD:
-          result = ((Double) compute(tree.child(0), g, values, depth, globalCounter)
-              + (Double) compute(tree.child(1), g, values, depth, globalCounter));
-          break;
-        case SUBTRACT:
-          result = ((Double) compute(tree.child(0), g, values, depth, globalCounter)
-              - (Double) compute(tree.child(1), g, values, depth, globalCounter));
-          break;
-        case MULT:
-          result = ((Double) compute(tree.child(0), g, values, depth, globalCounter)
-              * (Double) compute(tree.child(1), g, values, depth, globalCounter));
-          break;
-        case DIVIDE:
-          result =
-              protectedDivision((Double) compute(tree.child(0), g, values, depth, globalCounter), (Double)
-                  compute(tree.child(1), g, values, depth, globalCounter));
-          break;
-        case REMAINDER:
-          result = protectedRemainder(
-              (Double) compute(tree.child(0), g, values, depth, globalCounter),
-              (Double) compute(tree.child(1), g, values, depth, globalCounter));
-          break;
-        case LENGTH:
-          result = (double) ((List) compute(tree.child(0), g, values, depth, globalCounter)).size();
-          break;
-        case MAX_INDEX:
-          result = (double)
-              maxIndex((List<Double>) compute(tree.child(0), g, values, depth, globalCounter), 1d);
-          break;
-        case MIN_INDEX:
-          result = (double)
-              maxIndex((List<Double>) compute(tree.child(0), g, values, depth, globalCounter), -1d);
-          break;
-        case GET:
-          result = getFromList(
-              (List) compute(tree.child(0), g, values, depth, globalCounter),
-              ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue());
-          break;
-        case SEQ:
-          result = seq(
-              ((Double) compute(tree.child(0), g, values, depth, globalCounter)).intValue(),
-              values.size());
-          break;
-        case REPEAT:
-          result = repeat(
-              compute(tree.child(0), g, values, depth, globalCounter),
-              ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue(),
-              values.size());
-          break;
-        case ROTATE_SX:
-          result = rotateSx(
-              (BitString) compute(tree.child(0), g, values, depth, globalCounter),
-              ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue());
-          break;
-        case ROTATE_DX:
-          result = rotateDx(
-              (BitString) compute(tree.child(0), g, values, depth, globalCounter),
-              ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue());
-          break;
-        case SUBSTRING:
-          result = substring(
-              (BitString) compute(tree.child(0), g, values, depth, globalCounter),
-              ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue());
-          break;
-        case SPLIT:
-          result = split(
-              (BitString) compute(tree.child(0), g, values, depth, globalCounter),
-              ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue(),
-              values.size());
-          break;
-        case SPLIT_W:
-          result = splitWeighted(
-              (BitString) compute(tree.child(0), g, values, depth, globalCounter),
-              (List<Double>) compute(tree.child(1), g, values, depth, globalCounter),
-              values.size());
-          break;
-        case APPLY:
-          result = apply(
-              (Element.MapperFunction) tree.child(0).content(),
-              ((List) compute(tree.child(1), g, values, depth, globalCounter)),
-              (tree.nChildren() >= 3) ? compute(tree.child(2), g, values, depth, globalCounter) : null);
-          break;
-      }
+          yield (double) bitsGenotype.nOfOnes() / (double) bitsGenotype.size();
+        }
+        case INT -> (double) ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).toInt();
+        case ADD -> ((Double) compute(tree.child(0), g, values, depth, globalCounter)
+            + (Double) compute(tree.child(1), g, values, depth, globalCounter));
+        case SUBTRACT -> ((Double) compute(tree.child(0), g, values, depth, globalCounter)
+            - (Double) compute(tree.child(1), g, values, depth, globalCounter));
+        case MULT -> ((Double) compute(tree.child(0), g, values, depth, globalCounter)
+            * (Double) compute(tree.child(1), g, values, depth, globalCounter));
+        case DIVIDE -> protectedDivision(
+            (Double) compute(tree.child(0), g, values, depth, globalCounter),
+            (Double) compute(tree.child(1), g, values, depth, globalCounter));
+        case REMAINDER -> protectedRemainder(
+            (Double) compute(tree.child(0), g, values, depth, globalCounter),
+            (Double) compute(tree.child(1), g, values, depth, globalCounter));
+        case LENGTH -> (double) ((List) compute(tree.child(0), g, values, depth, globalCounter)).size();
+        case MAX_INDEX -> (double)
+            maxIndex((List<Double>) compute(tree.child(0), g, values, depth, globalCounter), 1d);
+        case MIN_INDEX -> (double)
+            maxIndex((List<Double>) compute(tree.child(0), g, values, depth, globalCounter), -1d);
+        case GET -> getFromList(
+            (List) compute(tree.child(0), g, values, depth, globalCounter),
+            ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue());
+        case SEQ -> seq(
+            ((Double) compute(tree.child(0), g, values, depth, globalCounter)).intValue(), values.size());
+        case REPEAT -> repeat(
+            compute(tree.child(0), g, values, depth, globalCounter),
+            ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue(),
+            values.size());
+        case ROTATE_SX -> rotateSx(
+            (BitString) compute(tree.child(0), g, values, depth, globalCounter),
+            ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue());
+        case ROTATE_DX -> rotateDx(
+            (BitString) compute(tree.child(0), g, values, depth, globalCounter),
+            ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue());
+        case SUBSTRING -> substring(
+            (BitString) compute(tree.child(0), g, values, depth, globalCounter),
+            ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue());
+        case SPLIT -> split(
+            (BitString) compute(tree.child(0), g, values, depth, globalCounter),
+            ((Double) compute(tree.child(1), g, values, depth, globalCounter)).intValue(),
+            values.size());
+        case SPLIT_W -> splitWeighted(
+            (BitString) compute(tree.child(0), g, values, depth, globalCounter),
+            (List<Double>) compute(tree.child(1), g, values, depth, globalCounter),
+            values.size());
+        case APPLY -> apply(
+            (Element.MapperFunction) tree.child(0).content(),
+            ((List) compute(tree.child(1), g, values, depth, globalCounter)),
+            (tree.nChildren() >= 3) ? compute(tree.child(2), g, values, depth, globalCounter) : null);};
     } else if (tree.content() instanceof Element.NumericConstant) {
       result = ((Element.NumericConstant) tree.content()).value();
     }
@@ -409,12 +356,10 @@ public class MapperUtils {
       return g;
     }
     BitString copy = new BitString(g.size());
-    for (int i = g.size() - n; i < g.size(); i++) {
-      copy.bits()[i] = g.bits()[g.size() - n + i];
-    }
-    for (int i = 0; i < g.size() - n; i++) {
-      copy.bits()[i] = g.bits()[i];
-    }
+    if (g.size() - (g.size() - n) >= 0)
+      System.arraycopy(
+          g.bits(), g.size() - n + g.size() - n, copy.bits(), g.size() - n, g.size() - (g.size() - n));
+    if (g.size() - n >= 0) System.arraycopy(g.bits(), 0, copy.bits(), 0, g.size() - n);
     return copy;
   }
 
@@ -427,12 +372,8 @@ public class MapperUtils {
       return g;
     }
     BitString copy = new BitString(g.size());
-    for (int i = n; i < g.size(); i++) {
-      copy.bits()[i - n] = g.bits()[n + i];
-    }
-    for (int i = 0; i < n; i++) {
-      copy.bits()[g.size() - n + i] = g.bits()[i];
-    }
+    if (g.size() - n >= 0) System.arraycopy(g.bits(), n + n, copy.bits(), n - n, g.size() - n);
+    System.arraycopy(g.bits(), 0, copy.bits(), g.size() - n + 0, n);
     return copy;
   }
 

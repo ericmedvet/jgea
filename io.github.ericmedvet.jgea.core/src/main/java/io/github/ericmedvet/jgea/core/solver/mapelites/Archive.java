@@ -26,9 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-/**
- * @author "Eric Medvet" on 2024/05/31 for jgea
- */
+/** @author "Eric Medvet" on 2024/05/31 for jgea */
 public class Archive<T> {
 
   private final List<Integer> binUpperBounds;

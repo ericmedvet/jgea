@@ -107,11 +107,11 @@ public class FitnessFunction implements Function<Pair<Tree<Element>, Tree<Elemen
         pair.second(),
         maxMappingDepth,
         EXPRESSIVENESS_DEPTH,
-        problem.getProblem().getGrammar());
+        problem.problem().getGrammar());
     // map
     List<S> solutions = genotypes.stream()
         .map(recursiveMapper)
-        .map(t -> problem.getProblem().getSolutionMapper().apply(t))
+        .map(t -> problem.problem().getSolutionMapper().apply(t))
         .toList();
     Multiset<S> multiset = new LinkedHashMultiset<>(solutions);
     multiset.addAll(solutions);
@@ -126,7 +126,7 @@ public class FitnessFunction implements Function<Pair<Tree<Element>, Tree<Elemen
             .toArray();
         values.add(Math.sqrt(StatUtils.variance(sizes)) / StatUtils.mean(sizes));
       } else if (property.equals(Property.NON_LOCALITY)) {
-        double[] solutionDistances = computeDistances(solutions, problem.getDistance());
+        double[] solutionDistances = computeDistances(solutions, problem.distance());
         double locality =
             1d - (1d + (new PearsonsCorrelation().correlation(genotypeDistances, solutionDistances))) / 2d;
         values.add(Double.isNaN(locality) ? 1d : locality);

@@ -31,26 +31,13 @@ public class ClassificationFitness<O, L extends Enum<L>>
     extends ListCaseBasedFitness<Classifier<O, L>, O, L, List<Double>> {
 
   private final List<Pair<O, L>> data;
-  private final List<String> names;
 
-  @SuppressWarnings("unchecked")
   public ClassificationFitness(List<Pair<O, L>> data, Metric errorMetric) {
     super(
         data.stream().map(Pair::first).toList(),
         Classifier::classify,
         getAggregator(data.stream().map(Pair::second).toList(), errorMetric));
     this.data = data;
-    names = new ArrayList<>();
-    if (errorMetric.equals(Metric.CLASS_ERROR_RATE)) {
-      L protoLabel = data.get(0).second();
-      for (L label : (L[]) protoLabel.getClass().getEnumConstants()) {
-        names.add(label.toString().toLowerCase() + ".error.rate");
-      }
-    } else if (errorMetric.equals(Metric.ERROR_RATE)) {
-      names.add("error.rate");
-    } else if (errorMetric.equals(Metric.BALANCED_ERROR_RATE)) {
-      names.add("balanced.error.rate");
-    }
   }
 
   public enum Metric {
@@ -59,13 +46,8 @@ public class ClassificationFitness<O, L extends Enum<L>>
     BALANCED_ERROR_RATE
   }
 
-  private static class ClassErrorRate<E extends Enum<E>> implements Function<List<E>, List<Pair<Integer, Integer>>> {
-
-    private final List<E> actualLabels;
-
-    public ClassErrorRate(List<E> actualLabels) {
-      this.actualLabels = actualLabels;
-    }
+  private record ClassErrorRate<E extends Enum<E>>(List<E> actualLabels)
+      implements Function<List<E>, List<Pair<Integer, Integer>>> {
 
     @SuppressWarnings("unchecked")
     @Override

@@ -54,13 +54,7 @@ public class BooleanFunctionFitness extends ListCaseBasedFitness<List<Tree<Eleme
     }
   }
 
-  private static class Error implements BiFunction<List<Tree<Element>>, boolean[], Boolean> {
-
-    private final BooleanFunctionFitness.TargetFunction targetFunction;
-
-    public Error(BooleanFunctionFitness.TargetFunction targetFunction) {
-      this.targetFunction = targetFunction;
-    }
+  private record Error(TargetFunction targetFunction) implements BiFunction<List<Tree<Element>>, boolean[], Boolean> {
 
     @Override
     public Boolean apply(List<Tree<Element>> solution, boolean[] observation) {

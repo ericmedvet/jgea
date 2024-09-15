@@ -27,7 +27,7 @@ public class GrammarOptionStringDistance<S> implements Distance<GrammarOptionStr
     for (S s : gos1.options().keySet()) {
       if (gos1.options().get(s).size() != gos2.options().get(s).size()) {
         throw new IllegalArgumentException(String.format(
-            "Sequences size should be the same for symbol %d (%d vs. %d)",
+            "Sequences size should be the same for symbol %s (%d vs. %d)",
             s, gos1.options().get(s).size(), gos2.options().get(s).size()));
       }
     }

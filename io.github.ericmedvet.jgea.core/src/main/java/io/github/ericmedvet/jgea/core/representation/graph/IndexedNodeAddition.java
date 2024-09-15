@@ -25,7 +25,6 @@ import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.ToIntFunction;
 import java.util.random.RandomGenerator;
 
@@ -64,35 +63,7 @@ public class IndexedNodeAddition<M extends N, N, A> implements Mutation<Graph<In
     this(nodeFactory, nodeTyper, counterInitialValue, toNewNodeArcMutation, fromNewNodeArcMutation, null);
   }
 
-  private static class IndexKey {
-    protected final int srcIndex;
-    protected final int dstIndex;
-    protected final int type;
-    protected final int nOfSiblings;
-
-    public IndexKey(int srcIndex, int dstIndex, int type, int nOfSiblings) {
-      this.srcIndex = srcIndex;
-      this.dstIndex = dstIndex;
-      this.type = type;
-      this.nOfSiblings = nOfSiblings;
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(srcIndex, dstIndex, type, nOfSiblings);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      IndexKey indexKey = (IndexKey) o;
-      return srcIndex == indexKey.srcIndex
-          && dstIndex == indexKey.dstIndex
-          && type == indexKey.type
-          && nOfSiblings == indexKey.nOfSiblings;
-    }
-  }
+  private record IndexKey(int srcIndex, int dstIndex, int type, int nOfSiblings) {}
 
   @Override
   public Graph<IndexedNode<N>, A> mutate(Graph<IndexedNode<N>, A> parent, RandomGenerator random) {

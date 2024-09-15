@@ -35,7 +35,7 @@ public class Tournament implements Selector<Object> {
   }
 
   @Override
-  public <K extends Object> K select(PartiallyOrderedCollection<K> ks, RandomGenerator random) {
+  public <K> K select(PartiallyOrderedCollection<K> ks, RandomGenerator random) {
     Collection<K> all = ks.all();
     Collection<K> tournament = new ArrayList<>();
     for (int i = 0; i < size; i++) {

@@ -24,7 +24,7 @@ import io.github.ericmedvet.jgea.core.util.Progress;
 import java.util.function.Predicate;
 
 @FunctionalInterface
-public interface ProgressBasedStopCondition<T extends State> extends Predicate<T> {
+public interface ProgressBasedStopCondition<T extends State<?, ?>> extends Predicate<T> {
   Progress progress(T t);
 
   @Override

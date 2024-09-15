@@ -58,17 +58,8 @@ public class LazyNumericalDataset implements NumericalDataset {
 
   private record DatasetKey(String path, List<String> xVarNames, List<String> yVarNames) {}
 
-  private static class FilteredNumericalDataset implements NumericalDataset {
-    private final NumericalDataset dataset;
-    private final List<String> xVarNames;
-
-    private final List<String> yVarNames;
-
-    public FilteredNumericalDataset(NumericalDataset dataset, List<String> xVarNames, List<String> yVarNames) {
-      this.dataset = dataset;
-      this.xVarNames = xVarNames;
-      this.yVarNames = yVarNames;
-    }
+  private record FilteredNumericalDataset(NumericalDataset dataset, List<String> xVarNames, List<String> yVarNames)
+      implements NumericalDataset {
 
     @Override
     public IntFunction<Example> exampleProvider() {
@@ -83,16 +74,6 @@ public class LazyNumericalDataset implements NumericalDataset {
     @Override
     public int size() {
       return dataset.size();
-    }
-
-    @Override
-    public List<String> xVarNames() {
-      return xVarNames;
-    }
-
-    @Override
-    public List<String> yVarNames() {
-      return yVarNames;
     }
 
     @Override

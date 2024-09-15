@@ -26,15 +26,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
-public class IndexedNode<C> implements Serializable {
-
-  private final int index;
-  private final C content;
-
-  public IndexedNode(int index, C content) {
-    this.index = index;
-    this.content = content;
-  }
+public record IndexedNode<C>(int index, C content) implements Serializable {
 
   public static <H, K extends H> Function<K, IndexedNode<H>> hashMapper(Class<H> c) {
     return k -> new IndexedNode<>(Objects.hash(k.getClass(), k), k);
@@ -56,10 +48,6 @@ public class IndexedNode<C> implements Serializable {
     };
   }
 
-  public C content() {
-    return content;
-  }
-
   @Override
   public int hashCode() {
     return Objects.hash(index);
@@ -76,9 +64,5 @@ public class IndexedNode<C> implements Serializable {
   @Override
   public String toString() {
     return content + "[" + index + "]";
-  }
-
-  public int index() {
-    return index;
   }
 }

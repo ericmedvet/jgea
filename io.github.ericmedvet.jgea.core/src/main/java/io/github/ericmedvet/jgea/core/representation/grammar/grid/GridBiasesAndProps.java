@@ -268,28 +268,29 @@ public class GridBiasesAndProps {
                   .filter(Optional::isPresent)
                   .map(Optional::get)
                   .toList();
-              StringBuilder line = new StringBuilder();
-              line.append("%s\t%s\t%s\t%4d\t"
-                  .formatted(
-                      grammarEntry.getKey(),
-                      developeEntry.getKey(),
-                      factoryChooserEntry.getKey(),
-                      finalL));
-              //noinspection unchecked
-              line.append(mappingMetrics.stream()
-                  .map(Map.Entry::getValue)
-                  .map(f -> f.applyAsDouble((List<Mapped<?>>) mappeds, factoryChooser.distance))
-                  .map("%6.4f"::formatted)
-                  .collect(Collectors.joining("\t")));
-              line.append("\t");
-              line.append(gridMetrics.stream()
-                  .map(Map.Entry::getValue)
-                  .map(f -> grids.stream()
-                      .mapToDouble(f)
-                      .average()
-                      .orElse(Double.NaN))
-                  .map("%6.4f"::formatted)
-                  .collect(Collectors.joining("\t")));
+              String line = "%s\t%s\t%s\t%4d\t"
+                      .formatted(
+                          grammarEntry.getKey(),
+                          developeEntry.getKey(),
+                          factoryChooserEntry.getKey(),
+                          finalL)
+                  +
+                  //noinspection unchecked
+                  mappingMetrics.stream()
+                      .map(Map.Entry::getValue)
+                      .map(f ->
+                          f.applyAsDouble((List<Mapped<?>>) mappeds, factoryChooser.distance))
+                      .map("%6.4f"::formatted)
+                      .collect(Collectors.joining("\t"))
+                  + "\t"
+                  + gridMetrics.stream()
+                      .map(Map.Entry::getValue)
+                      .map(f -> grids.stream()
+                          .mapToDouble(f)
+                          .average()
+                          .orElse(Double.NaN))
+                      .map("%6.4f"::formatted)
+                      .collect(Collectors.joining("\t"));
               ps.println(line);
             });
           }

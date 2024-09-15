@@ -182,7 +182,7 @@ public class Misc {
             .toString();
       }
       if (newName == null) {
-        newName = filePath.toString() + ".newer";
+        newName = filePath + ".newer";
       }
       filePath = Path.of(newName);
     }

@@ -30,7 +30,7 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
   private final Aggregator<S> aggregator;
 
   public ExtractionFitness(List<S> sequence, Set<IntRange> desiredExtractions, Metric... metrics) {
-    aggregator = new Aggregator<S>(sequence, desiredExtractions, metrics);
+    aggregator = new Aggregator<>(sequence, desiredExtractions, metrics);
   }
 
   public enum Metric {
@@ -40,7 +40,7 @@ public class ExtractionFitness<S> implements Function<Extractor<S>, List<Double>
     SYMBOL_FNR,
     SYMBOL_FPR,
     SYMBOL_ERROR,
-    SYMBOL_WEIGHTED_ERROR;
+    SYMBOL_WEIGHTED_ERROR
   }
 
   private static class Aggregator<S> implements Function<Set<IntRange>, List<Double>> {
