@@ -50,6 +50,7 @@
       <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
   </distributionManagement>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jdk.version>17</jdk.version>
@@ -58,6 +59,7 @@
     <jsdynsym.version>1.0.1-SNAPSHOT</jsdynsym.version>
     <jviz.version>0.1.2-SNAPSHOT</jviz.version>
   </properties>
+
   <dependencies/>
 
   <repositories>
@@ -84,7 +86,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.11.0</version>
+        <version>3.13.0</version>
         <configuration>
           <source>${jdk.version}</source>
           <target>${jdk.version}</target>
@@ -93,7 +95,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.6.0</version>
+        <version>3.7.0</version>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -151,7 +153,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>license-maven-plugin</artifactId>
-        <version>2.2.0</version>
+        <version>2.4.0</version>
         <configuration>
           <organizationName>Eric Medvet</organizationName>
           <inceptionYear>2018</inceptionYear>
@@ -173,7 +175,7 @@
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
-        <version>2.40.0</version>
+        <version>2.43.0</version>
         <configuration>
           <java>
             <toggleOffOn/>
@@ -181,8 +183,10 @@
             <trimTrailingWhitespace/>
             <removeUnusedImports/>
             <palantirJavaFormat>
-              <version>2.38.0</version>
+              <version>2.39.0</version>
+              <formatJavadoc>true</formatJavadoc>
             </palantirJavaFormat>
+            <formatAnnotations/>
             <indent>
               <tabs>true</tabs>
               <spacesPerTab>4</spacesPerTab>
@@ -226,7 +230,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
-            <version>3.3.0</version>
+            <version>3.3.1</version>
             <executions>
               <execution>
                 <id>attach-sources</id>
@@ -239,7 +243,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>3.5.0</version>
+            <version>3.8.0</version>
             <configuration>
               <additionalOptions>
                 <additionalOption>-Xdoclint:none</additionalOption>
@@ -257,7 +261,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>3.1.0</version>
+            <version>3.2.1</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -271,7 +275,7 @@
           <plugin>
             <groupId>org.sonatype.plugins</groupId>
             <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.6.13</version>
+            <version>1.7.0</version>
             <extensions>true</extensions>
             <configuration>
               <serverId>ossrh</serverId>
