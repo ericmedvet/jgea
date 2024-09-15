@@ -116,10 +116,11 @@ public interface PartiallyOrderedCollection<T> extends Sized {
 
   static <T> PartiallyOrderedCollection<T> from(Collection<T> ts, Comparator<? super T> comparator) {
     List<T> all = ts.stream().sorted(comparator).toList();
-    List<T> firsts =
-        all.stream().filter(t -> comparator.compare(t, all.get(0)) == 0).toList();
+    List<T> firsts = all.stream()
+        .filter(t -> comparator.compare(t, all.getFirst()) == 0)
+        .toList();
     List<T> lasts = all.stream()
-        .filter(t -> comparator.compare(t, all.get(all.size() - 1)) == 0)
+        .filter(t -> comparator.compare(t, all.getLast()) == 0)
         .toList();
     return new PartiallyOrderedCollection<>() {
       @Override

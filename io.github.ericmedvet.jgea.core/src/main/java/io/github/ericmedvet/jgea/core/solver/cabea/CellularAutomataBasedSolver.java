@@ -180,7 +180,7 @@ public class CellularAutomataBasedSolver<G, S, Q>
                           .map(Individual::genotype)
                           .toList(),
                       random)
-                  .get(0),
+                  .getFirst(),
               parents.stream().map(Individual::id).toList()),
           solutionMapper,
           state.problem().qualityFunction(),

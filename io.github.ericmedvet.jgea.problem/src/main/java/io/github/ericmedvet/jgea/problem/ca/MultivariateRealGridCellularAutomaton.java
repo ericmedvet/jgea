@@ -174,8 +174,8 @@ public class MultivariateRealGridCellularAutomaton extends GridCellularAutomaton
               .map(k -> "(%dx%d)".formatted(k.w(), k.h()))
               .collect(Collectors.joining(" "))));
     }
-    int w = ws.get(0);
-    int h = hs.get(0);
+    int w = ws.getFirst();
+    int h = hs.getFirst();
     if (w != h) {
       throw new IllegalArgumentException("Kernels are not squares: %dx%d".formatted(w, h));
     }

@@ -124,8 +124,8 @@ public class NsgaII<G, S>
             - individuals.get(nextIndex).quality().get(finalOI));
         dists[indexes.get(ii)] = dists[indexes.get(ii)] + dist;
       }
-      dists[indexes.get(0)] = dists[indexes.get(0)] + Double.POSITIVE_INFINITY;
-      dists[indexes.get(indexes.size() - 1)] = dists[indexes.get(indexes.size() - 1)] + Double.POSITIVE_INFINITY;
+      dists[indexes.getFirst()] = dists[indexes.getFirst()] + Double.POSITIVE_INFINITY;
+      dists[indexes.getLast()] = dists[indexes.getLast()] + Double.POSITIVE_INFINITY;
     }
     return Arrays.stream(dists).boxed().toList();
   }

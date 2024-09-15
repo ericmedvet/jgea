@@ -39,7 +39,7 @@ public class SingleVarNamedMultivariateRealFunction extends AbstractComposed<Nam
 
   @Override
   public String yVarName() {
-    return inner().yVarNames().get(0);
+    return inner().yVarNames().getFirst();
   }
 
   @Override

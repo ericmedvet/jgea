@@ -43,7 +43,7 @@ public interface NamedUnivariateRealFunction extends NamedMultivariateRealFuncti
 
       @Override
       public String yVarName() {
-        return nmrf.yVarNames().get(0);
+        return nmrf.yVarNames().getFirst();
       }
 
       @Override

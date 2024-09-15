@@ -34,6 +34,6 @@ public class RandomSearch<G, S, Q> extends RandomWalk<G, S, Q> {
           stopCondition) {
     super(solutionMapper, genotypeFactory, stopCondition, (g, random) -> genotypeFactory
         .build(1, random)
-        .get(0));
+        .getFirst());
   }
 }

@@ -52,7 +52,7 @@ public class ClassificationFitness<O, L extends Enum<L>>
     @SuppressWarnings("unchecked")
     @Override
     public List<Pair<Integer, Integer>> apply(List<E> predictedLabels) {
-      E protoLabel = actualLabels.get(0);
+      E protoLabel = actualLabels.getFirst();
       E[] allLabels = (E[]) protoLabel.getClass().getEnumConstants();
       Multiset<E> counts = new LinkedHashMultiset<>();
       Multiset<E> errors = new LinkedHashMultiset<>();

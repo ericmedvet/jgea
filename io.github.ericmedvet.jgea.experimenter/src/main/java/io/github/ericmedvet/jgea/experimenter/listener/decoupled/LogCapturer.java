@@ -61,7 +61,7 @@ public class LogCapturer extends Handler {
       synchronized (logRecords) {
         logRecords.add(record);
         while (logRecords.size() > LOG_HISTORY_SIZE) {
-          logRecords.remove(0);
+          logRecords.removeFirst();
         }
       }
     }

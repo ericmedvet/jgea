@@ -42,7 +42,7 @@ public interface Crossover<G> extends GeneticOperator<G> {
   }
 
   static <K> Crossover<K> from(GeneticOperator<K> op) {
-    return (g1, g2, random) -> op.apply(List.of(g1, g2), random).get(0);
+    return (g1, g2, random) -> op.apply(List.of(g1, g2), random).getFirst();
   }
 
   @Override

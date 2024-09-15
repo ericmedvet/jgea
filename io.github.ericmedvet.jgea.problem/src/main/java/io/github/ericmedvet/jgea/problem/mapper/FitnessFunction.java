@@ -154,7 +154,7 @@ public class FitnessFunction implements Function<Pair<Tree<Element>, Tree<Elemen
     Set<BitString> set = new LinkedHashSet<>();
     while (set.size() < n) {
       set.add(g);
-      g = mutation.apply(Collections.singletonList(g), random).get(0);
+      g = mutation.apply(Collections.singletonList(g), random).getFirst();
     }
     return new ArrayList<>(set);
   }

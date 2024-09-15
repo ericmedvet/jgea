@@ -54,29 +54,35 @@ public class Consumers {
   private static void save(Object o, String filePath) {
     File file = null;
     try {
-      if (o instanceof BufferedImage image) {
-        file = Misc.robustGetFile(filePath + ".png");
-        ImageIO.write(image, "png", file);
-      } else if (o instanceof String s) {
-        file = Misc.robustGetFile(filePath + ".txt");
-        Files.writeString(file.toPath(), s, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
-      } else if (o instanceof Video video) {
-        file = Misc.robustGetFile(filePath + ".mp4");
-        Files.write(file.toPath(), video.data(), StandardOpenOption.WRITE, StandardOpenOption.CREATE);
-      } else if (o instanceof byte[] data) {
-        file = Misc.robustGetFile(filePath + ".bin");
-        try (OutputStream os = new FileOutputStream(file)) {
-          os.write(data);
+      switch (o) {
+        case BufferedImage image -> {
+          file = Misc.robustGetFile(filePath + ".png");
+          ImageIO.write(image, "png", file);
         }
-      } else if (o instanceof NamedParamMap npm) {
-        file = Misc.robustGetFile(filePath + ".txt");
-        Files.writeString(
-            file.toPath(),
-            MapNamedParamMap.prettyToString(npm),
-            StandardOpenOption.WRITE,
-            StandardOpenOption.CREATE);
-      } else {
-        throw new IllegalArgumentException(
+        case String s -> {
+          file = Misc.robustGetFile(filePath + ".txt");
+          Files.writeString(file.toPath(), s, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+        }
+        case Video video -> {
+          file = Misc.robustGetFile(filePath + ".mp4");
+          Files.write(file.toPath(), video.data(), StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+        }
+        case byte[] data -> {
+          file = Misc.robustGetFile(filePath + ".bin");
+          try (OutputStream os = new FileOutputStream(file)) {
+            os.write(data);
+          }
+        }
+        case NamedParamMap npm -> {
+          file = Misc.robustGetFile(filePath + ".txt");
+          Files.writeString(
+              file.toPath(),
+              MapNamedParamMap.prettyToString(npm),
+              StandardOpenOption.WRITE,
+              StandardOpenOption.CREATE);
+        }
+        case null -> throw new IllegalArgumentException("Cannot save null data of type %s");
+        default -> throw new IllegalArgumentException(
             "Cannot save data of type %s".formatted(o.getClass().getSimpleName()));
       }
     } catch (IOException e) {

@@ -43,7 +43,7 @@ public class PointsAiming implements ProblemWithExampleSolution<List<Double>>, M
     checkLengthsList(targets);
     this.targets = Collections.unmodifiableList(targets);
     distance = (vs1, vs2) -> norm(diff(vs1, vs2), 2);
-    p = targets.get(0).size();
+    p = targets.getFirst().size();
   }
 
   @Override

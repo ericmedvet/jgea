@@ -65,7 +65,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
 
   private List<T> chooseOption(BitString genotype, IntRange range, List<List<T>> options) {
     if (options.size() == 1) {
-      return options.get(0);
+      return options.getFirst();
     }
     double max = Double.NEGATIVE_INFINITY;
     List<BitString> slices = getOptionSlices(range, options).stream()
@@ -82,7 +82,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
         bestOptionIndexes.add(i);
       }
     }
-    int index = bestOptionIndexes.get(0);
+    int index = bestOptionIndexes.getFirst();
     // for avoiding choosing always the 1st option in case of tie, choose depending on count of 1s
     // in genotype
     if (bestOptionIndexes.size() == 1) {

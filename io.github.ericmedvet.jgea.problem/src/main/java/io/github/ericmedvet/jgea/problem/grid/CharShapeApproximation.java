@@ -65,7 +65,7 @@ public class CharShapeApproximation
       if (ws.stream().distinct().count() != 1) {
         throw new IllegalArgumentException("The file has an invalid shape: %s".formatted(ws));
       }
-      int w = ws.get(0);
+      int w = ws.getFirst();
       int h = ws.size();
       return Grid.create(w, h, (x, y) -> {
         Character c = rows.get(y).get(x);

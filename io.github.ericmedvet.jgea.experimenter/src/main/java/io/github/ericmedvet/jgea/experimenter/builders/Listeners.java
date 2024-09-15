@@ -391,7 +391,7 @@ public class Listeners {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         accumulatorFactory.thenOnShutdown(Naming.named(consumers.toString(), (Consumer<List<O>>) (os -> {
           if (!os.isEmpty()) {
-            P p = preprocessor.apply(os.get(os.size() - 1));
+            P p = preprocessor.apply(os.getLast());
             consumers.forEach(c -> c.accept(p, null, experiment));
           }
         }))),

@@ -51,7 +51,7 @@ public interface Factory<T> {
 
   default IndependentFactory<T> independent() {
     Factory<T> thisFactory = this;
-    return random -> thisFactory.build(1, random).get(0);
+    return random -> thisFactory.build(1, random).getFirst();
   }
 
   default <K> Factory<K> then(Function<T, K> f) {

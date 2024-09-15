@@ -25,7 +25,7 @@ public class BentCigar extends AbstractNumericalProblem {
   public BentCigar(int p) {
     super(
         p,
-        vs -> vs.get(0) * vs.get(0)
+        vs -> vs.getFirst() * vs.getFirst()
             + 1000000d
                 * IntStream.range(1, p)
                     .mapToDouble(i -> vs.get(i) * vs.get(i))

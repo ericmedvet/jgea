@@ -62,11 +62,11 @@ public class VectorialFieldSEPAF<E, R, X, F>
                       ppf.apply(field).entrySet().stream()
                           .collect(Collectors.toMap(
                               me -> new VectorialFieldDataSeries.Point(
-                                  me.getKey().get(0),
+                                  me.getKey().getFirst(),
                                   me.getKey().get(1)),
                               me -> new VectorialFieldDataSeries.Point(
                                   me.getValue()
-                                      .get(0),
+                                      .getFirst(),
                                   me.getValue()
                                       .get(1))))))
                   .toList());

@@ -77,7 +77,7 @@ public class OpenAIEvolutionaryStrategy<S, Q>
     this.beta1 = beta1;
     this.beta2 = beta2;
     this.epsilon = epsilon;
-    int p = genotypeFactory.build(1, new Random(0)).get(0).size();
+    int p = genotypeFactory.build(1, new Random(0)).getFirst().size();
     gaussianSamplesFactory = new FixedLengthListFactory<>(p, r -> r.nextGaussian() * sigma);
   }
 
@@ -88,7 +88,7 @@ public class OpenAIEvolutionaryStrategy<S, Q>
     OpenAIESState<S, Q> newState = OpenAIESState.empty(
         problem,
         stopCondition(),
-        unboxed(genotypeFactory.build(1, random).get(0)));
+        unboxed(genotypeFactory.build(1, random).getFirst()));
     AtomicLong counter = new AtomicLong(0);
     Collection<Individual<List<Double>, S, Q>> newIndividuals = getAll(map(
         genotypeFactory.build(2 * batchSize, random).stream()

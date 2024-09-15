@@ -141,8 +141,8 @@ public class Solvers {
           merger,
           descriptors1,
           descriptors2,
-          r1.mutations().get(0),
-          r2.mutations().get(0),
+          r1.mutations().getFirst(),
+          r2.mutations().getFirst(),
           populationSize,
           nOfOffspring,
           strategy,
@@ -219,7 +219,7 @@ public class Solvers {
           mapper.mapperFor(exampleS),
           r.factory(),
           StopConditions.nOfFitnessEvaluations(nEval),
-          r.mutations().get(0),
+          r.mutations().getFirst(),
           nPop,
           descriptors);
     };
@@ -399,7 +399,7 @@ public class Solvers {
           mapper.mapperFor(exampleS),
           r.factory(),
           StopConditions.nOfFitnessEvaluations(nEval),
-          r.mutations().get(0));
+          r.mutations().getFirst());
     };
   }
 

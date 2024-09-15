@@ -292,7 +292,7 @@ public class VectorUtils {
           "Unconsistent samples and weights sizes: %d vs %d".formatted(vs.size(), weights.length));
     }
     checkLengthsArray(vs);
-    int l = vs.iterator().next().length;
+    int l = vs.getFirst().length;
     final double[] sums = new double[l];
     IntStream.range(0, vs.size())
         .forEach(i -> IntStream.range(0, l).forEach(j -> sums[j] = sums[j] + vs.get(i)[j] * weights[i]));
@@ -318,7 +318,7 @@ public class VectorUtils {
           "Unconsistent samples and weights sizes: %d vs %d".formatted(vs.size(), weights.size()));
     }
     checkLengthsList(vs);
-    int l = vs.iterator().next().size();
+    int l = vs.getFirst().size();
     final double[] sums = new double[l];
     IntStream.range(0, vs.size()).forEach(i -> IntStream.range(0, l)
         .forEach(j -> sums[j] = sums[j] + vs.get(i).get(j) * weights.get(i)));

@@ -152,7 +152,7 @@ public class SpeciatedEvolver<G, S, Q>
         .map(w -> (int) Math.floor(w / weightSum * (double) remaining))
         .toList());
     int sizeSum = sizes.stream().mapToInt(Integer::intValue).sum();
-    sizes.set(0, sizes.get(0) + remaining - sizeSum);
+    sizes.set(0, sizes.getFirst() + remaining - sizeSum);
     L.fine(String.format("Offspring sizes assigned to %d species: %s", allSpecies.size(), sizes));
     // reproduce species
     List<ChildGenotype<G>> offspringChildGenotypes = new ArrayList<>(remaining);

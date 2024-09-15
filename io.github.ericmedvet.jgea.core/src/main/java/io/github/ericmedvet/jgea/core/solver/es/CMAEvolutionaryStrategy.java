@@ -68,7 +68,7 @@ public class CMAEvolutionaryStrategy<S, Q>
         solutionMapper,
         genotypeFactory,
         stopCondition,
-        genotypeFactory.build(1, new Random(0)).get(0).size());
+        genotypeFactory.build(1, new Random(0)).getFirst().size());
   }
 
   private CMAEvolutionaryStrategy(
@@ -140,7 +140,7 @@ public class CMAEvolutionaryStrategy<S, Q>
     CMAESState<S, Q> newState = CMAESState.empty(
         problem,
         stopCondition(),
-        unboxed(genotypeFactory.build(1, random).get(0)));
+        unboxed(genotypeFactory.build(1, random).getFirst()));
     AtomicLong counter = new AtomicLong(0);
     List<? extends List<Double>> genotypes = genotypeFactory.build(populationSize, random);
     Collection<CMAESIndividual<S, Q>> newIndividuals = getAll(map(

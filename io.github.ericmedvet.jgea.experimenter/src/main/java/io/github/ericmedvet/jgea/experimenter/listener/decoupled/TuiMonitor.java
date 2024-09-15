@@ -146,23 +146,19 @@ public class TuiMonitor implements Runnable {
       int logHistorySize,
       double purgeThreshold) {}
 
-  private static <T> T last(List<T> ts) {
-    return ts.get(ts.size() - 1);
-  }
-
   private static int compareRunTableItems(
       List<Map.Entry<Pair<LocalDateTime, RunKey>, RunInfo>> es1,
       List<Map.Entry<Pair<LocalDateTime, RunKey>, RunInfo>> es2) {
-    if (es1.get(0).getValue().ended() && !es2.get(0).getValue().ended()) {
+    if (es1.getFirst().getValue().ended() && !es2.getFirst().getValue().ended()) {
       return 1;
     }
-    if (!es1.get(0).getValue().ended() && es2.get(0).getValue().ended()) {
+    if (!es1.getFirst().getValue().ended() && es2.getFirst().getValue().ended()) {
       return -1;
     }
-    return es1.get(0)
+    return es1.getFirst()
         .getValue()
         .startLocalDateTime()
-        .compareTo(es2.get(0).getValue().startLocalDateTime());
+        .compareTo(es2.getFirst().getValue().startLocalDateTime());
   }
 
   private void refreshTables() {
@@ -239,7 +235,7 @@ public class TuiMonitor implements Runnable {
     toRemoveRKs.forEach(runTable::removeRow);
     toRemoveDIKs.forEach(dataItemTable::removeRow);
     while (logTable.nRows() > configuration.logHistorySize) {
-      logTable.removeRow(logTable.rowIndexes().get(0));
+      logTable.removeRow(logTable.rowIndexes().getFirst());
     }
   }
 
@@ -293,15 +289,18 @@ public class TuiMonitor implements Runnable {
     LocalDateTime machineHistoryStartTime = LocalDateTime.now().minusSeconds(configuration.machineHistorySeconds);
     LocalDateTime machineHistoryEndTime = LocalDateTime.now();
     Map<ProcessKey, ProcessInfo> processInfos = processTable
-        .aggregateByIndexSingle(Pair::second, Comparator.comparing(Pair::first), vs -> last(vs).getValue())
+        .aggregateByIndexSingle(Pair::second, Comparator.comparing(Pair::first), vs -> vs.getLast()
+            .getValue())
         .remapRowIndex(Pair::second)
         .column(VALUE_NAME);
     Map<RunKey, RunInfo> runInfos = runTable.aggregateByIndexSingle(
-            Pair::second, Comparator.comparing(Pair::first), vs -> last(vs).getValue())
+            Pair::second, Comparator.comparing(Pair::first), vs -> vs.getLast()
+                .getValue())
         .remapRowIndex(Pair::second)
         .column(VALUE_NAME);
     Map<ExperimentKey, ExperimentInfo> experimentInfos = experimentTable
-        .aggregateByIndexSingle(Pair::second, Comparator.comparing(Pair::first), vs -> last(vs).getValue())
+        .aggregateByIndexSingle(Pair::second, Comparator.comparing(Pair::first), vs -> vs.getLast()
+            .getValue())
         .remapRowIndex(Pair::second)
         .column(VALUE_NAME);
     List<String> dataItemNames = experimentInfos.values().stream()
@@ -324,10 +323,11 @@ public class TuiMonitor implements Runnable {
                 Map.entry("S", new StatusCell(p.first())),
                 Map.entry(
                     "Name",
-                    new StringCell(last(vs).getValue().machineName())),
+                    new StringCell(vs.getLast().getValue().machineName())),
                 Map.entry(
                     "CPUs",
-                    new NumericCell(last(vs).getValue().numberOfProcessors(), "%d").rightAligned()),
+                    new NumericCell(vs.getLast().getValue().numberOfProcessors(), "%d")
+                        .rightAligned()),
                 Map.entry(
                     "Load",
                     new TrendedNumericCell<>(
@@ -357,7 +357,8 @@ public class TuiMonitor implements Runnable {
                         machineHistoryEndTime.toEpochSecond(ZoneOffset.UTC)))))
         .remapRowIndex(Pair::second);
     Table<MachineKey, String, Cell> pCells = processTable
-        .aggregateByIndexSingle(Pair::second, Comparator.comparing(Pair::first), ps -> last(ps).getValue())
+        .aggregateByIndexSingle(Pair::second, Comparator.comparing(Pair::first), ps -> ps.getLast()
+            .getValue())
         .aggregateByIndexSingle(p -> p.second().machineKey(), Comparator.comparing(Pair::first), ps -> ps)
         .expandColumn(VALUE_NAME, (p, vs) -> {
           double usedMemory = vs.stream()
@@ -386,7 +387,7 @@ public class TuiMonitor implements Runnable {
     Table<ExperimentKey, String, Cell> experiments = experimentTable
         .aggregateByIndexSingle(Pair::second, (p1, p2) -> p2.first().compareTo(p1.first()), vs -> vs)
         .expandColumn(VALUE_NAME, (p, vs) -> {
-          long nOfAll = vs.get(0).getValue().nOfRuns();
+          long nOfAll = vs.getFirst().getValue().nOfRuns();
           List<RunInfo> eRunInfos = runInfos.entrySet().stream()
               .filter(e -> e.getKey().experimentKey().equals(p.second()))
               .map(Map.Entry::getValue)
@@ -417,7 +418,7 @@ public class TuiMonitor implements Runnable {
               Map.entry(
                   "ETA",
                   new EtaCell(
-                      vs.get(0).getValue().startLocalDateTime(),
+                      vs.getFirst().getValue().startLocalDateTime(),
                       new Progress(0, nOfAll, sumOfProgresses))));
         })
         .remapRowIndex(Pair::second)
@@ -447,12 +448,12 @@ public class TuiMonitor implements Runnable {
                     "Progress",
                     new ProgressCell(
                         configuration.barLength,
-                        vs.get(0).getValue().progress())),
+                        vs.getFirst().getValue().progress())),
                 Map.entry(
                     "ETA",
                     new EtaCell(
-                        vs.get(0).getValue().startLocalDateTime(),
-                        vs.get(0).getValue().progress()))))
+                        vs.getFirst().getValue().startLocalDateTime(),
+                        vs.getFirst().getValue().progress()))))
         .remapRowIndex(Pair::second)
         .expandRowIndex(r -> Map.ofEntries(
             Map.entry(
@@ -481,14 +482,14 @@ public class TuiMonitor implements Runnable {
           List<Object> vs =
               es.stream().map(e -> e.getValue().content()).toList();
           String format = formats.getOrDefault(new Pair<>(rk.experimentKey(), name), "%s");
-          if (vs.get(0) instanceof Number) {
+          if (vs.getFirst() instanceof Number) {
             //noinspection rawtypes,unchecked
             return new TrendedNumericCell<>((List) vs, format).rightAligned();
           }
-          if (last(vs) instanceof TextPlotter.Miniplot miniplot) {
+          if (vs.getLast() instanceof TextPlotter.Miniplot miniplot) {
             return new MiniplotCell(miniplot);
           }
-          return new StringCell(format.formatted(last(vs).toString()));
+          return new StringCell(format.formatted(vs.getLast().toString()));
         });
     runs = runs.colLeftJoin(diCells);
     // log table

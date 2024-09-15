@@ -52,15 +52,15 @@ public record ListNumericalDataset(List<Example> examples, List<String> xVarName
         throw new IllegalArgumentException(
             "Size of y is not consistent across examples, found sizes %s".formatted(ysSizes));
       }
-      if (xVarNames.size() != xsSizes.get(0)) {
+      if (xVarNames.size() != xsSizes.getFirst()) {
         throw new IllegalArgumentException(
             ("Number of names of x vars is different form size of x in examples: %d vs" + " " + "%d")
-                .formatted(xVarNames().size(), xsSizes.get(0)));
+                .formatted(xVarNames().size(), xsSizes.getFirst()));
       }
-      if (yVarNames.size() != ysSizes.get(0)) {
+      if (yVarNames.size() != ysSizes.getFirst()) {
         throw new IllegalArgumentException(
             ("Number of names of y vars is different form size of y in examples: %d vs" + " " + "%d")
-                .formatted(xVarNames().size(), xsSizes.get(0)));
+                .formatted(xVarNames().size(), xsSizes.getFirst()));
       }
     }
   }
@@ -68,8 +68,8 @@ public record ListNumericalDataset(List<Example> examples, List<String> xVarName
   public ListNumericalDataset(List<Example> examples) {
     this(
         examples,
-        MultivariateRealFunction.varNames("x", examples.get(0).xs().length),
-        MultivariateRealFunction.varNames("y", examples.get(0).ys().length));
+        MultivariateRealFunction.varNames("x", examples.getFirst().xs().length),
+        MultivariateRealFunction.varNames("y", examples.getFirst().ys().length));
   }
 
   private static NumericalDataset buildDataset(
@@ -92,14 +92,14 @@ public record ListNumericalDataset(List<Example> examples, List<String> xVarName
   public static NumericalDataset loadFromCSV(InputStream inputStream, List<String> xVarNames, List<String> yVarNames)
       throws IOException {
     List<Map<String, String>> data = loadFromCSV(inputStream, Long.MAX_VALUE);
-    if (!data.get(0).keySet().containsAll(xVarNames)) {
+    if (!data.getFirst().keySet().containsAll(xVarNames)) {
       Set<String> notFoundVars = new LinkedHashSet<>(xVarNames);
-      data.get(0).keySet().forEach(notFoundVars::remove);
+      data.getFirst().keySet().forEach(notFoundVars::remove);
       throw new IOException("Some xVarNames not found in the file: %s".formatted(notFoundVars));
     }
-    if (!data.get(0).keySet().containsAll(yVarNames)) {
+    if (!data.getFirst().keySet().containsAll(yVarNames)) {
       Set<String> notFoundVars = new LinkedHashSet<>(yVarNames);
-      data.get(0).keySet().forEach(notFoundVars::remove);
+      data.getFirst().keySet().forEach(notFoundVars::remove);
       throw new IOException("Some yVarNames not found in the file: %s".formatted(notFoundVars));
     }
     return buildDataset(data, xVarNames, yVarNames);
@@ -108,7 +108,7 @@ public record ListNumericalDataset(List<Example> examples, List<String> xVarName
   public static NumericalDataset loadFromCSV(InputStream inputStream, String xVarNamePattern, String yVarNamePattern)
       throws IOException {
     List<Map<String, String>> data = loadFromCSV(inputStream, Long.MAX_VALUE);
-    List<String> varNames = data.get(0).keySet().stream().toList();
+    List<String> varNames = data.getFirst().keySet().stream().toList();
     return buildDataset(
         data,
         varNames.stream().filter(n -> n.matches(xVarNamePattern)).toList(),
@@ -121,12 +121,12 @@ public record ListNumericalDataset(List<Example> examples, List<String> xVarName
 
   public static NumericalDataset loadFromCSV(InputStream inputStream, List<String> yVarNames) throws IOException {
     List<Map<String, String>> data = loadFromCSV(inputStream, Long.MAX_VALUE);
-    if (!data.get(0).keySet().containsAll(yVarNames)) {
+    if (!data.getFirst().keySet().containsAll(yVarNames)) {
       Set<String> notFoundVars = new LinkedHashSet<>(yVarNames);
-      data.get(0).keySet().forEach(notFoundVars::remove);
+      data.getFirst().keySet().forEach(notFoundVars::remove);
       throw new IOException("Some yVarNames not found in the file: %s".formatted(notFoundVars));
     }
-    Set<String> xVarNamesSet = new LinkedHashSet<>(data.get(0).keySet());
+    Set<String> xVarNamesSet = new LinkedHashSet<>(data.getFirst().keySet());
     yVarNames.forEach(xVarNamesSet::remove);
     List<String> xVarNames = xVarNamesSet.stream().toList();
     return buildDataset(data, xVarNames, yVarNames);
@@ -137,7 +137,7 @@ public record ListNumericalDataset(List<Example> examples, List<String> xVarName
       CSVParser parser =
           CSVFormat.Builder.create().setDelimiter(";").build().parse(new InputStreamReader(inputStream));
       List<CSVRecord> records = parser.getRecords();
-      List<String> varNames = records.get(0).stream().toList();
+      List<String> varNames = records.getFirst().stream().toList();
       List<Map<String, String>> maps = new ArrayList<>();
       int lc = 0;
       for (CSVRecord record : records) {

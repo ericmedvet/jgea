@@ -125,20 +125,25 @@ public class TelegramClient {
 
   public void send(String title, Object o) {
     try {
-      if (o instanceof BufferedImage image) {
-        sendMarkdownText("Image from: %s\n`%s`".formatted(StringUtils.getUserMachineName(), title));
-        sendImage(image);
-      } else if (o instanceof String s) {
-        sendMarkdownText("Text from: %s\n`%s`".formatted(StringUtils.getUserMachineName(), title));
-        sendText(s);
-      } else if (o instanceof Video video) {
-        sendMarkdownText("Video from: %s\n`%s`".formatted(StringUtils.getUserMachineName(), title));
-        sendVideo(video);
-      } else if (o instanceof NamedParamMap npm) {
-        sendMarkdownText("NamedParamMap from: %s\n`%s`".formatted(StringUtils.getUserMachineName(), title));
-        sendText(MapNamedParamMap.prettyToString(npm));
-      } else {
-        throw new IllegalArgumentException(
+      switch (o) {
+        case BufferedImage image -> {
+          sendMarkdownText("Image from: %s\n`%s`".formatted(StringUtils.getUserMachineName(), title));
+          sendImage(image);
+        }
+        case String s -> {
+          sendMarkdownText("Text from: %s\n`%s`".formatted(StringUtils.getUserMachineName(), title));
+          sendText(s);
+        }
+        case Video video -> {
+          sendMarkdownText("Video from: %s\n`%s`".formatted(StringUtils.getUserMachineName(), title));
+          sendVideo(video);
+        }
+        case NamedParamMap npm -> {
+          sendMarkdownText("NamedParamMap from: %s\n`%s`".formatted(StringUtils.getUserMachineName(), title));
+          sendText(MapNamedParamMap.prettyToString(npm));
+        }
+        case null -> throw new IllegalArgumentException("Cannot send null data of type %s");
+        default -> throw new IllegalArgumentException(
             "Cannot send data of type %s".formatted(o.getClass().getSimpleName()));
       }
     } catch (IOException e) {

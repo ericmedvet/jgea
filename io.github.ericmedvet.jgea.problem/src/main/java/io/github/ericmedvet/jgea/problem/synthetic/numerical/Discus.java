@@ -25,7 +25,7 @@ public class Discus extends AbstractNumericalProblem {
   public Discus(int p) {
     super(
         p,
-        vs -> 1000000d * vs.get(0) * vs.get(0)
+        vs -> 1000000d * vs.getFirst() * vs.getFirst()
             + IntStream.range(1, p)
                 .mapToDouble(i -> vs.get(i) * vs.get(i))
                 .sum());

@@ -45,7 +45,7 @@ public class UnivariateRegressionProblem<F extends UnivariateRegressionFitness>
         UnivariateRealFunction.from(
             xs -> 0d, fitness.getDataset().xVarNames().size()),
         fitness.getDataset().xVarNames(),
-        fitness.getDataset().yVarNames().get(0));
+        fitness.getDataset().yVarNames().getFirst());
   }
 
   @Override

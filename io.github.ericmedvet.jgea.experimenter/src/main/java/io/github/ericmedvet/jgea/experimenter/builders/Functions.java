@@ -90,8 +90,8 @@ public class Functions {
   @Cacheable
   public static <X, G> NamedFunction<X, Grid<G>> archiveToGrid(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Archive<G>> beforeF) {
-    Function<Archive<G>, Grid<G>> f =
-        a -> Grid.create(a.binUpperBounds().get(0), a.binUpperBounds().get(1), (x, y) -> a.get(List.of(x, y)));
+    Function<Archive<G>, Grid<G>> f = a ->
+        Grid.create(a.binUpperBounds().getFirst(), a.binUpperBounds().get(1), (x, y) -> a.get(List.of(x, y)));
     return NamedFunction.from(f, "archive.to.grid").compose(beforeF);
   }
 

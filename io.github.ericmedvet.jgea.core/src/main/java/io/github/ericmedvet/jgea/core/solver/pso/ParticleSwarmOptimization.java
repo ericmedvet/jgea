@@ -153,9 +153,8 @@ public class ParticleSwarmOptimization<S, Q>
           .toList()));
       List<PSOIndividual<S, Q>> sortedIndividuals =
           individuals.stream().sorted(comparator(state.problem())).toList();
-
-      if (comparator(state.problem()).compare(sortedIndividuals.get(0), knownBest) < 0) {
-        knownBest = sortedIndividuals.get(0);
+      if (comparator(state.problem()).compare(sortedIndividuals.getFirst(), knownBest) < 0) {
+        knownBest = sortedIndividuals.getFirst();
       }
       return state.updatedWithIteration(populationSize, populationSize, sortedIndividuals, knownBest);
     } catch (InterruptedException e) {

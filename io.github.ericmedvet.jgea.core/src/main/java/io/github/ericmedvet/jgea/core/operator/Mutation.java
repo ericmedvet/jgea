@@ -47,7 +47,7 @@ public interface Mutation<G> extends GeneticOperator<G> {
 
   @Override
   default List<? extends G> apply(List<? extends G> gs, RandomGenerator random) {
-    return Collections.singletonList(mutate(gs.get(0), random));
+    return Collections.singletonList(mutate(gs.getFirst(), random));
   }
 
   @Override

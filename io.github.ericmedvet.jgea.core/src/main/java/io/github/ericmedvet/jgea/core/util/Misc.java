@@ -53,7 +53,7 @@ public class Misc {
 
   private static <T> List<List<T>> cartesian(List<List<T>> tss, List<List<T>> lists) {
     if (tss.size() == 1) {
-      return tss.get(0).stream()
+      return tss.getFirst().stream()
           .map(t -> lists.stream()
               .map(l -> Stream.concat(l.stream(), Stream.of(t)).toList())
               .toList())
@@ -86,7 +86,7 @@ public class Misc {
   public static double hypervolume2D(Collection<List<Double>> points, List<Double> reference) {
     Point min = new Point(reference.get(0), reference.get(1));
     List<Point> ps = points.stream()
-        .map(vs -> new Point(vs.get(0), vs.get(1)))
+        .map(vs -> new Point(vs.getFirst(), vs.get(1)))
         .sorted(Comparator.comparingDouble(Point::x))
         .toList();
     return IntStream.range(1, ps.size())

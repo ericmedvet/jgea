@@ -173,7 +173,7 @@ public class KMeansSpeciator<G, S, F> implements SpeciatedEvolver.Speciator<Indi
     List<CentroidCluster<ClusterableIndividual>> clusters = clusterPoints(points);
     List<ClusterableIndividual> representers = clusters.stream()
         .map(c -> {
-          ClusterableIndividual closest = c.getPoints().get(0);
+          ClusterableIndividual closest = c.getPoints().getFirst();
           double closestD =
               distance.apply(closest.point, c.getCenter().getPoint());
           for (int i = 0; i < c.getPoints().size(); i++) {

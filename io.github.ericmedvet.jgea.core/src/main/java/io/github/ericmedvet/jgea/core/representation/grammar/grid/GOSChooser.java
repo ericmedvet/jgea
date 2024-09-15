@@ -53,7 +53,7 @@ public class GOSChooser<S, O> implements Chooser<S, O> {
   @Override
   public Optional<O> chooseFor(S s) {
     if (grammar.rules().get(s).size() == 1) {
-      return Optional.of(grammar.rules().get(s).get(0));
+      return Optional.of(grammar.rules().get(s).getFirst());
     }
     if (!gos.options().containsKey(s)) {
       throw new IllegalArgumentException("Invalid genotype, it does not contain symbol %s".formatted(s));

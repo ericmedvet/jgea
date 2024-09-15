@@ -24,8 +24,8 @@ public class LinearPoints extends AbstractNumericalProblem {
 
   public LinearPoints(int p) {
     super(p, vs -> {
-      double m = (vs.get(vs.size() - 1) - vs.get(0)) / (double) vs.size();
-      double q = vs.get(0);
+      double m = (vs.getLast() - vs.getFirst()) / (double) vs.size();
+      double q = vs.getFirst();
       double sumOfSquaredErrors = 0;
       for (int i = 0; i < vs.size(); i++) {
         double error = vs.get(i) - (m * (double) i + q);
