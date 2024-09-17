@@ -136,9 +136,13 @@ ea.experiment(
       functions = [
         ea.f.simQuality(of = ea.f.quality(of = ea.f.best()); format = "%7.5f");
         ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best())); format = "%7.5f");
-        $popSuccess
+        $popSuccess;
+        f.all(of = ea.f.best(); fs = [
+          ea.f.descBin(descriptor = ea.s.me.d.descriptor(f = $descBody1; min = -1.57; max = 1.57; nOfBins = 10));
+          ea.f.descBin(descriptor = ea.s.me.d.descriptor(f = $descBody2; min = 0; max = 3.14; nOfBins = 10))
+        ])
       ];
-      onlyLast = true
+      onlyLast = false
     );
     ea.l.onRunDone(
       of = ea.acc.lastBest();

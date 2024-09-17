@@ -50,11 +50,10 @@ import io.github.ericmedvet.jviz.core.drawer.Video;
 import io.github.ericmedvet.jviz.core.drawer.VideoBuilder;
 import io.github.ericmedvet.jviz.core.plot.*;
 import io.github.ericmedvet.jviz.core.plot.csv.*;
-import io.github.ericmedvet.jviz.core.plot.image.Configuration;
 import io.github.ericmedvet.jviz.core.plot.image.*;
+import io.github.ericmedvet.jviz.core.plot.image.Configuration;
 import io.github.ericmedvet.jviz.core.plot.video.*;
 import io.github.ericmedvet.jviz.core.util.VideoUtils;
-
 import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.HashSet;
@@ -190,6 +189,17 @@ public class Functions {
           "Unsupported type of plot %s".formatted(p.getClass().getSimpleName()));
     };
     return NamedFunction.from(f, "csv.plotter").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X, G, S, Q> FormattedNamedFunction<X, Integer> descBin(
+      @Param("descriptor") MapElites.Descriptor<G, S, Q> descriptor,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Individual<G, S, Q>> beforeF,
+      @Param(value = "format", dS = "%2d") String format) {
+    Function<Individual<G, S, Q>, Integer> f = i -> descriptor.coordinate(i).bin();
+    return FormattedNamedFunction.from(f, format, "bin[%s]".formatted(NamedFunction.name(descriptor.function())))
+        .compose(beforeF);
   }
 
   @SuppressWarnings("unused")
