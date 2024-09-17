@@ -50,10 +50,11 @@ import io.github.ericmedvet.jviz.core.drawer.Video;
 import io.github.ericmedvet.jviz.core.drawer.VideoBuilder;
 import io.github.ericmedvet.jviz.core.plot.*;
 import io.github.ericmedvet.jviz.core.plot.csv.*;
-import io.github.ericmedvet.jviz.core.plot.image.*;
 import io.github.ericmedvet.jviz.core.plot.image.Configuration;
+import io.github.ericmedvet.jviz.core.plot.image.*;
 import io.github.ericmedvet.jviz.core.plot.video.*;
 import io.github.ericmedvet.jviz.core.util.VideoUtils;
+
 import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.HashSet;
@@ -102,14 +103,6 @@ public class Functions {
     Function<POCPopulationState<I, G, S, Q, ?>, I> f =
         state -> state.pocPopulation().firsts().iterator().next();
     return NamedFunction.from(f, "best").compose(beforeF);
-  }
-
-  @SuppressWarnings("unused")
-  @Cacheable
-  public static <X> NamedFunction<X, String> classSimpleName(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, Object> beforeF) {
-    Function<Object, String> f = o -> o.getClass().getSimpleName();
-    return NamedFunction.from(f, "class").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
