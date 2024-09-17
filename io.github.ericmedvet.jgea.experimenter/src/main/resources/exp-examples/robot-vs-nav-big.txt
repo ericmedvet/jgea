@@ -1,20 +1,14 @@
-$popSuccess = f.size(of = f.filter(
-  of = f.each(
-    of = ea.f.all();
-    mapF = ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality()))
-  );
-  condition = predicate.lt(t = 0.05);
-  format = "%3d"
-))
-$telegram = ea.c.telegram(botIdFilePath = "/home/eric/Documenti/experiments/tlg.txt"; chatId = "207490209")
-
 % ======== DESCRIPTORS ========
-$descBehav1 = ea.s.me.d.descriptor(f = ds.e.n.x(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality()))); min = 0; max = 1; nOfBins = 10)
-$descBehav2 = ea.s.me.d.descriptor(f = ds.e.n.y(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality()))); min = 0; max = 1; nOfBins = 10)
-$descBody1 = ea.s.me.d.descriptor(f = f.avg(of = f.pairFirst(of = ea.f.genotype())); min = -1.57; max = 1.57; nOfBins = 10)
-$descBody2 = ea.s.me.d.descriptor(f = f.sd(of = f.pairFirst(of = ea.f.genotype())); min = 0; max = 3.14; nOfBins = 10)
-$coDescBody1 = ea.s.me.d.descriptor(f = f.avg(of = ea.f.genotype()); min = -1.57; max = 1.57; nOfBins = 10)
-$coDescBody2 = ea.s.me.d.descriptor(f = f.sd(of = ea.f.genotype()); min = 0; max = 3.14; nOfBins = 10)
+$fBehav1 = ds.e.n.x(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality())))
+$fBehav2 = ds.e.n.y(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality())))
+$fBody1 = f.avg()
+$fBody2 = f.sd()
+$descBehav1 = ea.s.me.d.descriptor(f = $fBehav1; min = 0; max = 1; nOfBins = 10)
+$descBehav2 = ea.s.me.d.descriptor(f = $fBehav2; min = 0; max = 1; nOfBins = 10)
+$descBody1 = ea.s.me.d.descriptor(f = f.composition(of = f.pairFirst(of = ea.f.genotype()); then = $fBody1); min = -1.57; max = 1.57; nOfBins = 10)
+$descBody2 = ea.s.me.d.descriptor(f = f.composition(of = f.pairFirst(of = ea.f.genotype()); then = $fBody2); min = 0; max = 3.14; nOfBins = 10)
+$coDescBody1 = ea.s.me.d.descriptor(f = f.composition(of = ea.f.genotype(); then = $fBody1); min = -1.57; max = 1.57; nOfBins = 10)
+$coDescBody2 = ea.s.me.d.descriptor(f = f.composition(of = ea.f.genotype(); then = $fBody2); min = 0; max = 3.14; nOfBins = 10)
 $descBrain1 = ea.s.me.d.descriptor(
   f = f.mathOp(of = f.pairSecond(of = ea.f.genotype()); op = add; args = [
     ea.f.treeSize(of = f.nTh(n = 0));
@@ -43,6 +37,39 @@ $coDescBrain2 = ea.s.me.d.descriptor(
   ]);
   min = 0; max = 20; nOfBins = 10
 )
+$coords = f.as(
+  of = f.all(fs = [
+    ea.f.descBin(descriptor = $descBody1);
+    ea.f.descBin(descriptor = $descBody2);
+    ea.f.descBin(descriptor = $descBrain1);
+    ea.f.descBin(descriptor = $descBrain2)
+  ]);
+  name = "desc.coords"
+)
+
+% ======== SUCCESS ========
+$successT = 0.05
+$popSuccess = f.size(of = f.filter(
+  of = f.each(
+    of = ea.f.all();
+    mapF = ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality()))
+  );
+  condition = predicate.lt(t = $successT);
+  format = "%3d"
+))
+$popDistinctSuccess = f.size(of = f.filter(
+  of = f.each(
+    of = f.distinctSortedByKey(
+      of = ea.f.all();
+      key = $coords;
+      sort = ea.f.simQuality(of = ea.f.quality())
+    );
+    mapF = ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality()))
+  );
+  condition = predicate.lt(t = $successT);
+  format = "%3d"
+))
+$telegram = ea.c.telegram(botIdFilePath = "/home/eric/Documenti/experiments/tlg.txt"; chatId = "207490209")
 
 % ======== PROBLEMS ========
 $simTime = 30
@@ -88,8 +115,8 @@ $validationProblem4 = ea.p.simTo(
 )
 
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:10]) * [m.defaultRG()]) *
-  (solver = (nEval = [50000]) * + (strategy = [
+  runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
+  (solver = (nEval = [500]) * + (strategy = [
     random;
     smoothed_local_best;
     local_best;
@@ -141,34 +168,38 @@ ea.experiment(
     $evolutionProblem4
   ]) * [ea.run()];
   listeners = + [
+
     % ======== CONSOLE AND CSV ========
     ea.l.console(
       functions = [
         ea.f.simQuality(of = ea.f.quality(of = ea.f.best()); format = "%7.5f");
         ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best())); format = "%7.5f");
-        $popSuccess
+        $popSuccess;
+        $popDistinctSuccess
       ];
-      onlyLast = true
+      onlyLast = false
     );
     ea.l.bestCsv(
-      path = "results/{name}/{startTime}/iterations";
+      path = "../results/{name}/{startTime}/iterations";
       functions = [
         ea.f.simQuality(of = ea.f.quality(of = ea.f.best()));
         ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best())));
-        $popSuccess
+        $popSuccess;
+        $popDistinctSuccess
       ];
       runFunctions = [
         ea.f.runKey(key = "run.problem.simulation.arena")
       ];
       onlyLast = false
     );
+
     % ======== IMAGES AND VIDEOS ========
     ea.l.onRunDone(
       of = ea.acc.lastBest();
       preprocessor = ea.f.toVideo(video = ea.misc.toVideo(drawer = ds.d.navigation()); of = ea.f.simOutcome(of = ea.f.quality()));
       consumers = [
         % $telegram;
-        ea.c.saver(path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-traj-{run.randomGenerator.seed:%03d}")
+        ea.c.saver(path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-traj-{run.randomGenerator.seed:%03d}")
       ]
     );
     ea.l.onRunDone(
@@ -176,23 +207,24 @@ ea.experiment(
       preprocessor = ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = ea.f.quality()));
       consumers = [
         % $telegram;
-        ea.c.saver(path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-traj-{run.randomGenerator.seed:%03d}")
+        ea.c.saver(path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-traj-{run.randomGenerator.seed:%03d}")
       ]
     );
     ea.l.saveForRun(
-      path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/trajs-{run.randomGenerator.seed:%03d}";
+      path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/trajs-{run.randomGenerator.seed:%03d}";
       of = ea.acc.bests();
       processor = ea.f.toImagesVideo(image = ds.d.navigation(); of = f.each(mapF = ea.f.simOutcome(of = ea.f.quality())))
     );
+
     % ======== RUN PLOTS ========
     ea.l.saveForRun(
-      path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/archive-{run.randomGenerator.seed:%03d}";
+      path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/archive-{run.randomGenerator.seed:%03d}";
       of = ea.plot.single.me(q = ea.f.simQuality(); condition = predicate.always());
       processor = ea.f.videoPlotter();
       condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "me2-.*")
     );
     ea.l.saveForRun(
-      path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/archives-{run.randomGenerator.seed:%03d}";
+      path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/archives-{run.randomGenerator.seed:%03d}";
       of = ea.plot.single.coMe(q = ea.f.simQuality(); condition = predicate.always());
       processor = ea.f.videoPlotter();
       condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "coMe-.*")
@@ -200,82 +232,85 @@ ea.experiment(
     ea.l.onRunDone(
       of = ea.plot.single.me(q = ea.f.simQuality());
       consumers = [
-        ea.c.saver(path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/archive-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter());
-        ea.c.saver(path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/archive-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/archive-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter());
+        ea.c.saver(path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/archive-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
       ];
       condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "me2-.*")
     );
     ea.l.onRunDone(
       of = ea.plot.single.coMe(q = ea.f.simQuality());
       consumers = [
-        ea.c.saver(path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/archives-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter());
-        ea.c.saver(path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/archives-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/archives-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter());
+        ea.c.saver(path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/archives-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
       ];
       condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "coMe-.*")
     );
     ea.l.onRunDone(
       of = ea.plot.single.coMeStrategies();
       consumers = [
-        ea.c.saver(path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/come-strategy-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter());
-        ea.c.saver(path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/come-strategy-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/come-strategy-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter());
+        ea.c.saver(path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/come-strategy-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
       ];
       condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = "coMe-.*")
     );
+
     % ======== EXP PLOTS ========
     ea.l.onExpDone(
       of = ea.plot.multi.quality(q = ea.f.simQuality(); x = f.quantized(q = 2500; of = ea.f.nOfEvals()));
       consumers = [
         % $telegram;
-        ea.c.saver(path = "results/{name}/{startTime}/fitness"; of = ea.f.imagePlotter());
-        ea.c.saver(path = "results/{name}/{startTime}/fitness"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../results/{name}/{startTime}/fitness"; of = ea.f.imagePlotter());
+        ea.c.saver(path = "../results/{name}/{startTime}/fitness"; of = ea.f.csvPlotter())
       ]
     );
     ea.l.onExpDone(
       of = ea.plot.multi.qualityBoxplot(q = ea.f.simQuality());
       consumers = [
         % $telegram;
-        ea.c.saver(path = "results/{name}/{startTime}/final-fitness"; of = ea.f.imagePlotter());
-        ea.c.saver(path = "results/{name}/{startTime}/final-fitness"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../results/{name}/{startTime}/final-fitness"; of = ea.f.imagePlotter());
+        ea.c.saver(path = "../results/{name}/{startTime}/final-fitness"; of = ea.f.csvPlotter())
       ]
     );
     ea.l.onExpDone(
       of = ea.plot.multi.xyExp(y = $popSuccess; x = f.quantized(q = 2500; of = ea.f.nOfEvals()));
       consumers = [
         % $telegram;
-        ea.c.saver(path = "results/{name}/{startTime}/pop-success"; of = ea.f.imagePlotter());
-        ea.c.saver(path = "results/{name}/{startTime}/pop-success"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../results/{name}/{startTime}/pop-success"; of = ea.f.imagePlotter());
+        ea.c.saver(path = "../results/{name}/{startTime}/pop-success"; of = ea.f.csvPlotter())
       ]
     );
     ea.l.onExpDone(
       of = ea.plot.multi.xyExp(y = f.size(of = ea.f.all()); x = f.quantized(q = 2500; of = ea.f.nOfEvals()));
       consumers = [
         % $telegram;
-        ea.c.saver(path = "results/{name}/{startTime}/pop-size"; of = ea.f.imagePlotter());
-        ea.c.saver(path = "results/{name}/{startTime}/pop-size"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../results/{name}/{startTime}/pop-size"; of = ea.f.imagePlotter());
+        ea.c.saver(path = "../results/{name}/{startTime}/pop-size"; of = ea.f.csvPlotter())
       ]
     )
   ] + [
+
     % ======== VALIDATION IMAGES ========
     ea.l.saveForRun(
-      path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-validation1-traj-{run.randomGenerator.seed:%03d}";
+      path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-validation1-traj-{run.randomGenerator.seed:%03d}";
       of = ea.acc.last(eFunction = ea.f.solution(of = ea.f.best()));
       processor = ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = $validationProblem1))
     );
     ea.l.saveForRun(
-      path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-validation2-traj-{run.randomGenerator.seed:%03d}";
+      path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-validation2-traj-{run.randomGenerator.seed:%03d}";
       of = ea.acc.last(eFunction = ea.f.solution(of = ea.f.best()));
       processor = ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = $validationProblem2))
     );
     ea.l.saveForRun(
-      path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-validation3-traj-{run.randomGenerator.seed:%03d}";
+      path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-validation3-traj-{run.randomGenerator.seed:%03d}";
       of = ea.acc.last(eFunction = ea.f.solution(of = ea.f.best()));
       processor = ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = $validationProblem3))
     );
     ea.l.saveForRun(
-      path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-validation4-traj-{run.randomGenerator.seed:%03d}";
+      path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-validation4-traj-{run.randomGenerator.seed:%03d}";
       of = ea.acc.last(eFunction = ea.f.solution(of = ea.f.best()));
       processor = ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = $validationProblem4))
     );
+    
     % ======== VALIDATION PLOTS ========
     ea.l.onRunDone(
       of = ea.plot.s.populationValidation(
@@ -283,8 +318,8 @@ ea.experiment(
         v = ea.f.fromProblem(problem = $validationProblem1)
       );
       consumers = [
-        ea.c.saver(path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation1-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter(secondary = true; independences = []));
-        ea.c.saver(path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation1-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation1-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter(secondary = true; independences = []));
+        ea.c.saver(path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation1-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
       ]
     );
     ea.l.onRunDone(
@@ -293,8 +328,8 @@ ea.experiment(
         v = ea.f.fromProblem(problem = $validationProblem2)
       );
       consumers = [
-        ea.c.saver(path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation2-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter(secondary = true; independences = []));
-        ea.c.saver(path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation2-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation2-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter(secondary = true; independences = []));
+        ea.c.saver(path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation2-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
       ]
     );
     ea.l.onRunDone(
@@ -303,8 +338,8 @@ ea.experiment(
         v = ea.f.fromProblem(problem = $validationProblem3)
       );
       consumers = [
-        ea.c.saver(path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation3-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter(secondary = true; independences = []));
-        ea.c.saver(path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation3-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation3-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter(secondary = true; independences = []));
+        ea.c.saver(path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation3-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
       ]
     );
     ea.l.onRunDone(
@@ -313,8 +348,8 @@ ea.experiment(
         v = ea.f.fromProblem(problem = $validationProblem4)
       );
       consumers = [
-        ea.c.saver(path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation4-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter(secondary = true; independences = []));
-        ea.c.saver(path = "results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation4-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation4-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter(secondary = true; independences = []));
+        ea.c.saver(path = "../results/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation4-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
       ]
     )
   ]

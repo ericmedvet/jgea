@@ -60,6 +60,16 @@
     <jviz.version>1.0.0</jviz.version>
   </properties>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.github.ericmedvet</groupId>
+        <artifactId>jnb.buildable</artifactId>
+        <version>${jnb.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies/>
 
   <repositories>
