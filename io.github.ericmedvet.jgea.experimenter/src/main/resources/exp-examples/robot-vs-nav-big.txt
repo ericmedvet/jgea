@@ -1,42 +1,33 @@
 % ======== DESCRIPTORS ========
-$fBehav1 = ds.e.n.x(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality())))
-$fBehav2 = ds.e.n.y(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality())))
+$fBehav1 = f.as(of = ds.e.n.x(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality()))); name = "final.x")
+$fBehav2 = f.as(of = ds.e.n.y(of = ds.e.n.finalRobotP(of = ea.f.simOutcome(of = ea.f.quality()))); name = "final.y")
 $fBody1 = f.avg()
 $fBody2 = f.sd()
+$fBrain1 = f.as(
+  of = f.mathOp(op = add; args = [
+    ea.f.treeSize(of = f.nTh(n = 0));
+    ea.f.treeSize(of = f.nTh(n = 1))
+  ]);
+  name = "brain.size"
+)
+$fBrain2 = f.as(
+  of = f.mathOp(op = add; args = [
+    f.size(of = f.filter(of = f.distinct(of = ea.f.treeLeaves(of = f.nTh(n = 0))); condition = predicate.matches(f = f.toString(); regex = "i[0-9]+")));
+    f.size(of = f.filter(of = f.distinct(of = ea.f.treeLeaves(of = f.nTh(n = 1))); condition = predicate.matches(f = f.toString(); regex = "i[0-9]+")))
+  ]);
+  name = "brain.vars"
+)
+
 $descBehav1 = ea.s.me.d.descriptor(f = $fBehav1; min = 0; max = 1; nOfBins = 10)
 $descBehav2 = ea.s.me.d.descriptor(f = $fBehav2; min = 0; max = 1; nOfBins = 10)
 $descBody1 = ea.s.me.d.descriptor(f = f.composition(of = f.pairFirst(of = ea.f.genotype()); then = $fBody1); min = -1.57; max = 1.57; nOfBins = 10)
 $descBody2 = ea.s.me.d.descriptor(f = f.composition(of = f.pairFirst(of = ea.f.genotype()); then = $fBody2); min = 0; max = 3.14; nOfBins = 10)
 $coDescBody1 = ea.s.me.d.descriptor(f = f.composition(of = ea.f.genotype(); then = $fBody1); min = -1.57; max = 1.57; nOfBins = 10)
 $coDescBody2 = ea.s.me.d.descriptor(f = f.composition(of = ea.f.genotype(); then = $fBody2); min = 0; max = 3.14; nOfBins = 10)
-$descBrain1 = ea.s.me.d.descriptor(
-  f = f.mathOp(of = f.pairSecond(of = ea.f.genotype()); op = add; args = [
-    ea.f.treeSize(of = f.nTh(n = 0));
-    ea.f.treeSize(of = f.nTh(n = 1))
-  ]);
-  min = 0; max = 500; nOfBins = 10
-)
-$descBrain2 = ea.s.me.d.descriptor(
-  f = f.mathOp(of = f.pairSecond(of = ea.f.genotype()); op = add; args = [
-    f.size(of = f.filter(of = f.distinct(of = ea.f.treeLeaves(of = f.nTh(n = 0))); condition = predicate.matches(f = f.toString(); regex = "i[0-9]+")));
-    f.size(of = f.filter(of = f.distinct(of = ea.f.treeLeaves(of = f.nTh(n = 1))); condition = predicate.matches(f = f.toString(); regex = "i[0-9]+")))
-  ]);
-  min = 0; max = 20; nOfBins = 10
-)
-$coDescBrain1 = ea.s.me.d.descriptor(
-  f = f.mathOp(of = ea.f.genotype(); op = add; args = [
-    ea.f.treeSize(of = f.nTh(n = 0));
-    ea.f.treeSize(of = f.nTh(n = 1))
-  ]);
-  min = 0; max = 500; nOfBins = 10
-)
-$coDescBrain2 = ea.s.me.d.descriptor(
-  f = f.mathOp(of = ea.f.genotype(); op = add; args = [
-    f.size(of = f.filter(of = f.distinct(of = ea.f.treeLeaves(of = f.nTh(n = 0))); condition = predicate.matches(f = f.toString(); regex = "i[0-9]+")));
-    f.size(of = f.filter(of = f.distinct(of = ea.f.treeLeaves(of = f.nTh(n = 1))); condition = predicate.matches(f = f.toString(); regex = "i[0-9]+")))
-  ]);
-  min = 0; max = 20; nOfBins = 10
-)
+$descBrain1 = ea.s.me.d.descriptor(f = f.composition(of = f.pairSecond(of = ea.f.genotype()); then = $fBrain1); min = 0; max = 500; nOfBins = 10)
+$descBrain2 = ea.s.me.d.descriptor(f = f.composition(of = f.pairSecond(of = ea.f.genotype()); then = $fBrain2); min = 0; max = 20; nOfBins = 10)
+$coDescBrain1 = ea.s.me.d.descriptor(f = f.composition(of = ea.f.genotype(); then = $fBrain1); min = 0; max = 500; nOfBins = 10)
+$coDescBrain2 = ea.s.me.d.descriptor(f = f.composition(of = ea.f.genotype(); then = $fBrain2); min = 0; max = 20; nOfBins = 10)
 $coords = f.as(
   of = f.all(fs = [
     ea.f.descBin(descriptor = $descBody1);
