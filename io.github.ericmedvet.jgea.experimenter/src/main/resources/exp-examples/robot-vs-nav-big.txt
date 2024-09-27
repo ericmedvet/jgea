@@ -39,16 +39,15 @@ $coords = f.as(
 )
 
 % ======== SUCCESS ========
-$successT = 0.05
-$popSuccess = f.size(of = f.filter(
+$successT = 0.1
+$popSuccess = f.as(name = "n.success"; of = f.size(of = f.filter(
   of = f.each(
     of = ea.f.all();
     mapF = ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality()))
   );
-  condition = predicate.lt(t = $successT);
-  format = "%3d"
-))
-$popDistinctSuccess = f.size(of = f.filter(
+  condition = predicate.lt(t = $successT)
+); format = "%3d"))
+$popDistinctSuccess = f.as(name = "diverse.n.success"; of = f.size(of = f.filter(
   of = f.each(
     of = f.distinctSortedByKey(
       of = ea.f.all();
@@ -57,42 +56,27 @@ $popDistinctSuccess = f.size(of = f.filter(
     );
     mapF = ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality()))
   );
-  condition = predicate.lt(t = $successT);
-  format = "%3d"
-))
+  condition = predicate.lt(t = $successT)
+); format = "%3d"))
+
+% ======== PROBLEM ========
+$simTime = 30
+$fitnessF = ds.e.n.finalD()
+
+% ======== OTHER ========
+$evalsQuant = 2500
 $telegram = ea.c.telegram(botIdFilePath = "/home/eric/Documenti/experiments/tlg.txt"; chatId = "207490209")
 
-% ======== PROBLEMS ========
-$simTime = 30
-$validationProblem1 = ea.p.simTo(
-  simulation = ds.s.variableSensorPositionsNavigation(arena = a_maze; nOfSensors = 9; finalT = $simTime);
-  f = ds.e.n.avgD();
-  type = minimize
-)
-$validationProblem2 = ea.p.simTo(
-  simulation = ds.s.variableSensorPositionsNavigation(arena = b_maze; nOfSensors = 9; finalT = $simTime);
-  f = ds.e.n.avgD();
-  type = minimize
-)
-$validationProblem3 = ea.p.simTo(
-  simulation = ds.s.variableSensorPositionsNavigation(arena = c_maze; nOfSensors = 9; finalT = $simTime);
-  f = ds.e.n.avgD();
-  type = minimize
-)
-$validationProblem4 = ea.p.simTo(
-  simulation = ds.s.variableSensorPositionsNavigation(arena = d_maze; nOfSensors = 9; finalT = $simTime);
-  f = ds.e.n.avgD();
-  type = minimize
-)
-
+% ======== EXP ========
 ea.experiment(
+
   runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
-  (solver = (nEval = [500]) * + (strategy = [
+  (solver = (nEval = [25000]) * + (strategy = [
     random;
-    smoothed_local_best;
-    local_best;
-    global_best;
-    central;
+    % smoothed_local_best;
+    % local_best;
+    % global_best;
+    % central;
     identity
   ]) * [
     % ======== COME ========
@@ -106,7 +90,7 @@ ea.experiment(
       descriptors1 = [$coDescBody1; $coDescBody2];
       descriptors2 = [$coDescBrain1; $coDescBrain2]
     )
-  ] + 1 *
+  ] + 0 *
     % ======== GA AND ME ========
     (mapper = [ea.mapper.pair(second = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf()))]) *
     (representation = [ea.representation.pair(first = ea.representation.doubleString(); second = ea.representation.multiSRTree())]) * [
@@ -116,11 +100,15 @@ ea.experiment(
     ea.s.mapElites(name = "me2-brain"; descriptors = [$descBrain1; $descBrain2]);
     ea.s.mapElites(name = "me4-body+brain"; descriptors = [$descBody1; $descBody2; $descBrain1; $descBrain2])
   ]) * (problem = (simulation = (arena = [
-    a_maze; b_maze; c_maze; d_maze
+    a_maze;
+    % b_maze;
+    % c_maze;
+    d_maze
   ]) * [
     ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime)
-  ]) * [ea.p.simTo(f = ds.e.n.avgD(); type = minimize)]) * [ea.run()];
-  listeners = + [
+  ]) * [ea.p.simTo(f = $fitnessF; type = minimize)]) * [ea.run()];
+
+  listeners = + + [
 
     % ======== CONSOLE AND CSV ========
     ea.l.console(
@@ -133,7 +121,7 @@ ea.experiment(
       onlyLast = false
     );
     ea.l.bestCsv(
-      path = "../../experiments/{name}/{startTime}/iterations";
+      path = "../../experiments/{name}/{startTime}/all-iterations";
       functions = [
         ea.f.simQuality(of = ea.f.quality(of = ea.f.best()));
         ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best())));
@@ -209,11 +197,19 @@ ea.experiment(
 
     % ======== EXP PLOTS ========
     ea.l.onExpDone(
-      of = ea.plot.multi.quality(q = ea.f.simQuality(); x = f.quantized(q = 2500; of = ea.f.nOfEvals()));
+      of = ea.plot.multi.quality(q = ea.f.simQuality(); x = f.quantized(q = $evalsQuant; of = ea.f.nOfEvals()));
       consumers = [
         % $telegram;
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/fitness"; of = ea.f.imagePlotter());
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/fitness"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/fitness-evals"; of = ea.f.imagePlotter());
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/fitness-evals"; of = ea.f.csvPlotter())
+      ]
+    );
+    ea.l.onExpDone(
+      of = ea.plot.multi.quality(q = ea.f.simQuality(); x = ea.f.nOfIterations());
+      consumers = [
+        % $telegram;
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/fitness-iters"; of = ea.f.imagePlotter());
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/fitness-iters"; of = ea.f.csvPlotter())
       ]
     );
     ea.l.onExpDone(
@@ -225,84 +221,82 @@ ea.experiment(
       ]
     );
     ea.l.onExpDone(
-      of = ea.plot.multi.xyExp(y = $popSuccess; x = f.quantized(q = 2500; of = ea.f.nOfEvals()));
+      of = ea.plot.multi.yBoxplotExp(y = $popDistinctSuccess);
       consumers = [
         % $telegram;
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/pop-success"; of = ea.f.imagePlotter());
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/pop-success"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/final-distinct-pop-success"; of = ea.f.imagePlotter());
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/final-distinct-pop-success"; of = ea.f.csvPlotter())
       ]
     );
     ea.l.onExpDone(
-      of = ea.plot.multi.xyExp(y = f.size(of = ea.f.all()); x = f.quantized(q = 2500; of = ea.f.nOfEvals()));
+      of = ea.plot.multi.yBoxplotExp(y = $popSuccess);
       consumers = [
         % $telegram;
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/pop-size"; of = ea.f.imagePlotter());
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/pop-size"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/final-pop-success"; of = ea.f.imagePlotter());
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/final-pop-success"; of = ea.f.csvPlotter())
+      ]
+    );
+    ea.l.onExpDone(
+      of = ea.plot.multi.xyExp(y = $popDistinctSuccess; x = f.quantized(q = $evalsQuant; of = ea.f.nOfEvals()));
+      consumers = [
+        % $telegram;
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/distinct-pop-success-evals"; of = ea.f.imagePlotter());
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/distinct-pop-success-evals"; of = ea.f.csvPlotter())
+      ]
+    );
+    ea.l.onExpDone(
+      of = ea.plot.multi.xyExp(y = $popDistinctSuccess; x = ea.f.nOfIterations());
+      consumers = [
+        % $telegram;
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/distinct-pop-success-iters"; of = ea.f.imagePlotter());
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/distinct-pop-success-iters"; of = ea.f.csvPlotter())
+      ]
+    );
+    ea.l.onExpDone(
+      of = ea.plot.multi.xyExp(y = f.size(of = ea.f.all()); x = f.quantized(q = $evalsQuant; of = ea.f.nOfEvals()));
+      consumers = [
+        % $telegram;
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/pop-size-evals"; of = ea.f.imagePlotter());
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/pop-size-evals"; of = ea.f.csvPlotter())
+      ]
+    );
+    ea.l.onExpDone(
+      of = ea.plot.multi.xyExp(y = f.size(of = ea.f.all()); x = f.quantized(q = $evalsQuant; of = ea.f.nOfEvals()));
+      consumers = [
+        % $telegram;
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/pop-size-iters"; of = ea.f.imagePlotter());
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/pop-size-iters"; of = ea.f.csvPlotter())
       ]
     )
-  ] + [
+  ] +
+  % ======== VALIDATION IMAGES ========
+  (processor = (of = (of = (simulation = (arena = [
+    a_maze;
+    % b_maze;
+    % c_maze;
+    d_maze
+  ]) * [
+    ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime)
+  ]) * [ea.p.simTo(f = ds.e.n.avgD(); type = minimize)]) * [ea.f.simOutcome()]) * [ea.f.toImage(image = ds.d.navigation())]) * [
+    ea.l.saveForRun(
+      path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-validation-traj-{run.randomGenerator.seed:%03d}";
+      of = ea.acc.last(eFunction = ea.f.solution(of = ea.f.best()))
+    )
+  ] +
 
-    % ======== VALIDATION IMAGES ========
-    ea.l.saveForRun(
-      path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-validation1-traj-{run.randomGenerator.seed:%03d}";
-      of = ea.acc.last(eFunction = ea.f.solution(of = ea.f.best()));
-      processor = ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = $validationProblem1))
-    );
-    ea.l.saveForRun(
-      path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-validation2-traj-{run.randomGenerator.seed:%03d}";
-      of = ea.acc.last(eFunction = ea.f.solution(of = ea.f.best()));
-      processor = ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = $validationProblem2))
-    );
-    ea.l.saveForRun(
-      path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-validation3-traj-{run.randomGenerator.seed:%03d}";
-      of = ea.acc.last(eFunction = ea.f.solution(of = ea.f.best()));
-      processor = ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = $validationProblem3))
-    );
-    ea.l.saveForRun(
-      path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-validation4-traj-{run.randomGenerator.seed:%03d}";
-      of = ea.acc.last(eFunction = ea.f.solution(of = ea.f.best()));
-      processor = ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = $validationProblem4))
-    );
-    
-    % ======== VALIDATION PLOTS ========
+  % ======== VALIDATION PLOTS ========
+  (of = (v = (problem = (simulation = (arena = [
+    a_maze;
+    % b_maze;
+    % c_maze;
+    d_maze
+  ]) * [
+    ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime)
+  ]) * [ea.p.simTo(f = ds.e.n.avgD(); type = minimize)]) * [ea.f.fromProblem()]) * [ea.plot.s.populationValidation(q = ea.f.simQuality())]) * [
     ea.l.onRunDone(
-      of = ea.plot.s.populationValidation(
-        q = ea.f.simQuality();
-        v = ea.f.fromProblem(problem = $validationProblem1)
-      );
       consumers = [
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation1-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter(secondary = true; independences = []));
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation1-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
-      ]
-    );
-    ea.l.onRunDone(
-      of = ea.plot.s.populationValidation(
-        q = ea.f.simQuality();
-        v = ea.f.fromProblem(problem = $validationProblem2)
-      );
-      consumers = [
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation2-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter(secondary = true; independences = []));
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation2-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
-      ]
-    );
-    ea.l.onRunDone(
-      of = ea.plot.s.populationValidation(
-        q = ea.f.simQuality();
-        v = ea.f.fromProblem(problem = $validationProblem3)
-      );
-      consumers = [
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation3-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter(secondary = true; independences = []));
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation3-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
-      ]
-    );
-    ea.l.onRunDone(
-      of = ea.plot.s.populationValidation(
-        q = ea.f.simQuality();
-        v = ea.f.fromProblem(problem = $validationProblem4)
-      );
-      consumers = [
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation4-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter(secondary = true; independences = []));
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation4-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter(secondary = true; independences = []));
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
       ]
     )
   ]
