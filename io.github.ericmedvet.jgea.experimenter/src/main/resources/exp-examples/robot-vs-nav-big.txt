@@ -39,25 +39,24 @@ $coords = f.as(
 )
 
 % ======== SUCCESS ========
-$successT = 0.1
-$popSuccess = f.as(name = "n.success"; of = f.size(of = f.filter(
-  of = f.each(
-    of = ea.f.all();
-    mapF = ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality()))
-  );
-  condition = predicate.lt(t = $successT)
-); format = "%3d"))
-$popDistinctSuccess = f.as(name = "diverse.n.success"; of = f.size(of = f.filter(
-  of = f.each(
-    of = f.distinctSortedByKey(
-      of = ea.f.all();
-      key = $coords;
-      sort = ea.f.simQuality(of = ea.f.quality())
-    );
-    mapF = ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality()))
-  );
-  condition = predicate.lt(t = $successT)
-); format = "%3d"))
+$successT = 0.05
+$diversePop = f.as(name = "diverse.pop"; of = f.distinctSortedByKey(
+  of = ea.f.all();
+  key = $coords;
+  sort = ea.f.simQuality(of = ea.f.quality())
+))
+$popSuccess = f.as(name = "n.success"; of = f.sizeIfLt(
+  allF = ea.f.all();
+  mapF = ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality()));
+  t = $successT;
+  format = "%3d"
+))
+$popDistinctSuccess = f.as(name = "diverse.n.success"; of = f.sizeIfLt(
+  allF = $diversePop;
+  mapF = ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality()));
+  t = $successT;
+  format = "%3d"
+))
 
 % ======== PROBLEM ========
 $simTime = 30
@@ -71,7 +70,7 @@ $telegram = ea.c.telegram(botIdFilePath = "/home/eric/Documenti/experiments/tlg.
 ea.experiment(
 
   runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
-  (solver = (nEval = [25000]) * + (strategy = [
+  (solver = (nEval = [5000]) * + (strategy = [
     random;
     % smoothed_local_best;
     % local_best;
@@ -132,6 +131,25 @@ ea.experiment(
         ea.f.runKey(key = "run.problem.simulation.arena")
       ];
       onlyLast = false
+    );
+    ea.l.bestCsv(
+      path = "../../experiments/{name}/{startTime}/last-iterations";
+      functions = + [
+        ea.f.simQuality(of = ea.f.quality(of = ea.f.best()));
+        ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best())));
+        $popSuccess;
+        $popDistinctSuccess
+      ] + [
+        f.sizeIfLt(
+          allF = ea.f.all();
+          mapF = ea.f.simQuality(of = ea.f.fromProblem(of = ea.f.solution(); problem = ea.p.simTo(f = ds.e.n.avgD(); type = minimize; simulation = ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime; arena = a_maze))));
+          t = $successT
+        )
+      ];
+      runFunctions = [
+        ea.f.runKey(key = "run.problem.simulation.arena")
+      ];
+      onlyLast = true
     );
 
     % ======== IMAGES AND VIDEOS ========
