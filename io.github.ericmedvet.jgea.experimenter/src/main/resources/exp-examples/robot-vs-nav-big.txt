@@ -69,13 +69,13 @@ $telegram = ea.c.telegram(botIdFilePath = "/home/eric/Documenti/experiments/tlg.
 % ======== EXP ========
 ea.experiment(
 
-  runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
-  (solver = (nEval = [5000]) * + (strategy = [
+  runs = (randomGenerator = (seed = [1:1:10]) * [m.defaultRG()]) *
+  (solver = (nEval = [50000]) * + (strategy = [
     random;
-    % smoothed_local_best;
-    % local_best;
-    % global_best;
-    % central;
+    smoothed_local_best;
+    local_best;
+    global_best;
+    central;
     identity
   ]) * [
     % ======== COME ========
@@ -89,7 +89,7 @@ ea.experiment(
       descriptors1 = [$coDescBody1; $coDescBody2];
       descriptors2 = [$coDescBrain1; $coDescBrain2]
     )
-  ] + 0 *
+  ] + 1 *
     % ======== GA AND ME ========
     (mapper = [ea.mapper.pair(second = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf()))]) *
     (representation = [ea.representation.pair(first = ea.representation.doubleString(); second = ea.representation.multiSRTree())]) * [
@@ -100,8 +100,8 @@ ea.experiment(
     ea.s.mapElites(name = "me4-body+brain"; descriptors = [$descBody1; $descBody2; $descBrain1; $descBrain2])
   ]) * (problem = (simulation = (arena = [
     a_maze;
-    % b_maze;
-    % c_maze;
+    b_maze;
+    c_maze;
     d_maze
   ]) * [
     ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime)
@@ -143,6 +143,21 @@ ea.experiment(
         f.sizeIfLt(
           allF = ea.f.all();
           mapF = ea.f.simQuality(of = ea.f.fromProblem(of = ea.f.solution(); problem = ea.p.simTo(f = ds.e.n.avgD(); type = minimize; simulation = ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime; arena = a_maze))));
+          t = $successT
+        );
+        f.sizeIfLt(
+          allF = ea.f.all();
+          mapF = ea.f.simQuality(of = ea.f.fromProblem(of = ea.f.solution(); problem = ea.p.simTo(f = ds.e.n.avgD(); type = minimize; simulation = ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime; arena = b_maze))));
+          t = $successT
+        );
+        f.sizeIfLt(
+          allF = ea.f.all();
+          mapF = ea.f.simQuality(of = ea.f.fromProblem(of = ea.f.solution(); problem = ea.p.simTo(f = ds.e.n.avgD(); type = minimize; simulation = ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime; arena = c_maze))));
+          t = $successT
+        );
+        f.sizeIfLt(
+          allF = ea.f.all();
+          mapF = ea.f.simQuality(of = ea.f.fromProblem(of = ea.f.solution(); problem = ea.p.simTo(f = ds.e.n.avgD(); type = minimize; simulation = ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime; arena = d_maze))));
           t = $successT
         )
       ];
