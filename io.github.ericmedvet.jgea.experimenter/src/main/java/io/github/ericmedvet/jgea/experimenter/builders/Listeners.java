@@ -387,6 +387,7 @@ public class Listeners {
               value = "consumers",
               dNPMs = {"ea.consumer.deaf()"})
           List<TriConsumer<? super P, Run<?, ?, ?, ?>, Experiment>> consumers,
+      @Param(value = "deferred") boolean deferred,
       @Param(value = "condition", dNPM = "predicate.always()") Predicate<Run<?, ?, ?, ?>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         accumulatorFactory.thenOnShutdown(Naming.named(consumers.toString(), (Consumer<List<O>>) (os -> {
@@ -396,7 +397,7 @@ public class Listeners {
           }
         }))),
         predicate,
-        executorService,
+        deferred ? executorService : null,
         false);
   }
 
@@ -443,6 +444,7 @@ public class Listeners {
               value = "consumers",
               dNPMs = {"ea.consumer.deaf()"})
           List<TriConsumer<? super P, Run<?, ?, ?, ?>, Experiment>> consumers,
+      @Param(value = "deferred") boolean deferred,
       @Param(value = "condition", dNPM = "predicate.always()") Predicate<Run<?, ?, ?, ?>> predicate) {
     return (experiment, executorService) -> new ListenerFactoryAndMonitor<>(
         accumulatorFactory.thenOnDone(Naming.named(consumers.toString(), (run, o) -> {
@@ -450,7 +452,7 @@ public class Listeners {
           consumers.forEach(c -> c.accept(p, run, experiment));
         })),
         predicate,
-        executorService,
+        deferred ? executorService : null,
         false);
   }
 

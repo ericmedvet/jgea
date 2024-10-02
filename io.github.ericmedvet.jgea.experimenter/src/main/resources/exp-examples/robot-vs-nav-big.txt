@@ -108,7 +108,7 @@ ea.experiment(
     ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime)
   ]) * [ea.p.simTo(f = $fitnessF; type = minimize)]) * [ea.run()];
 
-  listeners = + + [
+  listeners = [
 
     % ======== CONSOLE AND CSV ========
     ea.l.console(
@@ -301,36 +301,57 @@ ea.experiment(
         ea.c.saver(path = "../../experiments/{name}/{startTime}/pop-size-iters"; of = ea.f.imagePlotter());
         ea.c.saver(path = "../../experiments/{name}/{startTime}/pop-size-iters"; of = ea.f.csvPlotter())
       ]
-    )
-  ] +
-  % ======== VALIDATION IMAGES ========
-  (processor = (of = (of = (simulation = (arena = [
-    a_maze;
-    % b_maze;
-    % c_maze;
-    d_maze
-  ]) * [
-    ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime)
-  ]) * [ea.p.simTo(f = $fitnessF; type = minimize)]) * [ea.f.simOutcome()]) * [ea.f.toImage(image = ds.d.navigation())]) * [
-    ea.l.saveForRun(
-      path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-validation-traj-{run.randomGenerator.seed:%03d}";
-      of = ea.acc.last(eFunction = ea.f.solution(of = ea.f.best()))
-    )
-  ] +
+    );
 
-  % ======== VALIDATION PLOTS ========
-  (of = (v = (problem = (simulation = (arena = [
-    a_maze;
-    % b_maze;
-    % c_maze;
-    d_maze
-  ]) * [
-    ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime)
-  ]) * [ea.p.simTo(f = $fitnessF; type = minimize)]) * [ea.f.fromProblem()]) * [ea.plot.s.populationValidation(q = ea.f.simQuality())]) * [
+    % ======== VALIDATION IMAGES ========
+    ea.l.saveForRun(
+      path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-validation-traj-a_maze-{run.randomGenerator.seed:%03d}";
+      of = ea.acc.last(eFunction = ea.f.solution(of = ea.f.best()));
+      processor = ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = ea.p.simTo(f = $fitnessF; type = minimize; simulation = ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime; arena = a_maze))))
+    );
+    ea.l.saveForRun(
+      path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-validation-traj-b_maze-{run.randomGenerator.seed:%03d}";
+      of = ea.acc.last(eFunction = ea.f.solution(of = ea.f.best()));
+      processor = ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = ea.p.simTo(f = $fitnessF; type = minimize; simulation = ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime; arena = b_maze))))
+    );
+    ea.l.saveForRun(
+      path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-validation-traj-c_maze-{run.randomGenerator.seed:%03d}";
+      of = ea.acc.last(eFunction = ea.f.solution(of = ea.f.best()));
+      processor = ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = ea.p.simTo(f = $fitnessF; type = minimize; simulation = ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime; arena = c_maze))))
+    );
+    ea.l.saveForRun(
+      path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-validation-traj-d_maze-{run.randomGenerator.seed:%03d}";
+      of = ea.acc.last(eFunction = ea.f.solution(of = ea.f.best()));
+      processor = ea.f.toImage(image = ds.d.navigation(); of = ea.f.simOutcome(of = ea.p.simTo(f = $fitnessF; type = minimize; simulation = ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime; arena = d_maze))))
+    );
+
+    % ======== VALIDATION PLOTS ========
     ea.l.onRunDone(
+      of = ea.plot.s.populationValidation(q = ea.f.simQuality(); v = ea.f.fromProblem(problem = ea.p.simTo(f = $fitnessF; type = minimize; simulation = ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime; arena = a_maze))));
       consumers = [
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter(secondary = true; independences = []));
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation-a_maze-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter(secondary = true; independences = []));
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation-a_maze-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
+      ]
+    );
+    ea.l.onRunDone(
+      of = ea.plot.s.populationValidation(q = ea.f.simQuality(); v = ea.f.fromProblem(problem = ea.p.simTo(f = $fitnessF; type = minimize; simulation = ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime; arena = b_maze))));
+      consumers = [
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation-b_maze-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter(secondary = true; independences = []));
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation-b_maze-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
+      ]
+    );
+    ea.l.onRunDone(
+      of = ea.plot.s.populationValidation(q = ea.f.simQuality(); v = ea.f.fromProblem(problem = ea.p.simTo(f = $fitnessF; type = minimize; simulation = ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime; arena = c_maze))));
+      consumers = [
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation-c_maze-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter(secondary = true; independences = []));
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation-c_maze-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
+      ]
+    );
+    ea.l.onRunDone(
+      of = ea.plot.s.populationValidation(q = ea.f.simQuality(); v = ea.f.fromProblem(problem = ea.p.simTo(f = $fitnessF; type = minimize; simulation = ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime; arena = d_maze))));
+      consumers = [
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation-d_maze-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter(secondary = true; independences = []));
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation-d_maze-{run.randomGenerator.seed:%03d}"; of = ea.f.csvPlotter())
       ]
     )
   ]
