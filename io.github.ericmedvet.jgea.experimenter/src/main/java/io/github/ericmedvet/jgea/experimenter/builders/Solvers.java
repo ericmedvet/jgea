@@ -110,7 +110,7 @@ public class Solvers {
   @SuppressWarnings("unused")
   @Cacheable
   public static <G1, G2, S1, S2, S, Q> Function<S, CoMapElites<G1, G2, S1, S2, S, Q>> coMapElites(
-      @Param(value = "name", iS = "coMe-{strategy}") String name,
+      @Param(value = "name", iS = "coMe-{strategy}-{neighborRadius}-{maxNOfNeighbors}") String name,
       @Param("representation1") Function<G1, Representation<G1>> representation1,
       @Param("representation2") Function<G2, Representation<G2>> representation2,
       @Param(value = "mapper1", dNPM = "ea.m.identity()") InvertibleMapper<G1, S1> mapper1,
@@ -122,7 +122,8 @@ public class Solvers {
       @Param(value = "populationSize", dI = 100) int populationSize,
       @Param(value = "nOfOffspring", dI = 50) int nOfOffspring,
       @Param(value = "strategy", dS = "identity") CoMEStrategy.Prepared strategy,
-      @Param(value = "neighborRadius", dD = 2) double neighborRadius) {
+      @Param(value = "neighborRadius", dD = 2) double neighborRadius,
+      @Param(value = "maxNOfNeighbors", dI = 2) int maxNOfNeighbors) {
     return exampleS -> {
       Pair<S1, S2> splitExample = invertibleMapperMerger.exampleFor(exampleS);
       Representation<G1> r1 = representation1.apply(mapper1.exampleFor(splitExample.first()));
@@ -146,7 +147,8 @@ public class Solvers {
           populationSize,
           nOfOffspring,
           strategy,
-          neighborRadius);
+          neighborRadius,
+          maxNOfNeighbors);
     };
   }
 

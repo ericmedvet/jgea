@@ -31,10 +31,7 @@ import io.github.ericmedvet.jgea.core.solver.mapelites.strategy.CoMEStrategy;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Pair;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
@@ -68,6 +65,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
   private final int nOfOffspring;
   private final Supplier<CoMEStrategy> strategySupplier;
   private final double neighborRadius;
+  private final int maxNOfNeighbors;
 
   public CoMapElites(
       Predicate<? super CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>>> stopCondition,
@@ -83,7 +81,8 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
       int populationSize,
       int nOfOffspring,
       Supplier<CoMEStrategy> strategySupplier,
-      double neighborRadius) {
+      double neighborRadius,
+      int maxNOfNeighbors) {
     super(null, null, stopCondition, false);
     this.genotypeFactory1 = genotypeFactory1;
     this.genotypeFactory2 = genotypeFactory2;
@@ -98,6 +97,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
     this.nOfOffspring = nOfOffspring;
     this.strategySupplier = strategySupplier;
     this.neighborRadius = neighborRadius;
+    this.maxNOfNeighbors = maxNOfNeighbors;
     if (descriptors1.size() != descriptors2.size()) {
       throw new IllegalArgumentException("Unexpected different sizes of descriptors: %d vs. %d"
           .formatted(descriptors1.size(), descriptors2.size()));
@@ -172,6 +172,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
               List<MapElites.Descriptor<GO, SO, Q>> otherDescriptors,
               CoMEStrategy strategy,
               double neighborRadius,
+              int maxNOfNeighbors,
               QualityBasedProblem<S, Q> problem,
               RandomGenerator random,
               long iteration,
@@ -189,9 +190,11 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
       List<Integer> otherCoords = denormalizeCoords(
           strategy.getOtherCoords(normalizeCoords(thisCoords, thisDescriptors)), otherDescriptors);
       otherCoords = getClosestCoordinate(otherCoords, otherArchive.asMap());
-      Collection<? extends MEIndividual<GO, SO, Q>> neighbors =
-          findNeighbors(otherCoords, otherArchive.asMap(), CoMapElites::euclideanDistance, neighborRadius);
+      List<? extends MEIndividual<GO, SO, Q>> neighbors = new ArrayList<>(
+          findNeighbors(otherCoords, otherArchive.asMap(), CoMapElites::euclideanDistance, neighborRadius));
+      Collections.shuffle(neighbors, random);
       List<CoMEIndividual<GT, GO, ST, SO, S, Q>> localCompositeIndividuals = neighbors.stream()
+          .limit(maxNOfNeighbors)
           .map(iO -> {
             S s = solutionMerger.apply(iT.solution(), iO.solution());
             return CoMEIndividual.of(
@@ -294,7 +297,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
                 CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>,
                 List<CoMEIndividual<G1, G2, S1, S2, S, Q>>>>
         reproduction1 = getAll(
-            IntStream.range(0, populationSize)
+            IntStream.range(0, nOfOffspring / 2)
                 .mapToObj(i -> reproduceCallable(
                     state.mapOfElites1(),
                     state.mapOfElites2(),
@@ -305,6 +308,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
                     descriptors2,
                     state.strategy1(),
                     neighborRadius,
+                    maxNOfNeighbors,
                     state.problem(),
                     random,
                     state.nOfIterations(),
@@ -317,7 +321,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
                 CoMEPartialIndividual<G2, S2, G2, G1, S2, S1, S, Q>,
                 List<CoMEIndividual<G2, G1, S2, S1, S, Q>>>>
         reproduction2 = getAll(
-            IntStream.range(0, populationSize)
+            IntStream.range(0, nOfOffspring / 2)
                 .mapToObj(i -> reproduceCallable(
                     state.mapOfElites2(),
                     state.mapOfElites1(),
@@ -328,6 +332,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
                     descriptors1,
                     state.strategy2(),
                     neighborRadius,
+                    maxNOfNeighbors,
                     state.problem(),
                     random,
                     state.nOfIterations(),
@@ -357,7 +362,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
             partialComparator(state.problem()));
     // return state
     return state.updatedWithIteration(
-        nOfOffspring * 2L,
+        nOfOffspring,
         coMEIndividuals1.size() + coMEIndividuals2.size(),
         archive1,
         archive2,
