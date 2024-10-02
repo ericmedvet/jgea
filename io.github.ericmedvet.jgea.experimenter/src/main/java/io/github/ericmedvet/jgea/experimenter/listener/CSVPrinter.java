@@ -104,7 +104,7 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
           synchronized (this) {
             if (printer == null) {
               try {
-                File file = Misc.robustGetFile(filePath);
+                File file = Misc.robustGetFile(filePath, false);
                 printer = new org.apache.commons.csv.CSVPrinter(
                     new PrintStream(file),
                     CSVFormat.Builder.create()

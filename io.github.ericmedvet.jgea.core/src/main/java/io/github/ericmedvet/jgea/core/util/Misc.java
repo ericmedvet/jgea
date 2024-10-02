@@ -153,7 +153,7 @@ public class Misc {
     return (T) ts.toArray()[random.nextInt(ts.size())];
   }
 
-  public static File robustGetFile(String pathName) throws IOException {
+  public static File robustGetFile(String pathName, boolean overwrite) throws IOException {
     // create directory
     Path path = Path.of(pathName);
     Path filePath = path.getFileName();
@@ -165,31 +165,34 @@ public class Misc {
     } else {
       dirsPath = Path.of(".");
     }
-    // check file existence
-    while (dirsPath.resolve(filePath).toFile().exists()) {
-      String newName = null;
-      Matcher mNum = Pattern.compile("\\((?<n>[0-9]+)\\)\\.\\w+$").matcher(filePath.toString());
-      if (mNum.find()) {
-        int n = Integer.parseInt(mNum.group("n"));
-        newName = new StringBuilder(filePath.toString())
-            .replace(mNum.start("n"), mNum.end("n"), Integer.toString(n + 1))
-            .toString();
+    if (!overwrite) {
+      // check file existence
+      while (dirsPath.resolve(filePath).toFile().exists()) {
+        String newName = null;
+        Matcher mNum = Pattern.compile("\\((?<n>[0-9]+)\\)\\.\\w+$").matcher(filePath.toString());
+        if (mNum.find()) {
+          int n = Integer.parseInt(mNum.group("n"));
+          newName = new StringBuilder(filePath.toString())
+              .replace(mNum.start("n"), mNum.end("n"), Integer.toString(n + 1))
+              .toString();
+        }
+        Matcher mExtension = Pattern.compile("\\.\\w+$").matcher(filePath.toString());
+        if (newName == null && mExtension.find()) {
+          newName = new StringBuilder(filePath.toString())
+              .replace(mExtension.start(), mExtension.end(), ".(1)" + mExtension.group())
+              .toString();
+        }
+        if (newName == null) {
+          newName = filePath + ".newer";
+        }
+        filePath = Path.of(newName);
       }
-      Matcher mExtension = Pattern.compile("\\.\\w+$").matcher(filePath.toString());
-      if (newName == null && mExtension.find()) {
-        newName = new StringBuilder(filePath.toString())
-            .replace(mExtension.start(), mExtension.end(), ".(1)" + mExtension.group())
-            .toString();
+      if (!path.equals(dirsPath.resolve(filePath))) {
+        L.log(
+            Level.WARNING,
+            String.format(
+                "Given file path '%s' exists; will write on '%s'", path, dirsPath.resolve(filePath)));
       }
-      if (newName == null) {
-        newName = filePath + ".newer";
-      }
-      filePath = Path.of(newName);
-    }
-    if (!path.equals(dirsPath.resolve(filePath))) {
-      L.log(
-          Level.WARNING,
-          String.format("Given file path '%s' exists; will write on '%s'", path, dirsPath.resolve(filePath)));
     }
     return dirsPath.resolve(filePath).toFile();
   }

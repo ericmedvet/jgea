@@ -121,7 +121,7 @@ ea.experiment(
       onlyLast = false
     );
     ea.l.bestCsv(
-      path = "../../experiments/{name}/{startTime}/all-iterations";
+      path = "../../experiments/{name}/{startTime}/all-iterations.txt";
       functions = [
         ea.f.simQuality(of = ea.f.quality(of = ea.f.best()));
         ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best())));
@@ -134,7 +134,7 @@ ea.experiment(
       onlyLast = false
     );
     ea.l.bestCsv(
-      path = "../../experiments/{name}/{startTime}/last-iterations";
+      path = "../../experiments/{name}/{startTime}/last-iterations.txt";
       functions = + [
         ea.f.simQuality(of = ea.f.quality(of = ea.f.best()));
         ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best())));
@@ -230,12 +230,12 @@ ea.experiment(
     );
 
     % ======== EXP PLOTS ========
-    ea.l.onExpDone(
+    ea.l.onRunDone(
       of = ea.plot.multi.quality(q = ea.f.simQuality(); x = f.quantized(q = $evalsQuant; of = ea.f.nOfEvals()));
       consumers = [
         % $telegram;
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/fitness-evals"; of = ea.f.imagePlotter());
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/fitness-evals"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/fitness-evals"; of = ea.f.imagePlotter(); overwrite = true);
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/fitness-evals"; of = ea.f.csvPlotter(); overwrite = true)
       ]
     );
     ea.l.onExpDone(

@@ -483,11 +483,12 @@ Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.TriConsumer">
 
 ### Builder `ea.consumer.saver()`
 
-`ea.c.saver(of; path)`
+`ea.c.saver(of; overwrite; path)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
 | `of` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, O&gt;</code> |
+| `overwrite` | b | `false` | <code>boolean</code> |
 | `path` | s | `run-{run.index:%04d}` | <code><abbr title="java.lang.String">String</abbr></code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.TriConsumer">TriConsumer</abbr>&lt;X, <abbr title="io.github.ericmedvet.jgea.experimenter.Run">Run</abbr>&lt;?, ?, ?, ?&gt;, <abbr title="io.github.ericmedvet.jgea.experimenter.Experiment">Experiment</abbr>&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Consumers.saver()` by jgea-experimenter:2.7.1-SNAPSHOT

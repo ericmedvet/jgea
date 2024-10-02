@@ -51,30 +51,30 @@ public class Consumers {
     return Naming.named("deaf", (i1, i2, i3) -> {});
   }
 
-  private static void save(Object o, String filePath) {
+  private static void save(Object o, String filePath, boolean overwrite) {
     File file = null;
     try {
       switch (o) {
         case BufferedImage image -> {
-          file = Misc.robustGetFile(filePath + ".png");
+          file = Misc.robustGetFile(filePath + ".png", overwrite);
           ImageIO.write(image, "png", file);
         }
         case String s -> {
-          file = Misc.robustGetFile(filePath + ".txt");
+          file = Misc.robustGetFile(filePath + ".txt", overwrite);
           Files.writeString(file.toPath(), s, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
         }
         case Video video -> {
-          file = Misc.robustGetFile(filePath + ".mp4");
+          file = Misc.robustGetFile(filePath + ".mp4", overwrite);
           Files.write(file.toPath(), video.data(), StandardOpenOption.WRITE, StandardOpenOption.CREATE);
         }
         case byte[] data -> {
-          file = Misc.robustGetFile(filePath + ".bin");
+          file = Misc.robustGetFile(filePath + ".bin", overwrite);
           try (OutputStream os = new FileOutputStream(file)) {
             os.write(data);
           }
         }
         case NamedParamMap npm -> {
-          file = Misc.robustGetFile(filePath + ".txt");
+          file = Misc.robustGetFile(filePath + ".txt", overwrite);
           Files.writeString(
               file.toPath(),
               MapNamedParamMap.prettyToString(npm),
@@ -95,10 +95,12 @@ public class Consumers {
   @Cacheable
   public static <X, O> TriConsumer<X, Run<?, ?, ?, ?>, Experiment> saver(
       @Param(value = "of", dNPM = "f.identity()") Function<X, O> f,
+      @Param(value = "overwrite") boolean overwrite,
       @Param(value = "path", dS = "run-{run.index:%04d}") String filePathTemplate) {
     return Naming.named(
         "saver[%s]".formatted(NamedFunction.name(f)),
-        (x, run, experiment) -> save(f.apply(x), Utils.interpolate(filePathTemplate, experiment, run)));
+        (x, run, experiment) ->
+            save(f.apply(x), Utils.interpolate(filePathTemplate, experiment, run), overwrite));
   }
 
   @SuppressWarnings("unused")
