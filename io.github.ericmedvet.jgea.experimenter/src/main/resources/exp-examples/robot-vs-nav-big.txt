@@ -143,22 +143,22 @@ ea.experiment(
       ] + [
         f.sizeIfLt(
           allF = ea.f.all();
-          mapF = ea.f.simQuality(of = ea.f.fromProblem(of = ea.f.solution(); problem = ea.p.simTo(f = ds.e.n.avgD(); type = minimize; simulation = ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime; arena = a_maze))));
+          mapF = ea.f.simQuality(of = ea.f.fromProblem(of = ea.f.solution(); problem = ea.p.simTo(f = $fitnessF; type = minimize; simulation = ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime; arena = a_maze))));
           t = $successT
         );
         f.sizeIfLt(
           allF = ea.f.all();
-          mapF = ea.f.simQuality(of = ea.f.fromProblem(of = ea.f.solution(); problem = ea.p.simTo(f = ds.e.n.avgD(); type = minimize; simulation = ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime; arena = b_maze))));
+          mapF = ea.f.simQuality(of = ea.f.fromProblem(of = ea.f.solution(); problem = ea.p.simTo(f = $fitnessF; type = minimize; simulation = ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime; arena = b_maze))));
           t = $successT
         );
         f.sizeIfLt(
           allF = ea.f.all();
-          mapF = ea.f.simQuality(of = ea.f.fromProblem(of = ea.f.solution(); problem = ea.p.simTo(f = ds.e.n.avgD(); type = minimize; simulation = ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime; arena = c_maze))));
+          mapF = ea.f.simQuality(of = ea.f.fromProblem(of = ea.f.solution(); problem = ea.p.simTo(f = $fitnessF; type = minimize; simulation = ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime; arena = c_maze))));
           t = $successT
         );
         f.sizeIfLt(
           allF = ea.f.all();
-          mapF = ea.f.simQuality(of = ea.f.fromProblem(of = ea.f.solution(); problem = ea.p.simTo(f = ds.e.n.avgD(); type = minimize; simulation = ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime; arena = d_maze))));
+          mapF = ea.f.simQuality(of = ea.f.fromProblem(of = ea.f.solution(); problem = ea.p.simTo(f = $fitnessF; type = minimize; simulation = ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime; arena = d_maze))));
           t = $successT
         )
       ];
@@ -311,7 +311,7 @@ ea.experiment(
     d_maze
   ]) * [
     ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime)
-  ]) * [ea.p.simTo(f = ds.e.n.avgD(); type = minimize)]) * [ea.f.simOutcome()]) * [ea.f.toImage(image = ds.d.navigation())]) * [
+  ]) * [ea.p.simTo(f = $fitnessF; type = minimize)]) * [ea.f.simOutcome()]) * [ea.f.toImage(image = ds.d.navigation())]) * [
     ea.l.saveForRun(
       path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/best-validation-traj-{run.randomGenerator.seed:%03d}";
       of = ea.acc.last(eFunction = ea.f.solution(of = ea.f.best()))
@@ -326,7 +326,7 @@ ea.experiment(
     d_maze
   ]) * [
     ds.s.variableSensorPositionsNavigation(nOfSensors = 9; finalT = $simTime)
-  ]) * [ea.p.simTo(f = ds.e.n.avgD(); type = minimize)]) * [ea.f.fromProblem()]) * [ea.plot.s.populationValidation(q = ea.f.simQuality())]) * [
+  ]) * [ea.p.simTo(f = $fitnessF; type = minimize)]) * [ea.f.fromProblem()]) * [ea.plot.s.populationValidation(q = ea.f.simQuality())]) * [
     ea.l.onRunDone(
       consumers = [
         ea.c.saver(path = "../../experiments/{name}/{startTime}/{run.solver.name}/{run.problem.simulation.arena}/evo-vs-validation-{run.randomGenerator.seed:%03d}"; of = ea.f.imagePlotter(secondary = true; independences = []));
