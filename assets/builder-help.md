@@ -476,6 +476,18 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.listener.AccumulatorF
 
 Aliases: `ea.c`, `ea.consumer`
 
+### Builder `ea.consumer.composed()`
+
+`ea.c.composed(of; f; c)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `of` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, Y&gt;</code> |
+| `f` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;Y, O&gt;</code> |
+| `c` | npm |  | <code><abbr title="io.github.ericmedvet.jnb.datastructure.TriConsumer">TriConsumer</abbr>&lt;O, <abbr title="io.github.ericmedvet.jgea.experimenter.Run">Run</abbr>&lt;?, ?, ?, ?&gt;, <abbr title="io.github.ericmedvet.jgea.experimenter.Experiment">Experiment</abbr>&gt;</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.TriConsumer">TriConsumer</abbr>&lt;X, <abbr title="io.github.ericmedvet.jgea.experimenter.Run">Run</abbr>&lt;?, ?, ?, ?&gt;, <abbr title="io.github.ericmedvet.jgea.experimenter.Experiment">Experiment</abbr>&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Consumers.composed()` by jgea-experimenter:2.7.1-SNAPSHOT
+
 ### Builder `ea.consumer.deaf()`
 
 `ea.c.deaf()`

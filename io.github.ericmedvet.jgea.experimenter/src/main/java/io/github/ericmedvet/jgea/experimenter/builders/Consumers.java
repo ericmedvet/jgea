@@ -47,6 +47,17 @@ public class Consumers {
 
   @SuppressWarnings("unused")
   @Cacheable
+  public static <X, Y, O> TriConsumer<X, Run<?, ?, ?, ?>, Experiment> composed(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Y> f,
+      @Param(value = "f", dNPM = "f.identity()") Function<Y, O> innerF,
+      @Param(value = "c") TriConsumer<O, Run<?, ?, ?, ?>, Experiment> consumer) {
+    return Naming.named(
+        "%s[f=%s]".formatted(consumer, NamedFunction.name(f)),
+        (x, run, experiment) -> consumer.accept(innerF.apply(f.apply(x)), run, experiment));
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
   public static TriConsumer<?, ?, ?> deaf() {
     return Naming.named("deaf", (i1, i2, i3) -> {});
   }
