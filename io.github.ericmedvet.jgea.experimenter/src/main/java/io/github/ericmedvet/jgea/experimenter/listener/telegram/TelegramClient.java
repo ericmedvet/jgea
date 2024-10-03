@@ -32,7 +32,9 @@ import io.github.ericmedvet.jnb.core.MapNamedParamMap;
 import io.github.ericmedvet.jnb.core.NamedParamMap;
 import io.github.ericmedvet.jviz.core.drawer.Video;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
@@ -65,6 +67,43 @@ public class TelegramClient {
     return "%s (%d members)".formatted(title, chatMemberCountResponse.count());
   }
 
+  public void send(String title, Object o) {
+    try {
+      switch (o) {
+        case BufferedImage image -> {
+          if (!title.isEmpty()) {
+            sendMarkdownText("Image from: %s\n`%s`".formatted(StringUtils.getUserMachineName(), title));
+          }
+          sendImage(image);
+        }
+        case String s -> {
+          if (!title.isEmpty()) {
+            sendMarkdownText("Text from: %s\n`%s`".formatted(StringUtils.getUserMachineName(), title));
+          }
+          sendText(s);
+        }
+        case Video video -> {
+          if (!title.isEmpty()) {
+            sendMarkdownText("Video from: %s\n`%s`".formatted(StringUtils.getUserMachineName(), title));
+          }
+          sendVideo(video);
+        }
+        case NamedParamMap npm -> {
+          if (!title.isEmpty()) {
+            sendMarkdownText(
+                "NamedParamMap from: %s\n`%s`".formatted(StringUtils.getUserMachineName(), title));
+          }
+          sendText(MapNamedParamMap.prettyToString(npm));
+        }
+        case null -> throw new IllegalArgumentException("Cannot send null data of type %s");
+        default -> throw new IllegalArgumentException(
+            "Cannot send data of type %s".formatted(o.getClass().getSimpleName()));
+      }
+    } catch (IOException e) {
+      throw new RuntimeException("Cannot send '%s'".formatted(title), e);
+    }
+  }
+
   public void sendFile(File file) {
     try {
       SendResponse response = bot.execute(new SendDocument(chatId, file));
@@ -90,9 +129,9 @@ public class TelegramClient {
     }
   }
 
-  public void sendText(String string) {
+  public void sendMarkdownText(String string) {
     try {
-      SendResponse response = bot.execute(new SendMessage(chatId, string));
+      SendResponse response = bot.execute(new SendMessage(chatId, string).parseMode(ParseMode.Markdown));
       if (!response.isOk()) {
         L.warning(String.format("Response is not ok: %s", response));
       }
@@ -101,9 +140,9 @@ public class TelegramClient {
     }
   }
 
-  public void sendMarkdownText(String string) {
+  public void sendText(String string) {
     try {
-      SendResponse response = bot.execute(new SendMessage(chatId, string).parseMode(ParseMode.Markdown));
+      SendResponse response = bot.execute(new SendMessage(chatId, string));
       if (!response.isOk()) {
         L.warning(String.format("Response is not ok: %s", response));
       }
@@ -120,34 +159,6 @@ public class TelegramClient {
       }
     } catch (Throwable t) {
       L.warning(String.format("Cannot send video: %s", t));
-    }
-  }
-
-  public void send(String title, Object o) {
-    try {
-      switch (o) {
-        case BufferedImage image -> {
-          sendMarkdownText("Image from: %s\n`%s`".formatted(StringUtils.getUserMachineName(), title));
-          sendImage(image);
-        }
-        case String s -> {
-          sendMarkdownText("Text from: %s\n`%s`".formatted(StringUtils.getUserMachineName(), title));
-          sendText(s);
-        }
-        case Video video -> {
-          sendMarkdownText("Video from: %s\n`%s`".formatted(StringUtils.getUserMachineName(), title));
-          sendVideo(video);
-        }
-        case NamedParamMap npm -> {
-          sendMarkdownText("NamedParamMap from: %s\n`%s`".formatted(StringUtils.getUserMachineName(), title));
-          sendText(MapNamedParamMap.prettyToString(npm));
-        }
-        case null -> throw new IllegalArgumentException("Cannot send null data of type %s");
-        default -> throw new IllegalArgumentException(
-            "Cannot send data of type %s".formatted(o.getClass().getSimpleName()));
-      }
-    } catch (IOException e) {
-      throw new RuntimeException("Cannot send '%s'".formatted(title), e);
     }
   }
 }
