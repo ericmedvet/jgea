@@ -28,21 +28,45 @@ $descBrain1 = ea.s.me.d.descriptor(f = f.composition(of = f.pairSecond(of = ea.f
 $descBrain2 = ea.s.me.d.descriptor(f = f.composition(of = f.pairSecond(of = ea.f.genotype()); then = $fBrain2); min = 0; max = 20; nOfBins = 10)
 $coDescBrain1 = ea.s.me.d.descriptor(f = f.composition(of = ea.f.genotype(); then = $fBrain1); min = 0; max = 500; nOfBins = 10)
 $coDescBrain2 = ea.s.me.d.descriptor(f = f.composition(of = ea.f.genotype(); then = $fBrain2); min = 0; max = 20; nOfBins = 10)
-$coords = f.as(
+$coordsAll = f.as(
   of = f.all(fs = [
     ea.f.descBin(descriptor = $descBody1);
     ea.f.descBin(descriptor = $descBody2);
     ea.f.descBin(descriptor = $descBrain1);
     ea.f.descBin(descriptor = $descBrain2)
   ]);
-  name = "desc.coords"
+  name = "desc.all.coords"
+)
+$coordsBody = f.as(
+  of = f.all(fs = [
+    ea.f.descBin(descriptor = $descBody1);
+    ea.f.descBin(descriptor = $descBody2)
+  ]);
+  name = "desc.body.coords"
+)
+$coordsBrain = f.as(
+  of = f.all(fs = [
+    ea.f.descBin(descriptor = $descBrain1);
+    ea.f.descBin(descriptor = $descBrain2)
+  ]);
+  name = "desc.brain.coords"
 )
 
 % ======== SUCCESS ========
-$successT = 0.05
-$diversePop = f.as(name = "diverse.pop"; of = f.distinctSortedByKey(
+$successT = 0.1
+$diverseAllPop = f.as(name = "diverse.all.pop"; of = f.distinctSortedByKey(
   of = ea.f.all();
-  key = $coords;
+  key = $coordsAll;
+  sort = ea.f.simQuality(of = ea.f.quality())
+))
+$diverseBodyPop = f.as(name = "diverse.body.pop"; of = f.distinctSortedByKey(
+  of = ea.f.all();
+  key = $coordsBody;
+  sort = ea.f.simQuality(of = ea.f.quality())
+))
+$diverseBrainPop = f.as(name = "diverse.brain.pop"; of = f.distinctSortedByKey(
+  of = ea.f.all();
+  key = $coordsBrain;
   sort = ea.f.simQuality(of = ea.f.quality())
 ))
 $popSuccess = f.as(name = "n.success"; of = f.sizeIfLt(
@@ -51,8 +75,20 @@ $popSuccess = f.as(name = "n.success"; of = f.sizeIfLt(
   t = $successT;
   format = "%3d"
 ))
-$popDistinctSuccess = f.as(name = "diverse.n.success"; of = f.sizeIfLt(
-  allF = $diversePop;
+$popAllDistinctSuccess = f.as(name = "diverse.n.success"; of = f.sizeIfLt(
+  allF = $diverseAllPop;
+  mapF = ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality()));
+  t = $successT;
+  format = "%3d"
+))
+$popBodyDistinctSuccess = f.as(name = "body.diverse.n.success"; of = f.sizeIfLt(
+  allF = $diverseBodyPop;
+  mapF = ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality()));
+  t = $successT;
+  format = "%3d"
+))
+$popBrainDistinctSuccess = f.as(name = "brain.diverse.n.success"; of = f.sizeIfLt(
+  allF = $diverseBrainPop;
   mapF = ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality()));
   t = $successT;
   format = "%3d"
@@ -60,7 +96,7 @@ $popDistinctSuccess = f.as(name = "diverse.n.success"; of = f.sizeIfLt(
 
 % ======== PROBLEM ========
 $simTime = 30
-$fitnessF = ds.e.n.finalD()
+$fitnessF = ds.e.n.avgD()
 
 % ======== OTHER ========
 $evalsQuant = 2500
@@ -116,7 +152,9 @@ ea.experiment(
         ea.f.simQuality(of = ea.f.quality(of = ea.f.best()); format = "%7.5f");
         ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best())); format = "%7.5f");
         $popSuccess;
-        $popDistinctSuccess
+        $popAllDistinctSuccess;
+        $popBodyDistinctSuccess;
+        $popBrainDistinctSuccess
       ];
       onlyLast = false
     );
@@ -126,7 +164,9 @@ ea.experiment(
         ea.f.simQuality(of = ea.f.quality(of = ea.f.best()));
         ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best())));
         $popSuccess;
-        $popDistinctSuccess
+        $popAllDistinctSuccess;
+        $popBodyDistinctSuccess;
+        $popBrainDistinctSuccess
       ];
       runFunctions = [
         ea.f.runKey(key = "run.problem.simulation.arena")
@@ -139,7 +179,9 @@ ea.experiment(
         ea.f.simQuality(of = ea.f.quality(of = ea.f.best()));
         ds.e.n.finalD(of = ea.f.simOutcome(of = ea.f.quality(of = ea.f.best())));
         $popSuccess;
-        $popDistinctSuccess
+        $popAllDistinctSuccess;
+        $popBodyDistinctSuccess;
+        $popBrainDistinctSuccess
       ] + [
         f.sizeIfLt(
           allF = ea.f.all();
@@ -238,68 +280,116 @@ ea.experiment(
         ea.c.saver(path = "../../experiments/{name}/{startTime}/fitness-evals"; of = ea.f.csvPlotter(); overwrite = true)
       ]
     );
-    ea.l.onExpDone(
+    ea.l.onRunDone(
       of = ea.plot.multi.quality(q = ea.f.simQuality(); x = ea.f.nOfIterations());
       consumers = [
         % $telegram;
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/fitness-iters"; of = ea.f.imagePlotter());
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/fitness-iters"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/fitness-iters"; of = ea.f.imagePlotter(); overwrite = true);
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/fitness-iters"; of = ea.f.csvPlotter(); overwrite = true)
       ]
     );
-    ea.l.onExpDone(
+    ea.l.onRunDone(
       of = ea.plot.multi.qualityBoxplot(q = ea.f.simQuality());
       consumers = [
         % $telegram;
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/final-fitness"; of = ea.f.imagePlotter());
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/final-fitness"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/final-fitness"; of = ea.f.imagePlotter(); overwrite = true);
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/final-fitness"; of = ea.f.csvPlotter(); overwrite = true)
       ]
     );
-    ea.l.onExpDone(
-      of = ea.plot.multi.yBoxplotExp(y = $popDistinctSuccess);
+    ea.l.onRunDone(
+      of = ea.plot.multi.yBoxplotExp(y = $popAllDistinctSuccess);
       consumers = [
         % $telegram;
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/final-distinct-pop-success"; of = ea.f.imagePlotter());
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/final-distinct-pop-success"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/final-distinct-pop-success"; of = ea.f.imagePlotter(); overwrite = true);
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/final-distinct-pop-success"; of = ea.f.csvPlotter(); overwrite = true)
       ]
     );
-    ea.l.onExpDone(
+    ea.l.onRunDone(
+      of = ea.plot.multi.yBoxplotExp(y = $popBodyDistinctSuccess);
+      consumers = [
+        % $telegram;
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/final-body-distinct-pop-success"; of = ea.f.imagePlotter(); overwrite = true);
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/final-body-distinct-pop-success"; of = ea.f.csvPlotter(); overwrite = true)
+      ]
+    );
+    ea.l.onRunDone(
+      of = ea.plot.multi.yBoxplotExp(y = $popBrainDistinctSuccess);
+      consumers = [
+        % $telegram;
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/final-brain-distinct-pop-success"; of = ea.f.imagePlotter(); overwrite = true);
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/final-brain-distinct-pop-success"; of = ea.f.csvPlotter(); overwrite = true)
+      ]
+    );
+    ea.l.onRunDone(
       of = ea.plot.multi.yBoxplotExp(y = $popSuccess);
       consumers = [
         % $telegram;
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/final-pop-success"; of = ea.f.imagePlotter());
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/final-pop-success"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/final-pop-success"; of = ea.f.imagePlotter(); overwrite = true);
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/final-pop-success"; of = ea.f.csvPlotter(); overwrite = true)
       ]
     );
-    ea.l.onExpDone(
-      of = ea.plot.multi.xyExp(y = $popDistinctSuccess; x = f.quantized(q = $evalsQuant; of = ea.f.nOfEvals()));
+    ea.l.onRunDone(
+      of = ea.plot.multi.xyExp(y = $popAllDistinctSuccess; x = f.quantized(q = $evalsQuant; of = ea.f.nOfEvals()));
       consumers = [
         % $telegram;
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/distinct-pop-success-evals"; of = ea.f.imagePlotter());
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/distinct-pop-success-evals"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/distinct-pop-success-evals"; of = ea.f.imagePlotter(); overwrite = true);
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/distinct-pop-success-evals"; of = ea.f.csvPlotter(); overwrite = true)
       ]
     );
-    ea.l.onExpDone(
-      of = ea.plot.multi.xyExp(y = $popDistinctSuccess; x = ea.f.nOfIterations());
+    ea.l.onRunDone(
+      of = ea.plot.multi.xyExp(y = $popAllDistinctSuccess; x = ea.f.nOfIterations());
       consumers = [
         % $telegram;
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/distinct-pop-success-iters"; of = ea.f.imagePlotter());
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/distinct-pop-success-iters"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/distinct-pop-success-iters"; of = ea.f.imagePlotter(); overwrite = true);
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/distinct-pop-success-iters"; of = ea.f.csvPlotter(); overwrite = true)
       ]
     );
-    ea.l.onExpDone(
+    ea.l.onRunDone(
+      of = ea.plot.multi.xyExp(y = $popBodyDistinctSuccess; x = f.quantized(q = $evalsQuant; of = ea.f.nOfEvals()));
+      consumers = [
+        % $telegram;
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/body-distinct-pop-success-evals"; of = ea.f.imagePlotter(); overwrite = true);
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/body-distinct-pop-success-evals"; of = ea.f.csvPlotter(); overwrite = true)
+      ]
+    );
+    ea.l.onRunDone(
+      of = ea.plot.multi.xyExp(y = $popBodyDistinctSuccess; x = ea.f.nOfIterations());
+      consumers = [
+        % $telegram;
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/body-distinct-pop-success-iters"; of = ea.f.imagePlotter(); overwrite = true);
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/body-distinct-pop-success-iters"; of = ea.f.csvPlotter(); overwrite = true)
+      ]
+    );
+    ea.l.onRunDone(
+      of = ea.plot.multi.xyExp(y = $popBrainDistinctSuccess; x = f.quantized(q = $evalsQuant; of = ea.f.nOfEvals()));
+      consumers = [
+        % $telegram;
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/brain-distinct-pop-success-evals"; of = ea.f.imagePlotter(); overwrite = true);
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/brain-distinct-pop-success-evals"; of = ea.f.csvPlotter(); overwrite = true)
+      ]
+    );
+    ea.l.onRunDone(
+      of = ea.plot.multi.xyExp(y = $popBrainDistinctSuccess; x = ea.f.nOfIterations());
+      consumers = [
+        % $telegram;
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/brain-distinct-pop-success-iters"; of = ea.f.imagePlotter(); overwrite = true);
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/brain-distinct-pop-success-iters"; of = ea.f.csvPlotter(); overwrite = true)
+      ]
+    );
+    ea.l.onRunDone(
       of = ea.plot.multi.xyExp(y = f.size(of = ea.f.all()); x = f.quantized(q = $evalsQuant; of = ea.f.nOfEvals()));
       consumers = [
         % $telegram;
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/pop-size-evals"; of = ea.f.imagePlotter());
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/pop-size-evals"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/pop-size-evals"; of = ea.f.imagePlotter(); overwrite = true);
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/pop-size-evals"; of = ea.f.csvPlotter(); overwrite = true)
       ]
     );
-    ea.l.onExpDone(
+    ea.l.onRunDone(
       of = ea.plot.multi.xyExp(y = f.size(of = ea.f.all()); x = f.quantized(q = $evalsQuant; of = ea.f.nOfEvals()));
       consumers = [
         % $telegram;
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/pop-size-iters"; of = ea.f.imagePlotter());
-        ea.c.saver(path = "../../experiments/{name}/{startTime}/pop-size-iters"; of = ea.f.csvPlotter())
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/pop-size-iters"; of = ea.f.imagePlotter(); overwrite = true);
+        ea.c.saver(path = "../../experiments/{name}/{startTime}/pop-size-iters"; of = ea.f.csvPlotter(); overwrite = true)
       ]
     );
 
