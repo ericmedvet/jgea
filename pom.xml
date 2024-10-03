@@ -56,7 +56,7 @@
     <jdk.version>21</jdk.version>
     <revision>2.7.1-SNAPSHOT</revision>
     <jnb.version>1.4.1-SNAPSHOT</jnb.version>
-    <jsdynsym.version>1.1.0</jsdynsym.version>
+    <jsdynsym.version>1.1.1-SNAPSHOT</jsdynsym.version>
     <jviz.version>1.0.0</jviz.version>
   </properties>
 

@@ -320,7 +320,7 @@ Aliases: `ds.s`, `ds.sim`, `ds.simulation`, `dynSys.s`, `dynSys.sim`, `dynSys.si
 
 ### Builder `dynamicalSystem.simulation.variableSensorPositionsNavigation()`
 
-`ds.s.variableSensorPositionsNavigation(name; initialRobotXRange; initialRobotYRange; initialRobotDirectionRange; targetXRange; targetYRange; robotRadius; robotMaxV; nOfSensors; sensorRange; senseTarget; arena; rescaleInput; randomGenerator; dT; initialT; finalT)`
+`ds.s.variableSensorPositionsNavigation(name; initialRobotXRange; initialRobotYRange; initialRobotDirectionRange; targetXRange; targetYRange; robotRadius; robotMaxV; nOfSensors; sensorRange; senseTarget; arena; rescaleInput; sortAngles; randomGenerator; dT; initialT; finalT)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
@@ -337,6 +337,7 @@ Aliases: `ds.s`, `ds.sim`, `ds.simulation`, `dynSys.s`, `dynSys.sim`, `dynSys.si
 | `senseTarget` | b | `true` | <code>boolean</code> |
 | `arena` | e | `EMPTY` | <code><abbr title="io.github.ericmedvet.jsdynsym.control.navigation.Arena$Prepared">Arena$Prepared</abbr></code> |
 | `rescaleInput` | b | `true` | <code>boolean</code> |
+| `sortAngles` | b | `true` | <code>boolean</code> |
 | `randomGenerator` | npm | `m.defaultRG()` | <code><abbr title="java.util.random.RandomGenerator">RandomGenerator</abbr></code> |
 | `dT` | d | `0.1` | <code>double</code> |
 | `initialT` | d | `0.0` | <code>double</code> |
