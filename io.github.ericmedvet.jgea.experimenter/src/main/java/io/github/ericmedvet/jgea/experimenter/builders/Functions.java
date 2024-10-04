@@ -338,6 +338,16 @@ public class Functions {
 
   @SuppressWarnings("unused")
   @Cacheable
+  public static <X, G, S, Q> NamedFunction<X, Archive<? extends MEIndividual<G, S, Q>>> maMeArchive(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, MAMEPopulationState<G, S, Q, ?>> beforeF,
+      @Param("n") int n) {
+    Function<MAMEPopulationState<G, S, Q, ?>, Archive<? extends MEIndividual<G, S, Q>>> f =
+        s -> s.archives().get(n);
+    return NamedFunction.from(f, "maMe.archive[%d]".formatted(n)).compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
   public static <X, G, S, Q> NamedFunction<X, Archive<MEIndividual<G, S, Q>>> meArchive(
       @Param(value = "of", dNPM = "f.identity()") Function<X, MEPopulationState<G, S, Q, ?>> beforeF) {
     Function<MEPopulationState<G, S, Q, ?>, Archive<MEIndividual<G, S, Q>>> f = MEPopulationState::archive;

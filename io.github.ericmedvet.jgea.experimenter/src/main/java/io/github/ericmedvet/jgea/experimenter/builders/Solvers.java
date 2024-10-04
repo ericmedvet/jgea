@@ -42,6 +42,7 @@ import io.github.ericmedvet.jgea.core.solver.es.OpenAIEvolutionaryStrategy;
 import io.github.ericmedvet.jgea.core.solver.es.SimpleEvolutionaryStrategy;
 import io.github.ericmedvet.jgea.core.solver.mapelites.CoMapElites;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MapElites;
+import io.github.ericmedvet.jgea.core.solver.mapelites.MultiArchiveMapElites;
 import io.github.ericmedvet.jgea.core.solver.mapelites.strategy.CoMEStrategy;
 import io.github.ericmedvet.jgea.core.solver.pso.ParticleSwarmOptimization;
 import io.github.ericmedvet.jgea.core.solver.speciation.LazySpeciator;
@@ -203,6 +204,28 @@ public class Solvers {
           true,
           maxUniquenessAttempts,
           remap);
+    };
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <G, S, Q> Function<S, MultiArchiveMapElites<G, S, Q>> maMapElites2(
+      @Param(value = "name", dS = "maMe2") String name,
+      @Param("representation") Function<G, Representation<G>> representation,
+      @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<G, S> mapper,
+      @Param(value = "nPop", dI = 100) int nPop,
+      @Param(value = "nEval", dI = 1000) int nEval,
+      @Param("descriptors1") List<MapElites.Descriptor<G, S, Q>> descriptors1,
+      @Param("descriptors2") List<MapElites.Descriptor<G, S, Q>> descriptors2) {
+    return exampleS -> {
+      Representation<G> r = representation.apply(mapper.exampleFor(exampleS));
+      return new MultiArchiveMapElites<>(
+          mapper.mapperFor(exampleS),
+          r.factory(),
+          StopConditions.nOfFitnessEvaluations(nEval),
+          r.mutations().getFirst(),
+          nPop,
+          List.of(descriptors1, descriptors2));
     };
   }
 

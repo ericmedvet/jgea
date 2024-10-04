@@ -110,6 +110,19 @@ public class SinglePlots {
               )
               """) // spotless:on
   @Alias(
+      name = "maMe2",
+      passThroughParams = {
+        @PassThroughParam(name = "q", value = "f.identity()", type = ParamMap.Type.NAMED_PARAM_MAP)
+      },
+      value = // spotless:off
+          """
+              gridRun(
+                title = ea.f.runString(name = title; s = "Archives of {run.solver.name} on {run.problem.name} (seed={run.randomGenerator.seed})");
+                values = [f.composition(of = ea.f.quality(); then = $q)];
+                grids = [ea.f.archiveToGrid(of = ea.f.maMeArchive(n = 0)); ea.f.archiveToGrid(of = ea.f.maMeArchive(n = 1))]
+              )
+              """) // spotless:on
+  @Alias(
       name = "gridState",
       passThroughParams = {
         @PassThroughParam(name = "q", value = "f.identity()", type = ParamMap.Type.NAMED_PARAM_MAP)
