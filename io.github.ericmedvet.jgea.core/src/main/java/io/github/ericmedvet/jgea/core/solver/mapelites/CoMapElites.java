@@ -131,10 +131,10 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
 
   private static <X> Collection<X> findNeighbors(
       List<Integer> coords,
-      Map<List<Integer>, X> mapOfElites,
+      Map<List<Integer>, X> archive,
       Distance<List<Integer>> distance,
       double neighborRadius) {
-    return mapOfElites.entrySet().stream()
+    return archive.entrySet().stream()
         .filter(e -> distance.apply(e.getKey(), coords) < neighborRadius)
         .map(Map.Entry::getValue)
         .toList();
@@ -266,14 +266,14 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
     // update strategies
     updateStrategies(newState, coMEIndividuals);
     // update archive
-    Archive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> archive1 = newState.mapOfElites1()
+    Archive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> archive1 = newState.archive1()
         .updated(
             coMEIndividuals.stream()
                 .map(CoMEPartialIndividual::from1)
                 .toList(),
             MEIndividual::bins,
             partialComparator(problem));
-    Archive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> archive2 = newState.mapOfElites2()
+    Archive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> archive2 = newState.archive2()
         .updated(
             coMEIndividuals.stream()
                 .map(CoMEPartialIndividual::from2)
@@ -299,8 +299,8 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
         reproduction1 = getAll(
             IntStream.range(0, nOfOffspring / 2)
                 .mapToObj(i -> reproduceCallable(
-                    state.mapOfElites1(),
-                    state.mapOfElites2(),
+                    state.archive1(),
+                    state.archive2(),
                     mutation1,
                     solutionMapper1,
                     solutionMerger,
@@ -323,8 +323,8 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
         reproduction2 = getAll(
             IntStream.range(0, nOfOffspring / 2)
                 .mapToObj(i -> reproduceCallable(
-                    state.mapOfElites2(),
-                    state.mapOfElites1(),
+                    state.archive2(),
+                    state.archive1(),
                     mutation2,
                     solutionMapper2,
                     (s2, s1) -> solutionMerger.apply(s1, s2),
@@ -350,12 +350,12 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
     // update strategies
     updateStrategies(state, offspring);
     // update archives
-    Archive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> archive1 = state.mapOfElites1()
+    Archive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> archive1 = state.archive1()
         .updated(
             offspring.stream().map(CoMEPartialIndividual::from1).toList(),
             MEIndividual::bins,
             partialComparator(state.problem()));
-    Archive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> archive2 = state.mapOfElites2()
+    Archive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> archive2 = state.archive2()
         .updated(
             offspring.stream().map(CoMEPartialIndividual::from2).toList(),
             MEIndividual::bins,

@@ -94,7 +94,7 @@ public class MapElites<G, S, Q>
     return newState.updatedWithIteration(
         populationSize,
         populationSize,
-        newState.mapOfElites().updated(newIndividuals, MEIndividual::bins, partialComparator(problem)));
+        newState.archive().updated(newIndividuals, MEIndividual::bins, partialComparator(problem)));
   }
 
   @Override
@@ -103,8 +103,7 @@ public class MapElites<G, S, Q>
       ExecutorService executor,
       MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>> state)
       throws SolverException {
-    Collection<MEIndividual<G, S, Q>> individuals =
-        state.mapOfElites().asMap().values();
+    Collection<MEIndividual<G, S, Q>> individuals = state.archive().asMap().values();
     // build new genotypes
     AtomicLong counter = new AtomicLong(state.nOfBirths());
     Collection<MEIndividual<G, S, Q>> newIndividuals = getAll(map(
@@ -122,6 +121,6 @@ public class MapElites<G, S, Q>
     return state.updatedWithIteration(
         populationSize,
         populationSize,
-        state.mapOfElites().updated(newIndividuals, MEIndividual::bins, partialComparator(state.problem())));
+        state.archive().updated(newIndividuals, MEIndividual::bins, partialComparator(state.problem())));
   }
 }
