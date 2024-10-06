@@ -48,9 +48,7 @@ import io.github.ericmedvet.jnb.datastructure.Pair;
 import io.github.ericmedvet.jsdynsym.buildable.builders.NumericalDynamicalSystems;
 import io.github.ericmedvet.jsdynsym.core.composed.Stepped;
 import io.github.ericmedvet.jsdynsym.core.numerical.*;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
@@ -61,6 +59,24 @@ import java.util.stream.Stream;
 @Discoverable(prefixTemplate = "ea.mapper|m")
 public class Mappers {
   private Mappers() {}
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X> InvertibleMapper<X, NumericalDynamicalSystem<?>> aggregatedInputNds(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NumericalDynamicalSystem<?>> beforeM,
+      @Param(
+              value = "types",
+              dSs = {"current", "trend"})
+          List<AggregatedInput.Type> types,
+      @Param(value = "windowT", dD = 1) double windowT) {
+    return beforeM.andThen(InvertibleMapper.from(
+        (eNds, nds) -> new AggregatedInput<>(nds, windowT, types),
+        eNds -> NumericalStatelessSystem.zeros(eNds.nOfInputs() * types.size(), eNds.nOfOutputs()),
+        "aggregated[t=%.2f,%s]"
+            .formatted(
+                windowT,
+                types.stream().map(t -> t.name().toLowerCase()).collect(Collectors.joining(";")))));
+  }
 
   @SuppressWarnings("unused")
   @Cacheable
