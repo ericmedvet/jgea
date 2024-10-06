@@ -1,3 +1,5 @@
+$nEvals = [1000]
+
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:5]) * [m.defaultRG()]) *
     (problem = [
@@ -6,7 +8,7 @@ ea.experiment(
       ea.p.ur.synthetic(name = "korns12");
       ea.p.ur.synthetic(name = "vladislavleva4")
     ]) *
-    (solver = (nEval = [1000]) * [
+    (solver = (nEval = $nEvals) * [
       ea.s.ga(
         name = "gp";
         representation = ea.r.srTree();
@@ -27,17 +29,13 @@ ea.experiment(
         ea.f.quality(of = ea.f.best(); format = "%6.2f");
         f.percentile(of = f.each(of = ea.f.all(); mapF = ea.f.quality()); p = 75; format = "%6.2f");
         ea.f.hist(of = f.each(of = ea.f.all(); mapF = ea.f.quality()));
-        ea.f.validationQuality(format = "%6.2f");
-        ea.f.solution(of = ea.f.best(); format = "%60.60s")
+        ea.f.validationQuality(format = "%6.2f")
       ];
       onlyLast = true
     );
-    ea.l.expPlotSaver(
-      filePath = "../sr.png";
-      freeScales = true;
-      w = 600; h = 1000;
-      type = lines;
-      plot = ea.plot.qualityPlotMatrix()
+    ea.l.savePlotForExp(
+      path = "../../experiments/jgea/results/{name}/{startTime}/sr";
+      plot = ea.plot.multi.quality()
     )
   ]
 )

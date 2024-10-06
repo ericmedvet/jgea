@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -92,6 +93,12 @@ public class Starter {
         description = "Show this help.",
         help = true)
     public boolean help;
+
+    @Parameter(
+        names = {"--expHeadLines"},
+        description = "Additional experiment description lines that will be put at the head of thee experiment "
+            + "description.")
+    public List<String> expHeadLines = List.of();
   }
 
   public static void main(String[] args) {
@@ -152,6 +159,9 @@ public class Starter {
     if (expDescription == null) {
       L.info("No experiment provided");
       System.exit(-1);
+    }
+    if (!configuration.expHeadLines.isEmpty()) {
+      expDescription = String.join("\n", configuration.expHeadLines) + "\n" + expDescription;
     }
     // parse and add name
     Experiment experiment = (Experiment) nb.build(expDescription);
