@@ -25,9 +25,9 @@ $descBody2 = ea.s.me.d.descriptor(f = f.composition(of = f.pairFirst(of = ea.f.g
 $coDescBody1 = ea.s.me.d.descriptor(f = f.composition(of = ea.f.genotype(); then = $fBody1); min = -1.57; max = 1.57; nOfBins = 10)
 $coDescBody2 = ea.s.me.d.descriptor(f = f.composition(of = ea.f.genotype(); then = $fBody2); min = 0; max = 3.14; nOfBins = 10)
 $descBrain1 = ea.s.me.d.descriptor(f = f.composition(of = f.pairSecond(of = ea.f.genotype()); then = $fBrain1); min = 0; max = 500; nOfBins = 10)
-$descBrain2 = ea.s.me.d.descriptor(f = f.composition(of = f.pairSecond(of = ea.f.genotype()); then = $fBrain2); min = 0; max = 20; nOfBins = 10)
+$descBrain2 = ea.s.me.d.descriptor(f = f.composition(of = f.pairSecond(of = ea.f.genotype()); then = $fBrain2); min = 0; max = 40; nOfBins = 10)
 $coDescBrain1 = ea.s.me.d.descriptor(f = f.composition(of = ea.f.genotype(); then = $fBrain1); min = 0; max = 500; nOfBins = 10)
-$coDescBrain2 = ea.s.me.d.descriptor(f = f.composition(of = ea.f.genotype(); then = $fBrain2); min = 0; max = 20; nOfBins = 10)
+$coDescBrain2 = ea.s.me.d.descriptor(f = f.composition(of = ea.f.genotype(); then = $fBrain2); min = 0; max = 40; nOfBins = 10)
 $coordsAll = f.as(
   of = f.all(fs = [
     ea.f.descBin(descriptor = $descBody1);
@@ -53,7 +53,7 @@ $coordsBrain = f.as(
 )
 
 % ======== SUCCESS ========
-$successT = 0.7
+$successT = 0.5
 $diverseAllPop = f.as(name = "diverse.all.pop"; of = f.distinctSortedByKey(
   of = ea.f.all();
   key = $coordsAll;
@@ -95,7 +95,7 @@ $popBrainDistinctSuccess = f.as(name = "brain.diverse.n.success"; of = f.sizeIfG
 ))
 
 % ======== PROBLEM ========
-$simTime = 60
+$simTime = 90
 $fitnessF = ds.e.n.arenaCoverage()
 
 % ======== OTHER ========
@@ -106,7 +106,7 @@ $telegram = ea.c.telegram(botIdFilePath = "/home/eric/experiments/tlg.txt"; chat
 ea.experiment(
 
   runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
-  (solver = (nEval = [5000]) * + 0 * (strategy = [
+  (solver = (nEval = [50000]) * + 1 * (strategy = [
     %random;
     %smoothed_local_best;
     %local_best;
@@ -126,7 +126,7 @@ ea.experiment(
       descriptors1 = [$coDescBody1; $coDescBody2];
       descriptors2 = [$coDescBrain1; $coDescBrain2]
     )
-  ] + 1 *
+  ] + 0 *
     % ======== GA AND ME ========
     (mapper = [ea.mapper.pair(second = ea.mapper.aggregatedInputNds(of = ea.mapper.nmrfToNds(of = ea.mapper.multiSrTreeToNmrf())))]) *
     (representation = [ea.representation.pair(first = ea.representation.doubleString(); second = ea.representation.multiSRTree())]) * [
@@ -137,7 +137,7 @@ ea.experiment(
     ea.s.mapElites(name = "me2-brain"; descriptors = [$descBrain1; $descBrain2]);
     ea.s.mapElites(name = "me4-body+brain"; descriptors = [$descBody1; $descBody2; $descBrain1; $descBrain2])
   ]) * (problem = (simulation = (arena = [
-    a_maze;
+    % a_maze;
     % b_maze;
     % c_maze;
     d_maze
