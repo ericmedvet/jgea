@@ -166,7 +166,8 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
               Archive<? extends MEIndividual<GT, ST, Q>> thisArchive,
               Archive<? extends MEIndividual<GO, SO, Q>> otherArchive,
               Mutation<GT> mutation,
-              Function<? super GT, ? extends ST> solutionMapper,
+              Function<? super GT, ? extends ST> thisSolutionMapper,
+              Function<? super GO, ? extends SO> otherSolutionMapper,
               BiFunction<? super ST, ? super SO, ? extends S> solutionMerger,
               List<MapElites.Descriptor<GT, ST, Q>> thisDescriptors,
               List<MapElites.Descriptor<GO, SO, Q>> otherDescriptors,
@@ -183,7 +184,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
       ChildGenotype<GT> childGenotypeT = new ChildGenotype<>(
           counter.getAndIncrement(), mutation.mutate(parentT.genotype(), random), List.of(parentT.id()));
       CoMEPartialIndividual<GT, ST, GT, GO, ST, SO, S, Q> iT = CoMEPartialIndividual.from(
-          Individual.from(childGenotypeT, solutionMapper, sT -> null, iteration), thisDescriptors);
+          Individual.from(childGenotypeT, thisSolutionMapper, sT -> null, iteration), thisDescriptors);
       List<Integer> thisCoords = iT.coordinates().stream()
           .map(MapElites.Descriptor.Coordinate::bin)
           .toList();
@@ -196,7 +197,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
       List<CoMEIndividual<GT, GO, ST, SO, S, Q>> localCompositeIndividuals = neighbors.stream()
           .limit(maxNOfNeighbors)
           .map(iO -> {
-            S s = solutionMerger.apply(iT.solution(), iO.solution());
+            S s = solutionMerger.apply(iT.solution(), otherSolutionMapper.apply(iO.genotype()));
             return CoMEIndividual.of(
                 counter.getAndIncrement(),
                 s,
@@ -303,6 +304,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
                     state.archive2(),
                     mutation1,
                     solutionMapper1,
+                    solutionMapper2,
                     solutionMerger,
                     descriptors1,
                     descriptors2,
@@ -327,6 +329,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q>
                     state.archive1(),
                     mutation2,
                     solutionMapper2,
+                    solutionMapper1,
                     (s2, s1) -> solutionMerger.apply(s1, s2),
                     descriptors2,
                     descriptors1,
