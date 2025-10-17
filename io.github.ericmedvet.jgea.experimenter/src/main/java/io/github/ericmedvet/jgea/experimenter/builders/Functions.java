@@ -819,10 +819,24 @@ public class Functions {
       @Param(value = "name", iS = "{s}") String name,
       @Param("s") String s,
       @Param(value = "of", dNPM = "f.identity()") Function<X, Run<?, ?, ?, ?>> beforeF,
-      @Param(value = "format", dS = "%s") String format
+      @Param(value = "format", dS = "%s") String format,
+      @Param(value = "regex", dS = "") String regex
   ) {
     Function<Run<?, ?, ?, ?>, String> f = run -> Utils.interpolate(s, null, run);
-    return FormattedNamedFunction.from(f, format, name).compose(beforeF);
+    Function<Run<?, ?, ?, ?>, String> fr = f;
+    if (!regex.isEmpty()) {
+      final java.util.regex.Pattern p = java.util.regex.Pattern.compile(regex);
+      fr = run -> {
+        String raw = f.apply(run);
+        java.util.regex.Matcher m = p.matcher(raw);
+        if (m.find() && m.groupCount() >= 1) {
+          String g = m.group(1);
+          return g == null ? raw : g;
+        }
+        return raw;
+      };
+    }
+    return FormattedNamedFunction.from(fr, format, name).compose(beforeF);
   }
 
   @SuppressWarnings("unused")
