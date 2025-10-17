@@ -22,7 +22,7 @@ ea.experiment(
         descriptors = $ANN_DESCRIPTORS;
         fitnessAggregator = f.avg()
       )
-    ] + [
+    ] + + [
       ea.s.ga(
         name = "self-ga-tree";
         representation = ea.r.srTree();
@@ -45,22 +45,19 @@ ea.experiment(
         representation = ea.r.srTree();
         mapper = ea.m.nurfToNds(of = ea.m.srTreeToNurf());
         descriptors = $TREE_DESCRIPTOR
-      );
-
+      )
+    ] + (fitnessReducer = [ea.misc.lossyAverage()]) * (opponentsSelector = (nOfOpponents = [1; 2; 3]) *
+    [ea.misc.randomSelector(); ea.misc.bestSelector(); ea.misc.oldestSelector()]) * [
       ea.s.biGa(
         name = "bi-ga-ann";
-        fitnessReducer = ea.misc.lossyAverage();
         representation = ea.r.doubleString();
         mapper = ea.m.dsToNpnds(npnds = $MLP);
-        opponentsSelector = ea.misc.randomSelector(nOfOpponents = 2);
         fitnessAggregator = f.avg()
       );
       ea.s.biGa(
         name = "bi-ga-tree";
-        fitnessReducer = ea.misc.lossyAverage();
         representation = ea.r.srTree();
         mapper = ea.m.nurfToNds(of = ea.m.srTreeToNurf());
-        opponentsSelector = ea.misc.randomSelector(nOfOpponents = 2);
         fitnessAggregator = f.avg()
       )
     ]) *
