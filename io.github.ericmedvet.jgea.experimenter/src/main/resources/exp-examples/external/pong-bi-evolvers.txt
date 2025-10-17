@@ -6,68 +6,23 @@
 ea.experiment(
   runs =
     (randomGenerator = (seed = $SEEDS) * [m.defaultRG()]) *
-    (solver = (stop = [ea.sc.nOfQualityEvaluations(n = $N_EVALS)]) * [
+    (solver = (stop = [ea.sc.nOfQualityEvaluations(n = $N_EVALS)]) *
+    + (fitnessReducer = [ea.misc.lossyAverage()]) * (opponentsSelector = (nOfOpponents = [1; 2; 3]) * [ea.misc.nearestMESelector(); ea.misc.randomSelector(); ea.misc.farthestMESelector(); ea.misc.bestSelector(); ea.misc.oldestSelector()]) * (emptyArchive = [false]) * [
       ea.s.biMapElites(
-        name = "bi-me-tree-random2";
-        fitnessReducer = ea.misc.lossyAverage();
+        name = "bi-me-tree";
         representation = ea.r.srTree();
         mapper = ea.m.nurfToNds(of = ea.m.srTreeToNurf());
-        emptyArchive = false;
         descriptors = $TREE_DESCRIPTOR;
-        opponentsSelector = ea.misc.randomMESelector(nOfOpponents = 2);
         fitnessAggregator = f.avg()
       );
       ea.s.biMapElites(
-        name = "bi-me-ann-random2";
-        fitnessReducer = ea.misc.lossyAverage();
+        name = "bi-me-ann";
         representation = ea.r.doubleString();
         mapper = ea.m.dsToNpnds(npnds = $MLP);
-        emptyArchive = false;
         descriptors = $ANN_DESCRIPTORS;
-        opponentsSelector = ea.misc.randomMESelector(nOfOpponents = 2);
         fitnessAggregator = f.avg()
-      );
-      ea.s.biMapElites(
-        name = "bi-me-tree-farthest2";
-        fitnessReducer = ea.misc.lossyAverage();
-        representation = ea.r.srTree();
-        mapper = ea.m.nurfToNds(of = ea.m.srTreeToNurf());
-        emptyArchive = false;
-        descriptors = $TREE_DESCRIPTOR;
-        opponentsSelector = ea.misc.farthestMESelector(nOfOpponents = 2);
-        fitnessAggregator = f.avg()
-      );
-      ea.s.biMapElites(
-        name = "bi-me-tree-best2";
-        fitnessReducer = ea.misc.lossyAverage();
-        representation = ea.r.srTree();
-        mapper = ea.m.nurfToNds(of = ea.m.srTreeToNurf());
-        emptyArchive = false;
-        descriptors = $TREE_DESCRIPTOR;
-        opponentsSelector = ea.misc.bestMESelector(nOfOpponents = 2);
-        fitnessAggregator = f.avg()
-      );
-      ea.s.biMapElites(
-        name = "bi-me-ann-farthest2";
-        fitnessReducer = ea.misc.lossyAverage();
-        representation = ea.r.doubleString();
-        mapper = ea.m.dsToNpnds(npnds = $MLP);
-        emptyArchive = false;
-        descriptors = $ANN_DESCRIPTORS;
-        opponentsSelector = ea.misc.farthestMESelector(nOfOpponents = 2);
-        fitnessAggregator = f.avg()
-      );
-      ea.s.biMapElites(
-        name = "bi-me-ann-best2";
-        fitnessReducer = ea.misc.lossyAverage();
-        representation = ea.r.doubleString();
-        mapper = ea.m.dsToNpnds(npnds = $MLP);
-        emptyArchive = false;
-        descriptors = $ANN_DESCRIPTORS;
-        opponentsSelector = ea.misc.bestMESelector(nOfOpponents = 2);
-        fitnessAggregator = f.avg()
-      );
-
+      )
+    ] + [
       ea.s.ga(
         name = "self-ga-tree";
         representation = ea.r.srTree();

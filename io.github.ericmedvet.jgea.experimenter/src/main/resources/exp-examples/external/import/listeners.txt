@@ -1,6 +1,9 @@
 $GENERAL_LISTENERS = [
 
   ea.l.console(
+    runFunctions = [
+      ea.f.runString(name = "solver-name"; s = "{run.solver.name}-{run.solver.opponentsSelector.name}"; regex="^(.*?)(?:-null)*$")
+    ];
     functions = [
       ea.f.timestamp();
       ea.f.size(of = ea.f.genotype(of = ea.f.best()); format = "%3d");
@@ -11,6 +14,7 @@ $GENERAL_LISTENERS = [
   ea.listener.allCsv(
     path = "../results/{name}/{startTime}/last-generations.csv";
     runFunctions = [
+      ea.f.runString(name = "solver-name"; s = "{run.solver.name}-{run.solver.opponentsSelector.name}"; regex="^(.*?)(?:-null)*$");
       ea.f.runKey(key = "run.problem.simulation.environment");
       ea.f.runKey(key = "run.solver.mapper")
     ];
@@ -25,6 +29,7 @@ $GENERAL_LISTENERS = [
   ea.l.bestCsv(
     path = "../results/{name}/{startTime}/last-generations-bests.csv";
     runFunctions = [
+      ea.f.runString(name = "solver-name"; s = "{run.solver.name}-{run.solver.opponentsSelector.name}"; regex="^(.*?)(?:-null)*$");
       ea.f.runKey(key = "run.problem.simulation.environment");
       ea.f.runKey(key = "run.solver.mapper")
     ];
@@ -38,7 +43,9 @@ $GENERAL_LISTENERS = [
 
   ea.l.savePlotAndCsvForExp(
     path = "../results/{name}/{startTime}/best-q.svg";
-    plot = ea.plot.multi.quality();
+    plot = ea.plot.multi.quality(
+      line = ea.f.runString(name = "solver"; s = "{run.solver.name}-{run.solver.opponentsSelector.name}"; regex="^(.*?)(?:-null)*$")
+    );
     overwrite = true;
     type = svg
   );
@@ -46,7 +53,10 @@ $GENERAL_LISTENERS = [
   ea.l.savePlotAndCsvForExp(
     deferred = true;
     path = "../results/{name}/{startTime}/best-vs-self.svg";
-    plot = ea.plot.multi.xyExp(y = f.composition(of = f.composition(of = ea.f.best(); then = $VS_SELF); then = $QUALITY_F1));
+    plot = ea.plot.multi.xyExp(
+      y = f.composition(of = f.composition(of = ea.f.best(); then = $VS_SELF); then = $QUALITY_F1);
+      line = ea.f.runString(name = "solver"; s = "{run.solver.name}-{run.solver.opponentsSelector.name}"; regex="^(.*?)(?:-null)*$")
+    );
     overwrite = true;
     type = svg
   );
@@ -54,14 +64,20 @@ $GENERAL_LISTENERS = [
   ea.l.savePlotAndCsvForExp(
     deferred = true;
     path = "../results/{name}/{startTime}/best-vs-opponent.svg";
-    plot = ea.plot.multi.xyExp(y = f.composition(of = f.composition(of = ea.f.best(); then = $VS_OPPONENT); then = $QUALITY_F1));
+    plot = ea.plot.multi.xyExp(
+      y = f.composition(of = f.composition(of = ea.f.best(); then = $VS_OPPONENT); then = $QUALITY_F1);
+      line = ea.f.runString(name = "solver"; s = "{run.solver.name}-{run.solver.opponentsSelector.name}"; regex="^(.*?)(?:-null)*$")
+    );
     overwrite = true;
     type = svg
   );
 
   ea.l.savePlotAndCsvForExp(
     path = "../results/{name}/{startTime}/avg-q.svg";
-    plot = ea.plot.multi.xyExp(y = f.avg(of = f.each(mapF = ea.f.quality(); of = ea.f.all())));
+    plot = ea.plot.multi.xyExp(
+      y = f.avg(of = f.each(mapF = ea.f.quality(); of = ea.f.all()));
+      line = ea.f.runString(name = "solver"; s = "{run.solver.name}-{run.solver.opponentsSelector.name}"; regex="^(.*?)(?:-null)*$")
+    );
     overwrite = true;
     type = svg
   );
@@ -69,7 +85,10 @@ $GENERAL_LISTENERS = [
   ea.l.savePlotAndCsvForExp(
     deferred = true;
     path = "../results/{name}/{startTime}/avg-vs-self.svg";
-    plot = ea.plot.multi.xyExp(y = f.avg(of = f.each(mapF = f.composition(of = f.composition(then = $VS_SELF); then = $QUALITY_F1); of = ea.f.all())));
+    plot = ea.plot.multi.xyExp(
+      y = f.avg(of = f.each(mapF = f.composition(of = f.composition(then = $VS_SELF); then = $QUALITY_F1); of = ea.f.all()));
+      line = ea.f.runString(name = "solver"; s = "{run.solver.name}-{run.solver.opponentsSelector.name}"; regex="^(.*?)(?:-null)*$")
+    );
     overwrite = true;
     type = svg
   );
@@ -77,14 +96,19 @@ $GENERAL_LISTENERS = [
   ea.l.savePlotAndCsvForExp(
     deferred = true;
     path = "../results/{name}/{startTime}/avg-vs-opponent.svg";
-    plot = ea.plot.multi.xyExp(y = f.avg(of = f.each(mapF = f.composition(of = f.composition(then = $VS_OPPONENT); then = $QUALITY_F1); of = ea.f.all())));
+    plot = ea.plot.multi.xyExp(
+      y = f.avg(of = f.each(mapF = f.composition(of = f.composition(then = $VS_OPPONENT); then = $QUALITY_F1); of = ea.f.all()));
+      line = ea.f.runString(name = "solver"; s = "{run.solver.name}-{run.solver.opponentsSelector.name}"; regex="^(.*?)(?:-null)*$")
+    );
     overwrite = true;
     type = svg
   );
 
   ea.l.savePlotAndCsvForRun(
-    path = "../results/{name}/{startTime}/archive-{run.problem.name}-{run.solver.name}-{run.randomGenerator.seed:%03d}.svg";
-    plot = ea.plot.single.me();
+    path = "../results/{name}/{startTime}/archive-{run.problem.name}-{run.solver.name}-{run.solver.opponentsSelector.name}-{run.randomGenerator.seed:%02d}.svg";
+    plot = ea.plot.single.me(
+      title = ea.f.runString(name = "title"; s = "Archive of {run.solver.name}-{run.solver.opponentsSelector.name} on {run.problem.name} (seed={run.randomGenerator.seed})"; regex="^(.*?)(?:-null)*$")
+    );
     condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = ".*-me-.*");
     type = svg
   )
@@ -98,7 +122,7 @@ $PONG_LISTENERS = [
       video = ea.misc.toVideo(drawer = ds.d.pong());
       of = $VS_SELF
     );
-    path = "../results/{name}/{startTime}/best-vs-self-{run.solver.name}-{run.randomGenerator.seed:%04d}";
+    path = "../results/{name}/{startTime}/best-vs-self-{run.solver.name}-{run.solver.opponentsSelector.name}-{run.randomGenerator.seed:%02d}";
     condition = $VIDEO
   )
 ]
@@ -113,7 +137,7 @@ $SUMO_LISTENERS =[
         task = $SIMULATION
       )
     );
-    path = "../results/{name}/{startTime}/best-vs-box-{run.solver.name}-{run.randomGenerator.seed:%04d}.mp4";
+    path = "../results/{name}/{startTime}/best-vs-box-{run.solver.name}-{run.solver.opponentsSelector.name}-{run.randomGenerator.seed:%02d}.mp4";
     condition = $VIDEO
   )
 ]
