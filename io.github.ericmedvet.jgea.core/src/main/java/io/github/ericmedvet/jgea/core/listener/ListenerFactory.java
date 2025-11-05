@@ -81,10 +81,10 @@ public interface ListenerFactory<E, K> {
     return all(List.of(this, other));
   }
 
-  default ListenerFactory<E, K> conditional(Predicate<K> predicate) {
+  default ListenerFactory<E, K> conditional(Predicate<K> kPredicate, Predicate<E> ePredicate) {
     return from(
-        "%s[if:%s]".formatted(this, predicate),
-        k -> predicate.test(k) ? build(k) : Listener.deaf(),
+        "%s[if:%s;%s]".formatted(this, kPredicate, ePredicate),
+        k -> kPredicate.test(k) ? build(k).conditional(ePredicate) : Listener.deaf(),
         this::shutdown
     );
   }
@@ -238,4 +238,5 @@ public interface ListenerFactory<E, K> {
 
   default void shutdown() {
   }
+
 }

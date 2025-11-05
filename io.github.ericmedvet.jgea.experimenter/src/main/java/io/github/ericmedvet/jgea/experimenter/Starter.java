@@ -113,10 +113,6 @@ public class Starter {
         );
         System.exit(-1);
       }
-      if (configuration.nOfRunFolds <= 0) {
-        L.severe("Number of folds %d is negative".formatted(configuration.nOfRunFolds));
-        System.exit(-1);
-      }
     } catch (ParameterException e) {
       e.usage();
       L.severe("Cannot read command line options: %s".formatted(e));
@@ -146,20 +142,20 @@ public class Starter {
           "Using example experiment description: %s"
               .formatted(configuration.exampleExperimentDescriptionResourceName)
       );
-      InputStream inputStream = Starter.class.getResourceAsStream(
+
+      try (InputStream inputStream = Starter.class.getResourceAsStream(
           "/exp-examples/%s.txt".formatted(configuration.exampleExperimentDescriptionResourceName)
-      );
-      if (inputStream == null) {
-        L.severe(
-            "Cannot find default experiment description: %s"
-                .formatted(configuration.exampleExperimentDescriptionResourceName)
-        );
-      } else {
-        try {
+      )) {
+        if (inputStream == null) {
+          L.severe(
+              "Cannot find default experiment description: %s"
+                  .formatted(configuration.exampleExperimentDescriptionResourceName)
+          );
+        } else {
           expDescription = new String(inputStream.readAllBytes());
-        } catch (IOException e) {
-          L.severe("Cannot read default experiment description: %s".formatted(e));
         }
+      } catch (IOException e) {
+        L.severe("Cannot read default experiment description: %s".formatted(e));
       }
     } else if (!configuration.experimentDescriptionFilePath.isEmpty()) {
       L.config(

@@ -57,6 +57,7 @@ import io.github.ericmedvet.jsdynsym.core.composed.Stepped;
 import io.github.ericmedvet.jsdynsym.core.numerical.*;
 import io.github.ericmedvet.jsdynsym.core.numerical.named.NamedMultivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.numerical.named.NamedUnivariateRealFunction;
+import io.github.ericmedvet.jsdynsym.core.rl.NumericalReinforcementLearningAgent;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
@@ -506,6 +507,24 @@ public class Mappers {
                 .andThen(toOperator(postOperator)),
             nmrf -> TreeBasedMultivariateRealFunction.sampleFor(nmrf.xVarNames(), nmrf.yVarNames()),
             "multiSrTreeToNmrf[po=%s]".formatted(postOperator)
+        )
+    );
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X> InvertibleMapper<X, NumericalReinforcementLearningAgent<?>> ndsToNrla(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NumericalDynamicalSystem<?>> beforeM
+  ) {
+    return beforeM.andThen(
+        InvertibleMapper.from(
+            (eNrla, nds) -> NumericalReinforcementLearningAgent.from(nds),
+            eNrla -> MultivariateRealFunction.from(
+                in -> new double[eNrla.nOfOutputs()],
+                eNrla.nOfInputs(),
+                eNrla.nOfOutputs()
+            ),
+            "rlAgent"
         )
     );
   }

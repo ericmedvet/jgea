@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -43,7 +42,6 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
 
   private final List<? extends NamedFunction<? super E, ?>> eFunctions;
   private final List<? extends NamedFunction<? super K, ?>> kFunctions;
-  private final Predicate<? super E> ePredicate;
   private final String filePath;
   private final String errorString;
   private final String intFormat;
@@ -55,7 +53,6 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
   public CSVPrinter(
       List<? extends Function<? super E, ?>> eFunctions,
       List<? extends Function<? super K, ?>> kFunctions,
-      Predicate<? super E> ePredicate,
       String filePath,
       String errorString,
       String intFormat,
@@ -63,7 +60,6 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
   ) {
     this.eFunctions = eFunctions.stream().map(NamedFunction::from).toList();
     this.kFunctions = kFunctions.stream().map(NamedFunction::from).toList();
-    this.ePredicate = ePredicate;
     this.filePath = filePath;
     this.errorString = errorString;
     this.intFormat = intFormat;
@@ -79,82 +75,73 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
         .map(f -> f.name())
         .toList();
     return Naming.named(
-        "csv[%s]"
-            .formatted(
-                Stream.concat(
-                    eFunctions.stream().map(f -> f.name()),
-                    kFunctions.stream().map(f -> f.name())
-                )
-                    .collect(Collectors.joining(";"))
-            ),
+        toString(),
         (Listener<E>) (e -> {
-          if (ePredicate.test(e)) {
-            List<?> eValues = eFunctions.stream()
-                .map(f -> {
-                  try {
-                    Object v = f.apply(e);
-                    if (v instanceof Double d) {
-                      return doubleFormat.formatted(d);
-                    }
-                    if (v instanceof Float d) {
-                      return doubleFormat.formatted(d);
-                    }
-                    if (v instanceof Integer n) {
-                      return intFormat.formatted(n);
-                    }
-                    if (v instanceof Long n) {
-                      return intFormat.formatted(n);
-                    }
-                    return v;
-                  } catch (Exception ex) {
-                    return errorString;
+          List<?> eValues = eFunctions.stream()
+              .map(f -> {
+                try {
+                  Object v = f.apply(e);
+                  if (v instanceof Double d) {
+                    return doubleFormat.formatted(d);
                   }
-                })
-                .toList();
-            synchronized (this) {
-              if (printer == null) {
-                try {
-                  File file = Misc.robustGetFile(filePath, false);
-                  printer = new org.apache.commons.csv.CSVPrinter(
-                      new PrintStream(file),
-                      CSVFormat.Builder.create()
-                          .setDelimiter(";")
-                          .build()
-                  );
-                  L.info(
-                      String.format(
-                          "File '%s' created and header for %d columns written",
-                          file.getPath(),
-                          eFunctions.size() + kFunctions.size()
-                      )
-                  );
-                } catch (IOException ex) {
-                  L.severe(String.format("Cannot create CSVPrinter: %s", ex));
-                  return;
+                  if (v instanceof Float d) {
+                    return doubleFormat.formatted(d);
+                  }
+                  if (v instanceof Integer n) {
+                    return intFormat.formatted(n);
+                  }
+                  if (v instanceof Long n) {
+                    return intFormat.formatted(n);
+                  }
+                  return v;
+                } catch (Exception ex) {
+                  return errorString;
                 }
-                try {
-                  printer.printRecord(headers);
-                } catch (IOException ex) {
-                  L.warning(String.format("Cannot print header: %s", ex));
-                  return;
-                }
-              }
+              })
+              .toList();
+          synchronized (this) {
+            if (printer == null) {
               try {
-                printer.printRecord(Misc.concat(List.of(kValues, eValues)));
+                File file = Misc.robustGetFile(filePath, false);
+                printer = new org.apache.commons.csv.CSVPrinter(
+                    new PrintStream(file),
+                    CSVFormat.Builder.create()
+                        .setDelimiter(";")
+                        .get()
+                );
+                L.info(
+                    String.format(
+                        "File '%s' created and header for %d columns written",
+                        file.getPath(),
+                        eFunctions.size() + kFunctions.size()
+                    )
+                );
               } catch (IOException ex) {
-                L.warning(String.format("Cannot print values: %s", ex));
+                L.severe(String.format("Cannot create CSVPrinter: %s", ex));
                 return;
               }
-              if (lineCounter % FLUSH_N == 0) {
-                try {
-                  printer.flush();
-                } catch (IOException ex) {
-                  L.warning(String.format("Cannot flush CSVPrinter: %s", ex));
-                  return;
-                }
+              try {
+                printer.printRecord(headers);
+              } catch (IOException ex) {
+                L.warning(String.format("Cannot print header: %s", ex));
+                return;
               }
-              lineCounter = lineCounter + 1;
             }
+            try {
+              printer.printRecord(Misc.concat(List.of(kValues, eValues)));
+            } catch (IOException ex) {
+              L.warning(String.format("Cannot print values: %s", ex));
+              return;
+            }
+            if (lineCounter % FLUSH_N == 0) {
+              try {
+                printer.flush();
+              } catch (IOException ex) {
+                L.warning(String.format("Cannot flush CSVPrinter: %s", ex));
+                return;
+              }
+            }
+            lineCounter = lineCounter + 1;
           }
         })
     );
@@ -171,4 +158,17 @@ public class CSVPrinter<E, K> implements ListenerFactory<E, K> {
       }
     }
   }
+
+  @Override
+  public String toString() {
+    return "csv[%s]"
+        .formatted(
+            Stream.concat(
+                eFunctions.stream().map(f -> NamedFunction.name(f)),
+                kFunctions.stream().map(f -> NamedFunction.name(f))
+            )
+                .collect(Collectors.joining(";"))
+        );
+  }
+
 }

@@ -29,10 +29,10 @@ public interface AccumulatorFactory<E, O, K> extends ListenerFactory<E, K> {
   Accumulator<E, O> build(K k);
 
   @Override
-  default AccumulatorFactory<E, O, K> conditional(Predicate<K> predicate) {
+  default AccumulatorFactory<E, O, K> conditional(Predicate<K> kPredicate, Predicate<E> ePredicate) {
     return from(
-        "%s[if=%s]".formatted(this, predicate),
-        k -> predicate.test(k) ? build(k) : Accumulator.nullAccumulator(),
+        "%s[if:%s;%s]".formatted(this, kPredicate, ePredicate),
+        k -> kPredicate.test(k) ? build(k).conditional(ePredicate) : Accumulator.nullAccumulator(),
         this::shutdown
     );
   }
@@ -106,7 +106,9 @@ public interface AccumulatorFactory<E, O, K> extends ListenerFactory<E, K> {
     AO accumulatedOutput = initializer.get();
     return from(
         "%s[thenOnShutDown:%s]".formatted(this, consumer),
-        k -> build(k).thenOnDone(a -> updater.accept(a, accumulatedOutput)),
+        k -> build(k).thenOnDone(
+            Naming.named(updater.toString(), (Consumer<Accumulator<E, O>>) a -> updater.accept(a, accumulatedOutput))
+        ),
         () -> {
           consumer.accept(accumulatedOutput);
           shutdown();
@@ -116,13 +118,15 @@ public interface AccumulatorFactory<E, O, K> extends ListenerFactory<E, K> {
 
   default AccumulatorFactory<E, O, K> thenOnShutdown(Consumer<O> consumer) {
     class Box<C> {
-
       C content;
     }
     return thenOnShutdown(
-        () -> new Box<Accumulator<E, O>>(),
-        (o, box) -> box.content = o,
-        box -> consumer.accept(box.content.get())
+        Box::new,
+        Naming.named(
+            "keepForShutdown",
+            (BiConsumer<Accumulator<E, O>, Box<Accumulator<E, O>>>) (o, box) -> box.content = o
+        ),
+        Naming.named(consumer.toString(), (Consumer<Box<Accumulator<E, O>>>) box -> consumer.accept(box.content.get()))
     );
   }
 }

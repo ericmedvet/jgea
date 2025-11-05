@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public interface Accumulator<E, O> extends Listener<E> {
@@ -38,13 +39,15 @@ public interface Accumulator<E, O> extends Listener<E> {
           os.add(function.apply(e));
           return os;
         },
-        os -> {}
+        os -> {
+        }
     );
   }
 
   static <OE, OO, IE, IO> Accumulator<OE, OO> from(
       String name,
       Accumulator<IE, IO> accumulator,
+      Predicate<OE> ePredicate,
       Function<OE, IE> eFunction,
       Function<IO, OO> oGetterFunction,
       Consumer<Accumulator<IE, IO>> ioConsumer
@@ -57,12 +60,15 @@ public interface Accumulator<E, O> extends Listener<E> {
 
       @Override
       public void listen(OE oe) {
-        accumulator.listen(eFunction.apply(oe));
+        if (ePredicate.test(oe)) {
+          accumulator.listen(eFunction.apply(oe));
+        }
       }
 
       @Override
       public void done() {
         ioConsumer.accept(accumulator);
+        accumulator.done();
       }
 
       @Override
@@ -113,20 +119,50 @@ public interface Accumulator<E, O> extends Listener<E> {
 
   @Override
   default <X> Accumulator<X, O> on(Function<X, E> function) {
-    return from("%s[on:%s]".formatted(this, function), this, function, Function.identity(), o -> {});
+    return from(
+        "%s[on:%s]".formatted(this, function),
+        this,
+        e -> true,
+        function,
+        Function.identity(),
+        o -> {
+        }
+    );
   }
 
   default <Q> Accumulator<E, Q> then(Function<O, Q> function) {
-    return from("%s[then:%s]".formatted(this, function), this, Function.identity(), function, o -> {});
+    return from(
+        "%s[then:%s]".formatted(this, function),
+        this,
+        e -> true,
+        Function.identity(),
+        function,
+        o -> {
+        }
+    );
   }
 
   default Accumulator<E, O> thenOnDone(Consumer<Accumulator<E, O>> consumer) {
     return from(
         "%s[thenOnDone:%s]".formatted(this, consumer),
         this,
+        e -> true,
         Function.identity(),
         Function.identity(),
         consumer
+    );
+  }
+
+  @Override
+  default Accumulator<E, O> conditional(Predicate<E> predicate) {
+    return from(
+        "%s[if:%s]".formatted(this, predicate),
+        this,
+        predicate,
+        Function.identity(),
+        Function.identity(),
+        a -> {
+        }
     );
   }
 }

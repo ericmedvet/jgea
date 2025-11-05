@@ -25,14 +25,13 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @FunctionalInterface
 public interface Listener<E> {
-
-  void listen(E e);
 
   static <E> Listener<E> all(List<Listener<? super E>> listeners) {
     return from(
@@ -49,13 +48,13 @@ public interface Listener<E> {
   static <E> Listener<E> from(String name, Consumer<E> consumer, Runnable doneRunnable) {
     return new Listener<>() {
       @Override
-      public void listen(E e) {
-        consumer.accept(e);
+      public void done() {
+        doneRunnable.run();
       }
 
       @Override
-      public void done() {
-        doneRunnable.run();
+      public void listen(E e) {
+        consumer.accept(e);
       }
 
       @Override
@@ -67,6 +66,18 @@ public interface Listener<E> {
 
   default Listener<E> and(Listener<? super E> other) {
     return all(List.of(this, other));
+  }
+
+  default Listener<E> conditional(Predicate<E> predicate) {
+    return from(
+        "%s[if:%s]".formatted(this, predicate),
+        e -> {
+          if (predicate.test(e)) {
+            listen(e);
+          }
+        },
+        this::done
+    );
   }
 
   default Listener<E> deferred(Executor executor) {
@@ -103,11 +114,16 @@ public interface Listener<E> {
     );
   }
 
+  void listen(E e);
+
   default <F> Listener<F> on(Function<F, E> function) {
     return from("%s[on:%s]".formatted(this, function), f -> listen(function.apply(f)), this::done);
   }
 
   default Listener<E> onLast() {
-    return Accumulator.from("%s[last]".formatted(this), () -> null, (e, oldE) -> e, this::listen);
+    return Accumulator.from("%s[last]".formatted(this), () -> null, (e, oldE) -> e, (E e1) -> {
+      listen(e1);
+      done();
+    });
   }
 }

@@ -19,7 +19,6 @@
  */
 package io.github.ericmedvet.jgea.experimenter.builders;
 
-import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Naming;
 import io.github.ericmedvet.jgea.experimenter.Experiment;
 import io.github.ericmedvet.jgea.experimenter.Run;
@@ -28,17 +27,8 @@ import io.github.ericmedvet.jgea.experimenter.listener.telegram.TelegramClient;
 import io.github.ericmedvet.jnb.core.*;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jnb.datastructure.TriConsumer;
-import io.github.ericmedvet.jviz.core.drawer.Video;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-import java.util.Objects;
 import java.util.function.Function;
-import javax.imageio.ImageIO;
 
 @Discoverable(prefixTemplate = "ea.consumer|c")
 public class Consumers {
@@ -70,59 +60,6 @@ public class Consumers {
     });
   }
 
-  private static void save(Object o, String filePath, boolean overwrite) {
-    File file = null;
-    try {
-      file = Misc.robustGetFile(filePath, overwrite);
-      switch (o) {
-        case BufferedImage image -> {
-          ImageIO.write(image, "png", file);
-        }
-        case String s -> {
-          Files.writeString(
-              file.toPath(),
-              s,
-              StandardOpenOption.WRITE,
-              StandardOpenOption.CREATE,
-              StandardOpenOption.TRUNCATE_EXISTING
-          );
-        }
-        case Video video -> {
-          Files.write(
-              file.toPath(),
-              video.data(),
-              StandardOpenOption.WRITE,
-              StandardOpenOption.CREATE,
-              StandardOpenOption.TRUNCATE_EXISTING
-          );
-        }
-        case byte[] data -> {
-          try (OutputStream os = new FileOutputStream(file)) {
-            os.write(data);
-          }
-        }
-        case NamedParamMap npm -> {
-          Files.writeString(
-              file.toPath(),
-              MapNamedParamMap.prettyToString(npm),
-              StandardOpenOption.WRITE,
-              StandardOpenOption.CREATE,
-              StandardOpenOption.TRUNCATE_EXISTING
-          );
-        }
-        case null -> throw new IllegalArgumentException("Cannot save null data of type %s");
-        default -> throw new IllegalArgumentException(
-            "Cannot save data of type %s".formatted(o.getClass().getSimpleName())
-        );
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(
-          "Cannot save '%s'".formatted(Objects.isNull(file) ? filePath : file.getPath()),
-          e
-      );
-    }
-  }
-
   @SuppressWarnings("unused")
   @Cacheable
   public static <X, O> TriConsumer<X, Run<?, ?, ?, ?>, Experiment> saver(
@@ -136,7 +73,7 @@ public class Consumers {
             NamedFunction.name(f),
             filePathTemplate + (overwrite ? "(*)" : "")
         ),
-        (TriConsumer<X, Run<?, ?, ?, ?>, Experiment>) (x, run, experiment) -> save(
+        (TriConsumer<X, Run<?, ?, ?, ?>, Experiment>) (x, run, experiment) -> Utils.save(
             f.apply(x),
             Utils.interpolate(filePathTemplate, experiment, run) + suffix,
             overwrite

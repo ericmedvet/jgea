@@ -1,0 +1,73 @@
+$dT = 0.1
+$tRange = m.range(min = 0; max = 60)
+
+$environment = ds.e.navigation(
+  arena = ds.arena.prepared(
+    name = empty;
+    initialRobotXRange = m.range(min=0.5;max=0.5);
+    initialRobotYRange = m.range(min=0.8;max=0.8)
+  )
+)
+
+$postSimulateF = ds.f.simulate(
+  of = ds.f.frozen(of = ea.f.solution());
+  simulation = ds.sat.fromEnvironment(
+    environment = $environment
+  );
+  dT = $dT;
+  tRange = $tRange
+)
+
+ea.experiment(
+  runs = (randomGenerator = (seed = [1:1:7]) * [m.defaultRG()])
+  * (solver = (stop = ea.sc.nOfQualityEvaluations(n = 2500))
+  * (representation = [ea.representation.doubleString()]) * [
+    ea.s.ga(
+      name = "ga+linear-zeroq";
+      mapper = ea.mapper.ndsToNrla(of = ea.mapper.dsToNpnds(npnds = ds.num.linear(zeroQ = true)))
+    );
+    ea.s.ga(
+      name = "ga+linear";
+      mapper = ea.mapper.ndsToNrla(of = ea.mapper.dsToNpnds(npnds = ds.num.linear(zeroQ = false)))
+    );
+    ea.s.ga(
+      name = "ga+mlp";
+      mapper = ea.mapper.ndsToNrla(of = ea.mapper.dsToNpnds(npnds = ds.num.mlp(innerLayers = [8])))
+    )
+  ])
+  * [ea.run(
+    problem = ea.p.srlatToBbto(
+      task = ds.srlat.fromNumericalEnvironment(
+        environment = $environment;
+        reward = ds.e.nav.reward.reaching()
+      );
+      dT = $dT;
+      tRange = $tRange
+    )
+  )];
+  listeners = [
+    ea.l.console(
+      functions = [
+        ea.f.behaviorQuality(of = ea.f.quality(of = ea.f.best(); format = "%6.2f"));
+        ds.e.n.finalD(format = "%5.3f"; of = ds.f.unwrappedRl(of = ea.f.behavior(of = ea.f.quality(of = ea.f.best()))));
+        ds.e.n.avgD(format = "%5.3f"; of = ds.f.unwrappedRl(of = ea.f.behavior(of = ea.f.quality(of = ea.f.best()))))
+      ];
+      onlyLast = false
+    );
+    ea.l.savePlotForExp(
+      path = "../../Documenti/experiments/{name}/{startTime}/best-fitness.svg";
+      plot = ea.plot.multi.quality(q = ea.f.behaviorQuality());
+      type = svg
+    );
+    ea.l.savePlotForExp(
+      path = "../../Documenti/experiments/{name}/{startTime}/best-final-dist.svg";
+      plot = ea.plot.multi.quality(q = ds.e.n.finalD(of = ds.f.unwrappedRl(of = ea.f.behavior())));
+      type = svg
+    );
+    ea.l.savePlotForExp(
+      path = "../../Documenti/experiments/{name}/{startTime}/best-avg-dist.svg";
+      plot = ea.plot.multi.quality(q = ds.e.n.avgD(of = ds.f.unwrappedRl(of = ea.f.behavior())));
+      type = svg
+    )
+  ]
+)

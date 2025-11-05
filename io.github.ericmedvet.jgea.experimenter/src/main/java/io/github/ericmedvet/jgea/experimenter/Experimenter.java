@@ -96,6 +96,7 @@ public class Experimenter {
     List<RunOutcome> runOutcomes = experiment.runs()
         .stream()
         .map(run -> new RunOutcome(run, experimentExecutorService.submit(() -> {
+          L.fine("Starting run %d of %d ".formatted(run.index() + 1, experiment.runs().size()));
           progressMonitor.notify(
               run.index(),
               experiment.runs().size(),

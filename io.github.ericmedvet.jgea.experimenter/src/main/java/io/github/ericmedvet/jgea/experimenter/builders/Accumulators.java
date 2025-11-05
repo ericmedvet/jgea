@@ -30,43 +30,26 @@ import java.util.function.Function;
 
 @Discoverable(prefixTemplate = "ea.accumulator|acc|a")
 public class Accumulators {
+
   private Accumulators() {
   }
 
-  @Alias(
-      name = "bests", value = // spotless:off
-            """
-                    all(
-                      eFunction = ea.f.best()
-                    )
-                    """) // spotless:on
-  @Alias(
-      name = "first", value = // spotless:off
-            """
-                    all(
-                      listFunction = f.nTh(n = 1)
-                    )
-                    """) // spotless:on
-  @Alias(
-      name = "last", value = // spotless:off
-            """
-                    all(
-                      listFunction = f.nTh(n = -1)
-                    )
-                    """) // spotless:on
-  @Alias(
-      name = "lastBest", value = // spotless:off
-            """
-                    last(
-                      eFunction = ea.f.best()
-                    )
-                    """) // spotless:on
+  @Alias(name = "bests", value = "all(eFunction = ea.f.best())")
+  @Alias(name = "first", value = "all(listFunction = f.nTh(n = 1))")
   @SuppressWarnings("unused")
   public static <E, F, O, R> AccumulatorFactory<E, O, R> all(
       @Param(value = "eFunction", dNPM = "f.identity()") Function<E, F> eFunction,
       @Param(value = "listFunction", dNPM = "f.identity()") Function<List<F>, O> listFunction
   ) {
     return AccumulatorFactory.<E, F, R>collector(eFunction).then(listFunction);
+  }
+
+  @Alias(name = "lastBest", value = "last(function = ea.f.best())")
+  @SuppressWarnings("unused")
+  public static <E, O, R> AccumulatorFactory<E, O, R> last(
+      @Param(value = "function", dNPM = "f.identity()") Function<E, O> function
+  ) {
+    return AccumulatorFactory.last((e, r) -> function.apply(e));
   }
 
   @SuppressWarnings("unused")
@@ -78,7 +61,10 @@ public class Accumulators {
             "ea.runOutcome",
             Map.ofEntries(
                 Map.entry(new MapNamedParamMap.TypedKey("index", ParamMap.Type.INT), run.index()),
-                Map.entry(new MapNamedParamMap.TypedKey("run", ParamMap.Type.NAMED_PARAM_MAP), run.map()),
+                Map.entry(
+                    new MapNamedParamMap.TypedKey("run", ParamMap.Type.NAMED_PARAM_MAP),
+                    run.map()
+                ),
                 Map.entry(
                     new MapNamedParamMap.TypedKey("serializedGenotypes", ParamMap.Type.STRINGS),
                     s.pocPopulation()

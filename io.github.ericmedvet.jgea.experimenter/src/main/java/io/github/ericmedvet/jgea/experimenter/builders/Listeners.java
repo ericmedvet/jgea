@@ -58,39 +58,29 @@ public class Listeners {
   private Listeners() {
   }
 
-  private static class ListenerFactoryAndMonitor<E, K> implements ListenerFactory<E, K>, ProgressMonitor {
+  public static class ListenerFactoryAndMonitor<E, K> implements ListenerFactory<E, K>, ProgressMonitor {
 
     private final ListenerFactory<E, K> innerListenerFactory;
-    private final ListenerFactory<E, K> outerListenerFactory;
 
     public ListenerFactoryAndMonitor(
         ListenerFactory<E, K> innerListenerFactory,
-        Predicate<K> predicate,
+        Predicate<K> kPredicate,
+        Predicate<E> ePredicate,
         Executor executor,
         boolean onLast
     ) {
-      this.innerListenerFactory = innerListenerFactory;
-      if (onLast) {
-        if (executor != null) {
-          outerListenerFactory = innerListenerFactory
-              .onLast()
-              .deferred(executor)
-              .conditional(predicate);
-        } else {
-          outerListenerFactory = innerListenerFactory.onLast().conditional(predicate);
-        }
-      } else {
-        if (executor != null) {
-          outerListenerFactory = innerListenerFactory.deferred(executor).conditional(predicate);
-        } else {
-          outerListenerFactory = innerListenerFactory.conditional(predicate);
-        }
+      if (executor != null) {
+        innerListenerFactory = innerListenerFactory.deferred(executor);
       }
+      if (onLast) {
+        innerListenerFactory = innerListenerFactory.onLast();
+      }
+      this.innerListenerFactory = innerListenerFactory.conditional(kPredicate, ePredicate);
     }
 
     @Override
     public Listener<E> build(K k) {
-      return outerListenerFactory.build(k);
+      return innerListenerFactory.build(k);
     }
 
     @Override
@@ -160,7 +150,6 @@ public class Listeners {
           Stream.concat(defaultRunFunctions.stream(), runFunctions.stream())
               .map(f -> reformatToFit(f, experiment.runs()))
               .toList(),
-          pip -> statePredicate.test(pip.pop),
           Utils.interpolate(path, experiment, null),
           errorString,
           intFormat,
@@ -198,6 +187,7 @@ public class Listeners {
       return new ListenerFactoryAndMonitor<>(
           allListenerFactory,
           runPredicate,
+          statePredicate,
           deferred ? executor : null,
           onlyLast
       );
@@ -231,13 +221,13 @@ public class Listeners {
             Stream.concat(defaultRunFunctions.stream(), runFunctions.stream())
                 .map(f -> reformatToFit(f, experiment.runs()))
                 .toList(),
-            statePredicate,
             Utils.interpolate(path, experiment, null),
             errorString,
             intFormat,
             doubleFormat
         ),
         runPredicate,
+        statePredicate,
         deferred ? executor : null,
         onlyLast
     );
@@ -267,10 +257,10 @@ public class Listeners {
             Stream.concat(defaultRunFunctions.stream(), runFunctions.stream())
                 .map(f -> reformatToFit(f, experiment.runs()))
                 .toList(),
-            statePredicate,
             logExceptions
         ),
         runPredicate,
+        statePredicate,
         deferred ? executor : null,
         onlyLast
     );
@@ -289,7 +279,8 @@ public class Listeners {
       @Param(value = "serverPort", dI = 10979) int serverPort,
       @Param(value = "serverKeyFilePath") String serverKeyFilePath,
       @Param(value = "pollInterval", dD = 1) double pollInterval,
-      @Param(value = "condition", dNPM = "predicate.always()") Predicate<Run<?, G, S, Q>> predicate
+      @Param(value = "runCondition", dNPM = "predicate.always()") Predicate<Run<?, G, S, Q>> runPredicate,
+      @Param(value = "stateCondition", dNPM = "predicate.always()") Predicate<POCPopulationState<?, G, S, Q, ?>> statePredicate
   ) {
     NetMultiSink netMultiSink = new NetMultiSink(
         pollInterval,
@@ -311,7 +302,8 @@ public class Listeners {
             netMultiSink.getRunSink(),
             netMultiSink.getDatItemSink()
         ),
-        predicate,
+        runPredicate,
+        statePredicate,
         executor,
         false
     );
@@ -351,13 +343,15 @@ public class Listeners {
           """ // spotless:on
   )
   @SuppressWarnings("unused")
-  public static <E, O, P> BiFunction<Experiment, Executor, ListenerFactory<E, Run<?, ?, ?, ?>>> onExpDone(
-      @Param("of") AccumulatorFactory<E, O, Run<?, ?, ?, ?>> accumulatorFactory,
+  public static <E, O, P, R, EX> BiFunction<EX, Executor, ListenerFactory<E, R>> onExpDone(
+      @Param("of") AccumulatorFactory<E, O, R> accumulatorFactory,
       @Param(value = "preprocessor", dNPM = "f.identity()") Function<? super O, ? extends P> preprocessor,
       @Param(
-          value = "consumers", dNPMs = {"ea.consumer.deaf()"}) List<TriConsumer<? super P, Run<?, ?, ?, ?>, Experiment>> consumers,
+          value = "consumers", dNPMs = {"ea.consumer.deaf()"}) List<TriConsumer<? super P, R, EX>> consumers,
       @Param(value = "deferred") boolean deferred,
-      @Param(value = "condition", dNPM = "predicate.always()") Predicate<Run<?, ?, ?, ?>> predicate
+      @Param(value = "eCondition", dNPM = "predicate.always()") Predicate<E> ePredicate,
+      @Param(value = "rCondition", dNPM = "predicate.always()") Predicate<R> rPredicate
+
   ) {
     return (experiment, executor) -> new ListenerFactoryAndMonitor<>(
         accumulatorFactory.thenOnShutdown(
@@ -371,7 +365,8 @@ public class Listeners {
                 })
             )
         ),
-        predicate,
+        rPredicate,
+        ePredicate,
         deferred ? executor : null,
         false
     );
@@ -420,13 +415,14 @@ public class Listeners {
           """ // spotless:on
   )
   @SuppressWarnings("unused")
-  public static <E, O, P> BiFunction<Experiment, Executor, ListenerFactory<E, Run<?, ?, ?, ?>>> onRunDone(
-      @Param("of") AccumulatorFactory<E, O, Run<?, ?, ?, ?>> accumulatorFactory,
+  public static <E, O, P, R, EX> BiFunction<EX, Executor, ListenerFactory<E, R>> onRunDone(
+      @Param("of") AccumulatorFactory<E, O, R> accumulatorFactory,
       @Param(value = "preprocessor", dNPM = "f.identity()") Function<? super O, ? extends P> preprocessor,
       @Param(
-          value = "consumers", dNPMs = {"ea.consumer.deaf()"}) List<TriConsumer<? super P, Run<?, ?, ?, ?>, Experiment>> consumers,
+          value = "consumers", dNPMs = {"ea.consumer.deaf()"}) List<TriConsumer<? super P, R, EX>> consumers,
       @Param(value = "deferred") boolean deferred,
-      @Param(value = "condition", dNPM = "predicate.always()") Predicate<Run<?, ?, ?, ?>> predicate
+      @Param(value = "eCondition", dNPM = "predicate.always()") Predicate<E> ePredicate,
+      @Param(value = "rCondition", dNPM = "predicate.always()") Predicate<R> rPredicate
   ) {
     return (experiment, executor) -> new ListenerFactoryAndMonitor<>(
         accumulatorFactory.thenOnDone(
@@ -438,7 +434,8 @@ public class Listeners {
                 }
             )
         ),
-        predicate,
+        rPredicate,
+        ePredicate,
         deferred ? executor : null,
         false
     );
@@ -460,7 +457,8 @@ public class Listeners {
           value = "defaultRunFunctions", dNPMs = {"ea.f.runKey(key = \"run.problem.name\")", "ea.f.runKey(key = \"run" + ".solver.name\")", "ea.f.runKey(key = " + "\"run.randomGenerator.seed\")"
           }) List<Function<? super Run<?, G, S, Q>, ?>> defaultRunFunctions,
       @Param("runFunctions") List<Function<? super Run<?, G, S, Q>, ?>> runFunctions,
-      @Param(value = "condition", dNPM = "predicate.always()") Predicate<Run<?, G, S, Q>> predicate
+      @Param(value = "runCondition", dNPM = "predicate.always()") Predicate<Run<?, G, S, Q>> runPredicate,
+      @Param(value = "stateCondition", dNPM = "predicate.always()") Predicate<POCPopulationState<?, G, S, Q, ?>> statePredicate
   ) {
     DirectSinkSource<MachineKey, MachineInfo> machineSinkSource = new DirectSinkSource<>();
     DirectSinkSource<ProcessKey, ProcessInfo> processSinkSource = new DirectSinkSource<>();
@@ -492,7 +490,8 @@ public class Listeners {
             runSinkSource,
             dataItemSinkSource
         ),
-        predicate,
+        runPredicate,
+        statePredicate,
         executor,
         false
     );
