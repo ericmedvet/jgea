@@ -109,7 +109,7 @@ $GENERAL_LISTENERS = [
     plot = ea.plot.single.me(
       title = ea.f.runString(name = "title"; s = "Archive of {run.solver.name}-{run.solver.opponentsSelector.name} on {run.problem.name} (seed={run.randomGenerator.seed})"; regex="^(.*?)(?:-null)*$")
     );
-    condition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = ".*-me-.*");
+    rCondition = predicate.matches(f = ea.f.runKey(key = "run.solver.name"); regex = ".*-me-.*");
     type = svg
   )
 
@@ -123,7 +123,7 @@ $PONG_LISTENERS = [
       of = $VS_SELF
     );
     path = "../results/{name}/{startTime}/best-vs-self-{run.solver.name}-{run.solver.opponentsSelector.name}-{run.randomGenerator.seed:%02d}";
-    condition = $VIDEO
+    rCondition = $VIDEO
   )
 ]
 
@@ -138,6 +138,6 @@ $SUMO_LISTENERS =[
       )
     );
     path = "../results/{name}/{startTime}/best-vs-box-{run.solver.name}-{run.solver.opponentsSelector.name}-{run.randomGenerator.seed:%02d}.mp4";
-    condition = $VIDEO
+    rCondition = $VIDEO
   )
 ]

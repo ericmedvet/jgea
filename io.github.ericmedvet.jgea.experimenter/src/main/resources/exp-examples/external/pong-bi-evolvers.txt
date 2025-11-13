@@ -61,7 +61,7 @@ ea.experiment(
         fitnessAggregator = f.avg()
       )
     ]) *
-    (problem = [ea.p.biSimToBqb(
+    (problem = [ea.p.biSimToBiTo(
       simulation = $SIMULATION;
       qFunction1 = $QUALITY_F1;
       qFunction2 = $QUALITY_F2;

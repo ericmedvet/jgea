@@ -31,7 +31,7 @@ ea.experiment(
         descriptors = $TREE_DESCRIPTOR
       )
     ]) *
-    (problem = [ea.p.biSimToQb(
+    (problem = [ea.p.biSimToTo(
       simulation = $SIMULATION;
       qFunction = $QUALITY_F1;
       trainingOpponent = m.supplier(of = $OPPONENT);

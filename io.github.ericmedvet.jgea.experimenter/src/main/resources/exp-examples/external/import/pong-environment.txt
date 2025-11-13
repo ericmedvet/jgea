@@ -14,14 +14,14 @@ $SIMULATION = ds.bat.fromEnvironment(
 
 $OPPONENT = ds.opponent.pong.simple()
 
-$PONG_PROBLEM = ea.p.biSimToQb(
+$PONG_PROBLEM = ea.p.biSimToTo(
   simulation = $SIMULATION;
   qFunction = $QUALITY_F1;
   trainingOpponent = m.supplier(of = ds.opponent.pong.simple());
   type = maximize
 )
 
-$PONG_BI_PROBLEM = ea.p.biSimToBqb(
+$PONG_BI_PROBLEM = ea.p.biSimToBiTo(
   simulation = $SIMULATION;
   qFunction1 = $QUALITY_F1;
   qFunction2 = $QUALITY_F2;
