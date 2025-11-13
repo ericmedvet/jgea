@@ -43,6 +43,16 @@ public class Grammars {
 
   @SuppressWarnings("unused")
   @Cacheable
+  public static StringGrammar<String> fromFile(@Param("path") String path) {
+    try (FileInputStream fis = new FileInputStream(path)) {
+      return StringGrammar.load(fis);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
   public static <N> StringGrammar<N> fromProblem(@Param("problem") GrammarBasedProblem<N, ?> problem) {
     return problem.grammar();
   }

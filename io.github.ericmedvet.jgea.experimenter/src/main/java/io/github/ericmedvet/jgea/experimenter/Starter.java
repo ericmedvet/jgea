@@ -27,7 +27,6 @@ import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.core.BuilderException;
 import io.github.ericmedvet.jnb.core.NamedBuilder;
 import io.github.ericmedvet.jnb.core.NamedParamMap;
-import io.github.ericmedvet.jnb.core.ParamMap;
 import io.github.ericmedvet.jnb.core.parsing.StringParser;
 import java.io.IOException;
 import java.io.InputStream;
@@ -192,12 +191,11 @@ public class Starter {
               .isEmpty() ? configuration.exampleExperimentDescriptionResourceName : configuration.experimentDescriptionFilePath
       );
       expNPM = expNPM
-          .with("name", ParamMap.Type.STRING, path.getFileName().toString());
+          .with("name", path.getFileName().toString());
     }
     expNPM = expNPM
         .with(
             "startTime",
-            ParamMap.Type.STRING,
             "%1$tY-%1$tm-%1$td--%1$tH-%1$tM-%1$tS"
                 .formatted(Instant.now().toEpochMilli())
         );

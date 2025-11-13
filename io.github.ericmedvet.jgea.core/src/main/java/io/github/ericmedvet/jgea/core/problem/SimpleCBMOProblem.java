@@ -27,16 +27,16 @@ import java.util.SequencedMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public interface SimpleEBMOProblem<S, EI, EO, EQ, O> extends EBMOProblem<S, EI, EO, EQ, SequencedMap<String, O>, O>, SimpleMOProblem<S, O>, SimpleCBMOProblem<S, ExampleBasedProblem.Example<EI, EO>, EQ, O> {
+public interface SimpleCBMOProblem<S, C, CQ, O> extends CBMOProblem<S, C, CQ, SequencedMap<String, O>, O>, SimpleMOProblem<S, O> {
 
-  SequencedMap<String, Objective<List<EQ>, O>> aggregateObjectives();
+  SequencedMap<String, Objective<List<CQ>, O>> aggregateObjectives();
 
   @Override
-  default Function<List<EQ>, SequencedMap<String, O>> aggregateFunction() {
+  default Function<List<CQ>, SequencedMap<String, O>> aggregateFunction() {
     return NamedFunction.from(
-        eqs -> Misc.sequencedTransformValues(
+        cqs -> Misc.sequencedTransformValues(
             aggregateObjectives(),
-            obj -> obj.function().apply(eqs)
+            obj -> obj.function().apply(cqs)
         ),
         "(%s)".formatted(
             aggregateObjectives().values()
@@ -53,5 +53,4 @@ public interface SimpleEBMOProblem<S, EI, EO, EQ, O> extends EBMOProblem<S, EI, 
   default SequencedMap<String, Comparator<O>> comparators() {
     return Misc.sequencedTransformValues(aggregateObjectives(), Objective::comparator);
   }
-
 }

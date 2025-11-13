@@ -60,13 +60,10 @@ public class Accumulators {
         (s, run) -> new MapNamedParamMap(
             "ea.runOutcome",
             Map.ofEntries(
-                Map.entry(new MapNamedParamMap.TypedKey("index", ParamMap.Type.INT), run.index()),
+                Map.entry("index", run.index()),
+                Map.entry("run", run.map()),
                 Map.entry(
-                    new MapNamedParamMap.TypedKey("run", ParamMap.Type.NAMED_PARAM_MAP),
-                    run.map()
-                ),
-                Map.entry(
-                    new MapNamedParamMap.TypedKey("serializedGenotypes", ParamMap.Type.STRINGS),
+                    "serializedGenotypes",
                     s.pocPopulation()
                         .all()
                         .stream()

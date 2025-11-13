@@ -19,5 +19,6 @@
  */
 package io.github.ericmedvet.jgea.core.problem;
 
-public interface EBMOProblem<S, EI, EO, EQ, Q, O> extends ExampleBasedProblem<S, EI, EO, EQ, Q>, CBMOProblem<S, ExampleBasedProblem.Example<EI, EO>, EQ, Q, O> {
+public interface CBMOProblem<S, C, CQ, Q, O> extends CaseBasedProblem<S, C, CQ, Q>, MultiObjectiveProblem<S, Q, O> {
+
 }

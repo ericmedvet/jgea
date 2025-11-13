@@ -1,73 +1,80 @@
 $dT = 0.1
-$tRange = m.range(min = 0; max = 60)
+$tRange = m.range(min = 0; max = 30)
 
-$environment = ds.e.navigation(
-  arena = ds.arena.prepared(
+$learningEnvs = (arena = [
+  ds.arena.prepared(
     name = empty;
-    initialRobotXRange = m.range(min=0.5;max=0.5);
-    initialRobotYRange = m.range(min=0.8;max=0.8)
-  )
-)
-
-$postSimulateF = ds.f.simulate(
-  of = ds.f.frozen(of = ea.f.solution());
-  simulation = ds.sat.fromEnvironment(
-    environment = $environment
+    initialRobotXRange = m.range(min = 0.45; max = 0.5);
+    initialRobotYRange = m.range(min = 0.78; max = 0.8);
+    targetXRange = m.range(min = 0.3; max = 0.6)
   );
-  dT = $dT;
-  tRange = $tRange
-)
+  ds.arena.prepared(
+    name = a_barrier;
+    initialRobotXRange = m.range(min = 0.45; max = 0.5);
+    initialRobotYRange = m.range(min = 0.78; max = 0.8)
+  );
+  ds.arena.prepared(
+    name = snake;
+    initialRobotXRange = m.range(min = 0.1; max = 0.12);
+    initialRobotYRange = m.range(min = 0.1; max = 0.12);
+    targetXRange = m.range(min = 0.9; max = 0.95);
+    targetYRange = m.range(min = 0.9; max = 0.95)
+  )
+])
+* [ds.e.navigation(randomGenerator = m.sharedRG())]
+
+$exampleRLagent = ds.misc.simExample(simulation = ds.srlat.fromNumericalEnvironment(
+  environment = ds.e.navigation(arena = ds.arena.prepared(name = empty));
+  reward = ds.e.nav.reward.reaching()
+))
 
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:7]) * [m.defaultRG()])
-  * (solver = (stop = ea.sc.nOfQualityEvaluations(n = 2500))
-  * (representation = [ea.representation.doubleString()]) * [
-    ea.s.ga(
-      name = "ga+linear-zeroq";
-      mapper = ea.mapper.ndsToNrla(of = ea.mapper.dsToNpnds(npnds = ds.num.linear(zeroQ = true)))
-    );
-    ea.s.ga(
-      name = "ga+linear";
-      mapper = ea.mapper.ndsToNrla(of = ea.mapper.dsToNpnds(npnds = ds.num.linear(zeroQ = false)))
-    );
-    ea.s.ga(
-      name = "ga+mlp";
-      mapper = ea.mapper.ndsToNrla(of = ea.mapper.dsToNpnds(npnds = ds.num.mlp(innerLayers = [8])))
+  runs = (randomGenerator = (seed = [1:1:3]) * [m.defaultRG()])
+  * (solver = (stop = ea.sc.nOfQualityEvaluations(n = 500))
+  * (representation = [ea.representation.doubleString()])
+  * (mapper = [
+    ea.mapper.ndsToNrla(name = "linear-zeroq"; of = ea.mapper.dsToNpnds(npnds = ds.num.linear(zeroQ = true)));
+    ea.mapper.ndsToNrla(name = "linear"; of = ea.mapper.dsToNpnds(npnds = ds.num.linear(zeroQ = false)));
+    ea.mapper.ndsToNrla(name = "mlp"; of = ea.mapper.dsToNpnds(npnds = ds.num.mlp(innerLayers = [8])))
+  ])
+  * [ea.s.ga(name = ""ga+{mapper.name}"")
+  ])
+  * (problem = [
+    ea.p.functionsToScbmo(
+      cases = (of = (simulation = (environment = $learningEnvs)
+      * [ds.srlat.fromNumericalEnvironment(reward = ds.e.nav.reward.reaching())])
+      * [ds.f.simulate(dT = $dT; tRange = $tRange)])
+      * [ds.f.cumulatedReward()];
+      example = $exampleRLagent;
+      toMaxObjectives = [f.as(of = f.avg(); name = avg)]
     )
   ])
-  * [ea.run(
-    problem = ea.p.srlatToBbto(
-      task = ds.srlat.fromNumericalEnvironment(
-        environment = $environment;
-        reward = ds.e.nav.reward.reaching()
-      );
-      dT = $dT;
-      tRange = $tRange
-    )
-  )];
+  * [ea.run()];
   listeners = [
     ea.l.console(
       functions = [
-        ea.f.behaviorQuality(of = ea.f.quality(of = ea.f.best(); format = "%6.2f"));
-        ds.e.n.finalD(format = "%5.3f"; of = ds.f.unwrappedRl(of = ea.f.behavior(of = ea.f.quality(of = ea.f.best()))));
-        ds.e.n.avgD(format = "%5.3f"; of = ds.f.unwrappedRl(of = ea.f.behavior(of = ea.f.quality(of = ea.f.best()))))
+        f.mapValue(key = avg; of = ea.f.quality(of = ea.f.best()); format = "%6.1f")
       ];
       onlyLast = false
     );
     ea.l.savePlotForExp(
       path = "../../Documenti/experiments/{name}/{startTime}/best-fitness.svg";
-      plot = ea.plot.multi.quality(q = ea.f.behaviorQuality());
+      plot = ea.plot.multi.quality(q = f.mapValue(key = avg));
       type = svg
     );
-    ea.l.savePlotForExp(
-      path = "../../Documenti/experiments/{name}/{startTime}/best-final-dist.svg";
-      plot = ea.plot.multi.quality(q = ds.e.n.finalD(of = ds.f.unwrappedRl(of = ea.f.behavior())));
-      type = svg
-    );
-    ea.l.savePlotForExp(
-      path = "../../Documenti/experiments/{name}/{startTime}/best-avg-dist.svg";
-      plot = ea.plot.multi.quality(q = ds.e.n.avgD(of = ds.f.unwrappedRl(of = ea.f.behavior())));
-      type = svg
+    ea.l.saveForRun(
+      path = "../../Documenti/experiments/{name}/{startTime}/{run.solver.name}/best-frozen-learning-trajs-{run.randomGenerator.seed:%02d}.svg";
+      of = ea.acc.lastBest();
+      processor = ea.f.toMultiImage(
+        drawer = ds.d.navigation();
+        of = f.all(
+          of = ds.f.nonLearning(of = ea.f.solution());
+          fs = (simulation = (environment = $learningEnvs)
+          * [ds.sat.fromEnvironment()])
+          * [ds.f.simulate(dT = $dT; tRange = $tRange)]
+        );
+        type = svg
+      )
     )
   ]
 )

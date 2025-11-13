@@ -130,8 +130,7 @@ public class Utils {
     if (run != null) {
       map = map.with(
           "run",
-          ParamMap.Type.NAMED_PARAM_MAP,
-          run.map().with("index", ParamMap.Type.INT, run.index())
+          run.map().with("index", run.index())
       );
     }
     return Interpolator.interpolate(format, map, "_");

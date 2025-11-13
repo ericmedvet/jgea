@@ -22,6 +22,7 @@ package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jgea.core.problem.*;
 import io.github.ericmedvet.jgea.core.problem.MultiObjectiveProblem.Objective;
+import io.github.ericmedvet.jgea.core.util.IndexedProvider;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
@@ -30,7 +31,6 @@ import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jnb.datastructure.Pair;
 import io.github.ericmedvet.jsdynsym.control.*;
-import io.github.ericmedvet.jsdynsym.control.Simulation.Outcome;
 import io.github.ericmedvet.jsdynsym.core.rl.ReinforcementLearningAgent;
 import java.util.*;
 import java.util.function.BiFunction;
@@ -38,16 +38,11 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import org.jetbrains.annotations.NotNull;
 
 @Discoverable(prefixTemplate = "ea.problem|p")
 public class Problems {
 
   private Problems() {
-  }
-
-  public enum OptimizationType {
-    @SuppressWarnings("unused") MINIMIZE, MAXIMIZE
   }
 
   @SuppressWarnings("unused")
@@ -70,13 +65,13 @@ public class Problems {
       }
 
       @Override
-      public BiFunction<S, S, B> outcomeFunction() {
-        return (s1, s2) -> simulation.simulate(s1, s2, dT, tRange);
+      public Function<B, Q> firstQualityFunction() {
+        return qFunction1;
       }
 
       @Override
-      public Function<B, Q> firstQualityFunction() {
-        return qFunction1;
+      public BiFunction<S, S, B> outcomeFunction() {
+        return (s1, s2) -> simulation.simulate(s1, s2, dT, tRange);
       }
 
       @Override
@@ -136,11 +131,11 @@ public class Problems {
     };
   }
 
-  private static <B extends Outcome<BS>, BS, O extends Comparable<O>> @NotNull SequencedMap<String, Objective<B, O>> buildObjectives(
-      List<Function<B, O>> toMinObjectives,
-      List<Function<B, O>> toMaxObjectives
+  private static <Q, O extends Comparable<O>> SequencedMap<String, Objective<Q, O>> buildObjectives(
+      List<Function<Q, O>> toMinObjectives,
+      List<Function<Q, O>> toMaxObjectives
   ) {
-    SequencedMap<String, Objective<B, O>> behaviorObjectives = Stream.concat(
+    SequencedMap<String, Objective<Q, O>> objectives = Stream.concat(
         toMinObjectives.stream()
             .map(f -> new Objective<>(f, Comparable::compareTo)),
         toMaxObjectives.stream()
@@ -157,7 +152,7 @@ public class Problems {
                 o -> o
             )
         );
-    if (behaviorObjectives.size() != (toMinObjectives.size() + toMaxObjectives.size())) {
+    if (objectives.size() != (toMinObjectives.size() + toMaxObjectives.size())) {
       Logger.getLogger(Problems.class.getName())
           .warning(
               "Objectives have conflicting names: to minimize is %s, to maximize is %s".formatted(
@@ -166,7 +161,7 @@ public class Problems {
               )
           );
     }
-    return behaviorObjectives;
+    return objectives;
   }
 
   @SuppressWarnings("unused")
@@ -185,6 +180,55 @@ public class Problems {
             .reversed() : Comparator.comparing(comparableFunction),
         Optional.ofNullable(example)
     );
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <S, CQ, O extends Comparable<O>> SimpleCBMOProblem<S, Function<S, CQ>, CQ, O> functionsToScbmo(
+      @Param(value = "name", iS = "cases") String name,
+      @Param("cases") List<Function<S, CQ>> cases,
+      @Param("validationCases") List<Function<S, CQ>> validationCases,
+      @Param("toMinObjectives") List<Function<List<CQ>, O>> toMinObjectives,
+      @Param("toMaxObjectives") List<Function<List<CQ>, O>> toMaxObjectives,
+      @Param(value = "example", dNPM = "ea.misc.nullValue()") S example
+  ) {
+    SequencedMap<String, Objective<List<CQ>, O>> objectives = buildObjectives(
+        toMinObjectives,
+        toMaxObjectives
+    );
+    IndexedProvider<Function<S, CQ>> caseProvider = IndexedProvider.from(cases);
+    IndexedProvider<Function<S, CQ>> validationCaseProvider = IndexedProvider.from(validationCases);
+    return new SimpleCBMOProblem<>() {
+      @Override
+      public SequencedMap<String, Objective<List<CQ>, O>> aggregateObjectives() {
+        return objectives;
+      }
+
+      @Override
+      public BiFunction<S, Function<S, CQ>, CQ> caseFunction() {
+        return (s, caseF) -> caseF.apply(s);
+      }
+
+      @Override
+      public IndexedProvider<Function<S, CQ>> caseProvider() {
+        return caseProvider;
+      }
+
+      @Override
+      public Optional<S> example() {
+        return Optional.ofNullable(example);
+      }
+
+      @Override
+      public String toString() {
+        return name;
+      }
+
+      @Override
+      public IndexedProvider<Function<S, CQ>> validationCaseProvider() {
+        return validationCaseProvider;
+      }
+    };
   }
 
   @SuppressWarnings("unused")
@@ -224,7 +268,11 @@ public class Problems {
     return new SimpleMFBBMOProblem<>() {
       @Override
       public MultifidelityFunction<? super S, ? extends B> behaviorFunction() {
-        return (s, fidelity) -> simulation.simulate(s, dT, new DoubleRange(initT, finalTRange.denormalize(fidelity)));
+        return (s, fidelity) -> simulation.simulate(
+            s,
+            dT,
+            new DoubleRange(initT, finalTRange.denormalize(fidelity))
+        );
       }
 
       @Override
@@ -239,7 +287,11 @@ public class Problems {
 
       @Override
       public String toString() {
-        return "%s[fT=%s;%s]".formatted(name, finalTRange, String.join(";", behaviorObjectives.keySet()));
+        return "%s[fT=%s;%s]".formatted(
+            name,
+            finalTRange,
+            String.join(";", behaviorObjectives.keySet())
+        );
       }
     };
   }
@@ -276,7 +328,11 @@ public class Problems {
 
       @Override
       public String toString() {
-        return "%s[dT=%s;%s]".formatted(name, dTRange, String.join(";", behaviorObjectives.keySet()));
+        return "%s[dT=%s;%s]".formatted(
+            name,
+            dTRange,
+            String.join(";", behaviorObjectives.keySet())
+        );
       }
     };
   }
@@ -399,7 +455,11 @@ public class Problems {
 
       @Override
       public Function<? super Simulation.Outcome<SingleAgentTask.Step<ReinforcementLearningAgent.RewardedInput<O>, A, TS>>, ? extends Double> behaviorQualityFunction() {
-        return o -> o.snapshots().values().stream().mapToDouble(s -> s.observation().reward()).sum();
+        return o -> o.snapshots()
+            .values()
+            .stream()
+            .mapToDouble(s -> s.observation().reward())
+            .sum();
       }
 
       @Override
@@ -448,5 +508,9 @@ public class Problems {
         return ((Comparator<Double>) Double::compareTo).reversed();
       }
     };
+  }
+
+  public enum OptimizationType {
+    @SuppressWarnings("unused") MINIMIZE, MAXIMIZE
   }
 }
