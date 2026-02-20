@@ -62,11 +62,7 @@ import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jnb.datastructure.Sized;
 import io.github.ericmedvet.jsdynsym.core.numerical.named.NamedUnivariateRealFunction;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -386,6 +382,93 @@ public class Functions {
   ) {
     Function<Individual<?, ?, ?>, Long> f = Individual::id;
     return FormattedNamedFunction.from(f, format, "id").compose(beforeF);
+  }
+
+  @Cacheable
+  public static <X> FormattedNamedFunction<X, Integer> isParameter(
+      @Param(value = "name", iS = "is.{parameter}") String name,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, IntString> beforeF,
+      @Param(value = "parameter", dS = "size") String parameter,
+      @Param(value = "format", dS = "%2d") String format
+  ) {
+    Function<IntString, Integer> f = is -> {
+      Integer value = null;
+      switch (parameter) {
+        case "size" -> value = is.size();
+        case "lowerBound" -> value = is.lowerBound();
+        case "upperBound" -> value = is.upperBound();
+      }
+      return value;
+    };
+    return FormattedNamedFunction.from(
+        f,
+        format,
+        name
+    ).compose(beforeF);
+  }
+
+  @Cacheable
+  public static <X> FormattedNamedFunction<X, Integer> isLb(
+      @Param(value = "name", iS = "is.lower.bound") String name,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, IntString> beforeF,
+      @Param(value = "format", dS = "%2d") String format
+  ) {
+    Function<IntString, Integer> f = IntString::lowerBound;
+    return FormattedNamedFunction.from(
+        f,
+        format,
+        name
+    ).compose(beforeF);
+  }
+
+  @Cacheable
+  public static <X> FormattedNamedFunction<X, Integer> isUb(
+      @Param(value = "name", iS = "is.upper.bound") String name,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, IntString> beforeF,
+      @Param(value = "format", dS = "%2d") String format
+  ) {
+    Function<IntString, Integer> f = IntString::upperBound;
+    return FormattedNamedFunction.from(
+        f,
+        format,
+        name
+    ).compose(beforeF);
+  }
+
+  @Cacheable
+  public static <X> FormattedNamedFunction<X, IntString> isToBoundedSumPhenotype(
+      @Param(value = "name", iS = "bounded.sum.phenotype") String name,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, IntString> beforeF,
+      @Param(value = "format", dS = "%3d") String format
+  ) {
+    Function<IntString, IntString> f = is -> {
+      int[] phenotype = new int[is.upperBound()];
+      for (int gene : is.genes()) {
+        if (gene >= 0 && gene < is.upperBound()) {
+          phenotype[gene]++;
+        }
+      }
+      return new IntString(Arrays.stream(phenotype).boxed().toList(), 0, is.size());
+    };
+    return FormattedNamedFunction.from(
+        f,
+        format,
+        name
+    ).compose(beforeF);
+  }
+
+  @Cacheable
+  public static <X> FormattedNamedFunction<X, List<Integer>> isToList(
+      @Param(value = "name", iS = "is.list") String name,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, IntString> beforeF,
+      @Param(value = "format", dS = "%3d") String format
+  ) {
+    Function<IntString, List<Integer>> f = is -> is.genes().stream().toList();
+    return FormattedNamedFunction.from(
+        f,
+        format,
+        name
+    ).compose(beforeF);
   }
 
   @Cacheable

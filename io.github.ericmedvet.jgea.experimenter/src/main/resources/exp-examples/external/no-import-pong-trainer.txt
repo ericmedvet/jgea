@@ -1,3 +1,101 @@
+$N_RUN = 10
+
+$RANDOM = misc.sharedRG()
+
+$MLP = ds.num.mlp(innerLayerRatio = 2; nOfInnerLayers = 1)
+
+$QUALITY_F1 = ds.e.pong.shiftedScoreDiff1()
+$QUALITY_F2 = ds.e.pong.shiftedScoreDiff2()
+
+$SIMULATION = ds.bat.fromEnvironment(
+  environment = ds.e.pong(racketsInitialYRange = m.range(min=25.0;max=25.0); randomGenerator=$RANDOM);
+  stopCondition = predicate.not(condition = predicate.always())
+)
+
+$OPPONENT = ds.opponent.pong.simple()
+
+$PONG_PROBLEM = ea.p.biSimToTo(
+  simulation = $SIMULATION;
+  qFunction = $QUALITY_F1;
+  trainingOpponent = m.supplier(of = ds.opponent.pong.simple());
+  type = maximize
+)
+
+$PONG_BI_PROBLEM = ea.p.biSimToBiTo(
+  simulation = $SIMULATION;
+  qFunction1 = $QUALITY_F1;
+  qFunction2 = $QUALITY_F2;
+  type = maximize
+)
+
+$BRAIN_EXTRACTOR = ea.f.solution()
+
+$VS_SELF = ds.f.selfBiSimulator(
+  of = ea.f.solution();
+  tRange = misc.range(min = 0; max = 45);
+  dT = 0.05;
+  simulation = $SIMULATION
+)
+
+$VS_OPPONENT = ds.f.opponentBiSimulator(
+  of = ea.f.solution();
+  opponent = $OPPONENT;
+  tRange = misc.range(min = 0; max = 45);
+  dT = 0.05;
+  simulation = $SIMULATION
+)
+
+$THRESHOLD = 0.5
+$NEG_THRESHOLD = -0.5
+
+$TREE_DESCRIPTOR = [
+  ea.s.me.d.descriptor(f = ea.f.treeSize(of = ea.f.genotype()); min = 0; max = 250; nOfBins = 10);
+  ea.s.me.d.descriptor(f = f.size(of = f.filter(of = ea.f.treeLeaves(of = ea.f.genotype()); condition = predicate.matches(f = f.toString(); regex = "i[0-9]+"))); min = 0; max = 30; nOfBins = 10)
+]
+
+$ANN_DESCRIPTORS = [
+  ea.s.me.d.descriptor(
+    f = f.mathOp(
+      op = divide;
+      args = [
+        f.size(of = f.filter(
+          of = f.flat(of = f.nTh(of = ds.f.weights(of = $BRAIN_EXTRACTOR); n = 0));
+          condition = predicate.all(conditions = [predicate.lt(t = $THRESHOLD); predicate.gt(t = $NEG_THRESHOLD)])
+        ));
+        f.size(
+          of = f.flat(of = f.nTh(of = ds.f.weights(of = $BRAIN_EXTRACTOR); n = 0))
+        )
+      ]
+    );
+    min = 0.0;
+    max = 1.0;
+    nOfBins = 8
+  );
+  ea.s.me.d.descriptor(
+    f = f.mathOp(
+      op = divide;
+      args = [
+        f.size(of = f.filter(
+          of = f.flat(of = f.nTh(of = ds.f.weights(of = $BRAIN_EXTRACTOR); n = 1));
+          condition = predicate.all(conditions = [predicate.lt(t = $THRESHOLD); predicate.gt(t = $NEG_THRESHOLD)])
+        ));
+        f.size(
+          of = f.flat(of = f.nTh(of = ds.f.weights(of = $BRAIN_EXTRACTOR); n = 1))
+        )
+      ]
+    );
+    min = 0.0;
+    max = 1.0;
+    nOfBins = 8
+  )
+]
+
+$VSR_BODY_DESCRIPTORS = [
+  ea.s.me.d.descriptor(f = f.gridCount(of = s.f.vsrBody(of = ea.f.supplied(of = ea.f.solution()))); min = 1; max = 16; nOfBins = 8);
+  ea.s.me.d.descriptor(f = f.gridElongation(of = s.f.vsrBody(of = ea.f.supplied(of = ea.f.solution()))); min = 0; max = 1; nOfBins = 8)
+]
+
+
 $basePath = ''../results/{^^.name}/{^^.startTime}/''
 
 $GENERAL_LISTENERS = [
@@ -155,3 +253,44 @@ $SUMO_LISTENERS =[
     kCondition = $VIDEO
   )
 ]
+
+ea.experiment(
+  runs =
+    (randomGenerator = (seed = $SEEDS) * [m.defaultRG()]) *
+    (solver = (stop = [ea.sc.nOfQualityEvaluations(n = $N_EVALS)]) * [
+      ea.s.ga(
+        name = "trainer-ga-tree";
+        representation = ea.r.srTree();
+        mapper = ea.m.nurfToNds(of = ea.m.srTreeToNurf())
+      );
+      ea.s.ga(
+        name = "trainer-ga-ann";
+        representation = ea.r.doubleString();
+        mapper = ea.m.dsToNpnds(npnds = $MLP)
+      );
+
+      ea.s.mapElites(
+        name = "trainer-me-ann";
+        representation = ea.r.doubleString();
+        mapper = ea.m.dsToNpnds(npnds = $MLP);
+        descriptors = $ANN_DESCRIPTORS
+      );
+      ea.s.mapElites(
+        name = "trainer-me-tree";
+        representation = ea.r.srTree();
+        mapper = ea.m.nurfToNds(of = ea.m.srTreeToNurf());
+        descriptors = $TREE_DESCRIPTOR
+      )
+    ]) *
+    (problem = [ea.p.biSimToTo(
+      simulation = $SIMULATION;
+      qFunction = $QUALITY_F1;
+      trainingOpponent = m.supplier(of = $OPPONENT);
+      tRange = misc.range(min = 0; max = 45);
+      dT = 0.05;
+      type = maximize
+    )]) *
+    [ea.run()];
+
+  listeners = $GENERAL_LISTENERS + $PONG_LISTENERS
+)

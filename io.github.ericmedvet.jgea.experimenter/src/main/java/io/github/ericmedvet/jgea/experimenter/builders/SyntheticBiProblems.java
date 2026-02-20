@@ -40,4 +40,14 @@ public class SyntheticBiProblems {
         DoubleStream.generate(() -> target).limit(p).toArray()
     );
   }
+
+  @SuppressWarnings("unused")
+  public static BoundedSumBiProblem boundedSumBiProblem(
+      @Param(value = "name", iS = "boundedSumBiProblem-{d}-{b}-{k}") String name,
+      @Param(value = "d", dI = 5) int d,
+      @Param(value = "b", dI = 100) int b,
+      @Param(value = "k", dI = 100) int k
+  ) {
+    return new BoundedSumBiProblem(d, b, k);
+  }
 }
