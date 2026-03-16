@@ -358,6 +358,41 @@ public class Problems {
   }
 
   @Cacheable
+  public static <S, B extends Simulation.Outcome<BS>, BS, Q> TotalOrderQualityBasedProblem<S, Q> simsToTo(
+      @Param(value = "name", iS = "sims->{qFunction}->{aggregator}") String name,
+      @Param("simulations") List<Simulation<S, BS, B>> simulations,
+      @Param("dT") double dT,
+      @Param("tRange") DoubleRange tRange,
+      @Param("comparator") Comparator<Q> comparator,
+      @Param("aggregator") Function<List<Q>, Q> aggregator,
+      @Param("qFunction") Function<B, Q> qFunction
+  ) {
+    Function<S, Q> f = s -> aggregator.apply(
+        simulations.stream()
+            .map(sim -> qFunction.apply(sim.simulate(s, dT, tRange)))
+            .toList()
+    );
+    f = s -> {
+      List<B> outcomes = simulations.stream()
+          .map(sim -> sim.simulate(s, dT, tRange))
+          .toList();
+      List<Q> qs = outcomes.stream()
+          .map(qFunction)
+          .toList();
+      Q q = aggregator.apply(qs);
+      return q;
+    };
+    return TotalOrderQualityBasedProblem.of(
+        f,
+        f,
+        comparator,
+        simulations.getFirst().example().orElse(null),
+        name
+    );
+  }
+
+
+  @Cacheable
   public static <S, O> SimpleMOProblem<S, O> smoToSubsettedSmo(
       @Param(value = "name", iS = "{smoProblem.name}") String name,
       @Param("objectives") List<String> objectives,

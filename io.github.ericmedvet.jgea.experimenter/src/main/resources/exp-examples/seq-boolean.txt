@@ -1,5 +1,5 @@
 $seeds = [1:1:3]
-$nOfEvals = 5000
+$nOfEvals = 10000
 $innerLayers = [2]
 
 $cases = 100 * ["00"] + 100 * ["01"] + 100 * ["10"] + 100 * ["11"]
@@ -8,9 +8,8 @@ $tRangeLife = m.range(min = 0; max = 400)
 $fitnessType = avgLastBoolScore
 
 $qFunctions = f.allNamed(fs = m.sKeyMap(
-  keys = [behavior; avgLastBoolScore; increase; consistency];
+  keys = [avgLastBoolScore; increase; consistency];
   values = [
-    f.identity();
     ds.e.sBool.avgScore(
       scoreType = boolean;
       caseIndexes = [360:1:399]   % last 40 cases
@@ -27,18 +26,19 @@ $qFunctions = f.allNamed(fs = m.sKeyMap(
   ]
 ))
 
-$xorProblem = ea.p.simToTo(
+$xorProblem = ea.p.simsToTo(
   name = "xor";
-  simulation = ds.s.sequentialXor(
+  simulations = 3 * [ds.s.sequentialXor(
     cases = $cases;
     rewardType = unlimited;
     resetAgent = true;
     shuffle = true
-  );
+  )];
   dT = 1;
   tRange = $tRangeLife;
   comparator = ea.comparator.descending(of = f.mapValue(key = avgLastBoolScore));
-  qFunction = $qFunctions
+  qFunction = $qFunctions;
+  aggregator = f.mapAggregate(aggregateF = f.avg())
 )
 
 $biXorProblem = ea.p.simToTo(
@@ -60,7 +60,7 @@ $biXorProblem = ea.p.simToTo(
 )
 
 $weightsUpdateInterval = 1
-$initialWeightRange = m.range(min = -0.01; max = 0.01)
+$initialWeightRange = m.range(min = -0.02; max = 0.02)
 
 $dIncrease = ea.s.me.d.descriptor(f = f.mapValue(key = increase; of = ea.f.quality()); min = 0.0; max = 1.0; nOfBins = 10)
 $dConsistency = ea.s.me.d.descriptor(f = f.mapValue(key = consistency; of = ea.f.quality()); min = 0.0; max = 0.2; nOfBins = 10)
@@ -195,6 +195,18 @@ $bestBehavior = ea.l.saveForRun(
   )
 )
 
+$ffSolver = ea.s.mapElites(
+  name = "me-freeForm";
+  representation = ea.r.srTree(
+    ephemeral = true;
+    operators = [addition; subtraction; multiplication; prot_division; prot_log; max; min; tanh; gt; lt; ternary]
+    %operators = [addition; subtraction; multiplication];
+    %includeVarNameRegex = "current_neuronPost_activation|current_neuronPre_activation|layeIdx|preSynapticNeuronIdx|postSynapticNeuronIdx"
+  );
+  mapper = $freeFormMapper;
+  descriptors = [$dIncrease; $dConsistency]
+)
+
 ea.experiment(
   runs = (randomGenerator = (seed = $seeds) * [m.defaultRG()])
   * (problem = [$xorProblem; $biXorProblem])
@@ -210,17 +222,6 @@ ea.experiment(
       representation = ea.representation.doubleString();
       mapper = $hebbianNetMapper;
       descriptors = [$dIncrease; $dConsistency]
-    );
-    ea.s.mapElites(
-      name = "me-freeForm";
-      representation = ea.r.srTree(
-        ephemeral = true;
-        operators = [addition; subtraction; multiplication; prot_division; prot_log; max; min; tanh; gt; lt; ternary]
-        %operators = [addition; subtraction; multiplication];
-        %includeVarNameRegex = "current_neuronPost_activation|current_neuronPre_activation|layeIdx|preSynapticNeuronIdx|postSynapticNeuronIdx"
-      );
-      mapper = $freeFormMapper;
-      descriptors = [$dIncrease; $dConsistency]
     )
   ])
   * [ea.run()];
@@ -231,7 +232,6 @@ ea.experiment(
     $consistency;
     $stateTraj;
     $archivesP;
-    $srTree;
-    $bestBehavior
+    $srTree
   ]
 )
