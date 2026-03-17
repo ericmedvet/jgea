@@ -873,7 +873,7 @@ Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;<abb
 
 ### Builder `dynamicalSystem.num.hebbianMlp()`
 
-`ds.num.hebbianMlp(innerLayers; learningRate; weightsUpdateInterval; activationFunction; initialWeightRange; randomGenerator; parametrizationType; weightInitializationType)`
+`ds.num.hebbianMlp(innerLayers; learningRate; weightsUpdateInterval; activationFunction; initialWeightRange; maxWeightMagnitude; randomGenerator; parametrizationType; weightInitializationType)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
@@ -882,6 +882,7 @@ Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;<abb
 | `weightsUpdateInterval` | i | `1` | <code>int</code> |
 | `activationFunction` | e | `TANH` | <code><abbr title="io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron$ActivationFunction">MultiLayerPerceptron$ActivationFunction</abbr></code> |
 | `initialWeightRange` | npm | `m.range(max = 0.1; min = -0.1)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
+| `maxWeightMagnitude` | d | `10.0` | <code>double</code> |
 | `randomGenerator` | npm | `m.defaultRG()` | <code><abbr title="java.util.random.RandomGenerator">RandomGenerator</abbr></code> |
 | `parametrizationType` | e | `SYNAPSE` | <code><abbr title="io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultiLayerPerceptron$ParametrizationType">HebbianMultiLayerPerceptron$ParametrizationType</abbr></code> |
 | `weightInitializationType` | e | `PARAMS` | <code><abbr title="io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultiLayerPerceptron$WeightInitializationType">HebbianMultiLayerPerceptron$WeightInitializationType</abbr></code> |
@@ -990,7 +991,7 @@ Aliases: `ds.rl.num`, `dynSys.rl.num`, `dynamicalSystem.rl.num`
 
 ### Builder `dynamicalSystem.rl.num.freeFormMlp()`
 
-`ds.rl.num.freeFormMlp(innerLayerRatio; nOfInnerLayers; innerLayers; activationFunction; historyLength; weightsUpdateInterval; initialWeightRange; randomGenerator; weightInitializationType)`
+`ds.rl.num.freeFormMlp(innerLayerRatio; nOfInnerLayers; innerLayers; activationFunction; historyLength; weightsUpdateInterval; initialWeightRange; randomGenerator; maxWeightMagnitude; weightInitializationType)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
@@ -1002,6 +1003,7 @@ Aliases: `ds.rl.num`, `dynSys.rl.num`, `dynamicalSystem.rl.num`
 | `weightsUpdateInterval` | i | `1` | <code>int</code> |
 | `initialWeightRange` | npm | `m.range(max = 0.01; min = -0.01)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `randomGenerator` | npm | `m.defaultRG()` | <code><abbr title="java.util.random.RandomGenerator">RandomGenerator</abbr></code> |
+| `maxWeightMagnitude` | d | `10.0` | <code>double</code> |
 | `weightInitializationType` | e | `RANDOM` | <code><abbr title="io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultiLayerPerceptron$WeightInitializationType">HebbianMultiLayerPerceptron$WeightInitializationType</abbr></code> |
 
 Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;<abbr title="io.github.ericmedvet.jsdynsym.core.rl.NumericalReinforcementLearningAgent">NumericalReinforcementLearningAgent</abbr>&lt;?&gt;, <abbr title="io.github.ericmedvet.jsdynsym.core.rl.FreeFormPlasticMLPRLAgent">FreeFormPlasticMLPRLAgent</abbr>&gt;</code>; built from `io.github.ericmedvet.jsdynsym.buildable.builders.NumericalRLAgents.freeFormMlp()` by jgea-experimenter:2.8.2-SNAPSHOT
@@ -3757,6 +3759,22 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.problem.SimpleMOProbl
 
 Produces <code><abbr title="io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem">TotalOrderQualityBasedProblem</abbr>&lt;S, Q&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Problems.simToTo()` by jgea-experimenter:2.8.2-SNAPSHOT
 
+### Builder `ea.problem.simsToTo()`
+
+`ea.p.simsToTo(name; simulations; dT; tRange; comparator; aggregator; qFunction)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `name` | s | interpolate `sims->{qFunction}->{aggregator}` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `simulations` | npm[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="io.github.ericmedvet.jsdynsym.control.Simulation">Simulation</abbr>&lt;S, BS, B&gt;&gt;</code> |
+| `dT` | d |  | <code>double</code> |
+| `tRange` | npm |  | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
+| `comparator` | npm |  | <code><abbr title="java.util.Comparator">Comparator</abbr>&lt;Q&gt;</code> |
+| `aggregator` | npm |  | <code><abbr title="java.util.function.Function">Function</abbr>&lt;<abbr title="java.util.List">List</abbr>&lt;Q&gt;, Q&gt;</code> |
+| `qFunction` | npm |  | <code><abbr title="java.util.function.Function">Function</abbr>&lt;B, Q&gt;</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jgea.core.problem.TotalOrderQualityBasedProblem">TotalOrderQualityBasedProblem</abbr>&lt;S, Q&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Problems.simsToTo()` by jgea-experimenter:2.8.2-SNAPSHOT
+
 ### Builder `ea.problem.smoToSubsettedSmo()`
 
 `ea.p.smoToSubsettedSmo(name; objectives; smoProblem)`
@@ -5775,6 +5793,19 @@ Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.FormattedName
 | `format` | s | `%s` | <code><abbr title="java.lang.String">String</abbr></code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.NamedFunction">NamedFunction</abbr>&lt;X, T&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Functions.nTh()` by jgea-experimenter:2.8.2-SNAPSHOT
+
+### Builder `function.mapAggregate()`
+
+`f.mapAggregate(name; of; aggregateF; format)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `name` | s | interpolate `{aggregateF}` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `of` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, <abbr title="java.util.List">List</abbr>&lt;<abbr title="java.util.Map">Map</abbr>&lt;<abbr title="java.lang.String">String</abbr>, T&gt;&gt;&gt;</code> |
+| `aggregateF` | npm |  | <code><abbr title="java.util.function.Function">Function</abbr>&lt;<abbr title="java.util.List">List</abbr>&lt;T&gt;, K&gt;</code> |
+| `format` | s | `%s` | <code><abbr title="java.lang.String">String</abbr></code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction">FormattedNamedFunction</abbr>&lt;X, <abbr title="java.util.Map">Map</abbr>&lt;<abbr title="java.lang.String">String</abbr>, K&gt;&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Functions.mapAggregate()` by jgea-experimenter:2.8.2-SNAPSHOT
 
 ### Builder `function.mapValue()`
 

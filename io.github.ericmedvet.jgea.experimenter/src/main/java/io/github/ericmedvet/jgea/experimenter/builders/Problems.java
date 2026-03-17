@@ -372,16 +372,6 @@ public class Problems {
             .map(sim -> qFunction.apply(sim.simulate(s, dT, tRange)))
             .toList()
     );
-    f = s -> {
-      List<B> outcomes = simulations.stream()
-          .map(sim -> sim.simulate(s, dT, tRange))
-          .toList();
-      List<Q> qs = outcomes.stream()
-          .map(qFunction)
-          .toList();
-      Q q = aggregator.apply(qs);
-      return q;
-    };
     return TotalOrderQualityBasedProblem.of(
         f,
         f,
