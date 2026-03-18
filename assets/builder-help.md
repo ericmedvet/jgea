@@ -6181,6 +6181,18 @@ Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.FormattedName
 
 Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction">FormattedNamedFunction</abbr>&lt;X, <abbr title="java.lang.Double">Double</abbr>&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Functions.sum()` by jgea-experimenter:2.8.2-SNAPSHOT
 
+### Builder `function.tdaMapToTable()`
+
+`f.tdaMapToTable(name; of; format)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `name` | s | `to.table` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `of` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, <abbr title="java.util.Map">Map</abbr>&lt;<abbr title="java.lang.Double">Double</abbr>, double[]&gt;&gt;</code> |
+| `format` | s | `%s` | <code><abbr title="java.lang.String">String</abbr></code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.NamedFunction">NamedFunction</abbr>&lt;X, <abbr title="io.github.ericmedvet.jnb.datastructure.Table">Table</abbr>&lt;<abbr title="java.lang.Double">Double</abbr>, <abbr title="java.lang.Integer">Integer</abbr>, <abbr title="java.lang.Double">Double</abbr>&gt;&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Functions.tdaMapToTable()` by jgea-experimenter:2.8.2-SNAPSHOT
+
 ### Builder `function.timestamp()`
 
 `f.timestamp(format)`
@@ -6215,6 +6227,18 @@ Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.NamedFunction
 | `format` | s | `%s` | <code><abbr title="java.lang.String">String</abbr></code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.NamedFunction">NamedFunction</abbr>&lt;X, <abbr title="java.lang.String">String</abbr>&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Functions.toString()` by jgea-experimenter:2.8.2-SNAPSHOT
+
+### Builder `function.toaMapToTable()`
+
+`f.toaMapToTable(name; of; format)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `name` | s | `to.table` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `of` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, <abbr title="java.util.Map">Map</abbr>&lt;<abbr title="java.lang.Double">Double</abbr>, T[]&gt;&gt;</code> |
+| `format` | s | `%s` | <code><abbr title="java.lang.String">String</abbr></code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.NamedFunction">NamedFunction</abbr>&lt;X, <abbr title="io.github.ericmedvet.jnb.datastructure.Table">Table</abbr>&lt;<abbr title="java.lang.Double">Double</abbr>, <abbr title="java.lang.Integer">Integer</abbr>, T&gt;&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Functions.toaMapToTable()` by jgea-experimenter:2.8.2-SNAPSHOT
 
 ### Builder `function.uniqueness()`
 
