@@ -1,5 +1,5 @@
-$seeds = [1:1:3]
-$nOfEvals = 1000
+$seeds = [1:1:1]
+$nOfEvals = 10000
 $innerLayers = [2]
 
 $cases = 100 * ["00"] + 100 * ["01"] + 100 * ["10"] + 100 * ["11"]
@@ -100,7 +100,7 @@ $console = ea.l.console(
   kFunctions = [
     f.replaceAll(of = f.interpolated(name = numberOfInnerLayers; s = "{solver.mapper.of.parametrized.innerLayers}{solver.mapper.parametrized.innerLayers}"); regex="null")
   ];
-  onlyLast = true
+  onlyLast = false
 )
 
 $consoleCSV = ea.l.csv(
@@ -141,16 +141,46 @@ $consistency = ea.l.savePlotForExp(
   type = $imgType
 )
 
+$orReset = ea.l.savePlotForExp(
+  path = $basePath + "or-reset." + $imgType;
+  plot = ea.plot.multi.xyExp(
+    y = f.as(name = "or-reset"; of = ds.e.sBool.avgScore(
+      scoreType = unlimited;
+      caseIndexes = [360:1:399];
+      of = ds.f.simulate(
+        of = f.copy(of = ea.f.solution(of = ea.f.best()));
+        dT = 1;
+        tRange = $tRangeLife;
+        simulation = ds.s.sequentialBf(cases = $cases; target = ea.misc.bf(exprs = ["or(0;1)"]); resetAgent = true; shuffle = true)
+      )
+    ))
+  );
+  type = $imgType
+)
+
+$orNoReset = ea.l.savePlotForExp(
+  path = $basePath + "or-no-reset." + $imgType;
+  plot = ea.plot.multi.xyExp(
+    y = f.as(name = "or-no-reset"; of = ds.e.sBool.avgScore(
+      scoreType = unlimited;
+      caseIndexes = [360:1:399];
+      of = ds.f.simulate(
+        of = f.copy(of = ea.f.solution(of = ea.f.best()));
+        dT = 1;
+        tRange = $tRangeLife;
+        simulation = ds.s.sequentialBf(cases = $cases; target = ea.misc.bf(exprs = ["or(0;1)"]); resetAgent = false; shuffle = true)
+      )
+    ))
+  );
+  type = $imgType
+)
+
 $stateTraj = ea.l.saveForRun(
   of = ea.acc.lastBest();
   processor = ds.f.agentStateTrajectory(
     of = ea.f.solution();
     stateF = ds.f.params();
-    sat = ds.s.sequentialXor(
-      cases = $cases;
-      resetAgent = true;
-      shuffle = true
-    );
+    sat = ds.s.sequentialXor(cases = $cases; resetAgent = true; shuffle = true);
     dT = 1;
     tRange = $tRangeLife
   );
@@ -166,10 +196,81 @@ $stateTraj = ea.l.saveForRun(
   ]
 )
 
+$stateTrajCopyNoReset = ea.l.saveForRun(
+  of = ea.acc.lastBest();
+  processor = ds.f.agentStateTrajectory(
+    of = f.copy(of = ea.f.solution());
+    stateF = ds.f.params();
+    sat = ds.s.sequentialXor(cases = $cases; resetAgent = false; shuffle = true);
+    dT = 1;
+    tRange = $tRangeLife
+  );
+  consumers = [
+    consumer.saver(
+      path = $basePath + "/{solver.name}/{problem.name}/best-state-copy-no-reset-{randomGenerator.seed:%02d}." + $imgType;
+      of = viz.f.toImage(drawer = ds.d.vectorialTrajectory(); type = $imgType)
+    );
+    consumer.saver(
+      path = $basePath + "/{solver.name}/{problem.name}/best-state-copy-no-reset-{randomGenerator.seed:%02d}.tsv";
+      of = f.tdaMapToTable()
+    )
+  ]
+)
+
 $archivesP = ea.l.savePlotForRun(
   path = $basePath + "/{solver.name}/{problem.name}/me-archives-{randomGenerator.seed:%02d}." + $imgType;
   plot = ea.plot.single.me(values = [
-    f.mapValue(key = avgLastBoolScore; of = ea.f.quality())
+    f.as(name = fitness; of = f.mapValue(key = avgLastBoolScore; of = ea.f.quality()));
+    f.as(name = frozen; of = ds.e.sBool.avgScore(
+      scoreType = unlimited;
+      caseIndexes = [360:1:399];
+      of = ds.f.simulate(
+        of = ds.f.asNumericalRLAgent(of = ds.f.stateless(of = ds.f.nonLearning(of = ea.f.solution())));
+        dT = 1;
+        tRange = $tRangeLife;
+        simulation = ds.s.sequentialXor(cases = $cases; resetAgent = true; shuffle = true)
+      )
+    ));
+    f.as(name = "copy-no-reset"; of = ds.e.sBool.avgScore(
+      scoreType = unlimited;
+      caseIndexes = [360:1:399];
+      of = ds.f.simulate(
+        of = f.copy(of = ea.f.solution());
+        dT = 1;
+        tRange = $tRangeLife;
+        simulation = ds.s.sequentialXor(cases = $cases; resetAgent = false; shuffle = true)
+      )
+    ));
+    f.as(name = "copy-reset"; of = ds.e.sBool.avgScore(
+      scoreType = unlimited;
+      caseIndexes = [360:1:399];
+      of = ds.f.simulate(
+        of = f.copy(of = ea.f.solution());
+        dT = 1;
+        tRange = $tRangeLife;
+        simulation = ds.s.sequentialXor(cases = $cases; resetAgent = true; shuffle = true)
+      )
+    ));
+    f.as(name = "or-no-reset"; of = ds.e.sBool.avgScore(
+      scoreType = unlimited;
+      caseIndexes = [360:1:399];
+      of = ds.f.simulate(
+        of = f.copy(of = ea.f.solution());
+        dT = 1;
+        tRange = $tRangeLife;
+        simulation = ds.s.sequentialBf(cases = $cases; target = ea.misc.bf(exprs = ["or(0;1)"]); resetAgent = false; shuffle = true)
+      )
+    ));
+    f.as(name = "or-reset"; of = ds.e.sBool.avgScore(
+      scoreType = unlimited;
+      caseIndexes = [360:1:399];
+      of = ds.f.simulate(
+        of = f.copy(of = ea.f.solution());
+        dT = 1;
+        tRange = $tRangeLife;
+        simulation = ds.s.sequentialBf(cases = $cases; target = ea.misc.bf(exprs = ["or(0;1)"]); resetAgent = true; shuffle = true)
+      )
+    ))
   ]);
   kCondition = predicate.matches(f = f.mappableKey(key = "solver.name"); regex = "me.*");
   type = $imgType
@@ -190,12 +291,32 @@ $srTree = ea.l.saveForRun(
   kCondition = predicate.matches(f = f.mappableKey(key = "solver.name"); regex = ".*freeForm.*")
 )
 
-$bestBehavior = ea.l.saveForRun(
-  path = $basePath + "/{solver.name}/{problem.name}/best-behavior-{randomGenerator.seed:%02d}." + $imgType;
+$bestBehaviorCopyNoReset = ea.l.saveForRun(
+  path = $basePath + "/{solver.name}/{problem.name}/best-behavior-copy-no-reset-{randomGenerator.seed:%02d}." + $imgType;
   of = ea.acc.lastBest();
   processor = viz.f.toImage(
-    drawer = ds.d.sequentialBf(scoreTypes = [boolean; limited]);
-    of = f.mapValue(key = behavior; of = ea.f.quality());
+    drawer = ds.d.sequentialBf(scoreTypes = [limited]);
+    of = ds.f.simulate(
+      of = f.copy(of = ea.f.solution());
+      dT = 1;
+      tRange = $tRangeLife;
+      simulation = ds.s.sequentialXor(cases = $cases; resetAgent = false; shuffle = true)
+    );
+    type = svg
+  )
+)
+
+$bestBehaviorCopyReset = ea.l.saveForRun(
+  path = $basePath + "/{solver.name}/{problem.name}/best-behavior-copy-reset-{randomGenerator.seed:%02d}." + $imgType;
+  of = ea.acc.lastBest();
+  processor = viz.f.toImage(
+    drawer = ds.d.sequentialBf(scoreTypes = [limited]);
+    of = ds.f.simulate(
+      of = f.copy(of = ea.f.solution());
+      dT = 1;
+      tRange = $tRangeLife;
+      simulation = ds.s.sequentialXor(cases = $cases; resetAgent = true; shuffle = true)
+    );
     type = svg
   )
 )
@@ -214,8 +335,17 @@ $ffSolver = ea.s.mapElites(
 
 ea.experiment(
   runs = (randomGenerator = (seed = $seeds) * [m.defaultRG()])
-  * (problem = [$xorProblem; $biXorProblem])
+  * (problem = [$xorProblem])
   * (solver = (stop = ea.sc.nOfQualityEvaluations(n = $nOfEvals)) * [
+    ea.s.mapElites(
+      name = "me-free-form";
+      representation = ea.r.srTree(
+        ephemeral = true;
+        operators = [addition; subtraction; multiplication; prot_division; prot_log; max; min; tanh; gt; lt; ternary]
+      );
+      mapper = $freeFormMapper;
+      descriptors = [$dIncrease; $dConsistency]
+    );
     ea.s.mapElites(
       name = "me-hebbian-synapse";
       representation = ea.representation.doubleString();
@@ -235,7 +365,12 @@ ea.experiment(
     $avgLastBoolScore;
     $increase;
     $consistency;
+    $orReset;
+    $orNoReset;
     $stateTraj;
+    $stateTrajCopyNoReset;
+    $bestBehaviorCopyNoReset;
+    $bestBehaviorCopyReset;
     $archivesP;
     $srTree
   ]
