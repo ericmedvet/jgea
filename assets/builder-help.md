@@ -601,9 +601,9 @@ Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.FormattedName
 
 Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction">FormattedNamedFunction</abbr>&lt;X, <abbr title="java.lang.Double">Double</abbr>&gt;</code>; built from `io.github.ericmedvet.jsdynsym.buildable.builders.SequentialBooleanFunctions.avgScoreDelta()` by jgea-experimenter:2.8.2-SNAPSHOT
 
-### Builder `dynamicalSystem.environment.sequentialBoolean.avgScoreVariation()`
+### Builder `dynamicalSystem.environment.sequentialBoolean.sdScore()`
 
-`ds.e.sBool.avgScoreVariation(name; of; format; scoreType; indexes)`
+`ds.e.sBool.sdScore(name; of; format; scoreType; indexes)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
@@ -613,7 +613,7 @@ Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.FormattedName
 | `scoreType` | e | `UNLIMITED` | <code><abbr title="io.github.ericmedvet.jsdynsym.control.synthetic.BooleanUtils$ScoreType">BooleanUtils$ScoreType</abbr></code> |
 | `indexes` | i[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.lang.Integer">Integer</abbr>&gt;</code> |
 
-Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction">FormattedNamedFunction</abbr>&lt;X, <abbr title="java.lang.Double">Double</abbr>&gt;</code>; built from `io.github.ericmedvet.jsdynsym.buildable.builders.SequentialBooleanFunctions.avgScoreVariation()` by jgea-experimenter:2.8.2-SNAPSHOT
+Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction">FormattedNamedFunction</abbr>&lt;X, <abbr title="java.lang.Double">Double</abbr>&gt;</code>; built from `io.github.ericmedvet.jsdynsym.buildable.builders.SequentialBooleanFunctions.sdScore()` by jgea-experimenter:2.8.2-SNAPSHOT
 
 ## Package `dynamicalSystem.function`
 
@@ -724,6 +724,18 @@ Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.FormattedName
 | `format` | s | `%s` | <code><abbr title="java.lang.String">String</abbr></code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction">FormattedNamedFunction</abbr>&lt;X, P&gt;</code>; built from `io.github.ericmedvet.jsdynsym.buildable.builders.Functions.params()` by jgea-experimenter:2.8.2-SNAPSHOT
+
+### Builder `dynamicalSystem.function.rewards()`
+
+`ds.f.rewards(name; of; format)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `name` | s | interpolate `reward` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `of` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, <abbr title="io.github.ericmedvet.jsdynsym.control.Simulation$Outcome">Simulation$Outcome</abbr>&lt;<abbr title="io.github.ericmedvet.jsdynsym.control.SingleAgentTask$Step">SingleAgentTask$Step</abbr>&lt;<abbr title="io.github.ericmedvet.jsdynsym.core.rl.ReinforcementLearningAgent$RewardedInput">ReinforcementLearningAgent$RewardedInput</abbr>&lt;?&gt;, ?, ?&gt;&gt;&gt;</code> |
+| `format` | s | `s` | <code><abbr title="java.lang.String">String</abbr></code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction">FormattedNamedFunction</abbr>&lt;X, <abbr title="java.util.List">List</abbr>&lt;<abbr title="java.lang.Double">Double</abbr>&gt;&gt;</code>; built from `io.github.ericmedvet.jsdynsym.buildable.builders.Functions.rewards()` by jgea-experimenter:2.8.2-SNAPSHOT
 
 ### Builder `dynamicalSystem.function.selfBiSimulator()`
 
@@ -1031,6 +1043,17 @@ Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;<abb
 
 Aliases: `ds.s`, `ds.sim`, `ds.simulation`, `dynSys.s`, `dynSys.sim`, `dynSys.simulation`, `dynamicalSystem.s`, `dynamicalSystem.sim`, `dynamicalSystem.simulation`
 
+### Builder `dynamicalSystem.simulation.sequential()`
+
+`ds.s.sequential(name; relativeV)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `name` | s | interpolate `seq.sims` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `relativeV` | npm[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;? extends <abbr title="io.github.ericmedvet.jsdynsym.control.Simulation">Simulation</abbr>&lt;T, S, O&gt;&gt;</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jsdynsym.control.Simulation">Simulation</abbr>&lt;T, S, <abbr title="io.github.ericmedvet.jsdynsym.control.Simulation$Outcome">Simulation$Outcome</abbr>&lt;S&gt;&gt;</code>; built from `io.github.ericmedvet.jsdynsym.buildable.builders.Simulations.sequential()` by jgea-experimenter:2.8.2-SNAPSHOT
+
 ### Builder `dynamicalSystem.simulation.sequentialBf()`
 
 `ds.s.sequentialBf(name; target; cases; rewardType; resetAgent; shuffle; randomGenerator)`
@@ -1099,6 +1122,19 @@ Aliases: `ds.saTask`, `ds.sat`, `ds.singleAgentTask`, `dynSys.saTask`, `dynSys.s
 | `resetAgent` | b | `true` | <code>boolean</code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jsdynsym.control.SingleAgentTask">SingleAgentTask</abbr>&lt;C, O, A, CS, ES&gt;</code>; built from `io.github.ericmedvet.jsdynsym.buildable.builders.SingleAgentTasks.fromEnvironment()` by jgea-experimenter:2.8.2-SNAPSHOT
+
+### Builder `dynamicalSystem.singleAgentTask.sequential()`
+
+`ds.sat.sequential(name; tasks; resetFirst; resetAll)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `name` | s | interpolate `seq.tasks` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `tasks` | npm[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;? extends <abbr title="io.github.ericmedvet.jsdynsym.control.SingleAgentTask">SingleAgentTask</abbr>&lt;C, O, A, CS, TS&gt;&gt;</code> |
+| `resetFirst` | b | `false` | <code>boolean</code> |
+| `resetAll` | b | `false` | <code>boolean</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jsdynsym.control.SingleAgentTask">SingleAgentTask</abbr>&lt;C, O, A, CS, TS&gt;</code>; built from `io.github.ericmedvet.jsdynsym.buildable.builders.SingleAgentTasks.sequential()` by jgea-experimenter:2.8.2-SNAPSHOT
 
 ## Package `dynamicalSystem.singleRLAgentTask`
 
