@@ -266,7 +266,7 @@ public class Mappers {
               return new IntString(
                   ds.stream()
                       .map(v -> (int) Math.floor(isRange.denormalize(range.normalize(v))))
-                      .map(i -> Math.max(Math.min(i, eIs.upperBound() - 1), eIs.lowerBound()))
+                      .map(i -> Math.clamp(i, eIs.lowerBound(), eIs.upperBound() - 1))
                       .toList(),
                   eIs.lowerBound(),
                   eIs.upperBound()
