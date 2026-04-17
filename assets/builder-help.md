@@ -2798,6 +2798,20 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">Inv
 
 Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jsdynsym.core.numerical.named.NamedMultivariateRealFunction">NamedMultivariateRealFunction</abbr>&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Mappers.multiSrTreeToNmrf()` by jgea-experimenter:2.8.2-SNAPSHOT
 
+### Builder `ea.mapper.ndsPairToBiLevelNds()`
+
+`ea.m.ndsPairToBiLevelNds(name; of; nOfHighInputs; nOfHighOutputs; highPeriod)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `name` | s | `bi.level` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `of` | npm | `ea.m.identity()` | <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jnb.datastructure.Pair">Pair</abbr>&lt;<abbr title="io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem">NumericalDynamicalSystem</abbr>&lt;?&gt;, <abbr title="io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem">NumericalDynamicalSystem</abbr>&lt;?&gt;&gt;&gt;</code> |
+| `nOfHighInputs` | i |  | <code>int</code> |
+| `nOfHighOutputs` | i |  | <code>int</code> |
+| `highPeriod` | i |  | <code>int</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem">NumericalDynamicalSystem</abbr>&lt;?&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Mappers.ndsPairToBiLevelNds()` by jgea-experimenter:2.8.2-SNAPSHOT
+
 ### Builder `ea.mapper.ndsToNrla()`
 
 `ea.m.ndsToNrla(of)`

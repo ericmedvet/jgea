@@ -63,6 +63,7 @@ import io.github.ericmedvet.jnb.datastructure.Parametrized;
 import io.github.ericmedvet.jsdynsym.core.bool.BooleanFunction;
 import io.github.ericmedvet.jsdynsym.core.composed.Stepped;
 import io.github.ericmedvet.jsdynsym.core.numerical.AggregatedInput;
+import io.github.ericmedvet.jsdynsym.core.numerical.BiLevelNumericalDynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.EnhancedInput;
 import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.numerical.Noised;
@@ -593,7 +594,10 @@ public class Mappers {
                 simplify
             )
                 .andThen(toOperator(postOperator)),
-            nmrf -> TreeBasedMultivariateRealFunction.exampleFor(nmrf.xVarNames(), nmrf.yVarNames()),
+            nmrf -> TreeBasedMultivariateRealFunction.exampleFor(
+                nmrf.xVarNames(),
+                nmrf.yVarNames()
+            ),
             "multiSrTreeToNmrf[po=%s]".formatted(postOperator)
         )
     );
@@ -611,6 +615,33 @@ public class Mappers {
                 eNrla.nOfOutputs()
             ),
             "rlAgent"
+        )
+    );
+  }
+
+  @Cacheable
+  public static <X> InvertibleMapper<X, NumericalDynamicalSystem<?>> ndsPairToBiLevelNds(
+      @Param(value = "name", dS = "bi.level") String name,
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Pair<NumericalDynamicalSystem<?>, NumericalDynamicalSystem<?>>> beforeM,
+      @Param("nOfHighInputs") int nOfHighInputs,
+      @Param("nOfHighOutputs") int nOfHighOutputs,
+      @Param("highPeriod") int highPeriod
+  ) {
+    return beforeM.andThen(
+        InvertibleMapper.from(
+            (ndsE, ndsPair) -> new BiLevelNumericalDynamicalSystem<>(
+                ndsPair.first(),
+                ndsPair.second(),
+                highPeriod
+            ),
+            ndsE -> new Pair<>(
+                MultivariateRealFunction.from(nOfHighInputs, nOfHighOutputs),
+                MultivariateRealFunction.from(
+                    ndsE.nOfInputs() - nOfHighInputs + nOfHighOutputs,
+                    ndsE.nOfOutputs()
+                )
+            ),
+            name
         )
     );
   }
