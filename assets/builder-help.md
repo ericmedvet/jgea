@@ -1142,14 +1142,15 @@ Aliases: `ds.saRLTask`, `ds.singleRLAgentTask`, `ds.srlat`, `dynSys.saRLTask`, `
 
 ### Builder `dynamicalSystem.singleRLAgentTask.fromNumericalEnvironment()`
 
-`ds.srlat.fromNumericalEnvironment(name; environment; stopCondition; resetAgent; reward)`
+`ds.srlat.fromNumericalEnvironment(name; environment; stopCondition; resetAgent; initialReward; reward)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
-| `name` | s | interpolate `{environment.name}` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `name` | s | interpolate `{environment.name}[{reward.name}]` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `environment` | npm |  | <code><abbr title="io.github.ericmedvet.jsdynsym.control.Environment">Environment</abbr>&lt;double[], double[], ES, <abbr title="io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem">NumericalDynamicalSystem</abbr>&lt;? extends CS&gt;&gt;</code> |
 | `stopCondition` | npm | `predicate.not(condition = predicate.always())` | <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;ES&gt;</code> |
 | `resetAgent` | b | `false` | <code>boolean</code> |
+| `initialReward` | d | `0.0` | <code>double</code> |
 | `reward` | npm |  | <code><abbr title="java.util.function.Function">Function</abbr>&lt;ES, <abbr title="java.lang.Double">Double</abbr>&gt;</code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jsdynsym.control.SingleRLAgentTask">SingleRLAgentTask</abbr>&lt;<abbr title="io.github.ericmedvet.jsdynsym.core.rl.NumericalReinforcementLearningAgent">NumericalReinforcementLearningAgent</abbr>&lt;? extends CS&gt;, double[], double[], CS, ES&gt;</code>; built from `io.github.ericmedvet.jsdynsym.buildable.builders.SingleRLAgentTasks.fromNumericalEnvironment()` by jgea-experimenter:2.8.2-SNAPSHOT
