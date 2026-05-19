@@ -44,7 +44,6 @@ public class GeneticOperators {
   private GeneticOperators() {
   }
 
-  @SuppressWarnings("unused")
   @Cacheable
   public static Function<BitString, Mutation<BitString>> bsFlipMutation(
       @Param(value = "pMutRate", dD = 1d) double pMutRate
@@ -52,13 +51,12 @@ public class GeneticOperators {
     return eBs -> new BitStringFlipMutation(pMutRate * (double) eBs.size());
   }
 
-  @SuppressWarnings("unused")
+
   @Cacheable
   public static Function<BitString, Crossover<BitString>> bsUniformXover() {
     return eIs -> new BitStringUniformCrossover();
   }
 
-  @SuppressWarnings("unused")
   @Cacheable
   public static <X> Function<X, Mutation<X>> composedMutation(
       @Param("mutation1") Function<X, Mutation<X>> mutation1,
@@ -67,7 +65,6 @@ public class GeneticOperators {
     return eX -> Mutation.from(mutation1.apply(eX).andThen(mutation2.apply(eX)));
   }
 
-  @SuppressWarnings("unused")
   @Cacheable
   public static <X> Function<X, Crossover<X>> composedXover(
       @Param("xover") Function<X, Crossover<X>> xover,
@@ -76,7 +73,6 @@ public class GeneticOperators {
     return eX -> Crossover.from(xover.apply(eX).andThen(mutation.apply(eX)));
   }
 
-  @SuppressWarnings("unused")
   @Cacheable
   public static Function<List<Double>, Mutation<List<Double>>> dsGaussianMutation(
       @Param(value = "sigmaMut", dD = 0.35d) double sigmaMut
@@ -84,7 +80,6 @@ public class GeneticOperators {
     return eDs -> new GaussianMutation(sigmaMut);
   }
 
-  @SuppressWarnings("unused")
   @Cacheable
   public static Function<List<Double>, Crossover<List<Double>>> dsHypercubeGeometricXover(
       @Param(value = "ext", dD = 1d) double ext
@@ -92,7 +87,6 @@ public class GeneticOperators {
     return eDs -> new HypercubeGeometricCrossover(DoubleRange.UNIT.extend(ext));
   }
 
-  @SuppressWarnings("unused")
   @Cacheable
   public static Function<List<Double>, Crossover<List<Double>>> dsSegmentGeometricXover(
       @Param(value = "ext", dD = 1d) double ext
@@ -100,7 +94,6 @@ public class GeneticOperators {
     return eDs -> new SegmentGeometricCrossover(DoubleRange.UNIT.extend(ext));
   }
 
-  @SuppressWarnings("unused")
   @Cacheable
   public static Function<IntString, Mutation<IntString>> isFlipMutation(
       @Param(value = "pMutRate", dD = 1d) double pMutRate
@@ -108,19 +101,16 @@ public class GeneticOperators {
     return eIs -> new IntStringFlipMutation(pMutRate * (double) eIs.size());
   }
 
-  @SuppressWarnings("unused")
   @Cacheable
   public static Function<IntString, Mutation<IntString>> isSymbolCopyMutation() {
     return eIs -> new IntStringSymbolCopy();
   }
 
-  @SuppressWarnings("unused")
   @Cacheable
   public static Function<IntString, Crossover<IntString>> isUniformXover() {
     return eIs -> new IntStringUniformCrossover();
   }
 
-  @SuppressWarnings("unused")
   @Cacheable
   public static <X> Function<X, Mutation<X>> oneMutation(
       @Param("mutations") List<Function<X, Mutation<X>>> mutations
@@ -132,7 +122,6 @@ public class GeneticOperators {
     );
   }
 
-  @SuppressWarnings("unused")
   @Cacheable
   public static <X> Function<X, Crossover<X>> oneXover(
       @Param("xovers") List<Function<X, Crossover<X>>> xovers
@@ -144,5 +133,11 @@ public class GeneticOperators {
     );
   }
 
+  @Cacheable
+  public static <X> Function<X, Crossover<X>> deterministicXover(
+      @Param("first") boolean first
+  ) {
+    return eX -> Crossover.deterministicCopy(first);
+  }
 
 }

@@ -47,6 +47,10 @@ public interface Crossover<G> extends GeneticOperator<G> {
     );
   }
 
+  static <G> Crossover<G> deterministicCopy(boolean first) {
+    return (g1, g2, random) -> first ? g1 : g2;
+  }
+
   @SuppressWarnings("unused")
   static <K> Crossover<K> randomCopy() {
     return (g1, g2, random) -> random.nextBoolean() ? g1 : g2;
