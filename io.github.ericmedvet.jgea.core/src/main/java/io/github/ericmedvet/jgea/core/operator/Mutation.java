@@ -31,10 +31,8 @@ import java.util.random.RandomGenerator;
 @FunctionalInterface
 public interface Mutation<G> extends GeneticOperator<G> {
 
-  G mutate(G g, RandomGenerator random);
-
-  static <K> Mutation<K> copy() {
-    return (k, random) -> k;
+  static <G> Mutation<G> copy() {
+    return (g, random) -> g;
   }
 
   static <G> Mutation<G> from(GeneticOperator<G> mutation) {
@@ -44,16 +42,12 @@ public interface Mutation<G> extends GeneticOperator<G> {
     return (g, rnd) -> mutation.apply(List.of(g), rnd).getFirst();
   }
 
-  static <K> Mutation<K> oneOf(Map<Mutation<K>, Double> operators) {
-    return (k, random) -> Misc.pickRandomly(operators, random).mutate(k, random);
+  static <G> Mutation<G> oneOf(Map<Mutation<G>, Double> operators) {
+    return (g, random) -> Misc.pickRandomly(operators, random).mutate(g, random);
   }
 
   static <G1, G2> Mutation<Pair<G1, G2>> pair(Mutation<G1> mutation1, Mutation<G2> mutation2) {
     return (p, random) -> new Pair<>(mutation1.mutate(p.first(), random), mutation2.mutate(p.second(), random));
-  }
-
-  default Mutation<List<G>> list() {
-    return (gs, random) -> gs.stream().map(g -> mutate(g, random)).toList();
   }
 
   @Override
@@ -65,6 +59,12 @@ public interface Mutation<G> extends GeneticOperator<G> {
   default int arity() {
     return 1;
   }
+
+  default Mutation<List<G>> list() {
+    return (gs, random) -> gs.stream().map(g -> mutate(g, random)).toList();
+  }
+
+  G mutate(G g, RandomGenerator random);
 
   default Mutation<G> withChecker(Predicate<? super G> checker) {
     Mutation<G> thisMutation = this;

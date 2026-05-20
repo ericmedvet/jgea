@@ -31,14 +31,16 @@ import java.util.stream.IntStream;
 @FunctionalInterface
 public interface Crossover<G> extends GeneticOperator<G> {
 
-  G recombine(G g1, G g2, RandomGenerator random);
+  static <G> Crossover<G> deterministicCopy(boolean first) {
+    return (g1, g2, random) -> first ? g1 : g2;
+  }
 
-  static <K> Crossover<K> from(GeneticOperator<K> op) {
+  static <G> Crossover<G> from(GeneticOperator<G> op) {
     return (g1, g2, random) -> op.apply(List.of(g1, g2), random).getFirst();
   }
 
-  static <K> Crossover<K> oneOf(Map<Crossover<K>, Double> operators) {
-    return (k1, k2, random) -> Misc.pickRandomly(operators, random).recombine(k1, k2, random);
+  static <G> Crossover<G> oneOf(Map<Crossover<G>, Double> operators) {
+    return (g1, g2, random) -> Misc.pickRandomly(operators, random).recombine(g1, g2, random);
   }
 
   static <G1, G2> Crossover<Pair<G1, G2>> pair(Crossover<G1> crossover1, Crossover<G2> crossover2) {
@@ -48,18 +50,8 @@ public interface Crossover<G> extends GeneticOperator<G> {
     );
   }
 
-  default Crossover<List<G>> list() {
-    return (gs1, gs2, random) -> IntStream.range(0, Math.min(gs1.size(), gs2.size()))
-        .mapToObj(i -> recombine(gs1.get(i), gs2.get(i), random))
-        .toList();
-  }
-
-  static <G> Crossover<G> deterministicCopy(boolean first) {
-    return (g1, g2, random) -> first ? g1 : g2;
-  }
-
   @SuppressWarnings("unused")
-  static <K> Crossover<K> randomCopy() {
+  static <G> Crossover<G> randomCopy() {
     return (g1, g2, random) -> random.nextBoolean() ? g1 : g2;
   }
 
@@ -72,6 +64,14 @@ public interface Crossover<G> extends GeneticOperator<G> {
   default int arity() {
     return 2;
   }
+
+  default Crossover<List<G>> list() {
+    return (gs1, gs2, random) -> IntStream.range(0, Math.min(gs1.size(), gs2.size()))
+        .mapToObj(i -> recombine(gs1.get(i), gs2.get(i), random))
+        .toList();
+  }
+
+  G recombine(G g1, G g2, RandomGenerator random);
 
   @SuppressWarnings("unused")
   default Crossover<G> withChecker(Predicate<G> checker) {

@@ -74,6 +74,13 @@ public class GeneticOperators {
   }
 
   @Cacheable
+  public static <X> Function<X, Crossover<X>> deterministicXover(
+      @Param("first") boolean first
+  ) {
+    return eX -> Crossover.deterministicCopy(first);
+  }
+
+  @Cacheable
   public static Function<List<Double>, Mutation<List<Double>>> dsGaussianMutation(
       @Param(value = "sigmaMut", dD = 0.35d) double sigmaMut
   ) {
@@ -112,6 +119,20 @@ public class GeneticOperators {
   }
 
   @Cacheable
+  public static <X> Function<List<X>, Crossover<List<X>>> listCrossover(
+      @Param("crossover") Function<X, Crossover<X>> crossover
+  ) {
+    return eXs -> crossover.apply(eXs.getFirst()).list();
+  }
+
+  @Cacheable
+  public static <X> Function<List<X>, Mutation<List<X>>> listMutation(
+      @Param("mutation") Function<X, Mutation<X>> mutation
+  ) {
+    return eXs -> mutation.apply(eXs.getFirst()).list();
+  }
+
+  @Cacheable
   public static <X> Function<X, Mutation<X>> oneMutation(
       @Param("mutations") List<Function<X, Mutation<X>>> mutations
   ) {
@@ -131,27 +152,6 @@ public class GeneticOperators {
             .map(c -> c.apply(eX))
             .collect(Utils.toSequencedMap(c -> 1d))
     );
-  }
-
-  @Cacheable
-  public static <X> Function<X, Crossover<X>> deterministicXover(
-      @Param("first") boolean first
-  ) {
-    return eX -> Crossover.deterministicCopy(first);
-  }
-
-  @Cacheable
-  public static <X> Function<List<X>, Mutation<List<X>>> listMutation(
-      @Param("mutation") Function<X, Mutation<X>> mutation
-  ) {
-    return eXs -> mutation.apply(eXs.getFirst()).list();
-  }
-
-  @Cacheable
-  public static <X> Function<List<X>, Crossover<List<X>>> listCrossover(
-      @Param("crossover") Function<X, Crossover<X>> crossover
-  ) {
-    return eXs -> crossover.apply(eXs.getFirst()).list();
   }
 
 }
