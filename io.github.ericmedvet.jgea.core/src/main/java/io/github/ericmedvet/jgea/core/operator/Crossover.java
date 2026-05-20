@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
+import java.util.stream.IntStream;
 
 @FunctionalInterface
 public interface Crossover<G> extends GeneticOperator<G> {
@@ -45,6 +46,16 @@ public interface Crossover<G> extends GeneticOperator<G> {
         crossover1.recombine(p1.first(), p2.first(), random),
         crossover2.recombine(p1.second(), p2.second(), random)
     );
+  }
+
+  default Crossover<List<G>> list() {
+    return (gs1, gs2, random) -> IntStream.range(0, Math.min(gs1.size(), gs2.size()))
+        .mapToObj(i -> recombine(gs1.get(i), gs2.get(i), random))
+        .toList();
+  }
+
+  static <G> Crossover<G> deterministicCopy(boolean first) {
+    return (g1, g2, random) -> first ? g1 : g2;
   }
 
   @SuppressWarnings("unused")

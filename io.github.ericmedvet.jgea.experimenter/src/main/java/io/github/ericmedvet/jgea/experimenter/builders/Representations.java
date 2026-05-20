@@ -61,7 +61,6 @@ import java.util.SequencedSet;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @Discoverable(prefixTemplate = "ea.representation|r")
@@ -180,32 +179,27 @@ public class Representations {
   @Cacheable
   public static <G> Function<List<G>, Representation<List<G>>> list(
       @Param("of") Function<G, Representation<G>> representation,
+      @Param("altMutations") List<Function<List<G>, Mutation<List<G>>>> altMutations,
+      @Param("altXovers") List<Function<List<G>, Crossover<List<G>>>> altCrossovers,
       @Param(value = "uniformCrossover", dB = true) boolean uniformCrossover
   ) {
     return egs -> {
       Representation<G> innerR = representation.apply(egs.getFirst());
-      List<Mutation<List<G>>> mutations = innerR.mutations()
-          .stream()
-          .map(
-              innerMut -> (Mutation<List<G>>) (gs, random) -> gs.stream()
-                  .map(g -> innerMut.mutate(g, random))
-                  .toList()
-          )
-          .toList();
-      List<Crossover<List<G>>> crossovers = innerR.crossovers()
-          .stream()
-          .map(
-              innerXOver -> (Crossover<List<G>>) (gs1, gs2, random) -> IntStream.range(
-                  0,
-                  egs.size()
-              )
-                  .mapToObj(j -> innerXOver.recombine(gs1.get(j), gs2.get(j), random))
-                  .toList()
-          )
-          .toList();
-      if (uniformCrossover) {
-        crossovers = Stream.concat(crossovers.stream(), Stream.of(new UniformCrossover<G>()))
-            .toList();
+      List<Mutation<List<G>>> mutations;
+      if (altMutations.isEmpty()) {
+        mutations = innerR.mutations().stream().map(m -> m.list()).toList();
+      } else {
+        mutations = altMutations.stream().map(m -> m.apply(egs)).toList();
+      }
+      List<Crossover<List<G>>> crossovers;
+      if (altCrossovers.isEmpty()) {
+        crossovers = innerR.crossovers().stream().map(c -> c.list()).toList();
+        if (uniformCrossover) {
+          crossovers = Stream.concat(crossovers.stream(), Stream.of(new UniformCrossover<G>()))
+              .toList();
+        }
+      } else {
+        crossovers = altCrossovers.stream().map(c -> c.apply(egs)).toList();
       }
       return new Representation<>(
           new FixedLengthListFactory<>(egs.size(), innerR.factory().independent()),
