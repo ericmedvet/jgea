@@ -52,6 +52,10 @@ public interface Mutation<G> extends GeneticOperator<G> {
     return (p, random) -> new Pair<>(mutation1.mutate(p.first(), random), mutation2.mutate(p.second(), random));
   }
 
+  default Mutation<List<G>> list() {
+    return (gs, random) -> gs.stream().map(g -> mutate(g, random)).toList();
+  }
+
   @Override
   default List<? extends G> apply(List<? extends G> gs, RandomGenerator random) {
     return Collections.singletonList(mutate(gs.getFirst(), random));

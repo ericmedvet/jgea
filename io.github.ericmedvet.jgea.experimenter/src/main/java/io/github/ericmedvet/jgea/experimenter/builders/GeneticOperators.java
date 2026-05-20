@@ -140,4 +140,18 @@ public class GeneticOperators {
     return eX -> Crossover.deterministicCopy(first);
   }
 
+  @Cacheable
+  public static <X> Function<List<X>, Mutation<List<X>>> listMutation(
+      @Param("mutation") Function<X, Mutation<X>> mutation
+  ) {
+    return eXs -> mutation.apply(eXs.getFirst()).list();
+  }
+
+  @Cacheable
+  public static <X> Function<List<X>, Crossover<List<X>>> listCrossover(
+      @Param("crossover") Function<X, Crossover<X>> crossover
+  ) {
+    return eXs -> crossover.apply(eXs.getFirst()).list();
+  }
+
 }
