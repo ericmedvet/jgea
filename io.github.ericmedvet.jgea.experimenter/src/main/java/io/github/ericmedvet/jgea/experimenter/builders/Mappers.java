@@ -624,11 +624,13 @@ public class Mappers {
       @Param(value = "name", dS = "bi.level") String name,
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Pair<NumericalDynamicalSystem<?>, NumericalDynamicalSystem<?>>> beforeM,
       @Param("nOfHighInputs") int nOfHighInputs,
-      @Param("nOfLowInputs") int nOfLowInputs,
+      @Param("nOfRawLowInputs") int nOfRawLowInputs,
       @Param("nOfHighOutputs") int nOfHighOutputs,
       @Param("highPeriod") int highPeriod,
-      @Param("highIndex") int highIndex,
-      @Param("lowIndex") int lowIndex
+      @Param(value = "highIndex", dI = 0) int highIndex,
+      @Param(value = "lowIndex", dI = 0) int lowIndex,
+      @Param(value = "enableAverage", dB = false) boolean enableAverage,
+      @Param(value = "discountFactor", dD = 1d) double discountFactor
 
   ) {
     return beforeM.andThen(
@@ -638,11 +640,13 @@ public class Mappers {
                 ndsPair.second(),
                 highPeriod,
                 highIndex,
-                lowIndex
+                lowIndex,
+                enableAverage,
+                discountFactor
             ),
             ndsE -> new Pair<>(
                 MultivariateRealFunction.from(nOfHighInputs, nOfHighOutputs),
-                MultivariateRealFunction.from(nOfLowInputs + nOfHighOutputs, ndsE.nOfOutputs())
+                MultivariateRealFunction.from(nOfRawLowInputs + nOfHighOutputs, ndsE.nOfOutputs())
             ),
             name
         )

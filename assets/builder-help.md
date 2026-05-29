@@ -1142,14 +1142,15 @@ Aliases: `ds.saRLTask`, `ds.singleRLAgentTask`, `ds.srlat`, `dynSys.saRLTask`, `
 
 ### Builder `dynamicalSystem.singleRLAgentTask.fromNumericalEnvironment()`
 
-`ds.srlat.fromNumericalEnvironment(name; environment; stopCondition; resetAgent; reward)`
+`ds.srlat.fromNumericalEnvironment(name; environment; stopCondition; resetAgent; initialReward; reward)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
-| `name` | s | interpolate `{environment.name}` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `name` | s | interpolate `{environment.name}[{reward.name}]` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `environment` | npm |  | <code><abbr title="io.github.ericmedvet.jsdynsym.control.Environment">Environment</abbr>&lt;double[], double[], ES, <abbr title="io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem">NumericalDynamicalSystem</abbr>&lt;? extends CS&gt;&gt;</code> |
 | `stopCondition` | npm | `predicate.not(condition = predicate.always())` | <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;ES&gt;</code> |
 | `resetAgent` | b | `false` | <code>boolean</code> |
+| `initialReward` | d | `0.0` | <code>double</code> |
 | `reward` | npm |  | <code><abbr title="java.util.function.Function">Function</abbr>&lt;ES, <abbr title="java.lang.Double">Double</abbr>&gt;</code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jsdynsym.control.SingleRLAgentTask">SingleRLAgentTask</abbr>&lt;<abbr title="io.github.ericmedvet.jsdynsym.core.rl.NumericalReinforcementLearningAgent">NumericalReinforcementLearningAgent</abbr>&lt;? extends CS&gt;, double[], double[], CS, ES&gt;</code>; built from `io.github.ericmedvet.jsdynsym.buildable.builders.SingleRLAgentTasks.fromNumericalEnvironment()` by jgea-experimenter:2.8.2-SNAPSHOT
@@ -2800,18 +2801,20 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">Inv
 
 ### Builder `ea.mapper.ndsPairToBiLevelNds()`
 
-`ea.m.ndsPairToBiLevelNds(name; of; nOfHighInputs; nOfLowInputs; nOfHighOutputs; highPeriod; highIndex; lowIndex)`
+`ea.m.ndsPairToBiLevelNds(name; of; nOfHighInputs; nOfRawLowInputs; nOfHighOutputs; highPeriod; highIndex; lowIndex; enableAverage; discountFactor)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
 | `name` | s | `bi.level` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `of` | npm | `ea.m.identity()` | <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jnb.datastructure.Pair">Pair</abbr>&lt;<abbr title="io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem">NumericalDynamicalSystem</abbr>&lt;?&gt;, <abbr title="io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem">NumericalDynamicalSystem</abbr>&lt;?&gt;&gt;&gt;</code> |
 | `nOfHighInputs` | i |  | <code>int</code> |
-| `nOfLowInputs` | i |  | <code>int</code> |
+| `nOfRawLowInputs` | i |  | <code>int</code> |
 | `nOfHighOutputs` | i |  | <code>int</code> |
 | `highPeriod` | i |  | <code>int</code> |
-| `highIndex` | i |  | <code>int</code> |
-| `lowIndex` | i |  | <code>int</code> |
+| `highIndex` | i | `0` | <code>int</code> |
+| `lowIndex` | i | `0` | <code>int</code> |
+| `enableAverage` | b | `false` | <code>boolean</code> |
+| `discountFactor` | d | `1.0` | <code>double</code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem">NumericalDynamicalSystem</abbr>&lt;?&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Mappers.ndsPairToBiLevelNds()` by jgea-experimenter:2.8.2-SNAPSHOT
 
