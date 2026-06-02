@@ -2801,20 +2801,17 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">Inv
 
 ### Builder `ea.mapper.ndsPairToBiLevelNds()`
 
-`ea.m.ndsPairToBiLevelNds(name; of; nOfHighInputs; nOfRawLowInputs; nOfHighOutputs; highPeriod; highIndex; lowIndex; enableAverage; discountFactor)`
+`ea.m.ndsPairToBiLevelNds(name; of; nOfHighOutputs; highPeriod; highIndexesList; lowIndexesList; averageEnabled)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
 | `name` | s | `bi.level` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `of` | npm | `ea.m.identity()` | <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jnb.datastructure.Pair">Pair</abbr>&lt;<abbr title="io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem">NumericalDynamicalSystem</abbr>&lt;?&gt;, <abbr title="io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem">NumericalDynamicalSystem</abbr>&lt;?&gt;&gt;&gt;</code> |
-| `nOfHighInputs` | i |  | <code>int</code> |
-| `nOfRawLowInputs` | i |  | <code>int</code> |
 | `nOfHighOutputs` | i |  | <code>int</code> |
 | `highPeriod` | i |  | <code>int</code> |
-| `highIndex` | i | `0` | <code>int</code> |
-| `lowIndex` | i | `0` | <code>int</code> |
-| `enableAverage` | b | `false` | <code>boolean</code> |
-| `discountFactor` | d | `1.0` | <code>double</code> |
+| `highIndexesList` | i[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.lang.Integer">Integer</abbr>&gt;</code> |
+| `lowIndexesList` | i[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.lang.Integer">Integer</abbr>&gt;</code> |
+| `averageEnabled` | b | `false` | <code>boolean</code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem">NumericalDynamicalSystem</abbr>&lt;?&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Mappers.ndsPairToBiLevelNds()` by jgea-experimenter:2.8.2-SNAPSHOT
 

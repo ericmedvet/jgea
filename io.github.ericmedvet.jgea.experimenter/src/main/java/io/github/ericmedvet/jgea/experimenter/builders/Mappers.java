@@ -623,15 +623,11 @@ public class Mappers {
   public static <X> InvertibleMapper<X, NumericalDynamicalSystem<?>> ndsPairToBiLevelNds(
       @Param(value = "name", dS = "bi.level") String name,
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Pair<NumericalDynamicalSystem<?>, NumericalDynamicalSystem<?>>> beforeM,
-      @Param("nOfHighInputs") int nOfHighInputs,
-      @Param("nOfRawLowInputs") int nOfRawLowInputs,
       @Param("nOfHighOutputs") int nOfHighOutputs,
       @Param("highPeriod") int highPeriod,
-      @Param(value = "highIndex", dI = 0) int highIndex,
-      @Param(value = "lowIndex", dI = 0) int lowIndex,
-      @Param(value = "enableAverage", dB = false) boolean enableAverage,
-      @Param(value = "discountFactor", dD = 1d) double discountFactor
-
+      @Param("highIndexesList") List<Integer> highIndexesList,
+      @Param("lowIndexesList") List<Integer> lowIndexesList,
+      @Param(value = "averageEnabled", dB = false) boolean averageEnabled
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
@@ -639,14 +635,13 @@ public class Mappers {
                 ndsPair.first(),
                 ndsPair.second(),
                 highPeriod,
-                highIndex,
-                lowIndex,
-                enableAverage,
-                discountFactor
+                highIndexesList.stream().mapToInt(Integer::intValue).toArray(),
+                lowIndexesList.stream().mapToInt(Integer::intValue).toArray(),
+                averageEnabled
             ),
             ndsE -> new Pair<>(
-                MultivariateRealFunction.from(nOfHighInputs, nOfHighOutputs),
-                MultivariateRealFunction.from(nOfRawLowInputs + nOfHighOutputs, ndsE.nOfOutputs())
+                MultivariateRealFunction.from(highIndexesList.size(), nOfHighOutputs),
+                MultivariateRealFunction.from(lowIndexesList.size() + nOfHighOutputs, ndsE.nOfOutputs())
             ),
             name
         )
