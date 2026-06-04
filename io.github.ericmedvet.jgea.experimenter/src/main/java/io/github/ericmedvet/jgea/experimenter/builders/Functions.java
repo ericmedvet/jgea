@@ -75,9 +75,9 @@ public class Functions {
   @Cacheable
   public static <X> NamedFunction<X, Map<List<Double>, List<Double>>> uniformSample(
       @Param(value = "of", dNPM = "f.identity()") Function<X, MultivariateRealFunction> beforeF,
-      @Param(value = "name", iS = "{mapper.name}") String name,
+      @Param(value = "name", iS = "uniform.sample") String name,
       @Param("ranges") List<DoubleRange> ranges,
-      @Param("nOfPoints") int nOfPoints
+      @Param(value = "nOfPoints", dI = 10) int nOfPoints
   ) {
     Function<MultivariateRealFunction, Map<List<Double>, List<Double>>> f = nds -> {
       List<List<Double>> sampledRanges = ranges

@@ -2242,9 +2242,9 @@ Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.FormattedName
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
 | `of` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, <abbr title="io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction">MultivariateRealFunction</abbr>&gt;</code> |
-| `name` | s | interpolate `{mapper.name}` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `name` | s | interpolate `uniform.sample` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `ranges` | npm[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr>&gt;</code> |
-| `nOfPoints` | i |  | <code>int</code> |
+| `nOfPoints` | i | `10` | <code>int</code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.NamedFunction">NamedFunction</abbr>&lt;X, <abbr title="java.util.Map">Map</abbr>&lt;<abbr title="java.util.List">List</abbr>&lt;<abbr title="java.lang.Double">Double</abbr>&gt;, <abbr title="java.util.List">List</abbr>&lt;<abbr title="java.lang.Double">Double</abbr>&gt;&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Functions.uniformSample()` by jgea-experimenter:2.8.2-SNAPSHOT
 
