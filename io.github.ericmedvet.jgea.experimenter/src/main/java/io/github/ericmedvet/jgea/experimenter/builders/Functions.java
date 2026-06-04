@@ -57,10 +57,8 @@ import io.github.ericmedvet.jnb.core.Alias;
 import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
-import io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction;
-import io.github.ericmedvet.jnb.datastructure.Grid;
-import io.github.ericmedvet.jnb.datastructure.NamedFunction;
-import io.github.ericmedvet.jnb.datastructure.Sized;
+import io.github.ericmedvet.jnb.datastructure.*;
+import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.numerical.named.NamedUnivariateRealFunction;
 import java.util.*;
 import java.util.function.Function;
@@ -72,6 +70,31 @@ import java.util.stream.IntStream;
 public class Functions {
 
   private Functions() {
+  }
+
+  @Cacheable
+  public static <X> NamedFunction<X, Map<List<Double>, List<Double>>> uniformSample(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, MultivariateRealFunction> beforeF,
+      @Param(value = "name", iS = "uniform.sample") String name,
+      @Param("ranges") List<DoubleRange> ranges,
+      @Param(value = "nOfPoints", dI = 10) int nOfPoints
+  ) {
+    Function<MultivariateRealFunction, Map<List<Double>, List<Double>>> f = nds -> {
+      List<List<Double>> sampledRanges = ranges
+          .stream()
+          .map(r -> r.points(nOfPoints).boxed().toList())
+          .toList();
+      List<List<Double>> points = Misc.cartesian(sampledRanges);
+      Map<List<Double>, List<Double>> pointValueMap = points.stream()
+          .collect(
+              Collectors.toMap(
+                  p -> p,
+                  p -> Arrays.stream(nds.apply(p.stream().mapToDouble(d -> d).toArray())).boxed().toList()
+              )
+          );
+      return pointValueMap;
+    };
+    return NamedFunction.from(f, name).compose(beforeF);
   }
 
   @Cacheable

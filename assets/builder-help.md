@@ -659,6 +659,28 @@ Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.FormattedName
 
 Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction">FormattedNamedFunction</abbr>&lt;X, <abbr title="io.github.ericmedvet.jsdynsym.core.rl.ReinforcementLearningAgent">ReinforcementLearningAgent</abbr>&lt;I, O, S&gt;&gt;</code>; built from `io.github.ericmedvet.jsdynsym.buildable.builders.Functions.asRLAgent()` by jgea-experimenter:2.8.2-SNAPSHOT
 
+### Builder `dynamicalSystem.function.biLevelHighInnerNds()`
+
+`ds.f.biLevelHighInnerNds(name; of)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `name` | s | interpolate `high` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `of` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, <abbr title="io.github.ericmedvet.jsdynsym.core.numerical.BiLevelNumericalDynamicalSystem">BiLevelNumericalDynamicalSystem</abbr>&lt;SH, ?&gt;&gt;</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.NamedFunction">NamedFunction</abbr>&lt;X, <abbr title="io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem">NumericalDynamicalSystem</abbr>&lt;SH&gt;&gt;</code>; built from `io.github.ericmedvet.jsdynsym.buildable.builders.Functions.biLevelHighInnerNds()` by jgea-experimenter:2.8.2-SNAPSHOT
+
+### Builder `dynamicalSystem.function.biLevelLowInnerNds()`
+
+`ds.f.biLevelLowInnerNds(name; of)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `name` | s | interpolate `low` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `of` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, <abbr title="io.github.ericmedvet.jsdynsym.core.numerical.BiLevelNumericalDynamicalSystem">BiLevelNumericalDynamicalSystem</abbr>&lt;?, SL&gt;&gt;</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.NamedFunction">NamedFunction</abbr>&lt;X, <abbr title="io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem">NumericalDynamicalSystem</abbr>&lt;SL&gt;&gt;</code>; built from `io.github.ericmedvet.jsdynsym.buildable.builders.Functions.biLevelLowInnerNds()` by jgea-experimenter:2.8.2-SNAPSHOT
+
 ### Builder `dynamicalSystem.function.cumulatedReward()`
 
 `ds.f.cumulatedReward(name; of; format)`
@@ -2213,6 +2235,19 @@ Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.FormattedName
 
 Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction">FormattedNamedFunction</abbr>&lt;X, <abbr title="java.lang.Integer">Integer</abbr>&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Functions.ttpnNOfTypes()` by jgea-experimenter:2.8.2-SNAPSHOT
 
+### Builder `ea.function.uniformSample()`
+
+`ea.f.uniformSample(of; name; ranges; nOfPoints)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `of` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, <abbr title="io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction">MultivariateRealFunction</abbr>&gt;</code> |
+| `name` | s | interpolate `uniform.sample` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `ranges` | npm[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr>&gt;</code> |
+| `nOfPoints` | i | `10` | <code>int</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.NamedFunction">NamedFunction</abbr>&lt;X, <abbr title="java.util.Map">Map</abbr>&lt;<abbr title="java.util.List">List</abbr>&lt;<abbr title="java.lang.Double">Double</abbr>&gt;, <abbr title="java.util.List">List</abbr>&lt;<abbr title="java.lang.Double">Double</abbr>&gt;&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Functions.uniformSample()` by jgea-experimenter:2.8.2-SNAPSHOT
+
 ### Builder `ea.function.validationQuality()`
 
 `ea.f.validationQuality(of; individual; format)`
@@ -2801,15 +2836,17 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">Inv
 
 ### Builder `ea.mapper.ndsPairToBiLevelNds()`
 
-`ea.m.ndsPairToBiLevelNds(name; of; nOfHighInputs; nOfHighOutputs; highPeriod)`
+`ea.m.ndsPairToBiLevelNds(name; of; nOfHighOutputs; highPeriod; highIndexes; lowIndexes; averageEnabled)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
 | `name` | s | `bi.level` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `of` | npm | `ea.m.identity()` | <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jnb.datastructure.Pair">Pair</abbr>&lt;<abbr title="io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem">NumericalDynamicalSystem</abbr>&lt;?&gt;, <abbr title="io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem">NumericalDynamicalSystem</abbr>&lt;?&gt;&gt;&gt;</code> |
-| `nOfHighInputs` | i |  | <code>int</code> |
 | `nOfHighOutputs` | i |  | <code>int</code> |
 | `highPeriod` | i |  | <code>int</code> |
+| `highIndexes` | i[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.lang.Integer">Integer</abbr>&gt;</code> |
+| `lowIndexes` | i[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.lang.Integer">Integer</abbr>&gt;</code> |
+| `averageEnabled` | b | `false` | <code>boolean</code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem">NumericalDynamicalSystem</abbr>&lt;?&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Mappers.ndsPairToBiLevelNds()` by jgea-experimenter:2.8.2-SNAPSHOT
 
