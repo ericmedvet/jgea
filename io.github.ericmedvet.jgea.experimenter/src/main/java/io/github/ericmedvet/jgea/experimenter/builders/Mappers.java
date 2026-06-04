@@ -625,9 +625,9 @@ public class Mappers {
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Pair<NumericalDynamicalSystem<?>, NumericalDynamicalSystem<?>>> beforeM,
       @Param("nOfHighOutputs") int nOfHighOutputs,
       @Param("highPeriod") int highPeriod,
-      @Param("highIndexesList") List<Integer> highIndexesList,
-      @Param("lowIndexesList") List<Integer> lowIndexesList,
-      @Param(value = "averageEnabled", dB = false) boolean averageEnabled
+      @Param("highIndexes") List<Integer> highIndexes,
+      @Param("lowIndexes") List<Integer> lowIndexes,
+      @Param("averageEnabled") boolean averageEnabled
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
@@ -635,13 +635,13 @@ public class Mappers {
                 ndsPair.first(),
                 ndsPair.second(),
                 highPeriod,
-                highIndexesList.stream().mapToInt(Integer::intValue).toArray(),
-                lowIndexesList.stream().mapToInt(Integer::intValue).toArray(),
+                highIndexes.stream().mapToInt(Integer::intValue).toArray(),
+                lowIndexes.stream().mapToInt(Integer::intValue).toArray(),
                 averageEnabled
             ),
             ndsE -> new Pair<>(
-                MultivariateRealFunction.from(highIndexesList.size(), nOfHighOutputs),
-                MultivariateRealFunction.from(lowIndexesList.size() + nOfHighOutputs, ndsE.nOfOutputs())
+                MultivariateRealFunction.from(highIndexes.size(), nOfHighOutputs),
+                MultivariateRealFunction.from(lowIndexes.size() + nOfHighOutputs, ndsE.nOfOutputs())
             ),
             name
         )
