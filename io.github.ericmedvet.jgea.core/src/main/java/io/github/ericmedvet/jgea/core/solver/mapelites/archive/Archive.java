@@ -22,10 +22,13 @@ package io.github.ericmedvet.jgea.core.solver.mapelites.archive;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 
 public interface Archive<K, V, C> {
 
   int capacity();
+
+  Collection<C> contents();
 
   default double coverage() {
     return (double) contents().size() / (double) capacity();
@@ -48,5 +51,8 @@ public interface Archive<K, V, C> {
     return false;
   }
 
-  Collection<C> contents();
+  default Archive<K, V, C> withAll(Collection<V> values, Function<V, K> keyExtractor, BiPredicate<V, C> predicate) {
+    values.forEach(value -> putIf(keyExtractor.apply(value), value, predicate));
+    return this;
+  }
 }

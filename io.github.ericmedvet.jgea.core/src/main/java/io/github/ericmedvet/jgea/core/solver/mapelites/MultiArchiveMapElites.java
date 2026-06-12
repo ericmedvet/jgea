@@ -23,10 +23,13 @@ package io.github.ericmedvet.jgea.core.solver.mapelites;
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
+import io.github.ericmedvet.jgea.core.order.PartialComparator.PartialComparatorOutcome;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSolver;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
+import io.github.ericmedvet.jgea.core.solver.mapelites.archive.Archive;
+import io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import java.util.Collection;
 import java.util.List;
@@ -37,11 +40,13 @@ import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
-public class MultiArchiveMapElites<G, S, Q> extends AbstractPopulationBasedIterativeSolver<MAMEPopulationState<G, S, Q, QualityBasedProblem<S, Q>>, QualityBasedProblem<S, Q>, Individual<G, S, Q>, G, S, Q> {
+public class MultiArchiveMapElites<G, S, Q> extends
+    AbstractPopulationBasedIterativeSolver<MAMEPopulationState<G, S, Q, QualityBasedProblem<S, Q>>, QualityBasedProblem<S, Q>, Individual<G, S, Q>, G, S, Q> {
 
   protected final int populationSize;
   private final Mutation<G> mutation;
-  private final List<List<MapElites.Descriptor<G, S, Q>>> listsOfDescriptors;
+  private final List<List<Function<Individual<G, S, Q>, Number>>> listsOfDescriptors;
+  private final NumericalKeyArchive.Provider<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archiveProvider;
 
   public MultiArchiveMapElites(
       Function<? super G, ? extends S> solutionMapper,
@@ -49,13 +54,15 @@ public class MultiArchiveMapElites<G, S, Q> extends AbstractPopulationBasedItera
       Predicate<? super MAMEPopulationState<G, S, Q, QualityBasedProblem<S, Q>>> stopCondition,
       Mutation<G> mutation,
       int populationSize,
-      List<List<MapElites.Descriptor<G, S, Q>>> listsOfDescriptors,
+      List<List<Function<Individual<G, S, Q>, Number>>> listsOfDescriptors,
+      NumericalKeyArchive.Provider<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archiveProvider,
       List<PartialComparator<? super Individual<G, S, Q>>> additionalIndividualComparators
   ) {
     super(solutionMapper, genotypeFactory, stopCondition, false, additionalIndividualComparators);
     this.populationSize = populationSize;
     this.mutation = mutation;
     this.listsOfDescriptors = listsOfDescriptors;
+    this.archiveProvider = archiveProvider;
   }
 
   @Override
@@ -64,10 +71,21 @@ public class MultiArchiveMapElites<G, S, Q> extends AbstractPopulationBasedItera
       RandomGenerator random,
       Executor executor
   ) throws SolverException {
+    List<NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>> archives = listsOfDescriptors.stream()
+        .map(descriptors -> archiveProvider.provide(descriptors.size(),
+            i -> i, (oldI, newI) -> newI)).toList();
+    for (int i = 0; i < archives.size(); i++) {
+      if (archives.get(i).arity() != listsOfDescriptors.get(i).size()) {
+        throw new SolverException(
+            "Archive %d and descriptor sizes %d do not matches: %d vs. %d".formatted(i, i,
+                archives.get(i).arity(),
+                listsOfDescriptors.get(i).size()));
+      }
+    }
     MAMEPopulationState<G, S, Q, QualityBasedProblem<S, Q>> newState = MAMEPopulationState.empty(
         problem,
         stopCondition(),
-        listsOfDescriptors
+        archives
     );
     AtomicLong counter = new AtomicLong(0);
     Collection<Individual<G, S, Q>> newIndividuals = parallelCall(
@@ -76,7 +94,8 @@ public class MultiArchiveMapElites<G, S, Q> extends AbstractPopulationBasedItera
                 .stream()
                 .map(g -> new ChildGenotype<G>(counter.getAndIncrement(), g, List.of()))
                 .toList(),
-            (cg, s, r) -> Individual.from(cg, solutionMapper, s.problem().qualityFunction(), s.nOfIterations()),
+            (cg, s, r) -> Individual.from(cg, solutionMapper, s.problem().qualityFunction(),
+                s.nOfIterations()),
             newState,
             random
         ),
@@ -90,12 +109,13 @@ public class MultiArchiveMapElites<G, S, Q> extends AbstractPopulationBasedItera
             .mapToObj(
                 j -> newState.archives()
                     .get(j)
-                    .updated(
+                    .withAll(
                         newIndividuals.stream()
                             .map(i -> MEIndividual.from(i, listsOfDescriptors.get(j)))
                             .toList(),
-                        MEIndividual::bins,
-                        partialComparator
+                        MEIndividual::descriptorValues,
+                        (newI, oldI) -> !partialComparator(problem)
+                            .compare(oldI, newI).equals(PartialComparatorOutcome.BEFORE)
                     )
             )
             .toList()
@@ -110,14 +130,16 @@ public class MultiArchiveMapElites<G, S, Q> extends AbstractPopulationBasedItera
   ) throws SolverException {
     List<Collection<MEIndividual<G, S, Q>>> archiveIndividuals = state.archives()
         .stream()
-        .map(a -> a.asMap().values())
+        .map(Archive::contents)
         .toList();
     // build new genotypes
     AtomicLong counter = new AtomicLong(state.nOfBirths());
     Collection<Individual<G, S, Q>> newIndividuals = parallelCall(
         mapTasks(
             IntStream.range(0, populationSize)
-                .mapToObj(j -> Misc.pickRandomly(archiveIndividuals.get(j % archiveIndividuals.size()), random))
+                .mapToObj(
+                    j -> Misc.pickRandomly(archiveIndividuals.get(j % archiveIndividuals.size()),
+                        random))
                 .map(
                     p -> new ChildGenotype<>(
                         counter.getAndIncrement(),
@@ -126,13 +148,15 @@ public class MultiArchiveMapElites<G, S, Q> extends AbstractPopulationBasedItera
                     )
                 )
                 .toList(),
-            (cg, s, r) -> Individual.from(cg, solutionMapper, s.problem().qualityFunction(), s.nOfIterations()),
+            (cg, s, r) -> Individual.from(cg, solutionMapper, s.problem().qualityFunction(),
+                s.nOfIterations()),
             state,
             random
         ),
         executor
     );
-    PartialComparator<? super MEIndividual<G, S, Q>> partialComparator = partialComparator(state.problem());
+    PartialComparator<? super MEIndividual<G, S, Q>> partialComparator = partialComparator(
+        state.problem());
     return state.updatedWithIteration(
         populationSize,
         populationSize,
@@ -140,12 +164,13 @@ public class MultiArchiveMapElites<G, S, Q> extends AbstractPopulationBasedItera
             .mapToObj(
                 j -> state.archives()
                     .get(j)
-                    .updated(
+                    .withAll(
                         newIndividuals.stream()
                             .map(i -> MEIndividual.from(i, listsOfDescriptors.get(j)))
                             .toList(),
-                        MEIndividual::bins,
-                        partialComparator
+                        MEIndividual::descriptorValues,
+                        (newI, oldI) -> !partialComparator(state.problem())
+                            .compare(oldI, newI).equals(PartialComparatorOutcome.BEFORE)
                     )
             )
             .toList()

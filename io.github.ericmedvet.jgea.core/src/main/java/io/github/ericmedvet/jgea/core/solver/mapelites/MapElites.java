@@ -23,26 +23,30 @@ package io.github.ericmedvet.jgea.core.solver.mapelites;
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
+import io.github.ericmedvet.jgea.core.order.PartialComparator.PartialComparatorOutcome;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSolver;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
+import io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive;
 import io.github.ericmedvet.jgea.core.util.Misc;
-import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
-public class MapElites<G, S, Q> extends AbstractPopulationBasedIterativeSolver<MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>>, QualityBasedProblem<S, Q>, MEIndividual<G, S, Q>, G, S, Q> {
+public class MapElites<G, S, Q> extends
+    AbstractPopulationBasedIterativeSolver<MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>>, QualityBasedProblem<S, Q>, MEIndividual<G, S, Q>, G, S, Q> {
 
   protected final int populationSize;
   private final Mutation<G> mutation;
-  private final List<Descriptor<G, S, Q>> descriptors;
+  private final List<Function<Individual<G, S, Q>, Number>> descriptors;
+  private final NumericalKeyArchive.Provider<MEIndividual<G,S,Q>,MEIndividual<G,S,Q>> archiveProvider;
 
   public MapElites(
       Function<? super G, ? extends S> solutionMapper,
@@ -50,30 +54,15 @@ public class MapElites<G, S, Q> extends AbstractPopulationBasedIterativeSolver<M
       Predicate<? super MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>>> stopCondition,
       Mutation<G> mutation,
       int populationSize,
-      List<Descriptor<G, S, Q>> descriptors,
+      List<Function<Individual<G, S, Q>, Number>> descriptors,
+      NumericalKeyArchive.Provider<MEIndividual<G,S,Q>,MEIndividual<G,S,Q>> archiveProvider,
       List<PartialComparator<? super MEIndividual<G, S, Q>>> additionalIndividualComparators
   ) {
     super(solutionMapper, genotypeFactory, stopCondition, false, additionalIndividualComparators);
     this.mutation = mutation;
     this.populationSize = populationSize;
     this.descriptors = descriptors;
-  }
-
-  public record Descriptor<G, S, Q>(
-      Function<Individual<G, S, Q>, Number> function, double min, double max, int nOfBins
-  ) {
-
-    public record Coordinate(int bin, double value) {
-
-    }
-
-    public Coordinate coordinate(Individual<G, S, Q> individual) {
-      double value = function.apply(individual).doubleValue();
-      return new Coordinate(
-          Math.min((int) (new DoubleRange(min, max).normalize(value) * nOfBins), nOfBins - 1),
-          value
-      );
-    }
+    this.archiveProvider = archiveProvider;
   }
 
   @Override
@@ -82,10 +71,17 @@ public class MapElites<G, S, Q> extends AbstractPopulationBasedIterativeSolver<M
       RandomGenerator random,
       Executor executor
   ) throws SolverException {
+    NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archive = archiveProvider.provide(descriptors.size(),
+        i -> i, (oldI, newI) -> newI);
+    if (archive.arity() != descriptors.size()) {
+      throw new SolverException(
+          "Archive and descriptor sizes do not matches: %d vs. %d".formatted(archive.arity(),
+              descriptors.size()));
+    }
     MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>> newState = MEPopulationState.empty(
         problem,
         stopCondition(),
-        descriptors
+        archive
     );
     AtomicLong counter = new AtomicLong(0);
     Collection<MEIndividual<G, S, Q>> newIndividuals = parallelCall(
@@ -101,7 +97,7 @@ public class MapElites<G, S, Q> extends AbstractPopulationBasedIterativeSolver<M
                     s.problem().qualityFunction(),
                     s.nOfIterations()
                 ),
-                s.descriptors()
+                descriptors
             ),
             newState,
             random
@@ -111,7 +107,12 @@ public class MapElites<G, S, Q> extends AbstractPopulationBasedIterativeSolver<M
     return newState.updatedWithIteration(
         populationSize,
         populationSize,
-        newState.archive().updated(newIndividuals, MEIndividual::bins, partialComparator(problem))
+        newState.archive().withAll(
+            newIndividuals,
+            MEIndividual::descriptorValues,
+            (newI, oldI) -> !partialComparator(problem)
+                .compare(oldI, newI).equals(PartialComparatorOutcome.BEFORE)
+        )
     );
   }
 
@@ -121,7 +122,7 @@ public class MapElites<G, S, Q> extends AbstractPopulationBasedIterativeSolver<M
       Executor executor,
       MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>> state
   ) throws SolverException {
-    Collection<MEIndividual<G, S, Q>> individuals = state.archive().asMap().values();
+    Collection<MEIndividual<G, S, Q>> individuals = state.archive().contents();
     // build new genotypes
     AtomicLong counter = new AtomicLong(state.nOfBirths());
     Collection<MEIndividual<G, S, Q>> newIndividuals = parallelCall(
@@ -143,7 +144,7 @@ public class MapElites<G, S, Q> extends AbstractPopulationBasedIterativeSolver<M
                     s.problem().qualityFunction(),
                     s.nOfIterations()
                 ),
-                s.descriptors()
+                descriptors
             ),
             state,
             random
@@ -153,8 +154,12 @@ public class MapElites<G, S, Q> extends AbstractPopulationBasedIterativeSolver<M
     return state.updatedWithIteration(
         populationSize,
         populationSize,
-        state.archive()
-            .updated(newIndividuals, MEIndividual::bins, partialComparator(state.problem()))
+        state.archive().withAll(
+            newIndividuals,
+            MEIndividual::descriptorValues,
+            (newI, oldI) -> !partialComparator(state.problem())
+                .compare(oldI, newI).equals(PartialComparatorOutcome.BEFORE)
+        )
     );
   }
 }

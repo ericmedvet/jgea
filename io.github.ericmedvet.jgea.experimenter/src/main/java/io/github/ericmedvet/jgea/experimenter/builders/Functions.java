@@ -40,7 +40,6 @@ import io.github.ericmedvet.jgea.core.solver.MultiFidelityPOCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.State;
 import io.github.ericmedvet.jgea.core.solver.cabea.GridPopulationState;
-import io.github.ericmedvet.jgea.core.solver.mapelites.Archive;
 import io.github.ericmedvet.jgea.core.solver.mapelites.CoMEPopulationState;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MAMEPopulationState;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MEIndividual;

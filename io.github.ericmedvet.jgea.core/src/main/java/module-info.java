@@ -23,6 +23,7 @@ module io.github.ericmedvet.jgea.core {
   requires io.github.ericmedvet.jnb.datastructure;
   requires commons.math3;
   requires io.github.ericmedvet.jviz.core;
+  requires jcodec;
 
   exports io.github.ericmedvet.jgea.core;
   exports io.github.ericmedvet.jgea.core.distance;
@@ -59,6 +60,7 @@ module io.github.ericmedvet.jgea.core {
   exports io.github.ericmedvet.jgea.core.solver.pso;
   exports io.github.ericmedvet.jgea.core.solver.es;
   exports io.github.ericmedvet.jgea.core.solver.cooperative;
+  exports io.github.ericmedvet.jgea.core.solver.mapelites.archive;
   exports io.github.ericmedvet.jgea.core.solver.mapelites.strategy;
   exports io.github.ericmedvet.jgea.core.solver.bi;
   exports io.github.ericmedvet.jgea.core.solver.bi.mapelites;

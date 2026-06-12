@@ -19,10 +19,28 @@
  */
 package io.github.ericmedvet.jgea.core.solver.mapelites.archive;
 
+import io.github.ericmedvet.jnb.datastructure.TriFunction;
+import java.util.Collection;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import org.jcodec.common.DictionaryCompressor.Int;
 
 public interface NumericalKeyArchive<V, C> extends Archive<List<Double>, V, C> {
 
+  interface Provider<V, C> {
+
+    NumericalKeyArchive<V, C> provide(int arity,
+        Function<V, C> contentInitializer, BiFunction<C, V, C> contentUpdater);
+  }
+
   int arity();
 
+  @Override
+  default NumericalKeyArchive<V, C> withAll(Collection<V> values,
+      Function<V, List<Double>> keyExtractor, BiPredicate<V, C> predicate) {
+    values.forEach(value -> putIf(keyExtractor.apply(value), value, predicate));
+    return this;
+  }
 }

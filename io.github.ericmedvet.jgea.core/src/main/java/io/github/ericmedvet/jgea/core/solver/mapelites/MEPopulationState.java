@@ -24,20 +24,18 @@ import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.State;
+import io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.function.Predicate;
 
 public interface MEPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q>> extends POCPopulationState<MEIndividual<G, S, Q>, G, S, Q, P> {
-  Archive<MEIndividual<G, S, Q>> archive();
-
-  List<MapElites.Descriptor<G, S, Q>> descriptors();
-
+  NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archive();
   static <G, S, Q, P extends QualityBasedProblem<S, Q>> MEPopulationState<G, S, Q, P> empty(
       P problem,
       Predicate<State<?, ?>> stopCondition,
-      List<MapElites.Descriptor<G, S, Q>> descriptors
+      NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archive
   ) {
     return of(
         LocalDateTime.now(),
@@ -47,10 +45,7 @@ public interface MEPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q>>
         stopCondition,
         0,
         0,
-        descriptors,
-        new Archive<>(
-            descriptors.stream().map(MapElites.Descriptor::nOfBins).toList()
-        )
+        archive
     );
   }
 
@@ -62,8 +57,7 @@ public interface MEPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q>>
       Predicate<State<?, ?>> stopCondition,
       long nOfBirths,
       long nOfQualityEvaluations,
-      List<MapElites.Descriptor<G, S, Q>> descriptors,
-      Archive<MEIndividual<G, S, Q>> archive
+      NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archive
   ) {
     PartialComparator<? super MEIndividual<G, S, Q>> comparator = (i1, i2) -> problem.qualityComparator()
         .compare(i1.quality(), i2.quality());
@@ -76,8 +70,7 @@ public interface MEPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q>>
         long nOfBirths,
         long nOfQualityEvaluations,
         PartiallyOrderedCollection<MEIndividual<G, S, Q>> pocPopulation,
-        List<MapElites.Descriptor<G, S, Q>> descriptors,
-        Archive<MEIndividual<G, S, Q>> archive
+        NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archive
     ) implements MEPopulationState<G, S, Q, P> {}
     return new HardState<>(
         startingDateTime,
@@ -87,8 +80,7 @@ public interface MEPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q>>
         stopCondition,
         nOfBirths,
         nOfQualityEvaluations,
-        PartiallyOrderedCollection.from(archive.asMap().values(), comparator),
-        descriptors,
+        PartiallyOrderedCollection.from(archive.contents(), comparator),
         archive
     );
   }
@@ -96,7 +88,7 @@ public interface MEPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q>>
   default MEPopulationState<G, S, Q, P> updatedWithIteration(
       long nOfNewBirths,
       long nOfNewQualityEvaluations,
-      Archive<MEIndividual<G, S, Q>> archive
+      NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archive
   ) {
     return of(
         startingDateTime(),
@@ -106,7 +98,6 @@ public interface MEPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q>>
         stopCondition(),
         nOfBirths() + nOfNewBirths,
         nOfQualityEvaluations() + nOfNewQualityEvaluations,
-        descriptors(),
         archive
     );
   }
@@ -121,7 +112,6 @@ public interface MEPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q>>
         stopCondition(),
         nOfBirths(),
         nOfQualityEvaluations(),
-        descriptors(),
         archive()
     );
   }

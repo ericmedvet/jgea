@@ -24,14 +24,15 @@ import io.github.ericmedvet.jgea.core.solver.Individual;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 public interface MEIndividual<G, S, Q> extends Individual<G, S, Q> {
 
-  List<MapElites.Descriptor.Coordinate> coordinates();
+  List<Double> descriptorValues();
 
   static <G, S, Q> MEIndividual<G, S, Q> from(
       Individual<G, S, Q> individual,
-      List<MapElites.Descriptor<G, S, Q>> descriptors
+      List<Function<Individual<G, S, Q>,Number>> descriptors
   ) {
     return of(
         individual.id(),
@@ -41,7 +42,7 @@ public interface MEIndividual<G, S, Q> extends Individual<G, S, Q> {
         individual.genotypeBirthIteration(),
         individual.qualityMappingIteration(),
         individual.parentIds(),
-        descriptors.stream().map(d -> d.coordinate(individual)).toList()
+        descriptors.stream().map(d -> d.apply(individual).doubleValue()).toList()
     );
   }
 
@@ -53,7 +54,7 @@ public interface MEIndividual<G, S, Q> extends Individual<G, S, Q> {
       long genotypeBirthIteration,
       long qualityMappingIteration,
       Collection<Long> parentIds,
-      List<MapElites.Descriptor.Coordinate> coordinates
+      List<Double> descriptorValues
   ) {
     record HardIndividual<G, S, Q>(
         long id,
@@ -63,7 +64,7 @@ public interface MEIndividual<G, S, Q> extends Individual<G, S, Q> {
         long genotypeBirthIteration,
         long qualityMappingIteration,
         Collection<Long> parentIds,
-        List<MapElites.Descriptor.Coordinate> coordinates
+        List<Double> descriptorValues
     ) implements MEIndividual<G, S, Q> {
       @Override
       public boolean equals(Object o) {
@@ -86,12 +87,8 @@ public interface MEIndividual<G, S, Q> extends Individual<G, S, Q> {
         genotypeBirthIteration,
         qualityMappingIteration,
         parentIds,
-        coordinates
+        descriptorValues
     );
-  }
-
-  default List<Integer> bins() {
-    return coordinates().stream().map(MapElites.Descriptor.Coordinate::bin).toList();
   }
 
   default MEIndividual<G, S, Q> updatedWithQuality(Q q) {
@@ -103,7 +100,7 @@ public interface MEIndividual<G, S, Q> extends Individual<G, S, Q> {
         genotypeBirthIteration(),
         qualityMappingIteration(),
         parentIds(),
-        coordinates()
+        descriptorValues()
     );
   }
 
@@ -116,7 +113,7 @@ public interface MEIndividual<G, S, Q> extends Individual<G, S, Q> {
         genotypeBirthIteration(),
         qualityMappingIteration,
         parentIds(),
-        this.coordinates()
+        descriptorValues()
     );
   }
 }

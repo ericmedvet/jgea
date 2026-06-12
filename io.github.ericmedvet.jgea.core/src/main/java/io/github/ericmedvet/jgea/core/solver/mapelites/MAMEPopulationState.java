@@ -26,6 +26,8 @@ import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.State;
+import io.github.ericmedvet.jgea.core.solver.mapelites.archive.Archive;
+import io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -34,14 +36,12 @@ import java.util.function.Predicate;
 
 public interface MAMEPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q>> extends POCPopulationState<Individual<G, S, Q>, G, S, Q, P> {
 
-  List<Archive<MEIndividual<G, S, Q>>> archives();
-
-  List<List<MapElites.Descriptor<G, S, Q>>> listsOfDescriptors();
+  List<NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>> archives();
 
   static <G, S, Q, P extends QualityBasedProblem<S, Q>> MAMEPopulationState<G, S, Q, P> empty(
       P problem,
       Predicate<State<?, ?>> stopCondition,
-      List<List<MapElites.Descriptor<G, S, Q>>> listsOfDescriptors
+      List<NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>> archives
   ) {
     return of(
         LocalDateTime.now(),
@@ -51,14 +51,7 @@ public interface MAMEPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q
         stopCondition,
         0,
         0,
-        listsOfDescriptors,
-        listsOfDescriptors.stream()
-            .map(
-                ds -> new Archive<MEIndividual<G, S, Q>>(
-                    ds.stream().map(MapElites.Descriptor::nOfBins).toList()
-                )
-            )
-            .toList()
+        archives
     );
   }
 
@@ -70,8 +63,7 @@ public interface MAMEPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q
       Predicate<State<?, ?>> stopCondition,
       long nOfBirths,
       long nOfQualityEvaluations,
-      List<List<MapElites.Descriptor<G, S, Q>>> listsOfDescriptors,
-      List<Archive<MEIndividual<G, S, Q>>> archives
+      List<NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>> archives
   ) {
     PartialComparator<? super Individual<G, S, Q>> comparator = (i1, i2) -> problem.qualityComparator()
         .compare(i1.quality(), i2.quality());
@@ -84,8 +76,7 @@ public interface MAMEPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q
         long nOfBirths,
         long nOfQualityEvaluations,
         PartiallyOrderedCollection<Individual<G, S, Q>> pocPopulation,
-        List<List<MapElites.Descriptor<G, S, Q>>> listsOfDescriptors,
-        List<Archive<MEIndividual<G, S, Q>>> archives
+        List<NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>> archives
     ) implements MAMEPopulationState<G, S, Q, P> {}
     return new HardState<>(
         startingDateTime,
@@ -97,13 +88,12 @@ public interface MAMEPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q
         nOfQualityEvaluations,
         PartiallyOrderedCollection.from(
             archives.stream()
-                .map(a -> a.asMap().values())
+                .map(Archive::contents)
                 .flatMap(Collection::stream)
                 .map(i -> (Individual<G, S, Q>) i)
                 .toList(),
             comparator
         ),
-        listsOfDescriptors,
         archives
     );
   }
@@ -111,7 +101,7 @@ public interface MAMEPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q
   default MAMEPopulationState<G, S, Q, P> updatedWithIteration(
       long nOfNewBirths,
       long nOfNewQualityEvaluations,
-      List<Archive<MEIndividual<G, S, Q>>> archives
+      List<NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>> archives
   ) {
     return of(
         startingDateTime(),
@@ -121,7 +111,6 @@ public interface MAMEPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q
         stopCondition(),
         nOfBirths() + nOfNewBirths,
         nOfQualityEvaluations() + nOfNewQualityEvaluations,
-        listsOfDescriptors(),
         archives
     );
   }
@@ -136,7 +125,6 @@ public interface MAMEPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q
         stopCondition(),
         nOfBirths(),
         nOfQualityEvaluations(),
-        listsOfDescriptors(),
         archives()
     );
   }
