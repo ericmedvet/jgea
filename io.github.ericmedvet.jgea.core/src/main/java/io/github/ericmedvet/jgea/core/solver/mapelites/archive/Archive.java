@@ -21,6 +21,7 @@ package io.github.ericmedvet.jgea.core.solver.mapelites.archive;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
@@ -51,8 +52,53 @@ public interface Archive<K, V, C> {
     return false;
   }
 
+  default <MV, MC> Archive<K, MV, MC> map(Function<? super C, ? extends MC> mapper) {
+    // returns a read-only view
+    Archive<K, V, C> thisArchive = this;
+    return new Archive<>() {
+      @Override
+      public int capacity() {
+        return thisArchive.capacity();
+      }
+
+      @Override
+      public Collection<MC> contents() {
+        return thisArchive.contents().stream().map(c -> (MC) mapper.apply(c)).toList();
+      }
+
+      @Override
+      public Optional<MC> get(K key) {
+        return thisArchive.get(key).map(mapper);
+      }
+
+      @Override
+      public void put(K key, MV value) {
+        throw new UnsupportedOperationException(
+            "Cannot put values as this is a readonly view of %s".formatted(thisArchive)
+        );
+      }
+    };
+  }
+
+  default void merge(K key, V value, BiFunction<V, C, V> merger) {
+    Optional<C> existingCO = get(key);
+    if (existingCO.isEmpty()) {
+      put(key, value);
+    } else {
+      put(key, merger.apply(value, existingCO.get()));
+    }
+  }
+
+  default void putOrUpdate(K key, V value, Function<C, V> updater) {
+    merge(key, value, (newV, oldC) -> updater.apply(oldC));
+  }
+
   default Archive<K, V, C> withAll(Collection<V> values, Function<V, K> keyExtractor, BiPredicate<V, C> predicate) {
     values.forEach(value -> putIf(keyExtractor.apply(value), value, predicate));
     return this;
+  }
+
+  default void update(K key, Function<C, V> updater) {
+    get(key).ifPresent(content -> put(key, updater.apply(content)));
   }
 }

@@ -82,4 +82,14 @@ public class TwoDGridArchive<V, C> extends GridArchive<V, C> implements TwoDKeyA
     );
     return map;
   }
+
+  @Override
+  public String toString() {
+    return "TwoDGridArchive[%s]".formatted(
+        axes.stream()
+            .map(a -> "%d".formatted(a.nOfBins()))
+            .collect(Collectors.joining("x"))
+    );
+  }
+
 }

@@ -20,9 +20,14 @@
 package io.github.ericmedvet.jgea.core.solver.mapelites.archive;
 
 import io.github.ericmedvet.jviz.core.geometry.Polygon;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public interface TwoDKeyArchive<V, C> extends NumericalKeyArchive<V, C> {
 
@@ -57,4 +62,47 @@ public interface TwoDKeyArchive<V, C> extends NumericalKeyArchive<V, C> {
 
   Map<Polygon, C> localizedContents();
 
+  @Override
+  default <MV, MC> TwoDKeyArchive<MV, MC> map(Function<? super C, ? extends MC> mapper) {
+    // returns a read-only view
+    TwoDKeyArchive<V, C> thisArchive = this;
+    return new TwoDKeyArchive<>() {
+      @Override
+      public int arity() {
+        return thisArchive.arity();
+      }
+
+      @Override
+      public int capacity() {
+        return thisArchive.capacity();
+      }
+
+      @Override
+      public Collection<MC> contents() {
+        return thisArchive.contents().stream().map(c -> (MC) mapper.apply(c)).toList();
+      }
+
+      @Override
+      public Optional<MC> get(double x, double y) {
+        return thisArchive.get(x, y).map(mapper);
+      }
+
+      @Override
+      public Map<Polygon, MC> localizedContents() {
+        return Collections.unmodifiableMap(
+            thisArchive.localizedContents()
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(Entry::getKey, e -> mapper.apply(e.getValue())))
+        );
+      }
+
+      @Override
+      public void put(double x, double y, MV value) {
+        throw new UnsupportedOperationException(
+            "Cannot put values as this is a readonly view of %s".formatted(thisArchive)
+        );
+      }
+    };
+  }
 }

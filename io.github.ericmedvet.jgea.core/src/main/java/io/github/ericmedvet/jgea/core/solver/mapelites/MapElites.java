@@ -34,19 +34,17 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
-public class MapElites<G, S, Q> extends
-    AbstractPopulationBasedIterativeSolver<MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>>, QualityBasedProblem<S, Q>, MEIndividual<G, S, Q>, G, S, Q> {
+public class MapElites<G, S, Q> extends AbstractPopulationBasedIterativeSolver<MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>>, QualityBasedProblem<S, Q>, MEIndividual<G, S, Q>, G, S, Q> {
 
   protected final int populationSize;
   private final Mutation<G> mutation;
   private final List<Function<Individual<G, S, Q>, Number>> descriptors;
-  private final NumericalKeyArchive.Provider<MEIndividual<G,S,Q>,MEIndividual<G,S,Q>> archiveProvider;
+  private final NumericalKeyArchive.Provider archiveProvider;
 
   public MapElites(
       Function<? super G, ? extends S> solutionMapper,
@@ -55,7 +53,7 @@ public class MapElites<G, S, Q> extends
       Mutation<G> mutation,
       int populationSize,
       List<Function<Individual<G, S, Q>, Number>> descriptors,
-      NumericalKeyArchive.Provider<MEIndividual<G,S,Q>,MEIndividual<G,S,Q>> archiveProvider,
+      NumericalKeyArchive.Provider archiveProvider,
       List<PartialComparator<? super MEIndividual<G, S, Q>>> additionalIndividualComparators
   ) {
     super(solutionMapper, genotypeFactory, stopCondition, false, additionalIndividualComparators);
@@ -71,12 +69,18 @@ public class MapElites<G, S, Q> extends
       RandomGenerator random,
       Executor executor
   ) throws SolverException {
-    NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archive = archiveProvider.provide(descriptors.size(),
-        i -> i, (oldI, newI) -> newI);
+    NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archive = archiveProvider.provide(
+        descriptors.size(),
+        i -> i,
+        (oldI, newI) -> newI
+    );
     if (archive.arity() != descriptors.size()) {
       throw new SolverException(
-          "Archive and descriptor sizes do not matches: %d vs. %d".formatted(archive.arity(),
-              descriptors.size()));
+          "Archive and descriptor sizes do not matches: %d vs. %d".formatted(
+              archive.arity(),
+              descriptors.size()
+          )
+      );
     }
     MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>> newState = MEPopulationState.empty(
         problem,
@@ -107,12 +111,14 @@ public class MapElites<G, S, Q> extends
     return newState.updatedWithIteration(
         populationSize,
         populationSize,
-        newState.archive().withAll(
-            newIndividuals,
-            MEIndividual::descriptorValues,
-            (newI, oldI) -> !partialComparator(problem)
-                .compare(oldI, newI).equals(PartialComparatorOutcome.BEFORE)
-        )
+        newState.archive()
+            .withAll(
+                newIndividuals,
+                MEIndividual::descriptorValues,
+                (newI, oldI) -> !partialComparator(problem)
+                    .compare(oldI, newI)
+                    .equals(PartialComparatorOutcome.BEFORE)
+            )
     );
   }
 
@@ -154,12 +160,14 @@ public class MapElites<G, S, Q> extends
     return state.updatedWithIteration(
         populationSize,
         populationSize,
-        state.archive().withAll(
-            newIndividuals,
-            MEIndividual::descriptorValues,
-            (newI, oldI) -> !partialComparator(state.problem())
-                .compare(oldI, newI).equals(PartialComparatorOutcome.BEFORE)
-        )
+        state.archive()
+            .withAll(
+                newIndividuals,
+                MEIndividual::descriptorValues,
+                (newI, oldI) -> !partialComparator(state.problem())
+                    .compare(oldI, newI)
+                    .equals(PartialComparatorOutcome.BEFORE)
+            )
     );
   }
 }

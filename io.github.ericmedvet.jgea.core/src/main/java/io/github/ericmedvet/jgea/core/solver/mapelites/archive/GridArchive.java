@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class GridArchive<V, C> extends AbstractHasherArchive<List<Double>, List<DoubleRange>, V, C> implements NumericalKeyArchive<V, C> {
@@ -32,8 +33,8 @@ public class GridArchive<V, C> extends AbstractHasherArchive<List<Double>, List<
 
   }
 
-  private final List<Axis> axes;
-  private final List<List<DoubleRange>> cells;
+  protected final List<Axis> axes;
+  protected final List<List<DoubleRange>> cells;
   private final int capacity;
 
   public GridArchive(
@@ -73,5 +74,14 @@ public class GridArchive<V, C> extends AbstractHasherArchive<List<Double>, List<
   @Override
   public int capacity() {
     return capacity;
+  }
+
+  @Override
+  public String toString() {
+    return "GridArchive[%s]".formatted(
+        axes.stream()
+            .map(a -> "%d".formatted(a.nOfBins))
+            .collect(Collectors.joining("x"))
+    );
   }
 }

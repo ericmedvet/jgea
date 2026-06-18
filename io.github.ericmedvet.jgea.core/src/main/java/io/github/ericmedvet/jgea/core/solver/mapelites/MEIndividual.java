@@ -32,7 +32,7 @@ public interface MEIndividual<G, S, Q> extends Individual<G, S, Q> {
 
   static <G, S, Q> MEIndividual<G, S, Q> from(
       Individual<G, S, Q> individual,
-      List<Function<Individual<G, S, Q>,Number>> descriptors
+      List<Function<Individual<G, S, Q>, Number>> descriptors
   ) {
     return of(
         individual.id(),

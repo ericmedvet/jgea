@@ -23,21 +23,16 @@ import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.MultifidelityQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.MultiFidelityPOCPopulationState;
-import io.github.ericmedvet.jgea.core.solver.mapelites.MapElites.Descriptor;
+import io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.function.Predicate;
 
 public interface MultiFidelityMEPopulationState<G, S, Q, P extends MultifidelityQualityBasedProblem<S, Q>> extends MEPopulationState<G, S, Q, P>, MultiFidelityPOCPopulationState<MEIndividual<G, S, Q>, G, S, Q, P> {
-  record LocalState(long nOfQualityEvaluations, double fidelity, double cumulativeFidelity) {}
-
-  Archive<LocalState> fidelityArchive();
 
   static <G, S, Q, P extends MultifidelityQualityBasedProblem<S, Q>> MultiFidelityMEPopulationState<G, S, Q, P> empty(
       P problem,
       Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
-      List<MapElites.Descriptor<G, S, Q>> descriptors
+      NumericalKeyArchive<LocalState<G, S, Q>, LocalState<G, S, Q>> stateArchive
   ) {
     return of(
         LocalDateTime.now(),
@@ -47,11 +42,7 @@ public interface MultiFidelityMEPopulationState<G, S, Q, P extends Multifidelity
         stopCondition,
         0,
         0,
-        descriptors,
-        new Archive<>(
-            descriptors.stream().map(MapElites.Descriptor::nOfBins).toList()
-        ),
-        new Archive<>(descriptors.stream().map(MapElites.Descriptor::nOfBins).toList())
+        stateArchive
     );
   }
 
@@ -63,9 +54,7 @@ public interface MultiFidelityMEPopulationState<G, S, Q, P extends Multifidelity
       Predicate<io.github.ericmedvet.jgea.core.solver.State<?, ?>> stopCondition,
       long nOfBirths,
       long nOfQualityEvaluations,
-      List<Descriptor<G, S, Q>> descriptors,
-      Archive<MEIndividual<G, S, Q>> archive,
-      Archive<LocalState> fidelityArchive
+      NumericalKeyArchive<LocalState<G, S, Q>, LocalState<G, S, Q>> stateArchive
   ) {
     PartialComparator<? super MEIndividual<G, S, Q>> comparator = (i1, i2) -> problem.qualityComparator()
         .compare(i1.quality(), i2.quality());
@@ -78,11 +67,11 @@ public interface MultiFidelityMEPopulationState<G, S, Q, P extends Multifidelity
         long nOfBirths,
         long nOfQualityEvaluations,
         PartiallyOrderedCollection<MEIndividual<G, S, Q>> pocPopulation,
-        List<MapElites.Descriptor<G, S, Q>> descriptors,
-        Archive<MEIndividual<G, S, Q>> archive,
-        Archive<LocalState> fidelityArchive,
+        NumericalKeyArchive<LocalState<G, S, Q>, LocalState<G, S, Q>> stateArchive,
         double cumulativeFidelity
-    ) implements MultiFidelityMEPopulationState<G, S, Q, P> {}
+    ) implements MultiFidelityMEPopulationState<G, S, Q, P> {
+
+    }
     return new HardState<>(
         startingDateTime,
         elapsedMillis,
@@ -91,33 +80,21 @@ public interface MultiFidelityMEPopulationState<G, S, Q, P extends Multifidelity
         stopCondition,
         nOfBirths,
         nOfQualityEvaluations,
-        PartiallyOrderedCollection.from(archive.asMap().values(), comparator),
-        descriptors,
-        archive,
-        fidelityArchive,
-        fidelityArchive.asMap().values().stream().mapToDouble(LocalState::cumulativeFidelity).sum()
+        PartiallyOrderedCollection.from(
+            stateArchive.map(LocalState::individual).contents(),
+            comparator
+        ),
+        stateArchive,
+        stateArchive.contents().stream().mapToDouble(LocalState::cumulativeFidelity).sum()
     );
   }
 
-  default MultiFidelityMEPopulationState<G, S, Q, P> updatedWithIteration(
-      long nOfNewBirths,
-      long nOfNewQualityEvaluations,
-      Archive<MEIndividual<G, S, Q>> archive,
-      Archive<LocalState> fidelityArchive
-  ) {
-    return of(
-        startingDateTime(),
-        ChronoUnit.MILLIS.between(startingDateTime(), LocalDateTime.now()),
-        nOfIterations() + 1,
-        problem(),
-        stopCondition(),
-        nOfBirths() + nOfNewBirths,
-        nOfQualityEvaluations() + nOfNewQualityEvaluations,
-        descriptors(),
-        archive,
-        fidelityArchive
-    );
+  @Override
+  default NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archive() {
+    return stateArchive().map(LocalState::individual);
   }
+
+  NumericalKeyArchive<LocalState<G, S, Q>, LocalState<G, S, Q>> stateArchive();
 
   @Override
   default MultiFidelityMEPopulationState<G, S, Q, P> updatedWithProblem(P problem) {
@@ -129,10 +106,44 @@ public interface MultiFidelityMEPopulationState<G, S, Q, P extends Multifidelity
         stopCondition(),
         nOfBirths(),
         nOfQualityEvaluations(),
-        descriptors(),
-        archive(),
-        fidelityArchive()
+        stateArchive()
     );
+  }
+
+  record LocalState<G, S, Q>(
+      MEIndividual<G, S, Q> individual,
+      long nOfQualityEvaluations,
+      double individualFidelity,
+      double currentFidelity,
+      double cumulativeFidelity
+  ) {
+
+    public static <G, S, Q> LocalState<G, S, Q> of(
+        MEIndividual<G, S, Q> individual,
+        double fidelity
+    ) {
+      return new LocalState<>(individual, 1, fidelity, fidelity, fidelity);
+    }
+
+    public LocalState<G, S, Q> updated(MEIndividual<G, S, Q> individual, double fidelity) {
+      return new LocalState<>(
+          individual,
+          nOfQualityEvaluations,
+          fidelity,
+          currentFidelity,
+          cumulativeFidelity
+      );
+    }
+
+    public LocalState<G, S, Q> updated(double fidelity) {
+      return new LocalState<>(
+          individual,
+          nOfQualityEvaluations + 1,
+          individualFidelity,
+          fidelity,
+          cumulativeFidelity + fidelity
+      );
+    }
   }
 
 }

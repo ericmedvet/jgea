@@ -27,11 +27,11 @@ import io.github.ericmedvet.jgea.core.solver.State;
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.function.Predicate;
 
 public interface MEPopulationState<G, S, Q, P extends QualityBasedProblem<S, Q>> extends POCPopulationState<MEIndividual<G, S, Q>, G, S, Q, P> {
   NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archive();
+
   static <G, S, Q, P extends QualityBasedProblem<S, Q>> MEPopulationState<G, S, Q, P> empty(
       P problem,
       Predicate<State<?, ?>> stopCondition,

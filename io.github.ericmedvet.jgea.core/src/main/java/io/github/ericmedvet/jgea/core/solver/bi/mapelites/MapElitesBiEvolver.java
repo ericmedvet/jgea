@@ -22,6 +22,7 @@ package io.github.ericmedvet.jgea.core.solver.bi.mapelites;
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
+import io.github.ericmedvet.jgea.core.order.PartialComparator.PartialComparatorOutcome;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedBiProblem;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.SolverException;
@@ -29,6 +30,7 @@ import io.github.ericmedvet.jgea.core.solver.bi.AbstractBiEvolver;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MEIndividual;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MEPopulationState;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MapElites;
+import io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.util.*;
@@ -42,11 +44,13 @@ import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
-public class MapElitesBiEvolver<G, S, Q, O> extends AbstractBiEvolver<MEPopulationState<G, S, Q, QualityBasedBiProblem<S, O, Q>>, QualityBasedBiProblem<S, O, Q>, MEIndividual<G, S, Q>, G, S, Q, O> {
+public class MapElitesBiEvolver<G, S, Q, O> extends
+    AbstractBiEvolver<MEPopulationState<G, S, Q, QualityBasedBiProblem<S, O, Q>>, QualityBasedBiProblem<S, O, Q>, MEIndividual<G, S, Q>, G, S, Q, O> {
 
   protected final int populationSize;
   private final Mutation<G> mutation;
-  private final List<MapElites.Descriptor<G, S, Q>> descriptors;
+  private final List<Function<Individual<G, S, Q>, Number>> descriptors;
+  private final NumericalKeyArchive.Provider archiveProvider;
   private final boolean emptyArchive;
 
   public MapElitesBiEvolver(
@@ -55,7 +59,8 @@ public class MapElitesBiEvolver<G, S, Q, O> extends AbstractBiEvolver<MEPopulati
       Predicate<? super MEPopulationState<G, S, Q, QualityBasedBiProblem<S, O, Q>>> stopCondition,
       Mutation<G> mutation,
       int populationSize,
-      List<MapElites.Descriptor<G, S, Q>> descriptors,
+      List<Function<Individual<G, S, Q>, Number>> descriptors,
+      NumericalKeyArchive.Provider archiveProvider,
       BinaryOperator<Q> fitnessReducer,
       boolean emptyArchive,
       List<PartialComparator<? super MEIndividual<G, S, Q>>> additionalIndividualComparators,
@@ -75,6 +80,7 @@ public class MapElitesBiEvolver<G, S, Q, O> extends AbstractBiEvolver<MEPopulati
     this.populationSize = populationSize;
     this.mutation = mutation;
     this.descriptors = descriptors;
+    this.archiveProvider = archiveProvider;
     this.emptyArchive = emptyArchive;
   }
 
@@ -84,6 +90,24 @@ public class MapElitesBiEvolver<G, S, Q, O> extends AbstractBiEvolver<MEPopulati
       RandomGenerator random,
       Executor executor
   ) throws SolverException {
+    NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archive = archiveProvider.provide(
+        descriptors.size(),
+        i -> i,
+        (oldI, newI) -> newI
+    );
+    if (archive.arity() != descriptors.size()) {
+      throw new SolverException(
+          "Archive and descriptor sizes do not matches: %d vs. %d".formatted(
+              archive.arity(),
+              descriptors.size()
+          )
+      );
+    }
+    MEPopulationState<G, S, Q, QualityBasedBiProblem<S, O, Q>> newState = MEPopulationState.empty(
+        problem,
+        stopCondition(),
+        archive
+    );
     // create new genotypes and split in two list of opponents
     AtomicLong counter = new AtomicLong(0);
     Collection<? extends G> genotypes = genotypeFactory.build(populationSize, random);
@@ -109,13 +133,16 @@ public class MapElitesBiEvolver<G, S, Q, O> extends AbstractBiEvolver<MEPopulati
         i2
     ) -> new Pair<>(Math.min(i1.id(), i2.id()), Math.max(i1.id(), i2.id()));
     for (MEIndividual<G, S, Q> individual : individuals) {
-      List<MEIndividual<G, S, Q>> opponents = opponentsSelector.select(individuals, individual, problem, random);
+      List<MEIndividual<G, S, Q>> opponents = opponentsSelector.select(individuals, individual,
+          problem, random);
       for (MEIndividual<G, S, Q> opponent : opponents) {
-        matches.putIfAbsent(individualsToIdPair.apply(individual, opponent), new Pair<>(individual, opponent));
+        matches.putIfAbsent(individualsToIdPair.apply(individual, opponent),
+            new Pair<>(individual, opponent));
       }
     }
     List<Callable<MatchOutcome<Q>>> callables = new ArrayList<>(matches.size());
-    List<Pair<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>> matchesOpponents = matches.values().stream().toList();
+    List<Pair<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>> matchesOpponents = matches.values()
+        .stream().toList();
     for (int i = 0; i < matches.size(); i++) {
       int index = i;
       callables.add(() -> {
@@ -139,15 +166,17 @@ public class MapElitesBiEvolver<G, S, Q, O> extends AbstractBiEvolver<MEPopulati
             i -> i.updateQuality(fitnessAggregator.apply(idsFitnessMap.get(i.id())), 0)
         )
         .toList();
-    MEPopulationState<G, S, Q, QualityBasedBiProblem<S, O, Q>> newState = MEPopulationState.empty(
-        problem,
-        stopCondition(),
-        descriptors
-    );
     return newState.updatedWithIteration(
         populationSize,
         callables.size(),
-        newState.archive().updated(updatedIndividuals, MEIndividual::bins, partialComparator(problem))
+        newState.archive()
+            .withAll(
+                updatedIndividuals,
+                MEIndividual::descriptorValues,
+                (newI, oldI) -> !partialComparator(problem)
+                    .compare(oldI, newI)
+                    .equals(PartialComparatorOutcome.BEFORE)
+            )
     );
   }
 
@@ -158,7 +187,8 @@ public class MapElitesBiEvolver<G, S, Q, O> extends AbstractBiEvolver<MEPopulati
       MEPopulationState<G, S, Q, QualityBasedBiProblem<S, O, Q>> state
   ) throws SolverException {
     // build offspring with empty quality
-    Collection<MEIndividual<G, S, Q>> individuals = new ArrayList<>(state.archive().asMap().values().stream().toList());
+    Collection<MEIndividual<G, S, Q>> individuals = new ArrayList<>(
+        state.archive().contents().stream().toList());
     AtomicLong counter = new AtomicLong(state.nOfBirths());
     Collection<ChildGenotype<G>> newChildGenotypes = IntStream.range(0, populationSize)
         .mapToObj(j -> Misc.pickRandomly(individuals, random))
@@ -196,11 +226,13 @@ public class MapElitesBiEvolver<G, S, Q, O> extends AbstractBiEvolver<MEPopulati
           random
       );
       for (MEIndividual<G, S, Q> opponent : opponents) {
-        matches.putIfAbsent(individualsToIdPair.apply(individual, opponent), new Pair<>(individual, opponent));
+        matches.putIfAbsent(individualsToIdPair.apply(individual, opponent),
+            new Pair<>(individual, opponent));
       }
     }
     List<Callable<MatchOutcome<Q>>> callables = new ArrayList<>(matches.size());
-    List<Pair<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>> matchesOpponents = matches.values().stream().toList();
+    List<Pair<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>> matchesOpponents = matches.values()
+        .stream().toList();
     for (int i = 0; i < matches.size(); i++) {
       int index = i;
       callables.add(() -> {
@@ -238,14 +270,30 @@ public class MapElitesBiEvolver<G, S, Q, O> extends AbstractBiEvolver<MEPopulati
     PartialComparator<? super Individual<?, ?, ?>> updaterComparator = (
         newI,
         existingI
-    ) -> newI == existingI ? PartialComparator.PartialComparatorOutcome.BEFORE : PartialComparator.PartialComparatorOutcome.AFTER;
-    Archive<MEIndividual<G, S, Q>> archive;
+    ) -> newI == existingI ? PartialComparator.PartialComparatorOutcome.BEFORE
+        : PartialComparator.PartialComparatorOutcome.AFTER;
+
+    NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archive;
     if (emptyArchive) {
-      archive = new Archive<>(state.archive().binUpperBounds());
+      archive = archiveProvider.provide(
+          descriptors.size(),
+          i -> i,
+          (oldI, newI) -> newI
+      );
     } else {
-      archive = state.archive().updated(updatedIndividuals, MEIndividual::bins, updaterComparator);
+      archive = state.archive();
     }
-    archive = archive.updated(updatedIndividuals, MEIndividual::bins, partialComparator(state.problem()));
-    return state.updatedWithIteration(populationSize, matchesOutcomes.size(), archive);
+    return state.updatedWithIteration(
+        populationSize,
+        callables.size(),
+        archive
+            .withAll(
+                updatedIndividuals,
+                MEIndividual::descriptorValues,
+                (newI, oldI) -> !partialComparator(state.problem())
+                    .compare(oldI, newI)
+                    .equals(PartialComparatorOutcome.BEFORE)
+            )
+    );
   }
 }

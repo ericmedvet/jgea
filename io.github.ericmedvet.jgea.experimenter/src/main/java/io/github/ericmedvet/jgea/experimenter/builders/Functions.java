@@ -281,7 +281,7 @@ public class Functions {
       }
       return (double) s.nOfQualityEvaluations();
     };
-    return FormattedNamedFunction.from(f, format, "cumulative.fidelity").compose(beforeF);
+    return FormattedNamedFunction.from(f, format, "cumulative.individualFidelity").compose(beforeF);
   }
 
   @Cacheable
@@ -598,8 +598,8 @@ public class Functions {
   public static <X, G, S, Q> NamedFunction<X, Archive<MultiFidelityMEPopulationState.LocalState>> mfMeFidelityArchive(
       @Param(value = "of", dNPM = "f.identity()") Function<X, MultiFidelityMEPopulationState<G, S, Q, ?>> beforeF
   ) {
-    Function<MultiFidelityMEPopulationState<G, S, Q, ?>, Archive<MultiFidelityMEPopulationState.LocalState>> f = MultiFidelityMEPopulationState::fidelityArchive;
-    return NamedFunction.from(f, "fidelity.archive").compose(beforeF);
+    Function<MultiFidelityMEPopulationState<G, S, Q, ?>, Archive<MultiFidelityMEPopulationState.LocalState>> f = MultiFidelityMEPopulationState::stateArchive;
+    return NamedFunction.from(f, "individualFidelity.archive").compose(beforeF);
   }
 
   @Cacheable
@@ -608,7 +608,7 @@ public class Functions {
       @Param(value = "format", dS = "%5.3f") String format
   ) {
     Function<MultiFidelityMEPopulationState.LocalState, Double> f = MultiFidelityMEPopulationState.LocalState::cumulativeFidelity;
-    return FormattedNamedFunction.from(f, format, "cumulative.fidelity").compose(beforeF);
+    return FormattedNamedFunction.from(f, format, "cumulative.individualFidelity").compose(beforeF);
   }
 
   @Cacheable
@@ -616,8 +616,8 @@ public class Functions {
       @Param(value = "of", dNPM = "f.identity()") Function<X, MultiFidelityMEPopulationState.LocalState> beforeF,
       @Param(value = "format", dS = "%5.3f") String format
   ) {
-    Function<MultiFidelityMEPopulationState.LocalState, Double> f = MultiFidelityMEPopulationState.LocalState::fidelity;
-    return FormattedNamedFunction.from(f, format, "fidelity").compose(beforeF);
+    Function<MultiFidelityMEPopulationState.LocalState, Double> f = MultiFidelityMEPopulationState.LocalState::individualFidelity;
+    return FormattedNamedFunction.from(f, format, "individualFidelity").compose(beforeF);
   }
 
   @Cacheable

@@ -40,13 +40,12 @@ import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
-public class MultiArchiveMapElites<G, S, Q> extends
-    AbstractPopulationBasedIterativeSolver<MAMEPopulationState<G, S, Q, QualityBasedProblem<S, Q>>, QualityBasedProblem<S, Q>, Individual<G, S, Q>, G, S, Q> {
+public class MultiArchiveMapElites<G, S, Q> extends AbstractPopulationBasedIterativeSolver<MAMEPopulationState<G, S, Q, QualityBasedProblem<S, Q>>, QualityBasedProblem<S, Q>, Individual<G, S, Q>, G, S, Q> {
 
   protected final int populationSize;
   private final Mutation<G> mutation;
   private final List<List<Function<Individual<G, S, Q>, Number>>> listsOfDescriptors;
-  private final NumericalKeyArchive.Provider<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archiveProvider;
+  private final NumericalKeyArchive.Provider archiveProvider;
 
   public MultiArchiveMapElites(
       Function<? super G, ? extends S> solutionMapper,
@@ -55,7 +54,7 @@ public class MultiArchiveMapElites<G, S, Q> extends
       Mutation<G> mutation,
       int populationSize,
       List<List<Function<Individual<G, S, Q>, Number>>> listsOfDescriptors,
-      NumericalKeyArchive.Provider<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archiveProvider,
+      NumericalKeyArchive.Provider archiveProvider,
       List<PartialComparator<? super Individual<G, S, Q>>> additionalIndividualComparators
   ) {
     super(solutionMapper, genotypeFactory, stopCondition, false, additionalIndividualComparators);
@@ -72,14 +71,24 @@ public class MultiArchiveMapElites<G, S, Q> extends
       Executor executor
   ) throws SolverException {
     List<NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>> archives = listsOfDescriptors.stream()
-        .map(descriptors -> archiveProvider.provide(descriptors.size(),
-            i -> i, (oldI, newI) -> newI)).toList();
+        .map(
+            descriptors -> archiveProvider.<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>provide(
+                descriptors.size(),
+                i -> i,
+                (oldI, newI) -> newI
+            )
+        )
+        .toList();
     for (int i = 0; i < archives.size(); i++) {
       if (archives.get(i).arity() != listsOfDescriptors.get(i).size()) {
         throw new SolverException(
-            "Archive %d and descriptor sizes %d do not matches: %d vs. %d".formatted(i, i,
+            "Archive %d and descriptor sizes %d do not matches: %d vs. %d".formatted(
+                i,
+                i,
                 archives.get(i).arity(),
-                listsOfDescriptors.get(i).size()));
+                listsOfDescriptors.get(i).size()
+            )
+        );
       }
     }
     MAMEPopulationState<G, S, Q, QualityBasedProblem<S, Q>> newState = MAMEPopulationState.empty(
@@ -94,8 +103,12 @@ public class MultiArchiveMapElites<G, S, Q> extends
                 .stream()
                 .map(g -> new ChildGenotype<G>(counter.getAndIncrement(), g, List.of()))
                 .toList(),
-            (cg, s, r) -> Individual.from(cg, solutionMapper, s.problem().qualityFunction(),
-                s.nOfIterations()),
+            (cg, s, r) -> Individual.from(
+                cg,
+                solutionMapper,
+                s.problem().qualityFunction(),
+                s.nOfIterations()
+            ),
             newState,
             random
         ),
@@ -115,7 +128,8 @@ public class MultiArchiveMapElites<G, S, Q> extends
                             .toList(),
                         MEIndividual::descriptorValues,
                         (newI, oldI) -> !partialComparator(problem)
-                            .compare(oldI, newI).equals(PartialComparatorOutcome.BEFORE)
+                            .compare(oldI, newI)
+                            .equals(PartialComparatorOutcome.BEFORE)
                     )
             )
             .toList()
@@ -138,8 +152,11 @@ public class MultiArchiveMapElites<G, S, Q> extends
         mapTasks(
             IntStream.range(0, populationSize)
                 .mapToObj(
-                    j -> Misc.pickRandomly(archiveIndividuals.get(j % archiveIndividuals.size()),
-                        random))
+                    j -> Misc.pickRandomly(
+                        archiveIndividuals.get(j % archiveIndividuals.size()),
+                        random
+                    )
+                )
                 .map(
                     p -> new ChildGenotype<>(
                         counter.getAndIncrement(),
@@ -148,15 +165,20 @@ public class MultiArchiveMapElites<G, S, Q> extends
                     )
                 )
                 .toList(),
-            (cg, s, r) -> Individual.from(cg, solutionMapper, s.problem().qualityFunction(),
-                s.nOfIterations()),
+            (cg, s, r) -> Individual.from(
+                cg,
+                solutionMapper,
+                s.problem().qualityFunction(),
+                s.nOfIterations()
+            ),
             state,
             random
         ),
         executor
     );
     PartialComparator<? super MEIndividual<G, S, Q>> partialComparator = partialComparator(
-        state.problem());
+        state.problem()
+    );
     return state.updatedWithIteration(
         populationSize,
         populationSize,
@@ -170,7 +192,8 @@ public class MultiArchiveMapElites<G, S, Q> extends
                             .toList(),
                         MEIndividual::descriptorValues,
                         (newI, oldI) -> !partialComparator(state.problem())
-                            .compare(oldI, newI).equals(PartialComparatorOutcome.BEFORE)
+                            .compare(oldI, newI)
+                            .equals(PartialComparatorOutcome.BEFORE)
                     )
             )
             .toList()
