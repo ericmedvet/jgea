@@ -20,11 +20,14 @@
 package io.github.ericmedvet.jgea.core.solver.mapelites.archive;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public abstract class AbstractHasherArchive<K, H, V, C> implements Archive<K, V, C> {
 
@@ -51,6 +54,8 @@ public abstract class AbstractHasherArchive<K, H, V, C> implements Archive<K, V,
 
   public abstract H hash(K key);
 
+  public abstract K deHash(H hash);
+
   @Override
   public Optional<C> get(K key) {
     return Optional.ofNullable(map.get(hash(key)));
@@ -69,5 +74,10 @@ public abstract class AbstractHasherArchive<K, H, V, C> implements Archive<K, V,
   @Override
   public Collection<C> contents() {
     return map.values();
+  }
+
+  @Override
+  public Set<K> valuedKeys() {
+    return map.keySet().stream().map(this::deHash).collect(Collectors.toSet());
   }
 }

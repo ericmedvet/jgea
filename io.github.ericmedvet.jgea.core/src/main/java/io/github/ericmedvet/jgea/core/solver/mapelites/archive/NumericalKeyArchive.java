@@ -22,6 +22,7 @@ package io.github.ericmedvet.jgea.core.solver.mapelites.archive;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -41,6 +42,11 @@ public interface NumericalKeyArchive<V, C> extends Archive<List<Double>, V, C> {
       @Override
       public int capacity() {
         return thisArchive.capacity();
+      }
+
+      @Override
+      public Set<List<Double>> valuedKeys() {
+        return thisArchive.valuedKeys();
       }
 
       @Override
@@ -68,7 +74,7 @@ public interface NumericalKeyArchive<V, C> extends Archive<List<Double>, V, C> {
   default NumericalKeyArchive<V, C> withAll(
       Collection<V> values,
       Function<V, List<Double>> keyExtractor,
-      BiPredicate<V, C> predicate
+      BiPredicate<? super V, ? super C> predicate
   ) {
     values.forEach(value -> putIf(keyExtractor.apply(value), value, predicate));
     return this;

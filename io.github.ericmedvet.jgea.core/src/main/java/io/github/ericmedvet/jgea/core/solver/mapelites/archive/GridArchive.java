@@ -60,6 +60,11 @@ public class GridArchive<V, C> extends AbstractHasherArchive<List<Double>, List<
         .toList();
   }
 
+  @Override
+  public List<Double> deHash(List<DoubleRange> hash) {
+    return hash.stream().map(DoubleRange::center).toList();
+  }
+
   private static DoubleRange cellOf(double value, Axis axis, List<DoubleRange> subranges) {
     return subranges.get(
         (int) Math.clamp(axis.range.normalize(value) * axis.nOfBins, 0, axis.nOfBins - 1)

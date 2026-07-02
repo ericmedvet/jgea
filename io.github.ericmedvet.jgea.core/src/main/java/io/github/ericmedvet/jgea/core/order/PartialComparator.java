@@ -20,8 +20,10 @@
 
 package io.github.ericmedvet.jgea.core.order;
 
+import io.github.ericmedvet.jgea.core.problem.BehaviorBasedProblem.Outcome;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 @FunctionalInterface
@@ -172,6 +174,18 @@ public interface PartialComparator<K> {
       public boolean isTotal() {
         return thisPartialComparator.isTotal() && other.isTotal();
       }
+    };
+  }
+
+  default BiPredicate<K,K> firstIs(PartialComparatorOutcome... outcomes) {
+    return (k1, k2) -> {
+      PartialComparatorOutcome outcome = compare(k1, k2);
+      for (PartialComparatorOutcome okOutcome : outcomes) {
+        if (outcome.equals(okOutcome)) {
+          return true;
+        }
+      }
+      return false;
     };
   }
 }

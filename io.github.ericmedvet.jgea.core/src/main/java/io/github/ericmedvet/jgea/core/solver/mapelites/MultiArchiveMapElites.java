@@ -114,7 +114,6 @@ public class MultiArchiveMapElites<G, S, Q> extends AbstractPopulationBasedItera
         ),
         executor
     );
-    PartialComparator<? super MEIndividual<G, S, Q>> partialComparator = partialComparator(problem);
     return newState.updatedWithIteration(
         populationSize,
         populationSize,
@@ -127,9 +126,7 @@ public class MultiArchiveMapElites<G, S, Q> extends AbstractPopulationBasedItera
                             .map(i -> MEIndividual.from(i, listsOfDescriptors.get(j)))
                             .toList(),
                         MEIndividual::descriptorValues,
-                        (newI, oldI) -> !partialComparator(problem)
-                            .compare(oldI, newI)
-                            .equals(PartialComparatorOutcome.BEFORE)
+                        partialComparator(problem).firstIs(PartialComparatorOutcome.BEFORE).negate()
                     )
             )
             .toList()
@@ -176,9 +173,6 @@ public class MultiArchiveMapElites<G, S, Q> extends AbstractPopulationBasedItera
         ),
         executor
     );
-    PartialComparator<? super MEIndividual<G, S, Q>> partialComparator = partialComparator(
-        state.problem()
-    );
     return state.updatedWithIteration(
         populationSize,
         populationSize,
@@ -191,9 +185,7 @@ public class MultiArchiveMapElites<G, S, Q> extends AbstractPopulationBasedItera
                             .map(i -> MEIndividual.from(i, listsOfDescriptors.get(j)))
                             .toList(),
                         MEIndividual::descriptorValues,
-                        (newI, oldI) -> !partialComparator(state.problem())
-                            .compare(oldI, newI)
-                            .equals(PartialComparatorOutcome.BEFORE)
+                        partialComparator(state.problem()).firstIs(PartialComparatorOutcome.BEFORE).negate()
                     )
             )
             .toList()

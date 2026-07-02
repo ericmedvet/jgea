@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -75,6 +76,11 @@ public interface TwoDKeyArchive<V, C> extends NumericalKeyArchive<V, C> {
       @Override
       public int capacity() {
         return thisArchive.capacity();
+      }
+
+      @Override
+      public Set<List<Double>> valuedKeys() {
+        return thisArchive.valuedKeys();
       }
 
       @Override

@@ -24,6 +24,7 @@ import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.POCPopulationState;
 import io.github.ericmedvet.jgea.core.solver.State;
+import io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive;
 import io.github.ericmedvet.jgea.core.solver.mapelites.strategy.CoMEStrategy;
 import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.time.LocalDateTime;
@@ -33,25 +34,14 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBasedProblem<S, Q>> extends POCPopulationState<CoMEIndividual<G1, G2, S1, S2, S, Q>, Pair<G1, G2>, S, Q, P> {
-
-  Archive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> archive1();
-
-  Archive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> archive2();
-
-  List<MapElites.Descriptor<G1, S1, Q>> descriptors1();
-
-  List<MapElites.Descriptor<G2, S2, Q>> descriptors2();
-
-  CoMEStrategy strategy1();
-
-  CoMEStrategy strategy2();
+public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBasedProblem<S, Q>> extends
+    POCPopulationState<CoMEIndividual<G1, G2, S1, S2, S, Q>, Pair<G1, G2>, S, Q, P> {
 
   static <G1, G2, S1, S2, S, Q, P extends QualityBasedProblem<S, Q>> CoMEPopulationState<G1, G2, S1, S2, S, Q, P> empty(
       P problem,
       Predicate<State<?, ?>> stopCondition,
-      List<MapElites.Descriptor<G1, S1, Q>> descriptors1,
-      List<MapElites.Descriptor<G2, S2, Q>> descriptors2,
+      NumericalKeyArchive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>, CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> archive1,
+      NumericalKeyArchive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>, CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> archive2,
       CoMEStrategy strategy1,
       CoMEStrategy strategy2
   ) {
@@ -63,15 +53,8 @@ public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBase
         stopCondition,
         0,
         0,
-        List.of(),
-        descriptors1,
-        descriptors2,
-        new Archive<>(
-            descriptors1.stream().map(MapElites.Descriptor::nOfBins).toList()
-        ),
-        new Archive<>(
-            descriptors2.stream().map(MapElites.Descriptor::nOfBins).toList()
-        ),
+        archive1,
+        archive2,
         strategy1,
         strategy2
     );
@@ -85,11 +68,8 @@ public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBase
       Predicate<State<?, ?>> stopCondition,
       long nOfBirths,
       long nOfQualityEvaluations,
-      Collection<CoMEIndividual<G1, G2, S1, S2, S, Q>> individuals,
-      List<MapElites.Descriptor<G1, S1, Q>> descriptors1,
-      List<MapElites.Descriptor<G2, S2, Q>> descriptors2,
-      Archive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> archive1,
-      Archive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> archive2,
+      NumericalKeyArchive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>, CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> archive1,
+      NumericalKeyArchive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>, CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> archive2,
       CoMEStrategy strategy1,
       CoMEStrategy strategy2
   ) {
@@ -104,13 +84,13 @@ public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBase
         long nOfBirths,
         long nOfQualityEvaluations,
         PartiallyOrderedCollection<CoMEIndividual<G1, G2, S1, S2, S, Q>> pocPopulation,
-        List<MapElites.Descriptor<G1, S1, Q>> descriptors1,
-        List<MapElites.Descriptor<G2, S2, Q>> descriptors2,
-        Archive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> archive1,
-        Archive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> archive2,
+        NumericalKeyArchive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>, CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> archive1,
+        NumericalKeyArchive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>, CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> archive2,
         CoMEStrategy strategy1,
         CoMEStrategy strategy2
-    ) implements CoMEPopulationState<G1, G2, S1, S2, S, Q, P> {}
+    ) implements CoMEPopulationState<G1, G2, S1, S2, S, Q, P> {
+
+    }
     return new HardState<>(
         startingDateTime,
         elapsedMillis,
@@ -119,9 +99,13 @@ public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBase
         stopCondition,
         nOfBirths,
         nOfQualityEvaluations,
-        PartiallyOrderedCollection.from(individuals, comparator),
-        descriptors1,
-        descriptors2,
+        PartiallyOrderedCollection.from(
+            Stream.concat(
+                    archive1.contents().stream(),
+                    archive2.contents().stream()
+                ).map(CoMEPartialIndividual::completeIndividual)
+                .toList()
+            , comparator),
         archive1,
         archive2,
         strategy1,
@@ -129,11 +113,19 @@ public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBase
     );
   }
 
+  CoMEStrategy strategy1();
+
+  CoMEStrategy strategy2();
+
+  NumericalKeyArchive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>, CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> archive1();
+
+  NumericalKeyArchive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>, CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> archive2();
+
   default CoMEPopulationState<G1, G2, S1, S2, S, Q, P> updatedWithIteration(
       long nOfNewBirths,
       long nOfNewQualityEvaluations,
-      Archive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> archive1,
-      Archive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> archive2,
+      NumericalKeyArchive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>, CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> archive1,
+      NumericalKeyArchive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>, CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> archive2,
       CoMEStrategy strategy1,
       CoMEStrategy strategy2
   ) {
@@ -145,13 +137,6 @@ public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBase
         stopCondition(),
         nOfBirths() + nOfNewBirths,
         nOfQualityEvaluations() + nOfNewQualityEvaluations,
-        Stream.concat(
-            archive1.asMap().values().stream().map(CoMEPartialIndividual::completeIndividual),
-            archive2.asMap().values().stream().map(CoMEPartialIndividual::completeIndividual)
-        )
-            .toList(),
-        descriptors1(),
-        descriptors2(),
         archive1,
         archive2,
         strategy1,
@@ -169,9 +154,6 @@ public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBase
         stopCondition(),
         nOfBirths(),
         nOfQualityEvaluations(),
-        pocPopulation().all(),
-        descriptors1(),
-        descriptors2(),
         archive1(),
         archive2(),
         strategy1(),

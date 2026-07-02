@@ -20,7 +20,9 @@
 package io.github.ericmedvet.jgea.core.solver.mapelites.archive;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -29,27 +31,16 @@ public interface Archive<K, V, C> {
 
   int capacity();
 
-  Collection<C> contents();
-
-  default double coverage() {
-    return (double) contents().size() / (double) capacity();
+  default Collection<C> contents() {
+    return valuedKeys().stream()
+        .map(this::get)
+        .filter(Optional::isPresent)
+        .map(Optional::orElseThrow)
+        .toList();
   }
 
-  Optional<C> get(K key);
-
-  void put(K key, V value);
-
-  default boolean putIf(K key, V value, BiPredicate<V, C> predicate) {
-    Optional<C> existingCO = get(key);
-    if (existingCO.isEmpty()) {
-      put(key, value);
-      return true;
-    }
-    if (predicate.test(value, existingCO.get())) {
-      put(key, value);
-      return true;
-    }
-    return false;
+  default double coverage() {
+    return (double) valuedKeys().size() / (double) capacity();
   }
 
   default <MV, MC> Archive<K, MV, MC> map(Function<? super C, ? extends MC> mapper) {
@@ -59,6 +50,11 @@ public interface Archive<K, V, C> {
       @Override
       public int capacity() {
         return thisArchive.capacity();
+      }
+
+      @Override
+      public Set<K> valuedKeys() {
+        return thisArchive.valuedKeys();
       }
 
       @Override
@@ -79,6 +75,25 @@ public interface Archive<K, V, C> {
       }
     };
   }
+
+  Optional<C> get(K key);
+
+  void put(K key, V value);
+
+  default boolean putIf(K key, V value, BiPredicate<? super V, ? super C> predicate) {
+    Optional<C> existingCO = get(key);
+    if (existingCO.isEmpty()) {
+      put(key, value);
+      return true;
+    }
+    if (predicate.test(value, existingCO.get())) {
+      put(key, value);
+      return true;
+    }
+    return false;
+  }
+
+  Set<K> valuedKeys();
 
   default void merge(K key, V value, BiFunction<V, C, V> merger) {
     Optional<C> existingCO = get(key);
