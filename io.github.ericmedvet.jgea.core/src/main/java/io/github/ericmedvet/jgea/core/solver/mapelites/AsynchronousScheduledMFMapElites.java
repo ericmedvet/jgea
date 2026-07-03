@@ -206,9 +206,7 @@ public class AsynchronousScheduledMFMapElites<G, S, Q> extends AbstractPopulatio
     AtomicReference<Double> progressRate = new AtomicReference<>(0d);
     AtomicBoolean stopped = new AtomicBoolean(false);
     NumericalKeyArchive<LocalState<G, S, Q>, LocalState<G, S, Q>> stateArchive = archiveProvider.provide(
-        descriptors.size(),
-        ls -> ls,
-        (oldLS, newLS) -> newLS
+        descriptors.size()
     );
     // build seed individual
     long seedId = nOfBirths.getAndIncrement();

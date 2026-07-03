@@ -22,6 +22,9 @@ package io.github.ericmedvet.jgea.core.distance;
 import java.util.List;
 
 public class LNorm implements Distance<List<Double>> {
+
+  public static final LNorm EUCLIDEAN = new LNorm(2);
+
   private final double d;
 
   public LNorm(double d) {

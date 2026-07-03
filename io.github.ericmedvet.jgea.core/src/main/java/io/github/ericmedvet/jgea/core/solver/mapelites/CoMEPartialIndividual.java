@@ -23,13 +23,14 @@ import io.github.ericmedvet.jgea.core.solver.Individual;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 public interface CoMEPartialIndividual<GT, ST, G1, G2, S1, S2, S, Q> extends MEIndividual<GT, ST, Q> {
   CoMEIndividual<G1, G2, S1, S2, S, Q> completeIndividual();
 
   static <GT, ST, G1, G2, S1, S2, S, Q> CoMEPartialIndividual<GT, ST, G1, G2, S1, S2, S, Q> from(
       Individual<GT, ST, Q> individual,
-      List<MapElites.Descriptor<GT, ST, Q>> descriptors
+      List<Function<Individual<GT, ST, Q>, Number>> descriptors
   ) {
     return of(
         individual.id(),
@@ -39,7 +40,7 @@ public interface CoMEPartialIndividual<GT, ST, G1, G2, S1, S2, S, Q> extends MEI
         individual.genotypeBirthIteration(),
         individual.qualityMappingIteration(),
         individual.parentIds(),
-        descriptors.stream().map(d -> d.coordinate(individual)).toList(),
+        descriptors.stream().map(d -> d.apply(individual).doubleValue()).toList(),
         null
     );
   }
@@ -55,7 +56,7 @@ public interface CoMEPartialIndividual<GT, ST, G1, G2, S1, S2, S, Q> extends MEI
         coMEIndividual.individual1().genotypeBirthIteration(),
         coMEIndividual.individual1().qualityMappingIteration(),
         coMEIndividual.individual1().parentIds(),
-        coMEIndividual.individual1().coordinates(),
+        coMEIndividual.individual1().descriptorValues(),
         coMEIndividual
     );
   }
@@ -71,7 +72,7 @@ public interface CoMEPartialIndividual<GT, ST, G1, G2, S1, S2, S, Q> extends MEI
         coMEIndividual.individual2().genotypeBirthIteration(),
         coMEIndividual.individual2().qualityMappingIteration(),
         coMEIndividual.individual2().parentIds(),
-        coMEIndividual.individual2().coordinates(),
+        coMEIndividual.individual2().descriptorValues(),
         coMEIndividual
     );
   }
@@ -84,7 +85,7 @@ public interface CoMEPartialIndividual<GT, ST, G1, G2, S1, S2, S, Q> extends MEI
       long genotypeBirthIteration,
       long qualityMappingIteration,
       Collection<Long> parentIds,
-      List<MapElites.Descriptor.Coordinate> coordinates,
+      List<Double> descriptorValues,
       CoMEIndividual<G1, G2, S1, S2, S, Q> completeIndividual
   ) {
     record HardIndividual<GT, ST, G1, G2, S1, S2, S, Q>(
@@ -95,7 +96,7 @@ public interface CoMEPartialIndividual<GT, ST, G1, G2, S1, S2, S, Q> extends MEI
         long genotypeBirthIteration,
         long qualityMappingIteration,
         Collection<Long> parentIds,
-        List<MapElites.Descriptor.Coordinate> coordinates,
+        List<Double> descriptorValues,
         CoMEIndividual<G1, G2, S1, S2, S, Q> completeIndividual
     ) implements CoMEPartialIndividual<GT, ST, G1, G2, S1, S2, S, Q> {
       @Override
@@ -119,7 +120,7 @@ public interface CoMEPartialIndividual<GT, ST, G1, G2, S1, S2, S, Q> extends MEI
         genotypeBirthIteration,
         qualityMappingIteration,
         parentIds,
-        coordinates,
+        descriptorValues,
         completeIndividual
     );
   }
@@ -133,7 +134,7 @@ public interface CoMEPartialIndividual<GT, ST, G1, G2, S1, S2, S, Q> extends MEI
         genotypeBirthIteration(),
         qualityMappingIteration(),
         parentIds(),
-        coordinates(),
+        descriptorValues(),
         completeIndividual().swapped()
     );
   }
@@ -149,7 +150,7 @@ public interface CoMEPartialIndividual<GT, ST, G1, G2, S1, S2, S, Q> extends MEI
         genotypeBirthIteration(),
         qualityMappingIteration(),
         parentIds(),
-        coordinates(),
+        descriptorValues(),
         completeIndividual
     );
   }

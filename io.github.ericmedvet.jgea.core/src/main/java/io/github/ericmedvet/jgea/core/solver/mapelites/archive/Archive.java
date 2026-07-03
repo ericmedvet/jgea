@@ -20,7 +20,6 @@
 package io.github.ericmedvet.jgea.core.solver.mapelites.archive;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -108,7 +107,11 @@ public interface Archive<K, V, C> {
     merge(key, value, (newV, oldC) -> updater.apply(oldC));
   }
 
-  default Archive<K, V, C> withAll(Collection<V> values, Function<V, K> keyExtractor, BiPredicate<V, C> predicate) {
+  default Archive<K, V, C> withAll(
+      Collection<V> values,
+      Function<? super V, ? extends K> keyExtractor,
+      BiPredicate<? super V, ? super C> predicate
+  ) {
     values.forEach(value -> putIf(keyExtractor.apply(value), value, predicate));
     return this;
   }

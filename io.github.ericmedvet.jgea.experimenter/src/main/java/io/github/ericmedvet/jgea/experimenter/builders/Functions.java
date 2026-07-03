@@ -22,6 +22,7 @@ package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jgea.core.InvertibleMapper;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
+import io.github.ericmedvet.jgea.core.order.PartialComparator.PartialComparatorOutcome;
 import io.github.ericmedvet.jgea.core.problem.BehaviorBasedProblem;
 import io.github.ericmedvet.jgea.core.problem.MultiTargetProblem;
 import io.github.ericmedvet.jgea.core.problem.Problem;
@@ -44,8 +45,10 @@ import io.github.ericmedvet.jgea.core.solver.mapelites.CoMEPopulationState;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MAMEPopulationState;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MEIndividual;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MEPopulationState;
-import io.github.ericmedvet.jgea.core.solver.mapelites.MapElites;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MultiFidelityMEPopulationState;
+import io.github.ericmedvet.jgea.core.solver.mapelites.MultiFidelityMEPopulationState.LocalState;
+import io.github.ericmedvet.jgea.core.solver.mapelites.archive.Archive;
+import io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
@@ -72,28 +75,12 @@ public class Functions {
   }
 
   @Cacheable
-  public static <X> NamedFunction<X, Map<List<Double>, List<Double>>> uniformSample(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, MultivariateRealFunction> beforeF,
-      @Param(value = "name", iS = "uniform.sample") String name,
-      @Param("ranges") List<DoubleRange> ranges,
-      @Param(value = "nOfPoints", dI = 10) int nOfPoints
+  public static <X, T> FormattedNamedFunction<X, Collection<T>> archiveContents(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Archive<?, ?, T>> beforeF,
+      @Param(value = "format", dS = "%4.2f") String format
   ) {
-    Function<MultivariateRealFunction, Map<List<Double>, List<Double>>> f = nds -> {
-      List<List<Double>> sampledRanges = ranges
-          .stream()
-          .map(r -> r.points(nOfPoints).boxed().toList())
-          .toList();
-      List<List<Double>> points = Misc.cartesian(sampledRanges);
-      Map<List<Double>, List<Double>> pointValueMap = points.stream()
-          .collect(
-              Collectors.toMap(
-                  p -> p,
-                  p -> Arrays.stream(nds.apply(p.stream().mapToDouble(d -> d).toArray())).boxed().toList()
-              )
-          );
-      return pointValueMap;
-    };
-    return NamedFunction.from(f, name).compose(beforeF);
+    Function<Archive<?, ?, T>, Collection<T>> f = Archive::contents;
+    return FormattedNamedFunction.from(f, format, "contents").compose(beforeF);
   }
 
   @Cacheable
@@ -106,33 +93,20 @@ public class Functions {
   }
 
   @Cacheable
-  public static <X, T> FormattedNamedFunction<X, Collection<T>> archiveContents(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, Archive<T>> beforeF,
-      @Param(value = "format", dS = "%4.2f") String format
-  ) {
-    Function<Archive<T>, Collection<T>> f = a -> a.asMap().values();
-    return FormattedNamedFunction.from(f, format, "contents").compose(beforeF);
-  }
-
-  @Cacheable
   public static <X, T> FormattedNamedFunction<X, Double> archiveCoverage(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, Archive<T>> beforeF,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Archive<?, ?, ?>> beforeF,
       @Param(value = "format", dS = "%4.2f") String format
   ) {
-    Function<Archive<T>, Double> f = a -> (double) a.asMap().size() / (double) a.capacity();
+    Function<Archive<?, ?, ?>, Double> f = Archive::coverage;
     return FormattedNamedFunction.from(f, format, "coverage").compose(beforeF);
   }
 
   @Cacheable
-  public static <X, T> NamedFunction<X, Grid<T>> archiveToGrid(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, Archive<T>> beforeF
+  public static <X, G, S, Q> NamedFunction<X, NumericalKeyArchive<? extends MEIndividual<G, S, Q>, ? extends MEIndividual<G, S, Q>>> coMeArchive1(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, CoMEPopulationState<G, ?, S, ?, ?, Q, ?>> beforeF
   ) {
-    Function<Archive<T>, Grid<T>> f = a -> Grid.create(
-        a.binUpperBounds().getFirst(),
-        a.binUpperBounds().get(1),
-        (x, y) -> a.get(List.of(x, y))
-    );
-    return NamedFunction.from(f, "archive.to.grid").compose(beforeF);
+    Function<CoMEPopulationState<G, ?, S, ?, ?, Q, ?>, NumericalKeyArchive<? extends MEIndividual<G, S, Q>, ? extends MEIndividual<G, S, Q>>> f = CoMEPopulationState::archive1;
+    return NamedFunction.from(f, "archive1").compose(beforeF);
   }
 
   @Cacheable
@@ -174,18 +148,10 @@ public class Functions {
   }
 
   @Cacheable
-  public static <X, G, S, Q> NamedFunction<X, Archive<? extends MEIndividual<G, S, Q>>> coMeArchive1(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, CoMEPopulationState<G, ?, S, ?, ?, Q, ?>> beforeF
-  ) {
-    Function<CoMEPopulationState<G, ?, S, ?, ?, Q, ?>, Archive<? extends MEIndividual<G, S, Q>>> f = CoMEPopulationState::archive1;
-    return NamedFunction.from(f, "archive1").compose(beforeF);
-  }
-
-  @Cacheable
-  public static <X, G, S, Q> NamedFunction<X, Archive<? extends MEIndividual<G, S, Q>>> coMeArchive2(
+  public static <X, G, S, Q> NamedFunction<X, NumericalKeyArchive<? extends MEIndividual<G, S, Q>, ? extends MEIndividual<G, S, Q>>> coMeArchive2(
       @Param(value = "of", dNPM = "f.identity()") Function<X, CoMEPopulationState<?, G, ?, S, ?, Q, ?>> beforeF
   ) {
-    Function<CoMEPopulationState<?, G, ?, S, ?, Q, ?>, Archive<? extends MEIndividual<G, S, Q>>> f = CoMEPopulationState::archive2;
+    Function<CoMEPopulationState<?, G, ?, S, ?, Q, ?>, NumericalKeyArchive<? extends MEIndividual<G, S, Q>, ? extends MEIndividual<G, S, Q>>> f = CoMEPopulationState::archive2;
     return NamedFunction.from(f, "archive2").compose(beforeF);
   }
 
@@ -195,13 +161,7 @@ public class Functions {
       @Param(value = "relative", dB = true) boolean relative
   ) {
     Function<CoMEPopulationState<?, ?, ?, ?, ?, ?, ?>, Map<List<Double>, List<Double>>> f = state -> state.strategy1()
-        .asField(
-            state.descriptors1()
-                .stream()
-                .map(MapElites.Descriptor::nOfBins)
-                .toList(),
-            relative
-        );
+        .asField(state.archive1().valuedKeys(), relative);
     return NamedFunction.from(f, "coMe.strategy1.field").compose(beforeF);
   }
 
@@ -211,38 +171,48 @@ public class Functions {
       @Param(value = "relative", dB = true) boolean relative
   ) {
     Function<CoMEPopulationState<?, ?, ?, ?, ?, ?, ?>, Map<List<Double>, List<Double>>> f = state -> state.strategy2()
-        .asField(
-            state.descriptors1()
-                .stream()
-                .map(MapElites.Descriptor::nOfBins)
-                .toList(),
-            relative
-        );
+        .asField(state.archive2().valuedKeys(), relative);
     return NamedFunction.from(f, "coMe.strategy2.field").compose(beforeF);
   }
 
   @Cacheable
-  public static <X, G, S, Q, I extends Individual<G, S, Q>> NamedFunction<X, Archive<MEIndividual<G, S, Q>>> computedArchive(
+  public static <X, G, S, Q, I extends Individual<G, S, Q>> NamedFunction<X, NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>> computedArchive(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Collection<I>> beforeF,
-      @Param("descriptors") List<MapElites.Descriptor<G, S, Q>> descriptors,
+      @Param("descriptors") List<Function<Individual<G, S, Q>, Number>> descriptors,
+      @Param("archive") NumericalKeyArchive.Provider archiveProvider,
       @Param(value = "qComparator", dNPM = "ea.f.qualityComparator(of = ea.f.problem())") Function<X, PartialComparator<? super Q>> qPartialComparatorFunction
   ) {
-    Function<X, Archive<MEIndividual<G, S, Q>>> f = x -> {
-      Collection<I> individuals = beforeF.apply(x);
-      List<MEIndividual<G, S, Q>> meIndividuals = individuals.stream()
-          .map(i -> MEIndividual.from(i, descriptors))
-          .toList();
-      Archive<MEIndividual<G, S, Q>> archive = new Archive<>(
-          descriptors.stream().map(MapElites.Descriptor::nOfBins).toList()
-      );
-      PartialComparator<MEIndividual<G, S, Q>> iPartialComparator = qPartialComparatorFunction.apply(
+    Function<X, NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>> f = x -> {
+      Collection<I> is = beforeF.apply(x);
+      PartialComparator<MEIndividual<G, S, Q>> partialComparator = qPartialComparatorFunction.apply(
           x
-      )
-          .comparing(MEIndividual::quality);
-      meIndividuals.forEach(i -> archive.put(i.bins(), i, iPartialComparator));
+      ).comparing(Individual::quality);
+      NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archive = archiveProvider.provide(
+          descriptors.size()
+      );
+      is.stream()
+          .map(i -> MEIndividual.from(i, descriptors))
+          .forEach(
+              i -> archive.putIf(
+                  i.descriptorValues(),
+                  i,
+                  partialComparator.secondIs(PartialComparatorOutcome.BEFORE).negate()
+              )
+          );
       return archive;
     };
     return NamedFunction.from(f, "computed.archive");
+  }
+
+  @Cacheable
+  public static <X, G, S, Q> NamedFunction<X, NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>> maMeArchive(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, MAMEPopulationState<G, S, Q, ?>> beforeF,
+      @Param("n") int n
+  ) {
+    Function<MAMEPopulationState<G, S, Q, ?>, NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>> f = s -> s
+        .archives()
+        .get(n);
+    return NamedFunction.from(f, "archive[%d]".formatted(n)).compose(beforeF);
   }
 
   @Cacheable
@@ -282,21 +252,6 @@ public class Functions {
       return (double) s.nOfQualityEvaluations();
     };
     return FormattedNamedFunction.from(f, format, "cumulative.individualFidelity").compose(beforeF);
-  }
-
-  @Cacheable
-  public static <X, G, S, Q> FormattedNamedFunction<X, Integer> descBin(
-      @Param("descriptor") MapElites.Descriptor<G, S, Q> descriptor,
-      @Param(value = "of", dNPM = "f.identity()") Function<X, Individual<G, S, Q>> beforeF,
-      @Param(value = "format", dS = "%2d") String format
-  ) {
-    Function<Individual<G, S, Q>, Integer> f = i -> descriptor.coordinate(i).bin();
-    return FormattedNamedFunction.from(
-        f,
-        format,
-        "bin[%s]".formatted(NamedFunction.name(descriptor.function()))
-    )
-        .compose(beforeF);
   }
 
   @Cacheable
@@ -550,83 +505,72 @@ public class Functions {
   }
 
   @Cacheable
-  public static <X, G, S, Q> NamedFunction<X, Archive<? extends MEIndividual<G, S, Q>>> maMeArchive(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, MAMEPopulationState<G, S, Q, ?>> beforeF,
-      @Param("n") int n
-  ) {
-    Function<MAMEPopulationState<G, S, Q, ?>, Archive<? extends MEIndividual<G, S, Q>>> f = s -> s.archives()
-        .get(n);
-    return NamedFunction.from(f, "archive[%d]".formatted(n)).compose(beforeF);
-  }
-
-  @Cacheable
-  public static <X, G, S, Q> NamedFunction<X, Archive<MEIndividual<G, S, Q>>> meArchive(
+  public static <X, G, S, Q> NamedFunction<X, NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>> meArchive(
       @Param(value = "of", dNPM = "f.identity()") Function<X, MEPopulationState<G, S, Q, ?>> beforeF
   ) {
-    Function<MEPopulationState<G, S, Q, ?>, Archive<MEIndividual<G, S, Q>>> f = MEPopulationState::archive;
+    Function<MEPopulationState<G, S, Q, ?>, NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>> f = MEPopulationState::archive;
     return NamedFunction.from(f, "archive").compose(beforeF);
   }
 
   @Cacheable
-  public static <X> FormattedNamedFunction<X, Integer> meBin(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, MapElites.Descriptor.Coordinate> beforeF,
-      @Param(value = "format", dS = "%3d") String format
-  ) {
-    Function<MapElites.Descriptor.Coordinate, Integer> f = MapElites.Descriptor.Coordinate::bin;
-    return FormattedNamedFunction.from(f, format, "bin").compose(beforeF);
-  }
-
-  @Cacheable
-  public static <X> FormattedNamedFunction<X, List<MapElites.Descriptor.Coordinate>> meCoordinates(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, MEIndividual<?, ?, ?>> beforeF,
-      @Param(value = "format", dS = "%s") String format
-  ) {
-    Function<MEIndividual<?, ?, ?>, List<MapElites.Descriptor.Coordinate>> f = MEIndividual::coordinates;
-    return FormattedNamedFunction.from(f, format, "coords").compose(beforeF);
-  }
-
-  @Cacheable
-  public static <X> FormattedNamedFunction<X, Double> meValue(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, MapElites.Descriptor.Coordinate> beforeF,
-      @Param(value = "format", dS = "%.2f") String format
-  ) {
-    Function<MapElites.Descriptor.Coordinate, Double> f = MapElites.Descriptor.Coordinate::value;
-    return FormattedNamedFunction.from(f, format, "value").compose(beforeF);
-  }
-
-  @Cacheable
-  public static <X, G, S, Q> NamedFunction<X, Archive<MultiFidelityMEPopulationState.LocalState>> mfMeFidelityArchive(
+  public static <X, G, S, Q> NamedFunction<X, NumericalKeyArchive<LocalState<G, S, Q>, LocalState<G, S, Q>>> mfMeFidelityArchive(
       @Param(value = "of", dNPM = "f.identity()") Function<X, MultiFidelityMEPopulationState<G, S, Q, ?>> beforeF
   ) {
-    Function<MultiFidelityMEPopulationState<G, S, Q, ?>, Archive<MultiFidelityMEPopulationState.LocalState>> f = MultiFidelityMEPopulationState::stateArchive;
+    Function<MultiFidelityMEPopulationState<G, S, Q, ?>, NumericalKeyArchive<LocalState<G, S, Q>, LocalState<G, S, Q>>> f = MultiFidelityMEPopulationState::stateArchive;
     return NamedFunction.from(f, "individualFidelity.archive").compose(beforeF);
   }
 
   @Cacheable
   public static <X> FormattedNamedFunction<X, Double> mfMeLsCumulativeFidelity(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, MultiFidelityMEPopulationState.LocalState> beforeF,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, MultiFidelityMEPopulationState.LocalState<?, ?, ?>> beforeF,
       @Param(value = "format", dS = "%5.3f") String format
   ) {
-    Function<MultiFidelityMEPopulationState.LocalState, Double> f = MultiFidelityMEPopulationState.LocalState::cumulativeFidelity;
+    Function<MultiFidelityMEPopulationState.LocalState<?, ?, ?>, Double> f = MultiFidelityMEPopulationState.LocalState::cumulativeFidelity;
     return FormattedNamedFunction.from(f, format, "cumulative.individualFidelity").compose(beforeF);
   }
 
   @Cacheable
   public static <X> FormattedNamedFunction<X, Double> mfMeLsFidelity(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, MultiFidelityMEPopulationState.LocalState> beforeF,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, MultiFidelityMEPopulationState.LocalState<?, ?, ?>> beforeF,
       @Param(value = "format", dS = "%5.3f") String format
   ) {
-    Function<MultiFidelityMEPopulationState.LocalState, Double> f = MultiFidelityMEPopulationState.LocalState::individualFidelity;
+    Function<MultiFidelityMEPopulationState.LocalState<?, ?, ?>, Double> f = MultiFidelityMEPopulationState.LocalState::individualFidelity;
     return FormattedNamedFunction.from(f, format, "individualFidelity").compose(beforeF);
   }
 
   @Cacheable
   public static <X> FormattedNamedFunction<X, Long> mfMeLsNOfEvals(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, MultiFidelityMEPopulationState.LocalState> beforeF,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, MultiFidelityMEPopulationState.LocalState<?, ?, ?>> beforeF,
       @Param(value = "format", dS = "%4d") String format
   ) {
-    Function<MultiFidelityMEPopulationState.LocalState, Long> f = MultiFidelityMEPopulationState.LocalState::nOfQualityEvaluations;
+    Function<MultiFidelityMEPopulationState.LocalState<?, ?, ?>, Long> f = MultiFidelityMEPopulationState.LocalState::nOfQualityEvaluations;
     return FormattedNamedFunction.from(f, format, "n.evals").compose(beforeF);
+  }
+
+  @Alias(name = "srTreeShortVarName", value = """
+      srTreeVarNameChange(
+        findRegex = "(([a-zA-Z])[a-z]++_?)";
+        replaceExpr ="$2"
+      )
+      """)
+  @Cacheable
+  public static <X> FormattedNamedFunction<X, Tree<Element>> srTreeVarNameChange(
+      @Param(value = "name", iS = "var.name.change") String name,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Tree<Element>> beforeF,
+      @Param(value = "format", dS = "s") String format,
+      @Param(value = "map", dNPM = "m.sMap()") Map<String, String> map,
+      @Param(value = "findRegex", dS = "") String findRegex,
+      @Param(value = "replaceExpr", dS = "") String replaceExpr
+  ) {
+    Function<Tree<Element>, Tree<Element>> f = t -> Tree.map(
+        t,
+        e -> switch (e) {
+          case Variable v ->
+            new Variable(map.getOrDefault(v.name(), v.name()).replaceAll(findRegex, replaceExpr));
+          default -> e;
+        }
+    );
+    return FormattedNamedFunction.from(f, format, name).compose(beforeF);
   }
 
   @Cacheable
@@ -857,29 +801,30 @@ public class Functions {
     return FormattedNamedFunction.from(f, format, "solution").compose(beforeF);
   }
 
-  @Alias(name = "srTreeShortVarName", value = """
-      srTreeVarNameChange(
-        findRegex = "(([a-zA-Z])[a-z]++_?)";
-        replaceExpr ="$2"
-      )
-      """)
   @Cacheable
-  public static <X> FormattedNamedFunction<X, Tree<Element>> srTreeVarNameChange(
-      @Param(value = "name", iS = "var.name.change") String name,
-      @Param(value = "of", dNPM = "f.identity()") Function<X, Tree<Element>> beforeF,
-      @Param(value = "format", dS = "s") String format,
-      @Param(value = "map", dNPM = "m.sMap()") Map<String, String> map,
-      @Param(value = "findRegex", dS = "") String findRegex,
-      @Param(value = "replaceExpr", dS = "") String replaceExpr
+  public static <X> NamedFunction<X, Map<List<Double>, List<Double>>> uniformSample(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, MultivariateRealFunction> beforeF,
+      @Param(value = "name", iS = "uniform.sample") String name,
+      @Param("ranges") List<DoubleRange> ranges,
+      @Param(value = "nOfPoints", dI = 10) int nOfPoints
   ) {
-    Function<Tree<Element>, Tree<Element>> f = t -> Tree.map(
-        t,
-        e -> switch (e) {
-          case Variable v -> new Variable(map.getOrDefault(v.name(), v.name()).replaceAll(findRegex, replaceExpr));
-          default -> e;
-        }
-    );
-    return FormattedNamedFunction.from(f, format, name).compose(beforeF);
+    Function<MultivariateRealFunction, Map<List<Double>, List<Double>>> f = nds -> {
+      List<List<Double>> sampledRanges = ranges
+          .stream()
+          .map(r -> r.points(nOfPoints).boxed().toList())
+          .toList();
+      List<List<Double>> points = Misc.cartesian(sampledRanges);
+      return points.stream()
+          .collect(
+              Collectors.toMap(
+                  p -> p,
+                  p -> Arrays.stream(nds.apply(p.stream().mapToDouble(d -> d).toArray()))
+                      .boxed()
+                      .toList()
+              )
+          );
+    };
+    return NamedFunction.from(f, name).compose(beforeF);
   }
 
   @Cacheable

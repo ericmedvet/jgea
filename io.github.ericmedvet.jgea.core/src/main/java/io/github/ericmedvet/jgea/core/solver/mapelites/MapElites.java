@@ -34,12 +34,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
-import org.jspecify.annotations.NonNull;
 
 public class MapElites<G, S, Q> extends AbstractPopulationBasedIterativeSolver<MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>>, QualityBasedProblem<S, Q>, MEIndividual<G, S, Q>, G, S, Q> {
 
@@ -72,9 +70,7 @@ public class MapElites<G, S, Q> extends AbstractPopulationBasedIterativeSolver<M
       Executor executor
   ) throws SolverException {
     NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archive = archiveProvider.provide(
-        descriptors.size(),
-        i -> i,
-        (oldI, newI) -> newI
+        descriptors.size()
     );
     if (archive.arity() != descriptors.size()) {
       throw new SolverException(
@@ -117,7 +113,7 @@ public class MapElites<G, S, Q> extends AbstractPopulationBasedIterativeSolver<M
             .withAll(
                 newIndividuals,
                 MEIndividual::descriptorValues,
-                partialComparator(problem).firstIs(PartialComparatorOutcome.BEFORE).negate()
+                partialComparator(problem).secondIs(PartialComparatorOutcome.BEFORE).negate()
             )
     );
   }
@@ -164,7 +160,7 @@ public class MapElites<G, S, Q> extends AbstractPopulationBasedIterativeSolver<M
             .withAll(
                 newIndividuals,
                 MEIndividual::descriptorValues,
-                partialComparator(state.problem()).firstIs(PartialComparatorOutcome.BEFORE).negate()
+                partialComparator(state.problem()).secondIs(PartialComparatorOutcome.BEFORE).negate()
             )
     );
   }

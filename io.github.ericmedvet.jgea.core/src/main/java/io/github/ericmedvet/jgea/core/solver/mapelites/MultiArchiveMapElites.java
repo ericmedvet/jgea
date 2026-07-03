@@ -71,13 +71,7 @@ public class MultiArchiveMapElites<G, S, Q> extends AbstractPopulationBasedItera
       Executor executor
   ) throws SolverException {
     List<NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>> archives = listsOfDescriptors.stream()
-        .map(
-            descriptors -> archiveProvider.<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>provide(
-                descriptors.size(),
-                i -> i,
-                (oldI, newI) -> newI
-            )
-        )
+        .map(descriptors -> archiveProvider.<MEIndividual<G, S, Q>>provide(descriptors.size()))
         .toList();
     for (int i = 0; i < archives.size(); i++) {
       if (archives.get(i).arity() != listsOfDescriptors.get(i).size()) {
@@ -126,7 +120,8 @@ public class MultiArchiveMapElites<G, S, Q> extends AbstractPopulationBasedItera
                             .map(i -> MEIndividual.from(i, listsOfDescriptors.get(j)))
                             .toList(),
                         MEIndividual::descriptorValues,
-                        partialComparator(problem).firstIs(PartialComparatorOutcome.BEFORE).negate()
+                        partialComparator(problem).secondIs(PartialComparatorOutcome.BEFORE)
+                            .negate()
                     )
             )
             .toList()
@@ -185,7 +180,8 @@ public class MultiArchiveMapElites<G, S, Q> extends AbstractPopulationBasedItera
                             .map(i -> MEIndividual.from(i, listsOfDescriptors.get(j)))
                             .toList(),
                         MEIndividual::descriptorValues,
-                        partialComparator(state.problem()).firstIs(PartialComparatorOutcome.BEFORE).negate()
+                        partialComparator(state.problem()).secondIs(PartialComparatorOutcome.BEFORE)
+                            .negate()
                     )
             )
             .toList()

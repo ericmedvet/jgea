@@ -29,13 +29,10 @@ import io.github.ericmedvet.jgea.core.solver.mapelites.strategy.CoMEStrategy;
 import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Collection;
-import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBasedProblem<S, Q>> extends
-    POCPopulationState<CoMEIndividual<G1, G2, S1, S2, S, Q>, Pair<G1, G2>, S, Q, P> {
+public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBasedProblem<S, Q>> extends POCPopulationState<CoMEIndividual<G1, G2, S1, S2, S, Q>, Pair<G1, G2>, S, Q, P> {
 
   static <G1, G2, S1, S2, S, Q, P extends QualityBasedProblem<S, Q>> CoMEPopulationState<G1, G2, S1, S2, S, Q, P> empty(
       P problem,
@@ -101,11 +98,13 @@ public interface CoMEPopulationState<G1, G2, S1, S2, S, Q, P extends QualityBase
         nOfQualityEvaluations,
         PartiallyOrderedCollection.from(
             Stream.concat(
-                    archive1.contents().stream(),
-                    archive2.contents().stream()
-                ).map(CoMEPartialIndividual::completeIndividual)
-                .toList()
-            , comparator),
+                archive1.contents().stream(),
+                archive2.contents().stream()
+            )
+                .map(CoMEPartialIndividual::completeIndividual)
+                .toList(),
+            comparator
+        ),
         archive1,
         archive2,
         strategy1,

@@ -29,7 +29,6 @@ import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.solver.bi.AbstractBiEvolver;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MEIndividual;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MEPopulationState;
-import io.github.ericmedvet.jgea.core.solver.mapelites.MapElites;
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.Pair;
@@ -44,8 +43,7 @@ import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
-public class MapElitesBiEvolver<G, S, Q, O> extends
-    AbstractBiEvolver<MEPopulationState<G, S, Q, QualityBasedBiProblem<S, O, Q>>, QualityBasedBiProblem<S, O, Q>, MEIndividual<G, S, Q>, G, S, Q, O> {
+public class MapElitesBiEvolver<G, S, Q, O> extends AbstractBiEvolver<MEPopulationState<G, S, Q, QualityBasedBiProblem<S, O, Q>>, QualityBasedBiProblem<S, O, Q>, MEIndividual<G, S, Q>, G, S, Q, O> {
 
   protected final int populationSize;
   private final Mutation<G> mutation;
@@ -91,9 +89,7 @@ public class MapElitesBiEvolver<G, S, Q, O> extends
       Executor executor
   ) throws SolverException {
     NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archive = archiveProvider.provide(
-        descriptors.size(),
-        i -> i,
-        (oldI, newI) -> newI
+        descriptors.size()
     );
     if (archive.arity() != descriptors.size()) {
       throw new SolverException(
@@ -133,16 +129,23 @@ public class MapElitesBiEvolver<G, S, Q, O> extends
         i2
     ) -> new Pair<>(Math.min(i1.id(), i2.id()), Math.max(i1.id(), i2.id()));
     for (MEIndividual<G, S, Q> individual : individuals) {
-      List<MEIndividual<G, S, Q>> opponents = opponentsSelector.select(individuals, individual,
-          problem, random);
+      List<MEIndividual<G, S, Q>> opponents = opponentsSelector.select(
+          individuals,
+          individual,
+          problem,
+          random
+      );
       for (MEIndividual<G, S, Q> opponent : opponents) {
-        matches.putIfAbsent(individualsToIdPair.apply(individual, opponent),
-            new Pair<>(individual, opponent));
+        matches.putIfAbsent(
+            individualsToIdPair.apply(individual, opponent),
+            new Pair<>(individual, opponent)
+        );
       }
     }
     List<Callable<MatchOutcome<Q>>> callables = new ArrayList<>(matches.size());
     List<Pair<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>> matchesOpponents = matches.values()
-        .stream().toList();
+        .stream()
+        .toList();
     for (int i = 0; i < matches.size(); i++) {
       int index = i;
       callables.add(() -> {
@@ -188,7 +191,8 @@ public class MapElitesBiEvolver<G, S, Q, O> extends
   ) throws SolverException {
     // build offspring with empty quality
     Collection<MEIndividual<G, S, Q>> individuals = new ArrayList<>(
-        state.archive().contents().stream().toList());
+        state.archive().contents().stream().toList()
+    );
     AtomicLong counter = new AtomicLong(state.nOfBirths());
     Collection<ChildGenotype<G>> newChildGenotypes = IntStream.range(0, populationSize)
         .mapToObj(j -> Misc.pickRandomly(individuals, random))
@@ -226,13 +230,16 @@ public class MapElitesBiEvolver<G, S, Q, O> extends
           random
       );
       for (MEIndividual<G, S, Q> opponent : opponents) {
-        matches.putIfAbsent(individualsToIdPair.apply(individual, opponent),
-            new Pair<>(individual, opponent));
+        matches.putIfAbsent(
+            individualsToIdPair.apply(individual, opponent),
+            new Pair<>(individual, opponent)
+        );
       }
     }
     List<Callable<MatchOutcome<Q>>> callables = new ArrayList<>(matches.size());
     List<Pair<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>> matchesOpponents = matches.values()
-        .stream().toList();
+        .stream()
+        .toList();
     for (int i = 0; i < matches.size(); i++) {
       int index = i;
       callables.add(() -> {
@@ -270,15 +277,11 @@ public class MapElitesBiEvolver<G, S, Q, O> extends
     PartialComparator<? super Individual<?, ?, ?>> updaterComparator = (
         newI,
         existingI
-    ) -> newI == existingI ? PartialComparator.PartialComparatorOutcome.BEFORE
-        : PartialComparator.PartialComparatorOutcome.AFTER;
-
+    ) -> newI == existingI ? PartialComparator.PartialComparatorOutcome.BEFORE : PartialComparator.PartialComparatorOutcome.AFTER;
     NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archive;
     if (emptyArchive) {
       archive = archiveProvider.provide(
-          descriptors.size(),
-          i -> i,
-          (oldI, newI) -> newI
+          descriptors.size()
       );
     } else {
       archive = state.archive();

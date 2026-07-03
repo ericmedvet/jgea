@@ -19,6 +19,8 @@
  */
 package io.github.ericmedvet.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jgea.core.distance.Distance;
+import io.github.ericmedvet.jgea.core.distance.LNorm;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.order.PartiallyOrderedCollection;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
@@ -30,7 +32,6 @@ import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedUniva
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.bi.AbstractBiEvolver;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MEIndividual;
-import io.github.ericmedvet.jgea.core.solver.mapelites.MapElites;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.experimenter.drawer.DoubleGridDrawer;
 import io.github.ericmedvet.jgea.problem.bool.synthetic.EvenParity;
@@ -61,7 +62,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -194,27 +194,13 @@ public class Miscs {
       @Param(value = "nOfOpponents", dI = 1) int nOfOpponents
   ) {
     return (population, individual, problem, random) -> {
-      double[] targetCoordinates = individual.coordinates()
-          .stream()
-          .mapToDouble(MapElites.Descriptor.Coordinate::value)
-          .toArray();
-      BiFunction<double[], double[], Double> euclideanDistance = (v1, v2) -> {
-        if (v1.length != v2.length) {
-          throw new IllegalArgumentException("Mismatch in array size");
-        }
-        return Math.sqrt(
-            IntStream.range(0, v1.length).mapToDouble(i -> Math.pow(v1[i] - v2[i], 2)).sum()
-        );
-      };
+      Distance<List<Double>> d = new LNorm(2);
       return population.stream()
           .sorted(
               Comparator.comparingDouble(
-                  candidate -> -euclideanDistance.apply(
-                      targetCoordinates,
-                      candidate.coordinates()
-                          .stream()
-                          .mapToDouble(MapElites.Descriptor.Coordinate::value)
-                          .toArray()
+                  candidate -> -d.apply(
+                      individual.descriptorValues(),
+                      candidate.descriptorValues()
                   )
               )
           )
@@ -286,28 +272,14 @@ public class Miscs {
       @Param(value = "nOfOpponents", dI = 1) int nOfOpponents
   ) {
     return (population, individual, problem, random) -> {
-      double[] individualCoordinates = individual.coordinates()
-          .stream()
-          .mapToDouble(MapElites.Descriptor.Coordinate::value)
-          .toArray();
-      BiFunction<double[], double[], Double> euclideanDistance = (v1, v2) -> {
-        if (v1.length != v2.length) {
-          throw new IllegalArgumentException("Mismatch in array size");
-        }
-        return Math.sqrt(
-            IntStream.range(0, v1.length).mapToDouble(i -> Math.pow(v1[i] - v2[i], 2)).sum()
-        );
-      };
+      Distance<List<Double>> d = new LNorm(2);
       return population.stream()
           .filter(candidate -> !candidate.equals(individual))
           .sorted(
               Comparator.comparingDouble(
-                  candidate -> euclideanDistance.apply(
-                      individualCoordinates,
-                      candidate.coordinates()
-                          .stream()
-                          .mapToDouble(MapElites.Descriptor.Coordinate::value)
-                          .toArray()
+                  candidate -> d.apply(
+                      individual.descriptorValues(),
+                      candidate.descriptorValues()
                   )
               )
           )

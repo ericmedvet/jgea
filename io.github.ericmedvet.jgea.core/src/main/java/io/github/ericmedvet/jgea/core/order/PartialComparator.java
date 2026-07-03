@@ -20,7 +20,6 @@
 
 package io.github.ericmedvet.jgea.core.order;
 
-import io.github.ericmedvet.jgea.core.problem.BehaviorBasedProblem.Outcome;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiPredicate;
@@ -122,7 +121,10 @@ public interface PartialComparator<K> {
     return new PartialComparator<>() {
       @Override
       public PartialComparatorOutcome compare(C c1, C c2) {
-        return thisPartialComparator.compare(extractorFunction.apply(c1), extractorFunction.apply(c2));
+        return thisPartialComparator.compare(
+            extractorFunction.apply(c1),
+            extractorFunction.apply(c2)
+        );
       }
 
       @Override
@@ -177,7 +179,7 @@ public interface PartialComparator<K> {
     };
   }
 
-  default BiPredicate<K,K> firstIs(PartialComparatorOutcome... outcomes) {
+  default BiPredicate<K, K> firstIs(PartialComparatorOutcome... outcomes) {
     return (k1, k2) -> {
       PartialComparatorOutcome outcome = compare(k1, k2);
       for (PartialComparatorOutcome okOutcome : outcomes) {
@@ -187,5 +189,9 @@ public interface PartialComparator<K> {
       }
       return false;
     };
+  }
+
+  default BiPredicate<K, K> secondIs(PartialComparatorOutcome... outcomes) {
+    return (k1, k2) -> firstIs(outcomes).test(k2, k1);
   }
 }

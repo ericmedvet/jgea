@@ -21,6 +21,7 @@ package io.github.ericmedvet.jgea.core.solver.mapelites;
 
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.distance.Distance;
+import io.github.ericmedvet.jgea.core.distance.LNorm;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
 import io.github.ericmedvet.jgea.core.order.PartialComparator.PartialComparatorOutcome;
@@ -32,7 +33,6 @@ import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive;
 import io.github.ericmedvet.jgea.core.solver.mapelites.strategy.CoMEStrategy;
 import io.github.ericmedvet.jgea.core.util.Misc;
-import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -62,7 +62,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q> extends AbstractPopulationBasedIt
   private final int populationSize;
   private final int nOfOffspring;
   private final Supplier<CoMEStrategy> strategySupplier;
-  private final double neighborRadius;
+  private final double normalizedNeighborRadius;
   private final int maxNOfNeighbors;
 
   public CoMapElites(
@@ -81,7 +81,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q> extends AbstractPopulationBasedIt
       int populationSize,
       int nOfOffspring,
       Supplier<CoMEStrategy> strategySupplier,
-      double neighborRadius,
+      double normalizedNeighborRadius,
       int maxNOfNeighbors,
       List<PartialComparator<? super CoMEIndividual<G1, G2, S1, S2, S, Q>>> additionalIndividualComparators
   ) {
@@ -100,7 +100,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q> extends AbstractPopulationBasedIt
     this.populationSize = populationSize;
     this.nOfOffspring = nOfOffspring;
     this.strategySupplier = strategySupplier;
-    this.neighborRadius = neighborRadius;
+    this.normalizedNeighborRadius = normalizedNeighborRadius;
     this.maxNOfNeighbors = maxNOfNeighbors;
     if (descriptors1.size() != descriptors2.size()) {
       throw new IllegalArgumentException(
@@ -110,144 +110,44 @@ public class CoMapElites<G1, G2, S1, S2, S, Q> extends AbstractPopulationBasedIt
     }
   }
 
-  // TODO likely remove
-  public static List<Integer> denormalizeCoords(
-      List<Double> coordinates,
-      List<? extends MapElites.Descriptor<?, ?, ?>> descriptors
-  ) {
-    if (coordinates.size() != descriptors.size()) {
-      throw new IllegalArgumentException(
-          "Unexpected different sizes of coords and descriptors: %d vs. %d"
-              .formatted(coordinates.size(), descriptors.size())
-      );
-    }
-    return IntStream.range(0, coordinates.size())
-        .map(
-            i -> (int) Math.round(
-                new DoubleRange(0, descriptors.get(i).nOfBins() - 1).denormalize(coordinates.get(i))
-            )
-        )
-        .boxed()
-        .toList();
-  }
-
-  // TODO likely change to List<Double>
-  private static double euclideanDistance(List<Integer> coords1, List<Integer> coords2) {
-    if (coords1.size() != coords2.size()) {
-      throw new IllegalArgumentException("Coordinates must have the same dimensions.");
-    }
-    double sum = 0.0;
-    for (int i = 0; i < coords1.size(); i++) {
-      double diff = coords1.get(i) - coords2.get(i);
-      sum += diff * diff;
-    }
-    return Math.sqrt(sum);
-  }
-
-  private static <X> Collection<X> findNeighbors(
-      List<Integer> coords,
-      Map<List<Integer>, X> archive,
-      Distance<List<Integer>> distance,
+  private static <X> Collection<? extends X> findNeighbors(
+      List<Double> coords,
+      NumericalKeyArchive<? extends X, ? extends X> archive,
       double neighborRadius
   ) {
-    return archive.entrySet()
+    return archive.valuedKeys()
         .stream()
-        .filter(e -> distance.apply(e.getKey(), coords) < neighborRadius)
-        .map(Map.Entry::getValue)
+        .filter(k -> LNorm.EUCLIDEAN.apply(k, coords) < neighborRadius)
+        .map(k -> archive.get(k).orElseThrow())
         .toList();
   }
 
-  // TODO likely change to List<Double>
-  private static List<Integer> getClosestCoordinate(List<Integer> coords, Map<List<Integer>, ?> mapOfElites) {
-    return mapOfElites.keySet()
+  private static List<Double> getClosestCoordinate(
+      List<Double> coords,
+      NumericalKeyArchive<?, ?> archive
+  ) {
+    return archive.valuedKeys()
         .stream()
-        .min(Comparator.comparingDouble(c -> euclideanDistance(c, coords)))
+        .min(Comparator.comparingDouble(c -> LNorm.EUCLIDEAN.apply(c, coords)))
         .orElseThrow();
   }
 
-  // TODO likely remove
-  public static List<Double> normalizeCoords(
-      List<Integer> coordinates,
-      List<? extends MapElites.Descriptor<?, ?, ?>> descriptors
-  ) {
-    if (coordinates.size() != descriptors.size()) {
-      throw new IllegalArgumentException(
-          "Unexpected different size of coords and descriptors: %d vs. %d"
-              .formatted(coordinates.size(), descriptors.size())
-      );
+  private static double radius(NumericalKeyArchive<?, ?> archive, double normalizedRadius) {
+    if (archive.valuedKeys().isEmpty()) {
+      return 0;
     }
-    return IntStream.range(0, coordinates.size())
-        .mapToObj(i -> new DoubleRange(0, descriptors.get(i).nOfBins() - 1).normalize(coordinates.get(i)))
-        .toList();
-  }
-
-  private static <GT, GO, ST, SO, S, Q> Callable<Pair<CoMEPartialIndividual<GT, ST, GT, GO, ST, SO, S, Q>, List<CoMEIndividual<GT, GO, ST, SO, S, Q>>>> reproduceCallable(
-      Archive<? extends MEIndividual<GT, ST, Q>> thisArchive,
-      Archive<? extends MEIndividual<GO, SO, Q>> otherArchive,
-      Mutation<GT> mutation,
-      Function<? super GT, ? extends ST> thisSolutionMapper,
-      Function<? super GO, ? extends SO> otherSolutionMapper,
-      BiFunction<? super ST, ? super SO, ? extends S> solutionMerger,
-      List<MapElites.Descriptor<GT, ST, Q>> thisDescriptors,
-      List<MapElites.Descriptor<GO, SO, Q>> otherDescriptors,
-      CoMEStrategy strategy,
-      double neighborRadius,
-      int maxNOfNeighbors,
-      QualityBasedProblem<S, Q> problem,
-      RandomGenerator random,
-      long iteration,
-      AtomicLong counter
-  ) {
-    return () -> {
-      MEIndividual<GT, ST, Q> parentT = Misc.pickRandomly(thisArchive.asMap().values(), random);
-      ChildGenotype<GT> childGenotypeT = new ChildGenotype<>(
-          counter.getAndIncrement(),
-          mutation.mutate(parentT.genotype(), random),
-          List.of(parentT.id())
-      );
-      CoMEPartialIndividual<GT, ST, GT, GO, ST, SO, S, Q> iT = CoMEPartialIndividual.from(
-          Individual.from(childGenotypeT, thisSolutionMapper, sT -> null, iteration),
-          thisDescriptors
-      );
-      List<Integer> thisCoords = iT.coordinates()
-          .stream()
-          .map(MapElites.Descriptor.Coordinate::bin)
-          .toList();
-      List<Integer> otherCoords = denormalizeCoords(
-          strategy.getOtherCoords(normalizeCoords(thisCoords, thisDescriptors)),
-          otherDescriptors
-      );
-      otherCoords = getClosestCoordinate(otherCoords, otherArchive.asMap());
-      List<? extends MEIndividual<GO, SO, Q>> neighbors = new ArrayList<>(
-          findNeighbors(otherCoords, otherArchive.asMap(), CoMapElites::euclideanDistance, neighborRadius)
-      );
-      Collections.shuffle(neighbors, random);
-      List<CoMEIndividual<GT, GO, ST, SO, S, Q>> localCompositeIndividuals = neighbors.stream()
-          .limit(maxNOfNeighbors)
-          .map(iO -> {
-            S s = solutionMerger.apply(iT.solution(), otherSolutionMapper.apply(iO.genotype()));
-            return CoMEIndividual.of(
-                counter.getAndIncrement(),
-                s,
-                problem.qualityFunction().apply(s),
-                iteration,
-                iteration,
-                List.of(),
-                iT,
-                iO
-            );
-          })
-          .toList();
-      CoMEIndividual<GT, GO, ST, SO, S, Q> bestCompleteIndividual = PartiallyOrderedCollection.from(
-          localCompositeIndividuals,
-          problem.qualityComparator().comparing(CoMEIndividual::quality)
-      )
-          .firsts()
-          .stream()
-          .findAny()
-          .orElseThrow();
-      return new Pair<>(iT.updateWithCompleteIndividual(bestCompleteIndividual), localCompositeIndividuals);
-    };
+    int d = archive.valuedKeys().stream().limit(1).toList().getFirst().size();
+    final double[] mins = new double[d];
+    final double[] maxs = new double[d];
+    Arrays.fill(mins, Double.MAX_VALUE);
+    Arrays.fill(maxs, Double.MIN_VALUE);
+    archive.valuedKeys()
+        .forEach(k -> IntStream.range(0, d).forEach(i -> {
+          mins[i] = Math.min(mins[i], k.get(i));
+          maxs[i] = Math.max(maxs[i], k.get(i));
+        }));
+    double volume = IntStream.range(0, d).mapToDouble(i -> maxs[i] - mins[i]).reduce(1d, (v1, v2) -> (v1 * v2));
+    return Math.pow(volume, 1d / d) * normalizedRadius;
   }
 
   private Callable<CoMEIndividual<G1, G2, S1, S2, S, Q>> coMapCallable(
@@ -280,16 +180,87 @@ public class CoMapElites<G1, G2, S1, S2, S, Q> extends AbstractPopulationBasedIt
     };
   }
 
+  private static <GT, GO, ST, SO, S, Q> Callable<Pair<CoMEPartialIndividual<GT, ST, GT, GO, ST, SO, S, Q>, List<CoMEIndividual<GT, GO, ST, SO, S, Q>>>> reproduceCallable(
+      NumericalKeyArchive<? extends MEIndividual<GT, ST, Q>, ? extends MEIndividual<GT, ST, Q>> thisArchive,
+      NumericalKeyArchive<? extends MEIndividual<GO, SO, Q>, ? extends MEIndividual<GO, SO, Q>> otherArchive,
+      Mutation<GT> mutation,
+      Function<? super GT, ? extends ST> thisSolutionMapper,
+      Function<? super GO, ? extends SO> otherSolutionMapper,
+      BiFunction<? super ST, ? super SO, ? extends S> solutionMerger,
+      List<Function<Individual<GT, ST, Q>, Number>> thisDescriptors,
+      List<Function<Individual<GO, SO, Q>, Number>> otherDescriptors,
+      CoMEStrategy strategy,
+      double otherNeighborRadius,
+      int maxNOfNeighbors,
+      QualityBasedProblem<S, Q> problem,
+      RandomGenerator random,
+      long iteration,
+      AtomicLong counter
+  ) {
+    return () -> {
+      MEIndividual<GT, ST, Q> parentT = Misc.pickRandomly(thisArchive.contents(), random);
+      ChildGenotype<GT> childGenotypeT = new ChildGenotype<>(
+          counter.getAndIncrement(),
+          mutation.mutate(parentT.genotype(), random),
+          List.of(parentT.id())
+      );
+      CoMEPartialIndividual<GT, ST, GT, GO, ST, SO, S, Q> iT = CoMEPartialIndividual.from(
+          Individual.from(childGenotypeT, thisSolutionMapper, sT -> null, iteration),
+          thisDescriptors
+      );
+      List<? extends MEIndividual<GO, SO, Q>> neighbors = new ArrayList<>(
+          findNeighbors(
+              strategy.getOtherCoords(iT.descriptorValues()),
+              otherArchive,
+              otherNeighborRadius
+          )
+      );
+      Collections.shuffle(neighbors, random);
+      List<CoMEIndividual<GT, GO, ST, SO, S, Q>> localCompositeIndividuals = neighbors.stream()
+          .limit(maxNOfNeighbors)
+          .map(iO -> {
+            S s = solutionMerger.apply(iT.solution(), otherSolutionMapper.apply(iO.genotype()));
+            return CoMEIndividual.of(
+                counter.getAndIncrement(),
+                s,
+                problem.qualityFunction().apply(s),
+                iteration,
+                iteration,
+                List.of(),
+                iT,
+                iO
+            );
+          })
+          .toList();
+      CoMEIndividual<GT, GO, ST, SO, S, Q> bestCompleteIndividual = PartiallyOrderedCollection.from(
+          localCompositeIndividuals,
+          problem.qualityComparator().comparing(CoMEIndividual::quality)
+      )
+          .firsts()
+          .stream()
+          .findAny()
+          .orElseThrow();
+      return new Pair<>(
+          iT.updateWithCompleteIndividual(bestCompleteIndividual),
+          localCompositeIndividuals
+      );
+    };
+  }
+
   @Override
   public CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>> init(
       QualityBasedProblem<S, Q> problem,
       RandomGenerator random,
       Executor executor
   ) throws SolverException {
-    NumericalKeyArchive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>, CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> archive1 = archiveProvider1.provide(descriptors1.size(),
-        i -> i, (oldI, newI) -> newI);
-    NumericalKeyArchive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>, CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> archive2 = archiveProvider2.provide(descriptors2.size(),
-        i -> i, (oldI, newI) -> newI);
+    NumericalKeyArchive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>, CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> archive1 = archiveProvider1
+        .provide(
+            descriptors1.size()
+        );
+    NumericalKeyArchive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>, CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> archive2 = archiveProvider2
+        .provide(
+            descriptors2.size()
+        );
     if (archive1.arity() != descriptors1.size()) {
       throw new SolverException(
           "Archive 1 and respective descriptor sizes do not matches: %d vs. %d".formatted(
@@ -327,57 +298,47 @@ public class CoMapElites<G1, G2, S1, S2, S, Q> extends AbstractPopulationBasedIt
         .toList();
     Collection<CoMEIndividual<G1, G2, S1, S2, S, Q>> coMEIndividuals = parallelCall(
         IntStream.range(0, populationSize)
-            .mapToObj(i -> coMapCallable(childGenotypes1.get(i), childGenotypes2.get(i), newState, counter))
+            .mapToObj(
+                i -> coMapCallable(
+                    childGenotypes1.get(i),
+                    childGenotypes2.get(i),
+                    newState,
+                    counter
+                )
+            )
             .toList(),
         executor
     );
     // update strategies
     updateStrategies(newState, coMEIndividuals);
-    // update archive
-    PartialComparator<? super CoMEIndividual<G1, G2, S1, S2, S, Q>> partialComparatorInner = partialComparator(problem);
-//    Archive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> archive1 = newState.archive1()
-//        .updated(
-//            coMEIndividuals.stream()
-//                .map(CoMEPartialIndividual::from1)
-//                .toList(),
-//            MEIndividual::bins,
-//            partialComparatorInner.comparing(CoMEPartialIndividual::completeIndividual)
-//        );
-//    Archive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> archive2 = newState.archive2()
-//        .updated(
-//            coMEIndividuals.stream()
-//                .map(CoMEPartialIndividual::from2)
-//                .toList(),
-//            MEIndividual::bins,
-//            partialComparatorInner.comparing(CoMEPartialIndividual::completeIndividual)
-//        );
-    partialComparatorInner.comparing(CoMEPartialIndividual::completeIndividual).firstIs(PartialComparatorOutcome.BEFORE).negate()
-    archive1.withAll(
-        coMEIndividuals.stream().map(CoMEPartialIndividual::from1).toList(),
-        MEIndividual::descriptorValues,
-        partialComparatorInner.comparing(CoMEPartialIndividual::completeIndividual).firstIs(PartialComparatorOutcome.BEFORE).negate()
-    );
-    // return state
+    // return state with updated archives
     return newState.updatedWithIteration(
         populationSize,
         populationSize,
         archive1.withAll(
             coMEIndividuals.stream().map(CoMEPartialIndividual::from1).toList(),
             MEIndividual::descriptorValues,
-            (newI, oldI) -> !partialComparatorInner.compare(oldI.completeIndividual(), newI.completeIndividual()).equals(
-                PartialComparatorOutcome.BEFORE)
+            partialComparator(problem)
+                .comparing(
+                    (CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q> i1) -> i1.completeIndividual()
+                )
+                .secondIs(PartialComparatorOutcome.BEFORE)
+                .negate()
         ),
         archive2.withAll(
             coMEIndividuals.stream().map(CoMEPartialIndividual::from2).toList(),
             MEIndividual::descriptorValues,
-            (newI, oldI) -> !partialComparatorInner.compare(oldI.completeIndividual(), newI.completeIndividual()).equals(
-                PartialComparatorOutcome.BEFORE)
+            partialComparator(problem)
+                .comparing(
+                    (CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q> i2) -> i2.completeIndividual()
+                )
+                .secondIs(PartialComparatorOutcome.BEFORE)
+                .negate()
         ),
         strategy1,
         strategy2
     );
   }
-
 
   @Override
   public CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>> update(
@@ -400,7 +361,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q> extends AbstractPopulationBasedIt
                     descriptors1,
                     descriptors2,
                     state.strategy1(),
-                    neighborRadius,
+                    radius(state.archive2(), normalizedNeighborRadius),
                     maxNOfNeighbors,
                     state.problem(),
                     random,
@@ -425,7 +386,7 @@ public class CoMapElites<G1, G2, S1, S2, S, Q> extends AbstractPopulationBasedIt
                     descriptors2,
                     descriptors1,
                     state.strategy2(),
-                    neighborRadius,
+                    radius(state.archive1(), normalizedNeighborRadius),
                     maxNOfNeighbors,
                     state.problem(),
                     random,
@@ -442,33 +403,40 @@ public class CoMapElites<G1, G2, S1, S2, S, Q> extends AbstractPopulationBasedIt
     List<CoMEIndividual<G1, G2, S1, S2, S, Q>> coMEIndividuals2 = reproduction2.stream()
         .flatMap(p2 -> p2.second().stream().map(CoMEIndividual::swapped))
         .toList();
-    List<CoMEIndividual<G1, G2, S1, S2, S, Q>> offspring = Stream.of(coMEIndividuals1, coMEIndividuals2)
+    List<CoMEIndividual<G1, G2, S1, S2, S, Q>> offspring = Stream.of(
+        coMEIndividuals1,
+        coMEIndividuals2
+    )
         .flatMap(List::stream)
         .toList();
     // update strategies
     updateStrategies(state, offspring);
-    // update archives
-    PartialComparator<? super CoMEIndividual<G1, G2, S1, S2, S, Q>> partialComparatorInner = partialComparator(
-        state.problem()
-    );
-    Archive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> archive1 = state.archive1()
-        .updated(
-            offspring.stream().map(CoMEPartialIndividual::from1).toList(),
-            MEIndividual::bins,
-            partialComparatorInner.comparing(CoMEPartialIndividual::completeIndividual)
-        );
-    Archive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> archive2 = state.archive2()
-        .updated(
-            offspring.stream().map(CoMEPartialIndividual::from2).toList(),
-            MEIndividual::bins,
-            partialComparatorInner.comparing(CoMEPartialIndividual::completeIndividual)
-        );
-    // return state
+    // return state with updated archives
     return state.updatedWithIteration(
         nOfOffspring,
         coMEIndividuals1.size() + coMEIndividuals2.size(),
-        archive1,
-        archive2,
+        state.archive1()
+            .withAll(
+                offspring.stream().map(CoMEPartialIndividual::from1).toList(),
+                MEIndividual::descriptorValues,
+                partialComparator(state.problem())
+                    .comparing(
+                        (CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q> i1) -> i1.completeIndividual()
+                    )
+                    .secondIs(PartialComparatorOutcome.BEFORE)
+                    .negate()
+            ),
+        state.archive2()
+            .withAll(
+                offspring.stream().map(CoMEPartialIndividual::from2).toList(),
+                MEIndividual::descriptorValues,
+                partialComparator(state.problem())
+                    .comparing(
+                        (CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q> i2) -> i2.completeIndividual()
+                    )
+                    .secondIs(PartialComparatorOutcome.BEFORE)
+                    .negate()
+            ),
         state.strategy1(),
         state.strategy2()
     );
@@ -483,22 +451,8 @@ public class CoMapElites<G1, G2, S1, S2, S, Q> extends AbstractPopulationBasedIt
             newIndividuals.stream()
                 .map(
                     ci -> new CoMEStrategy.Observation<>(
-                        normalizeCoords(
-                            ci.individual1()
-                                .coordinates()
-                                .stream()
-                                .map(MapElites.Descriptor.Coordinate::bin)
-                                .toList(),
-                            descriptors1
-                        ),
-                        normalizeCoords(
-                            ci.individual2()
-                                .coordinates()
-                                .stream()
-                                .map(MapElites.Descriptor.Coordinate::bin)
-                                .toList(),
-                            descriptors2
-                        ),
+                        ci.individual1().descriptorValues(),
+                        ci.individual2().descriptorValues(),
                         ci.quality()
                     )
                 )
@@ -510,22 +464,8 @@ public class CoMapElites<G1, G2, S1, S2, S, Q> extends AbstractPopulationBasedIt
             newIndividuals.stream()
                 .map(
                     ci -> new CoMEStrategy.Observation<>(
-                        normalizeCoords(
-                            ci.individual2()
-                                .coordinates()
-                                .stream()
-                                .map(MapElites.Descriptor.Coordinate::bin)
-                                .toList(),
-                            descriptors2
-                        ),
-                        normalizeCoords(
-                            ci.individual1()
-                                .coordinates()
-                                .stream()
-                                .map(MapElites.Descriptor.Coordinate::bin)
-                                .toList(),
-                            descriptors1
-                        ),
+                        ci.individual2().descriptorValues(),
+                        ci.individual1().descriptorValues(),
                         ci.quality()
                     )
                 )

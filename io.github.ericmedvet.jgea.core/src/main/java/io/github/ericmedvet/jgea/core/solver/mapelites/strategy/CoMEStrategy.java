@@ -20,8 +20,6 @@
 package io.github.ericmedvet.jgea.core.solver.mapelites.strategy;
 
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
-import io.github.ericmedvet.jgea.core.util.Misc;
-import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
@@ -54,25 +52,17 @@ public interface CoMEStrategy {
 
   List<Double> getOtherCoords(List<Double> theseCoords);
 
-  default Map<List<Double>, List<Double>> asField(List<Integer> counts, boolean relative) {
-    return Misc.cartesian(
-        counts.stream()
-            .map(
-                c -> IntStream.range(0, c)
-                    .mapToObj(i -> new DoubleRange(0, c - 1).normalize(i))
-                    .toList()
-            )
-            .toList()
-    )
+  default Map<List<Double>, List<Double>> asField(Collection<List<Double>> points, boolean relative) {
+    return points
         .stream()
-        .collect(Collectors.toMap(tc -> tc, tc -> {
-          List<Double> oc = getOtherCoords(tc);
+        .collect(Collectors.toMap(p -> p, tp -> {
+          List<Double> op = getOtherCoords(tp);
           if (relative) {
-            return IntStream.range(0, tc.size())
-                .mapToObj(i -> oc.get(i) - tc.get(i))
+            return IntStream.range(0, tp.size())
+                .mapToObj(i -> op.get(i) - tp.get(i))
                 .toList();
           }
-          return oc;
+          return op;
         }));
   }
 

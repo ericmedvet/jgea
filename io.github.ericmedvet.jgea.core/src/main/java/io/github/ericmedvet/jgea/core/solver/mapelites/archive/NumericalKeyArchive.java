@@ -73,7 +73,7 @@ public interface NumericalKeyArchive<V, C> extends Archive<List<Double>, V, C> {
   @Override
   default NumericalKeyArchive<V, C> withAll(
       Collection<V> values,
-      Function<V, List<Double>> keyExtractor,
+      Function<? super V, ? extends List<Double>> keyExtractor,
       BiPredicate<? super V, ? super C> predicate
   ) {
     values.forEach(value -> putIf(keyExtractor.apply(value), value, predicate));
@@ -87,5 +87,9 @@ public interface NumericalKeyArchive<V, C> extends Archive<List<Double>, V, C> {
         Function<V, C> contentInitializer,
         BiFunction<C, V, C> contentUpdater
     );
+
+    default <V> NumericalKeyArchive<V, V> provide(int arity) {
+      return provide(arity, v -> v, (oldV, newV) -> newV);
+    }
   }
 }

@@ -47,6 +47,7 @@ import io.github.ericmedvet.jgea.core.solver.cabea.GridPopulationState;
 import io.github.ericmedvet.jgea.core.solver.cabea.SubstrateFiller;
 import io.github.ericmedvet.jgea.core.solver.es.*;
 import io.github.ericmedvet.jgea.core.solver.mapelites.*;
+import io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive;
 import io.github.ericmedvet.jgea.core.solver.mapelites.strategy.CoMEStrategy;
 import io.github.ericmedvet.jgea.core.solver.multifidelity.ScheduledFidelityStandardEvolver;
 import io.github.ericmedvet.jgea.core.solver.pso.PSOState;
@@ -81,7 +82,8 @@ public class Solvers {
       @Param(value = "nOfBirthsForIteration", dI = 100) int nOfBirthsForIteration,
       @Param(value = "stop", dNPM = "ea.sc.nOfQualityEvaluations()") ProgressBasedStopCondition<? super MultiFidelityMEPopulationState<G, S, Q, MultifidelityQualityBasedProblem<S, Q>>> stopCondition,
       @Param("iComparators") List<PartialComparator<? super MEIndividual<G, S, Q>>> additionalIndividualComparators,
-      @Param("descriptors") List<MapElites.Descriptor<G, S, Q>> descriptors,
+      @Param("descriptors") List<Function<Individual<G, S, Q>, Number>> descriptors,
+      @Param("archive") NumericalKeyArchive.Provider archiProvider,
       @Param(value = "recomputationRatio", dD = 0.5) double recomputationRatio,
       @Param(value = "schedule", dNPM = "ea.schedule.flat()") DoubleUnaryOperator schedule
   ) {
@@ -94,6 +96,7 @@ public class Solvers {
           additionalIndividualComparators,
           r.mutations().getFirst(),
           descriptors,
+          archiProvider,
           schedule,
           recomputationRatio,
           nOfBirthsForIteration
@@ -147,7 +150,8 @@ public class Solvers {
       @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<G, S> mapper,
       @Param(value = "nPop", dI = 100) int nPop,
       @Param(value = "stop", dNPM = "ea.sc.nOfQualityEvaluations()") Predicate<? super MEPopulationState<G, S, Q, QualityBasedBiProblem<S, O, Q>>> stopCondition,
-      @Param("descriptors") List<MapElites.Descriptor<G, S, Q>> descriptors,
+      @Param("descriptors") List<Function<Individual<G, S, Q>, Number>> descriptors,
+      @Param("archive") NumericalKeyArchive.Provider archiProvider,
       @Param("fitnessReducer") BinaryOperator<Q> fitnessReducer,
       @Param("emptyArchive") boolean emptyArchive,
       @Param("additionalIndividualComparators") List<PartialComparator<? super MEIndividual<G, S, Q>>> additionalIndividualComparators,
@@ -163,6 +167,7 @@ public class Solvers {
           r.mutations().getFirst(),
           nPop,
           descriptors,
+          archiProvider,
           fitnessReducer,
           emptyArchive,
           additionalIndividualComparators,
@@ -228,13 +233,15 @@ public class Solvers {
       @Param(value = "mapper1", dNPM = "ea.m.identity()") InvertibleMapper<G1, S1> mapper1,
       @Param(value = "mapper2", dNPM = "ea.m.identity()") InvertibleMapper<G2, S2> mapper2,
       @Param("merger") InvertibleMapper<Pair<S1, S2>, S> invertibleMapperMerger,
-      @Param(value = "descriptors1") List<MapElites.Descriptor<G1, S1, Q>> descriptors1,
-      @Param(value = "descriptors2") List<MapElites.Descriptor<G2, S2, Q>> descriptors2,
+      @Param("descriptors1") List<Function<Individual<G1, S1, Q>, Number>> descriptors1,
+      @Param("descriptors1") List<Function<Individual<G2, S2, Q>, Number>> descriptors2,
+      @Param("archive1") NumericalKeyArchive.Provider archiProvider1,
+      @Param("archive2") NumericalKeyArchive.Provider archiProvider2,
       @Param(value = "stop", dNPM = "ea.sc.nOfQualityEvaluations()") Predicate<? super CoMEPopulationState<G1, G2, S1, S2, S, Q, QualityBasedProblem<S, Q>>> stopCondition,
       @Param(value = "populationSize", dI = 100) int populationSize,
       @Param(value = "nOfOffspring", dI = 50) int nOfOffspring,
       @Param(value = "strategy", dS = "identity") CoMEStrategy.Prepared strategy,
-      @Param(value = "neighborRadius", dD = 2) double neighborRadius,
+      @Param(value = "normalizedNeighborRadius", dD = 0.1) double normalizedNeighborRadius,
       @Param(value = "maxNOfNeighbors", dI = 2) int maxNOfNeighbors,
       @Param("iComparators") List<PartialComparator<? super CoMEIndividual<G1, G2, S1, S2, S, Q>>> additionalIndividualComparators
   ) {
@@ -242,7 +249,8 @@ public class Solvers {
       Pair<S1, S2> splitExample = invertibleMapperMerger.exampleFor(exampleS);
       Representation<G1> r1 = representation1.apply(mapper1.exampleFor(splitExample.first()));
       Representation<G2> r2 = representation2.apply(mapper2.exampleFor(splitExample.second()));
-      BiFunction<S1, S2, S> merger = (s1, s2) -> invertibleMapperMerger.mapperFor(exampleS).apply(new Pair<>(s1, s2));
+      BiFunction<S1, S2, S> merger = (s1, s2) -> invertibleMapperMerger.mapperFor(exampleS)
+          .apply(new Pair<>(s1, s2));
       if (descriptors1.isEmpty() || descriptors2.isEmpty()) {
         throw new IllegalArgumentException("Descriptors for representations must be initialized.");
       }
@@ -255,12 +263,14 @@ public class Solvers {
           merger,
           descriptors1,
           descriptors2,
+          archiProvider1,
+          archiProvider2,
           r1.mutations().getFirst(),
           r2.mutations().getFirst(),
           populationSize,
           nOfOffspring,
           strategy,
-          neighborRadius,
+          normalizedNeighborRadius,
           maxNOfNeighbors,
           additionalIndividualComparators
       );
@@ -375,8 +385,9 @@ public class Solvers {
       @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<G, S> mapper,
       @Param(value = "nPop", dI = 100) int nPop,
       @Param(value = "stop", dNPM = "ea.sc.nOfQualityEvaluations()") Predicate<? super MAMEPopulationState<G, S, Q, QualityBasedProblem<S, Q>>> stopCondition,
-      @Param("descriptors1") List<MapElites.Descriptor<G, S, Q>> descriptors1,
-      @Param("descriptors2") List<MapElites.Descriptor<G, S, Q>> descriptors2,
+      @Param("descriptors") List<Function<Individual<G, S, Q>, Number>> descriptors1,
+      @Param("descriptors") List<Function<Individual<G, S, Q>, Number>> descriptors2,
+      @Param("archive") NumericalKeyArchive.Provider archiProvider,
       @Param("iComparators") List<PartialComparator<? super Individual<G, S, Q>>> additionalIndividualComparators
   ) {
     return exampleS -> {
@@ -388,6 +399,7 @@ public class Solvers {
           r.mutations().getFirst(),
           nPop,
           List.of(descriptors1, descriptors2),
+          archiProvider,
           additionalIndividualComparators
       );
     };
@@ -401,7 +413,8 @@ public class Solvers {
       @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<G, S> mapper,
       @Param(value = "nPop", dI = 100) int nPop,
       @Param(value = "stop", dNPM = "ea.sc.nOfQualityEvaluations()") Predicate<? super MEPopulationState<G, S, Q, QualityBasedProblem<S, Q>>> stopCondition,
-      @Param("descriptors") List<MapElites.Descriptor<G, S, Q>> descriptors,
+      @Param("descriptors") List<Function<Individual<G, S, Q>, Number>> descriptors,
+      @Param("archive") NumericalKeyArchive.Provider archiProvider,
       @Param("iComparators") List<PartialComparator<? super MEIndividual<G, S, Q>>> additionalIndividualComparators
   ) {
     return exampleS -> {
@@ -413,6 +426,7 @@ public class Solvers {
           r.mutations().getFirst(),
           nPop,
           descriptors,
+          archiProvider,
           additionalIndividualComparators
       );
     };
@@ -478,7 +492,10 @@ public class Solvers {
               nodeAdditionRate
           ),
           Map.entry(
-              new ArcAddition<Node, OperatorGraph.NonValuedArc>(r -> OperatorGraph.NON_VALUED_ARC, false)
+              new ArcAddition<Node, OperatorGraph.NonValuedArc>(
+                  r -> OperatorGraph.NON_VALUED_ARC,
+                  false
+              )
                   .withChecker(OperatorGraph.checker()),
               arcAdditionRate
           ),
