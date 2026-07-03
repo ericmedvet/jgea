@@ -5105,6 +5105,16 @@ Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;S, <
 
 Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;S, <abbr title="io.github.ericmedvet.jgea.core.solver.StandardEvolver">StandardEvolver</abbr>&lt;G, S, Q&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Solvers.ga()` by jgea-experimenter:2.8.2-SNAPSHOT
 
+## Package `ea.solver.mapelites.archive`
+
+Aliases: `ea.s.mapelites.a`, `ea.s.mapelites.archive`, `ea.s.me.a`, `ea.s.me.archive`, `ea.solver.mapelites.a`, `ea.solver.mapelites.archive`, `ea.solver.me.a`, `ea.solver.me.archive`
+
+### Builder `ea.solver.mapelites.archive.archiveProviders()`
+
+`ea.s.me.a.archiveProviders()`
+
+Produces <code><abbr title="io.github.ericmedvet.jgea.experimenter.builders.ArchiveProviders">ArchiveProviders</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.ArchiveProviders()` by jgea-experimenter:2.8.2-SNAPSHOT
+
 ## Package `ea.stoppingCriterion`
 
 Aliases: `ea.sc`, `ea.stoppingCriterion`

@@ -43,4 +43,5 @@ module io.github.ericmedvet.jgea.experimenter {
   requires java.sql;
   requires annotations;
   requires org.jspecify;
+  requires jcodec;
 }
