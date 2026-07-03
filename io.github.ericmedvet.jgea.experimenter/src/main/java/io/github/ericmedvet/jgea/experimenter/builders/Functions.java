@@ -49,6 +49,7 @@ import io.github.ericmedvet.jgea.core.solver.mapelites.MultiFidelityMEPopulation
 import io.github.ericmedvet.jgea.core.solver.mapelites.MultiFidelityMEPopulationState.LocalState;
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.Archive;
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive;
+import io.github.ericmedvet.jgea.core.solver.mapelites.archive.TwoDKeyArchive;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jgea.core.util.Progress;
 import io.github.ericmedvet.jgea.core.util.TextPlotter;
@@ -62,6 +63,7 @@ import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.*;
 import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.numerical.named.NamedUnivariateRealFunction;
+import io.github.ericmedvet.jviz.core.geometry.Polygon;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -93,12 +95,20 @@ public class Functions {
   }
 
   @Cacheable
-  public static <X, T> FormattedNamedFunction<X, Double> archiveCoverage(
+  public static <X> FormattedNamedFunction<X, Double> archiveCoverage(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Archive<?, ?, ?>> beforeF,
       @Param(value = "format", dS = "%4.2f") String format
   ) {
     Function<Archive<?, ?, ?>, Double> f = Archive::coverage;
     return FormattedNamedFunction.from(f, format, "coverage").compose(beforeF);
+  }
+
+  @Cacheable
+  public static <X, T> NamedFunction<X, Map<Polygon, T>> archiveToPolygons(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, TwoDKeyArchive<?, T>> beforeF
+  ) {
+    Function<TwoDKeyArchive<?, T>, Map<Polygon, T>> f = TwoDKeyArchive::localizedContents;
+    return NamedFunction.from(f, "polygons").compose(beforeF);
   }
 
   @Cacheable

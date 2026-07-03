@@ -9,17 +9,21 @@ ea.experiment(
       ea.p.moToSo(objective = mse; moProblem = ea.p.ur.bundled(name = "energy-efficiency"; xScaling = standardization; yScaling = symmetric_min_max))
     ]) *
     (solver = (stop = ea.sc.nOfQualityEvaluations(n = 1000)) * [
-      ea.s.ga(name = "gp-consts"; mapper = ea.m.srTreeToNurf(); representation = ea.r.srTree());
-      ea.s.ga(name = "gp-ephemeral"; mapper = ea.m.srTreeToNurf(); representation = ea.r.srTree(
-        ephemeral = true
-      ));
-      ea.s.ga(name = "gp-ops"; mapper = ea.m.srTreeToNurf(); representation = ea.r.srTree(
-        operators = [addition; subtraction; multiplication; prot_division; prot_log; re_lu; ternary]
-      ));
-      ea.s.ga(name = "gp-ephemeral+ops"; mapper = ea.m.srTreeToNurf(); representation = ea.r.srTree(
-        ephemeral = true;
-        operators = [addition; subtraction; multiplication; prot_division; prot_log; re_lu; ternary]
-      ))
+      ea.s.ga(mapper = ea.m.srTreeToNurf(); representation = ea.r.srTree());
+      ea.s.mapElites(
+        mapper = ea.m.srTreeToNurf();
+        representation = ea.r.srTree();
+        descriptors = [
+          f.size(of = f.filter(of = ea.f.treeLeaves(of = ea.f.genotype()); condition = ea.predicate.isSrConstant()));
+          f.size(of = f.filter(of = ea.f.treeLeaves(of = ea.f.genotype()); condition = ea.predicate.isSrVariable()))
+        ];
+        archive = ea.s.me.a.grid2d(
+          ranges1 = m.range(min = 1; max = 32);
+          ranges2 = m.range(min = 1; max = 32);
+          nOfBins1 = 8;
+          nOfBins2 = 8
+        )
+      )
     ]) * [
     ea.run()
   ];
@@ -30,6 +34,7 @@ ea.experiment(
         f.mapValue(key = mse; of = ea.f.quality(of = ea.f.best()); format = "%6.2f");
         ea.f.hist(of = f.each(of = ea.f.all(); mapF = f.mapValue(key = mse; of = ea.f.quality())));
         f.mapValue(key = mse; of = ea.f.validationQuality(); format = "%6.2f");
+        ea.f.archiveCoverage(of = ea.f.meArchive());
         f.timestamp()
       ];
       onlyLast = true
@@ -61,19 +66,14 @@ ea.experiment(
       type = svg
     );
 
-    % ========= TREES
-    ea.l.saveForRun(
-      path = $basePath + "{solver.name}/{problem.name}/best-{randomGenerator.seed:%02d}.svg";
-      of = ea.acc.lastBest();
-      processor = viz.f.toImage(
-        drawer = viz.d.stacked(drawers = [
-          ea.d.tree(scale = 3);
-          ea.d.formula(scale = 3);
-          ea.d.formula(scale = 3; simplify = true)
-        ]);
-        of = ea.f.srTreeShortVarName(of = ea.f.genotype());
-        type = svg
-      )
+    % ========= ARCHIVE PLOTS
+    ea.l.savePlotForRun(
+      path = $basePath + "{solver.name}/{problem.name}/{randomGenerator.seed}-archive.svg";
+      plot = ea.plot.single.me(
+        q = f.mapValue(key = mse)
+      );
+      kCondition = predicate.matches(f = f.mappableKey(key = "solver.name"); regex = ".*me.*");
+      type = svg
     )
   ]
 )

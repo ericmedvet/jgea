@@ -1421,6 +1421,16 @@ Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.FormattedName
 
 Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction">FormattedNamedFunction</abbr>&lt;X, <abbr title="java.lang.Double">Double</abbr>&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Functions.archiveCoverage()` by jgea-experimenter:2.8.2-SNAPSHOT
 
+### Builder `ea.function.archiveToPolygons()`
+
+`ea.f.archiveToPolygons(of)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `of` | npm | `f.identity()` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;X, <abbr title="io.github.ericmedvet.jgea.core.solver.mapelites.archive.TwoDKeyArchive">TwoDKeyArchive</abbr>&lt;?, T&gt;&gt;</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jnb.datastructure.NamedFunction">NamedFunction</abbr>&lt;X, <abbr title="java.util.Map">Map</abbr>&lt;<abbr title="io.github.ericmedvet.jviz.core.geometry.Polygon">Polygon</abbr>, T&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Functions.archiveToPolygons()` by jgea-experimenter:2.8.2-SNAPSHOT
+
 ### Builder `ea.function.asDouble()`
 
 `ea.f.asDouble(of; format)`
@@ -5109,11 +5119,29 @@ Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;S, <
 
 Aliases: `ea.s.mapelites.a`, `ea.s.mapelites.archive`, `ea.s.me.a`, `ea.s.me.archive`, `ea.solver.mapelites.a`, `ea.solver.mapelites.archive`, `ea.solver.me.a`, `ea.solver.me.archive`
 
-### Builder `ea.solver.mapelites.archive.archiveProviders()`
+### Builder `ea.solver.mapelites.archive.grid()`
 
-`ea.s.me.a.archiveProviders()`
+`ea.s.me.a.grid(ranges; nsOfBins)`
 
-Produces <code><abbr title="io.github.ericmedvet.jgea.experimenter.builders.ArchiveProviders">ArchiveProviders</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.ArchiveProviders()` by jgea-experimenter:2.8.2-SNAPSHOT
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `ranges` | npm[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr>&gt;</code> |
+| `nsOfBins` | i[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.lang.Integer">Integer</abbr>&gt;</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive$Provider">NumericalKeyArchive$Provider</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.ArchiveProviders.grid()` by jgea-experimenter:2.8.2-SNAPSHOT
+
+### Builder `ea.solver.mapelites.archive.grid2d()`
+
+`ea.s.me.a.grid2d(ranges1; ranges2; nOfBins1; nOfBins2)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `ranges1` | npm |  | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
+| `ranges2` | npm |  | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
+| `nOfBins1` | i |  | <code>int</code> |
+| `nOfBins2` | i |  | <code>int</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive$Provider">NumericalKeyArchive$Provider</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.ArchiveProviders.grid2d()` by jgea-experimenter:2.8.2-SNAPSHOT
 
 ## Package `ea.stoppingCriterion`
 

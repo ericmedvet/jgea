@@ -52,6 +52,9 @@ import java.util.stream.IntStream;
 @Discoverable(prefixTemplate = "ea.solver|s.mapelites|me.archive|a")
 public class ArchiveProviders {
 
+  private ArchiveProviders() {
+  }
+
   @Cacheable
   public static NumericalKeyArchive.Provider grid(
       @Param("ranges") List<DoubleRange> ranges,

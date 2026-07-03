@@ -51,6 +51,7 @@ import java.util.function.Predicate;
           pointPairs = [f.identity()]
         )
         """) // spotless:on
+// TODO add heatRun
 @Alias(
     name = "gridRun", value = // spotless:off
     """
@@ -60,7 +61,7 @@ import java.util.function.Predicate;
           condition = predicate.inD(values = [0; 0.1; 0.25; 0.50; 1])
         )
         """) // spotless:on
-@Alias(
+@Alias( // TODO replace gridRun with heatRun
     name = "me", passThroughParams = {@PassThroughParam(name = "q", value = "f.identity()", type = ParamMap.Type.NAMED_PARAM_MAP)
     }, value = // spotless:off
     """
@@ -70,7 +71,7 @@ import java.util.function.Predicate;
           grids = [ea.f.archiveToGrid(of = ea.f.meArchive())]
         )
         """) // spotless:on
-@Alias(
+@Alias( // TODO replace gridRun with heatRun
     name = "coMe", passThroughParams = {@PassThroughParam(name = "q", value = "f.identity()", type = ParamMap.Type.NAMED_PARAM_MAP)
     }, value = // spotless:off
     """
@@ -80,7 +81,7 @@ import java.util.function.Predicate;
           grids = [ea.f.archiveToGrid(of = ea.f.coMeArchive1()); ea.f.archiveToGrid(of = ea.f.coMeArchive2())]
         )
         """) // spotless:on
-@Alias(
+@Alias( // TODO replace gridRun with heatRun
     name = "maMe2", passThroughParams = {@PassThroughParam(name = "q", value = "f.identity()", type = ParamMap.Type.NAMED_PARAM_MAP)
     }, value = // spotless:off
     """
