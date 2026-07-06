@@ -51,7 +51,6 @@ import java.util.function.Predicate;
           pointPairs = [f.identity()]
         )
         """) // spotless:on
-// TODO add heatRun
 @Alias(
     name = "gridRun", value = // spotless:off
     """
@@ -61,34 +60,43 @@ import java.util.function.Predicate;
           condition = predicate.inD(values = [0; 0.1; 0.25; 0.50; 1])
         )
         """) // spotless:on
-@Alias( // TODO replace gridRun with heatRun
+@Alias(
+    name = "heatRun", value = // spotless:off
+    """
+        viz.plot.single.heat(
+          title = f.interpolated(name = title; s = "{solver.name} on {problem.name} (seed={randomGenerator.seed})");
+          predicateValue = f.quantized(of = ea.f.rate(of = ea.f.progress()); q = 0.05; format = "%.2f");
+          condition = predicate.inD(values = [0; 0.1; 0.25; 0.50; 1])
+        )
+        """) // spotless:on
+@Alias(
     name = "me", passThroughParams = {@PassThroughParam(name = "q", value = "f.identity()", type = ParamMap.Type.NAMED_PARAM_MAP)
     }, value = // spotless:off
     """
-        ea.plot.single.gridRun(
+        ea.plot.single.heatRun(
           title = f.interpolated(name = title; s = "Archive of {solver.name} on {problem.name} (seed={randomGenerator.seed})");
           values = [f.composition(of = ea.f.quality(); then = $q)];
-          grids = [ea.f.archiveToGrid(of = ea.f.meArchive())]
+          maps = [ea.f.archiveToPolygons(of = ea.f.meArchive())]
         )
         """) // spotless:on
-@Alias( // TODO replace gridRun with heatRun
+@Alias(
     name = "coMe", passThroughParams = {@PassThroughParam(name = "q", value = "f.identity()", type = ParamMap.Type.NAMED_PARAM_MAP)
     }, value = // spotless:off
     """
-        ea.plot.single.gridRun(
+        ea.plot.single.heatRun(
           title = f.interpolated(name = title; s = "Archives of {solver.name} on {problem.name} (seed={randomGenerator.seed})");
           values = [f.composition(of = ea.f.quality(); then = $q)];
-          grids = [ea.f.archiveToGrid(of = ea.f.coMeArchive1()); ea.f.archiveToGrid(of = ea.f.coMeArchive2())]
+          maps = [ea.f.archiveToPolygons(of = ea.f.coMeArchive1()); ea.f.archiveToPolygons(of = ea.f.coMeArchive2())]
         )
         """) // spotless:on
-@Alias( // TODO replace gridRun with heatRun
+@Alias(
     name = "maMe2", passThroughParams = {@PassThroughParam(name = "q", value = "f.identity()", type = ParamMap.Type.NAMED_PARAM_MAP)
     }, value = // spotless:off
     """
-        ea.plot.single.gridRun(
+        ea.plot.single.heatRun(
           title = f.interpolated(name = title; s = "Archives of {solver.name} on {problem.name} (seed={randomGenerator.seed})");
           values = [f.composition(of = ea.f.quality(); then = $q)];
-          grids = [ea.f.archiveToGrid(of = ea.f.maMeArchive(n = 0)); ea.f.archiveToGrid(of = ea.f.maMeArchive(n = 1))]
+          grids = [ea.f.archiveToPolygons(of = ea.f.maMeArchive(n = 0)); ea.f.archiveToPolygons(of = ea.f.maMeArchive(n = 1))]
         )
         """) // spotless:on
 @Alias(

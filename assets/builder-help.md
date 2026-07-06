@@ -3394,20 +3394,20 @@ Produces <code><abbr title="io.github.ericmedvet.jviz.core.plot.accumulator.XYDa
 
 ### Builder `ea.plot.single.coMe()`
 
-`ea.plot.s.coMe(title; values; grids; predicateValue; condition; valueRange; unique; q)`
+`ea.plot.s.coMe(title; values; maps; predicateValue; condition; valueRange; unique; q)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
 | `title` | npm | `f.interpolated(name = title; s = "Archives of {solver.name} on {problem.name} (seed={randomGenerator.seed})")` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;? super K, <abbr title="java.lang.String">String</abbr>&gt;</code> |
-| `values` | npm[] | `[f.composition(of = ea.f.quality(); then = f.identity())]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.util.function.Function">Function</abbr>&lt;? super G, ? extends <abbr title="java.lang.Number">Number</abbr>&gt;&gt;</code> |
-| `grids` | npm[] | `[ea.f.archiveToGrid(of = ea.f.coMeArchive1()), ea.f.archiveToGrid(of = ea.f.coMeArchive2())]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.util.function.Function">Function</abbr>&lt;? super E, <abbr title="io.github.ericmedvet.jnb.datastructure.Grid">Grid</abbr>&lt;G&gt;&gt;&gt;</code> |
+| `values` | npm[] | `[f.composition(of = ea.f.quality(); then = f.identity())]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.util.function.Function">Function</abbr>&lt;? super V, ? extends <abbr title="java.lang.Number">Number</abbr>&gt;&gt;</code> |
+| `maps` | npm[] | `[ea.f.archiveToPolygons(of = ea.f.coMeArchive1()), ea.f.archiveToPolygons(of = ea.f.coMeArchive2())]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.util.function.Function">Function</abbr>&lt;? super E, <abbr title="java.util.Map">Map</abbr>&lt;<abbr title="io.github.ericmedvet.jviz.core.geometry.Polygon">Polygon</abbr>, V&gt;&gt;&gt;</code> |
 | `predicateValue` | npm | `f.quantized(format = "%.2f"; of = ea.f.rate(of = ea.f.progress()); q = 0.05)` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;E, X&gt;</code> |
 | `condition` | npm | `predicate.inD(values = [0.0; 0.1; 0.25; 0.5; 1.0])` | <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code> |
 | `valueRange` | npm | `m.range(max = Infinity; min = -Infinity)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `unique` | b | `true` | <code>boolean</code> |
 | `q` | npm | `f.identity()` | <code><abbr title="java.lang.String">String</abbr></code> |
 
-Produces <code><abbr title="io.github.ericmedvet.jviz.core.plot.accumulator.UnivariateGridSEPAF">UnivariateGridSEPAF</abbr>&lt;E, K, X, G&gt;</code>; built from `io.github.ericmedvet.jviz.buildable.builders.SinglePlots.grid()` by jgea-experimenter:2.8.2-SNAPSHOT
+Produces <code><abbr title="io.github.ericmedvet.jviz.core.plot.accumulator.HeatPolyMapSEPAF">HeatPolyMapSEPAF</abbr>&lt;E, K, X, V&gt;</code>; built from `io.github.ericmedvet.jviz.buildable.builders.SinglePlots.heat()` by jgea-experimenter:2.8.2-SNAPSHOT
 
 ### Builder `ea.plot.single.coMeStrategies()`
 
@@ -3472,6 +3472,22 @@ Produces <code><abbr title="io.github.ericmedvet.jviz.core.plot.accumulator.Univ
 
 Produces <code><abbr title="io.github.ericmedvet.jviz.core.plot.accumulator.UnivariateGridSEPAF">UnivariateGridSEPAF</abbr>&lt;E, K, X, G&gt;</code>; built from `io.github.ericmedvet.jviz.buildable.builders.SinglePlots.grid()` by jgea-experimenter:2.8.2-SNAPSHOT
 
+### Builder `ea.plot.single.heatRun()`
+
+`ea.plot.s.heatRun(title; values; maps; predicateValue; condition; valueRange; unique)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `title` | npm | `f.interpolated(name = title; s = "{solver.name} on {problem.name} (seed={randomGenerator.seed})")` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;? super K, <abbr title="java.lang.String">String</abbr>&gt;</code> |
+| `values` | npm[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.util.function.Function">Function</abbr>&lt;? super V, ? extends <abbr title="java.lang.Number">Number</abbr>&gt;&gt;</code> |
+| `maps` | npm[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.util.function.Function">Function</abbr>&lt;? super E, <abbr title="java.util.Map">Map</abbr>&lt;<abbr title="io.github.ericmedvet.jviz.core.geometry.Polygon">Polygon</abbr>, V&gt;&gt;&gt;</code> |
+| `predicateValue` | npm | `f.quantized(format = "%.2f"; of = ea.f.rate(of = ea.f.progress()); q = 0.05)` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;E, X&gt;</code> |
+| `condition` | npm | `predicate.inD(values = [0.0; 0.1; 0.25; 0.5; 1.0])` | <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code> |
+| `valueRange` | npm | `m.range(max = Infinity; min = -Infinity)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
+| `unique` | b | `true` | <code>boolean</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jviz.core.plot.accumulator.HeatPolyMapSEPAF">HeatPolyMapSEPAF</abbr>&lt;E, K, X, V&gt;</code>; built from `io.github.ericmedvet.jviz.buildable.builders.SinglePlots.heat()` by jgea-experimenter:2.8.2-SNAPSHOT
+
 ### Builder `ea.plot.single.landscape()`
 
 `ea.plot.s.landscape(title; predicateValue; condition; mapper; q; xRange; yRange; xF; yF; valueRange; unique)`
@@ -3494,37 +3510,37 @@ Produces <code><abbr title="io.github.ericmedvet.jviz.core.plot.accumulator.Land
 
 ### Builder `ea.plot.single.maMe2()`
 
-`ea.plot.s.maMe2(title; values; grids; predicateValue; condition; valueRange; unique; q)`
+`ea.plot.s.maMe2(title; values; maps; predicateValue; condition; valueRange; unique; q)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
 | `title` | npm | `f.interpolated(name = title; s = "Archives of {solver.name} on {problem.name} (seed={randomGenerator.seed})")` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;? super K, <abbr title="java.lang.String">String</abbr>&gt;</code> |
-| `values` | npm[] | `[f.composition(of = ea.f.quality(); then = f.identity())]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.util.function.Function">Function</abbr>&lt;? super G, ? extends <abbr title="java.lang.Number">Number</abbr>&gt;&gt;</code> |
-| `grids` | npm[] | `[ea.f.archiveToGrid(of = ea.f.maMeArchive(n = 0)), ea.f.archiveToGrid(of = ea.f.maMeArchive(n = 1))]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.util.function.Function">Function</abbr>&lt;? super E, <abbr title="io.github.ericmedvet.jnb.datastructure.Grid">Grid</abbr>&lt;G&gt;&gt;&gt;</code> |
+| `values` | npm[] | `[f.composition(of = ea.f.quality(); then = f.identity())]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.util.function.Function">Function</abbr>&lt;? super V, ? extends <abbr title="java.lang.Number">Number</abbr>&gt;&gt;</code> |
+| `maps` | npm[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.util.function.Function">Function</abbr>&lt;? super E, <abbr title="java.util.Map">Map</abbr>&lt;<abbr title="io.github.ericmedvet.jviz.core.geometry.Polygon">Polygon</abbr>, V&gt;&gt;&gt;</code> |
 | `predicateValue` | npm | `f.quantized(format = "%.2f"; of = ea.f.rate(of = ea.f.progress()); q = 0.05)` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;E, X&gt;</code> |
 | `condition` | npm | `predicate.inD(values = [0.0; 0.1; 0.25; 0.5; 1.0])` | <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code> |
 | `valueRange` | npm | `m.range(max = Infinity; min = -Infinity)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `unique` | b | `true` | <code>boolean</code> |
 | `q` | npm | `f.identity()` | <code><abbr title="java.lang.String">String</abbr></code> |
 
-Produces <code><abbr title="io.github.ericmedvet.jviz.core.plot.accumulator.UnivariateGridSEPAF">UnivariateGridSEPAF</abbr>&lt;E, K, X, G&gt;</code>; built from `io.github.ericmedvet.jviz.buildable.builders.SinglePlots.grid()` by jgea-experimenter:2.8.2-SNAPSHOT
+Produces <code><abbr title="io.github.ericmedvet.jviz.core.plot.accumulator.HeatPolyMapSEPAF">HeatPolyMapSEPAF</abbr>&lt;E, K, X, V&gt;</code>; built from `io.github.ericmedvet.jviz.buildable.builders.SinglePlots.heat()` by jgea-experimenter:2.8.2-SNAPSHOT
 
 ### Builder `ea.plot.single.me()`
 
-`ea.plot.s.me(title; values; grids; predicateValue; condition; valueRange; unique; q)`
+`ea.plot.s.me(title; values; maps; predicateValue; condition; valueRange; unique; q)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
 | `title` | npm | `f.interpolated(name = title; s = "Archive of {solver.name} on {problem.name} (seed={randomGenerator.seed})")` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;? super K, <abbr title="java.lang.String">String</abbr>&gt;</code> |
-| `values` | npm[] | `[f.composition(of = ea.f.quality(); then = f.identity())]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.util.function.Function">Function</abbr>&lt;? super G, ? extends <abbr title="java.lang.Number">Number</abbr>&gt;&gt;</code> |
-| `grids` | npm[] | `[ea.f.archiveToGrid(of = ea.f.meArchive())]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.util.function.Function">Function</abbr>&lt;? super E, <abbr title="io.github.ericmedvet.jnb.datastructure.Grid">Grid</abbr>&lt;G&gt;&gt;&gt;</code> |
+| `values` | npm[] | `[f.composition(of = ea.f.quality(); then = f.identity())]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.util.function.Function">Function</abbr>&lt;? super V, ? extends <abbr title="java.lang.Number">Number</abbr>&gt;&gt;</code> |
+| `maps` | npm[] | `[ea.f.archiveToPolygons(of = ea.f.meArchive())]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.util.function.Function">Function</abbr>&lt;? super E, <abbr title="java.util.Map">Map</abbr>&lt;<abbr title="io.github.ericmedvet.jviz.core.geometry.Polygon">Polygon</abbr>, V&gt;&gt;&gt;</code> |
 | `predicateValue` | npm | `f.quantized(format = "%.2f"; of = ea.f.rate(of = ea.f.progress()); q = 0.05)` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;E, X&gt;</code> |
 | `condition` | npm | `predicate.inD(values = [0.0; 0.1; 0.25; 0.5; 1.0])` | <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;X&gt;</code> |
 | `valueRange` | npm | `m.range(max = Infinity; min = -Infinity)` | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `unique` | b | `true` | <code>boolean</code> |
 | `q` | npm | `f.identity()` | <code><abbr title="java.lang.String">String</abbr></code> |
 
-Produces <code><abbr title="io.github.ericmedvet.jviz.core.plot.accumulator.UnivariateGridSEPAF">UnivariateGridSEPAF</abbr>&lt;E, K, X, G&gt;</code>; built from `io.github.ericmedvet.jviz.buildable.builders.SinglePlots.grid()` by jgea-experimenter:2.8.2-SNAPSHOT
+Produces <code><abbr title="io.github.ericmedvet.jviz.core.plot.accumulator.HeatPolyMapSEPAF">HeatPolyMapSEPAF</abbr>&lt;E, K, X, V&gt;</code>; built from `io.github.ericmedvet.jviz.buildable.builders.SinglePlots.heat()` by jgea-experimenter:2.8.2-SNAPSHOT
 
 ### Builder `ea.plot.single.populationValidation()`
 
