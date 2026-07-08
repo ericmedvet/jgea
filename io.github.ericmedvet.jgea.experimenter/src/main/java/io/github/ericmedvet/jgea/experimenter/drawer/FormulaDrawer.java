@@ -24,9 +24,9 @@ import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element.Constant;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element.Operator;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element.Variable;
-import io.github.ericmedvet.jsdynsym.control.geometry.Point;
-import io.github.ericmedvet.jsdynsym.control.geometry.Rectangle;
 import io.github.ericmedvet.jviz.core.drawer.Drawer;
+import io.github.ericmedvet.jviz.core.geometry.Point;
+import io.github.ericmedvet.jviz.core.geometry.Rectangle;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -122,13 +122,13 @@ public class FormulaDrawer implements Drawer<Tree<Element>> {
     draw(
         g,
         Rectangle.of(
-            new io.github.ericmedvet.jsdynsym.control.geometry.Point(
+            new Point(
                 clipBounds.getMinX(),
                 clipBounds.getMinY()
             ).sum(
-                new io.github.ericmedvet.jsdynsym.control.geometry.Point(c.margin, c.margin)
+                new Point(c.margin, c.margin)
             ),
-            new io.github.ericmedvet.jsdynsym.control.geometry.Point(
+            new Point(
                 clipBounds.getMaxX(),
                 clipBounds.getMaxY()
             ).diff(new Point(c.margin, c.margin))

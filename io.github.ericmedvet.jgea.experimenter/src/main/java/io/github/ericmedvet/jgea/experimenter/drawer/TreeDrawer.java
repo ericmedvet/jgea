@@ -21,9 +21,9 @@
 package io.github.ericmedvet.jgea.experimenter.drawer;
 
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
-import io.github.ericmedvet.jsdynsym.control.geometry.Point;
-import io.github.ericmedvet.jsdynsym.control.geometry.Rectangle;
 import io.github.ericmedvet.jviz.core.drawer.Drawer;
+import io.github.ericmedvet.jviz.core.geometry.Point;
+import io.github.ericmedvet.jviz.core.geometry.Rectangle;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
