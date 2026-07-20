@@ -20,8 +20,11 @@
 
 package io.github.ericmedvet.jgea.core.representation.grammar.string;
 
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 public class GrammarUtils {
 
@@ -195,19 +198,16 @@ public class GrammarUtils {
     return map;
   }
 
-  public static <T> Map<T, Pair<Double, Double>> computeSymbolsMinMaxDepths(StringGrammar<T> g) {
+  public static <T> Map<T, DoubleRange> computeSymbolsMinMaxDepths(StringGrammar<T> g) {
     Map<T, Pair<Integer, Boolean>> minDepths = computeSymbolsMinDepths(g);
     Map<T, Triplet<Double, Boolean, Set<T>>> maxDepths = computeSymbolsMaxDepths(g);
-    Map<T, Pair<Double, Double>> map = new HashMap<>();
-    for (T t : minDepths.keySet()) {
-      map.put(
-          t,
-          new Pair<>(
-              (double) minDepths.get(t).first(),
-              maxDepths.get(t).first()
-          )
-      );
-    }
-    return map;
+    return minDepths.entrySet().stream()
+        .collect(Collectors.toMap(
+            Entry::getKey,
+            e -> new DoubleRange(
+                Optional.ofNullable(e.getValue()).map(Pair::first).orElse(0),
+                Optional.ofNullable(maxDepths.get(e.getKey())).map(Triplet::first).orElse(0d)
+            )
+        ));
   }
 }

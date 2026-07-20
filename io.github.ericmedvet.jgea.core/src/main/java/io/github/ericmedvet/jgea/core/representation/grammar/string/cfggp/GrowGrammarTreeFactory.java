@@ -24,6 +24,8 @@ import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarUtils;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.tree.Tree;
+import io.github.ericmedvet.jgea.core.util.Misc;
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,12 +40,12 @@ public class GrowGrammarTreeFactory<T> implements Factory<Tree<T>> {
   protected final int maxHeight;
   protected final StringGrammar<T> grammar;
 
-  private final Map<T, Pair<Double, Double>> nonTerminalDepths;
+  private final Map<T, DoubleRange> nonTerminalHeights;
 
   public GrowGrammarTreeFactory(int maxHeight, StringGrammar<T> grammar) {
     this.maxHeight = maxHeight;
     this.grammar = grammar;
-    nonTerminalDepths = GrammarUtils.computeSymbolsMinMaxDepths(grammar);
+    nonTerminalHeights = GrammarUtils.computeSymbolsMinMaxDepths(grammar);
   }
 
   @Override
@@ -64,61 +66,45 @@ public class GrowGrammarTreeFactory<T> implements Factory<Tree<T>> {
 
   public Tree<T> build(RandomGenerator random, T symbol, int targetDepth) {
     if (targetDepth < 0) {
-      return null;
+      throw new IllegalArgumentException("Unexpected negative target depth");
     }
     Tree<T> tree = Tree.of(symbol);
     if (grammar.rules().containsKey(symbol)) {
       // a non-terminal
-      List<List<T>> options = grammar.rules().get(symbol);
-      List<List<T>> availableOptions = new ArrayList<>();
       // general idea: try the following
-      // 1. choose expansion with min,max including target depth
+      // 1. choose expansion with min,max including target depth; if empty, choose all
       // 2. choose expansion
-      for (List<T> option : options) {
-        Pair<Double, Double> minMax = optionMinMaxDepth(option);
-        if (((targetDepth - 1) >= minMax.first()) && ((targetDepth - 1) <= minMax.second())) {
-          availableOptions.add(option);
-        }
-      }
+      // 3. for each child, with 1/n_of_children prob, fill full, otherwise fill up to full
+      List<List<T>> options = grammar.rules().get(symbol);
+      List<List<T>> availableOptions = options.stream()
+          .filter(o -> optionMinMaxHeight(o).contains(targetDepth - 1))
+          .toList();
       if (availableOptions.isEmpty()) {
-        availableOptions.addAll(options);
+        availableOptions = options;
       }
-      int optionIndex = random.nextInt(availableOptions.size());
-      // choose one index to force as full
-      List<Integer> availableFullIndexes = new ArrayList<>();
-      for (int i = 0; i < availableOptions.get(optionIndex).size(); i++) {
-        Pair<Double, Double> minMax = nonTerminalDepths.get(availableOptions.get(optionIndex).get(i));
-        if (((targetDepth - 1) >= minMax.first()) && ((targetDepth - 1) <= minMax.second())) {
-          availableFullIndexes.add(i);
-        }
-      }
-      int fullIndex = random.nextInt(availableOptions.get(optionIndex).size());
-      if (!availableFullIndexes.isEmpty()) {
-        fullIndex = availableFullIndexes.get(random.nextInt(availableFullIndexes.size()));
-      }
-      for (int i = 0; i < availableOptions.get(optionIndex).size(); i++) {
+      List<T> option = Misc.pickRandomly(availableOptions, random);
+      option.forEach(t -> {
         int childTargetDepth = targetDepth - 1;
-        Pair<Double, Double> minMax = nonTerminalDepths.get(availableOptions.get(optionIndex).get(i));
-        if ((i != fullIndex) && (childTargetDepth > minMax.first())) {
-          childTargetDepth = random.nextInt(childTargetDepth - minMax.first().intValue()) + minMax.first().intValue();
+        if (random.nextInt(option.size()) != 0) {
+          // randomly set target depth
+          DoubleRange childHeightRange = nonTerminalHeights.get(t)
+              .intersectionWith(new DoubleRange(0, childTargetDepth));
+          childTargetDepth = random.nextInt((int) Math.floor(childHeightRange.extent()))
+              + (int) childHeightRange.min();
         }
-        Tree<T> child = build(random, availableOptions.get(optionIndex).get(i), childTargetDepth);
-        if (child == null) {
-          return null;
-        }
-        tree.addChild(child);
-      }
+        tree.addChild(build(random, t, childTargetDepth));
+      });
     }
     return tree;
   }
 
-  protected Pair<Double, Double> optionMinMaxDepth(List<T> option) {
+  protected DoubleRange optionMinMaxHeight(List<T> option) {
     double min = 0d;
     double max = 0d;
     for (T symbol : option) {
-      min = Math.max(min, nonTerminalDepths.get(symbol).first());
-      max = Math.max(max, nonTerminalDepths.get(symbol).second());
+      min = Math.max(min, nonTerminalHeights.get(symbol).min());
+      max = Math.max(max, nonTerminalHeights.get(symbol).max());
     }
-    return new Pair<>(min, max);
+    return new DoubleRange(min, max);
   }
 }

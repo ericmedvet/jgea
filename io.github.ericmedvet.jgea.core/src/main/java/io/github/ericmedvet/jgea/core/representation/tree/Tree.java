@@ -19,6 +19,7 @@
  */
 package io.github.ericmedvet.jgea.core.representation.tree;
 
+import io.github.ericmedvet.jnb.datastructure.Copyable;
 import io.github.ericmedvet.jnb.datastructure.Sized;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>> {
+public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>>, Copyable<Tree<C>> {
 
   public final static String CHILDREN_START_DELIMITER = "(";
   public final static String CHILDREN_END_DELIMITER = ")";
@@ -43,12 +44,11 @@ public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>> {
     this.parent = parent;
   }
 
-  public static <K> Tree<K> copyOf(Tree<K> other) {
-    Tree<K> t = new Tree<>(other.content, null);
-    for (Tree<K> child : other.children) {
-      t.addChild(Tree.copyOf(child));
-    }
-    return t;
+  @Override
+  public Tree<C> copyOf() {
+    Tree<C> copy = new Tree<>(content, null);
+    children.forEach(c -> copy.addChild(c.copyOf()));
+    return copy;
   }
 
   public static <K, H> Tree<H> map(Tree<K> other, Function<K, H> mapper) {

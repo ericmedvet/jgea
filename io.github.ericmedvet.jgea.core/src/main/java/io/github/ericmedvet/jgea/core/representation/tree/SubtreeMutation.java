@@ -58,7 +58,7 @@ public class SubtreeMutation<N> implements Mutation<Tree<N>> {
             .findFirst()
             .orElse(0);
     Tree<N> newSubtree = builder.build(random, random.nextInt(maxHeight - maxDepth) + 1);
-    return replaceAll ? TreeUtils.replaceAll(Tree.copyOf(parent), toReplaceSubtree, newSubtree) : TreeUtils
-        .replaceFirst(Tree.copyOf(parent), toReplaceSubtree, newSubtree);
+    return replaceAll ? TreeUtils.replaceAll(parent.copyOf(), toReplaceSubtree, newSubtree) : TreeUtils
+        .replaceFirst(parent.copyOf(), toReplaceSubtree, newSubtree);
   }
 }

@@ -39,7 +39,7 @@ public class GrammarBasedSubtreeMutation<T> implements Mutation<Tree<T>> {
 
   @Override
   public Tree<T> mutate(Tree<T> parent, RandomGenerator random) {
-    Tree<T> child = Tree.copyOf(parent);
+    Tree<T> child = parent.copyOf();
     List<Tree<T>> nonTerminalTrees = Misc.shuffle(child.topSubtrees(), random);
     boolean done = false;
     for (Tree<T> toReplaceSubTree : nonTerminalTrees) {

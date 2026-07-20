@@ -27,7 +27,7 @@ public class TreeUtils {
 
   public static <N> Tree<N> replaceAll(Tree<N> t, Tree<N> oldT, Tree<N> newT) {
     if (t.equals(oldT)) {
-      return Tree.copyOf(newT);
+      return newT.copyOf();
     }
     Tree<N> rebuilt = Tree.of(t.content());
     t.childStream().map(c -> replaceAll(c, oldT, newT)).forEach(rebuilt::addChild);
@@ -36,7 +36,7 @@ public class TreeUtils {
 
   public static <N> Tree<N> replaceFirst(Tree<N> t, Tree<N> oldT, Tree<N> newT) {
     if (t.equals(oldT)) {
-      return Tree.copyOf(newT);
+      return newT.copyOf();
     }
     Tree<N> rebuilt = Tree.of(t.content());
     boolean replaced = false;

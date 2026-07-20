@@ -58,6 +58,6 @@ public class SameRootSubtreeCrossover<N> implements Crossover<Tree<N>> {
         }
       }
     }
-    return Tree.copyOf(parent1);
+    return parent1.copyOf();
   }
 }
