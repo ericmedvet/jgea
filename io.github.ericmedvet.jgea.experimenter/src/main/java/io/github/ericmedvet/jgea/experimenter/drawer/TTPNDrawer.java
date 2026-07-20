@@ -53,7 +53,7 @@ public class TTPNDrawer implements Drawer<Network> {
       double ioGateOutputHRate, double textWMarginRate, double textHMarginRate,
       boolean showGateIndex, boolean showDeadGate
   ) {
-    public static Configuration DEFAULT = new Configuration(
+    public static final Configuration DEFAULT = new Configuration(
         Color.LIGHT_GRAY,
         Color.PINK,
         Color.BLACK,

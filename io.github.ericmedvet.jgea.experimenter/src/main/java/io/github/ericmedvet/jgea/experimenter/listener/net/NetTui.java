@@ -33,7 +33,7 @@ public class NetTui {
   private static class CommandLineConfiguration {
     @Parameter(
         names = {"--port", "-p"}, description = "Server port.")
-    public int port = DEFAULT_PORT;
+    public final int port = DEFAULT_PORT;
 
     @Parameter(
         names = {"--key", "-k"}, description = "Handshake key.", required = true)

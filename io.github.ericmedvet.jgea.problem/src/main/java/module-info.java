@@ -39,7 +39,6 @@ module io.github.ericmedvet.jgea.problem {
   requires io.github.ericmedvet.jgea.core;
   requires io.github.ericmedvet.jnb.datastructure;
   requires io.github.ericmedvet.jsdynsym.core;
-  requires io.github.ericmedvet.jsdynsym.control;
   requires io.github.ericmedvet.jviz.core;
   requires commons.math3;
   requires java.desktop;

@@ -52,7 +52,7 @@ public class LimitedExecutorService extends AbstractExecutorService {
   private final boolean logEvents;
 
   public enum Event {
-    TASK_SUBMITTED, TASK_STARTED, TASK_ENDED, TASK_REJECTED, TASK_FAILED, STARTED, SHUTDOWN, TERMINATED;
+    TASK_SUBMITTED, TASK_STARTED, TASK_ENDED, TASK_REJECTED, TASK_FAILED, STARTED, SHUTDOWN, TERMINATED
   }
 
   private final Map<LocalDateTime, Event> events;

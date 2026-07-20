@@ -586,7 +586,7 @@ public class Gates {
         List.of(Generic.of("f"), Generic.of("s")),
         NamedFunction.from(
             in -> Gate.Data.pairOne(
-                in.one(0, List.class).get(0),
+                in.one(0, List.class).getFirst(),
                 in.one(0, List.class).get(1)
             ),
             "unpairer"

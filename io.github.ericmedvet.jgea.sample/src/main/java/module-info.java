@@ -18,9 +18,4 @@
  * =========================LICENSE_END==================================
  */
 module io.github.ericmedvet.jgea.sample {
-  requires io.github.ericmedvet.jgea.core;
-  requires io.github.ericmedvet.jnb.datastructure;
-  requires io.github.ericmedvet.jgea.problem;
-  requires java.logging;
-  requires java.desktop;
 }

@@ -110,7 +110,7 @@ public class TextPlotter {
         sb.append(
             VERTICAL_PART_FILLER.charAt(
                 (int) Math.round(
-                    Math.max(Math.min((value - min) / (max - min), 1d), 0d) * ((double) VERTICAL_PART_FILLER
+                    Math.clamp((value - min) / (max - min), 0d, 1d) * ((double) VERTICAL_PART_FILLER
                         .length() - 1d)
                 )
             )
@@ -201,7 +201,7 @@ public class TextPlotter {
         sb.append(
             HORIZONTAL_PART_FILLER.charAt(
                 (int) Math.round(
-                    Math.max(Math.min((value - localMin) / r, 1d), 0d) * ((double) VERTICAL_PART_FILLER.length() - 1d)
+                    Math.clamp((value - localMin) / r, 0d, 1d) * ((double) VERTICAL_PART_FILLER.length() - 1d)
                 )
             )
         );

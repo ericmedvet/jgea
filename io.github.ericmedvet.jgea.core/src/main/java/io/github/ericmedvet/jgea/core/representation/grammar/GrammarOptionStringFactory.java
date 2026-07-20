@@ -31,12 +31,10 @@ public class GrammarOptionStringFactory<S, C> implements IndependentFactory<Gram
 
   private final Grammar<S, C> grammar;
 
-  private final int l;
   private final Map<S, Integer> lengths;
 
   public GrammarOptionStringFactory(Grammar<S, C> grammar, int l, int level) {
     this.grammar = grammar;
-    this.l = l;
     // expand
     List<List<S>> last = List.of(List.of(grammar.startingSymbol()));
     List<List<S>> all = new ArrayList<>(last);

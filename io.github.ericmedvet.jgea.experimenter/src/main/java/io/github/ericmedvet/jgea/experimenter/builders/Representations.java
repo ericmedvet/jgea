@@ -187,13 +187,13 @@ public class Representations {
       Representation<G> innerR = representation.apply(egs.getFirst());
       List<Mutation<List<G>>> mutations;
       if (altMutations.isEmpty()) {
-        mutations = innerR.mutations().stream().map(m -> m.list()).toList();
+        mutations = innerR.mutations().stream().map(Mutation::list).toList();
       } else {
         mutations = altMutations.stream().map(m -> m.apply(egs)).toList();
       }
       List<Crossover<List<G>>> crossovers;
       if (altCrossovers.isEmpty()) {
-        crossovers = innerR.crossovers().stream().map(c -> c.list()).toList();
+        crossovers = innerR.crossovers().stream().map(Crossover::list).toList();
         if (uniformCrossover) {
           crossovers = Stream.concat(crossovers.stream(), Stream.of(new UniformCrossover<G>()))
               .toList();

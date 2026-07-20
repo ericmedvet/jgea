@@ -26,7 +26,6 @@ import io.github.ericmedvet.jgea.core.problem.MultifidelityQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSolver;
 import io.github.ericmedvet.jgea.core.solver.Individual;
 import io.github.ericmedvet.jgea.core.solver.ProgressBasedStopCondition;
-import io.github.ericmedvet.jgea.core.solver.SolverException;
 import io.github.ericmedvet.jgea.core.solver.mapelites.MultiFidelityMEPopulationState.LocalState;
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive;
 import io.github.ericmedvet.jgea.core.util.Misc;
@@ -177,16 +176,7 @@ public class AsynchronousScheduledMFMapElites<G, S, Q> extends AbstractPopulatio
       MultifidelityQualityBasedProblem<S, Q> problem,
       RandomGenerator random,
       Executor executor
-  ) throws SolverException {
-    throw new UnsupportedOperationException("This solver is not actually iterative");
-  }
-
-  @Override
-  public MultiFidelityMEPopulationState<G, S, Q, MultifidelityQualityBasedProblem<S, Q>> update(
-      RandomGenerator random,
-      Executor executor,
-      MultiFidelityMEPopulationState<G, S, Q, MultifidelityQualityBasedProblem<S, Q>> state
-  ) throws SolverException {
+  ) {
     throw new UnsupportedOperationException("This solver is not actually iterative");
   }
 
@@ -196,7 +186,7 @@ public class AsynchronousScheduledMFMapElites<G, S, Q> extends AbstractPopulatio
       RandomGenerator random,
       Executor executor,
       Listener<? super MultiFidelityMEPopulationState<G, S, Q, MultifidelityQualityBasedProblem<S, Q>>> listener
-  ) throws SolverException {
+  ) {
     // init maps and counters
     LocalDateTime startingDateTime = LocalDateTime.now();
     AtomicLong nOfBirths = new AtomicLong(0);
@@ -274,6 +264,15 @@ public class AsynchronousScheduledMFMapElites<G, S, Q> extends AbstractPopulatio
             problem
         )
     );
+  }
+
+  @Override
+  public MultiFidelityMEPopulationState<G, S, Q, MultifidelityQualityBasedProblem<S, Q>> update(
+      RandomGenerator random,
+      Executor executor,
+      MultiFidelityMEPopulationState<G, S, Q, MultifidelityQualityBasedProblem<S, Q>> state
+  ) {
+    throw new UnsupportedOperationException("This solver is not actually iterative");
   }
 
   private Runnable variationRunnable(

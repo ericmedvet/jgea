@@ -20,7 +20,6 @@
 package io.github.ericmedvet.jgea.core.util;
 
 import io.github.ericmedvet.jgea.core.problem.MultifidelityQualityBasedProblem.MultifidelityFunction;
-import java.util.function.*;
 
 public class Naming {
 

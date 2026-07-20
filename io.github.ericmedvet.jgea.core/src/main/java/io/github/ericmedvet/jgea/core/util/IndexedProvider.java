@@ -52,7 +52,7 @@ public interface IndexedProvider<T> {
 
   default IndexedProvider<T> asSynchronized() {
     IndexedProvider<T> thisIndexedProvider = this;
-    return new IndexedProvider<T>() {
+    return new IndexedProvider<>() {
       @Override
       public synchronized T get(int i) {
         return thisIndexedProvider.get(i);
@@ -106,7 +106,7 @@ public interface IndexedProvider<T> {
     List<Integer> shuffledIndexes = new ArrayList<>(indexes());
     Collections.shuffle(shuffledIndexes, rnd);
     List<Integer> finalShuffledIndexes = Collections.unmodifiableList(shuffledIndexes);
-    return new IndexedProvider<T>() {
+    return new IndexedProvider<>() {
       @Override
       public T get(int i) {
         return thisIndexedProvider.get(i);

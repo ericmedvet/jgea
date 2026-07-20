@@ -191,7 +191,7 @@ public class TTPNOutcomeVideoBuilder implements VideoBuilder<Runner.TTPNInstrume
     double sL = length(List.of(wirePoints.get(sC), wirePoints.get(sC - 1)));
     double d = d0;
     Shape clip = g.getClip();
-    for (int i = 0; i < tokens.size(); i++) {
+    for (Object token : tokens) {
       if (d > sL) {
         d = d0;
         sC = sC - 1;
@@ -205,7 +205,7 @@ public class TTPNOutcomeVideoBuilder implements VideoBuilder<Runner.TTPNInstrume
       g.setColor(configuration.drawerConfiguration.borderColor());
       g.draw(circle);
       g.setClip(circle);
-      String str = tokens.get(i).toString();
+      String str = token.toString();
       Rectangle2D strR = ImageUtils.bounds(str, g.getFont(), g);
       g.setColor(configuration.tokenContentColor);
       g.drawString(

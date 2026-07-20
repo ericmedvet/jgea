@@ -38,6 +38,7 @@ import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 public class FitnessFunction implements Function<Pair<Tree<Element>, Tree<Element>>, List<Double>> {
 
   private static final int EXPRESSIVENESS_DEPTH = 2;
+  @SuppressWarnings("rawtypes")
   private final List<EnhancedProblem> problems;
   private final int maxMappingDepth;
   private final List<Property> properties;
@@ -45,7 +46,7 @@ public class FitnessFunction implements Function<Pair<Tree<Element>, Tree<Elemen
   private final double[] genotypeDistances;
 
   public FitnessFunction(
-      List<EnhancedProblem> problems,
+      @SuppressWarnings("rawtypes") List<EnhancedProblem> problems,
       int genotypeSize,
       int n,
       int maxMappingDepth,

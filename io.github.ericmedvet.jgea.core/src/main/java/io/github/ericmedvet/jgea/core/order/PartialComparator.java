@@ -60,7 +60,7 @@ public interface PartialComparator<K> {
   }
 
   static <C> PartialComparator<C> from(List<PartialComparator<? super C>> partialComparators) {
-    return new PartialComparator<C>() {
+    return new PartialComparator<>() {
       @Override
       public PartialComparatorOutcome compare(C k1, C k2) {
         int nOfBefore = 0;
@@ -162,7 +162,7 @@ public interface PartialComparator<K> {
 
   default PartialComparator<K> thenComparing(PartialComparator<? super K> other) {
     PartialComparator<K> thisPartialComparator = this;
-    return new PartialComparator<K>() {
+    return new PartialComparator<>() {
       @Override
       public PartialComparatorOutcome compare(K k1, K k2) {
         PartialComparatorOutcome outcome = thisPartialComparator.compare(k1, k2);

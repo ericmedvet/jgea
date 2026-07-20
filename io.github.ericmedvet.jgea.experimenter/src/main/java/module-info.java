@@ -31,17 +31,11 @@ module io.github.ericmedvet.jgea.experimenter {
   requires io.github.ericmedvet.jgea.problem;
   requires io.github.ericmedvet.jsdynsym.core;
   requires io.github.ericmedvet.jsdynsym.control;
-  requires io.github.ericmedvet.jsdynsym.buildable;
   requires io.github.ericmedvet.jviz.core;
   requires java.desktop;
   requires telegram.bot.api;
-  requires jdk.management;
+  requires java.management;
   requires com.googlecode.lanterna;
   requires jcommander;
-  requires org.apache.commons.csv;
-  requires commons.math3;
-  requires java.sql;
-  requires annotations;
-  requires org.jspecify;
-  requires jcodec;
+  requires java.logging;
 }

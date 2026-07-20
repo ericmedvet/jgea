@@ -35,7 +35,7 @@ public class StringParser<L, NT extends L, T extends L> {
       String childrenSeparator,
       boolean allowVoid
   ) {
-    public static Configuration DEFAULT = new Configuration(
+    public static final Configuration DEFAULT = new Configuration(
         Pattern.quote(Tree.CHILDREN_START_DELIMITER),
         Pattern.quote(Tree.CHILDREN_END_DELIMITER),
         Pattern.quote(Tree.CHILDREN_SEPARATOR),

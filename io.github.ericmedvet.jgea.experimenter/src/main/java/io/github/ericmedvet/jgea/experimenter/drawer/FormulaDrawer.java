@@ -280,7 +280,7 @@ public class FormulaDrawer implements Drawer<Tree<Element>> {
       boolean debug
   ) {
 
-    public static Configuration DEFAULT = new Configuration(
+    public static final Configuration DEFAULT = new Configuration(
         5,
         1,
         0.5,

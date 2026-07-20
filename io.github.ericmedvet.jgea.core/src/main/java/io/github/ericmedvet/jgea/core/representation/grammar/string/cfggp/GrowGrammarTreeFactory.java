@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.random.RandomGenerator;
+import java.util.stream.IntStream;
 
 public class GrowGrammarTreeFactory<T> implements Factory<Tree<T>> {
 
@@ -47,11 +48,7 @@ public class GrowGrammarTreeFactory<T> implements Factory<Tree<T>> {
 
   @Override
   public List<Tree<T>> build(int n, RandomGenerator random) {
-    List<Tree<T>> trees = new ArrayList<>();
-    while (trees.size() < n) {
-      trees.add(build(random, maxHeight));
-    }
-    return trees;
+    return IntStream.range(0, n).mapToObj(_ -> build(random, maxHeight)).toList();
   }
 
   public Tree<T> build(RandomGenerator random, int targetDepth) {

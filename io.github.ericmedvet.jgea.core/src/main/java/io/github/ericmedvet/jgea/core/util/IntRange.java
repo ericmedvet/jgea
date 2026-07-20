@@ -24,7 +24,7 @@ import java.util.Optional;
 
 public record IntRange(int min, int max) implements Serializable {
   public int clip(int value) {
-    return Math.min(Math.max(value, this.min), this.max);
+    return Math.clamp(value, this.min, this.max);
   }
 
   public boolean contains(int d) {

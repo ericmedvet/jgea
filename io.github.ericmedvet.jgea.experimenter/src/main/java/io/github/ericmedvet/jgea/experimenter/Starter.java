@@ -54,30 +54,37 @@ public class Starter {
   }
 
   public static class Configuration {
+    @SuppressWarnings("CanBeFinal")
     @Parameter(
         names = {"--expFile", "-f"}, description = "Path of the file with the experiment description.")
     public String experimentDescriptionFilePath = "";
 
+    @SuppressWarnings("CanBeFinal")
     @Parameter(
         names = {"--exampleExp", "-e"}, description = "Name of the example experiment description.")
     public String exampleExperimentDescriptionResourceName = "";
 
+    @SuppressWarnings("CanBeFinal")
     @Parameter(
         names = {"--nOfThreads", "-nt"}, description = "Number of threads to be used for fitness computation.")
     public int nOfThreads = 2;
 
+    @SuppressWarnings("CanBeFinal")
     @Parameter(
         names = {"--nOfRuns", "-nr"}, description = "Number of concurrent runs.")
     public int nOfConcurrentRuns = 1;
 
+    @SuppressWarnings("CanBeFinal")
     @Parameter(
         names = {"--showExpFileHelp", "-d"}, description = "Show a description of available constructs for the experiment file.")
     public boolean showExpFileHelp = false;
 
+    @SuppressWarnings("CanBeFinal")
     @Parameter(
         names = {"--checkExpFile", "-c"}, description = "Just check the correctness of the experiment description.")
     public boolean check = false;
 
+    @SuppressWarnings("CanBeFinal")
     @Parameter(
         names = {"--verbose", "-v"}, description = "Be verbose on errors (i.e., print stack traces)")
     public boolean verbose = false;
@@ -86,14 +93,17 @@ public class Starter {
         names = {"--help", "-h"}, description = "Show this help.", help = true)
     public boolean help;
 
+    @SuppressWarnings("CanBeFinal")
     @Parameter(
         names = {"--expHeadLines"}, description = "Additional experiment description lines that will be put at the head of the experiment " + "description.", variableArity = true)
     public List<String> expHeadLines = List.of();
 
+    @SuppressWarnings("CanBeFinal")
     @Parameter(
         names = {"--nOfRunFolds", "-nrf"}, description = "Number of equal parts to split the list of runs into.")
     public int nOfRunFolds = 1;
 
+    @SuppressWarnings("CanBeFinal")
     @Parameter(
         names = {"--runFoldIndex", "-rfi"}, description = "Index (0-based) of the split part to execute. Must be between 0 and nOfRunFolds - 1.")
     public int runFoldIndex = 0;

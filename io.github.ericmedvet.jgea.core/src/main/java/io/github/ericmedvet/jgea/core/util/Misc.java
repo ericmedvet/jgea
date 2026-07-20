@@ -146,7 +146,7 @@ public class Misc {
 
   public static <K> K percentile(Collection<K> ks, Comparator<? super K> comparator, double p) {
     List<K> collection = ks.stream().sorted(comparator).toList();
-    int i = (int) Math.max(Math.min(((double) collection.size()) * p, collection.size() - 1), 0);
+    int i = (int) Math.clamp(((double) collection.size()) * p, 0, collection.size() - 1);
     return collection.get(i);
   }
 

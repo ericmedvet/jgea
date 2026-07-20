@@ -29,7 +29,7 @@
   <licenses>
     <license>
       <name>The Apache License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
     </license>
   </licenses>
 
@@ -49,11 +49,15 @@
     <module>io.github.ericmedvet.jgea.experimenter</module>
   </modules>
 
-  <scm>
-    <connection>scm:git:https://github.com/ericmedvet/jgea.git</connection>
-    <developerConnection>scm:git:ssh://github.com:ericmedvet/jgea.git</developerConnection>
-    <url>http://github.com/ericmedvet/jgea</url>
-  </scm>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <jdk.version>25</jdk.version>
+    <maven.version>3.9.11</maven.version>
+    <jnb.version>1.5.2-SNAPSHOT</jnb.version>
+    <jsdynsym.version>1.2.2-SNAPSHOT</jsdynsym.version>
+    <jviz.version>1.2.2-SNAPSHOT</jviz.version>
+    <revision>2.8.2-SNAPSHOT</revision>
+  </properties>
 
   <distributionManagement>
     <snapshotRepository>
@@ -62,15 +66,11 @@
     </snapshotRepository>
   </distributionManagement>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jdk.version>21</jdk.version>
-    <maven.version>3.9.11</maven.version>
-    <jnb.version>1.5.2-SNAPSHOT</jnb.version>
-    <jsdynsym.version>1.2.2-SNAPSHOT</jsdynsym.version>
-    <jviz.version>1.2.2-SNAPSHOT</jviz.version>
-    <revision>2.8.2-SNAPSHOT</revision>
-  </properties>
+  <scm>
+    <connection>scm:git:https://github.com/ericmedvet/jgea.git</connection>
+    <developerConnection>scm:git:ssh://github.com:ericmedvet/jgea.git</developerConnection>
+    <url>https://github.com/ericmedvet/jgea</url>
+  </scm>
 
   <dependencyManagement>
     <dependencies>

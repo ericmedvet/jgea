@@ -44,6 +44,52 @@ public class TreeDrawer implements Drawer<Tree<?>> {
     this.c = configuration;
   }
 
+  protected static void drawString(
+      Graphics2D g,
+      Point p,
+      Color color,
+      double charH,
+      boolean debug,
+      String s
+  ) {
+    g.setFont(new Font("Monospaced", Font.PLAIN, (int) charH));
+    List<String> lines = s.lines().toList();
+    for (double l = 0; l < lines.size(); l = l + 1) {
+      String line = lines.get((int) l);
+      Point lineSize = stringSize(g, line);
+      Point lineCenter = p.sum(Point.ofY(((lines.size() - 1d) / 2d - l) * charH));
+      g.setColor(color);
+      g.drawString(
+          line,
+          (float) (lineCenter.x() - lineSize.x() / 2),
+          (float) (lineCenter.y() + g.getFontMetrics().getAscent() / 3d)
+      );
+      if (debug) {
+        drawDebugBox(g, new Rectangle(lineCenter, lineSize.x(), lineSize.y()));
+      }
+    }
+  }
+
+  protected static void drawDebugBox(Graphics2D g, Rectangle r) {
+    g.setStroke(new BasicStroke(1));
+    g.setColor(Color.RED);
+    g.draw(drawable(r));
+  }
+
+  protected static Rectangle2D.Double drawable(Rectangle nodeR) {
+    return new Rectangle2D.Double(
+        nodeR.min().x(),
+        nodeR.min().y(),
+        nodeR.width(),
+        nodeR.height()
+    );
+  }
+
+  protected static Point stringSize(Graphics2D g, String s) {
+    Rectangle2D r = g.getFontMetrics().getStringBounds(s, g);
+    return new Point(r.getWidth(), r.getHeight());
+  }
+
   public record Configuration(
       double margin,
       double boxBorderThickness,
@@ -61,7 +107,7 @@ public class TreeDrawer implements Drawer<Tree<?>> {
       boolean debug
   ) {
 
-    public static Configuration DEFAULT = new Configuration(
+    public static final Configuration DEFAULT = new Configuration(
         5,
         1,
         1,
@@ -95,52 +141,6 @@ public class TreeDrawer implements Drawer<Tree<?>> {
           maxLabelLength,
           debug
       );
-    }
-  }
-
-  protected static void drawDebugBox(Graphics2D g, Rectangle r) {
-    g.setStroke(new BasicStroke(1));
-    g.setColor(Color.RED);
-    g.draw(drawable(r));
-  }
-
-  protected static Rectangle2D.Double drawable(Rectangle nodeR) {
-    return new Rectangle2D.Double(
-        nodeR.min().x(),
-        nodeR.min().y(),
-        nodeR.width(),
-        nodeR.height()
-    );
-  }
-
-  protected static Point stringSize(Graphics2D g, String s) {
-    Rectangle2D r = g.getFontMetrics().getStringBounds(s, g);
-    return new Point(r.getWidth(), r.getHeight());
-  }
-
-  protected static void drawString(
-      Graphics2D g,
-      Point p,
-      Color color,
-      double charH,
-      boolean debug,
-      String s
-  ) {
-    g.setFont(new Font("Monospaced", Font.PLAIN, (int) charH));
-    List<String> lines = s.lines().toList();
-    for (double l = 0; l < lines.size(); l = l + 1) {
-      String line = lines.get((int) l);
-      Point lineSize = stringSize(g, line);
-      Point lineCenter = p.sum(Point.ofY(+((lines.size() - 1d) / 2d - l) * charH));
-      g.setColor(color);
-      g.drawString(
-          line,
-          (float) (lineCenter.x() - lineSize.x() / 2),
-          (float) (lineCenter.y() + g.getFontMetrics().getAscent() / 3d)
-      );
-      if (debug) {
-        drawDebugBox(g, new Rectangle(lineCenter, lineSize.x(), lineSize.y()));
-      }
     }
   }
 

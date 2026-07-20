@@ -25,7 +25,6 @@ import io.github.ericmedvet.jgea.problem.ca.MRCAMorphogenesis;
 import io.github.ericmedvet.jgea.problem.grid.CharShapeApproximation;
 import io.github.ericmedvet.jgea.problem.image.ImageUtils;
 import io.github.ericmedvet.jgea.problem.synthetic.*;
-import io.github.ericmedvet.jgea.problem.synthetic.LettersMax;
 import io.github.ericmedvet.jgea.problem.synthetic.numerical.*;
 import io.github.ericmedvet.jnb.core.*;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;

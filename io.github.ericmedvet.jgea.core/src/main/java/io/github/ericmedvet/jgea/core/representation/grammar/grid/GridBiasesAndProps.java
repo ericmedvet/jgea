@@ -259,7 +259,10 @@ public class GridBiasesAndProps {
                 .count() / (double) ms.size()
         ),
         Map.entry("locality", (ms, d) -> {
-          double[] gDistances = IntStream.range(0, Math.min(ms.size(), localityN))
+          @SuppressWarnings({"rawtypes", "unchecked"}) double[] gDistances = IntStream.range(
+              0,
+              Math.min(ms.size(), localityN)
+          )
               .mapToObj(
                   i -> IntStream.range(i + 1, Math.min(ms.size(), localityN))
                       .mapToObj(
@@ -317,7 +320,7 @@ public class GridBiasesAndProps {
                   .filter(Optional::isPresent)
                   .map(Optional::get)
                   .toList();
-              String line = "%s\t%s\t%s\t%4d\t"
+              @SuppressWarnings("unchecked") String line = "%s\t%s\t%s\t%4d\t"
                   .formatted(
                       grammarEntry.getKey(),
                       developeEntry.getKey(),

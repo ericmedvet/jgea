@@ -32,7 +32,7 @@ public class DoubleGridDrawer implements Drawer<Grid<double[]>> {
       GRAY, RGB
     }
 
-    public static Configuration DEFAULT = new Configuration(ColorType.RGB, DoubleRange.UNIT, 4, 0);
+    public static final Configuration DEFAULT = new Configuration(ColorType.RGB, DoubleRange.UNIT, 4, 0);
   }
 
   private final Configuration c;

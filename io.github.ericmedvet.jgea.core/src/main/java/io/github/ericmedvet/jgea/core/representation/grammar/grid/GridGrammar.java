@@ -31,7 +31,7 @@ public class GridGrammar<T> implements Serializable, Grammar<T, GridGrammar.Refe
 
   public static final String RULE_ASSIGNMENT_STRING = "::=";
   public static final String RULE_OPTION_SEPARATOR_STRING = "|";
-  Map<T, List<ReferencedGrid<T>>> rules;
+  private final Map<T, List<ReferencedGrid<T>>> rules;
   private T startingSymbol;
 
   public GridGrammar() {
