@@ -87,6 +87,16 @@ public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>>, Copyable
     return children.get(i);
   }
 
+  public Tree<C> child(List<Integer> lineageCoords) {
+    if (lineageCoords.isEmpty()) {
+      return this;
+    }
+    if (lineageCoords.size() == 1) {
+      return child(lineageCoords.getFirst());
+    }
+    return child(lineageCoords.getFirst()).child(lineageCoords.subList(1, lineageCoords.size()));
+  }
+
   public Stream<Tree<C>> childStream() {
     return StreamSupport.stream(spliterator(), false);
   }
@@ -99,13 +109,11 @@ public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>>, Copyable
     return content;
   }
 
-  public Collection<List<Integer>> allLineageCoords() {
-    if (isLeaf()) {
-      return List.of();
-    }
-    List<List<Integer>> coords = new ArrayList<>();
-    IntStream.range(0, children.size()).boxed().toList();
-    throw new UnsupportedOperationException("doing");
+  @Override
+  public Tree<C> copyOf() {
+    Tree<C> copy = new Tree<>(content, null);
+    children.forEach(c -> copy.addChild(c.copyOf()));
+    return copy;
   }
 
   public int depth() {
@@ -115,18 +123,21 @@ public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>>, Copyable
     return parent.depth() + 1;
   }
 
-  private Collection<List<Integer>> allLineageCoords(int current) {
-    throw new UnsupportedOperationException("doing");
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Tree<?> tree = (Tree<?>) o;
+    return Objects.equals(content, tree.content) && children.equals(tree.children);
   }
 
-  public Tree<C> child(List<Integer> lineageCoords) {
-    if (lineageCoords.isEmpty()) {
-      return this;
-    }
-    if (lineageCoords.size() == 1) {
-      return child(lineageCoords.getFirst());
-    }
-    return child(lineageCoords.getFirst()).child(lineageCoords.subList(1, lineageCoords.size()));
+  @Override
+  public int hashCode() {
+    return Objects.hash(content, children);
   }
 
   public int height() {
@@ -173,10 +184,11 @@ public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>>, Copyable
   }
 
   @Override
-  public Tree<C> copyOf() {
-    Tree<C> copy = new Tree<>(content, null);
-    children.forEach(c -> copy.addChild(c.copyOf()));
-    return copy;
+  public String toString() {
+    return content.toString() + (children.isEmpty() ? ""
+        : (CHILDREN_START_DELIMITER + children.stream()
+            .map(Tree::toString)
+            .collect(Collectors.joining(CHILDREN_SEPARATOR)) + CHILDREN_END_DELIMITER));
   }
 
   public List<Tree<C>> topSubtrees() {
@@ -195,30 +207,5 @@ public class Tree<C> implements Serializable, Sized, Iterable<Tree<C>>, Copyable
 
   public List<C> visitLeaves() {
     return leaves().stream().map(Tree::content).toList();
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    Tree<?> tree = (Tree<?>) o;
-    return Objects.equals(content, tree.content) && children.equals(tree.children);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(content, children);
-  }
-
-  @Override
-  public String toString() {
-    return content.toString() + (children.isEmpty() ? ""
-        : (CHILDREN_START_DELIMITER + children.stream()
-            .map(Tree::toString)
-            .collect(Collectors.joining(CHILDREN_SEPARATOR)) + CHILDREN_END_DELIMITER));
   }
 }
