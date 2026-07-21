@@ -144,7 +144,7 @@ public class Representations {
       @Param(value = "minTreeH", dI = 4) int minTreeH,
       @Param(value = "maxTreeH", dI = 16) int maxTreeH
   ) {
-    return eTree -> new Representation<>(
+    return _ -> new Representation<>(
         new GrammarRampedHalfAndHalf<>(minTreeH, maxTreeH, grammar),
         List.of(new GrammarBasedSubtreeMutation<>(maxTreeH, grammar)),
         List.of(new SameRootSubtreeCrossover<>(maxTreeH))
