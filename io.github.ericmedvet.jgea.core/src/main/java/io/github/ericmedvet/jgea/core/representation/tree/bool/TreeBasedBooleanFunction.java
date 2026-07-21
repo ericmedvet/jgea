@@ -70,7 +70,8 @@ public class TreeBasedBooleanFunction implements BooleanFunction {
       case Element.Variable v -> input[v.index()];
       case Element.Operator op -> op.test(
           unbox(
-              tree.children().stream()
+              tree.children()
+                  .stream()
                   .filter(c -> !(c.label() instanceof Element.Decoration))
                   .map(c -> compute(c, input))
                   .toArray(Boolean[]::new)

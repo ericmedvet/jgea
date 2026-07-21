@@ -23,6 +23,7 @@ package io.github.ericmedvet.jgea.problem.mapper;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.ge.WeightedHierarchicalMapper;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -50,7 +51,13 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
   public Tree<T> apply(BitString genotype) {
     AtomicInteger mappingGlobalCounter = new AtomicInteger();
     AtomicInteger finalizationGlobalCounter = new AtomicInteger();
-    return mapRecursively(grammar.startingSymbol(), genotype, mappingGlobalCounter, finalizationGlobalCounter, 0);
+    return mapRecursively(
+        grammar.startingSymbol(),
+        genotype,
+        mappingGlobalCounter,
+        finalizationGlobalCounter,
+        0
+    );
   }
 
   private Tree<T> mapRecursively(
@@ -60,9 +67,8 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
       AtomicInteger finalizationGlobalCounter,
       int depth
   ) {
-    Tree<T> tree = Tree.of(symbol);
     if (!grammar.rules().containsKey(symbol)) {
-      return tree;
+      return new Tree<>(symbol);
     }
     if (depth >= maxMappingDepth) {
       List<Integer> shortestOptionIndexTies = shortestOptionIndexesMap.get(symbol);
@@ -73,18 +79,20 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
                   finalizationGlobalCounter.getAndIncrement() % shortestOptionIndexTies.size()
               )
           );
-      for (T optionSymbol : shortestOption) {
-        tree.addChild(
-            mapRecursively(
-                optionSymbol,
-                genotype,
-                mappingGlobalCounter,
-                finalizationGlobalCounter,
-                depth + 1
-            )
-        );
-      }
-      return tree;
+      return new Tree<>(
+          symbol,
+          shortestOption.stream()
+              .map(
+                  t -> mapRecursively(
+                      t,
+                      genotype,
+                      mappingGlobalCounter,
+                      finalizationGlobalCounter,
+                      depth + 1
+                  )
+              )
+              .toList()
+      );
     }
     // choose option
     List<List<T>> options = grammar.rules().get(symbol);
@@ -118,6 +126,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
         depth,
         mappingGlobalCounter
     ));
+    List<Tree<T>> children = new ArrayList<>();
     for (int i = 0; i < options.get(optionIndex).size(); i++) {
       BitString piece;
       if (pieces.size() > i) {
@@ -125,7 +134,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
       } else {
         piece = new BitString(0);
       }
-      tree.addChild(
+      children.add(
           mapRecursively(
               options.get(optionIndex).get(i),
               piece,
@@ -135,6 +144,6 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
           )
       );
     }
-    return tree;
+    return new Tree<>(symbol, children);
   }
 }

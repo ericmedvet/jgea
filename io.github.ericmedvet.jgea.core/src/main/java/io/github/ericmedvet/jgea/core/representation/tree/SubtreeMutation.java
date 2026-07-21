@@ -20,22 +20,20 @@
 
 package io.github.ericmedvet.jgea.core.representation.tree;
 
+import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.Tree;
-import io.github.ericmedvet.jnb.datastructure.Utils;
 import java.util.List;
-import java.util.Optional;
-import java.util.SequencedMap;
+import java.util.function.Function;
 import java.util.random.RandomGenerator;
-import java.util.stream.Collectors;
 
 public class SubtreeMutation<L> implements Mutation<Tree<L>> {
 
   private final int maxHeight;
-  private final TreeBuilder<L> builder;
+  private final Function<Integer, IndependentFactory<Tree<L>>> builder;
 
-  public SubtreeMutation(int maxHeight, TreeBuilder<L> builder) {
+  public SubtreeMutation(int maxHeight, Function<Integer, IndependentFactory<Tree<L>>> builder) {
     this.maxHeight = maxHeight;
     this.builder = builder;
 
@@ -43,16 +41,9 @@ public class SubtreeMutation<L> implements Mutation<Tree<L>> {
 
   @Override
   public Tree<L> mutate(Tree<L> parent, RandomGenerator random) {
-    SequencedMap<List<Integer>, L> lineageMap = parent.lineages().stream()
-        .collect(Utils.toSequencedMap(lineage -> parent.descendant(lineage).label()));
-    List<Integer> toReplaceLineage = Misc.pickRandomly(lineageMap.keySet(), random);
-    Tree<L> subtree = builder.build(random,
-        random.nextInt(maxHeight - toReplaceLineage.size()) + 1);
-    // TODO replace this with a call to withAt(), also elsewhere
-    subtree.lineages().forEach(l -> lineageMap.put(
-        Utils.concat(toReplaceLineage, l),
-        subtree.descendant(l).label()
-    ));
-    return Tree.from(l -> Optional.ofNullable(lineageMap.get(l)));
+    List<Integer> toReplaceLineage = Misc.pickRandomly(parent.lineages(), random);
+    Tree<L> subtree = builder.apply(random.nextInt(maxHeight - toReplaceLineage.size()) + 1)
+        .build(random);
+    return parent.withAt(subtree, toReplaceLineage);
   }
 }

@@ -56,7 +56,8 @@ public class BooleanTreeUtils {
     }
     //and(x;x;...) -> and(x;...); and(T;...) -> and(...)
     if (tree.label().equals(Element.Operator.AND)) {
-      List<Tree<Element>> reducedChildren = tree.children().stream()
+      List<Tree<Element>> reducedChildren = tree.children()
+          .stream()
           .distinct()
           .filter(c -> !isTrue(c.label()))
           .flatMap(c -> switch (c.label()) {
@@ -70,7 +71,8 @@ public class BooleanTreeUtils {
     }
     //or(x;x;...) -> or(x;...); or(F;...) -> or(...)
     if (tree.label().equals(Element.Operator.OR)) {
-      List<Tree<Element>> reducedChildren = tree.children().stream()
+      List<Tree<Element>> reducedChildren = tree.children()
+          .stream()
           .distinct()
           .filter(c -> !isFalse(c.label()))
           .flatMap(c -> switch (c.label()) {

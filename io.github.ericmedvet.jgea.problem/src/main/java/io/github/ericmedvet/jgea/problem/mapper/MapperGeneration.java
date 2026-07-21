@@ -25,6 +25,7 @@ import io.github.ericmedvet.jgea.core.problem.QualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jnb.datastructure.Pair;
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
@@ -78,8 +79,8 @@ public class MapperGeneration implements GrammarBasedProblem<String, Pair<Tree<E
   @Override
   public Function<Tree<String>, Pair<Tree<Element>, Tree<Element>>> solutionMapper() {
     return (Tree<String> rawMappingTree) -> {
-      Tree<Element> optionChooser = MapperUtils.transform(rawMappingTree.child(0));
-      Tree<Element> genoAssigner = MapperUtils.transform(rawMappingTree.child(1));
+      Tree<Element> optionChooser = rawMappingTree.child(0).map(Element::from);
+      Tree<Element> genoAssigner = rawMappingTree.child(1).map(Element::from);
       return new Pair<>(optionChooser, genoAssigner);
     };
   }

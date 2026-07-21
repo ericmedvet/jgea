@@ -201,13 +201,16 @@ public class GrammarUtils {
   public static <T> Map<T, DoubleRange> computeSymbolsMinMaxDepths(StringGrammar<T> g) {
     Map<T, Pair<Integer, Boolean>> minDepths = computeSymbolsMinDepths(g);
     Map<T, Triplet<Double, Boolean, Set<T>>> maxDepths = computeSymbolsMaxDepths(g);
-    return minDepths.entrySet().stream()
-        .collect(Collectors.toMap(
-            Entry::getKey,
-            e -> new DoubleRange(
-                Optional.ofNullable(e.getValue()).map(Pair::first).orElse(0),
-                Optional.ofNullable(maxDepths.get(e.getKey())).map(Triplet::first).orElse(0d)
+    return minDepths.entrySet()
+        .stream()
+        .collect(
+            Collectors.toMap(
+                Entry::getKey,
+                e -> new DoubleRange(
+                    Optional.ofNullable(e.getValue()).map(Pair::first).orElse(0),
+                    Optional.ofNullable(maxDepths.get(e.getKey())).map(Triplet::first).orElse(0d)
+                )
             )
-        ));
+        );
   }
 }

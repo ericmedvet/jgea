@@ -571,8 +571,7 @@ public class Functions {
       @Param(value = "findRegex", dS = "") String findRegex,
       @Param(value = "replaceExpr", dS = "") String replaceExpr
   ) {
-    Function<Tree<Element>, Tree<Element>> f = t -> Tree.map(
-        t,
+    Function<Tree<Element>, Tree<Element>> f = t -> t.map(
         e -> switch (e) {
           case Variable v ->
             new Variable(map.getOrDefault(v.name(), v.name()).replaceAll(findRegex, replaceExpr));
@@ -897,30 +896,30 @@ public class Functions {
   }
 
   @Cacheable
-  public static <X, C> FormattedNamedFunction<X, Integer> treeDepth(
+  public static <X, C> FormattedNamedFunction<X, Integer> treeHeight(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Tree<C>> beforeF,
       @Param(value = "format", dS = "%3d") String format
   ) {
-    Function<Tree<C>, Integer> f = Tree::depth;
-    return FormattedNamedFunction.from(f, format, "tree.depth").compose(beforeF);
+    Function<Tree<C>, Integer> f = Tree::height;
+    return FormattedNamedFunction.from(f, format, "tree.height").compose(beforeF);
   }
 
   @Cacheable
-  public static <X, C> FormattedNamedFunction<X, Collection<C>> treeLabels(
+  public static <X, C> FormattedNamedFunction<X, List<C>> treeLabels(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Tree<C>> beforeF,
       @Param(value = "format", dS = "%s") String format
   ) {
-    Function<Tree<C>, Collection<C>> f = Tree::visitDepth;
+    Function<Tree<C>, List<C>> f = Tree::depthFirstLabels;
     return FormattedNamedFunction.from(f, format, "tree.labels").compose(beforeF);
   }
 
   @Cacheable
-  public static <X, C> FormattedNamedFunction<X, Collection<C>> treeLeaves(
+  public static <X, C> FormattedNamedFunction<X, List<C>> treeLeafLabels(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Tree<C>> beforeF,
       @Param(value = "format", dS = "%s") String format
   ) {
-    Function<Tree<C>, Collection<C>> f = Tree::visitLeaves;
-    return FormattedNamedFunction.from(f, format, "tree.leaves").compose(beforeF);
+    Function<Tree<C>, List<C>> f = Tree::leafLabels;
+    return FormattedNamedFunction.from(f, format, "tree.leaf.labels").compose(beforeF);
   }
 
   @Cacheable

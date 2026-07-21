@@ -21,24 +21,28 @@
 package io.github.ericmedvet.jgea.core.representation.grammar.string.cfggp;
 
 import io.github.ericmedvet.jgea.core.Factory;
+import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.random.RandomGenerator;
 
 public class GrammarRampedHalfAndHalf<L> implements Factory<Tree<L>> {
 
   private final int minHeight;
   private final int maxHeight;
-  private final FullGrammarGrammarTreeFactory<L> fullGrammarTreeFactory;
-  private final GrowGrammarTreeFactory<L> growGrammarTreeFactory;
+  private final BiFunction<L, Integer, IndependentFactory<Tree<L>>> fullGrammarTreeFactory;
+  private final BiFunction<L, Integer, IndependentFactory<Tree<L>>> growGrammarTreeFactory;
+  private final L startingSymbol;
 
   public GrammarRampedHalfAndHalf(int minHeight, int maxHeight, StringGrammar<L> grammar) {
     this.minHeight = minHeight;
     this.maxHeight = maxHeight;
     fullGrammarTreeFactory = new FullGrammarGrammarTreeFactory<>(maxHeight, grammar);
     growGrammarTreeFactory = new GrowGrammarTreeFactory<>(maxHeight, grammar);
+    startingSymbol = grammar.startingSymbol();
   }
 
   @Override
@@ -47,7 +51,7 @@ public class GrammarRampedHalfAndHalf<L> implements Factory<Tree<L>> {
     // full
     int height = minHeight;
     while (trees.size() < n / 2) {
-      trees.add(fullGrammarTreeFactory.build(random, height));
+      trees.add(fullGrammarTreeFactory.apply(startingSymbol, height).build(random));
       height = height + 1;
       if (height > maxHeight) {
         height = minHeight;
@@ -55,7 +59,7 @@ public class GrammarRampedHalfAndHalf<L> implements Factory<Tree<L>> {
     }
     // grow
     while (trees.size() < n) {
-      trees.add(growGrammarTreeFactory.build(random, height));
+      trees.add(growGrammarTreeFactory.apply(startingSymbol, height).build(random));
       height = height + 1;
       if (height > maxHeight) {
         height = minHeight;

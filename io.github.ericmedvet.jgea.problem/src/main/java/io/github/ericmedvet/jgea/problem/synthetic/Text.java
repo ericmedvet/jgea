@@ -25,10 +25,10 @@ import io.github.ericmedvet.jgea.core.distance.Edit;
 import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class Text implements GrammarBasedProblem<String, String>, ComparableQualityBasedProblem<String, Double> {
 
@@ -40,10 +40,7 @@ public class Text implements GrammarBasedProblem<String, String>, ComparableQual
 
   public Text(String targetString) throws IOException {
     grammar = StringGrammar.load(StringGrammar.class.getResourceAsStream("/grammars/1d/text.bnf"));
-    solutionMapper = (Tree<String> tree) -> tree.leaves()
-        .stream()
-        .map(Tree::content)
-        .collect(Collectors.joining())
+    solutionMapper = (Tree<String> tree) -> String.join("", tree.leafLabels())
         .replace("_", " ");
     target = targetString.chars().mapToObj(c -> (char) c).toList();
     this.distance = new Edit<>();

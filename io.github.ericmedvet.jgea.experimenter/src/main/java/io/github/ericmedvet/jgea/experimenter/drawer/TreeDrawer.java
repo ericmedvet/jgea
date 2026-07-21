@@ -20,6 +20,7 @@
 
 package io.github.ericmedvet.jgea.experimenter.drawer;
 
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import io.github.ericmedvet.jviz.core.drawer.Drawer;
 import io.github.ericmedvet.jviz.core.geometry.Point;
 import io.github.ericmedvet.jviz.core.geometry.Rectangle;
@@ -163,9 +164,11 @@ public class TreeDrawer implements Drawer<Tree<?>> {
   private Rectangle draw(Graphics2D g, Rectangle r, Tree<?> t) {
     Point nodeSize = nodeSize(t, this::stringSize);
     //draw children
-    double[] centers = new double[t.nChildren()];
-    double childrenW = t.childStream().mapToDouble(c -> treeSize(c, this::stringSize).x()).sum() + (t
-        .nChildren() - 1) * c.nodeMinXGap;
+    double[] centers = new double[t.children().size()];
+    double childrenW = t.children()
+        .stream()
+        .mapToDouble(c -> treeSize(c, this::stringSize).x())
+        .sum() + (t.children().size() - 1) * c.nodeMinXGap;
     Point p = r.min()
         .sum(
             new Point(
@@ -173,7 +176,7 @@ public class TreeDrawer implements Drawer<Tree<?>> {
                 nodeSize.y() + c.nodeMinYGap
             )
         );
-    for (int i = 0; i < t.nChildren(); i = i + 1) {
+    for (int i = 0; i < t.children().size(); i = i + 1) {
       Point childSize = treeSize(t.child(i), this::stringSize);
       Rectangle childR = Rectangle.of(p, p.sum(childSize));
       p = childR.min().sum(Point.ofX(childR.width() + c.nodeMinXGap));
@@ -203,7 +206,7 @@ public class TreeDrawer implements Drawer<Tree<?>> {
     g.setColor(c.boxBorderColor);
     g.draw(box);
     //draw string
-    String labelString = t.content().toString();
+    String labelString = t.label().toString();
     if (labelString.length() > c.maxLabelLength) {
       labelString = labelString.substring(0, c.maxLabelLength) + CONTINUATION_STRING;
     }
@@ -234,7 +237,7 @@ public class TreeDrawer implements Drawer<Tree<?>> {
   }
 
   private Point nodeSize(Tree<?> t, Function<String, Point> stringSizer) {
-    Point sSize = stringSizer.apply(t.content().toString());
+    Point sSize = stringSizer.apply(t.label().toString());
     return new Point(
         sSize.x() + 2 * c.boxMargin,
         sSize.y() + 2 * c.boxMargin
@@ -249,13 +252,13 @@ public class TreeDrawer implements Drawer<Tree<?>> {
   }
 
   private Point treeSize(Tree<?> t, Function<String, Point> stringSizer) {
-    if (t.nChildren() == 0) {
+    if (t.isLeaf()) {
       return nodeSize(t, stringSizer);
     }
     Point nodeSize = nodeSize(t, stringSizer);
     double w = 0;
     double h = 0;
-    for (int i = 0; i < t.nChildren(); i = i + 1) {
+    for (int i = 0; i < t.children().size(); i = i + 1) {
       Point childSize = treeSize(t.child(i), stringSizer);
       w = w + childSize.x() + ((i > 0) ? c.nodeMinXGap : 0);
       h = Math.max(h, childSize.y());

@@ -49,6 +49,19 @@
     <module>io.github.ericmedvet.jgea.experimenter</module>
   </modules>
 
+  <scm>
+    <connection>scm:git:https://github.com/ericmedvet/jgea.git</connection>
+    <developerConnection>scm:git:ssh://github.com:ericmedvet/jgea.git</developerConnection>
+    <url>https://github.com/ericmedvet/jgea</url>
+  </scm>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>central</id>
+      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jdk.version>25</jdk.version>
@@ -58,19 +71,6 @@
     <jviz.version>1.2.2-SNAPSHOT</jviz.version>
     <revision>2.8.2-SNAPSHOT</revision>
   </properties>
-
-  <distributionManagement>
-    <snapshotRepository>
-      <id>central</id>
-      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
-    </snapshotRepository>
-  </distributionManagement>
-
-  <scm>
-    <connection>scm:git:https://github.com/ericmedvet/jgea.git</connection>
-    <developerConnection>scm:git:ssh://github.com:ericmedvet/jgea.git</developerConnection>
-    <url>https://github.com/ericmedvet/jgea</url>
-  </scm>
 
   <dependencyManagement>
     <dependencies>

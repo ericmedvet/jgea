@@ -27,11 +27,9 @@ import io.github.ericmedvet.jsdynsym.core.numerical.named.NamedUnivariateRealFun
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.DoubleUnaryOperator;
 
-public class TreeBasedUnivariateRealFunction implements NamedUnivariateRealFunction, Sized,
-    Parametrized<TreeBasedUnivariateRealFunction, Tree<Element>> {
+public class TreeBasedUnivariateRealFunction implements NamedUnivariateRealFunction, Sized, Parametrized<TreeBasedUnivariateRealFunction, Tree<Element>> {
 
   private final List<String> xVarNames;
   private final String yVarName;
@@ -81,7 +79,7 @@ public class TreeBasedUnivariateRealFunction implements NamedUnivariateRealFunct
   protected static double compute(Tree<Element> tree, Map<String, Double> input) {
     return switch (tree.label()) {
       case Element.Variable(String name) ->
-          Objects.requireNonNull(input.get(name), String.format("Undefined variable: %s", name));
+        Objects.requireNonNull(input.get(name), String.format("Undefined variable: %s", name));
       case Element.Constant(double value) -> value;
       case Element.Operator o -> o.applyAsDouble(
           tree.children().stream().mapToDouble(c -> compute(c, input)).toArray()
@@ -90,7 +88,7 @@ public class TreeBasedUnivariateRealFunction implements NamedUnivariateRealFunct
           String.format("Cannot compute: decoration node %s found", tree.label())
       );
       default ->
-          throw new IllegalArgumentException("Unexpected node type %s".formatted(tree.label()));
+        throw new IllegalArgumentException("Unexpected node type %s".formatted(tree.label()));
     };
   }
 
@@ -140,8 +138,7 @@ public class TreeBasedUnivariateRealFunction implements NamedUnivariateRealFunct
       return false;
     }
     TreeBasedUnivariateRealFunction that = (TreeBasedUnivariateRealFunction) o;
-    return Objects.equals(xVarNames, that.xVarNames) && Objects.equals(yVarName, that.yVarName)
-        && Objects.equals(
+    return Objects.equals(xVarNames, that.xVarNames) && Objects.equals(yVarName, that.yVarName) && Objects.equals(
         tree,
         that.tree
     );

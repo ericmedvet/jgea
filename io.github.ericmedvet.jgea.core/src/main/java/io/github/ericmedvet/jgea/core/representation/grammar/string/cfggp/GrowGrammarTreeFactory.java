@@ -20,7 +20,7 @@
 
 package io.github.ericmedvet.jgea.core.representation.grammar.string.cfggp;
 
-import io.github.ericmedvet.jgea.core.Factory;
+import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarUtils;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.util.Misc;
@@ -28,12 +28,9 @@ import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.List;
 import java.util.Map;
-import java.util.random.RandomGenerator;
-import java.util.stream.IntStream;
+import java.util.function.BiFunction;
 
-public class GrowGrammarTreeFactory<L> implements Factory<Tree<L>> {
-
-  private static final int MAX_ATTEMPTS = 100;
+public class GrowGrammarTreeFactory<L> implements BiFunction<L, Integer, IndependentFactory<Tree<L>>> {
 
   protected final int maxHeight;
   protected final StringGrammar<L> grammar;
@@ -47,34 +44,21 @@ public class GrowGrammarTreeFactory<L> implements Factory<Tree<L>> {
   }
 
   @Override
-  public List<Tree<L>> build(int n, RandomGenerator random) {
-    return IntStream.range(0, n).mapToObj(_ -> build(random, maxHeight)).toList();
-  }
-
-  public Tree<L> build(RandomGenerator random, int targetDepth) {
-    Tree<L> tree = null;
-    for (int i = 0; i < MAX_ATTEMPTS; i++) {
-      tree = build(random, grammar.startingSymbol(), targetDepth);
-      if (tree != null) {
-        break;
-      }
+  public IndependentFactory<Tree<L>> apply(L symbol, Integer h) {
+    if (!grammar.rules().containsKey(symbol)) {
+      return _ -> new Tree<>(symbol);
     }
-    return tree;
-  }
-
-  public Tree<L> build(RandomGenerator random, L symbol, int targetDepth) {
-    if (targetDepth < 0) {
-      throw new IllegalArgumentException("Unexpected negative target depth");
+    if (h < 0) {
+      throw new IllegalArgumentException("Unexpected negative target height");
     }
-    if (grammar.rules().containsKey(symbol)) {
-      // a non-terminal
+    return random -> {
       // general idea: try the following
       // 1. choose expansion with min,max including target depth; if empty, choose all
       // 2. choose expansion
       // 3. for each child, with 1/n_of_children prob, fill full, otherwise fill up to full
       List<List<L>> options = grammar.rules().get(symbol);
       List<List<L>> availableOptions = options.stream()
-          .filter(o -> optionMinMaxHeight(o).contains(targetDepth - 1))
+          .filter(o -> optionMinMaxHeight(o).contains(h - 1))
           .toList();
       if (availableOptions.isEmpty()) {
         availableOptions = options;
@@ -83,19 +67,18 @@ public class GrowGrammarTreeFactory<L> implements Factory<Tree<L>> {
       return new Tree<>(
           symbol,
           option.stream().map(l -> {
-            int childTargetDepth = targetDepth - 1;
+            int childTargetDepth = h - 1;
             if (random.nextInt(option.size()) != 0) {
               // randomly set target depth
               DoubleRange childHeightRange = nonTerminalHeights.get(l)
                   .intersectionWith(new DoubleRange(0, childTargetDepth));
-              childTargetDepth = random.nextInt((int) Math.floor(childHeightRange.extent()))
-                  + (int) childHeightRange.min();
+              childTargetDepth = random.nextInt((int) Math.floor(childHeightRange.extent())) + (int) childHeightRange
+                  .min();
             }
-            return build(random, l, childTargetDepth);
+            return apply(l, childTargetDepth).build(random);
           }).toList()
       );
-    }
-    return new Tree<>(symbol);
+    };
   }
 
   protected DoubleRange optionMinMaxHeight(List<L> option) {

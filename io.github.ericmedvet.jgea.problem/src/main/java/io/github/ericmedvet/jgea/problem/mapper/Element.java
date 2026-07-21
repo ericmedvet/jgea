@@ -22,6 +22,28 @@ package io.github.ericmedvet.jgea.problem.mapper;
 
 public interface Element {
 
+  static Element from(String string) {
+    try {
+      double value = Double.parseDouble(string);
+      return new Element.NumericConstant(value);
+    } catch (NumberFormatException ex) {
+      // just ignore
+    }
+    for (Element.Variable variable : Element.Variable.values()) {
+      if (variable.getGrammarName().equals(string)) {
+        return variable;
+      }
+    }
+    for (Element.MapperFunction function : Element.MapperFunction.values()) {
+      if (function.getGrammarName().equals(string)) {
+        return function;
+      }
+    }
+    throw new IllegalArgumentException(
+        "Unknown string representation of element `%s`: cannot transform".formatted(string)
+    );
+  }
+
   enum MapperFunction implements Element {
     SIZE("size"), WEIGHT("weight"), WEIGHT_R("weight_r"), INT("int"), ADD("+"), SUBTRACT("-"), MULT("*"), DIVIDE(
         "/"

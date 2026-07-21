@@ -20,6 +20,7 @@
 
 package io.github.ericmedvet.jgea.core.distance;
 
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.List;
 
 public class TreeLeaves<T> implements Distance<Tree<T>> {
@@ -32,6 +33,6 @@ public class TreeLeaves<T> implements Distance<Tree<T>> {
 
   @Override
   public Double apply(Tree<T> t1, Tree<T> t2) {
-    return innerDistance.apply(t1.visitLeaves(), t2.visitLeaves());
+    return innerDistance.apply(t1.leafLabels(), t2.leafLabels());
   }
 }

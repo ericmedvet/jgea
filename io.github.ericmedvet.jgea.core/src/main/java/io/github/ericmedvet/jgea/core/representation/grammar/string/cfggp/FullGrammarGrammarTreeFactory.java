@@ -20,11 +20,11 @@
 
 package io.github.ericmedvet.jgea.core.representation.grammar.string.cfggp;
 
+import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.List;
-import java.util.Random;
 
 public class FullGrammarGrammarTreeFactory<L> extends GrowGrammarTreeFactory<L> {
 
@@ -32,18 +32,21 @@ public class FullGrammarGrammarTreeFactory<L> extends GrowGrammarTreeFactory<L> 
     super(maxDepth, grammar);
   }
 
-  public Tree<L> build(Random random, L symbol, int targetDepth) {
-    if (targetDepth < 0) {
-      throw new IllegalArgumentException("Unexpected negative target depth");
+  @Override
+  public IndependentFactory<Tree<L>> apply(L symbol, Integer h) {
+    if (!grammar.rules().containsKey(symbol)) {
+      return _ -> new Tree<>(symbol);
     }
-    if (grammar.rules().containsKey(symbol)) {
-      // a non-terminal
+    if (h < 0) {
+      throw new IllegalArgumentException("Unexpected negative target height");
+    }
+    return random -> {
       // general idea: try the following
       // 1. choose expansion with min,max including target depth; if empty, choose all
       // 2. choose expansion
       List<List<L>> options = grammar.rules().get(symbol);
       List<List<L>> availableOptions = options.stream()
-          .filter(o -> optionMinMaxHeight(o).contains(targetDepth - 1))
+          .filter(o -> optionMinMaxHeight(o).contains(h - 1))
           .toList();
       if (availableOptions.isEmpty()) {
         availableOptions = options;
@@ -52,10 +55,10 @@ public class FullGrammarGrammarTreeFactory<L> extends GrowGrammarTreeFactory<L> 
           symbol,
           Misc.pickRandomly(availableOptions, random)
               .stream()
-              .map(l -> build(random, l, targetDepth - 1))
+              .map(l -> apply(l, h - 1).build(random))
               .toList()
       );
-    }
-    return new Tree<>(symbol);
+    };
   }
+
 }

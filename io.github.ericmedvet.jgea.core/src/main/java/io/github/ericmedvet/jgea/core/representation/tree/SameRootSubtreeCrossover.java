@@ -23,11 +23,8 @@ package io.github.ericmedvet.jgea.core.representation.tree;
 import io.github.ericmedvet.jgea.core.operator.Crossover;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.Tree;
-import io.github.ericmedvet.jnb.datastructure.Utils;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
-import java.util.SequencedMap;
 import java.util.Set;
 import java.util.random.RandomGenerator;
 
@@ -47,14 +44,15 @@ public class SameRootSubtreeCrossover<L> implements Crossover<Tree<L>> {
     if (commonLabels.isEmpty()) {
       return parent1;
     }
-    SequencedMap<List<Integer>, L> lineageMap1 = parent1.lineages().stream()
-        .collect(Utils.toSequencedMap(lineage -> parent1.descendant(lineage).label()));
     List<Integer> toReplaceLineage1 = Misc.pickRandomly(
-        lineageMap1.keySet().stream()
+        parent1.lineages()
+            .stream()
             .filter(l -> commonLabels.contains(parent1.descendant(l).label()))
             .toList(),
-        random);
-    List<List<Integer>> matchingLineages2 = parent2.lineages().stream()
+        random
+    );
+    List<List<Integer>> matchingLineages2 = parent2.lineages()
+        .stream()
         .filter(l -> commonLabels.contains(parent2.descendant(l).label()))
         .filter(l -> toReplaceLineage1.size() + parent2.descendant(l).height() <= maxHeight)
         .toList();
@@ -62,10 +60,6 @@ public class SameRootSubtreeCrossover<L> implements Crossover<Tree<L>> {
       return parent1;
     }
     Tree<L> subtree2 = parent2.descendant(Misc.pickRandomly(matchingLineages2, random));
-    subtree2.lineages().forEach(l -> lineageMap1.put(
-        Utils.concat(toReplaceLineage1, l),
-        subtree2.descendant(l).label()
-    ));
-    return Tree.from(l -> Optional.ofNullable(lineageMap1.get(l)));
+    return parent1.withAt(subtree2, toReplaceLineage1);
   }
 }

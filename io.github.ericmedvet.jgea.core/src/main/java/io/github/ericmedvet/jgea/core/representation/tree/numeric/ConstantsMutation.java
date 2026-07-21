@@ -23,10 +23,7 @@ import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element.Constant;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.Tree;
-import io.github.ericmedvet.jnb.datastructure.Utils;
 import java.util.List;
-import java.util.Optional;
-import java.util.SequencedMap;
 import java.util.random.RandomGenerator;
 
 public class ConstantsMutation implements Mutation<Tree<Element>> {
@@ -39,14 +36,14 @@ public class ConstantsMutation implements Mutation<Tree<Element>> {
 
   @Override
   public Tree<Element> mutate(Tree<Element> parent, RandomGenerator random) {
-    SequencedMap<List<Integer>, Element> lineageMap = parent.lineages().stream()
-        .collect(Utils.toSequencedMap(lineage -> parent.descendant(lineage).label()));
     List<Integer> toVariateLineage = Misc.pickRandomly(
-        lineageMap.keySet().stream().filter(l -> lineageMap.get(l) instanceof Constant).toList(),
-        random);
-    double currentValue = ((Constant) lineageMap.get(toVariateLineage)).value();
-    lineageMap.put(toVariateLineage,
-        new Constant(currentValue * (1d + random.nextGaussian() * sigma)));
-    return Tree.from(l -> Optional.ofNullable(lineageMap.get(l)));
+        parent.lineages().stream().filter(l -> parent.descendant(l).label() instanceof Constant).toList(),
+        random
+    );
+    double currentValue = ((Constant) parent.descendant(toVariateLineage).label()).value();
+    return parent.withAt(
+        new Tree<>(new Constant(currentValue * (1d + random.nextGaussian() * sigma))),
+        toVariateLineage
+    );
   }
 }

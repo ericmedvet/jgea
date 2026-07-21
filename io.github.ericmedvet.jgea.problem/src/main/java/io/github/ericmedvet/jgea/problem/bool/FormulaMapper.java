@@ -21,10 +21,10 @@
 package io.github.ericmedvet.jgea.problem.bool;
 
 import io.github.ericmedvet.jgea.core.representation.tree.bool.Element;
-import java.util.ArrayList;
-import java.util.Collections;
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class FormulaMapper implements Function<Tree<String>, List<Tree<Element>>> {
 
@@ -50,28 +50,29 @@ public class FormulaMapper implements Function<Tree<String>, List<Tree<Element>>
 
   @Override
   public List<Tree<Element>> apply(Tree<String> stringTree) {
-    if (stringTree.content().equals(MULTIPLE_OUTPUT_NON_TERMINAL)) {
-      List<Tree<Element>> trees = new ArrayList<>();
-      for (Tree<String> child : stringTree) {
-        trees.add(singleMap(child));
-      }
-      return trees;
-    } else {
-      return Collections.singletonList(singleMap(stringTree));
+    if (stringTree.label().equals(MULTIPLE_OUTPUT_NON_TERMINAL)) {
+      return stringTree.children().stream().map(this::singleMap).toList();
     }
+    return List.of(singleMap(stringTree));
   }
 
   public Tree<Element> singleMap(Tree<String> stringTree) {
     if (stringTree.isLeaf()) {
-      return Tree.of(fromString(stringTree.content()));
+      return new Tree<>(fromString(stringTree.label()));
     }
-    if (stringTree.nChildren() == 1) {
+    if (stringTree.children().size() == 1) {
       return singleMap(stringTree.child(0));
     }
     Tree<Element> tree = singleMap(stringTree.child(0));
-    for (int i = 1; i < stringTree.nChildren(); i++) {
-      tree.addChild(singleMap(stringTree.child(i)));
-    }
-    return tree;
+    return new Tree<>(
+        tree.label(),
+        Stream.concat(
+            tree.children().stream(),
+            stringTree.children()
+                .subList(0, stringTree.children().size())
+                .stream()
+                .map(this::singleMap)
+        ).toList()
+    );
   }
 }

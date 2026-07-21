@@ -23,7 +23,9 @@ package io.github.ericmedvet.jgea.problem.mapper;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.util.IntRange;
 import io.github.ericmedvet.jgea.core.util.Misc;
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -77,45 +79,60 @@ public class MapperUtils {
       int depth,
       AtomicInteger globalCounter
   ) {
-    Object result = null;
-    if (tree.content() instanceof Element.Variable) {
-      result = switch (((Element.Variable) tree.content())) {
+    return switch (tree.label()) {
+      case Element.Variable v -> switch (v) {
         case GENOTYPE -> g;
         case LIST_N -> values;
         case DEPTH -> (double) depth;
         case GL_COUNT_R -> (double) globalCounter.get();
         case GL_COUNT_RW -> (double) globalCounter.getAndIncrement();
       };
-    } else if (tree.content() instanceof Element.MapperFunction) {
-      result = switch (((Element.MapperFunction) tree.content())) {
-        case SIZE -> (double) ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).size();
-        case WEIGHT -> (double) ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).nOfOnes();
+      case Element.MapperFunction f -> switch (f) {
+        case SIZE ->
+          (double) ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).size();
+        case WEIGHT -> (double) ((BitString) compute(
+            tree.child(0),
+            g,
+            values,
+            depth,
+            globalCounter
+        )).nOfOnes();
         case WEIGHT_R -> {
-          BitString bitsGenotype = (BitString) compute(tree.child(0), g, values, depth, globalCounter);
+          BitString bitsGenotype = (BitString) compute(
+              tree.child(0),
+              g,
+              values,
+              depth,
+              globalCounter
+          );
           yield (double) bitsGenotype.nOfOnes() / (double) bitsGenotype.size();
         }
-        case INT -> (double) ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).toInt();
-        case ADD -> ((Double) compute(tree.child(0), g, values, depth, globalCounter) + (Double) compute(
-            tree.child(1),
-            g,
-            values,
-            depth,
-            globalCounter
-        ));
-        case SUBTRACT -> ((Double) compute(tree.child(0), g, values, depth, globalCounter) - (Double) compute(
-            tree.child(1),
-            g,
-            values,
-            depth,
-            globalCounter
-        ));
-        case MULT -> ((Double) compute(tree.child(0), g, values, depth, globalCounter) * (Double) compute(
-            tree.child(1),
-            g,
-            values,
-            depth,
-            globalCounter
-        ));
+        case INT ->
+          (double) ((BitString) compute(tree.child(0), g, values, depth, globalCounter)).toInt();
+        case ADD ->
+          ((Double) compute(tree.child(0), g, values, depth, globalCounter) + (Double) compute(
+              tree.child(1),
+              g,
+              values,
+              depth,
+              globalCounter
+          ));
+        case SUBTRACT ->
+          ((Double) compute(tree.child(0), g, values, depth, globalCounter) - (Double) compute(
+              tree.child(1),
+              g,
+              values,
+              depth,
+              globalCounter
+          ));
+        case MULT ->
+          ((Double) compute(tree.child(0), g, values, depth, globalCounter) * (Double) compute(
+              tree.child(1),
+              g,
+              values,
+              depth,
+              globalCounter
+          ));
         case DIVIDE -> protectedDivision(
             (Double) compute(tree.child(0), g, values, depth, globalCounter),
             (Double) compute(tree.child(1), g, values, depth, globalCounter)
@@ -124,9 +141,13 @@ public class MapperUtils {
             (Double) compute(tree.child(0), g, values, depth, globalCounter),
             (Double) compute(tree.child(1), g, values, depth, globalCounter)
         );
-        case LENGTH -> (double) ((List<?>) compute(tree.child(0), g, values, depth, globalCounter)).size();
+        case LENGTH ->
+          (double) ((List<?>) compute(tree.child(0), g, values, depth, globalCounter)).size();
         case MAX_INDEX -> //noinspection unchecked
-          (double) maxIndex((List<Double>) compute(tree.child(0), g, values, depth, globalCounter), 1d);
+          (double) maxIndex(
+              (List<Double>) compute(tree.child(0), g, values, depth, globalCounter),
+              1d
+          );
         case MIN_INDEX -> //noinspection unchecked
           (double) maxIndex(
               (List<Double>) compute(tree.child(0), g, values, depth, globalCounter),
@@ -171,43 +192,32 @@ public class MapperUtils {
           );
         case APPLY -> //noinspection rawtypes
           apply(
-              (Element.MapperFunction) tree.child(0).content(),
+              (Element.MapperFunction) tree.child(0).label(),
               ((List) compute(tree.child(1), g, values, depth, globalCounter)),
-              (tree.nChildren() >= 3) ? compute(tree.child(2), g, values, depth, globalCounter) : null
+              (tree.children().size() >= 3) ? compute(
+                  tree.child(2),
+                  g,
+                  values,
+                  depth,
+                  globalCounter
+              ) : null
           );
       };
-    } else if (tree.content() instanceof Element.NumericConstant) {
-      result = ((Element.NumericConstant) tree.content()).value();
-    }
-    return result;
+      case Element.NumericConstant c -> c.value();
+      default ->
+        throw new IllegalArgumentException("Unexpected node of type %s".formatted(tree.label()));
+    };
   }
 
   @SuppressWarnings("rawtypes")
-  private static List concat(@SuppressWarnings("rawtypes") List l1, @SuppressWarnings("rawtypes") List l2) {
+  private static List concat(
+      @SuppressWarnings("rawtypes") List l1,
+      @SuppressWarnings("rawtypes") List l2
+  ) {
     @SuppressWarnings({"rawtypes", "unchecked"}) List l = new ArrayList(l1);
     //noinspection unchecked
     l.addAll(l2);
     return l;
-  }
-
-  private static Element fromString(String string) {
-    try {
-      double value = Double.parseDouble(string);
-      return new Element.NumericConstant(value);
-    } catch (NumberFormatException ex) {
-      // just ignore
-    }
-    for (Element.Variable variable : Element.Variable.values()) {
-      if (variable.getGrammarName().equals(string)) {
-        return variable;
-      }
-    }
-    for (Element.MapperFunction function : Element.MapperFunction.values()) {
-      if (function.getGrammarName().equals(string)) {
-        return function;
-      }
-    }
-    return null;
   }
 
   private static <T> T getFromList(List<T> list, int n) {
@@ -387,11 +397,7 @@ public class MapperUtils {
 
   @SafeVarargs
   private static <T> Tree<T> node(T content, Tree<T>... children) {
-    Tree<T> tree = Tree.of(content);
-    for (Tree<T> child : children) {
-      tree.addChild(child);
-    }
-    return tree;
+    return new Tree<>(content, Arrays.stream(children).toList());
   }
 
   private static double protectedDivision(double d1, double d2) {
@@ -431,7 +437,7 @@ public class MapperUtils {
       return g;
     }
     BitString copy = new BitString(g.size());
-    if (g.size() - (g.size() - n) >= 0)
+    if (g.size() - (g.size() - n) >= 0) {
       System.arraycopy(
           g.bits(),
           g.size() - n + g.size() - n,
@@ -439,8 +445,10 @@ public class MapperUtils {
           g.size() - n,
           g.size() - (g.size() - n)
       );
-    if (g.size() - n >= 0)
+    }
+    if (g.size() - n >= 0) {
       System.arraycopy(g.bits(), 0, copy.bits(), 0, g.size() - n);
+    }
     return copy;
   }
 
@@ -453,8 +461,9 @@ public class MapperUtils {
       return g;
     }
     BitString copy = new BitString(g.size());
-    if (g.size() - n >= 0)
+    if (g.size() - n >= 0) {
       System.arraycopy(g.bits(), n + n, copy.bits(), 0, g.size() - n);
+    }
     System.arraycopy(g.bits(), 0, copy.bits(), g.size() - n, n);
     return copy;
   }
@@ -528,24 +537,4 @@ public class MapperUtils {
     return g.slice(0, Math.min(to, g.size()));
   }
 
-  public static Tree<Element> transform(Tree<String> stringTree) {
-    if (stringTree.isLeaf()) {
-      Element element = fromString(stringTree.content());
-      if (element == null) {
-        return null;
-      }
-      return Tree.of(element);
-    }
-    if (stringTree.nChildren() == 1) {
-      return transform(stringTree.child(0));
-    }
-    Tree<Element> tree = transform(stringTree.child(0));
-    for (int i = 1; i < stringTree.nChildren(); i++) {
-      Tree<Element> child = transform(stringTree.child(i));
-      if (child != null) { // discard decorations
-        tree.addChild(child);
-      }
-    }
-    return tree;
-  }
 }

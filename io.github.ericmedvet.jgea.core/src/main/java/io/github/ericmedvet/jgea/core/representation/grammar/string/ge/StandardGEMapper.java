@@ -23,6 +23,7 @@ package io.github.ericmedvet.jgea.core.representation.grammar.string.ge;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedMapper;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.List;
 
 public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
@@ -39,42 +40,50 @@ public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {
   @Override
   public Tree<T> apply(BitString genotype) {
     if (genotype.size() < codonLength) {
-      throw new IllegalArgumentException(String.format("Short genotype (%d<%d)", genotype.size(), codonLength));
+      throw new IllegalArgumentException(
+          String.format("Short genotype (%d<%d)", genotype.size(), codonLength)
+      );
     }
-    Tree<T> tree = Tree.of(grammar.startingSymbol());
+    Tree<T> tree = new Tree<>(grammar.startingSymbol());
     int currentCodonIndex = 0;
     int wraps = 0;
     while (true) {
-      Tree<T> treeToBeReplaced = null;
-      for (Tree<T> node : tree.leaves()) {
-        if (grammar.rules().containsKey(node.content())) {
-          treeToBeReplaced = node;
-          break;
-        }
-      }
-      if (treeToBeReplaced == null) {
+      final Tree<T> finalTree = tree;
+      List<List<Integer>> replaceableLineages = finalTree.lineages()
+          .stream()
+          .filter(l -> finalTree.descendant(l).isLeaf())
+          .filter(l -> grammar.rules().containsKey(finalTree.descendant(l).label()))
+          .toList();
+      if (replaceableLineages.isEmpty()) {
         break;
       }
+      // get lineage to replace
+      List<Integer> toReplaceLineage = replaceableLineages.getFirst();
       // get codon index and option
       if ((currentCodonIndex + 1) * codonLength > genotype.size()) {
         wraps = wraps + 1;
         currentCodonIndex = 0;
         if (wraps > maxWraps) {
-          throw new IllegalArgumentException(String.format("Too many wraps (%d>%d)", wraps, maxWraps));
+          throw new IllegalArgumentException(
+              String.format("Too many wraps (%d>%d)", wraps, maxWraps)
+          );
         }
       }
-      List<List<T>> options = grammar.rules().get(treeToBeReplaced.content());
+      T toReplaceSymbol = finalTree.descendant(toReplaceLineage).label();
+      List<List<T>> options = grammar.rules().get(toReplaceSymbol);
       int optionIndex = 0;
       if (options.size() > 1) {
         optionIndex = genotype.slice(currentCodonIndex * codonLength, (currentCodonIndex + 1) * codonLength)
             .toInt() % options.size();
         currentCodonIndex = currentCodonIndex + 1;
       }
-      // add children
-      for (T t : options.get(optionIndex)) {
-        Tree<T> newChild = Tree.of(t);
-        treeToBeReplaced.addChild(newChild);
-      }
+      tree = finalTree.withAt(
+          new Tree<>(
+              toReplaceSymbol,
+              options.get(optionIndex).stream().map(Tree::new).toList()
+          ),
+          toReplaceLineage
+      );
     }
     return tree;
   }

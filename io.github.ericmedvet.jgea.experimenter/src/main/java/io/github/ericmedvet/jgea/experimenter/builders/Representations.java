@@ -41,7 +41,6 @@ import io.github.ericmedvet.jgea.core.representation.tree.GrowTreeBuilder;
 import io.github.ericmedvet.jgea.core.representation.tree.RampedHalfAndHalf;
 import io.github.ericmedvet.jgea.core.representation.tree.SubtreeCrossover;
 import io.github.ericmedvet.jgea.core.representation.tree.SubtreeMutation;
-import io.github.ericmedvet.jgea.core.representation.tree.TreeBuilder;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.ConstantsMutation;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element.Constant;
@@ -53,6 +52,7 @@ import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Pair;
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -79,9 +79,11 @@ public class Representations {
   ) {
     return exampleTree -> {
       List<io.github.ericmedvet.jgea.core.representation.tree.bool.Element.Variable> variables = exampleTree
-          .visitLeaves()
+          .leafLabels()
           .stream()
-          .filter(e -> e instanceof io.github.ericmedvet.jgea.core.representation.tree.bool.Element.Variable)
+          .filter(
+              e -> e instanceof io.github.ericmedvet.jgea.core.representation.tree.bool.Element.Variable
+          )
           .map(e -> ((io.github.ericmedvet.jgea.core.representation.tree.bool.Element.Variable) e))
           .distinct()
           .toList();
@@ -93,14 +95,10 @@ public class Representations {
           constants.stream()
       ).toList();
       ToIntFunction<io.github.ericmedvet.jgea.core.representation.tree.bool.Element> arityFunction = e -> switch (e) {
-        case io.github.ericmedvet.jgea.core.representation.tree.bool.Element.Operator o -> o.arity();
+        case io.github.ericmedvet.jgea.core.representation.tree.bool.Element.Operator o ->
+          o.arity();
         default -> 0;
       };
-      TreeBuilder<io.github.ericmedvet.jgea.core.representation.tree.bool.Element> treeBuilder = new GrowTreeBuilder<>(
-          arityFunction,
-          IndependentFactory.picker(operators),
-          IndependentFactory.picker(terminals)
-      );
       return new Representation<>(
           new RampedHalfAndHalf<>(
               minTreeH,
@@ -109,7 +107,16 @@ public class Representations {
               IndependentFactory.picker(operators),
               IndependentFactory.picker(terminals)
           ),
-          List.of(new SubtreeMutation<>(maxTreeH, treeBuilder)),
+          List.of(
+              new SubtreeMutation<>(
+                  maxTreeH,
+                  new GrowTreeBuilder<>(
+                      arityFunction,
+                      IndependentFactory.picker(operators),
+                      IndependentFactory.picker(terminals)
+                  )
+              )
+          ),
           List.of(new SubtreeCrossover<>(maxTreeH))
       );
     };
@@ -242,7 +249,7 @@ public class Representations {
       @Param(value = "excludeVarNameRegex", dS = "") String excludeVarNameRegex
   ) {
     return exampleTree -> {
-      List<Element.Variable> variables = exampleTree.visitDepth()
+      List<Element.Variable> variables = exampleTree.leafLabels()
           .stream()
           .filter(e -> e instanceof Element.Variable)
           .map(e -> ((Element.Variable) e).name())
@@ -270,7 +277,7 @@ public class Representations {
         }
         return 0;
       };
-      TreeBuilder<Element> treeBuilder = new GrowTreeBuilder<>(
+      Function<Integer, IndependentFactory<Tree<Element>>> treeBuilder = new GrowTreeBuilder<>(
           arityFunction,
           nonTerminalFactory,
           terminalFactory

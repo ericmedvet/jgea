@@ -22,11 +22,11 @@ package io.github.ericmedvet.jgea.core.representation.tree;
 
 import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jnb.datastructure.Tree;
+import java.util.function.Function;
 import java.util.function.ToIntFunction;
-import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
-public class GrowTreeBuilder<L> implements TreeBuilder<L> {
+public class GrowTreeBuilder<L> implements Function<Integer, IndependentFactory<Tree<L>>> {
 
   protected final ToIntFunction<L> arityFunction;
   protected final IndependentFactory<L> nonTerminalFactory;
@@ -43,16 +43,18 @@ public class GrowTreeBuilder<L> implements TreeBuilder<L> {
   }
 
   @Override
-  public Tree<L> build(RandomGenerator random, int h) {
-    L label = terminalFactory.build(random);
-    if (h == 1) {
-      return new Tree<>(label);
-    }
-    return new Tree<>(
-        label,
-        IntStream.range(0, arityFunction.applyAsInt(label))
-            .mapToObj(_ -> build(random, random.nextInt(h - 1) + 1))
-            .toList()
-    );
+  public IndependentFactory<Tree<L>> apply(Integer h) {
+    return random -> {
+      L label = terminalFactory.build(random);
+      if (h == 1) {
+        return new Tree<>(label);
+      }
+      return new Tree<>(
+          label,
+          IntStream.range(0, arityFunction.applyAsInt(label))
+              .mapToObj(_ -> apply(random.nextInt(h - 1) + 1).build(random))
+              .toList()
+      );
+    };
   }
 }

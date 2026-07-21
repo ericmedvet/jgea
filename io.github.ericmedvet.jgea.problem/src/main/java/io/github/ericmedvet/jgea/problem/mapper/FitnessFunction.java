@@ -29,6 +29,7 @@ import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringFlipM
 import io.github.ericmedvet.jgea.core.util.LinkedHashMultiset;
 import io.github.ericmedvet.jgea.core.util.Multiset;
 import io.github.ericmedvet.jnb.datastructure.Pair;
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.*;
 import java.util.function.Function;
 import org.apache.commons.math3.stat.StatUtils;

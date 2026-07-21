@@ -25,6 +25,7 @@ import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.random.RandomGenerator;
 
@@ -32,8 +33,8 @@ public class RampedHalfAndHalf<L> implements Factory<Tree<L>> {
 
   private final int minHeight;
   private final int maxHeight;
-  private final FullTreeBuilder<L> fullTreeFactory;
-  private final GrowTreeBuilder<L> growTreeBuilder;
+  private final Function<Integer, IndependentFactory<Tree<L>>> fullTreeFactory;
+  private final Function<Integer, IndependentFactory<Tree<L>>> growTreeBuilder;
 
   public RampedHalfAndHalf(
       int minHeight,
@@ -54,7 +55,7 @@ public class RampedHalfAndHalf<L> implements Factory<Tree<L>> {
     // full
     int height = minHeight;
     while (trees.size() < n / 2) {
-      trees.add(fullTreeFactory.build(random, height));
+      trees.add(fullTreeFactory.apply(height).build(random));
       height = height + 1;
       if (height > maxHeight) {
         height = minHeight;
@@ -62,7 +63,7 @@ public class RampedHalfAndHalf<L> implements Factory<Tree<L>> {
     }
     // grow
     while (trees.size() < n) {
-      trees.add(growTreeBuilder.build(random, height));
+      trees.add(growTreeBuilder.apply(height).build(random));
       height = height + 1;
       if (height > maxHeight) {
         height = minHeight;

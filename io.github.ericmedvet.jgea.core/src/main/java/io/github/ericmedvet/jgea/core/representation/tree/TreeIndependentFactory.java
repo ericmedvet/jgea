@@ -22,14 +22,16 @@ package io.github.ericmedvet.jgea.core.representation.tree;
 
 import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jnb.datastructure.Tree;
+import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.random.RandomGenerator;
 
 public class TreeIndependentFactory<L> implements IndependentFactory<Tree<L>> {
+
   private final int minHeight;
   private final int maxHeight;
-  private final TreeBuilder<L> fullTreeFactory;
-  private final TreeBuilder<L> growTreeBuilder;
+  private final Function<Integer, IndependentFactory<Tree<L>>> fullTreeFactory;
+  private final Function<Integer, IndependentFactory<Tree<L>>> growTreeBuilder;
   private final double pFull;
 
   public TreeIndependentFactory(
@@ -50,9 +52,9 @@ public class TreeIndependentFactory<L> implements IndependentFactory<Tree<L>> {
   @Override
   public Tree<L> build(RandomGenerator random) {
     if (random.nextDouble() < pFull) {
-      return fullTreeFactory.build(random, random.nextInt(minHeight, maxHeight + 1));
+      return fullTreeFactory.apply(random.nextInt(minHeight, maxHeight + 1)).build(random);
     } else {
-      return growTreeBuilder.build(random, random.nextInt(minHeight, maxHeight + 1));
+      return growTreeBuilder.apply(random.nextInt(minHeight, maxHeight + 1)).build(random);
     }
   }
 }

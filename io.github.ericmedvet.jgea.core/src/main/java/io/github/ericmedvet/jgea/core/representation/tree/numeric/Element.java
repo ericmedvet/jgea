@@ -30,6 +30,24 @@ public interface Element {
   String CONSTANT_REGEX = "-?[0-9]+(\\.[0-9]+)?";
   String VAR_REGEX = "[A-Za-z][A-Za-z0-9_]*";
 
+  static Element fromString(String string) {
+    for (Element.Operator operator : Element.Operator.values()) {
+      if (operator.toString().equals(string)) {
+        return operator;
+      }
+    }
+    try {
+      double value = Double.parseDouble(string);
+      return new Element.Constant(value);
+    } catch (NumberFormatException ex) {
+      // just ignore
+    }
+    if (string.matches("[a-zA-Z]\\w*")) {
+      return new Element.Variable(string);
+    }
+    return new Element.Decoration(string);
+  }
+
   static StringParser<Element, Element.Operator, Element> stringParser(boolean allowVoid) {
     return new StringParser<>(
         StringParser.NodeParser.fromEnum(Element.Operator.class, allowVoid),

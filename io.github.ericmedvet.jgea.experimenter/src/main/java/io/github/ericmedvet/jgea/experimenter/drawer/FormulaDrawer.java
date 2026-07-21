@@ -23,6 +23,7 @@ import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element.Constant;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element.Operator;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element.Variable;
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import io.github.ericmedvet.jviz.core.drawer.Drawer;
 import io.github.ericmedvet.jviz.core.geometry.Point;
 import io.github.ericmedvet.jviz.core.geometry.Rectangle;
@@ -77,11 +78,11 @@ public class FormulaDrawer implements Drawer<Tree<Element>> {
   }
 
   private static boolean isConstant(Tree<Element> t) {
-    return t.content() instanceof Element.Constant;
+    return t.label() instanceof Element.Constant;
   }
 
   private static boolean hasParentheses(Element.Operator o, Tree<Element> child, int index) {
-    if (child.nChildren() == 0) {
+    if (child.isLeaf()) {
       return false;
     }
     if (o.equals(Operator.EXP) || o.equals(Operator.SQRT)) {
@@ -90,23 +91,23 @@ public class FormulaDrawer implements Drawer<Tree<Element>> {
     if (o.equals(Operator.PROT_DIVISION) || o.equals(Operator.DIVISION)) {
       return false;
     }
-    if (child.content().equals(Operator.LT) || child.content().equals(Operator.GT) || child.content()
+    if (child.label().equals(Operator.LT) || child.label().equals(Operator.GT) || child.label()
         .equals(Operator.TERNARY)) {
       return true;
     }
     if (o.equals(Operator.ADDITION)) {
       return false;
     }
-    if (child.content().equals(Operator.SIN) || child.content().equals(Operator.COS) || child.content()
-        .equals(Operator.TANH) || child.content().equals(Operator.SQ) || child.content()
+    if (child.label().equals(Operator.SIN) || child.label().equals(Operator.COS) || child.label()
+        .equals(Operator.TANH) || child.label().equals(Operator.SQ) || child.label()
             .equals(Operator.SQRT) || child
-                .content()
-                .equals(Operator.LOG) || child.content().equals(Operator.PROT_LOG) || child.content()
-                    .equals(Operator.RE_LU) || child.content().equals(Operator.DIVISION) || child.content()
-                        .equals(Operator.PROT_DIVISION) || child.content().equals(Operator.EXP)) {
+                .label()
+                .equals(Operator.LOG) || child.label().equals(Operator.PROT_LOG) || child.label()
+                    .equals(Operator.RE_LU) || child.label().equals(Operator.DIVISION) || child.label()
+                        .equals(Operator.PROT_DIVISION) || child.label().equals(Operator.EXP)) {
       return false;
     }
-    if (o.equals(Operator.MULTIPLICATION) && child.content().equals(Operator.MULTIPLICATION)) {
+    if (o.equals(Operator.MULTIPLICATION) && child.label().equals(Operator.MULTIPLICATION)) {
       return false;
     }
     if (o.equals(Operator.POW) && index == 1) {
@@ -341,19 +342,19 @@ public class FormulaDrawer implements Drawer<Tree<Element>> {
   }
 
   private final static Comparator<Tree<Element>> ELEMENT_COMPARATOR = Comparator
-      .comparingInt((Tree<Element> e) -> switch (e.content()) {
+      .comparingInt((Tree<Element> e) -> switch (e.label()) {
         case Constant c -> 0;
         case Variable v -> 1;
         default -> 2;
       })
-      .thenComparing((t1, t2) -> switch (t1.content()) {
-        case Constant c1 -> Double.compare(c1.value(), ((Constant) t2.content()).value());
-        case Variable v1 -> v1.name().compareTo(((Variable) t2.content()).name());
+      .thenComparing((t1, t2) -> switch (t1.label()) {
+        case Constant c1 -> Double.compare(c1.value(), ((Constant) t2.label()).value());
+        case Variable v1 -> v1.name().compareTo(((Variable) t2.label()).name());
         default -> Integer.compare(t1.size(), t2.size());
       });
 
   private Rectangle draw(Graphics2D g, Rectangle r, Tree<Element> t, double textScale) {
-    Rectangle innerR = switch (t.content()) {
+    Rectangle innerR = switch (t.label()) {
       case Element.Variable v -> {
         Rectangle nodeR = at(r.center(), stringSize(v.name(), textScale));
         if (Objects.nonNull(g)) {
@@ -394,7 +395,7 @@ public class FormulaDrawer implements Drawer<Tree<Element>> {
         yield nodeR;
       }
       case Element.Operator o -> {
-        List<Tree<Element>> children = new ArrayList<>(t.childStream().toList());
+        List<Tree<Element>> children = new ArrayList<>(t.children());
         if (c.sortChildren && (o.equals(Operator.MULTIPLICATION) || o.equals(Operator.ADDITION))) {
           children.sort(ELEMENT_COMPARATOR);
         }
@@ -404,7 +405,7 @@ public class FormulaDrawer implements Drawer<Tree<Element>> {
           default -> o.toString();
         }, textScale));
         double childTextScale = Math.max(c.minTextScale, textScale * c.expTextScaleR);
-        List<Rectangle> childRs = IntStream.range(0, t.nChildren()).mapToObj(j -> {
+        List<Rectangle> childRs = IntStream.range(0, t.children().size()).mapToObj(j -> {
           Rectangle childR = draw(null, r, children.get(j), switch (o) {
             case POW -> j == 0 ? textScale : childTextScale;
             case EXP -> childTextScale;
@@ -445,22 +446,23 @@ public class FormulaDrawer implements Drawer<Tree<Element>> {
             childRs.stream().mapToDouble(Rectangle::width).max().orElseThrow() + 2 * c.fractionXGap;
           case MULTIPLICATION -> {
             int nOfDots = 0;
-            for (int i = 1; i < t.nChildren(); i = i + 1) {
+            for (int i = 1; i < t.children().size(); i = i + 1) {
               if (isConstant(children.get(i - 1)) && isConstant(children.get(i))) {
                 nOfDots = nOfDots + 1;
               }
             }
             yield (opR.width() + 2 * c.operatorXGap) * nOfDots + c.operatorXGap * (t
-                .nChildren() - 1 - nOfDots) + childrenW;
+                .children()
+                .size() - 1 - nOfDots) + childrenW;
           }
           case ADDITION, SUBTRACTION, GT, LT ->
-            (opR.width() + 2 * c.operatorXGap) * (t.nChildren() - 1) + childrenW;
+            (opR.width() + 2 * c.operatorXGap) * (t.children().size() - 1) + childrenW;
           default -> {
-            if (t.nChildren() > 1) {
+            if (t.children().size() > 1) {
               Rectangle argsR = withPars(
                   new Rectangle(
                       Point.ORIGIN,
-                      (c.operatorXGap + stringSize(",", textScale).x()) * (t.nChildren() - 1) + childrenW,
+                      (c.operatorXGap + stringSize(",", textScale).x()) * (t.children().size() - 1) + childrenW,
                       h
                   )
               );
@@ -567,7 +569,7 @@ public class FormulaDrawer implements Drawer<Tree<Element>> {
               g.draw(path);
             }
             case MULTIPLICATION -> {
-              for (int i = 0; i < t.nChildren(); i = i + 1) {
+              for (int i = 0; i < t.children().size(); i = i + 1) {
                 if (i > 0) {
                   if (isConstant(children.get(i - 1)) && isConstant(children.get(i))) {
                     drawOp(
@@ -587,7 +589,7 @@ public class FormulaDrawer implements Drawer<Tree<Element>> {
               }
             }
             case ADDITION, SUBTRACTION, GT, LT -> {
-              for (int i = 0; i < t.nChildren(); i = i + 1) {
+              for (int i = 0; i < t.children().size(); i = i + 1) {
                 if (i > 0) {
                   drawOp(
                       g,
@@ -606,7 +608,7 @@ public class FormulaDrawer implements Drawer<Tree<Element>> {
             default -> {
               drawOp(g, textScale, x + opR.width() / 2d, r.center().y(), o.toString());
               x = x + opR.width() + c.operatorThinXGap;
-              if (t.nChildren() == 1) {
+              if (t.children().size() == 1) {
                 drawChild(
                     g,
                     textScale,
@@ -622,7 +624,7 @@ public class FormulaDrawer implements Drawer<Tree<Element>> {
                 argsR = withoutPars(argsR);
                 x = argsR.min().x();
                 Point sepSize = stringSize(",", textScale);
-                for (int i = 0; i < t.nChildren(); i = i + 1) {
+                for (int i = 0; i < t.children().size(); i = i + 1) {
                   if (i > 0) {
                     drawOp(
                         g,
@@ -644,7 +646,7 @@ public class FormulaDrawer implements Drawer<Tree<Element>> {
         yield new Rectangle(r.center(), w, h);
       }
       default ->
-        throw new IllegalArgumentException("Unexpected node type: %s".formatted(t.content()));
+        throw new IllegalArgumentException("Unexpected node type: %s".formatted(t.label()));
     };
     if (Objects.nonNull(g) && c.debug) {
       TreeDrawer.drawDebugBox(g, innerR);

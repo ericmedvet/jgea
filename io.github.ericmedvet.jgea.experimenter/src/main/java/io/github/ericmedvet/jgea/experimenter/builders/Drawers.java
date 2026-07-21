@@ -28,6 +28,7 @@ import io.github.ericmedvet.jgea.experimenter.drawer.TreeDrawer;
 import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import io.github.ericmedvet.jviz.core.drawer.Drawer;
 import java.awt.*;
 import java.util.Map;
@@ -43,8 +44,11 @@ public class Drawers {
       @Param(value = "scale", dD = 1) double scale,
       @Param("simplify") boolean simplify
   ) {
-    return new FormulaDrawer(FormulaDrawer.Configuration.DEFAULT.scaled(scale))
-        .on(NumericTreeUtils::simplify);
+    if (simplify) {
+      return new FormulaDrawer(FormulaDrawer.Configuration.DEFAULT.scaled(scale))
+          .on(NumericTreeUtils::simplify);
+    }
+    return new FormulaDrawer(FormulaDrawer.Configuration.DEFAULT.scaled(scale));
   }
 
   @Cacheable

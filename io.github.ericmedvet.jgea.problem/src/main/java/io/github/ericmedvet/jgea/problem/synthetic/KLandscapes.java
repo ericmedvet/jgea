@@ -25,6 +25,7 @@ import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBased
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Pair;
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.*;
 import java.util.function.Function;
 
@@ -97,16 +98,18 @@ public class KLandscapes implements GrammarBasedProblem<String, Tree<String>>, C
     if (original == null) {
       return null;
     }
-    Tree<String> tree = Tree.of(original.child(0).child(0).content());
     if (original.height() > 1) {
       // is a non terminal node
-      for (Tree<String> orginalChild : original) {
-        if (orginalChild.content().equals("N")) {
-          tree.addChild(convertTree(orginalChild));
-        }
-      }
+      return new Tree<>(
+          original.child(0).child(0).label(),
+          original.children()
+              .stream()
+              .filter(oc -> oc.label().equals("N"))
+              .map(KLandscapes::convertTree)
+              .toList()
+      );
     }
-    return tree;
+    return new Tree<>(original.child(0).child(0).label());
   }
 
   protected static double f(Tree<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
@@ -115,11 +118,11 @@ public class KLandscapes implements GrammarBasedProblem<String, Tree<String>>, C
 
   protected static double fK(Tree<String> tree, int k, Map<String, Double> v, Map<Pair<String, String>, Double> w) {
     if (k == 0) {
-      return v.get(tree.content());
+      return v.get(tree.label());
     }
-    double sum = v.get(tree.content());
-    for (Tree<String> child : tree) {
-      final double weight = w.get(new Pair<>(tree.content(), child.content()));
+    double sum = v.get(tree.label());
+    for (Tree<String> child : tree.children()) {
+      final double weight = w.get(new Pair<>(tree.label(), child.label()));
       final double innerFK = fK(child, k - 1, v, w);
       sum = sum + (1 + weight) * innerFK;
     }
@@ -133,13 +136,12 @@ public class KLandscapes implements GrammarBasedProblem<String, Tree<String>>, C
 
   protected static Tree<String> levelEqualTree(int[] indexes, int arity) {
     if (indexes.length == 1) {
-      return Tree.of("t" + indexes[0]);
+      return new Tree<>("t" + indexes[0]);
     }
-    Tree<String> tree = Tree.of("n" + indexes[0]);
-    for (int i = 0; i < arity; i++) {
-      tree.addChild(levelEqualTree(Arrays.copyOfRange(indexes, 1, indexes.length), arity));
-    }
-    return tree;
+    return new Tree<>(
+        "n" + indexes[0],
+        Collections.nCopies(arity, levelEqualTree(Arrays.copyOfRange(indexes, 1, indexes.length), arity))
+    );
   }
 
   protected static double maxFK(
@@ -149,7 +151,7 @@ public class KLandscapes implements GrammarBasedProblem<String, Tree<String>>, C
       Map<Pair<String, String>, Double> w
   ) {
     double max = fK(tree, k, v, w);
-    for (Tree<String> child : tree) {
+    for (Tree<String> child : tree.children()) {
       max = Math.max(max, maxFK(child, k, v, w));
     }
     return max;

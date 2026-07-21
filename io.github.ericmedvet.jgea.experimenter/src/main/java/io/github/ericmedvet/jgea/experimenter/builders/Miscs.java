@@ -43,6 +43,7 @@ import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.Pair;
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.control.SimulationOutcomeDrawer;
 import io.github.ericmedvet.jsdynsym.core.bool.BooleanFunction;
@@ -319,10 +320,10 @@ public class Miscs {
     return new TreeBasedUnivariateRealFunction(
         tree,
         Stream.concat(
-            tree.leaves()
+            tree.leafLabels()
                 .stream()
-                .filter(t -> t.content() instanceof Variable)
-                .map(t -> ((Variable) t.content()).toString()),
+                .filter(l -> l instanceof Variable)
+                .map(l -> ((Variable) l).toString()),
             additionalVars.stream()
         ).distinct().sorted(String::compareTo).toList(),
         yVarName,

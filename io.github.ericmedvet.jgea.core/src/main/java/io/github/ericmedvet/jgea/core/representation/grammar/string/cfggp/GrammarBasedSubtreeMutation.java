@@ -20,37 +20,32 @@
 
 package io.github.ericmedvet.jgea.core.representation.grammar.string.cfggp;
 
+import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.Tree;
-import io.github.ericmedvet.jnb.datastructure.Utils;
 import java.util.List;
-import java.util.Optional;
-import java.util.SequencedMap;
+import java.util.function.BiFunction;
 import java.util.random.RandomGenerator;
 
 public class GrammarBasedSubtreeMutation<L> implements Mutation<Tree<L>> {
 
   private final int maxHeight;
-  private final GrowGrammarTreeFactory<L> factory;
+  private final BiFunction<L, Integer, IndependentFactory<Tree<L>>> builder;
 
   public GrammarBasedSubtreeMutation(int maxHeight, StringGrammar<L> grammar) {
     this.maxHeight = maxHeight;
-    factory = new GrowGrammarTreeFactory<>(0, grammar);
+    builder = new GrowGrammarTreeFactory<>(0, grammar);
   }
 
   @Override
   public Tree<L> mutate(Tree<L> parent, RandomGenerator random) {
-    SequencedMap<List<Integer>, L> lineageMap = parent.lineages().stream()
-        .collect(Utils.toSequencedMap(lineage -> parent.descendant(lineage).label()));
-    List<Integer> toReplaceLineage = Misc.pickRandomly(lineageMap.keySet(), random);
-    Tree<L> subtree = factory.build(random, parent.descendant(toReplaceLineage).label(), random.nextInt(
-        maxHeight - toReplaceLineage.size()) + 1);
-    subtree.lineages().forEach(l -> lineageMap.put(
-        Utils.concat(toReplaceLineage, l),
-        subtree.descendant(l).label()
-    ));
-    return Tree.from(l -> Optional.ofNullable(lineageMap.get(l)));
+    List<Integer> toReplaceLineage = Misc.pickRandomly(parent.lineages(), random);
+    Tree<L> subtree = builder.apply(
+        parent.descendant(toReplaceLineage).label(),
+        random.nextInt(maxHeight - toReplaceLineage.size()) + 1
+    ).build(random);
+    return parent.withAt(subtree, toReplaceLineage);
   }
 }

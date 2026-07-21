@@ -68,10 +68,12 @@ public class NumericTreeUtils {
           }
           return false;
         }
-        List<Tree<Element>> t1Children = t1.children().stream()
+        List<Tree<Element>> t1Children = t1.children()
+            .stream()
             .sorted(Comparator.comparing(Tree::toString))
             .toList();
-        List<Tree<Element>> t2Children = t2.children().stream()
+        List<Tree<Element>> t2Children = t2.children()
+            .stream()
             .sorted(Comparator.comparing(Tree::toString))
             .toList();
         for (int i = 0; i < t1Children.size(); i = i + 1) {
@@ -155,7 +157,8 @@ public class NumericTreeUtils {
               new Tree<>(
                   new Element.Constant(
                       operator.applyAsDouble(
-                          tree.children().stream()
+                          tree.children()
+                              .stream()
                               .mapToDouble(c -> ((Element.Constant) c.label()).value())
                               .toArray()
                       )
@@ -166,7 +169,8 @@ public class NumericTreeUtils {
         }
         // some constants for + and *
         if (operator.equals(Operator.ADDITION) || operator.equals(Operator.MULTIPLICATION)) {
-          SequencedMap<Boolean, List<Tree<Element>>> simplifiedChildren = tree.children().stream()
+          SequencedMap<Boolean, List<Tree<Element>>> simplifiedChildren = tree.children()
+              .stream()
               .map((Tree<Element> t) -> simplify(t, types))
               .collect(
                   Collectors.groupingBy(
