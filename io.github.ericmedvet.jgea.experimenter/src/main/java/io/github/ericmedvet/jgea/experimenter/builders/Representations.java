@@ -39,6 +39,7 @@ import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
 import io.github.ericmedvet.jgea.core.representation.tree.GrowTreeBuilder;
 import io.github.ericmedvet.jgea.core.representation.tree.RampedHalfAndHalf;
+import io.github.ericmedvet.jgea.core.representation.tree.SameRootSubtreeCrossover;
 import io.github.ericmedvet.jgea.core.representation.tree.SubtreeCrossover;
 import io.github.ericmedvet.jgea.core.representation.tree.SubtreeMutation;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.ConstantsMutation;
@@ -146,7 +147,7 @@ public class Representations {
     return eTree -> new Representation<>(
         new GrammarRampedHalfAndHalf<>(minTreeH, maxTreeH, grammar),
         List.of(new GrammarBasedSubtreeMutation<>(maxTreeH, grammar)),
-        List.of()
+        List.of(new SameRootSubtreeCrossover<>(maxTreeH))
     );
   }
 
