@@ -19,7 +19,6 @@
  */
 package io.github.ericmedvet.jgea.experimenter.drawer;
 
-import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element.Constant;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element.Operator;

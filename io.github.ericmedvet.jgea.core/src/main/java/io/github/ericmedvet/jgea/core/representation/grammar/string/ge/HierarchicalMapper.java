@@ -24,13 +24,15 @@ import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBased
 import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarUtils;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
-import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.util.IntRange;
 import io.github.ericmedvet.jgea.core.util.Misc;
+import io.github.ericmedvet.jnb.datastructure.Tree;
+import io.github.ericmedvet.jnb.datastructure.Utils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
 
@@ -108,23 +110,69 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
   }
 
   public Tree<T> mapIteratively(BitString genotype, int[] bitUsages) {
-    Tree<EnhancedSymbol<T>> enhancedTree = Tree.of(
+    Tree<EnhancedSymbol<T>> enhancedTree = new Tree<>(
         new EnhancedSymbol<>(grammar.startingSymbol(), new IntRange(0, genotype.size()))
     );
     while (true) {
-      Tree<EnhancedSymbol<T>> treeToBeReplaced = null;
-      for (Tree<EnhancedSymbol<T>> tree : enhancedTree.leaves()) {
-        if (grammar.rules().containsKey(tree.content().symbol())) {
-          treeToBeReplaced = tree;
-          break;
-        }
-      }
-      if (treeToBeReplaced == null) {
+      Optional<List<Integer>> oRepleacableLineage = enhancedTree.lineages().stream()
+          .filter(l -> enhancedTree.descendant(l).isLeaf())
+          .filter(l -> grammar.rules().containsKey(enhancedTree.descendant(l).label().symbol()))
+          .findFirst();
+      if (oRepleacableLineage.isEmpty()) {
         break;
       }
       // get genotype
-      T symbol = treeToBeReplaced.content().symbol();
-      IntRange symbolRange = treeToBeReplaced.content().range();
+      T symbol =oRepleacableLineage.map(l -> enhancedTree.descendant(l).label().symbol()).orElseThrow();
+      IntRange symbolRange = oRepleacableLineage.map(l -> enhancedTree.descendant(l).label().range()).orElseThrow();
+      List<List<T>> options = grammar.rules().get(symbol);
+      // get option
+      List<T> symbols;
+      if ((symbolRange.extent()) < options.size()) {
+        int count = (symbolRange.extent() > 0) ? genotype.slice(symbolRange.min(), symbolRange.max())
+            .nOfOnes() : genotype.nOfOnes();
+        int index = shortestOptionIndexesMap
+            .get(symbol)
+            .get(count % shortestOptionIndexesMap.get(symbol).size());
+        symbols = options.get(index);
+      } else {
+        symbols = chooseOption(genotype, symbolRange, options);
+        for (int i = symbolRange.min(); i < symbolRange.max(); i++) {
+          bitUsages[i] = bitUsages[i] + 1;
+        }
+      }
+      // add children
+      List<IntRange> childRanges = getChildrenSlices(symbolRange, symbols);
+      List<Tree<EnhancedSymbol<T>>> newChildren = IntStream.range(0, symbols.size()).mapToObj(i -> {
+        IntRange childRange = childRanges.get(i);
+        if (childRanges.get(i).equals(symbolRange) && (childRange.extent() > 0)) {
+          childRange = new IntRange(symbolRange.min(), symbolRange.max() - 1);
+        }
+        return new Tree<>(new EnhancedSymbol<>(symbols.get(i), childRange));
+      }).toList();
+      Tree<EnhancedSymbol<T>> expandedTree = new Tree<>(
+          new EnhancedSymbol<>(symbol, symbolRange),
+          newChildren
+      );
+      SequencedMap<List<Integer>, EnhancedSymbol<T>> lineageMap = enhancedTree.lineages().stream()
+          .collect(Utils.toSequencedMap(lineage -> enhancedTree.descendant(lineage).label()));
+      expandedTree.lineages().forEach(l -> lineageMap.put(
+          Utils.concat(oRepleacableLineage.orElseThrow(), l),
+          expandedTree.descendant(l).label()
+      ));
+      enhancedTree = Tree.from(l -> Optional.ofNullable(lineageMap.get(l)));
+    }
+
+
+
+      Optional<EnhancedSymbol<T>> oRepleacableLeaf = enhancedTree.leafLabels().stream()
+          .filter(es -> grammar.rules().containsKey(es.symbol())).findFirst();
+      if (oRepleacableLeaf.isEmpty()) {
+        break;
+      }
+      Tree<EnhancedSymbol<T>> treeToBeReplaced = null;
+      // get genotype
+      T symbol = oRepleacableLeaf.get().symbol();
+      IntRange symbolRange = oRepleacableLeaf.get().range();
       List<List<T>> options = grammar.rules().get(symbol);
       // get option
       List<T> symbols;

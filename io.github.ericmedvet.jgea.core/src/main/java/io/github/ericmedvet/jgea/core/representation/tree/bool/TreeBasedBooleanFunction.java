@@ -19,7 +19,7 @@
  */
 package io.github.ericmedvet.jgea.core.representation.tree.bool;
 
-import io.github.ericmedvet.jgea.core.representation.tree.Tree;
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import io.github.ericmedvet.jsdynsym.core.bool.BooleanFunction;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +35,7 @@ public class TreeBasedBooleanFunction implements BooleanFunction {
     this.nOfInputs = nOfInputs;
     // check inputs consistency
     List<Integer> indexes = trees.stream()
-        .flatMap(t -> t.visitLeaves().stream())
+        .flatMap(t -> t.leafLabels().stream())
         .filter(e -> e instanceof Element.Variable)
         .map(e -> ((Element.Variable) e).index())
         .distinct()
@@ -57,7 +57,7 @@ public class TreeBasedBooleanFunction implements BooleanFunction {
     this(
         trees,
         (int) trees.stream()
-            .flatMap(t -> t.visitLeaves().stream())
+            .flatMap(t -> t.leafLabels().stream())
             .filter(e -> e instanceof Element.Variable)
             .map(e -> ((Element.Variable) e).index())
             .distinct()
@@ -66,28 +66,28 @@ public class TreeBasedBooleanFunction implements BooleanFunction {
   }
 
   private static boolean compute(Tree<Element> tree, boolean[] input) {
-    return switch (tree.content()) {
+    return switch (tree.label()) {
       case Element.Variable v -> input[v.index()];
       case Element.Operator op -> op.test(
           unbox(
-              tree.childStream()
-                  .filter(c -> !(c.content() instanceof Element.Decoration))
+              tree.children().stream()
+                  .filter(c -> !(c.label() instanceof Element.Decoration))
                   .map(c -> compute(c, input))
                   .toArray(Boolean[]::new)
           )
       );
       case Element.Constant c -> c.value();
-      default -> throw new IllegalArgumentException("Unexpected node type %s".formatted(tree.content()));
+      default -> throw new IllegalArgumentException("Unexpected node type %s".formatted(tree.label()));
     };
   }
 
   public static List<Tree<Element>> exampleFor(BooleanFunction booleanFunction) {
     return Collections.nCopies(
         booleanFunction.nOfOutputs(),
-        Tree.of(
+        new Tree<>(
             Element.Operator.AND,
             IntStream.range(0, booleanFunction.nOfInputs())
-                .mapToObj(i -> Tree.of((Element) new Element.Variable(i)))
+                .mapToObj(i -> new Tree<>((Element) new Element.Variable(i)))
                 .toList()
         )
     );

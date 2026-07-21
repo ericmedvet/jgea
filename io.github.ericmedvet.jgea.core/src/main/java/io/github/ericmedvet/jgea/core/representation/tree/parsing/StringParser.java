@@ -19,7 +19,7 @@
  */
 package io.github.ericmedvet.jgea.core.representation.tree.parsing;
 
-import io.github.ericmedvet.jgea.core.representation.tree.Tree;
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -160,7 +160,7 @@ public class StringParser<L, NT extends L, T extends L> {
       }
       return Optional.of(
           new Token<>(
-              Tree.of(ntToken.get().content(), children),
+              new Tree<>(ntToken.get().content(), children),
               finalI,
               i
           )
@@ -174,7 +174,7 @@ public class StringParser<L, NT extends L, T extends L> {
     if (tToken.isPresent()) {
       return Optional.of(
           new Token<>(
-              Tree.of(tToken.get().content()),
+              new Tree<>(tToken.get().content()),
               i,
               tToken.get().end()
           )

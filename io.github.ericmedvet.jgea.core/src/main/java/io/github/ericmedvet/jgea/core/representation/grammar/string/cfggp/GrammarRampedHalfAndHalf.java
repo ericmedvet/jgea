@@ -22,19 +22,19 @@ package io.github.ericmedvet.jgea.core.representation.grammar.string.cfggp;
 
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
-import io.github.ericmedvet.jgea.core.representation.tree.Tree;
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.random.RandomGenerator;
 
-public class GrammarRampedHalfAndHalf<T> implements Factory<Tree<T>> {
+public class GrammarRampedHalfAndHalf<L> implements Factory<Tree<L>> {
 
   private final int minHeight;
   private final int maxHeight;
-  private final FullGrammarGrammarTreeFactory<T> fullGrammarTreeFactory;
-  private final GrowGrammarTreeFactory<T> growGrammarTreeFactory;
+  private final FullGrammarGrammarTreeFactory<L> fullGrammarTreeFactory;
+  private final GrowGrammarTreeFactory<L> growGrammarTreeFactory;
 
-  public GrammarRampedHalfAndHalf(int minHeight, int maxHeight, StringGrammar<T> grammar) {
+  public GrammarRampedHalfAndHalf(int minHeight, int maxHeight, StringGrammar<L> grammar) {
     this.minHeight = minHeight;
     this.maxHeight = maxHeight;
     fullGrammarTreeFactory = new FullGrammarGrammarTreeFactory<>(maxHeight, grammar);
@@ -42,15 +42,12 @@ public class GrammarRampedHalfAndHalf<T> implements Factory<Tree<T>> {
   }
 
   @Override
-  public List<Tree<T>> build(int n, RandomGenerator random) {
-    List<Tree<T>> trees = new ArrayList<>();
+  public List<Tree<L>> build(int n, RandomGenerator random) {
+    List<Tree<L>> trees = new ArrayList<>();
     // full
     int height = minHeight;
     while (trees.size() < n / 2) {
-      Tree<T> tree = fullGrammarTreeFactory.build(random, height);
-      if (tree != null) {
-        trees.add(tree);
-      }
+      trees.add(fullGrammarTreeFactory.build(random, height));
       height = height + 1;
       if (height > maxHeight) {
         height = minHeight;
@@ -58,10 +55,7 @@ public class GrammarRampedHalfAndHalf<T> implements Factory<Tree<T>> {
     }
     // grow
     while (trees.size() < n) {
-      Tree<T> tree = growGrammarTreeFactory.build(random, height);
-      if (tree != null) {
-        trees.add(tree);
-      }
+      trees.add(growGrammarTreeFactory.build(random, height));
       height = height + 1;
       if (height > maxHeight) {
         height = minHeight;

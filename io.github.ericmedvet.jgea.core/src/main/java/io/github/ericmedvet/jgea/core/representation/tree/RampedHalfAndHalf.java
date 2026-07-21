@@ -22,23 +22,25 @@ package io.github.ericmedvet.jgea.core.representation.tree;
 
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.IndependentFactory;
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.ToIntFunction;
 import java.util.random.RandomGenerator;
 
-public class RampedHalfAndHalf<N> implements Factory<Tree<N>> {
+public class RampedHalfAndHalf<L> implements Factory<Tree<L>> {
+
   private final int minHeight;
   private final int maxHeight;
-  private final FullTreeBuilder<N> fullTreeFactory;
-  private final GrowTreeBuilder<N> growTreeBuilder;
+  private final FullTreeBuilder<L> fullTreeFactory;
+  private final GrowTreeBuilder<L> growTreeBuilder;
 
   public RampedHalfAndHalf(
       int minHeight,
       int maxHeight,
-      ToIntFunction<N> arityFunction,
-      IndependentFactory<N> nonTerminalFactory,
-      IndependentFactory<N> terminalFactory
+      ToIntFunction<L> arityFunction,
+      IndependentFactory<L> nonTerminalFactory,
+      IndependentFactory<L> terminalFactory
   ) {
     this.minHeight = minHeight;
     this.maxHeight = maxHeight;
@@ -47,15 +49,12 @@ public class RampedHalfAndHalf<N> implements Factory<Tree<N>> {
   }
 
   @Override
-  public List<Tree<N>> build(int n, RandomGenerator random) {
-    List<Tree<N>> trees = new ArrayList<>();
+  public List<Tree<L>> build(int n, RandomGenerator random) {
+    List<Tree<L>> trees = new ArrayList<>();
     // full
     int height = minHeight;
     while (trees.size() < n / 2) {
-      Tree<N> tree = fullTreeFactory.build(random, height);
-      if (tree != null) {
-        trees.add(tree);
-      }
+      trees.add(fullTreeFactory.build(random, height));
       height = height + 1;
       if (height > maxHeight) {
         height = minHeight;
@@ -63,10 +62,7 @@ public class RampedHalfAndHalf<N> implements Factory<Tree<N>> {
     }
     // grow
     while (trees.size() < n) {
-      Tree<N> tree = growTreeBuilder.build(random, height);
-      if (tree != null) {
-        trees.add(tree);
-      }
+      trees.add(growTreeBuilder.build(random, height));
       height = height + 1;
       if (height > maxHeight) {
         height = minHeight;

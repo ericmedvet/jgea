@@ -22,39 +22,35 @@ package io.github.ericmedvet.jgea.core.representation.grammar.string.cfggp;
 
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
-import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.util.Misc;
+import io.github.ericmedvet.jnb.datastructure.Tree;
+import io.github.ericmedvet.jnb.datastructure.Utils;
 import java.util.List;
+import java.util.Optional;
+import java.util.SequencedMap;
 import java.util.random.RandomGenerator;
 
-public class GrammarBasedSubtreeMutation<T> implements Mutation<Tree<T>> {
+public class GrammarBasedSubtreeMutation<L> implements Mutation<Tree<L>> {
 
-  private final int maxDepth;
-  private final GrowGrammarTreeFactory<T> factory;
+  private final int maxHeight;
+  private final GrowGrammarTreeFactory<L> factory;
 
-  public GrammarBasedSubtreeMutation(int maxDepth, StringGrammar<T> grammar) {
-    this.maxDepth = maxDepth;
+  public GrammarBasedSubtreeMutation(int maxHeight, StringGrammar<L> grammar) {
+    this.maxHeight = maxHeight;
     factory = new GrowGrammarTreeFactory<>(0, grammar);
   }
 
   @Override
-  public Tree<T> mutate(Tree<T> parent, RandomGenerator random) {
-    Tree<T> child = parent.copyOf();
-    List<Tree<T>> nonTerminalTrees = Misc.shuffle(child.topSubtrees(), random);
-    boolean done = false;
-    for (Tree<T> toReplaceSubTree : nonTerminalTrees) {
-      // TODO should select a depth randomly such that the resulting child is <= maxDepth
-      Tree<T> newSubTree = factory.build(random, toReplaceSubTree.content(), toReplaceSubTree.height());
-      if (newSubTree != null) {
-        toReplaceSubTree.clearChildren();
-        newSubTree.childStream().forEach(toReplaceSubTree::addChild);
-        done = true;
-        break;
-      }
-    }
-    if (!done) {
-      return null;
-    }
-    return child;
+  public Tree<L> mutate(Tree<L> parent, RandomGenerator random) {
+    SequencedMap<List<Integer>, L> lineageMap = parent.lineages().stream()
+        .collect(Utils.toSequencedMap(lineage -> parent.descendant(lineage).label()));
+    List<Integer> toReplaceLineage = Misc.pickRandomly(lineageMap.keySet(), random);
+    Tree<L> subtree = factory.build(random, parent.descendant(toReplaceLineage).label(), random.nextInt(
+        maxHeight - toReplaceLineage.size()) + 1);
+    subtree.lineages().forEach(l -> lineageMap.put(
+        Utils.concat(toReplaceLineage, l),
+        subtree.descendant(l).label()
+    ));
+    return Tree.from(l -> Optional.ofNullable(lineageMap.get(l)));
   }
 }

@@ -19,7 +19,7 @@
  */
 package io.github.ericmedvet.jgea.core.representation.tree.bool;
 
-import io.github.ericmedvet.jgea.core.representation.tree.Tree;
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -43,61 +43,61 @@ public class BooleanTreeUtils {
 
   public static Tree<Element> simplify(Tree<Element> tree) {
     //not(not(x)) -> x
-    if (tree.content().equals(Element.Operator.NOT)) {
-      if (tree.child(0).content().equals(Element.Operator.NOT)) {
+    if (tree.label().equals(Element.Operator.NOT)) {
+      if (tree.child(0).label().equals(Element.Operator.NOT)) {
         return simplify(tree.child(0).child(0));
       }
     }
     //and(x) -> x; or(x) -> x
-    if (tree.content().equals(Element.Operator.AND) || tree.content().equals(Element.Operator.OR)) {
-      if (tree.nChildren() == 1) {
+    if (tree.label().equals(Element.Operator.AND) || tree.label().equals(Element.Operator.OR)) {
+      if (tree.children().size() == 1) {
         return simplify(tree.child(0));
       }
     }
     //and(x;x;...) -> and(x;...); and(T;...) -> and(...)
-    if (tree.content().equals(Element.Operator.AND)) {
-      List<Tree<Element>> reducedChildren = tree.childStream()
+    if (tree.label().equals(Element.Operator.AND)) {
+      List<Tree<Element>> reducedChildren = tree.children().stream()
           .distinct()
-          .filter(c -> !isTrue(c.content()))
-          .flatMap(c -> switch (c.content()) {
-            case Element.Operator.AND -> c.childStream();
+          .filter(c -> !isTrue(c.label()))
+          .flatMap(c -> switch (c.label()) {
+            case Element.Operator.AND -> c.children().stream();
             default -> Stream.of(c);
           })
           .toList();
-      if (!reducedChildren.equals(tree.childStream().toList())) {
-        return simplify(Tree.of(Element.Operator.AND, reducedChildren));
+      if (!reducedChildren.equals(tree.children())) {
+        return simplify(new Tree<>(Element.Operator.AND, reducedChildren));
       }
     }
     //or(x;x;...) -> or(x;...); or(F;...) -> or(...)
-    if (tree.content().equals(Element.Operator.OR)) {
-      List<Tree<Element>> reducedChildren = tree.childStream()
+    if (tree.label().equals(Element.Operator.OR)) {
+      List<Tree<Element>> reducedChildren = tree.children().stream()
           .distinct()
-          .filter(c -> !isFalse(c.content()))
-          .flatMap(c -> switch (c.content()) {
-            case Element.Operator.OR -> c.childStream();
+          .filter(c -> !isFalse(c.label()))
+          .flatMap(c -> switch (c.label()) {
+            case Element.Operator.OR -> c.children().stream();
             default -> Stream.of(c);
           })
           .toList();
-      if (!reducedChildren.equals(tree.childStream().toList())) {
-        return simplify(Tree.of(Element.Operator.OR, reducedChildren));
+      if (!reducedChildren.equals(tree.children())) {
+        return simplify(new Tree<>(Element.Operator.OR, reducedChildren));
       }
     }
     //and(F;...) -> F
-    if (tree.content().equals(Element.Operator.AND)) {
-      if (tree.childStream().anyMatch(c -> isFalse(c.content()))) {
-        return Tree.of(new Element.Constant(false));
+    if (tree.label().equals(Element.Operator.AND)) {
+      if (tree.children().stream().anyMatch(c -> isFalse(c.label()))) {
+        return new Tree<>(new Element.Constant(false));
       }
     }
     //or(T;...) -> T
-    if (tree.content().equals(Element.Operator.OR)) {
-      if (tree.childStream().anyMatch(c -> isTrue(c.content()))) {
-        return Tree.of(new Element.Constant(true));
+    if (tree.label().equals(Element.Operator.OR)) {
+      if (tree.children().stream().anyMatch(c -> isTrue(c.label()))) {
+        return new Tree<>(new Element.Constant(true));
       }
     }
     while (true) {
-      Tree<Element> simplified = Tree.of(
-          tree.content(),
-          tree.childStream().map(BooleanTreeUtils::simplify).toList()
+      Tree<Element> simplified = new Tree<>(
+          tree.label(),
+          tree.children().stream().map(BooleanTreeUtils::simplify).toList()
       );
       if (simplified.equals(tree)) {
         return simplified;

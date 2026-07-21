@@ -41,7 +41,6 @@ import io.github.ericmedvet.jgea.core.representation.tree.GrowTreeBuilder;
 import io.github.ericmedvet.jgea.core.representation.tree.RampedHalfAndHalf;
 import io.github.ericmedvet.jgea.core.representation.tree.SubtreeCrossover;
 import io.github.ericmedvet.jgea.core.representation.tree.SubtreeMutation;
-import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.representation.tree.TreeBuilder;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.ConstantsMutation;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;

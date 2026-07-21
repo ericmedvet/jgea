@@ -25,7 +25,6 @@ import io.github.ericmedvet.jgea.core.distance.Edit;
 import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
-import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;

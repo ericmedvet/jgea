@@ -22,10 +22,14 @@ package io.github.ericmedvet.jgea.core.representation.tree;
 
 import io.github.ericmedvet.jgea.core.operator.Crossover;
 import io.github.ericmedvet.jgea.core.util.Misc;
+import io.github.ericmedvet.jnb.datastructure.Tree;
+import io.github.ericmedvet.jnb.datastructure.Utils;
 import java.util.List;
+import java.util.Optional;
+import java.util.SequencedMap;
 import java.util.random.RandomGenerator;
 
-public class SubtreeCrossover<N> implements Crossover<Tree<N>> {
+public class SubtreeCrossover<L> implements Crossover<Tree<L>> {
 
   private final int maxHeight;
 
@@ -34,16 +38,21 @@ public class SubtreeCrossover<N> implements Crossover<Tree<N>> {
   }
 
   @Override
-  public Tree<N> recombine(Tree<N> parent1, Tree<N> parent2, RandomGenerator random) {
-    List<Tree<N>> subtrees1 = Misc.shuffle(parent1.topSubtrees(), random);
-    List<Tree<N>> subtrees2 = Misc.shuffle(parent2.topSubtrees(), random);
-    for (Tree<N> subtree1 : subtrees1) {
-      for (Tree<N> subtree2 : subtrees2) {
-        if (subtree1.depth() + subtree2.height() <= maxHeight) {
-          return TreeUtils.replaceFirst(parent1, subtree1, subtree2);
-        }
-      }
+  public Tree<L> recombine(Tree<L> parent1, Tree<L> parent2, RandomGenerator random) {
+    SequencedMap<List<Integer>, L> lineageMap1 = parent1.lineages().stream()
+        .collect(Utils.toSequencedMap(lineage -> parent1.descendant(lineage).label()));
+    List<Integer> toReplaceLineage1 = Misc.pickRandomly(lineageMap1.keySet(), random);
+    List<List<Integer>> matchingLineages2 = parent2.lineages().stream()
+        .filter(l -> toReplaceLineage1.size() + parent2.descendant(l).height() <= maxHeight)
+        .toList();
+    if (matchingLineages2.isEmpty()) {
+      return parent1;
     }
-    return parent1.copyOf();
+    Tree<L> subtree2 = parent2.descendant(Misc.pickRandomly(matchingLineages2, random));
+    subtree2.lineages().forEach(l -> lineageMap1.put(
+        Utils.concat(toReplaceLineage1, l),
+        subtree2.descendant(l).label()
+    ));
+    return Tree.from(l -> Optional.ofNullable(lineageMap1.get(l)));
   }
 }

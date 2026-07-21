@@ -26,7 +26,6 @@ import io.github.ericmedvet.jgea.core.operator.GeneticOperator;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringFactory;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringFlipMutation;
-import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.util.LinkedHashMultiset;
 import io.github.ericmedvet.jgea.core.util.Multiset;
 import io.github.ericmedvet.jnb.datastructure.Pair;

@@ -20,9 +20,12 @@
 
 package io.github.ericmedvet.jgea.core.representation.tree;
 
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.random.RandomGenerator;
 
-public interface TreeBuilder<N> {
+// TODO make this "extend" or "provide" IndependentFactory
+public interface TreeBuilder<L> {
 
-  Tree<N> build(RandomGenerator random, int height);
+  // TODO change the order of args
+  Tree<L> build(RandomGenerator random, int height);
 }

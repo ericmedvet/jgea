@@ -20,7 +20,6 @@
 
 package io.github.ericmedvet.jgea.core.distance;
 
-import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import java.util.List;
 
 public class TreeLeaves<T> implements Distance<Tree<T>> {

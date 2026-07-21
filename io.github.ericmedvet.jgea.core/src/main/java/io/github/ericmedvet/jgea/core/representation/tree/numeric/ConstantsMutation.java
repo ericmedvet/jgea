@@ -20,11 +20,13 @@
 package io.github.ericmedvet.jgea.core.representation.tree.numeric;
 
 import io.github.ericmedvet.jgea.core.operator.Mutation;
-import io.github.ericmedvet.jgea.core.representation.tree.Tree;
-import io.github.ericmedvet.jgea.core.representation.tree.TreeUtils;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element.Constant;
 import io.github.ericmedvet.jgea.core.util.Misc;
+import io.github.ericmedvet.jnb.datastructure.Tree;
+import io.github.ericmedvet.jnb.datastructure.Utils;
 import java.util.List;
+import java.util.Optional;
+import java.util.SequencedMap;
 import java.util.random.RandomGenerator;
 
 public class ConstantsMutation implements Mutation<Tree<Element>> {
@@ -37,20 +39,14 @@ public class ConstantsMutation implements Mutation<Tree<Element>> {
 
   @Override
   public Tree<Element> mutate(Tree<Element> parent, RandomGenerator random) {
-    List<Tree<Element>> constantSubtrees = parent.topSubtrees()
-        .stream()
-        .filter(st -> st.size() == 1)
-        .filter(st -> st.content() instanceof Constant)
-        .toList();
-    if (constantSubtrees.isEmpty()) {
-      return parent;
-    }
-    Tree<Element> toReplaceConstant = Misc.pickRandomly(constantSubtrees, random);
-    Tree<Element> newConstant = Tree.of(
-        new Constant(
-            ((Constant) toReplaceConstant.content()).value() * (1d + random.nextGaussian() * sigma)
-        )
-    );
-    return TreeUtils.replaceFirst(parent, toReplaceConstant, newConstant);
+    SequencedMap<List<Integer>, Element> lineageMap = parent.lineages().stream()
+        .collect(Utils.toSequencedMap(lineage -> parent.descendant(lineage).label()));
+    List<Integer> toVariateLineage = Misc.pickRandomly(
+        lineageMap.keySet().stream().filter(l -> lineageMap.get(l) instanceof Constant).toList(),
+        random);
+    double currentValue = ((Constant) lineageMap.get(toVariateLineage)).value();
+    lineageMap.put(toVariateLineage,
+        new Constant(currentValue * (1d + random.nextGaussian() * sigma)));
+    return Tree.from(l -> Optional.ofNullable(lineageMap.get(l)));
   }
 }

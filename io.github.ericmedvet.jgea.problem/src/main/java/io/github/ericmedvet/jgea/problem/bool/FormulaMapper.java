@@ -20,7 +20,6 @@
 
 package io.github.ericmedvet.jgea.problem.bool;
 
-import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.representation.tree.bool.Element;
 import java.util.ArrayList;
 import java.util.Collections;

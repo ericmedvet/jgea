@@ -23,7 +23,6 @@ package io.github.ericmedvet.jgea.core.representation.grammar.string.ge;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedMapper;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
-import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import java.util.List;
 
 public class StandardGEMapper<T> extends GrammarBasedMapper<BitString, T> {

@@ -20,7 +20,6 @@
 
 package io.github.ericmedvet.jgea.problem.regression;
 
-import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import java.util.function.Function;
 

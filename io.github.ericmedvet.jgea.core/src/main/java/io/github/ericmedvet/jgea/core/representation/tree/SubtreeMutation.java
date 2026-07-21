@@ -22,43 +22,37 @@ package io.github.ericmedvet.jgea.core.representation.tree;
 
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.util.Misc;
+import io.github.ericmedvet.jnb.datastructure.Tree;
+import io.github.ericmedvet.jnb.datastructure.Utils;
 import java.util.List;
+import java.util.Optional;
+import java.util.SequencedMap;
 import java.util.random.RandomGenerator;
+import java.util.stream.Collectors;
 
-public class SubtreeMutation<N> implements Mutation<Tree<N>> {
+public class SubtreeMutation<L> implements Mutation<Tree<L>> {
 
   private final int maxHeight;
-  private final TreeBuilder<N> builder;
-  private final boolean replaceAll;
+  private final TreeBuilder<L> builder;
 
-  public SubtreeMutation(int maxHeight, TreeBuilder<N> builder, boolean replaceAll) {
+  public SubtreeMutation(int maxHeight, TreeBuilder<L> builder) {
     this.maxHeight = maxHeight;
     this.builder = builder;
-    this.replaceAll = replaceAll;
-  }
 
-  public SubtreeMutation(int maxHeight, TreeBuilder<N> builder) {
-    this(maxHeight, builder, true);
   }
 
   @Override
-  public Tree<N> mutate(Tree<N> parent, RandomGenerator random) {
-    if (parent.height() > maxHeight) {
-      return parent;
-    }
-    List<Tree<N>> subtrees = parent.topSubtrees();
-    Tree<N> toReplaceSubtree = Misc.pickRandomly(subtrees, random);
-    int maxDepth = replaceAll ? subtrees.stream()
-        .filter(s -> s.equals(toReplaceSubtree))
-        .mapToInt(Tree::depth)
-        .max()
-        .orElse(0) : subtrees.stream()
-            .filter(s -> s.equals(toReplaceSubtree))
-            .mapToInt(Tree::depth)
-            .findFirst()
-            .orElse(0);
-    Tree<N> newSubtree = builder.build(random, random.nextInt(maxHeight - maxDepth) + 1);
-    return replaceAll ? TreeUtils.replaceAll(parent.copyOf(), toReplaceSubtree, newSubtree) : TreeUtils
-        .replaceFirst(parent.copyOf(), toReplaceSubtree, newSubtree);
+  public Tree<L> mutate(Tree<L> parent, RandomGenerator random) {
+    SequencedMap<List<Integer>, L> lineageMap = parent.lineages().stream()
+        .collect(Utils.toSequencedMap(lineage -> parent.descendant(lineage).label()));
+    List<Integer> toReplaceLineage = Misc.pickRandomly(lineageMap.keySet(), random);
+    Tree<L> subtree = builder.build(random,
+        random.nextInt(maxHeight - toReplaceLineage.size()) + 1);
+    // TODO replace this with a call to withAt(), also elsewhere
+    subtree.lineages().forEach(l -> lineageMap.put(
+        Utils.concat(toReplaceLineage, l),
+        subtree.descendant(l).label()
+    ));
+    return Tree.from(l -> Optional.ofNullable(lineageMap.get(l)));
   }
 }

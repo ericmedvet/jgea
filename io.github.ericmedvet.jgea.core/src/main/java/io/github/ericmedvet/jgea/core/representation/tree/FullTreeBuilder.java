@@ -21,19 +21,21 @@
 package io.github.ericmedvet.jgea.core.representation.tree;
 
 import io.github.ericmedvet.jgea.core.IndependentFactory;
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.function.ToIntFunction;
 import java.util.random.RandomGenerator;
+import java.util.stream.IntStream;
 
-public class FullTreeBuilder<N> implements TreeBuilder<N> {
+public class FullTreeBuilder<L> implements TreeBuilder<L> {
 
-  protected final ToIntFunction<N> arityFunction;
-  protected final IndependentFactory<N> nonTerminalFactory;
-  protected final IndependentFactory<N> terminalFactory;
+  protected final ToIntFunction<L> arityFunction;
+  protected final IndependentFactory<L> nonTerminalFactory;
+  protected final IndependentFactory<L> terminalFactory;
 
   public FullTreeBuilder(
-      ToIntFunction<N> arityFunction,
-      IndependentFactory<N> nonTerminalFactory,
-      IndependentFactory<N> terminalFactory
+      ToIntFunction<L> arityFunction,
+      IndependentFactory<L> nonTerminalFactory,
+      IndependentFactory<L> terminalFactory
   ) {
     this.arityFunction = arityFunction;
     this.nonTerminalFactory = nonTerminalFactory;
@@ -41,15 +43,16 @@ public class FullTreeBuilder<N> implements TreeBuilder<N> {
   }
 
   @Override
-  public Tree<N> build(RandomGenerator random, int h) {
+  public Tree<L> build(RandomGenerator random, int h) {
+    L label = terminalFactory.build(random);
     if (h == 1) {
-      return Tree.of(terminalFactory.build(random));
+      return new Tree<>(label);
     }
-    Tree<N> t = Tree.of(nonTerminalFactory.build(random));
-    int nChildren = arityFunction.applyAsInt(t.content());
-    for (int i = 0; i < nChildren; i++) {
-      t.addChild(build(random, h - 1));
-    }
-    return t;
+    return new Tree<>(
+        label,
+        IntStream.range(0, arityFunction.applyAsInt(label))
+            .mapToObj(_ -> build(random, h - 1))
+            .toList()
+    );
   }
 }

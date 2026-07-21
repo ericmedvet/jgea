@@ -20,9 +20,9 @@
 
 package io.github.ericmedvet.jgea.core.representation.tree.numeric;
 
-import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jnb.datastructure.Parametrized;
 import io.github.ericmedvet.jnb.datastructure.Sized;
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import io.github.ericmedvet.jsdynsym.core.numerical.named.NamedMultivariateRealFunction;
 import java.util.Collections;
 import java.util.List;
@@ -73,7 +73,7 @@ public class TreeBasedMultivariateRealFunction implements NamedMultivariateRealF
         trees,
         trees.stream()
             .flatMap(
-                t -> t.visitLeaves()
+                t -> t.leafLabels()
                     .stream()
                     .filter(l -> l instanceof Element.Variable)
                     .map(l -> ((Element.Variable) l).name())
@@ -90,10 +90,10 @@ public class TreeBasedMultivariateRealFunction implements NamedMultivariateRealF
   public static List<Tree<Element>> exampleFor(List<String> xVarNames, List<String> yVarNames) {
     return Collections.nCopies(
         yVarNames.size(),
-        Tree.of(
+        new Tree<>(
             Element.Operator.ADDITION,
             xVarNames.stream()
-                .map(s -> Tree.of((Element) (new Element.Variable(s))))
+                .map(s -> new Tree<Element>(new Element.Variable(s)))
                 .toList()
         )
     );
@@ -125,7 +125,7 @@ public class TreeBasedMultivariateRealFunction implements NamedMultivariateRealF
 
   @Override
   public List<Tree<Element>> getParams() {
-    return null;
+    return trees;
   }
 
   @Override

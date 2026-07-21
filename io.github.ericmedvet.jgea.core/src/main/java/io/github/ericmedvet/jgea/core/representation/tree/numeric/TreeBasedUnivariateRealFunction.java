@@ -20,16 +20,18 @@
 
 package io.github.ericmedvet.jgea.core.representation.tree.numeric;
 
-import io.github.ericmedvet.jgea.core.representation.tree.Tree;
 import io.github.ericmedvet.jnb.datastructure.Parametrized;
 import io.github.ericmedvet.jnb.datastructure.Sized;
+import io.github.ericmedvet.jnb.datastructure.Tree;
 import io.github.ericmedvet.jsdynsym.core.numerical.named.NamedUnivariateRealFunction;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.DoubleUnaryOperator;
 
-public class TreeBasedUnivariateRealFunction implements NamedUnivariateRealFunction, Sized, Parametrized<TreeBasedUnivariateRealFunction, Tree<Element>> {
+public class TreeBasedUnivariateRealFunction implements NamedUnivariateRealFunction, Sized,
+    Parametrized<TreeBasedUnivariateRealFunction, Tree<Element>> {
 
   private final List<String> xVarNames;
   private final String yVarName;
@@ -65,7 +67,7 @@ public class TreeBasedUnivariateRealFunction implements NamedUnivariateRealFunct
   ) {
     this(
         tree,
-        tree.visitLeaves()
+        tree.leafLabels()
             .stream()
             .filter(l -> l instanceof Element.Variable)
             .map(l -> ((Element.Variable) l).name())
@@ -77,39 +79,29 @@ public class TreeBasedUnivariateRealFunction implements NamedUnivariateRealFunct
   }
 
   protected static double compute(Tree<Element> tree, Map<String, Double> input) {
-    if (tree.content() instanceof Element.Decoration) {
-      throw new RuntimeException(
-          String.format("Cannot compute: decoration node %s found", tree.content())
+    return switch (tree.label()) {
+      case Element.Variable(String name) ->
+          Objects.requireNonNull(input.get(name), String.format("Undefined variable: %s", name));
+      case Element.Constant(double value) -> value;
+      case Element.Operator o -> o.applyAsDouble(
+          tree.children().stream().mapToDouble(c -> compute(c, input)).toArray()
       );
-    }
-    if (tree.content() instanceof Element.Variable(String name)) {
-      Double varValue = input.get(name);
-      if (varValue == null) {
-        throw new RuntimeException(String.format("Undefined variable: %s", name));
-      }
-      return varValue;
-    }
-    if (tree.content() instanceof Element.Constant(double value)) {
-      return value;
-    }
-    double[] childrenValues = new double[tree.nChildren()];
-    int i = 0;
-    for (Tree<Element> child : tree) {
-      double childValue = compute(child, input);
-      childrenValues[i] = childValue;
-      i = i + 1;
-    }
-    return ((Element.Operator) tree.content()).applyAsDouble(childrenValues);
+      case Element.Decoration _ -> throw new IllegalArgumentException(
+          String.format("Cannot compute: decoration node %s found", tree.label())
+      );
+      default ->
+          throw new IllegalArgumentException("Unexpected node type %s".formatted(tree.label()));
+    };
   }
 
   public static Tree<Element> exampleFor(
       List<String> xVarNames,
       @SuppressWarnings("unused") String yVarName
   ) {
-    return Tree.of(
+    return new Tree<>(
         Element.Operator.ADDITION,
         xVarNames.stream()
-            .map(s -> Tree.of((Element) new Element.Variable(s)))
+            .map(s -> new Tree<Element>(new Element.Variable(s)))
             .toList()
     );
   }
@@ -148,7 +140,8 @@ public class TreeBasedUnivariateRealFunction implements NamedUnivariateRealFunct
       return false;
     }
     TreeBasedUnivariateRealFunction that = (TreeBasedUnivariateRealFunction) o;
-    return Objects.equals(xVarNames, that.xVarNames) && Objects.equals(yVarName, that.yVarName) && Objects.equals(
+    return Objects.equals(xVarNames, that.xVarNames) && Objects.equals(yVarName, that.yVarName)
+        && Objects.equals(
         tree,
         that.tree
     );
