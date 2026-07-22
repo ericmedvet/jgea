@@ -24,7 +24,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -52,17 +52,21 @@ class TreeBasedUnivariateRealFunctionTest {
     );
   }
 
-  private static Map<String,Double> m(double... values) {
-    return IntStream.range(0, values.length).boxed().collect(Collectors.toMap(
-        "x%d"::formatted,
-        i -> values[i]
-    ));
+  private static Map<String, Double> m(double... values) {
+    return IntStream.range(0, values.length)
+        .boxed()
+        .collect(
+            Collectors.toMap(
+                "x%d"::formatted,
+                i -> values[i]
+            )
+        );
   }
 
   @Test
   void computeAsDouble() {
     assertThat(f("+(x0;1)").computeAsDouble(m(2))).isEqualTo(3d);
-    assertThat(f("*(+(x0;1);÷(4;x1))").computeAsDouble(m(2,1))).isEqualTo(12d);
+    assertThat(f("*(+(x0;1);÷(4;x1))").computeAsDouble(m(2, 1))).isEqualTo(12d);
     assertThat(f("plog(exp(3))").computeAsDouble(m())).isEqualTo(3d);
   }
 }
