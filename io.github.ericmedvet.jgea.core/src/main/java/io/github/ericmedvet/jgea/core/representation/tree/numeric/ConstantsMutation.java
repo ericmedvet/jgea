@@ -36,10 +36,14 @@ public class ConstantsMutation implements Mutation<Tree<Element>> {
 
   @Override
   public Tree<Element> mutate(Tree<Element> parent, RandomGenerator random) {
-    List<Integer> toVariateLineage = Misc.pickRandomly(
-        parent.lineages().stream().filter(l -> parent.descendant(l).label() instanceof Constant).toList(),
-        random
-    );
+    List<List<Integer>> constantLineages = parent.lineages()
+        .stream()
+        .filter(l -> parent.descendant(l).label() instanceof Constant)
+        .toList();
+    if (constantLineages.isEmpty()) {
+      return parent;
+    }
+    List<Integer> toVariateLineage = Misc.pickRandomly(constantLineages, random);
     double currentValue = ((Constant) parent.descendant(toVariateLineage).label()).value();
     return parent.withAt(
         new Tree<>(new Constant(currentValue * (1d + random.nextGaussian() * sigma))),

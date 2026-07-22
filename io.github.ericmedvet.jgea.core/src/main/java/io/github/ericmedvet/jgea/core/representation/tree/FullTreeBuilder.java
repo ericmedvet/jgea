@@ -45,10 +45,10 @@ public class FullTreeBuilder<L> implements Function<Integer, IndependentFactory<
   @Override
   public IndependentFactory<Tree<L>> apply(Integer h) {
     return random -> {
-      L label = terminalFactory.build(random);
       if (h == 1) {
-        return new Tree<>(label);
+        return new Tree<>(terminalFactory.build(random));
       }
+      L label = nonTerminalFactory.build(random);
       return new Tree<>(
           label,
           IntStream.range(0, arityFunction.applyAsInt(label))

@@ -45,7 +45,28 @@ public class Misc {
   private Misc() {
   }
 
-  private record Point(double x, double y) {}
+  public static <T> T pickRandomly(Collection<T> ts, RandomGenerator random) {
+    if (ts.isEmpty()) {
+      throw new IllegalArgumentException("Empty collection");
+    }
+    if (ts instanceof List<T> list) {
+      return list.get(random.nextInt(ts.size()));
+    }
+    int chosenI = random.nextInt(ts.size());
+    int i = 0;
+    for (T t : ts) {
+      if (i == chosenI) {
+        return t;
+      }
+      i = i + 1;
+    }
+    throw new IllegalArgumentException(
+        "Unexpectedly unable to pick a random element (chosen index=%d, size=%d)".formatted(
+            chosenI,
+            ts.size()
+        )
+    );
+  }
 
   private static double area(Point a, Point b, Point c) {
     return 0.5 * Math.abs(a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y));
@@ -162,19 +183,18 @@ public class Misc {
     return first(options.keySet());
   }
 
-  public static <T> T pickRandomly(Collection<T> ts, RandomGenerator random) {
-    if (ts instanceof List<T> list) {
-      return list.get(random.nextInt(ts.size()));
-    }
-    int chosenI = random.nextInt(ts.size());
-    int i = 0;
-    for (T t : ts) {
-      if (i == chosenI) {
-        return t;
-      }
-      i = i + 1;
-    }
-    throw new IllegalArgumentException("Empty collection");
+  public static <K, V, U> Map<K, U> transformValues(
+      Map<K, V> map,
+      Function<? super V, ? extends U> transformer
+  ) {
+    return map.entrySet()
+        .stream()
+        .collect(
+            Collectors.toMap(
+                Map.Entry::getKey,
+                e -> transformer.apply(e.getValue())
+            )
+        );
   }
 
   public static <K> List<K> shuffle(List<K> list, RandomGenerator random) {
@@ -230,15 +250,8 @@ public class Misc {
     return ranges;
   }
 
-  public static <K, V, U> Map<K, U> transformValues(Map<K, V> map, Function<? super V, ? extends U> transformer) {
-    return map.entrySet()
-        .stream()
-        .collect(
-            Collectors.toMap(
-                Map.Entry::getKey,
-                e -> transformer.apply(e.getValue())
-            )
-        );
+  private record Point(double x, double y) {
+
   }
 
   public static <K, V, U> SequencedMap<K, U> sequencedTransformValues(

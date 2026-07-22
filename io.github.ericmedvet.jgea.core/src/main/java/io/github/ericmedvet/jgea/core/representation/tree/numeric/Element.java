@@ -19,7 +19,7 @@
  */
 package io.github.ericmedvet.jgea.core.representation.tree.numeric;
 
-import io.github.ericmedvet.jgea.core.representation.tree.parsing.StringParser;
+import io.github.ericmedvet.jnb.datastructure.Tree.StringParser;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
@@ -48,7 +48,7 @@ public interface Element {
     return new Element.Decoration(string);
   }
 
-  static StringParser<Element, Element.Operator, Element> stringParser(boolean allowVoid) {
+  static StringParser<Element, Operator, Element> stringParser(boolean allowVoid) {
     return new StringParser<>(
         StringParser.NodeParser.fromEnum(Element.Operator.class, allowVoid),
         List.of(
@@ -156,12 +156,12 @@ public interface Element {
     public double applyAsDouble(double... input) {
       if (input.length != arity && !unlimitedArity) {
         throw new IllegalArgumentException(
-            "Wrong number of inputs: %d expected, %d found".formatted(arity, input.length)
+            "Wrong number of inputs for %s: %d expected, %d found".formatted(this, arity, input.length)
         );
       }
       if (input.length < arity) {
         throw new IllegalArgumentException(
-            "Wrong number of inputs: >=%d expected, %d found".formatted(arity, input.length)
+            "Wrong number of inputs for %s: >=%d expected, %d found".formatted(this, arity, input.length)
         );
       }
       return function.applyAsDouble(input);

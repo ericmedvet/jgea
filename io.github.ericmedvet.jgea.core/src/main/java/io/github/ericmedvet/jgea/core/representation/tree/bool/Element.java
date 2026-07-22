@@ -20,7 +20,7 @@
 
 package io.github.ericmedvet.jgea.core.representation.tree.bool;
 
-import io.github.ericmedvet.jgea.core.representation.tree.parsing.StringParser;
+import io.github.ericmedvet.jnb.datastructure.Tree.StringParser;
 import java.io.Serializable;
 import java.util.List;
 import java.util.function.Predicate;
@@ -28,6 +28,38 @@ import java.util.function.Predicate;
 public interface Element {
   String CONSTANT_REGEX = "[TF]";
   String VAR_REGEX = "[0-9]+";
+
+  static StringParser<Element, Operator, Element> stringParser(boolean allowVoid) {
+    return new StringParser<>(
+        StringParser.NodeParser.fromEnum(Element.Operator.class, allowVoid),
+        List.of(
+            StringParser.NodeParser.fromRegex(
+                CONSTANT_REGEX,
+                s -> new Constant(switch (s) {
+                  case "T" -> true;
+                  case "F" -> false;
+                  default ->
+                    throw new IllegalArgumentException(
+                        "Unexpected constant value %s not matching %s".formatted(
+                            s,
+                            CONSTANT_REGEX
+                        )
+                    );
+                }),
+                allowVoid
+            ),
+            StringParser.NodeParser.fromRegex(
+                VAR_REGEX,
+                s -> new Variable(Integer.parseInt(s)),
+                allowVoid
+            )
+        ),
+        (op, n) -> op.unlimitedArity ? (n >= op.arity) : (n == op.arity),
+        StringParser.Configuration.DEFAULT
+    );
+  }
+
+  String toString();
 
   enum Operator implements Element, Serializable, Predicate<boolean[]> {
     AND(
@@ -125,37 +157,5 @@ public interface Element {
     public String toString() {
       return Integer.toString(index);
     }
-  }
-
-  String toString();
-
-  static StringParser<Element, Element.Operator, Element> stringParser(boolean allowVoid) {
-    return new StringParser<>(
-        StringParser.NodeParser.fromEnum(Element.Operator.class, allowVoid),
-        List.of(
-            StringParser.NodeParser.fromRegex(
-                CONSTANT_REGEX,
-                s -> new Constant(switch (s) {
-                  case "T" -> true;
-                  case "F" -> false;
-                  default ->
-                    throw new IllegalArgumentException(
-                        "Unexpected constant value %s not matching %s".formatted(
-                            s,
-                            CONSTANT_REGEX
-                        )
-                    );
-                }),
-                allowVoid
-            ),
-            StringParser.NodeParser.fromRegex(
-                VAR_REGEX,
-                s -> new Variable(Integer.parseInt(s)),
-                allowVoid
-            )
-        ),
-        (op, n) -> op.unlimitedArity ? (n >= op.arity) : (n == op.arity),
-        StringParser.Configuration.DEFAULT
-    );
   }
 }

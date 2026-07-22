@@ -72,6 +72,20 @@
     <revision>2.8.2-SNAPSHOT</revision>
   </properties>
 
+  <dependencies>
+    <dependency>
+      <artifactId>junit-jupiter</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <artifactId>assertj-core</artifactId>
+      <groupId>org.assertj</groupId>
+      <scope>test</scope>
+      <version>3.27.7</version>
+    </dependency>
+  </dependencies>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -79,10 +93,15 @@
         <artifactId>jnb.buildable</artifactId>
         <version>${jnb.version}</version>
       </dependency>
+      <dependency>
+        <artifactId>junit-bom</artifactId>
+        <groupId>org.junit</groupId>
+        <scope>import</scope>
+        <type>pom</type>
+        <version>6.0.1</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
-
-  <dependencies/>
 
   <repositories>
     <repository>
