@@ -35,7 +35,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public interface UnivariateRegressionProblem extends SimpleEBMOProblem<NamedUnivariateRealFunction, Map<String, Double>, Double, UnivariateRegressionProblem.Outcome, Double> {
-  Comparator<Double> MINIMIZE = Naming.named("maximize", (Comparator<Double>) Double::compareTo);
+  Comparator<Double> MINIMIZE = Naming.named("maximize", Double::compareTo);
   Comparator<Double> MAXIMIZE = Naming.named("maximize", (Comparator<Double>) (v1, v2) -> {
     if (Double.isNaN(v2)) {
       return -1;

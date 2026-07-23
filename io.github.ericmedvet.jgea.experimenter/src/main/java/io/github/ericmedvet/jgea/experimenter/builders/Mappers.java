@@ -368,7 +368,7 @@ public class Mappers {
   ) {
     FormulaMapper mapper = new FormulaMapper();
     return beforeM.andThen(
-        InvertibleMapper.from((eS, t) -> mapper.apply(t), es -> null, "problem.specific")
+        InvertibleMapper.from((_, t) -> mapper.apply(t), _ -> null, "problem.specific")
     );
   }
 

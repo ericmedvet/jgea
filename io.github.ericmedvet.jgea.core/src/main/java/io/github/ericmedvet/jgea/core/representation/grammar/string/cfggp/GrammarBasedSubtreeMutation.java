@@ -22,26 +22,45 @@ package io.github.ericmedvet.jgea.core.representation.grammar.string.cfggp;
 
 import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarUtils;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.random.RandomGenerator;
+import java.util.stream.Collectors;
 
 public class GrammarBasedSubtreeMutation<L> implements Mutation<Tree<L>> {
 
   private final int maxHeight;
   private final BiFunction<L, Integer, IndependentFactory<Tree<L>>> builder;
+  private final Set<L> nonTrivialLabels;
 
   public GrammarBasedSubtreeMutation(int maxHeight, StringGrammar<L> grammar) {
     this.maxHeight = maxHeight;
-    builder = new GrowGrammarTreeFactory<>(0, grammar);
+    builder = new GrowGrammarTreeFactory<>(grammar);
+    nonTrivialLabels = GrammarUtils.computeNumberOfExpansions(grammar)
+        .entrySet()
+        .stream()
+        .filter(e -> e.getValue() > 1)
+        .map(Entry::getKey)
+        .collect(Collectors.toSet());
   }
 
   @Override
   public Tree<L> mutate(Tree<L> parent, RandomGenerator random) {
-    List<Integer> toReplaceLineage = Misc.pickRandomly(parent.lineages(), random);
+    List<List<Integer>> replaceableLineages = parent.lineages()
+        .stream()
+        .filter(l -> !parent.descendant(l).isLeaf())
+        .filter(l -> nonTrivialLabels.contains(parent.descendant(l).label()))
+        .toList();
+    if (replaceableLineages.isEmpty()) {
+      return parent;
+    }
+    List<Integer> toReplaceLineage = Misc.pickRandomly(replaceableLineages, random);
     Tree<L> subtree = builder.apply(
         parent.descendant(toReplaceLineage).label(),
         random.nextInt(maxHeight - toReplaceLineage.size()) + 1

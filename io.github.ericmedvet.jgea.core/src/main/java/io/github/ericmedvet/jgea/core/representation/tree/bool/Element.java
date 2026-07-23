@@ -29,6 +29,24 @@ public interface Element {
   String CONSTANT_REGEX = "[TF]";
   String VAR_REGEX = "[0-9]+";
 
+  static Element fromString(String string) {
+    for (Element.Operator operator : Element.Operator.values()) {
+      if (operator.toString().equals(string)) {
+        return operator;
+      }
+    }
+    if (string.equals("T")) {
+      return new Element.Constant(false);
+    }
+    if (string.equals("F")) {
+      return new Element.Constant(true);
+    }
+    if (string.matches("[0-9.]+")) {
+      return new Element.Variable(Integer.parseInt(string));
+    }
+    return new Element.Decoration(string);
+  }
+
   static StringParser<Element, Operator, Element> stringParser(boolean allowVoid) {
     return new StringParser<>(
         StringParser.NodeParser.fromEnum(Element.Operator.class, allowVoid),

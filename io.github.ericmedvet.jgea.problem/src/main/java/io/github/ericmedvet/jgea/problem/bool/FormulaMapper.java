@@ -24,29 +24,11 @@ import io.github.ericmedvet.jgea.core.representation.tree.bool.Element;
 import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 public class FormulaMapper implements Function<Tree<String>, List<Tree<Element>>> {
 
   public static final String MULTIPLE_OUTPUT_NON_TERMINAL = "<o>";
 
-  private static Element fromString(String string) {
-    for (Element.Operator operator : Element.Operator.values()) {
-      if (operator.toString().equals(string)) {
-        return operator;
-      }
-    }
-    if (string.equals("T")) {
-      return new Element.Constant(false);
-    }
-    if (string.equals("F")) {
-      return new Element.Constant(true);
-    }
-    if (string.matches("[0-9.]+")) {
-      return new Element.Variable(Integer.parseInt(string));
-    }
-    return new Element.Decoration(string);
-  }
 
   @Override
   public List<Tree<Element>> apply(Tree<String> stringTree) {
@@ -58,7 +40,7 @@ public class FormulaMapper implements Function<Tree<String>, List<Tree<Element>>
 
   public Tree<Element> singleMap(Tree<String> stringTree) {
     if (stringTree.isLeaf()) {
-      return new Tree<>(fromString(stringTree.label()));
+      return new Tree<>(Element.fromString(stringTree.label()));
     }
     if (stringTree.children().size() == 1) {
       return singleMap(stringTree.child(0));
@@ -66,13 +48,11 @@ public class FormulaMapper implements Function<Tree<String>, List<Tree<Element>>
     Tree<Element> tree = singleMap(stringTree.child(0));
     return new Tree<>(
         tree.label(),
-        Stream.concat(
-            tree.children().stream(),
-            stringTree.children()
-                .subList(0, stringTree.children().size())
-                .stream()
-                .map(this::singleMap)
-        ).toList()
+        stringTree.children()
+            .subList(1, stringTree.children().size())
+            .stream()
+            .map(this::singleMap)
+            .toList()
     );
   }
 }

@@ -40,8 +40,8 @@ public class GrammarRampedHalfAndHalf<L> implements Factory<Tree<L>> {
   public GrammarRampedHalfAndHalf(int minHeight, int maxHeight, StringGrammar<L> grammar) {
     this.minHeight = minHeight;
     this.maxHeight = maxHeight;
-    fullGrammarTreeFactory = new FullGrammarGrammarTreeFactory<>(maxHeight, grammar);
-    growGrammarTreeFactory = new GrowGrammarTreeFactory<>(maxHeight, grammar);
+    fullGrammarTreeFactory = new FullGrammarGrammarTreeFactory<>(grammar);
+    growGrammarTreeFactory = new GrowGrammarTreeFactory<>(grammar);
     startingSymbol = grammar.startingSymbol();
   }
 

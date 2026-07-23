@@ -1,0 +1,63 @@
+$basePath = ''../../Documenti/experiments/{^^.name}/{^^.startTime}/''
+$nEvals = 10000
+
+ea.experiment(
+  runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
+    (solver = (stop = ea.sc.nOfQualityEvaluations(n = 1000)) * [
+      ea.s.ga(
+        name = "gp";
+        representation = ea.r.cfgTree(grammar = ea.grammar.regression(problem = ea.p.ur.synthetic(name = "keijzer6")));
+        mapper = ea.m.srTreeToNurf(of = ea.m.grammarTreeRegression())
+      )
+    ]) * [
+    ea.run(problem = ea.p.moToSo(objective = mse; moProblem = ea.p.ur.synthetic(name = "keijzer6")))
+  ];
+  listeners = [
+    ea.l.console(
+      eFunctions = [
+        ea.f.size(of = ea.f.genotype(of = ea.f.best()); format = "%3d");
+        f.mapValue(key = mse; of = ea.f.quality(of = ea.f.best()); format = "%6.2f");
+        ea.f.hist(of = f.each(of = ea.f.all(); mapF = f.mapValue(key = mse; of = ea.f.quality())));
+        f.mapValue(key = mse; of = ea.f.validationQuality(); format = "%6.2f");
+        f.timestamp()
+      ]
+    );
+
+    % ========= CONVERGENCE PLOTS
+    ea.l.savePlotForExp(
+      path = $basePath + "best-fitness.svg";
+      plot = ea.plot.multi.quality(q = f.mapValue(key = mse));
+      type = svg
+    );
+    ea.l.savePlotForExp(
+      path = $basePath + "best-validation.svg";
+      plot = ea.plot.multi.xyExp(y = f.mapValue(key = mse; of = ea.f.validationQuality()));
+      type = svg
+    );
+
+    % ========= BOX PLOTS
+    ea.l.savePlotForExp(
+      path = $basePath + "final-best-fitness.svg";
+      plot = ea.plot.multi.qualityBoxplot(q = f.mapValue(key = mse));
+      configuration = viz.plot.conf.image(axesShow = all; axesIndependences = [all]);
+      type = svg
+    );
+    ea.l.savePlotForExp(
+      path = $basePath + "final-best-validation.svg";
+      plot = ea.plot.multi.yBoxplotExp(y = f.mapValue(key = mse; of = ea.f.validationQuality()));
+      configuration = viz.plot.conf.image(axesShow = all; axesIndependences = [all]);
+      type = svg
+    );
+
+    % ========= TREES
+    ea.l.saveForRun(
+      path = $basePath + "{solver.name}/{problem.name}/best-{randomGenerator.seed:%02d}.svg";
+      of = ea.acc.lastBest();
+      processor = viz.f.toImage(
+        drawer = ea.d.tree(scale = 3);
+        of = ea.f.genotype();
+        type = svg
+      )
+    )
+  ]
+)

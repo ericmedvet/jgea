@@ -22,19 +22,59 @@ package io.github.ericmedvet.jgea.core.representation.grammar.string;
 
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Pair;
+import io.github.ericmedvet.jnb.datastructure.Utils;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 public class GrammarUtils {
 
-  private record Triplet<F, S, T>(F first, S second, T third) {}
+  private record Triplet<F, S, T>(F first, S second, T third) {
 
-  public static <T> Map<T, List<Integer>> computeShortestOptionIndexesMap(StringGrammar<T> grammar) {
+  }
+
+  public static <T> Map<T, Double> computeNumberOfExpansions(StringGrammar<T> grammar) {
+    return grammar.rules()
+        .keySet()
+        .stream()
+        .collect(
+            Collectors.toMap(
+                s -> s,
+                s -> computeNumberOfExpansions(grammar, s, List.of())
+            )
+        );
+  }
+
+  private static <T> double computeNumberOfExpansions(
+      StringGrammar<T> g,
+      T symbol,
+      List<T> seenSymbols
+  ) {
+    if (!g.rules().containsKey(symbol)) {
+      return 1;
+    }
+    if (seenSymbols.contains(symbol)) {
+      return Double.POSITIVE_INFINITY;
+    }
+    return g.rules()
+        .get(symbol)
+        .stream()
+        .mapToDouble(
+            option -> option.stream()
+                .mapToDouble(s -> computeNumberOfExpansions(g, s, Utils.concat(seenSymbols, s)))
+                .reduce((v1, v2) -> v1 * v2)
+                .orElse(0)
+        )
+        .sum();
+  }
+
+  public static <T> Map<T, List<Integer>> computeShortestOptionIndexesMap(
+      StringGrammar<T> grammar
+  ) {
     Map<T, List<Integer>> optionJumpsToTerminalMap = new LinkedHashMap<>();
     for (Map.Entry<T, List<List<T>>> rule : grammar.rules().entrySet()) {
       List<Integer> optionsJumps = new ArrayList<>();
-      for (List<T> option : rule.getValue()) {
+      for (List<T>_ : rule.getValue()) {
         optionsJumps.add(Integer.MAX_VALUE);
       }
       optionJumpsToTerminalMap.put(rule.getKey(), optionsJumps);
@@ -93,7 +133,9 @@ public class GrammarUtils {
     return shortestOptionIndexesMap;
   }
 
-  private static <T> Map<T, Triplet<Double, Boolean, Set<T>>> computeSymbolsMaxDepths(StringGrammar<T> g) {
+  private static <T> Map<T, Triplet<Double, Boolean, Set<T>>> computeSymbolsMaxHeights(
+      StringGrammar<T> g
+  ) {
     Map<T, Triplet<Double, Boolean, Set<T>>> map = new HashMap<>();
     map.put(g.startingSymbol(), new Triplet<>(0d, false, new HashSet<>()));
     for (List<List<T>> options : g.rules().values()) {
@@ -136,7 +178,11 @@ public class GrammarUtils {
           allResolved = true;
           maxDepth = Double.POSITIVE_INFINITY;
         }
-        Triplet<Double, Boolean, Set<T>> newTriplet = new Triplet<>(maxDepth, allResolved, dependencies);
+        Triplet<Double, Boolean, Set<T>> newTriplet = new Triplet<>(
+            maxDepth,
+            allResolved,
+            dependencies
+        );
         if (!newTriplet.equals(triplet)) {
           map.put(nonTerminal, newTriplet);
           changed = true;
@@ -149,7 +195,7 @@ public class GrammarUtils {
     return map;
   }
 
-  private static <T> Map<T, Pair<Integer, Boolean>> computeSymbolsMinDepths(StringGrammar<T> g) {
+  private static <T> Map<T, Pair<Integer, Boolean>> computeSymbolsMinHeights(StringGrammar<T> g) {
     Map<T, Pair<Integer, Boolean>> map = new HashMap<>();
     map.put(g.startingSymbol(), new Pair<>(Integer.MAX_VALUE, false));
     for (List<List<T>> options : g.rules().values()) {
@@ -198,9 +244,9 @@ public class GrammarUtils {
     return map;
   }
 
-  public static <T> Map<T, DoubleRange> computeSymbolsMinMaxDepths(StringGrammar<T> g) {
-    Map<T, Pair<Integer, Boolean>> minDepths = computeSymbolsMinDepths(g);
-    Map<T, Triplet<Double, Boolean, Set<T>>> maxDepths = computeSymbolsMaxDepths(g);
+  public static <T> Map<T, DoubleRange> computeSymbolsHeightRanges(StringGrammar<T> g) {
+    Map<T, Pair<Integer, Boolean>> minDepths = computeSymbolsMinHeights(g);
+    Map<T, Triplet<Double, Boolean, Set<T>>> maxDepths = computeSymbolsMaxHeights(g);
     return minDepths.entrySet()
         .stream()
         .collect(

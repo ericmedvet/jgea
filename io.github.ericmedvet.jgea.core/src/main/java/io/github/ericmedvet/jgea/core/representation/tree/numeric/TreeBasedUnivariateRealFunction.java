@@ -106,7 +106,11 @@ public class TreeBasedUnivariateRealFunction implements NamedUnivariateRealFunct
 
   @Override
   public double computeAsDouble(Map<String, Double> input) {
-    return postOperator.applyAsDouble(compute(tree, input));
+    try {
+      return postOperator.applyAsDouble(compute(tree, input));
+    } catch (RuntimeException e) {
+      throw new RuntimeException("Cannot compute tree %s for %s".formatted(tree, input), e);
+    }
   }
 
   @Override

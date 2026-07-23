@@ -24,12 +24,11 @@ import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.Tree;
-import java.util.List;
 
 public class FullGrammarGrammarTreeFactory<L> extends GrowGrammarTreeFactory<L> {
 
-  public FullGrammarGrammarTreeFactory(int maxDepth, StringGrammar<L> grammar) {
-    super(maxDepth, grammar);
+  public FullGrammarGrammarTreeFactory(StringGrammar<L> grammar) {
+    super(grammar);
   }
 
   @Override
@@ -37,28 +36,13 @@ public class FullGrammarGrammarTreeFactory<L> extends GrowGrammarTreeFactory<L> 
     if (!grammar.rules().containsKey(symbol)) {
       return _ -> new Tree<>(symbol);
     }
-    if (h < 0) {
-      throw new IllegalArgumentException("Unexpected negative target height");
-    }
-    return random -> {
-      // general idea: try the following
-      // 1. choose expansion with min,max including target depth; if empty, choose all
-      // 2. choose expansion
-      List<List<L>> options = grammar.rules().get(symbol);
-      List<List<L>> availableOptions = options.stream()
-          .filter(o -> optionMinMaxHeight(o).contains(h - 1))
-          .toList();
-      if (availableOptions.isEmpty()) {
-        availableOptions = options;
-      }
-      return new Tree<>(
-          symbol,
-          Misc.pickRandomly(availableOptions, random)
-              .stream()
-              .map(l -> apply(l, h - 1).build(random))
-              .toList()
-      );
-    };
+    return random -> new Tree<>(
+        symbol,
+        Misc.pickRandomly(getMatchingOptions(symbol, h), random)
+            .stream()
+            .map(l -> apply(l, h - 1).build(random))
+            .toList()
+    );
   }
 
 }

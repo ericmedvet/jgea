@@ -103,12 +103,21 @@ public class TreeBasedMultivariateRealFunction implements NamedMultivariateRealF
   public Map<String, Double> compute(Map<String, Double> input) {
     return IntStream.range(0, yVarNames().size())
         .mapToObj(
-            i -> Map.entry(
-                yVarNames.get(i),
-                postOperator.applyAsDouble(
-                    TreeBasedUnivariateRealFunction.compute(trees.get(i), input)
-                )
-            )
+            i -> {
+              try {
+                return Map.entry(
+                    yVarNames.get(i),
+                    postOperator.applyAsDouble(
+                        TreeBasedUnivariateRealFunction.compute(trees.get(i), input)
+                    )
+                );
+              } catch (RuntimeException e) {
+                throw new RuntimeException(
+                    "Cannot compute tree %s of %s for %s".formatted(trees.get(i), yVarNames.get(i), input),
+                    e
+                );
+              }
+            }
         )
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }

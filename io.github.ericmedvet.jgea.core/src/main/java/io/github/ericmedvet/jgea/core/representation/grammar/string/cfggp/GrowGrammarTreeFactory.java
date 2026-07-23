@@ -26,21 +26,21 @@ import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGramma
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Tree;
+import io.github.ericmedvet.jnb.datastructure.Utils;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.random.RandomGenerator;
 
 public class GrowGrammarTreeFactory<L> implements BiFunction<L, Integer, IndependentFactory<Tree<L>>> {
 
-  protected final int maxHeight;
   protected final StringGrammar<L> grammar;
 
   private final Map<L, DoubleRange> nonTerminalHeights;
 
-  public GrowGrammarTreeFactory(int maxHeight, StringGrammar<L> grammar) {
-    this.maxHeight = maxHeight;
+  public GrowGrammarTreeFactory(StringGrammar<L> grammar) {
     this.grammar = grammar;
-    nonTerminalHeights = GrammarUtils.computeSymbolsMinMaxDepths(grammar);
+    nonTerminalHeights = GrammarUtils.computeSymbolsHeightRanges(grammar);
   }
 
   @Override
@@ -48,40 +48,55 @@ public class GrowGrammarTreeFactory<L> implements BiFunction<L, Integer, Indepen
     if (!grammar.rules().containsKey(symbol)) {
       return _ -> new Tree<>(symbol);
     }
-    if (h < 0) {
-      throw new IllegalArgumentException("Unexpected negative target height");
-    }
     return random -> {
-      // general idea: try the following
-      // 1. choose expansion with min,max including target depth; if empty, choose all
-      // 2. choose expansion
-      // 3. for each child, with 1/n_of_children prob, fill full, otherwise fill up to full
-      List<List<L>> options = grammar.rules().get(symbol);
-      List<List<L>> availableOptions = options.stream()
-          .filter(o -> optionMinMaxHeight(o).contains(h - 1))
-          .toList();
-      if (availableOptions.isEmpty()) {
-        availableOptions = options;
-      }
-      List<L> option = Misc.pickRandomly(availableOptions, random);
+      List<L> option = Misc.pickRandomly(getMatchingOptions(symbol, h), random);
       return new Tree<>(
           symbol,
           option.stream().map(l -> {
-            int childTargetDepth = h - 1;
+            int childTargetH = h - 1;
             if (random.nextInt(option.size()) != 0) {
-              // randomly set target depth
-              DoubleRange childHeightRange = nonTerminalHeights.get(l)
-                  .intersectionWith(new DoubleRange(0, childTargetDepth));
-              childTargetDepth = random.nextInt((int) Math.floor(childHeightRange.extent())) + (int) childHeightRange
-                  .min();
+              DoubleRange childHeightRange = nonTerminalHeights.get(l);
+              if (childHeightRange.contains(childTargetH)) {
+                childTargetH = sample((int) childHeightRange.min(), childTargetH, random);
+              } else if (childHeightRange.max() < childTargetH) {
+                childTargetH = (int) childHeightRange.max();
+              } else {
+                childTargetH = (int) childHeightRange.min();
+              }
             }
-            return apply(l, childTargetDepth).build(random);
+            return apply(l, childTargetH).build(random);
           }).toList()
       );
     };
   }
 
-  protected DoubleRange optionMinMaxHeight(List<L> option) {
+  protected List<List<L>> getMatchingOptions(L symbol, Integer h) {
+    List<List<L>> options = grammar.rules().get(symbol);
+    List<List<L>> shorterOptions = options.stream()
+        .filter(o -> range(o).max() <= h)
+        .toList();
+    List<List<L>> matchingOptions = options.stream()
+        .filter(o -> range(o).contains(h - 1))
+        .toList();
+    List<List<L>> tallerOptions = options.stream()
+        .filter(o -> range(o).min() >= h)
+        .toList();
+    if (!matchingOptions.isEmpty()) {
+      return matchingOptions;
+    }
+    if (!shorterOptions.isEmpty()) {
+      if (!tallerOptions.isEmpty()) {
+        return Utils.concat(shorterOptions, tallerOptions);
+      }
+      return shorterOptions;
+    }
+    if (!tallerOptions.isEmpty()) {
+      return tallerOptions;
+    }
+    throw new IllegalArgumentException("No options for symbol %s".formatted(symbol));
+  }
+
+  protected DoubleRange range(List<L> option) {
     double min = 0d;
     double max = 0d;
     for (L symbol : option) {
@@ -90,4 +105,12 @@ public class GrowGrammarTreeFactory<L> implements BiFunction<L, Integer, Indepen
     }
     return new DoubleRange(min, max);
   }
+
+  protected static int sample(int min, int max, RandomGenerator random) {
+    if (min == max) {
+      return min;
+    }
+    return random.nextInt(min, max + 1);
+  }
+
 }

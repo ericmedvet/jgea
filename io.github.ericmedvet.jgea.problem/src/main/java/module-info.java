@@ -44,4 +44,7 @@ module io.github.ericmedvet.jgea.problem {
   requires java.desktop;
   requires org.apache.commons.csv;
   requires java.logging;
+
+  opens io.github.ericmedvet.jgea.problem.regression to org.junit.platform.commons;
+  opens io.github.ericmedvet.jgea.problem.bool to org.junit.platform.commons;
 }

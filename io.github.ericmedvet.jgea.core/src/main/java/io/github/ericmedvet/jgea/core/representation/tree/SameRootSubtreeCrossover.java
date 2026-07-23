@@ -51,9 +51,11 @@ public class SameRootSubtreeCrossover<L> implements Crossover<Tree<L>> {
             .toList(),
         random
     );
+    Tree<L> toReplaceSubtree = parent1.descendant(toReplaceLineage1);
     List<List<Integer>> matchingLineages2 = parent2.lineages()
         .stream()
-        .filter(l -> commonLabels.contains(parent2.descendant(l).label()))
+        .filter(l -> parent2.descendant(l).label().equals(toReplaceSubtree.label()))
+        .filter(l -> !parent2.descendant(l).equals(toReplaceSubtree))
         .filter(l -> toReplaceLineage1.size() + parent2.descendant(l).height() <= maxHeight)
         .toList();
     if (matchingLineages2.isEmpty()) {
