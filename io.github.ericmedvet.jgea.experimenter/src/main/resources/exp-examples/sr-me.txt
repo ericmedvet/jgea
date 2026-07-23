@@ -14,8 +14,8 @@ ea.experiment(
         mapper = ea.m.srTreeToNurf();
         representation = ea.r.srTree();
         descriptors = [
-          f.size(of = f.filter(of = ea.f.treeLeaves(of = ea.f.genotype()); condition = ea.predicate.isSrConstant()));
-          f.size(of = f.filter(of = ea.f.treeLeaves(of = ea.f.genotype()); condition = ea.predicate.isSrVariable()))
+          f.size(of = f.filter(of = ea.f.treeLeafLabels(of = ea.f.genotype()); condition = ea.predicate.isSrConstant()));
+          f.size(of = f.filter(of = ea.f.treeLeafLabels(of = ea.f.genotype()); condition = ea.predicate.isSrVariable()))
         ];
         archive = ea.s.me.a.grid2d(
           ranges1 = m.range(min = 1; max = 32);
