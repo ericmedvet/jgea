@@ -174,7 +174,21 @@ public interface UnivariateRegressionProblem extends SimpleEBMOProblem<NamedUniv
 
   @Override
   default BiFunction<NamedUnivariateRealFunction, Map<String, Double>, Double> predictFunction() {
-    return NamedUnivariateRealFunction::computeAsDouble;
+    if (example().isEmpty()) {
+      return NamedUnivariateRealFunction::computeAsDouble;
+    }
+    NamedUnivariateRealFunction exampleNurf = example().get();
+    return (nurf, input) -> {
+      if (nurf.nOfInputs() != exampleNurf.nOfInputs()) {
+        throw new IllegalArgumentException(
+            "Wrong number of inputs: %d found, %d expected".formatted(
+                nurf.nOfInputs(),
+                exampleNurf.nOfInputs()
+            )
+        );
+      }
+      return nurf.computeAsDouble(input);
+    };
   }
 
   @Override

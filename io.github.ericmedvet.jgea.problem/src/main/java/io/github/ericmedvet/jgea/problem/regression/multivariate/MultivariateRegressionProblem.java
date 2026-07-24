@@ -35,6 +35,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 public interface MultivariateRegressionProblem extends SimpleEBMOProblem<NamedMultivariateRealFunction, Map<String, Double>, Map<String, Double>, MultivariateRegressionProblem.Outcome, Double> {
+
   @Override
   default SequencedMap<String, Objective<List<Outcome>, Double>> aggregateObjectives() {
     return metrics().stream()
@@ -59,7 +60,11 @@ public interface MultivariateRegressionProblem extends SimpleEBMOProblem<NamedMu
                                       .toList()
                               )
                           );
-                      return urOutcomes.values().stream().mapToDouble(m::apply).average().orElseThrow();
+                      return urOutcomes.values()
+                          .stream()
+                          .mapToDouble(m::apply)
+                          .average()
+                          .orElseThrow();
                     },
                     m.comparator()
                 )
@@ -79,11 +84,13 @@ public interface MultivariateRegressionProblem extends SimpleEBMOProblem<NamedMu
         IndexedProvider<Example<Map<String, Double>, Map<String, Double>>> caseProvider,
         IndexedProvider<Example<Map<String, Double>, Map<String, Double>>> validationCaseProvider
     ) implements MultivariateRegressionProblem {
+
     }
     return new HardMultivariateRegressionProblem(metrics, caseProvider, validationCaseProvider);
   }
 
   record Outcome(Map<String, Double> actual, Map<String, Double> predicted) {
+
     public Map<String, UnivariateRegressionProblem.Outcome> toUROutcomes() {
       return actual.keySet()
           .stream()
@@ -105,7 +112,29 @@ public interface MultivariateRegressionProblem extends SimpleEBMOProblem<NamedMu
 
   @Override
   default BiFunction<NamedMultivariateRealFunction, Map<String, Double>, Map<String, Double>> predictFunction() {
-    return NamedMultivariateRealFunction::compute;
+    if (example().isEmpty()) {
+      return NamedMultivariateRealFunction::compute;
+    }
+    NamedMultivariateRealFunction exampleNmrf = example().get();
+    return (nmrf, input) -> {
+      if (nmrf.nOfOutputs() != exampleNmrf.nOfOutputs()) {
+        throw new IllegalArgumentException(
+            "Wrong number of outputs: %d found, %d expected".formatted(
+                nmrf.nOfOutputs(),
+                exampleNmrf.nOfOutputs()
+            )
+        );
+      }
+      if (nmrf.nOfInputs() != exampleNmrf.nOfInputs()) {
+        throw new IllegalArgumentException(
+            "Wrong number of inputs: %d found, %d expected".formatted(
+                nmrf.nOfInputs(),
+                exampleNmrf.nOfInputs()
+            )
+        );
+      }
+      return nmrf.compute(input);
+    };
   }
 
   @Override

@@ -20,9 +20,9 @@
 
 package io.github.ericmedvet.jgea.core.representation.grammar.string.ge;
 
-import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedMapper;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarUtils;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammarBasedMapper;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.util.IntRange;
 import io.github.ericmedvet.jgea.core.util.Misc;
@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
+public class HierarchicalMapper<T> extends StringGrammarBasedMapper<BitString, T> {
 
   private static final boolean RECURSIVE_DEFAULT = false;
   protected final Map<T, List<Integer>> shortestOptionIndexesMap;
@@ -59,7 +59,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
     Tree<T> tree;
     if (recursive) {
       tree = mapRecursively(
-          grammar.startingSymbol(),
+          grammar().startingSymbol(),
           new IntRange(0, genotype.size()),
           genotype,
           bitUsages
@@ -117,14 +117,14 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
 
   public Tree<T> mapIteratively(BitString genotype, int[] bitUsages) {
     Tree<EnhancedSymbol<T>> enhancedTree = new Tree<>(
-        new EnhancedSymbol<>(grammar.startingSymbol(), new IntRange(0, genotype.size()))
+        new EnhancedSymbol<>(grammar().startingSymbol(), new IntRange(0, genotype.size()))
     );
     while (true) {
       final Tree<EnhancedSymbol<T>> finalTree = enhancedTree;
       List<List<Integer>> replaceableLineages = enhancedTree.lineages()
           .stream()
           .filter(l -> finalTree.descendant(l).isLeaf())
-          .filter(l -> grammar.rules().containsKey(finalTree.descendant(l).label().symbol()))
+          .filter(l -> grammar().rules().containsKey(finalTree.descendant(l).label().symbol()))
           .toList();
       if (replaceableLineages.isEmpty()) {
         break;
@@ -133,7 +133,7 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
       List<Integer> toReplaceLineage = replaceableLineages.getFirst();
       T symbol = finalTree.descendant(toReplaceLineage).label().symbol();
       IntRange symbolRange = finalTree.descendant(toReplaceLineage).label().range();
-      List<List<T>> options = grammar.rules().get(symbol);
+      List<List<T>> options = grammar().rules().get(symbol);
       // get option
       List<T> symbols;
       if ((symbolRange.extent()) < options.size()) {
@@ -169,13 +169,13 @@ public class HierarchicalMapper<T> extends GrammarBasedMapper<BitString, T> {
   }
 
   public Tree<T> mapRecursively(T symbol, IntRange range, BitString genotype, int[] bitUsages) {
-    if (grammar.rules().containsKey(symbol)) {
+    if (grammar().rules().containsKey(symbol)) {
       // a non-terminal node
       // update usage
       for (int i = range.min(); i < range.max(); i++) {
         bitUsages[i] = bitUsages[i] + 1;
       }
-      List<List<T>> options = grammar.rules().get(symbol);
+      List<List<T>> options = grammar().rules().get(symbol);
       // get option
       List<T> symbols;
       if ((range.extent()) < options.size()) {

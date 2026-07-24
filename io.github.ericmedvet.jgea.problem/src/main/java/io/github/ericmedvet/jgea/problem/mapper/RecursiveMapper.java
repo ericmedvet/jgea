@@ -52,7 +52,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
     AtomicInteger mappingGlobalCounter = new AtomicInteger();
     AtomicInteger finalizationGlobalCounter = new AtomicInteger();
     return mapRecursively(
-        grammar.startingSymbol(),
+        grammar().startingSymbol(),
         genotype,
         mappingGlobalCounter,
         finalizationGlobalCounter,
@@ -67,12 +67,12 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
       AtomicInteger finalizationGlobalCounter,
       int depth
   ) {
-    if (!grammar.rules().containsKey(symbol)) {
+    if (!grammar().rules().containsKey(symbol)) {
       return new Tree<>(symbol);
     }
     if (depth >= maxMappingDepth) {
       List<Integer> shortestOptionIndexTies = shortestOptionIndexesMap.get(symbol);
-      List<T> shortestOption = grammar.rules()
+      List<T> shortestOption = grammar().rules()
           .get(symbol)
           .get(
               shortestOptionIndexTies.get(
@@ -95,7 +95,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
       );
     }
     // choose option
-    List<List<T>> options = grammar.rules().get(symbol);
+    List<List<T>> options = grammar().rules().get(symbol);
     List<Double> expressivenesses = new ArrayList<>(options.size());
     for (List<T> option : options) {
       double expressiveness = 1d;

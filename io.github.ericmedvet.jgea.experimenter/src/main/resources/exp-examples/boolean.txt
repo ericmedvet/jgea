@@ -17,6 +17,11 @@ ea.experiment(
     ])
     * (solver = (stop = ea.sc.nOfQualityEvaluations(n = 1000)) * [
       ea.s.ga(
+        name = "ge";
+        representation = ea.r.bitString();
+        mapper = ea.m.multiBTreeToBf(of = ea.m.cfgTreeToMultiBTree(of = ea.m.bsToGeCfgTree(grammar = ea.grammar.string.booleanRegression())))
+      );
+      ea.s.ga(
         name = "gp";
         mapper = ea.m.multiBTreeToBf();
         representation = ea.r.multiBTree()
@@ -36,7 +41,7 @@ ea.experiment(
         ea.f.hist(of = f.each(of = ea.f.all(); mapF = f.mapValue(key = avg_dissimilarity; of = ea.f.quality())));
         f.timestamp()
       ];
-      onlyLast = true
+      onlyLast = false
     );
 
     % ========= CONVERGENCE PLOTS

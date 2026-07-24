@@ -26,7 +26,9 @@ import io.github.ericmedvet.jgea.core.representation.grammar.grid.DoublesChooser
 import io.github.ericmedvet.jgea.core.representation.grammar.grid.GridGrammar;
 import io.github.ericmedvet.jgea.core.representation.grammar.grid.IntStringChooser;
 import io.github.ericmedvet.jgea.core.representation.grammar.grid.StandardGridDeveloper;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammarBasedProblem;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.ge.StandardGEMapper;
 import io.github.ericmedvet.jgea.core.representation.graph.Graph;
 import io.github.ericmedvet.jgea.core.representation.graph.Node;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.functiongraph.FunctionGraph;
@@ -91,8 +93,6 @@ public class Mappers {
   private Mappers() {
   }
 
-  // TODO add ge, hge, whge mappers
-
   @Cacheable
   public static <X> InvertibleMapper<X, NumericalDynamicalSystem<?>> aggregatedInputNds(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NumericalDynamicalSystem<?>> beforeM,
@@ -102,7 +102,7 @@ public class Mappers {
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
-            (eNds, nds) -> new AggregatedInput<>(nds, windowT, types),
+            (_, nds) -> new AggregatedInput<>(nds, windowT, types),
             eNds -> NumericalStatelessSystem.zeros(
                 eNds.nOfInputs() * types.size(),
                 eNds.nOfOutputs()
@@ -112,6 +112,51 @@ public class Mappers {
                     windowT,
                     types.stream().map(t -> t.name().toLowerCase()).collect(Collectors.joining(";"))
                 )
+        )
+    );
+  }
+
+  @Cacheable
+  // TODO add hge, whge mappers
+  public static <X, L> InvertibleMapper<X, Tree<L>> bsToGeCfgTree(
+      @Param(value = "name", iS = "cfg.tree[ge]") String name,
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, BitString> beforeM,
+      @Param("grammar") Function<Tree<L>, StringGrammar<L>> grammar,
+      @Param(value = "nOfCodons", dI = 256) int nOfCodons,
+      @Param(value = "codonLengthRate", dD = 1d) double codonLengthRate,
+      @Param(value = "maxWraps", dI = 1) int maxWraps
+  ) {
+    return beforeM.andThen(
+        InvertibleMapper.from(
+            eT -> {
+              StringGrammar<L> stringGrammar = grammar.apply(eT);
+              double minCodonSize = Math.log10(
+                  stringGrammar.rules()
+                      .values()
+                      .stream()
+                      .mapToInt(List::size)
+                      .max()
+                      .orElse(1)
+              ) / Math.log10(2d);
+              int codonSize = (int) Math.ceil(minCodonSize * codonLengthRate);
+              return new StandardGEMapper<>(codonSize, maxWraps, stringGrammar);
+            },
+            eT -> {
+              double minCodonSize = Math.log10(
+                  grammar.apply(eT)
+                      .rules()
+                      .values()
+                      .stream()
+                      .mapToInt(List::size)
+                      .max()
+                      .orElse(1)
+              ) / Math.log10(2d);
+              int codonSize = (int) Math.ceil(minCodonSize * codonLengthRate);
+              return new BitString(
+                  codonSize * nOfCodons
+              );
+            },
+            name
         )
     );
   }
@@ -127,9 +172,9 @@ public class Mappers {
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
-            (eGrid, bs) -> {
+            eGrid -> {
               GridGrammar<T> gridGrammar = grammar.apply(eGrid);
-              return new StandardGridDeveloper<>(gridGrammar, overwrite, criteria)
+              return bs -> new StandardGridDeveloper<>(gridGrammar, overwrite, criteria)
                   .develop(new BitStringChooser<>(bs, gridGrammar))
                   .orElse(eGrid);
             },
@@ -232,7 +277,7 @@ public class Mappers {
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
-            (eBs, ds) -> new BitString(ds.stream().map(v -> v < t).toList()),
+            (_, ds) -> new BitString(ds.stream().map(v -> v < t).toList()),
             eBs -> Collections.nCopies(eBs.size(), 0d),
             "bs[t=%.1f]".formatted(t)
         )
@@ -245,7 +290,7 @@ public class Mappers {
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
-            (e, ds) -> ds.stream().mapToDouble(v -> v).toArray(),
+            (_, ds) -> ds.stream().mapToDouble(v -> v).toArray(),
             da -> Arrays.stream(da).boxed().toList(),
             "da"
         )
@@ -299,9 +344,9 @@ public class Mappers {
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
-            (eGrid, vs) -> {
+            eGrid -> {
               GridGrammar<T> gridGrammar = grammar.apply(eGrid);
-              return new StandardGridDeveloper<>(gridGrammar, overwrite, criteria)
+              return vs -> new StandardGridDeveloper<>(gridGrammar, overwrite, criteria)
                   .develop(new DoublesChooser<>(vs, gridGrammar))
                   .orElse(eGrid);
             },
@@ -318,9 +363,9 @@ public class Mappers {
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
-            (eIs, ds) -> {
+            eIs -> {
               DoubleRange isRange = new DoubleRange(eIs.lowerBound(), eIs.upperBound());
-              return new IntString(
+              return ds -> new IntString(
                   ds.stream()
                       .map(v -> (int) Math.floor(isRange.denormalize(range.normalize(v))))
                       .map(i -> Math.clamp(i, eIs.lowerBound(), eIs.upperBound() - 1))
@@ -372,7 +417,7 @@ public class Mappers {
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
-            (eNds, nds) -> new EnhancedInput<>(nds, windowT, types),
+            (_, nds) -> new EnhancedInput<>(nds, windowT, types),
             eNds -> MultivariateRealFunction.from(
                 eNds.nOfInputs() * types.size(),
                 eNds.nOfOutputs()
@@ -393,11 +438,12 @@ public class Mappers {
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
-            (nmrf, g) -> NamedMultivariateRealFunction.from(
+            (nmrf, g) -> new FunctionGraph(
+                g,
                 nmrf.xVarNames(),
-                nmrf.yVarNames()
-            )
-                .andThen(toOperator(postOperator)),
+                nmrf.yVarNames(),
+                toOperator(postOperator)
+            ),
             nmrf -> FunctionGraph.sampleFor(nmrf.xVarNames(), nmrf.yVarNames()),
             "nmrf[po=%s]".formatted(postOperator)
         )
@@ -415,12 +461,15 @@ public class Mappers {
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
-            (ekg, tg) -> {
-              Grid<K> kg = tg.map(t -> elementMapper.mapperFor(ekg.values().getFirst()).apply(t));
-              if (onlyLargestConnected) {
-                kg = GridUtils.largestConnected(kg, predicate::apply, defaultElement);
-              }
-              return kg;
+            ekg -> {
+              Function<T, K> tkMapper = elementMapper.mapperFor(ekg.values().getFirst());
+              return tg -> {
+                Grid<K> kg = tg.map(tkMapper);
+                if (onlyLargestConnected) {
+                  kg = GridUtils.largestConnected(kg, predicate::apply, defaultElement);
+                }
+                return kg;
+              };
             },
             ekg -> ekg.map(elementMapper::exampleFor),
             name
@@ -503,9 +552,9 @@ public class Mappers {
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
-            (eGrid, is) -> {
+            eGrid -> {
               GridGrammar<T> gridGrammar = grammar.apply(eGrid);
-              return new StandardGridDeveloper<>(gridGrammar, overwrite, criteria)
+              return is -> new StandardGridDeveloper<>(gridGrammar, overwrite, criteria)
                   .develop(new IntStringChooser<>(is, gridGrammar))
                   .orElse(eGrid);
             },
@@ -664,7 +713,7 @@ public class Mappers {
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
-            (eNrla, nds) -> NumericalReinforcementLearningAgent.from(nds),
+            (_, nds) -> NumericalReinforcementLearningAgent.from(nds),
             eNrla -> MultivariateRealFunction.from(
                 eNrla.nOfInputs(),
                 eNrla.nOfOutputs()
@@ -740,38 +789,40 @@ public class Mappers {
         .toList();
     return beforeM.andThen(
         InvertibleMapper.from(
-            (mrca, nmrf) -> {
+            mrca -> {
               int minStateSize = MultivariateRealGridCellularAutomaton.minStateSize(
                   mrca.getInitialStates()
               );
               int nOfInputs = (minStateSize + nOfAdditionalChannels) * kernelGrids.size();
               int nOfOutputs = minStateSize + nOfAdditionalChannels;
-              if (nmrf.nOfInputs() != nOfInputs) {
-                throw new IllegalArgumentException(
-                    "Wrong input size for the MRF: %d expected, %d found"
-                        .formatted(nOfInputs, nmrf.nOfInputs())
+              return nmrf -> {
+                if (nmrf.nOfInputs() != nOfInputs) {
+                  throw new IllegalArgumentException(
+                      "Wrong input size for the MRF: %d expected, %d found"
+                          .formatted(nOfInputs, nmrf.nOfInputs())
+                  );
+                }
+                if (nmrf.nOfOutputs() != nOfOutputs) {
+                  throw new IllegalArgumentException(
+                      "Wrong output size for the MRF: %d expected, %d found"
+                          .formatted(nOfOutputs, nmrf.nOfOutputs())
+                  );
+                }
+                return new MultivariateRealGridCellularAutomaton(
+                    initializer.initialize(
+                        mrca.getInitialStates().w(),
+                        mrca.getInitialStates().h(),
+                        minStateSize + nOfAdditionalChannels,
+                        range
+                    ),
+                    range,
+                    kernelGrids,
+                    nmrf,
+                    additiveCoefficient,
+                    alivenessThreshold,
+                    toroidal
                 );
-              }
-              if (nmrf.nOfOutputs() != nOfOutputs) {
-                throw new IllegalArgumentException(
-                    "Wrong output size for the MRF: %d expected, %d found"
-                        .formatted(nOfOutputs, nmrf.nOfOutputs())
-                );
-              }
-              return new MultivariateRealGridCellularAutomaton(
-                  initializer.initialize(
-                      mrca.getInitialStates().w(),
-                      mrca.getInitialStates().h(),
-                      minStateSize + nOfAdditionalChannels,
-                      range
-                  ),
-                  range,
-                  kernelGrids,
-                  nmrf,
-                  additiveCoefficient,
-                  alivenessThreshold,
-                  toroidal
-              );
+              };
             },
             mrca -> {
               int minStateSize = MultivariateRealGridCellularAutomaton.minStateSize(
@@ -876,6 +927,7 @@ public class Mappers {
     return beforeM.andThen(
         InvertibleMapper.from(
             (nmrf, ntiss) -> NamedMultivariateRealFunction.from(
+                MultivariateRealFunction.from(ntiss, nmrf.nOfInputs(), nmrf.nOfOutputs()),
                 nmrf.xVarNames(),
                 nmrf.yVarNames()
             ),
@@ -912,7 +964,10 @@ public class Mappers {
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
-            (nmrf, g) -> new OperatorGraph(g, nmrf.xVarNames(), nmrf.yVarNames()).andThen(
+            (nmrf, g) -> new OperatorGraph(
+                g,
+                nmrf.xVarNames(),
+                nmrf.yVarNames(),
                 toOperator(postOperator)
             ),
             nmrf -> OperatorGraph.sampleFor(nmrf.xVarNames(), nmrf.yVarNames()),
@@ -929,10 +984,14 @@ public class Mappers {
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
-            (p2, p1) -> new Pair<>(
-                firstM.mapperFor(p2.first()).apply(p1.first()),
-                secondM.mapperFor(p2.second()).apply(p1.second())
-            ),
+            p2 -> {
+              Function<F1, F2> mapper1 = firstM.mapperFor(p2.first());
+              Function<S1, S2> mapper2 = secondM.mapperFor(p2.second());
+              return p1 -> new Pair<>(
+                  mapper1.apply(p1.first()),
+                  mapper2.apply(p1.second())
+              );
+            },
             p2 -> new Pair<>(firstM.exampleFor(p2.first()), secondM.exampleFor(p2.second())),
             "pair[first=%s;second=%s]".formatted(firstM, secondM)
         )
@@ -945,14 +1004,14 @@ public class Mappers {
   @Cacheable
   public static <X, E, Y extends Parametrized<? extends E, P>, P> InvertibleMapper<X, E> parametrized(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, P> beforeM,
-      @Param("parametrized") Function<E, Y> exampleBuilder
+      @Param("parametrized") Function<E, Y> parametrized
   ) {
     //noinspection unchecked
     return beforeM.andThen(
         InvertibleMapper.from(
-            (e, p) -> exampleBuilder.apply(e).withParams(p),
-            e -> exampleBuilder.apply(e).getParams(),
-            "parametrized[%s]".formatted(exampleBuilder)
+            (e, p) -> parametrized.apply(e).withParams(p),
+            e -> parametrized.apply(e).getParams(),
+            "parametrized[%s]".formatted(parametrized)
         )
     );
   }

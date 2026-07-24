@@ -2562,6 +2562,21 @@ Aliases: `ea.m`, `ea.mapper`
 
 Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem">NumericalDynamicalSystem</abbr>&lt;?&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Mappers.aggregatedInputNds()` by jgea-experimenter:2.8.2-SNAPSHOT
 
+### Builder `ea.mapper.bsToGeCfgTree()`
+
+`ea.m.bsToGeCfgTree(name; of; grammar; nOfCodons; codonLengthRate; maxWraps)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `name` | s | interpolate `cfg.tree[ge]` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `of` | npm | `ea.m.identity()` | <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString">BitString</abbr>&gt;</code> |
+| `grammar` | npm |  | <code><abbr title="java.util.function.Function">Function</abbr>&lt;<abbr title="io.github.ericmedvet.jnb.datastructure.Tree">Tree</abbr>&lt;L&gt;, <abbr title="io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar">StringGrammar</abbr>&lt;L&gt;&gt;</code> |
+| `nOfCodons` | i | `256` | <code>int</code> |
+| `codonLengthRate` | d | `1.0` | <code>double</code> |
+| `maxWraps` | i | `1` | <code>int</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jnb.datastructure.Tree">Tree</abbr>&lt;L&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Mappers.bsToGeCfgTree()` by jgea-experimenter:2.8.2-SNAPSHOT
+
 ### Builder `ea.mapper.bsToGrammarGrid()`
 
 `ea.m.bsToGrammarGrid(of; grammar; l; overwrite; criteria)`

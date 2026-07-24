@@ -88,7 +88,29 @@ public interface BooleanRegressionProblem extends SimpleEBMOProblem<BooleanFunct
 
   @Override
   default BiFunction<BooleanFunction, boolean[], boolean[]> predictFunction() {
-    return Function::apply;
+    if (example().isEmpty()) {
+      return BooleanFunction::apply;
+    }
+    BooleanFunction eBooleanFunction = example().get();
+    return (booleanFunction, t) -> {
+      if (booleanFunction.nOfOutputs() != eBooleanFunction.nOfOutputs()) {
+        throw new IllegalArgumentException(
+            "Wrong number of outputs: %d found, %d expected".formatted(
+                booleanFunction.nOfOutputs(),
+                eBooleanFunction.nOfOutputs()
+            )
+        );
+      }
+      if (booleanFunction.nOfInputs() != eBooleanFunction.nOfInputs()) {
+        throw new IllegalArgumentException(
+            "Wrong number of inputs: %d found, %d expected".formatted(
+                booleanFunction.nOfInputs(),
+                eBooleanFunction.nOfInputs()
+            )
+        );
+      }
+      return booleanFunction.apply(t);
+    };
   }
 
   @Override

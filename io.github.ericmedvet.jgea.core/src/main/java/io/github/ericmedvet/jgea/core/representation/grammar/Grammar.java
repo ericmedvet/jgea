@@ -21,8 +21,12 @@
 package io.github.ericmedvet.jgea.core.representation.grammar;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public interface Grammar<S, O> {
   Map<S, List<O>> rules();
@@ -30,5 +34,24 @@ public interface Grammar<S, O> {
   S startingSymbol();
 
   Collection<S> usedSymbols(O o);
+
+  default Set<S> nonTerminalSymbols() {
+    return Collections.unmodifiableSequencedSet(new LinkedHashSet<>(rules().keySet()));
+  }
+
+  default Set<S> terminalSymbols() {
+    Set<S> nonTerminalSymbols = nonTerminalSymbols();
+    return rules().values()
+        .stream()
+        .flatMap(os -> os.stream().flatMap(o -> usedSymbols(o).stream()))
+        .distinct()
+        .filter(s -> !nonTerminalSymbols.contains(s))
+        .collect(
+            Collectors.collectingAndThen(
+                Collectors.toCollection(LinkedHashSet::new),
+                Collections::unmodifiableSequencedSet
+            )
+        );
+  }
 
 }

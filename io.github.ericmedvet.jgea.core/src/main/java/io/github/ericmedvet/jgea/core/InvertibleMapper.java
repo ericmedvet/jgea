@@ -29,6 +29,18 @@ public interface InvertibleMapper<T, R> {
   Function<T, R> mapperFor(R r);
 
   static <T, R> InvertibleMapper<T, R> from(BiFunction<R, T, R> mapperF, Function<R, T> exampleF, String name) {
+    return from(
+        r -> t -> mapperF.apply(r, t),
+        exampleF,
+        name
+    );
+  };
+
+  static <T, R> InvertibleMapper<T, R> from(
+      Function<R, Function<T, R>> mapperBuilderF,
+      Function<R, T> exampleF,
+      String name
+  ) {
     return new InvertibleMapper<>() {
       @Override
       public T exampleFor(R r) {
@@ -37,7 +49,7 @@ public interface InvertibleMapper<T, R> {
 
       @Override
       public Function<T, R> mapperFor(R r) {
-        return t -> mapperF.apply(r, t);
+        return mapperBuilderF.apply(r);
       }
 
       @Override
@@ -48,7 +60,7 @@ public interface InvertibleMapper<T, R> {
   }
 
   static <T> InvertibleMapper<T, T> identity() {
-    return InvertibleMapper.from((t, t2) -> t2, t -> t, "");
+    return InvertibleMapper.from((_, t2) -> t2, t -> t, "");
   }
 
   default <Q> InvertibleMapper<T, Q> andThen(InvertibleMapper<R, Q> otherMapper) {
