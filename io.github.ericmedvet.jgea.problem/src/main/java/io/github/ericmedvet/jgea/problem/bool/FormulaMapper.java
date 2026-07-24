@@ -20,22 +20,85 @@
 
 package io.github.ericmedvet.jgea.problem.bool;
 
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.tree.bool.Element;
+import io.github.ericmedvet.jgea.core.representation.tree.bool.Element.Operator;
 import io.github.ericmedvet.jnb.datastructure.Tree;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.SequencedMap;
 import java.util.function.Function;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class FormulaMapper implements Function<Tree<String>, List<Tree<Element>>> {
 
-  public static final String MULTIPLE_OUTPUT_NON_TERMINAL = "<o>";
+  public static final String MULTIPLE_OUTPUT_NON_TERMINAL = "<out>";
+  public static final String EXPR_NON_TERMINAL = "<e>";
+  public static final String VAR_NON_TERMINAL = "<v>";
 
+  public static Tree<String> allVarsTree(int nOfInputs, int nOfOutputs) {
+    return new Tree<>(
+        MULTIPLE_OUTPUT_NON_TERMINAL,
+        Collections.nCopies(
+            nOfOutputs,
+            new Tree<>(
+                EXPR_NON_TERMINAL,
+                Stream.concat(
+                    Stream.of(new Tree<>(Operator.AND.toString())),
+                    IntStream.range(0, nOfInputs)
+                        .mapToObj(
+                            i -> new Tree<>(
+                                VAR_NON_TERMINAL,
+                                List.of(new Tree<>(Integer.toString(i)))
+                            )
+                        )
+                ).toList()
+            )
+        )
+    );
+  }
+
+  public static StringGrammar<String> grammar(
+      List<Operator> operators,
+      int nOfInputs,
+      int nOfOutputs
+  ) {
+    SequencedMap<String, List<List<String>>> rules = new LinkedHashMap<>();
+    rules.put(
+        MULTIPLE_OUTPUT_NON_TERMINAL,
+        List.of(Collections.nCopies(nOfOutputs, EXPR_NON_TERMINAL))
+    );
+    rules.put(
+        EXPR_NON_TERMINAL,
+        Stream.concat(
+            operators.stream()
+                .map(
+                    o -> Stream.concat(
+                        Stream.of(o.toString()),
+                        IntStream.range(0, o.arity())
+                            .mapToObj(_ -> EXPR_NON_TERMINAL)
+                    ).toList()
+                ),
+            Stream.of(List.of(VAR_NON_TERMINAL))
+        ).toList()
+    );
+    rules.put(
+        VAR_NON_TERMINAL,
+        IntStream.range(0, nOfInputs)
+            .mapToObj(i -> List.of(Integer.toString(i)))
+            .toList()
+    );
+    return StringGrammar.from(rules);
+  }
 
   @Override
   public List<Tree<Element>> apply(Tree<String> stringTree) {
     if (stringTree.label().equals(MULTIPLE_OUTPUT_NON_TERMINAL)) {
       return stringTree.children().stream().map(this::singleMap).toList();
     }
-    return List.of(singleMap(stringTree));
+    throw new IllegalArgumentException("Tree root is not %s".formatted(MULTIPLE_OUTPUT_NON_TERMINAL));
   }
 
   public Tree<Element> singleMap(Tree<String> stringTree) {

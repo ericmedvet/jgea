@@ -21,15 +21,15 @@
 package io.github.ericmedvet.jgea.problem.synthetic;
 
 import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
-import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammarBasedProblem;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Pair;
 import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.*;
 import java.util.function.Function;
 
-public class KLandscapes implements GrammarBasedProblem<String, Tree<String>>, ComparableQualityBasedProblem<Tree<String>, Double> {
+public class KLandscapes implements StringGrammarBasedProblem<String, Tree<String>>, ComparableQualityBasedProblem<Tree<String>, Double> {
 
   private static final int ARITY = 2;
   private static final DoubleRange V_RANGE = DoubleRange.SYMMETRIC_UNIT;
@@ -65,20 +65,19 @@ public class KLandscapes implements GrammarBasedProblem<String, Tree<String>>, C
   }
 
   private static StringGrammar<String> buildGrammar(int nTerminals, int nNonTerminals, int arity) {
-    StringGrammar<String> grammar = new StringGrammar<>();
-    grammar.setStartingSymbol("N");
-    grammar.rules().put("N", l(c(l("n"), r(arity, "N")), l("t")));
+    SequencedMap<String, List<List<String>>> rules = new LinkedHashMap<>();
+    rules.put("N", l(c(l("n"), r(arity, "N")), l("t")));
     List<List<String>> nonTerminalConstOptions = new ArrayList<>();
     for (int i = 0; i < nNonTerminals; i++) {
       nonTerminalConstOptions.add(l("n" + i));
     }
-    grammar.rules().put("n", nonTerminalConstOptions);
+    rules.put("n", nonTerminalConstOptions);
     List<List<String>> terminalConstOptions = new ArrayList<>();
     for (int i = 0; i < nTerminals; i++) {
       terminalConstOptions.add(l("t" + i));
     }
-    grammar.rules().put("t", terminalConstOptions);
-    return grammar;
+    rules.put("t", terminalConstOptions);
+    return StringGrammar.from(rules);
   }
 
   private static Function<Tree<String>, Tree<String>> buildSolutionMapper() {

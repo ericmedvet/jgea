@@ -24,7 +24,7 @@ import io.github.ericmedvet.jgea.core.problem.Problem;
 import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.function.Function;
 
-public interface GrammarBasedProblem<N, S> extends Problem<S> {
+public interface StringGrammarBasedProblem<N, S> extends Problem<S> {
 
   StringGrammar<N> grammar();
 

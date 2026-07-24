@@ -24,6 +24,8 @@ module io.github.ericmedvet.jgea.core {
   requires commons.math3;
   requires io.github.ericmedvet.jviz.core;
   requires org.jspecify;
+  requires jcodec;
+  requires java.sql;
 
   exports io.github.ericmedvet.jgea.core;
   exports io.github.ericmedvet.jgea.core.distance;

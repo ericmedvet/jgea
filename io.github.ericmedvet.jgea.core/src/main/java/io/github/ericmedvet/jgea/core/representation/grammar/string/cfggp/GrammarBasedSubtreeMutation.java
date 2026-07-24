@@ -61,9 +61,10 @@ public class GrammarBasedSubtreeMutation<L> implements Mutation<Tree<L>> {
       return parent;
     }
     List<Integer> toReplaceLineage = Misc.pickRandomly(replaceableLineages, random);
+    int subtreeMaxHeight = maxHeight - toReplaceLineage.size();
     Tree<L> subtree = builder.apply(
         parent.descendant(toReplaceLineage).label(),
-        random.nextInt(maxHeight - toReplaceLineage.size()) + 1
+        random.nextInt(Math.max(1, subtreeMaxHeight)) + 1
     ).build(random);
     return parent.withAt(subtree, toReplaceLineage);
   }

@@ -140,15 +140,18 @@ public class Representations {
 
   @Cacheable
   public static <N> Function<Tree<N>, Representation<Tree<N>>> cfgTree(
-      @Param("grammar") StringGrammar<N> grammar,
+      @Param("grammar") Function<Tree<N>, StringGrammar<N>> grammar,
       @Param(value = "minTreeH", dI = 4) int minTreeH,
       @Param(value = "maxTreeH", dI = 16) int maxTreeH
   ) {
-    return _ -> new Representation<>(
-        new GrammarRampedHalfAndHalf<>(minTreeH, maxTreeH, grammar),
-        List.of(new GrammarBasedSubtreeMutation<>(maxTreeH, grammar)),
-        List.of(new SameRootSubtreeCrossover<>(maxTreeH))
-    );
+    return eT -> {
+      StringGrammar<N> stringGrammar = grammar.apply(eT);
+      return new Representation<>(
+          new GrammarRampedHalfAndHalf<>(minTreeH, maxTreeH, stringGrammar),
+          List.of(new GrammarBasedSubtreeMutation<>(maxTreeH, stringGrammar)),
+          List.of(new SameRootSubtreeCrossover<>(maxTreeH))
+      );
+    };
   }
 
   @Cacheable

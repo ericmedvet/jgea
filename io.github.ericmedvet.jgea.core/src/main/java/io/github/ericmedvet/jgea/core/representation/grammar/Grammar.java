@@ -30,4 +30,5 @@ public interface Grammar<S, O> {
   S startingSymbol();
 
   Collection<S> usedSymbols(O o);
+
 }

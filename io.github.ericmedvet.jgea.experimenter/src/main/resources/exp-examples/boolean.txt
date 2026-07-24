@@ -1,8 +1,8 @@
 $basePath = ''../../Documenti/experiments/{^^.name}/{^^.startTime}/''
 
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
-    (problem = [
+  runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()])
+    * (problem = [
       ea.p.br.mopm(n = 2);
       ea.p.br.mopm(n = 3);
       ea.p.br.evenParity(n = 4);
@@ -14,15 +14,20 @@ ea.experiment(
           "not(and(or(0;1);not(and(0;1))))"
         ]
       )
-    ]) *
-    (solver = (stop = ea.sc.nOfQualityEvaluations(n = 5000)) * [
+    ])
+    * (solver = (stop = ea.sc.nOfQualityEvaluations(n = 1000)) * [
       ea.s.ga(
+        name = "gp";
         mapper = ea.m.multiBTreeToBf();
         representation = ea.r.multiBTree()
+      );
+      ea.s.ga(
+        name = "cfggp";
+        representation = ea.r.cfgTree(grammar = ea.grammar.string.booleanRegression());
+        mapper = ea.m.multiBTreeToBf(of = ea.m.cfgTreeToMultiBTree())
       )
-    ]) * [
-    ea.run()
-  ];
+    ])
+    * [ea.run()];
   listeners = [
     ea.l.console(
       eFunctions = [
@@ -63,7 +68,18 @@ ea.experiment(
         ]);
         of = ea.f.genotype();
         type = svg
-      )
+      );
+      kCondition = predicate.matches(f = f.mappableKey(key = "solver.name"); regex = "gp")
+    );
+    ea.l.saveForRun(
+      path = $basePath + "{solver.name}/{problem.name}/best-{randomGenerator.seed:%02d}.svg";
+      of = ea.acc.lastBest();
+      processor = viz.f.toImage(
+        drawer = ea.d.tree(scale = 3);
+        of = ea.f.genotype();
+        type = svg
+      );
+      kCondition = predicate.matches(f = f.mappableKey(key = "solver.name"); regex = "cfggp")
     )
   ]
 )

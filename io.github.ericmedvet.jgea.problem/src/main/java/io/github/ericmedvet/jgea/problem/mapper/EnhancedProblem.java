@@ -21,6 +21,6 @@
 package io.github.ericmedvet.jgea.problem.mapper;
 
 import io.github.ericmedvet.jgea.core.distance.Distance;
-import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedProblem;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammarBasedProblem;
 
-public record EnhancedProblem<N, S>(GrammarBasedProblem<N, S> problem, Distance<S> distance) {}
+public record EnhancedProblem<N, S>(StringGrammarBasedProblem<N, S> problem, Distance<S> distance) {}

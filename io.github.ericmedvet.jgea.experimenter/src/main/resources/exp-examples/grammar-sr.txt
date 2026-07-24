@@ -2,16 +2,20 @@ $basePath = ''../../Documenti/experiments/{^^.name}/{^^.startTime}/''
 $nEvals = 10000
 
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
-    (solver = (stop = ea.sc.nOfQualityEvaluations(n = 1000)) * [
+  runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()])
+    * (problem = [
+      ea.p.moToSo(objective = mse; moProblem = ea.p.ur.synthetic(name = "keijzer6"));
+      ea.p.moToSo(objective = mse; moProblem = ea.p.ur.synthetic(name = "nguyen7"));
+      ea.p.moToSo(objective = mse; moProblem = ea.p.ur.bundled(name = "concrete"; xScaling = standardization; yScaling = symmetric_min_max))
+    ])
+    * (solver = (stop = ea.sc.nOfQualityEvaluations(n = 1000)) * [
       ea.s.ga(
-        name = "gp";
-        representation = ea.r.cfgTree(grammar = ea.grammar.regression(problem = ea.p.ur.synthetic(name = "keijzer6")));
-        mapper = ea.m.srTreeToNurf(of = ea.m.grammarTreeRegression())
+        name = "cfggp";
+        representation = ea.r.cfgTree(grammar = ea.grammar.string.regression());
+        mapper = ea.m.srTreeToNurf(of = ea.m.cfgTreeToSrTree())
       )
-    ]) * [
-    ea.run(problem = ea.p.moToSo(objective = mse; moProblem = ea.p.ur.synthetic(name = "keijzer6")))
-  ];
+    ])
+    * [ea.run()];
   listeners = [
     ea.l.console(
       eFunctions = [
@@ -20,7 +24,8 @@ ea.experiment(
         ea.f.hist(of = f.each(of = ea.f.all(); mapF = f.mapValue(key = mse; of = ea.f.quality())));
         f.mapValue(key = mse; of = ea.f.validationQuality(); format = "%6.2f");
         f.timestamp()
-      ]
+      ];
+      onlyLast = true
     );
 
     % ========= CONVERGENCE PLOTS

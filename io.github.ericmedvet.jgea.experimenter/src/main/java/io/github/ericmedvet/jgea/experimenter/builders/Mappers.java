@@ -21,14 +21,12 @@
 package io.github.ericmedvet.jgea.experimenter.builders;
 
 import io.github.ericmedvet.jgea.core.InvertibleMapper;
-import io.github.ericmedvet.jgea.core.representation.grammar.Chooser;
-import io.github.ericmedvet.jgea.core.representation.grammar.Developer;
 import io.github.ericmedvet.jgea.core.representation.grammar.grid.BitStringChooser;
 import io.github.ericmedvet.jgea.core.representation.grammar.grid.DoublesChooser;
 import io.github.ericmedvet.jgea.core.representation.grammar.grid.GridGrammar;
 import io.github.ericmedvet.jgea.core.representation.grammar.grid.IntStringChooser;
 import io.github.ericmedvet.jgea.core.representation.grammar.grid.StandardGridDeveloper;
-import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedProblem;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammarBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.graph.Graph;
 import io.github.ericmedvet.jgea.core.representation.graph.Node;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.functiongraph.FunctionGraph;
@@ -43,6 +41,7 @@ import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString;
 import io.github.ericmedvet.jgea.core.representation.tree.bool.TreeBasedBooleanFunction;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
+import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element.Variable;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedMultivariateRealFunction;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.TreeBasedUnivariateRealFunction;
 import io.github.ericmedvet.jgea.problem.ca.MultivariateRealGridCellularAutomaton;
@@ -92,6 +91,8 @@ public class Mappers {
   private Mappers() {
   }
 
+  // TODO add ge, hge, whge mappers
+
   @Cacheable
   public static <X> InvertibleMapper<X, NumericalDynamicalSystem<?>> aggregatedInputNds(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NumericalDynamicalSystem<?>> beforeM,
@@ -118,28 +119,86 @@ public class Mappers {
   @Cacheable
   public static <X, T> InvertibleMapper<X, Grid<T>> bsToGrammarGrid(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, BitString> beforeM,
-      @Param("grammar") GridGrammar<T> grammar,
+      @Param("grammar") Function<Grid<T>, GridGrammar<T>> grammar,
       @Param(value = "l", dI = 256) int l,
       @Param(value = "overwrite") boolean overwrite,
       @Param(
           value = "criteria", dSs = {"least_recent", "lowest_y", "lowest_x"}) List<StandardGridDeveloper.SortingCriterion> criteria
   ) {
-    Developer<T, Grid<T>, GridGrammar.ReferencedGrid<T>> gridDeveloper = new StandardGridDeveloper<>(
-        grammar,
-        overwrite,
-        criteria
-    );
     return beforeM.andThen(
         InvertibleMapper.from(
             (eGrid, bs) -> {
-              Chooser<T, GridGrammar.ReferencedGrid<T>> chooser = new BitStringChooser<>(
-                  bs,
-                  grammar
-              );
-              return gridDeveloper.develop(chooser).orElse(eGrid);
+              GridGrammar<T> gridGrammar = grammar.apply(eGrid);
+              return new StandardGridDeveloper<>(gridGrammar, overwrite, criteria)
+                  .develop(new BitStringChooser<>(bs, gridGrammar))
+                  .orElse(eGrid);
             },
-            eGrid -> new BitString(l),
-            "bsToGrammarGrid[l=%d;o=%s;c=%s]".formatted(l, overwrite, criteria)
+            _ -> new BitString(l),
+            "grammar.grid[bs;l=%d;o=%s;c=%s]".formatted(l, overwrite, criteria)
+        )
+    );
+  }
+
+  @Cacheable
+  public static <X> InvertibleMapper<X, List<Tree<io.github.ericmedvet.jgea.core.representation.tree.bool.Element>>> cfgTreeToMultiBTree(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Tree<String>> beforeM
+  ) {
+    io.github.ericmedvet.jgea.problem.bool.FormulaMapper mapper = new io.github.ericmedvet.jgea.problem.bool.FormulaMapper();
+    return beforeM.andThen(
+        InvertibleMapper.from(
+            (_, t) -> mapper.apply(t),
+            eTs -> io.github.ericmedvet.jgea.problem.bool.FormulaMapper.allVarsTree(
+                (int) eTs.stream()
+                    .flatMap(
+                        t -> t.leafLabels()
+                            .stream()
+                            .filter(
+                                l -> l instanceof io.github.ericmedvet.jgea.core.representation.tree.bool.Element.Variable
+                            )
+                            .map(
+                                l -> ((io.github.ericmedvet.jgea.core.representation.tree.bool.Element.Variable) l)
+                                    .index()
+                            )
+                    )
+                    .distinct()
+                    .count(),
+                eTs.size()
+            ),
+            "multi.b.tree"
+        )
+    );
+  }
+
+  @Cacheable
+  public static <X, N, S> InvertibleMapper<X, S> cfgTreeToPb(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Tree<N>> beforeM,
+      @Param("problem") StringGrammarBasedProblem<N, S> problem
+  ) {
+    return beforeM.andThen(
+        InvertibleMapper.from(
+            (_, t) -> problem.solutionMapper().apply(t),
+            _ -> null,
+            "pb[p=%s]".formatted(problem)
+        )
+    );
+  }
+
+  @Cacheable
+  public static <X> InvertibleMapper<X, Tree<Element>> cfgTreeToSrTree(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Tree<String>> beforeM
+  ) {
+    FormulaMapper mapper = new FormulaMapper();
+    return beforeM.andThen(
+        InvertibleMapper.from(
+            (_, t) -> mapper.apply(t),
+            eT -> FormulaMapper.allVarsTree(
+                eT.leafLabels()
+                    .stream()
+                    .filter(l -> l instanceof Variable)
+                    .map(l -> ((Variable) l).name())
+                    .collect(Collectors.toSet())
+            ),
+            "sr.tree"
         )
     );
   }
@@ -175,7 +234,7 @@ public class Mappers {
         InvertibleMapper.from(
             (eBs, ds) -> new BitString(ds.stream().map(v -> v < t).toList()),
             eBs -> Collections.nCopies(eBs.size(), 0d),
-            "dsToBs[t=%.1f]".formatted(t)
+            "bs[t=%.1f]".formatted(t)
         )
     );
   }
@@ -188,13 +247,13 @@ public class Mappers {
         InvertibleMapper.from(
             (e, ds) -> ds.stream().mapToDouble(v -> v).toArray(),
             da -> Arrays.stream(da).boxed().toList(),
-            "dsToDa"
+            "da"
         )
     );
   }
 
   @Cacheable
-  public static <X, T> InvertibleMapper<X, Grid<T>> dsToFixedGrid(
+  public static <X, T> InvertibleMapper<X, Grid<T>> dsToFillingRateGrid(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM,
       @Param(value = "rate", dD = 0.25) double rate,
       @Param("negItem") T negItem,
@@ -224,7 +283,7 @@ public class Mappers {
               );
             },
             g -> Collections.nCopies(g.w() * g.h(), 0d),
-            "dsToFixedGrid[rate=%.2f]".formatted(rate)
+            "grid[rate=%.2f]".formatted(rate)
         )
     );
   }
@@ -232,25 +291,22 @@ public class Mappers {
   @Cacheable
   public static <X, T> InvertibleMapper<X, Grid<T>> dsToGrammarGrid(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Double>> beforeM,
-      @Param("grammar") GridGrammar<T> grammar,
+      @Param("grammar") Function<Grid<T>, GridGrammar<T>> grammar,
       @Param(value = "l", dI = 256) int l,
       @Param(value = "overwrite") boolean overwrite,
       @Param(
           value = "criteria", dSs = {"least_recent", "lowest_y", "lowest_x"}) List<StandardGridDeveloper.SortingCriterion> criteria
   ) {
-    Developer<T, Grid<T>, GridGrammar.ReferencedGrid<T>> gridDeveloper = new StandardGridDeveloper<>(
-        grammar,
-        overwrite,
-        criteria
-    );
     return beforeM.andThen(
         InvertibleMapper.from(
             (eGrid, vs) -> {
-              Chooser<T, GridGrammar.ReferencedGrid<T>> chooser = new DoublesChooser<>(vs, grammar);
-              return gridDeveloper.develop(chooser).orElse(eGrid);
+              GridGrammar<T> gridGrammar = grammar.apply(eGrid);
+              return new StandardGridDeveloper<>(gridGrammar, overwrite, criteria)
+                  .develop(new DoublesChooser<>(vs, gridGrammar))
+                  .orElse(eGrid);
             },
-            eGrid -> Collections.nCopies(l, 0d),
-            "dsToGrammarGrid[l=%d;o=%s;c=%s]".formatted(l, overwrite, criteria)
+            _ -> Collections.nCopies(l, 0d),
+            "grammar.grid[ds;l=%d;o=%s;c=%s]".formatted(l, overwrite, criteria)
         )
     );
   }
@@ -274,7 +330,7 @@ public class Mappers {
               );
             },
             eIs -> Collections.nCopies(eIs.size(), 0d),
-            "dsToIs[min=%.0f;max=%.0f]".formatted(range.min(), range.max())
+            "is[min=%.0f;max=%.0f]".formatted(range.min(), range.max())
         )
     );
   }
@@ -302,7 +358,7 @@ public class Mappers {
               );
             },
             g -> Collections.nCopies(g.w() * g.h(), 0d),
-            "dsToThresholdedGrid[t=%.2f]".formatted(t)
+            "grid[t=%.2f]".formatted(t)
         )
     );
   }
@@ -343,38 +399,14 @@ public class Mappers {
             )
                 .andThen(toOperator(postOperator)),
             nmrf -> FunctionGraph.sampleFor(nmrf.xVarNames(), nmrf.yVarNames()),
-            "fGraphToNmrf[po=%s]".formatted(postOperator)
+            "nmrf[po=%s]".formatted(postOperator)
         )
-    );
-  }
-
-  @Cacheable
-  public static <X, N, S> InvertibleMapper<X, S> grammarTreeBP(
-      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Tree<N>> beforeM,
-      @Param("problem") GrammarBasedProblem<N, S> problem
-  ) {
-    return beforeM.andThen(
-        InvertibleMapper.from(
-            (eS, t) -> problem.solutionMapper().apply(t),
-            es -> null,
-            "problem.specific"
-        )
-    );
-  }
-
-  @Cacheable
-  public static <X> InvertibleMapper<X, Tree<Element>> grammarTreeRegression(
-      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Tree<String>> beforeM
-  ) {
-    FormulaMapper mapper = new FormulaMapper();
-    return beforeM.andThen(
-        InvertibleMapper.from((_, t) -> mapper.apply(t), _ -> null, "problem.specific")
     );
   }
 
   @Cacheable
   public static <X, T, K> InvertibleMapper<X, Grid<K>> gridToGrid(
-      @Param(value = "name", dS = "gridToGrid") String name,
+      @Param(value = "name", iS = "cell.map[m={mapper}]") String name,
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, Grid<T>> beforeM,
       @Param(value = "mapper", dNPM = "ea.m.identity()") InvertibleMapper<T, K> elementMapper,
       @Param(value = "predicate", dNPM = "f.nonNull()") Function<K, Boolean> predicate,
@@ -454,7 +486,7 @@ public class Mappers {
                     (int) Math.round(eTs.size() * relativeLength)
                 )
             ),
-            "isIndexed[rl=%f]".formatted(relativeLength)
+            "indexed.by[rl=%f]".formatted(relativeLength)
         )
     );
   }
@@ -462,29 +494,23 @@ public class Mappers {
   @Cacheable
   public static <X, T> InvertibleMapper<X, Grid<T>> isToGrammarGrid(
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, IntString> beforeM,
-      @Param("grammar") GridGrammar<T> grammar,
+      @Param("grammar") Function<Grid<T>, GridGrammar<T>> grammar,
       @Param(value = "upperBound", dI = 16) int upperBound,
       @Param(value = "l", dI = 256) int l,
       @Param(value = "overwrite") boolean overwrite,
       @Param(
           value = "criteria", dSs = {"least_recent", "lowest_y", "lowest_x"}) List<StandardGridDeveloper.SortingCriterion> criteria
   ) {
-    Developer<T, Grid<T>, GridGrammar.ReferencedGrid<T>> gridDeveloper = new StandardGridDeveloper<>(
-        grammar,
-        overwrite,
-        criteria
-    );
     return beforeM.andThen(
         InvertibleMapper.from(
             (eGrid, is) -> {
-              Chooser<T, GridGrammar.ReferencedGrid<T>> chooser = new IntStringChooser<>(
-                  is,
-                  grammar
-              );
-              return gridDeveloper.develop(chooser).orElse(eGrid);
+              GridGrammar<T> gridGrammar = grammar.apply(eGrid);
+              return new StandardGridDeveloper<>(gridGrammar, overwrite, criteria)
+                  .develop(new IntStringChooser<>(is, gridGrammar))
+                  .orElse(eGrid);
             },
-            eGrid -> new IntString(Collections.nCopies(l, 0), 0, upperBound),
-            "isToGrammarGrid[l=%d;o=%s;c=%s]".formatted(l, overwrite, criteria)
+            _ -> new IntString(Collections.nCopies(l, 0), 0, upperBound),
+            "grid[is;l=%d;o=%s;c=%s]".formatted(l, overwrite, criteria)
         )
     );
   }
@@ -543,7 +569,7 @@ public class Mappers {
               int upperBound = items.size() + (nullItem ? 1 : 0);
               return new IntString(Collections.nCopies(w * h, 0), 0, upperBound);
             },
-            "isToGrid[nOfItems=%d]".formatted(items.size())
+            "s.grid[nOfItems=%d]".formatted(items.size())
         )
     );
   }
@@ -555,19 +581,19 @@ public class Mappers {
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
-            (str, is) -> is.genes()
+            (_, is) -> is.genes()
                 .stream()
                 .map(i -> alphabet.substring(i, i + 1))
                 .collect(Collectors.joining()),
             str -> new IntString(Collections.nCopies(str.length(), 0), 0, alphabet.length()),
-            "isToString[alphabetSize=%d]".formatted(alphabet.length())
+            "string[alphabetSize=%d]".formatted(alphabet.length())
         )
     );
   }
 
   @Cacheable
   public static <X> InvertibleMapper<X, BooleanFunction> multiBTreeToBf(
-      @Param(value = "name", dS = "multiBTreeToBf") String name,
+      @Param(value = "name", dS = "bf") String name,
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, List<Tree<io.github.ericmedvet.jgea.core.representation.tree.bool.Element>>> beforeM
   ) {
     return beforeM.andThen(
@@ -598,23 +624,7 @@ public class Mappers {
                 nmrf.xVarNames(),
                 nmrf.yVarNames()
             ),
-            "multiSrTreeToNmrf[po=%s]".formatted(postOperator)
-        )
-    );
-  }
-
-  @Cacheable
-  public static <X> InvertibleMapper<X, NumericalReinforcementLearningAgent<?>> ndsToNrla(
-      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NumericalDynamicalSystem<?>> beforeM
-  ) {
-    return beforeM.andThen(
-        InvertibleMapper.from(
-            (eNrla, nds) -> NumericalReinforcementLearningAgent.from(nds),
-            eNrla -> MultivariateRealFunction.from(
-                eNrla.nOfInputs(),
-                eNrla.nOfOutputs()
-            ),
-            "rlAgent"
+            "nmrf[po=%s]".formatted(postOperator)
         )
     );
   }
@@ -631,7 +641,7 @@ public class Mappers {
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
-            (ndsE, ndsPair) -> new BiLevelNumericalDynamicalSystem<>(
+            (_, ndsPair) -> new BiLevelNumericalDynamicalSystem<>(
                 ndsPair.first(),
                 ndsPair.second(),
                 highPeriod,
@@ -644,6 +654,22 @@ public class Mappers {
                 MultivariateRealFunction.from(lowIndexes.size() + nOfHighOutputs, ndsE.nOfOutputs())
             ),
             name
+        )
+    );
+  }
+
+  @Cacheable
+  public static <X> InvertibleMapper<X, NumericalReinforcementLearningAgent<?>> ndsToNrla(
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, NumericalDynamicalSystem<?>> beforeM
+  ) {
+    return beforeM.andThen(
+        InvertibleMapper.from(
+            (eNrla, nds) -> NumericalReinforcementLearningAgent.from(nds),
+            eNrla -> MultivariateRealFunction.from(
+                eNrla.nOfInputs(),
+                eNrla.nOfOutputs()
+            ),
+            "rl.agent"
         )
     );
   }
@@ -685,14 +711,14 @@ public class Mappers {
                   }
               );
             },
-            g -> NamedMultivariateRealFunction.from(
+            _ -> NamedMultivariateRealFunction.from(
                 MultivariateRealFunction.from(2, items.size()),
                 List.of("x", "y"),
                 IntStream.range(0, items.size())
                     .mapToObj("item%02d"::formatted)
                     .toList()
             ),
-            "nmrfToGrid[nOfItems=%d]".formatted(items.size())
+            "grid[nOfItems=%d]".formatted(items.size())
         )
     );
   }
@@ -766,7 +792,7 @@ public class Mappers {
                   varNames
               );
             },
-            "nmrfToMrCA[addChannels=%d;kernels=%d]".formatted(
+            "mrca[addChannels=%d;kernels=%d]".formatted(
                 nOfAdditionalChannels,
                 kernelGrids.size()
             )
@@ -780,7 +806,7 @@ public class Mappers {
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
-            (nds, nmrf) -> nmrf,
+            (_, nmrf) -> nmrf,
             nds -> NamedMultivariateRealFunction.from(
                 MultivariateRealFunction.from(
                     nds.nOfInputs(),
@@ -789,7 +815,7 @@ public class Mappers {
                 MultivariateRealFunction.varNames("i", nds.nOfInputs()),
                 MultivariateRealFunction.varNames("o", nds.nOfOutputs())
             ),
-            "nmrfToNds"
+            "nds"
         )
     );
   }
@@ -800,9 +826,9 @@ public class Mappers {
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
-            (nurf, nmrf) -> NamedUnivariateRealFunction.from(nmrf),
+            (_, nmrf) -> NamedUnivariateRealFunction.from(nmrf),
             nurf -> nurf,
-            "nmrfToNurf"
+            "nurf"
         )
     );
   }
@@ -816,7 +842,7 @@ public class Mappers {
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
-            (eNds, nds) -> new Noised<>(nds, inputSigma, outputSigma, randomGenerator),
+            (_, nds) -> new Noised<>(nds, inputSigma, outputSigma, randomGenerator),
             eNds -> eNds,
             "noised[in=%.2f;out=%.2f]".formatted(inputSigma, outputSigma)
         )
@@ -831,7 +857,7 @@ public class Mappers {
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
-            (eNmrf, nmrf) -> nmrf.andThen(
+            (_, nmrf) -> nmrf.andThen(
                 Naming.named(
                     "noised[out=%.2f]".formatted(sigma),
                     (DoubleUnaryOperator) v -> v + randomGenerator.nextGaussian() * sigma
@@ -857,7 +883,7 @@ public class Mappers {
                 nmrf.nOfInputs(),
                 nmrf.nOfOutputs()
             ),
-            "ntissToNmrf"
+            "nmrf"
         )
     );
   }
@@ -868,16 +894,13 @@ public class Mappers {
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
-            (nds, nurf) -> nurf,
+            (_, nurf) -> nurf,
             nds -> NamedUnivariateRealFunction.from(
-                UnivariateRealFunction.from(
-                    in -> 0d,
-                    nds.nOfInputs()
-                ),
+                UnivariateRealFunction.from(_ -> 0d, nds.nOfInputs()),
                 MultivariateRealFunction.varNames("i", nds.nOfInputs()),
                 "output"
             ),
-            "nurfToNds"
+            "nds"
         )
     );
   }
@@ -893,7 +916,7 @@ public class Mappers {
                 toOperator(postOperator)
             ),
             nmrf -> OperatorGraph.sampleFor(nmrf.xVarNames(), nmrf.yVarNames()),
-            "oGraphToNmrf[po=%s]".formatted(postOperator)
+            "nmrf[po=%s]".formatted(postOperator)
         )
     );
   }
@@ -929,7 +952,7 @@ public class Mappers {
         InvertibleMapper.from(
             (e, p) -> exampleBuilder.apply(e).withParams(p),
             e -> exampleBuilder.apply(e).getParams(),
-            "nmrfToParametrized[%s]".formatted(exampleBuilder)
+            "parametrized[%s]".formatted(exampleBuilder)
         )
     );
   }
@@ -983,7 +1006,7 @@ public class Mappers {
             )
                 .andThen(toOperator(postOperator)),
             nurf -> TreeBasedUnivariateRealFunction.exampleFor(nurf.xVarNames(), nurf.yVarName()),
-            "srTreeToNurf[po=%s;simp=%s]".formatted(
+            "nurf[po=%s;simp=%s]".formatted(
                 postOperator,
                 Boolean.toString(simplify).substring(0, 1)
             )
@@ -998,7 +1021,7 @@ public class Mappers {
   ) {
     return beforeM.andThen(
         InvertibleMapper.from(
-            (eNds, nds) -> NumericalDynamicalSystem.from(
+            (_, nds) -> NumericalDynamicalSystem.from(
                 new Stepped<>(nds, interval),
                 nds.nOfInputs(),
                 nds.nOfOutputs()
@@ -1041,7 +1064,7 @@ public class Mappers {
     );
     return beforeM.andThen(
         InvertibleMapper.from(
-            (eProgram, ttpn) -> runner.asInstrumentedProgram(ttpn),
+            (_, ttpn) -> runner.asInstrumentedProgram(ttpn),
             eProgram -> {
               try {
                 return new Network(

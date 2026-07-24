@@ -40,52 +40,61 @@ class FormulaMapperTest {
     return new FormulaMapper().apply(stringTree);
   }
 
+  private static Tree<Element> sm(Tree<String> stringTree) {
+    return new FormulaMapper().singleMap(stringTree);
+  }
+
+  private final static Tree<String> ST_BIG = n(
+      "<e>",
+      n("and"),
+      n(
+          "<e>",
+          n("or"),
+          n("<e>", n("<v>", n("1"))),
+          n("<e>", n("<v>", n("2")))
+      ),
+      n("<e>", n("<v>", n("3")))
+  );
+  private final static Tree<? extends Element> T_BIG = n(
+      Operator.AND,
+      n(
+          Operator.OR,
+          n(new Variable(1)),
+          n(new Variable(2))
+      ),
+      n(new Variable(3))
+  );
+  private final static Tree<String> ST_SMALL = n(
+      "<e>",
+      n("and"),
+      n("<e>", n("<v>", n("0"))),
+      n("<e>", n("<v>", n("1")))
+  );
+  private final static Tree<? extends Element> T_SMALL = n(
+      Operator.AND,
+      n(new Variable(0)),
+      n(new Variable(1))
+  );
+
   @Test
   void apply() {
-    Tree<String> stBig = n(
-        "<e>",
-        n("and"),
-        n(
-            "<e>",
-            n("or"),
-            n("<e>", n("<v>", n("1"))),
-            n("<e>", n("<v>", n("2")))
-        ),
-        n("<e>", n("<v>", n("3")))
-    );
-    Tree<? extends Element> tBig = n(
-        Operator.AND,
-        n(
-            Operator.OR,
-            n(new Variable(1)),
-            n(new Variable(2))
-        ),
-        n(new Variable(3))
-    );
-    Tree<String> stSmall = n(
-        "<e>",
-        n("and"),
-        n("<e>", n("<v>", n("0"))),
-        n("<e>", n("<v>", n("1")))
-    );
-    Tree<? extends Element> tSmall = n(
-        Operator.AND,
-        n(new Variable(0)),
-        n(new Variable(1))
-    );
     Tree<String> st2o = n(
-        "<o>",
-        stBig,
-        stSmall
+        "<out>",
+        ST_BIG,
+        ST_SMALL
     );
-    assertThat(m(stSmall))
-        .as("single output %s should give %s", stSmall, List.of(tSmall))
-        .isEqualTo(List.of(tSmall));
-    assertThat(m(stBig))
-        .as("single output %s should give %s", stBig, List.of(tBig))
-        .isEqualTo(List.of(tBig));
     assertThat(m(st2o))
-        .as("single output %s should give %s", st2o, List.of(tBig, tSmall))
-        .isEqualTo(List.of(tBig, tSmall));
+        .as("multiple output %s should give %s", st2o, List.of(T_BIG, T_SMALL))
+        .isEqualTo(List.of(T_BIG, T_SMALL));
+  }
+
+  @Test
+  void singleMap() {
+    assertThat(sm(ST_SMALL))
+        .as("single output %s should give %s", ST_SMALL, List.of(T_SMALL))
+        .isEqualTo(T_SMALL);
+    assertThat(sm(ST_BIG))
+        .as("single output %s should give %s", ST_BIG, List.of(T_BIG))
+        .isEqualTo(T_BIG);
   }
 }

@@ -22,57 +22,58 @@ package io.github.ericmedvet.jgea.core.representation.grammar.grid;
 
 import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
 import io.github.ericmedvet.jnb.datastructure.Grid;
+import io.github.ericmedvet.jnb.datastructure.Utils;
 import java.io.*;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
-public class GridGrammar<T> implements Serializable, Grammar<T, GridGrammar.ReferencedGrid<T>> {
+public interface GridGrammar<T> extends Grammar<T, GridGrammar.ReferencedGrid<T>> {
 
-  public static final String RULE_ASSIGNMENT_STRING = "::=";
-  public static final String RULE_OPTION_SEPARATOR_STRING = "|";
-  private final Map<T, List<ReferencedGrid<T>>> rules;
-  private T startingSymbol;
+  String RULE_ASSIGNMENT_STRING = "::=";
+  String RULE_OPTION_SEPARATOR_STRING = "|";
 
-  public GridGrammar() {
-    rules = new LinkedHashMap<>();
+  static <T> GridGrammar<T> from(T startingSymbol, Map<T, List<ReferencedGrid<T>>> rules) {
+    record HardStringGrammar<T>(T startingSymbol, Map<T, List<ReferencedGrid<T>>> rules) implements GridGrammar<T> {
+
+      @Override
+      public String toString() {
+        return GridGrammar.toString(this);
+      }
+    }
+    return new HardStringGrammar<>(startingSymbol, Collections.unmodifiableMap(new LinkedHashMap<>(rules)));
   }
 
-  public record ReferencedGrid<T>(Grid.Key referenceKey, Grid<T> grid) {}
+  static <T> GridGrammar<T> from(SequencedMap<T, List<ReferencedGrid<T>>> rules) {
+    return from(rules.firstEntry().getKey(), rules);
+  }
 
-  public static GridGrammar<String> load(InputStream inputStream) throws IOException {
+  static GridGrammar<String> load(InputStream inputStream) throws IOException {
     return load(inputStream, "UTF-8");
   }
 
-  public static GridGrammar<String> load(InputStream inputStream, String charset) throws IOException {
-    GridGrammar<String> grammar = new GridGrammar<>();
+  static GridGrammar<String> load(InputStream inputStream, String charset) throws IOException {
+    SequencedMap<String, List<ReferencedGrid<String>>> rules = new LinkedHashMap<>();
     try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, charset))) {
       String line;
       while ((line = br.readLine()) != null) {
         String[] components = line.split(Pattern.quote(RULE_ASSIGNMENT_STRING));
         String toReplaceSymbol = components[0].trim();
         String[] optionStrings = components[1].split(Pattern.quote(RULE_OPTION_SEPARATOR_STRING));
-        if (grammar.startingSymbol() == null) {
-          grammar.setStartingSymbol(toReplaceSymbol);
-        }
         List<ReferencedGrid<String>> options = new ArrayList<>();
         for (String optionString : optionStrings) {
-
           String[] rule = optionString.replaceAll("\\s+", "").split(";");
           String coordReference = rule[0].replaceAll("[()]", "");
-
           Grid.Key referencePoint = new Grid.Key(
               Integer.parseInt(coordReference.split(",")[0]),
               Integer.parseInt(coordReference.split(",")[1])
           );
           String[] gridRows = Arrays.copyOfRange(rule, 1, rule.length);
-
           int height = gridRows.length;
           int width = gridRows[0].split(",", -1).length;
           Grid<String> polyomino = Grid.create(width, height);
           int ycoord = 0;
           for (String gridRow : gridRows) {
-
             int xcoord = 0;
             for (String element : gridRow.split(",", -1)) {
               if (!element.isEmpty()) {
@@ -85,57 +86,18 @@ public class GridGrammar<T> implements Serializable, Grammar<T, GridGrammar.Refe
           ReferencedGrid<String> productionRule = new ReferencedGrid<>(referencePoint, polyomino);
           options.add(productionRule);
         }
-        grammar.rules().put(toReplaceSymbol, options);
+        rules.put(toReplaceSymbol, options);
       }
     }
-    return grammar;
+    return from(rules);
   }
 
-  public <X> GridGrammar<X> map(Function<T, X> function) {
-    GridGrammar<X> mapped = new GridGrammar<>();
-    rules.forEach(
-        (nt, list) -> mapped.rules.put(
-            function.apply(nt),
-            list.stream()
-                .map(
-                    rg -> new ReferencedGrid<>(
-                        rg.referenceKey(),
-                        rg.grid().map(function)
-                    )
-                )
-                .toList()
-        )
-    );
-    mapped.startingSymbol = function.apply(startingSymbol);
-    return mapped;
-  }
-
-  @Override
-  public Map<T, List<ReferencedGrid<T>>> rules() {
-    return rules;
-  }
-
-  @Override
-  public T startingSymbol() {
-    return startingSymbol;
-  }
-
-  @Override
-  public Collection<T> usedSymbols(ReferencedGrid<T> referencedGrid) {
-    return referencedGrid.grid().values().stream().filter(Objects::nonNull).toList();
-  }
-
-  public void setStartingSymbol(T startingSymbol) {
-    this.startingSymbol = startingSymbol;
-  }
-
-  @Override
-  public String toString() {
+  static <T> String toString(GridGrammar<T> gridGrammar) {
     StringBuilder sb = new StringBuilder();
-    for (Map.Entry<T, List<ReferencedGrid<T>>> rule : rules.entrySet()) {
+    for (Map.Entry<T, List<ReferencedGrid<T>>> rule : gridGrammar.rules().entrySet()) {
       sb.append(rule.getKey())
           .append(" ")
-          .append(rule.getKey().equals(startingSymbol) ? "*" : "")
+          .append(rule.getKey().equals(gridGrammar.startingSymbol()) ? "*" : "")
           .append(RULE_ASSIGNMENT_STRING + " ");
       for (ReferencedGrid<T> option : rule.getValue()) {
         sb.append(option);
@@ -146,4 +108,28 @@ public class GridGrammar<T> implements Serializable, Grammar<T, GridGrammar.Refe
     }
     return sb.toString();
   }
+
+  default <X> GridGrammar<X> map(Function<? super T, ? extends X> mapper) {
+    return from(
+        mapper.apply(startingSymbol()),
+        rules().entrySet()
+            .stream()
+            .collect(
+                Utils.toSequencedMap(
+                    e -> mapper.apply(e.getKey()),
+                    e -> e.getValue()
+                        .stream()
+                        .map(rg -> new ReferencedGrid<>(rg.referenceKey, rg.grid.map(t -> (X) mapper.apply(t))))
+                        .toList()
+                )
+            )
+    );
+  }
+
+  @Override
+  default Collection<T> usedSymbols(ReferencedGrid<T> referencedGrid) {
+    return referencedGrid.grid().values().stream().filter(Objects::nonNull).toList();
+  }
+
+  record ReferencedGrid<T>(Grid.Key referenceKey, Grid<T> grid) {}
 }

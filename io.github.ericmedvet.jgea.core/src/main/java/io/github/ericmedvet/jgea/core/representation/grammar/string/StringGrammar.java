@@ -21,78 +21,68 @@
 package io.github.ericmedvet.jgea.core.representation.grammar.string;
 
 import io.github.ericmedvet.jgea.core.representation.grammar.Grammar;
+import io.github.ericmedvet.jnb.datastructure.Utils;
 import java.io.*;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
-public class StringGrammar<T> implements Serializable, Grammar<T, List<T>> {
+public interface StringGrammar<T> extends Grammar<T, List<T>> {
 
-  public static final String RULE_ASSIGNMENT_STRING = "::=";
-  public static final String RULE_OPTION_SEPARATOR_STRING = "|";
-  private final Map<T, List<List<T>>> rules;
-  private T startingSymbol;
+  String RULE_ASSIGNMENT_STRING = "::=";
+  String RULE_OPTION_SEPARATOR_STRING = "|";
 
-  public StringGrammar() {
-    rules = new LinkedHashMap<>();
+  static <T> StringGrammar<T> from(SequencedMap<T, List<List<T>>> rules) {
+    return from(rules.firstEntry().getKey(), rules);
   }
 
-  public static StringGrammar<String> load(InputStream inputStream) throws IOException {
+  static <T> StringGrammar<T> from(T startingSymbol, Map<T, List<List<T>>> rules) {
+    record HardStringGrammar<T>(T startingSymbol, Map<T, List<List<T>>> rules) implements StringGrammar<T> {
+
+      @Override
+      public String toString() {
+        return StringGrammar.toString(this);
+      }
+    }
+    return new HardStringGrammar<>(startingSymbol, Collections.unmodifiableMap(new LinkedHashMap<>(rules)));
+  }
+
+  static StringGrammar<String> load(InputStream inputStream) throws IOException {
     return load(inputStream, "UTF-8");
   }
 
-  public static StringGrammar<String> load(InputStream inputStream, String charset) throws IOException {
-    StringGrammar<String> grammar = new StringGrammar<>();
-    BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, charset));
-    String line;
-    while ((line = br.readLine()) != null) {
-      String[] components = line.split(Pattern.quote(RULE_ASSIGNMENT_STRING));
-      String toReplaceSymbol = components[0].trim();
-      String[] optionStrings = components[1].split(Pattern.quote(RULE_OPTION_SEPARATOR_STRING));
-      if (grammar.startingSymbol() == null) {
-        grammar.setStartingSymbol(toReplaceSymbol);
-      }
-      List<List<String>> options = new ArrayList<>();
-      for (String optionString : optionStrings) {
-        List<String> symbols = new ArrayList<>();
-        for (String symbol : optionString.split("\\s+")) {
-          if (!symbol.trim().isEmpty()) {
-            symbols.add(symbol.trim());
+  static StringGrammar<String> load(InputStream inputStream, String charset) throws IOException {
+    SequencedMap<String, List<List<String>>> rules = new LinkedHashMap<>();
+    try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, charset))) {
+      String line;
+      while ((line = br.readLine()) != null) {
+        String[] components = line.split(Pattern.quote(RULE_ASSIGNMENT_STRING));
+        String toReplaceSymbol = components[0].trim();
+        String[] optionStrings = components[1].split(Pattern.quote(RULE_OPTION_SEPARATOR_STRING));
+        List<List<String>> options = new ArrayList<>();
+        for (String optionString : optionStrings) {
+          List<String> symbols = new ArrayList<>();
+          for (String symbol : optionString.split("\\s+")) {
+            if (!symbol.trim().isEmpty()) {
+              symbols.add(symbol.trim());
+            }
+          }
+          if (!symbols.isEmpty()) {
+            options.add(symbols);
           }
         }
-        if (!symbols.isEmpty()) {
-          options.add(symbols);
-        }
+        rules.put(toReplaceSymbol, options);
       }
-      grammar.rules().put(toReplaceSymbol, options);
     }
-    br.close();
-    return grammar;
+    return from(rules);
   }
 
-  public Map<T, List<List<T>>> rules() {
-    return rules;
-  }
-
-  public T startingSymbol() {
-    return startingSymbol;
-  }
-
-  @Override
-  public Collection<T> usedSymbols(List<T> ts) {
-    return ts;
-  }
-
-  public void setStartingSymbol(T startingSymbol) {
-    this.startingSymbol = startingSymbol;
-  }
-
-  @Override
-  public String toString() {
+  static <T> String toString(StringGrammar<T> grammar) {
     StringBuilder sb = new StringBuilder();
-    for (Map.Entry<T, List<List<T>>> rule : rules.entrySet()) {
+    for (Map.Entry<T, List<List<T>>> rule : grammar.rules().entrySet()) {
       sb.append(rule.getKey())
           .append(" ")
-          .append(rule.getKey().equals(startingSymbol) ? "*" : "")
+          .append(rule.getKey().equals(grammar.startingSymbol()) ? "*" : "")
           .append(RULE_ASSIGNMENT_STRING + " ");
       for (List<T> option : rule.getValue()) {
         for (T symbol : option) {
@@ -104,5 +94,27 @@ public class StringGrammar<T> implements Serializable, Grammar<T, List<T>> {
       sb.append("\n");
     }
     return sb.toString();
+  }
+
+  default <X> StringGrammar<X> map(Function<? super T, ? extends X> mapper) {
+    return from(
+        (X) mapper.apply(startingSymbol()),
+        rules().entrySet()
+            .stream()
+            .collect(
+                Utils.toSequencedMap(
+                    e -> mapper.apply(e.getKey()),
+                    e -> e.getValue()
+                        .stream()
+                        .map(o -> o.stream().map(t -> (X) mapper.apply(t)).toList())
+                        .toList()
+                )
+            )
+    );
+  }
+
+  @Override
+  default Collection<T> usedSymbols(List<T> ts) {
+    return ts;
   }
 }

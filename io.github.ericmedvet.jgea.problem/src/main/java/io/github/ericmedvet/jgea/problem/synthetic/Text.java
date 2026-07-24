@@ -23,14 +23,14 @@ package io.github.ericmedvet.jgea.problem.synthetic;
 import io.github.ericmedvet.jgea.core.distance.Distance;
 import io.github.ericmedvet.jgea.core.distance.Edit;
 import io.github.ericmedvet.jgea.core.problem.ComparableQualityBasedProblem;
-import io.github.ericmedvet.jgea.core.representation.grammar.string.GrammarBasedProblem;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammarBasedProblem;
 import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
 
-public class Text implements GrammarBasedProblem<String, String>, ComparableQualityBasedProblem<String, Double> {
+public class Text implements StringGrammarBasedProblem<String, String>, ComparableQualityBasedProblem<String, Double> {
 
   private final StringGrammar<String> grammar;
   private final Function<Tree<String>, String> solutionMapper;

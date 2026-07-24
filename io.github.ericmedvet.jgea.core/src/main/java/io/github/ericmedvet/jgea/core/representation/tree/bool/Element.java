@@ -41,7 +41,7 @@ public interface Element {
     if (string.equals("F")) {
       return new Element.Constant(true);
     }
-    if (string.matches("[0-9.]+")) {
+    if (string.matches(VAR_REGEX)) {
       return new Element.Variable(Integer.parseInt(string));
     }
     return new Element.Decoration(string);
