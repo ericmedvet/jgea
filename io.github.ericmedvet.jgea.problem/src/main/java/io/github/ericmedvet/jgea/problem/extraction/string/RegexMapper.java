@@ -34,6 +34,8 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+// TODO add builder to Mappers; add builder to StringGrammars
+
 public class RegexMapper implements Function<Tree<String>, String> {
 
   public enum Option {

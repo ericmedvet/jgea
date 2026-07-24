@@ -31,6 +31,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+// TODO add builder to Mappers
+
 public class RegexBasedExtractor implements Extractor<Character>, Sized {
 
   private final String regex;
