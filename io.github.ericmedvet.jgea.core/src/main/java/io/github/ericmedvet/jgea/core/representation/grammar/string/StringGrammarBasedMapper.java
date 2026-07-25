@@ -21,9 +21,10 @@
 package io.github.ericmedvet.jgea.core.representation.grammar.string;
 
 import io.github.ericmedvet.jnb.datastructure.Tree;
+import java.util.Optional;
 import java.util.function.Function;
 
-public abstract class StringGrammarBasedMapper<G, T> implements Function<G, Tree<T>> {
+public abstract class StringGrammarBasedMapper<G, T> implements Function<G, Optional<Tree<T>>> {
 
   private final StringGrammar<T> grammar;
 

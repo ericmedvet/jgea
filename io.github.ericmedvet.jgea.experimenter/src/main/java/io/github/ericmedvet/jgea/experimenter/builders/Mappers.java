@@ -80,6 +80,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
@@ -139,7 +140,12 @@ public class Mappers {
                       .orElse(1)
               ) / Math.log10(2d);
               int codonSize = (int) Math.ceil(minCodonSize * codonLengthRate);
-              return new StandardGEMapper<>(codonSize, maxWraps, stringGrammar);
+              Function<BitString, Optional<Tree<L>>> mapper = new StandardGEMapper<>(
+                  codonSize,
+                  maxWraps,
+                  stringGrammar
+              );
+              return bs -> mapper.apply(bs).orElse(eT);
             },
             eT -> {
               double minCodonSize = Math.log10(

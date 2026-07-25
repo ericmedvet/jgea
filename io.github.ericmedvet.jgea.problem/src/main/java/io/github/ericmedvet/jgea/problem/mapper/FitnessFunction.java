@@ -114,10 +114,11 @@ public class FitnessFunction implements Function<Pair<Tree<Element>, Tree<Elemen
     // map
     List<S> solutions = genotypes.stream()
         .map(recursiveMapper)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
         .map(t -> problem.problem().solutionMapper().apply(t))
         .toList();
     Multiset<S> multiset = new LinkedHashMultiset<>(solutions);
-    multiset.addAll(solutions);
     // compute properties
     List<Double> values = new ArrayList<>();
     for (Property property : properties) {

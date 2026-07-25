@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 public class HierarchicalMapper<T> extends StringGrammarBasedMapper<BitString, T> {
@@ -54,21 +55,18 @@ public class HierarchicalMapper<T> extends StringGrammarBasedMapper<BitString, T
   }
 
   @Override
-  public Tree<T> apply(BitString genotype) {
-    int[] bitUsages = new int[genotype.size()];
-    Tree<T> tree;
+  public Optional<Tree<T>> apply(BitString genotype) {
     if (recursive) {
-      tree = mapRecursively(
-          grammar().startingSymbol(),
-          new IntRange(0, genotype.size()),
-          genotype,
-          bitUsages
+      return Optional.of(
+          mapRecursively(
+              grammar().startingSymbol(),
+              new IntRange(0, genotype.size()),
+              genotype,
+              new int[genotype.size()]
+          )
       );
-    } else {
-      tree = mapIteratively(genotype, bitUsages);
     }
-    // convert
-    return tree;
+    return Optional.of(mapIteratively(genotype, new int[genotype.size()]));
   }
 
   private List<T> chooseOption(BitString genotype, IntRange range, List<List<T>> options) {

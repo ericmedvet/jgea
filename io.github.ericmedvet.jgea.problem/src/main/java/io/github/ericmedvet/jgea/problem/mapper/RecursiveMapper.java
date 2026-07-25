@@ -26,6 +26,7 @@ import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
@@ -48,15 +49,17 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
   }
 
   @Override
-  public Tree<T> apply(BitString genotype) {
+  public Optional<Tree<T>> apply(BitString genotype) {
     AtomicInteger mappingGlobalCounter = new AtomicInteger();
     AtomicInteger finalizationGlobalCounter = new AtomicInteger();
-    return mapRecursively(
-        grammar().startingSymbol(),
-        genotype,
-        mappingGlobalCounter,
-        finalizationGlobalCounter,
-        0
+    return Optional.of(
+        mapRecursively(
+            grammar().startingSymbol(),
+            genotype,
+            mappingGlobalCounter,
+            finalizationGlobalCounter,
+            0
+        )
     );
   }
 

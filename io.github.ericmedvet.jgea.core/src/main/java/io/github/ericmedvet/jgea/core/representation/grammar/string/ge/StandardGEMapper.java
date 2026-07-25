@@ -25,23 +25,21 @@ import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGramma
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.List;
+import java.util.Optional;
 
 public class StandardGEMapper<T> extends StringGrammarBasedMapper<BitString, T> {
 
   private final int codonLength;
   private final int maxWraps;
-  private final T fallbackSymbol;
 
-  // TODO add a param with a fallback tree, to avoid invalid trees being just the fallbackSymbol
   public StandardGEMapper(int codonLength, int maxWraps, StringGrammar<T> grammar) {
     super(grammar);
     this.codonLength = codonLength;
     this.maxWraps = maxWraps;
-    fallbackSymbol = grammar.nonTerminalSymbols().iterator().next();
   }
 
   @Override
-  public Tree<T> apply(BitString genotype) {
+  public Optional<Tree<T>> apply(BitString genotype) {
     if (genotype.size() < codonLength) {
       throw new IllegalArgumentException(
           "Short genotype (%d<%d)".formatted(genotype.size(), codonLength)
@@ -67,7 +65,7 @@ public class StandardGEMapper<T> extends StringGrammarBasedMapper<BitString, T> 
         wraps = wraps + 1;
         currentCodonIndex = 0;
         if (wraps > maxWraps) {
-          return new Tree<>(fallbackSymbol);
+          return Optional.empty();
         }
       }
       T toReplaceSymbol = finalTree.descendant(toReplaceLineage).label();
@@ -86,7 +84,7 @@ public class StandardGEMapper<T> extends StringGrammarBasedMapper<BitString, T> 
           toReplaceLineage
       );
     }
-    return tree;
+    return Optional.of(tree);
   }
 
   @Override
