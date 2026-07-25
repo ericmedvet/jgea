@@ -28,7 +28,9 @@ import io.github.ericmedvet.jgea.core.representation.grammar.grid.IntStringChoos
 import io.github.ericmedvet.jgea.core.representation.grammar.grid.StandardGridDeveloper;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammarBasedProblem;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.ge.HierarchicalMapper;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.ge.StandardGEMapper;
+import io.github.ericmedvet.jgea.core.representation.grammar.string.ge.WeightedHierarchicalMapper;
 import io.github.ericmedvet.jgea.core.representation.graph.Graph;
 import io.github.ericmedvet.jgea.core.representation.graph.Node;
 import io.github.ericmedvet.jgea.core.representation.graph.numeric.functiongraph.FunctionGraph;
@@ -118,9 +120,8 @@ public class Mappers {
   }
 
   @Cacheable
-  // TODO add hge, whge mappers
   public static <X, L> InvertibleMapper<X, Tree<L>> bsToGeCfgTree(
-      @Param(value = "name", iS = "cfg.tree[ge]") String name,
+      @Param(value = "name", iS = "cfg.tree[ge;{nOfCodons}]") String name,
       @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, BitString> beforeM,
       @Param("grammar") Function<Tree<L>, StringGrammar<L>> grammar,
       @Param(value = "nOfCodons", dI = 256) int nOfCodons,
@@ -162,6 +163,58 @@ public class Mappers {
                   codonSize * nOfCodons
               );
             },
+            name
+        )
+    );
+  }
+
+  @Cacheable
+  public static <X, L> InvertibleMapper<X, Tree<L>> bsToHgeCfgTree(
+      @Param(value = "name", iS = "cfg.tree[hge;{length}]") String name,
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, BitString> beforeM,
+      @Param("grammar") Function<Tree<L>, StringGrammar<L>> grammar,
+      @Param(value = "recursive", dB = true) boolean recursive,
+      @Param(value = "length", dI = 1024) int length
+  ) {
+    return beforeM.andThen(
+        InvertibleMapper.from(
+            eT -> {
+              Function<BitString, Optional<Tree<L>>> mapper = new HierarchicalMapper<>(
+                  grammar.apply(eT),
+                  recursive
+              );
+              return bs -> mapper.apply(bs).orElse(eT);
+            },
+            _ -> new BitString(length),
+            name
+        )
+    );
+  }
+
+  @Cacheable
+  public static <X, L> InvertibleMapper<X, Tree<L>> bsToWhgeCfgTree(
+      @Param(value = "name", iS = "cfg.tree[whge;{length};exp={expressivenessDepth}]") String name,
+      @Param(value = "of", dNPM = "ea.m.identity()") InvertibleMapper<X, BitString> beforeM,
+      @Param("grammar") Function<Tree<L>, StringGrammar<L>> grammar,
+      @Param(value = "recursive", dB = true) boolean recursive,
+      @Param(value = "expressivenessDepth", dI = 3) int expressivenessDepth,
+      @Param("weightOptions") boolean weightOptions,
+      @Param(value = "weightChildren", dB = true) boolean weightChildren,
+      @Param(value = "length", dI = 1024) int length
+  ) {
+    return beforeM.andThen(
+        InvertibleMapper.from(
+            eT -> {
+              Function<BitString, Optional<Tree<L>>> mapper = new WeightedHierarchicalMapper<>(
+                  expressivenessDepth,
+                  weightOptions,
+                  weightChildren,
+                  grammar.apply(eT),
+                  recursive
+              );
+              return bs -> mapper.apply(bs).orElse(eT);
+            },
+            _ -> new BitString(length),
             name
         )
     );

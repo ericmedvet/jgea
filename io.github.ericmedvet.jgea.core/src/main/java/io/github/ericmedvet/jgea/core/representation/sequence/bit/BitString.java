@@ -21,7 +21,6 @@
 package io.github.ericmedvet.jgea.core.representation.sequence.bit;
 
 import io.github.ericmedvet.jgea.core.util.IntRange;
-import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.Sized;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -62,7 +61,7 @@ public record BitString(boolean[] bits) implements Sized, Serializable, Cloneabl
   }
 
   public BitString compress(int newLength) {
-    List<BitString> slices = Misc.slices(new IntRange(0, bits.length), newLength)
+    List<BitString> slices = new IntRange(0, bits.length).slices(newLength)
         .stream()
         .map(r -> slice(r.min(), r.max()))
         .toList();

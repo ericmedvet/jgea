@@ -22,7 +22,6 @@ package io.github.ericmedvet.jgea.problem.mapper;
 
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.util.IntRange;
-import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -375,13 +374,6 @@ public class MapperUtils {
     );
   }
 
-  @SuppressWarnings("rawtypes")
-  private static List list(Object item) {
-    @SuppressWarnings("rawtypes") List l = new ArrayList(1);
-    l.add(item);
-    return l;
-  }
-
   private static int maxIndex(List<Double> list, double mult) {
     if (list.isEmpty()) {
       return 0;
@@ -494,7 +486,7 @@ public class MapperUtils {
     }
     n = Math.max(1, n);
     n = Math.min(n, g.size());
-    return Misc.slices(new IntRange(0, g.size()), n)
+    return new IntRange(0, g.size()).slices(n)
         .stream()
         .map(s -> g.slice(s.min(), s.max()))
         .toList();
@@ -517,14 +509,7 @@ public class MapperUtils {
       // all zero
       return split(g, weights.size(), maxN);
     }
-    List<Integer> intWeights = new ArrayList<>(weights.size());
-    for (double w : weights) {
-      intWeights.add((int) Math.max(Math.round(w / minWeight), 0d));
-    }
-    return Misc.slices(new IntRange(0, g.size()), intWeights)
-        .stream()
-        .map(s -> g.slice(s.min(), s.max()))
-        .toList();
+    return new IntRange(0, g.size()).slices(weights).stream().map(r -> g.slice(r.min(), r.max())).toList();
   }
 
   private static BitString substring(BitString g, int to) {

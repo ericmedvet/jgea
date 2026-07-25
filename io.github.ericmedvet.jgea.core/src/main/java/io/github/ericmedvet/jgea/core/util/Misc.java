@@ -24,7 +24,6 @@ import io.github.ericmedvet.jnb.datastructure.Utils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -206,48 +205,6 @@ public class Misc {
       indexes.remove(indexOfIndex);
     }
     return shuffledIndexes.stream().map(list::get).toList();
-  }
-
-  public static List<IntRange> slices(IntRange range, int pieces) {
-    return slices(range, Collections.nCopies(pieces, 1));
-  }
-
-  public static List<IntRange> slices(IntRange range, List<Integer> sizes) {
-    int length = range.extent();
-    int sumOfSizes = 0;
-    for (int size : sizes) {
-      sumOfSizes = sumOfSizes + size;
-    }
-    if (sumOfSizes > length) {
-      List<Integer> originalSizes = new ArrayList<>(sizes);
-      sizes = new ArrayList<>(sizes.size());
-      int oldSumOfSizes = sumOfSizes;
-      sumOfSizes = 0;
-      for (int originalSize : originalSizes) {
-        int newSize = (int) Math.round((double) originalSize / (double) oldSumOfSizes);
-        sizes.add(newSize);
-        sumOfSizes = sumOfSizes + newSize;
-      }
-    }
-    int minSize = (int) Math.floor((double) length / (double) sumOfSizes);
-    int missing = length - minSize * sumOfSizes;
-    int[] rangeSize = new int[sizes.size()];
-    for (int i = 0; i < rangeSize.length; i++) {
-      rangeSize[i] = minSize * sizes.get(i);
-    }
-    int c = 0;
-    while (missing > 0) {
-      rangeSize[c % rangeSize.length] = rangeSize[c % rangeSize.length] + 1;
-      c = c + 1;
-      missing = missing - 1;
-    }
-    List<IntRange> ranges = new ArrayList<>(sizes.size());
-    int offset = range.min();
-    for (int j : rangeSize) {
-      ranges.add(new IntRange(offset, offset + j));
-      offset = offset + j;
-    }
-    return ranges;
   }
 
   private record Point(double x, double y) {

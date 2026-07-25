@@ -1,7 +1,7 @@
 $basePath = ''../../Documenti/experiments/{^^.name}/{^^.startTime}/''
 
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()])
+  runs = (randomGenerator = (seed = [1:1:5]) * [m.defaultRG()])
     * (problem = [
       ea.p.br.mopm(n = 2);
       ea.p.br.mopm(n = 3);
@@ -15,11 +15,27 @@ ea.experiment(
         ]
       )
     ])
-    * (solver = (stop = ea.sc.nOfQualityEvaluations(n = 1000)) * [
+    * (solver = (stop = ea.sc.nOfQualityEvaluations(n = 5000)) * [
       ea.s.ga(
         name = "ge";
         representation = ea.r.bitString();
-        mapper = ea.m.multiBTreeToBf(of = ea.m.cfgTreeToMultiBTree(of = ea.m.bsToGeCfgTree(grammar = ea.grammar.string.booleanRegression())))
+        mapper = ea.m.multiBTreeToBf(of = ea.m.cfgTreeToMultiBTree(
+          of = ea.m.bsToGeCfgTree(grammar = ea.grammar.string.booleanRegression())
+        ))
+      );
+      ea.s.ga(
+        name = "hge";
+        representation = ea.r.bitString();
+        mapper = ea.m.multiBTreeToBf(of = ea.m.cfgTreeToMultiBTree(
+          of = ea.m.bsToHgeCfgTree(grammar = ea.grammar.string.booleanRegression(); length = 128)
+        ))
+      );
+      ea.s.ga(
+        name = "whge";
+        representation = ea.r.bitString();
+        mapper = ea.m.multiBTreeToBf(of = ea.m.cfgTreeToMultiBTree(
+          of = ea.m.bsToWhgeCfgTree(grammar = ea.grammar.string.booleanRegression(); length = 128)
+        ))
       );
       ea.s.ga(
         name = "gp";
@@ -36,12 +52,13 @@ ea.experiment(
   listeners = [
     ea.l.console(
       eFunctions = [
-        ea.f.size(of = ea.f.genotype(of = ea.f.best()); format = "%3d");
+        ea.f.size(of = ea.f.genotype(of = ea.f.best()); format = "%4d");
+        ea.f.size(of = ea.f.solution(of = ea.f.best()); format = "%3d");
         f.mapValue(key = avg_dissimilarity; of = ea.f.quality(of = ea.f.best()); format = "%6.2f");
         ea.f.hist(of = f.each(of = ea.f.all(); mapF = f.mapValue(key = avg_dissimilarity; of = ea.f.quality())));
         f.timestamp()
       ];
-      onlyLast = false
+      onlyLast = true
     );
 
     % ========= CONVERGENCE PLOTS

@@ -42,7 +42,7 @@ public class RecursiveMapper<T> extends WeightedHierarchicalMapper<T> {
       int maxDepth,
       StringGrammar<T> grammar
   ) {
-    super(maxDepth, grammar);
+    super(maxDepth, false, true, grammar, false);
     this.maxMappingDepth = maxMappingDepth;
     this.optionChooser = optionChooser;
     this.genoAssigner = genoAssigner;

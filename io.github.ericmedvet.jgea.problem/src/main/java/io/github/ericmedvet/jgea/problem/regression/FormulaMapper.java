@@ -24,7 +24,6 @@ import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGramma
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element;
 import io.github.ericmedvet.jgea.core.representation.tree.numeric.Element.Operator;
 import io.github.ericmedvet.jnb.datastructure.Tree;
-import io.github.ericmedvet.jnb.datastructure.Utils;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -41,6 +40,7 @@ public class FormulaMapper implements Function<Tree<String>, Tree<Element>> {
   public static final String EXPR_NON_TERMINAL = "<e>";
   public static final String VAR_NON_TERMINAL = "<v>";
   public static final String CONST_NON_TERMINAL = "<c>";
+  public static final String OP_NON_TERMINAL = "<o>";
   public static final String OP_NON_TERMINAL_FORMAT = "<o%d>";
 
   public static Tree<String> allVarsTree(Set<String> variableNames) {
@@ -73,27 +73,27 @@ public class FormulaMapper implements Function<Tree<String>, Tree<Element>> {
         .collect(Collectors.toCollection(TreeSet::new));
     rules.put(
         EXPR_NON_TERMINAL,
-        Utils.concat(
-            arities.stream()
-                .map(
-                    a -> Stream.concat(
-                        Stream.of(OP_NON_TERMINAL_FORMAT.formatted(a)),
-                        Collections.nCopies(a, EXPR_NON_TERMINAL).stream()
-                    )
-                        .toList()
-                )
-                .toList(),
+        List.of(
+            List.of(OP_NON_TERMINAL),
             List.of(VAR_NON_TERMINAL),
             List.of(CONST_NON_TERMINAL)
         )
     );
+    rules.put(
+        OP_NON_TERMINAL,
+        arities.stream()
+            .map(
+                a -> Stream.concat(
+                    Stream.of(OP_NON_TERMINAL_FORMAT.formatted(a)),
+                    Collections.nCopies(a, EXPR_NON_TERMINAL).stream()
+                ).toList()
+            )
+            .toList()
+    );
     arities.forEach(
         a -> rules.put(
             OP_NON_TERMINAL_FORMAT.formatted(a),
-            operators.stream()
-                .filter(o -> o.arity() == a)
-                .map(o -> List.of(o.toString()))
-                .toList()
+            operators.stream().filter(o -> o.arity() == a).map(o -> List.of(o.toString())).toList()
         )
     );
     rules.put(VAR_NON_TERMINAL, variables.stream().map(List::of).toList());

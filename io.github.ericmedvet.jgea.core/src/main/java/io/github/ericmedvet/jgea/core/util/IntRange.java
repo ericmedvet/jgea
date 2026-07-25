@@ -20,9 +20,13 @@
 package io.github.ericmedvet.jgea.core.util;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 public record IntRange(int min, int max) implements Serializable {
+
   public int clip(int value) {
     return Math.clamp(value, this.min, this.max);
   }
@@ -55,5 +59,36 @@ public record IntRange(int min, int max) implements Serializable {
       return Optional.empty();
     }
     return Optional.of(new IntRange(Math.max(min, other.min), Math.min(max, other.max)));
+  }
+
+  public List<IntRange> slices(int n) {
+    if (n < 1) {
+      throw new IllegalArgumentException("Cannot slice in %d pieces".formatted(n));
+    }
+    if (n == 1) {
+      return List.of(this);
+    }
+    int l = extent() / n;
+    return IntStream.iterate(0, s -> s < max, s -> s + l)
+        .mapToObj(s -> new IntRange(s, Math.min(s + l, max)))
+        .toList();
+  }
+
+  public List<IntRange> slices(List<Double> sizeProportions) {
+    if (sizeProportions.isEmpty()) {
+      throw new IllegalArgumentException("Cannot slice in zero pieces");
+    }
+    if (sizeProportions.size() == 1) {
+      return List.of(this);
+    }
+    double sum = sizeProportions.stream().mapToDouble(v -> v).sum();
+    List<IntRange> ranges = new ArrayList<>(sizeProportions.size());
+    int s = 0;
+    for (Double sizeProportion : sizeProportions) {
+      int e = Math.min(s + (int) Math.round(extent() * sizeProportion / sum), max);
+      ranges.add(new IntRange(s, e));
+      s = e;
+    }
+    return ranges;
   }
 }

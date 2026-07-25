@@ -2568,7 +2568,7 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">Inv
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
-| `name` | s | interpolate `cfg.tree[ge]` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `name` | s | interpolate `cfg.tree[ge;{nOfCodons}]` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `of` | npm | `ea.m.identity()` | <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString">BitString</abbr>&gt;</code> |
 | `grammar` | npm |  | <code><abbr title="java.util.function.Function">Function</abbr>&lt;<abbr title="io.github.ericmedvet.jnb.datastructure.Tree">Tree</abbr>&lt;L&gt;, <abbr title="io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar">StringGrammar</abbr>&lt;L&gt;&gt;</code> |
 | `nOfCodons` | i | `256` | <code>int</code> |
@@ -2590,6 +2590,37 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">Inv
 | `criteria` | e[] | `[LEAST_RECENT, LOWEST_Y, LOWEST_X]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="io.github.ericmedvet.jgea.core.representation.grammar.grid.StandardGridDeveloper$SortingCriterion">StandardGridDeveloper$SortingCriterion</abbr>&gt;</code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jnb.datastructure.Grid">Grid</abbr>&lt;T&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Mappers.bsToGrammarGrid()` by jgea-experimenter:2.8.2-SNAPSHOT
+
+### Builder `ea.mapper.bsToHgeCfgTree()`
+
+`ea.m.bsToHgeCfgTree(name; of; grammar; recursive; length)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `name` | s | interpolate `cfg.tree[hge;{length}]` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `of` | npm | `ea.m.identity()` | <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString">BitString</abbr>&gt;</code> |
+| `grammar` | npm |  | <code><abbr title="java.util.function.Function">Function</abbr>&lt;<abbr title="io.github.ericmedvet.jnb.datastructure.Tree">Tree</abbr>&lt;L&gt;, <abbr title="io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar">StringGrammar</abbr>&lt;L&gt;&gt;</code> |
+| `recursive` | b | `true` | <code>boolean</code> |
+| `length` | i | `1024` | <code>int</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jnb.datastructure.Tree">Tree</abbr>&lt;L&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Mappers.bsToHgeCfgTree()` by jgea-experimenter:2.8.2-SNAPSHOT
+
+### Builder `ea.mapper.bsToWhgeCfgTree()`
+
+`ea.m.bsToWhgeCfgTree(name; of; grammar; recursive; expressivenessDepth; weightOptions; weightChildren; length)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `name` | s | interpolate `cfg.tree[whge;{length};exp={expressivenessDepth}]` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `of` | npm | `ea.m.identity()` | <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString">BitString</abbr>&gt;</code> |
+| `grammar` | npm |  | <code><abbr title="java.util.function.Function">Function</abbr>&lt;<abbr title="io.github.ericmedvet.jnb.datastructure.Tree">Tree</abbr>&lt;L&gt;, <abbr title="io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar">StringGrammar</abbr>&lt;L&gt;&gt;</code> |
+| `recursive` | b | `true` | <code>boolean</code> |
+| `expressivenessDepth` | i | `3` | <code>int</code> |
+| `weightOptions` | b | `false` | <code>boolean</code> |
+| `weightChildren` | b | `true` | <code>boolean</code> |
+| `length` | i | `1024` | <code>int</code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jgea.core.InvertibleMapper">InvertibleMapper</abbr>&lt;X, <abbr title="io.github.ericmedvet.jnb.datastructure.Tree">Tree</abbr>&lt;L&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.Mappers.bsToWhgeCfgTree()` by jgea-experimenter:2.8.2-SNAPSHOT
 
 ### Builder `ea.mapper.cfgTreeToMultiBTree()`
 

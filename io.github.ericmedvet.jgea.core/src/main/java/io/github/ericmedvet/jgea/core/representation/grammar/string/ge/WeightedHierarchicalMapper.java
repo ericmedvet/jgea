@@ -23,7 +23,6 @@ package io.github.ericmedvet.jgea.core.representation.grammar.string.ge;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.util.IntRange;
-import io.github.ericmedvet.jgea.core.util.Misc;
 import java.util.*;
 
 public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
@@ -33,17 +32,14 @@ public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
   private final boolean weightOptions;
   private final boolean weightChildren;
 
-  public WeightedHierarchicalMapper(int expressivenessDepth, StringGrammar<T> grammar) {
-    this(expressivenessDepth, false, true, grammar);
-  }
-
   public WeightedHierarchicalMapper(
       int expressivenessDepth,
       boolean weightOptions,
       boolean weightChildren,
-      StringGrammar<T> grammar
+      StringGrammar<T> grammar,
+      boolean recursive
   ) {
-    super(grammar);
+    super(grammar, recursive);
     this.expressivenessDepth = expressivenessDepth;
     this.weightOptions = weightOptions;
     this.weightChildren = weightChildren;
@@ -87,21 +83,10 @@ public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
     if (!weightChildren) {
       return super.getChildrenSlices(range, symbols);
     }
-    List<IntRange> ranges;
-    if (symbols.size() > range.extent()) {
-      ranges = Collections.nCopies(symbols.size(), range);
-    } else {
-      List<Integer> sizes = new ArrayList<>(symbols.size());
-      int overallWeight = 0;
-      for (T symbol : symbols) {
-        overallWeight = overallWeight + weightsMap.get(symbol);
-      }
-      for (T symbol : symbols) {
-        sizes.add((int) Math.floor((double) weightsMap.get(symbol) / (double) overallWeight * (double) range.extent()));
-      }
-      ranges = Misc.slices(range, sizes);
-    }
-    return ranges;
+    List<Double> sizes = symbols.stream()
+        .map(s -> (double) weightsMap.getOrDefault(s, 0))
+        .toList();
+    return range.slices(sizes);
   }
 
   @Override
@@ -109,15 +94,15 @@ public class WeightedHierarchicalMapper<T> extends HierarchicalMapper<T> {
     if (!weightOptions) {
       return super.getOptionSlices(range, options);
     }
-    List<Integer> sizes = new ArrayList<>(options.size());
-    for (List<T> option : options) {
-      int w = 1;
-      for (T symbol : option) {
-        w = w * Math.max(weightsMap.getOrDefault(symbol, 1), 1);
-      }
-      sizes.add(w);
-    }
-    return Misc.slices(range, sizes);
+    List<Double> sizes = options.stream()
+        .map(
+            o -> o.stream()
+                .mapToDouble(s -> Math.max(weightsMap.getOrDefault(s, 1), 1))
+                .reduce((v1, v2) -> v1 * v2)
+                .orElse(0d)
+        )
+        .toList();
+    return range.slices(sizes);
   }
 
   @Override

@@ -25,7 +25,6 @@ import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGramma
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammarBasedMapper;
 import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jgea.core.util.IntRange;
-import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,13 +35,8 @@ import java.util.stream.IntStream;
 
 public class HierarchicalMapper<T> extends StringGrammarBasedMapper<BitString, T> {
 
-  private static final boolean RECURSIVE_DEFAULT = false;
   protected final Map<T, List<Integer>> shortestOptionIndexesMap;
   private final boolean recursive;
-
-  public HierarchicalMapper(StringGrammar<T> grammar) {
-    this(grammar, RECURSIVE_DEFAULT);
-  }
 
   public HierarchicalMapper(StringGrammar<T> grammar, boolean recursive) {
     super(grammar);
@@ -56,17 +50,13 @@ public class HierarchicalMapper<T> extends StringGrammarBasedMapper<BitString, T
 
   @Override
   public Optional<Tree<T>> apply(BitString genotype) {
-    if (recursive) {
-      return Optional.of(
-          mapRecursively(
-              grammar().startingSymbol(),
-              new IntRange(0, genotype.size()),
-              genotype,
-              new int[genotype.size()]
-          )
-      );
-    }
-    return Optional.of(mapIteratively(genotype, new int[genotype.size()]));
+    return Optional.of(
+        recursive ? mapRecursively(
+            grammar().startingSymbol(),
+            new IntRange(0, genotype.size()),
+            genotype
+        ) : mapIteratively(genotype)
+    );
   }
 
   private List<T> chooseOption(BitString genotype, IntRange range, List<List<T>> options) {
@@ -104,16 +94,16 @@ public class HierarchicalMapper<T> extends StringGrammarBasedMapper<BitString, T
     if (symbols.size() > range.extent()) {
       ranges = Collections.nCopies(symbols.size(), range);
     } else {
-      ranges = Misc.slices(range, symbols.size());
+      ranges = range.slices(symbols.size());
     }
     return ranges;
   }
 
   protected List<IntRange> getOptionSlices(IntRange range, List<List<T>> options) {
-    return Misc.slices(range, options.size());
+    return range.slices(options.size());
   }
 
-  public Tree<T> mapIteratively(BitString genotype, int[] bitUsages) {
+  public Tree<T> mapIteratively(BitString genotype) {
     Tree<EnhancedSymbol<T>> enhancedTree = new Tree<>(
         new EnhancedSymbol<>(grammar().startingSymbol(), new IntRange(0, genotype.size()))
     );
@@ -143,9 +133,6 @@ public class HierarchicalMapper<T> extends StringGrammarBasedMapper<BitString, T
         symbols = options.get(index);
       } else {
         symbols = chooseOption(genotype, symbolRange, options);
-        for (int i = symbolRange.min(); i < symbolRange.max(); i++) {
-          bitUsages[i] = bitUsages[i] + 1;
-        }
       }
       // add children
       List<IntRange> childRanges = getChildrenSlices(symbolRange, symbols);
@@ -166,13 +153,9 @@ public class HierarchicalMapper<T> extends StringGrammarBasedMapper<BitString, T
     return enhancedTree.map(EnhancedSymbol::symbol);
   }
 
-  public Tree<T> mapRecursively(T symbol, IntRange range, BitString genotype, int[] bitUsages) {
+  public Tree<T> mapRecursively(T symbol, IntRange range, BitString genotype) {
     if (grammar().rules().containsKey(symbol)) {
       // a non-terminal node
-      // update usage
-      for (int i = range.min(); i < range.max(); i++) {
-        bitUsages[i] = bitUsages[i] + 1;
-      }
       List<List<T>> options = grammar().rules().get(symbol);
       // get option
       List<T> symbols;
@@ -184,24 +167,21 @@ public class HierarchicalMapper<T> extends StringGrammarBasedMapper<BitString, T
         symbols = options.get(index);
       } else {
         symbols = chooseOption(genotype, range, options);
-        for (int i = range.min(); i < range.max(); i++) {
-          bitUsages[i] = bitUsages[i] + 1;
-        }
       }
       // add children
-      List<IntRange> childRanges = getChildrenSlices(range, symbols);
-      for (int i = 0; i < symbols.size(); i++) {
-        IntRange childRange = childRanges.get(i);
-        if (childRanges.get(i).equals(range) && (childRange.extent() > 0)) {
-          childRange = new IntRange(range.min(), range.max() - 1);
-          childRanges.set(i, childRange);
-        }
-      }
+      List<IntRange> childRanges = getChildrenSlices(range, symbols).stream()
+          .map(r -> {
+            if (r.extent() > 0 && r.extent() == range.extent()) {
+              return new IntRange(r.min(), r.max() - 1);
+            }
+            return r;
+          })
+          .toList();
       return new Tree<>(
           symbol,
           IntStream.range(0, symbols.size())
               .mapToObj(
-                  i -> mapRecursively(symbols.get(i), childRanges.get(i), genotype, bitUsages)
+                  i -> mapRecursively(symbols.get(i), childRanges.get(i), genotype)
               )
               .toList()
       );

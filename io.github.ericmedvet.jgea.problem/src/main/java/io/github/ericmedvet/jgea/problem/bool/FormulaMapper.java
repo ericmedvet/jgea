@@ -20,25 +20,17 @@
 
 package io.github.ericmedvet.jgea.problem.bool;
 
-import io.github.ericmedvet.jgea.core.IndependentFactory;
 import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGrammar;
-import io.github.ericmedvet.jgea.core.representation.grammar.string.ge.StandardGEMapper;
-import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
-import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitStringFactory;
 import io.github.ericmedvet.jgea.core.representation.tree.bool.Element;
 import io.github.ericmedvet.jgea.core.representation.tree.bool.Element.Operator;
 import io.github.ericmedvet.jnb.datastructure.Tree;
-import io.github.ericmedvet.jnb.datastructure.Utils;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Optional;
-import java.util.Random;
 import java.util.SequencedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Function;
-import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -86,20 +78,30 @@ public class FormulaMapper implements Function<Tree<String>, List<Tree<Element>>
         MULTIPLE_OUTPUT_NON_TERMINAL,
         List.of(Collections.nCopies(nOfOutputs, EXPR_NON_TERMINAL))
     );
-    rules.put(EXPR_NON_TERMINAL, List.of(
-       List.of(OP_NON_TERMINAL),
-       List.of(VAR_NON_TERMINAL)
-    ));
-    rules.put(OP_NON_TERMINAL, arities.stream()
-        .map(a -> Stream.concat(
-            Stream.of(OP_NON_TERMINAL_FORMAT.formatted(a)),
-            Collections.nCopies(a, EXPR_NON_TERMINAL).stream()
-        ).toList())
-        .toList()
+    rules.put(
+        EXPR_NON_TERMINAL,
+        List.of(
+            List.of(OP_NON_TERMINAL),
+            List.of(VAR_NON_TERMINAL)
+        )
     );
-    arities.forEach(a -> rules.put(OP_NON_TERMINAL_FORMAT.formatted(a),
-        operators.stream().filter(o -> o.arity()==a).map(o -> List.of(o.toString())).toList()
-        ));
+    rules.put(
+        OP_NON_TERMINAL,
+        arities.stream()
+            .map(
+                a -> Stream.concat(
+                    Stream.of(OP_NON_TERMINAL_FORMAT.formatted(a)),
+                    Collections.nCopies(a, EXPR_NON_TERMINAL).stream()
+                ).toList()
+            )
+            .toList()
+    );
+    arities.forEach(
+        a -> rules.put(
+            OP_NON_TERMINAL_FORMAT.formatted(a),
+            operators.stream().filter(o -> o.arity() == a).map(o -> List.of(o.toString())).toList()
+        )
+    );
     rules.put(
         VAR_NON_TERMINAL,
         IntStream.range(0, nOfInputs)
@@ -114,7 +116,9 @@ public class FormulaMapper implements Function<Tree<String>, List<Tree<Element>>
     if (stringTree.label().equals(MULTIPLE_OUTPUT_NON_TERMINAL)) {
       return stringTree.children().stream().map(this::singleMap).toList();
     }
-    throw new IllegalArgumentException("Tree root is not %s".formatted(MULTIPLE_OUTPUT_NON_TERMINAL));
+    throw new IllegalArgumentException(
+        "Tree root is not %s".formatted(MULTIPLE_OUTPUT_NON_TERMINAL)
+    );
   }
 
   public Tree<Element> singleMap(Tree<String> stringTree) {
@@ -133,17 +137,6 @@ public class FormulaMapper implements Function<Tree<String>, List<Tree<Element>>
             .map(this::singleMap)
             .toList()
     );
-  }
-
-  // TODO replicate this structure for symbolic regression
-  static void main() {
-    StringGrammar<String> grammar = FormulaMapper.grammar(
-        List.of(Operator.AND,Operator.OR,Operator.NOT), 2, 2);
-    System.out.println(grammar);
-    Function<BitString, Optional<Tree<String>>> m = new StandardGEMapper<>(2,1, grammar);
-    IndependentFactory<BitString> bsF = new BitStringFactory(1024);
-    RandomGenerator r = new Random(1);
-    m.apply(bsF.build(r)).ifPresent(t -> System.out.println(t.size()));
   }
 
 }
