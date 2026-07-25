@@ -19,13 +19,14 @@
  */
 package io.github.ericmedvet.jgea.core.representation.tree.bool;
 
+import io.github.ericmedvet.jnb.datastructure.Sized;
 import io.github.ericmedvet.jnb.datastructure.Tree;
 import io.github.ericmedvet.jsdynsym.core.bool.BooleanFunction;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
-public class TreeBasedBooleanFunction implements BooleanFunction {
+public class TreeBasedBooleanFunction implements BooleanFunction, Sized {
 
   private final List<Tree<Element>> trees;
   private final int nOfInputs;
@@ -103,6 +104,11 @@ public class TreeBasedBooleanFunction implements BooleanFunction {
   }
 
   @Override
+  public boolean[] compute(boolean... input) {
+    return unbox(trees.stream().map(t -> compute(t, input)).toArray(Boolean[]::new));
+  }
+
+  @Override
   public int nOfInputs() {
     return nOfInputs;
   }
@@ -113,7 +119,7 @@ public class TreeBasedBooleanFunction implements BooleanFunction {
   }
 
   @Override
-  public boolean[] compute(boolean... input) {
-    return unbox(trees.stream().map(t -> compute(t, input)).toArray(Boolean[]::new));
+  public int size() {
+    return trees.stream().mapToInt(Tree::size).sum();
   }
 }
