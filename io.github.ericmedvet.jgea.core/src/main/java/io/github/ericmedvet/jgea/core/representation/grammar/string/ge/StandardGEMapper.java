@@ -26,6 +26,7 @@ import io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString;
 import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 public class StandardGEMapper<T> extends StringGrammarBasedMapper<BitString, T> {
 
@@ -83,6 +84,8 @@ public class StandardGEMapper<T> extends StringGrammarBasedMapper<BitString, T> 
           ),
           toReplaceLineage
       );
+      System.out.printf("before: %s, repL: %s, option: %s -> after: %s%n",
+          finalTree, toReplaceLineage, options.get(optionIndex), tree);
     }
     return Optional.of(tree);
   }
@@ -91,4 +94,5 @@ public class StandardGEMapper<T> extends StringGrammarBasedMapper<BitString, T> 
   public String toString() {
     return "StandardGEMapper{" + "codonLength=" + codonLength + ", maxWraps=" + maxWraps + '}';
   }
+
 }
