@@ -45,7 +45,7 @@ import java.util.stream.Stream;
 
 @Discoverable(prefixTemplate = "ea.listener|l")
 @Alias(
-    name = "saveForExp", passThroughParams = {@PassThroughParam(name = "path", type = ParamMap.Type.STRING, value = "{experiment.name}"), @PassThroughParam(name = "processor", type = ParamMap.Type.NAMED_PARAM_MAP), @PassThroughParam(name = "overwrite", type = ParamMap.Type.BOOLEAN, value = "false"), @PassThroughParam(name = "verbose", type = ParamMap.Type.BOOLEAN, value = "false")
+    name = "saveForExp", passThroughParams = {@PassThroughParam(name = "path", type = ParamMap.Type.STRING), @PassThroughParam(name = "processor", type = ParamMap.Type.NAMED_PARAM_MAP), @PassThroughParam(name = "overwrite", type = ParamMap.Type.BOOLEAN, value = "false"), @PassThroughParam(name = "verbose", type = ParamMap.Type.BOOLEAN, value = "false")
     }, value = // spotless:off
     """
         listener.onDone(
@@ -65,7 +65,7 @@ import java.util.stream.Stream;
         """ // spotless:on
 )
 @Alias(
-    name = "savePlotAndCsvForExp", passThroughParams = {@PassThroughParam(name = "secondary", type = ParamMap.Type.BOOLEAN, value = "false"), @PassThroughParam(name = "overwrite", type = ParamMap.Type.BOOLEAN, value = "false"), @PassThroughParam(name = "path", type = ParamMap.Type.STRING, value = "{experiment.name}"), @PassThroughParam(name = "plot", type = ParamMap.Type.NAMED_PARAM_MAP), @PassThroughParam(name = "type", type = ParamMap.Type.STRING, value = "png"), @PassThroughParam(name = "configuration", type = Type.NAMED_PARAM_MAP, value = "viz.plot.configuration.image()")
+    name = "savePlotAndCsvForExp", passThroughParams = {@PassThroughParam(name = "secondary", type = ParamMap.Type.BOOLEAN, value = "false"), @PassThroughParam(name = "overwrite", type = ParamMap.Type.BOOLEAN, value = "false"), @PassThroughParam(name = "path", type = ParamMap.Type.STRING), @PassThroughParam(name = "plot", type = ParamMap.Type.NAMED_PARAM_MAP), @PassThroughParam(name = "type", type = ParamMap.Type.STRING, value = "png"), @PassThroughParam(name = "configuration", type = Type.NAMED_PARAM_MAP, value = "viz.plot.configuration.image()")
     }, value = // spotless:off
     """
         listener.onDone(
@@ -78,7 +78,7 @@ import java.util.stream.Stream;
         """ // spotless:on
 )
 @Alias(
-    name = "saveForRun", passThroughParams = {@PassThroughParam(name = "path", type = ParamMap.Type.STRING, value = "run-{index:%04d}"), @PassThroughParam(name = "overwrite", type = ParamMap.Type.BOOLEAN, value = "false"), @PassThroughParam(name = "processor", type = ParamMap.Type.NAMED_PARAM_MAP), @PassThroughParam(name = "verbose", type = ParamMap.Type.BOOLEAN, value = "false")
+    name = "saveForRun", passThroughParams = {@PassThroughParam(name = "path", type = ParamMap.Type.STRING), @PassThroughParam(name = "overwrite", type = ParamMap.Type.BOOLEAN, value = "false"), @PassThroughParam(name = "processor", type = ParamMap.Type.NAMED_PARAM_MAP), @PassThroughParam(name = "verbose", type = ParamMap.Type.BOOLEAN, value = "false")
     }, value = // spotless:off
     """
         listener.onKDone(
@@ -107,7 +107,7 @@ import java.util.stream.Stream;
         )
         """) // spotless:on
 @Alias(
-    name = "savePlotAndCsvForRun", passThroughParams = {@PassThroughParam(name = "secondary", type = ParamMap.Type.BOOLEAN, value = "false"), @PassThroughParam(name = "overwrite", type = ParamMap.Type.BOOLEAN, value = "false"), @PassThroughParam(name = "path", type = ParamMap.Type.STRING, value = "{experiment.name}"), @PassThroughParam(name = "plot", type = ParamMap.Type.NAMED_PARAM_MAP), @PassThroughParam(name = "type", type = ParamMap.Type.STRING, value = "png"), @PassThroughParam(name = "configuration", type = Type.NAMED_PARAM_MAP, value = "viz.plot.configuration.image()"), @PassThroughParam(name = "verbose", type = ParamMap.Type.BOOLEAN, value = "false")
+    name = "savePlotAndCsvForRun", passThroughParams = {@PassThroughParam(name = "secondary", type = ParamMap.Type.BOOLEAN, value = "false"), @PassThroughParam(name = "overwrite", type = ParamMap.Type.BOOLEAN, value = "false"), @PassThroughParam(name = "path", type = ParamMap.Type.STRING), @PassThroughParam(name = "plot", type = ParamMap.Type.NAMED_PARAM_MAP), @PassThroughParam(name = "type", type = ParamMap.Type.STRING, value = "png"), @PassThroughParam(name = "configuration", type = Type.NAMED_PARAM_MAP, value = "viz.plot.configuration.image()"), @PassThroughParam(name = "verbose", type = ParamMap.Type.BOOLEAN, value = "false")
     }, value = // spotless:off
     """
         listener.onKDone(
@@ -158,7 +158,8 @@ import java.util.stream.Stream;
            f.size(of = ea.f.lasts());
            f.uniqueness(of = f.each(mapF = ea.f.genotype(); of = ea.f.all()));
            f.uniqueness(of = f.each(mapF = ea.f.solution(); of = ea.f.all()));
-           f.uniqueness(of = f.each(mapF = ea.f.quality(); of = ea.f.all()))
+           f.uniqueness(of = f.each(mapF = ea.f.quality(); of = ea.f.all()));
+           ea.f.id(of = ea.f.best())
          ];
          defaultKFunctions = [
            f.mappableKey(key = "problem.name");
@@ -168,6 +169,57 @@ import java.util.stream.Stream;
        )
        """ // spotless:on
 )
+@Alias( // spotless:off
+    name = "individualCsv",
+    passThroughParams = {
+        @PassThroughParam(name = "splitterF", type = Type.NAMED_PARAM_MAP),
+        @PassThroughParam(name = "defaultOEFunctions", type = Type.NAMED_PARAM_MAPS, value = """
+            [
+              ea.f.nOfIterations();
+              ea.f.nOfEvals();
+              ea.f.nOfBirths();
+              ea.f.elapsedSecs()
+            ]
+            """),
+        @PassThroughParam(name = "defaultIEFunctions", type = Type.NAMED_PARAM_MAPS, value = """
+            [
+              ea.f.id()
+            ]
+            """),
+        @PassThroughParam(name = "oeFunctions", type = Type.NAMED_PARAM_MAPS, value = "[]"),
+        @PassThroughParam(name = "ieFunctions", type = Type.NAMED_PARAM_MAPS, value = "[]"),
+        @PassThroughParam(name = "kFunctions", type = Type.NAMED_PARAM_MAPS, value = "[]"),
+        @PassThroughParam(name = "path", type = Type.STRING),
+        @PassThroughParam(name = "errorString", type = Type.STRING, value = "NA"),
+        @PassThroughParam(name = "intFormat", type = Type.STRING, value = "%d"),
+        @PassThroughParam(name = "doubleFormat", type = Type.STRING, value = "%.5e")
+    },
+    value =
+    """
+       listener.splitPair(
+         splitter = $splitterF;
+         inner = listener.csv(
+           defaultEFunctions =
+             (then = $defaultOEFunctions) * [f.composition(of = f.pairFirst(name = "identity"))] +
+             (then = $defaultIEFunctions) * [f.composition(of = f.pairSecond(name = "identity"))];
+           defaultKFunctions = [
+             f.mappableKey(key = "problem.name");
+             f.mappableKey(key = "solver.name");
+             f.mappableKey(key = "randomGenerator.seed")
+           ];
+           eFunctions =
+             (then = $oeFunctions) * [f.composition(of = f.pairFirst(name = "identity"))] +
+             (then = $ieFunctions) * [f.composition(of = f.pairSecond(name = "identity"))];
+           kFunctions = $kFunctions;
+           path = $path;
+           errorString = $errorString;
+           intFormat = $intFormat;
+           doubleFormat = $doubleFormat
+         )
+       )
+       """ // spotless:on
+)
+@Alias(name = "allCsv", value = "individualCsv(splitterF = ea.f.all())")
 public class Listeners {
 
   private Listeners() {

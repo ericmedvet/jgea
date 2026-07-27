@@ -1,7 +1,7 @@
 $basePath = ''../../Documenti/experiments/{^^.name}/{^^.startTime}/''
 
 ea.experiment(
-  runs = (randomGenerator = (seed = [1:1:5]) * [m.defaultRG()])
+  runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()])
     * (problem = [
       ea.p.br.mopm(n = 2);
       ea.p.br.mopm(n = 3);
@@ -15,7 +15,7 @@ ea.experiment(
         ]
       )
     ])
-    * (solver = (stop = ea.sc.nOfQualityEvaluations(n = 5000)) * [
+    * (solver = (stop = ea.sc.nOfQualityEvaluations(n = 500)) * [
       ea.s.ga(
         name = "ge";
         representation = ea.r.bitString();
@@ -59,6 +59,17 @@ ea.experiment(
         f.timestamp()
       ];
       onlyLast = true
+    );
+
+    ea.l.individualCsv(
+      path = $basePath + "all.csv";
+      splitterF = ea.f.firsts();
+      onlyLast = true;
+      ieFunctions = [
+        ea.f.size(of = ea.f.genotype(); format = "%4d");
+        ea.f.size(of = ea.f.solution(); format = "%3d");
+        f.mapValue(key = avg_dissimilarity; of = ea.f.quality(); format = "%6.2f")
+      ]
     );
 
     % ========= CONVERGENCE PLOTS
