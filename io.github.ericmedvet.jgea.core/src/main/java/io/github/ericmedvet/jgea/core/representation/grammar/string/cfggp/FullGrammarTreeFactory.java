@@ -25,9 +25,9 @@ import io.github.ericmedvet.jgea.core.representation.grammar.string.StringGramma
 import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.Tree;
 
-public class FullGrammarGrammarTreeFactory<L> extends GrowGrammarTreeFactory<L> {
+public class FullGrammarTreeFactory<L> extends GrowGrammarTreeFactory<L> {
 
-  public FullGrammarGrammarTreeFactory(StringGrammar<L> grammar) {
+  public FullGrammarTreeFactory(StringGrammar<L> grammar) {
     super(grammar);
   }
 
