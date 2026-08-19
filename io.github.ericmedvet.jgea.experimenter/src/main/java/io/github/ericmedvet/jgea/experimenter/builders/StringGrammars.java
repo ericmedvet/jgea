@@ -31,7 +31,9 @@ import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.Tree;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 @Discoverable(prefixTemplate = "ea.grammar.string")
@@ -120,6 +122,22 @@ public class StringGrammars {
             .sorted()
             .toList(),
         constants
+    );
+  }
+
+  @Cacheable
+  public static Function<Tree<String>, StringGrammar<String>> simpleFixedArity(
+      @Param("arity") int arity
+  ) {
+    return _ -> StringGrammar.from(
+        "<n>",
+        Map.of(
+            "<n>",
+            List.of(
+                Collections.nCopies(arity, "<n>"),
+                List.of("t")
+            )
+        )
     );
   }
 

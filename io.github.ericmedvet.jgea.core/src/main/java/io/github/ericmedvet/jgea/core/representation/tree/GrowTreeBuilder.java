@@ -49,10 +49,12 @@ public class GrowTreeBuilder<L> implements Function<Integer, IndependentFactory<
         return new Tree<>(terminalFactory.build(random));
       }
       L label = nonTerminalFactory.build(random);
+      int arity = arityFunction.applyAsInt(label);
+      int fullIndex = random.nextInt(0, arity);
       return new Tree<>(
           label,
-          IntStream.range(0, arityFunction.applyAsInt(label))
-              .mapToObj(_ -> apply(random.nextInt(h - 1) + 1).build(random))
+          IntStream.range(0, arity)
+              .mapToObj(i -> apply(i == fullIndex ? (h - 1) : (random.nextInt(h - 1) + 1)).build(random))
               .toList()
       );
     };

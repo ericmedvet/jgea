@@ -41,7 +41,7 @@ public class GrammarBasedSubtreeMutation<L> implements Mutation<Tree<L>> {
 
   public GrammarBasedSubtreeMutation(int maxHeight, StringGrammar<L> grammar) {
     this.maxHeight = maxHeight;
-    builder = new GrowGrammarTreeFactory<>(grammar);
+    builder = new GrowGrammarTreeBuilder<>(grammar);
     nonTrivialLabels = GrammarUtils.computeNumberOfExpansions(grammar)
         .entrySet()
         .stream()
