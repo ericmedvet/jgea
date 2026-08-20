@@ -2388,6 +2388,40 @@ Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;<abb
 
 Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;<abbr title="java.util.concurrent.Executor">Executor</abbr>, <abbr title="io.github.ericmedvet.jnb.datastructure.ListenerFactory">ListenerFactory</abbr>&lt;E, K&gt;&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Listeners.csv()` by jgea-experimenter:2.8.2-SNAPSHOT
 
+### Builder `ea.listener.firstsCsv()`
+
+`ea.l.firstsCsv(splitter; inner; deferred; onlyLast; eCondition; kCondition; splitterF; defaultOEFunctions; defaultIEFunctions; oeFunctions; ieFunctions; kFunctions; path; errorString; intFormat; doubleFormat)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `splitter` | npm | `null` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;OE, <abbr title="java.util.Collection">Collection</abbr>&lt;IE&gt;&gt;</code> |
+| `inner` | npm | `listener.csv(defaultEFunctions = [f.composition(of = f.pairFirst(name = identity); then = ea.f.nOfIterations()); f.composition(of = f.pairFirst(name = identity); then = ea.f.nOfEvals()); f.composition(of = f.pairFirst(name = identity); then = ea.f.nOfBirths()); f.composition(of = f.pairFirst(name = identity); then = ea.f.elapsedSecs()); f.composition(of = f.pairSecond(name = identity); then = ea.f.id())]; defaultKFunctions = [f.mappableKey(key = "problem.name"); f.mappableKey(key = "solver.name"); f.mappableKey(key = "randomGenerator.seed")]; doubleFormat = "%.5e"; eFunctions = []; errorString = NA; intFormat = "%d"; kFunctions = []; path = null)` | <code><abbr title="java.util.function.Function">Function</abbr>&lt;<abbr title="java.util.concurrent.Executor">Executor</abbr>, <abbr title="io.github.ericmedvet.jnb.datastructure.ListenerFactory">ListenerFactory</abbr>&lt;<abbr title="io.github.ericmedvet.jnb.datastructure.Pair">Pair</abbr>&lt;OE, IE&gt;, K&gt;&gt;</code> |
+| `deferred` | b | `false` | <code>boolean</code> |
+| `onlyLast` | b | `false` | <code>boolean</code> |
+| `eCondition` | npm | `predicate.always()` | <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;OE&gt;</code> |
+| `kCondition` | npm | `predicate.always()` | <code><abbr title="java.util.function.Predicate">Predicate</abbr>&lt;K&gt;</code> |
+| `splitterF` | npm | `ea.f.firsts()` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `defaultOEFunctions` | npm[] | `[
+  ea.f.nOfIterations();
+  ea.f.nOfEvals();
+  ea.f.nOfBirths();
+  ea.f.elapsedSecs()
+]
+` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `defaultIEFunctions` | npm[] | `[
+  ea.f.id()
+]
+` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `oeFunctions` | npm[] | `[]` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `ieFunctions` | npm[] | `[]` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `kFunctions` | npm[] | `[]` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `path` | s | `` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `errorString` | s | `NA` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `intFormat` | s | `%d` | <code><abbr title="java.lang.String">String</abbr></code> |
+| `doubleFormat` | s | `%.5e` | <code><abbr title="java.lang.String">String</abbr></code> |
+
+Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;<abbr title="java.util.concurrent.Executor">Executor</abbr>, <abbr title="io.github.ericmedvet.jnb.datastructure.ListenerFactory">ListenerFactory</abbr>&lt;OE, K&gt;&gt;</code>; built from `io.github.ericmedvet.jnb.buildable.Listeners.splitPair()` by jgea-experimenter:2.8.2-SNAPSHOT
+
 ### Builder `ea.listener.individualCsv()`
 
 `ea.l.individualCsv(splitter; inner; deferred; onlyLast; eCondition; kCondition; splitterF; defaultOEFunctions; defaultIEFunctions; oeFunctions; ieFunctions; kFunctions; path; errorString; intFormat; doubleFormat)`

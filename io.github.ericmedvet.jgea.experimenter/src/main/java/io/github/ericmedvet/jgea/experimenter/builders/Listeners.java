@@ -215,6 +215,7 @@ import java.util.function.Predicate;
        """ // spotless:on
 )
 @Alias(name = "allCsv", value = "ea.listener.individualCsv(splitterF = ea.f.all())")
+@Alias(name = "firstsCsv", value = "ea.listener.individualCsv(splitterF = ea.f.firsts())")
 public class Listeners {
 
   private Listeners() {
