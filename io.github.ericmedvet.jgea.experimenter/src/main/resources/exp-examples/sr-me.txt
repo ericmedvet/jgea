@@ -70,7 +70,8 @@ ea.experiment(
     ea.l.savePlotForRun(
       path = $basePath + "{solver.name}/{problem.name}/{randomGenerator.seed}-archive.svg";
       plot = ea.plot.single.me(
-        q = f.mapValue(key = mse)
+        q = f.mapValue(key = mse);
+        valueRange = m.range(min = 0; max = 0.5)
       );
       kCondition = predicate.matches(f = f.mappableKey(key = "solver.name"); regex = ".*me.*");
       type = svg
