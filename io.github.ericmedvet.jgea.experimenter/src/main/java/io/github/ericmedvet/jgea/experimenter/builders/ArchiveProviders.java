@@ -40,6 +40,7 @@ import io.github.ericmedvet.jgea.core.solver.mapelites.archive.GridArchive.Axis;
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive;
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive.Provider;
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.TwoDGridArchive;
+import io.github.ericmedvet.jgea.core.solver.mapelites.archive.VoronoiArchive;
 import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
@@ -47,6 +48,7 @@ import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
 @Discoverable(prefixTemplate = "ea.solver|s.mapelites|me.archive|a")
@@ -98,6 +100,32 @@ public class ArchiveProviders {
         return new TwoDGridArchive<>(
             new Axis(range1, nOfBins1),
             new Axis(range2, nOfBins2),
+            contentInitializer,
+            contentUpdater
+        );
+      }
+    };
+  }
+
+  @Cacheable
+  public static NumericalKeyArchive.Provider voronoi(
+      @Param("ranges1") DoubleRange range1,
+      @Param("ranges2") DoubleRange range2,
+      @Param(value = "nOfPoints", dI = 100) int nOfPoints,
+      @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator
+  ) {
+    return new Provider() {
+      @Override
+      public <V, C> NumericalKeyArchive<V, C> provide(
+          int arity,
+          Function<V, C> contentInitializer,
+          BiFunction<C, V, C> contentUpdater
+      ) {
+        return new VoronoiArchive<>(
+            range1,
+            range2,
+            nOfPoints,
+            randomGenerator,
             contentInitializer,
             contentUpdater
         );

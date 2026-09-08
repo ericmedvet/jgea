@@ -89,7 +89,7 @@ public interface NumericalKeyArchive<V, C> extends Archive<List<Double>, V, C> {
     );
 
     default <V> NumericalKeyArchive<V, V> provide(int arity) {
-      return provide(arity, v -> v, (oldV, newV) -> newV);
+      return provide(arity, v -> v, (_, newV) -> newV);
     }
   }
 }

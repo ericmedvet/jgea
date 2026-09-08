@@ -11,6 +11,21 @@ ea.experiment(
     (solver = (stop = ea.sc.nOfQualityEvaluations(n = 1000)) * [
       ea.s.ga(mapper = ea.m.srTreeToNurf(); representation = ea.r.srTree());
       ea.s.mapElites(
+        name = "me-voronoi";
+        mapper = ea.m.srTreeToNurf();
+        representation = ea.r.srTree();
+        descriptors = [
+          f.size(of = f.filter(of = ea.f.treeLeafLabels(of = ea.f.genotype()); condition = ea.predicate.isSrConstant()));
+          f.size(of = f.filter(of = ea.f.treeLeafLabels(of = ea.f.genotype()); condition = ea.predicate.isSrVariable()))
+        ];
+        archive = ea.s.me.a.voronoi(
+          ranges1 = m.range(min = 1; max = 32);
+          ranges2 = m.range(min = 1; max = 32);
+          nOfPoints = 100
+        )
+      );
+      ea.s.mapElites(
+        name = "me-grid";
         mapper = ea.m.srTreeToNurf();
         representation = ea.r.srTree();
         descriptors = [
@@ -20,8 +35,8 @@ ea.experiment(
         archive = ea.s.me.a.grid2d(
           ranges1 = m.range(min = 1; max = 32);
           ranges2 = m.range(min = 1; max = 32);
-          nOfBins1 = 8;
-          nOfBins2 = 8
+          nOfBins1 = 10;
+          nOfBins2 = 10
         )
       )
     ]) * [
@@ -73,7 +88,7 @@ ea.experiment(
         q = f.mapValue(key = mse);
         valueRange = m.range(min = 0; max = 0.5)
       );
-      kCondition = predicate.matches(f = f.mappableKey(key = "solver.name"); regex = ".*me.*");
+      kCondition = predicate.matches(f = f.mappableKey(key = "solver.name"); regex = "me.*");
       type = svg
     )
   ]

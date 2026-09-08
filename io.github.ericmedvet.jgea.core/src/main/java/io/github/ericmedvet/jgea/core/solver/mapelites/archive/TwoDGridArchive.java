@@ -73,7 +73,7 @@ public class TwoDGridArchive<V, C> extends GridArchive<V, C> implements TwoDKeyA
 
   @Override
   public Map<Polygon, C> localizedContents() {
-    Map<Polygon, C> map = new HashMap<>();
+    Map<Polygon, C> map = new HashMap<>(cells.size());
     cells.forEach(
         (key, value) -> map.put(
             key,

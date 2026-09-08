@@ -26,6 +26,7 @@ module io.github.ericmedvet.jgea.core {
   requires org.jspecify;
   requires jcodec;
   requires java.sql;
+  requires java.desktop;
 
   exports io.github.ericmedvet.jgea.core;
   exports io.github.ericmedvet.jgea.core.distance;

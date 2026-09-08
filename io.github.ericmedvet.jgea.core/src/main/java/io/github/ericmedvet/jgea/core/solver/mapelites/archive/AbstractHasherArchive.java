@@ -64,8 +64,7 @@ public abstract class AbstractHasherArchive<K, H, V, C> implements Archive<K, V,
   public void put(K key, V value) {
     H hash = hash(key);
     if (map.containsKey(hash)) {
-      map.compute(hash, (h, existingC) -> contentUpdater.apply(existingC, value));
-
+      map.compute(hash, (_, existingC) -> contentUpdater.apply(existingC, value));
     }
     map.put(hash, contentInitializer.apply(value));
   }
