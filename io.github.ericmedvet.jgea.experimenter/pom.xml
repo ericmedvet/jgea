@@ -24,9 +24,9 @@
       <version>${jsdynsym.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.beust</groupId>
+      <groupId>org.jcommander</groupId>
       <artifactId>jcommander</artifactId>
-      <version>1.82</version>
+      <version>3.0</version>
     </dependency>
     <dependency>
       <groupId>com.googlecode.lanterna</groupId>
@@ -51,6 +51,8 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
+          <finalName>jgea</finalName>
+          <appendAssemblyId>false</appendAssemblyId>
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
           </descriptorRefs>
