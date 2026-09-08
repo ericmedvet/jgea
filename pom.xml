@@ -67,10 +67,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jdk.version>25</jdk.version>
     <maven.version>3.9.11</maven.version>
-    <jnb.version>1.5.2-SNAPSHOT</jnb.version>
-    <jsdynsym.version>1.2.2-SNAPSHOT</jsdynsym.version>
-    <jviz.version>1.2.2-SNAPSHOT</jviz.version>
-    <revision>2.8.2-SNAPSHOT</revision>
+    <jnb.version>1.5.2</jnb.version>
+    <jsdynsym.version>1.2.2</jsdynsym.version>
+    <jviz.version>1.2.2</jviz.version>
+    <revision>2.8.2</revision>
   </properties>
 
   <dependencyManagement>
