@@ -50,7 +50,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.7.1</version>
         <configuration>
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
@@ -74,7 +73,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.6.2</version>
+        <version>3.6.3</version>
         <configuration>
           <mainClass>io.github.ericmedvet.jnb.core.InfoPrinter</mainClass>
           <arguments>

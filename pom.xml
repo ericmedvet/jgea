@@ -22,8 +22,9 @@
   <packaging>pom</packaging>
 
   <name>jgea</name>
-  <description>Java General Evolutionary Algorithm (jgea) is a modular Java framework for experimenting with
-        Evolutionary Computation.</description>
+  <description>Java General Evolutionary Algorithm (jgea) is a modular Java framework for
+    experimenting with
+    Evolutionary Computation.</description>
   <url>https://github.com/ericmedvet/jgea</url>
 
   <licenses>
@@ -124,11 +125,20 @@
         <directory>src/main/resources</directory>
       </resource>
     </resources>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>3.8.0</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.6.2</version>
+        <version>3.6.3</version>
         <executions>
           <execution>
             <id>enforce-maven</id>
@@ -148,16 +158,11 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.14.1</version>
+        <version>3.16.0</version>
         <configuration>
           <source>${jdk.version}</source>
           <target>${jdk.version}</target>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.8.0</version>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
