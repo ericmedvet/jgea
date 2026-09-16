@@ -35,20 +35,12 @@ public abstract class AbstractHasherArchive<K, H, V, C> implements Archive<K, V,
   private final Function<V, C> contentInitializer;
 
   public AbstractHasherArchive(
-      Map<H, C> map,
       Function<V, C> contentInitializer,
       BiFunction<C, V, C> contentUpdater
   ) {
-    this.map = map;
+    map = new ConcurrentHashMap<>();
     this.contentUpdater = contentUpdater;
     this.contentInitializer = contentInitializer;
-  }
-
-  public AbstractHasherArchive(
-      Function<V, C> contentInitializer,
-      BiFunction<C, V, C> contentUpdater
-  ) {
-    this(new ConcurrentHashMap<>(), contentInitializer, contentUpdater);
   }
 
   public abstract H hash(K key);
@@ -65,8 +57,9 @@ public abstract class AbstractHasherArchive<K, H, V, C> implements Archive<K, V,
     H hash = hash(key);
     if (map.containsKey(hash)) {
       map.compute(hash, (_, existingC) -> contentUpdater.apply(existingC, value));
+    } else {
+      map.put(hash, contentInitializer.apply(value));
     }
-    map.put(hash, contentInitializer.apply(value));
   }
 
   @Override

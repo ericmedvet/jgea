@@ -1,40 +1,50 @@
 $basePath = ''../../Documenti/experiments/{^^.name}/{^^.startTime}/''
+$desc1 = f.size(of = f.filter(of = ea.f.treeLeafLabels(of = ea.f.genotype()); condition = ea.predicate.isSrConstant()))
+$desc2 = f.size(of = f.filter(of = ea.f.treeLeafLabels(of = ea.f.genotype()); condition = ea.predicate.isSrVariable()))
+$range1 = m.range(min = 1; max = 64)
+$range2 = m.range(min = 1; max = 64)
 
 ea.experiment(
   runs = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()]) *
     (problem = [
-      ea.p.moToSo(objective = mse; moProblem = ea.p.ur.synthetic(name = "keijzer6"));
-      ea.p.moToSo(objective = mse; moProblem = ea.p.ur.synthetic(name = "nguyen7"));
-      ea.p.moToSo(objective = mse; moProblem = ea.p.ur.bundled(name = "concrete"; xScaling = standardization; yScaling = symmetric_min_max));
-      ea.p.moToSo(objective = mse; moProblem = ea.p.ur.bundled(name = "energy-efficiency"; xScaling = standardization; yScaling = symmetric_min_max))
+      ea.p.moToSo(objective = mse; moProblem = ea.p.ur.synthetic(name = "keijzer6"))
+      % ea.p.moToSo(objective = mse; moProblem = ea.p.ur.synthetic(name = "nguyen7"));
+      % ea.p.moToSo(objective = mse; moProblem = ea.p.ur.bundled(name = "concrete"; xScaling = standardization; yScaling = symmetric_min_max));
+      % ea.p.moToSo(objective = mse; moProblem = ea.p.ur.bundled(name = "energy-efficiency"; xScaling = standardization; yScaling = symmetric_min_max))
     ]) *
-    (solver = (stop = ea.sc.nOfQualityEvaluations(n = 1000)) * [
+    (solver = (stop = ea.sc.nOfQualityEvaluations(n = 10000)) * [
       ea.s.ga(mapper = ea.m.srTreeToNurf(); representation = ea.r.srTree());
       ea.s.mapElites(
         name = "me-voronoi";
         mapper = ea.m.srTreeToNurf();
         representation = ea.r.srTree();
-        descriptors = [
-          f.size(of = f.filter(of = ea.f.treeLeafLabels(of = ea.f.genotype()); condition = ea.predicate.isSrConstant()));
-          f.size(of = f.filter(of = ea.f.treeLeafLabels(of = ea.f.genotype()); condition = ea.predicate.isSrVariable()))
-        ];
+        descriptors = [$desc1; $desc2];
         archive = ea.s.me.a.voronoi(
-          ranges1 = m.range(min = 1; max = 32);
-          ranges2 = m.range(min = 1; max = 32);
+          range1 = $range1;
+          range2 = $range2;
           nOfPoints = 100
+        )
+      );
+      ea.s.mapElites(
+        name = "me-timed-voronoi";
+        mapper = ea.m.srTreeToNurf();
+        representation = ea.r.srTree();
+        descriptors = [$desc1; $desc2];
+        archive = ea.s.me.a.timedVoronoi(
+          range1 = $range1;
+          range2 = $range2;
+          nOfPoints = 20;
+          step = 5
         )
       );
       ea.s.mapElites(
         name = "me-grid";
         mapper = ea.m.srTreeToNurf();
         representation = ea.r.srTree();
-        descriptors = [
-          f.size(of = f.filter(of = ea.f.treeLeafLabels(of = ea.f.genotype()); condition = ea.predicate.isSrConstant()));
-          f.size(of = f.filter(of = ea.f.treeLeafLabels(of = ea.f.genotype()); condition = ea.predicate.isSrVariable()))
-        ];
+        descriptors = [$desc1; $desc2];
         archive = ea.s.me.a.grid2d(
-          ranges1 = m.range(min = 1; max = 32);
-          ranges2 = m.range(min = 1; max = 32);
+          range1 = $range1;
+          range2 = $range2;
           nOfBins1 = 10;
           nOfBins2 = 10
         )

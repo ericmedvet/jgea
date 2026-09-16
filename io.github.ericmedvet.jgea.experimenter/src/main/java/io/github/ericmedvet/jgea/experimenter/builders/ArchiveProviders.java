@@ -41,6 +41,7 @@ import io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchi
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive.Provider;
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.TwoDGridArchive;
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.VoronoiArchive;
+import io.github.ericmedvet.jgea.core.solver.mapelites.archive.VoronoiTimedArchive;
 import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
@@ -85,8 +86,8 @@ public class ArchiveProviders {
 
   @Cacheable
   public static NumericalKeyArchive.Provider grid2d(
-      @Param("ranges1") DoubleRange range1,
-      @Param("ranges2") DoubleRange range2,
+      @Param("range1") DoubleRange range1,
+      @Param("range2") DoubleRange range2,
       @Param("nOfBins1") int nOfBins1,
       @Param("nOfBins2") int nOfBins2
   ) {
@@ -109,8 +110,8 @@ public class ArchiveProviders {
 
   @Cacheable
   public static NumericalKeyArchive.Provider voronoi(
-      @Param("ranges1") DoubleRange range1,
-      @Param("ranges2") DoubleRange range2,
+      @Param("range1") DoubleRange range1,
+      @Param("range2") DoubleRange range2,
       @Param(value = "nOfPoints", dI = 100) int nOfPoints,
       @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator
   ) {
@@ -125,6 +126,34 @@ public class ArchiveProviders {
             range1,
             range2,
             nOfPoints,
+            randomGenerator,
+            contentInitializer,
+            contentUpdater
+        );
+      }
+    };
+  }
+
+  @Cacheable
+  public static NumericalKeyArchive.Provider timedVoronoi(
+      @Param("range1") DoubleRange range1,
+      @Param("range2") DoubleRange range2,
+      @Param(value = "nOfPoints", dI = 20) int nOfPoints,
+      @Param(value = "step", dI = 5) int step,
+      @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator
+  ) {
+    return new Provider() {
+      @Override
+      public <V, C> NumericalKeyArchive<V, C> provide(
+          int arity,
+          Function<V, C> contentInitializer,
+          BiFunction<C, V, C> contentUpdater
+      ) {
+        return new VoronoiTimedArchive<>(
+            range1,
+            range2,
+            nOfPoints,
+            step,
             randomGenerator,
             contentInitializer,
             contentUpdater

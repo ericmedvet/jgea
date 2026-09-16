@@ -39,31 +39,78 @@ public class VoronoiArchive<V, C> extends AbstractHasherArchive<List<Double>, Li
 
   private final int nOfPoints;
 
-  private final Set<Point> centroids;
-  private final Map<Key, Set<Point>> spatialHash;
-  private final double cellW;
-  private final double cellH;
   private final Map<Point, Polygon> tessellation;
+  private final SpatialHash spatialHash;
 
-  private record Key(int x, int y) {
+  public static class SpatialHash {
 
-    public static Key from(Point point, double cellW, double cellH) {
-      return new Key((int) Math.floor(point.x() / cellW), (int) Math.floor(point.y() / cellH));
+    private record Key(int x, int y) {
+
+      public static Key from(Point point, double cellW, double cellH) {
+        return new Key((int) Math.floor(point.x() / cellW), (int) Math.floor(point.y() / cellH));
+      }
+
+      public Set<Key> neighbors() {
+        return Set.of(
+            new Key(x - 1, y - 1),
+            new Key(x - 1, y),
+            new Key(x - 1, y + 1),
+            new Key(x, y - 1),
+            new Key(x, y),
+            new Key(x, y + 1),
+            new Key(x + 1, y - 1),
+            new Key(x + 1, y),
+            new Key(x + 1, y + 1)
+        );
+      }
     }
 
-    public Set<Key> neighbors() {
-      return Set.of(
-          new Key(x - 1, y - 1),
-          new Key(x - 1, y),
-          new Key(x - 1, y + 1),
-          new Key(x, y - 1),
-          new Key(x, y),
-          new Key(x, y + 1),
-          new Key(x + 1, y - 1),
-          new Key(x + 1, y),
-          new Key(x + 1, y + 1)
+    private final Map<Key, Set<Point>> map;
+    private final Set<Point> keyPoints;
+    private final double cellW;
+    private final double cellH;
+
+    public SpatialHash(Set<Point> keyPoints) {
+      this.keyPoints = keyPoints;
+      DoubleRange xRange = new DoubleRange(
+          keyPoints.stream().mapToDouble(Point::x).min().orElseThrow(),
+          keyPoints.stream().mapToDouble(Point::x).max().orElseThrow()
       );
+      DoubleRange yRange = new DoubleRange(
+          keyPoints.stream().mapToDouble(Point::y).min().orElseThrow(),
+          keyPoints.stream().mapToDouble(Point::y).max().orElseThrow()
+      );
+      cellW = xRange.extent() / Math.sqrt(keyPoints.size());
+      cellH = yRange.extent() / Math.sqrt(keyPoints.size());
+      map = keyPoints.stream()
+          .collect(
+              Collectors.groupingBy(
+                  p -> Key.from(p, cellW, cellH),
+                  Collectors.toSet()
+              )
+          );
     }
+
+    public Set<Point> keyPoints() {
+      return keyPoints;
+    }
+
+    public Point closestTo(Point point) {
+      Set<Key> keys = Key.from(point, cellW, cellH).neighbors();
+      while (true) {
+        Set<Point> closeCentroids = keys.stream()
+            .flatMap(k -> map.getOrDefault(k, Set.of()).stream())
+            .collect(Collectors.toSet());
+        if (closeCentroids.isEmpty()) {
+          keys = keys.stream().flatMap(k -> k.neighbors().stream()).collect(Collectors.toSet());
+        } else {
+          return closeCentroids.stream()
+              .min(Comparator.comparingDouble(c -> c.distanceTo(point)))
+              .orElseThrow();
+        }
+      }
+    }
+
   }
 
   public VoronoiArchive(
@@ -77,7 +124,7 @@ public class VoronoiArchive<V, C> extends AbstractHasherArchive<List<Double>, Li
     super(contentInitializer, contentUpdater);
     this.nOfPoints = nOfPoints;
     // create points
-    centroids = new LinkedHashSet<>(nOfPoints);
+    Set<Point> centroids = new LinkedHashSet<>(nOfPoints);
     while (centroids.size() < nOfPoints) {
       centroids.add(
           new Point(
@@ -88,36 +135,12 @@ public class VoronoiArchive<V, C> extends AbstractHasherArchive<List<Double>, Li
     }
     tessellation = GeometryUtils.voronoiTessellation(centroids, xRange, yRange);
     // fill spatial hash
-    cellW = xRange.extent() / Math.sqrt(nOfPoints);
-    cellH = yRange.extent() / Math.sqrt(nOfPoints);
-    spatialHash = centroids.stream()
-        .collect(
-            Collectors.groupingBy(
-                p -> Key.from(p, cellW, cellH),
-                Collectors.toSet()
-            )
-        );
-  }
-
-  private Point closestCentroid(Point point) {
-    Set<Key> keys = Key.from(point, cellW, cellH).neighbors();
-    while (true) {
-      Set<Point> closeCentroids = keys.stream()
-          .flatMap(k -> spatialHash.getOrDefault(k, Set.of()).stream())
-          .collect(Collectors.toSet());
-      if (closeCentroids.isEmpty()) {
-        keys = keys.stream().flatMap(k -> k.neighbors().stream()).collect(Collectors.toSet());
-      } else {
-        return closeCentroids.stream()
-            .min(Comparator.comparingDouble(c -> c.distanceTo(point)))
-            .orElseThrow();
-      }
-    }
+    spatialHash = new SpatialHash(centroids);
   }
 
   @Override
   public List<Double> hash(List<Double> key) {
-    Point centroid = closestCentroid(new Point(key.getFirst(), key.getLast()));
+    Point centroid = spatialHash.closestTo(new Point(key.getFirst(), key.getLast()));
     return List.of(centroid.x(), centroid.y());
   }
 
