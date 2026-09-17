@@ -197,7 +197,8 @@ public class Functions {
           x
       ).comparing(Individual::quality);
       NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archive = archiveProvider.provide(
-          descriptors.size()
+          descriptors.size(),
+          partialComparator.firstIs(PartialComparatorOutcome.BEFORE)
       );
       is.stream()
           .map(i -> MEIndividual.from(i, descriptors))

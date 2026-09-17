@@ -22,19 +22,19 @@ ea.experiment(
         archive = ea.s.me.a.voronoi(
           range1 = $range1;
           range2 = $range2;
-          nOfPoints = 100
+          nOfPoints = 25
         )
       );
       ea.s.mapElites(
-        name = "me-timed-voronoi";
+        name = "me-dynamic-voronoi";
         mapper = ea.m.srTreeToNurf();
         representation = ea.r.srTree();
         descriptors = [$desc1; $desc2];
-        archive = ea.s.me.a.timedVoronoi(
+        archive = ea.s.me.a.dynamicVoronoi(
           range1 = $range1;
           range2 = $range2;
-          nOfPoints = 20;
-          step = 5
+          initialNOfPoints = 25;
+          maxNOfPoints = 25
         )
       );
       ea.s.mapElites(
@@ -45,8 +45,8 @@ ea.experiment(
         archive = ea.s.me.a.grid2d(
           range1 = $range1;
           range2 = $range2;
-          nOfBins1 = 10;
-          nOfBins2 = 10
+          nOfBins1 = 5;
+          nOfBins2 = 5
         )
       )
     ]) * [

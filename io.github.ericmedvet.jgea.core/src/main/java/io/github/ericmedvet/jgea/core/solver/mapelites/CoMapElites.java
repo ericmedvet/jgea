@@ -254,11 +254,17 @@ public class CoMapElites<G1, G2, S1, S2, S, Q> extends AbstractPopulationBasedIt
   ) throws SolverException {
     NumericalKeyArchive<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>, CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>> archive1 = archiveProvider1
         .provide(
-            descriptors1.size()
+            descriptors1.size(),
+            partialComparator(problem).<CoMEPartialIndividual<G1, S1, G1, G2, S1, S2, S, Q>>comparing(
+                CoMEPartialIndividual::completeIndividual
+            ).firstIs(PartialComparatorOutcome.BEFORE)
         );
     NumericalKeyArchive<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>, CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>> archive2 = archiveProvider2
         .provide(
-            descriptors2.size()
+            descriptors2.size(),
+            partialComparator(problem).<CoMEPartialIndividual<G2, S2, G1, G2, S1, S2, S, Q>>comparing(
+                CoMEPartialIndividual::completeIndividual
+            ).firstIs(PartialComparatorOutcome.BEFORE)
         );
     if (archive1.arity() != descriptors1.size()) {
       throw new SolverException(

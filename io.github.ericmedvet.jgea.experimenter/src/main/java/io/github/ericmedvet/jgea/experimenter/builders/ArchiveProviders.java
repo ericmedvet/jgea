@@ -35,19 +35,20 @@
 
 package io.github.ericmedvet.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jgea.core.solver.mapelites.archive.DynamicVoronoiArchive;
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.GridArchive;
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.GridArchive.Axis;
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive;
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive.Provider;
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.TwoDGridArchive;
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.VoronoiArchive;
-import io.github.ericmedvet.jgea.core.solver.mapelites.archive.VoronoiTimedArchive;
 import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
@@ -56,6 +57,37 @@ import java.util.stream.IntStream;
 public class ArchiveProviders {
 
   private ArchiveProviders() {
+  }
+
+  @Cacheable
+  public static NumericalKeyArchive.Provider dynamicVoronoi(
+      @Param("range1") DoubleRange range1,
+      @Param("range2") DoubleRange range2,
+      @Param(value = "initialNOfPoints", dI = 25) int initialNOfPoints,
+      @Param(value = "maxNOfPoints", dI = 100) int maxNOfPoints,
+      @Param(value = "step", dI = 5) int step,
+      @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator
+  ) {
+    return new Provider() {
+      @Override
+      public <V, C> NumericalKeyArchive<V, C> provide(
+          int arity,
+          Function<V, C> contentInitializer,
+          BiFunction<C, V, C> contentUpdater,
+          BiPredicate<? super V, ? super C> isBetterThan
+      ) {
+        return new DynamicVoronoiArchive<>(
+            range1,
+            range2,
+            initialNOfPoints,
+            maxNOfPoints,
+            randomGenerator,
+            contentInitializer,
+            contentUpdater,
+            isBetterThan
+        );
+      }
+    };
   }
 
   @Cacheable
@@ -73,7 +105,8 @@ public class ArchiveProviders {
       public <V, C> NumericalKeyArchive<V, C> provide(
           int arity,
           Function<V, C> contentInitializer,
-          BiFunction<C, V, C> contentUpdater
+          BiFunction<C, V, C> contentUpdater,
+          BiPredicate<? super V, ? super C> isBetterThan
       ) {
         return new GridArchive<>(
             IntStream.range(0, ranges.size()).mapToObj(i -> new Axis(ranges.get(i), nsOfBins.get(i))).toList(),
@@ -96,7 +129,8 @@ public class ArchiveProviders {
       public <V, C> NumericalKeyArchive<V, C> provide(
           int arity,
           Function<V, C> contentInitializer,
-          BiFunction<C, V, C> contentUpdater
+          BiFunction<C, V, C> contentUpdater,
+          BiPredicate<? super V, ? super C> isBetterThan
       ) {
         return new TwoDGridArchive<>(
             new Axis(range1, nOfBins1),
@@ -120,40 +154,13 @@ public class ArchiveProviders {
       public <V, C> NumericalKeyArchive<V, C> provide(
           int arity,
           Function<V, C> contentInitializer,
-          BiFunction<C, V, C> contentUpdater
+          BiFunction<C, V, C> contentUpdater,
+          BiPredicate<? super V, ? super C> isBetterThan
       ) {
         return new VoronoiArchive<>(
             range1,
             range2,
             nOfPoints,
-            randomGenerator,
-            contentInitializer,
-            contentUpdater
-        );
-      }
-    };
-  }
-
-  @Cacheable
-  public static NumericalKeyArchive.Provider timedVoronoi(
-      @Param("range1") DoubleRange range1,
-      @Param("range2") DoubleRange range2,
-      @Param(value = "nOfPoints", dI = 20) int nOfPoints,
-      @Param(value = "step", dI = 5) int step,
-      @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator
-  ) {
-    return new Provider() {
-      @Override
-      public <V, C> NumericalKeyArchive<V, C> provide(
-          int arity,
-          Function<V, C> contentInitializer,
-          BiFunction<C, V, C> contentUpdater
-      ) {
-        return new VoronoiTimedArchive<>(
-            range1,
-            range2,
-            nOfPoints,
-            step,
             randomGenerator,
             contentInitializer,
             contentUpdater

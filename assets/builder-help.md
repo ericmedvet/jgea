@@ -5302,6 +5302,21 @@ Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;S, <
 
 Aliases: `ea.s.mapelites.a`, `ea.s.mapelites.archive`, `ea.s.me.a`, `ea.s.me.archive`, `ea.solver.mapelites.a`, `ea.solver.mapelites.archive`, `ea.solver.me.a`, `ea.solver.me.archive`
 
+### Builder `ea.solver.mapelites.archive.dynamicVoronoi()`
+
+`ea.s.me.a.dynamicVoronoi(range1; range2; initialNOfPoints; maxNOfPoints; step; randomGenerator)`
+
+| Param | Type | Default | Java type |
+| --- | --- | --- | --- |
+| `range1` | npm |  | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
+| `range2` | npm |  | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
+| `initialNOfPoints` | i | `25` | <code>int</code> |
+| `maxNOfPoints` | i | `100` | <code>int</code> |
+| `step` | i | `5` | <code>int</code> |
+| `randomGenerator` | npm | `m.defaultRG()` | <code><abbr title="java.util.random.RandomGenerator">RandomGenerator</abbr></code> |
+
+Produces <code><abbr title="io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive$Provider">NumericalKeyArchive$Provider</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.ArchiveProviders.dynamicVoronoi()` by jgea-experimenter:2.8.2-SNAPSHOT
+
 ### Builder `ea.solver.mapelites.archive.grid()`
 
 `ea.s.me.a.grid(ranges; nsOfBins)`
@@ -5325,20 +5340,6 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.solver.mapelites.arch
 | `nOfBins2` | i |  | <code>int</code> |
 
 Produces <code><abbr title="io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive$Provider">NumericalKeyArchive$Provider</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.ArchiveProviders.grid2d()` by jgea-experimenter:2.8.2-SNAPSHOT
-
-### Builder `ea.solver.mapelites.archive.timedVoronoi()`
-
-`ea.s.me.a.timedVoronoi(range1; range2; nOfPoints; step; randomGenerator)`
-
-| Param | Type | Default | Java type |
-| --- | --- | --- | --- |
-| `range1` | npm |  | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
-| `range2` | npm |  | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
-| `nOfPoints` | i | `20` | <code>int</code> |
-| `step` | i | `5` | <code>int</code> |
-| `randomGenerator` | npm | `m.defaultRG()` | <code><abbr title="java.util.random.RandomGenerator">RandomGenerator</abbr></code> |
-
-Produces <code><abbr title="io.github.ericmedvet.jgea.core.solver.mapelites.archive.NumericalKeyArchive$Provider">NumericalKeyArchive$Provider</abbr></code>; built from `io.github.ericmedvet.jgea.experimenter.builders.ArchiveProviders.timedVoronoi()` by jgea-experimenter:2.8.2-SNAPSHOT
 
 ### Builder `ea.solver.mapelites.archive.voronoi()`
 

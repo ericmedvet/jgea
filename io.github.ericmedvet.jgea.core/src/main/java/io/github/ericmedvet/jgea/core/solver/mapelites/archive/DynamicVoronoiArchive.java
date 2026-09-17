@@ -20,11 +20,11 @@
 package io.github.ericmedvet.jgea.core.solver.mapelites.archive;
 
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.VoronoiArchive.SpatialHash;
-import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jviz.core.geometry.GeometryUtils;
 import io.github.ericmedvet.jviz.core.geometry.Point;
 import io.github.ericmedvet.jviz.core.geometry.Polygon;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -32,28 +32,33 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
 
-public class VoronoiTimedArchive<V, C> extends AbstractBestReplacerArchive<SpatialHash, List<Double>, Point, V, C> implements TwoDKeyArchive<V, C> {
+public class DynamicVoronoiArchive<V, C> extends AbstractBestReplacerArchive<List<Double>, Point, V, C> implements TwoDKeyArchive<V, C> {
 
   private final DoubleRange xRange;
   private final DoubleRange yRange;
+  private final int maxNOfPoints;
+  private SpatialHash spatialHash;
 
-  public VoronoiTimedArchive(
+  public DynamicVoronoiArchive(
       DoubleRange xRange,
       DoubleRange yRange,
-      int nOfPoints,
-      int step,
+      int initialNOfPoints,
+      int maxNOfPoints,
       RandomGenerator randomGenerator,
       Function<V, C> contentInitializer,
-      BiFunction<C, V, C> contentUpdater
+      BiFunction<C, V, C> contentUpdater,
+      BiPredicate<? super V, ? super C> isBetterThan
   ) {
     this.xRange = xRange;
     this.yRange = yRange;
+    this.maxNOfPoints = maxNOfPoints;
     // create points
-    Set<Point> centroids = new LinkedHashSet<>(nOfPoints);
-    while (centroids.size() < nOfPoints) {
+    Set<Point> centroids = new LinkedHashSet<>(initialNOfPoints);
+    while (centroids.size() < initialNOfPoints) {
       centroids.add(
           new Point(
               xRange.denormalize(randomGenerator.nextDouble()),
@@ -61,29 +66,27 @@ public class VoronoiTimedArchive<V, C> extends AbstractBestReplacerArchive<Spati
           )
       );
     }
+    spatialHash = new SpatialHash(centroids);
     super(
-        contentUpdater,
         contentInitializer,
-        VoronoiTimedArchive::hash,
-        VoronoiTimedArchive::deHash,
-        () -> new SpatialHash(centroids),
-        (spatialHash, newPoint, _, _, _, _) -> addPoint(spatialHash, newPoint),
-        step
+        contentUpdater,
+        isBetterThan
     );
   }
 
-  private static Point hash(List<Double> key, SpatialHash spatialHash) {
-    return spatialHash.closestTo(new Point(key.getFirst(), key.getLast()));
+  @Override
+  public int capacity() {
+    return spatialHash.keyPoints().size();
   }
 
-  private static List<Double> deHash(Point point, SpatialHash spatialHash) {
+  @Override
+  public List<Double> deHash(Point point) {
     return List.of(point.x(), point.y());
   }
 
-  private static SpatialHash addPoint(SpatialHash spatialHash, List<Double> newPoint) {
-    return new SpatialHash(
-        Misc.union(spatialHash.keyPoints(), Set.of(new Point(newPoint.getFirst(), newPoint.getLast())))
-    );
+  @Override
+  public Point hash(List<Double> key) {
+    return spatialHash.closestTo(new Point(key.getFirst(), key.getLast()));
   }
 
   @Override
@@ -99,7 +102,7 @@ public class VoronoiTimedArchive<V, C> extends AbstractBestReplacerArchive<Spati
   @Override
   public Map<Polygon, C> localizedContents() {
     Map<Point, Polygon> tessellation = GeometryUtils.voronoiTessellation(
-        state().keyPoints(),
+        spatialHash.keyPoints(),
         xRange,
         yRange
     );
@@ -109,7 +112,31 @@ public class VoronoiTimedArchive<V, C> extends AbstractBestReplacerArchive<Spati
   }
 
   @Override
-  public int capacity() {
-    return state().keyPoints().size();
+  protected boolean updateHashingState(List<Double> key, Point point, V value) {
+    Point newPoint = new Point(key.getFirst(), key.getLast());
+    if (!spatialHash.keyPoints().contains(newPoint)) {
+      Set<Point> newHashes = new LinkedHashSet<>(spatialHash.keyPoints());
+      newHashes.add(newPoint);
+      while (newHashes.size() > maxNOfPoints) {
+        Point toRemoveHash = newHashes.stream()
+            .min(
+                Comparator.comparingLong(
+                    h -> ageMap.getOrDefault(
+                        h,
+                        0L
+                    )
+                )
+            )
+            .orElseThrow();
+        newHashes.remove(toRemoveHash);
+        ageMap.remove(toRemoveHash);
+        map.remove(toRemoveHash);
+      }
+      spatialHash = new SpatialHash(newHashes);
+      bestHashes.clear();
+      bestHashes.add(newPoint);
+      return true;
+    }
+    return false;
   }
 }

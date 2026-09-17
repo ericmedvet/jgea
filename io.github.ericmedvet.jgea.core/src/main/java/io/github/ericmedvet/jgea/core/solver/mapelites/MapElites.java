@@ -70,7 +70,8 @@ public class MapElites<G, S, Q> extends AbstractPopulationBasedIterativeSolver<M
       Executor executor
   ) throws SolverException {
     NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archive = archiveProvider.provide(
-        descriptors.size()
+        descriptors.size(),
+        partialComparator(problem).firstIs(PartialComparatorOutcome.BEFORE)
     );
     if (archive.arity() != descriptors.size()) {
       throw new SolverException(

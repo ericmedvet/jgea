@@ -20,13 +20,10 @@
 package io.github.ericmedvet.jgea.core.solver.mapelites.archive;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
-public abstract class AbstractDynamicHasherArchive<K, H, V, C> extends AbstractHasherArchive<K,H,V,C> {
+public abstract class AbstractDynamicHasherArchive<K, H, V, C> extends AbstractHasherArchive<K, H, V, C> {
   public AbstractDynamicHasherArchive(Function<V, C> contentInitializer, BiFunction<C, V, C> contentUpdater) {
     super(contentInitializer, contentUpdater);
   }
@@ -36,9 +33,9 @@ public abstract class AbstractDynamicHasherArchive<K, H, V, C> extends AbstractH
   @Override
   public void put(K key, V value) {
     H hash = hash(key);
-    if (updateState(key,hash,value)) {
+    if (updateState(key, hash, value)) {
       hash = hash(key);
     }
-    map.compute(hash, (_, c) -> Objects.isNull(c)?contentInitializer.apply(value):contentUpdater.apply(c, value));
+    map.compute(hash, (_, c) -> Objects.isNull(c) ? contentInitializer.apply(value) : contentUpdater.apply(c, value));
   }
 }

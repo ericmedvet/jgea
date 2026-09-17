@@ -85,11 +85,15 @@ public interface NumericalKeyArchive<V, C> extends Archive<List<Double>, V, C> {
     <V, C> NumericalKeyArchive<V, C> provide(
         int arity,
         Function<V, C> contentInitializer,
-        BiFunction<C, V, C> contentUpdater
+        BiFunction<C, V, C> contentUpdater,
+        BiPredicate<? super V, ? super C> isBetterThan
     );
 
-    default <V> NumericalKeyArchive<V, V> provide(int arity) {
-      return provide(arity, v -> v, (_, newV) -> newV);
+    default <V> NumericalKeyArchive<V, V> provide(
+        int arity,
+        BiPredicate<? super V, ? super V> isBetterThan
+    ) {
+      return provide(arity, v -> v, (_, newV) -> newV, isBetterThan);
     }
   }
 }

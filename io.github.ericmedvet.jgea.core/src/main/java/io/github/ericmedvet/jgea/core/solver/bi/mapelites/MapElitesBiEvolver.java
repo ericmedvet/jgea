@@ -89,7 +89,8 @@ public class MapElitesBiEvolver<G, S, Q, O> extends AbstractBiEvolver<MEPopulati
       Executor executor
   ) throws SolverException {
     NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archive = archiveProvider.provide(
-        descriptors.size()
+        descriptors.size(),
+        partialComparator(problem).firstIs(PartialComparatorOutcome.BEFORE)
     );
     if (archive.arity() != descriptors.size()) {
       throw new SolverException(
@@ -274,14 +275,11 @@ public class MapElitesBiEvolver<G, S, Q, O> extends AbstractBiEvolver<MEPopulati
             }
         )
         .toList();
-    PartialComparator<? super Individual<?, ?, ?>> updaterComparator = (
-        newI,
-        existingI
-    ) -> newI == existingI ? PartialComparator.PartialComparatorOutcome.BEFORE : PartialComparator.PartialComparatorOutcome.AFTER;
     NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>> archive;
     if (emptyArchive) {
       archive = archiveProvider.provide(
-          descriptors.size()
+          descriptors.size(),
+          partialComparator(state.problem()).firstIs(PartialComparatorOutcome.BEFORE)
       );
     } else {
       archive = state.archive();

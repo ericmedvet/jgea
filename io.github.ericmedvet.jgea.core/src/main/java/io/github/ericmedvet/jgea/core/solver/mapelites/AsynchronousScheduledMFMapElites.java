@@ -22,6 +22,7 @@ package io.github.ericmedvet.jgea.core.solver.mapelites;
 import io.github.ericmedvet.jgea.core.Factory;
 import io.github.ericmedvet.jgea.core.operator.Mutation;
 import io.github.ericmedvet.jgea.core.order.PartialComparator;
+import io.github.ericmedvet.jgea.core.order.PartialComparator.PartialComparatorOutcome;
 import io.github.ericmedvet.jgea.core.problem.MultifidelityQualityBasedProblem;
 import io.github.ericmedvet.jgea.core.solver.AbstractPopulationBasedIterativeSolver;
 import io.github.ericmedvet.jgea.core.solver.Individual;
@@ -196,13 +197,16 @@ public class AsynchronousScheduledMFMapElites<G, S, Q> extends AbstractPopulatio
     AtomicReference<Double> progressRate = new AtomicReference<>(0d);
     AtomicBoolean stopped = new AtomicBoolean(false);
     NumericalKeyArchive<LocalState<G, S, Q>, LocalState<G, S, Q>> stateArchive = archiveProvider.provide(
-        descriptors.size()
+        descriptors.size(),
+        partialComparator(problem).<LocalState<G, S, Q>>comparing(LocalState::individual)
+            .firstIs(PartialComparatorOutcome.BEFORE)
     );
     // build seed individual
     long seedId = nOfBirths.getAndIncrement();
     G seedGenotype = genotypeFactory.build(1, random).getFirst();
     S seedSolution = solutionMapper.apply(seedGenotype);
     IndividualWithFidelity<G, S, Q> seedIndividual = buildIndividual(
+        // TODO check why not used
         seedId,
         List.of(),
         seedGenotype,
@@ -224,7 +228,7 @@ public class AsynchronousScheduledMFMapElites<G, S, Q> extends AbstractPopulatio
     // "iterate", ie, start capacity concurrent tasks
     IntStream.range(0, stateArchive.capacity())
         .forEach(
-            i -> executor.execute(
+            _ -> executor.execute(
                 variationRunnable(
                     stateArchive,
                     nOfBirths,

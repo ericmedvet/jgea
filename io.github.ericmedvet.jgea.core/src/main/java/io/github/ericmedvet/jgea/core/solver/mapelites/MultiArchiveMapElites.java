@@ -71,7 +71,12 @@ public class MultiArchiveMapElites<G, S, Q> extends AbstractPopulationBasedItera
       Executor executor
   ) throws SolverException {
     List<NumericalKeyArchive<MEIndividual<G, S, Q>, MEIndividual<G, S, Q>>> archives = listsOfDescriptors.stream()
-        .map(descriptors -> archiveProvider.<MEIndividual<G, S, Q>>provide(descriptors.size()))
+        .map(
+            descriptors -> archiveProvider.<MEIndividual<G, S, Q>>provide(
+                descriptors.size(),
+                partialComparator(problem).firstIs(PartialComparatorOutcome.BEFORE)
+            )
+        )
         .toList();
     for (int i = 0; i < archives.size(); i++) {
       if (archives.get(i).arity() != listsOfDescriptors.get(i).size()) {
