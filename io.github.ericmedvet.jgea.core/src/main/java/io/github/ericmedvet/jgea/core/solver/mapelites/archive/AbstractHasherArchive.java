@@ -19,10 +19,7 @@
  */
 package io.github.ericmedvet.jgea.core.solver.mapelites.archive;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -30,9 +27,9 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractHasherArchive<K, H, V, C> implements Archive<K, V, C> {
 
-  private final Map<H, C> map;
-  private final BiFunction<C, V, C> contentUpdater;
-  private final Function<V, C> contentInitializer;
+  protected final Map<H, C> map;
+  protected final BiFunction<C, V, C> contentUpdater;
+  protected final Function<V, C> contentInitializer;
 
   public AbstractHasherArchive(
       Function<V, C> contentInitializer,
@@ -55,11 +52,7 @@ public abstract class AbstractHasherArchive<K, H, V, C> implements Archive<K, V,
   @Override
   public void put(K key, V value) {
     H hash = hash(key);
-    if (map.containsKey(hash)) {
-      map.compute(hash, (_, existingC) -> contentUpdater.apply(existingC, value));
-    } else {
-      map.put(hash, contentInitializer.apply(value));
-    }
+    map.compute(hash, (_, c) -> Objects.isNull(c)?contentInitializer.apply(value):contentUpdater.apply(c, value));
   }
 
   @Override

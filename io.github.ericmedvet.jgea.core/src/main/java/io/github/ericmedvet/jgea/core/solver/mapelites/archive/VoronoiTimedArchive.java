@@ -35,7 +35,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
 
-public class VoronoiTimedArchive<V, C> extends AbstractTimedDynamicHasherArchive<SpatialHash, List<Double>, Point, V, C> implements TwoDKeyArchive<V, C> {
+public class VoronoiTimedArchive<V, C> extends AbstractBestReplacerArchive<SpatialHash, List<Double>, Point, V, C> implements TwoDKeyArchive<V, C> {
 
   private final DoubleRange xRange;
   private final DoubleRange yRange;
