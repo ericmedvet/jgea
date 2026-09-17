@@ -17,24 +17,10 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-/*
- * Copyright 2026 eric
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package io.github.ericmedvet.jgea.experimenter.builders;
 
+import io.github.ericmedvet.jgea.core.solver.mapelites.archive.DynamicBinaryTreeArchive;
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.DynamicVoronoiArchive;
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.GridArchive;
 import io.github.ericmedvet.jgea.core.solver.mapelites.archive.GridArchive.Axis;
@@ -60,12 +46,37 @@ public class ArchiveProviders {
   }
 
   @Cacheable
+  public static NumericalKeyArchive.Provider dynamicBinaryTree(
+      @Param("range1") DoubleRange range1,
+      @Param("range2") DoubleRange range2,
+      @Param(value = "maxNOfPoints", dI = 100) int maxNOfPoints
+  ) {
+    return new Provider() {
+      @Override
+      public <V, C> NumericalKeyArchive<V, C> provide(
+          int arity,
+          Function<V, C> contentInitializer,
+          BiFunction<C, V, C> contentUpdater,
+          BiPredicate<? super V, ? super C> isBetterThan
+      ) {
+        return new DynamicBinaryTreeArchive<>(
+            contentInitializer,
+            contentUpdater,
+            isBetterThan,
+            range1,
+            range2,
+            maxNOfPoints
+        );
+      }
+    };
+  }
+
+  @Cacheable
   public static NumericalKeyArchive.Provider dynamicVoronoi(
       @Param("range1") DoubleRange range1,
       @Param("range2") DoubleRange range2,
       @Param(value = "initialNOfPoints", dI = 25) int initialNOfPoints,
       @Param(value = "maxNOfPoints", dI = 100) int maxNOfPoints,
-      @Param(value = "step", dI = 5) int step,
       @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator
   ) {
     return new Provider() {
@@ -97,7 +108,10 @@ public class ArchiveProviders {
   ) {
     if (ranges.size() != nsOfBins.size()) {
       throw new IllegalArgumentException(
-          "Different size of ranges and nsOfBins: %d vs. %d".formatted(ranges.size(), nsOfBins.size())
+          "Different size of ranges and nsOfBins: %d vs. %d".formatted(
+              ranges.size(),
+              nsOfBins.size()
+          )
       );
     }
     return new Provider() {
@@ -109,7 +123,9 @@ public class ArchiveProviders {
           BiPredicate<? super V, ? super C> isBetterThan
       ) {
         return new GridArchive<>(
-            IntStream.range(0, ranges.size()).mapToObj(i -> new Axis(ranges.get(i), nsOfBins.get(i))).toList(),
+            IntStream.range(0, ranges.size())
+                .mapToObj(i -> new Axis(ranges.get(i), nsOfBins.get(i)))
+                .toList(),
             contentInitializer,
             contentUpdater
         );

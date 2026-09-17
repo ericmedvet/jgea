@@ -13,7 +13,17 @@ ea.experiment(
       % ea.p.moToSo(objective = mse; moProblem = ea.p.ur.bundled(name = "energy-efficiency"; xScaling = standardization; yScaling = symmetric_min_max))
     ]) *
     (solver = (stop = ea.sc.nOfQualityEvaluations(n = 10000)) * [
-      ea.s.ga(mapper = ea.m.srTreeToNurf(); representation = ea.r.srTree());
+      ea.s.mapElites(
+        name = "me-dynamic-tree";
+        mapper = ea.m.srTreeToNurf();
+        representation = ea.r.srTree();
+        descriptors = [$desc1; $desc2];
+        archive = ea.s.me.a.dynamicBinaryTree(
+          range1 = $range1;
+          range2 = $range2;
+          maxNOfPoints = 25
+        )
+      );
       ea.s.mapElites(
         name = "me-voronoi";
         mapper = ea.m.srTreeToNurf();
@@ -48,7 +58,8 @@ ea.experiment(
           nOfBins1 = 5;
           nOfBins2 = 5
         )
-      )
+      );
+      ea.s.ga(mapper = ea.m.srTreeToNurf(); representation = ea.r.srTree())
     ]) * [
     ea.run()
   ];

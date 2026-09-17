@@ -17,21 +17,6 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-/*
- * Copyright 2026 eric
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package io.github.ericmedvet.jgea.core.solver.mapelites.archive;
 
@@ -40,6 +25,8 @@ import io.github.ericmedvet.jnb.datastructure.Tree;
 import io.github.ericmedvet.jviz.core.geometry.Point;
 import io.github.ericmedvet.jviz.core.geometry.Polygon;
 import io.github.ericmedvet.jviz.core.geometry.Rectangle;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -84,7 +71,7 @@ public class DynamicBinaryTreeArchive<V, C> extends AbstractBestReplacerArchive<
     if (value <= condition.threshold) {
       return Stream.concat(Stream.of(0), lineageFor(point, tree.child(0)));
     }
-    return Stream.concat(Stream.of(0), lineageFor(point, tree.child(1)));
+    return Stream.concat(Stream.of(1), lineageFor(point, tree.child(1)));
   }
 
   private static Point pointFor(Point point, Tree<Object> tree) {
@@ -187,9 +174,12 @@ public class DynamicBinaryTreeArchive<V, C> extends AbstractBestReplacerArchive<
   @Override
   protected boolean updateHashingState(List<Double> key, Point existingPoint, V value) {
     Point newPoint = new Point(key.getFirst(), key.getLast());
-    Stream<Integer> lineage = lineageFor(newPoint, tree);
+    List<Integer> toSplitLineage = lineageFor(newPoint, tree).toList();
     double xRelGap = Math.abs(newPoint.x() - existingPoint.x()) / xRange.extent();
     double yRelGap = Math.abs(newPoint.y() - existingPoint.y()) / yRange.extent();
+    if (xRelGap == 0 && yRelGap == 0) {
+      return false;
+    }
     Condition condition;
     Point lessPoint;
     Point morePoint;
@@ -214,8 +204,31 @@ public class DynamicBinaryTreeArchive<V, C> extends AbstractBestReplacerArchive<
     }
     tree = tree.withAt(
         new Tree<>(condition, List.of(new Tree<>(lessPoint), new Tree<>(morePoint))),
-        lineage.toList()
+        toSplitLineage
     );
+    while (tree.leafLabels().size() > maxNOfPoints) {
+      Point toRemoveHash = map.keySet()
+          .stream()
+          .min(
+              Comparator.comparingLong(
+                  h -> ageMap.getOrDefault(
+                      h,
+                      0L
+                  )
+              )
+          )
+          .orElseThrow();
+      List<Integer> oldestLineage = lineageFor(toRemoveHash, tree).toList();
+      List<Integer> toMergeLineage = oldestLineage.subList(0, oldestLineage.size() - 1);
+      List<Integer> toKeepLineage = new ArrayList<>(oldestLineage);
+      toKeepLineage.set(toKeepLineage.size() - 1, 1 - toKeepLineage.getLast());
+      ageMap.remove(toRemoveHash);
+      map.remove(toRemoveHash);
+      tree = tree.withAt(
+          tree.descendant(toKeepLineage),
+          toMergeLineage
+      );
+    }
     bestHashes.clear();
     bestHashes.add(newPoint);
     return true;
@@ -225,5 +238,9 @@ public class DynamicBinaryTreeArchive<V, C> extends AbstractBestReplacerArchive<
 
   private record Condition(Variable variable, double threshold) {
 
+    @Override
+    public String toString() {
+      return "%s<%.3f".formatted(variable.name().toLowerCase(), threshold);
+    }
   }
 }
