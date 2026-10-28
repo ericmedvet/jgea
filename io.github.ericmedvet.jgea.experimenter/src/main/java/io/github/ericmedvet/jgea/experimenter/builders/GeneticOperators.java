@@ -46,15 +46,15 @@ public class GeneticOperators {
 
   @Cacheable
   public static Function<BitString, Mutation<BitString>> bsFlipMutation(
-      @Param(value = "pMutRate", dD = 1d) double pMutRate
+      @Param(value = "pMut", dD = 1d) double pMut
   ) {
-    return eBs -> new BitStringFlipMutation(pMutRate * (double) eBs.size());
+    return _ -> new BitStringFlipMutation(pMut);
   }
 
 
   @Cacheable
   public static Function<BitString, Crossover<BitString>> bsUniformXover() {
-    return eIs -> new BitStringUniformCrossover();
+    return _ -> new BitStringUniformCrossover();
   }
 
   @Cacheable
@@ -77,45 +77,45 @@ public class GeneticOperators {
   public static <X> Function<X, Crossover<X>> deterministicXover(
       @Param("first") boolean first
   ) {
-    return eX -> Crossover.deterministicCopy(first);
+    return _ -> Crossover.deterministicCopy(first);
   }
 
   @Cacheable
   public static Function<List<Double>, Mutation<List<Double>>> dsGaussianMutation(
       @Param(value = "sigmaMut", dD = 0.35d) double sigmaMut
   ) {
-    return eDs -> new GaussianMutation(sigmaMut);
+    return _ -> new GaussianMutation(sigmaMut);
   }
 
   @Cacheable
   public static Function<List<Double>, Crossover<List<Double>>> dsHypercubeGeometricXover(
       @Param(value = "ext", dD = 1d) double ext
   ) {
-    return eDs -> new HypercubeGeometricCrossover(DoubleRange.UNIT.extend(ext));
+    return _ -> new HypercubeGeometricCrossover(DoubleRange.UNIT.extend(ext));
   }
 
   @Cacheable
   public static Function<List<Double>, Crossover<List<Double>>> dsSegmentGeometricXover(
       @Param(value = "ext", dD = 1d) double ext
   ) {
-    return eDs -> new SegmentGeometricCrossover(DoubleRange.UNIT.extend(ext));
+    return _ -> new SegmentGeometricCrossover(DoubleRange.UNIT.extend(ext));
   }
 
   @Cacheable
   public static Function<IntString, Mutation<IntString>> isFlipMutation(
-      @Param(value = "pMutRate", dD = 1d) double pMutRate
+      @Param(value = "pMut", dD = 1d) double pMut
   ) {
-    return eIs -> new IntStringFlipMutation(pMutRate * (double) eIs.size());
+    return _ -> new IntStringFlipMutation(pMut);
   }
 
   @Cacheable
   public static Function<IntString, Mutation<IntString>> isSymbolCopyMutation() {
-    return eIs -> new IntStringSymbolCopy();
+    return _ -> new IntStringSymbolCopy();
   }
 
   @Cacheable
   public static Function<IntString, Crossover<IntString>> isUniformXover() {
-    return eIs -> new IntStringUniformCrossover();
+    return _ -> new IntStringUniformCrossover();
   }
 
   @Cacheable
@@ -150,7 +150,7 @@ public class GeneticOperators {
     return eX -> Crossover.oneOf(
         xovers.stream()
             .map(c -> c.apply(eX))
-            .collect(Utils.toSequencedMap(c -> 1d))
+            .collect(Utils.toSequencedMap(_ -> 1d))
     );
   }
 
