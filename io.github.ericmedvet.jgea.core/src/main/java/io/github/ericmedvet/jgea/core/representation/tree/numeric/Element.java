@@ -27,6 +27,7 @@ import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 
 public interface Element {
+
   String CONSTANT_REGEX = "-?[0-9]+(\\.[0-9]+)?";
   String VAR_REGEX = "[A-Za-z][A-Za-z0-9_]*";
 
@@ -84,7 +85,12 @@ public interface Element {
         x -> x[0] / x[1],
         2,
         false
-    ), PROT_DIVISION("p÷", x -> (x[1] != 0d) ? (x[0] / x[1]) : 1E9, 2, false), MULTIPLICATION(
+    ), PROT_DIVISION(
+        "p÷",
+        x -> (x[1] != 0d) ? (x[0] / x[1]) : 1E9 * Math.signum(x[0]),
+        2,
+        false
+    ), MULTIPLICATION(
         "*",
         x -> switch (x.length) { // optimization to avoid streams
           case 2 -> x[0] * x[1];
@@ -119,17 +125,32 @@ public interface Element {
         x -> Math.sqrt(x[0]),
         1,
         false
-    ), SQ("²", x -> Math.pow(x[0], 2d), 1, false), RE_LU("relu", x -> Math.max(x[0], 0d), 1, false), TERNARY(
+    ), SQ("²", x -> Math.pow(x[0], 2d), 1, false), RE_LU(
+        "relu",
+        x -> Math.max(x[0], 0d),
+        1,
+        false
+    ), TERNARY(
         "ternary",
         x -> x[0] >= 0 ? x[1] : x[2],
         3,
         false
-    ), MAX("max", x -> Math.max(x[0], x[1]), 2, false), MIN("min", x -> Math.min(x[0], x[1]), 2, false), TANH(
+    ), MAX("max", x -> Math.max(x[0], x[1]), 2, false), MIN(
+        "min",
+        x -> Math.min(x[0], x[1]),
+        2,
+        false
+    ), TANH(
         "tanh",
         x -> Math.tanh(x[0]),
         1,
         false
-    ), GT(">", x -> Math.signum(x[0] - x[1]), 2, false), LT("<", x -> Math.signum(x[1] - x[0]), 2, false), POW(
+    ), GT(">", x -> Math.signum(x[0] - x[1]), 2, false), LT(
+        "<",
+        x -> Math.signum(x[1] - x[0]),
+        2,
+        false
+    ), POW(
         "^",
         x -> Math.pow(x[0], x[1]),
         2,
@@ -141,7 +162,12 @@ public interface Element {
     private final int arity;
     private final boolean unlimitedArity;
 
-    Operator(String string, ToDoubleFunction<double[]> function, int arity, boolean unlimitedArity) {
+    Operator(
+        String string,
+        ToDoubleFunction<double[]> function,
+        int arity,
+        boolean unlimitedArity
+    ) {
       this.string = string;
       this.function = function;
       this.arity = arity;
@@ -156,12 +182,20 @@ public interface Element {
     public double applyAsDouble(double... input) {
       if (input.length != arity && !unlimitedArity) {
         throw new IllegalArgumentException(
-            "Wrong number of inputs for %s: %d expected, %d found".formatted(this, arity, input.length)
+            "Wrong number of inputs for %s: %d expected, %d found".formatted(
+                this,
+                arity,
+                input.length
+            )
         );
       }
       if (input.length < arity) {
         throw new IllegalArgumentException(
-            "Wrong number of inputs for %s: >=%d expected, %d found".formatted(this, arity, input.length)
+            "Wrong number of inputs for %s: >=%d expected, %d found".formatted(
+                this,
+                arity,
+                input.length
+            )
         );
       }
       return function.applyAsDouble(input);

@@ -30,7 +30,7 @@ public enum BaseOperator implements ToDoubleFunction<double[]> {
       2
   ), DIVISION("/", x -> x[0] / (x.length == 1 ? 1d : x[1]), 1, 2), PROT_DIVISION(
       "p/",
-      x -> x.length == 1 ? x[0] : ((x[1] != 0d) ? (x[0] / x[1]) : 1d),
+      x -> x.length == 1 ? x[0] : ((x[1] != 0d) ? (x[0] / x[1]) : 1E9 * Math.signum(x[0])),
       1,
       2
   ), MULTIPLICATION("*", x -> Arrays.stream(x).reduce(1d, (v1, v2) -> v1 * v2), 1, Integer.MAX_VALUE), LOG(
@@ -38,7 +38,7 @@ public enum BaseOperator implements ToDoubleFunction<double[]> {
       x -> Math.log(x[0]),
       1,
       1
-  ), PROT_LOG("plog", x -> (x[0] > 0d) ? Math.log(x[0]) : 0d, 1, 1), EXP("exp", x -> Math.exp(x[0]), 1, 1), SIN(
+  ), PROT_LOG("plog", x -> (x[0] > 0d) ? Math.log(x[0]) : -1E9, 1, 1), EXP("exp", x -> Math.exp(x[0]), 1, 1), SIN(
       "sin",
       x -> Math.sin(x[0]),
       1,
