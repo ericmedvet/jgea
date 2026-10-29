@@ -46,9 +46,9 @@ public class GeneticOperators {
 
   @Cacheable
   public static Function<BitString, Mutation<BitString>> bsFlipMutation(
-      @Param(value = "pMut", dD = 1d) double pMut
+      @Param(value = "pMutRate", dD = 1d) double pMutRate
   ) {
-    return _ -> new BitStringFlipMutation(pMut);
+    return bs -> new BitStringFlipMutation(pMutRate / (double) bs.size());
   }
 
 
@@ -103,9 +103,9 @@ public class GeneticOperators {
 
   @Cacheable
   public static Function<IntString, Mutation<IntString>> isFlipMutation(
-      @Param(value = "pMut", dD = 1d) double pMut
+      @Param(value = "pMutRate", dD = 1d) double pMutRate
   ) {
-    return _ -> new IntStringFlipMutation(pMut);
+    return is -> new IntStringFlipMutation(pMutRate / (double) is.size());
   }
 
   @Cacheable

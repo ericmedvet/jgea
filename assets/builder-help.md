@@ -4721,11 +4721,11 @@ Aliases: `ea.r.geneticOperator`, `ea.r.go`, `ea.representation.geneticOperator`,
 
 ### Builder `ea.representation.geneticOperator.bsFlipMutation()`
 
-`ea.r.go.bsFlipMutation(pMut)`
+`ea.r.go.bsFlipMutation(pMutRate)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
-| `pMut` | d | `1.0` | <code>double</code> |
+| `pMutRate` | d | `1.0` | <code>double</code> |
 
 Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;<abbr title="io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString">BitString</abbr>, <abbr title="io.github.ericmedvet.jgea.core.operator.Mutation">Mutation</abbr>&lt;<abbr title="io.github.ericmedvet.jgea.core.representation.sequence.bit.BitString">BitString</abbr>&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.GeneticOperators.bsFlipMutation()` by jgea-experimenter:2.8.2-SNAPSHOT
 
@@ -4799,11 +4799,11 @@ Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;<abb
 
 ### Builder `ea.representation.geneticOperator.isFlipMutation()`
 
-`ea.r.go.isFlipMutation(pMut)`
+`ea.r.go.isFlipMutation(pMutRate)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
-| `pMut` | d | `1.0` | <code>double</code> |
+| `pMutRate` | d | `1.0` | <code>double</code> |
 
 Produces <code><abbr title="java.util.function.Function">Function</abbr>&lt;<abbr title="io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString">IntString</abbr>, <abbr title="io.github.ericmedvet.jgea.core.operator.Mutation">Mutation</abbr>&lt;<abbr title="io.github.ericmedvet.jgea.core.representation.sequence.integer.IntString">IntString</abbr>&gt;&gt;</code>; built from `io.github.ericmedvet.jgea.experimenter.builders.GeneticOperators.isFlipMutation()` by jgea-experimenter:2.8.2-SNAPSHOT
 
