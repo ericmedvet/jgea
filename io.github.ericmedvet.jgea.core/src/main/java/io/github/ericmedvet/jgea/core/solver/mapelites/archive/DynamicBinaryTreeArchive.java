@@ -184,7 +184,7 @@ public class DynamicBinaryTreeArchive<V, C> extends AbstractBestReplacerArchive<
     Point lessPoint;
     Point morePoint;
     if (xRelGap > yRelGap) {
-      condition = new Condition(Variable.X, (newPoint.x() + existingPoint.x()) / 2d);
+      condition = new Condition(Variable.X, xRange.clip((newPoint.x() + existingPoint.x()) / 2d));
       if (newPoint.x() < existingPoint.x()) {
         lessPoint = newPoint;
         morePoint = existingPoint;
@@ -193,7 +193,7 @@ public class DynamicBinaryTreeArchive<V, C> extends AbstractBestReplacerArchive<
         morePoint = newPoint;
       }
     } else {
-      condition = new Condition(Variable.Y, (newPoint.y() + existingPoint.y()) / 2d);
+      condition = new Condition(Variable.Y, yRange.clip((newPoint.y() + existingPoint.y()) / 2d));
       if (newPoint.y() < existingPoint.y()) {
         lessPoint = newPoint;
         morePoint = existingPoint;
