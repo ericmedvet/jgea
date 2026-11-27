@@ -67,9 +67,9 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jdk.version>25</jdk.version>
     <maven.version>3.9.11</maven.version>
-    <jnb.version>1.5.2-SNAPSHOT</jnb.version>
-    <jsdynsym.version>1.2.2-SNAPSHOT</jsdynsym.version>
-    <jviz.version>1.2.2-SNAPSHOT</jviz.version>
+    <jnb.version>1.5.3-SNAPSHOT</jnb.version>
+    <jsdynsym.version>1.2.3-SNAPSHOT</jsdynsym.version>
+    <jviz.version>1.2.3-SNAPSHOT</jviz.version>
     <revision>2.8.2-SNAPSHOT</revision>
   </properties>
 
@@ -78,6 +78,11 @@
       <dependency>
         <groupId>io.github.ericmedvet</groupId>
         <artifactId>jnb.buildable</artifactId>
+        <version>${jnb.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.github.ericmedvet</groupId>
+        <artifactId>jnb.core</artifactId>
         <version>${jnb.version}</version>
       </dependency>
       <dependency>
