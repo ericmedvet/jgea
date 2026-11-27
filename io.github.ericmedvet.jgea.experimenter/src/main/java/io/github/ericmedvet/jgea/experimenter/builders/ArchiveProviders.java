@@ -47,6 +47,7 @@ public class ArchiveProviders {
 
   @Cacheable
   public static NumericalKeyArchive.Provider dynamicBinaryTree(
+      @Param(value = "name", iS = "dTree({maxNOfPoints})") String name,
       @Param("range1") DoubleRange range1,
       @Param("range2") DoubleRange range2,
       @Param(value = "maxNOfPoints", dI = 100) int maxNOfPoints
@@ -73,6 +74,7 @@ public class ArchiveProviders {
 
   @Cacheable
   public static NumericalKeyArchive.Provider dynamicVoronoi(
+      @Param(value = "name", iS = "dVoronoi({maxNOfPoints})") String name,
       @Param("range1") DoubleRange range1,
       @Param("range2") DoubleRange range2,
       @Param(value = "initialNOfPoints", dI = 25) int initialNOfPoints,
@@ -103,6 +105,7 @@ public class ArchiveProviders {
 
   @Cacheable
   public static NumericalKeyArchive.Provider grid(
+      @Param(value = "name", iS = "grid({nsOfBins})") String name,
       @Param("ranges") List<DoubleRange> ranges,
       @Param("nsOfBins") List<Integer> nsOfBins
   ) {
@@ -135,6 +138,7 @@ public class ArchiveProviders {
 
   @Cacheable
   public static NumericalKeyArchive.Provider grid2d(
+      @Param(value = "name", iS = "grid({nOfBins1}x{nOfBins2})") String name,
       @Param("range1") DoubleRange range1,
       @Param("range2") DoubleRange range2,
       @Param("nOfBins1") int nOfBins1,
@@ -160,6 +164,7 @@ public class ArchiveProviders {
 
   @Cacheable
   public static NumericalKeyArchive.Provider voronoi(
+      @Param(value = "name", iS = "voronoi({nOfPoints})") String name,
       @Param("range1") DoubleRange range1,
       @Param("range2") DoubleRange range2,
       @Param(value = "nOfPoints", dI = 100) int nOfPoints,
