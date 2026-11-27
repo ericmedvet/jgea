@@ -5304,10 +5304,11 @@ Aliases: `ea.s.mapelites.a`, `ea.s.mapelites.archive`, `ea.s.me.a`, `ea.s.me.arc
 
 ### Builder `ea.solver.mapelites.archive.dynamicBinaryTree()`
 
-`ea.s.me.a.dynamicBinaryTree(range1; range2; maxNOfPoints)`
+`ea.s.me.a.dynamicBinaryTree(name; range1; range2; maxNOfPoints)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
+| `name` | s | interpolate `dTree({maxNOfPoints})` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `range1` | npm |  | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `range2` | npm |  | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `maxNOfPoints` | i | `100` | <code>int</code> |
@@ -5316,10 +5317,11 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.solver.mapelites.arch
 
 ### Builder `ea.solver.mapelites.archive.dynamicVoronoi()`
 
-`ea.s.me.a.dynamicVoronoi(range1; range2; initialNOfPoints; maxNOfPoints; randomGenerator)`
+`ea.s.me.a.dynamicVoronoi(name; range1; range2; initialNOfPoints; maxNOfPoints; randomGenerator)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
+| `name` | s | interpolate `dVoronoi({maxNOfPoints})` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `range1` | npm |  | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `range2` | npm |  | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `initialNOfPoints` | i | `25` | <code>int</code> |
@@ -5330,10 +5332,11 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.solver.mapelites.arch
 
 ### Builder `ea.solver.mapelites.archive.grid()`
 
-`ea.s.me.a.grid(ranges; nsOfBins)`
+`ea.s.me.a.grid(name; ranges; nsOfBins)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
+| `name` | s | interpolate `grid({nsOfBins})` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `ranges` | npm[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr>&gt;</code> |
 | `nsOfBins` | i[] | `[]` | <code><abbr title="java.util.List">List</abbr>&lt;<abbr title="java.lang.Integer">Integer</abbr>&gt;</code> |
 
@@ -5341,10 +5344,11 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.solver.mapelites.arch
 
 ### Builder `ea.solver.mapelites.archive.grid2d()`
 
-`ea.s.me.a.grid2d(range1; range2; nOfBins1; nOfBins2)`
+`ea.s.me.a.grid2d(name; range1; range2; nOfBins1; nOfBins2)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
+| `name` | s | interpolate `grid({nOfBins1}x{nOfBins2})` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `range1` | npm |  | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `range2` | npm |  | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `nOfBins1` | i |  | <code>int</code> |
@@ -5354,10 +5358,11 @@ Produces <code><abbr title="io.github.ericmedvet.jgea.core.solver.mapelites.arch
 
 ### Builder `ea.solver.mapelites.archive.voronoi()`
 
-`ea.s.me.a.voronoi(range1; range2; nOfPoints; randomGenerator)`
+`ea.s.me.a.voronoi(name; range1; range2; nOfPoints; randomGenerator)`
 
 | Param | Type | Default | Java type |
 | --- | --- | --- | --- |
+| `name` | s | interpolate `voronoi({nOfPoints})` | <code><abbr title="java.lang.String">String</abbr></code> |
 | `range1` | npm |  | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `range2` | npm |  | <code><abbr title="io.github.ericmedvet.jnb.datastructure.DoubleRange">DoubleRange</abbr></code> |
 | `nOfPoints` | i | `100` | <code>int</code> |

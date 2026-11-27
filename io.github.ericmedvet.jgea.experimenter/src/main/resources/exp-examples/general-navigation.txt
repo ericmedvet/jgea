@@ -1,0 +1,92 @@
+$basePath = ''../../Documenti/experiments/{^^.name}/{^^.startTime}/''
+$dT = 0.1
+$tRange = m.range(min = 0; max = 30)
+
+$arenaE = ds.arena.prepared(
+  name = empty;
+  initialRobotXRange = m.range(min = 0.45; max = 0.5);
+  initialRobotYRange = m.range(min = 0.78; max = 0.8);
+  targetXRange = m.range(min = 0.3; max = 0.6)
+)
+$arenaB = ds.arena.prepared(
+  name = a_barrier;
+  initialRobotXRange = m.range(min = 0.45; max = 0.5);
+  initialRobotYRange = m.range(min = 0.78; max = 0.8)
+)
+$arenaS = ds.arena.prepared(
+  name = snake;
+  initialRobotXRange = m.range(min = 0.1; max = 0.12);
+  initialRobotYRange = m.range(min = 0.1; max = 0.12);
+  targetXRange = m.range(min = 0.9; max = 0.95);
+  targetYRange = m.range(min = 0.9; max = 0.95)
+)
+
+ea.experiment(
+  runs = (randomGenerator = (seed = [1:1:3]) * [m.defaultRG()])
+  * (solver = (stop = ea.sc.nOfQualityEvaluations(n = 500))
+  * (representation = [ea.representation.doubleString()])
+  * (mapper = [
+    ea.mapper.ndsPairToBiLevelNds(
+      name = "bilevel";
+      nOfHighInputs = 2;
+      nOfHighOutputs = 2;
+      highPeriod = 10;
+      of = ea.mapper.pair(
+        first = ea.mapper.dsToParametrized(parametrized = ds.num.mlp(innerLayers = []));
+        second = ea.mapper.dsToParametrized(parametrized = ds.num.mlp(innerLayers = []));
+        of = ea.mapper.splitter()
+      )
+    );
+    ea.mapper.dsToParametrized(name = "mlp"; parametrized = ds.num.mlp(innerLayers = []))
+  ])
+  * [ea.s.ga(name = ''ga+{mapper.name}'')
+  ])
+  * (problem = [
+    ea.p.simsToTo(
+      name = "arenas";
+      simulations = (environment = (arena = [
+        $arenaE;
+        $arenaS
+      ])
+      * [ds.e.navigation()])
+      * [ds.sat.fromEnvironment()];
+      dT = $dT;
+      tRange = $tRange;
+      qFunction = ds.e.n.finalD();
+      aggregator = f.avg();
+      comparator = ea.comparator.ascending()
+    )
+  ])
+  * [ea.run()];
+  listeners = [
+    ea.l.console(
+      eFunctions = [
+        ea.f.quality(of = ea.f.best(); format = "%5.3f");
+        f.size(of = ea.f.genotype(of = ea.f.best()); format = "%3d")
+      ];
+      onlyLast = false
+    );
+    ea.l.savePlotForExp(
+      path = $basePath + "best-fitness.svg";
+      plot = ea.plot.multi.quality();
+      type = svg
+    );
+    ea.l.saveForRun(
+      path = $basePath + "{solver.name}/best-learning-trajs-{randomGenerator.seed:%02d}.svg";
+      of = ea.acc.lastBest();
+      processor = viz.f.toMultiImage(
+        drawer = ds.d.navigation();
+        of = f.all(
+          of = ea.f.solution();
+          fs = (simulation = (environment = (arena = [
+            $arenaE; $arenaB; $arenaS
+          ])
+          * [ds.e.navigation()])
+          * [ds.sat.fromEnvironment()])
+          * [ds.f.simulate(dT = $dT; tRange = $tRange)]
+        );
+        type = svg
+      )
+    )
+  ]
+)

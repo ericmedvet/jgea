@@ -76,7 +76,7 @@ ea.experiment(
       onlyLast = true
     );
 
-    % ========= CONVERGENCE PLOTS
+    % ========= FITNESS PROGRESSION PLOTS
     ea.l.savePlotForExp(
       path = $basePath + "best-fitness.svg";
       plot = ea.plot.multi.quality(q = f.mapValue(key = mse));
